@@ -203,7 +203,7 @@ void MainWindow::on_pbRetrieve_clicked()
     float treevalue;
     for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
         treevalue = (*tit).retrieveValue(mStamp, *mGrid);
-        qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " impact: " << tit->impact();
+        qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " impact-value: " << tit->impact();
     }
 
 }
