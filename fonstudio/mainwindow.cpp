@@ -280,3 +280,8 @@ void MainWindow::on_calcFormula_clicked()
 }
 
 
+
+void MainWindow::on_lCalcResult_linkActivated(QString link)
+{
+    qDebug() << "link activated:" << link;
+}
