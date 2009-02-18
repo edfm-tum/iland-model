@@ -12,10 +12,11 @@ class PaintArea : public QWidget
 
 signals:
      void needsPainting(QPainter &painter);
-
+     void mouseClick(const QPoint &pos);
 
  protected:
      void paintEvent(QPaintEvent *event);
+     void mousePressEvent ( QMouseEvent * event );
  };
 
 

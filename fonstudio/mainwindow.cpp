@@ -32,6 +32,11 @@ bool writeToFile(const QString& fileName, const QString& content)
     return false;
 }
 
+double nrandom(const float& p1, const float& p2)
+{
+    return p1 + (p2-p1)*(rand()/float(RAND_MAX));
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindowClass)
 {
@@ -39,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
     mGrid=0;
     connect( ui->PaintWidget, SIGNAL(needsPainting(QPainter&)),
              this, SLOT(repaintArea(QPainter&)) );
+    connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
+             this, SLOT(mouseClick(const QPoint&)));
     //connect(&a, SIGNAL(valueChanged(int)),
     //                  &b, SLOT(setValue(int)));
 
@@ -85,14 +92,18 @@ void MainWindow::on_applyXML_clicked()
     //docElem.appendChild(elem);
 
     // Load stamp
-    mStamp.load(stampFile);
-    /*
+    if (!mStamp.load(stampFile)) {
+        QMessageBox::information(NULL, "info", "image not found!");
+        return;
+
+    }
+
     float phi=0.f;
     for (float r=0.; r<1.1; r+=0.1f) {
         qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
         phi+=0.1;
         qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
-    }*/
+    }
 
     // atan2-test
     //qDebug() << "1/1:" << atan2(1., 1.) << "-1/1:" << atan2(1., -1.) << "-1/-1" << atan2(-1., -1.) << "1/-1:" << atan2(-1., 1.);
@@ -120,7 +131,7 @@ void MainWindow::on_applyXML_clicked()
         delete mGrid; mGrid=0;
     }
     mGrid = new FloatGrid(cellsize, cellcount, cellcount);
-    mGrid->initialize(0.f); // set to zero...
+    mGrid->initialize(1.f); // set to unity...
 
     // Load Trees
     Trees.clear();
@@ -205,7 +216,7 @@ void MainWindow::on_pbRetrieve_clicked()
         treevalue = (*tit).retrieveValue(mStamp, *mGrid);
         qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " impact-value: " << tit->impact();
     }
-
+    ui->PaintWidget->update();
 }
 
 
@@ -235,10 +246,10 @@ void MainWindow::repaintArea(QPainter &painter)
     for (iy=0;iy<mGrid->sizeY();iy++) {
         for (ix=0;ix<mGrid->sizeX();ix++) {
             value = mGrid->valueAtIndex(QPoint(ix, iy));
-            if (value>0.) {
+            if (value<1.) {
             cell.moveTo(pxpercell*ix, pxpercell*iy);
             // scale color in hsv from 0..240
-            fill_color.setHsv( 240-int(value*240./maxval), 200, 200);
+            fill_color.setHsv( int(value*240./maxval), 200, 200);
             painter.fillRect(cell, fill_color);
             //painter.drawRect(cell);
         }
@@ -250,12 +261,25 @@ void MainWindow::repaintArea(QPainter &painter)
     std::vector<Tree>::iterator tit;
     for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
         pos = (*tit).position();
-        fill_color.setHsv(240-int((*tit).impact()*240./maxval), 200, 200);
+        fill_color.setHsv(int((*tit).impact()*240.), 200, 200);
         painter.drawRect(int(pxpermeter*pos.x()-3), int(pxpermeter*pos.y()-3), 7, 7);
         painter.fillRect(int(pxpermeter*pos.x()-2), int(pxpermeter*pos.y()-2), 4, 4, fill_color);
+        tit->pxRect = QRect(int(pxpermeter*pos.x()-3), int(pxpermeter*pos.y()-3), 7, 7);
     }
 
     qDebug() << "repaintArea. maxval:" << maxval;
+}
+
+void MainWindow::mouseClick(const QPoint& pos)
+{
+    //qDebug() << "click on" << pos;
+    std::vector<Tree>::iterator tit;
+    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+        if (tit->pxRect.contains(pos)) {
+            qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " impact-value: " << tit->impact();
+            break;
+        }
+    }
 }
 
 
@@ -284,4 +308,20 @@ void MainWindow::on_calcFormula_clicked()
 void MainWindow::on_lCalcResult_linkActivated(QString link)
 {
     qDebug() << "link activated:" << link;
+}
+
+void MainWindow::on_pbAddTrees_clicked()
+{
+    // add a number of trees
+    int n = ui->eTreeCount->text().toInt();
+    float dbh = ui->eTreeDBH->text().toFloat();
+    for (int i=0;i<n; i++) {
+        Tree t;
+        t.setDbh(nrandom(dbh-2., dbh+2));
+        t.setHeight(t.dbh());
+        QPointF p(nrandom(0.,mGrid->metricSizeX()), nrandom(0., mGrid->metricSizeY()));
+        t.setPosition(p);
+        Trees.push_back(t);
+    }
+
 }

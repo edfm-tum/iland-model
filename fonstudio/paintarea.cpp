@@ -23,3 +23,12 @@ void PaintArea::paintEvent(QPaintEvent *)
      //painter.drawPixmap(0, 0,
 
 }
+
+void PaintArea::mousePressEvent ( QMouseEvent * event )
+{
+
+    emit mouseClick(event->pos());
+     //emit needsPainting(painter);
+
+
+}

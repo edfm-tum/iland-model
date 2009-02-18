@@ -1,17 +1,17 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- some comment here -->
 <document>
 <params>
-<stampFile>e:\dev\iland\fonstudio\inits\circle100fun.jpg</stampFile>
+<stampFile>e:\dev\iland\fonstudio\inits\circle100.jpg</stampFile>
 <expression>5+3*sin(2)</expression>
 <!-- hScale / rScale: formulas for calculation of impact. 
 available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <rScale>dbh*0.3</rScale>
 <hScale>1</hScale>
 <!-- cellSize: in meters -->
-<cellSize>4</cellSize>
+<cellSize>2</cellSize>
 <!-- cells: number of cells (NOT number of meters) in x and y-direction-->
-<cells>25</cells>
+<cells>50</cells>
 </params>
 <trees>
 <tree x="79.9" y="79.0" dbh="11" height="10"/>

@@ -794,8 +794,8 @@ void LogicExpression::CheckBuffer(int Index)
 double nrandom(const double& p1, const double& p2)
 {
     return p1 + (p2-p1)*(rand()/double(RAND_MAX));
-
 }
+
 double LogicExpression::udfRandom(int type, double p1, double p2)
 {
     // random / gleichverteilt - normalverteilt

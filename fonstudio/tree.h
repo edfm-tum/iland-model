@@ -28,11 +28,14 @@ public:
 
     static LogicExpression rScale;
     static LogicExpression hScale;
+    // for visuals:
+    QRect pxRect;
 private:
     float mDbh;
     float mHeight;
     QPointF mPosition;
     float mOwnImpact;
+    float mImpactArea;
     float mImpact;
 };
 

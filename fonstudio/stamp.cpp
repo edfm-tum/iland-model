@@ -20,7 +20,7 @@ float Stamp::getXY(const float x, const float y)
     ix = int( (x+1.f) * ( mImage.width() / 2.) );  // scale from -1..1
     iy = int( (y+1.f) * (mImage.height() / 2.) );
     if (!mImage.valid(ix, iy))
-        return 0.f;
+        return 1.f;
     QRgb p = mImage.pixel(ix, iy);
     return (qGray(p)/255.)*hScale;
 
@@ -34,7 +34,7 @@ float Stamp::getXY(const float x, const float y)
 float Stamp::get(const float r, const float phi)
 {
     if (fabs(r)>rScale)
-        return 0.f;
+        return 1.f;
 
     float x, y;
     float r_unit = r/rScale; // scale to size of radius

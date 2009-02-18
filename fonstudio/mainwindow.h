@@ -30,6 +30,7 @@ private:
     Stamp mStamp;
 
 private slots:
+    void on_pbAddTrees_clicked();
     void on_lCalcResult_linkActivated(QString link);
     void on_pbRetrieve_clicked();
     void on_calcFormula_clicked();
@@ -37,6 +38,7 @@ private slots:
     void on_stampTrees_clicked();
     void on_saveFile_clicked();
     void repaintArea(QPainter &painter);
+    void mouseClick(const QPoint& pos);
 };
 
 #endif // MAINWINDOW_H

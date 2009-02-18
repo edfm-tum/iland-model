@@ -40,6 +40,7 @@ void Tree::stampOnGrid(Stamp& stamp, FloatGrid& grid)
     QPointF cellcoord;
     int ix, iy;
     mOwnImpact=0.f;
+    mImpactArea=0.f;
     for (ix=ul.x(); ix<lr.x(); ix++)
         for (iy=ul.y(); iy<lr.y(); iy++) {
         cell.setX(ix); cell.setY(iy);
@@ -50,8 +51,9 @@ void Tree::stampOnGrid(Stamp& stamp, FloatGrid& grid)
         // get value from stamp at this location (given by radius and angle)
         cell_value = stamp.get(r_cell, phi_cell);
         // add value to cell
-        mOwnImpact+=cell_value;
-        grid.valueAtIndex(cell)+=cell_value;
+        mOwnImpact+=(1. - cell_value);
+        mImpactArea++;
+        grid.valueAtIndex(cell)*=cell_value;
     }
 }
 
@@ -91,7 +93,7 @@ float Tree::retrieveValue(Stamp& stamp, FloatGrid& grid)
         //value += cell_value;
         value += grid.valueAtIndex(QPoint(ix,iy)); // - cell_value;
     }
-    mImpact = (value - mOwnImpact)/ float(counting_cells);
+    mImpact = (value + mOwnImpact)/ float(counting_cells);
     return mImpact;
 }
 
