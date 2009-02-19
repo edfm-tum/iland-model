@@ -37,6 +37,34 @@ double nrandom(const float& p1, const float& p2)
     return p1 + (p2-p1)*(rand()/float(RAND_MAX));
 }
 
+void myMessageOutput(QtMsgType type, const char *msg)
+ {
+     /*switch (type) {
+     case QtDebugMsg:
+         fprintf(stderr, "Debug: %s\n", msg);
+         break;
+     case QtWarningMsg:
+         fprintf(stderr, "Warning: %s\n", msg);
+         break;
+     case QtCriticalMsg:
+         fprintf(stderr, "Critical: %s\n", msg);
+         break;
+     case QtFatalMsg:
+         fprintf(stderr, "Fatal: %s\n", msg);
+         abort();
+     }*/
+
+     MainWindow::logSpace()->appendPlainText(QString(msg));
+     MainWindow::logSpace()->ensureCursorVisible();
+ }
+
+QPlainTextEdit *MainWindow::mLogSpace=NULL;
+
+QPlainTextEdit* MainWindow::logSpace()
+{
+   return mLogSpace;
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindowClass)
 {
@@ -48,6 +76,8 @@ MainWindow::MainWindow(QWidget *parent)
              this, SLOT(mouseClick(const QPoint&)));
     //connect(&a, SIGNAL(valueChanged(int)),
     //                  &b, SLOT(setValue(int)));
+    mLogSpace = ui->logOutput;
+    qInstallMsgHandler(myMessageOutput);
 
 }
 
@@ -181,7 +211,7 @@ void MainWindow::on_stampTrees_clicked()
     //QRect posRect;
     //QPoint cell;
     //QPointF cellcoord;
-
+    mGrid->initialize(1.f); // set to unity...
     std::vector<Tree>::iterator tit;
     for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
         (*tit).stampOnGrid(mStamp, *mGrid);
@@ -198,7 +228,8 @@ void MainWindow::on_stampTrees_clicked()
         }
         qDebug() << "y" << iy << ":" << Line;
     }
-    ui->PaintWidget->update();
+    on_pbRetrieve_clicked();
+    //ui->PaintWidget->update();
 
 }
 
@@ -214,7 +245,7 @@ void MainWindow::on_pbRetrieve_clicked()
     float treevalue;
     for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
         treevalue = (*tit).retrieveValue(mStamp, *mGrid);
-        qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " impact-value: " << tit->impact();
+        qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
     }
     ui->PaintWidget->update();
 }
@@ -323,5 +354,7 @@ void MainWindow::on_pbAddTrees_clicked()
         t.setPosition(p);
         Trees.push_back(t);
     }
+
+    on_stampTrees_clicked();
 
 }

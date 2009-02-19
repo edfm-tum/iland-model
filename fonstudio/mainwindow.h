@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui/QMainWindow>
+#include <QtGui>
 #include <vector>
 
 #include "../core/grid.h"
@@ -21,6 +21,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = 0);
+    static QPlainTextEdit* logSpace();
     ~MainWindow();
 
 private:
@@ -28,6 +29,7 @@ private:
     FloatGrid* mGrid;
     std::vector<Tree> Trees;
     Stamp mStamp;
+    static QPlainTextEdit *mLogSpace;
 
 private slots:
     void on_pbAddTrees_clicked();

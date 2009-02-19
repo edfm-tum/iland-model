@@ -68,7 +68,7 @@ float Tree::retrieveValue(Stamp& stamp, FloatGrid& grid)
     double h = hScale.execute();
     stamp.setScale(r, h); // stamp uses scaling values to calculate impact
 
-    float cell_value, r_cell, phi_cell;
+    float stamp_value, cell_value, r_cell, phi_cell;
     QPoint ul = grid.indexAt(QPointF(mPosition.x()-r, mPosition.y()-r) );
     QPoint lr =  grid.indexAt( QPointF(mPosition.x()+r, mPosition.y()+r) );
     grid.validate(ul); grid.validate(lr);
@@ -88,12 +88,15 @@ float Tree::retrieveValue(Stamp& stamp, FloatGrid& grid)
             continue;
         counting_cells++;
         // get value from stamp at this location (given by radius and angle)
-        //cell_value = stamp.get(r_cell, phi_cell);
+        stamp_value = stamp.get(r_cell, phi_cell);
+        cell_value =  grid.valueAtIndex(QPoint(ix,iy));
+        if (stamp_value>0.)
+           value += cell_value / stamp_value;
         // sum up values of cell
         //value += cell_value;
-        value += grid.valueAtIndex(QPoint(ix,iy)); // - cell_value;
+        //value += grid.valueAtIndex(QPoint(ix,iy)); // - cell_value;
     }
-    mImpact = (value + mOwnImpact)/ float(counting_cells);
+    mImpact = value / float(counting_cells);
     return mImpact;
 }
 

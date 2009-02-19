@@ -11,7 +11,7 @@ PaintArea::PaintArea(QWidget *parent)
      //timer->start(1000);
 
      //setWindowTitle(tr("Analog Clock"));
-     resize(200, 200);
+     //resize(200, 200);
  }
 
 void PaintArea::paintEvent(QPaintEvent *)
