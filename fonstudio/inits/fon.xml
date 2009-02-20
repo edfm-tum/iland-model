@@ -7,7 +7,7 @@
 <!-- hScale / rScale: formulas for calculation of impact. 
 available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <rScale>dbh*0.3</rScale>
-<hScale>1</hScale>
+<hScale>0.6</hScale>
 <!-- cellSize: in meters -->
 <cellSize>2</cellSize>
 <!-- cells: number of cells (NOT number of meters) in x and y-direction-->

@@ -243,10 +243,15 @@ void MainWindow::on_pbRetrieve_clicked()
 
     std::vector<Tree>::iterator tit;
     float treevalue;
+    float sum_bhd=0.f;
+    float sum_impact=0.f;
     for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
         treevalue = (*tit).retrieveValue(mStamp, *mGrid);
-        qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
+        sum_bhd+=tit->dbh();
+        sum_impact+=tit->impact();
+        //qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
     }
+    qDebug() << "N="<<Trees.size()<<"avg.dbh="<<sum_bhd/float(Trees.size())<<"avg.value="<<sum_impact/float(Trees.size());
     ui->PaintWidget->update();
 }
 

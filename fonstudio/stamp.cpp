@@ -22,7 +22,11 @@ float Stamp::getXY(const float x, const float y)
     if (!mImage.valid(ix, iy))
         return 1.f;
     QRgb p = mImage.pixel(ix, iy);
-    return (qGray(p)/255.)*hScale;
+    // scaling: range from 0..1 is scaled to 1-hScale to 1 (e.g.: hScale=0.8 -> result: 0.2..1)
+    if (hScale!=1)
+        return (1.-hScale) + hScale*qGray(p)/255.;
+    else
+        return (qGray(p)/255.);
 
 }
 
