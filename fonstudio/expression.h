@@ -19,14 +19,19 @@ enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, ed
   +,-,*,/ as expected, additionally "^" for power.
   mod(x,y): modulo division, gets remainder of x/y
   functions:
-    sin cos tan
-    exp ln sqrt
-    min max: variable number of arguments, e.g: min(x,y,z)
-    if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway.
-    incsum: ?? incremental sum - currently not supported.
-    polygon: special function for polygons. polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn): return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value.
-    sigmoid: returns a sigmoid function. sigmoid(value, type, param1, param2). see udfSigmoid() for details.
-    rnd rndg: random functions; rnd(from, to): uniform random number, rndg(mean, stddev): gaussian randomnumber (Note: gaussian currently not supported)
+    - sin cos tan
+    - exp ln sqrt
+    - min max: variable number of arguments, e.g: min(x,y,z)
+    - if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway.
+    - incsum: ?? incremental sum - currently not supported.
+    - polygon: special function for polygons. polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn): return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value.
+    - sigmoid: returns a sigmoid function. sigmoid(value, type, param1, param2). see udfSigmoid() for details.
+    - rnd rndg: random functions; rnd(from, to): uniform random number, rndg(mean, stddev): gaussian randomnumber (Note: gaussian currently not supported)
+    The Expression class also supports some logical operations:
+    (logical) True equals to "1", "False" to zero. The precedence rules for parentheses...
+    - and
+    - or
+    - not
 
 */
 class Expression
@@ -50,10 +55,10 @@ public:
         /// retrieve again the value pointer of a variable.
         double *  getVarAdress(const QString& VarName);
 
-        void  parse(); /// force a parsing of the expression
+        void  parse(); ///< force a parsing of the expression
 
-        const double result(){ return m_result; }
-        const bool logicResult() { return m_logicResult; }
+        const double result(){ return m_result; } ///< get the result of the last calcuation.
+        const bool logicResult() { return m_logicResult; } ///< get the logical result (true/false) of the last calculation.
         const bool isConstExpression() { return m_constExpression; } /// returns true if current expression is a constant.
         /** strict property: if true, variables must be named before execution.
           When strict=true, all variables in the expression must be added by setVar or addVar.
