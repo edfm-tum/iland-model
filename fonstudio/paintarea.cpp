@@ -21,6 +21,9 @@ void PaintArea::paintEvent(QPaintEvent *)
      painter.drawRect(0, 0, width()-1, height()-1);
      emit needsPainting(painter);
      //painter.drawPixmap(0, 0,
+//     QStylePainter spainter(this);
+//     QStyleOption opt;
+//     spainter.drawPrimitive(QStyle::PE_PanelButtonCommand, opt);
 
 }
 

@@ -10,6 +10,17 @@
 #include "paintarea.h"
 #include "logicexpression.h"
 
+
+// global settings
+QDomDocument xmldoc;
+QDomNode xmlparams;
+QString setting(const QString& paramname)
+{
+    if (!xmlparams.isNull())
+        return xmlparams.firstChildElement(paramname).text();
+    else
+        return "ERROR";
+}
 // Helper functions
 QString loadFromFile(const QString& fileName)
 {
@@ -88,7 +99,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_applyXML_clicked()
 {
-    QDomDocument doc;
+
+    xmldoc.clear();
     QFile file(ui->initFileName->text());
     if (!file.open(QIODevice::ReadOnly)) {
         QMessageBox::information(this, "title text", "Cannot open file!");
@@ -98,7 +110,7 @@ void MainWindow::on_applyXML_clicked()
     QString xmlFile = loadFromFile(ui->initFileName->text());
     ui->iniEdit->setPlainText(xmlFile);
 
-    if (!doc.setContent(&file)) {
+    if (!xmldoc.setContent(&file)) {
         file.close();
         QMessageBox::information(this, "title text", "Cannot set content!");
         return;
@@ -107,13 +119,13 @@ void MainWindow::on_applyXML_clicked()
 
     // print out the element names of all elements that are direct children
     // of the outermost element.
-    QDomElement docElem = doc.documentElement();
+    QDomElement docElem = xmldoc.documentElement();
 
-    QDomNode params = docElem.firstChildElement("params");
+    xmlparams = docElem.firstChildElement("params");
     QDomNode trees = docElem.firstChildElement("trees");
     // get a parameter...
     //int p1 = params.firstChildElement("param1").text().toInt();
-    QString stampFile =  params.firstChildElement("stampFile").text();
+    QString stampFile =  xmlparams.firstChildElement("stampFile").text();
 
 
     // Here we append a new element to the end of the document
@@ -139,24 +151,24 @@ void MainWindow::on_applyXML_clicked()
     //qDebug() << "1/1:" << atan2(1., 1.) << "-1/1:" << atan2(1., -1.) << "-1/-1" << atan2(-1., -1.) << "1/-1:" << atan2(-1., 1.);
 
     // expression test
-    QString expr_text=params.firstChildElement("expression").text();
+    QString expr_text=xmlparams.firstChildElement("expression").text();
     LogicExpression expr(expr_text);
     double value = expr.execute();
     qDebug() << "expression:" << expr_text << "->" <<value;
 
-    QString expr_hScale=params.firstChildElement("hScale").text();
+    QString expr_hScale=xmlparams.firstChildElement("hScale").text();
     Tree::hScale.setExpression(expr_hScale);
     Tree::hScale.addVar("height");
     Tree::hScale.addVar("dbh");
 
-    QString expr_rScale=params.firstChildElement("rScale").text();
+    QString expr_rScale=xmlparams.firstChildElement("rScale").text();
     Tree::rScale.setExpression(expr_rScale);
     Tree::rScale.addVar("height");
     Tree::rScale.addVar("dbh");
 
     // setup grid
-    int cellsize = params.firstChildElement("cellSize").text().toInt();
-    int cellcount = params.firstChildElement("cells").text().toInt();
+    int cellsize = xmlparams.firstChildElement("cellSize").text().toInt();
+    int cellcount = xmlparams.firstChildElement("cells").text().toInt();
     if (mGrid) {
         delete mGrid; mGrid=0;
     }
@@ -179,7 +191,9 @@ void MainWindow::on_applyXML_clicked()
         n = n.nextSiblingElement();
     }
     qDebug() << Trees.size() << "trees loaded.";
-
+    // test stylesheets...
+    QString style = setting("style");
+    ui->PaintWidget->setStyleSheet( style );
 
 }
 
@@ -361,5 +375,114 @@ void MainWindow::on_pbAddTrees_clicked()
     }
 
     on_stampTrees_clicked();
+
+}
+
+
+void MainWindow::stampTrees()
+{
+    mGrid->initialize(1.f); // set to unity...
+    std::vector<Tree>::iterator tit;
+    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+        (*tit).stampOnGrid(mStamp, *mGrid);
+    }
+}
+
+double MainWindow::retrieveFon()
+{
+    std::vector<Tree>::iterator tit;
+    float treevalue;
+    float sum_bhd=0.f;
+    float sum_impact=0.f;
+    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+        treevalue = (*tit).retrieveValue(mStamp, *mGrid);
+        sum_bhd+=tit->dbh();
+        sum_impact+=tit->impact();
+        //qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
+    }
+    qDebug() << "N="<<Trees.size()<<"avg.dbh="<<sum_bhd/float(Trees.size())<<"avg.value="<<sum_impact/float(Trees.size());
+    return sum_impact/float(Trees.size());
+
+}
+
+void MainWindow::addTrees(const double dbh, const int count)
+{
+    // add a number of trees
+    for (int i=0;i<count; i++) {
+        Tree t;
+        t.setDbh(nrandom(dbh-2., dbh+2));
+        t.setHeight(t.dbh());
+        QPointF p(nrandom(0.,mGrid->metricSizeX()), nrandom(0., mGrid->metricSizeY()));
+        t.setPosition(p);
+        Trees.push_back(t);
+    }
+}
+
+void MainWindow::on_calcMatrix_clicked()
+{
+    QStringList dbhs = setting("seriesDbh").split(" ");
+    QStringList ns = setting("seriesStemnumber").split(" ");
+    QStringList result, line;
+    result.append("result;" + dbhs.join(";"));
+    int stemCount, dbh;
+    double val;
+    QTime timer;
+    timer.start();
+    for (int n=0; n<ns.count(); ++n) {
+        line.clear(); line.append(ns[n]);
+        for (int d=0; d<dbhs.count(); ++d) {
+            stemCount = ns[n].toInt();
+            dbh = dbhs.at(d).toInt();
+            // clear trees
+            Trees.clear();
+            addTrees(dbh, stemCount);
+            // stamp
+            stampTrees();
+            val = retrieveFon();
+            line.append( QString::number(val) );
+            qDebug() << "dbh" << dbh << "n" << stemCount << "result" << val;
+        }
+        result.append(line.join(";"));
+        QApplication::processEvents();
+    }
+    // calculate iso-fones
+    double isoresult;
+
+    float n_min, n_max, below_val;
+    QStringList isofones = setting("seriesIsofones").split(" ");
+    QStringList isoresults;
+    isoresults.append("isofon;" + dbhs.join(";") );
+    for (int i=0; i<isofones.count(); ++i) {
+        double isofon = isofones[i].toFloat();
+        isoresult=0;
+        line.clear(); line.append(isofones[i]);
+        for (int d=0; d<dbhs.count(); d++) {
+            isoresult = result[ns.count()-1].section(';',0,0).toFloat(); // in case no result found (greter than maximum)
+            for (int n=0; n<ns.count(); ++n) {
+                val = result[n+1].section(';',d+1, d+1).toFloat();
+                if (val < isofon && n<ns.count()-1 ) {
+                    continue;
+                }
+                if (n==0) {
+                    // class break before --> use min
+                    isoresult=result[1].section(';',0,0).toFloat();
+                }  else {
+                    // break in between...
+                    n_min = result[n].section(';',0,0).toFloat();
+                    n_max = result[n+1].section(';',0,0).toFloat();
+                    below_val = result[n].section(';',d+1,d+1).toFloat();
+                    // linear interpolation
+                    isoresult = n_max + (isofon-val)/(val - below_val) * (n_max - n_min);
+                }
+                break;
+            } // stemnumbers
+            line.append(QString::number(isoresult) );
+        } // dbhs
+        isoresults.append(line.join(";") );
+    } // isoresults
+    result.append("");
+    result.append(isoresults);
+    qDebug() << "finished, elapsed " << timer.elapsed();
+    QApplication::clipboard()->setText(result.join("\n"));
 
 }

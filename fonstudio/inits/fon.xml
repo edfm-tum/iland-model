@@ -6,12 +6,24 @@
 <expression>5+3*sin(2)</expression>
 <!-- hScale / rScale: formulas for calculation of impact. 
 available Variables: "dbh" = dbh in cm, "height" = height in meters-->
-<rScale>dbh*0.3</rScale>
-<hScale>0.6</hScale>
-<!-- cellSize: in meters -->
+<rScale>1*dbh^0.5</rScale>
+<hScale>0.4</hScale><!-- cellSize: in meters -->
 <cellSize>2</cellSize>
 <!-- cells: number of cells (NOT number of meters) in x and y-direction-->
 <cells>50</cells>
+<!-- Isofon settings
+     ===============
+  seriesDbh: list of DBH values, space-separated
+  seriesStemnumber: list of stem-counts, space-delimited
+  seriesIsofones: list of isofon-values. 
+  results will be: 
+  * matrix of avg-fon value for each combination of Dbh & series
+  * isofones: for each isofon-value and each Dbh an interpolated stemnumber.
+-->
+<seriesDbh>10 15 20 25 30 35 40 45 50</seriesDbh>
+<seriesStemnumber>4000 3500 3000 2500 2000 1500 1000 800 600 400 200</seriesStemnumber>
+<seriesIsofones>0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.5</seriesIsofones>
+<style>background-color: red;</style>
 </params>
 <trees>
 <tree x="79.9" y="79.0" dbh="11" height="10"/>

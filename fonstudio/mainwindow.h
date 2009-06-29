@@ -25,6 +25,9 @@ public:
     ~MainWindow();
 
 private:
+    void stampTrees();
+    double retrieveFon();
+    void addTrees(const double dbh, const int count);
     Ui::MainWindowClass *ui;
     FloatGrid* mGrid;
     std::vector<Tree> Trees;
@@ -32,6 +35,7 @@ private:
     static QPlainTextEdit *mLogSpace;
 
 private slots:
+    void on_calcMatrix_clicked();
     void on_pbAddTrees_clicked();
     void on_lCalcResult_linkActivated(QString link);
     void on_pbRetrieve_clicked();

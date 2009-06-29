@@ -35,6 +35,7 @@ void Tree::stampOnGrid(Stamp& stamp, FloatGrid& grid)
     float cell_value, r_cell, phi_cell;
     QPoint ul = grid.indexAt(QPointF(mPosition.x()-r, mPosition.y()-r) );
     QPoint lr =  grid.indexAt( QPointF(mPosition.x()+r, mPosition.y()+r) );
+    QPoint centercell=grid.indexAt(position());
     grid.validate(ul); grid.validate(lr);
     QPoint cell;
     QPointF cellcoord;
@@ -46,7 +47,7 @@ void Tree::stampOnGrid(Stamp& stamp, FloatGrid& grid)
         cell.setX(ix); cell.setY(iy);
         cellcoord = grid.getCellCoordinates(cell);
         r_cell = dist_and_direction(mPosition, cellcoord, phi_cell);
-        if (r_cell > r)
+        if (r_cell > r && cell!=centercell)
             continue;
         // get value from stamp at this location (given by radius and angle)
         cell_value = stamp.get(r_cell, phi_cell);
@@ -71,6 +72,7 @@ float Tree::retrieveValue(Stamp& stamp, FloatGrid& grid)
     float stamp_value, cell_value, r_cell, phi_cell;
     QPoint ul = grid.indexAt(QPointF(mPosition.x()-r, mPosition.y()-r) );
     QPoint lr =  grid.indexAt( QPointF(mPosition.x()+r, mPosition.y()+r) );
+    QPoint centercell=grid.indexAt(position());
     grid.validate(ul); grid.validate(lr);
     QPoint cell;
     QPointF cellcoord;
@@ -84,7 +86,7 @@ float Tree::retrieveValue(Stamp& stamp, FloatGrid& grid)
         cell.setX(ix); cell.setY(iy);
         cellcoord = grid.getCellCoordinates(cell);
         r_cell = dist_and_direction(mPosition, cellcoord, phi_cell);
-        if (r_cell>r)
+        if (r_cell>r && cell!=centercell)
             continue;
         counting_cells++;
         // get value from stamp at this location (given by radius and angle)
@@ -96,7 +98,10 @@ float Tree::retrieveValue(Stamp& stamp, FloatGrid& grid)
         //value += cell_value;
         //value += grid.valueAtIndex(QPoint(ix,iy)); // - cell_value;
     }
-    mImpact = value / float(counting_cells);
+    if (counting_cells>0)
+        mImpact = value / float(counting_cells);
+    else
+        mImpact=1;
     return mImpact;
 }
 

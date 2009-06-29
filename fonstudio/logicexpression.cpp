@@ -36,115 +36,114 @@ QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "varian
 // static vars für simquery
 //bool TSimQuery::DoFreezeClasses=false;
 //bool TSimQuery::ClassesFrozen=false;
-//#define ModellVarCnt 4
-//AnsiString ModellVarList[ModellVarCnt]={"bhd", "height", "age", "art"};
+//#define m_modelVarCnt 4
+//AnsiString m_modelVarList[m_modelVarCnt]={"bhd", "height", "age", "art"};
 ETokType  LogicExpression::next_token()
 {
-    TokCnt++;
-    LastState=State;
-    // nächsten Token aus String lesen...
+    m_tokCount++;
+    m_lastState=m_state;
+    // nächsten m_token aus String lesen...
     // whitespaces eliminieren...
-    while (strchr(" \t", *Pos) && *Pos)
-        Pos++;
+    while (strchr(" \t", *m_pos) && *m_pos)
+        m_pos++;
 
-    if (*Pos==0) {
-        State=etStop;
-        Token="";
+    if (*m_pos==0) {
+        m_state=etStop;
+        m_token="";
         return etStop; // Ende der Vorstellung
     }
     // whitespaces eliminieren...
-    while (strchr(" \t", *Pos))
-        Pos++;
-    if (*Pos==';')
+    while (strchr(" \t", *m_pos))
+        m_pos++;
+    if (*m_pos==';')
     {
 
-        Token=*Pos++;
-        State=etDelimeter;
+        m_token=*m_pos++;
+        m_state=etDelimeter;
         return etDelimeter;
     }
-    if (strchr("+-*/(){}^", *Pos)) {
-        Token=*Pos++;
-        State=etOperator;
+    if (strchr("+-*/(){}^", *m_pos)) {
+        m_token=*m_pos++;
+        m_state=etOperator;
         return etOperator;
     }
-    if (strchr("=<>", *Pos)) {
-        Token=*Pos++;
-        if (*Pos=='>' || *Pos=='=')
-            Token+=*Pos++;
-        State=etCompare;
+    if (strchr("=<>", *m_pos)) {
+        m_token=*m_pos++;
+        if (*m_pos=='>' || *m_pos=='=')
+            m_token+=*m_pos++;
+        m_state=etCompare;
         return etCompare;
     }
-    if (*Pos>='0' && *Pos<='9') {
+    if (*m_pos>='0' && *m_pos<='9') {
         // Zahl
-        Token.setNum(atof(Pos));
-        while (strchr("0123456789.",*Pos) && *Pos!=0)
-            Pos++;  // nächstes Zeichen suchen...
+        m_token.setNum(atof(m_pos));
+        while (strchr("0123456789.",*m_pos) && *m_pos!=0)
+            m_pos++;  // nächstes Zeichen suchen...
 
-        State=etNumber;
+        m_state=etNumber;
         return etNumber;
     }
 
-    if (*Pos>='a' && *Pos<='z'|| *Pos>='A' && *Pos<='Z') {
+    if (*m_pos>='a' && *m_pos<='z'|| *m_pos>='A' && *m_pos<='Z') {
         // function ... find brace
-        Token="";
-        while ((*Pos>='a' && *Pos<='z' || *Pos>='A' && *Pos<='Z' || *Pos>='0' && *Pos<='9' || *Pos=='_' || *Pos=='.') && *Pos!='(' && Pos!=0)
-            Token+=*Pos++;
+        m_token="";
+        while ((*m_pos>='a' && *m_pos<='z' || *m_pos>='A' && *m_pos<='Z' || *m_pos>='0' && *m_pos<='9' || *m_pos=='_' || *m_pos=='.') && *m_pos!='(' && m_pos!=0)
+            m_token+=*m_pos++;
         // wenn am Ende Klammer, dann Funktion, sonst Variable.
-        if (*Pos=='(' || *Pos=='{') {
-            Pos++; // skip brace
-            State=etFunction;
+        if (*m_pos=='(' || *m_pos=='{') {
+            m_pos++; // skip brace
+            m_state=etFunction;
             return etFunction;
         } else {
-            if (Token.toLower()=="and" || Token.toLower()=="or") {
-                State=etLogical;
+            if (m_token.toLower()=="and" || m_token.toLower()=="or") {
+                m_state=etLogical;
                 return etLogical;
             } else {
-                State=etVariable;
+                m_state=etVariable;
                 return etVariable;
             }
         }
     }
-    State=etUnknown;
+    m_state=etUnknown;
     return etUnknown; // in case no match was found
 
 }
 
 LogicExpression::~LogicExpression()
 {
-    if (Expr)
-        delete[] Expr;
-    delete[] ExecList;
+    if (m_expr)
+        delete[] m_expr;
+    delete[] m_execList;
 }
 
 void LogicExpression::setExpression(const QString& aExpression)
 {
-    expression=aExpression;
-    //Expr=StrNew(PrepareExpr(expression).c_str());
+    m_expression=aExpression;
+    //m_expr=StrNew(PrepareExpr(m_expression).c_str());
 
-    QByteArray ba = expression.toLocal8Bit(); // convert from unicode to 8bit
-    Expr=new char[ba.length()+1]; // reserve memory...
-    strcpy(Expr, ba.constData());
+    QByteArray ba = m_expression.toLocal8Bit(); // convert from unicode to 8bit
+    m_expr=new char[ba.length()+1]; // reserve memory...
+    strcpy(m_expr, ba.constData());
 
-    Pos=Expr; // set pointer to begin of expression
-    while (*Pos) {  // selbergestricktes string-replace (dezimalpunkt)
-        if (*Pos==',') *Pos='.';
-        Pos++;
+    m_pos=m_expr; // set pointer to begin of m_expression
+    while (*m_pos) {  // selbergestricktes string-replace (dezimalpunkt)
+        if (*m_pos==',') *m_pos='.';
+        m_pos++;
     }
-    Pos=Expr;  // set starting point...
-    FResult=0.;
+    m_pos=m_expr;  // set starting point...
 
     for (int i=0; i<10; i++)
-        VarSpace[i]=0.;
-    parsed=false;
+        m_varSpace[i]=0.;
+    m_parsed=false;
 
-    ExternVarSpace=0;
-    ModellVarCnt=0;
-    ModellVarSet=false;
-    strict=true; // default....
-    IncSumEnabled=false;
+    m_externVarSpace=0;
+    m_modelVarCnt=0;
+    m_modelVarSet=false;
+    m_strict=true; // default....
+    m_incSumEnabled=false;
     // Buffer:
-    ExecListSize = 5; // inital value...
-    ExecList = new ExtExecListItem[ExecListSize]; // init
+    m_execListSize = 5; // inital value...
+    m_execList = new ExtExecListItem[m_execListSize]; // init
 }
 
 LogicExpression::LogicExpression(const QString& aExpression)
@@ -155,33 +154,32 @@ LogicExpression::LogicExpression(const QString& aExpression)
 void  LogicExpression::parse()
 {
     try {
-        tokString="";
-        State=etUnknown;
-        LastState=etUnknown;
-        constExpression=true;
-        ExecIndex=0;
-        TokCnt=0;
+        m_tokString="";
+        m_state=etUnknown;
+        m_lastState=etUnknown;
+        m_constExpression=true;
+        m_execIndex=0;
+        m_tokCount=0;
         int AktTok;
         next_token();
-        while (State!=etStop) {
-            tokString+="\n"+Token;
-            AktTok=TokCnt;
+        while (m_state!=etStop) {
+            m_tokString+="\n"+m_token;
+            AktTok=m_tokCount;
             parse_levelL0();  // start with logical level 0
-            if (AktTok==TokCnt)
+            if (AktTok==m_tokCount)
                 throw std::logic_error("Unbalanced Braces.");
-            if (State==etUnknown){
-                tokString+="\n***Error***";
-                throw std::logic_error("Syntax error, token: " + Token.toStdString());
+            if (m_state==etUnknown){
+                m_tokString+="\n***Error***";
+                throw std::logic_error("Syntax error, token: " + m_token.toStdString());
             }
         }
-        ExecList[ExecIndex].Type=etStop;
-        ExecList[ExecIndex].Value=0;
-        ExecList[ExecIndex++].Index=0;
-        CheckBuffer(ExecIndex);
-        parsed=true;
-        result=FResult;
+        m_execList[m_execIndex].Type=etStop;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=0;
+        checkBuffer(m_execIndex);
+        m_parsed=true;
     } catch (const std::logic_error& e) {
-        throw std::logic_error("Fehler in: " + std::string(Expr) + "\n"+e.what());
+        throw std::logic_error("Fehler in: " + std::string(m_expr) + "\n"+e.what());
     }
 }
 
@@ -191,8 +189,8 @@ void  LogicExpression::parse_levelL0()
     QString op;
     parse_levelL1();
 
-    if (State==etLogical)  {
-        op=Token.toLower();
+    if (m_state==etLogical)  {
+        op=m_token.toLower();
         next_token();
         parse_levelL1();
         int logicaltok=0;
@@ -200,16 +198,16 @@ void  LogicExpression::parse_levelL0()
         if (op=="or") logicaltok=opOr;
 
 
-        ExecList[ExecIndex].Type=etLogical;
-        ExecList[ExecIndex].Value=0;
-        ExecList[ExecIndex++].Index=logicaltok;
-        CheckBuffer(ExecIndex);
+        m_execList[m_execIndex].Type=etLogical;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=logicaltok;
+        checkBuffer(m_execIndex);
     }
     /*       if (op=='+')
           FResult=temp+FResult;
         if (op=='-')
           FResult=temp-FResult;     */
-    //if (Token=="+" || Token=="-") {
+    //if (m_token=="+" || m_token=="-") {
     //   parse_level0();
     //}
 }
@@ -219,8 +217,8 @@ void  LogicExpression::parse_levelL1()
     QString op;
     parse_level0();
     //double temp=FResult;
-    if (State==etCompare)  {
-        op=Token;
+    if (m_state==etCompare)  {
+        op=m_token;
         next_token();
         parse_level0();
         int logicaltok=0;
@@ -231,16 +229,16 @@ void  LogicExpression::parse_levelL1()
         if (op==">=") logicaltok=opGreaterOrEqual;
         if (op=="=")  logicaltok=opEqual;
 
-        ExecList[ExecIndex].Type=etCompare;
-        ExecList[ExecIndex].Value=0;
-        ExecList[ExecIndex++].Index=logicaltok;
-        CheckBuffer(ExecIndex);
+        m_execList[m_execIndex].Type=etCompare;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=logicaltok;
+        checkBuffer(m_execIndex);
     }
     /*       if (op=='+')
           FResult=temp+FResult;
         if (op=='-')
           FResult=temp-FResult;     */
-    //if (Token=="+" || Token=="-") {
+    //if (m_token=="+" || m_token=="-") {
     //   parse_level0();
     //}
 }
@@ -251,20 +249,20 @@ void  LogicExpression::parse_level0()
     QByteArray op;
     parse_level1();
 
-    while (Token=="+" || Token=="-")  {
-        op=Token.toAscii();
+    while (m_token=="+" || m_token=="-")  {
+        op=m_token.toAscii();
         next_token();
         parse_level1();
-        ExecList[ExecIndex].Type=etOperator;
-        ExecList[ExecIndex].Value=0;
-        ExecList[ExecIndex++].Index=op.at(0);///op.constData()[0];
-        CheckBuffer(ExecIndex);
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=op.at(0);///op.constData()[0];
+        checkBuffer(m_execIndex);
     }
     /*       if (op=='+')
           FResult=temp+FResult;
         if (op=='-')
           FResult=temp-FResult;     */
-    //if (Token=="+" || Token=="-") {
+    //if (m_token=="+" || m_token=="-") {
     //   parse_level0();
     //}
 }
@@ -275,15 +273,15 @@ void  LogicExpression::parse_level1()
     QByteArray op;
     parse_level2();
     //double temp=FResult;
-    // alt:        if (Token=="*" || Token=="/") {
-    while (Token=="*" || Token=="/") {
-        op=Token.toAscii();
+    // alt:        if (m_token=="*" || m_token=="/") {
+    while (m_token=="*" || m_token=="/") {
+        op=m_token.toAscii();
         next_token();
         parse_level2();
-        ExecList[ExecIndex].Type=etOperator;
-        ExecList[ExecIndex].Value=0;
-        ExecList[ExecIndex++].Index=op.at(0);
-        CheckBuffer(ExecIndex);
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=op.at(0);
+        checkBuffer(m_execIndex);
     }
     /*       if (op=="*")
            FResult=temp*FResult;
@@ -294,25 +292,25 @@ void  LogicExpression::parse_level1()
 
 void  LogicExpression::Atom()
 {
-    if (State==etVariable || State==etNumber) {
-        if (State==etNumber) {
-            FResult=Token.toDouble();
-            ExecList[ExecIndex].Type=etNumber;
-            ExecList[ExecIndex].Value=FResult;
-            ExecList[ExecIndex++].Index=-1;
-            CheckBuffer(ExecIndex);
+    if (m_state==etVariable || m_state==etNumber) {
+        if (m_state==etNumber) {
+            m_result=m_token.toDouble();
+            m_execList[m_execIndex].Type=etNumber;
+            m_execList[m_execIndex].Value=m_result;
+            m_execList[m_execIndex++].Index=-1;
+            checkBuffer(m_execIndex);
         }
-        if (State==etVariable) {
-            FResult=getVar(Token);
-            ExecList[ExecIndex].Type=etVariable;
-            ExecList[ExecIndex].Value=0;
-            ExecList[ExecIndex++].Index=GetVarIdx(Token);
-            CheckBuffer(ExecIndex);
-            constExpression=false;
+        if (m_state==etVariable) {
+            m_result=getVar(m_token);
+            m_execList[m_execIndex].Type=etVariable;
+            m_execList[m_execIndex].Value=0;
+            m_execList[m_execIndex++].Index=getVarIndex(m_token);
+            checkBuffer(m_execIndex);
+            m_constExpression=false;
         }
         next_token();
-    } else if (State==etStop)
-        throw std::logic_error("Unexpected end of expression.");
+    } else if (m_state==etStop)
+        throw std::logic_error("Unexpected end of m_expression.");
 }
 
 
@@ -321,33 +319,33 @@ void  LogicExpression::parse_level2()
     // x^y
     parse_level3();
     //double temp=FResult;
-    while (Token=="^") {
+    while (m_token=="^") {
         next_token();
         parse_level3();
         //FResult=pow(temp,FResult);
-        ExecList[ExecIndex].Type=etOperator;
-        ExecList[ExecIndex].Value=0;
-        ExecList[ExecIndex++].Index='^';
-        CheckBuffer(ExecIndex);
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index='^';
+        checkBuffer(m_execIndex);
     }
 }
 void  LogicExpression::parse_level3()
 {
     // unary operator (- bzw. +)
     QString op;
-    op=Token;
+    op=m_token;
     bool Unary=false;
-    if (op=="-" && (LastState==etOperator || LastState==etUnknown || LastState==etCompare || LastState==etLogical || LastState==etFunction)) {
+    if (op=="-" && (m_lastState==etOperator || m_lastState==etUnknown || m_lastState==etCompare || m_lastState==etLogical || m_lastState==etFunction)) {
         next_token();
         Unary=true;
     }
     parse_level4();
     if (Unary && op=="-") {
         //FResult=-FResult;
-        ExecList[ExecIndex].Type=etOperator;
-        ExecList[ExecIndex].Value=0;
-        ExecList[ExecIndex++].Index='_';
-        CheckBuffer(ExecIndex);
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index='_';
+        checkBuffer(m_execIndex);
     }
 
 }
@@ -358,8 +356,8 @@ void  LogicExpression::parse_level4()
     QString func;
     Atom();
     //double temp=FResult;
-    if (Token=="(" || State==etFunction) {
-        func=Token;
+    if (m_token=="(" || m_state==etFunction) {
+        func=m_token;
         if (func=="(")   // klammerausdruck
         {
             next_token();
@@ -368,25 +366,25 @@ void  LogicExpression::parse_level4()
         else        // funktion...
         {
             int argcount=0;
-            int idx=GetFuncIndex(func);
+            int idx=getFuncIndex(func);
             next_token();
-            //Token="{";
+            //m_token="{";
             // bei funktionen mit mehreren Parametern
-            while (Token!=")") {
+            while (m_token!=")") {
                 argcount++;
                 parse_levelL0();
-                if (State==etDelimeter)
+                if (m_state==etDelimeter)
                     next_token();
             }
             if (MaxArgCount[idx]>0 && MaxArgCount[idx]!=argcount)
                 throw std::logic_error( QString("Function %1 assumes %2 arguments!").arg(func).arg(MaxArgCount[idx]).toStdString());
             //throw std::logic_error("Funktion " + func + " erwartet " + std::string(MaxArgCount[idx]) + " Parameter!");
-            ExecList[ExecIndex].Type=etFunction;
-            ExecList[ExecIndex].Value=argcount;
-            ExecList[ExecIndex++].Index=idx;
-            CheckBuffer(ExecIndex);
+            m_execList[m_execIndex].Type=etFunction;
+            m_execList[m_execIndex].Value=argcount;
+            m_execList[m_execIndex++].Index=idx;
+            checkBuffer(m_execIndex);
         }
-        if (Token!="}" && Token!=")") // Fehler
+        if (m_token!="}" && m_token!=")") // Fehler
             throw std::logic_error("Falsche Zahl von Klammern.");
         next_token();
     }
@@ -396,12 +394,12 @@ double  LogicExpression::getVar(const QString& VarName)
 {
     // zuerst schauen, ob in system-liste....
     int idx;
-    if (!ModellVarList.isEmpty())
+    if (!m_modelVarList.isEmpty())
     {
-        ModellVarList.indexOf(VarName.toLower());
-        //idx=AnsiIndexStr(VarName.toLower(), ModellVarList, ModellVarCnt-1);
+        m_modelVarList.indexOf(VarName.toLower());
+        //idx=AnsiIndexStr(VarName.toLower(), m_modelVarList, m_modelVarCnt-1);
         if (idx>-1) {
-            tokString+="\nModellvar: " + VarName;
+            m_tokString+="\nModellvar: " + VarName;
             return 0; // no need to add...
         }
     }
@@ -414,46 +412,46 @@ double  LogicExpression::getVar(const QString& VarName)
             if (aType==edtNumber)
               return 0;  // nur numerische
         }*/
-    if (!ExternVarNames.isEmpty())
+    if (!m_externVarNames.isEmpty())
     {
-        idx=ExternVarNames.indexOf(VarName);
+        idx=m_externVarNames.indexOf(VarName);
         if (idx>-1) {
-            tokString+="\nExternvar: " + VarName;
+            m_tokString+="\nExternvar: " + VarName;
             return 0; // no need to add...
         }
     }
-    idx=VarList.indexOf(VarName);
+    idx=m_varList.indexOf(VarName);
     if (idx==-1) {
-        if (strict)
+        if (m_strict)
             throw std::logic_error("Undefined symbol: " + VarName.toStdString());
-        VarList+=VarName;
-        idx = VarList.size()-1;
-        tokString+="\nVariable: "+VarName;
+        m_varList+=VarName;
+        idx = m_varList.size()-1;
+        m_tokString+="\nVariable: "+VarName;
     }
 
-    return VarSpace[idx];
+    return m_varSpace[idx];
 }
 
 void  LogicExpression::setVar(const QString& Var, double Value)
 {
-    if (!parsed)
+    if (!m_parsed)
         parse();
-    int idx=GetVarIdx(Var);
+    int idx=getVarIndex(Var);
     if (idx>=0 && idx<10)
-        VarSpace[idx]=Value;
+        m_varSpace[idx]=Value;
     else
         throw std::logic_error("Ungültige Variable " + Var.toStdString());
 }
 
 double  LogicExpression::calculate(double Val1, double Val2)
 {
-    VarSpace[0]=Val1;
-    VarSpace[1]=Val2;
-    strict=false;
+    m_varSpace[0]=Val1;
+    m_varSpace[1]=Val2;
+    m_strict=false;
     return execute();
 }
 
-int  LogicExpression::GetFuncIndex(const QString& FuncName)
+int  LogicExpression::getFuncIndex(const QString& FuncName)
 {
     int pos=FuncList.indexOf(FuncName);
     if (pos<0)
@@ -466,11 +464,11 @@ int  LogicExpression::GetFuncIndex(const QString& FuncName)
 
 double  LogicExpression::execute()
 {
-    if (!parsed)
+    if (!m_parsed)
         parse();
-    ExtExecListItem *Exec=ExecList;
+    ExtExecListItem *Exec=m_execList;
     int i;
-    FResult=0.;
+    m_result=0.;
     double Stack[20];
     bool   LogicStack[20];
     bool   *lp=LogicStack;
@@ -478,17 +476,17 @@ double  LogicExpression::execute()
     *lp++=true; // zumindest eins am anfang...
     if (Exec->Type==etStop) {
         // leere expr.
-        logicResult=false;
-        result=0.;
+        m_logicResult=false;
+        m_result=0.;
         return 0.;
     }
-    //tokString="Start\n";
+    //m_tokString="Start\n";
     while (Exec->Type!=etStop) {
         /* switch (Exec->Type) {
-         case etOperator: tokString+="Operator " + AnsiString((char)Exec->Index)+"\n"; break;
-         case etNumber: tokString+=AnsiString(Exec->Value)+"\n";  break;
-         case etVariable: tokString+="Variable"+AnsiString(Exec->Index)+"\n"; break;
-         case etFunction: tokString+="Function"+AnsiString(Exec->Index)+" Args: "+AnsiString(Exec->Value) +"\n"; break;
+         case etOperator: m_tokString+="Operator " + AnsiString((char)Exec->Index)+"\n"; break;
+         case etNumber: m_tokString+=AnsiString(Exec->Value)+"\n";  break;
+         case etVariable: m_tokString+="Variable"+AnsiString(Exec->Index)+"\n"; break;
+         case etFunction: m_tokString+="Function"+AnsiString(Exec->Index)+" Args: "+AnsiString(Exec->Value) +"\n"; break;
       }  */
         switch (Exec->Type) {
         case etOperator:
@@ -504,11 +502,11 @@ double  LogicExpression::execute()
             break;
         case etVariable:
             if (Exec->Index<100)
-                *p++=VarSpace[Exec->Index];
+                *p++=m_varSpace[Exec->Index];
             else if (Exec->Index<1000)
-                *p++=GetModellVar(Exec->Index);
+                *p++=getModelVar(Exec->Index);
             else
-                *p++=GetExternVar(Exec->Index);
+                *p++=getExternVar(Exec->Index);
             break;
         case etNumber:
             *p++=Exec->Value;
@@ -539,8 +537,8 @@ double  LogicExpression::execute()
                      p-= 2; // die beiden argumente wegwerfen...
                      break;
                  case 9: // incrementelle summe
-                     IncSumVar+=*p;
-                     *p=IncSumVar;
+                     m_incSumVar+=*p;
+                     *p=m_incSumVar;
                      break;
                  case 10: // Polygon-Funktion
                      *(p-(int)(Exec->Value-1))=udfPolygon(*(p-(int)(Exec->Value-1)), p, (int)Exec->Value);
@@ -587,9 +585,9 @@ double  LogicExpression::execute()
                  }
             if (LogicResult) {
                 *(p-1)=1;   // 1 means true...
-                //tokString+="TRUE\n";
+                //m_tokString+="TRUE\n";
             } else {
-                //tokString+="FALSE\n";
+                //m_tokString+="FALSE\n";
                 *(p-1)=0;
             }
 
@@ -599,38 +597,38 @@ double  LogicExpression::execute()
         } // switch()
 
         Exec++;
-        //tokString+="Pos: " + AnsiString(p-Stack) + "; Value: " + AnsiString(*(p-1))+"\n";
+        //m_tokString+="m_pos: " + AnsiString(p-Stack) + "; Value: " + AnsiString(*(p-1))+"\n";
     }
     if (p-Stack!=1)
         throw std::logic_error("...unbalanced");
-    result=*(p-1);
-    logicResult=*(lp-1);
-    return result;
+    m_result=*(p-1);
+    m_logicResult=*(lp-1);
+    return m_result;
 }
 
 double * LogicExpression::addVar(const QString& VarName)
 {
     // add var
-    int idx=VarList.indexOf(VarName);
+    int idx=m_varList.indexOf(VarName);
     if (idx==-1) {
-        VarList+=VarName;
-        idx=VarList.size()-1;
+        m_varList+=VarName;
+        idx=m_varList.size()-1;
     }
-    return &VarSpace[GetVarIdx(VarName)];
+    return &m_varSpace[getVarIndex(VarName)];
 }
 
 double *  LogicExpression::getVarAdress(const QString& VarName)
 {
-    if (!parsed)
+    if (!m_parsed)
         parse();
-    int idx=GetVarIdx(VarName);
+    int idx=getVarIndex(VarName);
     if (idx>=0 && idx<10)
-        return &VarSpace[idx];
+        return &m_varSpace[idx];
     else
         throw std::logic_error("Ungültige Variable " + VarName.toStdString());
 }
 
-int  LogicExpression::GetVarIdx(const QString& VarName)
+int  LogicExpression::getVarIndex(const QString& VarName)
 {
     int idx;
 
@@ -642,23 +640,23 @@ int  LogicExpression::GetVarIdx(const QString& VarName)
            if (idx>-1)
               return 1000+idx;
         }*/
-    if (!ModellVarList.isEmpty()) {
-        idx=ModellVarList.indexOf(VarName.toLower());
+    if (!m_modelVarList.isEmpty()) {
+        idx=m_modelVarList.indexOf(VarName.toLower());
         if (idx>-1) {
             return 100 + idx; //
         }
     }
     // externe variablen
-    if (!ExternVarNames.isEmpty())
+    if (!m_externVarNames.isEmpty())
     {
-        ExternVarNames.indexOf(VarName);
+        m_externVarNames.indexOf(VarName);
         if (idx>-1)
             return 1000 + idx;
     }
-    return VarList.indexOf(VarName);
+    return m_varList.indexOf(VarName);
 }
 
-double LogicExpression::GetModellVar(int VarIdx)
+double LogicExpression::getModelVar(int VarIdx)
 {
     // der weg nach draussen....
     //int idx=VarIdx - 100; // intern als 100+x gespeichert...
@@ -670,17 +668,17 @@ double LogicExpression::GetModellVar(int VarIdx)
 
 /*void   LogicExpression::SetModellObject(TSimObject *Obj)
 {
-   if (!ModellVarSet) {
-     ModellVarList=Obj->GetVarList(ModellVarCnt);
-     ModellVarSet=true;
+   if (!m_modelVarSet) {
+     m_modelVarList=Obj->GetVarList(m_modelVarCnt);
+     m_modelVarSet=true;
    }
    FSimObject=Obj;
 }
 void   LogicExpression::SetModellBaum(TBaum *tree)
 {
-  if (!ModellVarSet) {
-     ModellVarList=tree->GetVarList(ModellVarCnt);
-     ModellVarSet=true;
+  if (!m_modelVarSet) {
+     m_modelVarList=tree->GetVarList(m_modelVarCnt);
+     m_modelVarSet=true;
   }
   TestBaum=tree;
 }*/
@@ -689,24 +687,24 @@ void   LogicExpression::SetModellBaum(TBaum *tree)
 void LogicExpression::setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace)
 {
     // externe variablen (zB von Scripting-Engine) bekannt machen...
-    ExternVarSpace=ExternSpace;
-    ExternVarNames=ExternSpaceNames;
+    m_externVarSpace=ExternSpace;
+    m_externVarNames=ExternSpaceNames;
 }
 
-double LogicExpression::GetExternVar(int Index)
+double LogicExpression::getExternVar(int Index)
 {
     //if (Script)
     //   return Script->GetNumVar(Index-1000);
     //else   // überhaupt noch notwendig???
-    return ExternVarSpace[Index-1000];
+    return m_externVarSpace[Index-1000];
 }
 
 void LogicExpression::enableIncSum()
 {
     // Funktion "inkrementelle summe" einschalten.
     // dabei wird der zähler zurückgesetzt und ein flag gesetzt.
-    IncSumEnabled=true;
-    IncSumVar=0.;
+    m_incSumEnabled=true;
+    m_incSumVar=0.;
 }
 
 // "Userdefined Function" Polygon
@@ -773,22 +771,22 @@ double LogicExpression::udfSigmoid(double Value, double sType, double p1, double
 }
 
 
-void LogicExpression::CheckBuffer(int Index)
+void LogicExpression::checkBuffer(int Index)
 {
     // um den Buffer für Befehle kümmern.
     // wenn der Buffer zu klein wird, neuen Platz reservieren.
-    if (Index<ExecListSize)
+    if (Index<m_execListSize)
         return; // nix zu tun.
-    int NewSize=ExecListSize * 2; // immer verdoppeln: 5->10->20->40->80->160
+    int NewSize=m_execListSize * 2; // immer verdoppeln: 5->10->20->40->80->160
     // (1) neuen Buffer anlegen....
     ExtExecListItem *NewBuf=new ExtExecListItem[NewSize];
     // (2) bisherige Werte umkopieren....
-    for (int i=0;i<ExecListSize;i++)
-        NewBuf[i]=ExecList[i];
+    for (int i=0;i<m_execListSize;i++)
+        NewBuf[i]=m_execList[i];
     // (3) alten buffer löschen und pointer umsetzen...
-    delete[] ExecList;
-    ExecList = NewBuf;
-    ExecListSize=NewSize;
+    delete[] m_execList;
+    m_execList = NewBuf;
+    m_execListSize=NewSize;
 }
 
 double nrandom(const double& p1, const double& p2)
