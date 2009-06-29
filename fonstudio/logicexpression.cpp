@@ -38,7 +38,7 @@ QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "varian
 //bool TSimQuery::ClassesFrozen=false;
 //#define m_modelVarCnt 4
 //AnsiString m_modelVarList[m_modelVarCnt]={"bhd", "height", "age", "art"};
-ETokType  LogicExpression::next_token()
+ETokType  Expression::next_token()
 {
     m_tokCount++;
     m_lastState=m_state;
@@ -109,14 +109,14 @@ ETokType  LogicExpression::next_token()
 
 }
 
-LogicExpression::~LogicExpression()
+Expression::~Expression()
 {
     if (m_expr)
         delete[] m_expr;
     delete[] m_execList;
 }
 
-void LogicExpression::setExpression(const QString& aExpression)
+void Expression::setExpression(const QString& aExpression)
 {
     m_expression=aExpression;
     //m_expr=StrNew(PrepareExpr(m_expression).c_str());
@@ -146,12 +146,12 @@ void LogicExpression::setExpression(const QString& aExpression)
     m_execList = new ExtExecListItem[m_execListSize]; // init
 }
 
-LogicExpression::LogicExpression(const QString& aExpression)
+Expression::Expression(const QString& aExpression)
 {
     setExpression(aExpression);
 }
 
-void  LogicExpression::parse()
+void  Expression::parse()
 {
     try {
         m_tokString="";
@@ -183,7 +183,7 @@ void  LogicExpression::parse()
     }
 }
 
-void  LogicExpression::parse_levelL0()
+void  Expression::parse_levelL0()
 {
     // logical operations  (and, or, not)
     QString op;
@@ -211,7 +211,7 @@ void  LogicExpression::parse_levelL0()
     //   parse_level0();
     //}
 }
-void  LogicExpression::parse_levelL1()
+void  Expression::parse_levelL1()
 {
     // logische operationen (<,>,=,...)
     QString op;
@@ -243,7 +243,7 @@ void  LogicExpression::parse_levelL1()
     //}
 }
 
-void  LogicExpression::parse_level0()
+void  Expression::parse_level0()
 {
     // plus und minus
     QByteArray op;
@@ -267,7 +267,7 @@ void  LogicExpression::parse_level0()
     //}
 }
 
-void  LogicExpression::parse_level1()
+void  Expression::parse_level1()
 {
     // mal und division
     QByteArray op;
@@ -290,7 +290,7 @@ void  LogicExpression::parse_level1()
 
 }
 
-void  LogicExpression::Atom()
+void  Expression::Atom()
 {
     if (m_state==etVariable || m_state==etNumber) {
         if (m_state==etNumber) {
@@ -314,7 +314,7 @@ void  LogicExpression::Atom()
 }
 
 
-void  LogicExpression::parse_level2()
+void  Expression::parse_level2()
 {
     // x^y
     parse_level3();
@@ -329,7 +329,7 @@ void  LogicExpression::parse_level2()
         checkBuffer(m_execIndex);
     }
 }
-void  LogicExpression::parse_level3()
+void  Expression::parse_level3()
 {
     // unary operator (- bzw. +)
     QString op;
@@ -350,7 +350,7 @@ void  LogicExpression::parse_level3()
 
 }
 
-void  LogicExpression::parse_level4()
+void  Expression::parse_level4()
 {
     // Klammer und Funktionen
     QString func;
@@ -390,7 +390,7 @@ void  LogicExpression::parse_level4()
     }
 }
 
-double  LogicExpression::getVar(const QString& VarName)
+double  Expression::getVar(const QString& VarName)
 {
     // zuerst schauen, ob in system-liste....
     int idx;
@@ -432,7 +432,7 @@ double  LogicExpression::getVar(const QString& VarName)
     return m_varSpace[idx];
 }
 
-void  LogicExpression::setVar(const QString& Var, double Value)
+void  Expression::setVar(const QString& Var, double Value)
 {
     if (!m_parsed)
         parse();
@@ -443,7 +443,7 @@ void  LogicExpression::setVar(const QString& Var, double Value)
         throw std::logic_error("Ungültige Variable " + Var.toStdString());
 }
 
-double  LogicExpression::calculate(double Val1, double Val2)
+double  Expression::calculate(double Val1, double Val2)
 {
     m_varSpace[0]=Val1;
     m_varSpace[1]=Val2;
@@ -451,7 +451,7 @@ double  LogicExpression::calculate(double Val1, double Val2)
     return execute();
 }
 
-int  LogicExpression::getFuncIndex(const QString& FuncName)
+int  Expression::getFuncIndex(const QString& FuncName)
 {
     int pos=FuncList.indexOf(FuncName);
     if (pos<0)
@@ -462,7 +462,7 @@ int  LogicExpression::getFuncIndex(const QString& FuncName)
     return idx;
 }
 
-double  LogicExpression::execute()
+double  Expression::execute()
 {
     if (!m_parsed)
         parse();
@@ -606,7 +606,7 @@ double  LogicExpression::execute()
     return m_result;
 }
 
-double * LogicExpression::addVar(const QString& VarName)
+double * Expression::addVar(const QString& VarName)
 {
     // add var
     int idx=m_varList.indexOf(VarName);
@@ -617,7 +617,7 @@ double * LogicExpression::addVar(const QString& VarName)
     return &m_varSpace[getVarIndex(VarName)];
 }
 
-double *  LogicExpression::getVarAdress(const QString& VarName)
+double *  Expression::getVarAdress(const QString& VarName)
 {
     if (!m_parsed)
         parse();
@@ -628,7 +628,7 @@ double *  LogicExpression::getVarAdress(const QString& VarName)
         throw std::logic_error("Ungültige Variable " + VarName.toStdString());
 }
 
-int  LogicExpression::getVarIndex(const QString& VarName)
+int  Expression::getVarIndex(const QString& VarName)
 {
     int idx;
 
@@ -656,7 +656,7 @@ int  LogicExpression::getVarIndex(const QString& VarName)
     return m_varList.indexOf(VarName);
 }
 
-double LogicExpression::getModelVar(int VarIdx)
+double Expression::getModelVar(int VarIdx)
 {
     // der weg nach draussen....
     //int idx=VarIdx - 100; // intern als 100+x gespeichert...
@@ -666,7 +666,7 @@ double LogicExpression::getModelVar(int VarIdx)
     //return FSimObject->getVar(idx);
 }
 
-/*void   LogicExpression::SetModellObject(TSimObject *Obj)
+/*void   Expression::SetModellObject(TSimObject *Obj)
 {
    if (!m_modelVarSet) {
      m_modelVarList=Obj->GetVarList(m_modelVarCnt);
@@ -674,7 +674,7 @@ double LogicExpression::getModelVar(int VarIdx)
    }
    FSimObject=Obj;
 }
-void   LogicExpression::SetModellBaum(TBaum *tree)
+void   Expression::SetModellBaum(TBaum *tree)
 {
   if (!m_modelVarSet) {
      m_modelVarList=tree->GetVarList(m_modelVarCnt);
@@ -684,14 +684,14 @@ void   LogicExpression::SetModellBaum(TBaum *tree)
 }*/
 
 
-void LogicExpression::setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace)
+void Expression::setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace)
 {
     // externe variablen (zB von Scripting-Engine) bekannt machen...
     m_externVarSpace=ExternSpace;
     m_externVarNames=ExternSpaceNames;
 }
 
-double LogicExpression::getExternVar(int Index)
+double Expression::getExternVar(int Index)
 {
     //if (Script)
     //   return Script->GetNumVar(Index-1000);
@@ -699,7 +699,7 @@ double LogicExpression::getExternVar(int Index)
     return m_externVarSpace[Index-1000];
 }
 
-void LogicExpression::enableIncSum()
+void Expression::enableIncSum()
 {
     // Funktion "inkrementelle summe" einschalten.
     // dabei wird der zähler zurückgesetzt und ein flag gesetzt.
@@ -708,7 +708,7 @@ void LogicExpression::enableIncSum()
 }
 
 // "Userdefined Function" Polygon
-double  LogicExpression::udfPolygon(double Value, double* Stack, int ArgCount)
+double  Expression::udfPolygon(double Value, double* Stack, int ArgCount)
 {
     // Polygon-Funktion: auf dem Stack liegen (x/y) Paare, aus denen ein "Polygon"
     // aus Linien zusammengesetzt ist. return ist der y-Wert zu x (Value).
@@ -743,7 +743,7 @@ double  LogicExpression::udfPolygon(double Value, double* Stack, int ArgCount)
 }
 
 // userdefined func sigmoid....
-double LogicExpression::udfSigmoid(double Value, double sType, double p1, double p2)
+double Expression::udfSigmoid(double Value, double sType, double p1, double p2)
 {
     // sType: typ der Funktion:
     // 0: logistische f
@@ -771,7 +771,7 @@ double LogicExpression::udfSigmoid(double Value, double sType, double p1, double
 }
 
 
-void LogicExpression::checkBuffer(int Index)
+void Expression::checkBuffer(int Index)
 {
     // um den Buffer für Befehle kümmern.
     // wenn der Buffer zu klein wird, neuen Platz reservieren.
@@ -794,7 +794,7 @@ double nrandom(const double& p1, const double& p2)
     return p1 + (p2-p1)*(rand()/double(RAND_MAX));
 }
 
-double LogicExpression::udfRandom(int type, double p1, double p2)
+double Expression::udfRandom(int type, double p1, double p2)
 {
     // random / gleichverteilt - normalverteilt
 
