@@ -13,12 +13,13 @@ struct ExtExecListItem {
 enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
 
 
-class LogicExpression
+
+class Expression
 {
 public:
-        ~LogicExpression();
-        LogicExpression() {} // empty constructor
-        LogicExpression(const QString &aExpression);
+        ~Expression();
+        Expression() {} // empty constructor
+        Expression(const QString &aExpression);
         void setExpression(const QString &aExpression);
         /// calculate formula and return result. variable values need to be set using "setVar()"
         double execute();
