@@ -13,7 +13,22 @@ struct ExtExecListItem {
 enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
 
 
+/** Expression engine for mathematical expressions.
+  The main purpose is fast execution speed.
+  notes regarding the syntax:
+  +,-,*,/ as expected, additionally "^" for power.
+  mod(x,y): modulo division, gets remainder of x/y
+  functions:
+    sin cos tan
+    exp ln sqrt
+    min max: variable number of arguments, e.g: min(x,y,z)
+    if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway.
+    incsum: ?? incremental sum - currently not supported.
+    polygon: special function for polygons. polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn): return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value.
+    sigmoid: returns a sigmoid function. sigmoid(value, type, param1, param2). see udfSigmoid() for details.
+    rnd rndg: random functions; rnd(from, to): uniform random number, rndg(mean, stddev): gaussian randomnumber (Note: gaussian currently not supported)
 
+*/
 class Expression
 {
 public:

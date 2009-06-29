@@ -11,12 +11,12 @@ SOURCES += main.cpp \
     stamp.cpp \
     tree.cpp \
     paintarea.cpp \
-    logicexpression.cpp
+    expression.cpp
 HEADERS += mainwindow.h \
     ../core/grid.h \
     stamp.h \
     tree.h \
     paintarea.h \
-    logicexpression.h
+    expression.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

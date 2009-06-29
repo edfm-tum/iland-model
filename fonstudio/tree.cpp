@@ -4,8 +4,8 @@
 #include "../core/grid.h"
 #include "stamp.h"
 
-LogicExpression Tree::rScale=LogicExpression();
-LogicExpression Tree::hScale=LogicExpression();
+Expression Tree::rScale=Expression();
+Expression Tree::hScale=Expression();
 Tree::Tree()
 {
 }

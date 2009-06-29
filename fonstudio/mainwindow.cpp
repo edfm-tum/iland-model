@@ -8,7 +8,7 @@
 #include "../core/grid.h"
 #include "tree.h"
 #include "paintarea.h"
-#include "logicexpression.h"
+#include "expression.h"
 
 
 // global settings
@@ -152,7 +152,7 @@ void MainWindow::on_applyXML_clicked()
 
     // expression test
     QString expr_text=xmlparams.firstChildElement("expression").text();
-    LogicExpression expr(expr_text);
+    Expression expr(expr_text);
     double value = expr.execute();
     qDebug() << "expression:" << expr_text << "->" <<value;
 
@@ -339,7 +339,7 @@ void MainWindow::mouseClick(const QPoint& pos)
 void MainWindow::on_calcFormula_clicked()
 {
     QString expression = ui->formula->text();
-    LogicExpression expr(expression);
+    Expression expr(expression);
     // add vars to expression
     double *v1 = expr.addVar("x");
     double *v2 = expr.addVar("y");

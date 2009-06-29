@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-#include "logicexpression.h"
+#include "expression.h"
 
 //---------------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ ETokType  Expression::next_token()
     // whitespaces eliminieren...
     while (strchr(" \t", *m_pos))
         m_pos++;
-    if (*m_pos==';')
+    if (*m_pos==',')
     {
 
         m_token=*m_pos++;
@@ -116,6 +116,8 @@ Expression::~Expression()
     delete[] m_execList;
 }
 
+/// set the current expression.
+/// do some preprocessing (e.g. handle the different use of ",", ".", ";")
 void Expression::setExpression(const QString& aExpression)
 {
     m_expression=aExpression;
@@ -125,11 +127,13 @@ void Expression::setExpression(const QString& aExpression)
     m_expr=new char[ba.length()+1]; // reserve memory...
     strcpy(m_expr, ba.constData());
 
+    /* string-replace: "german" version of Expression
+
     m_pos=m_expr; // set pointer to begin of m_expression
     while (*m_pos) {  // selbergestricktes string-replace (dezimalpunkt)
         if (*m_pos==',') *m_pos='.';
         m_pos++;
-    }
+    }*/
     m_pos=m_expr;  // set starting point...
 
     for (int i=0; i<10; i++)

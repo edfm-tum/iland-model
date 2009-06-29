@@ -3,7 +3,7 @@
 #include <QPointF>
 
 #include "../core/grid.h"
-#include "logicexpression.h"
+#include "expression.h"
 
 class Stamp;
 
