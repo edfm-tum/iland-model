@@ -26,8 +26,8 @@ public:
     void stampOnGrid(Stamp& stamp, FloatGrid& grid);
     float retrieveValue(Stamp& stamp, FloatGrid& grid);
 
-    static LogicExpression rScale;
-    static LogicExpression hScale;
+    static Expression rScale;
+    static Expression hScale;
     // for visuals:
     QRect pxRect;
 private:

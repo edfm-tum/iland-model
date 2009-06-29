@@ -1,0 +1,806 @@
+#include <QTCore>
+#include <stdio.h>
+
+
+#include <stdexcept>
+
+#include "logicexpression.h"
+
+//---------------------------------------------------------------------------
+
+//#include "pinclude.h"
+//#pragma hdrstop
+//#include "modell.h"
+//#include "ExtParser.h"
+//#include "PicusScript.h"
+//#include <strutils.hpp>
+
+//---------------------------------------------------------------------------
+
+
+#define opEqual 1
+#define opGreaterThen 2
+#define opLowerThen 3
+#define opNotEqual 4
+#define opLowerOrEqual 5
+#define opGreaterOrEqual 6
+#define opAnd 7
+#define opOr  8
+//Global *Globals=Global::Instance();
+
+QString FuncList="sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg";
+const int  MaxArgCount[15]={1,1,1,1,  1, 1,   -1, -1, 3, 1, -1, 2, 4, 2, 2};
+#define    AGGFUNCCOUNT 6
+QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
+
+// static vars für simquery
+//bool TSimQuery::DoFreezeClasses=false;
+//bool TSimQuery::ClassesFrozen=false;
+//#define m_modelVarCnt 4
+//AnsiString m_modelVarList[m_modelVarCnt]={"bhd", "height", "age", "art"};
+ETokType  Expression::next_token()
+{
+    m_tokCount++;
+    m_lastState=m_state;
+    // nächsten m_token aus String lesen...
+    // whitespaces eliminieren...
+    while (strchr(" \t", *m_pos) && *m_pos)
+        m_pos++;
+
+    if (*m_pos==0) {
+        m_state=etStop;
+        m_token="";
+        return etStop; // Ende der Vorstellung
+    }
+    // whitespaces eliminieren...
+    while (strchr(" \t", *m_pos))
+        m_pos++;
+    if (*m_pos==';')
+    {
+
+        m_token=*m_pos++;
+        m_state=etDelimeter;
+        return etDelimeter;
+    }
+    if (strchr("+-*/(){}^", *m_pos)) {
+        m_token=*m_pos++;
+        m_state=etOperator;
+        return etOperator;
+    }
+    if (strchr("=<>", *m_pos)) {
+        m_token=*m_pos++;
+        if (*m_pos=='>' || *m_pos=='=')
+            m_token+=*m_pos++;
+        m_state=etCompare;
+        return etCompare;
+    }
+    if (*m_pos>='0' && *m_pos<='9') {
+        // Zahl
+        m_token.setNum(atof(m_pos));
+        while (strchr("0123456789.",*m_pos) && *m_pos!=0)
+            m_pos++;  // nächstes Zeichen suchen...
+
+        m_state=etNumber;
+        return etNumber;
+    }
+
+    if (*m_pos>='a' && *m_pos<='z'|| *m_pos>='A' && *m_pos<='Z') {
+        // function ... find brace
+        m_token="";
+        while ((*m_pos>='a' && *m_pos<='z' || *m_pos>='A' && *m_pos<='Z' || *m_pos>='0' && *m_pos<='9' || *m_pos=='_' || *m_pos=='.') && *m_pos!='(' && m_pos!=0)
+            m_token+=*m_pos++;
+        // wenn am Ende Klammer, dann Funktion, sonst Variable.
+        if (*m_pos=='(' || *m_pos=='{') {
+            m_pos++; // skip brace
+            m_state=etFunction;
+            return etFunction;
+        } else {
+            if (m_token.toLower()=="and" || m_token.toLower()=="or") {
+                m_state=etLogical;
+                return etLogical;
+            } else {
+                m_state=etVariable;
+                return etVariable;
+            }
+        }
+    }
+    m_state=etUnknown;
+    return etUnknown; // in case no match was found
+
+}
+
+Expression::~Expression()
+{
+    if (m_expr)
+        delete[] m_expr;
+    delete[] m_execList;
+}
+
+void Expression::setExpression(const QString& aExpression)
+{
+    m_expression=aExpression;
+    //m_expr=StrNew(PrepareExpr(m_expression).c_str());
+
+    QByteArray ba = m_expression.toLocal8Bit(); // convert from unicode to 8bit
+    m_expr=new char[ba.length()+1]; // reserve memory...
+    strcpy(m_expr, ba.constData());
+
+    m_pos=m_expr; // set pointer to begin of m_expression
+    while (*m_pos) {  // selbergestricktes string-replace (dezimalpunkt)
+        if (*m_pos==',') *m_pos='.';
+        m_pos++;
+    }
+    m_pos=m_expr;  // set starting point...
+
+    for (int i=0; i<10; i++)
+        m_varSpace[i]=0.;
+    m_parsed=false;
+
+    m_externVarSpace=0;
+    m_modelVarCnt=0;
+    m_modelVarSet=false;
+    m_strict=true; // default....
+    m_incSumEnabled=false;
+    // Buffer:
+    m_execListSize = 5; // inital value...
+    m_execList = new ExtExecListItem[m_execListSize]; // init
+}
+
+Expression::Expression(const QString& aExpression)
+{
+    setExpression(aExpression);
+}
+
+void  Expression::parse()
+{
+    try {
+        m_tokString="";
+        m_state=etUnknown;
+        m_lastState=etUnknown;
+        m_constExpression=true;
+        m_execIndex=0;
+        m_tokCount=0;
+        int AktTok;
+        next_token();
+        while (m_state!=etStop) {
+            m_tokString+="\n"+m_token;
+            AktTok=m_tokCount;
+            parse_levelL0();  // start with logical level 0
+            if (AktTok==m_tokCount)
+                throw std::logic_error("Unbalanced Braces.");
+            if (m_state==etUnknown){
+                m_tokString+="\n***Error***";
+                throw std::logic_error("Syntax error, token: " + m_token.toStdString());
+            }
+        }
+        m_execList[m_execIndex].Type=etStop;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=0;
+        checkBuffer(m_execIndex);
+        m_parsed=true;
+    } catch (const std::logic_error& e) {
+        throw std::logic_error("Fehler in: " + std::string(m_expr) + "\n"+e.what());
+    }
+}
+
+void  Expression::parse_levelL0()
+{
+    // logical operations  (and, or, not)
+    QString op;
+    parse_levelL1();
+
+    if (m_state==etLogical)  {
+        op=m_token.toLower();
+        next_token();
+        parse_levelL1();
+        int logicaltok=0;
+        if (op=="and") logicaltok=opAnd;
+        if (op=="or") logicaltok=opOr;
+
+
+        m_execList[m_execIndex].Type=etLogical;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=logicaltok;
+        checkBuffer(m_execIndex);
+    }
+    /*       if (op=='+')
+          FResult=temp+FResult;
+        if (op=='-')
+          FResult=temp-FResult;     */
+    //if (m_token=="+" || m_token=="-") {
+    //   parse_level0();
+    //}
+}
+void  Expression::parse_levelL1()
+{
+    // logische operationen (<,>,=,...)
+    QString op;
+    parse_level0();
+    //double temp=FResult;
+    if (m_state==etCompare)  {
+        op=m_token;
+        next_token();
+        parse_level0();
+        int logicaltok=0;
+        if (op=="<") logicaltok=opLowerThen;
+        if (op==">") logicaltok=opGreaterThen;
+        if (op=="<>") logicaltok=opNotEqual;
+        if (op=="<=") logicaltok=opLowerOrEqual;
+        if (op==">=") logicaltok=opGreaterOrEqual;
+        if (op=="=")  logicaltok=opEqual;
+
+        m_execList[m_execIndex].Type=etCompare;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=logicaltok;
+        checkBuffer(m_execIndex);
+    }
+    /*       if (op=='+')
+          FResult=temp+FResult;
+        if (op=='-')
+          FResult=temp-FResult;     */
+    //if (m_token=="+" || m_token=="-") {
+    //   parse_level0();
+    //}
+}
+
+void  Expression::parse_level0()
+{
+    // plus und minus
+    QByteArray op;
+    parse_level1();
+
+    while (m_token=="+" || m_token=="-")  {
+        op=m_token.toAscii();
+        next_token();
+        parse_level1();
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=op.at(0);///op.constData()[0];
+        checkBuffer(m_execIndex);
+    }
+    /*       if (op=='+')
+          FResult=temp+FResult;
+        if (op=='-')
+          FResult=temp-FResult;     */
+    //if (m_token=="+" || m_token=="-") {
+    //   parse_level0();
+    //}
+}
+
+void  Expression::parse_level1()
+{
+    // mal und division
+    QByteArray op;
+    parse_level2();
+    //double temp=FResult;
+    // alt:        if (m_token=="*" || m_token=="/") {
+    while (m_token=="*" || m_token=="/") {
+        op=m_token.toAscii();
+        next_token();
+        parse_level2();
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index=op.at(0);
+        checkBuffer(m_execIndex);
+    }
+    /*       if (op=="*")
+           FResult=temp*FResult;
+        if (op=="/")
+           FResult=temp/FResult; */
+
+}
+
+void  Expression::Atom()
+{
+    if (m_state==etVariable || m_state==etNumber) {
+        if (m_state==etNumber) {
+            m_result=m_token.toDouble();
+            m_execList[m_execIndex].Type=etNumber;
+            m_execList[m_execIndex].Value=m_result;
+            m_execList[m_execIndex++].Index=-1;
+            checkBuffer(m_execIndex);
+        }
+        if (m_state==etVariable) {
+            m_result=getVar(m_token);
+            m_execList[m_execIndex].Type=etVariable;
+            m_execList[m_execIndex].Value=0;
+            m_execList[m_execIndex++].Index=getVarIndex(m_token);
+            checkBuffer(m_execIndex);
+            m_constExpression=false;
+        }
+        next_token();
+    } else if (m_state==etStop)
+        throw std::logic_error("Unexpected end of m_expression.");
+}
+
+
+void  Expression::parse_level2()
+{
+    // x^y
+    parse_level3();
+    //double temp=FResult;
+    while (m_token=="^") {
+        next_token();
+        parse_level3();
+        //FResult=pow(temp,FResult);
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index='^';
+        checkBuffer(m_execIndex);
+    }
+}
+void  Expression::parse_level3()
+{
+    // unary operator (- bzw. +)
+    QString op;
+    op=m_token;
+    bool Unary=false;
+    if (op=="-" && (m_lastState==etOperator || m_lastState==etUnknown || m_lastState==etCompare || m_lastState==etLogical || m_lastState==etFunction)) {
+        next_token();
+        Unary=true;
+    }
+    parse_level4();
+    if (Unary && op=="-") {
+        //FResult=-FResult;
+        m_execList[m_execIndex].Type=etOperator;
+        m_execList[m_execIndex].Value=0;
+        m_execList[m_execIndex++].Index='_';
+        checkBuffer(m_execIndex);
+    }
+
+}
+
+void  Expression::parse_level4()
+{
+    // Klammer und Funktionen
+    QString func;
+    Atom();
+    //double temp=FResult;
+    if (m_token=="(" || m_state==etFunction) {
+        func=m_token;
+        if (func=="(")   // klammerausdruck
+        {
+            next_token();
+            parse_levelL0();
+        }
+        else        // funktion...
+        {
+            int argcount=0;
+            int idx=getFuncIndex(func);
+            next_token();
+            //m_token="{";
+            // bei funktionen mit mehreren Parametern
+            while (m_token!=")") {
+                argcount++;
+                parse_levelL0();
+                if (m_state==etDelimeter)
+                    next_token();
+            }
+            if (MaxArgCount[idx]>0 && MaxArgCount[idx]!=argcount)
+                throw std::logic_error( QString("Function %1 assumes %2 arguments!").arg(func).arg(MaxArgCount[idx]).toStdString());
+            //throw std::logic_error("Funktion " + func + " erwartet " + std::string(MaxArgCount[idx]) + " Parameter!");
+            m_execList[m_execIndex].Type=etFunction;
+            m_execList[m_execIndex].Value=argcount;
+            m_execList[m_execIndex++].Index=idx;
+            checkBuffer(m_execIndex);
+        }
+        if (m_token!="}" && m_token!=")") // Fehler
+            throw std::logic_error("Falsche Zahl von Klammern.");
+        next_token();
+    }
+}
+
+double  Expression::getVar(const QString& VarName)
+{
+    // zuerst schauen, ob in system-liste....
+    int idx;
+    if (!m_modelVarList.isEmpty())
+    {
+        m_modelVarList.indexOf(VarName.toLower());
+        //idx=AnsiIndexStr(VarName.toLower(), m_modelVarList, m_modelVarCnt-1);
+        if (idx>-1) {
+            m_tokString+="\nModellvar: " + VarName;
+            return 0; // no need to add...
+        }
+    }
+    /*
+        if (Script)
+        {
+            EDatatype aType;
+            int ref;
+            idx=Script->GetName(VarName, aType, ref);
+            if (aType==edtNumber)
+              return 0;  // nur numerische
+        }*/
+    if (!m_externVarNames.isEmpty())
+    {
+        idx=m_externVarNames.indexOf(VarName);
+        if (idx>-1) {
+            m_tokString+="\nExternvar: " + VarName;
+            return 0; // no need to add...
+        }
+    }
+    idx=m_varList.indexOf(VarName);
+    if (idx==-1) {
+        if (m_strict)
+            throw std::logic_error("Undefined symbol: " + VarName.toStdString());
+        m_varList+=VarName;
+        idx = m_varList.size()-1;
+        m_tokString+="\nVariable: "+VarName;
+    }
+
+    return m_varSpace[idx];
+}
+
+void  Expression::setVar(const QString& Var, double Value)
+{
+    if (!m_parsed)
+        parse();
+    int idx=getVarIndex(Var);
+    if (idx>=0 && idx<10)
+        m_varSpace[idx]=Value;
+    else
+        throw std::logic_error("Ungültige Variable " + Var.toStdString());
+}
+
+double  Expression::calculate(double Val1, double Val2)
+{
+    m_varSpace[0]=Val1;
+    m_varSpace[1]=Val2;
+    m_strict=false;
+    return execute();
+}
+
+int  Expression::getFuncIndex(const QString& FuncName)
+{
+    int pos=FuncList.indexOf(FuncName);
+    if (pos<0)
+        throw std::logic_error("Function " + FuncName.toStdString() + " not defined!");
+    int idx=0;
+    for (int i=1;i<pos;i++)
+        if (FuncList[i]==' ') ++idx;
+    return idx;
+}
+
+double  Expression::execute()
+{
+    if (!m_parsed)
+        parse();
+    ExtExecListItem *Exec=m_execList;
+    int i;
+    m_result=0.;
+    double Stack[20];
+    bool   LogicStack[20];
+    bool   *lp=LogicStack;
+    double *p=Stack;  // Kopf
+    *lp++=true; // zumindest eins am anfang...
+    if (Exec->Type==etStop) {
+        // leere expr.
+        m_logicResult=false;
+        m_result=0.;
+        return 0.;
+    }
+    //m_tokString="Start\n";
+    while (Exec->Type!=etStop) {
+        /* switch (Exec->Type) {
+         case etOperator: m_tokString+="Operator " + AnsiString((char)Exec->Index)+"\n"; break;
+         case etNumber: m_tokString+=AnsiString(Exec->Value)+"\n";  break;
+         case etVariable: m_tokString+="Variable"+AnsiString(Exec->Index)+"\n"; break;
+         case etFunction: m_tokString+="Function"+AnsiString(Exec->Index)+" Args: "+AnsiString(Exec->Value) +"\n"; break;
+      }  */
+        switch (Exec->Type) {
+        case etOperator:
+            p--;
+            switch (Exec->Index) {
+                  case '+': *(p-1)=*(p-1) + *p;  break;
+                  case '-': *(p-1)=*(p-1)-*p;  break;
+                  case '*': *(p-1)=*(p-1) * *p;  break;
+                  case '/': *(p-1)=*(p-1) / *p;  break;
+                  case '^': *(p-1)=pow(*(p-1), *p);  break;
+                  case '_': *p=-*p; p++; break;  // unary operator -
+                  }
+            break;
+        case etVariable:
+            if (Exec->Index<100)
+                *p++=m_varSpace[Exec->Index];
+            else if (Exec->Index<1000)
+                *p++=getModelVar(Exec->Index);
+            else
+                *p++=getExternVar(Exec->Index);
+            break;
+        case etNumber:
+            *p++=Exec->Value;
+            break;
+        case etFunction:
+            p--;
+            switch (Exec->Index) {
+                 case 0: *p=sin(*p); break;
+                 case 1: *p=cos(*p); break;
+                 case 2: *p=tan(*p); break;
+                 case 3: *p=exp(*p); break;
+                 case 4: *p=log(*p); break;
+                 case 5: *p=sqrt(*p); break;
+                     // min, max, if:  variable zahl von argumenten
+                 case 6:      // min
+                     for (i=0;i<Exec->Value-1;i++,p--)
+                         *(p-1)=(*p<*(p-1))?*p:*(p-1);
+                     break;
+                 case 7:  //max
+                     for (i=0;i<Exec->Value-1;i++,p--)
+                         *(p-1)=(*p>*(p-1))?*p:*(p-1);
+                     break;
+                 case 8: // if
+                     if (*(p-2)==1) // true
+                         *(p-2)=*(p-1);
+                     else
+                         *(p-2)=*p; // false
+                     p-= 2; // die beiden argumente wegwerfen...
+                     break;
+                 case 9: // incrementelle summe
+                     m_incSumVar+=*p;
+                     *p=m_incSumVar;
+                     break;
+                 case 10: // Polygon-Funktion
+                     *(p-(int)(Exec->Value-1))=udfPolygon(*(p-(int)(Exec->Value-1)), p, (int)Exec->Value);
+                     p-=(int) (Exec->Value-1);
+                     break;
+                 case 11: // Modulo-Division: erg=rest von arg1/arg2
+                     p--; // p zeigt auf ergebnis...
+                     *p=fmod(*p, *(p+1));
+                     break;
+                 case 12: // hilfsfunktion für sigmoidie sachen.....
+                     *(p-3)=udfSigmoid(*(p-3), *(p-2), *(p-1), *p);
+                     p-=3; // drei argumente (4-1) wegwerfen...
+                     break;
+                 case 13: case 14: // rnd(from, to) bzw. rndg(mean, stddev)
+                             p--;
+                     // index-13: 1 bei rnd, 0 bei rndg
+                     *p=udfRandom(Exec->Index-13, *p, *(p+1));
+                     break;
+                 }
+            p++;
+            break;
+        case etLogical:
+            p--;
+            lp--;
+            switch (Exec->Index) {
+                case opAnd: *(lp-1)=(*(lp-1) && *lp);  break;
+                case opOr:  *(lp-1)=(*(lp-1) || *lp);  break;
+            }
+            if (*(lp-1))
+                *(p-1)=1;
+            else
+                *(p-1)=0;
+            break;
+        case etCompare: {
+            p--;
+            bool LogicResult=false;
+            switch (Exec->Index) {
+                 case opEqual: LogicResult=(*(p-1)==*p); break;
+                 case opNotEqual: LogicResult=(*(p-1)!=*p); break;
+                 case opLowerThen: LogicResult=(*(p-1)<*p); break;
+                 case opGreaterThen: LogicResult=(*(p-1)>*p); break;
+                 case opGreaterOrEqual: LogicResult=(*(p-1)>=*p); break;
+                 case opLowerOrEqual: LogicResult=(*(p-1)<=*p); break;
+                 }
+            if (LogicResult) {
+                *(p-1)=1;   // 1 means true...
+                //m_tokString+="TRUE\n";
+            } else {
+                //m_tokString+="FALSE\n";
+                *(p-1)=0;
+            }
+
+            *lp++=LogicResult;
+            break; }
+        case etStop: case etUnknown: case etDelimeter: throw std::logic_error("invalid token during execution.");
+        } // switch()
+
+        Exec++;
+        //m_tokString+="m_pos: " + AnsiString(p-Stack) + "; Value: " + AnsiString(*(p-1))+"\n";
+    }
+    if (p-Stack!=1)
+        throw std::logic_error("...unbalanced");
+    m_result=*(p-1);
+    m_logicResult=*(lp-1);
+    return m_result;
+}
+
+double * Expression::addVar(const QString& VarName)
+{
+    // add var
+    int idx=m_varList.indexOf(VarName);
+    if (idx==-1) {
+        m_varList+=VarName;
+        idx=m_varList.size()-1;
+    }
+    return &m_varSpace[getVarIndex(VarName)];
+}
+
+double *  Expression::getVarAdress(const QString& VarName)
+{
+    if (!m_parsed)
+        parse();
+    int idx=getVarIndex(VarName);
+    if (idx>=0 && idx<10)
+        return &m_varSpace[idx];
+    else
+        throw std::logic_error("Ungültige Variable " + VarName.toStdString());
+}
+
+int  Expression::getVarIndex(const QString& VarName)
+{
+    int idx;
+
+    /*if (Script)
+        {
+           int dummy;
+           EDatatype aType;
+           idx=Script->GetName(VarName, aType, dummy);
+           if (idx>-1)
+              return 1000+idx;
+        }*/
+    if (!m_modelVarList.isEmpty()) {
+        idx=m_modelVarList.indexOf(VarName.toLower());
+        if (idx>-1) {
+            return 100 + idx; //
+        }
+    }
+    // externe variablen
+    if (!m_externVarNames.isEmpty())
+    {
+        m_externVarNames.indexOf(VarName);
+        if (idx>-1)
+            return 1000 + idx;
+    }
+    return m_varList.indexOf(VarName);
+}
+
+double Expression::getModelVar(int VarIdx)
+{
+    // der weg nach draussen....
+    //int idx=VarIdx - 100; // intern als 100+x gespeichert...
+    // hier evtl. verschiedene objekte unterscheiden (Zahlenraum???)
+    throw std::logic_error("invalid modell var!");
+    //return TestBaum->getVar(idx);
+    //return FSimObject->getVar(idx);
+}
+
+/*void   Expression::SetModellObject(TSimObject *Obj)
+{
+   if (!m_modelVarSet) {
+     m_modelVarList=Obj->GetVarList(m_modelVarCnt);
+     m_modelVarSet=true;
+   }
+   FSimObject=Obj;
+}
+void   Expression::SetModellBaum(TBaum *tree)
+{
+  if (!m_modelVarSet) {
+     m_modelVarList=tree->GetVarList(m_modelVarCnt);
+     m_modelVarSet=true;
+  }
+  TestBaum=tree;
+}*/
+
+
+void Expression::setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace)
+{
+    // externe variablen (zB von Scripting-Engine) bekannt machen...
+    m_externVarSpace=ExternSpace;
+    m_externVarNames=ExternSpaceNames;
+}
+
+double Expression::getExternVar(int Index)
+{
+    //if (Script)
+    //   return Script->GetNumVar(Index-1000);
+    //else   // überhaupt noch notwendig???
+    return m_externVarSpace[Index-1000];
+}
+
+void Expression::enableIncSum()
+{
+    // Funktion "inkrementelle summe" einschalten.
+    // dabei wird der zähler zurückgesetzt und ein flag gesetzt.
+    m_incSumEnabled=true;
+    m_incSumVar=0.;
+}
+
+// "Userdefined Function" Polygon
+double  Expression::udfPolygon(double Value, double* Stack, int ArgCount)
+{
+    // Polygon-Funktion: auf dem Stack liegen (x/y) Paare, aus denen ein "Polygon"
+    // aus Linien zusammengesetzt ist. return ist der y-Wert zu x (Value).
+    // Achtung: *Stack zeigt auf das letzte Argument! (ist das letzte y).
+    // Stack bereinigen tut der Aufrufer.
+    if (ArgCount%2!=1)
+        throw std::logic_error("polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
+    int PointCnt = (ArgCount-1) / 2;
+    if (PointCnt<2)
+        throw std::logic_error("polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
+    double x,y, xold, yold;
+    y=*Stack--;   // 1. Argument: ganz rechts.
+    x=*Stack--;
+    if (Value>x)   // rechts draußen: annahme gerade.
+        return y;
+    for (int i=0; i<PointCnt-1; i++)
+    {
+        xold=x;
+        yold=y;
+        y=*Stack--;   // x,y-Paar vom Stack....
+        x=*Stack--;
+        if (Value>x)
+        {
+            // es geht los: Gerade zwischen (x,y) und (xold,yold)
+            // es geht vielleicht eleganter, aber auf die schnelle:
+            return (yold-y)/(xold-x) * (Value-x) + y;
+        }
+
+    }
+    // falls nichts gefunden: value < als linkester x-wert
+    return y;
+}
+
+// userdefined func sigmoid....
+double Expression::udfSigmoid(double Value, double sType, double p1, double p2)
+{
+    // sType: typ der Funktion:
+    // 0: logistische f
+    // 1: Hill-funktion
+    // 2: 1 - logistisch (geht von 1 bis 0)
+    // 3: 1- hill
+    double Result;
+
+    double x=qMax(qMin(Value, 1.), 0.);  // limit auf [0..1]
+    int typ=(int) sType;
+    switch (typ) {
+         case 0: case 2: // logistisch: f(x)=1 / (1 + p1 e^(-p2 * x))
+                     Result=1. / (1. + p1 * exp(-p2 * x));
+             break;
+         case 1: case 3:     // Hill-Funktion: f(x)=(x^p1)/(p2^p1+x^p1)
+                     Result=pow(x, p1) / ( pow(p2,p1) + pow(x,p1));
+             break;
+         default:
+             throw std::logic_error("sigmoid-funktion: ungültiger kurventyp. erlaubt: 0..3");
+         }
+    if (typ==2 || typ==3)
+        Result=1. - Result;
+
+    return Result;
+}
+
+
+void Expression::checkBuffer(int Index)
+{
+    // um den Buffer für Befehle kümmern.
+    // wenn der Buffer zu klein wird, neuen Platz reservieren.
+    if (Index<m_execListSize)
+        return; // nix zu tun.
+    int NewSize=m_execListSize * 2; // immer verdoppeln: 5->10->20->40->80->160
+    // (1) neuen Buffer anlegen....
+    ExtExecListItem *NewBuf=new ExtExecListItem[NewSize];
+    // (2) bisherige Werte umkopieren....
+    for (int i=0;i<m_execListSize;i++)
+        NewBuf[i]=m_execList[i];
+    // (3) alten buffer löschen und pointer umsetzen...
+    delete[] m_execList;
+    m_execList = NewBuf;
+    m_execListSize=NewSize;
+}
+
+double nrandom(const double& p1, const double& p2)
+{
+    return p1 + (p2-p1)*(rand()/double(RAND_MAX));
+}
+
+double Expression::udfRandom(int type, double p1, double p2)
+{
+    // random / gleichverteilt - normalverteilt
+
+    if (type == 0)
+        return nrandom(p1, p2);
+    else    // gaussverteilt
+        throw std::logic_error("std-deviated random numbers not supported.");
+    //return RandG(p1, p2);
+}
