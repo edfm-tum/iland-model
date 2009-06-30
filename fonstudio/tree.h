@@ -22,6 +22,7 @@ public:
     const float height() const { return mHeight; }
 
     const float impact() const { return mImpact; }
+    const float impactRadius() const { return mImpactRadius; }
 
     void stampOnGrid(Stamp& stamp, FloatGrid& grid);
     float retrieveValue(Stamp& stamp, FloatGrid& grid);
@@ -36,6 +37,7 @@ private:
     QPointF mPosition;
     float mOwnImpact;
     float mImpactArea;
+    float mImpactRadius;
     float mImpact;
 };
 

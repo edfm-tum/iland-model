@@ -1,5 +1,4 @@
 #include "stamp.h"
-#include <math.h>
 
 bool Stamp::load(const QString& filename)
 {

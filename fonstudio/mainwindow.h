@@ -30,9 +30,10 @@ private:
     void addTrees(const double dbh, const int count);
     Ui::MainWindowClass *ui;
     FloatGrid* mGrid;
-    std::vector<Tree> Trees;
+    std::vector<Tree> mTrees;
     Stamp mStamp;
     static QPlainTextEdit *mLogSpace;
+    void loadPicusIniFile(const QString &fileName);
 
 private slots:
     void on_calcMatrix_clicked();

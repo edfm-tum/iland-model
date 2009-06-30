@@ -9,6 +9,7 @@
 #include "tree.h"
 #include "paintarea.h"
 #include "expression.h"
+#include "helper.h"
 
 
 // global settings
@@ -176,25 +177,73 @@ void MainWindow::on_applyXML_clicked()
     mGrid->initialize(1.f); // set to unity...
 
     // Load Trees
-    Trees.clear();
+    mTrees.clear();
+    QDomElement treelist = docElem.firstChildElement("treeinit");
+    if (!treelist.isNull()) {
+        QString fname = treelist.text();
+        loadPicusIniFile(fname);
+
+    }
     QDomElement n = trees.firstChildElement("tree");
     while (!n.isNull()) {
         Tree tree;
         tree.setDbh( n.attributeNode("dbh").value().toFloat() );
         tree.setHeight( n.attributeNode("height").value().toFloat() );
         tree.setPosition( QPointF(n.attributeNode("x").value().toFloat(), n.attributeNode("y").value().toFloat() ));
-        Trees.push_back(tree);
+        mTrees.push_back(tree);
 
 /*        ui->logMessages->append("tree: " \
            " dbh: " + n.attributeNode("dbh").value() +
            "\nheight: " + n.attributeNode("height").value() );*/
         n = n.nextSiblingElement();
     }
-    qDebug() << Trees.size() << "trees loaded.";
+    qDebug() << mTrees.size() << "trees loaded.";
     // test stylesheets...
     QString style = setting("style");
     ui->PaintWidget->setStyleSheet( style );
 
+}
+/// load a Picus ini file formatted file.
+void MainWindow::loadPicusIniFile(const QString &fileName)
+{
+    QString text = Helper::loadTextFile(fileName);
+
+    // cut out the <trees> </trees> part....
+    QRegExp rx(".*<trees>(.*)</trees>.*");
+    rx.indexIn(text, 0);
+    if (rx.capturedTexts().count()<1)
+        return;
+    text = rx.cap(1).trimmed();
+    QStringList lines=text.split('\n');
+    if (lines.count()<2)
+        return;
+    char sep='\t';
+    if (!lines[0].contains(sep))
+        sep=';';
+    QStringList headers = lines[0].split(sep);
+    //int iSpecies = headers.indexOf("species");
+    //int iCount = headers.indexOf("count");
+    int iX = headers.indexOf("x");
+    int iY = headers.indexOf("y");
+    int iBhd = headers.indexOf("bhdfrom");
+    int iHeight = headers.indexOf("treeheight");
+    for (int i=1;i<lines.count();i++) {
+        QString &line = lines[i];
+        qDebug() << "line" << i << ":" << line;
+        Tree tree;
+        QPointF f;
+        if (iX>=0 && iY>=0) {
+           f.setX( line.section(sep, iX, iX).toDouble() );
+           f.setY( line.section(sep, iY, iY).toDouble() );
+           tree.setPosition(f);
+        }
+        if (iBhd>=0)
+            tree.setDbh(line.section(sep, iBhd, iBhd).toDouble());
+        if (iHeight>=0)
+            tree.setHeight(line.section(sep, iHeight, iHeight).toDouble());
+        mTrees.push_back(tree);
+    }
+    qDebug() << "lines: " << lines;
 }
 
 void MainWindow::on_saveFile_clicked()
@@ -219,7 +268,7 @@ void MainWindow::on_saveFile_clicked()
 ***************************************/
 void MainWindow::on_stampTrees_clicked()
 {
-    if (Trees.size()==0 || !mGrid)
+    if (mTrees.size()==0 || !mGrid)
         return;
     int ix,iy;
     //QRect posRect;
@@ -227,7 +276,7 @@ void MainWindow::on_stampTrees_clicked()
     //QPointF cellcoord;
     mGrid->initialize(1.f); // set to unity...
     std::vector<Tree>::iterator tit;
-    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).stampOnGrid(mStamp, *mGrid);
     }
 
@@ -252,20 +301,20 @@ void MainWindow::on_stampTrees_clicked()
 ***************************************/
 void MainWindow::on_pbRetrieve_clicked()
 {
-    if (Trees.size()==0 || !mGrid)
+    if (mTrees.size()==0 || !mGrid)
         return;
 
     std::vector<Tree>::iterator tit;
     float treevalue;
     float sum_bhd=0.f;
     float sum_impact=0.f;
-    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         treevalue = (*tit).retrieveValue(mStamp, *mGrid);
         sum_bhd+=tit->dbh();
         sum_impact+=tit->impact();
         //qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
     }
-    qDebug() << "N="<<Trees.size()<<"avg.dbh="<<sum_bhd/float(Trees.size())<<"avg.value="<<sum_impact/float(Trees.size());
+    qDebug() << "N="<<mTrees.size()<<"avg.dbh="<<sum_bhd/float(mTrees.size())<<"avg.value="<<sum_impact/float(mTrees.size());
     ui->PaintWidget->update();
 }
 
@@ -309,12 +358,16 @@ void MainWindow::repaintArea(QPainter &painter)
     // paint trees...
     QPointF pos;
     std::vector<Tree>::iterator tit;
-    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         pos = (*tit).position();
         fill_color.setHsv(int((*tit).impact()*240.), 200, 200);
         painter.drawRect(int(pxpermeter*pos.x()-3), int(pxpermeter*pos.y()-3), 7, 7);
         painter.fillRect(int(pxpermeter*pos.x()-2), int(pxpermeter*pos.y()-2), 4, 4, fill_color);
         tit->pxRect = QRect(int(pxpermeter*pos.x()-3), int(pxpermeter*pos.y()-3), 7, 7);
+        float r = int(tit->impactRadius() * pxpermeter);
+
+        painter.setPen(Qt::black);
+        painter.drawEllipse(QPointF(pxpermeter*pos.x(),pxpermeter*pos.y()),r,r);
     }
 
     qDebug() << "repaintArea. maxval:" << maxval;
@@ -324,7 +377,7 @@ void MainWindow::mouseClick(const QPoint& pos)
 {
     //qDebug() << "click on" << pos;
     std::vector<Tree>::iterator tit;
-    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         if (tit->pxRect.contains(pos)) {
             qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " impact-value: " << tit->impact();
             break;
@@ -371,7 +424,7 @@ void MainWindow::on_pbAddTrees_clicked()
         t.setHeight(t.dbh());
         QPointF p(nrandom(0.,mGrid->metricSizeX()), nrandom(0., mGrid->metricSizeY()));
         t.setPosition(p);
-        Trees.push_back(t);
+        mTrees.push_back(t);
     }
 
     on_stampTrees_clicked();
@@ -383,7 +436,7 @@ void MainWindow::stampTrees()
 {
     mGrid->initialize(1.f); // set to unity...
     std::vector<Tree>::iterator tit;
-    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).stampOnGrid(mStamp, *mGrid);
     }
 }
@@ -394,14 +447,14 @@ double MainWindow::retrieveFon()
     float treevalue;
     float sum_bhd=0.f;
     float sum_impact=0.f;
-    for (tit=Trees.begin(); tit!=Trees.end(); ++tit) {
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         treevalue = (*tit).retrieveValue(mStamp, *mGrid);
         sum_bhd+=tit->dbh();
         sum_impact+=tit->impact();
         //qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
     }
-    qDebug() << "N="<<Trees.size()<<"avg.dbh="<<sum_bhd/float(Trees.size())<<"avg.value="<<sum_impact/float(Trees.size());
-    return sum_impact/float(Trees.size());
+    qDebug() << "N="<<mTrees.size()<<"avg.dbh="<<sum_bhd/float(mTrees.size())<<"avg.value="<<sum_impact/float(mTrees.size());
+    return sum_impact/float(mTrees.size());
 
 }
 
@@ -414,7 +467,7 @@ void MainWindow::addTrees(const double dbh, const int count)
         t.setHeight(t.dbh());
         QPointF p(nrandom(0.,mGrid->metricSizeX()), nrandom(0., mGrid->metricSizeY()));
         t.setPosition(p);
-        Trees.push_back(t);
+        mTrees.push_back(t);
     }
 }
 
@@ -434,7 +487,7 @@ void MainWindow::on_calcMatrix_clicked()
             stemCount = ns[n].toInt();
             dbh = dbhs.at(d).toInt();
             // clear trees
-            Trees.clear();
+            mTrees.clear();
             addTrees(dbh, stemCount);
             // stamp
             stampTrees();

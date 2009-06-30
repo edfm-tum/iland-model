@@ -1,4 +1,3 @@
-#include <math.h>
 
 #include "tree.h"
 #include "../core/grid.h"
@@ -8,7 +7,12 @@ Expression Tree::rScale=Expression();
 Expression Tree::hScale=Expression();
 Tree::Tree()
 {
+    mDbh = 0;
+    mHeight = 0;
 }
+/** get distance and direction between two points.
+  returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle.
+  */
 float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAngle)
 {
     float dx = PEnd.x() - PStart.x();
@@ -31,6 +35,7 @@ void Tree::stampOnGrid(Stamp& stamp, FloatGrid& grid)
     double r = rScale.execute();
     double h = hScale.execute();
     stamp.setScale(r, h); // stamp uses scaling values to calculate impact
+    mImpactRadius = r;
 
     float cell_value, r_cell, phi_cell;
     QPoint ul = grid.indexAt(QPointF(mPosition.x()-r, mPosition.y()-r) );
