@@ -5,13 +5,14 @@
 #include <QTXml>
 
 #include <stamp.h>
+#include "lightroom.h"
 #include "core/grid.h"
 #include "tree.h"
 #include "paintarea.h"
 #include "tools/expression.h"
 #include "tools/helper.h"
 
-
+#define MSGRETURN(x) { qDebug() << x; return; }
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
@@ -90,6 +91,17 @@ MainWindow::MainWindow(QWidget *parent)
     //                  &b, SLOT(setValue(int)));
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
+    // load xml file
+    xmldoc.clear();
+    QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
+
+    ui->iniEdit->setPlainText(xmlFile);
+
+    if (!xmldoc.setContent(xmlFile)) {
+        QMessageBox::information(this, "title text", "Cannot set content of XML file " + ui->initFileName->text());
+        return;
+    }
+
 
 }
 
@@ -113,7 +125,7 @@ void MainWindow::on_applyXML_clicked()
 
     if (!xmldoc.setContent(&file)) {
         file.close();
-        QMessageBox::information(this, "title text", "Cannot set content!");
+        QMessageBox::information(this, "title text", "Cannot set content of XML file!");
         return;
     }
     file.close();
@@ -538,4 +550,46 @@ void MainWindow::on_calcMatrix_clicked()
     qDebug() << "finished, elapsed " << timer.elapsed();
     QApplication::clipboard()->setText(result.join("\n"));
 
+}
+
+void MainWindow::on_actionLightroom_triggered()
+{
+    ui->editStack->setCurrentIndex(1);
+    ui->headerCaption->setText("Lightroom");
+}
+
+void MainWindow::on_actionEdit_XML_settings_triggered()
+{
+    ui->editStack->setCurrentIndex(0);
+    ui->headerCaption->setText("Edit XML file");
+}
+
+void MainWindow::on_actionFON_action_triggered()
+{
+    ui->editStack->setCurrentIndex(2);
+    ui->headerCaption->setText("Field Of Neighborhood test environment");
+
+}
+
+void MainWindow::on_pbCreateLightroom_clicked()
+{
+    if (xmldoc.isNull()) MSGRETURN("XML not loaded");
+    QDomElement docElem = xmldoc.documentElement(); // top element
+    QDomElement docLightroom = docElem.firstChildElement("lightroom");
+    if (docLightroom.isNull()) MSGRETURN("cant find node 'lightroom' in xml");
+    int x,y,z;
+    x = docLightroom.firstChildElement("size").attribute("x").toInt();
+    y = docLightroom.firstChildElement("size").attribute("y").toInt();
+    z = docLightroom.firstChildElement("size").attribute("z").toInt();
+    int cellsize = docLightroom.firstChildElement("size").attribute("cellsize").toInt();
+
+    int hemisize = docLightroom.firstChildElement("hemigrid").attribute("size").toInt();
+    double lat = docLightroom.firstChildElement("hemigrid").attribute("latitude").toFloat();
+    double diffus = docLightroom.firstChildElement("hemigrid").attribute("diffus").toFloat();
+
+    // create a lightroom object...
+    LightRoom lightroom;
+    lightroom.setup(x,y,z,cellsize,
+                    hemisize,lat,diffus);
+    qDebug() << "Lightroom setup complete";
 }

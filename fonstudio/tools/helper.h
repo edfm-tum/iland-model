@@ -30,8 +30,7 @@ private:
     static bool m_NoDebug;
 };
 
-/**
-* StatData.
+/** StatData.
 * Helper class for statistics. This class calculates
 * from a double-vector relevant information used
 * for BoxPlots. */
@@ -64,6 +63,20 @@ private:
    double mMedian;
 };
 
+class DebugTimer
+{
+public:
+    DebugTimer() { start(); }
+    DebugTimer(const QString &caption) { m_caption = caption; start(); }
+    ~DebugTimer() { showElapsed();}
+    void showElapsed();
+    void start() { t.start(); m_shown=false; }
+private:
+    QTime t;
+    bool m_shown;
+    QString m_caption;  
+};
+
 /** UpdateState details missing.
   */
 class UpdateState
@@ -83,9 +96,6 @@ private:
     int mVal; // current state
     QVector<UpdateState*> mChilds;
     QMap<UpdateState*, int> mSavedStates;
-
-
-
 };
 
 #endif // HELPER_H

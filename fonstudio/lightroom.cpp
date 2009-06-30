@@ -1,4 +1,5 @@
 #include "lightroom.h"
+#include "tools/helper.h"
 
 LightRoom::LightRoom()
 {
@@ -17,6 +18,7 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
                       const double cellsize, const double hemigridsize,
                       const double latitude, const double diffus_frac)
 {
+    DebugTimer t1("setup of lightroom");
     m_countX = size_x; m_countY=size_y; m_countZ=size_z;
     m_cellsize = cellsize;
     m_2dvalues.setup(cellsize, size_x, size_y);
@@ -33,6 +35,8 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     solar.setVegetationPeriod(0,367); // no. veg. period
     solar.setDiffusRadFraction(diffus_frac); // 50% diffuse radiation
     // calculate global radiation values
+    DebugTimer t2("calculate solar radiation matrix");
     solar.calculateRadMatrix(hemigridsize, m_solarGrid);
+    t2.showElapsed();
     m_shadowGrid.setup(hemigridsize); // setup size
 }

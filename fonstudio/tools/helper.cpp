@@ -226,3 +226,10 @@ bool UpdateState::needsUpdate()
     return mVal > mCurrentVal;
 }
 
+
+void DebugTimer::showElapsed()
+{
+    if (!m_shown)
+        qDebug() << "Timer" << m_caption << ": " << t.elapsed() << "msec";
+    m_shown=true;
+}

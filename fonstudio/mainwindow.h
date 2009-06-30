@@ -36,6 +36,10 @@ private:
     void loadPicusIniFile(const QString &fileName);
 
 private slots:
+    void on_pbCreateLightroom_clicked();
+    void on_actionFON_action_triggered();
+    void on_actionEdit_XML_settings_triggered();
+    void on_actionLightroom_triggered();
     void on_calcMatrix_clicked();
     void on_pbAddTrees_clicked();
     void on_lCalcResult_linkActivated(QString link);

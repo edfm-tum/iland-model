@@ -2,5 +2,8 @@
     <qresource prefix="/" >
         <file>phone-icon.jpg</file>
         <file>phone-icon.png</file>
+        <file>camera.png</file>
+        <file>audio-input-microphone.png</file>
+        <file>source_xml.png</file>
     </qresource>
 </RCC>

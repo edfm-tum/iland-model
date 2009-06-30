@@ -39,8 +39,8 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 </trees>
 
 <lightroom>
-<size x="100" y="100" z="50" cellsize="1">
-<hemigrid size="5" latitude="48" diffus="0.5">
+<size x="100" y="100" z="50" cellsize="1"/>
+<hemigrid size="5" latitude="48" diffus="0.5"/>
 </lightroom>
 
 </document>

@@ -400,7 +400,7 @@ double  Expression::getVar(const QString& VarName)
     int idx;
     if (!m_modelVarList.isEmpty())
     {
-        m_modelVarList.indexOf(VarName.toLower());
+        idx=m_modelVarList.indexOf(VarName.toLower());
         //idx=AnsiIndexStr(VarName.toLower(), m_modelVarList, m_modelVarCnt-1);
         if (idx>-1) {
             m_tokString+="\nModellvar: " + VarName;
@@ -653,7 +653,7 @@ int  Expression::getVarIndex(const QString& VarName)
     // externe variablen
     if (!m_externVarNames.isEmpty())
     {
-        m_externVarNames.indexOf(VarName);
+        idx=m_externVarNames.indexOf(VarName);
         if (idx>-1)
             return 1000 + idx;
     }
