@@ -17,6 +17,9 @@ signals:
  protected:
      void paintEvent(QPaintEvent *event);
      void mousePressEvent ( QMouseEvent * event );
+     void resizeEvent ( QResizeEvent * event );
+ private:
+     QImage m_bitmap;
  };
 
 

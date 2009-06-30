@@ -619,7 +619,7 @@ void MainWindow::on_pbCreateLightroom_clicked()
     if (!lightroom)
         lightroom = new LightRoom();
 
-    lightroom.setup(x,y,z,cellsize,
+    lightroom->setup(x,y,z,cellsize,
                     hemisize,lat,diffus);
     qDebug() << "Lightroom setup complete";
 }

@@ -7,8 +7,7 @@
 /** virtual room to do some light-experiments.
   The basic use of this class is to derive the size/pattern of the light-influence FON for a single tree.
   It uses SolarRadiation for the calculation of global radiation and HemiGrid to calculate and store the results.
-  This calculation is done for each node of a 3D space and afterwards accumulated into a 2D pattern.
-  */
+  This calculation is done for each node of a 3D space and afterwards accumulated into a 2D pattern. */
 class LightRoom
 {
 public:

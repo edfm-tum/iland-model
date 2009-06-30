@@ -12,14 +12,27 @@ PaintArea::PaintArea(QWidget *parent)
 
      //setWindowTitle(tr("Analog Clock"));
      //resize(200, 200);
+     m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
+
  }
 
+void PaintArea::resizeEvent(QResizeEvent *event)
+{
+    m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
+    qDebug() << "paintarea resize" << this->size();
+}
 void PaintArea::paintEvent(QPaintEvent *)
 {
-     QPainter painter(this);
 
-     painter.drawRect(0, 0, width()-1, height()-1);
-     emit needsPainting(painter);
+    QPainter painter(this);
+    QPainter pxpainter(&m_bitmap);
+
+    //QPainter pxpainter(m_bitmap);
+    //painter.drawRect(0, 0, width()-1, height()-1);
+
+     emit needsPainting(pxpainter);
+     painter.drawImage(rect(), m_bitmap);
+     //painter.drawPixmap(rect(), m_bitmap);
      //painter.drawPixmap(0, 0,
 //     QStylePainter spainter(this);
 //     QStyleOption opt;
