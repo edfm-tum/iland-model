@@ -13,7 +13,7 @@ QString Helper::loadTextFile(const QString& fileName)
         return "";
     }
     QTextStream s(&file);
-    s.setCodec("UTF-8");
+    //s.setCodec("UTF-8");
     QString result=s.readAll();
     return result;
 }

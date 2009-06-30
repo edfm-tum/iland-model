@@ -1,6 +1,6 @@
 
 #include "tree.h"
-#include "../core/grid.h"
+#include "core/grid.h"
 #include "stamp.h"
 
 Expression Tree::rScale=Expression();

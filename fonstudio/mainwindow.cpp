@@ -5,11 +5,11 @@
 #include <QTXml>
 
 #include <stamp.h>
-#include "../core/grid.h"
+#include "core/grid.h"
 #include "tree.h"
 #include "paintarea.h"
-#include "expression.h"
-#include "helper.h"
+#include "tools/expression.h"
+#include "tools/helper.h"
 
 
 // global settings
@@ -23,26 +23,26 @@ QString setting(const QString& paramname)
         return "ERROR";
 }
 // Helper functions
-QString loadFromFile(const QString& fileName)
-{
-    QFile file(fileName);
-     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-         return "";
-
-     QTextStream s(&file);
-     return s.readAll();
-}
-
-bool writeToFile(const QString& fileName, const QString& content)
-{
-    QFile data(fileName);
-    if (data.open(QFile::WriteOnly | QFile::Truncate)) {
-        QTextStream out(&data);
-        out << content;
-        return true;
-    }
-    return false;
-}
+//QString loadFromFile(const QString& fileName)
+//{
+//    QFile file(fileName);
+//     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+//         return "";
+//
+//     QTextStream s(&file);
+//     return s.readAll();
+//}
+//
+//bool writeToFile(const QString& fileName, const QString& content)
+//{
+//    QFile data(fileName);
+//    if (data.open(QFile::WriteOnly | QFile::Truncate)) {
+//        QTextStream out(&data);
+//        out << content;
+//        return true;
+//    }
+//    return false;
+//}
 
 double nrandom(const float& p1, const float& p2)
 {
@@ -108,7 +108,7 @@ void MainWindow::on_applyXML_clicked()
         return;
     }
     // load for edit
-    QString xmlFile = loadFromFile(ui->initFileName->text());
+    QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
     ui->iniEdit->setPlainText(xmlFile);
 
     if (!xmldoc.setContent(&file)) {
@@ -250,7 +250,7 @@ void MainWindow::on_saveFile_clicked()
 {
     QString content = ui->iniEdit->toPlainText();
     if (!content.isEmpty())
-        writeToFile(ui->initFileName->text(), content);
+         Helper::saveToTextFile(ui->initFileName->text(), content);
 
 }
 

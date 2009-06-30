@@ -2,8 +2,8 @@
 #define TREE_H
 #include <QPointF>
 
-#include "../core/grid.h"
-#include "expression.h"
+#include "core/grid.h"
+#include "tools/expression.h"
 
 class Stamp;
 

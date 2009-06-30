@@ -4,7 +4,7 @@
 #include <QtGui>
 #include <vector>
 
-#include "../core/grid.h"
+#include "core/grid.h"
 #include "tree.h"
 #include "stamp.h"
 
