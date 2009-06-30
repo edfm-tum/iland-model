@@ -18,7 +18,7 @@ public:
     Grid(int cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
     ~Grid() { if (mData) delete[] mData; }
 
-    bool setup(int cellsize, int sizex, int sizey);
+    bool setup(const float cellsize, const int sizex, const int sizey);
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value;}
 
     const int sizeX() const { return mSizeX; }
@@ -27,7 +27,6 @@ public:
     const float metricSizeY() const { return mSizeY*mCellsize; }
     const float cellsize() const { return mCellsize; }
     // query
-    const T& operator[](const int x, const int y) { return valueAtIndex(QPoint(x,y)); }
     T& valueAtIndex(const QPoint& pos); /// value at position defined by indices (x,y)
     T& valueAt(const QPointF& posf); /// value at position defined by metric coordinates
     QPoint indexAt(const QPointF& pos) { return QPoint(int(pos.x() / mCellsize),  int(pos.y()/mCellsize)); } /// get index of value at position pos (metric)
@@ -55,7 +54,7 @@ Grid<T>::Grid()
 }
 
 template <class T>
-bool Grid<T>::setup(int cellsize, int sizex, int sizey)
+bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 {
     mSizeX=sizex; mSizeY=sizey; mCellsize=(float)cellsize;
     mCount = mSizeX*mSizeY;
