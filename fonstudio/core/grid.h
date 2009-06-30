@@ -27,6 +27,7 @@ public:
     const float metricSizeY() const { return mSizeY*mCellsize; }
     const float cellsize() const { return mCellsize; }
     // query
+    const T& operator[](const int x, const int y) { return valueAtIndex(QPoint(x,y)); }
     T& valueAtIndex(const QPoint& pos); /// value at position defined by indices (x,y)
     T& valueAt(const QPointF& posf); /// value at position defined by metric coordinates
     QPoint indexAt(const QPointF& pos) { return QPoint(int(pos.x() / mCellsize),  int(pos.y()/mCellsize)); } /// get index of value at position pos (metric)

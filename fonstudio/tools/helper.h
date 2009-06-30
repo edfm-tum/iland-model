@@ -31,12 +31,10 @@ private:
 };
 
 /**
-* StatData
-
+* StatData.
 * Helper class for statistics. This class calculates
 * from a double-vector relevant information used
-* for BoxPlots.
-*/
+* for BoxPlots. */
 class StatData
 {
 public:

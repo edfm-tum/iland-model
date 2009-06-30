@@ -5,9 +5,9 @@ QT += xml
 QT += script
 TARGET = fonstudio
 TEMPLATE = app
+
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
-
 SOURCES += main.cpp \
     mainwindow.cpp \
     core/grid.cpp \
@@ -17,7 +17,8 @@ SOURCES += main.cpp \
     tree.cpp \
     paintarea.cpp \
     tools/expression.cpp \
-    tools/helper.cpp
+    tools/helper.cpp \
+    lightroom.cpp
 HEADERS += mainwindow.h \
     stable.h \
     core/grid.h \
@@ -27,6 +28,7 @@ HEADERS += mainwindow.h \
     tree.h \
     paintarea.h \
     tools/expression.h \
-    tools/helper.h
+    tools/helper.h \
+    lightroom.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
