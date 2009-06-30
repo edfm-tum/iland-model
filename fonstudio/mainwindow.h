@@ -32,8 +32,11 @@ private:
     FloatGrid* mGrid;
     std::vector<Tree> mTrees;
     Stamp mStamp;
+    int m_gfxtype;
     static QPlainTextEdit *mLogSpace;
     void loadPicusIniFile(const QString &fileName);
+    // painter functions
+    void paintFON(QPainter &painter, QRect rect);
 
 private slots:
     void on_pbCreateLightroom_clicked();

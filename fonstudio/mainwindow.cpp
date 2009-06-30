@@ -16,6 +16,10 @@
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
+
+// global Object pointers
+LightRoom *lightroom = 0;
+
 QString setting(const QString& paramname)
 {
     if (!xmlparams.isNull())
@@ -102,12 +106,16 @@ MainWindow::MainWindow(QWidget *parent)
         return;
     }
 
+    on_actionEdit_XML_settings_triggered();
+
 
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    if (lightroom)
+        delete lightroom;
 }
 
 void MainWindow::on_applyXML_clicked()
@@ -330,13 +338,13 @@ void MainWindow::on_pbRetrieve_clicked()
     ui->PaintWidget->update();
 }
 
-
-void MainWindow::repaintArea(QPainter &painter)
+void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     // do the actual painting
     if (!mGrid)
         return;
     // draw grid...
+
     int sqsize = qMin(ui->PaintWidget->width(), ui->PaintWidget->height())-1;
     int ccount = mGrid->sizeX();
     float pxpercell = sqsize / float(ccount);
@@ -349,7 +357,7 @@ void MainWindow::repaintArea(QPainter &painter)
     if (maxval==0.)
         return;
 
-     painter.fillRect(1,1,sqsize-2,sqsize-2, QColor("white"));
+    painter.fillRect(1,1,sqsize-2,sqsize-2, QColor("white"));
     int ix,iy;
     QColor fill_color;
     float value;
@@ -358,12 +366,12 @@ void MainWindow::repaintArea(QPainter &painter)
         for (ix=0;ix<mGrid->sizeX();ix++) {
             value = mGrid->valueAtIndex(QPoint(ix, iy));
             if (value<1.) {
-            cell.moveTo(pxpercell*ix, pxpercell*iy);
-            // scale color in hsv from 0..240
-            fill_color.setHsv( int(value*240./maxval), 200, 200);
-            painter.fillRect(cell, fill_color);
-            //painter.drawRect(cell);
-        }
+                cell.moveTo(pxpercell*ix, pxpercell*iy);
+                // scale color in hsv from 0..240
+                fill_color.setHsv( int(value*240./maxval), 200, 200);
+                painter.fillRect(cell, fill_color);
+                //painter.drawRect(cell);
+            }
         }
     }
 
@@ -383,6 +391,20 @@ void MainWindow::repaintArea(QPainter &painter)
     }
 
     qDebug() << "repaintArea. maxval:" << maxval;
+
+}
+
+void MainWindow::repaintArea(QPainter &painter)
+{
+    // select drawing type...
+    switch (m_gfxtype) {
+        case 0: // paint FON cells
+            paintFON(painter, ui->PaintWidget->rect()); break;
+        case 1:  // paint Lightroom - studio
+            break;
+        case 2: // paint Lightroom
+        default: break; // no painting
+    }
 }
 
 void MainWindow::mouseClick(const QPoint& pos)
@@ -556,18 +578,24 @@ void MainWindow::on_actionLightroom_triggered()
 {
     ui->editStack->setCurrentIndex(1);
     ui->headerCaption->setText("Lightroom");
+    m_gfxtype = 1;
+    ui->PaintWidget->update();
 }
 
 void MainWindow::on_actionEdit_XML_settings_triggered()
 {
     ui->editStack->setCurrentIndex(0);
     ui->headerCaption->setText("Edit XML file");
+    m_gfxtype = -1;
+    ui->PaintWidget->update();
 }
 
 void MainWindow::on_actionFON_action_triggered()
 {
     ui->editStack->setCurrentIndex(2);
     ui->headerCaption->setText("Field Of Neighborhood test environment");
+    m_gfxtype = 0;
+    ui->PaintWidget->update();
 
 }
 
@@ -588,7 +616,9 @@ void MainWindow::on_pbCreateLightroom_clicked()
     double diffus = docLightroom.firstChildElement("hemigrid").attribute("diffus").toFloat();
 
     // create a lightroom object...
-    LightRoom lightroom;
+    if (!lightroom)
+        lightroom = new LightRoom();
+
     lightroom.setup(x,y,z,cellsize,
                     hemisize,lat,diffus);
     qDebug() << "Lightroom setup complete";
