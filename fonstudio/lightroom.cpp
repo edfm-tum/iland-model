@@ -21,13 +21,16 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     DebugTimer t1("setup of lightroom");
     m_countX = size_x; m_countY=size_y; m_countZ=size_z;
     m_cellsize = cellsize;
-    m_2dvalues.setup(cellsize, size_x, size_y);
+    if (m_countX%2==0) m_countX++; // make uneven
+    if (m_countY%2==0) m_countY++;
+    QRectF rect(-m_countX/2*cellsize, -m_countY/2*cellsize, m_countX*cellsize, m_countY*cellsize);
+    m_2dvalues.setup(rect, cellsize);
     m_2dvalues.initialize(0.);
-    m_3dvalues.setup(cellsize, size_x, size_y);
+    m_3dvalues.setup(rect, cellsize);
     // setup room
     int x,y;
-    for (x=0;x<size_x;x++)
-        for (y=0;y<size_y;y++)
+    for (x=0;x<m_countX;x++)
+        for (y=0;y<m_countY;y++)
             m_3dvalues.valueAtIndex(QPoint(x,y)).resize(size_z);
     // setup hemigrids
     SolarRadiation solar;
@@ -39,4 +42,20 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     solar.calculateRadMatrix(hemigridsize, m_solarGrid);
     t2.showElapsed();
     m_shadowGrid.setup(hemigridsize); // setup size
+}
+
+
+//////////////////////////////////////////////////////////
+// Lightroom Object
+//////////////////////////////////////////////////////////
+
+void LightRoomObject::setuptree(const double height, const double crownheight, const QString &formula)
+{
+
+}
+
+bool LightRoomObject::hittest(const double p_x, const double p_y, const double p_z,
+                              const double azimuth_rad, const double elevation_rad)
+{
+
 }
