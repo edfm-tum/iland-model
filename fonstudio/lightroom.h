@@ -23,7 +23,7 @@ public:
               the variable of the formula is 0 for ground 1 for tree top. */
     void setuptree(const double height, const double crownheight, const QString &formula);
 private:
-    Expression *m_radiusFormula;
+    Expression *m_radiusFormula; ///< formula for calculation of crown widht as f(relative_height)
     double m_baseradius; ///< maximum radius of the crown (at the bottom of the crown) [m]
     double m_height; ///< treehight [m]
     double m_crownheight; ///< height of the beginning of the living crown [m]
@@ -41,6 +41,9 @@ public:
     void setup(const int size_x, const int size_y, const int size_z,
                const double cellsize, const double hemigridsize,
                const double latitude=48., const double diffus_frac=0.5);
+    void setLightRoomObject(LightRoomObject *lro) { m_roomObject = lro; }
+    /// calculate a full hemiview image from given point
+    void calculateGridAtPoint(const double p_x, const double p_y, const double p_z);
 private:
     Grid< QVector<float> > m_3dvalues; ///< storage for resulting 3d light values
     FloatGrid m_2dvalues; ///< resulting 2d pattern (derived from 3dvalues)
@@ -50,6 +53,7 @@ private:
     double m_cellsize; ///< length of the side of one cell (equal for all 3 directions)
     HemiGrid m_solarGrid; ///< grid used for solar radiation (direct + diffus)
     HemiGrid m_shadowGrid; ///< grid used for shadow calculations
+    LightRoomObject *m_roomObject;
 };
 
 #endif // LIGHTROOM_H

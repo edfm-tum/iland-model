@@ -37,7 +37,7 @@ void HemiGrid::clear(double SetWith)
     }
 }
 
-void HemiGrid::getMatrixMinMax(double &rMatrixMin, double &rMatrixMax)
+void HemiGrid::matrixMinMax(double &rMatrixMin, double &rMatrixMax)
 {
     rMatrixMin = 100000000.;
     rMatrixMax = -1000000000;
@@ -91,9 +91,9 @@ if (iAzimuth < mMatrixCountAzimuth && iElevation < mMatrixCountElevation
 double& HemiGrid::rGet(const double Azimuth, const double Elevation)
 {
     // Azimuth goes from -pi .. +pi -> move to 0..2pi, scale to 0..1 and convert to integer indices
-    int iAzimuth = getIndexAzimuth(Azimuth);
+    int iAzimuth = indexAzimuth(Azimuth);
     // Elevation goes from 0..90° = 0..pi/2
-    int iElevation = getIndexElevation(Elevation);
+    int iElevation = indexElevation(Elevation);
 
     return rGetByIndex(iAzimuth, iElevation);
 }
@@ -116,8 +116,8 @@ double HemiGrid::getSum(const HemiGrid *Weighter) const
 {
     double Sum=0.;
     if (Weighter) {
-        if (Weighter->getMatrixCountAzimuth()!=this->getMatrixCountAzimuth()
-            || Weighter->getMatrixCountElevation() != this->getMatrixCountElevation())
+        if (Weighter->matrixCountAzimuth()!=this->matrixCountAzimuth()
+            || Weighter->matrixCountElevation() != this->matrixCountElevation())
                 throw QString("HemiGrid::getSum: invalid weighing object!");
 
         for (int i=0; i<mMatrixCountAzimuth*mMatrixCountElevation; i++) {
@@ -157,12 +157,12 @@ void HemiGrid::modifyAngleRect( const double &elow, const double &alow1, const d
                     const double &ehigh, const double &ahigh1, const double &ahigh2,
                     const ModifyMode mode, const double &value)
 {
-    int i_e_low = getIndexElevation(elow);
-    int i_e_high = getIndexElevation(ehigh);
-    int i_a_low1 = getIndexAzimuth(alow1);
-    int i_a_low2 = getIndexAzimuth(alow2);
-    int i_a_high1 = getIndexAzimuth(ahigh1);
-    int i_a_high2 = getIndexAzimuth(ahigh2);
+    int i_e_low = indexElevation(elow);
+    int i_e_high = indexElevation(ehigh);
+    int i_a_low1 = indexAzimuth(alow1);
+    int i_a_low2 = indexAzimuth(alow2);
+    int i_a_high1 = indexAzimuth(ahigh1);
+    int i_a_high2 = indexAzimuth(ahigh2);
     int i_a_min = std::min(i_a_low1, i_a_high1);
     int i_a_max = std::max(i_a_low2, i_a_high2);
 

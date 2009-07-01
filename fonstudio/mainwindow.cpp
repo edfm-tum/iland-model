@@ -12,9 +12,6 @@
 #include "tools/expression.h"
 #include "tools/helper.h"
 
-#define MSGRETURN(x) { qDebug() << x; return; }
-#define RAD(x) (x*M_PI/180.)
-#define GRAD(x) (x/M_PI*180.)
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
@@ -629,7 +626,7 @@ void MainWindow::on_pbCreateLightroom_clicked()
 
 void MainWindow::on_testLRO_clicked()
 {
-        // setup a lightroom object
+        // setup a lightroom object, and do some tests...
     LightRoomObject lro;
     lro.setuptree(40., 10., "1-x*x");
     qDebug()<<"0.2/0.2/8 - azimuth -45, elev: 80:" << lro.hittest(0.2,0.2,8,RAD(-45), RAD(80));

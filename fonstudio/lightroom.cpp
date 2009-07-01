@@ -3,6 +3,7 @@
 
 LightRoom::LightRoom()
 {
+    m_roomObject = 0;
 }
 
 /** setup routine.
@@ -44,6 +45,12 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     m_shadowGrid.setup(hemigridsize); // setup size
 }
 
+void LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const double p_z)
+{
+    m_shadowGrid.clear(0.);
+    // start with 45°
+    m_shadowGrid.indexElevation(RAD(45));
+}
 
 //////////////////////////////////////////////////////////
 // Lightroom Object

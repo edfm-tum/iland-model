@@ -16,5 +16,8 @@
 
 //
 #include <math.h>
+
+// globals of project
+#include "global.h"
 #endif
 //! [0]

@@ -29,6 +29,7 @@ HEADERS += mainwindow.h \
     paintarea.h \
     tools/expression.h \
     tools/helper.h \
-    lightroom.h
+    lightroom.h \
+    global.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

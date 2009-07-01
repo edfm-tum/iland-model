@@ -62,8 +62,8 @@ void SolarRadiation::calculateRadMatrix(const float Step_deg, HemiGrid &Grid)
       double latidude = Latitude;
 
       Grid.setup(Step_deg);
-      int cntAzimuth = Grid.getMatrixCountAzimuth();
-      int cntElevation = Grid.getMatrixCountElevation();
+      int cntAzimuth = Grid.matrixCountAzimuth();
+      int cntElevation = Grid.matrixCountElevation();
 
       int day;
       double sin_declination, declination, eccentricity;

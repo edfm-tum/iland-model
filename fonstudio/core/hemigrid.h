@@ -5,6 +5,9 @@
 
 /** HemiGrid represents a grid covering the hemisphehre as well as some operations.
     The sky is modeled as equally sized tiles.
+    Coordinate system:
+    azimuth: angle between -pi .. +pi, where 0=south direction
+    elevation: 0: horizon - pi/2 (90°)
   */
 class HemiGrid
 {
@@ -20,12 +23,12 @@ class HemiGrid
     double& rGetByIndex(const int iAzimuth, const int iElevation);
     double& rGet(const double Azimuth, const double Elevation);
 
-    int getIndexAzimuth(double Azimuth)  { int x=int( (Azimuth + M_PI) / (2.*M_PI) * mMatrixCountAzimuth ); if (x==mMatrixCountAzimuth) --x; return x;}
-    int getIndexElevation(double Elevation) { int x=int( Elevation / (M_PI / 2.) * mMatrixCountElevation ); if (x==mMatrixCountElevation) --x; return x;}
+    int indexAzimuth(double Azimuth)  { int x=int( (Azimuth + M_PI) / (2.*M_PI) * mMatrixCountAzimuth ); if (x==mMatrixCountAzimuth) --x; return x;}
+    int indexElevation(double Elevation) { int x=int( Elevation / (M_PI / 2.) * mMatrixCountElevation ); if (x==mMatrixCountElevation) --x; return x;}
 
-    int getMatrixCountAzimuth() const { return mMatrixCountAzimuth; }
-    int getMatrixCountElevation() const  { return mMatrixCountElevation; }
-    void getMatrixMinMax(double &rMatrixMin, double &rMatrixMax);
+    int matrixCountAzimuth() const { return mMatrixCountAzimuth; }
+    int matrixCountElevation() const  { return mMatrixCountElevation; }
+    void matrixMinMax(double &rMatrixMin, double &rMatrixMax);
 
     static void projectLine(const double &x, const double &y, const double &deltah, const double &r,
         double &elevation, double &azimuth1, double &azimuth2);
