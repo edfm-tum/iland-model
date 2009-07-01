@@ -4,6 +4,31 @@
 #include "core/grid.h"
 #include "core/solarradiation.h"
 #include "core/hemigrid.h"
+#include "tools/expression.h"
+
+class LightRoomObject
+{
+public:
+    LightRoomObject(): m_radiusFormula(0) {}
+    ~LightRoomObject();
+    /** Test if the ray starting at "p" hits the object.
+        the ray has direction azimuth/elevation and starts from the position denoted by p_x, p_y and p_z
+        @return true if the object is hit.*/
+    bool hittest(const double p_x, const double p_y, const double p_z,
+                 const double azimuth_rad, const double elevation_rad);
+    /** sets up a tree as the obstacle.
+        @param height treehight in meter
+        @param crownheight height of the start of crown (above ground) in meter
+        @param formula (as string representation) that yields the radius as f(relativeheight).
+              the variable of the formula is 0 for ground 1 for tree top. */
+    void setuptree(const double height, const double crownheight, const QString &formula);
+private:
+    Expression *m_radiusFormula;
+    double m_baseradius; ///< maximum radius of the crown (at the bottom of the crown) [m]
+    double m_height; ///< treehight [m]
+    double m_crownheight; ///< height of the beginning of the living crown [m]
+};
+
 /** virtual room to do some light-experiments.
   The basic use of this class is to derive the size/pattern of the light-influence FON for a single tree.
   It uses SolarRadiation for the calculation of global radiation and HemiGrid to calculate and store the results.

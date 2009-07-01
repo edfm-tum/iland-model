@@ -39,6 +39,7 @@ private:
     void paintFON(QPainter &painter, QRect rect);
 
 private slots:
+    void on_testLRO_clicked();
     void on_pbCreateLightroom_clicked();
     void on_actionFON_action_triggered();
     void on_actionEdit_XML_settings_triggered();

@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res/fonstudio.qrc">
+   <iconset>
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -90,6 +90,19 @@
         </property>
         <property name="text">
          <string>Create Lightroom</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="testLRO">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>50</y>
+          <width>75</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>lro</string>
         </property>
        </widget>
       </widget>
@@ -401,7 +414,7 @@ color: rgb(85, 0, 0);</string>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -413,7 +426,7 @@ color: rgb(85, 0, 0);</string>
   </action>
   <action name="actionFON_action">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
    </property>
    <property name="text">
@@ -425,7 +438,7 @@ color: rgb(85, 0, 0);</string>
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -442,8 +455,6 @@ color: rgb(85, 0, 0);</string>
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="res/fonstudio.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

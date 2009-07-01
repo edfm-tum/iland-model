@@ -13,6 +13,8 @@
 #include "tools/helper.h"
 
 #define MSGRETURN(x) { qDebug() << x; return; }
+#define RAD(x) (x*M_PI/180.)
+#define GRAD(x) (x/M_PI*180.)
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
@@ -621,5 +623,15 @@ void MainWindow::on_pbCreateLightroom_clicked()
 
     lightroom->setup(x,y,z,cellsize,
                     hemisize,lat,diffus);
+
     qDebug() << "Lightroom setup complete";
+}
+
+void MainWindow::on_testLRO_clicked()
+{
+        // setup a lightroom object
+    LightRoomObject lro;
+    lro.setuptree(40., 10., "1-x*x");
+    qDebug()<<"0.2/0.2/8 - azimuth -45, elev: 80:" << lro.hittest(0.2,0.2,8,RAD(-45), RAD(80));
+    qDebug()<<"-10,-10,0 - azimuth 42, elev: 45:" << lro.hittest(-10,-10,0,RAD(42), RAD(45));
 }
