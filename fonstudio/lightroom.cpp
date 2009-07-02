@@ -27,12 +27,7 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     QRectF rect(-m_countX/2*cellsize, -m_countY/2*cellsize, m_countX*cellsize, m_countY*cellsize);
     m_2dvalues.setup(rect, cellsize);
     m_2dvalues.initialize(0.);
-    m_3dvalues.setup(rect, cellsize);
-    // setup room
-    int x,y;
-    for (x=0;x<m_countX;x++)
-        for (y=0;y<m_countY;y++)
-            m_3dvalues.valueAtIndex(QPoint(x,y)).resize(size_z);
+
     // setup hemigrids
     SolarRadiation solar;
     solar.setLatidude(latitude); // austria
@@ -45,17 +40,18 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     m_shadowGrid.setup(hemigridsize); // setup size
 }
 
-double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const double p_z)
+double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const double p_z, bool fillShadowGrid)
 {
     if (!m_roomObject)
         return 0;
     // check feasibility
     if (m_roomObject->noHitGuaranteed(p_x, p_y, p_z)) {
-        qDebug()<<"skipped";
+        //qDebug()<<"skipped";
         return 0;
     }
 
-    m_shadowGrid.clear(0.);
+    if (fillShadowGrid)
+        m_shadowGrid.clear(0.);
 
     // start with 45°
     int ie = m_shadowGrid.indexElevation(RAD(45));
@@ -63,6 +59,7 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
     int max_a = m_shadowGrid.matrixCountAzimuth();
     int max_e = m_shadowGrid.matrixCountElevation();
     double elevation, azimuth;
+    double solar_sum=0;
     bool hit;
     int c_hit = 0;
     int c_test = 0;
@@ -74,34 +71,52 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
             //qDebug() << "testing azimuth" << GRAD(azimuth) << "elevation" << GRAD(elevation)<<"hit"<<hit;
             c_test++;
             if (hit) {
-                m_shadowGrid.rGetByIndex(ia, ie) = 1.;
+                // retrieve value from solar grid
+                // Sum(cells) of solargrid =1 -> the sum of all "shadowed" pixels therefore is already the "ratio" of shaded/total radiation
+                solar_sum += m_solarGrid.rGetByIndex(ia, ie);
+                if (fillShadowGrid)
+                  m_shadowGrid.rGetByIndex(ia, ie) = m_solarGrid.rGetByIndex(ia, ie);
                 c_hit++;
             }
         }
     }
-    double ratio = c_hit / double(c_test);
-    qDebug() << "tested"<< c_test<<"hit count:" << c_hit<<"ratio"<<c_hit/double(c_test)<<"total sum"<<m_shadowGrid.getSum();
-    return ratio; // TODO: the global radiation is not calculated!!!!!
+
+    return solar_sum;
+    //double ratio = c_hit / double(c_test);
+    //qDebug() << "tested"<< c_test<<"hit count:" << c_hit<<"ratio"<<c_hit/double(c_test)<<"total sum"<<m_shadowGrid.getSum();
+    //return ratio; // TODO: the global radiation is not calculated!!!!!
 
 }
 
 void LightRoom::calculateFullGrid()
 {
-    QVector<float> *v = m_3dvalues.begin();
-    QVector<float> *vend = m_3dvalues.end();
+    float *v = m_2dvalues.begin();
+    float *vend = m_2dvalues.end();
     int z;
     QPoint pindex;
     QPointF coord;
     double hit_ratio;
     DebugTimer t("calculate full grid");
     int c=0;
+    float maxh = m_roomObject->maxHeight();
+    float *values = new float[m_countZ];
+
+    double sum;
     while (v!=vend) {
-        pindex = m_3dvalues.indexOf(v);
-        coord = m_3dvalues.getCellCoordinates(pindex);
-        for (z=0;z<m_countZ;z++) {
-            hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), z*m_cellsize);
-            (*v)[z] = hit_ratio;
+        pindex = m_2dvalues.indexOf(v);
+        coord = m_2dvalues.getCellCoordinates(pindex);
+        for (z=0;z<m_countZ && z*m_cellsize <= maxh;z++) {
+            hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), // coords x,y
+                                             z*m_cellsize,false); // heigth (z), false: do not clear and fill shadow grid structure
+            values[z]=hit_ratio;
         }
+        // calculate average
+        sum = 0;
+        for(int i=0;i<z;i++)
+            sum+=values[i];
+        if (z)
+            sum/=float(z);
+        *v = sum; // save in 2d grid
         v++;
         c++;
         if (c%1000==0) {
@@ -131,12 +146,24 @@ void LightRoomObject::setuptree(const double height, const double crownheight, c
     m_baseradius = m_radiusFormula->calculate(crownheight/height);
     m_height = height;
     m_crownheight = crownheight;
+    double h=0., r;
+    m_treeHeights.clear();
+    // preprocess crown radii for each meter step
+    while (h<=m_height) {
+        if (h<m_crownheight)
+            r=0.;
+        else
+            r = m_radiusFormula->calculate(h/m_height);
+        m_treeHeights.push_back(r);
+        h++;
+    }
 }
 /** The tree is located in x/y=0/0.
 */
 bool LightRoomObject::hittest(const double p_x, const double p_y, const double p_z,
                               const double azimuth_rad, const double elevation_rad)
 {
+    bool inside_crown=false;
     if (p_z > m_height)
         return false;
     // Test 1: does the ray (azimuth) direction hit the crown?
@@ -151,6 +178,7 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
         if (fabs(alpha) > half_max_angle)
             return false;
     } else {
+        inside_crown = true;
         // test if p is inside the crown
         if (p_z<=m_height && p_z>=m_crownheight) {
             double radius_hit = m_radiusFormula->calculate(p_z / m_height);
@@ -166,31 +194,52 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
         if (elevation_rad < M_PI_2) {
             double d_hitbottom = (m_crownheight - p_z) / tan(elevation_rad);
             // calc. position (projected) of that hit point
-            double rx = p_x + sin(azimuth_rad)*d_hitbottom;
-            double ry = p_y + cos(azimuth_rad)*d_hitbottom;
+            double rx = p_x + cos(azimuth_rad)*d_hitbottom;
+            double ry = p_y + sin(azimuth_rad)*d_hitbottom;
             r_hitbottom = sqrt(rx*rx + ry*ry);
         }
         if (r_hitbottom <= m_baseradius)
             return true;
     }
+    // Test 3: test for height steps...
+    // distance from p to the plane normal to p-vector through the center of the tree
+    double rx,ry,rhit;
+    double d_center = cos(alpha)*dist2d;
+    double h_center = p_z + d_center*tan(elevation_rad);
+    if (h_center<=m_height && h_center>=m_crownheight) {
+        rx = p_x + cos(azimuth_rad)*d_center;
+        ry = p_y + sin(azimuth_rad)*d_center;
+        rhit = sqrt(rx*rx + ry*ry);
+        double r_h = m_radiusFormula->calculate(h_center / m_height);
+        if (rhit < r_h)
+            return true;
+    }
+
+    // Test 4: "walk" through crown using 1m steps.
+    double h=floor(p_z);
+    double d_1m = 1 / tan(elevation_rad); //projected ground distance equivalent of 1m height difference
+    double d_cur = 0;
+    if (h!=p_z) {
+       d_cur += ((h+1)-p_z)*d_1m;
+    }
+
+    while (h<=m_height) {
+        double r_tree = m_treeHeights[int(h)];
+        rx = p_x + cos(azimuth_rad)*d_cur;
+        ry = p_y + sin(azimuth_rad)*d_cur;
+        rhit = rx*rx + ry*ry;
+        if (rhit <= r_tree*r_tree)
+            return true;
+        if (inside_crown && rhit > m_baseradius*m_baseradius)
+            return false;
+
+        if (!inside_crown && rhit <=  m_baseradius*m_baseradius)
+            inside_crown = true;
+        d_cur+=d_1m;
+        h++;
+    }
     return false;
-    // Test 3: determine height of hitting tree
-//    double z_hit = p_z + dist2d*tan(elevation_rad);
-//    if (z_hit > m_height || z_hit<m_crownheight)
-//        return false;
-//    // determine angle of crownradius in hitting height (use relative height as variable in formula!)
-//    // e.g. for a simple parabola: 1-h_rel^2
-//    double radius_hit = m_radiusFormula->calculate(z_hit / m_height);
-//    if (radius_hit < 0)
-//        return false;
-//    double dist3d = sqrt(p_x*p_x + p_y*p_y + (z_hit-p_z)*(z_hit-p_z) );
-//    double radius_angle = asin(radius_hit/dist3d);
-//
-//    if (fabs(alpha) > radius_angle)
-//        return false;
 
-
-    return true;
 
 }
 

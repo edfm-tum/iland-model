@@ -673,7 +673,17 @@ void MainWindow::on_lrCalcFullGrid_clicked()
     if (!lightroom)
         MSGRETURN("Lightroom NULL!");
     lightroom->calculateFullGrid();
-
+    float maxvalue = lightroom->result().max();
+    qDebug() << "maxvalue" << maxvalue;
+    const FloatGrid &result = lightroom->result();
+    QString res;
+    for (int x=0;x<result.sizeX();x++){
+        for (int y=0;y<result.sizeY();y++) {
+            res+=QString::number(result.constValueAtIndex(QPoint(x,y))) + ";";
+        }
+        res+="\n";
+    }
+    qDebug()<< res;
 }
 
 

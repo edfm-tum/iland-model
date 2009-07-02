@@ -24,11 +24,13 @@ public:
     void setuptree(const double height, const double crownheight, const QString &formula);
     /// returns true if there is no way that a ray hits the object starting from p.
     bool noHitGuaranteed(const double p_x, const double p_y, const double p_z);
+    const double maxHeight() const { return m_height; }
 private:
     Expression *m_radiusFormula; ///< formula for calculation of crown widht as f(relative_height)
     double m_baseradius; ///< maximum radius of the crown (at the bottom of the crown) [m]
     double m_height; ///< treehight [m]
     double m_crownheight; ///< height of the beginning of the living crown [m]
+    QVector<double> m_treeHeights;
 };
 
 /** virtual room to do some light-experiments.
@@ -46,14 +48,15 @@ public:
                const double latitude=48., const double diffus_frac=0.5);
     void setLightRoomObject(LightRoomObject *lro) { if (m_roomObject) delete m_roomObject; m_roomObject = lro; }
     /// calculate a full hemiview image from given point
-    double calculateGridAtPoint(const double p_x, const double p_y, const double p_z);
+    double calculateGridAtPoint(const double p_x, const double p_y, const double p_z, bool fillShadowGrid=true);
     /// calculate a hemigrid for each node of the grid (store results in m_3dvalues).
     void calculateFullGrid();
         /// access to the hemigrid
     const HemiGrid &shadowGrid() { return m_shadowGrid; }
     const HemiGrid &solarGrid() { return m_solarGrid; }
+    const FloatGrid &result() { return m_2dvalues; }
 private:
-    Grid< QVector<float> > m_3dvalues; ///< storage for resulting 3d light values
+    //Grid< QVector<float> > m_3dvalues; ///< storage for resulting 3d light values
     FloatGrid m_2dvalues; ///< resulting 2d pattern (derived from 3dvalues)
     int m_countX; ///< size of the grid in x-direction
     int m_countY;
