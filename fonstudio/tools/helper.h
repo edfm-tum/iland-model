@@ -70,6 +70,7 @@ public:
     DebugTimer(const QString &caption) { m_caption = caption; start(); }
     ~DebugTimer() { showElapsed();}
     void showElapsed();
+    int elapsed();
     void start() { t.start(); m_shown=false; }
 private:
     QTime t;

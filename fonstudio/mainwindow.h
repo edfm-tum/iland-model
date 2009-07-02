@@ -39,6 +39,9 @@ private:
     void paintFON(QPainter &painter, QRect rect);
 
 private slots:
+    void on_lrLightGrid_clicked();
+    void on_lrCalcFullGrid_clicked();
+    void on_lroTestHemi_clicked();
     void on_testLRO_clicked();
     void on_pbCreateLightroom_clicked();
     void on_actionFON_action_triggered();

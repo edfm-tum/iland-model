@@ -45,11 +45,71 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     m_shadowGrid.setup(hemigridsize); // setup size
 }
 
-void LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const double p_z)
+double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const double p_z)
 {
+    if (!m_roomObject)
+        return 0;
+    // check feasibility
+    if (m_roomObject->noHitGuaranteed(p_x, p_y, p_z)) {
+        qDebug()<<"skipped";
+        return 0;
+    }
+
     m_shadowGrid.clear(0.);
+
     // start with 45°
-    m_shadowGrid.indexElevation(RAD(45));
+    int ie = m_shadowGrid.indexElevation(RAD(45));
+    int ia = 0;
+    int max_a = m_shadowGrid.matrixCountAzimuth();
+    int max_e = m_shadowGrid.matrixCountElevation();
+    double elevation, azimuth;
+    bool hit;
+    int c_hit = 0;
+    int c_test = 0;
+    for (;ie<max_e;ie++){
+        for (ia=0;ia<max_a;ia++) {
+            azimuth = m_shadowGrid.azimuth(ia);
+            elevation = m_shadowGrid.elevation(ie);
+            hit = m_roomObject->hittest(p_x, p_y, p_z,azimuth,elevation);
+            //qDebug() << "testing azimuth" << GRAD(azimuth) << "elevation" << GRAD(elevation)<<"hit"<<hit;
+            c_test++;
+            if (hit) {
+                m_shadowGrid.rGetByIndex(ia, ie) = 1.;
+                c_hit++;
+            }
+        }
+    }
+    double ratio = c_hit / double(c_test);
+    qDebug() << "tested"<< c_test<<"hit count:" << c_hit<<"ratio"<<c_hit/double(c_test)<<"total sum"<<m_shadowGrid.getSum();
+    return ratio; // TODO: the global radiation is not calculated!!!!!
+
+}
+
+void LightRoom::calculateFullGrid()
+{
+    QVector<float> *v = m_3dvalues.begin();
+    QVector<float> *vend = m_3dvalues.end();
+    int z;
+    QPoint pindex;
+    QPointF coord;
+    double hit_ratio;
+    DebugTimer t("calculate full grid");
+    int c=0;
+    while (v!=vend) {
+        pindex = m_3dvalues.indexOf(v);
+        coord = m_3dvalues.getCellCoordinates(pindex);
+        for (z=0;z<m_countZ;z++) {
+            hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), z*m_cellsize);
+            (*v)[z] = hit_ratio;
+        }
+        v++;
+        c++;
+        if (c%1000==0) {
+            qDebug() << c << "processed...time: ms: " << t.elapsed();
+            QCoreApplication::processEvents();
+        }
+    }
+
 }
 
 //////////////////////////////////////////////////////////
@@ -79,14 +139,14 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
 {
     if (p_z > m_height)
         return false;
-    // Test 1: does the ray (azimuth) direction hit the maximumradius?
+    // Test 1: does the ray (azimuth) direction hit the crown?
     double phi = atan2(-p_y, -p_x); // angle between P and the tree center
     double dist2d = sqrt(p_x*p_x + p_y*p_y); // distance at ground
     if (dist2d==0)
         return true;
 
     double alpha = phi - azimuth_rad; // angle between the ray and the center of the tree
-    if (dist2d>m_baseradius) { // test only, if p not within or within the crown
+    if (dist2d>m_baseradius) { // test only, if p not the crown
         double half_max_angle = asin(m_baseradius / dist2d); // maximum deviation angle from direct connection p - tree where ray hits maxradius
         if (fabs(alpha) > half_max_angle)
             return false;
@@ -100,7 +160,7 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
     }
 
     // Test 2: test if the crown-"plate" at the bottom of the crown is hit.
-    if (elevation_rad>0.) {
+    if (elevation_rad>0. && p_z<m_crownheight) {
         // calc. base distance between p and the point where the height of the ray reaches the bottom of the crown:
         double r_hitbottom = dist2d; // for 90°
         if (elevation_rad < M_PI_2) {
@@ -116,7 +176,7 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
 
     // Test 3: determine height of hitting tree
     double z_hit = p_z + dist2d*tan(elevation_rad);
-    if (z_hit > m_height)
+    if (z_hit > m_height || z_hit<m_crownheight)
         return false;
     // determine angle of crownradius in hitting height (use relative height as variable in formula!)
     // e.g. for a simple parabola: 1-h_rel^2
@@ -133,3 +193,16 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
     return true;
 
 }
+
+bool LightRoomObject::noHitGuaranteed(const double p_x, const double p_y, const double p_z)
+{
+    // 1. simple: compare height...
+    if (p_z > m_height)
+        return true;
+    // 2. 45° test:
+    if (p_z > m_height - sqrt(p_x*p_x + p_y*p_y)) // 45°: height = distance from tree center
+        return true;
+
+    return false;
+}
+

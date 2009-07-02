@@ -9,6 +9,7 @@ class PaintArea : public QWidget
 
  public:
      PaintArea(QWidget *parent = 0);
+     QImage &drawImage() { return m_bitmap; }
 
 signals:
      void needsPainting(QPainter &painter);

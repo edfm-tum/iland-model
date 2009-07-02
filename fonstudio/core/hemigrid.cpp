@@ -2,7 +2,10 @@
 #include "hemigrid.h"
 
 //#include <algorithm>
-
+#include <QtCore>
+// needed for drawing: image & color
+#include <QImage>
+#include <QColor>
 
 //////////////////////////////////////////////////////
 // Setup memory for the Grid.
@@ -13,6 +16,7 @@ void HemiGrid::setup(double cellsize_degree)
       // setup grid...
       mMatrixCountAzimuth = int(360 / cellsize_degree);
       mMatrixCountElevation = int(90 / cellsize_degree);
+      mCellSizeDegree = cellsize_degree;
       // size occupied by one pixel in rad
       mMatrixCellSize = cellsize_degree * M_PI / 180.;
       if (mMatrix)
@@ -37,7 +41,7 @@ void HemiGrid::clear(double SetWith)
     }
 }
 
-void HemiGrid::matrixMinMax(double &rMatrixMin, double &rMatrixMax)
+void HemiGrid::matrixMinMax(double &rMatrixMin, double &rMatrixMax) const
 {
     rMatrixMin = 100000000.;
     rMatrixMax = -1000000000;
@@ -73,7 +77,7 @@ void HemiGrid::matrixMinMax(double &rMatrixMin, double &rMatrixMax)
 // @param iElevation index of elevatin (0..count-1)
 // @return ref. to grid-value
 //////////////////////////////////////////////////////
-double& HemiGrid::rGetByIndex(const int iAzimuth, const int iElevation)
+double& HemiGrid::rGetByIndex(const int iAzimuth, const int iElevation) const
 {
 if (iAzimuth < mMatrixCountAzimuth && iElevation < mMatrixCountElevation
         && iAzimuth>=0 && iElevation>=0)
@@ -88,7 +92,7 @@ if (iAzimuth < mMatrixCountAzimuth && iElevation < mMatrixCountElevation
 // @param Elevation elevation angle (0=horizon, pi/2: zenith)
 // @return ref. to grid-value
 //////////////////////////////////////////////////////
-double& HemiGrid::rGet(const double Azimuth, const double Elevation)
+double& HemiGrid::rGet(const double Azimuth, const double Elevation) const
 {
     // Azimuth goes from -pi .. +pi -> move to 0..2pi, scale to 0..1 and convert to integer indices
     int iAzimuth = indexAzimuth(Azimuth);
@@ -202,5 +206,53 @@ void HemiGrid::projectCylinder(const double &deltax, const double &deltay,
     modifyAngleRect(elow, al1, al2, ehigh, ah1, ah2, mode, value);
 }
 
+
+void HemiGrid::paintGrid(QImage &image) const
+{
+    int dx = image.width();
+    int dy = image.height();
+    int ix,iy;
+    double x,y;
+    int maxsize = std::min(dx,dy);
+    double mmin, mmax; // min and max values of matrix
+    if (mmax==0) mmax=1;
+    matrixMinMax(mmin, mmax);
+    QColor col;
+    double phi, r, elevation, value;
+    for (ix=0;ix<maxsize;ix++){
+        for (iy=0;iy<maxsize;iy++){
+            // to -1..1
+            x = 2*(ix-maxsize/2.) / maxsize;
+            y = 2*(iy-maxsize/2.) / maxsize;
+            // get phi,r (polar coords)
+            if (x==0 && y==0)
+                continue;
+
+            r = sqrt(x*x + y*y);
+            if (r>=1)
+                continue;
+            phi = atan2(x,y);
+            elevation = M_PI_2 - (r * M_PI_2);
+            value = rGet(phi, elevation);
+            value /= mmax;
+            col = QColor::fromHsvF((1.-value)*0.666666 ,0.9, 0.9); // hue from 0..240 = red to blue
+            image.setPixel(ix,iy,col.rgb());
+        }
+    }
+}
+
+QString HemiGrid::dumpGrid() const
+{
+    QString text;
+    text="rows: azimuth steps, cols: elevation. (first value in row: index of azimuth)\n";
+    for (int i=0;i<mMatrixCountAzimuth;i++)  {
+       text+=QString::number(i);
+       for (int j=0;j<mMatrixCountElevation;j++)  {
+           text+=";"+QString::number(rGetByIndex(i,j));
+       }
+       text+="\n";
+    }
+    return text;
+}
 
 

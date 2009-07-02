@@ -230,6 +230,10 @@ bool UpdateState::needsUpdate()
 void DebugTimer::showElapsed()
 {
     if (!m_shown)
-        qDebug() << "Timer" << m_caption << ": " << t.elapsed() << "msec";
+        qDebug() << "Timer" << m_caption << ": " << elapsed() << "msec";
     m_shown=true;
+}
+int DebugTimer::elapsed()
+{
+    return t.elapsed();
 }

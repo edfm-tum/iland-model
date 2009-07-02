@@ -399,7 +399,7 @@ void MainWindow::repaintArea(QPainter &painter)
     switch (m_gfxtype) {
         case 0: // paint FON cells
             paintFON(painter, ui->PaintWidget->rect()); break;
-        case 1:  // paint Lightroom - studio
+        case 1:  // paint Lightroom - studio --- painting is done on the background image of PaintArea
             break;
         case 2: // paint Lightroom
         default: break; // no painting
@@ -620,6 +620,9 @@ void MainWindow::on_pbCreateLightroom_clicked()
 
     lightroom->setup(x,y,z,cellsize,
                     hemisize,lat,diffus);
+    LightRoomObject *lro = new LightRoomObject();
+    lro->setuptree(40., 10., "5*(1-x*x)");
+    lightroom->setLightRoomObject(lro);
 
     qDebug() << "Lightroom setup complete";
 }
@@ -628,7 +631,43 @@ void MainWindow::on_testLRO_clicked()
 {
         // setup a lightroom object, and do some tests...
     LightRoomObject lro;
-    lro.setuptree(40., 10., "1-x*x");
+    lro.setuptree(40., 10., "5*(1-x*x)");
     qDebug()<<"0.2/0.2/8 - azimuth -45, elev: 80:" << lro.hittest(0.2,0.2,8,RAD(-45), RAD(80));
     qDebug()<<"-10,-10,0 - azimuth 42, elev: 45:" << lro.hittest(-10,-10,0,RAD(42), RAD(45));
 }
+
+void MainWindow::on_lroTestHemi_clicked()
+{
+    double x = double(ui->lrSliderX->value());// ui->lr_x->text().toDouble();
+    double y = ui->lrSliderY->value();
+    double z = ui->lrSliderZ->value();
+    ui->lr_x->setText(QString::number(x));
+    ui->lr_y->setText(QString::number(y));
+    ui->lr_z->setText(QString::number(z));
+    if (!lightroom)
+        MSGRETURN("Lightroom NULL!");
+    DebugTimer t("single point");
+    lightroom->calculateGridAtPoint(x,y,z);
+    // now paint...
+    //ui->PaintWidget->drawImage();
+    lightroom->shadowGrid().paintGrid(ui->PaintWidget->drawImage());
+    ui->PaintWidget->update(); // repaint
+    //qDebug() << lightroom->shadowGrid().dumpGrid();
+
+}
+void MainWindow::on_lrLightGrid_clicked()
+{
+    lightroom->solarGrid().paintGrid(ui->PaintWidget->drawImage());
+    ui->PaintWidget->update(); // repaint
+    qDebug() << lightroom->solarGrid().dumpGrid();
+}
+
+void MainWindow::on_lrCalcFullGrid_clicked()
+{
+    if (!lightroom)
+        MSGRETURN("Lightroom NULL!");
+    lightroom->calculateFullGrid();
+
+}
+
+
