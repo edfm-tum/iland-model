@@ -53,7 +53,17 @@ void HemiGrid::matrixMinMax(double &rMatrixMin, double &rMatrixMax) const
       }
     }
 }
-
+const double HemiGrid::sum(const double elevation) const
+{
+    int ie=indexElevation(elevation);
+    int emax=matrixCountElevation();
+    int amax=matrixCountAzimuth();
+    double value = 0;
+    for (int e=ie;e<emax;e++)
+        for (int a=0;a<amax;a++)
+            value+=rGetByIndex(a,e);
+    return value;
+}
 
 //////////////////////////////////////////////////////
 // Dump the grid into a TStringList

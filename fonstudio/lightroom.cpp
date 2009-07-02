@@ -38,6 +38,7 @@ void LightRoom::setup(const int size_x, const int size_y, const int size_z,
     solar.calculateRadMatrix(hemigridsize, m_solarGrid);
     t2.showElapsed();
     m_shadowGrid.setup(hemigridsize); // setup size
+    m_solarrad_factor = 1. / m_solarGrid.sum(RAD(45)); // sum of rad. > 45°
 }
 
 double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const double p_z, bool fillShadowGrid)
@@ -80,8 +81,8 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
             }
         }
     }
-
-    return solar_sum;
+    // solar-rad-factor = 1/(sum rad > 45°)
+    return solar_sum * m_solarrad_factor;
     //double ratio = c_hit / double(c_test);
     //qDebug() << "tested"<< c_test<<"hit count:" << c_hit<<"ratio"<<c_hit/double(c_test)<<"total sum"<<m_shadowGrid.getSum();
     //return ratio; // TODO: the global radiation is not calculated!!!!!

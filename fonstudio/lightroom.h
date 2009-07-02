@@ -62,6 +62,7 @@ private:
     int m_countY;
     int m_countZ;
     double m_cellsize; ///< length of the side of one cell (equal for all 3 directions)
+    double m_solarrad_factor; ///< multiplier accounting for the difference of total radiation and the used part of the sky (45°)
     HemiGrid m_solarGrid; ///< grid used for solar radiation (direct + diffus)
     HemiGrid m_shadowGrid; ///< grid used for shadow calculations
     LightRoomObject *m_roomObject;
