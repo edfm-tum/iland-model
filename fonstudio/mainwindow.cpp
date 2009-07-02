@@ -630,10 +630,16 @@ void MainWindow::on_pbCreateLightroom_clicked()
 void MainWindow::on_testLRO_clicked()
 {
         // setup a lightroom object, and do some tests...
+    double x = ui->lr_x->text().toDouble();
+    double y = ui->lr_y->text().toDouble();
+    double z = ui->lr_z->text().toDouble();
+    double azi = ui->lrAzim->text().toDouble();
+    double elev = ui->lrElevation->text().toDouble();
+
     LightRoomObject lro;
     lro.setuptree(40., 10., "5*(1-x*x)");
-    qDebug()<<"0.2/0.2/8 - azimuth -45, elev: 80:" << lro.hittest(0.2,0.2,8,RAD(-45), RAD(80));
-    qDebug()<<"-10,-10,0 - azimuth 42, elev: 45:" << lro.hittest(-10,-10,0,RAD(42), RAD(45));
+    qDebug()<<"x:"<<x<<"y:"<<y<<"z:"<<z<<"azimuth:"<<azi<<"elevation:"<<elev << lro.hittest(x,y,z,RAD(azi), RAD(elev));
+    //qDebug()<<"-10,-10,0 - azimuth 42, elev: 45:" << lro.hittest(-10,-10,0,RAD(42), RAD(45));
 }
 
 void MainWindow::on_lroTestHemi_clicked()

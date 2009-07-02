@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res/fonstudio.qrc">
+   <iconset>
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -157,8 +157,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="testLRO">
         <property name="geometry">
          <rect>
-          <x>10</x>
-          <y>50</y>
+          <x>270</x>
+          <y>180</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -209,8 +209,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lroTestHemi">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>160</y>
+          <x>270</x>
+          <y>100</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -223,7 +223,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>30</x>
-          <y>210</y>
+          <y>280</y>
           <width>81</width>
           <height>23</height>
          </rect>
@@ -297,6 +297,58 @@ color: rgb(85, 0, 0);</string>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="lrAzim">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>180</y>
+          <width>41</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="lrElevation">
+        <property name="geometry">
+         <rect>
+          <x>210</x>
+          <y>180</y>
+          <width>41</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>45</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_4">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>160</y>
+          <width>46</width>
+          <height>14</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Azimuth</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_5">
+        <property name="geometry">
+         <rect>
+          <x>210</x>
+          <y>160</y>
+          <width>46</width>
+          <height>14</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Elevation</string>
         </property>
        </widget>
       </widget>
@@ -546,7 +598,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -558,7 +610,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionFON_action">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
    </property>
    <property name="text">
@@ -570,7 +622,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -613,9 +665,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources>
-  <include location="res/fonstudio.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>lrSliderX</sender>

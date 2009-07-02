@@ -173,21 +173,21 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
         if (r_hitbottom <= m_baseradius)
             return true;
     }
-
+    return false;
     // Test 3: determine height of hitting tree
-    double z_hit = p_z + dist2d*tan(elevation_rad);
-    if (z_hit > m_height || z_hit<m_crownheight)
-        return false;
-    // determine angle of crownradius in hitting height (use relative height as variable in formula!)
-    // e.g. for a simple parabola: 1-h_rel^2
-    double radius_hit = m_radiusFormula->calculate(z_hit / m_height);
-    if (radius_hit < 0)
-        return false;
-    double dist3d = sqrt(p_x*p_x + p_y*p_y + (z_hit-p_z)*(z_hit-p_z) );
-    double radius_angle = asin(radius_hit/dist3d);
-
-    if (fabs(alpha) > radius_angle)
-        return false;
+//    double z_hit = p_z + dist2d*tan(elevation_rad);
+//    if (z_hit > m_height || z_hit<m_crownheight)
+//        return false;
+//    // determine angle of crownradius in hitting height (use relative height as variable in formula!)
+//    // e.g. for a simple parabola: 1-h_rel^2
+//    double radius_hit = m_radiusFormula->calculate(z_hit / m_height);
+//    if (radius_hit < 0)
+//        return false;
+//    double dist3d = sqrt(p_x*p_x + p_y*p_y + (z_hit-p_z)*(z_hit-p_z) );
+//    double radius_angle = asin(radius_hit/dist3d);
+//
+//    if (fabs(alpha) > radius_angle)
+//        return false;
 
 
     return true;
