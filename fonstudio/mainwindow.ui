@@ -90,7 +90,7 @@ color: rgb(85, 0, 0);</string>
     <item row="1" column="0">
      <widget class="QStackedWidget" name="editStack">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="pageXML">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -555,6 +555,19 @@ p, li { white-space: pre-wrap; }
               </widget>
              </item>
             </layout>
+           </widget>
+           <widget class="QPushButton" name="fonRun">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>110</y>
+              <width>75</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Start FON</string>
+            </property>
            </widget>
           </widget>
          </widget>

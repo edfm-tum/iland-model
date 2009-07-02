@@ -99,6 +99,7 @@ void LightRoom::calculateFullGrid()
     DebugTimer t("calculate full grid");
     int c=0;
     float maxh = m_roomObject->maxHeight();
+
     float *values = new float[m_countZ];
 
     double sum;
@@ -106,12 +107,17 @@ void LightRoom::calculateFullGrid()
         pindex = m_2dvalues.indexOf(v);
         coord = m_2dvalues.getCellCoordinates(pindex);
         for (z=0;z<m_countZ && z*m_cellsize <= maxh;z++) {
+            // only calculate values up to the 45° line
+            // tan(45°)=1 -> so this is the case when the distance p->tree > height of the tree
+            if (sqrt(coord.x()*coord.x() + coord.y()*coord.y()) > maxh-z*m_cellsize)
+                break;
             hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), // coords x,y
                                              z*m_cellsize,false); // heigth (z), false: do not clear and fill shadow grid structure
             values[z]=hit_ratio;
         }
         // calculate average
         sum = 0;
+        // aggregate mean for all cells with angles>45° to the tree-top!
         for(int i=0;i<z;i++)
             sum+=values[i];
         if (z)
@@ -169,8 +175,8 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
     // Test 1: does the ray (azimuth) direction hit the crown?
     double phi = atan2(-p_y, -p_x); // angle between P and the tree center
     double dist2d = sqrt(p_x*p_x + p_y*p_y); // distance at ground
-    if (dist2d==0)
-        return true;
+    //if (dist2d==0)
+    //    return true;
 
     double alpha = phi - azimuth_rad; // angle between the ray and the center of the tree
     if (dist2d>m_baseradius) { // test only, if p not the crown
@@ -228,7 +234,7 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
         rx = p_x + cos(azimuth_rad)*d_cur;
         ry = p_y + sin(azimuth_rad)*d_cur;
         rhit = rx*rx + ry*ry;
-        if (rhit <= r_tree*r_tree)
+        if (rhit < r_tree*r_tree)
             return true;
         if (inside_crown && rhit > m_baseradius*m_baseradius)
             return false;

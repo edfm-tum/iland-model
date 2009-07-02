@@ -119,109 +119,18 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_applyXML_clicked()
 {
-
     xmldoc.clear();
-    QFile file(ui->initFileName->text());
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::information(this, "title text", "Cannot open file!");
-        return;
-    }
     // load for edit
-    QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
-    ui->iniEdit->setPlainText(xmlFile);
-
-    if (!xmldoc.setContent(&file)) {
-        file.close();
-        QMessageBox::information(this, "title text", "Cannot set content of XML file!");
+    QString xml = ui->iniEdit->toPlainText();
+    QString errMsg;
+    int errLine, errCol;
+    if (!xmldoc.setContent(xml, &errMsg, &errLine, &errCol)) {
+        QMessageBox::information(this, "Error applying XML",
+                                 QString("Error applying xml line %1, col %2.\nMessage: %3").arg(errLine).arg(errCol).arg(errMsg));
         return;
     }
-    file.close();
-
-    // print out the element names of all elements that are direct children
-    // of the outermost element.
-    QDomElement docElem = xmldoc.documentElement();
-
-    xmlparams = docElem.firstChildElement("params");
-    QDomNode trees = docElem.firstChildElement("trees");
-    // get a parameter...
-    //int p1 = params.firstChildElement("param1").text().toInt();
-    QString stampFile =  xmlparams.firstChildElement("stampFile").text();
-
-
-    // Here we append a new element to the end of the document
-    //QDomElement elem = doc.createElement("img");
-    //elem.setAttribute("src", "myimage.png");
-    //docElem.appendChild(elem);
-
-    // Load stamp
-    if (!mStamp.load(stampFile)) {
-        QMessageBox::information(NULL, "info", "image not found!");
-        return;
-
-    }
-
-    float phi=0.f;
-    for (float r=0.; r<1.1; r+=0.1f) {
-        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
-        phi+=0.1;
-        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
-    }
-
-    // atan2-test
-    //qDebug() << "1/1:" << atan2(1., 1.) << "-1/1:" << atan2(1., -1.) << "-1/-1" << atan2(-1., -1.) << "1/-1:" << atan2(-1., 1.);
-
-    // expression test
-    QString expr_text=xmlparams.firstChildElement("expression").text();
-    Expression expr(expr_text);
-    double value = expr.execute();
-    qDebug() << "expression:" << expr_text << "->" <<value;
-
-    QString expr_hScale=xmlparams.firstChildElement("hScale").text();
-    Tree::hScale.setExpression(expr_hScale);
-    Tree::hScale.addVar("height");
-    Tree::hScale.addVar("dbh");
-
-    QString expr_rScale=xmlparams.firstChildElement("rScale").text();
-    Tree::rScale.setExpression(expr_rScale);
-    Tree::rScale.addVar("height");
-    Tree::rScale.addVar("dbh");
-
-    // setup grid
-    int cellsize = xmlparams.firstChildElement("cellSize").text().toInt();
-    int cellcount = xmlparams.firstChildElement("cells").text().toInt();
-    if (mGrid) {
-        delete mGrid; mGrid=0;
-    }
-    mGrid = new FloatGrid(cellsize, cellcount, cellcount);
-    mGrid->initialize(1.f); // set to unity...
-
-    // Load Trees
-    mTrees.clear();
-    QDomElement treelist = docElem.firstChildElement("treeinit");
-    if (!treelist.isNull()) {
-        QString fname = treelist.text();
-        loadPicusIniFile(fname);
-
-    }
-    QDomElement n = trees.firstChildElement("tree");
-    while (!n.isNull()) {
-        Tree tree;
-        tree.setDbh( n.attributeNode("dbh").value().toFloat() );
-        tree.setHeight( n.attributeNode("height").value().toFloat() );
-        tree.setPosition( QPointF(n.attributeNode("x").value().toFloat(), n.attributeNode("y").value().toFloat() ));
-        mTrees.push_back(tree);
-
-/*        ui->logMessages->append("tree: " \
-           " dbh: " + n.attributeNode("dbh").value() +
-           "\nheight: " + n.attributeNode("height").value() );*/
-        n = n.nextSiblingElement();
-    }
-    qDebug() << mTrees.size() << "trees loaded.";
-    // test stylesheets...
-    QString style = setting("style");
-    ui->PaintWidget->setStyleSheet( style );
-
 }
+
 /// load a Picus ini file formatted file.
 void MainWindow::loadPicusIniFile(const QString &fileName)
 {
@@ -621,7 +530,7 @@ void MainWindow::on_pbCreateLightroom_clicked()
     lightroom->setup(x,y,z,cellsize,
                     hemisize,lat,diffus);
     LightRoomObject *lro = new LightRoomObject();
-    lro->setuptree(40., 10., "5*(1-x*x)");
+    lro->setuptree(40., 20., "5*(1-x*x)");
     lightroom->setLightRoomObject(lro);
 
     qDebug() << "Lightroom setup complete";
@@ -687,3 +596,91 @@ void MainWindow::on_lrCalcFullGrid_clicked()
 }
 
 
+
+void MainWindow::on_fonRun_clicked()
+{
+    // print out the element names of all elements that are direct children
+    // of the outermost element.
+    QDomElement docElem = xmldoc.documentElement();
+
+    xmlparams = docElem.firstChildElement("params");
+    QDomNode trees = docElem.firstChildElement("trees");
+    // get a parameter...
+    //int p1 = params.firstChildElement("param1").text().toInt();
+    QString stampFile =  xmlparams.firstChildElement("stampFile").text();
+
+
+    // Here we append a new element to the end of the document
+    //QDomElement elem = doc.createElement("img");
+    //elem.setAttribute("src", "myimage.png");
+    //docElem.appendChild(elem);
+
+    // Load stamp
+    if (!mStamp.load(stampFile)) {
+        QMessageBox::information(NULL, "info", "image not found!");
+        return;
+
+    }
+
+    float phi=0.f;
+    for (float r=0.; r<1.1; r+=0.1f) {
+        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
+        phi+=0.1;
+        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
+    }
+
+    // atan2-test
+    //qDebug() << "1/1:" << atan2(1., 1.) << "-1/1:" << atan2(1., -1.) << "-1/-1" << atan2(-1., -1.) << "1/-1:" << atan2(-1., 1.);
+
+    // expression test
+    QString expr_text=xmlparams.firstChildElement("expression").text();
+    Expression expr(expr_text);
+    double value = expr.execute();
+    qDebug() << "expression:" << expr_text << "->" <<value;
+
+    QString expr_hScale=xmlparams.firstChildElement("hScale").text();
+    Tree::hScale.setExpression(expr_hScale);
+    Tree::hScale.addVar("height");
+    Tree::hScale.addVar("dbh");
+
+    QString expr_rScale=xmlparams.firstChildElement("rScale").text();
+    Tree::rScale.setExpression(expr_rScale);
+    Tree::rScale.addVar("height");
+    Tree::rScale.addVar("dbh");
+
+    // setup grid
+    int cellsize = xmlparams.firstChildElement("cellSize").text().toInt();
+    int cellcount = xmlparams.firstChildElement("cells").text().toInt();
+    if (mGrid) {
+        delete mGrid; mGrid=0;
+    }
+    mGrid = new FloatGrid(cellsize, cellcount, cellcount);
+    mGrid->initialize(1.f); // set to unity...
+
+    // Load Trees
+    mTrees.clear();
+    QDomElement treelist = docElem.firstChildElement("treeinit");
+    if (!treelist.isNull()) {
+        QString fname = treelist.text();
+        loadPicusIniFile(fname);
+
+    }
+    QDomElement n = trees.firstChildElement("tree");
+    while (!n.isNull()) {
+        Tree tree;
+        tree.setDbh( n.attributeNode("dbh").value().toFloat() );
+        tree.setHeight( n.attributeNode("height").value().toFloat() );
+        tree.setPosition( QPointF(n.attributeNode("x").value().toFloat(), n.attributeNode("y").value().toFloat() ));
+        mTrees.push_back(tree);
+
+/*        ui->logMessages->append("tree: " \
+           " dbh: " + n.attributeNode("dbh").value() +
+           "\nheight: " + n.attributeNode("height").value() );*/
+        n = n.nextSiblingElement();
+    }
+    qDebug() << mTrees.size() << "trees loaded.";
+    // test stylesheets...
+    QString style = setting("style");
+    ui->PaintWidget->setStyleSheet( style );
+
+}
