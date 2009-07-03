@@ -13,23 +13,25 @@ SOURCES += main.cpp \
     core/grid.cpp \
     core/solarradiation.cpp \
     core/hemigrid.cpp \
-    stamp.cpp \
+    imagestamp.cpp \
     tree.cpp \
     paintarea.cpp \
     tools/expression.cpp \
     tools/helper.cpp \
-    lightroom.cpp
+    lightroom.cpp \
+    core/stamp.cpp
 HEADERS += mainwindow.h \
     stable.h \
     core/grid.h \
     core/solarradiation.h \
     core/hemigrid.h \
-    stamp.h \
+    imagestamp.h \
     tree.h \
     paintarea.h \
     tools/expression.h \
     tools/helper.h \
     lightroom.h \
-    global.h
+    global.h \
+    core/stamp.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

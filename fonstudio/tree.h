@@ -5,7 +5,7 @@
 #include "core/grid.h"
 #include "tools/expression.h"
 
-class Stamp;
+class ImageStamp;
 
 
 class Tree
@@ -24,8 +24,8 @@ public:
     const float impact() const { return mImpact; }
     const float impactRadius() const { return mImpactRadius; }
 
-    void stampOnGrid(Stamp& stamp, FloatGrid& grid);
-    float retrieveValue(Stamp& stamp, FloatGrid& grid);
+    void stampOnGrid(ImageStamp& stamp, FloatGrid& grid);
+    float retrieveValue(ImageStamp& stamp, FloatGrid& grid);
 
     static Expression rScale;
     static Expression hScale;

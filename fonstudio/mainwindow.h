@@ -6,7 +6,7 @@
 
 #include "core/grid.h"
 #include "tree.h"
-#include "stamp.h"
+#include "imagestamp.h"
 
 
 
@@ -31,7 +31,7 @@ private:
     Ui::MainWindowClass *ui;
     FloatGrid* mGrid;
     std::vector<Tree> mTrees;
-    Stamp mStamp;
+    ImageStamp mStamp;
     int m_gfxtype;
     static QPlainTextEdit *mLogSpace;
     void loadPicusIniFile(const QString &fileName);
@@ -39,6 +39,7 @@ private:
     void paintFON(QPainter &painter, QRect rect);
 
 private slots:
+    void on_lrProcess_clicked();
     void on_fonRun_clicked();
     void on_lrLightGrid_clicked();
     void on_lrCalcFullGrid_clicked();

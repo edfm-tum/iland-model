@@ -1,7 +1,7 @@
 
 #include "tree.h"
 #include "core/grid.h"
-#include "stamp.h"
+#include "imagestamp.h"
 
 Expression Tree::rScale=Expression();
 Expression Tree::hScale=Expression();
@@ -23,7 +23,7 @@ float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAng
     return d;
 }
 
-void Tree::stampOnGrid(Stamp& stamp, FloatGrid& grid)
+void Tree::stampOnGrid(ImageStamp& stamp, FloatGrid& grid)
 {
 
     // use formulas to derive scaling values...
@@ -63,7 +63,7 @@ void Tree::stampOnGrid(Stamp& stamp, FloatGrid& grid)
     }
 }
 
-float Tree::retrieveValue(Stamp& stamp, FloatGrid& grid)
+float Tree::retrieveValue(ImageStamp& stamp, FloatGrid& grid)
 {
 
     rScale.setVar("height", mHeight);

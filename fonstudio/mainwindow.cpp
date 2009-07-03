@@ -4,7 +4,7 @@
 #include <QTGui>
 #include <QTXml>
 
-#include <stamp.h>
+#include <imagestamp.h>
 #include "lightroom.h"
 #include "core/grid.h"
 #include "tree.h"
@@ -25,6 +25,21 @@ QString setting(const QString& paramname)
         return xmlparams.firstChildElement(paramname).text();
     else
         return "ERROR";
+}
+
+QDomElement getNode(const QString key)
+{
+    QDomElement docElem = xmldoc.documentElement(); // top element
+    QStringList keys = key.split(".");
+    QDomElement next = docElem;
+    foreach(QString k, keys) {
+        QDomElement next = next.firstChildElement(k);
+        if (next.isNull()) {
+            qDebug() << "XML key " << key << " not valid!";
+            return docElem;
+        }
+    }
+    return next;
 }
 // Helper functions
 //QString loadFromFile(const QString& fileName)
@@ -683,4 +698,16 @@ void MainWindow::on_fonRun_clicked()
     QString style = setting("style");
     ui->PaintWidget->setStyleSheet( style );
 
+}
+
+void MainWindow::on_lrProcess_clicked()
+{
+    QDomElement trees = getNode("document.lightroom.trees");
+    QString path = getNode("document.lightroom.keys.trees").text();
+    qDebug() << "store to " << path;
+    QDomElement tree = trees.firstChildElement("tree");
+    while (!tree.isNull()) {
+        qDebug() << tree.attribute("name") << tree.attribute("h").toDouble();
+        tree = tree.nextSiblingElement("tree");
+    }
 }

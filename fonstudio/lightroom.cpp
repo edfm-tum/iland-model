@@ -150,6 +150,7 @@ void LightRoomObject::setuptree(const double height, const double crownheight, c
         delete m_radiusFormula;
 
     m_radiusFormula = new Expression(formula);
+
     m_baseradius = m_radiusFormula->calculate(crownheight/height);
     m_height = height;
     m_crownheight = crownheight;

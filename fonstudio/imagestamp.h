@@ -1,13 +1,13 @@
-#ifndef STAMP_H
-#define STAMP_H
+#ifndef ImageStamp_H
+#define ImageStamp_H
 
 #include <QImage>
 
-class Stamp
+class ImageStamp
 {
 public:
-    Stamp() {}
-    Stamp(const QString& filename) { load(filename); }
+    ImageStamp() {}
+    ImageStamp(const QString& filename) { load(filename); }
     bool load(const QString& filename);
     float getXY(const float x, const float y);
     float get(const float r, const float phi);
@@ -19,4 +19,4 @@ private:
 
 };
 
-#endif // STAMP_H
+#endif // ImageStamp_H

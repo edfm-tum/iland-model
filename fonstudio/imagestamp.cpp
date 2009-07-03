@@ -1,6 +1,6 @@
-#include "stamp.h"
+#include "ImageStamp.h"
 
-bool Stamp::load(const QString& filename)
+bool ImageStamp::load(const QString& filename)
 {
     if (!mImage.load(filename))
         return false;
@@ -13,7 +13,7 @@ bool Stamp::load(const QString& filename)
 ** the return value is scaled to 0..hScale
 ** range for x/y is -1..+1
 **************************************/
-float Stamp::getXY(const float x, const float y)
+float ImageStamp::getXY(const float x, const float y)
 {
     int ix, iy;
     ix = int( (x+1.f) * ( mImage.width() / 2.) );  // scale from -1..1
@@ -34,7 +34,7 @@ float Stamp::getXY(const float x, const float y)
 ** angle phi (in radians).
 ** note: 0: East, pi/2: North, pi: West, 3pi/2: South
 **************************************/
-float Stamp::get(const float r, const float phi)
+float ImageStamp::get(const float r, const float phi)
 {
     if (fabs(r)>rScale)
         return 1.f;
