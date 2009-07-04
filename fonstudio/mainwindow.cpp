@@ -27,20 +27,49 @@ QString setting(const QString& paramname)
         return "ERROR";
 }
 
-QDomElement getNode(const QString key)
+QDomElement getNode(const QString xmlkey)
 {
     QDomElement docElem = xmldoc.documentElement(); // top element
-    QStringList keys = key.split(".");
+    QStringList keys = xmlkey.split(".");
     QDomElement next = docElem;
     foreach(QString k, keys) {
         QDomElement next = next.firstChildElement(k);
         if (next.isNull()) {
-            qDebug() << "XML key " << key << " not valid!";
+            qDebug() << "XML key " << xmlkey << " not valid!";
             return docElem;
         }
     }
     return next;
 }
+
+QString gridToString(const FloatGrid &grid)
+{
+    QString res;
+    for (int x=0;x<grid.sizeX();x++){
+        for (int y=0;y<grid.sizeY();y++) {
+            res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + ";";
+        }
+        res+="\r\n";
+    }
+    return res;
+}
+QImage gridToImage(const FloatGrid &grid)
+{
+    QImage res(grid.sizeX(), grid.sizeY(), QImage::Format_ARGB32);
+    QRgb col;
+    int grey;
+    for (int x=0;x<grid.sizeX();x++){
+        for (int y=0;y<grid.sizeY();y++) {
+            grey = int(255*(1.-grid.constValueAtIndex(QPoint(x,y))));
+            col = QColor(grey,grey,grey).rgb();
+            res.setPixel(x,y,col);
+            //res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + ";";
+        }
+        //res+="\r\n";
+    }
+    return res;
+}
+
 // Helper functions
 //QString loadFromFile(const QString& fileName)
 //{
@@ -577,7 +606,8 @@ void MainWindow::on_lroTestHemi_clicked()
     if (!lightroom)
         MSGRETURN("Lightroom NULL!");
     DebugTimer t("single point");
-    lightroom->calculateGridAtPoint(x,y,z);
+    double res = lightroom->calculateGridAtPoint(x,y,z);
+    ui->lrHemiValue->setText(QString::number(res));
     // now paint...
     //ui->PaintWidget->drawImage();
     lightroom->shadowGrid().paintGrid(ui->PaintWidget->drawImage());
@@ -702,12 +732,34 @@ void MainWindow::on_fonRun_clicked()
 
 void MainWindow::on_lrProcess_clicked()
 {
-    QDomElement trees = getNode("document.lightroom.trees");
-    QString path = getNode("document.lightroom.keys.trees").text();
+    QDomElement docElem = xmldoc.documentElement();
+    QDomElement trees = docElem.firstChildElement("lightroom").firstChildElement("trees");
+            //getNode("lightroom.trees");
+    QString path =  docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("path").text();
     qDebug() << "store to " << path;
-    QDomElement tree = trees.firstChildElement("tree");
+    QDomElement tree = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("tree");
+    double crown, height;
+    QString formula, name, result;
+
+    LightRoomObject *lro = new LightRoomObject();
+    lightroom->setLightRoomObject(lro);
+
     while (!tree.isNull()) {
-        qDebug() << tree.attribute("name") << tree.attribute("h").toDouble();
+        name = tree.attribute("name");
+        height = tree.attribute("h").toDouble();
+        crown = tree.attribute("crown").toDouble();
+        formula = tree.attribute("formula");
+        ///////////////////////////
+        lro->setuptree(height, crown, formula);
+        qDebug() << "start" << name;
+        lightroom->calculateFullGrid();
+        // store
+        result = gridToString( lightroom->result() );
+        Helper::saveToTextFile(path + "\\ " + name + ".txt", result);
+        QImage img = gridToImage( lightroom->result() );
+        img.save(path + "\\ " + name + ".jpg", "JPG", 100);
+        ///////////////////////////
         tree = tree.nextSiblingElement("tree");
     }
+    qDebug() << "finished!!!";
 }

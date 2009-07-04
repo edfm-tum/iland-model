@@ -61,7 +61,7 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
     int max_e = m_shadowGrid.matrixCountElevation();
     double elevation, azimuth;
     double solar_sum=0;
-    bool hit;
+    int hit;
     int c_hit = 0;
     int c_test = 0;
     for (;ie<max_e;ie++){
@@ -69,9 +69,12 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
             azimuth = m_shadowGrid.azimuth(ia);
             elevation = m_shadowGrid.elevation(ie);
             hit = m_roomObject->hittest(p_x, p_y, p_z,azimuth,elevation);
+            // if inside the crown: do nothing and return.
+            if (hit==-1)
+                return -1;
             //qDebug() << "testing azimuth" << GRAD(azimuth) << "elevation" << GRAD(elevation)<<"hit"<<hit;
             c_test++;
-            if (hit) {
+            if (hit==1) {
                 // retrieve value from solar grid
                 // Sum(cells) of solargrid =1 -> the sum of all "shadowed" pixels therefore is already the "ratio" of shaded/total radiation
                 solar_sum += m_solarGrid.rGetByIndex(ia, ie);
@@ -114,6 +117,9 @@ void LightRoom::calculateFullGrid()
                 break;
             hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), // coords x,y
                                              z*m_cellsize,false); // heigth (z), false: do not clear and fill shadow grid structure
+            // stop calculating when return = -1 (e.g. when inside the crown)
+            if (hit_ratio==-1)
+                break;
             values[z]=hit_ratio;
         }
         // calculate average
@@ -168,12 +174,12 @@ void LightRoomObject::setuptree(const double height, const double crownheight, c
 }
 /** The tree is located in x/y=0/0.
 */
-bool LightRoomObject::hittest(const double p_x, const double p_y, const double p_z,
+int LightRoomObject::hittest(const double p_x, const double p_y, const double p_z,
                               const double azimuth_rad, const double elevation_rad)
 {
     bool inside_crown=false;
     if (p_z > m_height)
-        return false;
+        return 0;
     // Test 1: does the ray (azimuth) direction hit the crown?
     double phi = atan2(-p_y, -p_x); // angle between P and the tree center
     double dist2d = sqrt(p_x*p_x + p_y*p_y); // distance at ground
@@ -184,14 +190,14 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
     if (dist2d>m_baseradius) { // test only, if p not the crown
         double half_max_angle = asin(m_baseradius / dist2d); // maximum deviation angle from direct connection p - tree where ray hits maxradius
         if (fabs(alpha) > half_max_angle)
-            return false;
+            return 0;
     } else {
         inside_crown = true;
         // test if p is inside the crown
         if (p_z<=m_height && p_z>=m_crownheight) {
             double radius_hit = m_radiusFormula->calculate(p_z / m_height);
-            if (radius_hit <= dist2d)
-                return true;
+            if (dist2d <= radius_hit)
+                return -1;
         }
     }
 
@@ -207,20 +213,23 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
             r_hitbottom = sqrt(rx*rx + ry*ry);
         }
         if (r_hitbottom <= m_baseradius)
-            return true;
+            return 1;
     }
     // Test 3: test for height steps...
     // distance from p to the plane normal to p-vector through the center of the tree
+    // do only when p is
     double rx,ry,rhit;
     double d_center = cos(alpha)*dist2d;
-    double h_center = p_z + d_center*tan(elevation_rad);
-    if (h_center<=m_height && h_center>=m_crownheight) {
-        rx = p_x + cos(azimuth_rad)*d_center;
-        ry = p_y + sin(azimuth_rad)*d_center;
-        rhit = sqrt(rx*rx + ry*ry);
-        double r_h = m_radiusFormula->calculate(h_center / m_height);
-        if (rhit < r_h)
-            return true;
+    if (d_center>=0) {
+        double h_center = p_z + d_center*tan(elevation_rad);
+        if (h_center<=m_height && h_center>=m_crownheight) {
+            rx = p_x + cos(azimuth_rad)*d_center;
+            ry = p_y + sin(azimuth_rad)*d_center;
+            rhit = sqrt(rx*rx + ry*ry);
+            double r_h = m_radiusFormula->calculate(h_center / m_height);
+            if (rhit < r_h)
+                return 1;
+        }
     }
 
     // Test 4: "walk" through crown using 1m steps.
@@ -236,17 +245,20 @@ bool LightRoomObject::hittest(const double p_x, const double p_y, const double p
         rx = p_x + cos(azimuth_rad)*d_cur;
         ry = p_y + sin(azimuth_rad)*d_cur;
         rhit = rx*rx + ry*ry;
+        // hit if inside of radius
         if (rhit < r_tree*r_tree)
-            return true;
+            return 1;
+        // no hit: if formerly was inside crown and now left
         if (inside_crown && rhit > m_baseradius*m_baseradius)
-            return false;
+            return 0;
 
+        // enter crown
         if (!inside_crown && rhit <=  m_baseradius*m_baseradius)
             inside_crown = true;
         d_cur+=d_1m;
         h++;
     }
-    return false;
+    return 0;
 
 
 }

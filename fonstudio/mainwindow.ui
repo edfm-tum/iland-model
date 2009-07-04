@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/fonstudio.qrc">
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -364,6 +364,19 @@ color: rgb(85, 0, 0);</string>
          <string>Process...</string>
         </property>
        </widget>
+       <widget class="QLabel" name="lrHemiValue">
+        <property name="geometry">
+         <rect>
+          <x>280</x>
+          <y>130</y>
+          <width>46</width>
+          <height>14</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="pageFON">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -624,7 +637,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -636,7 +649,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionFON_action">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
    </property>
    <property name="text">
@@ -648,7 +661,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -691,7 +704,9 @@ p, li { white-space: pre-wrap; }
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="res/fonstudio.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>lrSliderX</sender>
