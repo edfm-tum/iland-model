@@ -124,7 +124,7 @@ void StampContainer::load(QDataStream &in)
     }
 }
 /** Saves all stamps of the container to a binary stream.
-  Format: * count of stamps
+  Format: * count of stamps (int32)
       for each stamp:
       - type (enum Stamp::StampType, 4, 8, 12, 16, ...)
       - bhd of the stamp (float)
@@ -132,16 +132,19 @@ void StampContainer::load(QDataStream &in)
       - individual data values (Stamp::save() / Stamp::load())
       -- offset (int) no. of pixels away from center
       -- list of data items (type*type items)
+      see also stamp creation (FonStudio application, MainWindow.cpp).
 */
 void StampContainer::save(QDataStream &out)
 {
     qint32 type;
-    Stamp *stamp = newStamp( Stamp::StampType(type) );
+    qint32 size = m_stamps.count();
+    out >> size;
     foreach(StampItem si, m_stamps) {
         type = si.stamp->count();
         out >> type;
         out >> si.bhd;
         out >> si.hd;
+        si.stamp->save(out);
     }
-    stamp->save(out);
+
 }

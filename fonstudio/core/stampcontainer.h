@@ -21,8 +21,13 @@ public:
     const Stamp* getStamp(const float bhd_cm, const float height_m);
     /// save the content of the StampContainer to the output stream (binary encoding)
     void save(QDataStream &out);
-    /// load and setup from a data stream....
+    /// load the content of the StampContainer to the output stream (binary encoding)
     void load(QDataStream &in);
+
+    /** factory creation function for stamps of different size.
+        newStamp() creates new Stamp-Objects on the heap with a given type (see @enum Stamp::StampType).*/
+    static Stamp* newStamp(const Stamp::StampType type);
+
 private:
     static const int cBHDclassWidth;
     static const int cHDclassWidth;
@@ -35,7 +40,6 @@ private:
         float bhd;
         float hd;
     };
-    static Stamp* newStamp(const Stamp::StampType type);
     inline int getKey(const float bhd, const float hd_value);
     int m_maxBhd;
     bool m_useLookup; // use lookup table?

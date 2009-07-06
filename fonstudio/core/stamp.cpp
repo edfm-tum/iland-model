@@ -1,4 +1,6 @@
 #include "stamp.h"
+#include "core/grid.h"
+#include "core/stampcontainer.h"
 #include "../tools/helper.h"
 Stamp::Stamp()
 {
@@ -14,6 +16,7 @@ void Stamp::setup(const int size)
 {
     int c=size*size;
     m_size=size;
+    m_offset=0;
     if (m_data)
         delete[] m_data;
     m_data=new float[c];
@@ -60,4 +63,33 @@ void Stamp::save(QDataStream &out)
    for (int i=0;i<m_size; i++) {
        out << m_data[i];
    }
+}
+
+
+Stamp *stampFromGrid(const FloatGrid& grid, const int width)
+{
+    Stamp::StampType type=Stamp::est4x4;
+    int c = grid.count(); // total size of input grid
+    if (c%2==0 || width%2==0) {
+        qDebug() << "both grid and width should be uneven!!! returning NULL.";
+        return NULL;
+    }
+
+    if (c<=4) type = Stamp::est4x4;
+    else if (c<=8) type = Stamp::est8x8;
+    else if (c<=12) type = Stamp::est12x12;
+    else if (c<=16) type = Stamp::est16x16;
+    else if (c<=24) type = Stamp::est24x24;
+    else if (c<=32) type = Stamp::est32x32;
+    else type = Stamp::est48x48;
+
+    Stamp *stamp = StampContainer::newStamp(type);
+    stamp->setOffset(width/2);
+    int coff = c/2 - width/2; // e.g.: grid=25, width=7 -> coff = 12 - 3 = 9
+    int x,y;
+    for (x=0;x<width; x++)
+        for (y=0; y<width; y++)
+            stamp->setData(x,y, grid(coff+x, coff+y) ); // copy data (from a different rectangle)
+    return stamp;
+
 }

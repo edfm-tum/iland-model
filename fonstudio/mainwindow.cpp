@@ -7,6 +7,8 @@
 #include <imagestamp.h>
 #include "lightroom.h"
 #include "core/grid.h"
+#include "core/stamp.h"
+#include "core/stampcontainer.h"
 #include "tree.h"
 #include "paintarea.h"
 #include "tools/expression.h"
@@ -751,16 +753,20 @@ void MainWindow::on_lrProcess_clicked()
     QString path =  docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("path").text();
     qDebug() << "store to " << path;
     QDomElement tree = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("tree");
-    double crown, height;
+    double crown, height, bhd;
     QString formula, name, result;
 
     LightRoomObject *lro = new LightRoomObject();
     lightroom->setLightRoomObject(lro);
 
+    StampContainer container;
+    container.useLookup(false); // disable lookup table (not necessary for creation)
+
     while (!tree.isNull()) {
         name = tree.attribute("name");
         height = tree.attribute("h").toDouble();
         crown = tree.attribute("crown").toDouble();
+        bhd = tree.attribute("bhd").toDouble();
         formula = tree.attribute("formula");
         ///////////////////////////
         lro->setuptree(height, crown, formula);
@@ -771,6 +777,8 @@ void MainWindow::on_lrProcess_clicked()
         Helper::saveToTextFile(path + "\\ " + name + ".txt", result);
         QImage img = gridToImage( lightroom->result() );
         img.save(path + "\\ " + name + ".jpg", "JPG", 100);
+        // test: use subpixel averages ....
+        /*
         FloatGrid gr3x3 = lightroom->result().averaged(3);
         QImage img3x3 = gridToImage( gr3x3 );
         img3x3.save(path + "\\ " + name + "_3x3.jpg", "JPG", 100);
@@ -782,9 +790,21 @@ void MainWindow::on_lrProcess_clicked()
             result+="\r\n" + gridToString(gr3x3);
 
         }
-        Helper::saveToTextFile(QString("%1\\%2_shift.txt").arg(path, name), result);
+        Helper::saveToTextFile(QString("%1\\%2_shift.txt").arg(path, name), result); */
+
+        // store to container
+        Stamp *stamp = stampFromGrid(lightroom->result(), 23);
+        double hd = qRound( height*100 / hd );
+        container.addStamp(stamp,bhd, hd);
         ///////////////////////////
         tree = tree.nextSiblingElement("tree");
     }
     qDebug() << "finished!!!";
+    // write container to a file....
+    QFile file(path + "\\stamps.bin");
+    file.open(QIODevice::WriteOnly);
+    QDataStream out(&file);   // we will serialize the data into the file
+    container.save(out);
+    file.close();
+
 }
