@@ -771,14 +771,14 @@ void MainWindow::on_lrProcess_clicked()
         Helper::saveToTextFile(path + "\\ " + name + ".txt", result);
         QImage img = gridToImage( lightroom->result() );
         img.save(path + "\\ " + name + ".jpg", "JPG", 100);
-        FloatGrid gr3x3 = lightroom->result().average(3);
+        FloatGrid gr3x3 = lightroom->result().averaged(3);
         QImage img3x3 = gridToImage( gr3x3 );
         img3x3.save(path + "\\ " + name + "_3x3.jpg", "JPG", 100);
         Helper::saveToTextFile(path + "\\ " + name + "_3x3.txt", gridToString(gr3x3));
         result="";
         for (int x=0;x<3;x++)
             for (int y=0;y<3;y++) {
-            FloatGrid gr3x3 = lightroom->result().average(3,x,y);
+            FloatGrid gr3x3 = lightroom->result().averaged(3,x,y);
             result+="\r\n" + gridToString(gr3x3);
 
         }

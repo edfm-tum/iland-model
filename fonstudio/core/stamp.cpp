@@ -37,3 +37,27 @@ void Stamp::loadFromFile(const QString &fileName)
         l++;
     }
 }
+
+// load from stream....
+void Stamp::load(QDataStream &in)
+{
+   // see StampContainer doc for file stamp binary format
+   qint32 offset;
+   in >> offset;
+   m_offset = offset;
+   // load data
+   float data;
+   for (int i=0;i<m_size; i++) {
+       in >> data;
+       m_data[i]=data;
+   }
+}
+
+void Stamp::save(QDataStream &out)
+{
+    // see StampContainer doc for file stamp binary format
+   out << (qint32) m_offset;
+   for (int i=0;i<m_size; i++) {
+       out << m_data[i];
+   }
+}

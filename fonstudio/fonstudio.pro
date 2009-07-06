@@ -19,7 +19,8 @@ SOURCES += main.cpp \
     tools/expression.cpp \
     tools/helper.cpp \
     lightroom.cpp \
-    core/stamp.cpp
+    core/stamp.cpp \
+    core/stampcontainer.cpp
 HEADERS += mainwindow.h \
     stable.h \
     core/grid.h \
@@ -32,6 +33,7 @@ HEADERS += mainwindow.h \
     tools/helper.h \
     lightroom.h \
     global.h \
-    core/stamp.h
+    core/stamp.h \
+    core/stampcontainer.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

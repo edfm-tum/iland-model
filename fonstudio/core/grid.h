@@ -15,6 +15,8 @@ public:
 
     Grid();
     Grid(int cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
+    // copy ctor
+    Grid(const Grid<T>& toCopy);
     ~Grid() { if (mData) delete[] mData; }
 
     bool setup(const float cellsize, const int sizex, const int sizey);
@@ -28,13 +30,24 @@ public:
     const float cellsize() const { return mCellsize; }
     const int count() const { return mCount; }
     // operations
-    Grid<T> average(const int factor, const int offsetx=0, const int offsety=0) const;
     // query
+    /// access (const) with index variables. use int.
+    inline const T& operator()(const int ix, const int iy) const { return constValueAtIndex(ix, iy); }
+    /// access (const) using metric variables. use float.
+    inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
+
     T& valueAtIndex(const QPoint& pos); ///< value at position defined by indices (x,y)
-    T& valueAtIndex(const int ix, const int iy) { return valueAtIndex(QPoint(ix,iy)); }
-    const T& constValueAtIndex(const QPoint& pos) const; ///< value at position defined by indices (x,y)
+    T& valueAtIndex(const int ix, const int iy) { return valueAtIndex(QPoint(ix,iy)); } ///< const value at position defined by indices (x,y)
+
+    const T& constValueAtIndex(const QPoint& pos) const; ///< value at position defined by a (integer) QPoint
     const T& constValueAtIndex(const int ix, const int iy) const { return constValueAtIndex(QPoint(ix,iy)); }
-    T& valueAt(const QPointF& posf); ///< value at position defined by metric coordinates
+
+    T& valueAt(const QPointF& posf); ///< value at position defined by metric coordinates (QPointF)
+    const T& constValueAt(const QPointF& posf) const; ///< value at position defined by metric coordinates (QPointF)
+
+    T& valueAt(const float x, const float y); ///< value at position defined by metric coordinates (x,y)
+    const T& constValueAt(const float x, const float y) const; ///< value at position defined by metric coordinates (x,y)
+
     QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mOffset.x()) / mCellsize),  int((pos.y()-mOffset.y())/mCellsize)); } /// get index of value at position pos (metric)
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } /// get index of value at position pos (index)
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} /// ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
@@ -43,7 +56,17 @@ public:
     inline  T* end() const { return &(mData[mCount]); } ///< get iterator end-pointer
     QPoint indexOf(T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
     // special queries
-    T max() const;
+    T max() const; ///< retrieve the maximum value of a grid
+    T sum() const; ///< retrieve the sum of the grid
+    T avg() const; ///< retrieve the average value of a grid
+    /// creates a grid with lower resolution and averaged cell values.
+    /// @param factor factor by which grid size is reduced (e.g. 3 -> 3x3=9 pixels are averaged to 1 result pixel)
+    /// @param offsetx, offsety: start averaging with an offset from 0/0 (e.g.: x=1, y=2, factor=3: -> 1/2-3/4 -> 0/0)
+    /// @return Grid with size sizeX()/factor x sizeY()/factor
+    Grid<T> averaged(const int factor, const int offsetx=0, const int offsety=0) const;
+    /// normalized returns a normalized grid, in a way that the sum()  = @param targetvalue.
+    /// if the grid is empty or the sum is 0, no modifications are performed.
+    Grid<T> normalized(const T targetvalue) const;
 private:
     T* mData;
     QPointF mOffset;
@@ -55,9 +78,35 @@ private:
 
 typedef Grid<float> FloatGrid;
 
+// copy constructor
+template <class T>
+Grid<T>::Grid(const Grid<T>& toCopy)
+{
+    setup(toCopy.cellsize(), toCopy.sizeX(), toCopy.sizeY());
+    const T* end = toCopy.end();
+    T* ptr = begin();
+    for (T* i= toCopy.begin(); i!=end; ++i, ++ptr)
+       *ptr = *i;
+}
+
+// normalize function
+template <class T>
+Grid<T> Grid<T>::normalized(const T targetvalue) const
+{
+    Grid<T> target(*this);
+    T total = sum();
+    T multiplier;
+    if (total)
+        multiplier = targetvalue / total;
+    else
+        return target;
+    for (T* p=target.begin();p!=target.end();++p)
+        *p *= multiplier;
+}
+
 
 template <class T>
-Grid<T> Grid<T>::average(const int factor, const int offsetx, const int offsety) const
+Grid<T> Grid<T>::averaged(const int factor, const int offsetx, const int offsety) const
 {
     Grid<T> target;
     target.setup(cellsize()*factor, sizeX()/factor, sizeY()/factor);
@@ -94,9 +143,24 @@ const T&  Grid<T>::constValueAtIndex(const QPoint& pos) const
 }
 
 template <class T>
+T&  Grid<T>::valueAt(const float x, const float y)
+{
+    return valueAtIndex( indexAt(QPointF(x,y)) );
+}
+template <class T>
+const T&  Grid<T>::constValueAt(const float x, const float y) const
+{
+    return constValueAtIndex( indexAt(QPointF(x,y)) );
+}
+template <class T>
 T&  Grid<T>::valueAt(const QPointF& posf)
 {
     return valueAtIndex( indexAt(posf) );
+}
+template <class T>
+const T&  Grid<T>::constValueAt(const QPointF& posf) const
+{
+    return constValueAtIndex( indexAt(posf) );
 }
 
 template <class T>
@@ -152,6 +216,25 @@ T  Grid<T>::max() const
     for (p=begin(); p!=pend;++p)
        maxv = std::max(maxv, *p);
     return maxv;
+}
+
+
+template <class T>
+T  Grid<T>::sum() const
+{
+    T* pend = end();
+    T total = 0;
+    for (T *p=begin(); p!=pend;++p)
+       total += *p;
+    return total;
+}
+
+template <class T>
+T  Grid<T>::avg() const
+{
+    if (count())
+        return sum() / T(count());
+    else return 0;
 }
 
 #endif // GRID_H
