@@ -43,7 +43,7 @@ public:
     LightRoom();
     ~LightRoom() { if (m_roomObject) delete m_roomObject; }
     /// setup the spatial grid.
-    void setup(const int size_x, const int size_y, const int size_z,
+    void setup(const double dimx, const double dimy, const double dimz,
                const double cellsize, const double hemigridsize,
                const double latitude=48., const double diffus_frac=0.5);
     void setLightRoomObject(LightRoomObject *lro) { if (m_roomObject) delete m_roomObject; m_roomObject = lro; }

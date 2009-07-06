@@ -50,7 +50,7 @@ void Tree::stampOnGrid(ImageStamp& stamp, FloatGrid& grid)
     for (ix=ul.x(); ix<lr.x(); ix++)
         for (iy=ul.y(); iy<lr.y(); iy++) {
         cell.setX(ix); cell.setY(iy);
-        cellcoord = grid.getCellCoordinates(cell);
+        cellcoord = grid.cellCoordinates(cell);
         r_cell = dist_and_direction(mPosition, cellcoord, phi_cell);
         if (r_cell > r && cell!=centercell)
             continue;
@@ -89,7 +89,7 @@ float Tree::retrieveValue(ImageStamp& stamp, FloatGrid& grid)
         for (iy=ul.y(); iy<lr.y(); iy++) {
 
         cell.setX(ix); cell.setY(iy);
-        cellcoord = grid.getCellCoordinates(cell);
+        cellcoord = grid.cellCoordinates(cell);
         r_cell = dist_and_direction(mPosition, cellcoord, phi_cell);
         if (r_cell>r && cell!=centercell)
             continue;

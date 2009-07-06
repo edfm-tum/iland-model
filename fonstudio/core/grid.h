@@ -27,14 +27,18 @@ public:
     const float metricSizeY() const { return mSizeY*mCellsize; }
     const float cellsize() const { return mCellsize; }
     const int count() const { return mCount; }
+    // operations
+    Grid<T> average(const int factor, const int offsetx=0, const int offsety=0) const;
     // query
     T& valueAtIndex(const QPoint& pos); ///< value at position defined by indices (x,y)
+    T& valueAtIndex(const int ix, const int iy) { return valueAtIndex(QPoint(ix,iy)); }
     const T& constValueAtIndex(const QPoint& pos) const; ///< value at position defined by indices (x,y)
+    const T& constValueAtIndex(const int ix, const int iy) const { return constValueAtIndex(QPoint(ix,iy)); }
     T& valueAt(const QPointF& posf); ///< value at position defined by metric coordinates
     QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mOffset.x()) / mCellsize),  int((pos.y()-mOffset.y())/mCellsize)); } /// get index of value at position pos (metric)
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } /// get index of value at position pos (index)
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} /// ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
-    QPointF getCellCoordinates(const QPoint &pos) { return QPointF( (pos.x()+0.5)*mCellsize+mOffset.x(), (pos.y()+0.5)*mCellsize + mOffset.y());} /// get metric coordinates of the cells center
+    QPointF cellCoordinates(const QPoint &pos) { return QPointF( (pos.x()+0.5)*mCellsize+mOffset.x(), (pos.y()+0.5)*mCellsize + mOffset.y());} /// get metric coordinates of the cells center
     inline  T* begin() const { return mData; } ///< get "iterator" pointer
     inline  T* end() const { return &(mData[mCount]); } ///< get iterator end-pointer
     QPoint indexOf(T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
@@ -52,6 +56,25 @@ private:
 typedef Grid<float> FloatGrid;
 
 
+template <class T>
+Grid<T> Grid<T>::average(const int factor, const int offsetx, const int offsety) const
+{
+    Grid<T> target;
+    target.setup(cellsize()*factor, sizeX()/factor, sizeY()/factor);
+    int x,y;
+    T sum=0;
+    target.initialize(sum);
+    // sum over array of 2x2, 3x3, 4x4, ...
+    for (x=offsetx;x<mSizeX;x++)
+        for (y=offsety;y<mSizeY;y++) {
+            target.valueAtIndex((x-offsetx)/factor, (y-offsety)/factor) += constValueAtIndex(x,y);
+        }
+    // divide
+    double fsquare = factor*factor;
+    for (T* p=target.begin();p!=target.end();++p)
+        *p /= fsquare;
+    return target;
+}
 
 template <class T>
 T&  Grid<T>::valueAtIndex(const QPoint& pos)

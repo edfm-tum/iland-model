@@ -53,15 +53,28 @@ QString gridToString(const FloatGrid &grid)
     }
     return res;
 }
-QImage gridToImage(const FloatGrid &grid)
+QImage gridToImage(const FloatGrid &grid,
+                   bool black_white=false,
+                   double min_value=0., double max_value=1.,
+                   bool reverse=false)
 {
     QImage res(grid.sizeX(), grid.sizeY(), QImage::Format_ARGB32);
     QRgb col;
+    QColor qcol;
     int grey;
+    double rval;
     for (int x=0;x<grid.sizeX();x++){
         for (int y=0;y<grid.sizeY();y++) {
-            grey = int(255*(1.-grid.constValueAtIndex(QPoint(x,y))));
-            col = QColor(grey,grey,grey).rgb();
+            rval = grid.constValueAtIndex(QPoint(x,y));
+            rval = std::max(min_value, rval);
+            rval = std::min(max_value, rval);
+            if (reverse) rval = max_value - rval;
+            if (black_white) {
+                grey = int(255*rval);
+                col = QColor(grey,grey,grey).rgb();
+            } else {
+                col = QColor::fromHsvF(0.66666666666*rval, 0.95, 0.95).rgb();
+            }
             res.setPixel(x,y,col);
             //res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + ";";
         }
@@ -561,7 +574,7 @@ void MainWindow::on_pbCreateLightroom_clicked()
     x = docLightroom.firstChildElement("size").attribute("x").toInt();
     y = docLightroom.firstChildElement("size").attribute("y").toInt();
     z = docLightroom.firstChildElement("size").attribute("z").toInt();
-    int cellsize = docLightroom.firstChildElement("size").attribute("cellsize").toInt();
+    double cellsize = docLightroom.firstChildElement("size").attribute("cellsize").toDouble();
 
     int hemisize = docLightroom.firstChildElement("hemigrid").attribute("size").toInt();
     double lat = docLightroom.firstChildElement("hemigrid").attribute("latitude").toFloat();
@@ -758,6 +771,18 @@ void MainWindow::on_lrProcess_clicked()
         Helper::saveToTextFile(path + "\\ " + name + ".txt", result);
         QImage img = gridToImage( lightroom->result() );
         img.save(path + "\\ " + name + ".jpg", "JPG", 100);
+        FloatGrid gr3x3 = lightroom->result().average(3);
+        QImage img3x3 = gridToImage( gr3x3 );
+        img3x3.save(path + "\\ " + name + "_3x3.jpg", "JPG", 100);
+        Helper::saveToTextFile(path + "\\ " + name + "_3x3.txt", gridToString(gr3x3));
+        result="";
+        for (int x=0;x<3;x++)
+            for (int y=0;y<3;y++) {
+            FloatGrid gr3x3 = lightroom->result().average(3,x,y);
+            result+="\r\n" + gridToString(gr3x3);
+
+        }
+        Helper::saveToTextFile(QString("%1\\%2_shift.txt").arg(path, name), result);
         ///////////////////////////
         tree = tree.nextSiblingElement("tree");
     }

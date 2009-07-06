@@ -8,23 +8,30 @@ LightRoom::LightRoom()
 
 /** setup routine.
   sets up datastructures (3d space, hemi grids)
-  @param size_x count of cells in x direction
-  @param size_y count of cells in y direction
-  @param size_z count of cells in z direction
+  @param dimx size of space in x direction [m]
+  @param dimy size of space in y direction [m]
+  @param dimz size of space in z direction [m]
   @param cellsize metric length of cells (used for all 3 dimensions).
   @param hemigridsize size of hemigrid-cells (in degrees).
   @param latitude lat. in degrees.
   @param diffus_frac fraction [0..1] of diffus radiation of global radiation. */
-void LightRoom::setup(const int size_x, const int size_y, const int size_z,
+void LightRoom::setup(const double dimx, const double dimy, const double dimz,
                       const double cellsize, const double hemigridsize,
                       const double latitude, const double diffus_frac)
 {
     DebugTimer t1("setup of lightroom");
-    m_countX = size_x; m_countY=size_y; m_countZ=size_z;
+    m_countX = int(dimx / cellsize);
+    m_countY = int(dimy / cellsize);
+    m_countZ = int(dimz / cellsize);
+
     m_cellsize = cellsize;
     if (m_countX%2==0) m_countX++; // make uneven
     if (m_countY%2==0) m_countY++;
-    QRectF rect(-m_countX/2*cellsize, -m_countY/2*cellsize, m_countX*cellsize, m_countY*cellsize);
+
+    QRectF rect(-m_countX/2.*cellsize, -m_countY/2.*cellsize, m_countX*cellsize, m_countY*cellsize);
+    qDebug() << "Lightroom size: " << m_countX << "/" << m_countY << "/" << m_countZ << " elements. rect: " << rect;
+
+
     m_2dvalues.setup(rect, cellsize);
     m_2dvalues.initialize(0.);
 
@@ -109,7 +116,7 @@ void LightRoom::calculateFullGrid()
     double sum;
     while (v!=vend) {
         pindex = m_2dvalues.indexOf(v);
-        coord = m_2dvalues.getCellCoordinates(pindex);
+        coord = m_2dvalues.cellCoordinates(pindex);
         for (z=0;z<m_countZ && z*m_cellsize <= maxh;z++) {
             // only calculate values up to the 45° line
             // tan(45°)=1 -> so this is the case when the distance p->tree > height of the tree
@@ -172,6 +179,44 @@ void LightRoomObject::setuptree(const double height, const double crownheight, c
         h++;
     }
 }
+
+
+// Angle-function. return the  difference between
+// two angles as a radian value between -pi..pi [-180..180°]
+// >0: directionB is "left" (ccw) of directionA, <0: "right", clockwise
+// e.g.: result=-10: 10° cw, result=10°: 10° ccw
+// result:-180/+180: antiparallel.
+double DiffOfAngles(double DirectionA, double DirectionB)
+{
+    DirectionA = fmod(DirectionA, PI2); // -> -2pi .. 2pi
+    if (DirectionA < 0) DirectionA+=PI2; // -> 0..2pi (e.g.: AngleA = -30 -> 330)
+    DirectionB = fmod(DirectionB, PI2);
+    if (DirectionB < 0) DirectionB+=PI2;
+    double Delta = DirectionB - DirectionA;
+    if (Delta<0) {
+      if (Delta<-M_PI)
+         return Delta  + PI2; // ccw
+      else
+         return Delta; // cw
+    } else {
+      if (Delta>M_PI)
+         return Delta - PI2; // cw
+      else
+         return Delta;  // ccw
+    }
+
+}
+
+
+// Angle-function. return the absolute difference between
+// two angles as a radian value between 0..pi [0..180°]
+// e.g. 10° = +10° or -10°; maximum value is 180°
+double AbsDiffOfAngles(double AngleA, double AngleB)
+{
+     return fabs(DiffOfAngles(AngleA, AngleB));
+}
+
+
 /** The tree is located in x/y=0/0.
 */
 int LightRoomObject::hittest(const double p_x, const double p_y, const double p_z,
@@ -186,7 +231,7 @@ int LightRoomObject::hittest(const double p_x, const double p_y, const double p_
     //if (dist2d==0)
     //    return true;
 
-    double alpha = phi - azimuth_rad; // angle between the ray and the center of the tree
+    double alpha = DiffOfAngles(phi, azimuth_rad); //  phi - azimuth_rad; // angle between the ray and the center of the tree
     if (dist2d>m_baseradius) { // test only, if p not the crown
         double half_max_angle = asin(m_baseradius / dist2d); // maximum deviation angle from direct connection p - tree where ray hits maxradius
         if (fabs(alpha) > half_max_angle)
