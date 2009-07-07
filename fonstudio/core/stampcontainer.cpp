@@ -173,10 +173,11 @@ QString StampContainer::dump()
         line+="==============================================\r\n";
         res+=line;
     }
-    qDebug() << "Dump of lookup map\r\n=====================\r\n";
+    res+= "Dump of lookup map\r\n=====================\r\n";
     for (Stamp **s = m_lookup.begin(); s!=m_lookup.end(); ++s) {
         if (*s)
-          qDebug() << m_lookup.indexOf(s) << " .... " << (*s);
+         res += QString("P: x/y: %1/%2 addr %3\r\n").arg( m_lookup.indexOf(s).x()).arg(m_lookup.indexOf(s).y()).arg((int)*s, 0, 16);
     }
+    res+="\r\n" + gridToString(m_lookup);
     return res;
 }

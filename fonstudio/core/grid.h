@@ -70,10 +70,10 @@ public:
 private:
     T* mData;
     QPointF mOffset;
-    float mCellsize; /// size of a cell in meter
-    int mSizeX; /// count of cells in x-direction
-    int mSizeY; /// count of cells in y-direction
-    int mCount;
+    float mCellsize; ///< size of a cell in meter
+    int mSizeX; ///< count of cells in x-direction
+    int mSizeY; ///< count of cells in y-direction
+    int mCount; ///< total number of cells in the grid
 };
 
 typedef Grid<float> FloatGrid;
@@ -133,6 +133,7 @@ T&  Grid<T>::valueAtIndex(const QPoint& pos)
     }
     throw std::logic_error("TGrid: invalid Index!");
 }
+
 template <class T>
 const T&  Grid<T>::constValueAtIndex(const QPoint& pos) const
 {
@@ -147,16 +148,19 @@ T&  Grid<T>::valueAt(const float x, const float y)
 {
     return valueAtIndex( indexAt(QPointF(x,y)) );
 }
+
 template <class T>
 const T&  Grid<T>::constValueAt(const float x, const float y) const
 {
     return constValueAtIndex( indexAt(QPointF(x,y)) );
 }
+
 template <class T>
 T&  Grid<T>::valueAt(const QPointF& posf)
 {
     return valueAtIndex( indexAt(posf) );
 }
+
 template <class T>
 const T&  Grid<T>::constValueAt(const QPointF& posf) const
 {
@@ -218,7 +222,6 @@ T  Grid<T>::max() const
     return maxv;
 }
 
-
 template <class T>
 T  Grid<T>::sum() const
 {
@@ -237,4 +240,39 @@ T  Grid<T>::avg() const
     else return 0;
 }
 
+////////////////////////////////////////////////////////////7
+// global functions
+////////////////////////////////////////////////////////////7
+
+/// dumps a FloatGrid to a String.
+/// rows will be y-lines, columns x-values.
+QString gridToString(const FloatGrid &grid);
+
+/// creates and return a QImage from Grid-Data.
+/// @param black_white true: max_value = white, min_value = black, false: color-mode: uses a HSV-color model from blue (min_value) to red (max_value), default: color mode (false)
+/// @param min_value, max_value min/max bounds for color calcuations. values outside bounds are limited to these values. defaults: min=0, max=1
+/// @param reverse if true, color ramps are inversed (to: min_value = white (black and white mode) or red (color mode). default = false.
+/// @return a QImage with the Grids size of pixels. Pixel coordinates relate to the index values of the grid.
+QImage gridToImage(const FloatGrid &grid,
+                   bool black_white=false,
+                   double min_value=0., double max_value=1.,
+                   bool reverse=false);
+
+/// template version for non-float grids.
+template <class T>
+QString gridToString(const Grid<T> &grid)
+{
+    QString res;
+    QTextStream ts(&res);
+
+    for (int x=0;x<grid.sizeX();x++){
+        for (int y=0;y<grid.sizeY();y++) {
+            ts << grid.constValueAtIndex(x,y) << ";";
+
+        }
+        ts << "\r\n";
+    }
+
+    return res;
+}
 #endif // GRID_H

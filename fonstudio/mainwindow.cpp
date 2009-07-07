@@ -44,69 +44,6 @@ QDomElement getNode(const QString xmlkey)
     return next;
 }
 
-QString gridToString(const FloatGrid &grid)
-{
-    QString res;
-    for (int x=0;x<grid.sizeX();x++){
-        for (int y=0;y<grid.sizeY();y++) {
-            res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + ";";
-        }
-        res+="\r\n";
-    }
-    return res;
-}
-QImage gridToImage(const FloatGrid &grid,
-                   bool black_white=false,
-                   double min_value=0., double max_value=1.,
-                   bool reverse=false)
-{
-    QImage res(grid.sizeX(), grid.sizeY(), QImage::Format_ARGB32);
-    QRgb col;
-    QColor qcol;
-    int grey;
-    double rval;
-    for (int x=0;x<grid.sizeX();x++){
-        for (int y=0;y<grid.sizeY();y++) {
-            rval = grid.constValueAtIndex(QPoint(x,y));
-            rval = std::max(min_value, rval);
-            rval = std::min(max_value, rval);
-            if (reverse) rval = max_value - rval;
-            if (black_white) {
-                grey = int(255*rval);
-                col = QColor(grey,grey,grey).rgb();
-            } else {
-                col = QColor::fromHsvF(0.66666666666*rval, 0.95, 0.95).rgb();
-            }
-            res.setPixel(x,y,col);
-            //res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + ";";
-        }
-        //res+="\r\n";
-    }
-    return res;
-}
-
-// Helper functions
-//QString loadFromFile(const QString& fileName)
-//{
-//    QFile file(fileName);
-//     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-//         return "";
-//
-//     QTextStream s(&file);
-//     return s.readAll();
-//}
-//
-//bool writeToFile(const QString& fileName, const QString& content)
-//{
-//    QFile data(fileName);
-//    if (data.open(QFile::WriteOnly | QFile::Truncate)) {
-//        QTextStream out(&data);
-//        out << content;
-//        return true;
-//    }
-//    return false;
-//}
-
 double nrandom(const float& p1, const float& p2)
 {
     return p1 + (p2-p1)*(rand()/float(RAND_MAX));
