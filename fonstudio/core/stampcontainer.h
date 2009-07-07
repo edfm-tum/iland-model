@@ -28,6 +28,8 @@ public:
         newStamp() creates new Stamp-Objects on the heap with a given type (see @enum Stamp::StampType).*/
     static Stamp* newStamp(const Stamp::StampType type);
 
+    QString dump();
+
 private:
     static const int cBHDclassWidth;
     static const int cHDclassWidth;

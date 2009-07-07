@@ -30,8 +30,9 @@ StampContainer::~StampContainer()
 
 int StampContainer::getKey(const float bhd, const float hd_value)
 {
-    int cls_bhd = int(bhd / cBHDclassWidth) - cBHDclassLow;
-    int cls_hd = int(hd_value / cHDclassWidth) - cHDclassLow;
+    int cls_bhd = int(bhd - cBHDclassLow) / cBHDclassWidth;
+    int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
+
     return cls_bhd * 1000 + cls_hd;
 }
 
@@ -43,8 +44,8 @@ int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_valu
 {
     int key = getKey(bhd, hd_value);
     if (m_useLookup) {
-        int cls_bhd = int(bhd / cBHDclassWidth) - cBHDclassLow;
-        int cls_hd = int(hd_value / cHDclassWidth) - cHDclassLow;
+        int cls_bhd = int(bhd - cBHDclassLow) / cBHDclassWidth;
+        int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
         if (cls_bhd > m_maxBhd) {
             // start a new band of hd-values....
             // finish last line...
@@ -81,8 +82,10 @@ const Stamp* StampContainer::getStamp(const float bhd_cm, const float height_m)
 {
 
     float hd_value = 100 * height_m / bhd_cm;
-    int cls_bhd = int(bhd_cm / cBHDclassWidth) - cBHDclassLow;
-    int cls_hd = int(hd_value / cHDclassWidth) - cHDclassLow;
+    int cls_bhd = int(bhd_cm - cBHDclassLow) / cBHDclassWidth;
+    int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
+
+
     // check loopup table
     if (cls_bhd<cBHDclassCount && cls_bhd>=0 && cls_hd < cHDclassCount && cls_bhd>=0)
         return m_lookup(cls_bhd, cls_hd);
@@ -138,13 +141,42 @@ void StampContainer::save(QDataStream &out)
 {
     qint32 type;
     qint32 size = m_stamps.count();
-    out >> size;
+    out << size;
     foreach(StampItem si, m_stamps) {
-        type = si.stamp->count();
-        out >> type;
-        out >> si.bhd;
-        out >> si.hd;
+        type = si.stamp->size();
+        out << type;
+        out << si.bhd;
+        out << si.hd;
         si.stamp->save(out);
     }
 
+}
+
+QString StampContainer::dump()
+{
+    QString res;
+    QString line;
+    int x,y;
+    int maxidx;
+    foreach (StampItem si, m_stamps) {
+        line = QString("%5 -> size: %1 offset: %2 dbh: %3 hd-ratio: %4\r\n")
+               .arg(sqrt(si.stamp->count())).arg(si.stamp->offset())
+               .arg(si.bhd).arg(si.hd).arg((int)si.stamp, 0, 16);
+        // add data....
+        maxidx = 2*si.stamp->offset() + 1;
+        for (x=0;x<maxidx;++x) {
+            for (y=0;y<maxidx;++y) {
+                line+= QString::number(*si.stamp->data(x,y)) + " ";
+            }
+            line+="\r\n";
+        }
+        line+="==============================================\r\n";
+        res+=line;
+    }
+    qDebug() << "Dump of lookup map\r\n=====================\r\n";
+    for (Stamp **s = m_lookup.begin(); s!=m_lookup.end(); ++s) {
+        if (*s)
+          qDebug() << m_lookup.indexOf(s) << " .... " << (*s);
+    }
+    return res;
 }

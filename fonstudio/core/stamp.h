@@ -14,9 +14,11 @@ public:
     enum StampType { est4x4=4, est8x8=8, est12x12=12, est16x16=16, est24x24=24, est32x32=32, est48x48=48 };
     Stamp();
     ~Stamp();
-    Stamp(const int size) { setup(size); }
+    Stamp(const int size):m_data(NULL) { setup(size); }
     void setOffset(const int offset) { m_offset = offset; }
-    const int count() const { return m_size; }
+    const int offset() const { return m_offset; }
+    const int count() const { return m_size*m_size; }
+    const int size() const { return m_size; }
     /// get a full access pointer to internal data
     float *data() { return m_data; }
     /// get pointer to the element after the last element (iterator style)

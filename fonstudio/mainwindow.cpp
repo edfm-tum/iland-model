@@ -753,6 +753,8 @@ void MainWindow::on_lrProcess_clicked()
     QString path =  docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("path").text();
     qDebug() << "store to " << path;
     QDomElement tree = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("tree");
+    int avg_cells = docElem.firstChildElement("lightroom").firstChildElement("size").attribute("average").toInt();
+
     double crown, height, bhd;
     QString formula, name, result;
 
@@ -777,6 +779,9 @@ void MainWindow::on_lrProcess_clicked()
         Helper::saveToTextFile(path + "\\ " + name + ".txt", result);
         QImage img = gridToImage( lightroom->result() );
         img.save(path + "\\ " + name + ".jpg", "JPG", 100);
+
+        FloatGrid gr = lightroom->result().averaged(avg_cells);
+
         // test: use subpixel averages ....
         /*
         FloatGrid gr3x3 = lightroom->result().averaged(3);
@@ -793,8 +798,8 @@ void MainWindow::on_lrProcess_clicked()
         Helper::saveToTextFile(QString("%1\\%2_shift.txt").arg(path, name), result); */
 
         // store to container
-        Stamp *stamp = stampFromGrid(lightroom->result(), 23);
-        double hd = qRound( height*100 / hd );
+        Stamp *stamp = stampFromGrid(gr, 23);
+        double hd = qRound( height*100 / bhd );
         container.addStamp(stamp,bhd, hd);
         ///////////////////////////
         tree = tree.nextSiblingElement("tree");
@@ -806,5 +811,18 @@ void MainWindow::on_lrProcess_clicked()
     QDataStream out(&file);   // we will serialize the data into the file
     container.save(out);
     file.close();
+    qDebug() << "current content of the container:";
+    qDebug() << container.dump();
+}
 
+void MainWindow::on_lrLoadStamps_clicked()
+{
+    QFile infile("E:\\Daten\\iLand\\Light\\fons\\stamps.bin");
+    infile.open(QIODevice::ReadOnly);
+    QDataStream in(&infile);
+    StampContainer container;
+    container.load(in);
+    infile.close();
+    qDebug() << "Dumping content of Stamp-container:";
+    qDebug() << container.dump();
 }

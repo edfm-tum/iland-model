@@ -50,7 +50,7 @@ void Stamp::load(QDataStream &in)
    m_offset = offset;
    // load data
    float data;
-   for (int i=0;i<m_size; i++) {
+   for (int i=0;i<count(); i++) {
        in >> data;
        m_data[i]=data;
    }
@@ -60,7 +60,7 @@ void Stamp::save(QDataStream &out)
 {
     // see StampContainer doc for file stamp binary format
    out << (qint32) m_offset;
-   for (int i=0;i<m_size; i++) {
+   for (int i=0;i<count(); i++) {
        out << m_data[i];
    }
 }
@@ -69,18 +69,18 @@ void Stamp::save(QDataStream &out)
 Stamp *stampFromGrid(const FloatGrid& grid, const int width)
 {
     Stamp::StampType type=Stamp::est4x4;
-    int c = grid.count(); // total size of input grid
+    int c = grid.sizeX(); // total size of input grid
     if (c%2==0 || width%2==0) {
         qDebug() << "both grid and width should be uneven!!! returning NULL.";
         return NULL;
     }
 
-    if (c<=4) type = Stamp::est4x4;
-    else if (c<=8) type = Stamp::est8x8;
-    else if (c<=12) type = Stamp::est12x12;
-    else if (c<=16) type = Stamp::est16x16;
-    else if (c<=24) type = Stamp::est24x24;
-    else if (c<=32) type = Stamp::est32x32;
+    if (width<=4) type = Stamp::est4x4;
+    else if (width<=8) type = Stamp::est8x8;
+    else if (width<=12) type = Stamp::est12x12;
+    else if (width<=16) type = Stamp::est16x16;
+    else if (width<=24) type = Stamp::est24x24;
+    else if (width<=32) type = Stamp::est32x32;
     else type = Stamp::est48x48;
 
     Stamp *stamp = StampContainer::newStamp(type);

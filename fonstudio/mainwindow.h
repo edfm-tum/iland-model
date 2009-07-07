@@ -39,6 +39,7 @@ private:
     void paintFON(QPainter &painter, QRect rect);
 
 private slots:
+    void on_lrLoadStamps_clicked();
     void on_lrProcess_clicked();
     void on_fonRun_clicked();
     void on_lrLightGrid_clicked();
