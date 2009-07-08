@@ -10,9 +10,11 @@
 #include "core/stamp.h"
 #include "core/stampcontainer.h"
 #include "tree.h"
-#include "paintarea.h"
+#include "treespecies.h"
 #include "tools/expression.h"
 #include "tools/helper.h"
+
+#include "paintarea.h"
 
 // global settings
 QDomDocument xmldoc;
@@ -20,6 +22,9 @@ QDomNode xmlparams;
 
 // global Object pointers
 LightRoom *lightroom = 0;
+StampContainer *stamp_container=0;
+QList<TreeSpecies*> tree_species;
+
 
 QString setting(const QString& paramname)
 {
@@ -164,7 +169,11 @@ void MainWindow::loadPicusIniFile(const QString &fileName)
         if (iBhd>=0)
             tree.setDbh(line.section(sep, iBhd, iBhd).toDouble());
         if (iHeight>=0)
-            tree.setHeight(line.section(sep, iHeight, iHeight).toDouble());
+            tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
+
+        tree.setSpecies( tree_species.first() ); // TODO: species specific!!!!
+        tree.setup();
+
         mTrees.push_back(tree);
     }
     qDebug() << "lines: " << lines;
@@ -194,18 +203,24 @@ void MainWindow::on_stampTrees_clicked()
 {
     if (mTrees.size()==0 || !mGrid)
         return;
-    int ix,iy;
-    //QRect posRect;
-    //QPoint cell;
-    //QPointF cellcoord;
+
+    // old code:
+    /*
     mGrid->initialize(1.f); // set to unity...
+    std::vector<Tree>::iterator tit;
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+        (*tit).stampOnGrid(mStamp, *mGrid);
+    } */
+    mGrid->initialize(0.f); // set grid to zero.
     std::vector<Tree>::iterator tit;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).stampOnGrid(mStamp, *mGrid);
     }
 
+    /*
     // debug output
     QString Line, Value;
+    int ix,iy;
     for (iy=0;iy<mGrid->sizeY();iy++) {
         Line="";
         for (ix=0;ix<mGrid->sizeX();ix++) {
@@ -217,6 +232,7 @@ void MainWindow::on_stampTrees_clicked()
     }
     on_pbRetrieve_clicked();
     //ui->PaintWidget->update();
+    */
 
 }
 
@@ -605,7 +621,7 @@ void MainWindow::on_fonRun_clicked()
     // get a parameter...
     //int p1 = params.firstChildElement("param1").text().toInt();
     QString stampFile =  xmlparams.firstChildElement("stampFile").text();
-
+    QString binaryStampFile =  xmlparams.firstChildElement("binaryStamp").text();
 
     // Here we append a new element to the end of the document
     //QDomElement elem = doc.createElement("img");
@@ -654,6 +670,26 @@ void MainWindow::on_fonRun_clicked()
     mGrid = new FloatGrid(cellsize, cellcount, cellcount);
     mGrid->initialize(1.f); // set to unity...
 
+    // setup of the binary stamps
+    QFile infile(binaryStampFile);
+    infile.open(QIODevice::ReadOnly);
+    QDataStream in(&infile);
+    if (stamp_container)
+        delete stamp_container;
+
+    stamp_container = new StampContainer();
+    stamp_container->load(in);
+
+    infile.close();
+    qDebug() << "Loaded binary stamps from file. count:" << stamp_container->count();
+
+    // Tree species...
+    if (tree_species.isEmpty()) {
+        TreeSpecies *ts = new TreeSpecies();
+        tree_species.push_back(ts);
+    }
+    tree_species.first()->setStampContainer(stamp_container); // start with the common single container
+
     // Load Trees
     mTrees.clear();
     QDomElement treelist = docElem.firstChildElement("treeinit");
@@ -668,6 +704,8 @@ void MainWindow::on_fonRun_clicked()
         tree.setDbh( n.attributeNode("dbh").value().toFloat() );
         tree.setHeight( n.attributeNode("height").value().toFloat() );
         tree.setPosition( QPointF(n.attributeNode("x").value().toFloat(), n.attributeNode("y").value().toFloat() ));
+        tree.setSpecies( tree_species.first() );
+        tree.setup();
         mTrees.push_back(tree);
 
 /*        ui->logMessages->append("tree: " \
@@ -676,6 +714,7 @@ void MainWindow::on_fonRun_clicked()
         n = n.nextSiblingElement();
     }
     qDebug() << mTrees.size() << "trees loaded.";
+
     // test stylesheets...
     QString style = setting("style");
     ui->PaintWidget->setStyleSheet( style );

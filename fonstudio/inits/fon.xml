@@ -3,6 +3,7 @@
 <document>
 <params>
 <stampFile>e:\dev\iland\fonstudio\inits\circle100.jpg</stampFile>
+<binaryStamp>E:\Daten\iLand\Light\fons\stamps.bin</binaryStamp>
 <expression>5+3*sin(2)</expression>
 <!-- hScale / rScale: formulas for calculation of impact. 
 available Variables: "dbh" = dbh in cm, "height" = height in meters-->

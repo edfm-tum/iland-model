@@ -14,22 +14,30 @@ class Tree
 {
 public:
     Tree();
-    void setPosition(const QPointF pos) { mPosition=pos; }
-    const QPointF position() const { return mPosition; }
+    void setPosition(const QPointF pos) { m_Position=pos; }
+    const QPointF position() const { return m_Position; }
 
-    void setDbh(const float dbh) { mDbh=dbh; }
-    const float dbh() const { return mDbh; }
+    void setDbh(const float dbh) { m_Dbh=dbh; }
+    const float dbh() const { return m_Dbh; }
 
-    void setHeight(const float height) { mHeight=height; }
-    const float height() const { return mHeight; }
+    void setHeight(const float height) { m_Height=height; }
+    const float height() const { return m_Height; }
 
     const float impact() const { return mImpact; }
     const float impactRadius() const { return mImpactRadius; }
 
+    const TreeSpecies* species() const { return m_species; }
+    void setSpecies(TreeSpecies *ts) { m_species=ts; }
+
     void setup();
 
+    // image based stamp functions
     void stampOnGrid(ImageStamp& stamp, FloatGrid& grid);
     float retrieveValue(ImageStamp& stamp, FloatGrid& grid);
+
+    // grid based stamp functions
+    static void setGrid(FloatGrid* gridToStamp) { m_grid = gridToStamp; }
+    void applyStamp();
 
     static Expression rScale;
     static Expression hScale;
@@ -44,8 +52,9 @@ private:
     float mImpactRadius;
     float mImpact;
     // Stamp
-    Stamp *m_stamp;
+    const Stamp *m_stamp;
     TreeSpecies *m_species;
+    static FloatGrid *m_grid;
 };
 
 #endif // TREE_H

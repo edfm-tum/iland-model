@@ -8,6 +8,7 @@
 
 Expression Tree::rScale=Expression();
 Expression Tree::hScale=Expression();
+FloatGrid *Tree::m_grid = 0;
 Tree::Tree()
 {
     m_Dbh = 0;
@@ -122,4 +123,12 @@ void Tree::setup()
     // check stamp
    Q_ASSERT_X(m_species!=0, "Tree::setup()", "species is NULL");
    m_stamp = m_species->stamp(m_Dbh, m_Height);
+}
+
+void Tree::applyStamp()
+{
+    Q_ASSERT(m_grid!=0);
+    if (!m_stamp)
+        return;
+
 }

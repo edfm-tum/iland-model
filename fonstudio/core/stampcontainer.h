@@ -18,7 +18,8 @@ public:
     /// addStamp() add a pre-allocated stamp @param stamp to internal collection. Caller must allocate stamp on the heap,
     /// freeing is done by this class.
     int addStamp(Stamp* stamp, const float bhd, const float hd_value);
-    const Stamp* stamp(const float bhd_cm, const float height_m);
+    const Stamp* stamp(const float bhd_cm, const float height_m) const;
+    const int count() const { return m_stamps.count(); }
     /// save the content of the StampContainer to the output stream (binary encoding)
     void save(QDataStream &out);
     /// load the content of the StampContainer to the output stream (binary encoding)

@@ -79,7 +79,7 @@ int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_valu
 /** fast access for an individual stamp using a lookup table.
     the dimensions of the lookup table are defined by class-constants.
     If stamp is not found there, the more complete list of stamps is searched. */
-const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m)
+const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) const
 {
 
     float hd_value = 100 * height_m / bhd_cm;

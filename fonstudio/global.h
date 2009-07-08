@@ -9,5 +9,5 @@
 
 
 // general datatypes
-typedef int TreeSpecies;
+//typedef int TreeSpecies;
 #endif // GLOBAL_H
