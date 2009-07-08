@@ -718,6 +718,29 @@ void MainWindow::on_lrProcess_clicked()
         img.save(path + "\\ " + name + ".jpg", "JPG", 100);
 
         FloatGrid gr = lightroom->result().averaged(avg_cells);
+        // calculate sums...
+        QVector<double> sums;
+        double sum;
+        for (int o=0; o<gr.sizeX()/2; o++) {
+            sum = 0;
+            // top and bottom
+            for (int i=o; i<gr.sizeX()-o; i++) {
+                sum += gr(i, o);
+                sum += gr(i, gr.sizeX()-1-o);
+            }
+            // left, right :: do not calculate the edges two times....
+            for (int i=o+1; i<gr.sizeX()-o-1; i++) {
+                sum += gr(o, i);
+                sum += gr(gr.sizeX()-1-o, i);
+            }
+            sums.push_back(sum);
+        }
+        if (gr.sizeX()% 2)
+            sums.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel for unevenly sized grids
+        qDebug() << "circle;sum";
+        for (int i=0;i<sums.count();i++)
+            qDebug() << i << ";" << sums[i];
+
 
         // test: use subpixel averages ....
         /*

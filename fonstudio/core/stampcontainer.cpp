@@ -16,6 +16,7 @@ StampContainer::StampContainer()
                    cBHDclassCount, // count x
                    cHDclassCount); // count y
     m_lookup.initialize(NULL);
+    //qDebug() << "grid after init" << gridToString(m_lookup);
     m_maxBhd = -1;
     m_useLookup = true;
 }

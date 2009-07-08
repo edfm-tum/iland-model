@@ -46,7 +46,7 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <tree name="douglasie_10" bhd="10" h="10" crown="5.3" formula="1.97*(min(0.95, hrel) / 0.95)^0.302"/>
 <tree name="douglasie_20" bhd="20" h="20" crown="10.6" formula="2.53*(min(0.95, hrel) / 0.95)^0.302"/>
 <tree name="douglasie_40" bhd="50" h="40" crown="21.2" formula="3.68*(min(0.95, hrel) / 0.95)^0.302"/>
-<!-- <tree name="douglasie_80" bhd="80" h="60" crown="31.8" formula="5.98*(min(0.95, hrel) / 0.95)^0.302"/> -->
+<tree name="douglasie_80" bhd="80" h="60" crown="31.8" formula="5.98*(min(0.95, hrel) / 0.95)^0.302"/> 
 </trees>
 </lightroom>
 

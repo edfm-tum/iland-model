@@ -21,7 +21,7 @@ public:
 
     bool setup(const float cellsize, const int sizex, const int sizey);
     bool setup(const QRectF& rect, const double cellsize);
-    void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value;}
+    void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; qDebug()<<"Grid initialize"<<end()-begin()<<"items.";}
 
     const int sizeX() const { return mSizeX; }
     const int sizeY() const { return mSizeY; }
@@ -53,7 +53,7 @@ public:
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} /// ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
     QPointF cellCoordinates(const QPoint &pos) { return QPointF( (pos.x()+0.5)*mCellsize+mOffset.x(), (pos.y()+0.5)*mCellsize + mOffset.y());} /// get metric coordinates of the cells center
     inline  T* begin() const { return mData; } ///< get "iterator" pointer
-    inline  T* end() const { return &(mData[mCount]); } ///< get iterator end-pointer
+    inline  T* end() const { return mEnd; } ///< get iterator end-pointer
     QPoint indexOf(T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
     // special queries
     T max() const; ///< retrieve the maximum value of a grid
@@ -69,6 +69,7 @@ public:
     Grid<T> normalized(const T targetvalue) const;
 private:
     T* mData;
+    T* mEnd; ///< pointer to 1 element behind the last
     QPointF mOffset;
     float mCellsize; ///< size of a cell in meter
     int mSizeX; ///< count of cells in x-direction
@@ -129,7 +130,7 @@ template <class T>
 T&  Grid<T>::valueAtIndex(const QPoint& pos)
 {
     if (isIndexValid(pos)) {
-        return mData[pos.x()*mSizeX + pos.y()];
+        return mData[pos.x()*mSizeY + pos.y()];
     }
     throw std::logic_error("TGrid: invalid Index!");
 }
@@ -138,7 +139,7 @@ template <class T>
 const T&  Grid<T>::constValueAtIndex(const QPoint& pos) const
 {
     if (isIndexValid(pos)) {
-        return mData[pos.x()*mSizeX + pos.y()];
+        return mData[pos.x()*mSizeY + pos.y()];
     }
     throw std::logic_error("TGrid: invalid Index!");
 }
@@ -170,18 +171,21 @@ const T&  Grid<T>::constValueAt(const QPointF& posf) const
 template <class T>
 Grid<T>::Grid()
 {
-    mData=0; mCellsize=0.f;
+    mData = 0; mCellsize=0.f;
+    mEnd = 0;
 }
 
 template <class T>
 bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 {
-    mSizeX=sizex; mSizeY=sizey; mCellsize=(float)cellsize;
+    mSizeX=sizex; mSizeY=sizey; mCellsize=cellsize;
     mCount = mSizeX*mSizeY;
-    if (mData)
-         delete[] mData;
+    if (mData) {
+         delete[] mData; mData=NULL;
+     }
    if (mCount>0)
-    mData = new T[mCount];
+        mData = new T[mCount];
+   mEnd = &(mData[mCount]);
    return true;
 }
 
@@ -206,8 +210,8 @@ QPoint Grid<T>::indexOf(T* element) const
     if (element==NULL || element<mData || element>=end())
         return result;
     int idx = element - mData;
-    result.setX( idx / mSizeX);
-    result.setY( idx % mSizeX);
+    result.setX( idx / mSizeY);
+    result.setY( idx % mSizeY);
     return result;
 }
 

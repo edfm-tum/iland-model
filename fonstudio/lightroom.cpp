@@ -144,7 +144,6 @@ void LightRoom::calculateFullGrid()
             QCoreApplication::processEvents();
         }
     }
-
 }
 
 //////////////////////////////////////////////////////////
