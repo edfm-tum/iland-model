@@ -7,7 +7,7 @@
 /** Collection of @class Stamp for one tree species.
   Per species several stamps are stored (different BHD, different HD relations). This class
   encapsulates storage and access to these stamps. The design goal is to deliver high
-  access speeds for the "getStamp()" method.
+  access speeds for the "stamp()" method.
   Use getStamp(bhd, hd) or getStamp(bhd, height) to access. */
 class StampContainer
 {
@@ -18,7 +18,7 @@ public:
     /// addStamp() add a pre-allocated stamp @param stamp to internal collection. Caller must allocate stamp on the heap,
     /// freeing is done by this class.
     int addStamp(Stamp* stamp, const float bhd, const float hd_value);
-    const Stamp* getStamp(const float bhd_cm, const float height_m);
+    const Stamp* stamp(const float bhd_cm, const float height_m);
     /// save the content of the StampContainer to the output stream (binary encoding)
     void save(QDataStream &out);
     /// load the content of the StampContainer to the output stream (binary encoding)

@@ -77,8 +77,9 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
             elevation = m_shadowGrid.elevation(ie);
             hit = m_roomObject->hittest(p_x, p_y, p_z,azimuth,elevation);
             // if inside the crown: do nothing and return.
+            // 20090708: if inside the crown: return "totally dark"
             if (hit==-1)
-                return -1;
+                return 1;
             //qDebug() << "testing azimuth" << GRAD(azimuth) << "elevation" << GRAD(elevation)<<"hit"<<hit;
             c_test++;
             if (hit==1) {
@@ -127,15 +128,16 @@ void LightRoom::calculateFullGrid()
             // stop calculating when return = -1 (e.g. when inside the crown)
             if (hit_ratio==-1)
                 break;
-            values[z]=hit_ratio;
+            values[z]=hit_ratio * m_cellsize; // this value * height of cells
         }
         // calculate average
         sum = 0;
+        // 20090708: do not average, but keep the sum
         // aggregate mean for all cells with angles>45° to the tree-top!
         for(int i=0;i<z;i++)
             sum+=values[i];
-        if (z)
-            sum/=float(z);
+        //if (z)
+        //    sum/=float(z);
         *v = sum; // save in 2d grid
         v++;
         c++;

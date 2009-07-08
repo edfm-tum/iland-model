@@ -17,8 +17,8 @@ public:
     Stamp(const int size):m_data(NULL) { setup(size); }
     void setOffset(const int offset) { m_offset = offset; }
     const int offset() const { return m_offset; }
-    const int count() const { return m_size*m_size; }
-    const int size() const { return m_size; }
+    const int count() const { return m_size*m_size; } ///< count of pixels (rectangle)
+    const int size() const { return m_size; } ///< size of the stamp; e.g. 3 -> 3x3 stamp with 9 pixels.
     /// get a full access pointer to internal data
     float *data() { return m_data; }
     /// get pointer to the element after the last element (iterator style)

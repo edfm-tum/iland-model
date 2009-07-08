@@ -5,8 +5,10 @@
 #include "core/grid.h"
 #include "tools/expression.h"
 
-class ImageStamp;
 
+class ImageStamp;
+class TreeSpecies;
+class Stamp;
 
 class Tree
 {
@@ -24,6 +26,8 @@ public:
     const float impact() const { return mImpact; }
     const float impactRadius() const { return mImpactRadius; }
 
+    void setup();
+
     void stampOnGrid(ImageStamp& stamp, FloatGrid& grid);
     float retrieveValue(ImageStamp& stamp, FloatGrid& grid);
 
@@ -32,13 +36,16 @@ public:
     // for visuals:
     QRect pxRect;
 private:
-    float mDbh;
-    float mHeight;
-    QPointF mPosition;
+    float m_Dbh;
+    float m_Height;
+    QPointF m_Position;
     float mOwnImpact;
     float mImpactArea;
     float mImpactRadius;
     float mImpact;
+    // Stamp
+    Stamp *m_stamp;
+    TreeSpecies *m_species;
 };
 
 #endif // TREE_H

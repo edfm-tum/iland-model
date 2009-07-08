@@ -39,7 +39,7 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 </trees>
 
 <lightroom>
-<size x="100" y="100" z="65" cellsize="1.33333333" average="3"/>
+<size x="100" y="100" z="65" cellsize="2" average="3"/>
 <hemigrid size="5" latitude="48" diffus="0.5"/>
 <trees>
 <path>E:\Daten\iLand\Light\fons</path>

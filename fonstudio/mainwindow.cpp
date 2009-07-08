@@ -690,7 +690,7 @@ void MainWindow::on_lrProcess_clicked()
     QString path =  docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("path").text();
     qDebug() << "store to " << path;
     QDomElement tree = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("tree");
-    int avg_cells = docElem.firstChildElement("lightroom").firstChildElement("size").attribute("average").toInt();
+    //int avg_cells = docElem.firstChildElement("lightroom").firstChildElement("size").attribute("average").toInt();
 
     double crown, height, bhd;
     QString formula, name, result;
@@ -717,29 +717,44 @@ void MainWindow::on_lrProcess_clicked()
         QImage img = gridToImage( lightroom->result() );
         img.save(path + "\\ " + name + ".jpg", "JPG", 100);
 
-        FloatGrid gr = lightroom->result().averaged(avg_cells);
+        // averaged copy: FloatGrid gr = lightroom->result().averaged(avg_cells);
+        const FloatGrid &gr = lightroom->result();
         // calculate sums...
-        QVector<double> sums;
+        QVector<double> sums; // stores sum per ring (rectangle)
+        QVector<double> rel_sum; // stores sum/px
         double sum;
+        int ring_count;
         for (int o=0; o<gr.sizeX()/2; o++) {
-            sum = 0;
+            sum = 0; ring_count=0;
             // top and bottom
             for (int i=o; i<gr.sizeX()-o; i++) {
                 sum += gr(i, o);
                 sum += gr(i, gr.sizeX()-1-o);
+                ring_count+=2;
             }
             // left, right :: do not calculate the edges two times....
             for (int i=o+1; i<gr.sizeX()-o-1; i++) {
                 sum += gr(o, i);
                 sum += gr(gr.sizeX()-1-o, i);
+                ring_count+=2;
             }
             sums.push_back(sum);
+            rel_sum.push_back(sum / double(ring_count) );
         }
-        if (gr.sizeX()% 2)
+        if (gr.sizeX()% 2) {
             sums.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel for unevenly sized grids
+            rel_sum.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel for unevenly sized grids
+        }
+        int end_ring, target_grid_size;
+        for (end_ring=0;end_ring<rel_sum.count();end_ring++)
+            if (rel_sum[end_ring]>0.5)
+                break;
+        end_ring = rel_sum.count() - end_ring; //
+        target_grid_size = 2*end_ring - 1; // e.g. 3rd ring -> 5x5-matrix
+        qDebug() << "break at ring" << end_ring;
         qDebug() << "circle;sum";
         for (int i=0;i<sums.count();i++)
-            qDebug() << i << ";" << sums[i];
+            qDebug() << i << sums[i] << rel_sum[i];
 
 
         // test: use subpixel averages ....
@@ -758,7 +773,10 @@ void MainWindow::on_lrProcess_clicked()
         Helper::saveToTextFile(QString("%1\\%2_shift.txt").arg(path, name), result); */
 
         // store to container
-        Stamp *stamp = stampFromGrid(gr, 23);
+        Stamp *stamp = stampFromGrid(gr, target_grid_size);
+        if (!stamp)
+            return;
+        qDebug() << "created stamp with size (n x n)" << stamp->size();
         double hd = qRound( height*100 / bhd );
         container.addStamp(stamp,bhd, hd);
         ///////////////////////////
