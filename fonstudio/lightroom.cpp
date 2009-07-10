@@ -46,6 +46,7 @@ void LightRoom::setup(const double dimx, const double dimy, const double dimz,
     t2.showElapsed();
     m_shadowGrid.setup(hemigridsize); // setup size
     m_solarrad_factor = 1. / m_solarGrid.sum(RAD(45)); // sum of rad. > 45°
+    m_centervalue = 0.;
 }
 
 double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const double p_z, bool fillShadowGrid)
@@ -128,7 +129,7 @@ void LightRoom::calculateFullGrid()
             // stop calculating when return = -1 (e.g. when inside the crown)
             if (hit_ratio==-1)
                 break;
-            values[z]=hit_ratio * m_cellsize; // this value * height of cells
+            values[z]=hit_ratio; // this value * height of cells
         }
         // calculate average
         sum = 0;

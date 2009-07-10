@@ -808,6 +808,8 @@ void MainWindow::on_lrProcess_clicked()
     QDomElement tree = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("tree");
     //int avg_cells = docElem.firstChildElement("lightroom").firstChildElement("size").attribute("average").toInt();
 
+    double cut_threshold = docElem.firstChildElement("lightroom").firstChildElement("cutvalue").text().toDouble();
+    qDebug() << "cutting stamps when averaged absoulte value of rings is below"<<cut_threshold;
     double crown, height, bhd;
     QString formula, name, result;
 
@@ -873,7 +875,7 @@ void MainWindow::on_lrProcess_clicked()
         }
         int end_ring, target_grid_size;
         for (end_ring=0;end_ring<rel_sum.count();end_ring++)
-            if (rel_sum[end_ring]>0.5)
+            if (rel_sum[end_ring]>cut_threshold)
                 break;
         end_ring = rel_sum.count() - end_ring; //
         target_grid_size = 2*end_ring - 1; // e.g. 3rd ring -> 5x5-matrix

@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/fonstudio.qrc">
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -158,7 +158,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>270</x>
-          <y>180</y>
+          <y>160</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -223,7 +223,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>270</x>
-          <y>210</y>
+          <y>180</y>
           <width>81</width>
           <height>23</height>
          </rect>
@@ -355,13 +355,13 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>30</x>
-          <y>280</y>
-          <width>91</width>
+          <y>250</y>
+          <width>141</width>
           <height>23</height>
          </rect>
         </property>
         <property name="text">
-         <string>Process many...</string>
+         <string>Create &quot;writer&quot; stamps</string>
         </property>
        </widget>
        <widget class="QLabel" name="lrHemiValue">
@@ -380,27 +380,27 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lrLoadStamps">
         <property name="geometry">
          <rect>
-          <x>280</x>
+          <x>30</x>
           <y>280</y>
-          <width>75</width>
+          <width>141</width>
           <height>23</height>
          </rect>
         </property>
         <property name="text">
-         <string>load Stamps</string>
+         <string>Test load Stamps</string>
         </property>
        </widget>
        <widget class="QPushButton" name="lrReadStamps">
         <property name="geometry">
          <rect>
-          <x>270</x>
-          <y>240</y>
-          <width>75</width>
+          <x>30</x>
+          <y>220</y>
+          <width>141</width>
           <height>23</height>
          </rect>
         </property>
         <property name="text">
-         <string>read stamp</string>
+         <string>Create &quot;reader&quot; stamps</string>
         </property>
        </widget>
       </widget>
@@ -718,7 +718,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -730,7 +730,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionFON_action">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
    </property>
    <property name="text">
@@ -742,7 +742,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -785,7 +785,9 @@ p, li { white-space: pre-wrap; }
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="res/fonstudio.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>lrSliderX</sender>
