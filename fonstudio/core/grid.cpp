@@ -4,8 +4,8 @@
 QString gridToString(const FloatGrid &grid)
 {
     QString res;
-    for (int x=0;x<grid.sizeX();x++){
-        for (int y=0;y<grid.sizeY();y++) {
+    for (int y=0;y<grid.sizeY();y++) {
+         for (int x=0;x<grid.sizeX();x++) {
             res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + ";";
         }
         res+="\r\n";

@@ -254,7 +254,7 @@ T  Grid<T>::avg() const
 ////////////////////////////////////////////////////////////7
 
 /// dumps a FloatGrid to a String.
-/// rows will be y-lines, columns x-values.
+/// rows will be y-lines, columns x-values. (see grid.cpp)
 QString gridToString(const FloatGrid &grid);
 
 /// creates and return a QImage from Grid-Data.
@@ -267,21 +267,21 @@ QImage gridToImage(const FloatGrid &grid,
                    double min_value=0., double max_value=1.,
                    bool reverse=false);
 
-/// template version for non-float grids.
+/// template version for non-float grids (see also version for FloatGrid)
 template <class T>
-QString gridToString(const Grid<T> &grid)
+        QString gridToString(const Grid<T> &grid)
 {
     QString res;
     QTextStream ts(&res);
 
-    for (int x=0;x<grid.sizeX();x++){
-        for (int y=0;y<grid.sizeY();y++) {
+    for (int y=0;y<grid.sizeY();y++){
+        for (int x=0;x<grid.sizeX();x++){
             ts << grid.constValueAtIndex(x,y) << ";";
-
         }
         ts << "\r\n";
     }
 
     return res;
 }
+
 #endif // GRID_H
