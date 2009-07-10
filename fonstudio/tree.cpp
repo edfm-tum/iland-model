@@ -9,6 +9,7 @@
 Expression Tree::rScale=Expression();
 Expression Tree::hScale=Expression();
 FloatGrid *Tree::m_grid = 0;
+FloatGrid *Tree::m_dominanceGrid = 0;
 int Tree::m_statPrint=0;
 int Tree::m_nextId=0;
 
@@ -148,6 +149,11 @@ void Tree::applyStamp()
                m_grid->valueAtIndex(p)+=(*m_stamp)(x,y);
         }
     }
+    // apply height in domiance grid
+    float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
+    if (dom < m_stamp->dominanceValue()*m_Height)
+        dom =  m_stamp->dominanceValue()*m_Height;
+
     m_statPrint++; // count # of stamp applications...
 }
 

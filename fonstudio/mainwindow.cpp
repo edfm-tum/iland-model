@@ -92,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     mGrid=0;
+    mDomGrid=0;
     connect( ui->PaintWidget, SIGNAL(needsPainting(QPainter&)),
              this, SLOT(repaintArea(QPainter&)) );
     connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
@@ -218,7 +219,8 @@ void MainWindow::on_stampTrees_clicked()
         (*tit).stampOnGrid(mStamp, *mGrid);
     } */
     mGrid->initialize(0.f); // set grid to zero.
-    Tree::setGrid(mGrid); // set static target grid
+    mDomGrid->initialize(0.f); // set dominance grid to zero.
+    Tree::setGrid(mGrid, mDomGrid); // set static target grids
     Tree::resetStatistics();
 
     std::vector<Tree>::iterator tit;
@@ -227,6 +229,8 @@ void MainWindow::on_stampTrees_clicked()
     }
     //qDebug() << gridToString(*mGrid);
     qDebug() << "applied" << Tree::statPrints() << "stamps. tree #:" << mTrees.size();
+    qDebug() << "dominance grid";
+    qDebug() << gridToString(*mDomGrid);
 
     // read values...
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
@@ -731,9 +735,12 @@ void MainWindow::on_fonRun_clicked()
     int cellcount = xmlparams.firstChildElement("cells").text().toInt();
     if (mGrid) {
         delete mGrid; mGrid=0;
+        delete mDomGrid; mDomGrid=0;
     }
     mGrid = new FloatGrid(cellsize, cellcount, cellcount);
     mGrid->initialize(1.f); // set to unity...
+    mDomGrid = new FloatGrid(cellsize*5, cellcount/5, cellcount/5);
+    mDomGrid->initialize(0.f); // zero grid
 
     // setup of the binary stamps
 

@@ -29,7 +29,8 @@ private:
     double retrieveFon();
     void addTrees(const double dbh, const int count);
     Ui::MainWindowClass *ui;
-    FloatGrid* mGrid;
+    FloatGrid* mGrid; // light grid
+    FloatGrid *mDomGrid; // dominance grid
     std::vector<Tree> mTrees;
     ImageStamp mStamp;
     int m_gfxtype;

@@ -38,7 +38,7 @@ public:
     float retrieveValue(ImageStamp& stamp, FloatGrid& grid);
 
     // grid based stamp functions
-    static void setGrid(FloatGrid* gridToStamp) { m_grid = gridToStamp; }
+    static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { m_grid = gridToStamp; m_dominanceGrid = dominanceGrid; }
     void applyStamp();
     double readStamp();
 
@@ -61,6 +61,7 @@ private:
     const Stamp *m_stamp;
     TreeSpecies *m_species;
     static FloatGrid *m_grid;
+    static FloatGrid *m_dominanceGrid;
     // statistics
     static int m_statPrint;
     static int m_nextId;

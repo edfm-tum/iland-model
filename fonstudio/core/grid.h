@@ -35,6 +35,7 @@ public:
     inline const T& operator()(const int ix, const int iy) const { return constValueAtIndex(ix, iy); }
     /// access (const) using metric variables. use float.
     inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
+    inline const T& operator[] (const QPointF &p) const { return constValueAtIndex(p); }
 
     T& valueAtIndex(const QPoint& pos); ///< value at position defined by indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return valueAtIndex(QPoint(ix,iy)); } ///< const value at position defined by indices (x,y)
