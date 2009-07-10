@@ -296,12 +296,13 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     int ix,iy;
     QColor fill_color;
     float value;
+
     QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
     for (iy=0;iy<mGrid->sizeY();iy++) {
         for (ix=0;ix<mGrid->sizeX();ix++) {
             value = mGrid->valueAtIndex(QPoint(ix, iy));
 
-            cell.moveTo(m_pixelpercell*ix, m_pixelpercell*iy);
+            cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*iy);
             fill_color = Helper::colorFromValue(value, 0., maxval);
             painter.fillRect(cell, fill_color);
             //painter.drawRect(cell);
@@ -311,9 +312,10 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
     if (t) {
         QPointF pos = t->position();
+        int maxy = int( mGrid->sizeY()*m_pixelpercell );
         float pxpermeter = m_pixelpercell/ mGrid->cellsize();
         painter.setPen(Qt::black);
-        painter.drawRect(int(pos.x()*pxpermeter-1), int(pos.y()*pxpermeter-1), 3,3);
+        painter.drawRect(int(pos.x()*pxpermeter-1), int((maxy-pos.y())*pxpermeter-1), 3,3);
     }
     /*
     // paint trees...
@@ -358,7 +360,8 @@ void MainWindow::mouseClick(const QPoint& pos)
     ui->treeChange->setProperty("tree",0);
     if (!m_pixelpercell)
         return;
-    QPoint idx = QPoint(int (pos.x()/m_pixelpercell) , int(pos.y()/m_pixelpercell));
+    int maxy = int( mGrid->sizeY()*m_pixelpercell );
+    QPoint idx = QPoint(int (pos.x()/m_pixelpercell) , int((maxy-pos.y())/m_pixelpercell));
     QPointF coord = mGrid->cellCoordinates(idx);
     qDebug() << "click on" << pos << "are coords" << coord;
     // find adjactent tree
@@ -398,7 +401,8 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to)
     if (!t)
         return;
     // calculate new position...
-    QPointF pos = QPointF(mGrid->cellsize()*to.x()/m_pixelpercell , mGrid->cellsize()*to.y()/m_pixelpercell);
+    int maxy = int( m_pixelpercell*mGrid->sizeY() );
+    QPointF pos = QPointF(mGrid->cellsize()*to.x()/m_pixelpercell , mGrid->cellsize()*(maxy-to.y())/m_pixelpercell);
     t->setPosition(pos);
     on_stampTrees_clicked(); // restamp
 }
@@ -908,17 +912,17 @@ void MainWindow::on_lrProcess_clicked()
 
 void MainWindow::on_lrLoadStamps_clicked()
 {
-//    {
-//        QFile infile("E:\\Daten\\iLand\\Light\\fons\\stamps.bin");
-//        infile.open(QIODevice::ReadOnly);
-//        QDataStream in(&infile);
-//        StampContainer container;
-//        container.load(in);
-//        infile.close();
-//        qDebug() << "Dumping content of Stamp-container:";
-//        qDebug() << container.dump();
-//        // and the reader-stamps....
-//    }
+    {
+        QFile infile("E:\\Daten\\iLand\\Light\\fons\\stamps.bin");
+        infile.open(QIODevice::ReadOnly);
+        QDataStream in(&infile);
+        StampContainer container;
+        container.load(in);
+        infile.close();
+        qDebug() << "Dumping content of Stamp-container:";
+        qDebug() << container.dump();
+        // and the reader-stamps....
+    }
     {
         QFile infile("E:\\Daten\\iLand\\Light\\fons\\readerstamp.bin");
         infile.open(QIODevice::ReadOnly);

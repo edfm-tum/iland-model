@@ -198,8 +198,8 @@ QString StampContainer::dump()
                .arg(si.bhd).arg(si.hd).arg((int)si.stamp, 0, 16);
         // add data....
         maxidx = 2*si.stamp->offset() + 1;
-        for (x=0;x<maxidx;++x) {
-            for (y=0;y<maxidx;++y) {
+        for (y=0;y<maxidx;++y)  {
+            for (x=0;x<maxidx;++x)  {
                 line+= QString::number(*si.stamp->data(x,y)) + " ";
             }
             line+="\r\n";

@@ -214,8 +214,8 @@ QPoint Grid<T>::indexOf(T* element) const
     if (element==NULL || element<mData || element>=end())
         return result;
     int idx = element - mData;
-    result.setX( idx / mSizeY);
-    result.setY( idx % mSizeY);
+    result.setX( idx % mSizeY);
+    result.setY( idx / mSizeY);
     return result;
 }
 
