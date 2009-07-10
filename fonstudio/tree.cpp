@@ -9,11 +9,15 @@
 Expression Tree::rScale=Expression();
 Expression Tree::hScale=Expression();
 FloatGrid *Tree::m_grid = 0;
+int Tree::m_statPrint=0;
+int Tree::m_nextId=0;
+
 Tree::Tree()
 {
     m_Dbh = 0;
     m_Height = 0;
     m_species = 0;
+    m_id = m_nextId++;
 }
 
 /** get distance and direction between two points.
@@ -131,4 +135,49 @@ void Tree::applyStamp()
     if (!m_stamp)
         return;
 
+    QPoint pos = m_grid->indexAt(m_Position);
+    int offset = m_stamp->offset();
+    pos-=QPoint(offset, offset);
+    QPoint p;
+
+    int x,y;
+    for (x=0;x<m_stamp->size();++x) {
+        for (y=0;y<m_stamp->size(); ++y) {
+           p = pos + QPoint(x,y);
+           if (m_grid->isIndexValid(p))
+               m_grid->valueAtIndex(p)+=(*m_stamp)(x,y);
+        }
+    }
+    m_statPrint++; // count # of stamp applications...
+}
+
+double Tree::readStamp()
+{
+    float crown_radius = dbh()/10; // cm -> m
+    const Stamp *stamp = m_species->readerStamp(crown_radius);
+    if (!stamp)
+        return 0.;
+    QPoint pos = m_grid->indexAt(m_Position);
+    int offset = stamp->offset();
+    pos-=QPoint(offset, offset);
+    QPoint p;
+
+    int x,y;
+    double sum=0.;
+    for (x=0;x<stamp->size();++x) {
+        for (y=0;y<stamp->size(); ++y) {
+           p = pos + QPoint(x,y);
+           if (m_grid->isIndexValid(p))
+               sum += m_grid->valueAtIndex(p) * (*stamp)(x,y);
+        }
+    }
+    mImpact = sum;
+    qDebug() << "Tree #"<< id() << "value" << sum;
+    return sum;
+}
+
+void Tree::resetStatistics()
+{
+    m_statPrint=0;
+    m_nextId=1;
 }

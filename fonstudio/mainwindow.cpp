@@ -23,8 +23,13 @@ QDomNode xmlparams;
 // global Object pointers
 LightRoom *lightroom = 0;
 StampContainer *stamp_container=0;
+StampContainer *reader_stamp_container=0;
 QList<TreeSpecies*> tree_species;
 
+double distance(const QPointF &a, const QPointF &b)
+{
+    return sqrt( (a.x()-b.x())*(a.x()-b.x()) + (a.y()-b.y())*(a.y()-b.y()) );
+}
 
 QString setting(const QString& paramname)
 {
@@ -56,9 +61,10 @@ double nrandom(const float& p1, const float& p2)
 
 void myMessageOutput(QtMsgType type, const char *msg)
  {
-     /*switch (type) {
+     switch (type) {
      case QtDebugMsg:
-         fprintf(stderr, "Debug: %s\n", msg);
+         MainWindow::logSpace()->appendPlainText(QString(msg));
+         MainWindow::logSpace()->ensureCursorVisible();
          break;
      case QtWarningMsg:
          fprintf(stderr, "Warning: %s\n", msg);
@@ -69,10 +75,9 @@ void myMessageOutput(QtMsgType type, const char *msg)
      case QtFatalMsg:
          fprintf(stderr, "Fatal: %s\n", msg);
          abort();
-     }*/
+     }
 
-     MainWindow::logSpace()->appendPlainText(QString(msg));
-     MainWindow::logSpace()->ensureCursorVisible();
+
  }
 
 QPlainTextEdit *MainWindow::mLogSpace=NULL;
@@ -91,8 +96,9 @@ MainWindow::MainWindow(QWidget *parent)
              this, SLOT(repaintArea(QPainter&)) );
     connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
              this, SLOT(mouseClick(const QPoint&)));
-    //connect(&a, SIGNAL(valueChanged(int)),
-    //                  &b, SLOT(setValue(int)));
+    connect(ui->PaintWidget, SIGNAL(mouseDrag(QPoint,QPoint)),
+            this, SLOT(mouseDrag(const QPoint&, const QPoint &)));
+
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
     // load xml file
@@ -212,11 +218,22 @@ void MainWindow::on_stampTrees_clicked()
         (*tit).stampOnGrid(mStamp, *mGrid);
     } */
     mGrid->initialize(0.f); // set grid to zero.
+    Tree::setGrid(mGrid); // set static target grid
+    Tree::resetStatistics();
+
     std::vector<Tree>::iterator tit;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        (*tit).stampOnGrid(mStamp, *mGrid);
+        (*tit).applyStamp(); // just do it ;)
+    }
+    //qDebug() << gridToString(*mGrid);
+    qDebug() << "applied" << Tree::statPrints() << "stamps. tree #:" << mTrees.size();
+
+    // read values...
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+        (*tit).readStamp(); // just do it ;)
     }
 
+    ui->PaintWidget->update();
     /*
     // debug output
     QString Line, Value;
@@ -267,13 +284,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     int sqsize = qMin(ui->PaintWidget->width(), ui->PaintWidget->height())-1;
     int ccount = mGrid->sizeX();
-    float pxpercell = sqsize / float(ccount);
-    float pxpermeter = pxpercell / mGrid->cellsize();
+    m_pixelpercell = sqsize / float(ccount);
     // get maximum value
-    float maxval=0.;
-    for( float *p = mGrid->begin();p!=mGrid->end(); ++p)
-        maxval=qMax(maxval, *p);
 
+    float maxval=0.;
+    maxval = mGrid->max();
     if (maxval==0.)
         return;
 
@@ -281,22 +296,30 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     int ix,iy;
     QColor fill_color;
     float value;
-    QRectF cell(0,0,pxpercell, pxpercell);
+    QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
     for (iy=0;iy<mGrid->sizeY();iy++) {
         for (ix=0;ix<mGrid->sizeX();ix++) {
             value = mGrid->valueAtIndex(QPoint(ix, iy));
-            if (value<1.) {
-                cell.moveTo(pxpercell*ix, pxpercell*iy);
-                // scale color in hsv from 0..240
-                fill_color.setHsv( int(value*240./maxval), 200, 200);
-                painter.fillRect(cell, fill_color);
-                //painter.drawRect(cell);
-            }
+
+            cell.moveTo(m_pixelpercell*ix, m_pixelpercell*iy);
+            fill_color = Helper::colorFromValue(value, 0., maxval);
+            painter.fillRect(cell, fill_color);
+            //painter.drawRect(cell);
+
         }
     }
-
+    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
+    if (t) {
+        QPointF pos = t->position();
+        float pxpermeter = m_pixelpercell/ mGrid->cellsize();
+        painter.setPen(Qt::black);
+        painter.drawRect(int(pos.x()*pxpermeter-1), int(pos.y()*pxpermeter-1), 3,3);
+    }
+    /*
     // paint trees...
     QPointF pos;
+    float pxpermeter = pxpercell / mGrid->cellsize();
+
     std::vector<Tree>::iterator tit;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         pos = (*tit).position();
@@ -308,7 +331,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         painter.setPen(Qt::black);
         painter.drawEllipse(QPointF(pxpermeter*pos.x(),pxpermeter*pos.y()),r,r);
-    }
+    } */
 
     qDebug() << "repaintArea. maxval:" << maxval;
 
@@ -327,20 +350,58 @@ void MainWindow::repaintArea(QPainter &painter)
     }
 }
 
+bool wantDrag=false;
 void MainWindow::mouseClick(const QPoint& pos)
 {
-    //qDebug() << "click on" << pos;
+    wantDrag = false;
+    ui->PaintWidget->setCursor(Qt::CrossCursor);
+    ui->treeChange->setProperty("tree",0);
+    if (!m_pixelpercell)
+        return;
+    QPoint idx = QPoint(int (pos.x()/m_pixelpercell) , int(pos.y()/m_pixelpercell));
+    QPointF coord = mGrid->cellCoordinates(idx);
+    qDebug() << "click on" << pos << "are coords" << coord;
+    // find adjactent tree
+
     std::vector<Tree>::iterator tit;
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+        if(distance(tit->position(),coord)<2) {
+            Tree *p = &(*tit);
+            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->impact();
+            ui->treeChange->setProperty("tree", (int)p);
+            ui->treeDbh->setValue(p->dbh());
+            ui->treeHeight->setValue(p->height());
+            wantDrag=true;
+            ui->PaintWidget->setCursor(Qt::SizeAllCursor);
+            ui->PaintWidget->update();
+            break;
+        }
+   }
+
+    /*std::vector<Tree>::iterator tit;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         if (tit->pxRect.contains(pos)) {
             qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " impact-value: " << tit->impact();
             break;
         }
-    }
+    }*/
 }
 
 
-
+void MainWindow::mouseDrag(const QPoint& from, const QPoint &to)
+{
+    ui->PaintWidget->setCursor(Qt::CrossCursor);
+    if (!wantDrag)
+        return;
+    qDebug() << "drag from" << from << "to" << to;
+    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
+    if (!t)
+        return;
+    // calculate new position...
+    QPointF pos = QPointF(mGrid->cellsize()*to.x()/m_pixelpercell , mGrid->cellsize()*to.y()/m_pixelpercell);
+    t->setPosition(pos);
+    on_stampTrees_clicked(); // restamp
+}
 
 
 void MainWindow::on_calcFormula_clicked()
@@ -622,6 +683,7 @@ void MainWindow::on_fonRun_clicked()
     //int p1 = params.firstChildElement("param1").text().toInt();
     QString stampFile =  xmlparams.firstChildElement("stampFile").text();
     QString binaryStampFile =  xmlparams.firstChildElement("binaryStamp").text();
+    QString binaryReaderStampFile =  xmlparams.firstChildElement("binaryReaderStamp").text();
 
     // Here we append a new element to the end of the document
     //QDomElement elem = doc.createElement("img");
@@ -671,16 +733,28 @@ void MainWindow::on_fonRun_clicked()
     mGrid->initialize(1.f); // set to unity...
 
     // setup of the binary stamps
+
+    if (stamp_container) {
+        delete stamp_container;
+        delete reader_stamp_container;
+    }
+
+    stamp_container = new StampContainer();
+    reader_stamp_container = new StampContainer();
+
+    qDebug() << "loading stamps from" << binaryStampFile << "and readers from" << binaryReaderStampFile;
     QFile infile(binaryStampFile);
     infile.open(QIODevice::ReadOnly);
     QDataStream in(&infile);
-    if (stamp_container)
-        delete stamp_container;
-
-    stamp_container = new StampContainer();
     stamp_container->load(in);
-
     infile.close();
+
+    QFile readerfile(binaryReaderStampFile);
+    readerfile.open(QIODevice::ReadOnly);
+    QDataStream rin(&readerfile);
+    reader_stamp_container->load(rin);
+    readerfile.close();
+
     qDebug() << "Loaded binary stamps from file. count:" << stamp_container->count();
 
     // Tree species...
@@ -688,7 +762,7 @@ void MainWindow::on_fonRun_clicked()
         TreeSpecies *ts = new TreeSpecies();
         tree_species.push_back(ts);
     }
-    tree_species.first()->setStampContainer(stamp_container); // start with the common single container
+    tree_species.first()->setStampContainer(stamp_container, reader_stamp_container); // start with the common single container
 
     // Load Trees
     mTrees.clear();
@@ -815,7 +889,7 @@ void MainWindow::on_lrProcess_clicked()
         Stamp *stamp = stampFromGrid(gr, target_grid_size);
         if (!stamp)
             return;
-        qDebug() << "created stamp with size (n x n)" << stamp->size();
+        qDebug() << "created stamp with size (n x n)" << stamp->size() << "in an data-block of:" << stamp->dataSize();
         double hd = qRound( height*100 / bhd );
         container.addStamp(stamp,bhd, hd);
         ///////////////////////////
@@ -834,12 +908,86 @@ void MainWindow::on_lrProcess_clicked()
 
 void MainWindow::on_lrLoadStamps_clicked()
 {
-    QFile infile("E:\\Daten\\iLand\\Light\\fons\\stamps.bin");
-    infile.open(QIODevice::ReadOnly);
-    QDataStream in(&infile);
+//    {
+//        QFile infile("E:\\Daten\\iLand\\Light\\fons\\stamps.bin");
+//        infile.open(QIODevice::ReadOnly);
+//        QDataStream in(&infile);
+//        StampContainer container;
+//        container.load(in);
+//        infile.close();
+//        qDebug() << "Dumping content of Stamp-container:";
+//        qDebug() << container.dump();
+//        // and the reader-stamps....
+//    }
+    {
+        QFile infile("E:\\Daten\\iLand\\Light\\fons\\readerstamp.bin");
+        infile.open(QIODevice::ReadOnly);
+        QDataStream in(&infile);
+        StampContainer container;
+        container.load(in);
+        infile.close();
+        qDebug() << "Dumping content of Reader-container:";
+        qDebug() << container.dump();
+        // and the reader-stamps....
+    }
+
+}
+
+void MainWindow::on_treeChange_clicked()
+{
+    int pt = ui->treeChange->property("tree").toInt();
+    if (!pt)
+        return;
+    Tree *t = (Tree*)pt;
+    t->setDbh(    ui->treeDbh->value() );
+    t->setHeight(ui->treeHeight->value() );
+    t->setup();
+    // changed, now recalc...
+    on_stampTrees_clicked();
+}
+
+// create "reader" stamps....
+void MainWindow::on_lrReadStamps_clicked()
+{
+    FloatGrid grid; // use copy ctor
+    grid.setup(QRectF(-21., -21, 42, 42),2.);
     StampContainer container;
-    container.load(in);
-    infile.close();
-    qDebug() << "Dumping content of Stamp-container:";
+    int totcount=0;
+    DebugTimer t;
+    for (double radius=1.; radius<=8; radius+=0.1) {
+        qDebug() << "creation of reader stamp for radius" << radius;
+        grid.initialize(0.);
+        float x,y;
+        int tested=0, yes=0;
+        for (x=-radius;x<=radius;x+=0.01)
+            for (y=-radius;y<=radius;y+=0.01) {
+                tested++;
+                if ( x*x + y*y < radius*radius) {
+                    grid.valueAt(x,y)++; yes++;
+                }
+            }
+        qDebug() << "tested" << tested << "hit" << yes << "ratio" << yes/double(tested); // that should be pi, right?
+        totcount+=tested;
+        FloatGrid ngrid = grid.normalized(1.); // normalize with 1
+        // create a stamp with a fitting size
+        Stamp *stamp;
+        int width;
+        if (radius>=9.) {width=11;}
+        else if (radius>=7.) { width=9; }
+        else if (radius>=5.) { width=7; }
+        else if (radius>=3.) { width=5; }
+        else if (radius>=1.) { width=3; }
+        stamp = stampFromGrid(ngrid,width);
+        // save stamp
+        container.addReaderStamp(stamp, radius);
+
+    } // for (radius)
+    qDebug() << "tested a total of" << totcount;
+    QFile file("e:\\daten\\iland\\light\\fons\\readerstamp.bin");
+    file.open(QIODevice::WriteOnly);
+    QDataStream out(&file);   // we will serialize the data into the file
+    container.save(out);
     qDebug() << container.dump();
+
+
 }

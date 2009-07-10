@@ -63,8 +63,28 @@ bool Helper::m_quiet = true;
 bool Helper::m_NoDebug = false;
 
 
-// StatData
 
+// colors
+QColor Helper::colorFromValue(const float value, const float min_value, const float max_value, const bool reverse)
+{
+    float rval = value;
+    rval = std::max(min_value, rval);
+    rval = std::min(max_value, rval);
+    if (reverse)
+        rval = max_value - rval;
+    float rel_value;
+    QColor col;
+    if (min_value < max_value) {
+        // default: high values -> red (h=0), low values to blue (h=high)
+        rel_value = 1 - (rval - min_value) / (max_value - min_value);
+        col=  QColor::fromHsvF(0.66666666666*rel_value, 0.95, 0.95).rgb();
+    } else {
+        col = Qt::white;
+    }
+    return col;
+}
+
+// StatData
 StatData::StatData(QVector<double> &data)
 {
     mData=data;

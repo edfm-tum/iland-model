@@ -76,20 +76,52 @@ int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_valu
 
 }
 
+int StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
+{
+    double rest = crown_radius_m - floor(crown_radius_m) + 0.001;
+    int cls_hd = int( rest * cHDclassCount ); // 0 .. 9.99999999
+    if (cls_hd>=cHDclassCount)
+        cls_hd=cHDclassCount-1;
+    int cls_bhd = int(crown_radius_m);
+    float bhd = cBHDclassWidth * cls_bhd + cBHDclassLow;
+    float hd = cHDclassWidth * cls_hd + cHDclassLow;
+    qDebug() << "reader stamp radius" << crown_radius_m << "mapped to" << bhd << "bhd and hd=" << hd << "classes bhd hd:" << cls_bhd << cls_hd;
+    return addStamp(stamp, bhd, hd);
+
+ }
+
+
+/** retrieve a read-out-stamp. Readers depend solely on a crown radius.
+Internally, readers are stored in the same lookup-table, but using a encoding/decoding trick.*/
+const Stamp* StampContainer::readerStamp(const float crown_radius_m) const
+{
+    // Readers: from 0..10m in 50 steps???
+    int cls_hd = int( (fmod(crown_radius_m, 1.)+0.001) * cHDclassCount ); // 0 .. 9.99999999
+    if (cls_hd>=cHDclassCount)
+        cls_hd=cHDclassCount-1;
+    int cls_bhd = int(crown_radius_m);
+    const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
+    return stamp;
+}
+
 /** fast access for an individual stamp using a lookup table.
     the dimensions of the lookup table are defined by class-constants.
     If stamp is not found there, the more complete list of stamps is searched. */
 const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) const
 {
 
-    float hd_value = 100 * height_m / bhd_cm;
+    float hd_value = 100.f * height_m / bhd_cm;
     int cls_bhd = int(bhd_cm - cBHDclassLow) / cBHDclassWidth;
     int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
 
 
     // check loopup table
-    if (cls_bhd<cBHDclassCount && cls_bhd>=0 && cls_hd < cHDclassCount && cls_bhd>=0)
-        return m_lookup(cls_bhd, cls_hd);
+    if (cls_bhd<cBHDclassCount && cls_bhd>=0 && cls_hd < cHDclassCount && cls_bhd>=0) {
+        const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
+        if (stamp)
+            return stamp;
+        return m_stamps.first().stamp; // default value: the first stamp in the list....
+    }
 
     // extra work: search in list...
     //if (bhd_cm > m_maxBhd)
@@ -122,6 +154,7 @@ void StampContainer::load(QDataStream &in)
         in >> type; // read type
         in >> bhd;
         in >> hdvalue;
+        qDebug() << "stamp bhd hdvalue type" << bhd << hdvalue << type;
         Stamp *stamp = newStamp( Stamp::StampType(type) );
         stamp->load(in);
         addStamp(stamp, bhd, hdvalue);
@@ -144,7 +177,7 @@ void StampContainer::save(QDataStream &out)
     qint32 size = m_stamps.count();
     out << size;
     foreach(StampItem si, m_stamps) {
-        type = si.stamp->size();
+        type = si.stamp->dataSize();
         out << type;
         out << si.bhd;
         out << si.hd;

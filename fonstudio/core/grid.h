@@ -83,6 +83,7 @@ typedef Grid<float> FloatGrid;
 template <class T>
 Grid<T>::Grid(const Grid<T>& toCopy)
 {
+    mData = 0;
     setup(toCopy.cellsize(), toCopy.sizeX(), toCopy.sizeY());
     const T* end = toCopy.end();
     T* ptr = begin();
@@ -103,6 +104,7 @@ Grid<T> Grid<T>::normalized(const T targetvalue) const
         return target;
     for (T* p=target.begin();p!=target.end();++p)
         *p *= multiplier;
+    return target;
 }
 
 
@@ -132,7 +134,8 @@ T&  Grid<T>::valueAtIndex(const QPoint& pos)
     if (isIndexValid(pos)) {
         return mData[pos.x()*mSizeY + pos.y()];
     }
-    throw std::logic_error("TGrid: invalid Index!");
+    qCritical("Grid::valueAtIndex. invalid: %d/%d", pos.x(), pos.y());
+    return mData[0];
 }
 
 template <class T>
@@ -141,7 +144,8 @@ const T&  Grid<T>::constValueAtIndex(const QPoint& pos) const
     if (isIndexValid(pos)) {
         return mData[pos.x()*mSizeY + pos.y()];
     }
-    throw std::logic_error("TGrid: invalid Index!");
+    qCritical("Grid::constValueAtIndex. invalid: %d/%d", pos.x(), pos.y());
+    return mData[0];
 }
 
 template <class T>

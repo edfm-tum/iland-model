@@ -14,6 +14,8 @@ class Tree
 {
 public:
     Tree();
+    void setId(const int id) { m_id=id;}
+    const int id() const { return m_id; }
     void setPosition(const QPointF pos) { m_Position=pos; }
     const QPointF position() const { return m_Position; }
 
@@ -38,12 +40,16 @@ public:
     // grid based stamp functions
     static void setGrid(FloatGrid* gridToStamp) { m_grid = gridToStamp; }
     void applyStamp();
+    double readStamp();
+
+    // statistics
+    static void resetStatistics();
+    static const int statPrints() { return m_statPrint; }
 
     static Expression rScale;
     static Expression hScale;
-    // for visuals:
-    QRect pxRect;
 private:
+    int m_id;
     float m_Dbh;
     float m_Height;
     QPointF m_Position;
@@ -55,6 +61,9 @@ private:
     const Stamp *m_stamp;
     TreeSpecies *m_species;
     static FloatGrid *m_grid;
+    // statistics
+    static int m_statPrint;
+    static int m_nextId;
 };
 
 #endif // TREE_H

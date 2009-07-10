@@ -43,8 +43,18 @@ void PaintArea::paintEvent(QPaintEvent *)
 void PaintArea::mousePressEvent ( QMouseEvent * event )
 {
 
+    m_lastDown = event->pos();
     emit mouseClick(event->pos());
      //emit needsPainting(painter);
 
 
+}
+void PaintArea::mouseReleaseEvent ( QMouseEvent * event )
+{
+    setCursor(Qt::CrossCursor);
+    if ( (event->pos()-m_lastDown).manhattanLength() > 3) {
+        emit mouseDrag(m_lastDown, event->pos());
+    }
+    //emit mouseClick(event->pos());
+     //emit needsPainting(painter);
 }

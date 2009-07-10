@@ -246,7 +246,7 @@ void HemiGrid::paintGrid(QImage &image) const
             value = rGet(phi, elevation);
             value /= mmax;
             col = QColor::fromHsvF((1.-value)*0.666666 ,0.9, 0.9); // hue from 0..240 = red to blue
-            image.setPixel(ix,iy,col.rgb());
+            image.setPixel(ix,maxsize-iy,col.rgb());
         }
     }
 }

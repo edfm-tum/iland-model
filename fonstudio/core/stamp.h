@@ -16,18 +16,20 @@ public:
     ~Stamp();
     Stamp(const int size):m_data(NULL) { setup(size); }
     void setOffset(const int offset) { m_offset = offset; }
-    const int offset() const { return m_offset; }
+    const int offset() const { return m_offset; } ///< delta between edge of the stamp and the logical center point (of the tree). e.g. a 5x5 stamp in an 8x8-grid has an offset from 2.
     const int count() const { return m_size*m_size; } ///< count of pixels (rectangle)
-    const int size() const { return m_size; } ///< size of the stamp; e.g. 3 -> 3x3 stamp with 9 pixels.
+    const int size() const { return m_offset*2+1; } ///< logical size of the stamp
+    const int dataSize() const { return m_size; } ///< internal size of the stamp; e.g. 4 -> 4x4 stamp with 16 pixels.
     /// get a full access pointer to internal data
     float *data() { return m_data; }
     /// get pointer to the element after the last element (iterator style)
     const float *end() const { return &m_data[m_size*m_size]; }
     /// get pointer to data item with indices x and y
-    float *data(const int x, const int y) { return m_data + index(x,y); }
+    float *data(const int x, const int y) const { return m_data + index(x,y); }
     void setData(const int x, const int y, const float value) { *data(x,y) = value; }
     /// get index (e.g. for data()[index]) for indices x and y
     int index(const int x, const int y) const { return y*m_size + x; }
+    inline float operator()(const int x, const int y) const { return *data(x,y); }
     // loading/saving
     void loadFromFile(const QString &fileName);
     void load(QDataStream &in); ///< load from stream (predefined binary structure)

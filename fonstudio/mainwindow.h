@@ -33,12 +33,15 @@ private:
     std::vector<Tree> mTrees;
     ImageStamp mStamp;
     int m_gfxtype;
+    float m_pixelpercell;
     static QPlainTextEdit *mLogSpace;
     void loadPicusIniFile(const QString &fileName);
     // painter functions
     void paintFON(QPainter &painter, QRect rect);
 
 private slots:
+    void on_lrReadStamps_clicked();
+    void on_treeChange_clicked();
     void on_lrLoadStamps_clicked();
     void on_lrProcess_clicked();
     void on_fonRun_clicked();
@@ -60,6 +63,7 @@ private slots:
     void on_saveFile_clicked();
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
+    void mouseDrag(const QPoint& from, const QPoint &to);
 };
 
 #endif // MAINWINDOW_H

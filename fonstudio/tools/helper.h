@@ -25,6 +25,8 @@ public:
     static void setDebugEnabled(bool enable) { m_NoDebug = !enable; }
     static void openHelp(const QString& topic);
     static QString stripHtml(const QString &source);
+
+    static QColor colorFromValue(const float value, const float min_value=0.f, const float max_value=1.f, const bool reverse=false);
 private:
     static bool m_quiet;
     static bool m_NoDebug;
