@@ -159,8 +159,7 @@ void Tree::applyStamp()
 
 double Tree::readStamp()
 {
-    float crown_radius = dbh()/10; // cm -> m
-    const Stamp *stamp = m_species->readerStamp(crown_radius);
+    const Stamp *stamp = m_stamp->reader();
     if (!stamp)
         return 0.;
     QPoint pos = m_grid->indexAt(m_Position);
@@ -179,7 +178,9 @@ double Tree::readStamp()
     }
     float eigenvalue = m_stamp->readSum();
     mImpact = sum - eigenvalue;
-    qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue;
+    if (fabs(mImpact < 0.000001))
+        mImpact = 0.f;
+    qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue << "Impact" << mImpact;
     return mImpact;
 }
 

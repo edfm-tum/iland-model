@@ -17,7 +17,7 @@ public:
     void useLookup(const bool use) { m_useLookup = use; }
     /// addStamp() add a pre-allocated stamp @param stamp to internal collection. Caller must allocate stamp on the heap,
     /// freeing is done by this class.
-    int addStamp(Stamp* stamp, const float bhd, const float hd_value);
+    int addStamp(Stamp* stamp, const float bhd, const float hd_value, const float crown_radius_m);
     int addReaderStamp(Stamp *stamp, const float crown_radius_m);
     const Stamp* stamp(const float bhd_cm, const float height_m) const;
     const Stamp* readerStamp(const float crown_radius_m) const; ///< retrieve reader-stamp. @param radius of crown in m. @return the appropriate stamp or NULL if not found.
@@ -30,6 +30,10 @@ public:
     /** factory creation function for stamps of different size.
         newStamp() creates new Stamp-Objects on the heap with a given type (see @enum Stamp::StampType).*/
     static Stamp* newStamp(const Stamp::StampType type);
+    /** this functions attaches the appropriate reader (dep. on crown radius) to each stamp of the container.
+        The reader-stamp is returned by a call to the reader()-function of the Stamp itself.
+        @param Container holding the reader stamps.*/
+    void attachReaderStamps(const StampContainer &source);
 
     QString dump();
 
@@ -44,6 +48,7 @@ private:
         Stamp* stamp;
         float bhd;
         float hd;
+        float crown_radius;
     };
     inline int getKey(const float bhd, const float hd_value);
     int m_maxBhd;

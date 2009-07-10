@@ -18,6 +18,8 @@ void Stamp::setup(const int size)
     m_size=size;
     m_offset=0;
     m_readsum = 0.f;
+    m_reader = 0;
+    m_dominance=0;
     if (m_data)
         delete[] m_data;
     m_data=new float[c];

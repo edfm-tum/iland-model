@@ -766,13 +766,16 @@ void MainWindow::on_fonRun_clicked()
     readerfile.close();
 
     qDebug() << "Loaded binary stamps from file. count:" << stamp_container->count();
+    // attach reader stamps to each writer stamp
+    stamp_container->attachReaderStamps(*reader_stamp_container);
+
 
     // Tree species...
     if (tree_species.isEmpty()) {
         TreeSpecies *ts = new TreeSpecies();
         tree_species.push_back(ts);
     }
-    tree_species.first()->setStampContainer(stamp_container, reader_stamp_container); // start with the common single container
+    tree_species.first()->setStampContainer(stamp_container); // start with the common single container
 
     // Load Trees
     mTrees.clear();
@@ -928,7 +931,7 @@ void MainWindow::on_lrProcess_clicked()
 
         stamp->setDominanceValue( lightroom->centerValue() );
         double hd = qRound( height*100 / bhd );
-        container.addStamp(stamp,bhd, hd);
+        container.addStamp(stamp,bhd, hd, lro->maxRadius());
         ///////////////////////////
         tree = tree.nextSiblingElement("tree");
     }

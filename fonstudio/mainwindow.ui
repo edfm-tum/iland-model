@@ -90,7 +90,7 @@ color: rgb(85, 0, 0);</string>
     <item row="1" column="0">
      <widget class="QStackedWidget" name="editStack">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="pageXML">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -415,7 +415,7 @@ color: rgb(85, 0, 0);</string>
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -424,8 +424,8 @@ color: rgb(85, 0, 0);</string>
            <widget class="QPushButton" name="stampTrees">
             <property name="geometry">
              <rect>
-              <x>20</x>
-              <y>90</y>
+              <x>200</x>
+              <y>10</y>
               <width>75</width>
               <height>23</height>
              </rect>
@@ -443,92 +443,14 @@ color: rgb(85, 0, 0);</string>
            <widget class="QPushButton" name="pbRetrieve">
             <property name="geometry">
              <rect>
-              <x>110</x>
-              <y>90</y>
+              <x>280</x>
+              <y>10</y>
               <width>75</width>
               <height>23</height>
              </rect>
             </property>
             <property name="text">
              <string>retrieve</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="pbAddTrees">
-            <property name="geometry">
-             <rect>
-              <x>190</x>
-              <y>50</y>
-              <width>75</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Add</string>
-            </property>
-           </widget>
-           <widget class="QLineEdit" name="eTreeCount">
-            <property name="geometry">
-             <rect>
-              <x>60</x>
-              <y>50</y>
-              <width>41</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>100</string>
-            </property>
-           </widget>
-           <widget class="QLineEdit" name="eTreeDBH">
-            <property name="geometry">
-             <rect>
-              <x>140</x>
-              <y>50</y>
-              <width>41</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>30</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label">
-            <property name="geometry">
-             <rect>
-              <x>20</x>
-              <y>50</y>
-              <width>46</width>
-              <height>14</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Count</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_2">
-            <property name="geometry">
-             <rect>
-              <x>110</x>
-              <y>50</y>
-              <width>46</width>
-              <height>14</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>DBH</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="calcMatrix">
-            <property name="geometry">
-             <rect>
-              <x>190</x>
-              <y>90</y>
-              <width>151</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>ISOFON - calc matrix</string>
             </property>
            </widget>
            <widget class="QPushButton" name="fonRun">
@@ -548,7 +470,7 @@ color: rgb(85, 0, 0);</string>
             <property name="geometry">
              <rect>
               <x>10</x>
-              <y>120</y>
+              <y>40</y>
               <width>331</width>
               <height>111</height>
              </rect>
@@ -596,6 +518,74 @@ color: rgb(85, 0, 0);</string>
              </property>
              <property name="text">
               <string>Change</string>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>150</y>
+              <width>331</width>
+              <height>111</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Visualization Options</string>
+            </property>
+            <widget class="QRadioButton" name="visFon">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>20</y>
+               <width>84</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>FON</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+            <widget class="QRadioButton" name="visImpact">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>40</y>
+               <width>111</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Impact values</string>
+             </property>
+            </widget>
+            <widget class="QRadioButton" name="visDomGrid">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>60</y>
+               <width>101</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>dominace grid</string>
+             </property>
+            </widget>
+            <widget class="QCheckBox" name="visAutoScale">
+             <property name="geometry">
+              <rect>
+               <x>210</x>
+               <y>20</y>
+               <width>111</width>
+               <height>18</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Autoscale colors</string>
              </property>
             </widget>
            </widget>
@@ -675,6 +665,84 @@ p, li { white-space: pre-wrap; }
               </widget>
              </item>
             </layout>
+           </widget>
+           <widget class="QLabel" name="label">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>130</y>
+              <width>46</width>
+              <height>14</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Count</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="eTreeCount">
+            <property name="geometry">
+             <rect>
+              <x>70</x>
+              <y>130</y>
+              <width>41</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>100</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pbAddTrees">
+            <property name="geometry">
+             <rect>
+              <x>200</x>
+              <y>130</y>
+              <width>75</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Add</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="eTreeDBH">
+            <property name="geometry">
+             <rect>
+              <x>150</x>
+              <y>130</y>
+              <width>41</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>30</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_2">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>130</y>
+              <width>46</width>
+              <height>14</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>DBH</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="calcMatrix">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>160</y>
+              <width>151</width>
+              <height>21</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>ISOFON - calc matrix</string>
+            </property>
            </widget>
           </widget>
          </widget>
@@ -768,10 +836,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>tabWidget</tabstop>
   <tabstop>stampTrees</tabstop>
   <tabstop>pbRetrieve</tabstop>
-  <tabstop>pbAddTrees</tabstop>
-  <tabstop>eTreeCount</tabstop>
-  <tabstop>eTreeDBH</tabstop>
-  <tabstop>calcMatrix</tabstop>
   <tabstop>formula</tabstop>
   <tabstop>lVar1</tabstop>
   <tabstop>lVar2</tabstop>

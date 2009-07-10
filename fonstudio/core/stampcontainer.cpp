@@ -41,7 +41,7 @@ int StampContainer::getKey(const float bhd, const float hd_value)
     This function must be called ordered, increasing bhds and hd-values.
     for each line (i.e. same bhd-class) the left and the right margin of hd-values are "filled up":
     e.g. x x x x 3 4 5 x x ---->  3 3 3 3 3 4 5 5 5. */
-int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_value)
+int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_value, const float crown_radius_m)
 {
     int key = getKey(bhd, hd_value);
     if (m_useLookup) {
@@ -70,6 +70,7 @@ int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_valu
     StampItem si;
     si.bhd = bhd;
     si.hd = hd_value;
+    si.crown_radius = crown_radius_m;
     si.stamp = stamp;
     m_stamps.append(si); // store entry in list of stamps
     return key;
@@ -86,7 +87,7 @@ int StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
     float bhd = cBHDclassWidth * cls_bhd + cBHDclassLow;
     float hd = cHDclassWidth * cls_hd + cHDclassLow;
     qDebug() << "reader stamp radius" << crown_radius_m << "mapped to" << bhd << "bhd and hd=" << hd << "classes bhd hd:" << cls_bhd << cls_hd;
-    return addStamp(stamp, bhd, hd);
+    return addStamp(stamp, bhd, hd, crown_radius_m);
 
  }
 
@@ -143,17 +144,32 @@ Stamp* StampContainer::newStamp(const Stamp::StampType type)
     return stamp;
 }
 
+
+void StampContainer::attachReaderStamps(const StampContainer &source)
+{
+    int found=0, total=0;
+    foreach (StampItem si, m_stamps) {
+        const Stamp *s = source.readerStamp(si.crown_radius);
+        si.stamp->setReader(const_cast<Stamp*>(s));
+        if (s) found++;
+        total++;
+        //si.crown_radius
+    }
+    qDebug() << "attachReaderStamps: found" << found << "stamps of" << total;
+}
+
 void StampContainer::load(QDataStream &in)
 {
     qint32 type;
     qint32 count;
-    float bhd, hdvalue, readsum, domvalue;
+    float bhd, hdvalue, readsum, domvalue, crownradius;
     in >> count; // read count of stamps
     qDebug() << count << "stamps to read";
     for (int i=0;i<count;i++) {
         in >> type; // read type
         in >> bhd;
         in >> hdvalue;
+        in >> crownradius;
         in >> readsum;
         in >> domvalue;
         qDebug() << "stamp bhd hdvalue type readsum dominance" << bhd << hdvalue << type << readsum << domvalue;
@@ -161,7 +177,7 @@ void StampContainer::load(QDataStream &in)
         stamp->load(in);
         stamp->setReadSum(readsum);
         stamp->setDominanceValue(domvalue);
-        addStamp(stamp, bhd, hdvalue);
+        addStamp(stamp, bhd, hdvalue, crownradius);
     }
 }
 /** Saves all stamps of the container to a binary stream.
@@ -170,6 +186,7 @@ void StampContainer::load(QDataStream &in)
       - type (enum Stamp::StampType, 4, 8, 12, 16, ...)
       - bhd of the stamp (float)
       - hd-value of the tree (float)
+      - crownradius of the stamp (float) in [m]
       - the sum of values in the center of the stamp (used for read out)
       - the dominance value of the stamp
       - individual data values (Stamp::save() / Stamp::load())
@@ -187,6 +204,7 @@ void StampContainer::save(QDataStream &out)
         out << type;
         out << si.bhd;
         out << si.hd;
+        out << si.crown_radius;
         out << si.stamp->readSum();
         out << si.stamp->dominanceValue();
         si.stamp->save(out);
