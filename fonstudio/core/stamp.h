@@ -30,6 +30,9 @@ public:
     /// get index (e.g. for data()[index]) for indices x and y
     int index(const int x, const int y) const { return y*m_size + x; }
     inline float operator()(const int x, const int y) const { return *data(x,y); }
+    // sum of relevant subarea of the stamp (i.e. crown)
+    const float readSum() const { return m_readsum; }
+    void setReadSum(float sum) { m_readsum = sum; }
     // loading/saving
     void loadFromFile(const QString &fileName);
     void load(QDataStream &in); ///< load from stream (predefined binary structure)
@@ -37,6 +40,7 @@ public:
 private:
     void setup(const int size);
     float *m_data;
+    float m_readsum;
     int m_size;
     int m_offset;
 };

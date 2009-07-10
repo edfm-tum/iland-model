@@ -25,6 +25,7 @@ public:
     /// returns true if there is no way that a ray hits the object starting from p.
     bool noHitGuaranteed(const double p_x, const double p_y, const double p_z);
     const double maxHeight() const { return m_height; }
+    const double maxRadius() const { return m_baseradius; }
 private:
     Expression *m_radiusFormula; ///< formula for calculation of crown widht as f(relative_height)
     double m_baseradius; ///< maximum radius of the crown (at the bottom of the crown) [m]

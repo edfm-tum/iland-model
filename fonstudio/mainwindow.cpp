@@ -302,7 +302,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         for (ix=0;ix<mGrid->sizeX();ix++) {
             value = mGrid->valueAtIndex(QPoint(ix, iy));
 
-            cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*iy);
+            cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*(iy+1));
             fill_color = Helper::colorFromValue(value, 0., maxval);
             painter.fillRect(cell, fill_color);
             //painter.drawRect(cell);
@@ -312,10 +312,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
     if (t) {
         QPointF pos = t->position();
-        int maxy = int( mGrid->sizeY()*m_pixelpercell );
         float pxpermeter = m_pixelpercell/ mGrid->cellsize();
         painter.setPen(Qt::black);
-        painter.drawRect(int(pos.x()*pxpermeter-1), int((maxy-pos.y())*pxpermeter-1), 3,3);
+        painter.drawRect(int(pos.x()*pxpermeter-1), sqsize - int(pos.y()*pxpermeter-1), 3,3);
     }
     /*
     // paint trees...
@@ -815,6 +814,16 @@ void MainWindow::on_lrProcess_clicked()
     LightRoomObject *lro = new LightRoomObject();
     lightroom->setLightRoomObject(lro);
 
+    StampContainer readers;
+    xmlparams = docElem.firstChildElement("params");
+    QString binaryReaderStampFile =  xmlparams.firstChildElement("binaryReaderStamp").text();
+    qDebug() << "reading binary stamp reader file" << binaryReaderStampFile;
+    QFile infile(binaryReaderStampFile);
+    infile.open(QIODevice::ReadOnly);
+    QDataStream in(&infile);
+    readers.load(in);
+    infile.close();
+
     StampContainer container;
     container.useLookup(false); // disable lookup table (not necessary for creation)
 
@@ -894,6 +903,19 @@ void MainWindow::on_lrProcess_clicked()
         if (!stamp)
             return;
         qDebug() << "created stamp with size (n x n)" << stamp->size() << "in an data-block of:" << stamp->dataSize();
+        // process reading area
+        double maxradius = lro->maxRadius();
+        const Stamp *readerstamp = readers.readerStamp(maxradius);
+        if (readerstamp) {
+            int offset = stamp->offset() - readerstamp->offset();
+            qDebug() << "fetching read-sum. offset stamp" << stamp->offset() << "offset readerstamp" << readerstamp->offset();
+            double sum = 0;
+            for (int x=0;x<readerstamp->size();x++)
+                for (int y=0;y<readerstamp->size(); y++)
+                    sum += *(readerstamp->data(x,y)) * *(stamp->data(x+offset, y+offset));
+            qDebug() << "sum of reader-area over stamp" << sum;
+            stamp->setReadSum(sum);
+        } else qDebug() << "!!! no readerstamp available!!!";
         double hd = qRound( height*100 / bhd );
         container.addStamp(stamp,bhd, hd);
         ///////////////////////////

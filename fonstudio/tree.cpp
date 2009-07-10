@@ -171,9 +171,10 @@ double Tree::readStamp()
                sum += m_grid->valueAtIndex(p) * (*stamp)(x,y);
         }
     }
-    mImpact = sum;
-    qDebug() << "Tree #"<< id() << "value" << sum;
-    return sum;
+    float eigenvalue = m_stamp->readSum();
+    mImpact = sum - eigenvalue;
+    qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue;
+    return mImpact;
 }
 
 void Tree::resetStatistics()

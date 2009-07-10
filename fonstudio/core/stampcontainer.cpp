@@ -147,16 +147,18 @@ void StampContainer::load(QDataStream &in)
 {
     qint32 type;
     qint32 count;
-    float bhd, hdvalue;
+    float bhd, hdvalue, readsum;
     in >> count; // read count of stamps
     qDebug() << count << "stamps to read";
     for (int i=0;i<count;i++) {
         in >> type; // read type
         in >> bhd;
         in >> hdvalue;
+        in >> readsum;
         qDebug() << "stamp bhd hdvalue type" << bhd << hdvalue << type;
         Stamp *stamp = newStamp( Stamp::StampType(type) );
         stamp->load(in);
+        stamp->setReadSum(readsum);
         addStamp(stamp, bhd, hdvalue);
     }
 }
@@ -165,7 +167,8 @@ void StampContainer::load(QDataStream &in)
       for each stamp:
       - type (enum Stamp::StampType, 4, 8, 12, 16, ...)
       - bhd of the stamp (float)
-      - height of the tree (float)
+      - hd-value of the tree (float)
+      - the sum of values in the center of the stamp
       - individual data values (Stamp::save() / Stamp::load())
       -- offset (int) no. of pixels away from center
       -- list of data items (type*type items)
@@ -181,6 +184,7 @@ void StampContainer::save(QDataStream &out)
         out << type;
         out << si.bhd;
         out << si.hd;
+        out << si.stamp->readSum();
         si.stamp->save(out);
     }
 
