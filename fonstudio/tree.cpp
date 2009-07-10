@@ -11,6 +11,7 @@ Expression Tree::hScale=Expression();
 FloatGrid *Tree::m_grid = 0;
 FloatGrid *Tree::m_dominanceGrid = 0;
 int Tree::m_statPrint=0;
+int Tree::m_statAboveZ=0;
 int Tree::m_nextId=0;
 
 Tree::Tree()
@@ -178,6 +179,16 @@ double Tree::readStamp()
     }
     float eigenvalue = m_stamp->readSum();
     mImpact = sum - eigenvalue;
+    // read dominance field...
+    float dom_height = (*m_dominanceGrid)[m_Position];
+    if (dom_height < m_Height) {
+        // if tree is higher than Z*, the dominance height
+        // a part of the crown is in "full light".
+        // total value = zstar/treeheight*value + 1-zstar/height
+        // reformulated to:
+        mImpact =  mImpact * dom_height/m_Height ;
+        m_statAboveZ++;
+    }
     if (fabs(mImpact < 0.000001))
         mImpact = 0.f;
     qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue << "Impact" << mImpact;
@@ -187,5 +198,6 @@ double Tree::readStamp()
 void Tree::resetStatistics()
 {
     m_statPrint=0;
+    m_statAboveZ=0;
     m_nextId=1;
 }

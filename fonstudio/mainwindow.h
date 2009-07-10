@@ -65,6 +65,9 @@ private slots:
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
     void mouseDrag(const QPoint& from, const QPoint &to);
+    void on_visFon_toggled();
+    void on_visDomGrid_toggled();
+    void on_visImpact_toggled();
 };
 
 #endif // MAINWINDOW_H

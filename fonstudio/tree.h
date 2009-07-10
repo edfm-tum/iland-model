@@ -45,6 +45,7 @@ public:
     // statistics
     static void resetStatistics();
     static const int statPrints() { return m_statPrint; }
+    static const int statAboveZ() { return m_statAboveZ; } ///< # of trees that are above Z*, i.e. the top is above the dominant height grid
 
     static Expression rScale;
     static Expression hScale;
@@ -64,6 +65,7 @@ private:
     static FloatGrid *m_dominanceGrid;
     // statistics
     static int m_statPrint;
+    static int m_statAboveZ;
     static int m_nextId;
 };
 

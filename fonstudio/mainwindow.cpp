@@ -229,14 +229,14 @@ void MainWindow::on_stampTrees_clicked()
     }
     //qDebug() << gridToString(*mGrid);
     qDebug() << "applied" << Tree::statPrints() << "stamps. tree #:" << mTrees.size();
-    qDebug() << "dominance grid";
-    qDebug() << gridToString(*mDomGrid);
+    qDebug() << Tree::statAboveZ() << "above dominance grid";
+    //qDebug() << gridToString(*mDomGrid);
 
     // read values...
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).readStamp(); // just do it ;)
     }
-
+    qDebug() << Tree::statAboveZ() << "above dominance grid";
     ui->PaintWidget->update();
     /*
     // debug output
@@ -284,35 +284,73 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     // do the actual painting
     if (!mGrid)
         return;
-    // draw grid...
+    bool auto_scale_color = ui->visAutoScale->isChecked();
+    bool show_fon = ui->visFon->isChecked();
+    bool show_dom = ui->visDomGrid->isChecked();
+    bool show_impact = ui->visImpact->isChecked();
 
+    // draw grid...
     int sqsize = qMin(ui->PaintWidget->width(), ui->PaintWidget->height())-1;
     int ccount = mGrid->sizeX();
     m_pixelpercell = sqsize / float(ccount);
+    float pxpermeter = m_pixelpercell / mGrid->cellsize();
     // get maximum value
 
-    float maxval=0.;
-    maxval = mGrid->max();
+    float maxval=1.f; // default maximum
+    if (!auto_scale_color)
+        maxval = mGrid->max();
     if (maxval==0.)
         return;
 
     painter.fillRect(1,1,sqsize-2,sqsize-2, QColor("white"));
     int ix,iy;
+
     QColor fill_color;
     float value;
+    if (show_fon) {
+        QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
+        for (iy=0;iy<mGrid->sizeY();iy++) {
+            for (ix=0;ix<mGrid->sizeX();ix++) {
+                value = mGrid->valueAtIndex(QPoint(ix, iy));
 
-    QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
-    for (iy=0;iy<mGrid->sizeY();iy++) {
-        for (ix=0;ix<mGrid->sizeX();ix++) {
-            value = mGrid->valueAtIndex(QPoint(ix, iy));
+                cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*(iy+1));
+                fill_color = Helper::colorFromValue(value, 0., maxval);
+                painter.fillRect(cell, fill_color);
+                //painter.drawRect(cell);
 
-            cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*(iy+1));
-            fill_color = Helper::colorFromValue(value, 0., maxval);
-            painter.fillRect(cell, fill_color);
-            //painter.drawRect(cell);
+            }
+        }
+    } // if (show_fon)
+
+    if (show_dom) {
+        // paint the lower-res-grid;
+        float bigpixel = sqsize / float(mDomGrid->sizeX());
+        QRectF cell(0,0,bigpixel, bigpixel);
+        for (iy=0;iy<mDomGrid->sizeY();iy++) {
+            for (ix=0;ix<mDomGrid->sizeX();ix++) {
+                value = mDomGrid->valueAtIndex(ix,iy);
+                cell.moveTo(bigpixel*ix, sqsize - bigpixel*(iy+1));
+                fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
+                painter.fillRect(cell, fill_color);
+            }
+        }
+
+    } // if (show_dem)
+    if (show_impact) {
+        std::vector<Tree>::iterator tit;
+        for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+            QPointF pos = tit->position();
+            int x = qRound( pxpermeter * pos.x());
+            int y = qRound( sqsize - pxpermeter*pos.y());
+            value = tit->impact();
+            fill_color = Helper::colorFromValue(value, 0., 1.);
+            painter.setBrush(fill_color);
+            int diameter = 3 + qRound(5*tit->dbh()/100);
+            painter.drawEllipse(QPoint(x,y), diameter, diameter);
 
         }
-    }
+    } // if (show_impact)
+    // show selected tree
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
     if (t) {
         QPointF pos = t->position();
@@ -355,6 +393,9 @@ void MainWindow::repaintArea(QPainter &painter)
     }
 }
 
+void MainWindow::on_visFon_toggled() { ui->PaintWidget->update(); }
+void MainWindow::on_visDomGrid_toggled() { on_visFon_toggled(); }
+void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
 bool wantDrag=false;
 void MainWindow::mouseClick(const QPoint& pos)
 {
