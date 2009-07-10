@@ -134,10 +134,11 @@ void LightRoom::calculateFullGrid()
         sum = 0;
         // 20090708: do not average, but keep the sum
         // aggregate mean for all cells with angles>45° to the tree-top!
+        // 20090711: again average it, but now include the tree top.
         for(int i=0;i<z;i++)
             sum+=values[i];
-        //if (z)
-        //    sum/=float(z);
+        if (z)
+            sum/=float(z);
         *v = sum; // save in 2d grid
         v++;
         c++;
@@ -145,6 +146,8 @@ void LightRoom::calculateFullGrid()
             qDebug() << c << "processed...time: ms: " << t.elapsed();
             QCoreApplication::processEvents();
         }
+        // save value of the middle column...
+        m_centervalue = m_2dvalues(0.f, 0.f);
     }
 }
 

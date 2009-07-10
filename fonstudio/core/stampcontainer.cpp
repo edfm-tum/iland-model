@@ -147,7 +147,7 @@ void StampContainer::load(QDataStream &in)
 {
     qint32 type;
     qint32 count;
-    float bhd, hdvalue, readsum;
+    float bhd, hdvalue, readsum, domvalue;
     in >> count; // read count of stamps
     qDebug() << count << "stamps to read";
     for (int i=0;i<count;i++) {
@@ -155,10 +155,12 @@ void StampContainer::load(QDataStream &in)
         in >> bhd;
         in >> hdvalue;
         in >> readsum;
-        qDebug() << "stamp bhd hdvalue type" << bhd << hdvalue << type;
+        in >> domvalue;
+        qDebug() << "stamp bhd hdvalue type readsum dominance" << bhd << hdvalue << type << readsum << domvalue;
         Stamp *stamp = newStamp( Stamp::StampType(type) );
         stamp->load(in);
         stamp->setReadSum(readsum);
+        stamp->setDominanceValue(domvalue);
         addStamp(stamp, bhd, hdvalue);
     }
 }
@@ -168,7 +170,8 @@ void StampContainer::load(QDataStream &in)
       - type (enum Stamp::StampType, 4, 8, 12, 16, ...)
       - bhd of the stamp (float)
       - hd-value of the tree (float)
-      - the sum of values in the center of the stamp
+      - the sum of values in the center of the stamp (used for read out)
+      - the dominance value of the stamp
       - individual data values (Stamp::save() / Stamp::load())
       -- offset (int) no. of pixels away from center
       -- list of data items (type*type items)
@@ -185,6 +188,7 @@ void StampContainer::save(QDataStream &out)
         out << si.bhd;
         out << si.hd;
         out << si.stamp->readSum();
+        out << si.stamp->dominanceValue();
         si.stamp->save(out);
     }
 

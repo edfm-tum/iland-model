@@ -54,9 +54,11 @@ public:
     /// @return fraction of "blocked" radiation [0..1]. -1: point inside the object
     void calculateFullGrid();
         /// access to the hemigrid
-    const HemiGrid &shadowGrid() { return m_shadowGrid; }
-    const HemiGrid &solarGrid() { return m_solarGrid; }
-    const FloatGrid &result() { return m_2dvalues; }
+    const HemiGrid &shadowGrid() const { return m_shadowGrid; }
+    const HemiGrid &solarGrid() const { return m_solarGrid; }
+    const FloatGrid &result() const { return m_2dvalues; }
+    const double centerValue() const { return m_centervalue; }
+
 private:
     //Grid< QVector<float> > m_3dvalues; ///< storage for resulting 3d light values
     FloatGrid m_2dvalues; ///< resulting 2d pattern (derived from 3dvalues)
@@ -67,6 +69,8 @@ private:
     double m_solarrad_factor; ///< multiplier accounting for the difference of total radiation and the used part of the sky (45°)
     HemiGrid m_solarGrid; ///< grid used for solar radiation (direct + diffus)
     HemiGrid m_shadowGrid; ///< grid used for shadow calculations
+   double m_centervalue; ///< value (shadow*height) of the tree center (relative) [-]
+
     LightRoomObject *m_roomObject;
 };
 

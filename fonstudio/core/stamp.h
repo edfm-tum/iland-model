@@ -33,6 +33,9 @@ public:
     // sum of relevant subarea of the stamp (i.e. crown)
     const float readSum() const { return m_readsum; }
     void setReadSum(float sum) { m_readsum = sum; }
+    // height dominance value in at the tree center
+    const float dominanceValue() const { return m_dominance; }
+    void setDominanceValue(float dom) { m_dominance = dom; }
     // loading/saving
     void loadFromFile(const QString &fileName);
     void load(QDataStream &in); ///< load from stream (predefined binary structure)
@@ -41,6 +44,7 @@ private:
     void setup(const int size);
     float *m_data;
     float m_readsum;
+    float m_dominance;
     int m_size;
     int m_offset;
 };

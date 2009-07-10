@@ -916,6 +916,8 @@ void MainWindow::on_lrProcess_clicked()
             qDebug() << "sum of reader-area over stamp" << sum;
             stamp->setReadSum(sum);
         } else qDebug() << "!!! no readerstamp available!!!";
+
+        stamp->setDominanceValue( lightroom->centerValue() );
         double hd = qRound( height*100 / bhd );
         container.addStamp(stamp,bhd, hd);
         ///////////////////////////
