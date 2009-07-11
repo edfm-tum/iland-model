@@ -7,7 +7,7 @@
 #include "core/grid.h"
 #include "tree.h"
 #include "imagestamp.h"
-
+#include "tools/helper.h"
 
 
 namespace Ui
@@ -39,6 +39,7 @@ private:
     void loadPicusIniFile(const QString &fileName);
     // painter functions
     void paintFON(QPainter &painter, QRect rect);
+    Viewport vp;
 
 private slots:
     void on_lrReadStamps_clicked();
@@ -64,6 +65,7 @@ private slots:
     void on_saveFile_clicked();
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
+    void mouseMove(const QPoint& pos);
     void mouseDrag(const QPoint& from, const QPoint &to);
     void on_visFon_toggled();
     void on_visDomGrid_toggled();

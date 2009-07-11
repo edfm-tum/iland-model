@@ -15,12 +15,14 @@ signals:
      void needsPainting(QPainter &painter);
      void mouseClick(const QPoint &pos);
      void mouseDrag(const QPoint &from, const QPoint &to);
+     void mouseMove(const QPoint &pos);
 
  protected:
      void paintEvent(QPaintEvent *event);
      void mousePressEvent ( QMouseEvent * event );
      void mouseReleaseEvent ( QMouseEvent * event );
      void resizeEvent ( QResizeEvent * event );
+     void mouseMoveEvent(QMouseEvent *event);
  private:
      QImage m_bitmap;
      QPoint m_lastDown;

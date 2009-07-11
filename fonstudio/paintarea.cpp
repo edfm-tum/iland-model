@@ -13,6 +13,8 @@ PaintArea::PaintArea(QWidget *parent)
      //setWindowTitle(tr("Analog Clock"));
      //resize(200, 200);
      m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
+     // enable mouse tracking
+     this->setMouseTracking(true);
 
  }
 
@@ -42,13 +44,15 @@ void PaintArea::paintEvent(QPaintEvent *)
 
 void PaintArea::mousePressEvent ( QMouseEvent * event )
 {
-
     m_lastDown = event->pos();
     emit mouseClick(event->pos());
-     //emit needsPainting(painter);
-
-
 }
+
+void PaintArea::mouseMoveEvent( QMouseEvent * event )
+{
+    emit mouseMove(event->pos());
+}
+
 void PaintArea::mouseReleaseEvent ( QMouseEvent * event )
 {
     setCursor(Qt::CrossCursor);

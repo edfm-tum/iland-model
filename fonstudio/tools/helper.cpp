@@ -1,5 +1,5 @@
 #include "helper.h"
-#include <QTGui>
+#include <QtCore>
 
 Helper::Helper()
 {
@@ -256,4 +256,49 @@ void DebugTimer::showElapsed()
 int DebugTimer::elapsed()
 {
     return t.elapsed();
+}
+
+/** @class Viewport
+  Handles coordinaive transforation between grids (based on real-world metric coordinates).
+  The visible part of the grid is defined by the "viewport" (defaults to 100% of the grid).
+  The result coordinates are mapped into a "ScreenRect", which is a pixel-based viewing window.
+*/
+
+/// toWorld() converts the pixel-information (e.g. by an mouse event) to the corresponding real world coordinates (defined by viewport).
+const QPointF Viewport::toWorld(const QPoint pixel)
+{
+    QPointF p;
+    p.setX( m_viewport.left() + (pixel.x()/double(m_screen.height())) * m_viewport.width() );
+    p.setY( m_viewport.top() + (m_screen.height() - pixel.y())/double(m_screen.width()) * m_viewport.height());
+    return p;
+}
+
+/// toScreen() converts world coordinates in screen coordinates using the defined viewport.
+const QPoint Viewport::toScreen(const QPointF p)
+{
+    double x = (p.x()-m_viewport.left()) / m_viewport.width(); // scale to 0..1
+    double y = (p.y()-m_viewport.top()) / m_viewport.height(); // scale to 0..1
+    QPoint pixel( int( x * m_screen.width()),
+                  int( (1. - y) * m_screen.height()));
+    return pixel;
+}
+
+/// sets the screen rect; this also modifies the viewport.
+void Viewport::setScreenRect(const QRect &viewrect)
+{
+    m_screen = viewrect;
+    m_viewport = viewrect;
+    if (viewrect.isNull() || m_screen.isNull())
+        return;
+    double aspectratio = viewrect.width() / double(viewrect.height());
+    double px_per_meter_x = m_world.width() / double(m_screen.width());
+    double px_per_meter_y = m_world.height() / double(m_screen.height());
+    m_viewport = m_world;
+    if (px_per_meter_x > px_per_meter_y) {
+        // width is too high... center horizontally
+        m_viewport.setWidth(m_world.width() / aspectratio);
+    } else {
+        // height is too high .. center vertically
+        m_viewport.setHeight(m_world.height() * aspectratio );
+    }
 }

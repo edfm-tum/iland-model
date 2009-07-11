@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QTCore>
 
+
 #define QUIETDEBUG(x) if (!Helper::quiet()) { qDebug() << x; }
 
 /** Helper contains a bunch of (static) helper functions.
@@ -99,6 +100,25 @@ private:
     int mVal; // current state
     QVector<UpdateState*> mChilds;
     QMap<UpdateState*, int> mSavedStates;
+};
+
+class Viewport
+{
+public:
+    Viewport(): m_viewAll(true) {}
+    Viewport(const QRectF worldrect, const QRect screenrect) { setWorldRect(worldrect); setScreenRect(screenrect);  }
+    const QPointF toWorld(const QPoint pixel);
+    const QPoint toScreen(const QPointF p);
+    // zoom
+    // setters...
+    void setViewRect(const QRectF &viewrect) { m_viewport = viewrect; }
+    void setWorldRect(const QRectF &worldrect) { m_world = worldrect; }
+    void setScreenRect(const QRect &viewrect);
+private:
+    bool m_viewAll;
+    QRect m_screen;
+    QRectF m_world;
+    QRectF m_viewport;
 };
 
 #endif // HELPER_H

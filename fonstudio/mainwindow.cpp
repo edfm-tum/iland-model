@@ -99,6 +99,8 @@ MainWindow::MainWindow(QWidget *parent)
              this, SLOT(mouseClick(const QPoint&)));
     connect(ui->PaintWidget, SIGNAL(mouseDrag(QPoint,QPoint)),
             this, SLOT(mouseDrag(const QPoint&, const QPoint &)));
+    connect(ui->PaintWidget, SIGNAL(mouseMove(QPoint)),
+            this, SLOT(mouseMove(const QPoint&)));
 
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
@@ -391,6 +393,8 @@ void MainWindow::repaintArea(QPainter &painter)
         case 2: // paint Lightroom
         default: break; // no painting
     }
+    // fix viewpoint
+    vp.setScreenRect(ui->PaintWidget->rect());
 }
 
 void MainWindow::on_visFon_toggled() { ui->PaintWidget->update(); }
@@ -399,6 +403,7 @@ void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
 bool wantDrag=false;
 void MainWindow::mouseClick(const QPoint& pos)
 {
+    qDebug() << "to world:" << vp.toWorld(pos);
     wantDrag = false;
     ui->PaintWidget->setCursor(Qt::CrossCursor);
     ui->treeChange->setProperty("tree",0);
@@ -418,12 +423,16 @@ void MainWindow::mouseClick(const QPoint& pos)
             ui->treeChange->setProperty("tree", (int)p);
             ui->treeDbh->setValue(p->dbh());
             ui->treeHeight->setValue(p->height());
+            ui->treePosX->setValue(p->position().x());
+            ui->treePosY->setValue(p->position().y());
+            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->impact(),5));
             wantDrag=true;
             ui->PaintWidget->setCursor(Qt::SizeAllCursor);
             ui->PaintWidget->update();
             break;
         }
    }
+
 
     /*std::vector<Tree>::iterator tit;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
@@ -434,6 +443,14 @@ void MainWindow::mouseClick(const QPoint& pos)
     }*/
 }
 
+void MainWindow::mouseMove(const QPoint& pos)
+{
+    if (!mGrid || mGrid->isEmpty())
+        return;
+    QPointF p = vp.toWorld(pos);
+    if (mGrid->coordValid(p))
+        ui->fonValue->setText(QString("%1 / %2").arg(p.x()).arg(p.y()));
+}
 
 void MainWindow::mouseDrag(const QPoint& from, const QPoint &to)
 {
@@ -783,6 +800,8 @@ void MainWindow::on_fonRun_clicked()
     mDomGrid = new FloatGrid(cellsize*5, cellcount/5, cellcount/5);
     mDomGrid->initialize(0.f); // zero grid
 
+    vp = Viewport(mGrid->metricRect(), ui->PaintWidget->rect());
+
     // setup of the binary stamps
 
     if (stamp_container) {
@@ -1022,6 +1041,8 @@ void MainWindow::on_treeChange_clicked()
     Tree *t = (Tree*)pt;
     t->setDbh(    ui->treeDbh->value() );
     t->setHeight(ui->treeHeight->value() );
+    QPointF newPos(ui->treePosX->value(), ui->treePosY->value() );
+    t->setPosition(newPos);
     t->setup();
     // changed, now recalc...
     on_stampTrees_clicked();

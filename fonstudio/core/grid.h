@@ -27,8 +27,10 @@ public:
     const int sizeY() const { return mSizeY; }
     const float metricSizeX() const { return mSizeX*mCellsize; }
     const float metricSizeY() const { return mSizeY*mCellsize; }
+    QRectF metricRect() const { return mRect; }
     const float cellsize() const { return mCellsize; }
     const int count() const { return mCount; }
+    const bool isEmpty() const { return mData==NULL; }
     // operations
     // query
     /// access (const) with index variables. use int.
@@ -49,10 +51,12 @@ public:
     T& valueAt(const float x, const float y); ///< value at position defined by metric coordinates (x,y)
     const T& constValueAt(const float x, const float y) const; ///< value at position defined by metric coordinates (x,y)
 
-    QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mOffset.x()) / mCellsize),  int((pos.y()-mOffset.y())/mCellsize)); } /// get index of value at position pos (metric)
+    bool coordValid(const float x, const float y) const { return mRect.contains(x,y); }
+    bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
+    QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mRect.left()) / mCellsize),  int((pos.y()-mRect.top())/mCellsize)); } /// get index of value at position pos (metric)
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } /// get index of value at position pos (index)
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} /// ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
-    QPointF cellCoordinates(const QPoint &pos) { return QPointF( (pos.x()+0.5)*mCellsize+mOffset.x(), (pos.y()+0.5)*mCellsize + mOffset.y());} /// get metric coordinates of the cells center
+    QPointF cellCoordinates(const QPoint &pos) { return QPointF( (pos.x()+0.5)*mCellsize+mRect.left(), (pos.y()+0.5)*mCellsize + mRect.top());} /// get metric coordinates of the cells center
     inline  T* begin() const { return mData; } ///< get "iterator" pointer
     inline  T* end() const { return mEnd; } ///< get iterator end-pointer
     QPoint indexOf(T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
@@ -71,7 +75,7 @@ public:
 private:
     T* mData;
     T* mEnd; ///< pointer to 1 element behind the last
-    QPointF mOffset;
+    QRectF mRect;
     float mCellsize; ///< size of a cell in meter
     int mSizeX; ///< count of cells in x-direction
     int mSizeY; ///< count of cells in y-direction
@@ -184,6 +188,7 @@ template <class T>
 bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 {
     mSizeX=sizex; mSizeY=sizey; mCellsize=cellsize;
+    mRect.setCoords(0., 0., cellsize*sizex, cellsize*sizey);
     mCount = mSizeX*mSizeY;
     if (mData) {
          delete[] mData; mData=NULL;
@@ -197,13 +202,12 @@ bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 template <class T>
 bool Grid<T>::setup(const QRectF& rect, const double cellsize)
 {
-    mOffset.setX(rect.left());
-    mOffset.setY(rect.top());
+    mRect = rect;
     int dx = int(rect.width()/cellsize);
-    if (mOffset.x()+cellsize*dx<rect.right())
+    if (mRect.left()+cellsize*dx<rect.right())
         dx++;
     int dy = int(rect.height()/cellsize);
-    if (mOffset.y()+cellsize*dy<rect.bottom())
+    if (mRect.top()+cellsize*dy<rect.bottom())
         dy++;
     return setup(cellsize, dx, dy);
 }
