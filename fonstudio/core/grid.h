@@ -89,6 +89,7 @@ template <class T>
 Grid<T>::Grid(const Grid<T>& toCopy)
 {
     mData = 0;
+    mRect = toCopy.mRect;
     setup(toCopy.cellsize(), toCopy.sizeX(), toCopy.sizeY());
     const T* end = toCopy.end();
     T* ptr = begin();
@@ -188,7 +189,8 @@ template <class T>
 bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 {
     mSizeX=sizex; mSizeY=sizey; mCellsize=cellsize;
-    mRect.setCoords(0., 0., cellsize*sizex, cellsize*sizey);
+    if (mRect.isNull()) // only set rect if not set before
+        mRect.setCoords(0., 0., cellsize*sizex, cellsize*sizey);
     mCount = mSizeX*mSizeY;
     if (mData) {
          delete[] mData; mData=NULL;

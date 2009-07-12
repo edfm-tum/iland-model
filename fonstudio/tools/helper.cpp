@@ -268,8 +268,8 @@ int DebugTimer::elapsed()
 const QPointF Viewport::toWorld(const QPoint pixel)
 {
     QPointF p;
-    p.setX( m_viewport.left() + (pixel.x()/double(m_screen.height())) * m_viewport.width() );
-    p.setY( m_viewport.top() + (m_screen.height() - pixel.y())/double(m_screen.width()) * m_viewport.height());
+    p.setX( m_viewport.left() + (pixel.x()/double(m_screen.width())) * m_viewport.width() );
+    p.setY( m_viewport.top() + (m_screen.height() - pixel.y())/double(m_screen.height()) * m_viewport.height());
     return p;
 }
 

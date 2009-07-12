@@ -379,6 +379,15 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     } */
 
     qDebug() << "repaintArea. maxval:" << maxval;
+    // viewport test
+    /*
+    QRectF r = mGrid->metricRect();
+    painter.setPen(Qt::blue);
+    painter.drawLine(vp.toScreen(r.topLeft()), vp.toScreen(vp.toScreen(r.bottomRight())));
+    painter.drawLine(vp.toScreen(r.topRight()), vp.toScreen(vp.toScreen(r.bottomLeft())));
+    */
+
+
 
 }
 
@@ -874,6 +883,7 @@ void MainWindow::on_lrProcess_clicked()
     QDomElement trees = docElem.firstChildElement("lightroom").firstChildElement("trees");
             //getNode("lightroom.trees");
     QString path =  docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("path").text();
+    QString target_name = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("file").text();
     qDebug() << "store to " << path;
     QDomElement tree = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("tree");
     //int avg_cells = docElem.firstChildElement("lightroom").firstChildElement("size").attribute("average").toInt();
@@ -898,6 +908,8 @@ void MainWindow::on_lrProcess_clicked()
 
     StampContainer container;
     container.useLookup(false); // disable lookup table (not necessary for creation)
+
+    DebugTimer creation_time("total creation of stamps");
 
     while (!tree.isNull()) {
         name = tree.attribute("name");
@@ -997,7 +1009,7 @@ void MainWindow::on_lrProcess_clicked()
     }
     qDebug() << "finished!!!";
     // write container to a file....
-    QFile file(path + "\\stamps.bin");
+    QFile file(path + "\\" + target_name);
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);   // we will serialize the data into the file
     container.save(out);

@@ -3,7 +3,7 @@
 <document>
 <params>
 <stampFile>e:\dev\iland\fonstudio\inits\circle100.jpg</stampFile>
-<binaryStamp>E:\Daten\iLand\Light\fons\stamps.bin</binaryStamp>
+<binaryStamp>E:\Daten\iLand\Light\fons\piab.bin</binaryStamp>
 <binaryReaderStamp>E:\Daten\iLand\Light\fons\readerstamp.bin</binaryReaderStamp>
 <expression>5+3*sin(2)</expression>
 <!-- hScale / rScale: formulas for calculation of impact. 
@@ -46,10 +46,137 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <cutvalue>0.02</cutvalue>
 <trees>
 <path>E:\Daten\iLand\Light\fons</path>
-<tree name="douglasie_10" bhd="10" h="10" crown="5.3" formula="1.97*(min(0.95, hrel) / 0.95)^0.302"/>
-<tree name="douglasie_20" bhd="20" h="20" crown="10.6" formula="2.53*(min(0.95, hrel) / 0.95)^0.302"/>
-<tree name="douglasie_40" bhd="50" h="40" crown="21.2" formula="3.68*(min(0.95, hrel) / 0.95)^0.302"/>
-<tree name="douglasie_80" bhd="80" h="60" crown="31.8" formula="5.98*(min(0.95, hrel) / 0.95)^0.302"/> 
+<file>piab.bin</file>
+
+<tree name="Piab_6_4.2" bhd="6" h="4.2" crown="1.6" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_6_4.8" bhd="6" h="4.8" crown="1.83" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_6_5.4" bhd="6" h="5.4" crown="2.06" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_6_6" bhd="6" h="6" crown="2.29" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_6_6.6" bhd="6" h="6.6" crown="2.52" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_6_7.2" bhd="6" h="7.2" crown="2.75" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_10_6" bhd="10" h="6" crown="2.29" formula="1.595*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_10_7" bhd="10" h="7" crown="2.67" formula="1.595*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_10_8" bhd="10" h="8" crown="3.06" formula="1.595*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_10_9" bhd="10" h="9" crown="3.44" formula="1.595*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_10_10" bhd="10" h="10" crown="3.82" formula="1.595*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_10_11" bhd="10" h="11" crown="4.2" formula="1.595*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_14_8.4" bhd="14" h="8.4" crown="3.21" formula="1.981*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_14_9.8" bhd="14" h="9.8" crown="3.74" formula="1.981*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_14_11.2" bhd="14" h="11.2" crown="4.28" formula="1.981*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_14_12.6" bhd="14" h="12.6" crown="4.81" formula="1.981*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_14_14" bhd="14" h="14" crown="5.35" formula="1.981*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_18_9" bhd="18" h="9" crown="3.44" formula="2.329*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_18_10.8" bhd="18" h="10.8" crown="4.13" formula="2.329*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_18_12.6" bhd="18" h="12.6" crown="4.81" formula="2.329*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_18_14.4" bhd="18" h="14.4" crown="5.5" formula="2.329*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_18_16.2" bhd="18" h="16.2" crown="6.19" formula="2.329*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_22_11" bhd="22" h="11" crown="4.2" formula="2.65*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_22_13.2" bhd="22" h="13.2" crown="5.04" formula="2.65*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_22_15.4" bhd="22" h="15.4" crown="5.88" formula="2.65*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_22_17.6" bhd="22" h="17.6" crown="6.72" formula="2.65*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_22_19.8" bhd="22" h="19.8" crown="7.56" formula="2.65*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_26_13" bhd="26" h="13" crown="4.97" formula="2.951*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_26_15.6" bhd="26" h="15.6" crown="5.96" formula="2.951*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_26_18.2" bhd="26" h="18.2" crown="6.95" formula="2.951*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_26_20.8" bhd="26" h="20.8" crown="7.95" formula="2.951*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_30_15" bhd="30" h="15" crown="5.73" formula="3.236*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_30_18" bhd="30" h="18" crown="6.88" formula="3.236*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_30_21" bhd="30" h="21" crown="8.02" formula="3.236*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_30_24" bhd="30" h="24" crown="9.17" formula="3.236*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_34_17" bhd="34" h="17" crown="6.49" formula="3.508*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_34_20.4" bhd="34" h="20.4" crown="7.79" formula="3.508*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_34_23.8" bhd="34" h="23.8" crown="9.09" formula="3.508*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_34_27.2" bhd="34" h="27.2" crown="10.39" formula="3.508*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_38_19" bhd="38" h="19" crown="7.26" formula="3.768*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_38_22.8" bhd="38" h="22.8" crown="8.71" formula="3.768*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_38_26.6" bhd="38" h="26.6" crown="10.16" formula="3.768*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_38_30.4" bhd="38" h="30.4" crown="11.61" formula="3.768*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_42_21" bhd="42" h="21" crown="8.02" formula="4.019*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_42_25.2" bhd="42" h="25.2" crown="9.63" formula="4.019*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_42_29.4" bhd="42" h="29.4" crown="11.23" formula="4.019*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_46_23" bhd="46" h="23" crown="8.79" formula="4.262*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_46_27.6" bhd="46" h="27.6" crown="10.54" formula="4.262*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_46_32.2" bhd="46" h="32.2" crown="12.3" formula="4.262*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_50_25" bhd="50" h="25" crown="9.55" formula="4.497*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_50_30" bhd="50" h="30" crown="11.46" formula="4.497*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_50_35" bhd="50" h="35" crown="13.37" formula="4.497*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_54_27" bhd="54" h="27" crown="10.31" formula="4.725*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_54_32.4" bhd="54" h="32.4" crown="12.38" formula="4.725*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_54_37.8" bhd="54" h="37.8" crown="14.44" formula="4.725*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_58_23.2" bhd="58" h="23.2" crown="8.86" formula="4.948*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_58_29" bhd="58" h="29" crown="11.08" formula="4.948*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_58_34.8" bhd="58" h="34.8" crown="13.29" formula="4.948*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_58_40.6" bhd="58" h="40.6" crown="15.51" formula="4.948*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_62_24.8" bhd="62" h="24.8" crown="9.47" formula="5.165*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_62_31" bhd="62" h="31" crown="11.84" formula="5.165*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_62_37.2" bhd="62" h="37.2" crown="14.21" formula="5.165*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_62_43.4" bhd="62" h="43.4" crown="16.58" formula="5.165*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_66_26.4" bhd="66" h="26.4" crown="10.08" formula="5.377*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_66_33" bhd="66" h="33" crown="12.61" formula="5.377*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_66_39.6" bhd="66" h="39.6" crown="15.13" formula="5.377*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_66_46.2" bhd="66" h="46.2" crown="17.65" formula="5.377*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_70_28" bhd="70" h="28" crown="10.7" formula="5.585*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_70_35" bhd="70" h="35" crown="13.37" formula="5.585*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_70_42" bhd="70" h="42" crown="16.04" formula="5.585*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_70_49" bhd="70" h="49" crown="18.72" formula="5.585*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_74_29.6" bhd="74" h="29.6" crown="11.31" formula="5.789*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_74_37" bhd="74" h="37" crown="14.13" formula="5.789*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_74_44.4" bhd="74" h="44.4" crown="16.96" formula="5.789*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_78_31.2" bhd="78" h="31.2" crown="11.92" formula="5.988*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_78_39" bhd="78" h="39" crown="14.9" formula="5.988*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_78_46.8" bhd="78" h="46.8" crown="17.88" formula="5.988*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_82_32.8" bhd="82" h="32.8" crown="12.53" formula="6.184*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_82_41" bhd="82" h="41" crown="15.66" formula="6.184*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_82_49.2" bhd="82" h="49.2" crown="18.79" formula="6.184*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_86_34.4" bhd="86" h="34.4" crown="13.14" formula="6.377*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_86_43" bhd="86" h="43" crown="16.43" formula="6.377*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_86_51.6" bhd="86" h="51.6" crown="19.71" formula="6.377*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_90_36" bhd="90" h="36" crown="13.75" formula="6.566*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_90_45" bhd="90" h="45" crown="17.19" formula="6.566*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_90_54" bhd="90" h="54" crown="20.63" formula="6.566*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_94_37.6" bhd="94" h="37.6" crown="14.36" formula="6.753*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_94_47" bhd="94" h="47" crown="17.95" formula="6.753*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_94_56.4" bhd="94" h="56.4" crown="21.54" formula="6.753*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_98_39.2" bhd="98" h="39.2" crown="14.97" formula="6.937*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_98_49" bhd="98" h="49" crown="18.72" formula="6.937*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_98_58.8" bhd="98" h="58.8" crown="22.46" formula="6.937*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_102_40.8" bhd="102" h="40.8" crown="15.59" formula="7.118*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_102_51" bhd="102" h="51" crown="19.48" formula="7.118*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_102_61.2" bhd="102" h="61.2" crown="23.38" formula="7.118*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_106_42.4" bhd="106" h="42.4" crown="16.2" formula="7.296*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_106_53" bhd="106" h="53" crown="20.25" formula="7.296*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_106_63.6" bhd="106" h="63.6" crown="24.3" formula="7.296*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_110_44" bhd="110" h="44" crown="16.81" formula="7.473*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_110_55" bhd="110" h="55" crown="21.01" formula="7.473*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_110_66" bhd="110" h="66" crown="25.21" formula="7.473*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_114_45.6" bhd="114" h="45.6" crown="17.42" formula="7.646*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_114_57" bhd="114" h="57" crown="21.77" formula="7.646*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_114_68.4" bhd="114" h="68.4" crown="26.13" formula="7.646*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_118_47.2" bhd="118" h="47.2" crown="18.03" formula="7.818*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_118_59" bhd="118" h="59" crown="22.54" formula="7.818*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_118_70.8" bhd="118" h="70.8" crown="27.05" formula="7.818*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_122_48.8" bhd="122" h="48.8" crown="18.64" formula="7.988*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_122_61" bhd="122" h="61" crown="23.3" formula="7.988*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_122_73.2" bhd="122" h="73.2" crown="27.96" formula="7.988*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_126_50.4" bhd="126" h="50.4" crown="19.25" formula="8.156*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_126_63" bhd="126" h="63" crown="24.07" formula="8.156*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_126_75.6" bhd="126" h="75.6" crown="28.88" formula="8.156*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_130_52" bhd="130" h="52" crown="19.86" formula="8.321*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_130_65" bhd="130" h="65" crown="24.83" formula="8.321*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_130_78" bhd="130" h="78" crown="29.8" formula="8.321*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_134_53.6" bhd="134" h="53.6" crown="20.48" formula="8.485*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_134_67" bhd="134" h="67" crown="25.59" formula="8.485*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_134_80.4" bhd="134" h="80.4" crown="30.71" formula="8.485*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_138_55.2" bhd="138" h="55.2" crown="21.09" formula="8.648*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_138_69" bhd="138" h="69" crown="26.36" formula="8.648*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_138_82.8" bhd="138" h="82.8" crown="31.63" formula="8.648*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_142_56.8" bhd="142" h="56.8" crown="21.7" formula="8.808*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_142_71" bhd="142" h="71" crown="27.12" formula="8.808*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_146_58.4" bhd="146" h="58.4" crown="22.31" formula="8.967*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_146_73" bhd="146" h="73" crown="27.89" formula="8.967*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_150_60" bhd="150" h="60" crown="22.92" formula="9.125*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_150_75" bhd="150" h="75" crown="28.65" formula="9.125*(min(0.95, hrel)/0.95)^0.28483"/>
+
 </trees>
 </lightroom>
 
