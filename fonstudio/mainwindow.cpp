@@ -225,7 +225,7 @@ void MainWindow::on_stampTrees_clicked()
     //mGrid->initialize(0.f); // set grid to zero.
     //mDomGrid->initialize(0.f); // set dominance grid to zero.
     mGrid->initialize(1.f); // 1 for multiplicative
-    mDomGrid->initialize(1000.); // 1000: no influence (trees are always below this height)
+    mDomGrid->initialize(0.); //0: "active",  1000: no influence (trees are always below this height)
     Tree::setGrid(mGrid, mDomGrid); // set static target grids
     Tree::resetStatistics();
 
@@ -930,11 +930,14 @@ void MainWindow::on_lrProcess_clicked()
         lro->setuptree(height, crown, formula);
         qDebug() << "start" << name;
         lightroom->calculateFullGrid();
-        // store
-        result = gridToString( lightroom->result() );
-        Helper::saveToTextFile(path + "\\ " + name + ".txt", result);
-        QImage img = gridToImage( lightroom->result() );
-        img.save(path + "\\ " + name + ".jpg", "JPG", 100);
+
+        // store as textfile:
+        //result = gridToString( lightroom->result() );
+        //Helper::saveToTextFile(path + "\\ " + name + ".txt", result);
+
+        // save stamp as image:
+        //QImage img = gridToImage( lightroom->result() );
+        //img.save(path + "\\ " + name + ".jpg", "JPG", 100);
 
         // averaged copy: FloatGrid gr = lightroom->result().averaged(avg_cells);
         const FloatGrid &gr = lightroom->result();

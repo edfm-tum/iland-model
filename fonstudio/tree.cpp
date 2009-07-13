@@ -161,8 +161,13 @@ void Tree::applyStamp()
     }
     // apply height in domiance grid
     float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
-    if (dom < m_stamp->dominanceValue()*m_Height)
-        dom =  m_stamp->dominanceValue()*m_Height;
+    float compare_height;
+    if (m_Height<10)
+        compare_height = m_Height/2.f;
+    else
+        compare_height = m_Height - 5.f;
+    if (dom < compare_height)
+        dom =  compare_height; // set height (via ref)
 
     m_statPrint++; // count # of stamp applications...
 }

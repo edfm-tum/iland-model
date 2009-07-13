@@ -13,6 +13,7 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <cellSize>2</cellSize>
 <!-- cells: number of cells (NOT number of meters) in x and y-direction-->
 <cells>50</cells>
+<laifactor>0.8</laifactor>
 <!-- Isofon settings
      ===============
   seriesDbh: list of DBH values, space-separated
@@ -43,10 +44,17 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <lightroom>
 <size x="100" y="100" z="65" cellsize="2" average="3"/>
 <hemigrid size="5" latitude="48" diffus="0.5"/>
-<cutvalue>0.02</cutvalue>
+<cutvalue>0.1</cutvalue>
 <trees>
 <path>E:\Daten\iLand\Light\fons</path>
 <file>piab.bin</file>
+<!--<tree name="Piab_110_66" bhd="110" h="66" crown="25.21" formula="7.473*(min(0.95, hrel)/0.95)^0.28483"/>
+-->
+<!--
+<tree name="Piab_6_4.8" bhd="6" h="4.8" crown="1.83" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_22_15.4" bhd="22" h="15.4" crown="5.88" formula="2.65*(min(0.95, hrel)/0.95)^0.28483"/>
+<tree name="Piab_58_34.8" bhd="58" h="34.8" crown="13.29" formula="4.948*(min(0.95, hrel)/0.95)^0.28483"/>
+-->
 
 <tree name="Piab_6_4.2" bhd="6" h="4.2" crown="1.6" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
 <tree name="Piab_6_4.8" bhd="6" h="4.8" crown="1.83" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>

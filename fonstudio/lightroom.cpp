@@ -136,11 +136,12 @@ void LightRoom::calculateFullGrid()
         // 20090708: do not average, but keep the sum
         // aggregate mean for all cells with angles>45° to the tree-top!
         // 20090711: again average it, but now include the tree top.
+        // 20090713: go back to sum...
         for(int i=0;i<z;i++)
             sum+=values[i];
-        if (z)
-            sum/=float(z);
-        *v = sum; // save in 2d grid
+        //if (z)
+        //    sum/=float(z);
+        *v = sum*m_cellsize; // save in 2d grid, multiply with height (shadow * meter)
         v++;
         c++;
         if (c%1000==0) {
