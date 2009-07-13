@@ -177,6 +177,8 @@ void MainWindow::loadPicusIniFile(const QString &fileName)
         }
         if (iBhd>=0)
             tree.setDbh(line.section(sep, iBhd, iBhd).toDouble());
+        if (tree.dbh() < 5)
+            continue; // 5cm: lower threshold for the moment
         if (iHeight>=0)
             tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
 
@@ -220,8 +222,10 @@ void MainWindow::on_stampTrees_clicked()
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).stampOnGrid(mStamp, *mGrid);
     } */
-    mGrid->initialize(0.f); // set grid to zero.
-    mDomGrid->initialize(0.f); // set dominance grid to zero.
+    //mGrid->initialize(0.f); // set grid to zero.
+    //mDomGrid->initialize(0.f); // set dominance grid to zero.
+    mGrid->initialize(1.f); // 1 for multiplicative
+    mDomGrid->initialize(1000.); // 1000: no influence (trees are always below this height)
     Tree::setGrid(mGrid, mDomGrid); // set static target grids
     Tree::resetStatistics();
 
@@ -316,7 +320,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 value = mGrid->valueAtIndex(QPoint(ix, iy));
 
                 cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*(iy+1));
-                fill_color = Helper::colorFromValue(value, 0., maxval);
+                fill_color = Helper::colorFromValue(value, 0., maxval, true);
                 painter.fillRect(cell, fill_color);
                 //painter.drawRect(cell);
 
@@ -457,8 +461,9 @@ void MainWindow::mouseMove(const QPoint& pos)
     if (!mGrid || mGrid->isEmpty())
         return;
     QPointF p = vp.toWorld(pos);
-    if (mGrid->coordValid(p))
-        ui->fonValue->setText(QString("%1 / %2").arg(p.x()).arg(p.y()));
+    if (mGrid->coordValid(p)) {
+        ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mGrid).valueAt(p)));
+    }
 }
 
 void MainWindow::mouseDrag(const QPoint& from, const QPoint &to)
@@ -837,6 +842,10 @@ void MainWindow::on_fonRun_clicked()
     qDebug() << "Loaded binary stamps from file. count:" << stamp_container->count();
     // attach reader stamps to each writer stamp
     stamp_container->attachReaderStamps(*reader_stamp_container);
+    // when doing multiplicative combination, "1" is the no-influence-value. invert() reverses all stamps.
+    stamp_container->invert();
+    //qDebug() << stamp_container->dump();
+
 
 
     // Tree species...

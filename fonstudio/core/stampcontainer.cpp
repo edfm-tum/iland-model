@@ -158,6 +158,19 @@ void StampContainer::attachReaderStamps(const StampContainer &source)
     qDebug() << "attachReaderStamps: found" << found << "stamps of" << total;
 }
 
+void StampContainer::invert()
+{
+    StampItem  si;
+    foreach(si, m_stamps) {
+        Stamp *s =si.stamp;
+        float *p = s->data();
+        while (p!=s->end()) {
+            *p = 1. - *p;
+            p++;
+        }
+    }
+}
+
 void StampContainer::load(QDataStream &in)
 {
     qint32 type;

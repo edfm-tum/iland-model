@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/fonstudio.qrc">
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -546,7 +546,7 @@ color: rgb(85, 0, 0);</string>
                <x>220</x>
                <y>60</y>
                <width>91</width>
-               <height>16</height>
+               <height>41</height>
               </rect>
              </property>
              <property name="text">
@@ -627,7 +627,7 @@ color: rgb(85, 0, 0);</string>
                <x>210</x>
                <y>50</y>
                <width>101</width>
-               <height>16</height>
+               <height>31</height>
               </rect>
              </property>
              <property name="text">
@@ -832,7 +832,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -844,7 +844,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionFON_action">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
    </property>
    <property name="text">
@@ -856,7 +856,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -895,7 +895,9 @@ p, li { white-space: pre-wrap; }
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="res/fonstudio.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>lrSliderX</sender>

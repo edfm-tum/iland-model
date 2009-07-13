@@ -34,6 +34,7 @@ public:
         The reader-stamp is returned by a call to the reader()-function of the Stamp itself.
         @param Container holding the reader stamps.*/
     void attachReaderStamps(const StampContainer &source);
+    void invert(); ///< invert stamps (value = 1. - value) (for multiplicative overlay)
 
     QString dump();
 

@@ -143,11 +143,20 @@ void Tree::applyStamp()
     QPoint p;
 
     int x,y;
+    QPoint dbg(10,20);
     for (x=0;x<m_stamp->size();++x) {
         for (y=0;y<m_stamp->size(); ++y) {
            p = pos + QPoint(x,y);
-           if (m_grid->isIndexValid(p))
-               m_grid->valueAtIndex(p)+=(*m_stamp)(x,y);
+           // debug pixel
+           if (p==dbg)
+               qDebug() << "#" << id() << "value;"<<(*m_stamp)(x,y);
+
+           if (m_grid->isIndexValid(p)) {
+               // mulitplicative:
+               m_grid->valueAtIndex(p)*=(*m_stamp)(x,y);
+               // additiv:
+               //m_grid->valueAtIndex(p)+=(*m_stamp)(x,y);
+           }
         }
     }
     // apply height in domiance grid
@@ -160,6 +169,8 @@ void Tree::applyStamp()
 
 double Tree::readStamp()
 {
+    if (!m_stamp)
+        return 0.;
     const Stamp *stamp = m_stamp->reader();
     if (!stamp)
         return 0.;
@@ -178,7 +189,8 @@ double Tree::readStamp()
         }
     }
     float eigenvalue = m_stamp->readSum();
-    mImpact = sum - eigenvalue;
+    //mImpact = sum - eigenvalue;// additive
+    mImpact = sum + eigenvalue;// multiplicative
     // read dominance field...
     float dom_height = (*m_dominanceGrid)[m_Position];
     if (dom_height < m_Height) {
