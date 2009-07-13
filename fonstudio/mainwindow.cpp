@@ -222,10 +222,10 @@ void MainWindow::on_stampTrees_clicked()
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).stampOnGrid(mStamp, *mGrid);
     } */
-    //mGrid->initialize(0.f); // set grid to zero.
-    //mDomGrid->initialize(0.f); // set dominance grid to zero.
-    mGrid->initialize(1.f); // 1 for multiplicative
-    mDomGrid->initialize(0.); //0: "active",  1000: no influence (trees are always below this height)
+    mGrid->initialize(0.f); // set grid to zero.
+    mDomGrid->initialize(0.f); // set dominance grid to zero.
+    //mGrid->initialize(1.f); // 1 for multiplicative
+    //mDomGrid->initialize(1000.); //0: "active",  1000: no influence (trees are always below this height)
     Tree::setGrid(mGrid, mDomGrid); // set static target grids
     Tree::resetStatistics();
 
@@ -320,7 +320,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 value = mGrid->valueAtIndex(QPoint(ix, iy));
 
                 cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*(iy+1));
-                fill_color = Helper::colorFromValue(value, 0., maxval, true);
+                fill_color = Helper::colorFromValue(value, 0., maxval);
                 painter.fillRect(cell, fill_color);
                 //painter.drawRect(cell);
 
@@ -763,6 +763,8 @@ void MainWindow::on_fonRun_clicked()
     QString stampFile =  xmlparams.firstChildElement("stampFile").text();
     QString binaryStampFile =  xmlparams.firstChildElement("binaryStamp").text();
     QString binaryReaderStampFile =  xmlparams.firstChildElement("binaryReaderStamp").text();
+    Tree::lafactor = xmlparams.firstChildElement("laifactor").text().toFloat();
+    qDebug() << "set LA multiplier to" << Tree::lafactor;
 
     // Here we append a new element to the end of the document
     //QDomElement elem = doc.createElement("img");
@@ -843,7 +845,7 @@ void MainWindow::on_fonRun_clicked()
     // attach reader stamps to each writer stamp
     stamp_container->attachReaderStamps(*reader_stamp_container);
     // when doing multiplicative combination, "1" is the no-influence-value. invert() reverses all stamps.
-    stamp_container->invert();
+    //stamp_container->invert(); // only multiplicative!
     //qDebug() << stamp_container->dump();
 
 

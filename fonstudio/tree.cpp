@@ -13,6 +13,7 @@ FloatGrid *Tree::m_dominanceGrid = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_nextId=0;
+float Tree::lafactor = 1.;
 
 Tree::Tree()
 {
@@ -153,9 +154,9 @@ void Tree::applyStamp()
 
            if (m_grid->isIndexValid(p)) {
                // mulitplicative:
-               m_grid->valueAtIndex(p)*=(*m_stamp)(x,y);
+               //m_grid->valueAtIndex(p)*=(*m_stamp)(x,y);
                // additiv:
-               //m_grid->valueAtIndex(p)+=(*m_stamp)(x,y);
+               m_grid->valueAtIndex(p)+= (*m_stamp)(x,y) * lafactor;
            }
         }
     }
@@ -193,11 +194,15 @@ double Tree::readStamp()
                sum += m_grid->valueAtIndex(p) * (*stamp)(x,y);
         }
     }
-    float eigenvalue = m_stamp->readSum();
-    //mImpact = sum - eigenvalue;// additive
-    mImpact = sum + eigenvalue;// multiplicative
-    // read dominance field...
+    float eigenvalue = m_stamp->readSum() * lafactor;
+    mImpact = sum - eigenvalue;// additive
     float dom_height = (*m_dominanceGrid)[m_Position];
+    if (dom_height>0.)
+       mImpact = mImpact / dom_height;
+
+    //mImpact = sum + eigenvalue;// multiplicative
+    // read dominance field...
+
     if (dom_height < m_Height) {
         // if tree is higher than Z*, the dominance height
         // a part of the crown is in "full light".

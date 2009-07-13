@@ -49,6 +49,7 @@ public:
 
     static Expression rScale;
     static Expression hScale;
+    static float lafactor;
 private:
     int m_id;
     float m_Dbh;
@@ -63,6 +64,7 @@ private:
     TreeSpecies *m_species;
     static FloatGrid *m_grid;
     static FloatGrid *m_dominanceGrid;
+
     // statistics
     static int m_statPrint;
     static int m_statAboveZ;
