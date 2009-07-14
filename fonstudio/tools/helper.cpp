@@ -278,10 +278,6 @@ const QPointF Viewport::toWorld(const QPoint pixel)
     p.setY( (m_screen.height() - pixel.y()- m_delta_worldtoscreen.y() )/m_scale_worldtoscreen  );
     return p;
 
-//    QPointF p;
-//    p.setX( m_viewport.left() + (pixel.x()/double(m_screen.width())) * m_viewport.width() );
-//    p.setY( m_viewport.top() + (m_screen.height() - pixel.y())/double(m_screen.height()) * m_viewport.height());
-//    return p;
 }
 
 /// toScreen() converts world coordinates in screen coordinates using the defined viewport.
@@ -291,11 +287,6 @@ const QPoint Viewport::toScreen(const QPointF p)
     pixel.setX( qRound( p.x()*m_scale_worldtoscreen + m_delta_worldtoscreen.x() ));
     pixel.setY( m_screen.height()-1 -  qRound( p.y() * m_scale_worldtoscreen + m_delta_worldtoscreen.y() ));
     return pixel;
-//    double x = (p.x()-m_viewport.left()) / m_viewport.width(); // scale to 0..1
-//    double y = (p.y()-m_viewport.top()) / m_viewport.height(); // scale to 0..1
-//    QPoint pixel( int( x * m_screen.width()),
-//                  int( (1. - y) * m_screen.height()));
-//    return pixel;
 }
 
 /// sets the screen rect; this also modifies the viewport.
@@ -305,21 +296,9 @@ void Viewport::setScreenRect(const QRect &viewrect)
     m_viewport = viewrect;
     zoomToCenter(100.);
     return;
-//    if (viewrect.isNull() || m_screen.isNull())
-//        return;
-//    double aspectratio = viewrect.width() / double(viewrect.height());
-//    double px_per_meter_x = m_screen.width() / m_world.width();
-//    double px_per_meter_y = m_screen.height() / m_world.height();
-//    m_viewport = m_world;
-//    if (px_per_meter_x > px_per_meter_y) {
-//        // width is too high... center horizontally
-//        m_viewport.setWidth(m_world.width() / aspectratio);
-//    } else {
-//        // height is too high .. center vertically
-//        m_viewport.setHeight(m_world.height() * aspectratio );
-//    }
 }
 
+/// zoom to the center of the screen; the zooming parameter percent is currently not supported!
 void Viewport::zoomToCenter(const double percent)
 {
     // calculate move/scale so that world-rect maps entirely onto screen
