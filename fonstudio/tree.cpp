@@ -14,6 +14,7 @@ int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_nextId=0;
 float Tree::lafactor = 1.;
+int Tree::m_debugid = -1;
 
 Tree::Tree()
 {
@@ -143,34 +144,50 @@ void Tree::applyStamp()
     pos-=QPoint(offset, offset);
     QPoint p;
 
+    float &dom = m_dominanceGrid->valueAt(m_Position);
+
     int x,y;
+    float value;
     QPoint dbg(10,20);
     for (x=0;x<m_stamp->size();++x) {
         for (y=0;y<m_stamp->size(); ++y) {
            p = pos + QPoint(x,y);
            // debug pixel
            if (p==dbg)
-               qDebug() << "#" << id() << "value;"<<(*m_stamp)(x,y);
+               qDebug() << "#" << id() << "value;"<<(*m_stamp)(x,y)<<"domH"<<dom;
 
            if (m_grid->isIndexValid(p)) {
                // mulitplicative:
                //m_grid->valueAtIndex(p)*=(*m_stamp)(x,y);
                // additiv:
-               m_grid->valueAtIndex(p)+= (*m_stamp)(x,y) * lafactor;
+               // multiplicatie, v2
+               value = (*m_stamp)(x,y) ;
+               value = 1. - value*lafactor / dom;
+               if (value<0.)
+                   value=0;
+               m_grid->valueAtIndex(p)*= value;
            }
         }
     }
-    // apply height in domiance grid
+
+    m_statPrint++; // count # of stamp applications...
+}
+
+void Tree::heightGrid()
+{
+        // height of Z*
     float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
+    // apply height in domiance grid
     float compare_height;
-    if (m_Height<10)
-        compare_height = m_Height/2.f;
+    if (m_Height<15)
+        compare_height = m_Height;
+    //if (m_Height<10)
+    //    compare_height = m_Height/2.f;
     else
         compare_height = m_Height - 5.f;
     if (dom < compare_height)
         dom =  compare_height; // set height (via ref)
 
-    m_statPrint++; // count # of stamp applications...
 }
 
 double Tree::readStamp()
@@ -216,6 +233,60 @@ double Tree::readStamp()
     qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue << "Impact" << mImpact;
     return mImpact;
 }
+
+double Tree::readStampMul()
+{
+    if (!m_stamp)
+        return 0.;
+    const Stamp *reader = m_stamp->reader();
+    if (!reader)
+        return 0.;
+    QPoint pos_reader = m_grid->indexAt(m_Position);
+
+    int offset_reader = reader->offset();
+    int offset_writer = m_stamp->offset();
+    int d_offset = offset_writer - offset_reader;
+
+    QPoint pos_writer=pos_reader - QPoint(offset_writer, offset_writer);
+    pos_reader-=QPoint(offset_reader, offset_reader);
+    QPoint p;
+
+    float dom_height = (*m_dominanceGrid)[m_Position];
+
+    int x,y;
+    double sum=0.;
+    double value, own_value;
+    for (x=0;x<reader->size();++x) {
+        for (y=0;y<reader->size(); ++y) {
+            p = pos_reader + QPoint(x,y);
+            if (m_grid->isIndexValid(p)) {
+                own_value = 1. - m_stamp->offsetValue(x,y,d_offset)*lafactor /dom_height;
+                value =  m_grid->valueAtIndex(p) / own_value; // remove impact of focal tree
+                if (value>0.)
+                    sum += value * (*reader)(x,y);
+                //value = (1. - m_stamp->offsetValue(x,y,d_offset)/dom_height);
+                //value = (1 - m_grid->valueAtIndex(p)) / (m_stamp->offsetValue(x,y,d_offset)/dom_height * lafactor);
+                if (isDebugging()) {
+                    qDebug() << "Tree" << id() << "Coord" << p << "gridvalue" << m_grid->valueAtIndex(p) << "value" << value << "reader" << (*reader)(x,y) << "writer" << m_stamp->offsetValue(x,y,d_offset);
+                }
+
+            }
+        }
+    }
+    mImpact = sum;
+    // read dominance field...
+    if (dom_height < m_Height) {
+        // if tree is higher than Z*, the dominance height
+        // a part of the crown is in "full light".
+        m_statAboveZ++;
+        mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
+    }
+    if (mImpact > 1)
+        mImpact = 1.f;
+    qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
+    return mImpact;
+}
+
 
 void Tree::resetStatistics()
 {

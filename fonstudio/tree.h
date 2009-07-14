@@ -33,6 +33,8 @@ public:
 
     void setup();
 
+    void enableDebugging() { m_debugid = m_id; }
+
     // image based stamp functions
     void stampOnGrid(ImageStamp& stamp, FloatGrid& grid);
     float retrieveValue(ImageStamp& stamp, FloatGrid& grid);
@@ -41,6 +43,8 @@ public:
     static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { m_grid = gridToStamp; m_dominanceGrid = dominanceGrid; }
     void applyStamp();
     double readStamp();
+    double readStampMul();
+    void heightGrid();
 
     // statistics
     static void resetStatistics();
@@ -50,7 +54,9 @@ public:
     static Expression rScale;
     static Expression hScale;
     static float lafactor;
+
 private:
+    bool isDebugging() { return m_id == m_debugid; }
     int m_id;
     float m_Dbh;
     float m_Height;
@@ -64,6 +70,8 @@ private:
     TreeSpecies *m_species;
     static FloatGrid *m_grid;
     static FloatGrid *m_dominanceGrid;
+    // debugging
+    static int m_debugid;
 
     // statistics
     static int m_statPrint;

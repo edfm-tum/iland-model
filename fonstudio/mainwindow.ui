@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res/fonstudio.qrc">
+   <iconset>
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -511,9 +511,9 @@ color: rgb(85, 0, 0);</string>
              <property name="geometry">
               <rect>
                <x>220</x>
-               <y>30</y>
+               <y>10</y>
                <width>75</width>
-               <height>23</height>
+               <height>21</height>
               </rect>
              </property>
              <property name="text">
@@ -551,6 +551,19 @@ color: rgb(85, 0, 0);</string>
              </property>
              <property name="text">
               <string>(value)</string>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="pbSetAsDebug">
+             <property name="geometry">
+              <rect>
+               <x>220</x>
+               <y>40</y>
+               <width>75</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>debug tree</string>
              </property>
             </widget>
            </widget>
@@ -832,7 +845,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -844,7 +857,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionFON_action">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
    </property>
    <property name="text">
@@ -856,7 +869,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -895,9 +908,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources>
-  <include location="res/fonstudio.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>lrSliderX</sender>

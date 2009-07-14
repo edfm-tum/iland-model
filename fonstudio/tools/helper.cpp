@@ -308,14 +308,14 @@ void Viewport::zoomToCenter(const double percent)
     QPointF d;
     if (scale_x < scale_y) {
         // x-axis is full; center in y-axis
-        d.setX(0.);
+        d.setX(-m_world.left()*scale);
         int pxworld = int(scale * m_world.height());
-        d.setY( ((m_screen.height() - pxworld) / 2.));
+        d.setY(-m_world.top()*scale + ((m_screen.height() - pxworld) / 2.));
         qDebug() << "worldheight" << pxworld << "delta" << d << "scale" << scale;
     } else {
-        d.setY(0.);
+        d.setY(-m_world.top()*scale);
         int pxworld = int(scale * m_world.width());
-         d.setX( ((m_screen.width() - pxworld) / 2.));
+         d.setX(-m_world.left()*scale + ((m_screen.width() - pxworld) / 2.));
          qDebug() << "worldwidth" << pxworld << "delta" << d << "scale" << scale;
     }
     m_delta_worldtoscreen = d;

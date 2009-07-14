@@ -15,6 +15,7 @@ public:
 
     Grid();
     Grid(int cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
+    Grid(const QRectF rect_metric, const float cellsize) { mData=0; setup(rect_metric,cellsize); }
     // copy ctor
     Grid(const Grid<T>& toCopy);
     ~Grid() { if (mData) delete[] mData; }

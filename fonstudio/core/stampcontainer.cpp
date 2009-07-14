@@ -37,6 +37,39 @@ int StampContainer::getKey(const float bhd, const float hd_value)
     return cls_bhd * 1000 + cls_hd;
 }
 
+/** fill up the NULLs in the lookup map */
+void StampContainer::finalizeSetup()
+{
+    if (!m_useLookup)
+        return;
+    Stamp *s;
+    int h;
+    for (int b=0;b<cBHDclassCount;b++) {
+        // find lowest value...
+        for (h=0;h<cHDclassCount;h++) {
+            s=m_lookup.valueAtIndex(b,h);
+            if (s) {
+                // fill up values left from this value
+                for (int hfill=0;hfill<h;hfill++)
+                    m_lookup.valueAtIndex(b,h) = s;
+                break;
+            }
+        }
+        // go to last filled cell...
+        for (;h<cHDclassCount;h++) {
+            if (m_lookup.valueAtIndex(b,h)==0)
+                break;
+            s=m_lookup.valueAtIndex(b,h);
+        }
+        // fill up the rest...
+        for (;h<cHDclassCount;h++) {
+            m_lookup.valueAtIndex(b,h)=s;
+        }
+
+    }
+    //qDebug() << dump();
+}
+
 /** add a stamp to the internal storage.
     This function must be called ordered, increasing bhds and hd-values.
     for each line (i.e. same bhd-class) the left and the right margin of hd-values are "filled up":
@@ -44,26 +77,28 @@ int StampContainer::getKey(const float bhd, const float hd_value)
 int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_value, const float crown_radius_m)
 {
     int key = getKey(bhd, hd_value);
+//    Stamp *last_stamp = 0;
     if (m_useLookup) {
         int cls_bhd = int(bhd - cBHDclassLow) / cBHDclassWidth;
         int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
-        if (cls_bhd > m_maxBhd) {
-            // start a new band of hd-values....
-            // finish last line...
-            Stamp *s=0;
-            for (int hd=0;hd<cHDclassCount;++hd) {
-                if (m_lookup(cls_bhd, hd))
-                    s=m_lookup(cls_bhd, hd); // save last value...
-                else
-                    m_lookup.valueAt(cls_bhd, hd) = s; // write values
-            }
-
-            m_maxBhd = cls_bhd;
-            // fill up first line
-            for (int hd=0; hd<cls_hd;hd++)
-                m_lookup.valueAt(cls_bhd, hd) = stamp;
-        }
-
+//        if (cls_bhd > m_maxBhd) {
+//            // start a new band of hd-values....
+//            // finish last line...
+//            if (m_maxBhd>-1) {
+//                for (int hd=0;hd<cHDclassCount;++hd) {
+//                    if (m_lookup(m_maxBhd, hd))
+//                        last_stamp=m_lookup(cls_bhd, hd); // save last value...
+//                    else
+//                        m_lookup.valueAt(cls_bhd, hd) = last_stamp; // write values
+//                }
+//            }
+//
+//            m_maxBhd = cls_bhd;
+//            // fill up first line
+//            for (int hd=0; hd<cls_hd;hd++)
+//                m_lookup.valueAt(cls_bhd, hd) = stamp;
+//        }
+//
         m_lookup.valueAtIndex(cls_bhd, cls_hd) = stamp; // save address in look up table
     } // if (useLookup)
 
@@ -102,6 +137,8 @@ const Stamp* StampContainer::readerStamp(const float crown_radius_m) const
         cls_hd=cHDclassCount-1;
     int cls_bhd = int(crown_radius_m);
     const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
+    if (!stamp)
+        qDebug() << "Stamp::readerStamp(): no stamp found for radius" << crown_radius_m;
     return stamp;
 }
 
@@ -121,6 +158,7 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
         const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
         if (stamp)
             return stamp;
+        qDebug() << "StampContainer::stamp(): not in list: bhd height:" << bhd_cm << height_m;
         return m_stamps.first().stamp; // default value: the first stamp in the list....
     }
 
@@ -192,6 +230,7 @@ void StampContainer::load(QDataStream &in)
         stamp->setDominanceValue(domvalue);
         addStamp(stamp, bhd, hdvalue, crownradius);
     }
+    finalizeSetup(); // fill up lookup grid
 }
 /** Saves all stamps of the container to a binary stream.
   Format: * count of stamps (int32)

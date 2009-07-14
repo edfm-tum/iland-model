@@ -222,14 +222,20 @@ void MainWindow::on_stampTrees_clicked()
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).stampOnGrid(mStamp, *mGrid);
     } */
-    mGrid->initialize(0.f); // set grid to zero.
+    //mGrid->initialize(0.f); // set grid to zero.
     mDomGrid->initialize(0.f); // set dominance grid to zero.
-    //mGrid->initialize(1.f); // 1 for multiplicative
+    mGrid->initialize(1.f); // 1 for multiplicative
     //mDomGrid->initialize(1000.); //0: "active",  1000: no influence (trees are always below this height)
     Tree::setGrid(mGrid, mDomGrid); // set static target grids
     Tree::resetStatistics();
 
     std::vector<Tree>::iterator tit;
+    // height dominance grid
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+        (*tit).heightGrid(); // just do it ;)
+    }
+
+    // grid for horizontal concurrence
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).applyStamp(); // just do it ;)
     }
@@ -240,7 +246,8 @@ void MainWindow::on_stampTrees_clicked()
 
     // read values...
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        (*tit).readStamp(); // just do it ;)
+        //(*tit).readStamp(); // just do it ;)
+        (*tit).readStampMul(); // multipliactive approach
     }
     qDebug() << Tree::statAboveZ() << "above dominance grid";
     ui->PaintWidget->update();
@@ -321,7 +328,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 QRectF f = mGrid->cellRect(QPoint(ix,iy));
                 QRect r = vp.toScreen(f);
 
-                fill_color = Helper::colorFromValue(value, 0., maxval);
+                fill_color = Helper::colorFromValue(value, 0., maxval, true);
                 painter.fillRect(r, fill_color);
 
             }
@@ -348,7 +355,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             QPointF pos = tit->position();
             QPoint p = vp.toScreen(pos);
             value = tit->impact();
-            fill_color = Helper::colorFromValue(value, 0., 1.);
+            fill_color = Helper::colorFromValue(value, 0., 1., true);
             painter.setBrush(fill_color);
             int diameter = qMin(2,vp.meterToPixel(tit->dbh()));
             painter.drawEllipse(p, diameter, diameter);
@@ -400,16 +407,12 @@ void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
 bool wantDrag=false;
 void MainWindow::mouseClick(const QPoint& pos)
 {
-    qDebug() << "to world:" << vp.toWorld(pos);
+    QPointF coord=vp.toWorld(pos);
+    qDebug() << "to world:" << coord;
     wantDrag = false;
     ui->PaintWidget->setCursor(Qt::CrossCursor);
     ui->treeChange->setProperty("tree",0);
-    if (!m_pixelpercell)
-        return;
-    int maxy = int( mGrid->sizeY()*m_pixelpercell );
-    QPoint idx = QPoint(int (pos.x()/m_pixelpercell) , int((maxy-pos.y())/m_pixelpercell));
-    QPointF coord = mGrid->cellCoordinates(idx);
-    qDebug() << "click on" << pos << "are coords" << coord;
+
     // find adjactent tree
 
     std::vector<Tree>::iterator tit;
@@ -446,7 +449,10 @@ void MainWindow::mouseMove(const QPoint& pos)
         return;
     QPointF p = vp.toWorld(pos);
     if (mGrid->coordValid(p)) {
-        ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mGrid).valueAt(p)));
+        if (ui->visFon->isChecked())
+           ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mGrid).valueAt(p)));
+        if( ui->visDomGrid->isChecked())
+            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mDomGrid).valueAt(p)));
     }
 }
 
@@ -459,9 +465,8 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to)
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
     if (!t)
         return;
+    QPointF pos = vp.toWorld(to);
     // calculate new position...
-    int maxy = int( m_pixelpercell*mGrid->sizeY() );
-    QPointF pos = QPointF(mGrid->cellsize()*to.x()/m_pixelpercell , mGrid->cellsize()*(maxy-to.y())/m_pixelpercell);
     t->setPosition(pos);
     on_stampTrees_clicked(); // restamp
 }
@@ -744,7 +749,7 @@ void MainWindow::on_fonRun_clicked()
     QDomNode trees = docElem.firstChildElement("trees");
     // get a parameter...
     //int p1 = params.firstChildElement("param1").text().toInt();
-    QString stampFile =  xmlparams.firstChildElement("stampFile").text();
+    //QString stampFile =  xmlparams.firstChildElement("stampFile").text();
     QString binaryStampFile =  xmlparams.firstChildElement("binaryStamp").text();
     QString binaryReaderStampFile =  xmlparams.firstChildElement("binaryReaderStamp").text();
     Tree::lafactor = xmlparams.firstChildElement("laifactor").text().toFloat();
@@ -756,48 +761,53 @@ void MainWindow::on_fonRun_clicked()
     //docElem.appendChild(elem);
 
     // Load stamp
-    if (!mStamp.load(stampFile)) {
-        QMessageBox::information(NULL, "info", "image not found!");
-        return;
+//    if (!mStamp.load(stampFile)) {
+//        QMessageBox::information(NULL, "info", "image not found!");
+//        return;
+//
+//    }
 
-    }
-
-    float phi=0.f;
-    for (float r=0.; r<1.1; r+=0.1f) {
-        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
-        phi+=0.1;
-        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
-    }
+//    float phi=0.f;
+//    for (float r=0.; r<1.1; r+=0.1f) {
+//        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
+//        phi+=0.1;
+//        qDebug() << "r: " << r << " phi: " << phi << " col: " << mStamp.get(r, phi);
+//    }
 
     // atan2-test
     //qDebug() << "1/1:" << atan2(1., 1.) << "-1/1:" << atan2(1., -1.) << "-1/-1" << atan2(-1., -1.) << "1/-1:" << atan2(-1., 1.);
 
     // expression test
-    QString expr_text=xmlparams.firstChildElement("expression").text();
-    Expression expr(expr_text);
-    double value = expr.execute();
-    qDebug() << "expression:" << expr_text << "->" <<value;
-
-    QString expr_hScale=xmlparams.firstChildElement("hScale").text();
-    Tree::hScale.setExpression(expr_hScale);
-    Tree::hScale.addVar("height");
-    Tree::hScale.addVar("dbh");
-
-    QString expr_rScale=xmlparams.firstChildElement("rScale").text();
-    Tree::rScale.setExpression(expr_rScale);
-    Tree::rScale.addVar("height");
-    Tree::rScale.addVar("dbh");
+//    QString expr_text=xmlparams.firstChildElement("expression").text();
+//    Expression expr(expr_text);
+//    double value = expr.execute();
+//    qDebug() << "expression:" << expr_text << "->" <<value;
+//
+//    QString expr_hScale=xmlparams.firstChildElement("hScale").text();
+//    Tree::hScale.setExpression(expr_hScale);
+//    Tree::hScale.addVar("height");
+//    Tree::hScale.addVar("dbh");
+//
+//    QString expr_rScale=xmlparams.firstChildElement("rScale").text();
+//    Tree::rScale.setExpression(expr_rScale);
+//    Tree::rScale.addVar("height");
+//    Tree::rScale.addVar("dbh");
 
     // setup grid
     int cellsize = xmlparams.firstChildElement("cellSize").text().toInt();
-    int cellcount = xmlparams.firstChildElement("cells").text().toInt();
+    double size = xmlparams.firstChildElement("size").text().toDouble();
+    double buf_size = xmlparams.firstChildElement("buffer").text().toDouble();
+
     if (mGrid) {
         delete mGrid; mGrid=0;
         delete mDomGrid; mDomGrid=0;
     }
-    mGrid = new FloatGrid(cellsize, cellcount, cellcount);
+    QRectF total_grid(QPointF(-buf_size, -buf_size), QPointF(size+buf_size, size+buf_size));
+    qDebug() << "setup grid rectangle:" << total_grid << "cellsize:"<<cellsize;
+    mGrid = new FloatGrid(total_grid, cellsize);
+    //mGrid = new FloatGrid(cellsize, cellcount, cellcount);
     mGrid->initialize(1.f); // set to unity...
-    mDomGrid = new FloatGrid(cellsize*5, cellcount/5, cellcount/5);
+    mDomGrid = new FloatGrid(total_grid, cellsize*5);
     mDomGrid->initialize(0.f); // zero grid
 
     vp = Viewport(mGrid->metricRect(), ui->PaintWidget->rect());
@@ -1072,7 +1082,7 @@ void MainWindow::on_lrReadStamps_clicked()
     StampContainer container;
     int totcount=0;
     DebugTimer t;
-    for (double radius=1.; radius<=8; radius+=0.1) {
+    for (double radius=0.5; radius<=8; radius+=0.1) {
         qDebug() << "creation of reader stamp for radius" << radius;
         grid.initialize(0.);
         float x,y;
@@ -1106,5 +1116,15 @@ void MainWindow::on_lrReadStamps_clicked()
     container.save(out);
     qDebug() << container.dump();
 
+
+}
+
+void MainWindow::on_pbSetAsDebug_clicked()
+{
+    int pt = ui->treeChange->property("tree").toInt();
+    if (!pt)
+        return;
+    Tree *t = (Tree*)pt;
+    t->enableDebugging();
 
 }

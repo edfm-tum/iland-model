@@ -30,12 +30,13 @@ public:
     /// get index (e.g. for data()[index]) for indices x and y
     int index(const int x, const int y) const { return y*m_size + x; }
     inline float operator()(const int x, const int y) const { return *data(x,y); }
+    inline float offsetValue(const int x, const int y, const int offset) const { return *data(x+offset, y+offset); }
     const Stamp *reader() const { return m_reader; }
     void setReader(Stamp *reader) { m_reader = reader; }
-    // sum of relevant subarea of the stamp (i.e. crown)
+    /// sum of relevant subarea of the stamp (i.e. crown)
     const float readSum() const { return m_readsum; }
     void setReadSum(float sum) { m_readsum = sum; }
-    // height dominance value in at the tree center
+    /// height dominance value in at the tree center
     const float dominanceValue() const { return m_dominance; }
     void setDominanceValue(float dom) { m_dominance = dom; }
     // loading/saving

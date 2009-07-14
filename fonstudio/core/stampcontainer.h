@@ -39,6 +39,8 @@ public:
     QString dump();
 
 private:
+    void finalizeSetup(); ///< complete lookup-grid by filling up zero values
+
     static const int cBHDclassWidth;
     static const int cHDclassWidth;
     static const int cBHDclassLow; ///< bhd classes start with 2: class 0 = 2..6, class1 = 6..10
