@@ -295,22 +295,22 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_dom = ui->visDomGrid->isChecked();
     bool show_impact = ui->visImpact->isChecked();
 
-    // draw grid...
-    int sqsize = qMin(ui->PaintWidget->width(), ui->PaintWidget->height())-1;
-    int ccount = mGrid->sizeX();
-    m_pixelpercell = sqsize / float(ccount);
-    float pxpermeter = m_pixelpercell / mGrid->cellsize();
-    // get maximum value
+//    // get maximum value
 
     float maxval=1.f; // default maximum
     if (!auto_scale_color)
         maxval = mGrid->max();
     if (maxval==0.)
         return;
-
+    // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
-    int ix,iy;
+    // draw rectangle around the grid
+    QRectF r = mGrid->metricRect();
+    QRect rs = vp.toScreen(r);
+    painter.setPen(Qt::black);
+    painter.drawRect(rs);
 
+    int ix,iy;
     QColor fill_color;
     float value;
     if (show_fon) {
@@ -321,10 +321,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 QRectF f = mGrid->cellRect(QPoint(ix,iy));
                 QRect r = vp.toScreen(f);
 
-                cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*(iy+1));
                 fill_color = Helper::colorFromValue(value, 0., maxval);
                 painter.fillRect(r, fill_color);
-                //painter.drawRect(cell);
 
             }
         }
@@ -332,14 +330,14 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     if (show_dom) {
         // paint the lower-res-grid;
-        float bigpixel = sqsize / float(mDomGrid->sizeX());
-        QRectF cell(0,0,bigpixel, bigpixel);
+
         for (iy=0;iy<mDomGrid->sizeY();iy++) {
             for (ix=0;ix<mDomGrid->sizeX();ix++) {
-                value = mDomGrid->valueAtIndex(ix,iy);
-                cell.moveTo(bigpixel*ix, sqsize - bigpixel*(iy+1));
+                QPoint p(ix,iy);
+                value = mDomGrid->valueAtIndex(p);
+                QRect r = vp.toScreen(mDomGrid->cellRect(p));
                 fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
-                painter.fillRect(cell, fill_color);
+                painter.fillRect(r, fill_color);
             }
         }
 
@@ -348,13 +346,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         std::vector<Tree>::iterator tit;
         for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
             QPointF pos = tit->position();
-            int x = qRound( pxpermeter * pos.x());
-            int y = qRound( sqsize - pxpermeter*pos.y());
+            QPoint p = vp.toScreen(pos);
             value = tit->impact();
             fill_color = Helper::colorFromValue(value, 0., 1.);
             painter.setBrush(fill_color);
-            int diameter = 3 + qRound(5*tit->dbh()/100);
-            painter.drawEllipse(QPoint(x,y), diameter, diameter);
+            int diameter = qMin(2,vp.meterToPixel(tit->dbh()));
+            painter.drawEllipse(p, diameter, diameter);
 
         }
     } // if (show_impact)
@@ -362,36 +359,21 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
     if (t) {
         QPointF pos = t->position();
-        float pxpermeter = m_pixelpercell/ mGrid->cellsize();
         painter.setPen(Qt::black);
-        painter.drawRect(int(pos.x()*pxpermeter-1), sqsize - int(pos.y()*pxpermeter-1), 3,3);
+        QPoint p = vp.toScreen(pos);
+        painter.drawRect( p.x()-1, p.y()-1, 3,3);
     }
-    /*
-    // paint trees...
-    QPointF pos;
-    float pxpermeter = pxpercell / mGrid->cellsize();
 
-    std::vector<Tree>::iterator tit;
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        pos = (*tit).position();
-        fill_color.setHsv(int((*tit).impact()*240.), 200, 200);
-        painter.drawRect(int(pxpermeter*pos.x()-3), int(pxpermeter*pos.y()-3), 7, 7);
-        painter.fillRect(int(pxpermeter*pos.x()-2), int(pxpermeter*pos.y()-2), 4, 4, fill_color);
-        tit->pxRect = QRect(int(pxpermeter*pos.x()-3), int(pxpermeter*pos.y()-3), 7, 7);
-        float r = int(tit->impactRadius() * pxpermeter);
-
-        painter.setPen(Qt::black);
-        painter.drawEllipse(QPointF(pxpermeter*pos.x(),pxpermeter*pos.y()),r,r);
-    } */
 
     qDebug() << "repaintArea. maxval:" << maxval;
     // viewport test
 
+    /*
     QRectF r = mGrid->metricRect();
     painter.setPen(Qt::blue);
     painter.drawLine(vp.toScreen(r.topLeft()), vp.toScreen(r.bottomRight()));
     painter.drawLine(vp.toScreen(r.topRight()), vp.toScreen(r.bottomLeft()));
-
+    */
 
 
 

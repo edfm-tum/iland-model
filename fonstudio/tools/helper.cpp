@@ -289,7 +289,7 @@ const QPoint Viewport::toScreen(const QPointF p)
 {
     QPoint pixel;
     pixel.setX( qRound( p.x()*m_scale_worldtoscreen + m_delta_worldtoscreen.x() ));
-    pixel.setY( m_screen.height() -  qRound( p.y() * m_scale_worldtoscreen + m_delta_worldtoscreen.y() ));
+    pixel.setY( m_screen.height()-1 -  qRound( p.y() * m_scale_worldtoscreen + m_delta_worldtoscreen.y() ));
     return pixel;
 //    double x = (p.x()-m_viewport.left()) / m_viewport.width(); // scale to 0..1
 //    double y = (p.y()-m_viewport.top()) / m_viewport.height(); // scale to 0..1

@@ -115,6 +115,9 @@ public:
     const QRect toScreen(const QRectF world) { QRect r( toScreen(world.topLeft()), toScreen(world.bottomRight()) ); return r; }
     // zoom
     void zoomToCenter(const double percent);
+    // conversion of length
+    const double pixelToMeter(const int pixel) { return pixel/m_scale_worldtoscreen; }
+    const int meterToPixel(const double meter) { return qRound(meter * m_scale_worldtoscreen);}
     // setters...
     void setViewRect(const QRectF &viewrect) { m_viewport = viewrect; }
     void setWorldRect(const QRectF &worldrect) { m_world = worldrect; }
