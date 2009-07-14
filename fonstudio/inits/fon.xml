@@ -28,7 +28,8 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <seriesIsofones>0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.5</seriesIsofones>
 <style>background-color: red;</style>
 </params>
-<treeinit>e:\dev\iland\fonstudio\inits\SingleC.csv</treeinit>
+<treeinit>E:\Daten\iLand\Light\stamps\STO72_WG53MM_MT1_dg35.csv</treeinit>
+<!--
 <trees>
 <tree x="79.9" y="79.0" dbh="11" height="10"/>
 <tree x="30" y="20" dbh="23" height="15"/>
@@ -40,6 +41,7 @@ available Variables: "dbh" = dbh in cm, "height" = height in meters-->
 <tree x="85.454" y="45.4" dbh="20" height="20"/>
 <tree x="75" y="80" dbh="22" height="20"/>
 </trees>
+-->
 
 <lightroom>
 <size x="100" y="100" z="65" cellsize="2" average="3"/>

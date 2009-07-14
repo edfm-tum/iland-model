@@ -20,6 +20,9 @@ public:
     static void saveToTextFile(const QString& fileName, const QString& text);
     static void msg(const QString &message, QWidget *parent=0);
     static bool question(const QString &message, QWidget *parent=0);
+    /// open a File Dialog and let the user choose a file.
+    /// @return the filename selected by the user, an empty string if user cancels.
+    static QString fileDialog(const QString &title);
     static bool quiet() { return m_NoDebug || m_quiet; }
     static bool debugEnabled() { return !m_NoDebug; }
     static void setQuiet(bool quiet) { m_quiet = quiet; }

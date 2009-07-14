@@ -39,6 +39,12 @@ bool Helper::question(const QString &message, QWidget *parent)
    return QMessageBox::question(parent, "Eforwood MCA", message, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
 }
 
+QString Helper::fileDialog(const QString &title)
+{
+    QString fileName = QFileDialog::getOpenFileName(0,
+     title,"", "All files (*.*)");
+    return fileName;
+}
 
 void Helper::openHelp(const QString& topic)
 {

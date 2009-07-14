@@ -1035,24 +1035,30 @@ void MainWindow::on_lrProcess_clicked()
 void MainWindow::on_lrLoadStamps_clicked()
 {
     {
-        QFile infile("E:\\Daten\\iLand\\Light\\fons\\stamps.bin");
+        QString fileName = Helper::fileDialog("Name for binary stamp file");
+        if (fileName.isEmpty())
+            return;
+        QFile infile(fileName);
         infile.open(QIODevice::ReadOnly);
         QDataStream in(&infile);
         StampContainer container;
         container.load(in);
         infile.close();
-        qDebug() << "Dumping content of Stamp-container:";
+        qDebug() << "Dumping content of Stamp-container" << fileName;
         qDebug() << container.dump();
         // and the reader-stamps....
     }
     {
-        QFile infile("E:\\Daten\\iLand\\Light\\fons\\readerstamp.bin");
+        QString fileName = Helper::fileDialog("Name for reader stamp file");
+        if (fileName.isEmpty())
+            return;
+        QFile infile(fileName);
         infile.open(QIODevice::ReadOnly);
         QDataStream in(&infile);
         StampContainer container;
         container.load(in);
         infile.close();
-        qDebug() << "Dumping content of Reader-container:";
+        qDebug() << "Dumping content of Reader-container" << fileName;
         qDebug() << container.dump();
         // and the reader-stamps....
     }
@@ -1099,9 +1105,8 @@ void MainWindow::on_lrReadStamps_clicked()
         FloatGrid ngrid = grid.normalized(1.); // normalize with 1
         // create a stamp with a fitting size
         Stamp *stamp;
-        int width;
-        if (radius>=9.) {width=11;}
-        else if (radius>=7.) { width=9; }
+        int width=11;
+        if (radius>=7.) { width=9; }
         else if (radius>=5.) { width=7; }
         else if (radius>=3.) { width=5; }
         else if (radius>=1.) { width=3; }
