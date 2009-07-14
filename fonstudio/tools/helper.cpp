@@ -274,19 +274,28 @@ int DebugTimer::elapsed()
 const QPointF Viewport::toWorld(const QPoint pixel)
 {
     QPointF p;
-    p.setX( m_viewport.left() + (pixel.x()/double(m_screen.width())) * m_viewport.width() );
-    p.setY( m_viewport.top() + (m_screen.height() - pixel.y())/double(m_screen.height()) * m_viewport.height());
+    p.setX( (pixel.x()- m_delta_worldtoscreen.x())/m_scale_worldtoscreen  );
+    p.setY( (m_screen.height() - pixel.y()- m_delta_worldtoscreen.y() )/m_scale_worldtoscreen  );
     return p;
+
+//    QPointF p;
+//    p.setX( m_viewport.left() + (pixel.x()/double(m_screen.width())) * m_viewport.width() );
+//    p.setY( m_viewport.top() + (m_screen.height() - pixel.y())/double(m_screen.height()) * m_viewport.height());
+//    return p;
 }
 
 /// toScreen() converts world coordinates in screen coordinates using the defined viewport.
 const QPoint Viewport::toScreen(const QPointF p)
 {
-    double x = (p.x()-m_viewport.left()) / m_viewport.width(); // scale to 0..1
-    double y = (p.y()-m_viewport.top()) / m_viewport.height(); // scale to 0..1
-    QPoint pixel( int( x * m_screen.width()),
-                  int( (1. - y) * m_screen.height()));
+    QPoint pixel;
+    pixel.setX( qRound( p.x()*m_scale_worldtoscreen + m_delta_worldtoscreen.x() ));
+    pixel.setY( m_screen.height() -  qRound( p.y() * m_scale_worldtoscreen + m_delta_worldtoscreen.y() ));
     return pixel;
+//    double x = (p.x()-m_viewport.left()) / m_viewport.width(); // scale to 0..1
+//    double y = (p.y()-m_viewport.top()) / m_viewport.height(); // scale to 0..1
+//    QPoint pixel( int( x * m_screen.width()),
+//                  int( (1. - y) * m_screen.height()));
+//    return pixel;
 }
 
 /// sets the screen rect; this also modifies the viewport.
@@ -294,17 +303,42 @@ void Viewport::setScreenRect(const QRect &viewrect)
 {
     m_screen = viewrect;
     m_viewport = viewrect;
-    if (viewrect.isNull() || m_screen.isNull())
-        return;
-    double aspectratio = viewrect.width() / double(viewrect.height());
-    double px_per_meter_x = m_world.width() / double(m_screen.width());
-    double px_per_meter_y = m_world.height() / double(m_screen.height());
-    m_viewport = m_world;
-    if (px_per_meter_x > px_per_meter_y) {
-        // width is too high... center horizontally
-        m_viewport.setWidth(m_world.width() / aspectratio);
+    zoomToCenter(100.);
+    return;
+//    if (viewrect.isNull() || m_screen.isNull())
+//        return;
+//    double aspectratio = viewrect.width() / double(viewrect.height());
+//    double px_per_meter_x = m_screen.width() / m_world.width();
+//    double px_per_meter_y = m_screen.height() / m_world.height();
+//    m_viewport = m_world;
+//    if (px_per_meter_x > px_per_meter_y) {
+//        // width is too high... center horizontally
+//        m_viewport.setWidth(m_world.width() / aspectratio);
+//    } else {
+//        // height is too high .. center vertically
+//        m_viewport.setHeight(m_world.height() * aspectratio );
+//    }
+}
+
+void Viewport::zoomToCenter(const double percent)
+{
+    // calculate move/scale so that world-rect maps entirely onto screen
+    double scale_x = m_screen.width() /  m_world.width(); // pixel per meter in x
+    double scale_y = m_screen.height() / m_world.height(); // pixel per meter in y
+    double scale = qMin(scale_x, scale_y);
+    QPointF d;
+    if (scale_x < scale_y) {
+        // x-axis is full; center in y-axis
+        d.setX(0.);
+        int pxworld = int(scale * m_world.height());
+        d.setY( ((m_screen.height() - pxworld) / 2.));
+        qDebug() << "worldheight" << pxworld << "delta" << d << "scale" << scale;
     } else {
-        // height is too high .. center vertically
-        m_viewport.setHeight(m_world.height() * aspectratio );
+        d.setY(0.);
+        int pxworld = int(scale * m_world.width());
+         d.setX( ((m_screen.width() - pxworld) / 2.));
+         qDebug() << "worldwidth" << pxworld << "delta" << d << "scale" << scale;
     }
+    m_delta_worldtoscreen = d;
+    m_scale_worldtoscreen = scale;
 }

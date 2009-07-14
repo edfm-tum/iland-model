@@ -2,7 +2,7 @@
 #define HELPER_H
 
 #include <QVector>
-#include <QTCore>
+#include <QtCore>
 
 
 #define QUIETDEBUG(x) if (!Helper::quiet()) { qDebug() << x; }
@@ -108,11 +108,13 @@ private:
 class Viewport
 {
 public:
-    Viewport(): m_viewAll(true) {}
-    Viewport(const QRectF worldrect, const QRect screenrect) { setWorldRect(worldrect); setScreenRect(screenrect);  }
+    Viewport(): m_viewAll(true), m_scale_worldtoscreen(1.) {}
+    Viewport(const QRectF worldrect, const QRect screenrect) { setWorldRect(worldrect); setScreenRect(screenrect); zoomToCenter(100.); }
     const QPointF toWorld(const QPoint pixel);
     const QPoint toScreen(const QPointF p);
+    const QRect toScreen(const QRectF world) { QRect r( toScreen(world.topLeft()), toScreen(world.bottomRight()) ); return r; }
     // zoom
+    void zoomToCenter(const double percent);
     // setters...
     void setViewRect(const QRectF &viewrect) { m_viewport = viewrect; }
     void setWorldRect(const QRectF &worldrect) { m_world = worldrect; }
@@ -122,6 +124,8 @@ private:
     QRect m_screen;
     QRectF m_world;
     QRectF m_viewport;
+    QPointF m_delta_worldtoscreen;
+    double m_scale_worldtoscreen;
 };
 
 #endif // HELPER_H

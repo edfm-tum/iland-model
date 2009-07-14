@@ -308,7 +308,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     if (maxval==0.)
         return;
 
-    painter.fillRect(1,1,sqsize-2,sqsize-2, QColor("white"));
+    painter.fillRect(ui->PaintWidget->rect(), Qt::white);
     int ix,iy;
 
     QColor fill_color;
@@ -318,10 +318,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         for (iy=0;iy<mGrid->sizeY();iy++) {
             for (ix=0;ix<mGrid->sizeX();ix++) {
                 value = mGrid->valueAtIndex(QPoint(ix, iy));
+                QRectF f = mGrid->cellRect(QPoint(ix,iy));
+                QRect r = vp.toScreen(f);
 
                 cell.moveTo(m_pixelpercell*ix, sqsize - m_pixelpercell*(iy+1));
                 fill_color = Helper::colorFromValue(value, 0., maxval);
-                painter.fillRect(cell, fill_color);
+                painter.fillRect(r, fill_color);
                 //painter.drawRect(cell);
 
             }
@@ -384,12 +386,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     qDebug() << "repaintArea. maxval:" << maxval;
     // viewport test
-    /*
+
     QRectF r = mGrid->metricRect();
     painter.setPen(Qt::blue);
-    painter.drawLine(vp.toScreen(r.topLeft()), vp.toScreen(vp.toScreen(r.bottomRight())));
-    painter.drawLine(vp.toScreen(r.topRight()), vp.toScreen(vp.toScreen(r.bottomLeft())));
-    */
+    painter.drawLine(vp.toScreen(r.topLeft()), vp.toScreen(r.bottomRight()));
+    painter.drawLine(vp.toScreen(r.topRight()), vp.toScreen(r.bottomLeft()));
+
 
 
 
