@@ -175,7 +175,9 @@ Stamp* StampContainer::newStamp(const Stamp::StampType type)
 {
     Stamp *stamp;
     switch (type) {
-       case Stamp::est4x4:  qDebug() << "4x4stamp"; stamp=new Stamp(4); break;
+       case Stamp::est4x4:  //qDebug() << "4x4stamp";
+           stamp=new Stamp(4); break;
+
     default:
           stamp = new Stamp(int(type));
     }
@@ -216,6 +218,10 @@ void StampContainer::load(QDataStream &in)
     float bhd, hdvalue, readsum, domvalue, crownradius;
     in >> count; // read count of stamps
     qDebug() << count << "stamps to read";
+    QString desc;
+    in >> desc; // read textual description of stamp
+    qDebug() << "Stamp notes:" << desc;
+    m_desc = desc;
     for (int i=0;i<count;i++) {
         in >> type; // read type
         in >> bhd;
@@ -223,7 +229,7 @@ void StampContainer::load(QDataStream &in)
         in >> crownradius;
         in >> readsum;
         in >> domvalue;
-        qDebug() << "stamp bhd hdvalue type readsum dominance" << bhd << hdvalue << type << readsum << domvalue;
+        //qDebug() << "stamp bhd hdvalue type readsum dominance" << bhd << hdvalue << type << readsum << domvalue;
         Stamp *stamp = newStamp( Stamp::StampType(type) );
         stamp->load(in);
         stamp->setReadSum(readsum);
@@ -234,6 +240,7 @@ void StampContainer::load(QDataStream &in)
 }
 /** Saves all stamps of the container to a binary stream.
   Format: * count of stamps (int32)
+          * a string containing a description (free text) (QString)
       for each stamp:
       - type (enum Stamp::StampType, 4, 8, 12, 16, ...)
       - bhd of the stamp (float)
@@ -250,7 +257,8 @@ void StampContainer::save(QDataStream &out)
 {
     qint32 type;
     qint32 size = m_stamps.count();
-    out << size;
+    out << size; // count of stamps...
+    out << m_desc; // text...
     foreach(StampItem si, m_stamps) {
         type = si.stamp->dataSize();
         out << type;

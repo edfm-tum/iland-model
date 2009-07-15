@@ -35,7 +35,9 @@ public:
         @param Container holding the reader stamps.*/
     void attachReaderStamps(const StampContainer &source);
     void invert(); ///< invert stamps (value = 1. - value) (for multiplicative overlay)
-
+    // description
+    const QString &description() { return m_desc; }
+    void setDescription(const QString s) { m_desc = s; }
     QString dump();
 
 private:
@@ -58,6 +60,7 @@ private:
     bool m_useLookup; // use lookup table?
     QList<StampItem> m_stamps;
     Grid<Stamp*> m_lookup;
+    QString m_desc;
 };
 
 #endif // STAMPCONTAINER_H

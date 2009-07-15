@@ -858,6 +858,7 @@ void MainWindow::on_lrProcess_clicked()
     //int avg_cells = docElem.firstChildElement("lightroom").firstChildElement("size").attribute("average").toInt();
 
     double cut_threshold = docElem.firstChildElement("lightroom").firstChildElement("cutvalue").text().toDouble();
+    QString stamp_desc = docElem.firstChildElement("lightroom").firstChildElement("desc").text();
     qDebug() << "cutting stamps when averaged absoulte value of rings is below"<<cut_threshold;
     double crown, height, bhd;
     QString formula, name, result;
@@ -983,6 +984,7 @@ void MainWindow::on_lrProcess_clicked()
     // write container to a file....
     QFile file(path + "\\" + target_name);
     file.open(QIODevice::WriteOnly);
+    container.setDescription(stamp_desc); // provided in xml...
     QDataStream out(&file);   // we will serialize the data into the file
     container.save(out);
     file.close();
@@ -1077,6 +1079,7 @@ void MainWindow::on_lrReadStamps_clicked()
     QFile file("e:\\daten\\iland\\light\\fons\\readerstamp.bin");
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);   // we will serialize the data into the file
+    container.setDescription("Reader-stamps for crown-radii ranging from 0.5m to 8m, stepwidth is 0.1m.");
     container.save(out);
     qDebug() << container.dump();
 

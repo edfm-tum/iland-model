@@ -3,7 +3,7 @@
 <document>
 <params>
 <!-- define the stampfiles used: -->
-<binaryStamp>E:\Daten\iLand\Light\fons\piab.bin</binaryStamp>
+<binaryStamp>E:\Daten\iLand\Light\fons\test.bin</binaryStamp>
 <binaryReaderStamp>E:\Daten\iLand\Light\fons\readerstamp.bin</binaryReaderStamp>
 <!-- define the size of the grid:
 * cellSize: pixelsize in meters
@@ -50,9 +50,13 @@
 <size x="100" y="100" z="65" cellsize="2" average="3"/>
 <hemigrid size="5" latitude="48" diffus="0.5"/>
 <cutvalue>0.1</cutvalue>
+<desc>
+This is a description which is stored with the stamps defined below.
+</desc>
 <trees>
 <path>E:\Daten\iLand\Light\fons</path>
 <file>test.bin</file>
+
 <!--<tree name="Piab_110_66" bhd="110" h="66" crown="25.21" formula="7.473*(min(0.95, hrel)/0.95)^0.28483"/>
 -->
 
