@@ -29,7 +29,7 @@
 <seriesIsofones>0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.5</seriesIsofones>
 
 </params>
-<treeinit>E:\Daten\iLand\Light\stands\crowded_tall.csv</treeinit> 
+<treeinit>E:\Daten\iLand\Light\stands\structured_gap3.csv</treeinit> 
 <!--
 <trees>
 <tree x="79.9" y="79.0" dbh="11" height="10"/>

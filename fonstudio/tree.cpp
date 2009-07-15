@@ -145,7 +145,7 @@ void Tree::applyStamp()
     QPoint p;
 
     float &dom = m_dominanceGrid->valueAt(m_Position);
-
+    float local_dom; // height of Z* on the current position
     int x,y;
     float value;
     QPoint dbg(10,20);
@@ -161,8 +161,13 @@ void Tree::applyStamp()
                //m_grid->valueAtIndex(p)*=(*m_stamp)(x,y);
                // additiv:
                // multiplicatie, v2
-               value = (*m_stamp)(x,y) ;
-               value = 1. - value*lafactor / dom;
+               local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) ); // todo: could be done more effectively (here 2 transormations are performed)...
+               if (local_dom<=0.f) {
+                   qDebug() << "invalid height at " << m_grid->cellCoordinates(p) << "of" << local_dom;
+                   local_dom = 1.;
+               }
+               value = (*m_stamp)(x,y);
+               value = 1. - value*lafactor / local_dom;
                value = qMax(value, 0.02f);
                m_grid->valueAtIndex(p)*= value;
            }
