@@ -163,8 +163,7 @@ void Tree::applyStamp()
                // multiplicatie, v2
                value = (*m_stamp)(x,y) ;
                value = 1. - value*lafactor / dom;
-               if (value<0.)
-                   value=0;
+               value = qMax(value, 0.02f);
                m_grid->valueAtIndex(p)*= value;
            }
         }
@@ -175,18 +174,29 @@ void Tree::applyStamp()
 
 void Tree::heightGrid()
 {
-        // height of Z*
-    float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
-    // apply height in domiance grid
-    float compare_height;
-    if (m_Height<15)
-        compare_height = m_Height;
-    //if (m_Height<10)
-    //    compare_height = m_Height/2.f;
-    else
-        compare_height = m_Height - 5.f;
-    if (dom < compare_height)
-        dom =  compare_height; // set height (via ref)
+    // height of Z*
+    float cellsize = m_dominanceGrid->cellsize();
+    if (m_Height < cellsize) {
+        float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
+        dom = qMax(dom, m_Height/2.f);
+    } else {
+        QPoint p = m_dominanceGrid->indexAt(m_Position); // pos of tree on height grid
+        float h = m_Height - cellsize/2.f;
+        int ringcount = int(floor(h / cellsize));
+        int ix, iy;
+        int ring;
+        QPoint pos;
+        for (ix=-ringcount;ix<=ringcount;ix++)
+            for (iy=-ringcount; iy<=+ringcount; iy++) {
+            ring = qMax(abs(ix), abs(iy));
+            QPoint pos(ix+p.x(), iy+p.y());
+            if (m_dominanceGrid->isIndexValid(pos)) {
+                // apply value....
+                m_dominanceGrid->valueAtIndex(pos) = qMax(m_dominanceGrid->valueAtIndex(pos), h-ring*cellsize);
+            }
+
+        }
+    }
 
 }
 
@@ -261,6 +271,7 @@ double Tree::readStampMul()
             p = pos_reader + QPoint(x,y);
             if (m_grid->isIndexValid(p)) {
                 own_value = 1. - m_stamp->offsetValue(x,y,d_offset)*lafactor /dom_height;
+                own_value = qMax(own_value, 0.02);
                 value =  m_grid->valueAtIndex(p) / own_value; // remove impact of focal tree
                 if (value>0.)
                     sum += value * (*reader)(x,y);

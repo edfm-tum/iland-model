@@ -357,7 +357,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             value = tit->impact();
             fill_color = Helper::colorFromValue(value, 0., 1., true);
             painter.setBrush(fill_color);
-            int diameter = qMin(2,vp.meterToPixel(tit->dbh()));
+            int diameter = qMax(2,vp.meterToPixel( tit->dbh()/100. * 5.));
             painter.drawEllipse(p, diameter, diameter);
 
         }
