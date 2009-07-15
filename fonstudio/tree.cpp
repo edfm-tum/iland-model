@@ -6,8 +6,7 @@
 #include "core/stamp.h"
 #include "treespecies.h"
 
-Expression Tree::rScale=Expression();
-Expression Tree::hScale=Expression();
+
 FloatGrid *Tree::m_grid = 0;
 FloatGrid *Tree::m_dominanceGrid = 0;
 int Tree::m_statPrint=0;
@@ -36,93 +35,6 @@ float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAng
     return d;
 }
 
-void Tree::stampOnGrid(ImageStamp& stamp, FloatGrid& grid)
-{
-
-    // use formulas to derive scaling values...
-    rScale.setVar("height", m_Height);
-    rScale.setVar("dbh", m_Dbh);
-    hScale.setVar("height", m_Height);
-    hScale.setVar("dbh", m_Dbh);
-
-    double r = rScale.execute();
-    double h = hScale.execute();
-    stamp.setScale(r, h); // stamp uses scaling values to calculate impact
-    mImpactRadius = r;
-
-    float cell_value, r_cell, phi_cell;
-    QPoint ul = grid.indexAt(QPointF(m_Position.x()-r, m_Position.y()-r) );
-    QPoint lr =  grid.indexAt( QPointF(m_Position.x()+r, m_Position.y()+r) );
-    QPoint centercell=grid.indexAt(position());
-    grid.validate(ul); grid.validate(lr);
-    QPoint cell;
-    QPointF cellcoord;
-    int ix, iy;
-    mOwnImpact=0.f;
-    mImpactArea=0.f;
-    for (ix=ul.x(); ix<lr.x(); ix++)
-        for (iy=ul.y(); iy<lr.y(); iy++) {
-        cell.setX(ix); cell.setY(iy);
-        cellcoord = grid.cellCoordinates(cell);
-        r_cell = dist_and_direction(m_Position, cellcoord, phi_cell);
-        if (r_cell > r && cell!=centercell)
-            continue;
-        // get value from stamp at this location (given by radius and angle)
-        cell_value = stamp.get(r_cell, phi_cell);
-        // add value to cell
-        mOwnImpact+=(1. - cell_value);
-        mImpactArea++;
-        grid.valueAtIndex(cell)*=cell_value;
-    }
-}
-
-float Tree::retrieveValue(ImageStamp& stamp, FloatGrid& grid)
-{
-
-    rScale.setVar("height", m_Height);
-    rScale.setVar("dbh", m_Dbh);
-    hScale.setVar("height", m_Height);
-    hScale.setVar("dbh", m_Dbh);
-    double r = rScale.execute();
-    double h = hScale.execute();
-    stamp.setScale(r, h); // stamp uses scaling values to calculate impact
-
-    float stamp_value, cell_value, r_cell, phi_cell;
-    QPoint ul = grid.indexAt(QPointF(m_Position.x()-r, m_Position.y()-r) );
-    QPoint lr =  grid.indexAt( QPointF(m_Position.x()+r, m_Position.y()+r) );
-    QPoint centercell=grid.indexAt(position());
-    grid.validate(ul); grid.validate(lr);
-    QPoint cell;
-    QPointF cellcoord;
-    int ix, iy;
-    float value=0.f;
-
-    int counting_cells=0;
-    for (ix=ul.x(); ix<lr.x(); ix++)
-        for (iy=ul.y(); iy<lr.y(); iy++) {
-
-        cell.setX(ix); cell.setY(iy);
-        cellcoord = grid.cellCoordinates(cell);
-        r_cell = dist_and_direction(m_Position, cellcoord, phi_cell);
-        if (r_cell>r && cell!=centercell)
-            continue;
-        counting_cells++;
-        // get value from stamp at this location (given by radius and angle)
-        stamp_value = stamp.get(r_cell, phi_cell);
-        cell_value =  grid.valueAtIndex(QPoint(ix,iy));
-        if (stamp_value>0.)
-           value += cell_value / stamp_value;
-        // sum up values of cell
-        //value += cell_value;
-        //value += grid.valueAtIndex(QPoint(ix,iy)); // - cell_value;
-    }
-    if (counting_cells>0)
-        mImpact = value / float(counting_cells);
-    else
-        mImpact=1;
-    return mImpact;
-}
-
 
 void Tree::setup()
 {
@@ -144,7 +56,6 @@ void Tree::applyStamp()
     pos-=QPoint(offset, offset);
     QPoint p;
 
-    float &dom = m_dominanceGrid->valueAt(m_Position);
     float local_dom; // height of Z* on the current position
     int x,y;
     float value;
@@ -153,8 +64,8 @@ void Tree::applyStamp()
         for (y=0;y<m_stamp->size(); ++y) {
            p = pos + QPoint(x,y);
            // debug pixel
-           if (p==dbg)
-               qDebug() << "#" << id() << "value;"<<(*m_stamp)(x,y)<<"domH"<<dom;
+           //if (p==dbg)
+           //    qDebug() << "#" << id() << "value;"<<(*m_stamp)(x,y)<<"domH"<<dom;
 
            if (m_grid->isIndexValid(p)) {
                // mulitplicative:
@@ -163,8 +74,8 @@ void Tree::applyStamp()
                // multiplicatie, v2
                local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) ); // todo: could be done more effectively (here 2 transormations are performed)...
                if (local_dom<=0.f) {
-                   qDebug() << "invalid height at " << m_grid->cellCoordinates(p) << "of" << local_dom;
-                   local_dom = 1.;
+                   //qDebug() << "invalid height at " << m_grid->cellCoordinates(p) << "of" << local_dom;
+                   local_dom = 2.;
                }
                value = (*m_stamp)(x,y);
                value = 1. - value*lafactor / local_dom;
@@ -299,7 +210,7 @@ double Tree::readStampMul()
     }
     if (mImpact > 1)
         mImpact = 1.f;
-    qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
+    //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
     return mImpact;
 }
 

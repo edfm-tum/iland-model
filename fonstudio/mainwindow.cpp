@@ -223,6 +223,7 @@ void MainWindow::on_stampTrees_clicked()
         (*tit).stampOnGrid(mStamp, *mGrid);
     } */
     //mGrid->initialize(0.f); // set grid to zero.
+    DebugTimer t_print("apply/read-cycle");
     mDomGrid->initialize(0.f); // set dominance grid to zero.
     mGrid->initialize(1.f); // 1 for multiplicative
     //mDomGrid->initialize(1000.); //0: "active",  1000: no influence (trees are always below this height)
@@ -249,6 +250,8 @@ void MainWindow::on_stampTrees_clicked()
         //(*tit).readStamp(); // just do it ;)
         (*tit).readStampMul(); // multipliactive approach
     }
+    t_print.showElapsed();
+
     qDebug() << Tree::statAboveZ() << "above dominance grid";
     ui->PaintWidget->update();
     /*
@@ -275,21 +278,6 @@ void MainWindow::on_stampTrees_clicked()
 ***************************************/
 void MainWindow::on_pbRetrieve_clicked()
 {
-    if (mTrees.size()==0 || !mGrid)
-        return;
-
-    std::vector<Tree>::iterator tit;
-    float treevalue;
-    float sum_bhd=0.f;
-    float sum_impact=0.f;
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        treevalue = (*tit).retrieveValue(mStamp, *mGrid);
-        sum_bhd+=tit->dbh();
-        sum_impact+=tit->impact();
-        //qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
-    }
-    qDebug() << "N="<<mTrees.size()<<"avg.dbh="<<sum_bhd/float(mTrees.size())<<"avg.value="<<sum_impact/float(mTrees.size());
-    ui->PaintWidget->update();
 }
 
 void MainWindow::paintFON(QPainter &painter, QRect rect)
@@ -515,31 +503,7 @@ void MainWindow::on_pbAddTrees_clicked()
 }
 
 
-void MainWindow::stampTrees()
-{
-    mGrid->initialize(1.f); // set to unity...
-    std::vector<Tree>::iterator tit;
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        (*tit).stampOnGrid(mStamp, *mGrid);
-    }
-}
 
-double MainWindow::retrieveFon()
-{
-    std::vector<Tree>::iterator tit;
-    float treevalue;
-    float sum_bhd=0.f;
-    float sum_impact=0.f;
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        treevalue = (*tit).retrieveValue(mStamp, *mGrid);
-        sum_bhd+=tit->dbh();
-        sum_impact+=tit->impact();
-        //qDebug() << "tree x/y:" << tit->position().x() << "/" << tit->position().y() << " value: " << tit->impact();
-    }
-    qDebug() << "N="<<mTrees.size()<<"avg.dbh="<<sum_bhd/float(mTrees.size())<<"avg.value="<<sum_impact/float(mTrees.size());
-    return sum_impact/float(mTrees.size());
-
-}
 
 void MainWindow::addTrees(const double dbh, const int count)
 {
@@ -573,8 +537,8 @@ void MainWindow::on_calcMatrix_clicked()
             mTrees.clear();
             addTrees(dbh, stemCount);
             // stamp
-            stampTrees();
-            val = retrieveFon();
+            //stampTrees(); // dropped func
+            //val = retrieveFon();
             line.append( QString::number(val) );
             qDebug() << "dbh" << dbh << "n" << stemCount << "result" << val;
         }

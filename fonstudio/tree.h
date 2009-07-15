@@ -3,8 +3,6 @@
 #include <QPointF>
 
 #include "core/grid.h"
-#include "tools/expression.h"
-
 
 class ImageStamp;
 class TreeSpecies;
@@ -35,9 +33,6 @@ public:
 
     void enableDebugging() { m_debugid = m_id; }
 
-    // image based stamp functions
-    void stampOnGrid(ImageStamp& stamp, FloatGrid& grid);
-    float retrieveValue(ImageStamp& stamp, FloatGrid& grid);
 
     // grid based stamp functions
     static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { m_grid = gridToStamp; m_dominanceGrid = dominanceGrid; }
@@ -51,8 +46,6 @@ public:
     static const int statPrints() { return m_statPrint; }
     static const int statAboveZ() { return m_statAboveZ; } ///< # of trees that are above Z*, i.e. the top is above the dominant height grid
 
-    static Expression rScale;
-    static Expression hScale;
     static float lafactor;
 
 private:

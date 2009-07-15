@@ -43,7 +43,7 @@ private:
 
     static const int cBHDclassWidth;
     static const int cHDclassWidth;
-    static const int cBHDclassLow; ///< bhd classes start with 2: class 0 = 2..6, class1 = 6..10
+    static const int cBHDclassLow; ///< bhd classes start with 4: class 0 = 4..8, class1 = 8..12
     static const int cHDclassLow; ///< hd classes offset is 40: class 0 = 40-50, class 1 = 50-60
     static const int cBHDclassCount; ///< class count, 50: highest class = 50*4 +- 2 = 198 - 202
     static const int cHDclassCount; ///< class count. highest class: 140-150

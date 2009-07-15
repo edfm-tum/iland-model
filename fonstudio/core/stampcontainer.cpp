@@ -3,10 +3,10 @@
 //constants
 const int StampContainer::cBHDclassWidth=4;
 const int StampContainer::cHDclassWidth=10;
-const int StampContainer::cBHDclassLow = 2; ///< bhd classes start with 2: class 0 = 2..6, class1 = 6..10
-const int StampContainer::cHDclassLow = 40; ///< hd classes offset is 40: class 0 = 40-50, class 1 = 50-60
+const int StampContainer::cBHDclassLow = 4; ///< bhd classes start with 4: class 0 = 4-8, class1 = 8..112
+const int StampContainer::cHDclassLow = 35; ///< hd classes offset is 35: class 0 = 35-45, class 1 = 45-55
 const int StampContainer::cBHDclassCount = 50; ///< class count, 50: highest class = 50*4 +- 2 = 198 - 202
-const int StampContainer::cHDclassCount = 10; ///< class count. highest class: 140-150
+const int StampContainer::cHDclassCount = 10; ///< class count. highest class: 135-145
 
 
 StampContainer::StampContainer()

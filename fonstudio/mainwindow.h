@@ -25,8 +25,6 @@ public:
     ~MainWindow();
 
 private:
-    void stampTrees();
-    double retrieveFon();
     void addTrees(const double dbh, const int count);
     Ui::MainWindowClass *ui;
     FloatGrid* mGrid; // light grid
