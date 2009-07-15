@@ -28,13 +28,23 @@ StampContainer::~StampContainer()
         delete m_stamps.takeLast().stamp;
 
 }
-
-int StampContainer::getKey(const float bhd, const float hd_value)
+/// getKey: decodes a floating point piar of dbh and hd-ratio to indices for the
+/// lookup table containing pointers to the actual stamps.
+void StampContainer::getKey(const float dbh, const float hd_value, int &dbh_class, int &hd_class) const
 {
-    int cls_bhd = int(bhd - cBHDclassLow) / cBHDclassWidth;
-    int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
-
-    return cls_bhd * 1000 + cls_hd;
+    hd_class = int(hd_value - cHDclassLow) / cHDclassWidth;
+    dbh_class = int(dbh - cBHDclassLow) / cBHDclassWidth;
+    // fixed scheme: smallest classification scheme for tree-diameters:
+    // 1cm width from 4 up to 9cm,
+    // 2cm bins from 10 to 18cm
+    // 4cm bins starting from 20cm
+    if (dbh < 10.f) {
+        dbh_class = qMax(0, int(dbh-4.)); // classes from 0..5
+    } else if (dbh<20.f) {
+        dbh_class = 6 + int((dbh-10.f) / 2.f); // 10-12cm has index 6
+    } else {
+        dbh_class = 11 + int((dbh-20.f) / 4.f); // 20-24cm has index 11
+    }
 }
 
 /** fill up the NULLs in the lookup map */
@@ -70,61 +80,43 @@ void StampContainer::finalizeSetup()
     //qDebug() << dump();
 }
 
-/** add a stamp to the internal storage.
-    This function must be called ordered, increasing bhds and hd-values.
-    for each line (i.e. same bhd-class) the left and the right margin of hd-values are "filled up":
-    e.g. x x x x 3 4 5 x x ---->  3 3 3 3 3 4 5 5 5. */
-int  StampContainer::addStamp(Stamp* stamp, const float bhd, const float hd_value, const float crown_radius_m)
-{
-    int key = getKey(bhd, hd_value);
-//    Stamp *last_stamp = 0;
+
+ void StampContainer::addStamp(Stamp* stamp, const int cls_dbh, const int cls_hd, const float crown_radius_m, const float dbh, const float hd_value)
+ {
     if (m_useLookup) {
-        int cls_bhd = int(bhd - cBHDclassLow) / cBHDclassWidth;
-        int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
-//        if (cls_bhd > m_maxBhd) {
-//            // start a new band of hd-values....
-//            // finish last line...
-//            if (m_maxBhd>-1) {
-//                for (int hd=0;hd<cHDclassCount;++hd) {
-//                    if (m_lookup(m_maxBhd, hd))
-//                        last_stamp=m_lookup(cls_bhd, hd); // save last value...
-//                    else
-//                        m_lookup.valueAt(cls_bhd, hd) = last_stamp; // write values
-//                }
-//            }
-//
-//            m_maxBhd = cls_bhd;
-//            // fill up first line
-//            for (int hd=0; hd<cls_hd;hd++)
-//                m_lookup.valueAt(cls_bhd, hd) = stamp;
-//        }
-//
-        m_lookup.valueAtIndex(cls_bhd, cls_hd) = stamp; // save address in look up table
+        m_lookup.valueAtIndex(cls_dbh, cls_hd) = stamp; // save address in look up table
     } // if (useLookup)
 
     StampItem si;
-    si.bhd = bhd;
+    si.dbh = dbh;
     si.hd = hd_value;
     si.crown_radius = crown_radius_m;
     si.stamp = stamp;
     m_stamps.append(si); // store entry in list of stamps
-    return key;
 
+ }
+
+
+/** add a stamp to the internal storage.
+    After loading the function finalizeSetup() must be called to ensure that gaps in the matrix get filled. */
+void  StampContainer::addStamp(Stamp* stamp, const float dbh, const float hd_value)
+{
+    int cls_dbh, cls_hd;
+    getKey(dbh, hd_value, cls_dbh, cls_hd); // decode dbh/hd-value
+    addStamp(stamp, cls_dbh, cls_hd, 0.f, dbh, hd_value); // dont set crownradius
 }
 
-int StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
+void StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
 {
     double rest = crown_radius_m - floor(crown_radius_m) + 0.001;
     int cls_hd = int( rest * cHDclassCount ); // 0 .. 9.99999999
     if (cls_hd>=cHDclassCount)
         cls_hd=cHDclassCount-1;
-    int cls_bhd = int(crown_radius_m);
-    float bhd = cBHDclassWidth * cls_bhd + cBHDclassLow;
-    float hd = cHDclassWidth * cls_hd + cHDclassLow;
-    qDebug() << "reader stamp radius" << crown_radius_m << "mapped to" << bhd << "bhd and hd=" << hd << "classes bhd hd:" << cls_bhd << cls_hd;
-    return addStamp(stamp, bhd, hd, crown_radius_m);
-
- }
+    int cls_dbh = int(crown_radius_m);
+    qDebug() << "Readerstamp r="<< crown_radius_m<<" index dbh hd:" << cls_dbh << cls_hd;
+    // prepare special keys for reader stamps
+    addStamp(stamp,cls_dbh, cls_hd, crown_radius_m, 0., 0.); // set crownradius, but not dbh/hd
+}
 
 
 /** retrieve a read-out-stamp. Readers depend solely on a crown radius.
@@ -149,9 +141,9 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
 {
 
     float hd_value = 100.f * height_m / bhd_cm;
-    int cls_bhd = int(bhd_cm - cBHDclassLow) / cBHDclassWidth;
-    int cls_hd = int(hd_value - cHDclassLow) / cHDclassWidth;
 
+    int cls_bhd, cls_hd;
+    getKey(bhd_cm, hd_value, cls_bhd, cls_hd);
 
     // check loopup table
     if (cls_bhd<cBHDclassCount && cls_bhd>=0 && cls_hd < cHDclassCount && cls_bhd>=0) {
@@ -230,11 +222,15 @@ void StampContainer::load(QDataStream &in)
         in >> readsum;
         in >> domvalue;
         //qDebug() << "stamp bhd hdvalue type readsum dominance" << bhd << hdvalue << type << readsum << domvalue;
+
         Stamp *stamp = newStamp( Stamp::StampType(type) );
         stamp->load(in);
         stamp->setReadSum(readsum);
         stamp->setDominanceValue(domvalue);
-        addStamp(stamp, bhd, hdvalue, crownradius);
+        if (crownradius > 0.f)
+            addReaderStamp(stamp, crownradius);
+        else
+            addStamp(stamp, bhd, hdvalue);
     }
     finalizeSetup(); // fill up lookup grid
 }
@@ -262,7 +258,7 @@ void StampContainer::save(QDataStream &out)
     foreach(StampItem si, m_stamps) {
         type = si.stamp->dataSize();
         out << type;
-        out << si.bhd;
+        out << si.dbh;
         out << si.hd;
         out << si.crown_radius;
         out << si.stamp->readSum();
@@ -281,7 +277,7 @@ QString StampContainer::dump()
     foreach (StampItem si, m_stamps) {
         line = QString("%5 -> size: %1 offset: %2 dbh: %3 hd-ratio: %4\r\n")
                .arg(sqrt(si.stamp->count())).arg(si.stamp->offset())
-               .arg(si.bhd).arg(si.hd).arg((int)si.stamp, 0, 16);
+               .arg(si.dbh).arg(si.hd).arg((int)si.stamp, 0, 16);
         // add data....
         maxidx = 2*si.stamp->offset() + 1;
         for (y=0;y<maxidx;++y)  {

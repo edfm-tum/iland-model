@@ -860,7 +860,7 @@ void MainWindow::on_lrProcess_clicked()
     double cut_threshold = docElem.firstChildElement("lightroom").firstChildElement("cutvalue").text().toDouble();
     QString stamp_desc = docElem.firstChildElement("lightroom").firstChildElement("desc").text();
     qDebug() << "cutting stamps when averaged absoulte value of rings is below"<<cut_threshold;
-    double crown, height, bhd;
+    float crown, height, bhd;
     QString formula, name, result;
 
     LightRoomObject *lro = new LightRoomObject();
@@ -976,7 +976,7 @@ void MainWindow::on_lrProcess_clicked()
 
         stamp->setDominanceValue( lightroom->centerValue() );
         double hd = qRound( height*100 / bhd );
-        container.addStamp(stamp,bhd, hd, lro->maxRadius());
+        container.addStamp(stamp,bhd, hd); // 3rd param was: , lro->maxRadius()
         ///////////////////////////
         tree = tree.nextSiblingElement("tree");
     }

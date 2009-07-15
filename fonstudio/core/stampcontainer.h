@@ -17,8 +17,8 @@ public:
     void useLookup(const bool use) { m_useLookup = use; }
     /// addStamp() add a pre-allocated stamp @param stamp to internal collection. Caller must allocate stamp on the heap,
     /// freeing is done by this class.
-    int addStamp(Stamp* stamp, const float bhd, const float hd_value, const float crown_radius_m);
-    int addReaderStamp(Stamp *stamp, const float crown_radius_m);
+    void addStamp(Stamp* stamp, const float dbh, const float hd_value);
+    void addReaderStamp(Stamp *stamp, const float crown_radius_m);
     const Stamp* stamp(const float bhd_cm, const float height_m) const;
     const Stamp* readerStamp(const float crown_radius_m) const; ///< retrieve reader-stamp. @param radius of crown in m. @return the appropriate stamp or NULL if not found.
     const int count() const { return m_stamps.count(); }
@@ -51,11 +51,12 @@ private:
     static const int cHDclassCount; ///< class count. highest class: 140-150
     struct StampItem {
         Stamp* stamp;
-        float bhd;
+        float dbh;
         float hd;
         float crown_radius;
     };
-    inline int getKey(const float bhd, const float hd_value);
+    inline void getKey(const float dbh, const float hd_value, int &dbh_class, int &hd_class) const;
+    void addStamp(Stamp* stamp, const int cls_dbh, const int cls_hd, const float crown_radius_m, const float dbh, const float hd_value);
     int m_maxBhd;
     bool m_useLookup; // use lookup table?
     QList<StampItem> m_stamps;
