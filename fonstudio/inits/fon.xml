@@ -29,8 +29,10 @@
 <seriesIsofones>0.05 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.5</seriesIsofones>
 
 </params>
-<treeinit>E:\Daten\iLand\Light\stands\crowded_small.csv</treeinit> 
 <!--
+<treeinit>E:\Daten\iLand\Light\stands\crowded_small.csv</treeinit>
+--> 
+
 <trees>
 <tree x="79.9" y="79.0" dbh="11" height="10"/>
 <tree x="30" y="20" dbh="23" height="15"/>
@@ -42,7 +44,7 @@
 <tree x="85.454" y="45.4" dbh="20" height="20"/>
 <tree x="75" y="80" dbh="22" height="20"/>
 </trees>
--->
+
 
 <lightroom>
 <size x="100" y="100" z="65" cellsize="2" average="3"/>
@@ -50,14 +52,15 @@
 <cutvalue>0.1</cutvalue>
 <trees>
 <path>E:\Daten\iLand\Light\fons</path>
-<file>piab.bin</file>
+<file>test.bin</file>
 <!--<tree name="Piab_110_66" bhd="110" h="66" crown="25.21" formula="7.473*(min(0.95, hrel)/0.95)^0.28483"/>
 -->
-<!--
+
 <tree name="Piab_6_4.8" bhd="6" h="4.8" crown="1.83" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
 <tree name="Piab_22_15.4" bhd="22" h="15.4" crown="5.88" formula="2.65*(min(0.95, hrel)/0.95)^0.28483"/>
 <tree name="Piab_58_34.8" bhd="58" h="34.8" crown="13.29" formula="4.948*(min(0.95, hrel)/0.95)^0.28483"/>
--->
+
+<!--
 
 <tree name="Piab_6_4.2" bhd="6" h="4.2" crown="1.6" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
 <tree name="Piab_6_4.8" bhd="6" h="4.8" crown="1.83" formula="1.148*(min(0.95, hrel)/0.95)^0.28483"/>
@@ -187,7 +190,7 @@
 <tree name="Piab_146_73" bhd="146" h="73" crown="27.89" formula="8.967*(min(0.95, hrel)/0.95)^0.28483"/>
 <tree name="Piab_150_60" bhd="150" h="60" crown="22.92" formula="9.125*(min(0.95, hrel)/0.95)^0.28483"/>
 <tree name="Piab_150_75" bhd="150" h="75" crown="28.65" formula="9.125*(min(0.95, hrel)/0.95)^0.28483"/>
-
+-->
 </trees>
 </lightroom>
 

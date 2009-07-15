@@ -1,6 +1,8 @@
 #include "lightroom.h"
 #include "tools/helper.h"
 
+#include <QtCore>
+
 LightRoom::LightRoom()
 {
     m_roomObject = 0;
@@ -114,15 +116,20 @@ void LightRoom::calculateFullGrid()
     float maxh = m_roomObject->maxHeight();
 
     float *values = new float[m_countZ];
-
+    double h_realized;
     double sum;
+    const float dom_cellsize = 10.f; // size of the dominance height grid
+    float hdom;
+    int ring;
     while (v!=vend) {
         pindex = m_2dvalues.indexOf(v);
         coord = m_2dvalues.cellCoordinates(pindex);
+        double hor_distance = sqrt(coord.x()*coord.x() + coord.y()*coord.y());
+
         for (z=0;z<m_countZ && z*m_cellsize <= maxh;z++) {
             // only calculate values up to the 45° line
             // tan(45°)=1 -> so this is the case when the distance p->tree > height of the tree
-            if (sqrt(coord.x()*coord.x() + coord.y()*coord.y()) > maxh-z*m_cellsize)
+            if (hor_distance > maxh-z*m_cellsize)
                 break;
             hit_ratio = calculateGridAtPoint(coord.x(), coord.y(), // coords x,y
                                              z*m_cellsize,false); // heigth (z), false: do not clear and fill shadow grid structure
@@ -141,7 +148,28 @@ void LightRoom::calculateFullGrid()
             sum+=values[i];
         //if (z)
         //    sum/=float(z);
-        *v = sum*m_cellsize; // save in 2d grid, multiply with height (shadow * meter)
+        h_realized = sum*m_cellsize; // multiply with height (shadow * meter)
+
+        if (h_realized>0) {
+            // get current "ring"
+            double coord_max = qMax( fabs(coord.x()), fabs(coord.y()));
+            ring = int((coord_max + dom_cellsize / 2.) / dom_cellsize);
+            if (ring==0) {
+                hdom = maxh - dom_cellsize/4.;
+            } else {
+                hdom = maxh  -  ring*dom_cellsize;
+                if (hdom < 0.) {
+                    // for the outermost cell:  hmax%cellsize / 2
+                    hdom = fmod(maxh, dom_cellsize) / 2.;
+                }
+            }
+            if (hdom <= 0.)
+                hdom = 1.; // avoid div / 0
+            // weigh...
+            h_realized *= hor_distance / hdom;
+        } // if (h_realized)...
+
+        *v = h_realized; // store in matrix
         v++;
         c++;
         if (c%1000==0) {
@@ -150,7 +178,7 @@ void LightRoom::calculateFullGrid()
         }
         // save value of the middle column...
         m_centervalue = m_2dvalues(0.f, 0.f);
-    }
+    } // while(v!=vend)
 }
 
 //////////////////////////////////////////////////////////

@@ -88,27 +88,41 @@ void Tree::applyStamp()
     m_statPrint++; // count # of stamp applications...
 }
 
+/** heightGrid()
+  This function calculates the "dominant height field". This grid is coarser as the fine-scaled light-grid.
+
+*/
 void Tree::heightGrid()
 {
     // height of Z*
     float cellsize = m_dominanceGrid->cellsize();
-    if (m_Height < cellsize) {
+    if (m_Height < cellsize/2.) {
         float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
         dom = qMax(dom, m_Height/2.f);
     } else {
         QPoint p = m_dominanceGrid->indexAt(m_Position); // pos of tree on height grid
-        float h = m_Height - cellsize/2.f;
-        int ringcount = int(floor(h / cellsize));
+
+        int ringcount = int(floor(m_Height / cellsize));
         int ix, iy;
         int ring;
         QPoint pos;
+        float hdom;
+        float h_out = fmod(m_Height, cellsize) / 2.;
         for (ix=-ringcount;ix<=ringcount;ix++)
             for (iy=-ringcount; iy<=+ringcount; iy++) {
             ring = qMax(abs(ix), abs(iy));
             QPoint pos(ix+p.x(), iy+p.y());
             if (m_dominanceGrid->isIndexValid(pos)) {
                 // apply value....
-                m_dominanceGrid->valueAtIndex(pos) = qMax(m_dominanceGrid->valueAtIndex(pos), h-ring*cellsize);
+                if (ring==0) {
+                    hdom = m_Height- cellsize/4.;
+                } else if (ring==abs(ringcount)) {
+                    // outermost ring: use again height/2.
+                    hdom = h_out;
+                } else {
+                    hdom = m_Height- ring*cellsize;
+                }
+                m_dominanceGrid->valueAtIndex(pos) = qMax(m_dominanceGrid->valueAtIndex(pos), hdom);
             }
 
         }
