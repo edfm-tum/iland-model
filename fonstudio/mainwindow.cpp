@@ -169,7 +169,7 @@ void MainWindow::loadPicusIniFile(const QString &fileName)
     int iHeight = headers.indexOf("treeheight");
     for (int i=1;i<lines.count();i++) {
         QString &line = lines[i];
-        qDebug() << "line" << i << ":" << line;
+        //qDebug() << "line" << i << ":" << line;
         Tree tree;
         QPointF f;
         if (iX>=0 && iY>=0) {
@@ -189,6 +189,7 @@ void MainWindow::loadPicusIniFile(const QString &fileName)
 
         mTrees.push_back(tree);
     }
+    qDebug() << "loaded init-file contained" << lines.count() <<"lines.";
     //qDebug() << "lines: " << lines;
 }
 
@@ -217,13 +218,7 @@ void MainWindow::on_stampTrees_clicked()
     if (mTrees.size()==0 || !mGrid)
         return;
 
-    // old code:
-    /*
-    mGrid->initialize(1.f); // set to unity...
-    std::vector<Tree>::iterator tit;
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        (*tit).stampOnGrid(mStamp, *mGrid);
-    } */
+
     //mGrid->initialize(0.f); // set grid to zero.
     DebugTimer t_print("apply/read-cycle");
     mDomGrid->initialize(0.f); // set dominance grid to zero.
@@ -233,6 +228,7 @@ void MainWindow::on_stampTrees_clicked()
     Tree::resetStatistics();
 
     std::vector<Tree>::iterator tit;
+
     // height dominance grid
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).heightGrid(); // just do it ;)
@@ -255,32 +251,10 @@ void MainWindow::on_stampTrees_clicked()
     t_print.showElapsed();
 
     qDebug() << Tree::statAboveZ() << "above dominance grid";
-    ui->PaintWidget->update();
-    /*
-    // debug output
-    QString Line, Value;
-    int ix,iy;
-    for (iy=0;iy<mGrid->sizeY();iy++) {
-        Line="";
-        for (ix=0;ix<mGrid->sizeX();ix++) {
-            Line = QString("%1 %2").arg(Line).arg(mGrid->valueAtIndex(QPoint(ix, iy)));
-            //Value.setNum(mGrid->valueAtIndex(QPoint(ix, iy)));
-            //Line+=Value;
-        }
-        qDebug() << "y" << iy << ":" << Line;
-    }
-    on_pbRetrieve_clicked();
-    //ui->PaintWidget->update();
-    */
-
+    ui->PaintWidget->update(); // repaint...
 }
 
-/**************************************
-**
-***************************************/
-void MainWindow::on_pbRetrieve_clicked()
-{
-}
+
 
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
@@ -845,6 +819,9 @@ void MainWindow::on_fonRun_clicked()
     // test stylesheets...
     QString style = setting("style");
     ui->PaintWidget->setStyleSheet( style );
+
+    // start first cycle...
+    on_stampTrees_clicked();
 
 }
 

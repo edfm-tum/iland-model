@@ -18,7 +18,7 @@
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout" rowstretch="1,5,2" columnstretch="1,1">
+   <layout class="QGridLayout" name="gridLayout" rowstretch="1,5,2" columnstretch="1,2">
     <property name="margin">
      <number>3</number>
     </property>
@@ -89,8 +89,20 @@ color: rgb(85, 0, 0);</string>
     </item>
     <item row="1" column="0">
      <widget class="QStackedWidget" name="editStack">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>400</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="pageXML">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -431,7 +443,7 @@ color: rgb(85, 0, 0);</string>
            <widget class="QPushButton" name="stampTrees">
             <property name="geometry">
              <rect>
-              <x>200</x>
+              <x>270</x>
               <y>10</y>
               <width>75</width>
               <height>23</height>
@@ -445,19 +457,6 @@ color: rgb(85, 0, 0);</string>
             </property>
             <property name="text">
              <string>stamp trees</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="pbRetrieve">
-            <property name="geometry">
-             <rect>
-              <x>280</x>
-              <y>10</y>
-              <width>75</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>retrieve</string>
             </property>
            </widget>
            <widget class="QPushButton" name="fonRun">
@@ -901,7 +900,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>pbCreateLightroom</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>stampTrees</tabstop>
-  <tabstop>pbRetrieve</tabstop>
   <tabstop>formula</tabstop>
   <tabstop>lVar1</tabstop>
   <tabstop>lVar2</tabstop>

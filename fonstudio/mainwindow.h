@@ -58,7 +58,6 @@ private slots:
     void on_calcMatrix_clicked();
     void on_pbAddTrees_clicked();
     void on_lCalcResult_linkActivated(QString link);
-    void on_pbRetrieve_clicked();
     void on_calcFormula_clicked();
     void on_applyXML_clicked();
     void on_stampTrees_clicked();
