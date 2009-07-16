@@ -443,7 +443,7 @@ color: rgb(85, 0, 0);</string>
            <widget class="QPushButton" name="stampTrees">
             <property name="geometry">
              <rect>
-              <x>270</x>
+              <x>90</x>
               <y>10</y>
               <width>75</width>
               <height>23</height>
@@ -654,6 +654,22 @@ color: rgb(85, 0, 0);</string>
              </property>
             </widget>
            </widget>
+           <widget class="QPushButton" name="pbResults">
+            <property name="geometry">
+             <rect>
+              <x>270</x>
+              <y>10</y>
+              <width>71</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="toolTip">
+             <string>copies tree results in clipboard.</string>
+            </property>
+            <property name="text">
+             <string>Results</string>
+            </property>
+           </widget>
           </widget>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
@@ -827,6 +843,14 @@ p, li { white-space: pre-wrap; }
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuOutput_menu">
+    <property name="title">
+     <string>Output-menu</string>
+    </property>
+    <addaction name="actionTreelist"/>
+    <addaction name="actionFON_grid"/>
+   </widget>
+   <addaction name="menuOutput_menu"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="iconSize">
@@ -880,6 +904,16 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>XML settings</string>
+   </property>
+  </action>
+  <action name="actionTreelist">
+   <property name="text">
+    <string>treelist</string>
+   </property>
+  </action>
+  <action name="actionFON_grid">
+   <property name="text">
+    <string>FON grid</string>
    </property>
   </action>
  </widget>

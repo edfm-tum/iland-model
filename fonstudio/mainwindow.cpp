@@ -102,6 +102,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->PaintWidget, SIGNAL(mouseMove(QPoint)),
             this, SLOT(mouseMove(const QPoint&)));
 
+    ui->pbResults->setMenu(ui->menuOutput_menu);
+
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
     // load xml file
@@ -239,8 +241,7 @@ void MainWindow::on_stampTrees_clicked()
         (*tit).applyStamp(); // just do it ;)
     }
     //qDebug() << gridToString(*mGrid);
-    qDebug() << "applied" << Tree::statPrints() << "stamps. tree #:" << mTrees.size();
-    qDebug() << Tree::statAboveZ() << "above dominance grid";
+    qDebug() << "applied" << Tree::statPrints() << "stamps. (no. of trees):" << mTrees.size();
     //qDebug() << gridToString(*mDomGrid);
 
     // read values...
@@ -254,6 +255,26 @@ void MainWindow::on_stampTrees_clicked()
     ui->PaintWidget->update(); // repaint...
 }
 
+QString MainWindow::dumpTreelist()
+{
+    QStringList result;
+    result+=QString("id;x;y;dbh;height;fonvalue");
+    std::vector<Tree>::iterator tit;
+    Tree *tree;
+
+    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+        tree = &(*tit);
+        result+=QString("%1;%2;%3;%4;%5;%6")
+                .arg(tree->id())
+                .arg(tree->position().x())
+                .arg(tree->position().y())
+                .arg(tree->dbh())
+                .arg(tree->height())
+                .arg(tree->impact());
+    }
+    QString resStr = result.join("\n");
+    return resStr;
+}
 
 
 void MainWindow::paintFON(QPainter &painter, QRect rect)
@@ -1083,4 +1104,20 @@ void MainWindow::on_openFile_clicked()
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
     ui->iniEdit->setPlainText(xmlFile);
+}
+
+
+void MainWindow::on_actionTreelist_triggered()
+{
+    QApplication::clipboard()->setText(dumpTreelist());
+    qDebug() << "treelist copied to clipboard.";
+}
+
+void MainWindow::on_actionFON_grid_triggered()
+{
+    if (!mGrid)
+        return;
+    QString gr = gridToString(*mGrid);
+    QApplication::clipboard()->setText(gr);
+    qDebug() << "grid copied to clipboard.";
 }
