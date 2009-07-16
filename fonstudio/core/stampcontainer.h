@@ -17,7 +17,7 @@ public:
     void useLookup(const bool use) { m_useLookup = use; }
     /// addStamp() add a pre-allocated stamp @param stamp to internal collection. Caller must allocate stamp on the heap,
     /// freeing is done by this class.
-    void addStamp(Stamp* stamp, const float dbh, const float hd_value);
+    void addStamp(Stamp* stamp, const float dbh, const float hd_value, const float crown_radius);
     void addReaderStamp(Stamp *stamp, const float crown_radius_m);
     const Stamp* stamp(const float bhd_cm, const float height_m) const;
     const Stamp* readerStamp(const float crown_radius_m) const; ///< retrieve reader-stamp. @param radius of crown in m. @return the appropriate stamp or NULL if not found.

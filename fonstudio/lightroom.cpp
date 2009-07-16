@@ -163,10 +163,10 @@ void LightRoom::calculateFullGrid()
                     hdom = fmod(maxh, dom_cellsize) / 2.;
                 }
             }
-            if (hdom <= 0.)
-                hdom = 1.; // avoid div / 0
-            // weigh...
-            h_realized *= hor_distance / hdom;
+
+            if (maxh - hor_distance > 0.1) // avoid a huge amplification....
+                h_realized *=  hdom / (maxh - hor_distance);
+
         } // if (h_realized)...
 
         *v = h_realized; // store in matrix

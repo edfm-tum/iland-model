@@ -40,6 +40,7 @@ private:
     Viewport vp;
 
 private slots:
+    void on_openFile_clicked();
     void on_pbSetAsDebug_clicked();
     void on_lrReadStamps_clicked();
     void on_treeChange_clicked();

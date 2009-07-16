@@ -108,11 +108,13 @@ MainWindow::MainWindow(QWidget *parent)
     xmldoc.clear();
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
 
-    ui->iniEdit->setPlainText(xmlFile);
+    if (!xmlFile.isEmpty()) {
+        ui->iniEdit->setPlainText(xmlFile);
 
-    if (!xmldoc.setContent(xmlFile)) {
-        QMessageBox::information(this, "title text", "Cannot set content of XML file " + ui->initFileName->text());
-        return;
+        if (!xmldoc.setContent(xmlFile)) {
+            QMessageBox::information(this, "title text", "Cannot set content of XML file " + ui->initFileName->text());
+            return;
+        }
     }
 
     on_actionEdit_XML_settings_triggered();
@@ -187,7 +189,7 @@ void MainWindow::loadPicusIniFile(const QString &fileName)
 
         mTrees.push_back(tree);
     }
-    qDebug() << "lines: " << lines;
+    //qDebug() << "lines: " << lines;
 }
 
 void MainWindow::on_saveFile_clicked()
@@ -525,7 +527,7 @@ void MainWindow::on_calcMatrix_clicked()
     QStringList result, line;
     result.append("result;" + dbhs.join(";"));
     int stemCount, dbh;
-    double val;
+    double val=0.;
     QTime timer;
     timer.start();
     for (int n=0; n<ns.count(); ++n) {
@@ -976,7 +978,7 @@ void MainWindow::on_lrProcess_clicked()
 
         stamp->setDominanceValue( lightroom->centerValue() );
         double hd = qRound( height*100 / bhd );
-        container.addStamp(stamp,bhd, hd); // 3rd param was: , lro->maxRadius()
+        container.addStamp(stamp,bhd, hd, lro->maxRadius()); // 3rd param was: ,
         ///////////////////////////
         tree = tree.nextSiblingElement("tree");
     }
@@ -1094,4 +1096,14 @@ void MainWindow::on_pbSetAsDebug_clicked()
     Tree *t = (Tree*)pt;
     t->enableDebugging();
 
+}
+
+void MainWindow::on_openFile_clicked()
+{
+    QString fileName = Helper::fileDialog("select XML-ini file for FonStudio...");
+    if (fileName.isEmpty())
+        return;
+    ui->initFileName->setText(fileName);
+    QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
+    ui->iniEdit->setPlainText(xmlFile);
 }

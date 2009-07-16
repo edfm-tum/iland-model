@@ -99,11 +99,11 @@ void StampContainer::finalizeSetup()
 
 /** add a stamp to the internal storage.
     After loading the function finalizeSetup() must be called to ensure that gaps in the matrix get filled. */
-void  StampContainer::addStamp(Stamp* stamp, const float dbh, const float hd_value)
+void  StampContainer::addStamp(Stamp* stamp, const float dbh, const float hd_value, const float crown_radius)
 {
     int cls_dbh, cls_hd;
     getKey(dbh, hd_value, cls_dbh, cls_hd); // decode dbh/hd-value
-    addStamp(stamp, cls_dbh, cls_hd, 0.f, dbh, hd_value); // dont set crownradius
+    addStamp(stamp, cls_dbh, cls_hd, crown_radius, dbh, hd_value); // dont set crownradius
 }
 
 void StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
@@ -227,10 +227,10 @@ void StampContainer::load(QDataStream &in)
         stamp->load(in);
         stamp->setReadSum(readsum);
         stamp->setDominanceValue(domvalue);
-        if (crownradius > 0.f)
-            addReaderStamp(stamp, crownradius);
+        if (bhd > 0.f)
+            addStamp(stamp, bhd, hdvalue, crownradius);
         else
-            addStamp(stamp, bhd, hdvalue);
+            addReaderStamp(stamp, crownradius);
     }
     finalizeSetup(); // fill up lookup grid
 }
