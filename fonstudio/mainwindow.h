@@ -41,6 +41,7 @@ private:
     QString dumpTreelist();
 
 private slots:
+    void on_execManyStands_clicked();
     void on_actionFON_grid_triggered();
     void on_actionTreelist_triggered();
     void on_openFile_clicked();

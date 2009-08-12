@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/fonstudio.qrc">
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -825,6 +825,22 @@ p, li { white-space: pre-wrap; }
              <string>ISOFON - calc matrix</string>
             </property>
            </widget>
+           <widget class="QPushButton" name="execManyStands">
+            <property name="geometry">
+             <rect>
+              <x>120</x>
+              <y>190</y>
+              <width>151</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="toolTip">
+             <string>parse setting &quot;standlist&quot; in XML-input file, then load/stamp/save results for each stand listed.</string>
+            </property>
+            <property name="text">
+             <string>execute many stands</string>
+            </property>
+           </widget>
           </widget>
          </widget>
         </item>
@@ -875,7 +891,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -887,7 +903,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionFON_action">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
    </property>
    <property name="text">
@@ -899,7 +915,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -947,7 +963,9 @@ p, li { white-space: pre-wrap; }
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="res/fonstudio.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>lrSliderX</sender>

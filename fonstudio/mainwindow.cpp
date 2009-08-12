@@ -149,6 +149,10 @@ void MainWindow::on_applyXML_clicked()
 void MainWindow::loadPicusIniFile(const QString &fileName)
 {
     QString text = Helper::loadTextFile(fileName);
+    if (text.isEmpty()) {
+        qDebug() << "file not found: " + fileName;
+        return;
+    }
 
     // cut out the <trees> </trees> part....
     QRegExp rx(".*<trees>(.*)</trees>.*");
@@ -1120,4 +1124,31 @@ void MainWindow::on_actionFON_grid_triggered()
     QString gr = gridToString(*mGrid);
     QApplication::clipboard()->setText(gr);
     qDebug() << "grid copied to clipboard.";
+}
+
+void MainWindow::on_execManyStands_clicked()
+{
+    QDomElement xmlAuto = xmldoc.documentElement().firstChildElement("automation");
+    QString outPath = xmlAuto.firstChildElement("outputpath").text();
+    QString inPath = xmlAuto.firstChildElement("inputpath").text();
+    QString inFile = xmlAuto.firstChildElement("stands").text();
+    qDebug() << "standlist:" << inFile << "inpath:"<<inPath << "save to:"<<outPath;
+    QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', QString::SkipEmptyParts);
+    foreach (QString file, fileList) {
+        file = inPath + "\\" + file;
+        qDebug() << "processing" << file;
+        mTrees.clear();
+        loadPicusIniFile(file);
+
+        // start a first cycle...
+        on_stampTrees_clicked();
+        QFileInfo fi(file);
+        QString outFileName = QString("%1\\out_%2.csv").arg(outPath, fi.baseName());
+        Helper::saveToTextFile(outFileName, dumpTreelist() );
+        qDebug() << mTrees.size() << "trees loaded, saved to" << outFileName;
+        QApplication::processEvents();
+
+    }
+
+
 }
