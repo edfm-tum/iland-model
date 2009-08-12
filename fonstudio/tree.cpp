@@ -45,6 +45,7 @@ void Tree::setup()
    m_stamp = m_species->stamp(m_Dbh, m_Height);
 }
 
+#define NOFULLDBG
 void Tree::applyStamp()
 {
     Q_ASSERT(m_grid!=0);
@@ -60,6 +61,9 @@ void Tree::applyStamp()
     int x,y;
     float value;
     QPoint dbg(10,20);
+    #ifndef NOFULLDBG
+    qDebug() <<"indexstampx indexstamy gridx gridy local_dom_height stampvalue 1-value*la/dom grid_before gridvalue_after";
+    #endif
     for (x=0;x<m_stamp->size();++x) {
         for (y=0;y<m_stamp->size(); ++y) {
            p = pos + QPoint(x,y);
@@ -80,6 +84,10 @@ void Tree::applyStamp()
                value = (*m_stamp)(x,y);
                value = 1. - value*lafactor / local_dom;
                value = qMax(value, 0.02f);
+#ifndef NOFULLDBG
+                qDebug() << x << y << p.x() << p.y() << local_dom << (*m_stamp)(x,y) << 1. - (*m_stamp)(x,y)*lafactor / local_dom  << m_grid->valueAtIndex(p) << m_grid->valueAtIndex(p)*value;
+#endif
+
                m_grid->valueAtIndex(p)*= value;
            }
         }
@@ -192,6 +200,7 @@ double Tree::readStampMul()
     QPoint p;
 
     float dom_height = (*m_dominanceGrid)[m_Position];
+    float local_dom;
 
     int x,y;
     double sum=0.;
@@ -200,7 +209,8 @@ double Tree::readStampMul()
         for (y=0;y<reader->size(); ++y) {
             p = pos_reader + QPoint(x,y);
             if (m_grid->isIndexValid(p)) {
-                own_value = 1. - m_stamp->offsetValue(x,y,d_offset)*lafactor /dom_height;
+                local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
+                own_value = 1. - m_stamp->offsetValue(x,y,d_offset)*lafactor /local_dom; // old: dom_height;
                 own_value = qMax(own_value, 0.02);
                 value =  m_grid->valueAtIndex(p) / own_value; // remove impact of focal tree
                 if (value>0.)

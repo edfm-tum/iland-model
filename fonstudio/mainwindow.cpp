@@ -290,6 +290,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_fon = ui->visFon->isChecked();
     bool show_dom = ui->visDomGrid->isChecked();
     bool show_impact = ui->visImpact->isChecked();
+    bool show_scale40 = ui->visDomHeight->isChecked();
+    float scale_value = ui->visScaleValue->currentText().toFloat();
 
 //    // get maximum value
 
@@ -310,10 +312,19 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QColor fill_color;
     float value;
     if (show_fon) {
+
         QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
+        QPointF k;
+        float hdom;
         for (iy=0;iy<mGrid->sizeY();iy++) {
             for (ix=0;ix<mGrid->sizeX();ix++) {
+
                 value = mGrid->valueAtIndex(QPoint(ix, iy));
+                if (show_scale40) {
+                    k = mGrid->cellCoordinates(QPoint(ix, iy));
+                    hdom = mDomGrid->valueAt(k);
+                    value = 1.f -  (1.f - value) * hdom / scale_value;
+                }
                 QRectF f = mGrid->cellRect(QPoint(ix,iy));
                 QRect r = vp.toScreen(f);
 
@@ -362,18 +373,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
 
     qDebug() << "repaintArea. maxval:" << maxval;
-    // viewport test
-
-    /*
-    QRectF r = mGrid->metricRect();
-    painter.setPen(Qt::blue);
-    painter.drawLine(vp.toScreen(r.topLeft()), vp.toScreen(r.bottomRight()));
-    painter.drawLine(vp.toScreen(r.topRight()), vp.toScreen(r.bottomLeft()));
-    */
-
-
-
 }
+
 
 void MainWindow::repaintArea(QPainter &painter)
 {
