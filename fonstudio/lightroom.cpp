@@ -116,11 +116,10 @@ void LightRoom::calculateFullGrid()
     float maxh = m_roomObject->maxHeight();
 
     float *values = new float[m_countZ];
+
     double h_realized;
     double sum;
-    const float dom_cellsize = 10.f; // size of the dominance height grid
-    float hdom;
-    int ring;
+
     while (v!=vend) {
         pindex = m_2dvalues.indexOf(v);
         coord = m_2dvalues.cellCoordinates(pindex);
@@ -144,32 +143,14 @@ void LightRoom::calculateFullGrid()
         // aggregate mean for all cells with angles>45° to the tree-top!
         // 20090711: again average it, but now include the tree top.
         // 20090713: go back to sum...
+        // 20090812: remove the weighting for the 10m cells again.
         for(int i=0;i<z;i++)
             sum+=values[i];
         //if (z)
         //    sum/=float(z);
         h_realized = sum*m_cellsize; // multiply with height (shadow * meter)
-
-        if (h_realized>0) {
-            // get current "ring"
-            double coord_max = qMax( fabs(coord.x()), fabs(coord.y()));
-            ring = int((coord_max + dom_cellsize / 2.) / dom_cellsize);
-            if (ring==0) {
-                hdom = maxh - dom_cellsize/4.;
-            } else {
-                hdom = maxh  -  ring*dom_cellsize;
-                if (hdom < 0.) {
-                    // for the outermost cell:  hmax%cellsize / 2
-                    hdom = fmod(maxh, dom_cellsize) / 2.;
-                }
-            }
-
-            if (maxh - hor_distance > 0.1) // avoid a huge amplification....
-                h_realized *=  hdom / (maxh - hor_distance);
-
-        } // if (h_realized)...
-
         *v = h_realized; // store in matrix
+
         v++;
         c++;
         if (c%1000==0) {
