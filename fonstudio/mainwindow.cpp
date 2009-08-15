@@ -322,7 +322,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 value = mGrid->valueAtIndex(QPoint(ix, iy));
                 if (show_scale40) {
                     k = mGrid->cellCoordinates(QPoint(ix, iy));
-                    hdom = mDomGrid->valueAt(k);
+                    hdom = qMax(2.f, mDomGrid->valueAt(k)); // 2m: as in stamp grid
                     value = 1.f -  (1.f - value) * hdom / scale_value;
                 }
                 QRectF f = mGrid->cellRect(QPoint(ix,iy));

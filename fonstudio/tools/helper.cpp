@@ -1,5 +1,6 @@
 #include "helper.h"
 #include <QtCore>
+#include "cycle.h"
 
 Helper::Helper()
 {
@@ -255,13 +256,24 @@ bool UpdateState::needsUpdate()
 
 void DebugTimer::showElapsed()
 {
-    if (!m_shown)
-        qDebug() << "Timer" << m_caption << ": " << elapsed() << "msec";
+    if (!m_shown) {
+        ticks t=m_ticks;
+        ticks now = getticks();
+        quint64 elapsed_ticks = qRound64( elapsed(now, t) );
+        qDebug() << "Timer" << m_caption << ": " << elapsedMs() << "msec - ticks" << elapsed_ticks;
+    }
     m_shown=true;
 }
-int DebugTimer::elapsed()
+int DebugTimer::elapsedMs()
 {
     return t.elapsed();
+}
+
+void DebugTimer::start()
+{
+    t.start();
+    m_ticks = getticks();
+    m_shown=false;
 }
 
 /** @class Viewport

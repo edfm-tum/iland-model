@@ -154,7 +154,7 @@ void LightRoom::calculateFullGrid()
         v++;
         c++;
         if (c%1000==0) {
-            qDebug() << c << "processed...time: ms: " << t.elapsed();
+            qDebug() << c << "processed...time: ms: " << t.elapsedMs();
             QCoreApplication::processEvents();
         }
         // save value of the middle column...

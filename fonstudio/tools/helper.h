@@ -76,12 +76,13 @@ public:
     DebugTimer(const QString &caption) { m_caption = caption; start(); }
     ~DebugTimer() { showElapsed();}
     void showElapsed();
-    int elapsed();
-    void start() { t.start(); m_shown=false; }
+    int elapsedMs();
+    void start();
 private:
     QTime t;
     bool m_shown;
-    QString m_caption;  
+    QString m_caption;
+    qint64 m_ticks;
 };
 
 /** UpdateState details missing.
