@@ -120,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     on_actionEdit_XML_settings_triggered();
-
+    // update
 
 }
 
@@ -219,6 +219,58 @@ void MainWindow::on_saveFile_clicked()
 /**************************************
 **
 ***************************************/
+
+void MainWindow::applyCycles(int cycle_count)
+{
+    // (1) init grid
+    DebugTimer t2(QString("application of %1 cycles").arg(cycle_count));
+    int i;
+    std::vector<Tree>::iterator tit;
+    {
+        DebugTimer t("initialize");
+        for (i=0;i<cycle_count;i++) {
+            mDomGrid->initialize(0.f); // set dominance grid to zero.
+            mGrid->initialize(1.f); // 1 for multiplicative
+        }
+    }
+
+    {
+        DebugTimer t("dominance grid");
+        for (i=0;i<cycle_count;i++) {
+            // height dominance grid
+            for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+                (*tit).heightGrid(); // just do it ;)
+            }
+        }
+    }
+
+    Tree::setGrid(mGrid, mDomGrid); // set static target grids
+    Tree::resetStatistics();
+    {
+        DebugTimer t("apply grid");
+        for (i=0;i<cycle_count;i++) {
+            // height dominance grid
+            if (cycle_count>1 && i==cycle_count-1)
+                mGrid->initialize(1.f); // reset before the ultimate application
+
+            for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+                (*tit).applyStamp(); // just do it ;)
+            }
+        }
+    }
+
+    {
+        DebugTimer t("read grid");
+        for (i=0;i<cycle_count;i++) {
+            for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
+                //(*tit).readStamp(); // just do it ;)
+                (*tit).readStampMul(); // multipliactive approach
+            }
+        }
+    }
+
+}
+
 void MainWindow::on_stampTrees_clicked()
 {
     if (mTrees.size()==0 || !mGrid)
@@ -235,15 +287,18 @@ void MainWindow::on_stampTrees_clicked()
 
     std::vector<Tree>::iterator tit;
 
+    DebugTimer t2;
     // height dominance grid
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).heightGrid(); // just do it ;)
     }
+    t2.interval("height grid");
 
     // grid for horizontal concurrence
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         (*tit).applyStamp(); // just do it ;)
     }
+    t2.interval("apply stamp");
     //qDebug() << gridToString(*mGrid);
     qDebug() << "applied" << Tree::statPrints() << "stamps. (no. of trees):" << mTrees.size();
     //qDebug() << gridToString(*mDomGrid);
@@ -253,6 +308,7 @@ void MainWindow::on_stampTrees_clicked()
         //(*tit).readStamp(); // just do it ;)
         (*tit).readStampMul(); // multipliactive approach
     }
+    t2.interval("read stamp");
     t_print.showElapsed();
 
     qDebug() << Tree::statAboveZ() << "above dominance grid";
@@ -1152,4 +1208,10 @@ void MainWindow::on_execManyStands_clicked()
     }
 
 
+}
+
+void MainWindow::on_pbMultipleApplication_clicked()
+{
+    int c=ui->lApplyManyCount->text().toInt();
+    applyCycles(c);
 }

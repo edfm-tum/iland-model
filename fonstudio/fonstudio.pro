@@ -21,7 +21,8 @@ SOURCES += main.cpp \
     lightroom.cpp \
     core/stamp.cpp \
     core/stampcontainer.cpp \
-    treespecies.cpp
+    treespecies.cpp \
+    tools/ticktack.cpp
 HEADERS += mainwindow.h \
     stable.h \
     core/grid.h \
@@ -36,6 +37,7 @@ HEADERS += mainwindow.h \
     global.h \
     core/stamp.h \
     core/stampcontainer.h \
-    treespecies.h
+    treespecies.h \
+    tools/ticktack.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

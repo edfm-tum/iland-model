@@ -4,6 +4,7 @@
 #include <QVector>
 #include <QtCore>
 
+#include "ticktack.h"
 
 #define QUIETDEBUG(x) if (!Helper::quiet()) { qDebug() << x; }
 
@@ -76,13 +77,15 @@ public:
     DebugTimer(const QString &caption) { m_caption = caption; start(); }
     ~DebugTimer() { showElapsed();}
     void showElapsed();
-    int elapsedMs();
+    double elapsed(); // elapsed time in milliseconds
     void start();
+    void interval(const QString &text);
+    static void sampleClock(int ms=100);
 private:
-    QTime t;
+    TickTack t;
+    //QTime t;
     bool m_shown;
     QString m_caption;
-    qint64 m_ticks;
 };
 
 /** UpdateState details missing.

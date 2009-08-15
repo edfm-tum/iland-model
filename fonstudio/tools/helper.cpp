@@ -1,6 +1,7 @@
 #include "helper.h"
 #include <QtCore>
-#include "cycle.h"
+//#include "cycle.h"
+#include "ticktack.h"
 
 Helper::Helper()
 {
@@ -254,25 +255,51 @@ bool UpdateState::needsUpdate()
 }
 
 
+/*
+double DebugTimer::m_tick_p_s=0.;
+
+void DebugTimer::sampleClock(int ms)
+{
+    QTime t;
+    t.start();
+    ticks now = getticks();
+
+    while (t.elapsed() < ms) {
+       int t;
+       double x=0.;
+       for (t=0; t<100; t++)
+           x+=sin(x);
+    }
+    int el = t.elapsed();
+    double tickselapsed = elapsed(getticks(), now);
+    m_tick_p_s = tickselapsed / double(el);
+    qDebug() << ms << "ms -> ticks/msec" << m_tick_p_s << "ticks elapsed" << tickselapsed;
+
+}*/
+
+void DebugTimer::interval(const QString &text)
+{
+    double elapsed_time = elapsed();
+    qDebug() << "Timer" << text << elapsed_time << "ms";
+    start();
+}
+
 void DebugTimer::showElapsed()
 {
     if (!m_shown) {
-        ticks t=m_ticks;
-        ticks now = getticks();
-        quint64 elapsed_ticks = qRound64( elapsed(now, t) );
-        qDebug() << "Timer" << m_caption << ": " << elapsedMs() << "msec - ticks" << elapsed_ticks;
+
+        qDebug() << "Timer" << m_caption << ": " << elapsed();
     }
     m_shown=true;
 }
-int DebugTimer::elapsedMs()
+double DebugTimer::elapsed()
 {
-    return t.elapsed();
+    return t.elapsed()*1000;
 }
 
 void DebugTimer::start()
 {
     t.start();
-    m_ticks = getticks();
     m_shown=false;
 }
 

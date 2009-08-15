@@ -434,7 +434,7 @@ color: rgb(85, 0, 0);</string>
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
@@ -907,6 +907,37 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="text">
              <string>execute many stands</string>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="tabPerf">
+           <attribute name="title">
+            <string>Timing</string>
+           </attribute>
+           <widget class="QLineEdit" name="lApplyManyCount">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>51</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pbMultipleApplication">
+            <property name="geometry">
+             <rect>
+              <x>70</x>
+              <y>20</y>
+              <width>81</width>
+              <height>23</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>x apply</string>
             </property>
            </widget>
           </widget>

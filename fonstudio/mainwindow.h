@@ -39,8 +39,10 @@ private:
     void paintFON(QPainter &painter, QRect rect);
     Viewport vp;
     QString dumpTreelist();
+    void applyCycles(int cycle_count=1);
 
 private slots:
+    void on_pbMultipleApplication_clicked();
     void on_execManyStands_clicked();
     void on_actionFON_grid_triggered();
     void on_actionTreelist_triggered();
