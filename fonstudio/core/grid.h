@@ -30,7 +30,7 @@ public:
 
     bool setup(const float cellsize, const int sizex, const int sizey);
     bool setup(const QRectF& rect, const double cellsize);
-    void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; qDebug()<<"Grid initialize"<<end()-begin()<<"items.";}
+    void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
 
     const int sizeX() const { return mSizeX; }
     const int sizeY() const { return mSizeY; }
@@ -62,8 +62,10 @@ public:
 
     bool coordValid(const float x, const float y) const { return mRect.contains(x,y); }
     bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
+
     QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mRect.left()) / mCellsize),  int((pos.y()-mRect.top())/mCellsize)); } ///< get index of value at position pos (metric)
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } ///< get index of value at position pos (index)
+    /// force @param pos to contain valid indices with respect to this grid.
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} ///< ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
     QPointF cellCoordinates(const QPoint &pos) { return QPointF( (pos.x()+0.5)*mCellsize+mRect.left(), (pos.y()+0.5)*mCellsize + mRect.top());} ///< get metric coordinates of the cells center
     QRectF cellRect(const QPoint &pos) { QRectF r( QPointF(mRect.left() + mCellsize*pos.x(), mRect.top() + pos.y()*mCellsize),
@@ -148,21 +150,21 @@ Grid<T> Grid<T>::averaged(const int factor, const int offsetx, const int offsety
 template <class T>
 T&  Grid<T>::valueAtIndex(const QPoint& pos)
 {
-    if (isIndexValid(pos)) {
+    //if (isIndexValid(pos)) {
         return mData[pos.x()*mSizeY + pos.y()];
-    }
-    qCritical("Grid::valueAtIndex. invalid: %d/%d", pos.x(), pos.y());
-    return mData[0];
+    //}
+    //qCritical("Grid::valueAtIndex. invalid: %d/%d", pos.x(), pos.y());
+    //return mData[0];
 }
 
 template <class T>
 const T&  Grid<T>::constValueAtIndex(const QPoint& pos) const
 {
-    if (isIndexValid(pos)) {
+    //if (isIndexValid(pos)) {
         return mData[pos.x()*mSizeY + pos.y()];
-    }
-    qCritical("Grid::constValueAtIndex. invalid: %d/%d", pos.x(), pos.y());
-    return mData[0];
+    //}
+    //qCritical("Grid::constValueAtIndex. invalid: %d/%d", pos.x(), pos.y());
+    //return mData[0];
 }
 
 template <class T>

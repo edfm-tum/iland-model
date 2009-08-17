@@ -76,6 +76,8 @@ void Tree::applyStamp()
                //m_grid->valueAtIndex(p)*=(*m_stamp)(x,y);
                // additiv:
                // multiplicatie, v2
+               // a optimization for 2m vs 10m grids: local_dom = m_dominanceGrid->valueAtIndex(p.x()/5, p.y()/5);
+               // effect is about 20% of the application time
                local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) ); // todo: could be done more effectively (here 2 transormations are performed)...
                if (local_dom<=0.f) {
                    //qDebug() << "invalid height at " << m_grid->cellCoordinates(p) << "of" << local_dom;
@@ -158,7 +160,7 @@ void Tree::heightGrid()
     dist[6] = qMax(dist[3], dist[7]); // south-east
     dist[0] = qMax(dist[3], dist[1]); // south-west
     dist[2] = qMax(dist[5], dist[1]); // north-west
-    dist[4] = 0;
+    dist[4] = 0; // center cell
 
 
     int ringcount = int(floor(m_Height / cellsize)) + 1;
