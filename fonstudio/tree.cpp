@@ -96,14 +96,11 @@ void Tree::applyStamp()
     m_statPrint++; // count # of stamp applications...
 }
 
-/** heightGrid()
-  This function calculates the "dominant height field". This grid is coarser as the fine-scaled light-grid.
-
-*/
-void Tree::heightGrid()
+ /*
+void Tree::heightGrid_old()
 {
     // height of Z*
-    float cellsize = m_dominanceGrid->cellsize();
+    const float cellsize = m_dominanceGrid->cellsize();
     if (m_Height < cellsize/2.) {
         float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
         dom = qMax(dom, m_Height/2.f);
@@ -136,6 +133,56 @@ void Tree::heightGrid()
         }
     }
 
+} */
+
+/** heightGrid()
+  This function calculates the "dominant height field". This grid is coarser as the fine-scaled light-grid.
+
+*/
+void Tree::heightGrid()
+{
+    // height of Z*
+    const float cellsize = m_dominanceGrid->cellsize();
+
+    QPoint p = m_dominanceGrid->indexAt(m_Position); // pos of tree on height grid
+    QPoint competition_grid = m_grid->indexAt(m_Position);
+
+    int index_eastwest = competition_grid.x() % 5; // 4: very west, 0 east edge
+    int index_northsouth = competition_grid.y() % 5; // 4: northern edge, 0: southern edge
+    int dist[9];
+    dist[3] = index_northsouth * 2 + 1; // south
+    dist[1] = index_eastwest * 2 + 1; // west
+    dist[5] = 10 - dist[3]; // north
+    dist[7] = 10 - dist[1]; // east
+    dist[8] = qMax(dist[5], dist[7]); // north-east
+    dist[6] = qMax(dist[3], dist[7]); // south-east
+    dist[0] = qMax(dist[3], dist[1]); // south-west
+    dist[2] = qMax(dist[5], dist[1]); // north-west
+    dist[4] = 0;
+
+
+    int ringcount = int(floor(m_Height / cellsize)) + 1;
+    int ix, iy;
+    int ring;
+    QPoint pos;
+    float hdom;
+
+    for (ix=-ringcount;ix<=ringcount;ix++)
+        for (iy=-ringcount; iy<=+ringcount; iy++) {
+        ring = qMax(abs(ix), abs(iy));
+        QPoint pos(ix+p.x(), iy+p.y());
+        if (m_dominanceGrid->isIndexValid(pos)) {
+            float &rHGrid = m_dominanceGrid->valueAtIndex(pos);
+            if (rHGrid > m_Height) // skip calculation if grid is higher than tree
+                continue;
+            int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
+            hdom = m_Height - dist[direction];
+            if (ring>1)
+                hdom -= (ring-1)*10;
+
+            rHGrid = qMax(rHGrid, hdom); // write value
+        } // is valid
+    } // for (y)
 }
 
 double Tree::readStamp()

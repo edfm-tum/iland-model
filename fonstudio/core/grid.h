@@ -6,9 +6,17 @@
 
 #include <stdexcept>
 
-/** Grid class (template).
+/** @class Grid class (template).
 
-  */
+Orientation
+The grid is oriented as typically coordinates on the northern hemisphere: greater y-values -> north, greater x-values-> east.
+The projection is reversed for drawing on screen (Viewport):
+          N
+  (2/0) (2/1) (2/2)
+E (1/0) (1/1) (2/1)  W
+  (0/0) (1/0) (2/0)
+          S
+*/
 template <class T>
 class Grid {
 public:
