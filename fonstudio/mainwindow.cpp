@@ -268,7 +268,7 @@ void MainWindow::applyCycles(int cycle_count)
             }
         }
     }
-
+    qDebug() << "ms/cycle (avg):" << t2.elapsed() / double(cycle_count) << "total time" << t2.elapsed();
 }
 
 void MainWindow::on_stampTrees_clicked()
