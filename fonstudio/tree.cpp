@@ -278,6 +278,7 @@ double Tree::readStamp()
     return mImpact;
 }
 
+/*
 double Tree::readStampMul()
 {
     if (!m_stamp)
@@ -332,8 +333,66 @@ double Tree::readStampMul()
         mImpact = 1.f;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
     return mImpact;
-}
+}*/
 
+double Tree::readStampMul()
+{
+    if (!m_stamp)
+        return 0.;
+    const Stamp *reader = m_stamp->reader();
+    if (!reader)
+        return 0.;
+    QPoint pos_reader = m_grid->indexAt(m_Position);
+
+    int offset_reader = reader->offset();
+    int offset_writer = m_stamp->offset();
+    int d_offset = offset_writer - offset_reader; // offset on the *stamp* to the crown-cells
+
+    QPoint pos_writer=pos_reader - QPoint(offset_writer, offset_writer);
+    pos_reader-=QPoint(offset_reader, offset_reader);
+    QPoint p;
+
+    //float dom_height = (*m_dominanceGrid)[m_Position];
+    float local_dom;
+
+    int x,y;
+    double sum=0.;
+    double value, own_value;
+    float *grid_value;
+    int reader_size = reader->size();
+    int rx = pos_reader.x();
+    int ry = pos_reader.y();
+    for (y=0;y<reader_size; ++y, ++ry) {
+        grid_value = m_grid->ptr(rx, ry);
+        for (x=0;x<reader_size;++x) {
+
+            //p = pos_reader + QPoint(x,y);
+            //if (m_grid->isIndexValid(p)) {
+            local_dom = m_dominanceGrid->valueAtIndex((rx+x)/5, ry/5);
+            //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
+            own_value = 1. - m_stamp->offsetValue(x,y,d_offset)*lafactor /local_dom; // old: dom_height;
+            own_value = qMax(own_value, 0.02);
+            value =  *grid_value++ / own_value; // remove impact of focal tree
+            //if (value>0.)
+            sum += value * (*reader)(x,y);
+
+            //} // isIndexValid
+        }
+    }
+    mImpact = sum;
+    // read dominance field...
+    // this applies only if some trees are potentially *higher* than the dominant height grid
+    //if (dom_height < m_Height) {
+        // if tree is higher than Z*, the dominance height
+        // a part of the crown is in "full light".
+    //    m_statAboveZ++;
+    //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
+    //}
+    if (mImpact > 1)
+        mImpact = 1.f;
+    //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
+    return mImpact;
+}
 
 void Tree::resetStatistics()
 {
