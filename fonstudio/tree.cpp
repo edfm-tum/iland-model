@@ -161,6 +161,10 @@ void Tree::heightGrid()
     dist[0] = qMax(dist[3], dist[1]); // south-west
     dist[2] = qMax(dist[5], dist[1]); // north-west
     dist[4] = 0; // center cell
+    /* the scheme of indices is as follows:  if sign(ix)= -1, if ix<0, 0 for ix=0, 1 for ix>0 (detto iy), then:
+       index = 4 + 3*sign(ix) + sign(iy) transforms combinations of directions to unique ids (0..8), which are used above.
+        e.g.: sign(ix) = -1, sign(iy) = 1 (=north-west) -> index = 4 + -3 + 1 = 2
+    */
 
 
     int ringcount = int(floor(m_Height / cellsize)) + 1;
