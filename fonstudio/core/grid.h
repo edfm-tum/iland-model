@@ -48,7 +48,7 @@ public:
     inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
     inline const T& operator[] (const QPointF &p) const { return constValueAt(p); }
 
-    T& valueAtIndex(const QPoint& pos); ///< value at position defined by indices (x,y)
+    inline T& valueAtIndex(const QPoint& pos); ///< value at position defined by indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return valueAtIndex(QPoint(ix,iy)); } ///< const value at position defined by indices (x,y)
 
     const T& constValueAtIndex(const QPoint& pos) const; ///< value at position defined by a (integer) QPoint
@@ -85,7 +85,9 @@ public:
     /// normalized returns a normalized grid, in a way that the sum()  = @param targetvalue.
     /// if the grid is empty or the sum is 0, no modifications are performed.
     Grid<T> normalized(const T targetvalue) const;
+    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); }
 private:
+
     T* mData;
     T* mEnd; ///< pointer to 1 element behind the last
     QRectF mRect;
@@ -151,7 +153,7 @@ template <class T>
 T&  Grid<T>::valueAtIndex(const QPoint& pos)
 {
     //if (isIndexValid(pos)) {
-        return mData[pos.x()*mSizeY + pos.y()];
+        return mData[pos.y()*mSizeX + pos.x()];
     //}
     //qCritical("Grid::valueAtIndex. invalid: %d/%d", pos.x(), pos.y());
     //return mData[0];
@@ -161,7 +163,7 @@ template <class T>
 const T&  Grid<T>::constValueAtIndex(const QPoint& pos) const
 {
     //if (isIndexValid(pos)) {
-        return mData[pos.x()*mSizeY + pos.y()];
+        return mData[pos.y()*mSizeX + pos.x()];
     //}
     //qCritical("Grid::constValueAtIndex. invalid: %d/%d", pos.x(), pos.y());
     //return mData[0];
@@ -234,8 +236,8 @@ QPoint Grid<T>::indexOf(T* element) const
     if (element==NULL || element<mData || element>=end())
         return result;
     int idx = element - mData;
-    result.setX( idx % mSizeY);
-    result.setY( idx / mSizeY);
+    result.setX( idx / mSizeX);
+    result.setY( idx % mSizeX);
     return result;
 }
 

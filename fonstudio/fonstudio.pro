@@ -41,3 +41,6 @@ HEADERS += mainwindow.h \
     tools/ticktack.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
+
+# add debug information anyway (also in release mode)
+##QMAKE_CXXFLAGS += -O2

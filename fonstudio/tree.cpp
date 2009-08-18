@@ -46,6 +46,8 @@ void Tree::setup()
 }
 
 #define NOFULLDBG
+//#define NOFULLOPT
+/*
 void Tree::applyStamp()
 {
     Q_ASSERT(m_grid!=0);
@@ -92,6 +94,47 @@ void Tree::applyStamp()
 
                m_grid->valueAtIndex(p)*= value;
            }
+        }
+    }
+
+    m_statPrint++; // count # of stamp applications...
+}
+*/
+
+void Tree::applyStamp()
+{
+    Q_ASSERT(m_grid!=0);
+    if (!m_stamp)
+        return;
+
+    QPoint pos = m_grid->indexAt(m_Position);
+    int offset = m_stamp->offset();
+    pos-=QPoint(offset, offset);
+
+    float local_dom; // height of Z* on the current position
+    int x,y;
+    float value;
+    int gr_stamp = m_stamp->size();
+    int grid_x, grid_y;
+    float *grid_value;
+    if (!m_grid->isIndexValid(pos) || !m_grid->isIndexValid(pos+QPoint(gr_stamp, gr_stamp))) {
+        // todo: in this case we should use another algorithm!!!
+        return;
+    }
+
+    for (y=0;y<gr_stamp; ++y) {
+        grid_y = pos.y() + y;
+        grid_value = m_grid->ptr(pos.x(), grid_y);
+        for (x=0;x<gr_stamp;++x) {
+            // suppose there is no stamping outside
+            grid_x = pos.x() + x;
+
+            local_dom = m_dominanceGrid->valueAtIndex(grid_x/5, grid_y/5);
+            value = (*m_stamp)(x,y); // stampvalue
+            value = 1. - value*lafactor / local_dom; // calculated value
+            value = qMax(value, 0.02f); // limit value
+
+            *grid_value++ *= value;
         }
     }
 
