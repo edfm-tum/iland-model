@@ -70,6 +70,20 @@ private:
    double mMedian;
 };
 
+/** Timer class that writes timings to the Debug-Output-Channel
+
+The class writes the elapsed time to qDebug() when either destructed, or when explicitely showElapsed() is called.
+  elapsed() queries the elapsed time in milliseconds since construction or start() is called. Using interval() one can
+  write a message with the time elapsed up the calling time, and the clock is reset afterwards. The name of the timer is
+  set during construction. This message is printed when showElapsed() is called or durig destruction.
+  @code void foo() {
+     DebugTimer t("foo took [ms]:");
+     <some lengthy operation>
+ } // will e.g. print "foo took [ms]: 123" to debug console
+ @endcode
+ For Windows, the "TickTack"-backend is used.
+
+*/
 class DebugTimer
 {
 public:
