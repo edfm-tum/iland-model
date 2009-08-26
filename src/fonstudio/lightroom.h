@@ -1,10 +1,10 @@
 #ifndef LIGHTROOM_H
 #define LIGHTROOM_H
 
-#include "../core/grid.h"
-#include "../core/solarradiation.h"
-#include "../core/hemigrid.h"
-#include "../tools/expression.h"
+#include "grid.h"
+#include "solarradiation.h"
+#include "hemigrid.h"
+#include "expression.h"
 
 class LightRoomObject
 {

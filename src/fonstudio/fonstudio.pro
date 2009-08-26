@@ -5,7 +5,8 @@ QT += xml
 QT += script
 TARGET = fonstudio
 TEMPLATE = app
-
+# includepath: adds directories to the standard include (no directory needed when #include a file).
+INCLUDEPATH += ../core ../tools
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \

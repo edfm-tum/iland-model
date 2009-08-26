@@ -6,13 +6,13 @@
 
 #include <imagestamp.h>
 #include "lightroom.h"
-#include "../core/grid.h"
-#include "../core/stamp.h"
-#include "../core/stampcontainer.h"
-#include "../core/tree.h"
-#include "../core/treespecies.h"
-#include "../tools/expression.h"
-#include "../tools/helper.h"
+#include "grid.h"
+#include "stamp.h"
+#include "stampcontainer.h"
+#include "tree.h"
+#include "treespecies.h"
+#include "expression.h"
+#include "helper.h"
 
 #include "paintarea.h"
 

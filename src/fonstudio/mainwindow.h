@@ -4,10 +4,10 @@
 #include <QtGui>
 #include <vector>
 
-#include "../core/grid.h"
-#include "../core/tree.h"
+#include "grid.h"
+#include "tree.h"
 #include "imagestamp.h"
-#include "../tools/helper.h"
+#include "helper.h"
 
 
 namespace Ui

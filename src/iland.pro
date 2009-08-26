@@ -1,3 +1,3 @@
 
 TEMPLATE = subdirs
-SUBDIRS = fonstudio
+SUBDIRS = fonstudio tests
