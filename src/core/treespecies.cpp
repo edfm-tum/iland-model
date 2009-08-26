@@ -1,6 +1,6 @@
 #include "treespecies.h"
 
-#include "core/stampcontainer.h"
+#include "stampcontainer.h"
 
 TreeSpecies::TreeSpecies()
 {

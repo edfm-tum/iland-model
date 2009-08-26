@@ -2,7 +2,7 @@
 #define TREE_H
 #include <QPointF>
 
-#include "core/grid.h"
+#include "grid.h"
 
 class ImageStamp;
 class TreeSpecies;

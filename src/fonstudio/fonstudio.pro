@@ -10,35 +10,35 @@ TEMPLATE = app
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     mainwindow.cpp \
-    core/grid.cpp \
-    core/solarradiation.cpp \
-    core/hemigrid.cpp \
+    ../core/grid.cpp \
+    ../core/solarradiation.cpp \
+    ../core/hemigrid.cpp \
     imagestamp.cpp \
-    tree.cpp \
+    ../core/tree.cpp \
     paintarea.cpp \
-    tools/expression.cpp \
-    tools/helper.cpp \
+    ../tools/expression.cpp \
+    ../tools/helper.cpp \
     lightroom.cpp \
-    core/stamp.cpp \
-    core/stampcontainer.cpp \
-    treespecies.cpp \
-    tools/ticktack.cpp
+    ../core/stamp.cpp \
+    ../core/stampcontainer.cpp \
+    ../core/treespecies.cpp \
+    ../tools/ticktack.cpp
 HEADERS += mainwindow.h \
     stable.h \
-    core/grid.h \
-    core/solarradiation.h \
-    core/hemigrid.h \
+    ../core/grid.h \
+    ../core/solarradiation.h \
+    ../core/hemigrid.h \
     imagestamp.h \
-    tree.h \
+    ../core/tree.h \
     paintarea.h \
-    tools/expression.h \
-    tools/helper.h \
+    ../tools/expression.h \
+    ../tools/helper.h \
     lightroom.h \
     global.h \
-    core/stamp.h \
-    core/stampcontainer.h \
-    treespecies.h \
-    tools/ticktack.h
+    ../core/stamp.h \
+    ../core/stampcontainer.h \
+    ../core/treespecies.h \
+    ../tools/ticktack.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
 

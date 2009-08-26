@@ -1,7 +1,7 @@
 #ifndef STAMP_H
 #define STAMP_H
 
-#include "core/grid.h"
+#include "grid.h"
 #include <QtCore>
 /** Stamp is the basic class for the FON field of a individual tree.
 

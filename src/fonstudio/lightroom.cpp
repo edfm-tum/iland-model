@@ -1,5 +1,5 @@
 #include "lightroom.h"
-#include "tools/helper.h"
+#include "../tools/helper.h"
 
 #include <QtCore>
 

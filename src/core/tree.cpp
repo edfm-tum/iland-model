@@ -1,9 +1,9 @@
 
 #include "tree.h"
-#include "core/grid.h"
+#include "grid.h"
 #include "imagestamp.h"
 
-#include "core/stamp.h"
+#include "stamp.h"
 #include "treespecies.h"
 
 

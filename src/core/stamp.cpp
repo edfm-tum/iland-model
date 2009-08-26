@@ -1,6 +1,6 @@
 #include "stamp.h"
-#include "core/grid.h"
-#include "core/stampcontainer.h"
+#include "grid.h"
+#include "stampcontainer.h"
 #include "../tools/helper.h"
 Stamp::Stamp()
 {
