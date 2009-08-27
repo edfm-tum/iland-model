@@ -5,8 +5,11 @@ QT += xml
 QT += script
 TARGET = fonstudio
 TEMPLATE = app
+
 # includepath: adds directories to the standard include (no directory needed when #include a file).
-INCLUDEPATH += ../core ../tools
+INCLUDEPATH += ../core \
+    ../tools
+
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
@@ -23,7 +26,8 @@ SOURCES += main.cpp \
     ../core/stamp.cpp \
     ../core/stampcontainer.cpp \
     ../core/treespecies.cpp \
-    ../tools/ticktack.cpp
+    ../tools/ticktack.cpp \
+    ../tools/settingmetadata.cpp
 HEADERS += mainwindow.h \
     stable.h \
     ../core/grid.h \
@@ -39,9 +43,7 @@ HEADERS += mainwindow.h \
     ../core/stamp.h \
     ../core/stampcontainer.h \
     ../core/treespecies.h \
-    ../tools/ticktack.h
+    ../tools/ticktack.h \
+    ../tools/settingmetadata.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
-
-# add debug information anyway (also in release mode)
-##QMAKE_CXXFLAGS += -O2

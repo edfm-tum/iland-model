@@ -1,6 +1,9 @@
 #include "ticktack.h"
 #include <windows.h>
 
+/* TODO: this is purely WINDOWS - provide a version for other BS, change the build-system
+   to only use this on Win.
+*/
 class TTickTack
 {
   private:
