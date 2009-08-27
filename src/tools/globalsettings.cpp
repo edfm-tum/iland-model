@@ -11,13 +11,21 @@ GlobalSettings::GlobalSettings()
 {
 }
 
-const SettingMetaData *GlobalSettings::settingMetaData(const QString &name)
+/** retrieve a const reference to a stored SettingMetaData object.
+ if @p name is not found, a reference to a data object with type Invalid is returned.
+ */
+const SettingMetaData &GlobalSettings::settingMetaData(const QString &name)
 {
+
     if (mSettingMetaData.contains(name)) {
-        const SettingMetaData &valRef = mSettingMetaData.value(name);
-        return &valRef;
+        return mSettingMetaData[name];
     }
-    return NULL;
+    return mSettingMetaData["invalid"];
+}
+
+QVariant GlobalSettings::settingDefaultValue(const QString &name)
+{
+    return settingMetaData(name).defaultValue();
 }
 
 void GlobalSettings::loadSettingsMetaDataFromFile(const QString &fileName)
@@ -33,6 +41,16 @@ QString childText(QDomElement &elem, const QString &name, const QString &def="")
         return e.text();
 }
 
+/** Load setting meta data from a piece of XML.
+    @p topNode is a XML node, that contains the "setting" nodes as childs:
+    @code
+    <topnode>
+    <setting>...</setting>
+    <setting>...</setting>
+    ...
+    </topnode>
+    @endcode
+  */
 void GlobalSettings::loadSettingsMetaDataFromXml(const QDomElement &topNode)
 {
     mSettingMetaData.clear();
@@ -55,6 +73,7 @@ void GlobalSettings::loadSettingsMetaDataFromXml(const QDomElement &topNode)
                       QVariant(childText(elt,"default"))
                       );
         qDebug() << md.dump();
+        //mSettingMetaData[settingName].dump();
     }
     qDebug() << "setup settingmetadata complete." << mSettingMetaData.count() << "items loaded.";
 }

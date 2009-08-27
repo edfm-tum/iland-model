@@ -16,9 +16,15 @@ public:
     Type typeFromName(const QString &settingName) const;
     /// convert a Type to a string.
     const QString typeName(const Type type) const;
+    // getters
+    QVariant defaultValue() const { return mDefaultValue; }
+    const QString &url() const { return mUrl; }
+    const QString &name() const { return mName; }
+    const QString &description() const { return mDescription; }
     /// dump content of meta data to a String
     QString dump() const;
 private:
+    //SettingMetaData(const SettingMetaData &other); // private copoy ctor
     static const QStringList mTypeNames;
     Type mType;
     QString mName;

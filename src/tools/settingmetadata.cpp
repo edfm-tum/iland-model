@@ -43,11 +43,13 @@ void SettingMetaData::setValues(const Type type, const QString &name, const QStr
 
 QString SettingMetaData::dump() const
 {
-    QString res = QString("Name: %1\nType: %2 *** Default Value: %5 *** Url: %3\nDescription: %4").
+    QString res = QString("Name: %1\nType: %2 *** Default Value: %5 *** Url: %3 *** Memory address: %6 \nDescription: %4").
                   arg(mName,
                       typeName(mType),
-                      mUrl, mDescription,
-                      mDefaultValue.toString());
+                      mUrl,
+                      mDescription).
+                  arg(mDefaultValue.toString()).
+                  arg(int(this), 0, 16);
     return res;
 }
 

@@ -12,12 +12,14 @@ public:
     void loadSettingsMetaDataFromFile(const QString &fileName);
     void loadSettingsMetaDataFromXml(const QDomElement &topNode);
 
-    const SettingMetaData *settingMetaData(const QString &name);
+    const SettingMetaData &settingMetaData(const QString &name);
+    QVariant settingDefaultValue(const QString &name);
     QList<QString> settingNames() { return mSettingMetaData.keys(); }
+
 private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;
-    SettingMetaDataList mSettingMetaData;
+    SettingMetaDataList mSettingMetaData; /// storage container (QHash) for settings.
 };
 
 /// shortcut to the GlobalSettings Singleton object.
