@@ -27,7 +27,8 @@ SOURCES += main.cpp \
     ../core/stampcontainer.cpp \
     ../core/treespecies.cpp \
     ../tools/ticktack.cpp \
-    ../tools/settingmetadata.cpp
+    ../tools/settingmetadata.cpp \
+    ../tools/globalsettings.cpp
 HEADERS += mainwindow.h \
     stable.h \
     ../core/grid.h \
@@ -44,6 +45,7 @@ HEADERS += mainwindow.h \
     ../core/stampcontainer.h \
     ../core/treespecies.h \
     ../tools/ticktack.h \
-    ../tools/settingmetadata.h
+    ../tools/settingmetadata.h \
+    ../tools/globalsettings.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

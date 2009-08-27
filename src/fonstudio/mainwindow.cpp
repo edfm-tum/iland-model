@@ -16,6 +16,8 @@
 
 #include "paintarea.h"
 
+#include "globalsettings.h"
+
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
@@ -67,7 +69,9 @@ void myMessageOutput(QtMsgType type, const char *msg)
          MainWindow::logSpace()->ensureCursorVisible();
          break;
      case QtWarningMsg:
-         fprintf(stderr, "Warning: %s\n", msg);
+         MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
+         MainWindow::logSpace()->ensureCursorVisible();
+         fprintf(stderr, "WARNING: %s\n", msg);
          break;
      case QtCriticalMsg:
          fprintf(stderr, "Critical: %s\n", msg);
@@ -142,6 +146,16 @@ void MainWindow::on_applyXML_clicked()
         QMessageBox::information(this, "Error applying XML",
                                  QString("Error applying xml line %1, col %2.\nMessage: %3").arg(errLine).arg(errCol).arg(errMsg));
         return;
+    }
+    // test global settings....
+    //GlobalSettings::instance()->loadSettingsMetaDataFromXml(xmldoc.firstChildElement("globalsettings"));
+    Globals->loadSettingsMetaDataFromXml(xmldoc.documentElement().firstChildElement("globalsettings"));
+    // test global settings
+    QStringList list = Globals->settingNames();
+    foreach(QString key, list) {
+        const SettingMetaData *smd = Globals->settingMetaData(key);
+        if (smd)
+            qDebug() << smd->dump();
     }
 }
 
