@@ -8,11 +8,12 @@ class GlobalSettings
 {
 public:
     static GlobalSettings *instance() { if (mInstance) return mInstance; mInstance = new GlobalSettings(); return mInstance; }
+    ~GlobalSettings();
     /// meta data of settings
     void loadSettingsMetaDataFromFile(const QString &fileName);
     void loadSettingsMetaDataFromXml(const QDomElement &topNode);
 
-    const SettingMetaData &settingMetaData(const QString &name);
+    const SettingMetaData *settingMetaData(const QString &name);
     QVariant settingDefaultValue(const QString &name);
     QList<QString> settingNames() { return mSettingMetaData.keys(); }
 

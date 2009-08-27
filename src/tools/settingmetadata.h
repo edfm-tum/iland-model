@@ -33,6 +33,6 @@ private:
     QVariant mDefaultValue;
 };
 
-typedef  QHash<QString, SettingMetaData> SettingMetaDataList;
+typedef  QHash<QString, SettingMetaData*> SettingMetaDataList;
 
 #endif // SettingMetaData_H

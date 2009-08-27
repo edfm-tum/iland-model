@@ -153,10 +153,12 @@ void MainWindow::on_applyXML_clicked()
     // test global settings
     QStringList list = Globals->settingNames();
     foreach(const QString key, list) {
-        SettingMetaData &smd = Globals->settingMetaData(key);
-        qWarning() << smd.dump();
+        const SettingMetaData *smd = Globals->settingMetaData(key);
+        if (smd)
+          qWarning() << smd->dump();
     }
-    qDebug() << Globals->settingMetaData("idonthave").dump();
+    qDebug() << "i dont have: " << Globals->settingMetaData("idonthave");
+    delete GlobalSettings::instance();
 }
 
 /// load a Picus ini file formatted file.

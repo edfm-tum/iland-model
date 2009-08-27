@@ -11,21 +11,31 @@ GlobalSettings::GlobalSettings()
 {
 }
 
-/** retrieve a const reference to a stored SettingMetaData object.
- if @p name is not found, a reference to a data object with type Invalid is returned.
- */
-const SettingMetaData &GlobalSettings::settingMetaData(const QString &name)
-{
 
+GlobalSettings::~GlobalSettings()
+{
+    // meta data... really clear ressources...
+    qDeleteAll(mSettingMetaData.values());
+    mInstance = NULL;
+}
+
+/** retrieve a const pointer to a stored SettingMetaData object.
+ if @p name is not found, a NULL returned.
+ */
+const SettingMetaData *GlobalSettings::settingMetaData(const QString &name)
+{
     if (mSettingMetaData.contains(name)) {
         return mSettingMetaData[name];
     }
-    return mSettingMetaData["invalid"];
+    return NULL;
 }
 
 QVariant GlobalSettings::settingDefaultValue(const QString &name)
 {
-    return settingMetaData(name).defaultValue();
+    const SettingMetaData *smd = settingMetaData(name);
+    if (smd)
+        return smd->defaultValue();
+    return QVariant(0);
 }
 
 void GlobalSettings::loadSettingsMetaDataFromFile(const QString &fileName)
@@ -64,15 +74,14 @@ void GlobalSettings::loadSettingsMetaDataFromXml(const QDomElement &topNode)
         if (mSettingMetaData.contains(settingName))
             WARNINGRETURN( "GlobalSettings::loadSettingsMetaDataFromXml():: setting" << settingName << "already exists in the settings list!") ;
 
-
-        SettingMetaData &md = mSettingMetaData[settingName]; // creates a default constructed entry and returns ref to it
-        md.setValues( md.typeFromName(elt.attribute("type", "invalid")), // type
+        SettingMetaData *md = new SettingMetaData(md->typeFromName(elt.attribute("type", "invalid")), // type
                       settingName, // name
                       childText(elt,"description"), // description
                       childText(elt, "url"), // url
-                      QVariant(childText(elt,"default"))
-                      );
-        qDebug() << md.dump();
+                      QVariant(childText(elt,"default")));
+        mSettingMetaData[settingName] = md;
+
+        qDebug() << md->dump();
         //mSettingMetaData[settingName].dump();
     }
     qDebug() << "setup settingmetadata complete." << mSettingMetaData.count() << "items loaded.";
