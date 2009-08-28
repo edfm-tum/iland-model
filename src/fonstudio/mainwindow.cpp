@@ -10,7 +10,7 @@
 #include "stamp.h"
 #include "stampcontainer.h"
 #include "tree.h"
-#include "treespecies.h"
+#include "species.h"
 #include "expression.h"
 #include "helper.h"
 
@@ -26,7 +26,7 @@ QDomNode xmlparams;
 LightRoom *lightroom = 0;
 StampContainer *stamp_container=0;
 StampContainer *reader_stamp_container=0;
-QList<TreeSpecies*> tree_species;
+QList<Species*> tree_species;
 
 double distance(const QPointF &a, const QPointF &b)
 {
@@ -884,7 +884,7 @@ void MainWindow::on_fonRun_clicked()
 
     // Tree species...
     if (tree_species.isEmpty()) {
-        TreeSpecies *ts = new TreeSpecies();
+        Species *ts = new Species();
         tree_species.push_back(ts);
     }
     tree_species.first()->setStampContainer(stamp_container); // start with the common single container

@@ -25,10 +25,11 @@ SOURCES += main.cpp \
     lightroom.cpp \
     ../core/stamp.cpp \
     ../core/stampcontainer.cpp \
-    ../core/treespecies.cpp \
+    ../core/species.cpp \
     ../tools/ticktack.cpp \
     ../tools/settingmetadata.cpp \
-    ../tools/globalsettings.cpp
+    ../tools/globalsettings.cpp \
+    ../core/speciesset.cpp
 HEADERS += mainwindow.h \
     stable.h \
     ../core/grid.h \
@@ -43,9 +44,10 @@ HEADERS += mainwindow.h \
     global.h \
     ../core/stamp.h \
     ../core/stampcontainer.h \
-    ../core/treespecies.h \
+    ../core/species.h \
     ../tools/ticktack.h \
     ../tools/settingmetadata.h \
-    ../tools/globalsettings.h
+    ../tools/globalsettings.h \
+    ../core/speciesset.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

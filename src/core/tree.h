@@ -5,7 +5,7 @@
 #include "grid.h"
 
 class ImageStamp;
-class TreeSpecies;
+class Species;
 class Stamp;
 
 class Tree
@@ -26,8 +26,8 @@ public:
     const float impact() const { return mImpact; }
     const float impactRadius() const { return mImpactRadius; }
 
-    const TreeSpecies* species() const { return m_species; }
-    void setSpecies(TreeSpecies *ts) { m_species=ts; }
+    const Species* species() const { return m_species; }
+    void setSpecies(Species *ts) { m_species=ts; }
 
     void setup();
 
@@ -60,7 +60,7 @@ private:
     float mImpact;
     // Stamp
     const Stamp *m_stamp;
-    TreeSpecies *m_species;
+    Species *m_species;
     static FloatGrid *m_grid;
     static FloatGrid *m_dominanceGrid;
     // debugging

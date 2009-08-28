@@ -4,7 +4,7 @@
 #include "imagestamp.h"
 
 #include "stamp.h"
-#include "treespecies.h"
+#include "species.h"
 
 
 FloatGrid *Tree::m_grid = 0;

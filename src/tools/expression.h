@@ -13,27 +13,7 @@ struct ExtExecListItem {
 enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
 
 
-/** Expression engine for mathematical expressions.
-  The main purpose is fast execution speed.
-  notes regarding the syntax:
-  +,-,*,/ as expected, additionally "^" for power.
-  mod(x,y): modulo division, gets remainder of x/y
-  functions:
-    - sin cos tan
-    - exp ln sqrt
-    - min max: variable number of arguments, e.g: min(x,y,z)
-    - if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway.
-    - incsum: ?? incremental sum - currently not supported.
-    - polygon: special function for polygons. polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn): return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value.
-    - sigmoid: returns a sigmoid function. sigmoid(value, type, param1, param2). see udfSigmoid() for details.
-    - rnd rndg: random functions; rnd(from, to): uniform random number, rndg(mean, stddev): gaussian randomnumber (Note: gaussian currently not supported)
-    The Expression class also supports some logical operations:
-    (logical) True equals to "1", "False" to zero. The precedence rules for parentheses...
-    - and
-    - or
-    - not
 
-*/
 class Expression
 {
 public:
@@ -69,9 +49,8 @@ public:
 
         void   setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace);
         void enableIncSum();
-        // scripting...
-        //TPScript *Script;
-        double udfRandom(int type, double p1, double p2);
+
+        double udfRandom(int type, double p1, double p2); ///< user defined function rnd() (normal distribution does not work now!)
 private:
         bool m_parsed;
         double m_result;
@@ -81,7 +60,7 @@ private:
         QString m_tokString;
         QString m_expression;
         ExtExecListItem *m_execList;
-        int m_execListSize; // größe des buffers
+        int m_execListSize; // size of buffer
         int m_execIndex;
         double m_varSpace[10];
         QStringList m_varList;
@@ -110,14 +89,13 @@ private:
         QStringList m_modelVarList;
         int         m_modelVarCnt;
         bool        m_modelVarSet;
-        //TSimObject  *FSimObject;
-        //TBaum       *TestBaum;
+
         double getExternVar(const int Index);
         // inc-sum
         double m_incSumVar;
         bool   m_incSumEnabled;
-        double  udfPolygon(double Value, double* Stack, int ArgCount);
-        double udfSigmoid(double Value, double sType, double p1, double p2);
+        double  udfPolygon(double Value, double* Stack, int ArgCount); ///< special function polygon()
+        double udfSigmoid(double Value, double sType, double p1, double p2); ///< special function sigmoid()
         void checkBuffer(int Index);
 
 };
