@@ -884,7 +884,7 @@ void MainWindow::on_fonRun_clicked()
 
     // Tree species...
     if (tree_species.isEmpty()) {
-        Species *ts = new Species();
+        Species *ts = new Species(NULL);
         tree_species.push_back(ts);
     }
     tree_species.first()->setStampContainer(stamp_container); // start with the common single container

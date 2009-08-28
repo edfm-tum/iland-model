@@ -11,6 +11,8 @@
 
 #include <iostream>
 #include <QtGui>
+#include <QtXml>
+#include <QtSql>
 //#include <QHttp>
 //#include <QTXml>
 

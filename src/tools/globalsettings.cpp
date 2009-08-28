@@ -1,5 +1,6 @@
 #include <QtCore>
 #include <QtXml>
+#include <QtSql>
 
 #include "globalsettings.h"
 #include "settingmetadata.h"
@@ -85,4 +86,24 @@ void GlobalSettings::loadSettingsMetaDataFromXml(const QDomElement &topNode)
         //mSettingMetaData[settingName].dump();
     }
     qDebug() << "setup settingmetadata complete." << mSettingMetaData.count() << "items loaded.";
+}
+
+
+
+/////////////////////////////////
+bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QString &fileName)
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE",dbname);
+    //db.setDatabaseName(":memory:");
+    db.setDatabaseName(fileName);
+    if (!db.open()) {
+        QMessageBox::critical(0, qApp->tr("Cannot open database"),
+            qApp->tr("Unable to establish a database <%2> connection to %1.\n"
+                     "This software needs SQLite support. Please read "
+                     "the Qt SQL driver documentation for information how "
+                     "to build it.\n\n"
+                     "Click Cancel to exit.").arg(fileName, dbname), QMessageBox::Cancel);
+        return false;
+    }
+    return true;
 }

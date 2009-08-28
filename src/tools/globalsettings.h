@@ -17,6 +17,11 @@ public:
     QVariant settingDefaultValue(const QString &name);
     QList<QString> settingNames() { return mSettingMetaData.keys(); }
 
+    // Database connections
+    bool setupDatabaseConnection(const QString& dbname, const QString &fileName);
+    QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
+    QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
+
 private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;

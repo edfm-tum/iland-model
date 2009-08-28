@@ -3,6 +3,7 @@
 # -------------------------------------------------
 QT += xml
 QT += script
+QT += sql
 TARGET = fonstudio
 TEMPLATE = app
 
