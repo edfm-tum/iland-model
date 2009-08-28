@@ -12,6 +12,10 @@ class Model
 public:
     Model();
     ~Model();
+    // access
+    RessourceUnit *ru() { return mRU.front(); }
+
+    // setup/maintenance
     void clear(); ///< free ressources
     void loadProject(const QDomElement &node); ///< setup and load a project
 private:

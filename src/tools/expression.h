@@ -97,7 +97,7 @@ private:
         double  udfPolygon(double Value, double* Stack, int ArgCount); ///< special function polygon()
         double udfSigmoid(double Value, double sType, double p1, double p2); ///< special function sigmoid()
         void checkBuffer(int Index);
-
+        QVector<double> m_linearizedSpace;
 };
 
 #endif // LOGICEXPRESSION_H

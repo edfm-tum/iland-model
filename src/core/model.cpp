@@ -53,10 +53,9 @@ void Model::loadProject(const QDomElement &node)
     GlobalSettings *g = GlobalSettings::instance();
     g->clearDatabaseConnections();
     // database connections: reset
-    //GlobalSettings::instance()->clearDatabaseConnections();
+    GlobalSettings::instance()->clearDatabaseConnections();
     // input and output connection
-    QString inputDB = "e:\\dev\\iland\\testdb";
-    GlobalSettings::instance()->setupDatabaseConnection("in", "");
+    GlobalSettings::instance()->setupDatabaseConnection("in", xml.value("database.in"));
     //GlobalSettings::instance()->setupDatabaseConnection("out", "");
 
 
@@ -76,6 +75,7 @@ void Model::loadProject(const QDomElement &node)
     speciesSet->loadFromDatabase(speciesTableName);
 
     // (2) RessourceUnits (including everything else).
-
-
+    RessourceUnit *ru = new RessourceUnit();
+    ru->setSpeciesSet(speciesSet);
+    mRU.push_back(ru);
 }

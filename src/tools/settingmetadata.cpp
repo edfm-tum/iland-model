@@ -1,15 +1,13 @@
 /** @class SettingMetaData
  This is some help text for the SettingMetaData class.
-This is some help text for the SettingMetaData class.
- This is some help text for the SettingMetaData class.
 */
 
 #include <QtCore>
-#include "SettingMetaData.h"
+#include "settingmetadata.h"
 
 const QStringList SettingMetaData::mTypeNames = QStringList() << "invalid" <<  "species" << "model";
 
-SettingMetaData::Type SettingMetaData::typeFromName(const QString &settingName) const
+SettingMetaData::Type SettingMetaData::typeFromName(const QString &settingName)
 {
     Type retType = (Type) mTypeNames.indexOf(settingName);
     if ( int(retType)<0)

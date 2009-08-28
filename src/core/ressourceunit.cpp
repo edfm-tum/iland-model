@@ -10,4 +10,5 @@
 
 RessourceUnit::RessourceUnit()
 {
+    mSpeciesSet = 0;
 }

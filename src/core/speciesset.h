@@ -9,7 +9,7 @@ public:
     SpeciesSet();
     ~SpeciesSet();
     // access
-    inline const Species *species(const QString &speciesId);
+    Species *species(const QString &speciesId) { return mSpecies.value(speciesId); }
     // maintenance
     void clear();
     QVariant var(const QString& varName);

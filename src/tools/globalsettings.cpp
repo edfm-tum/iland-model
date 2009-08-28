@@ -91,7 +91,7 @@ void GlobalSettings::loadSettingsMetaDataFromXml(const QDomElement &topNode)
         if (mSettingMetaData.contains(settingName))
             WARNINGRETURN( "GlobalSettings::loadSettingsMetaDataFromXml():: setting" << settingName << "already exists in the settings list!") ;
 
-        SettingMetaData *md = new SettingMetaData(md->typeFromName(elt.attribute("type", "invalid")), // type
+        SettingMetaData *md = new SettingMetaData(SettingMetaData::typeFromName(elt.attribute("type", "invalid")), // type
                       settingName, // name
                       childText(elt,"description"), // description
                       childText(elt, "url"), // url
@@ -113,6 +113,7 @@ void GlobalSettings::clearDatabaseConnections()
 bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QString &fileName)
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE",dbname);
+    qDebug() << "setup database connection" << dbname << "to" << fileName;
     //db.setDatabaseName(":memory:");
     db.setDatabaseName(fileName);
     if (!db.open()) {

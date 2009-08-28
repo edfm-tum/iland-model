@@ -13,7 +13,7 @@ public:
     SettingMetaData(const Type type, const QString &name, const QString &description, const QString &url, const QVariant defaultValue);
     void setValues(const Type type, const QString &name, const QString &description, const QString &url, const QVariant defaultValue);
     /// converts a string to a setting Type
-    Type typeFromName(const QString &settingName) const;
+    static SettingMetaData::Type typeFromName(const QString &settingName);
     /// convert a Type to a string.
     const QString typeName(const Type type) const;
     // getters

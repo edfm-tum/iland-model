@@ -17,7 +17,7 @@ const Stamp* Species::stamp(const float dbh, const float height) const
 */
 void Species::setup()
 {
-    Q_ASSERT(mSet == 0);
+    Q_ASSERT(mSet != 0);
     // setup general information
     mId = stringVar("shortName");
     mName = stringVar("name");
@@ -27,6 +27,8 @@ void Species::setup()
     mBiomassLeaf.setExpression(stringVar("bmLeaf"));
     mBiomassStem.setExpression(stringVar("bmStem"));
     mBiomassRoot.setExpression(stringVar("bmRoot"));
+
+    qDebug() << "biomass leaf. 10:->" << mBiomassLeaf.calculate(10.);
 
 }
 

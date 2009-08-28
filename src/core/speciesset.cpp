@@ -20,10 +20,6 @@ void SpeciesSet::clear()
     mSpecies.clear();
 }
 
-const Species *SpeciesSet::species(const QString &speciesId)
-{
-    return mSpecies.value(speciesId);
-}
 
 /** loads active species from a database table and creates/setups the species.
     The function uses the global database-connection.
@@ -57,7 +53,7 @@ int SpeciesSet::loadFromDatabase(const QString &tableName)
   */
 QVariant SpeciesSet::var(const QString& varName)
 {
-    Q_ASSERT(mSetupQuery==0);
+    Q_ASSERT(mSetupQuery!=0);
 
     int idx = mSetupQuery->record().indexOf(varName);
     if (idx>=0)

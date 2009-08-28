@@ -46,7 +46,7 @@ void XmlHelper::loadFromFile(const QString &fileName)
             return;
         }
     } else {
-        Helper::msg("xmlfile is empty!");
+        Helper::msg("xmlfile does not exist or is empty!");
     }
     mCurrentTop = mDoc.documentElement(); // top element
     mTopNode = mCurrentTop;

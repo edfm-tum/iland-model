@@ -20,7 +20,7 @@
 
 */
 
-#include <QTCore>
+#include <QtCore>
 #include <stdio.h>
 
 
@@ -821,3 +821,5 @@ double Expression::udfRandom(int type, double p1, double p2)
         throw std::logic_error("std-deviated random numbers not supported.");
     //return RandG(p1, p2);
 }
+
+

@@ -17,9 +17,9 @@ public:
     /// the full name (e.g. Picea Abies) of the species
     const QString &name() { return mName; }
     // calculations: allometries
-    double biomassLeaf(const float dbh) { return mBiomassLeaf.calculate(); }
-    double biomassStem(const float dbh) { return mBiomassLeaf.calculate(); }
-    double biomassRoot(const float dbh) { return mBiomassLeaf.calculate(); }
+    double biomassLeaf(const double dbh) { return mBiomassLeaf.calculate(dbh); }
+    double biomassStem(const double dbh) { return mBiomassStem.calculate(dbh); }
+    double biomassRoot(const double dbh) { return mBiomassRoot.calculate(dbh); }
 
     const Stamp* stamp(const float dbh, const float height) const;
     // maintenance
