@@ -30,7 +30,9 @@ SOURCES += main.cpp \
     ../tools/ticktack.cpp \
     ../tools/settingmetadata.cpp \
     ../tools/globalsettings.cpp \
-    ../core/speciesset.cpp
+    ../core/speciesset.cpp \
+    ../core/model.cpp \
+    ../core/ressourceunit.cpp
 HEADERS += mainwindow.h \
     stable.h \
     ../core/grid.h \
@@ -49,6 +51,8 @@ HEADERS += mainwindow.h \
     ../tools/ticktack.h \
     ../tools/settingmetadata.h \
     ../tools/globalsettings.h \
-    ../core/speciesset.h
+    ../core/speciesset.h \
+    ../core/model.h \
+    ../core/ressourceunit.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

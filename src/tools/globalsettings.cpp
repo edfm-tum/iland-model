@@ -1,3 +1,18 @@
+/** @class GlobalSettings
+  This class contains various global structures/definitions. This class is a Singleton and accessed via the static instance() function.
+  @caption various (textual) meta data (SettingMetaData)
+
+  @caption global database connections
+  There are two defined global database connections dbin() and dbout() with the names "in" and "out".
+  They are setup with setupDatabaseConnection(). Currently, only SQLite DBs are supported.
+  Use dbin() and dbout() to faciliate those database connections:
+  @code
+  ...
+  QSqlQuery query(GlobalSettings::instance()->dbin());
+  query.exec(...);
+  ...
+  @endcode
+*/
 #include <QtCore>
 #include <QtXml>
 #include <QtSql>
@@ -88,9 +103,12 @@ void GlobalSettings::loadSettingsMetaDataFromXml(const QDomElement &topNode)
     qDebug() << "setup settingmetadata complete." << mSettingMetaData.count() << "items loaded.";
 }
 
+void GlobalSettings::clearDatabaseConnections()
+{
+    QSqlDatabase::removeDatabase("in");
+    QSqlDatabase::removeDatabase("out");
+}
 
-
-/////////////////////////////////
 bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QString &fileName)
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE",dbname);
@@ -107,3 +125,4 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
     }
     return true;
 }
+

@@ -13,12 +13,15 @@ public:
     void loadSettingsMetaDataFromFile(const QString &fileName);
     void loadSettingsMetaDataFromXml(const QDomElement &topNode);
 
+    /// access an individual SettingMetaData named @p name.
     const SettingMetaData *settingMetaData(const QString &name);
+    /// retrieve the default value of the setting @p name.
     QVariant settingDefaultValue(const QString &name);
-    QList<QString> settingNames() { return mSettingMetaData.keys(); }
+    QList<QString> settingNames() { return mSettingMetaData.keys(); } ///< retrieve list of all names of settings.
 
     // Database connections
     bool setupDatabaseConnection(const QString& dbname, const QString &fileName);
+    void clearDatabaseConnections(); ///< shutdown and clear connections
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
     QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
 
