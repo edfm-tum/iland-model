@@ -32,7 +32,8 @@ SOURCES += main.cpp \
     ../tools/globalsettings.cpp \
     ../core/speciesset.cpp \
     ../core/model.cpp \
-    ../core/ressourceunit.cpp
+    ../core/ressourceunit.cpp \
+    ../tools/xmlhelper.cpp
 HEADERS += mainwindow.h \
     stable.h \
     ../core/grid.h \
@@ -44,7 +45,7 @@ HEADERS += mainwindow.h \
     ../tools/expression.h \
     ../tools/helper.h \
     lightroom.h \
-    global.h \
+    ../core/global.h \
     ../core/stamp.h \
     ../core/stampcontainer.h \
     ../core/species.h \
@@ -53,6 +54,7 @@ HEADERS += mainwindow.h \
     ../tools/globalsettings.h \
     ../core/speciesset.h \
     ../core/model.h \
-    ../core/ressourceunit.h
+    ../core/ressourceunit.h \
+    ../tools/xmlhelper.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

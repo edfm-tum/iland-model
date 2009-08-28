@@ -1,7 +1,6 @@
 
 #include "tree.h"
 #include "grid.h"
-#include "imagestamp.h"
 
 #include "stamp.h"
 #include "species.h"

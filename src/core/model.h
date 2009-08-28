@@ -1,5 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
+#include <QtCore>
+#include <QtXml>
 
 // forwards
 class RessourceUnit;

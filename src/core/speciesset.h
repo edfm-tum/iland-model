@@ -1,5 +1,6 @@
 #ifndef SPECIESSET_H
 #define SPECIESSET_H
+#include <QtSql>
 
 class Species;
 class SpeciesSet

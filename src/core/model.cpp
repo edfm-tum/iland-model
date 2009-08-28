@@ -6,6 +6,7 @@
 #include <QtXml>
 
 #include "global.h"
+#include "xmlhelper.h"
 
 #include "model.h"
 
@@ -48,8 +49,11 @@ void Model::clear()
   */
 void Model::loadProject(const QDomElement &node)
 {
+    XmlHelper xml(node);
+    GlobalSettings *g = GlobalSettings::instance();
+    g->clearDatabaseConnections();
     // database connections: reset
-    GlobalSettings::instance()->clearDatabaseConnections();
+    //GlobalSettings::instance()->clearDatabaseConnections();
     // input and output connection
     QString inputDB = "e:\\dev\\iland\\testdb";
     GlobalSettings::instance()->setupDatabaseConnection("in", "");
@@ -65,7 +69,7 @@ void Model::loadProject(const QDomElement &node)
     </species> */
     //QDomElement xmlSpecies = node.firstChildElement("species");
     //QString dbName = "";
-    QString speciesTableName = "species";
+    QString speciesTableName = xml.value("species.source", "species");
     SpeciesSet *speciesSet = new SpeciesSet();
     mSpeciesSets.push_back(speciesSet);
 

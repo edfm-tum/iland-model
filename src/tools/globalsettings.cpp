@@ -17,9 +17,10 @@
 #include <QtXml>
 #include <QtSql>
 
+#include "global.h"
+#include "helper.h"
 #include "globalsettings.h"
 #include "settingmetadata.h"
-#include "helper.h"
 
 GlobalSettings *GlobalSettings::mInstance = 0;
 
@@ -115,12 +116,11 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
     //db.setDatabaseName(":memory:");
     db.setDatabaseName(fileName);
     if (!db.open()) {
-        QMessageBox::critical(0, qApp->tr("Cannot open database"),
-            qApp->tr("Unable to establish a database <%2> connection to %1.\n"
+        Helper::msg(QString("Unable to establish a database <%2> connection to %1.\n"
                      "This software needs SQLite support. Please read "
                      "the Qt SQL driver documentation for information how "
                      "to build it.\n\n"
-                     "Click Cancel to exit.").arg(fileName, dbname), QMessageBox::Cancel);
+                     "Click Cancel to exit.").arg(fileName, dbname));
         return false;
     }
     return true;

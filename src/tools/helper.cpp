@@ -1,5 +1,6 @@
 #include "helper.h"
 #include <QtCore>
+#include <QtGui>
 //#include "cycle.h"
 #include "ticktack.h"
 
@@ -33,7 +34,7 @@ void Helper::saveToTextFile(const QString& fileName, const QString& text)
 
 void Helper::msg(const QString &message, QWidget *parent)
 {
-   QMessageBox::information(parent, "Eforwood MCA", message);
+    QMessageBox::information(parent, "Eforwood MCA", message);
 }
 
 bool Helper::question(const QString &message, QWidget *parent)

@@ -1,7 +1,8 @@
+#include "global.h"
 #include "stamp.h"
 #include "grid.h"
 #include "stampcontainer.h"
-#include "../tools/helper.h"
+#include "helper.h"
 Stamp::Stamp()
 {
     m_data=0;

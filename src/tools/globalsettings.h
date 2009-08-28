@@ -1,5 +1,7 @@
 #ifndef GLOBALSETTINGS_H
 #define GLOBALSETTINGS_H
+#include <QtSql>
+#include <QtXml>
 
 #include "settingmetadata.h"
 
