@@ -17,7 +17,7 @@ public:
 
     // setup/maintenance
     void clear(); ///< free ressources
-    void loadProject(const QDomElement &node); ///< setup and load a project
+    void loadProject(); ///< setup and load a project
 private:
     void initialize(); ///< basic startup without creating a simulation
 

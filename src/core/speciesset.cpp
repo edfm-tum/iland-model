@@ -1,6 +1,7 @@
 #include <QtCore>
 #include <QtSql>
 #include "global.h"
+#include "xmlhelper.h"
 #include "speciesset.h"
 #include "species.h"
 
@@ -24,8 +25,14 @@ void SpeciesSet::clear()
 /** loads active species from a database table and creates/setups the species.
     The function uses the global database-connection.
   */
-int SpeciesSet::loadFromDatabase(const QString &tableName)
+int SpeciesSet::setup()
 {
+    const XmlHelper &xml = GlobalSettings::instance()->settings();
+    QString tableName = xml.value("species.source", "species");
+    QString readerFile = xml.value("species.reader", "reader.bin");
+    readerFile = GlobalSettings::instance()->path(readerFile, "lip");
+    mReaderStamp.load(readerFile);
+
     QSqlQuery query(GlobalSettings::instance()->dbin());
     mSetupQuery = &query;
     QString sql = QString("select * from %1").arg(tableName);

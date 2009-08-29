@@ -11,6 +11,7 @@
 
 
 #include "globalsettings.h"
+#include "exception.h"
 // general datatypes
 //typedef int TreeSpecies;
 #endif // GLOBAL_H

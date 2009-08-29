@@ -47,10 +47,11 @@ void Model::clear()
 /** Setup of the Simulation.
   This really creates the simulation environment and does the setup of various aspects.
   */
-void Model::loadProject(const QDomElement &node)
+void Model::loadProject()
 {
-    XmlHelper xml(node);
+
     GlobalSettings *g = GlobalSettings::instance();
+    const XmlHelper &xml = g->settings();
     // fix file path
     g->setupDirectories(xml.node("path"));
     g->clearDatabaseConnections();
@@ -68,7 +69,7 @@ void Model::loadProject(const QDomElement &node)
     SpeciesSet *speciesSet = new SpeciesSet();
     mSpeciesSets.push_back(speciesSet);
 
-    speciesSet->loadFromDatabase(speciesTableName);
+    speciesSet->setup();
 
     // (2) RessourceUnits (including everything else).
     RessourceUnit *ru = new RessourceUnit();

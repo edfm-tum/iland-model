@@ -12,10 +12,11 @@ public:
     ~SpeciesSet();
     // access
     Species *species(const QString &speciesId) { return mSpecies.value(speciesId); }
+    const StampContainer &readerStamps() { return mReaderStamp; }
     // maintenance
     void clear();
     QVariant var(const QString& varName);
-    int loadFromDatabase(const QString &tableName);
+    int setup();
 
 private:
 

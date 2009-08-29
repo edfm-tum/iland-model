@@ -179,8 +179,10 @@ QString GlobalSettings::path(const QString &fileName, const QString &type)
     QDir d;
     if (mFilePath.contains(type))
         d.setPath(mFilePath.value(type));
-    else
+    else {
+        qDebug() << "GlobalSettings::path() called with unknown type" << type;
         d = QDir::currentPath();
+    }
 
     return d.filePath(fileName);
 }
@@ -195,5 +197,15 @@ bool GlobalSettings::fileExists(const QString &fileName, const QString &type)
         return false;
     }
     return true;
+}
+
+
+void GlobalSettings::loadProjectFile(const QString &fileName)
+{
+    qDebug() << "Loading Project file" << fileName;
+    if (!QFile::exists(fileName))
+        throw IException(QString("The project file %1 does not exist!").arg(fileName));
+    mXml.loadFromFile(fileName);
+
 }
 

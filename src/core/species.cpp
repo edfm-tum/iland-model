@@ -1,15 +1,11 @@
 #include <QtCore>
+#include "globalsettings.h"
+
 #include "species.h"
 #include "speciesset.h"
 #include "stampcontainer.h"
 
 
-
-const Stamp* Species::stamp(const float dbh, const float height) const
-{
-    Q_ASSERT_X(m_stamps!=0, "Species::stamp", "stamp NULL");
-    return m_stamps->stamp(dbh, height);
-}
 
 /** main setup routine for tree species.
   Data is fetched from the open query (or file, ...) in the parent SpeciesSet using xyzVar() functions.
@@ -22,6 +18,10 @@ void Species::setup()
     mId = stringVar("shortName");
     mName = stringVar("name");
     QString stampFile = stringVar("LIPFile");
+    // load stamps
+    mStamp.load( GlobalSettings::instance()->path(stampFile, "lip") );
+    // attach writer stamps to reader stamps
+    mStamp.attachReaderStamps(mSet->readerStamps());
 
     // setup allometries
     mBiomassLeaf.setExpression(stringVar("bmLeaf"));

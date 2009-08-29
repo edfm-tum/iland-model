@@ -20,6 +20,7 @@
   */
 #include "xmlhelper.h"
 #include "helper.h"
+#include "exception.h"
 
 XmlHelper::XmlHelper()
 {
@@ -41,19 +42,17 @@ void XmlHelper::loadFromFile(const QString &fileName)
     QString errMsg;
     int errLine, errCol;
         if (!mDoc.setContent(xmlFile, &errMsg, &errLine, &errCol)) {
-            Helper::msg(QString("Error in xml-file!\nError applying xml line %1, col %2.\nMessage: %3").arg(errLine).arg(errCol).arg(errMsg));
-            //QMessageBox::information(this, "title text", "Cannot set content of XML file " + ui->initFileName->text());
-            return;
+            throw IException(QString("Error in xml-file!\nError applying xml line %1, col %2.\nMessage: %3").arg(errLine).arg(errCol).arg(errMsg));
         }
     } else {
-        Helper::msg("xmlfile does not exist or is empty!");
+         throw IException("xmlfile does not exist or is empty!");
     }
     mCurrentTop = mDoc.documentElement(); // top element
     mTopNode = mCurrentTop;
 }
 
 
-QString XmlHelper::value(const QString &path, const QString &defaultValue)
+QString XmlHelper::value(const QString &path, const QString &defaultValue) const
 {
     QDomElement e = node(path);
     if (e.isNull())
@@ -63,7 +62,7 @@ QString XmlHelper::value(const QString &path, const QString &defaultValue)
 }
 
 /// retreives node with given @p path and a element where isNull() is true if nothing is found.
-QDomElement XmlHelper::node(const QString &path)
+QDomElement XmlHelper::node(const QString &path) const
 {
     QStringList elem = path.split('.', QString::SkipEmptyParts);
     QDomElement c;

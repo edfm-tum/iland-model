@@ -4,6 +4,7 @@
 
 #include "expression.h"
 
+
 class StampContainer; // forwards
 class Stamp;
 
@@ -21,10 +22,9 @@ public:
     double biomassStem(const double dbh) { return mBiomassStem.calculate(dbh); }
     double biomassRoot(const double dbh) { return mBiomassRoot.calculate(dbh); }
 
-    const Stamp* stamp(const float dbh, const float height) const;
+    const Stamp* stamp(const float dbh, const float height) const { return mStamp.stamp(dbh, height);}
     // maintenance
     void setup();
-    void setStampContainer(const StampContainer *writer) { m_stamps = writer; }
 private:
     Q_DISABLE_COPY(Species);
     /// during setup: get value of variable @p s as a double.
@@ -34,7 +34,7 @@ private:
     /// during setup: get value of variable @p s as a string.
     QString stringVar(const QString s) { return mSet->var(s).toString(); }
     SpeciesSet *mSet; ///< ptr. to the "parent" set
-    const StampContainer *m_stamps;
+    StampContainer mStamp;
     QString mId;
     QString mName;
     // Allometric Functions (use expressions)

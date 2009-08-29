@@ -4,6 +4,8 @@
 #include <QtXml>
 
 #include "settingmetadata.h"
+#include "xmlhelper.h"
+#include "exception.h"
 
 /// General settings and globally available data
 class GlobalSettings
@@ -26,7 +28,13 @@ public:
     QString path(const QString &fileName, const QString &type="home");
     bool fileExists(const QString &fileName, const QString &type="home");
 
+    // xml project file
+    const XmlHelper &settings() { return mXml; }
+
     // setup and maintenance
+
+    // xml project settings
+    void loadProjectFile(const QString &fileName);
 
     // meta data of settings
     void loadSettingsMetaDataFromFile(const QString &fileName);
@@ -44,6 +52,7 @@ private:
     static GlobalSettings *mInstance;
     SettingMetaDataList mSettingMetaData; /// storage container (QHash) for settings.
     QHash<QString, QString> mFilePath;
+    XmlHelper mXml;
 };
 
 /// shortcut to the GlobalSettings Singleton object.

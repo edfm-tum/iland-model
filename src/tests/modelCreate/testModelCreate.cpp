@@ -24,10 +24,14 @@ private slots:
 
 void TestModelCreate::initTestCase()
 {
-    XmlHelper xml("E:\\dev\\iland\\src\\tests\\modelCreate\\test.xml");
-
-    model = new Model();
-    model->loadProject(xml.top());
+    //XmlHelper xml("E:\\dev\\iland\\src\\tests\\modelCreate\\test.xml");
+    try {
+        model = new Model();
+        GlobalSettings::instance()->loadProjectFile("E:\\dev\\iland\\src\\tests\\modelCreate\\test.xml");
+        model->loadProject();
+    } catch (const IException &e) {
+        qDebug() << "Exception:" << e.asString();
+    }
 }
 
 void TestModelCreate::cleanupTestCase()

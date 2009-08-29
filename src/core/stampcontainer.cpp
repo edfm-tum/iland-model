@@ -1,4 +1,5 @@
 #include "stampcontainer.h"
+#include "globalsettings.h"
 
 //constants
 const int StampContainer::cBHDclassWidth=4;
@@ -113,7 +114,7 @@ void StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
     if (cls_hd>=cHDclassCount)
         cls_hd=cHDclassCount-1;
     int cls_dbh = int(crown_radius_m);
-    qDebug() << "Readerstamp r="<< crown_radius_m<<" index dbh hd:" << cls_dbh << cls_hd;
+    //qDebug() << "Readerstamp r="<< crown_radius_m<<" index dbh hd:" << cls_dbh << cls_hd;
     // prepare special keys for reader stamps
     addStamp(stamp,cls_dbh, cls_hd, crown_radius_m, 0., 0.); // set crownradius, but not dbh/hd
 }
@@ -206,6 +207,8 @@ void StampContainer::invert()
 void StampContainer::load(const QString &fileName)
 {
     QFile readerfile(fileName);
+    if (!readerfile.exists())
+        throw IException(QString("The LIP stampfile %1 cannot be found!").arg(fileName));
     readerfile.open(QIODevice::ReadOnly);
     QDataStream rin(&readerfile);
     load(rin);
@@ -242,6 +245,8 @@ void StampContainer::load(QDataStream &in)
             addReaderStamp(stamp, crownradius);
     }
     finalizeSetup(); // fill up lookup grid
+    if (count==0)
+        throw IException("no stamps loaded!");
 }
 /** Saves all stamps of the container to a binary stream.
   Format: * count of stamps (int32)
