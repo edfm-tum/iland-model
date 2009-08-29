@@ -51,11 +51,15 @@ void Model::loadProject(const QDomElement &node)
 {
     XmlHelper xml(node);
     GlobalSettings *g = GlobalSettings::instance();
+    // fix file path
+    g->setupDirectories(xml.node("path"));
     g->clearDatabaseConnections();
     // database connections: reset
     GlobalSettings::instance()->clearDatabaseConnections();
     // input and output connection
-    GlobalSettings::instance()->setupDatabaseConnection("in", xml.value("database.in"));
+    QString dbPath = g->path( xml.value("database.in"), "database");
+    g->fileExists(dbPath);
+    GlobalSettings::instance()->setupDatabaseConnection("in", dbPath);
     //GlobalSettings::instance()->setupDatabaseConnection("out", "");
 
 

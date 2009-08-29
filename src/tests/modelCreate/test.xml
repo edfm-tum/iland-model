@@ -2,18 +2,20 @@
 <!-- More details on iland.boku.ac.at/ProjectFile -->
 <project>
 <database>
-<in>e:\dev\iland\testdb</in>
+<in>testdb</in>
 <out></out>
 </database>
 <path>
-<home>e:\daten\iland\test</home>
-<database>species_params</database>
+<home>e:\daten\iland\projects\test</home>
+<database>database</database>
 <lip>lip</lip>
+<temp>temp</temp>
 </path>
 
 <species>
-<source type="db" dbfile="speciesSet.db">species</source>
-<readerlip>E:\Daten\iLand\Light\fons\readerstamp.bin</readerlip>
+<source>species</source>
+<reader>readerstamp.bin</reader>
+
 <enabledSpecies>
 piab foobar prozac dunno
 </enabledSpecies>
