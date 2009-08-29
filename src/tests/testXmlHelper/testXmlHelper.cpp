@@ -3,6 +3,7 @@
 
 
 #include "xmlhelper.h"
+#include "globalsettings.h"
 
 class TestXmlHelper: public QObject
 {
@@ -16,6 +17,8 @@ private slots:
     void toUpper();
     void traverse();
     void dump();
+    // file path
+    void filepath();
 };
 
 
@@ -61,6 +64,15 @@ void TestXmlHelper::toUpper()
     QString str = "Hello";
     QCOMPARE(str.toUpper(), QString("HELLO"));
 }
+
+void TestXmlHelper::filepath()
+{
+    // setup file paths...
+    xml.dump("path");
+    GlobalSettings::instance()->setupDirectories(xml.node("path"));
+
+}
+
 
 QTEST_MAIN(TestXmlHelper)
 #include "testXmlHelper.moc"

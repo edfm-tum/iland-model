@@ -21,7 +21,7 @@ void Species::setup()
     // setup general information
     mId = stringVar("shortName");
     mName = stringVar("name");
-    QString stampFile = stringVar("LIPFile"); // todo: process!!
+    QString stampFile = stringVar("LIPFile");
 
     // setup allometries
     mBiomassLeaf.setExpression(stringVar("bmLeaf"));

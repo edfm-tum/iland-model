@@ -26,6 +26,7 @@ public:
     void save(QDataStream &out);
     /// load the content of the StampContainer to the output stream (binary encoding)
     void load(QDataStream &in);
+    void load(const QString &fileName);
 
     /** factory creation function for stamps of different size.
         newStamp() creates new Stamp-Objects on the heap with a given type (see @enum Stamp::StampType).*/

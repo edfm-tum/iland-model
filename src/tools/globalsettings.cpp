@@ -1,8 +1,8 @@
 /** @class GlobalSettings
   This class contains various global structures/definitions. This class is a Singleton and accessed via the static instance() function.
-  @caption various (textual) meta data (SettingMetaData)
+  @par various (textual) meta data (SettingMetaData)
 
-  @caption global database connections
+  @par global database connections
   There are two defined global database connections dbin() and dbout() with the names "in" and "out".
   They are setup with setupDatabaseConnection(). Currently, only SQLite DBs are supported.
   Use dbin() and dbout() to faciliate those database connections:
@@ -12,6 +12,27 @@
   query.exec(...);
   ...
   @endcode
+
+  @par Helpers with file Paths
+  the actual project file is parsed for path defined in the <path> section.
+  Use the path() function to expand a @p fileName to a iLand-Path. To check if a file exists, you could
+  use fileExists().
+  Available paths:
+  - home: the project's home directory. All other directories can be defined relative to this dir.
+  - lip: path for the storage of LIP (aka binary Stamp files) (default: home/lip)
+  - database: base path for SQLite database files (default: home/database)
+  - temp: path for storage of temporary files (default: home/temp)
+  - log: storage for log-files (default: home/log)
+  - exe: the path to the executable file.
+  @code
+  // home is "e:/iland/test", temp is "c:\temp" and log is omitted in project-file:
+  QString p;
+  p = Globals->path("somestuff.txt", "temp"); // > c:\temp\somestuff.txt
+  p = Globals->path("e:\averyspecial\place.txt", "temp"); // -> e:\averyspecial\place.txt
+                                                          //    (abs. path is not changed)
+  p = Globals->path("log123.txt", "log"); // -> e:/iland/test/log/log123.txt (default for log)
+  @endcode
+
 */
 #include <QtCore>
 #include <QtXml>
@@ -19,6 +40,7 @@
 
 #include "global.h"
 #include "helper.h"
+#include "xmlhelper.h"
 #include "globalsettings.h"
 #include "settingmetadata.h"
 
@@ -122,6 +144,54 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
                      "the Qt SQL driver documentation for information how "
                      "to build it.\n\n"
                      "Click Cancel to exit.").arg(fileName, dbname));
+        return false;
+    }
+    return true;
+}
+
+
+///////// Path functions
+
+void GlobalSettings::setupDirectories(QDomElement pathNode)
+{
+    mFilePath.clear();
+    mFilePath.insert("exe", QCoreApplication::applicationDirPath());
+    XmlHelper xml(pathNode);
+    QString homePath = xml.value("home", QCoreApplication::applicationDirPath());
+    mFilePath.insert("home", homePath);
+    // make other paths relativ to "home" if given as relative paths
+    mFilePath.insert("lip", path(xml.value("lip", "lip"), "home"));
+    mFilePath.insert("database", path(xml.value("database", "database"), "home"));
+    mFilePath.insert("temp", path(xml.value("temp", "temp"), "home"));
+    mFilePath.insert("log", path(xml.value("log", "log"), "home"));
+    qDebug() << "current File Paths:" << mFilePath;
+}
+
+/** extend the file to a full absoulte path of the given type (temp, home, ...).
+  If @p file is already an absolute path, nothing is done.
+  */
+QString GlobalSettings::path(const QString &fileName, const QString &type)
+{
+    QFileInfo fileinfo(fileName);
+    if (fileinfo.isAbsolute())
+        return fileName;
+
+    QDir d;
+    if (mFilePath.contains(type))
+        d.setPath(mFilePath.value(type));
+    else
+        d = QDir::currentPath();
+
+    return d.filePath(fileName);
+}
+
+/// returns true if file @p fileName exists.
+bool GlobalSettings::fileExists(const QString &fileName, const QString &type)
+{
+    QString name = path(fileName, type);
+
+    if (!QFile::exists(name)) {
+        qDebug() << "Path" << fileName << "(expanded to:)"<< name << "does not exist!";
         return false;
     }
     return true;

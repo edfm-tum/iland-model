@@ -60,14 +60,6 @@ void Model::loadProject(const QDomElement &node)
 
 
     // (1) SpeciesSets: currently only one a global species set.
-    /*Sample XML: <species>
-    <source type="db" dbfile="speciesSet.db">species1</source>
-    <enabledSpecies>
-    piab foobar prozac dunno
-    </enabledSpecies>
-    </species> */
-    //QDomElement xmlSpecies = node.firstChildElement("species");
-    //QString dbName = "";
     QString speciesTableName = xml.value("species.source", "species");
     SpeciesSet *speciesSet = new SpeciesSet();
     mSpeciesSets.push_back(speciesSet);

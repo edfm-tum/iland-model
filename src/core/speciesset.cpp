@@ -37,7 +37,7 @@ int SpeciesSet::loadFromDatabase(const QString &tableName)
             continue;
 
         Species *s = new Species(this); // create
-        // call setup routine (which call SpeciesSet::var() to retrieve values
+        // call setup routine (which calls SpeciesSet::var() to retrieve values
         s->setup();
 
         mSpecies.insert(s->id(), s); // store

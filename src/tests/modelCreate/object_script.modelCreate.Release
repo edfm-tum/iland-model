@@ -1,0 +1,16 @@
+INPUT(
+./release\testModelCreate.o
+./release\globalsettings.o
+./release\settingmetadata.o
+./release\helper.o
+./release\xmlhelper.o
+./release\ticktack.o
+./release\expression.o
+./release\stamp.o
+./release\stampcontainer.o
+./release\species.o
+./release\speciesset.o
+./release\tree.o
+./release\model.o
+./release\ressourceunit.o
+);

@@ -202,6 +202,15 @@ void StampContainer::invert()
         }
     }
 }
+/// convenience function that loads stamps directly from a single file.
+void StampContainer::load(const QString &fileName)
+{
+    QFile readerfile(fileName);
+    readerfile.open(QIODevice::ReadOnly);
+    QDataStream rin(&readerfile);
+    load(rin);
+    readerfile.close();
+}
 
 void StampContainer::load(QDataStream &in)
 {

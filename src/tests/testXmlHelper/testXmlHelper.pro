@@ -1,19 +1,17 @@
 QT += xml
-Qt += sql
-
+QT += sql
 INCLUDEPATH += ../../core \
-               ../../tools \
-              ../..
+               ../../tools
 
-PRECOMPILED_HEADER = ../../stable.h
 
 SOURCES = testXmlHelper.cpp \
           ../../tools/helper.cpp \
           ../../tools/ticktack.cpp \
-          ../../tools/xmlhelper.cpp
+          ../../tools/settingmetadata.cpp \
+          ../../tools/xmlhelper.cpp \
+          ../../tools/globalsettings.cpp
 # \
 #          ../../tools/globalsettings.cpp \
-#          ../../tools/settingmetadata.cpp \
 #          ../../tools/helper.cpp \
 #          ../../tools/ticktack.cpp \
 #          ../../tools/expression.cpp \
@@ -26,12 +24,13 @@ SOURCES = testXmlHelper.cpp \
 
 HEADERS =  ../../tools/xmlhelper.h \
           ../../tools/ticktack.h \
+          ../../tools/globalsettings.h \
+          ../../tools/settingmetadata.h \
           ../../tools/helper.h
 
 
 # \
 #          ../../tools/globalsettings.h \
-#          ../../tools/settingmetadata.h \
 #          ../../tools/helper.h \
 #          ../../tools/expression.h \
 #          ../../tools/ticktack.h \

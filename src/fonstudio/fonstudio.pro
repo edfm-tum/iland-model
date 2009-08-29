@@ -10,11 +10,10 @@ TEMPLATE = app
 
 # includepath: adds directories to the standard include (no directory needed when #include a file).
 INCLUDEPATH += ../core \
-    ../tools \
-    ..
+    ../tools
 
 # Use Precompiled headers (PCH)
-PRECOMPILED_HEADER = ../stable.h
+PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     mainwindow.cpp \
     ../core/grid.cpp \

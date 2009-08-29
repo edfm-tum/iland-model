@@ -2,6 +2,8 @@
 #define SPECIESSET_H
 #include <QtSql>
 
+#include "stampcontainer.h"
+
 class Species;
 class SpeciesSet
 {
@@ -19,6 +21,7 @@ private:
 
     QMap<QString, Species*> mSpecies;
     QSqlQuery *mSetupQuery;
+    StampContainer mReaderStamp;
 };
 
 #endif // SPECIESSET_H
