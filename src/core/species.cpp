@@ -1,3 +1,11 @@
+/** @class Species encapsulates a single tree species.
+  Because the individual trees are designed as leightweight as possible, lots of stuff is done by the Species.
+  Inter alia, Species do:
+  - store all the precalcualted patterns for light competition (LIP, stamps)
+  - do most of the growth (3PG) calculation
+  */
+
+
 #include <QtCore>
 #include "globalsettings.h"
 

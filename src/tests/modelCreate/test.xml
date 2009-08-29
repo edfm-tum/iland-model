@@ -21,5 +21,11 @@ piab foobar prozac dunno
 </enabledSpecies>
 </species>
 
+<world>
+<cellSize>2</cellSize>
+<width>100</width>
+<height>200</height>
+<buffer>50</buffer>
+</world>
 
 </project>

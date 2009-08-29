@@ -11,6 +11,7 @@ SOURCES = testModelCreate.cpp \
     ../../tools/xmlhelper.cpp \
     ../../tools/ticktack.cpp \
     ../../tools/expression.cpp \
+    ../../core/grid.cpp \
     ../../core/stamp.cpp \
     ../../core/stampcontainer.cpp \
     ../../core/species.cpp \
@@ -25,6 +26,7 @@ HEADERS = ../../core/global.h \
     ../../tools/xmlhelper.h \
     ../../tools/expression.h \
     ../../tools/ticktack.h \
+    ../../core/grid.h \
     ../../core/stamp.h \
     ../../core/stampcontainer.h \
     ../../core/species.h \

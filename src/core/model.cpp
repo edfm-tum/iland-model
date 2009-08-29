@@ -31,16 +31,44 @@ void Model::initialize()
 
 }
 
+void Model::setupSpace()
+{
+    const XmlHelper &xml = GlobalSettings::instance()->settings();
+    double cellSize = xml.value("world.cellSize", "2").toDouble();
+    double width = xml.value("world.width", "100").toDouble();
+    double height = xml.value("world.height", "100").toDouble();
+    double buffer = xml.value("world.buffer", "50").toDouble();
+    qDebug() << QString("setup of the world: %1x%2m with cell-size=%3m and %4m buffer").arg(width).arg(height).arg(cellSize).arg(buffer);
+
+
+    QRectF total_grid(QPointF(-buffer, -buffer), QPointF(width+buffer, height+buffer));
+    qDebug() << "setup grid rectangle:" << total_grid;
+
+    mGrid = new FloatGrid(total_grid, cellSize);
+    mGridList.push_back(mGrid);
+    mGrid->initialize(1.f); // set to unity...
+    mHeightGrid = new FloatGrid(total_grid, cellSize*5);
+    mGridList.push_back(mHeightGrid); // could be solved better...
+    mHeightGrid->initialize(0.f); // zero grid
+}
+
+
 /** clear() frees all ressources allocated with the run of a simulation.
 
   */
 void Model::clear()
 {
+    qDebug() << "Model clear: attempting to clear" << mRU.count() << "RU, " << mSpeciesSets.count() << "SpeciesSets, " << mGridList.count() << "Grids.";
     // clear ressource units
-    qDeleteAll(mRU);
+    qDeleteAll(mRU); // delete ressource units (and trees)
     mRU.clear();
-    qDeleteAll(mSpeciesSets);
+
+    qDeleteAll(mSpeciesSets); // delete species sets
     mSpeciesSets.clear();
+
+    qDeleteAll(mGridList); // delete all grids
+    mGridList.clear();
+
     qDebug() << "Model ressources freed.";
 }
 
@@ -75,4 +103,6 @@ void Model::loadProject()
     RessourceUnit *ru = new RessourceUnit();
     ru->setSpeciesSet(speciesSet);
     mRU.push_back(ru);
+
+    setupSpace();
 }

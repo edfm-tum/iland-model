@@ -1,12 +1,14 @@
 #ifndef SPECIES_H
 #define SPECIES_H
-#include "speciesset.h"
+
 
 #include "expression.h"
 
+#include "speciesset.h"
 
 class StampContainer; // forwards
 class Stamp;
+
 
 class Species
 {

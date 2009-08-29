@@ -16,6 +16,16 @@ piab foobar prozac dunno
 </enabledSpecies>
 </species>
 
+<!-- Project Area 
+Phase 1: simple...
+
+-->
+<world>
+<cellSize>2</cellSize>
+<width>100</width>
+<height>200</height>
+<buffer>50</buffer>
+</world>
 
 <test>
 <block>

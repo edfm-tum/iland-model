@@ -1,5 +1,6 @@
 #include "stampcontainer.h"
 #include "globalsettings.h"
+#include "exception.h"
 
 //constants
 const int StampContainer::cBHDclassWidth=4;
