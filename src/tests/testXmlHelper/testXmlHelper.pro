@@ -1,7 +1,11 @@
 QT += xml
+Qt += sql
 
 INCLUDEPATH += ../../core \
-               ../../tools
+               ../../tools \
+              ../..
+
+PRECOMPILED_HEADER = ../../stable.h
 
 SOURCES = testXmlHelper.cpp \
           ../../tools/helper.cpp \
