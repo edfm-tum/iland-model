@@ -2,8 +2,8 @@ QT += xml
 QT += sql
 
 INCLUDEPATH += ../../core \
-               ../../tools \
-               ../..
+               ../../tools
+
 
 # PRECOMPILED_HEADER = ../../stable.h
 
@@ -23,8 +23,8 @@ SOURCES = testModelCreate.cpp \
           ../../core/ressourceunit.cpp
 
 HEADERS = ../../core/global.h \
-          ../../tools/settingmetadata.h \
           ../../tools/globalsettings.h \
+          ../../tools/settingmetadata.h \
           ../../tools/helper.h \
           ../../tools/xmlhelper.h \
           ../../tools/expression.h \
