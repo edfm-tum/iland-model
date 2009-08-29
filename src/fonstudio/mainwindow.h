@@ -9,6 +9,7 @@
 #include "imagestamp.h"
 #include "helper.h"
 
+class Model;
 
 namespace Ui
 {
@@ -25,6 +26,9 @@ public:
     ~MainWindow();
 
 private:
+    // setup
+    void setupModel();
+    Model *mModel;
     void addTrees(const double dbh, const int count);
     Ui::MainWindowClass *ui;
     FloatGrid* mGrid; // light grid

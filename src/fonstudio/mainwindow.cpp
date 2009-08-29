@@ -6,17 +6,24 @@
 
 #include <imagestamp.h>
 #include "lightroom.h"
-#include "grid.h"
-#include "stamp.h"
-#include "stampcontainer.h"
+
+#include "model.h"
+
+//#include "grid.h"
+//#include "stamp.h"
+//#include "stampcontainer.h"
 #include "tree.h"
-#include "species.h"
-#include "expression.h"
-#include "helper.h"
+//#include "species.h"
+//#include "expression.h"
+//#include "helper.h"
 
 #include "paintarea.h"
 
-#include "globalsettings.h"
+//#include "globalsettings.h"
+
+
+QStringList picusSpeciesIds = QStringList() << "0" << "17";
+QStringList iLandSpeciesIds = QStringList() << "piab" << "fasy";
 
 // global settings
 QDomDocument xmldoc;
@@ -97,6 +104,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     mGrid=0;
     mDomGrid=0;
+    mModel = 0;
     connect( ui->PaintWidget, SIGNAL(needsPainting(QPainter&)),
              this, SLOT(repaintArea(QPainter&)) );
     connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
@@ -133,6 +141,8 @@ MainWindow::~MainWindow()
     delete ui;
     if (lightroom)
         delete lightroom;
+    if (mModel)
+        delete mModel;
 }
 
 void MainWindow::on_applyXML_clicked()
@@ -151,19 +161,20 @@ void MainWindow::on_applyXML_clicked()
     //GlobalSettings::instance()->loadSettingsMetaDataFromXml(xmldoc.firstChildElement("globalsettings"));
     Globals->loadSettingsMetaDataFromXml(xmldoc.documentElement().firstChildElement("globalsettings"));
     // test global settings
-    QStringList list = Globals->settingNames();
+    /*QStringList list = Globals->settingNames();
     foreach(const QString key, list) {
         const SettingMetaData *smd = Globals->settingMetaData(key);
         if (smd)
           qWarning() << smd->dump();
     }
     qDebug() << "i dont have: " << Globals->settingMetaData("idonthave");
-    delete GlobalSettings::instance();
+    delete GlobalSettings::instance();*/
 }
 
 /// load a Picus ini file formatted file.
 void MainWindow::loadPicusIniFile(const QString &fileName)
 {
+    SpeciesSet *speciesSet = mModel->ru()->speciesSet(); // of default RU
     QString text = Helper::loadTextFile(fileName);
     if (text.isEmpty()) {
         qDebug() << "file not found: " + fileName;
@@ -189,6 +200,7 @@ void MainWindow::loadPicusIniFile(const QString &fileName)
     int iY = headers.indexOf("y");
     int iBhd = headers.indexOf("bhdfrom");
     int iHeight = headers.indexOf("treeheight");
+    int iSpecies = headers.indexOf("species");
     for (int i=1;i<lines.count();i++) {
         QString &line = lines[i];
         //qDebug() << "line" << i << ":" << line;
@@ -206,7 +218,15 @@ void MainWindow::loadPicusIniFile(const QString &fileName)
         if (iHeight>=0)
             tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
 
-        tree.setSpecies( tree_species.first() ); // TODO: species specific!!!!
+        if (iSpecies>=0) {
+            int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
+            QString speciesid="piab";
+            if (idx>0)
+                speciesid = iLandSpeciesIds[idx];
+            Species *s = speciesSet->species(speciesid);
+            tree.setSpecies(s);
+        }
+
         tree.setup();
 
         mTrees.push_back(tree);
@@ -777,11 +797,25 @@ void MainWindow::on_lrCalcFullGrid_clicked()
 
 
 
+void MainWindow::setupModel()
+{
+    if (mModel)
+        delete mModel;
+
+    mModel = new Model();
+    GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
+    mModel->loadProject();
+    mGrid = mModel->grid();
+    mDomGrid= mModel->heightGrid();
+    // set viewport of paintwidget
+    vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
+}
+
 void MainWindow::on_fonRun_clicked()
 {
     // print out the element names of all elements that are direct children
     // of the outermost element.
-    QDomElement docElem = xmldoc.documentElement();
+/*    QDomElement docElem = xmldoc.documentElement();
 
     xmlparams = docElem.firstChildElement("params");
     QDomNode trees = docElem.firstChildElement("trees");
@@ -791,7 +825,7 @@ void MainWindow::on_fonRun_clicked()
     QString binaryStampFile =  xmlparams.firstChildElement("binaryStamp").text();
     QString binaryReaderStampFile =  xmlparams.firstChildElement("binaryReaderStamp").text();
     Tree::lafactor = xmlparams.firstChildElement("laifactor").text().toFloat();
-    qDebug() << "set LA multiplier to" << Tree::lafactor;
+    qDebug() << "set LA multiplier to" << Tree::lafactor;*/
 
     // Here we append a new element to the end of the document
     //QDomElement elem = doc.createElement("img");
@@ -830,7 +864,7 @@ void MainWindow::on_fonRun_clicked()
 //    Tree::rScale.setExpression(expr_rScale);
 //    Tree::rScale.addVar("height");
 //    Tree::rScale.addVar("dbh");
-
+/*
     // setup grid
     int cellsize = xmlparams.firstChildElement("cellSize").text().toInt();
     double size = xmlparams.firstChildElement("size").text().toDouble();
@@ -846,13 +880,13 @@ void MainWindow::on_fonRun_clicked()
     //mGrid = new FloatGrid(cellsize, cellcount, cellcount);
     mGrid->initialize(1.f); // set to unity...
     mDomGrid = new FloatGrid(total_grid, cellsize*5);
-    mDomGrid->initialize(0.f); // zero grid
+    mDomGrid->initialize(0.f); // zero grid*/
 
-    vp = Viewport(mGrid->metricRect(), ui->PaintWidget->rect());
+
 
     // setup of the binary stamps
 
-    if (stamp_container) {
+   /* if (stamp_container) {
         delete stamp_container;
         delete reader_stamp_container;
     }
@@ -888,15 +922,27 @@ void MainWindow::on_fonRun_clicked()
         tree_species.push_back(ts);
     }
     tree_species.first()->setStampContainer(stamp_container); // start with the common single container
+*/
 
+    setupModel();
+
+
+    Tree::lafactor = 0.8;
     // Load Trees
-    mTrees.clear();
-    QDomElement treelist = docElem.firstChildElement("treeinit");
-    if (!treelist.isNull()) {
-        QString fname = treelist.text();
-        loadPicusIniFile(fname);
 
+    mTrees.clear();
+    QString fname = GlobalSettings::instance()->settings().value("treeinit","");
+    if (!QFile::exists(fname)) {
+        Helper::msg("init file does not exist:" + fname);
+        return;
     }
+
+    loadPicusIniFile(fname);
+
+
+
+    /* loading of single trees (not files)
+
     QDomElement n = trees.firstChildElement("tree");
     while (!n.isNull()) {
         Tree tree;
@@ -907,16 +953,17 @@ void MainWindow::on_fonRun_clicked()
         tree.setup();
         mTrees.push_back(tree);
 
-/*        ui->logMessages->append("tree: " \
-           " dbh: " + n.attributeNode("dbh").value() +
-           "\nheight: " + n.attributeNode("height").value() );*/
+//        ui->logMessages->append("tree: " \
+//           " dbh: " + n.attributeNode("dbh").value() +
+//           "\nheight: " + n.attributeNode("height").value() );
         n = n.nextSiblingElement();
-    }
+    }*/
+
     qDebug() << mTrees.size() << "trees loaded.";
 
     // test stylesheets...
-    QString style = setting("style");
-    ui->PaintWidget->setStyleSheet( style );
+    //QString style = setting("style");
+    //ui->PaintWidget->setStyleSheet( style );
 
     // start first cycle...
     on_stampTrees_clicked();

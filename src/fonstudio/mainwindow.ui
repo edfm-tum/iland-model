@@ -102,7 +102,7 @@ color: rgb(85, 0, 0);</string>
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="pageXML">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -434,7 +434,7 @@ color: rgb(85, 0, 0);</string>
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">

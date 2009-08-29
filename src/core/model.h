@@ -9,6 +9,7 @@
 #include "helper.h"
 #include "xmlhelper.h"
 #include "speciesset.h"
+#include "species.h"
 #include "ressourceunit.h"
 
 
@@ -19,6 +20,9 @@ public:
     ~Model();
     // access
     RessourceUnit *ru() { return mRU.front(); }
+    // global grids
+    FloatGrid *grid() { return mGrid; }
+    FloatGrid *heightGrid() { return mHeightGrid; }
 
     // setup/maintenance
     void clear(); ///< free ressources

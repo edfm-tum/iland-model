@@ -11,8 +11,9 @@ public:
    XmlHelper(QDomElement topNode);
    void loadFromFile(const QString &fileName);
    QDomElement node(const QString &path) const;
-   void setCurrentNode(const QString &path) { mCurrentTop = node(path); }
-   QString value(const QString &path, const QString &defaultValue="") const;
+   bool hasNode(const QString &path) const; ///< returns true if @p path exists.
+   void setCurrentNode(const QString &path) { mCurrentTop = node(path); } ///< sets @p path as the current (relative) node.
+   QString value(const QString &path, const QString &defaultValue="") const; ///< retrieve value (as string) from node @p path.
    QString dump(const QString &path, int levels=-1);
    QDomElement top() const { return mTopNode;}
 private:

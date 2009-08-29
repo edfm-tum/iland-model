@@ -51,6 +51,10 @@ void XmlHelper::loadFromFile(const QString &fileName)
     mTopNode = mCurrentTop;
 }
 
+bool XmlHelper::hasNode(const QString &path) const
+{
+    return !node(path).isNull();
+}
 
 QString XmlHelper::value(const QString &path, const QString &defaultValue) const
 {
