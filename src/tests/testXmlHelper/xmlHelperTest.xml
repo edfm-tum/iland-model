@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Project definition file -->
+<project>
+
+<path>
+<home>e:\daten\iland\test</home>
+<database>species_params</database>
+<lip>lip</lip>
+</path>
+
+<species>
+<source type="db" dbfile="speciesSet.db">species1</source>
+<enabledSpecies>
+piab foobar prozac dunno
+</enabledSpecies>
+</species>
+
+
+<test>
+<block>
+<a>
+</a>
+<b>
+	<c>c</c>
+	<d>d</d>
+	<c>c2</c>
+</b>
+
+</block>
+<block>
+<n></n>
+<n></n>
+<n><o>o</o></n>
+</block>
+</test>
+
+</project>
