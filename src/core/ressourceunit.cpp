@@ -19,3 +19,9 @@ Tree &RessourceUnit::newTree()
     mTrees.append(Tree());
     return mTrees.back();
 }
+
+
+void RessourceUnit::newYear()
+{
+    mAggregatedWLA = 0.f;
+}

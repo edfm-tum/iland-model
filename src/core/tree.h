@@ -35,13 +35,17 @@ public:
     void enableDebugging() { mDebugid = mId; }
 
 
-    // grid based stamp functions
-    static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { mGrid = gridToStamp; mHeightGrid = dominanceGrid; }
-    void applyStamp();
+    // grid based light-concurrency functions
+    void applyStamp(); ///< apply LightInfluencePattern onto the global grid
     double readStamp();
-    double readStampMul();
-    void heightGrid();
+    void readStampMul(); ///< calculate the lightRessourceIndex
+    void heightGrid(); ///< calculate the height grid
 
+    // growth, etc.
+    void grow();
+
+    // static functions
+    static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { mGrid = gridToStamp; mHeightGrid = dominanceGrid; }
     // statistics
     static void resetStatistics();
     static const int statPrints() { return m_statPrint; }
@@ -50,19 +54,27 @@ public:
     static float lafactor;
 
 private:
-    bool isDebugging() { return mId == mDebugid; }
+    // state variables
     int mId;
     float mDbh;
     float mHeight;
     QPointF mPosition;
-    //float mOwnImpact;
-    //float mImpactArea;
-    //float mImpactRadius;
-    float mLRI;
-    // Stamp
+    // biomass compartements
+    float mLeafArea; // m2
+
+    float mLeafMass; // kg
+    float mStemMass; // kg
+    float mRootMass; // kg
+
+
+    float mLRI; // resulting lightRessourceIndex
+    // Stamp, Species, Ressource Unit
     const Stamp *mStamp;
     Species *mSpecies;
     RessourceUnit *mRU;
+
+    bool isDebugging() { return mId == mDebugid; }
+    // static data
     static FloatGrid *mGrid;
     static FloatGrid *mHeightGrid;
     // debugging

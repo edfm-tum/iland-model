@@ -4,6 +4,7 @@
 
 #include "stamp.h"
 #include "species.h"
+#include "ressourceunit.h"
 
 
 FloatGrid *Tree::mGrid = 0;
@@ -20,6 +21,7 @@ Tree::Tree()
     mDbh = 0;
     mHeight = 0;
     mSpecies = 0;
+    mRU = 0;
     mId = m_nextId++;
     m_statCreated++;
 }
@@ -44,6 +46,10 @@ void Tree::setup()
     // check stamp
    Q_ASSERT_X(mSpecies!=0, "Tree::setup()", "species is NULL");
    mStamp = mSpecies->stamp(mDbh, mHeight);
+   mLeafArea = 1.;
+   mLeafMass = 0.;
+   mStemMass = 0.;
+   mRootMass = 0.;
 }
 
 #define NOFULLDBG
@@ -334,13 +340,13 @@ double Tree::readStampMul()
     return mImpact;
 }*/
 
-double Tree::readStampMul()
+void Tree::readStampMul()
 {
     if (!mStamp)
-        return 0.;
+        return;
     const Stamp *reader = mStamp->reader();
     if (!reader)
-        return 0.;
+        return;
     QPoint pos_reader = mGrid->indexAt(mPosition);
 
     int offset_reader = reader->offset();
@@ -390,7 +396,7 @@ double Tree::readStampMul()
     if (mLRI > 1)
         mLRI = 1.f;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    return mLRI;
+    mRU->addWLA(mLRI * mLeafArea);
 }
 
 void Tree::resetStatistics()
@@ -400,3 +406,12 @@ void Tree::resetStatistics()
     m_statAboveZ=0;
     m_nextId=1;
 }
+
+
+void Tree::grow()
+{
+    // step 1: calculate radiation:
+    double radiation = mRU->interceptedRadiation(mLRI * mLeafArea);
+
+}
+

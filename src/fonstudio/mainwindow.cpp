@@ -310,8 +310,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     DebugTimer drawtimer("painting");
     if (!mModel || !mModel->ru())
         return;
-    RessourceUnit *ru = mModel->ru();
-    QVector<Tree> &mTrees = ru->trees();
+
+
     // do the actual painting
     if (!mGrid)
         return;
@@ -341,7 +341,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QColor fill_color;
     float value;
 
-    if (vp.meterToPixel(1) < 1) {
+    if (show_fon && vp.meterToPixel(1) < 1) {
         // start from each pixel and query value in grid for the pixel
         int x,y;
         int sizex = rect.width();
@@ -401,17 +401,18 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         } // if (show_dem)
     }
     if (show_impact) {
-        QVector<Tree>::iterator tit;
-        for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-            QPointF pos = tit->position();
+        AllTreeIterator treelist(mModel);
+        Tree *tree;
+        while (tree = treelist.next()) {
+            QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
-            value = tit->lightRessourceIndex();
+            value = tree->lightRessourceIndex();
             fill_color = Helper::colorFromValue(value, 0., 1., true);
             painter.setBrush(fill_color);
-            int diameter = qMax(2,vp.meterToPixel( tit->dbh()/100. * 5.));
+            int diameter = qMax(2,vp.meterToPixel( tree->dbh()/100. * 5.));
             painter.drawEllipse(p, diameter, diameter);
-
         }
+
     } // if (show_impact)
     // show selected tree
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();

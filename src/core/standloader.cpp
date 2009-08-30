@@ -40,6 +40,7 @@ void StandLoader::processInit()
                 Tree &newtree = (*p)->newTree();
                 newtree = tree; // copy tree data...
                 newtree.setPosition(tree.position()+(*p)->boundingBox().topLeft());
+                newtree.setRU(*p);
             }
             //(*p)->trees()
             // loadFromPicus(fileName, rect.topLeft(), *p); -> do that for differing stands
@@ -109,6 +110,8 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Ressour
             if (idx>0)
                 speciesid = iLandSpeciesIds[idx];
             Species *s = speciesSet->species(speciesid);
+
+            tree.setRU(ru);
             tree.setSpecies(s);
         }
 

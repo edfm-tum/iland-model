@@ -23,6 +23,7 @@ public:
     // access to elements
     RessourceUnit *ru() { return mRU.front(); }
     RessourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
+    const QList<RessourceUnit*> &ruList() {return mRU; }
     // global grids
     FloatGrid *grid() { return mGrid; }
     FloatGrid *heightGrid() { return mHeightGrid; }
@@ -52,4 +53,17 @@ private:
     QList<FloatGrid*> mGridList;
 };
 
+class Tree;
+class AllTreeIterator
+{
+public:
+    AllTreeIterator(Model* model): mModel(model), mTreeEnd(0),mCurrent(0) {}
+    Tree *next();
+    RessourceUnit *currentRU() const { return *mRUIterator; }
+private:
+    Model *mModel;
+    Tree *mTreeEnd;
+    Tree *mCurrent;
+    QList<RessourceUnit*>::const_iterator mRUIterator;
+};
 #endif // MODEL_H

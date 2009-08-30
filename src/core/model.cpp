@@ -14,6 +14,42 @@
 #include <QtCore>
 #include <QtXml>
 
+/** iterate over all trees of the model. return NULL if all trees processed.
+  Usage:
+  @code
+  AllTreeIterator trees(model);
+  while (Tree *tree = trees.next()) { // returns NULL when finished.
+     tree->something(); // do something
+  }
+  @endcode
+  */
+Tree *AllTreeIterator::next()
+{
+    if (!mTreeEnd) {
+        // initialize to first ressource unit
+        mRUIterator = mModel->ruList().constBegin();
+        if (mRUIterator == mModel->ruList().constEnd()) return NULL;
+        mTreeEnd = &((*mRUIterator)->trees().back());
+        mCurrent = &((*mRUIterator)->trees().front());
+        mCurrent--; // set ptr 1 behind the begin
+    }
+
+    mCurrent++;
+
+    if (mCurrent==mTreeEnd) {
+        mRUIterator++; // switch to next RU
+        if (mRUIterator == mModel->ruList().constEnd()) {
+            return NULL; // finished
+        }else {
+            mTreeEnd = &((*mRUIterator)->trees().back());
+            mCurrent = &((*mRUIterator)->trees().front());
+            mCurrent--;  // intialize this RU
+        }
+    }
+    return mCurrent;
+}
+
+
 Model::Model()
 {
     initialize();
@@ -171,6 +207,9 @@ void Model::applyPattern()
     QVector<Tree>::iterator tend;
     DebugTimer t("applyPattern()");
     foreach(RessourceUnit *ru, mRU) {
+
+        ru->newYear(); // reset state of some variables
+
         tend = ru->trees().end();
         // height dominance grid
         for (tit=ru->trees().begin(); tit!=tend; ++tit) {
@@ -201,4 +240,14 @@ void Model::readPattern()
 
 void Model::grow()
 {
+    QVector<Tree>::iterator tit;
+    QVector<Tree>::iterator tend;
+    DebugTimer t("grow()");
+    foreach(RessourceUnit *ru, mRU) {
+        tend = ru->trees().end();
+        // light concurrence influence
+        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
+            (*tit).grow(); // and finally grow
+        }
+    } // foreach
 }
