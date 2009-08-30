@@ -134,7 +134,7 @@ void Model::clear()
   */
 void Model::loadProject()
 {
-
+    DebugTimer dt("load project");
     GlobalSettings *g = GlobalSettings::instance();
     const XmlHelper &xml = g->settings();
     // fix file path
