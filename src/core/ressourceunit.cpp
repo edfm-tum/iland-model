@@ -24,4 +24,13 @@ Tree &RessourceUnit::newTree()
 void RessourceUnit::newYear()
 {
     mAggregatedWLA = 0.f;
+    mAggregatedLA = 0.f;
 }
+
+void RessourceUnit::beforeGrow()
+{
+    const double ruArea = 10000;
+    double LAI = mAggregatedLA / ruArea;
+    qDebug() << "LAI" << LAI;
+}
+

@@ -54,6 +54,8 @@ public:
     static float lafactor;
 
 private:
+    // helping functions
+    void calcBiomassCompartments();
     // state variables
     int mId;
     float mDbh;

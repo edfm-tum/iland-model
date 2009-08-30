@@ -36,6 +36,8 @@ void Species::setup()
     mBiomassStem.setExpression(stringVar("bmStem"));
     mBiomassRoot.setExpression(stringVar("bmRoot"));
 
+    mSpecificLeafArea = doubleVar("specificLeafArea");
+
     qDebug() << "biomass leaf. 10:->" << mBiomassLeaf.calculate(10.);
 
 }

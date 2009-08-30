@@ -188,6 +188,7 @@ void Model::runYear()
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();
     readPattern();
+
     grow();
 
 }
@@ -245,6 +246,7 @@ void Model::grow()
     DebugTimer t("grow()");
     foreach(RessourceUnit *ru, mRU) {
         tend = ru->trees().end();
+        ru->beforeGrow();
         // light concurrence influence
         for (tit=ru->trees().begin(); tit!=tend; ++tit) {
             (*tit).grow(); // and finally grow

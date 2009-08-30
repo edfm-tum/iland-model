@@ -289,7 +289,7 @@ void DebugTimer::showElapsed()
 {
     if (!m_shown) {
 
-        qDebug() << "Timer" << m_caption << ": " << elapsed();
+        qDebug() << "Timer" << m_caption << ":" << elapsed() << "ms";
     }
     m_shown=true;
 }

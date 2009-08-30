@@ -6,7 +6,7 @@
 #include "species.h"
 #include "ressourceunit.h"
 
-
+// static varaibles
 FloatGrid *Tree::mGrid = 0;
 FloatGrid *Tree::mHeightGrid = 0;
 int Tree::m_statPrint=0;
@@ -16,6 +16,7 @@ int Tree::m_nextId=0;
 float Tree::lafactor = 1.;
 int Tree::mDebugid = -1;
 
+// lifecycle
 Tree::Tree()
 {
     mDbh = 0;
@@ -46,11 +47,14 @@ void Tree::setup()
     // check stamp
    Q_ASSERT_X(mSpecies!=0, "Tree::setup()", "species is NULL");
    mStamp = mSpecies->stamp(mDbh, mHeight);
-   mLeafArea = 1.;
-   mLeafMass = 0.;
-   mStemMass = 0.;
-   mRootMass = 0.;
+
+   calcBiomassCompartments();
+
 }
+
+//////////////////////////////////////////////////
+////  Light functions (Pattern-stuff)
+//////////////////////////////////////////////////
 
 #define NOFULLDBG
 //#define NOFULLOPT
@@ -396,7 +400,7 @@ void Tree::readStampMul()
     if (mLRI > 1)
         mLRI = 1.f;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    mRU->addWLA(mLRI * mLeafArea);
+    mRU->addWLA(mLRI * mLeafArea, mLeafArea);
 }
 
 void Tree::resetStatistics()
@@ -407,11 +411,27 @@ void Tree::resetStatistics()
     m_nextId=1;
 }
 
+//////////////////////////////////////////////////
+////  Growth Functions
+//////////////////////////////////////////////////
+
+/// evaluate allometries and calculate LeafArea
+void Tree::calcBiomassCompartments()
+{
+    mLeafMass = mSpecies->biomassLeaf(mDbh);
+    mRootMass = mSpecies->biomassRoot(mDbh);
+    mStemMass = mSpecies->biomassStem(mDbh);
+    // LeafArea = LeafMass * specificLeafArea
+    mLeafArea = mLeafMass * mSpecies->specificLeafArea();
+}
+
 
 void Tree::grow()
 {
     // step 1: calculate radiation:
     double radiation = mRU->interceptedRadiation(mLRI * mLeafArea);
+
+    calcBiomassCompartments();
 
 }
 

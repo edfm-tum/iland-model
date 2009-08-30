@@ -24,6 +24,8 @@ public:
     double biomassStem(const double dbh) { return mBiomassStem.calculate(dbh); }
     double biomassRoot(const double dbh) { return mBiomassRoot.calculate(dbh); }
 
+    const double specificLeafArea() const { return mSpecificLeafArea; }
+
     const Stamp* stamp(const float dbh, const float height) const { return mStamp.stamp(dbh, height);}
     // maintenance
     void setup();
@@ -43,6 +45,7 @@ private:
     Expression mBiomassLeaf; ///< formula for calc. of leaf-biomass as f(dbh)
     Expression mBiomassStem; ///< formula for calc. of stem-biomass as f(dbh)
     Expression mBiomassRoot; ///< formula for calc. of biomass-biomass as f(dbh)
+    double mSpecificLeafArea; ///< conversion factor from kg OTS to m2 LeafArea
 };
 
 

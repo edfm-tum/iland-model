@@ -16,8 +16,9 @@ public:
     const QRectF &boundingBox() const { return mBoundingBox; }
     // actions
     void newYear(); ///< reset values for a new simulation year
+    void beforeGrow(); ///< called after the LIP/LIF calc, before growth of individual trees
     /// is called by each tree to aggregate the total weighted leaf area on a unit
-    void addWLA(const float WLA) { mAggregatedWLA += WLA; }
+    void addWLA(const float WLA, const float LA) { mAggregatedWLA += WLA; mAggregatedLA += LA; }
     double interceptedRadiation(const float WLA) const { return WLA / mAggregatedWLA; }
 
     // setup/maintenance
@@ -27,6 +28,7 @@ private:
     SpeciesSet *mSpeciesSet; ///< pointer to the species set for this RU
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
+    float mAggregatedLA; ///< sum of leafArea
     float mAggregatedWLA; ///< sum of lightResponseIndex * LeafArea for all trees
 
 };
