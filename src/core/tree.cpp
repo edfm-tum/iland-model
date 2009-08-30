@@ -421,7 +421,7 @@ void Tree::calcBiomassCompartments()
     mLeafMass = mSpecies->biomassLeaf(mDbh);
     mRootMass = mSpecies->biomassRoot(mDbh);
     mStemMass = mSpecies->biomassStem(mDbh);
-    // LeafArea = LeafMass * specificLeafArea
+    // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
     mLeafArea = mLeafMass * mSpecies->specificLeafArea();
 }
 
