@@ -69,6 +69,7 @@ private:
     // statistics
     static int m_statPrint;
     static int m_statAboveZ;
+    static int m_statCreated;
     static int m_nextId;
 };
 

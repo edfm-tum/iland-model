@@ -122,7 +122,7 @@ void LightRoom::calculateFullGrid()
 
     while (v!=vend) {
         pindex = m_2dvalues.indexOf(v);
-        coord = m_2dvalues.cellCoordinates(pindex);
+        coord = m_2dvalues.cellCenterPoint(pindex);
         double hor_distance = sqrt(coord.x()*coord.x() + coord.y()*coord.y());
 
         for (z=0;z<m_countZ && z*m_cellsize <= maxh;z++) {

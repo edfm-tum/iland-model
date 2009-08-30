@@ -1,17 +1,15 @@
 /** @class Model
   Model is the main model container.
   */
+#include "global.h"
+#include "model.h"
+
+#include "xmlhelper.h"
+#include "ressourceunit.h"
+#include "speciesset.h"
 
 #include <QtCore>
 #include <QtXml>
-
-#include "global.h"
-#include "xmlhelper.h"
-
-#include "model.h"
-
-#include "ressourceunit.h"
-#include "speciesset.h"
 
 Model::Model()
 {
@@ -50,6 +48,26 @@ void Model::setupSpace()
     mHeightGrid = new FloatGrid(total_grid, cellSize*5);
     mGridList.push_back(mHeightGrid); // could be solved better...
     mHeightGrid->initialize(0.f); // zero grid
+
+    // simple case: create ressource units in a regular grid.
+    mRUMap.clear();
+    if (xml.hasNode("world.ressourceUnitsAsGrid")) {
+        mRUMap.setup(QRectF(0., 0., width, height),100.);
+        RessourceUnit **p=mRUMap.begin();
+        RessourceUnit *new_ru;
+        mRU.first()->setBoundingBox(QRectF(0., 0., 100., 100.)); // the first
+        *p = mRU.first(); // store first RU in grid.
+        p++; // no need to create the first...
+        for (; p!=mRUMap.end(); ++p) {
+            QRectF r = mRUMap.cellRect(mRUMap.indexOf(p));
+            new_ru = new RessourceUnit();
+            mRU.append(new_ru); // store in list
+            new_ru->setBoundingBox(r);
+            *p = new_ru; // store in grid
+        }
+        qDebug() << "created a grid of RessourceUnits: count=" << mRU.count();
+
+    }
 }
 
 
@@ -105,4 +123,27 @@ void Model::loadProject()
     mRU.push_back(ru);
 
     setupSpace();
+}
+
+
+RessourceUnit *Model::ru(QPointF &coord)
+{
+    if (!mRUMap.isEmpty() && mRUMap.coordValid(coord))
+        return mRUMap.valueAt(coord);
+    return ru(); // default RU if only one created
+}
+
+void Model::beforeRun()
+{
+    // initialize stands
+}
+
+void Model::runYear()
+{
+    // process a cycle
+}
+
+void Model::afterStop()
+{
+    // do some cleanup
 }

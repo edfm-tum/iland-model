@@ -11,8 +11,8 @@ class IException : public std::runtime_error {
     ~IException () throw () {}
    IException() : std::runtime_error("iLand model exception.") { }
    IException(const QString& msg) : std::runtime_error("iLand model exception.") {mMsg += msg;}
-   QString asString() const { return mMsg.join("\n"); }
-   QStringList asList() const { return mMsg; }
+   QString toString() const { return mMsg.join("\n"); }
+   QStringList toList() const { return mMsg; }
 private:
     QStringList mMsg;
 };

@@ -4,7 +4,6 @@
 QT += xml
 QT += script
 QT += sql
-
 TARGET = fonstudio
 TEMPLATE = app
 
@@ -34,7 +33,8 @@ SOURCES += main.cpp \
     ../core/speciesset.cpp \
     ../core/model.cpp \
     ../core/ressourceunit.cpp \
-    ../tools/xmlhelper.cpp
+    ../tools/xmlhelper.cpp \
+    ../core/modelcontroller.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
@@ -56,6 +56,7 @@ HEADERS += mainwindow.h \
     ../core/speciesset.h \
     ../core/model.h \
     ../core/ressourceunit.h \
-    ../tools/xmlhelper.h
+    ../tools/xmlhelper.h \
+    ../core/modelcontroller.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

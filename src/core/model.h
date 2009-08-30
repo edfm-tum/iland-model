@@ -4,22 +4,25 @@
 #include <QtXml>
 
 #include "global.h"
-#include "globalsettings.h"
-#include "grid.h"
-#include "helper.h"
-#include "xmlhelper.h"
-#include "speciesset.h"
-#include "species.h"
-#include "ressourceunit.h"
 
+#include "grid.h"
+
+
+class RessourceUnit;
+class SpeciesSet;
 
 class Model
 {
 public:
     Model();
     ~Model();
-    // access
+    // start/stop/run
+    void beforeRun(); ///< initializations
+    void runYear(); ///< run a single year
+    void afterStop(); ///< finish and cleanup
+    // access to elements
     RessourceUnit *ru() { return mRU.front(); }
+    RessourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
     // global grids
     FloatGrid *grid() { return mGrid; }
     FloatGrid *heightGrid() { return mHeightGrid; }
@@ -34,6 +37,8 @@ private:
 
     /// container holding all ressource units
     QList<RessourceUnit*> mRU;
+    /// grid specifying a map of RessourceUnits
+    Grid<RessourceUnit*> mRUMap;
     /// container holding all species sets
     QList<SpeciesSet*> mSpeciesSets;
     // global grids...

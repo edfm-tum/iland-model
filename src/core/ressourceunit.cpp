@@ -12,3 +12,10 @@ RessourceUnit::RessourceUnit()
 {
     mSpeciesSet = 0;
 }
+
+Tree &RessourceUnit::newTree()
+{
+    // start simple: just append to the vector...
+    mTrees.append(Tree());
+    return mTrees.back();
+}

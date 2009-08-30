@@ -10,6 +10,7 @@ FloatGrid *Tree::m_grid = 0;
 FloatGrid *Tree::m_dominanceGrid = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
+int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 float Tree::lafactor = 1.;
 int Tree::m_debugid = -1;
@@ -20,6 +21,7 @@ Tree::Tree()
     m_Height = 0;
     m_species = 0;
     m_id = m_nextId++;
+    m_statCreated++;
 }
 
 /** get distance and direction between two points.
@@ -396,6 +398,7 @@ double Tree::readStampMul()
 void Tree::resetStatistics()
 {
     m_statPrint=0;
+    m_statCreated=0;
     m_statAboveZ=0;
     m_nextId=1;
 }

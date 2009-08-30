@@ -28,12 +28,12 @@ public:
 private:
     // setup
     void setupModel();
+    void readwriteCycle();
     Model *mModel;
     void addTrees(const double dbh, const int count);
     Ui::MainWindowClass *ui;
     FloatGrid* mGrid; // light grid
     FloatGrid *mDomGrid; // dominance grid
-    std::vector<Tree> mTrees;
     ImageStamp mStamp;
     int m_gfxtype;
     float m_pixelpercell;
