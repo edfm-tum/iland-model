@@ -430,6 +430,7 @@ void Tree::grow()
 {
     // step 1: calculate radiation:
     double radiation = mRU->interceptedRadiation(mLRI * mLeafArea);
+    double GPP_per_rad = 0.;
 
     calcBiomassCompartments();
 

@@ -72,6 +72,7 @@ private:
     float mLRI; // resulting lightRessourceIndex
     // Stamp, Species, Ressource Unit
     const Stamp *mStamp;
+
     Species *mSpecies;
     RessourceUnit *mRU;
 

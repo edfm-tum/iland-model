@@ -13,12 +13,13 @@ class Stamp;
 class Species
 {
 public:
-    Species(SpeciesSet *set) { mSet = set; }
+    Species(SpeciesSet *set) { mSet = set; mIndex=set->count(); }
     // properties
     /// @property id 4-character unique identification of the tree species
-    const QString &id() { return mId; }
+    const QString &id() const { return mId; }
     /// the full name (e.g. Picea Abies) of the species
-    const QString &name() { return mName; }
+    const QString &name() const { return mName; }
+    const int index() const { return mIndex; } ///< unique index of species within current set
     // calculations: allometries
     double biomassLeaf(const double dbh) { return mBiomassLeaf.calculate(dbh); }
     double biomassStem(const double dbh) { return mBiomassStem.calculate(dbh); }
@@ -41,6 +42,7 @@ private:
     StampContainer mStamp;
     QString mId;
     QString mName;
+    int mIndex; ///< internal index within the SpeciesSet
     // Allometric Functions (use expressions)
     Expression mBiomassLeaf; ///< formula for calc. of leaf-biomass as f(dbh)
     Expression mBiomassStem; ///< formula for calc. of stem-biomass as f(dbh)

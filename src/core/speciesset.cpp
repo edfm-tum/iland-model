@@ -21,6 +21,13 @@ void SpeciesSet::clear()
     mSpecies.clear();
 }
 
+const Species *SpeciesSet::species(const int &index)
+{
+    foreach(Species *s, mSpecies)
+        if (s->index() == index)
+            return s;
+    return NULL;
+}
 
 /** loads active species from a database table and creates/setups the species.
     The function uses the global database-connection.

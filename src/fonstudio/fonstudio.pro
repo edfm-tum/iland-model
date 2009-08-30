@@ -35,7 +35,8 @@ SOURCES += main.cpp \
     ../core/ressourceunit.cpp \
     ../tools/xmlhelper.cpp \
     ../core/modelcontroller.cpp \
-    ../core/standloader.cpp
+    ../core/standloader.cpp \
+    ../core/ressourceunitspecies.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
@@ -59,6 +60,7 @@ HEADERS += mainwindow.h \
     ../core/ressourceunit.h \
     ../tools/xmlhelper.h \
     ../core/modelcontroller.h \
-    ../core/standloader.h
+    ../core/standloader.h \
+    ../core/ressourceunitspecies.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
