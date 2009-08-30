@@ -6,21 +6,21 @@
 #include "species.h"
 
 
-FloatGrid *Tree::m_grid = 0;
-FloatGrid *Tree::m_dominanceGrid = 0;
+FloatGrid *Tree::mGrid = 0;
+FloatGrid *Tree::mHeightGrid = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 float Tree::lafactor = 1.;
-int Tree::m_debugid = -1;
+int Tree::mDebugid = -1;
 
 Tree::Tree()
 {
-    m_Dbh = 0;
-    m_Height = 0;
-    m_species = 0;
-    m_id = m_nextId++;
+    mDbh = 0;
+    mHeight = 0;
+    mSpecies = 0;
+    mId = m_nextId++;
     m_statCreated++;
 }
 
@@ -39,11 +39,11 @@ float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAng
 
 void Tree::setup()
 {
-    if (m_Dbh<=0 || m_Height<=0)
+    if (mDbh<=0 || mHeight<=0)
         return;
     // check stamp
-   Q_ASSERT_X(m_species!=0, "Tree::setup()", "species is NULL");
-   m_stamp = m_species->stamp(m_Dbh, m_Height);
+   Q_ASSERT_X(mSpecies!=0, "Tree::setup()", "species is NULL");
+   mStamp = mSpecies->stamp(mDbh, mHeight);
 }
 
 #define NOFULLDBG
@@ -104,34 +104,32 @@ void Tree::applyStamp()
 
 void Tree::applyStamp()
 {
-    Q_ASSERT(m_grid!=0);
-    if (!m_stamp)
-        return;
+    Q_ASSERT(mGrid!=0 && mStamp!=0 && mRU!=0);
 
-    QPoint pos = m_grid->indexAt(m_Position);
-    int offset = m_stamp->offset();
+    QPoint pos = mGrid->indexAt(mPosition);
+    int offset = mStamp->offset();
     pos-=QPoint(offset, offset);
 
     float local_dom; // height of Z* on the current position
     int x,y;
     float value;
-    int gr_stamp = m_stamp->size();
+    int gr_stamp = mStamp->size();
     int grid_x, grid_y;
     float *grid_value;
-    if (!m_grid->isIndexValid(pos) || !m_grid->isIndexValid(pos+QPoint(gr_stamp, gr_stamp))) {
+    if (!mGrid->isIndexValid(pos) || !mGrid->isIndexValid(pos+QPoint(gr_stamp, gr_stamp))) {
         // todo: in this case we should use another algorithm!!!
         return;
     }
 
     for (y=0;y<gr_stamp; ++y) {
         grid_y = pos.y() + y;
-        grid_value = m_grid->ptr(pos.x(), grid_y);
+        grid_value = mGrid->ptr(pos.x(), grid_y);
         for (x=0;x<gr_stamp;++x) {
             // suppose there is no stamping outside
             grid_x = pos.x() + x;
 
-            local_dom = m_dominanceGrid->valueAtIndex(grid_x/5, grid_y/5);
-            value = (*m_stamp)(x,y); // stampvalue
+            local_dom = mHeightGrid->valueAtIndex(grid_x/5, grid_y/5);
+            value = (*mStamp)(x,y); // stampvalue
             value = 1. - value*lafactor / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
 
@@ -188,10 +186,10 @@ void Tree::heightGrid_old()
 void Tree::heightGrid()
 {
     // height of Z*
-    const float cellsize = m_dominanceGrid->cellsize();
+    const float cellsize = mHeightGrid->cellsize();
 
-    QPoint p = m_dominanceGrid->indexAt(m_Position); // pos of tree on height grid
-    QPoint competition_grid = m_grid->indexAt(m_Position);
+    QPoint p = mHeightGrid->indexAt(mPosition); // pos of tree on height grid
+    QPoint competition_grid = mGrid->indexAt(mPosition);
 
     int index_eastwest = competition_grid.x() % 5; // 4: very west, 0 east edge
     int index_northsouth = competition_grid.y() % 5; // 4: northern edge, 0: southern edge
@@ -211,7 +209,7 @@ void Tree::heightGrid()
     */
 
 
-    int ringcount = int(floor(m_Height / cellsize)) + 1;
+    int ringcount = int(floor(mHeight / cellsize)) + 1;
     int ix, iy;
     int ring;
     QPoint pos;
@@ -221,12 +219,12 @@ void Tree::heightGrid()
         for (iy=-ringcount; iy<=+ringcount; iy++) {
         ring = qMax(abs(ix), abs(iy));
         QPoint pos(ix+p.x(), iy+p.y());
-        if (m_dominanceGrid->isIndexValid(pos)) {
-            float &rHGrid = m_dominanceGrid->valueAtIndex(pos);
-            if (rHGrid > m_Height) // skip calculation if grid is higher than tree
+        if (mHeightGrid->isIndexValid(pos)) {
+            float &rHGrid = mHeightGrid->valueAtIndex(pos);
+            if (rHGrid > mHeight) // skip calculation if grid is higher than tree
                 continue;
             int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
-            hdom = m_Height - dist[direction];
+            hdom = mHeight - dist[direction];
             if (ring>1)
                 hdom -= (ring-1)*10;
 
@@ -237,12 +235,12 @@ void Tree::heightGrid()
 
 double Tree::readStamp()
 {
-    if (!m_stamp)
+    if (!mStamp)
         return 0.;
-    const Stamp *stamp = m_stamp->reader();
+    const Stamp *stamp = mStamp->reader();
     if (!stamp)
         return 0.;
-    QPoint pos = m_grid->indexAt(m_Position);
+    QPoint pos = mGrid->indexAt(mPosition);
     int offset = stamp->offset();
     pos-=QPoint(offset, offset);
     QPoint p;
@@ -252,31 +250,31 @@ double Tree::readStamp()
     for (x=0;x<stamp->size();++x) {
         for (y=0;y<stamp->size(); ++y) {
            p = pos + QPoint(x,y);
-           if (m_grid->isIndexValid(p))
-               sum += m_grid->valueAtIndex(p) * (*stamp)(x,y);
+           if (mGrid->isIndexValid(p))
+               sum += mGrid->valueAtIndex(p) * (*stamp)(x,y);
         }
     }
-    float eigenvalue = m_stamp->readSum() * lafactor;
-    mImpact = sum - eigenvalue;// additive
-    float dom_height = (*m_dominanceGrid)[m_Position];
+    float eigenvalue = mStamp->readSum() * lafactor;
+    mLRI = sum - eigenvalue;// additive
+    float dom_height = (*mHeightGrid)[mPosition];
     if (dom_height>0.)
-       mImpact = mImpact / dom_height;
+       mLRI = mLRI / dom_height;
 
     //mImpact = sum + eigenvalue;// multiplicative
     // read dominance field...
 
-    if (dom_height < m_Height) {
+    if (dom_height < mHeight) {
         // if tree is higher than Z*, the dominance height
         // a part of the crown is in "full light".
         // total value = zstar/treeheight*value + 1-zstar/height
         // reformulated to:
-        mImpact =  mImpact * dom_height/m_Height ;
+        mLRI =  mLRI * dom_height/mHeight ;
         m_statAboveZ++;
     }
-    if (fabs(mImpact < 0.000001))
-        mImpact = 0.f;
-    qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue << "Impact" << mImpact;
-    return mImpact;
+    if (fabs(mLRI < 0.000001))
+        mLRI = 0.f;
+    qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue << "Impact" << mLRI;
+    return mLRI;
 }
 
 /*
@@ -338,15 +336,15 @@ double Tree::readStampMul()
 
 double Tree::readStampMul()
 {
-    if (!m_stamp)
+    if (!mStamp)
         return 0.;
-    const Stamp *reader = m_stamp->reader();
+    const Stamp *reader = mStamp->reader();
     if (!reader)
         return 0.;
-    QPoint pos_reader = m_grid->indexAt(m_Position);
+    QPoint pos_reader = mGrid->indexAt(mPosition);
 
     int offset_reader = reader->offset();
-    int offset_writer = m_stamp->offset();
+    int offset_writer = mStamp->offset();
     int d_offset = offset_writer - offset_reader; // offset on the *stamp* to the crown-cells
 
     QPoint pos_writer=pos_reader - QPoint(offset_writer, offset_writer);
@@ -364,14 +362,14 @@ double Tree::readStampMul()
     int rx = pos_reader.x();
     int ry = pos_reader.y();
     for (y=0;y<reader_size; ++y, ++ry) {
-        grid_value = m_grid->ptr(rx, ry);
+        grid_value = mGrid->ptr(rx, ry);
         for (x=0;x<reader_size;++x) {
 
             //p = pos_reader + QPoint(x,y);
             //if (m_grid->isIndexValid(p)) {
-            local_dom = m_dominanceGrid->valueAtIndex((rx+x)/5, ry/5);
+            local_dom = mHeightGrid->valueAtIndex((rx+x)/5, ry/5);
             //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
-            own_value = 1. - m_stamp->offsetValue(x,y,d_offset)*lafactor /local_dom; // old: dom_height;
+            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*lafactor /local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value++ / own_value; // remove impact of focal tree
             //if (value>0.)
@@ -380,7 +378,7 @@ double Tree::readStampMul()
             //} // isIndexValid
         }
     }
-    mImpact = sum;
+    mLRI = sum;
     // read dominance field...
     // this applies only if some trees are potentially *higher* than the dominant height grid
     //if (dom_height < m_Height) {
@@ -389,10 +387,10 @@ double Tree::readStampMul()
     //    m_statAboveZ++;
     //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
     //}
-    if (mImpact > 1)
-        mImpact = 1.f;
+    if (mLRI > 1)
+        mLRI = 1.f;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    return mImpact;
+    return mLRI;
 }
 
 void Tree::resetStatistics()

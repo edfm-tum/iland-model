@@ -8,6 +8,7 @@
 #include "lightroom.h"
 
 #include "model.h"
+#include "standloader.h"
 #include "stampcontainer.h"
 #include "ressourceunit.h"
 #include "speciesset.h"
@@ -17,8 +18,6 @@
 
 #include "paintarea.h"
 
-QStringList picusSpeciesIds = QStringList() << "0" << "17";
-QStringList iLandSpeciesIds = QStringList() << "piab" << "fasy";
 
 // global settings
 QDomDocument xmldoc;
@@ -157,69 +156,6 @@ void MainWindow::on_applyXML_clicked()
 
 }
 
-/// load a Picus ini file formatted file.
-void MainWindow::loadPicusIniFile(const QString &fileName)
-{
-    RessourceUnit *ru = mModel->ru();
-    SpeciesSet *speciesSet = mModel->ru()->speciesSet(); // of default RU
-    QString text = Helper::loadTextFile(fileName);
-    if (text.isEmpty()) {
-        qDebug() << "file not found: " + fileName;
-        return;
-    }
-
-    // cut out the <trees> </trees> part....
-    QRegExp rx(".*<trees>(.*)</trees>.*");
-    rx.indexIn(text, 0);
-    if (rx.capturedTexts().count()<1)
-        return;
-    text = rx.cap(1).trimmed();
-    QStringList lines=text.split('\n');
-    if (lines.count()<2)
-        return;
-    char sep='\t';
-    if (!lines[0].contains(sep))
-        sep=';';
-    QStringList headers = lines[0].split(sep);
-    //int iSpecies = headers.indexOf("species");
-    //int iCount = headers.indexOf("count");
-    int iX = headers.indexOf("x");
-    int iY = headers.indexOf("y");
-    int iBhd = headers.indexOf("bhdfrom");
-    int iHeight = headers.indexOf("treeheight");
-    int iSpecies = headers.indexOf("species");
-
-    for (int i=1;i<lines.count();i++) {
-        QString &line = lines[i];
-        //qDebug() << "line" << i << ":" << line;
-        Tree &tree = ru->newTree();
-        QPointF f;
-        if (iX>=0 && iY>=0) {
-           f.setX( line.section(sep, iX, iX).toDouble() );
-           f.setY( line.section(sep, iY, iY).toDouble() );
-           tree.setPosition(f);
-        }
-        if (iBhd>=0)
-            tree.setDbh(line.section(sep, iBhd, iBhd).toDouble());
-        if (tree.dbh() < 5)
-            continue; // 5cm: lower threshold for the moment
-        if (iHeight>=0)
-            tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
-
-        if (iSpecies>=0) {
-            int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
-            QString speciesid="piab";
-            if (idx>0)
-                speciesid = iLandSpeciesIds[idx];
-            Species *s = speciesSet->species(speciesid);
-            tree.setSpecies(s);
-        }
-
-        tree.setup();
-    }
-    qDebug() << "loaded init-file contained" << lines.count() <<"lines.";
-    //qDebug() << "lines: " << lines;
-}
 
 void MainWindow::on_saveFile_clicked()
 {
@@ -235,6 +171,9 @@ void MainWindow::readwriteCycle()
 
     if (!mModel || !mModel->ru())
         return;
+    mModel->runYear();
+
+    /*
     RessourceUnit *ru = mModel->ru();
     QVector<Tree> &mTrees = ru->trees();
     if (mTrees.size()==0 || !mGrid)
@@ -275,6 +214,7 @@ void MainWindow::readwriteCycle()
     t_print.showElapsed();
 
     //qDebug() << Tree::statAboveZ() << "above dominance grid";
+    */
     ui->PaintWidget->update(); // repaint...
 
 }
@@ -358,7 +298,7 @@ QString MainWindow::dumpTreelist()
                 .arg(tree->position().y())
                 .arg(tree->dbh())
                 .arg(tree->height())
-                .arg(tree->impact());
+                .arg(tree->lightRessourceIndex());
     }
     QString resStr = result.join("\n");
     return resStr;
@@ -465,7 +405,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
             QPointF pos = tit->position();
             QPoint p = vp.toScreen(pos);
-            value = tit->impact();
+            value = tit->lightRessourceIndex();
             fill_color = Helper::colorFromValue(value, 0., 1., true);
             painter.setBrush(fill_color);
             int diameter = qMax(2,vp.meterToPixel( tit->dbh()/100. * 5.));
@@ -522,13 +462,13 @@ void MainWindow::mouseClick(const QPoint& pos)
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         if(distance(tit->position(),coord)<2) {
             Tree *p = &(*tit);
-            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->impact();
+            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightRessourceIndex();
             ui->treeChange->setProperty("tree", (int)p);
             ui->treeDbh->setValue(p->dbh());
             ui->treeHeight->setValue(p->height());
             ui->treePosX->setValue(p->position().x());
             ui->treePosY->setValue(p->position().y());
-            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->impact(),5));
+            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightRessourceIndex(),5));
             wantDrag=true;
             ui->PaintWidget->setCursor(Qt::SizeAllCursor);
             ui->PaintWidget->update();
@@ -836,22 +776,20 @@ void MainWindow::setupModel()
 
 void MainWindow::on_fonRun_clicked()
 {
-    setupModel();
-    QVector<Tree> &mTrees =  mModel->ru()->trees();
-    Tree::lafactor = 0.8;
-    // Load Trees
-    mTrees.clear();
-    QString fname = GlobalSettings::instance()->settings().value("treeinit","");
-    if (!QFile::exists(fname)) {
-        Helper::msg("init file does not exist:" + fname);
-        return;
+    try {
+        setupModel();
+        QVector<Tree> &mTrees =  mModel->ru()->trees();
+        Tree::lafactor = 0.8;
+        // Load Trees
+        mTrees.clear();
+
+        mModel->beforeRun(); // load stand
+
+        // start first cycle...
+        readwriteCycle();
+    } catch(const IException &e) {
+        Helper::msg(e.toString());
     }
-
-    loadPicusIniFile(fname);
-    qDebug() << mTrees.size() << "trees loaded.";
-
-    // start first cycle...
-    readwriteCycle();
 }
 
 void MainWindow::on_lrProcess_clicked()
@@ -1141,14 +1079,18 @@ void MainWindow::on_execManyStands_clicked()
     QString inFile = xmlAuto.firstChildElement("stands").text();
     qDebug() << "standlist:" << inFile << "inpath:"<<inPath << "save to:"<<outPath;
     QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', QString::SkipEmptyParts);
+
+    StandLoader loader(mModel);
+
     foreach (QString file, fileList) {
         file = inPath + "\\" + file;
         qDebug() << "processing" << file;
         mTrees.clear();
-        loadPicusIniFile(file);
+        loader.loadFromPicus(file);
+        // do a cycle...
+        readwriteCycle();
 
-        // start a first cycle...
-        on_stampTrees_clicked();
+        // create output file
         QFileInfo fi(file);
         QString outFileName = QString("%1\\out_%2.csv").arg(outPath, fi.baseName());
         Helper::saveToTextFile(outFileName, dumpTreelist() );

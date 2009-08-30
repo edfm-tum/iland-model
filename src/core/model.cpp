@@ -5,8 +5,11 @@
 #include "model.h"
 
 #include "xmlhelper.h"
+#include "helper.h"
 #include "ressourceunit.h"
 #include "speciesset.h"
+#include "standloader.h"
+#include "tree.h"
 
 #include <QtCore>
 #include <QtXml>
@@ -50,16 +53,16 @@ void Model::setupSpace()
     mHeightGrid->initialize(0.f); // zero grid
 
     // simple case: create ressource units in a regular grid.
-    mRUMap.clear();
+    mRUmap.clear();
     if (xml.hasNode("world.ressourceUnitsAsGrid")) {
-        mRUMap.setup(QRectF(0., 0., width, height),100.);
-        RessourceUnit **p=mRUMap.begin();
+        mRUmap.setup(QRectF(0., 0., width, height),100.);
+        RessourceUnit **p=mRUmap.begin();
         RessourceUnit *new_ru;
         mRU.first()->setBoundingBox(QRectF(0., 0., 100., 100.)); // the first
         *p = mRU.first(); // store first RU in grid.
         p++; // no need to create the first...
-        for (; p!=mRUMap.end(); ++p) {
-            QRectF r = mRUMap.cellRect(mRUMap.indexOf(p));
+        for (; p!=mRUmap.end(); ++p) {
+            QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
             new_ru = new RessourceUnit();
             mRU.append(new_ru); // store in list
             new_ru->setBoundingBox(r);
@@ -128,22 +131,74 @@ void Model::loadProject()
 
 RessourceUnit *Model::ru(QPointF &coord)
 {
-    if (!mRUMap.isEmpty() && mRUMap.coordValid(coord))
-        return mRUMap.valueAt(coord);
+    if (!mRUmap.isEmpty() && mRUmap.coordValid(coord))
+        return mRUmap.valueAt(coord);
     return ru(); // default RU if only one created
 }
 
 void Model::beforeRun()
 {
     // initialize stands
+    DebugTimer loadtrees("load trees");
+    StandLoader loader(this);
+    loader.processInit();
+
+
 }
 
 void Model::runYear()
 {
     // process a cycle
+    Tree::setGrid(mGrid, mHeightGrid);
+    applyPattern();
+    readPattern();
+    grow();
+
 }
 
 void Model::afterStop()
 {
     // do some cleanup
+}
+
+void Model::applyPattern()
+{
+    // intialize grids...
+    mGrid->initialize(1.);
+    mHeightGrid->initialize(0.);
+
+    QVector<Tree>::iterator tit;
+    QVector<Tree>::iterator tend;
+    DebugTimer t("applyPattern()");
+    foreach(RessourceUnit *ru, mRU) {
+        tend = ru->trees().end();
+        // height dominance grid
+        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
+            (*tit).heightGrid(); // just do it ;)
+        }
+
+        // light concurrence influence
+        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
+            (*tit).applyStamp(); // just do it ;)
+        }
+
+    } // foreach
+}
+
+void Model::readPattern()
+{
+    QVector<Tree>::iterator tit;
+    QVector<Tree>::iterator tend;
+    DebugTimer t("readPattern()");
+    foreach(RessourceUnit *ru, mRU) {
+        tend = ru->trees().end();
+        // light concurrence influence
+        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
+            (*tit).readStampMul(); // multipliactive approach
+        }
+    } // foreach
+}
+
+void Model::grow()
+{
 }

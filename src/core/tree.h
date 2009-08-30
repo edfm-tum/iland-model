@@ -4,38 +4,39 @@
 
 #include "grid.h"
 
-class ImageStamp;
 class Species;
 class Stamp;
+class RessourceUnit;
 
 class Tree
 {
 public:
     Tree();
-    void setId(const int id) { m_id=id;}
-    const int id() const { return m_id; }
-    void setPosition(const QPointF pos) { m_Position=pos; }
-    const QPointF position() const { return m_Position; }
+    void setId(const int id) { mId=id;}
+    const int id() const { return mId; }
+    void setPosition(const QPointF pos) { mPosition=pos; }
+    const QPointF position() const { return mPosition; }
 
-    void setDbh(const float dbh) { m_Dbh=dbh; }
-    const float dbh() const { return m_Dbh; }
+    void setDbh(const float dbh) { mDbh=dbh; }
+    const float dbh() const { return mDbh; }
 
-    void setHeight(const float height) { m_Height=height; }
-    const float height() const { return m_Height; }
+    void setHeight(const float height) { mHeight=height; }
+    const float height() const { return mHeight; }
 
-    const float impact() const { return mImpact; }
-    const float impactRadius() const { return mImpactRadius; }
+    const float lightRessourceIndex() const { return mLRI; }
 
-    const Species* species() const { return m_species; }
-    void setSpecies(Species *ts) { m_species=ts; }
+    const Species* species() const { return mSpecies; }
+    void setSpecies(Species *ts) { mSpecies=ts; }
+    const RessourceUnit *ru() const { return mRU; }
+    void setRU(RessourceUnit *ru) { mRU = ru; }
 
     void setup();
 
-    void enableDebugging() { m_debugid = m_id; }
+    void enableDebugging() { mDebugid = mId; }
 
 
     // grid based stamp functions
-    static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { m_grid = gridToStamp; m_dominanceGrid = dominanceGrid; }
+    static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { mGrid = gridToStamp; mHeightGrid = dominanceGrid; }
     void applyStamp();
     double readStamp();
     double readStampMul();
@@ -44,27 +45,28 @@ public:
     // statistics
     static void resetStatistics();
     static const int statPrints() { return m_statPrint; }
-    static const int statAboveZ() { return m_statAboveZ; } ///< # of trees that are above Z*, i.e. the top is above the dominant height grid
+    static const int statCreated() { return m_statCreated; }
 
     static float lafactor;
 
 private:
-    bool isDebugging() { return m_id == m_debugid; }
-    int m_id;
-    float m_Dbh;
-    float m_Height;
-    QPointF m_Position;
-    float mOwnImpact;
-    float mImpactArea;
-    float mImpactRadius;
-    float mImpact;
+    bool isDebugging() { return mId == mDebugid; }
+    int mId;
+    float mDbh;
+    float mHeight;
+    QPointF mPosition;
+    //float mOwnImpact;
+    //float mImpactArea;
+    //float mImpactRadius;
+    float mLRI;
     // Stamp
-    const Stamp *m_stamp;
-    Species *m_species;
-    static FloatGrid *m_grid;
-    static FloatGrid *m_dominanceGrid;
+    const Stamp *mStamp;
+    Species *mSpecies;
+    RessourceUnit *mRU;
+    static FloatGrid *mGrid;
+    static FloatGrid *mHeightGrid;
     // debugging
-    static int m_debugid;
+    static int mDebugid;
 
     // statistics
     static int m_statPrint;

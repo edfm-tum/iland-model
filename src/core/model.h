@@ -26,6 +26,7 @@ public:
     // global grids
     FloatGrid *grid() { return mGrid; }
     FloatGrid *heightGrid() { return mHeightGrid; }
+    const Grid<RessourceUnit*> &RUgrid() { return mRUmap; }
 
     // setup/maintenance
     void clear(); ///< free ressources
@@ -35,10 +36,14 @@ private:
     void initialize(); ///< basic startup without creating a simulation
     void setupSpace(); ///< setup the "world"(spatial grids, ...), create ressource units
 
+    void applyPattern();
+    void readPattern();
+    void grow();
+
     /// container holding all ressource units
     QList<RessourceUnit*> mRU;
     /// grid specifying a map of RessourceUnits
-    Grid<RessourceUnit*> mRUMap;
+    Grid<RessourceUnit*> mRUmap;
     /// container holding all species sets
     QList<SpeciesSet*> mSpeciesSets;
     // global grids...
