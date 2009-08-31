@@ -49,6 +49,7 @@ void Tree::setup()
    mStamp = mSpecies->stamp(mDbh, mHeight);
 
    calcBiomassCompartments();
+   mNPPReserve = mLeafMass; // initial value
 
 }
 
@@ -432,16 +433,28 @@ void Tree::grow()
     double radiation = mRU->interceptedRadiation(mLRI * mLeafArea);
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
-    double raw_gpp_per_rad = mRU->ressourceUnitSpecies(mSpecies).rawGPPperRad();
-
+    double raw_gpp_per_rad = mRU->ressourceUnitSpecies(mSpecies).prod3PG().GPPperRad();
     // GPP (without aging-effect) [gC] / year
     double raw_gpp = raw_gpp_per_rad * radiation;
     /*
     if (mRU->index()==3) {
         qDebug() << "tree production: radiation: " << radiation << "gpp/rad:" << raw_gpp_per_rad << "gpp" << raw_gpp << "LRI:" << mLRI << "LeafArea:" << mLeafArea;
     }*/
+    // apply aging
+    double gpp = raw_gpp * 0.6; // aging
+    double npp = gpp * 0.47; // respiration loss
+
+    partitioning(npp);
 
     calcBiomassCompartments();
 
 }
+
+void Tree::partitioning(double npp)
+{
+    double harshness = mRU->ressourceUnitSpecies(mSpecies).prod3PG().harshness();
+    // add content of reserve pool
+    npp +=
+}
+
 

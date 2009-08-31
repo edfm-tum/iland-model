@@ -14,7 +14,7 @@ const double radMonth[] = {30., 80., 200., 350., 450., 500., 550., 400., 300., 1
 const double totalResponses[] = {0., 0.05, 0.4, 0.6, 0.4, 0.4, 0.6, 0.3, 0.2, 0.1, 0. ,0. };
 const double radYear = 3140.; // the sum of radMonth [MJ/m2]
 
-double Production3PG::calculate(RessourceUnitSpecies &rus)
+double Production3PG::calculate()
 {
     double month_gpp[12];
     double year_raw_gpp = 0.;
@@ -22,8 +22,11 @@ double Production3PG::calculate(RessourceUnitSpecies &rus)
         month_gpp[i] = radMonth[i] * 0.5 * totalResponses[i];
         year_raw_gpp += month_gpp[i];
     }
+    // calculate harshness factor
+    mHarshness = 0.5; // fake
     // PARutilized - fraction:.... to GPP:
     // year GPP/rad: gC / (yearly MJ/m2)
-    double year_gpp_per_rad = year_raw_gpp / radYear;
-    return year_gpp_per_rad;
+    mGPPperRad = year_raw_gpp / radYear;
+
+    return mGPPperRad;
 }

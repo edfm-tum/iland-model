@@ -55,6 +55,7 @@ public:
 private:
     // helping functions
     void calcBiomassCompartments();
+    void partitioning(const double &npp);
     // state variables
     int mId;
     float mDbh;

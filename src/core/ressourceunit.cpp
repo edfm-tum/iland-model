@@ -82,11 +82,10 @@ void RessourceUnit::production()
     QVector<RessourceUnitSpecies>::iterator i;
     QVector<RessourceUnitSpecies>::iterator iend = mRUSpecies.end();
 
-    Production3PG p3PG;
+
     double raw_gpp_per_rad;
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        raw_gpp_per_rad = p3PG.calculate( *i );
-        (*i).setRawGPPperRad(raw_gpp_per_rad);
+        (*i).prod3PG().calculate();
 //        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << raw_gpp_per_rad;
     }
 }
