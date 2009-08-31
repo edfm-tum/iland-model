@@ -14,8 +14,9 @@ class PaintArea : public QWidget
 signals:
      void needsPainting(QPainter &painter);
      void mouseClick(const QPoint &pos);
-     void mouseDrag(const QPoint &from, const QPoint &to);
+     void mouseDrag(const QPoint &from, const QPoint &to, Qt::MouseButton mouseButton);
      void mouseMove(const QPoint &pos);
+     void mouseWheel(const QPoint &pos, int wheel_steps);
 
  protected:
      void paintEvent(QPaintEvent *event);
@@ -23,6 +24,7 @@ signals:
      void mouseReleaseEvent ( QMouseEvent * event );
      void resizeEvent ( QResizeEvent * event );
      void mouseMoveEvent(QMouseEvent *event);
+     void wheelEvent ( QWheelEvent * event );
  private:
      QImage m_bitmap;
      QPoint m_lastDown;

@@ -314,8 +314,8 @@ void DebugTimer::start()
 const QPointF Viewport::toWorld(const QPoint pixel)
 {
     QPointF p;
-    p.setX( (pixel.x()- m_delta_worldtoscreen.x())/m_scale_worldtoscreen  );
-    p.setY( (m_screen.height() - pixel.y()- m_delta_worldtoscreen.y() )/m_scale_worldtoscreen  );
+    p.setX( pixel.x()/m_scale_worldtoscreen +  m_delta_worldtoscreen.x());
+    p.setY( (m_screen.height() - pixel.y()  )/m_scale_worldtoscreen + m_delta_worldtoscreen.y() );
     return p;
 
 }
@@ -324,22 +324,23 @@ const QPointF Viewport::toWorld(const QPoint pixel)
 const QPoint Viewport::toScreen(const QPointF p)
 {
     QPoint pixel;
-    pixel.setX( qRound( p.x()*m_scale_worldtoscreen + m_delta_worldtoscreen.x() ));
-    pixel.setY( m_screen.height()-1 -  qRound( p.y() * m_scale_worldtoscreen + m_delta_worldtoscreen.y() ));
+    pixel.setX( qRound( (p.x()-m_delta_worldtoscreen.x())* m_scale_worldtoscreen ) );
+    pixel.setY( m_screen.height() - 1 -  qRound( (p.y()-m_delta_worldtoscreen.y() ) * m_scale_worldtoscreen ));
     return pixel;
 }
 
 /// sets the screen rect; this also modifies the viewport.
 void Viewport::setScreenRect(const QRect &viewrect)
 {
-    m_screen = viewrect;
-    m_viewport = viewrect;
-    zoomToCenter(100.);
-    return;
+    if (m_screen!=viewrect) {
+        m_screen = viewrect;
+        m_viewport = viewrect;
+        zoomToAll();
+    }
 }
 
-/// zoom to the center of the screen; the zooming parameter percent is currently not supported!
-void Viewport::zoomToCenter(const double percent)
+/// show the full extent of the world.
+void Viewport::zoomToAll()
 {
     // calculate move/scale so that world-rect maps entirely onto screen
     double scale_x = m_screen.width() /  m_world.width(); // pixel per meter in x
@@ -347,17 +348,47 @@ void Viewport::zoomToCenter(const double percent)
     double scale = qMin(scale_x, scale_y);
     QPointF d;
     if (scale_x < scale_y) {
-        // x-axis is full; center in y-axis
-        d.setX(-m_world.left()*scale);
-        int pxworld = int(scale * m_world.height());
-        d.setY(-m_world.top()*scale + ((m_screen.height() - pxworld) / 2.));
-        //qDebug() << "worldheight" << pxworld << "delta" << d << "scale" << scale;
+        // x-axis fills the screen; center in y-axis
+        d.setX(m_world.left());
+        int py_mid = m_screen.height()/2;
+        double world_mid = m_world.center().y();
+        d.setY( world_mid - py_mid/scale );
     } else {
-        d.setY(-m_world.top()*scale);
-        int pxworld = int(scale * m_world.width());
-         d.setX(-m_world.left()*scale + ((m_screen.width() - pxworld) / 2.));
-         //qDebug() << "worldwidth" << pxworld << "delta" << d << "scale" << scale;
+        d.setY(m_world.top());
+        int px_mid = m_screen.width()/2;
+        double world_mid = m_world.center().x();
+        d.setX( world_mid - px_mid/scale );
     }
     m_delta_worldtoscreen = d;
     m_scale_worldtoscreen = scale;
+    m_viewport.setBottomLeft(toWorld(m_screen.topLeft()));
+    m_viewport.setTopRight(toWorld(m_screen.bottomRight()));
+}
+
+/// zoom using a factor of @p factor. Values > 1 means zoom out, < 1 zoom in. (factor=1 would have no effect).
+/// after zooming, the world-point under the mouse @p screen_point is still under the mouse.
+void Viewport::zoomTo(const QPoint &screen_point, const double factor)
+{
+    QPointF focus_point = toWorld(screen_point); // point under the mouse
+    QRectF moved = m_viewport;
+
+    moved.setWidth(moved.width() * factor);
+    moved.setHeight(moved.height() * factor);
+
+    m_scale_worldtoscreen /= factor;
+
+    // get scale/delta
+    QPointF new_focus = toWorld(screen_point);
+    m_delta_worldtoscreen -= (new_focus - focus_point);
+
+    m_viewport = moved;
+    //qDebug() <<"oldf"<< new_focus << "newf" << focus_point << "m_delta" << m_delta_worldtoscreen << "m_scale:" << m_scale_worldtoscreen << "viewport:"<<m_viewport;
+}
+
+/// move the viewport. @p screen_from and @p screen_to give mouse positions (in pixel) from dragging the mouse.
+void Viewport::moveTo(const QPoint &screen_from, const QPoint &screen_to)
+{
+    QPointF p1 = toWorld(screen_from);
+    QPointF p2 = toWorld(screen_to);
+    m_delta_worldtoscreen -= (p2-p1);
 }

@@ -127,12 +127,14 @@ class Viewport
 {
 public:
     Viewport(): m_viewAll(true), m_scale_worldtoscreen(1.) {}
-    Viewport(const QRectF worldrect, const QRect screenrect) { setWorldRect(worldrect); setScreenRect(screenrect); zoomToCenter(100.); }
+    Viewport(const QRectF worldrect, const QRect screenrect) { setWorldRect(worldrect); setScreenRect(screenrect); zoomToAll(); }
     const QPointF toWorld(const QPoint pixel);
     const QPoint toScreen(const QPointF p);
     const QRect toScreen(const QRectF world) { QRect r( toScreen(world.topLeft()), toScreen(world.bottomRight()) ); return r; }
     // zoom
-    void zoomToCenter(const double percent);
+    void zoomToAll();
+    void zoomTo(const QPoint &screen_point, const double factor);
+    void moveTo(const QPoint &screen_from, const QPoint &screen_to);
     // conversion of length
     const double pixelToMeter(const int pixel) { return pixel/m_scale_worldtoscreen; }
     const int meterToPixel(const double meter) { return qRound(meter * m_scale_worldtoscreen);}

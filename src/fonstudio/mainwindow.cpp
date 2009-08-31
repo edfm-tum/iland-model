@@ -103,10 +103,13 @@ MainWindow::MainWindow(QWidget *parent)
              this, SLOT(repaintArea(QPainter&)) );
     connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
              this, SLOT(mouseClick(const QPoint&)));
-    connect(ui->PaintWidget, SIGNAL(mouseDrag(QPoint,QPoint)),
-            this, SLOT(mouseDrag(const QPoint&, const QPoint &)));
+    connect(ui->PaintWidget, SIGNAL(mouseDrag(QPoint,QPoint,Qt::MouseButton)),
+            this, SLOT(mouseDrag(const QPoint&, const QPoint &, const Qt::MouseButton)));
     connect(ui->PaintWidget, SIGNAL(mouseMove(QPoint)),
             this, SLOT(mouseMove(const QPoint&)));
+    connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
+            this, SLOT(mouseWheel(const QPoint&, int)));
+
 
     ui->pbResults->setMenu(ui->menuOutput_menu);
 
@@ -341,7 +344,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QColor fill_color;
     float value;
 
-    if (show_fon && vp.meterToPixel(1) < 1) {
+    if (show_fon ) { // !=0: no sense!
         // start from each pixel and query value in grid for the pixel
         int x,y;
         int sizex = rect.width();
@@ -491,9 +494,23 @@ void MainWindow::mouseMove(const QPoint& pos)
     }
 }
 
-void MainWindow::mouseDrag(const QPoint& from, const QPoint &to)
+void MainWindow::mouseWheel(const QPoint& pos, int steps)
 {
+    qDebug() << "mouse-wheel" << steps;
+    vp.zoomTo(pos, qMax(1-(2*steps/10.),0.2));
+    ui->PaintWidget->update();
+}
+
+void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton button)
+{
+    qDebug() << "drag" << button;
     ui->PaintWidget->setCursor(Qt::CrossCursor);
+    // padding
+    if (button == Qt::MidButton) {
+        vp.moveTo(from, to);
+        ui->PaintWidget->update();
+        return;
+    }
     if (!wantDrag)
         return;
     qDebug() << "drag from" << from << "to" << to;

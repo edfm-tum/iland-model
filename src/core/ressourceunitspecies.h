@@ -9,10 +9,12 @@ class RessourceUnitSpecies
 public:
     RessourceUnitSpecies() : mSpecies(0), mRU(0) {}
     RessourceUnitSpecies(Species *species, RessourceUnit *ru) { mSpecies = species; mRU = ru; }
-    double utilizedPARFraction() const { return mPARutilizedFraction; }
-    void setUtilizedPARFraction(const double &fraction) { mPARutilizedFraction = fraction; }
+    double rawGPPperRad() const { return mRawGPPperRad; }
+    void setRawGPPperRad(const double &fraction) { mRawGPPperRad = fraction; }
+    const Species *species() const { return mSpecies; }
+    const RessourceUnit *ru() const { return mRU; }
 private:
-    double mPARutilizedFraction; ///< fraction of radiation that can be utilized by this Species on this RessourceUnit per year
+    double mRawGPPperRad;
     Species *mSpecies;
     RessourceUnit *mRU;
 };

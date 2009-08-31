@@ -9,11 +9,13 @@
 #include "ressourceunit.h"
 #include "speciesset.h"
 #include "species.h"
+#include "production3pg.h"
 
 
-RessourceUnit::RessourceUnit()
+RessourceUnit::RessourceUnit(const int index)
 {
     mSpeciesSet = 0;
+    mIndex = index;
 }
 
 /// set species and setup the species-per-RU-data
@@ -66,21 +68,26 @@ void RessourceUnit::production()
     const double k = 0.6;
     double interception_fraction = 1. - exp(-k * LAI);
     // calculate the amount of radiation available on this ressource unit
-    const double I_m2 = 1000; // incoming radiation per year per m2
+    const double I_year_m2 = 3140; // incoming radiation sum of year in MJ/m2*year
     // incoming: I for the RU area (only stocked!) and reduced with beer-lambert
-    mInterceptedRadiation = I_m2 * stockedRUArea * interception_fraction;
+    mInterceptedRadiation = I_year_m2 * stockedRUArea * interception_fraction;
     mIntercepted_per_WLA = mInterceptedRadiation / mAggregatedWLA;
 
-    qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 intercept per WLA: %3")
-            .arg(LAI).arg(interception_fraction)
-            .arg(mIntercepted_per_WLA)
-            .arg(mAggregatedWLA/mAggregatedLA);
+//    qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 intercept per WLA: %3")
+//            .arg(LAI).arg(interception_fraction)
+//            .arg(mIntercepted_per_WLA)
+//            .arg(mAggregatedWLA/mAggregatedLA);
 
     // invoke species specific calculation (3PG)
     QVector<RessourceUnitSpecies>::iterator i;
     QVector<RessourceUnitSpecies>::iterator iend = mRUSpecies.end();
+
+    Production3PG p3PG;
+    double raw_gpp_per_rad;
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        (*i).setUtilizedPARFraction(0.5);
+        raw_gpp_per_rad = p3PG.calculate( *i );
+        (*i).setRawGPPperRad(raw_gpp_per_rad);
+//        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << raw_gpp_per_rad;
     }
 }
 

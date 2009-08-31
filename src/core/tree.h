@@ -12,7 +12,6 @@ class Tree
 {
 public:
     Tree();
-    void setId(const int id) { mId=id;}
     const int id() const { return mId; }
     void setPosition(const QPointF pos) { mPosition=pos; }
     const QPointF position() const { return mPosition; }

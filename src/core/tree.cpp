@@ -428,9 +428,18 @@ void Tree::calcBiomassCompartments()
 
 void Tree::grow()
 {
-    // step 1: calculate radiation:
+    // step 1: get radiation from ressource unit: radiaton (MJ/tree/year) total intercepted radiation for this tree per year!
     double radiation = mRU->interceptedRadiation(mLRI * mLeafArea);
-    double GPP_per_rad = 0.;
+    // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
+
+    double raw_gpp_per_rad = mRU->ressourceUnitSpecies(mSpecies).rawGPPperRad();
+
+    // GPP (without aging-effect) [gC] / year
+    double raw_gpp = raw_gpp_per_rad * radiation;
+    /*
+    if (mRU->index()==3) {
+        qDebug() << "tree production: radiation: " << radiation << "gpp/rad:" << raw_gpp_per_rad << "gpp" << raw_gpp << "LRI:" << mLRI << "LeafArea:" << mLeafArea;
+    }*/
 
     calcBiomassCompartments();
 

@@ -29,7 +29,7 @@ void StandLoader::processInit()
     Tree::resetStatistics();
     if (forEachCell) {
         loadFromPicus(fileName); // load in initial grid cell
-        // we assume that all stands are equal...
+        // we assume that all stands are equal, so wie simply COPY the trees and modify them afterwards
         const Grid<RessourceUnit*> &ruGrid=mModel->RUgrid();
         RessourceUnit **p = ruGrid.begin();
         ++p; // skip the first...

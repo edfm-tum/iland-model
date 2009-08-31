@@ -98,9 +98,10 @@ void Model::setupSpace()
         *p = mRU.first(); // store first RU in grid.
         SpeciesSet *species_set = (*p)->speciesSet(); // copy the species sets
         p++; // no need to create the first...
+        int ru_index = 1;
         for (; p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-            new_ru = new RessourceUnit();
+            new_ru = new RessourceUnit(ru_index++);
             new_ru->setSpeciesSet(species_set);
             mRU.append(new_ru); // store in list
             new_ru->setBoundingBox(r);
@@ -159,7 +160,7 @@ void Model::loadProject()
     speciesSet->setup();
 
     // (2) RessourceUnits (including everything else).
-    RessourceUnit *ru = new RessourceUnit();
+    RessourceUnit *ru = new RessourceUnit(0);
     ru->setSpeciesSet(speciesSet);
     mRU.push_back(ru);
 
@@ -245,10 +246,16 @@ void Model::grow()
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator tend;
+    { DebugTimer t("growRU()");
+        foreach(RessourceUnit *ru, mRU) {
+            ru->production();
+        }
+    }
+
     DebugTimer t("grow()");
     foreach(RessourceUnit *ru, mRU) {
         tend = ru->trees().end();
-        ru->production();
+
         // light concurrence influence
         for (tit=ru->trees().begin(); tit!=tend; ++tit) {
             (*tit).grow(); // and finally grow
