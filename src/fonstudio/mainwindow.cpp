@@ -407,6 +407,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         AllTreeIterator treelist(mModel);
         Tree *tree;
         while (tree = treelist.next()) {
+            if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
+                continue;
+            }
             QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
             value = tree->lightRessourceIndex();
@@ -461,7 +464,7 @@ void MainWindow::mouseClick(const QPoint& pos)
     // test ressource units...
     RessourceUnit *ru = mModel->ru(coord);
     qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
-    QVector<Tree> &mTrees =  mModel->ru()->trees();
+    QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         if(distance(tit->position(),coord)<2) {

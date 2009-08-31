@@ -370,10 +370,9 @@ void Viewport::zoomToAll()
 void Viewport::zoomTo(const QPoint &screen_point, const double factor)
 {
     QPointF focus_point = toWorld(screen_point); // point under the mouse
-    QRectF moved = m_viewport;
 
-    moved.setWidth(moved.width() * factor);
-    moved.setHeight(moved.height() * factor);
+    m_viewport.setWidth(m_viewport.width() * factor);
+    m_viewport.setHeight(m_viewport.height() * factor);
 
     m_scale_worldtoscreen /= factor;
 
@@ -381,8 +380,10 @@ void Viewport::zoomTo(const QPoint &screen_point, const double factor)
     QPointF new_focus = toWorld(screen_point);
     m_delta_worldtoscreen -= (new_focus - focus_point);
 
-    m_viewport = moved;
-    //qDebug() <<"oldf"<< new_focus << "newf" << focus_point << "m_delta" << m_delta_worldtoscreen << "m_scale:" << m_scale_worldtoscreen << "viewport:"<<m_viewport;
+    m_viewport.setBottomLeft(toWorld(m_screen.topLeft()));
+    m_viewport.setTopRight(toWorld(m_screen.bottomRight()));
+
+    qDebug() <<"oldf"<< new_focus << "newf" << focus_point << "m_delta" << m_delta_worldtoscreen << "m_scale:" << m_scale_worldtoscreen << "viewport:"<<m_viewport;
 }
 
 /// move the viewport. @p screen_from and @p screen_to give mouse positions (in pixel) from dragging the mouse.
@@ -391,4 +392,17 @@ void Viewport::moveTo(const QPoint &screen_from, const QPoint &screen_to)
     QPointF p1 = toWorld(screen_from);
     QPointF p2 = toWorld(screen_to);
     m_delta_worldtoscreen -= (p2-p1);
+    // correct the viewport
+    m_viewport.setBottomLeft(toWorld(m_screen.topLeft()));
+    m_viewport.setTopRight(toWorld(m_screen.bottomRight()));
+}
+
+bool Viewport::isVisible(const QPointF &world_coord) const
+{
+    return m_viewport.contains(world_coord);
+}
+bool Viewport::isVisible(const QRectF &world_rect) const
+{
+    return m_viewport.contains(world_rect)
+            || m_viewport.intersects(world_rect);
 }

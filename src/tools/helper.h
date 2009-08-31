@@ -128,9 +128,14 @@ class Viewport
 public:
     Viewport(): m_viewAll(true), m_scale_worldtoscreen(1.) {}
     Viewport(const QRectF worldrect, const QRect screenrect) { setWorldRect(worldrect); setScreenRect(screenrect); zoomToAll(); }
+    // coordinate transformations
     const QPointF toWorld(const QPoint pixel);
     const QPoint toScreen(const QPointF p);
     const QRect toScreen(const QRectF world) { QRect r( toScreen(world.topLeft()), toScreen(world.bottomRight()) ); return r; }
+    // getters
+    const QRectF viewRect() const { return m_viewport; }
+    bool isVisible(const QPointF &world_coord) const;
+    bool isVisible(const QRectF &world_rect) const;
     // zoom
     void zoomToAll();
     void zoomTo(const QPoint &screen_point, const double factor);
