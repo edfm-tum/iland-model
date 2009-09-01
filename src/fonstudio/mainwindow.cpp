@@ -131,6 +131,8 @@ MainWindow::MainWindow(QWidget *parent)
     on_actionEdit_XML_settings_triggered();
     // update
 
+    qDebug() << "threadcount: " << QThread::idealThreadCount();
+
 }
 
 MainWindow::~MainWindow()

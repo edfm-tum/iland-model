@@ -201,51 +201,68 @@ void Model::afterStop()
     // do some cleanup
 }
 
+RessourceUnit* nc_applyPattern(RessourceUnit *unit)
+{
+    unit->newYear(); // reset state of some variables
+
+    QVector<Tree>::iterator tit;
+    QVector<Tree>::iterator tend = unit->trees().end();
+
+    // height dominance grid
+    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+        (*tit).heightGrid(); // just do it ;)
+    }
+
+    // light concurrence influence
+    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+        (*tit).applyStamp(); // just do it ;)
+    }
+    return unit;
+}
+
+RessourceUnit *nc_readPattern(RessourceUnit *unit)
+{
+    QVector<Tree>::iterator tit;
+    QVector<Tree>::iterator  tend = unit->trees().end();
+
+    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+        (*tit).readStampMul(); // multipliactive approach
+    }
+    return unit;
+}
+
+RessourceUnit *nc_grow(RessourceUnit *unit)
+{
+    QVector<Tree>::iterator tit;
+    QVector<Tree>::iterator  tend = unit->trees().end();
+
+    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+        (*tit).grow(); //
+    }
+    return unit;
+}
+
 void Model::applyPattern()
 {
+
+    DebugTimer t("applyPattern()");
     // intialize grids...
     mGrid->initialize(1.);
     mHeightGrid->initialize(0.);
 
-    QVector<Tree>::iterator tit;
-    QVector<Tree>::iterator tend;
-    DebugTimer t("applyPattern()");
-    foreach(RessourceUnit *ru, mRU) {
-
-        ru->newYear(); // reset state of some variables
-
-        tend = ru->trees().end();
-        // height dominance grid
-        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
-            (*tit).heightGrid(); // just do it ;)
-        }
-
-        // light concurrence influence
-        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
-            (*tit).applyStamp(); // just do it ;)
-        }
-
-    } // foreach
+    // multi-threaded apply
+    QtConcurrent::blockingMap(mRU,nc_applyPattern);
 }
 
 void Model::readPattern()
 {
-    QVector<Tree>::iterator tit;
-    QVector<Tree>::iterator tend;
     DebugTimer t("readPattern()");
-    foreach(RessourceUnit *ru, mRU) {
-        tend = ru->trees().end();
-        // light concurrence influence
-        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
-            (*tit).readStampMul(); // multipliactive approach
-        }
-    } // foreach
+    QtConcurrent::blockingMap(mRU, nc_readPattern);
+
 }
 
 void Model::grow()
 {
-    QVector<Tree>::iterator tit;
-    QVector<Tree>::iterator tend;
     { DebugTimer t("growRU()");
         foreach(RessourceUnit *ru, mRU) {
             ru->production();
@@ -253,12 +270,6 @@ void Model::grow()
     }
 
     DebugTimer t("grow()");
-    foreach(RessourceUnit *ru, mRU) {
-        tend = ru->trees().end();
+    QtConcurrent::blockingMap(mRU, nc_grow);
 
-        // light concurrence influence
-        for (tit=ru->trees().begin(); tit!=tend; ++tit) {
-            (*tit).grow(); // and finally grow
-        }
-    } // foreach
 }

@@ -460,6 +460,14 @@ QString test_cntr()
     return QString::number(cnt);
 }
 
+#if !defined(DBGMODE)
+#  ifndef QT_NO_DEBUG
+#    define DBGMODE(stmts) { stmts }
+#  else
+#    define DBGMODE(stmts) qt_noop()
+#  endif
+#endif
+
 void Tree::partitioning(double npp)
 {
     double harshness = mRU->ressourceUnitSpecies(mSpecies).prod3PG().harshness();
@@ -481,7 +489,10 @@ void Tree::partitioning(double npp)
 
     //DBG_IF(apct_foliage<0, "Tree::partitioning", "foliage out of range");
     DBG_IF_X(mId==1, "Tree::partitioning", "foliage out of range", test_cntr());
-
+    DBGMODE(
+        if (mId==1)
+            test_cntr();
+    );
 }
 
 
