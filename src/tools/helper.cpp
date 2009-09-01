@@ -383,7 +383,7 @@ void Viewport::zoomTo(const QPoint &screen_point, const double factor)
     m_viewport.setBottomLeft(toWorld(m_screen.topLeft()));
     m_viewport.setTopRight(toWorld(m_screen.bottomRight()));
 
-    qDebug() <<"oldf"<< new_focus << "newf" << focus_point << "m_delta" << m_delta_worldtoscreen << "m_scale:" << m_scale_worldtoscreen << "viewport:"<<m_viewport;
+    //qDebug() <<"oldf"<< new_focus << "newf" << focus_point << "m_delta" << m_delta_worldtoscreen << "m_scale:" << m_scale_worldtoscreen << "viewport:"<<m_viewport;
 }
 
 /// move the viewport. @p screen_from and @p screen_to give mouse positions (in pixel) from dragging the mouse.

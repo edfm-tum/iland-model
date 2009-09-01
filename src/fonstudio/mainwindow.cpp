@@ -178,7 +178,7 @@ void MainWindow::on_saveFile_clicked()
 void MainWindow::readwriteCycle()
 {
 
-    if (!mModel || !mModel->ru())
+    if (!mModel || !mModel->isSetup())
         return;
     mModel->runYear();
 
@@ -317,8 +317,11 @@ QString MainWindow::dumpTreelist()
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
-    if (!mModel || !mModel->isSetup() ||  !mModel->ru())
+
+    if (!mModel  || !mModel->isSetup() ) {
+        qDebug() << "model is not setup - no drawing";
         return;
+    }
 
 
     // do the actual painting
@@ -544,8 +547,12 @@ void MainWindow::on_calcFormula_clicked()
     // set current values
     *v1 = ui->lVar1->text().toDouble();
     *v2 = ui->lVar2->text().toDouble();
-
-    double result = expr.execute();
+    double result = 0;
+    try {
+        result = expr.execute();
+    } catch (const IException &e) {
+        Helper::msg(e.toString());
+    }
 
     ui->lCalcResult->setText(QString("%1").arg(result));
 }
@@ -785,7 +792,7 @@ void MainWindow::on_lrCalcFullGrid_clicked()
 
 void MainWindow::setupModel()
 {
-//    try {
+    try {
         if (mModel)
             delete mModel;
 
@@ -796,12 +803,12 @@ void MainWindow::setupModel()
         mDomGrid= mModel->heightGrid();
         // set viewport of paintwidget
         vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
-//    } catch(const IException &e) {
-//        QString error_msg = e.toString();
-//        qDebug() << error_msg;
-//
-//        //Helper::msg( error_msg );
-//    }
+    } catch(const IException &e) {
+        QString error_msg = e.toString();
+        qDebug() << error_msg;
+
+        //Helper::msg( error_msg );
+    }
 }
 
 void MainWindow::on_fonRun_clicked()
@@ -810,10 +817,6 @@ void MainWindow::on_fonRun_clicked()
         setupModel();
         if (mModel->ruList().count()==0)
             return;
-        QVector<Tree> &mTrees =  mModel->ru()->trees();
-        Tree::lafactor = 0.8;
-        // Load Trees
-        mTrees.clear();
 
         mModel->beforeRun(); // load stand
 

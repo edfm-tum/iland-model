@@ -66,6 +66,7 @@ Model::~Model()
 void Model::initialize()
 {
     mSetup = false;
+    //
 }
 
 void Model::setupSpace()
@@ -151,8 +152,10 @@ void Model::loadProject()
     QString dbPath = g->path( xml.value("database.in"), "database");
     g->fileExists(dbPath);
     GlobalSettings::instance()->setupDatabaseConnection("in", dbPath);
-    //GlobalSettings::instance()->setupDatabaseConnection("out", "");
 
+    // various globals...
+    mMultithreading = (xml.value("system.multithreading", "false") == "true");
+    qDebug() << "multithreading enabled:" << mMultithreading;
 
     // (1) SpeciesSets: currently only one a global species set.
     QString speciesTableName = xml.value("species.source", "species");
@@ -253,14 +256,24 @@ void Model::applyPattern()
     mHeightGrid->initialize(0.);
 
     // multi-threaded apply
-    QtConcurrent::blockingMap(mRU,nc_applyPattern);
+    if (multithreading()) {
+        QtConcurrent::blockingMap(mRU,nc_applyPattern);
+    } else {
+        foreach(RessourceUnit *ru, mRU)
+            nc_applyPattern(ru);
+    }
 }
 
 void Model::readPattern()
 {
     DebugTimer t("readPattern()");
-    QtConcurrent::blockingMap(mRU, nc_readPattern);
 
+    if (multithreading()) {
+        QtConcurrent::blockingMap(mRU, nc_readPattern);
+    } else {
+        foreach(RessourceUnit *ru, mRU)
+            nc_readPattern(ru);
+    }
 }
 
 void Model::grow()
@@ -272,6 +285,11 @@ void Model::grow()
     }
 
     DebugTimer t("grow()");
-    QtConcurrent::blockingMap(mRU, nc_grow);
+    if (multithreading()) {
+        QtConcurrent::blockingMap(mRU, nc_grow);
+    } else {
+            foreach(RessourceUnit *ru, mRU)
+                nc_grow(ru);
+        }
 
-}
+    }

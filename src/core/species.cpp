@@ -32,9 +32,9 @@ void Species::setup()
     mStamp.attachReaderStamps(mSet->readerStamps());
 
     // setup allometries
-    mBiomassLeaf.setExpression(stringVar("bmLeaf"));
-    mBiomassStem.setExpression(stringVar("bmStem"));
-    mBiomassRoot.setExpression(stringVar("bmRoot"));
+    mBiomassLeaf.setAndParse(stringVar("bmLeaf"));
+    mBiomassStem.setAndParse(stringVar("bmStem"));
+    mBiomassRoot.setAndParse(stringVar("bmRoot"));
 
     mSpecificLeafArea = doubleVar("specificLeafArea");
 
@@ -44,8 +44,8 @@ void Species::setup()
     mTurnoverRoot = doubleVar("turnoverRoot");
 
     // hd-relations
-    mHDlow.setExpression(stringVar("HDlow"));
-    mHDhigh.setExpression(stringVar("HDhigh"));
+    mHDlow.setAndParse(stringVar("HDlow"));
+    mHDhigh.setAndParse(stringVar("HDhigh"));
 
     qDebug() << "biomass leaf. 10:->" << mBiomassLeaf.calculate(10.);
 

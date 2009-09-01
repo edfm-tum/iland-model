@@ -42,7 +42,10 @@ private:
     void readPattern();
     void grow();
 
+    const bool multithreading() const { return mMultithreading; }
+
     bool mSetup;
+    bool mMultithreading;
     /// container holding all ressource units
     QList<RessourceUnit*> mRU;
     /// grid specifying a map of RessourceUnits

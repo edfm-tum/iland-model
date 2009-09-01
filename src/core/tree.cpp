@@ -520,11 +520,8 @@ void Tree::partitioning(double npp)
     grow_diameter(net_stem);
 
     //DBG_IF(apct_foliage<0, "Tree::partitioning", "foliage out of range");
-    DBG_IF_X(mId==1, "Tree::partitioning", "foliage out of range", test_cntr());
-    DBGMODE(
-        if (mId==1)
-            test_cntr();
-    );
+    //DBG_IF_X(mId==1, "Tree::partitioning", "foliage out of range", test_cntr());
+
 }
 
 inline void Tree::grow_diameter(const double &net_stem_npp)

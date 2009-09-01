@@ -19,17 +19,10 @@
     - not
 
 */
-
-#include <QtCore>
-#include <stdio.h>
-
-
-#include <stdexcept>
-
 #include "expression.h"
+#include <QtCore>
 
-
-
+#include "exception.h"
 
 #define opEqual 1
 #define opGreaterThen 2
@@ -39,7 +32,6 @@
 #define opGreaterOrEqual 6
 #define opAnd 7
 #define opOr  8
-//Global *Globals=Global::Instance();
 
 QString FuncList="sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg";
 const int  MaxArgCount[15]={1,1,1,1,  1, 1,   -1, -1, 3, 1, -1, 2, 4, 2, 2};
@@ -129,6 +121,17 @@ Expression::~Expression()
     delete[] m_execList;
 }
 
+
+/** sets expression @p expr and checks the syntax (parse).
+    Expressions are setup with strict = false, i.e. no fixed binding of variable names.
+  */
+void Expression::setAndParse(const QString &expr)
+{
+    setExpression(expr);
+    m_strict = false;
+    parse();
+}
+
 /// set the current expression.
 /// do some preprocessing (e.g. handle the different use of ",", ".", ";")
 void Expression::setExpression(const QString& aExpression)
@@ -161,6 +164,7 @@ void Expression::setExpression(const QString& aExpression)
     // Buffer:
     m_execListSize = 5; // inital value...
     m_execList = new ExtExecListItem[m_execListSize]; // init
+
 }
 
 Expression::Expression(const QString& aExpression)
@@ -184,10 +188,10 @@ void  Expression::parse()
             AktTok=m_tokCount;
             parse_levelL0();  // start with logical level 0
             if (AktTok==m_tokCount)
-                throw std::logic_error("Unbalanced Braces.");
+                throw IException("Expression::parse(): Unbalanced Braces.");
             if (m_state==etUnknown){
                 m_tokString+="\n***Error***";
-                throw std::logic_error("Syntax error, token: " + m_token.toStdString());
+                throw IException("Expression::parse(): Syntax error, token: " + m_token);
             }
         }
         m_execList[m_execIndex].Type=etStop;
@@ -195,8 +199,8 @@ void  Expression::parse()
         m_execList[m_execIndex++].Index=0;
         checkBuffer(m_execIndex);
         m_parsed=true;
-    } catch (const std::logic_error& e) {
-        throw std::logic_error("Fehler in: " + std::string(m_expr) + "\n"+e.what());
+    } catch (const IException& e) {
+        throw IException(QString("Expression::parse: Error in: %1 : %2").arg(m_expr, e.toString()));
     }
 }
 
@@ -327,7 +331,7 @@ void  Expression::Atom()
         }
         next_token();
     } else if (m_state==etStop)
-        throw std::logic_error("Unexpected end of m_expression.");
+        throw IException("Unexpected end of m_expression.");
 }
 
 
@@ -394,7 +398,7 @@ void  Expression::parse_level4()
                     next_token();
             }
             if (MaxArgCount[idx]>0 && MaxArgCount[idx]!=argcount)
-                throw std::logic_error( QString("Function %1 assumes %2 arguments!").arg(func).arg(MaxArgCount[idx]).toStdString());
+                throw IException( QString("Function %1 assumes %2 arguments!").arg(func).arg(MaxArgCount[idx]));
             //throw std::logic_error("Funktion " + func + " erwartet " + std::string(MaxArgCount[idx]) + " Parameter!");
             m_execList[m_execIndex].Type=etFunction;
             m_execList[m_execIndex].Value=argcount;
@@ -402,7 +406,7 @@ void  Expression::parse_level4()
             checkBuffer(m_execIndex);
         }
         if (m_token!="}" && m_token!=")") // Fehler
-            throw std::logic_error("Falsche Zahl von Klammern.");
+            throw IException(QString("Expression::unbalanced number of parentheses in [%1].").arg(m_expression));
         next_token();
     }
 }
@@ -440,7 +444,7 @@ double  Expression::getVar(const QString& VarName)
     idx=m_varList.indexOf(VarName);
     if (idx==-1) {
         if (m_strict)
-            throw std::logic_error("Undefined symbol: " + VarName.toStdString());
+            throw IException("Undefined symbol: " + VarName);
         m_varList+=VarName;
         idx = m_varList.size()-1;
         m_tokString+="\nVariable: "+VarName;
@@ -457,7 +461,7 @@ void  Expression::setVar(const QString& Var, double Value)
     if (idx>=0 && idx<10)
         m_varSpace[idx]=Value;
     else
-        throw std::logic_error("Ungültige Variable " + Var.toStdString());
+        throw IException("Invalid variable " + Var);
 }
 
 double  Expression::calculate(double Val1, double Val2)
@@ -472,7 +476,7 @@ int  Expression::getFuncIndex(const QString& FuncName)
 {
     int pos=FuncList.indexOf(FuncName);
     if (pos<0)
-        throw std::logic_error("Function " + FuncName.toStdString() + " not defined!");
+        throw IException("Function " + FuncName + " not defined!");
     int idx=0;
     for (int i=1;i<pos;i++)
         if (FuncList[i]==' ') ++idx;
@@ -610,14 +614,14 @@ double  Expression::execute()
 
             *lp++=LogicResult;
             break; }
-        case etStop: case etUnknown: case etDelimeter: throw std::logic_error("invalid token during execution.");
+        case etStop: case etUnknown: case etDelimeter: throw IException("invalid token during execution.");
         } // switch()
 
         Exec++;
         //m_tokString+="m_pos: " + AnsiString(p-Stack) + "; Value: " + AnsiString(*(p-1))+"\n";
     }
     if (p-Stack!=1)
-        throw std::logic_error("...unbalanced");
+        throw IException("Expression::execute: stack unbalanced!");
     m_result=*(p-1);
     m_logicResult=*(lp-1);
     return m_result;
@@ -642,7 +646,7 @@ double *  Expression::getVarAdress(const QString& VarName)
     if (idx>=0 && idx<10)
         return &m_varSpace[idx];
     else
-        throw std::logic_error("Ungültige Variable " + VarName.toStdString());
+        throw IException(QString("Expression::getVarAdress: Invalid variable <%1> ").arg(VarName));
 }
 
 int  Expression::getVarIndex(const QString& VarName)
@@ -678,7 +682,7 @@ double Expression::getModelVar(int VarIdx)
     // der weg nach draussen....
     //int idx=VarIdx - 100; // intern als 100+x gespeichert...
     // hier evtl. verschiedene objekte unterscheiden (Zahlenraum???)
-    throw std::logic_error("invalid modell var!");
+    throw IException("Expression::getModelVar: invalid modell variable!");
     //return TestBaum->getVar(idx);
     //return FSimObject->getVar(idx);
 }
@@ -732,10 +736,10 @@ double  Expression::udfPolygon(double Value, double* Stack, int ArgCount)
     // Achtung: *Stack zeigt auf das letzte Argument! (ist das letzte y).
     // Stack bereinigen tut der Aufrufer.
     if (ArgCount%2!=1)
-        throw std::logic_error("polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
+        throw IException("Expression::polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
     int PointCnt = (ArgCount-1) / 2;
     if (PointCnt<2)
-        throw std::logic_error("polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
+        throw IException("Expression::polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
     double x,y, xold, yold;
     y=*Stack--;   // 1. Argument: ganz rechts.
     x=*Stack--;
@@ -779,7 +783,7 @@ double Expression::udfSigmoid(double Value, double sType, double p1, double p2)
                      Result=pow(x, p1) / ( pow(p2,p1) + pow(x,p1));
              break;
          default:
-             throw std::logic_error("sigmoid-funktion: ungültiger kurventyp. erlaubt: 0..3");
+             throw IException("sigmoid-funktion: ungültiger kurventyp. erlaubt: 0..3");
          }
     if (typ==2 || typ==3)
         Result=1. - Result;
@@ -818,7 +822,7 @@ double Expression::udfRandom(int type, double p1, double p2)
     if (type == 0)
         return nrandom(p1, p2);
     else    // gaussverteilt
-        throw std::logic_error("std-deviated random numbers not supported.");
+        throw IException("std-deviated random numbers not supported.");
     //return RandG(p1, p2);
 }
 

@@ -1,7 +1,6 @@
 #ifndef LOGICEXPRESSION_H
 #define LOGICEXPRESSION_H
 
-#include <QTCore>
 
 enum ETokType {etNumber, etOperator, etVariable, etFunction, etLogical, etCompare, etStop, etUnknown, etDelimeter};
 enum EValueClasses {evcBHD, evcHoehe, evcAlter};
@@ -21,6 +20,7 @@ public:
         Expression() {} // empty constructor
         Expression(const QString &aExpression);
         void setExpression(const QString &aExpression);
+        void setAndParse(const QString &expr);
         /// calculate formula and return result. variable values need to be set using "setVar()"
         double execute();
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
