@@ -1,20 +1,21 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
-#include <stdexcept>
 
 /** Exception IException is the iLand model exception class.
-    The class uses a string list to store exception messages.
+    The class uses a string to store exception messages.
   */
-class IException : public std::runtime_error {
+class IException  {
  public:
-    ~IException () throw () {}
-   IException() : std::runtime_error("iLand model exception.") { }
-   IException(const QString& msg) : std::runtime_error("iLand model exception.") {mMsg += msg;}
-   QString toString() const { return mMsg.join("\n"); }
-   QStringList toList() const { return mMsg; }
+   // ~IException () throw() {  }
+   IException()  { }
+   //IException(QString msg)  { GlobalSettings::instance()->addErrorMessage(msg); }
+   //QString toString() const { return GlobalSettings::instance()->errorMessage(); }
+   IException(QString msg)  { add(msg); }
+   const QString &toString() const { return mMsg; }
+   void add(const QString &msg) { if(!mMsg.isEmpty()) mMsg+="\n"; mMsg += msg; }
 private:
-    QStringList mMsg;
+   QString mMsg;
 };
 
 

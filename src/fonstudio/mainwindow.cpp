@@ -317,7 +317,7 @@ QString MainWindow::dumpTreelist()
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
-    if (!mModel || !mModel->ru())
+    if (!mModel || !mModel->isSetup() ||  !mModel->ru())
         return;
 
 
@@ -785,7 +785,7 @@ void MainWindow::on_lrCalcFullGrid_clicked()
 
 void MainWindow::setupModel()
 {
-    try {
+//    try {
         if (mModel)
             delete mModel;
 
@@ -796,15 +796,20 @@ void MainWindow::setupModel()
         mDomGrid= mModel->heightGrid();
         // set viewport of paintwidget
         vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
-    } catch(const IException &e) {
-        Helper::msg(e.toString());
-    }
+//    } catch(const IException &e) {
+//        QString error_msg = e.toString();
+//        qDebug() << error_msg;
+//
+//        //Helper::msg( error_msg );
+//    }
 }
 
 void MainWindow::on_fonRun_clicked()
 {
-    try {
+        try {
         setupModel();
+        if (mModel->ruList().count()==0)
+            return;
         QVector<Tree> &mTrees =  mModel->ru()->trees();
         Tree::lafactor = 0.8;
         // Load Trees
@@ -816,7 +821,12 @@ void MainWindow::on_fonRun_clicked()
         readwriteCycle();
     } catch(const IException &e) {
         Helper::msg(e.toString());
+        qDebug() << e.toString();
     }
+    catch(...) {
+        qDebug() << "some other error...";
+    }
+
 }
 
 void MainWindow::on_lrProcess_clicked()

@@ -32,6 +32,7 @@ public:
     // setup/maintenance
     void clear(); ///< free ressources
     void loadProject(); ///< setup and load a project
+    bool isSetup() const { return mSetup; } ///< return true if the model world is correctly setup.
 
 private:
     void initialize(); ///< basic startup without creating a simulation
@@ -41,6 +42,7 @@ private:
     void readPattern();
     void grow();
 
+    bool mSetup;
     /// container holding all ressource units
     QList<RessourceUnit*> mRU;
     /// grid specifying a map of RessourceUnits

@@ -49,6 +49,7 @@ HEADERS += mainwindow.h \
     ../tools/expression.h \
     ../tools/helper.h \
     lightroom.h \
+    ../core/exception.h \
     ../core/global.h \
     ../core/stamp.h \
     ../core/stampcontainer.h \

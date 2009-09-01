@@ -1,11 +1,13 @@
 #ifndef GLOBALSETTINGS_H
 #define GLOBALSETTINGS_H
+#include "globalsettings.h"
+
 #include <QtSql>
 #include <QtXml>
 
 #include "settingmetadata.h"
 #include "xmlhelper.h"
-#include "exception.h"
+//#include "exception.h"
 
 /// General settings and globally available data
 class GlobalSettings

@@ -34,12 +34,12 @@ void Helper::saveToTextFile(const QString& fileName, const QString& text)
 
 void Helper::msg(const QString &message, QWidget *parent)
 {
-    QMessageBox::information(parent, "Eforwood MCA", message);
+    QMessageBox::information(parent, "iLand", message);
 }
 
 bool Helper::question(const QString &message, QWidget *parent)
 {
-   return QMessageBox::question(parent, "Eforwood MCA", message, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
+   return QMessageBox::question(parent, "iLand", message, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
 }
 
 QString Helper::fileDialog(const QString &title)

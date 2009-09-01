@@ -65,7 +65,7 @@ Model::~Model()
   */
 void Model::initialize()
 {
-
+    mSetup = false;
 }
 
 void Model::setupSpace()
@@ -110,6 +110,7 @@ void Model::setupSpace()
         qDebug() << "created a grid of RessourceUnits: count=" << mRU.count();
 
     }
+    mSetup = true;
 }
 
 
@@ -129,6 +130,7 @@ void Model::clear()
     qDeleteAll(mGridList); // delete all grids
     mGridList.clear();
 
+    mSetup = false;
     qDebug() << "Model ressources freed.";
 }
 

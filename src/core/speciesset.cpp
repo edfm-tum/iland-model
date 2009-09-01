@@ -72,7 +72,8 @@ QVariant SpeciesSet::var(const QString& varName)
     int idx = mSetupQuery->record().indexOf(varName);
     if (idx>=0)
         return mSetupQuery->value(idx);
-    throw IException(QString("load species parameter: field %1 not found!").arg(varName));
+    throw IException("species set set var message");
+    //throw IException(QString("load species parameter: field %1 not found!").arg(varName));
     // lookup in defaults
     //qDebug() << "variable" << varName << "not found - using default.";
     //return GlobalSettings::instance()->settingDefaultValue(varName);
