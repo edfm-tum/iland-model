@@ -14,4 +14,25 @@
 #include "exception.h"
 // general datatypes
 //typedef int TreeSpecies;
+
+// global debug helpers (used by macros!)
+void dbg_helper(const char *where, const char *what,const char* file,int line);
+void dbg_helper_ext(const char *where, const char *what,const char* file,int line, const QString &s);
+
+#if !defined(DBG_IF)
+#  ifndef QT_NO_DEBUG
+#    define DBG_IF(cond, where, what) ((cond) ? dbg_helper(where, what, __FILE__, __LINE__) : qt_noop())
+#  else
+#    define DBG_IF(cond, where, what) qt_noop()
+#  endif
+#endif
+
+#if !defined(DBG_IF_X)
+#  ifndef QT_NO_DEBUG
+#    define DBG_IF_X(cond, where, what,more) ((cond) ? dbg_helper_ext(where, what, __FILE__, __LINE__,more) : qt_noop())
+#  else
+#    define DBG_IF_X(cond, where, what,more) qt_noop()
+#  endif
+#endif
+
 #endif // GLOBAL_H

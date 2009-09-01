@@ -41,6 +41,7 @@ void StandLoader::processInit()
                 newtree = tree; // copy tree data...
                 newtree.setPosition(tree.position()+(*p)->boundingBox().topLeft());
                 newtree.setRU(*p);
+                newtree.setNewId();
             }
             //(*p)->trees()
             // loadFromPicus(fileName, rect.topLeft(), *p); -> do that for differing stands

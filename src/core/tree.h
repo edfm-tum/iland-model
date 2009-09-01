@@ -13,6 +13,7 @@ class Tree
 public:
     Tree();
     const int id() const { return mId; }
+    void setNewId() { mId = m_nextId++; }
     void setPosition(const QPointF pos) { mPosition=pos; }
     const QPointF position() const { return mPosition; }
 
@@ -78,6 +79,7 @@ private:
     Species *mSpecies;
     RessourceUnit *mRU;
 
+    // special functions
     bool isDebugging() { return mId == mDebugid; }
     // static data
     static FloatGrid *mGrid;

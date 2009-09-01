@@ -1,5 +1,6 @@
-
+#include "global.h"
 #include "tree.h"
+
 #include "grid.h"
 
 #include "stamp.h"
@@ -450,11 +451,36 @@ void Tree::grow()
 
 }
 
+
+// just used to test the DBG_IF_x macros...
+QString test_cntr()
+{
+    static int cnt = 0;
+    cnt++;
+    return QString::number(cnt);
+}
+
 void Tree::partitioning(double npp)
 {
     double harshness = mRU->ressourceUnitSpecies(mSpecies).prod3PG().harshness();
     // add content of reserve pool
     npp += mNPPReserve;
+    double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1)
+    // turnover rates
+    const double &to_fol = mSpecies->turnoverLeaf();
+    const double &to_wood = mSpecies->turnoverStem();
+    const double &to_root = mSpecies->turnoverRoot();
+
+    apct_root = harshness;
+
+    double b_wf = 1.32; // ratio of allometric exponents... now fixed
+
+    // Duursma 2007, Eq. (20)
+    apct_wood = (mLeafMass * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( mStemMass / mStemMass + b_wf );
+    apct_foliage = 1. - apct_root - apct_wood;
+
+    //DBG_IF(apct_foliage<0, "Tree::partitioning", "foliage out of range");
+    DBG_IF_X(mId==1, "Tree::partitioning", "foliage out of range", test_cntr());
 
 }
 

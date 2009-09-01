@@ -44,6 +44,18 @@
 #include "globalsettings.h"
 #include "settingmetadata.h"
 
+// debug macro helpers
+void dbg_helper(const char *where, const char *what,const char* file,int line)
+{
+    qDebug() << "Warning in " << where << ":"<< what << ". (file: " << file << "line:" << line;
+}
+void dbg_helper_ext(const char *where, const char *what,const char* file,int line, const QString &s)
+{
+    qDebug() << "Warning in " << where << ":"<< what << ". (file: " << file << "line:" << line << "more:" << s;
+}
+
+
+
 GlobalSettings *GlobalSettings::mInstance = 0;
 
 GlobalSettings::GlobalSettings()
