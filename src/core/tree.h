@@ -55,7 +55,7 @@ public:
 private:
     // helping functions
     void calcBiomassCompartments();
-    void partitioning(const double &npp);
+    void partitioning(double npp);
     // state variables
     int mId;
     float mDbh;
@@ -67,6 +67,8 @@ private:
     float mLeafMass; // kg
     float mStemMass; // kg
     float mRootMass; // kg
+    // production relevant
+    float mNPPReserve; // kg
 
 
     float mLRI; // resulting lightRessourceIndex

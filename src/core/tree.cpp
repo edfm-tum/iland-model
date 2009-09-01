@@ -454,7 +454,8 @@ void Tree::partitioning(double npp)
 {
     double harshness = mRU->ressourceUnitSpecies(mSpecies).prod3PG().harshness();
     // add content of reserve pool
-    npp +=
+    npp += mNPPReserve;
+
 }
 
 

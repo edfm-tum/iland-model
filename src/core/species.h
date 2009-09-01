@@ -21,9 +21,13 @@ public:
     const QString &name() const { return mName; }
     const int index() const { return mIndex; } ///< unique index of species within current set
     // calculations: allometries
-    double biomassLeaf(const double dbh) { return mBiomassLeaf.calculate(dbh); }
-    double biomassStem(const double dbh) { return mBiomassStem.calculate(dbh); }
-    double biomassRoot(const double dbh) { return mBiomassRoot.calculate(dbh); }
+    const double biomassLeaf(const double dbh) { return mBiomassLeaf.calculate(dbh); }
+    const double biomassStem(const double dbh) { return mBiomassStem.calculate(dbh); }
+    const double biomassRoot(const double dbh) { return mBiomassRoot.calculate(dbh); }
+    // turnover rates
+    const double turnoverLeaf() const { return mTurnoverLeaf; }
+    const double turnoverStem() const { return mTurnoverStem; }
+    const double turnoverRoot() const { return mTurnoverRoot; }
 
     const double specificLeafArea() const { return mSpecificLeafArea; }
 
@@ -48,6 +52,10 @@ private:
     Expression mBiomassStem; ///< formula for calc. of stem-biomass as f(dbh)
     Expression mBiomassRoot; ///< formula for calc. of biomass-biomass as f(dbh)
     double mSpecificLeafArea; ///< conversion factor from kg OTS to m2 LeafArea
+    // turnover rates
+    double mTurnoverLeaf; ///< yearly turnover rate leafs
+    double mTurnoverStem; ///< yearly turnover rate stem
+    double mTurnoverRoot; ///< yearly turnover rate root
 };
 
 

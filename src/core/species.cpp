@@ -38,6 +38,11 @@ void Species::setup()
 
     mSpecificLeafArea = doubleVar("specificLeafArea");
 
+    // turnover rates
+    mTurnoverLeaf = doubleVar("turnoverLeaf");
+    mTurnoverStem = doubleVar("turnoverStem");
+    mTurnoverRoot = doubleVar("turnoverRoot");
+
     qDebug() << "biomass leaf. 10:->" << mBiomassLeaf.calculate(10.);
 
 }
