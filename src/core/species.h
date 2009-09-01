@@ -28,6 +28,8 @@ public:
     const double turnoverLeaf() const { return mTurnoverLeaf; }
     const double turnoverStem() const { return mTurnoverStem; }
     const double turnoverRoot() const { return mTurnoverRoot; }
+    // hd-values
+    void hdRange(const double dbh, double &rMinHD, double &rMaxHD);
 
     const double specificLeafArea() const { return mSpecificLeafArea; }
 
@@ -56,7 +58,17 @@ private:
     double mTurnoverLeaf; ///< yearly turnover rate leafs
     double mTurnoverStem; ///< yearly turnover rate stem
     double mTurnoverRoot; ///< yearly turnover rate root
+    // height-diameter-relationships
+    Expression mHDlow; ///< minimum HD-relation as f(d) (open grown tree)
+    Expression mHDhigh; ///< maximum HD-relation as f(d)
 };
 
+
+// inlined functions...
+inline void Species::hdRange(const double dbh, double &rLowHD, double &rHighHD)
+{
+    rLowHD = mHDlow.calculate(dbh);
+    rHighHD = mHDhigh.calculate(dbh);
+}
 
 #endif // SPECIES_H

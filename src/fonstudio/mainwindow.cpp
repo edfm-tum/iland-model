@@ -117,6 +117,10 @@ MainWindow::MainWindow(QWidget *parent)
     qInstallMsgHandler(myMessageOutput);
     // load xml file
     xmldoc.clear();
+    QString argText = QApplication::arguments().last();
+    if (!argText.isEmpty())
+        ui->initFileName->setText(argText);
+
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
 
     if (!xmlFile.isEmpty()) {

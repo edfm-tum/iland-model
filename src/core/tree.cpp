@@ -470,9 +470,15 @@ QString test_cntr()
 
 void Tree::partitioning(double npp)
 {
+    DBGMODE(
+        if (mId==1)
+            test_cntr();
+    );
     double harshness = mRU->ressourceUnitSpecies(mSpecies).prod3PG().harshness();
     // add content of reserve pool
     npp += mNPPReserve;
+    const double reserve_size = mLeafMass;
+
     double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1)
     // turnover rates
     const double &to_fol = mSpecies->turnoverLeaf();
@@ -487,6 +493,32 @@ void Tree::partitioning(double npp)
     apct_wood = (mLeafMass * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( mStemMass / mStemMass + b_wf );
     apct_foliage = 1. - apct_root - apct_wood;
 
+    // senescence demands of the compartemnts
+    double senescence_foliage = mLeafMass * to_fol;
+    double senescence_stem = mStemMass * to_wood;
+    double senescence_root = mRootMass * to_root;
+
+    // brutto compartment increments
+    double gross_foliage = npp * apct_foliage;
+    double gross_stem = npp * apct_wood;
+    double gross_root = npp * apct_root;
+
+    // netto increments
+    double net_foliage = gross_foliage - senescence_foliage;
+    double net_root = gross_root - senescence_root;
+    double net_stem = gross_stem - senescence_stem;
+
+    // flow back to reserve pool:
+    double to_reserve = qMin(reserve_size, net_stem);
+    net_stem -= to_reserve;
+
+    // update of compartments
+    mLeafMass += net_foliage;
+    mRootMass += net_root;
+
+    // calculate the dimension of growth
+    grow_diameter(net_stem);
+
     //DBG_IF(apct_foliage<0, "Tree::partitioning", "foliage out of range");
     DBG_IF_X(mId==1, "Tree::partitioning", "foliage out of range", test_cntr());
     DBGMODE(
@@ -495,4 +527,20 @@ void Tree::partitioning(double npp)
     );
 }
 
+inline void Tree::grow_diameter(const double &net_stem_npp)
+{
+    // determine dh-ratio of increment
+    // height increment is a function of light competition:
+    double rel_height_growth = relative_height_growth(); // [0..1]
 
+}
+
+inline double Tree::relative_height_growth()
+{
+    double hd_low, hd_high;
+    mSpecies->hdRange(mDbh, hd_low, hd_high);
+
+    // scale according to LRI: if having much light (LRI=1), the result is hd_low (for open grown trees)
+    double result = hd_high - (hd_high-hd_low)*mLRI;
+    return result;
+}

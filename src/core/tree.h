@@ -43,6 +43,8 @@ public:
 
     // growth, etc.
     void grow();
+    void grow_diameter(const double &net_stem_npp);
+    double relative_height_growth();
 
     // static functions
     static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { mGrid = gridToStamp; mHeightGrid = dominanceGrid; }

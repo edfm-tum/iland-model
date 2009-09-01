@@ -43,6 +43,10 @@ void Species::setup()
     mTurnoverStem = doubleVar("turnoverStem");
     mTurnoverRoot = doubleVar("turnoverRoot");
 
+    // hd-relations
+    mHDlow.setExpression(stringVar("HDlow"));
+    mHDhigh.setExpression(stringVar("HDhigh"));
+
     qDebug() << "biomass leaf. 10:->" << mBiomassLeaf.calculate(10.);
 
 }
