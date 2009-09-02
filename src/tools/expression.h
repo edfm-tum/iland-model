@@ -37,8 +37,8 @@ public:
 
         void  parse(); ///< force a parsing of the expression
 
-        const double result(){ return m_result; } ///< get the result of the last calcuation.
-        const bool logicResult() { return m_logicResult; } ///< get the logical result (true/false) of the last calculation.
+        //const double result(){ return m_result; } ///< get the result of the last calcuation.
+        //const bool logicResult() { return m_logicResult; } ///< get the logical result (true/false) of the last calculation.
         const bool isConstExpression() { return m_constExpression; } /// returns true if current expression is a constant.
         /** strict property: if true, variables must be named before execution.
           When strict=true, all variables in the expression must be added by setVar or addVar.
@@ -52,9 +52,9 @@ public:
 
         double udfRandom(int type, double p1, double p2); ///< user defined function rnd() (normal distribution does not work now!)
 private:
-        bool m_parsed;
         double m_result;
-        double m_logicResult;
+
+        bool m_parsed;
         double m_strict;
         bool m_constExpression;
         QString m_tokString;

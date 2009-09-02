@@ -18,6 +18,7 @@
     - or
     - not
 
+
 */
 #include "expression.h"
 #include <QtCore>
@@ -128,7 +129,7 @@ Expression::~Expression()
 void Expression::setAndParse(const QString &expr)
 {
     setExpression(expr);
-    m_strict = false;
+    m_strict = false; 
     parse();
 }
 
@@ -172,8 +173,12 @@ Expression::Expression(const QString& aExpression)
     setExpression(aExpression);
 }
 
+// mutex used to serialize expression parsing.
+QMutex mutex;
+
 void  Expression::parse()
 {
+    QMutexLocker locker(&mutex);
     try {
         m_tokString="";
         m_state=etUnknown;
@@ -497,7 +502,7 @@ double  Expression::execute()
     *lp++=true; // zumindest eins am anfang...
     if (Exec->Type==etStop) {
         // leere expr.
-        m_logicResult=false;
+        //m_logicResult=false;
         m_result=0.;
         return 0.;
     }
@@ -623,7 +628,7 @@ double  Expression::execute()
     if (p-Stack!=1)
         throw IException("Expression::execute: stack unbalanced!");
     m_result=*(p-1);
-    m_logicResult=*(lp-1);
+    //m_logicResult=*(lp-1);
     return m_result;
 }
 
