@@ -109,6 +109,10 @@ void Model::setupSpace()
             *p = new_ru; // store in grid
         }
         qDebug() << "created a grid of RessourceUnits: count=" << mRU.count();
+        // setup the helper that does the multithreading
+        threadRunner.setup(mRU);
+        threadRunner.setMultithreading(xml.value("system.multithreading", "false") == "true");
+        threadRunner.print();
 
     }
     mSetup = true;
@@ -153,9 +157,6 @@ void Model::loadProject()
     g->fileExists(dbPath);
     GlobalSettings::instance()->setupDatabaseConnection("in", dbPath);
 
-    // various globals...
-    mMultithreading = (xml.value("system.multithreading", "false") == "true");
-    qDebug() << "multithreading enabled:" << mMultithreading;
 
     // (1) SpeciesSets: currently only one a global species set.
     QString speciesTableName = xml.value("species.source", "species");
@@ -255,25 +256,13 @@ void Model::applyPattern()
     mGrid->initialize(1.);
     mHeightGrid->initialize(0.);
 
-    // multi-threaded apply
-    if (multithreading()) {
-        QtConcurrent::blockingMap(mRU,nc_applyPattern);
-    } else {
-        foreach(RessourceUnit *ru, mRU)
-            nc_applyPattern(ru);
-    }
+    threadRunner.run(nc_applyPattern);
 }
 
 void Model::readPattern()
 {
     DebugTimer t("readPattern()");
-
-    if (multithreading()) {
-        QtConcurrent::blockingMap(mRU, nc_readPattern);
-    } else {
-        foreach(RessourceUnit *ru, mRU)
-            nc_readPattern(ru);
-    }
+    threadRunner.run(nc_readPattern);
 }
 
 void Model::grow()
@@ -285,11 +274,7 @@ void Model::grow()
     }
 
     DebugTimer t("grow()");
-    if (multithreading()) {
-        QtConcurrent::blockingMap(mRU, nc_grow);
-    } else {
-            foreach(RessourceUnit *ru, mRU)
-                nc_grow(ru);
-        }
+    threadRunner.run(nc_grow);
 
-    }
+
+}

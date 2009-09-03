@@ -6,7 +6,7 @@
 #include "global.h"
 
 #include "grid.h"
-
+#include "threadrunner.h"
 
 class RessourceUnit;
 class SpeciesSet;
@@ -42,10 +42,9 @@ private:
     void readPattern();
     void grow();
 
-    const bool multithreading() const { return mMultithreading; }
-
+    const bool multithreading() const { return threadRunner.multithreading(); }
+    ThreadRunner threadRunner;
     bool mSetup;
-    bool mMultithreading;
     /// container holding all ressource units
     QList<RessourceUnit*> mRU;
     /// grid specifying a map of RessourceUnits

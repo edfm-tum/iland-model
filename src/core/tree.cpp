@@ -530,6 +530,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     // height increment is a function of light competition:
     double rel_height_growth = relative_height_growth(); // [0..1]
 
+
 }
 
 inline double Tree::relative_height_growth()

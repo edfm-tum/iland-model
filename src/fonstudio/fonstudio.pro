@@ -37,7 +37,8 @@ SOURCES += main.cpp \
     ../core/modelcontroller.cpp \
     ../core/standloader.cpp \
     ../core/ressourceunitspecies.cpp \
-    ../core/production3pg.cpp
+    ../core/production3pg.cpp \
+    ../core/threadrunner.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
@@ -64,6 +65,7 @@ HEADERS += mainwindow.h \
     ../core/modelcontroller.h \
     ../core/standloader.h \
     ../core/ressourceunitspecies.h \
-    ../core/production3pg.h
+    ../core/production3pg.h \
+    ../core/threadrunner.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
