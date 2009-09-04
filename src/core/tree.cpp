@@ -431,7 +431,10 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
         //dbgstruct["sen_demand"]=sen_demand;
-
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && mId<50) {
+            DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
+            out << hd_growth << factor_diameter << delta_d_estimate << d_increment;
+        }
 
             );
     d_increment = qMax(d_increment, 0.);

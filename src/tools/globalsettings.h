@@ -1,21 +1,29 @@
 #ifndef GLOBALSETTINGS_H
 #define GLOBALSETTINGS_H
-#include "globalsettings.h"
 
-#include <QtSql>
-#include <QtXml>
+#include <QtCore>
+//#include <QtSql>
+//#include <QtXml>
 
 #include "settingmetadata.h"
 #include "xmlhelper.h"
-//#include "exception.h"
+typedef QList<QVariant> DebugList;
 
 /// General settings and globally available data
 class GlobalSettings
 {
 public:
+    // singleton-access
     static GlobalSettings *instance() { if (mInstance) return mInstance; mInstance = new GlobalSettings(); return mInstance; }
     ~GlobalSettings();
     // Access
+    // debugging fain grained debug outputs
+    enum DebugOutputs { dTreeGrowth=1, dTreePartition=2, dStandNPP=4 }; ///< defines available debug output types.
+    void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
+    const bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
+    DebugList &debugList(const int ID, const DebugOutputs dbg); ///< returns a ref to a list ready to be filled with debug output of a type/id combination.
+    const QList<DebugList> debugLists(const int ID, const DebugOutputs dbg); ///< return a list of debug outputs
+    QStringList debugListCaptions(const DebugOutputs dbg); ///< returns stringlist of captions for a specific output type
     // database
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
     QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
@@ -52,9 +60,16 @@ public:
 private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;
-    SettingMetaDataList mSettingMetaData; /// storage container (QHash) for settings.
-    QHash<QString, QString> mFilePath;
-    XmlHelper mXml;
+
+    // special debug outputs
+    QString makeDebugKey(const int id, const int type);
+    QHash<QString, DebugList> mDebugLists;
+    int mDebugOutputs; // "bitmap" of enabled debugoutputs.
+
+    SettingMetaDataList mSettingMetaData; ///< storage container (QHash) for settings.
+    QHash<QString, QString> mFilePath; ///< storage for file paths
+
+    XmlHelper mXml; ///< xml-based hierarchical settings
 };
 
 /// shortcut to the GlobalSettings Singleton object.

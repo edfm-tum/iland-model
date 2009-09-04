@@ -181,49 +181,10 @@ void MainWindow::readwriteCycle()
     if (!mModel || !mModel->isSetup())
         return;
     mModel->runYear();
-
-    /*
-    RessourceUnit *ru = mModel->ru();
-    QVector<Tree> &mTrees = ru->trees();
-    if (mTrees.size()==0 || !mGrid)
-        return;
-
-    //mGrid->initialize(0.f); // set grid to zero.
-    DebugTimer t_print("apply/read-cycle");
-    mDomGrid->initialize(0.f); // set dominance grid to zero.
-    mGrid->initialize(1.f); // 1 for multiplicative
-    //mDomGrid->initialize(1000.); //0: "active",  1000: no influence (trees are always below this height)
-    Tree::setGrid(mGrid, mDomGrid); // set static target grids
-    Tree::resetStatistics();
-
-    QVector<Tree>::iterator tit;
-
-    DebugTimer t2;
-    // height dominance grid
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        (*tit).heightGrid(); // just do it ;)
-    }
-    t2.interval("height grid");
-
-    // grid for horizontal concurrence
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        (*tit).applyStamp(); // just do it ;)
-    }
-    t2.interval("apply stamp");
-    //qDebug() << gridToString(*mGrid);
-    qDebug() << "applied" << Tree::statPrints() << "stamps. (no. of trees):" << mTrees.size();
-    //qDebug() << gridToString(*mDomGrid);
-
-    // read values...
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        //(*tit).readStamp(); // just do it ;)
-        (*tit).readStampMul(); // multipliactive approach
-    }
-    t2.interval("read stamp");
-    t_print.showElapsed();
-
-    //qDebug() << Tree::statAboveZ() << "above dominance grid";
-    */
+    GlobalSettings *g = GlobalSettings::instance();
+    QList<DebugList> ddl = g->debugLists(-1, GlobalSettings::DebugOutputs(-1)); // get all debug data
+    qDebug() << ddl;
+    qDebug() << g->debugListCaptions(GlobalSettings::dTreeGrowth);
     ui->PaintWidget->update(); // repaint...
 
 }
@@ -803,6 +764,8 @@ void MainWindow::setupModel()
         mDomGrid= mModel->heightGrid();
         // set viewport of paintwidget
         vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
+        // debug mode
+        GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
     } catch(const IException &e) {
         QString error_msg = e.toString();
         Helper::msg(error_msg);

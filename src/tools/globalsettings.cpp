@@ -33,7 +33,24 @@
   p = Globals->path("log123.txt", "log"); // -> e:/iland/test/log/log123.txt (default for log)
   @endcode
 
+  @par Fine-Grained debugging outputs
+  The enumeration DebugOutputs defines a list of realms (uses binary notation: 1,2,4,8,...!).
+  Use setDebugOutput() to enable/disable such an output. Use isDebugEnabled() to test inside the
+  code if the generation of debug output for a specific type is enabled. Internally, this is a single
+  bitwise operation which is very fast.
+  Call debugLists() to retrieve a list of lists of data that fit specific criteria.
+  @code
+    // use something like that somewhere in a tree-growth-related routine:
+    DBGMODE(
+       if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) {
+            DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth); // get a ref to the list
+            out << hd_growth << factor_diameter << delta_d_estimate << d_increment;   // fill with data
+       }
+    ); // only in debugmode
+  @endcode
+
 */
+#include "globalsettings.h"
 #include <QtCore>
 #include <QtXml>
 #include <QtSql>
@@ -41,7 +58,7 @@
 #include "global.h"
 #include "helper.h"
 #include "xmlhelper.h"
-#include "globalsettings.h"
+
 #include "settingmetadata.h"
 
 // debug macro helpers
@@ -55,11 +72,11 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 }
 
 
-
 GlobalSettings *GlobalSettings::mInstance = 0;
 
 GlobalSettings::GlobalSettings()
 {
+    mDebugOutputs = 0;
 }
 
 
@@ -69,6 +86,55 @@ GlobalSettings::~GlobalSettings()
     qDeleteAll(mSettingMetaData.values());
     mInstance = NULL;
 }
+
+// debugging
+void GlobalSettings::setDebugOutput(const GlobalSettings::DebugOutputs dbg, const bool enable)
+{
+    if (enable)
+        mDebugOutputs |= int(dbg);
+    else
+        mDebugOutputs &= int(dbg) ^ 0xffffffff;
+}
+
+QString GlobalSettings::makeDebugKey(const int id, const int type)
+{
+    return QString("%1 %2").arg(id).arg(type);
+}
+
+DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
+{
+    const QString &key = makeDebugKey(ID, int(dbg));
+    if (mDebugLists.contains(key)) {
+        DebugList &dbglist = mDebugLists[key];
+        return dbglist; // rely here on Qt's implicit sharing!
+    }
+    DebugList &dbglist = mDebugLists[key];
+    dbglist << ID << dbg; // the first two elements should always be the ID and the type.
+    return dbglist;
+}
+
+const QList<DebugList> GlobalSettings::debugLists(const int ID, const DebugOutputs dbg)
+{
+    QList<DebugList> result_list;
+    foreach(DebugList list, mDebugLists)
+        if (list.count()>2)  // contains data
+            if (ID==-1 ||  list[0]==ID) // id fits or is -1 for all
+                if (int(dbg)==-1 || (list[1]).toInt() & int(dbg) ) // type fits or is -1 for all
+                    result_list << list;
+
+    return result_list;
+}
+
+QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
+{
+    switch(dbg) {
+        case dTreeGrowth: return QStringList() << "id" << "type" << "growth" << "hach" << "hech";
+        case dTreePartition: return QStringList() << "id" << "type" << "partition" << "hach" << "hech";
+            case dStandNPP: return QStringList() << "id" << "type" << "standnpp" << "hach" << "hech";
+    }
+    return QStringList() << "invalid debug output!";
+}
+
 
 /** retrieve a const pointer to a stored SettingMetaData object.
  if @p name is not found, a NULL returned.
