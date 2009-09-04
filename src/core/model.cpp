@@ -200,6 +200,8 @@ void Model::runYear()
 
     grow();
 
+    //test();
+
 }
 
 void Model::afterStop()
@@ -248,6 +250,19 @@ RessourceUnit *nc_grow(RessourceUnit *unit)
     return unit;
 }
 
+void Model::test()
+{
+    // Test-funktion: braucht 1/3 time von readGrid()
+    DebugTimer t("test");
+    FloatGrid averaged = mGrid->averaged(10);
+    int count = 0;
+    float *end = averaged.end();
+    for (float *p=averaged.begin(); p!=end; ++p)
+        if (*p > 0.9)
+            count++;
+    qDebug() << count << "LIF>0.9 of " << averaged.count();
+}
+
 void Model::applyPattern()
 {
 
@@ -275,6 +290,4 @@ void Model::grow()
 
     DebugTimer t("grow()");
     threadRunner.run(nc_grow);
-
-
 }

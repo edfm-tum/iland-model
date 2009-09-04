@@ -42,6 +42,7 @@ private:
     void readPattern();
     void grow();
 
+    void test();
     const bool multithreading() const { return threadRunner.multithreading(); }
     ThreadRunner threadRunner;
     bool mSetup;
