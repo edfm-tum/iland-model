@@ -805,6 +805,7 @@ void MainWindow::setupModel()
         vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
     } catch(const IException &e) {
         QString error_msg = e.toString();
+        Helper::msg(error_msg);
         qDebug() << error_msg;
 
         //Helper::msg( error_msg );

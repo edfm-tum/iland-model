@@ -47,6 +47,13 @@ void Species::setup()
     mHDlow.setAndParse(stringVar("HDlow"));
     mHDhigh.setAndParse(stringVar("HDhigh"));
 
+    // form/density
+    mWoodDensity = doubleVar("woodDensity");
+    mFormFactor = doubleVar("formFactor");
+    // volume = density*formfactor*pi/4 *d^2*h -> volume = volumefactor * d^2 * h
+    // convert from [cm] to [m] of dbh by dividing through "10000": d^2*h = (d[cm]/100)^2*h = 1/10000 * d^2*h
+    mVolumeFactor = mWoodDensity * mFormFactor * M_PI_4 / 10000.;
+
     qDebug() << "biomass leaf. 10:->" << mBiomassLeaf.calculate(10.);
 
 }

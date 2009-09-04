@@ -30,7 +30,8 @@ public:
     const double turnoverRoot() const { return mTurnoverRoot; }
     // hd-values
     void hdRange(const double dbh, double &rMinHD, double &rMaxHD);
-
+    // growth
+    const double volumeFactor() const { return mVolumeFactor; } ///< factor for volume calculation: V = factor * D^2*H (incorporates density and the form of the bole)
     const double specificLeafArea() const { return mSpecificLeafArea; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mStamp.stamp(dbh, height);}
@@ -61,6 +62,10 @@ private:
     // height-diameter-relationships
     Expression mHDlow; ///< minimum HD-relation as f(d) (open grown tree)
     Expression mHDhigh; ///< maximum HD-relation as f(d)
+    // stem density and taper
+    double mWoodDensity; ///< density of the wood [kg/m3]
+    double mFormFactor; ///< taper form factor of the stem [-] used for volume / stem-mass calculation calculation
+    double mVolumeFactor; ///< factor for volume calculation
 };
 
 

@@ -40,6 +40,15 @@ float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAng
     return d;
 }
 
+/// dumps some core variables of a tree to a string.
+QString Tree::dump()
+{
+    QString result = QString("id %1 species %2 dbh %3 h %4 x/y %5/%6 ru# %7 LRI %8")
+                            .arg(mId).arg(mSpecies->id()).arg(mDbh).arg(mHeight)
+                            .arg(mPosition.x()).arg(mPosition.y())
+                            .arg(mRU->index()).arg(mLRI);
+    return result;
+}
 
 void Tree::setup()
 {
@@ -51,6 +60,7 @@ void Tree::setup()
 
    calcBiomassCompartments();
    mNPPReserve = mLeafMass; // initial value
+   mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
 
 }
 
@@ -60,59 +70,7 @@ void Tree::setup()
 
 #define NOFULLDBG
 //#define NOFULLOPT
-/*
-void Tree::applyStamp()
-{
-    Q_ASSERT(m_grid!=0);
-    if (!m_stamp)
-        return;
 
-    QPoint pos = m_grid->indexAt(m_Position);
-    int offset = m_stamp->offset();
-    pos-=QPoint(offset, offset);
-    QPoint p;
-
-    float local_dom; // height of Z* on the current position
-    int x,y;
-    float value;
-    QPoint dbg(10,20);
-    #ifndef NOFULLDBG
-    qDebug() <<"indexstampx indexstamy gridx gridy local_dom_height stampvalue 1-value*la/dom grid_before gridvalue_after";
-    #endif
-    for (x=0;x<m_stamp->size();++x) {
-        for (y=0;y<m_stamp->size(); ++y) {
-           p = pos + QPoint(x,y);
-           // debug pixel
-           //if (p==dbg)
-           //    qDebug() << "#" << id() << "value;"<<(*m_stamp)(x,y)<<"domH"<<dom;
-
-           if (m_grid->isIndexValid(p)) {
-               // mulitplicative:
-               //m_grid->valueAtIndex(p)*=(*m_stamp)(x,y);
-               // additiv:
-               // multiplicatie, v2
-               // a optimization for 2m vs 10m grids: local_dom = m_dominanceGrid->valueAtIndex(p.x()/5, p.y()/5);
-               // effect is about 20% of the application time
-               local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) ); // todo: could be done more effectively (here 2 transormations are performed)...
-               if (local_dom<=0.f) {
-                   //qDebug() << "invalid height at " << m_grid->cellCoordinates(p) << "of" << local_dom;
-                   local_dom = 2.;
-               }
-               value = (*m_stamp)(x,y);
-               value = 1. - value*lafactor / local_dom;
-               value = qMax(value, 0.02f);
-#ifndef NOFULLDBG
-                qDebug() << x << y << p.x() << p.y() << local_dom << (*m_stamp)(x,y) << 1. - (*m_stamp)(x,y)*lafactor / local_dom  << m_grid->valueAtIndex(p) << m_grid->valueAtIndex(p)*value;
-#endif
-
-               m_grid->valueAtIndex(p)*= value;
-           }
-        }
-    }
-
-    m_statPrint++; // count # of stamp applications...
-}
-*/
 
 void Tree::applyStamp()
 {
@@ -152,44 +110,6 @@ void Tree::applyStamp()
     m_statPrint++; // count # of stamp applications...
 }
 
- /*
-void Tree::heightGrid_old()
-{
-    // height of Z*
-    const float cellsize = m_dominanceGrid->cellsize();
-    if (m_Height < cellsize/2.) {
-        float &dom = m_dominanceGrid->valueAt(m_Position); // modifyable reference
-        dom = qMax(dom, m_Height/2.f);
-    } else {
-        QPoint p = m_dominanceGrid->indexAt(m_Position); // pos of tree on height grid
-
-        int ringcount = int(floor(m_Height / cellsize));
-        int ix, iy;
-        int ring;
-        QPoint pos;
-        float hdom;
-        float h_out = fmod(m_Height, cellsize) / 2.;
-        for (ix=-ringcount;ix<=ringcount;ix++)
-            for (iy=-ringcount; iy<=+ringcount; iy++) {
-            ring = qMax(abs(ix), abs(iy));
-            QPoint pos(ix+p.x(), iy+p.y());
-            if (m_dominanceGrid->isIndexValid(pos)) {
-                // apply value....
-                if (ring==0) {
-                    hdom = m_Height- cellsize/4.;
-                } else if (ring==abs(ringcount)) {
-                    // outermost ring: use again height/2.
-                    hdom = h_out;
-                } else {
-                    hdom = m_Height- ring*cellsize;
-                }
-                m_dominanceGrid->valueAtIndex(pos) = qMax(m_dominanceGrid->valueAtIndex(pos), hdom);
-            }
-
-        }
-    }
-
-} */
 
 /** heightGrid()
   This function calculates the "dominant height field". This grid is coarser as the fine-scaled light-grid.
@@ -289,62 +209,6 @@ double Tree::readStamp()
     return mLRI;
 }
 
-/*
-double Tree::readStampMul()
-{
-    if (!m_stamp)
-        return 0.;
-    const Stamp *reader = m_stamp->reader();
-    if (!reader)
-        return 0.;
-    QPoint pos_reader = m_grid->indexAt(m_Position);
-
-    int offset_reader = reader->offset();
-    int offset_writer = m_stamp->offset();
-    int d_offset = offset_writer - offset_reader;
-
-    QPoint pos_writer=pos_reader - QPoint(offset_writer, offset_writer);
-    pos_reader-=QPoint(offset_reader, offset_reader);
-    QPoint p;
-
-    float dom_height = (*m_dominanceGrid)[m_Position];
-    float local_dom;
-
-    int x,y;
-    double sum=0.;
-    double value, own_value;
-    for (x=0;x<reader->size();++x) {
-        for (y=0;y<reader->size(); ++y) {
-            p = pos_reader + QPoint(x,y);
-            if (m_grid->isIndexValid(p)) {
-                local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
-                own_value = 1. - m_stamp->offsetValue(x,y,d_offset)*lafactor /local_dom; // old: dom_height;
-                own_value = qMax(own_value, 0.02);
-                value =  m_grid->valueAtIndex(p) / own_value; // remove impact of focal tree
-                if (value>0.)
-                    sum += value * (*reader)(x,y);
-                //value = (1. - m_stamp->offsetValue(x,y,d_offset)/dom_height);
-                //value = (1 - m_grid->valueAtIndex(p)) / (m_stamp->offsetValue(x,y,d_offset)/dom_height * lafactor);
-                if (isDebugging()) {
-                    qDebug() << "Tree" << id() << "Coord" << p << "gridvalue" << m_grid->valueAtIndex(p) << "value" << value << "reader" << (*reader)(x,y) << "writer" << m_stamp->offsetValue(x,y,d_offset);
-                }
-
-            }
-        }
-    }
-    mImpact = sum;
-    // read dominance field...
-    if (dom_height < m_Height) {
-        // if tree is higher than Z*, the dominance height
-        // a part of the crown is in "full light".
-        m_statAboveZ++;
-        mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
-    }
-    if (mImpact > 1)
-        mImpact = 1.f;
-    //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    return mImpact;
-}*/
 
 void Tree::readStampMul()
 {
@@ -379,9 +243,10 @@ void Tree::readStampMul()
 
             //p = pos_reader + QPoint(x,y);
             //if (m_grid->isIndexValid(p)) {
-            local_dom = mHeightGrid->valueAtIndex((rx+x)/5, ry/5);
+            local_dom = mHeightGrid->valueAtIndex((rx+x)/5, ry/5); // ry: gets ++ed in outer loop, rx not
             //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
-            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*lafactor /local_dom; // old: dom_height;
+
+            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*lafactor / local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value++ / own_value; // remove impact of focal tree
             //if (value>0.)
@@ -447,7 +312,7 @@ void Tree::grow()
 
     partitioning(npp);
 
-    calcBiomassCompartments();
+     mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
 
 }
 
@@ -512,33 +377,82 @@ void Tree::partitioning(double npp)
     double to_reserve = qMin(reserve_size, net_stem);
     net_stem -= to_reserve;
 
+    DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
+             + QString("npp %1 npp_reserve %9 sen_fol %2 sen_stem %3 sen_root %4 net_fol %5 net_stem %6 net_root %7 to_reserve %8")
+               .arg(npp).arg(senescence_foliage).arg(senescence_stem).arg(senescence_root)
+               .arg(net_foliage).arg(net_stem).arg(net_root).arg(to_reserve).arg(mNPPReserve) );
+
     // update of compartments
     mLeafMass += net_foliage;
-    mRootMass += net_root;
+    mLeafMass = qMax(mLeafMass, 0.f);
+    mLeafArea = mLeafMass * mSpecies->specificLeafArea();
 
-    // calculate the dimension of growth
+    mRootMass += net_root;
+    mRootMass = qMax(mRootMass, 0.f);
+
+    // calculate the dimensions of growth (diameter, height)
     grow_diameter(net_stem);
 
-    //DBG_IF(apct_foliage<0, "Tree::partitioning", "foliage out of range");
-    //DBG_IF_X(mId==1, "Tree::partitioning", "foliage out of range", test_cntr());
+    // calculate stem biomass using the allometric equation
+    mStemMass = mSpecies->biomassStem(mDbh);
 
 }
 
+
+/** Determination of diamter and height growth based on increment of the stem mass (@net_stem_npp).
+    Refer to XXX for equations and variables.
+    This function updates the dbh and height of the tree.
+  */
 inline void Tree::grow_diameter(const double &net_stem_npp)
 {
     // determine dh-ratio of increment
     // height increment is a function of light competition:
-    double rel_height_growth = relative_height_growth(); // [0..1]
+    double hd_growth = relative_height_growth(); // hd of height growth
+    //DBG_IF_X(rel_height_growth<0 || rel_height_growth>1., "Tree::grow_dimater", "rel_height_growth out of bound.", dump());
+
+    const double volume_factor = mSpecies->volumeFactor();
+
+    double factor_diameter = 1. / (  volume_factor * (mDbh + mDbhDelta)*(mDbh + mDbhDelta) * ( 2. * mHeight/mDbh + hd_growth) );
+    double delta_d_estimate = factor_diameter * net_stem_npp; // estimated dbh-inc using last years increment
+
+    // using that dbh-increment we estimate a stem-mass-increment and the residual (Eq. 9)
+    double stem_estimate = volume_factor * (mDbh + delta_d_estimate)*(mDbh + delta_d_estimate)*(mHeight + delta_d_estimate*hd_growth);
+    double stem_residual = stem_estimate - (mStemMass + net_stem_npp);
+
+    // the final increment is then:
+    double d_increment = factor_diameter * (net_stem_npp - stem_residual); // Eq. (11)
+    DBG_IF_X(mId == 1 || d_increment<0., "Tree::grow_dimater", "increment < 0.", dump()
+             + QString("\nhdz %1 factor_diameter %2 stem_residual %3 delta_d_estimate %4 d_increment %5 final residual(kg) %6")
+               .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
+               .arg( volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mStemMass + net_stem_npp)) ));
+
+    DBGMODE(
+        double res_final = volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mStemMass + net_stem_npp));
+        DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
+        DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
+        //dbgstruct["sen_demand"]=sen_demand;
 
 
+            );
+    d_increment = qMax(d_increment, 0.);
+
+    // update state variables
+    mDbh += d_increment;
+    mDbhDelta = d_increment; // save for next year's growth
+    mHeight += d_increment * hd_growth * 0.01;
 }
 
+
+/// return the HD ratio of this year's increment based on the light status.
 inline double Tree::relative_height_growth()
 {
     double hd_low, hd_high;
     mSpecies->hdRange(mDbh, hd_low, hd_high);
 
-    // scale according to LRI: if having much light (LRI=1), the result is hd_low (for open grown trees)
-    double result = hd_high - (hd_high-hd_low)*mLRI;
-    return result;
+    DBG_IF_X(hd_low>hd_high, "Tree::relative_height_growth", "hd low higher dann hd_high for ", dump());
+    DBG_IF_X(hd_low < 20 || hd_high>250, "Tree::relative_height_growth", "hd out of range ", dump() + QString(" hd-low: %1 hd-high: %2").arg(hd_low).arg(hd_high));
+
+    // scale according to LRI: if receiving much light (LRI=1), the result is hd_low (for open grown trees)
+    double hd_ratio = hd_high - (hd_high-hd_low)*mLRI;
+    return hd_ratio;
 }

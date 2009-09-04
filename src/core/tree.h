@@ -61,11 +61,11 @@ private:
     void partitioning(double npp);
     // state variables
     int mId;
-    float mDbh;
-    float mHeight;
+    float mDbh; ///< diameter at breast height [cm]
+    float mHeight; ///< tree height [m]
     QPointF mPosition;
     // biomass compartements
-    float mLeafArea; // m2
+    float mLeafArea; ///< m2 leaf area??
 
     float mLeafMass; // kg
     float mStemMass; // kg
@@ -73,8 +73,9 @@ private:
     // production relevant
     float mNPPReserve; // kg
 
+    float mDbhDelta; ///< diameter growth [cm]
 
-    float mLRI; // resulting lightRessourceIndex
+    float mLRI; ///< resulting lightRessourceIndex
     // Stamp, Species, Ressource Unit
     const Stamp *mStamp;
 
@@ -83,6 +84,7 @@ private:
 
     // special functions
     bool isDebugging() { return mId == mDebugid; }
+    QString dump();
     // static data
     static FloatGrid *mGrid;
     static FloatGrid *mHeightGrid;
@@ -96,4 +98,10 @@ private:
     static int m_nextId;
 };
 
+/** a struct that contains details about a single tree
+  */
+struct SingleTreeStatistics
+{
+// growth
+};
 #endif // TREE_H
