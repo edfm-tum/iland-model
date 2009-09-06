@@ -25,6 +25,7 @@ public:
     DebugList &debugList(const int ID, const DebugOutputs dbg); ///< returns a ref to a list ready to be filled with debug output of a type/id combination.
     const QList<DebugList> debugLists(const int ID, const DebugOutputs dbg); ///< return a list of debug outputs
     QStringList debugListCaptions(const DebugOutputs dbg); ///< returns stringlist of captions for a specific output type
+    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator); ///< output for all available items (trees, ...) in table form
     // database
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
     QSqlDatabase dbout() { return QSqlDatabase::database("out"); }

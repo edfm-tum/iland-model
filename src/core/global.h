@@ -35,4 +35,13 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 #  endif
 #endif
 
+#if !defined(DBGMODE)
+#  ifndef QT_NO_DEBUG
+#    define DBGMODE(stmts) { stmts }
+#  else
+#    define DBGMODE(stmts) qt_noop()
+#  endif
+#endif
+
+
 #endif // GLOBAL_H

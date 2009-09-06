@@ -40,7 +40,6 @@ private:
     void paintFON(QPainter &painter, QRect rect);
     Viewport vp;
     QString dumpTreelist();
-    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator);
     void applyCycles(int cycle_count=1);
     void checkModelState();
 

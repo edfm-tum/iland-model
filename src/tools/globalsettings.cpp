@@ -141,6 +141,26 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
     return QStringList() << "invalid debug output!";
 }
 
+QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, const QString separator)
+{
+
+    GlobalSettings *g = GlobalSettings::instance();
+    QList<DebugList> ddl = g->debugLists(-1, type); // get all debug data
+
+    QStringList result;
+    result << g->debugListCaptions(type).join(separator);
+    foreach (const DebugList &l, ddl) {
+        QString line;
+        int c=0;
+        foreach(const QVariant &value, l) {
+            if (c++)
+                line+=separator;
+            line += value.toString();
+        }
+        result << line;
+    }
+    return result;
+}
 
 /** retrieve a const pointer to a stored SettingMetaData object.
  if @p name is not found, a NULL returned.

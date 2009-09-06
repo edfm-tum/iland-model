@@ -331,14 +331,6 @@ QString test_cntr()
     return QString::number(cnt);
 }
 
-#if !defined(DBGMODE)
-#  ifndef QT_NO_DEBUG
-#    define DBGMODE(stmts) { stmts }
-#  else
-#    define DBGMODE(stmts) qt_noop()
-#  endif
-#endif
-
 void Tree::partitioning(double npp)
 {
     DBGMODE(

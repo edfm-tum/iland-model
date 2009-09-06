@@ -53,6 +53,9 @@ Tree *AllTreeIterator::next()
 Model::Model()
 {
     initialize();
+    QString dbg="running in release mode.";
+    DBGMODE( dbg="running in debug mode."; );
+    qDebug() << dbg;
 }
 
 Model::~Model()

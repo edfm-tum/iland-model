@@ -485,41 +485,18 @@ void MainWindow::on_actionModelRun_triggered()
    ui->PaintWidget->update();
 }
 
-QStringList MainWindow::debugDataTable(GlobalSettings::DebugOutputs type, const QString separator)
-{
-    if (!mRemoteControl.isRunning())
-        return QStringList();
-
-    GlobalSettings *g = GlobalSettings::instance();
-    QList<DebugList> ddl = g->debugLists(-1, type); // get all debug data
-
-    QStringList result;
-    result << g->debugListCaptions(type).join(separator);
-    foreach (const DebugList &l, ddl) {
-        QString line;
-        int c=0;
-        foreach(const QVariant &value, l) {
-            if (c++)
-                line+=separator;
-            line += value.toString();
-        }
-        result << line;
-    }
-    return result;
-}
-
 
 
 void MainWindow::on_actionTree_Partition_triggered()
 {
-    QStringList result = debugDataTable(GlobalSettings::dTreePartition, ";");
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";");
     QApplication::clipboard()->setText(result.join("\n"));
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
 
 void MainWindow::on_actionTree_Growth_triggered()
 {
-    QStringList result = debugDataTable(GlobalSettings::dTreeGrowth, ";");
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";");
     QApplication::clipboard()->setText(result.join("\n"));
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
