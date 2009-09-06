@@ -68,7 +68,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    mModel = 0;
     connect( ui->PaintWidget, SIGNAL(needsPainting(QPainter&)),
              this, SLOT(repaintArea(QPainter&)) );
     connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
@@ -113,9 +112,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-
-    if (mModel)
-        delete mModel;
 }
 
 
@@ -133,9 +129,11 @@ void MainWindow::on_saveFile_clicked()
 void MainWindow::readwriteCycle()
 {
 
-    if (!mModel || !mModel->isSetup())
+    if (!mRemoteControl.canRun())
         return;
-    mModel->runYear();
+
+    mRemoteControl.runYear();
+
     GlobalSettings *g = GlobalSettings::instance();
     QList<DebugList> ddl = g->debugLists(-1, GlobalSettings::DebugOutputs(-1)); // get all debug data
     qDebug() << ddl;
@@ -149,9 +147,11 @@ void MainWindow::readwriteCycle()
 
 QString MainWindow::dumpTreelist()
 {
-    if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
+    if (!mRemoteControl.isRunning())
         return "";
-    RessourceUnit *ru = mModel->ru();
+
+    Model *model = mRemoteControl.model();
+    RessourceUnit *ru = model->ru();
     QVector<Tree> &mTrees = ru->trees();
     QStringList result;
     result+=QString("id;x;y;dbh;height;fonvalue");
@@ -177,13 +177,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
 
-    if (!mModel  || !mModel->isSetup() ) {
-        qDebug() << "model is not setup - no drawing";
+    if (!mRemoteControl.canRun())
         return;
-    }
+    Model *model = mRemoteControl.model();
 
-    FloatGrid *grid = mModel->grid();
-    FloatGrid *domGrid = mModel->heightGrid();
+    FloatGrid *grid = model->grid();
+    FloatGrid *domGrid = model->heightGrid();
     // do the actual painting
     if (!grid)
         return;
@@ -272,7 +271,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         } // if (show_dem)
     }
     if (show_impact) {
-        AllTreeIterator treelist(mModel);
+        AllTreeIterator treelist(model);
         Tree *tree;
         while (tree = treelist.next()) {
             if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
@@ -327,10 +326,12 @@ void MainWindow::mouseClick(const QPoint& pos)
     ui->treeChange->setProperty("tree",0);
 
     // find adjactent tree
-    if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
+    if (!mRemoteControl.isRunning())
         return;
+
     // test ressource units...
-    RessourceUnit *ru = mModel->ru(coord);
+    Model *model = mRemoteControl.model();
+    RessourceUnit *ru = model->ru(coord);
     qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
@@ -355,15 +356,15 @@ void MainWindow::mouseClick(const QPoint& pos)
 void MainWindow::mouseMove(const QPoint& pos)
 {
 
-    if (!mModel || mModel->grid()->isEmpty())
+    if (!mRemoteControl.isRunning())
         return;
-    FloatGrid *grid = mModel->grid();
+    FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);
     if (grid->coordValid(p)) {
         if (ui->visFon->isChecked())
            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*grid).valueAt(p)));
         if( ui->visDomGrid->isChecked())
-            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mModel->heightGrid()).valueAt(p)));
+            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mRemoteControl.model()->heightGrid()).valueAt(p)));
     }
 }
 
@@ -411,47 +412,47 @@ void MainWindow::on_actionEdit_XML_settings_triggered()
 
 void MainWindow::setupModel()
 {
-    try {
-        if (mModel)
-            delete mModel;
-
-        mModel = new Model();
-        GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
-        mModel->loadProject();
+//    try {
+//        if (mModel)
+//            delete mModel;
+//
+//        mModel = new Model();
+//        GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
+//        mModel->loadProject();
 
         // set viewport of paintwidget
-        vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
-        // debug mode
-        GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
-    } catch(const IException &e) {
-        QString error_msg = e.toString();
-        Helper::msg(error_msg);
-        qDebug() << error_msg;
-
-        //Helper::msg( error_msg );
-    }
+//        vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
+//        // debug mode
+//        GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
+//    } catch(const IException &e) {
+//        QString error_msg = e.toString();
+//        Helper::msg(error_msg);
+//        qDebug() << error_msg;
+//
+//        //Helper::msg( error_msg );
+//    }
 }
 
-void MainWindow::on_fonRun_clicked()
-{
-        try {
-        setupModel();
-        if (mModel->ruList().count()==0)
-            return;
-
-        mModel->beforeRun(); // load stand
-
-        // start first cycle...
-        readwriteCycle();
-    } catch(const IException &e) {
-        Helper::msg(e.toString());
-        qDebug() << e.toString();
-    }
-    catch(...) {
-        qDebug() << "some other error...";
-    }
-
-}
+//void MainWindow::on_fonRun_clicked()
+//{
+//        try {
+//        setupModel();
+//        if (mModel->ruList().count()==0)
+//            return;
+//
+//        mModel->beforeRun(); // load stand
+//
+//        // start first cycle...
+//        readwriteCycle();
+//    } catch(const IException &e) {
+//        Helper::msg(e.toString());
+//        qDebug() << e.toString();
+//    }
+//    catch(...) {
+//        qDebug() << "some other error...";
+//    }
+//
+//}
 
 
 void MainWindow::on_pbSetAsDebug_clicked()
@@ -483,9 +484,8 @@ void MainWindow::on_actionTreelist_triggered()
 
 void MainWindow::on_actionFON_grid_triggered()
 {
-    if (!mModel || mModel->grid())
-        return;
-    QString gr = gridToString(*mModel->grid());
+    if (!mRemoteControl.isRunning()) return;
+    QString gr = gridToString(*mRemoteControl.model()->grid());
     QApplication::clipboard()->setText(gr);
     qDebug() << "grid copied to clipboard.";
 }

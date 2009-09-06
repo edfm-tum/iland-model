@@ -8,6 +8,8 @@
 #include "tree.h"
 #include "helper.h"
 
+#include "modelcontroller.h"
+
 class Model;
 
 namespace Ui
@@ -26,10 +28,10 @@ public:
 
 private:
     Ui::MainWindowClass *ui;
+    ModelController mRemoteControl;
     // setup
     void setupModel();
     void readwriteCycle();
-    Model *mModel;
     void addTrees(const double dbh, const int count);
 
 
@@ -51,16 +53,7 @@ private slots:
     void on_pbSetAsDebug_clicked();
 
 
-    void on_fonRun_clicked();
-
-
-
     void on_actionEdit_XML_settings_triggered();
-
-
-
-
-
 
     void on_saveFile_clicked();
     void repaintArea(QPainter &painter);
