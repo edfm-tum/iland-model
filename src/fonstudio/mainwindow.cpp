@@ -645,9 +645,9 @@ void MainWindow::on_actionLightroom_triggered()
 
 void MainWindow::on_actionEdit_XML_settings_triggered()
 {
+
     ui->editStack->setCurrentIndex(0);
-    ui->headerCaption->setText("Edit XML file");
-    m_gfxtype = -1;
+
     ui->PaintWidget->update();
 }
 

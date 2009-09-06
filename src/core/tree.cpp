@@ -50,6 +50,12 @@ QString Tree::dump()
     return result;
 }
 
+void Tree::dumpList(DebugList &rTargetList)
+{
+    rTargetList << mId << mSpecies->id() << mDbh << mHeight  << mPosition.x() << mPosition.y()   << mRU->index() << mLRI
+                << mStemMass << mRootMass << mLeafMass << mLeafArea;
+}
+
 void Tree::setup()
 {
     if (mDbh<=0 || mHeight<=0)
@@ -377,10 +383,18 @@ void Tree::partitioning(double npp)
     double to_reserve = qMin(reserve_size, net_stem);
     net_stem -= to_reserve;
 
-    DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
+    /*DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
              + QString("npp %1 npp_reserve %9 sen_fol %2 sen_stem %3 sen_root %4 net_fol %5 net_stem %6 net_root %7 to_reserve %8")
                .arg(npp).arg(senescence_foliage).arg(senescence_stem).arg(senescence_root)
-               .arg(net_foliage).arg(net_stem).arg(net_root).arg(to_reserve).arg(mNPPReserve) );
+               .arg(net_foliage).arg(net_stem).arg(net_root).arg(to_reserve).arg(mNPPReserve) );*/
+
+    DBGMODE(
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition) && mId<300) {
+            DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreePartition);
+            dumpList(out); // add tree headers
+            out << npp << senescence_foliage << senescence_stem << senescence_root << net_foliage << net_stem << net_root << to_reserve << mNPPReserve;
+        }
+    ); // DBGMODE()
 
     // update of compartments
     mLeafMass += net_foliage;
@@ -431,12 +445,13 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
         //dbgstruct["sen_demand"]=sen_demand;
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && mId<50) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && mId<300) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
-            out << hd_growth << factor_diameter << delta_d_estimate << d_increment;
+            dumpList(out); // add tree headers
+            out << net_stem_npp << hd_growth << factor_diameter << delta_d_estimate << d_increment;
         }
 
-            );
+            ); // DBGMODE()
     d_increment = qMax(d_increment, 0.);
 
     // update state variables

@@ -24,7 +24,7 @@ ModelController::~ModelController()
 
 const bool ModelController::canCreate()
 {
-    if (mModel || mInitFile.isEmpty())
+    if (mModel)
         return false;
     return true;
 }
@@ -67,6 +67,9 @@ void ModelController::create()
     mModel = new Model();
     mModel->loadProject();
     mRunYears = 0;
+    if (mModel->isSetup())
+        mModel->beforeRun();
+
     } catch(const IException &e) {
         QString error_msg = e.toString();
         Helper::msg(error_msg);

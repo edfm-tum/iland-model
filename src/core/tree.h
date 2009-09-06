@@ -85,6 +85,7 @@ private:
     // special functions
     bool isDebugging() { return mId == mDebugid; }
     QString dump();
+    void dumpList(DebugList &rTargetList);
     // static data
     static FloatGrid *mGrid;
     static FloatGrid *mHeightGrid;
@@ -98,10 +99,5 @@ private:
     static int m_nextId;
 };
 
-/** a struct that contains details about a single tree
-  */
-struct SingleTreeStatistics
-{
-// growth
-};
+
 #endif // TREE_H

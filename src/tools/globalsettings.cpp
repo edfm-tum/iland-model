@@ -127,10 +127,16 @@ const QList<DebugList> GlobalSettings::debugLists(const int ID, const DebugOutpu
 
 QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 {
+    QStringList treeCaps = QStringList() << "Id" << "Species" << "Dbh" << "Height" << "x" << "y" << "ru_index" << "LRI" << "mStem" << "mRoot" << "mFoliage" << "LA";
     switch(dbg) {
-        case dTreeGrowth: return QStringList() << "id" << "type" << "growth" << "hach" << "hech";
-        case dTreePartition: return QStringList() << "id" << "type" << "partition" << "hach" << "hech";
-            case dStandNPP: return QStringList() << "id" << "type" << "standnpp" << "hach" << "hech";
+        case dTreeGrowth: return QStringList() << "id" << "type" << treeCaps
+                    << "netNPPStem" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
+
+        case dTreePartition: return QStringList() << "id" << "type" << treeCaps
+                    << "npp" << "senescence_foliage" << "senescence_stem" << "senescence_root"
+                    << "net_foliage" << "net_stem" << "net_root" << "to_reserve" << "mNPPReserve";
+
+        case dStandNPP: return QStringList() << "id" << "type" << "standnpp" << "hach" << "hech";
     }
     return QStringList() << "invalid debug output!";
 }

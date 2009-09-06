@@ -32,10 +32,7 @@ private:
     // setup
     void setupModel();
     void readwriteCycle();
-    void addTrees(const double dbh, const int count);
 
-
-    int m_gfxtype;
 
     static QPlainTextEdit *mLogSpace;
     void loadPicusIniFile(const QString &fileName);
@@ -43,10 +40,18 @@ private:
     void paintFON(QPainter &painter, QRect rect);
     Viewport vp;
     QString dumpTreelist();
+    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator);
     void applyCycles(int cycle_count=1);
+    void checkModelState();
 
 private slots:
 
+    void on_actionSelect_Data_Types_triggered();
+    void on_actionTree_Growth_triggered();
+    void on_actionTree_Partition_triggered();
+    void on_actionModelRun_triggered();
+    void on_actionModelDestroy_triggered();
+    void on_actionModelCreate_triggered();
     void on_actionFON_grid_triggered();
     void on_actionTreelist_triggered();
     void on_openFile_clicked();

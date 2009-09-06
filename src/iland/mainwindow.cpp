@@ -79,6 +79,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
             this, SLOT(mouseWheel(const QPoint&, int)));
 
+    // dock windows
+    ui->menuView->addAction( ui->dockEditor->toggleViewAction() );
+    ui->menuView->addAction( ui->dockLogviewer->toggleViewAction() );
+    ui->menuView->addAction( ui->dockWidget->toggleViewAction() );
+
 
     ui->pbResults->setMenu(ui->menuOutput_menu);
 
@@ -107,6 +112,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     qDebug() << "threadcount: " << QThread::idealThreadCount();
 
+    checkModelState();
+
 }
 
 MainWindow::~MainWindow()
@@ -114,7 +121,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
+// control GUI actions
+void MainWindow::checkModelState()
+{
+    ui->actionModelCreate->setEnabled(mRemoteControl.canCreate());
+    ui->actionModelDestroy->setEnabled(mRemoteControl.canDestroy());
+    ui->actionModelRun->setEnabled(mRemoteControl.canRun());
+}
 
 
 void MainWindow::on_saveFile_clicked()
@@ -133,12 +146,6 @@ void MainWindow::readwriteCycle()
         return;
 
     mRemoteControl.runYear();
-
-    GlobalSettings *g = GlobalSettings::instance();
-    QList<DebugList> ddl = g->debugLists(-1, GlobalSettings::DebugOutputs(-1)); // get all debug data
-    qDebug() << ddl;
-    qDebug() << g->debugListCaptions(GlobalSettings::dTreeGrowth);
-    ui->PaintWidget->update(); // repaint...
 
 }
 
@@ -300,18 +307,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
 void MainWindow::repaintArea(QPainter &painter)
 {
-    // select drawing type...
-    switch (m_gfxtype) {
-        case 0: // paint FON cells
-            paintFON(painter, ui->PaintWidget->rect()); break;
-        case 1:  // paint Lightroom - studio --- painting is done on the background image of PaintArea
-            break;
-        case 2: // paint Lightroom
-        default: break; // no painting
-    }
+     paintFON(painter, ui->PaintWidget->rect());
     // fix viewpoint
     vp.setScreenRect(ui->PaintWidget->rect());
 }
+
 
 void MainWindow::on_visFon_toggled() { ui->PaintWidget->update(); }
 void MainWindow::on_visDomGrid_toggled() { on_visFon_toggled(); }
@@ -402,8 +402,6 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
 void MainWindow::on_actionEdit_XML_settings_triggered()
 {
     ui->editStack->setCurrentIndex(0);
-    ui->headerCaption->setText("Edit XML file");
-    m_gfxtype = -1;
     ui->PaintWidget->update();
 }
 
@@ -412,47 +410,19 @@ void MainWindow::on_actionEdit_XML_settings_triggered()
 
 void MainWindow::setupModel()
 {
-//    try {
-//        if (mModel)
-//            delete mModel;
-//
-//        mModel = new Model();
-//        GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
-//        mModel->loadProject();
-
+    // load project xml file to global xml settings structure
+    GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
+    // create the model
+    mRemoteControl.create();
+    Model *model = mRemoteControl.model();
+    if (model) {
         // set viewport of paintwidget
-//        vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
-//        // debug mode
-//        GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
-//    } catch(const IException &e) {
-//        QString error_msg = e.toString();
-//        Helper::msg(error_msg);
-//        qDebug() << error_msg;
-//
-//        //Helper::msg( error_msg );
-//    }
+        vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
+        // debug mode
+        GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
+    }
 }
 
-//void MainWindow::on_fonRun_clicked()
-//{
-//        try {
-//        setupModel();
-//        if (mModel->ruList().count()==0)
-//            return;
-//
-//        mModel->beforeRun(); // load stand
-//
-//        // start first cycle...
-//        readwriteCycle();
-//    } catch(const IException &e) {
-//        Helper::msg(e.toString());
-//        qDebug() << e.toString();
-//    }
-//    catch(...) {
-//        qDebug() << "some other error...";
-//    }
-//
-//}
 
 
 void MainWindow::on_pbSetAsDebug_clicked()
@@ -492,3 +462,76 @@ void MainWindow::on_actionFON_grid_triggered()
 
 
 
+
+void MainWindow::on_actionModelCreate_triggered()
+{
+    // create model
+    setupModel();
+    checkModelState();
+}
+
+void MainWindow::on_actionModelDestroy_triggered()
+{
+    mRemoteControl.destroy();
+    checkModelState();
+}
+
+void MainWindow::on_actionModelRun_triggered()
+{
+   if (!mRemoteControl.canRun())
+        return;
+   mRemoteControl.runYear();
+   checkModelState();
+   ui->PaintWidget->update();
+}
+
+QStringList MainWindow::debugDataTable(GlobalSettings::DebugOutputs type, const QString separator)
+{
+    if (!mRemoteControl.isRunning())
+        return QStringList();
+
+    GlobalSettings *g = GlobalSettings::instance();
+    QList<DebugList> ddl = g->debugLists(-1, type); // get all debug data
+
+    QStringList result;
+    result << g->debugListCaptions(type).join(separator);
+    foreach (const DebugList &l, ddl) {
+        QString line;
+        int c=0;
+        foreach(const QVariant &value, l) {
+            if (c++)
+                line+=separator;
+            line += value.toString();
+        }
+        result << line;
+    }
+    return result;
+}
+
+
+
+void MainWindow::on_actionTree_Partition_triggered()
+{
+    QStringList result = debugDataTable(GlobalSettings::dTreePartition, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+}
+
+void MainWindow::on_actionTree_Growth_triggered()
+{
+    QStringList result = debugDataTable(GlobalSettings::dTreeGrowth, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+}
+
+void MainWindow::on_actionSelect_Data_Types_triggered()
+{
+    int value = 0;
+    int newvalue = QInputDialog::getInt(this, "QInputDialog::getText()",
+                                        "Enter code for desired outputs: add\n" \
+                                        "1 ... Tree grwoth\n" \
+                                        "2 ... Tree partition\n" \
+                                        "4 ... Standlevel NPP\n" \
+                                        "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
+     GlobalSettings::instance()->setDebugOutput(newvalue);
+}

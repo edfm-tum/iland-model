@@ -6,5 +6,9 @@
         <file>audio-input-microphone.png</file>
         <file>source_xml.png</file>
         <file>icon4.png</file>
+        <file>www.png</file>
+        <file>go-next.png</file>
+        <file>process-stop.png</file>
+        <file>user-trash.png</file>
     </qresource>
 </RCC>
