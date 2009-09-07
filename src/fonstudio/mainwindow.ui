@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="res/fonstudio.qrc">
-    <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
+    <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout" rowstretch="1,5,2" columnstretch="1,2">

@@ -85,13 +85,14 @@ Stamp *stampFromGrid(const FloatGrid& grid, const int width)
     else if (width<=16) type = Stamp::est16x16;
     else if (width<=24) type = Stamp::est24x24;
     else if (width<=32) type = Stamp::est32x32;
-    else type = Stamp::est48x48;
+    else if (width<=48) type = Stamp::est48x48;
+    else type = Stamp::est64x64;
 
     Stamp *stamp = StampContainer::newStamp(type);
     int swidth = width;
-    if (width>47) {
-        qDebug() << "Warning: grid to big, truncated stamp t0 47x47px!";
-        swidth = 47;
+    if (width>63) {
+        qDebug() << "Warning: grid too big, truncated stamp to 63x63px!";
+        swidth = 63;
     }
     stamp->setOffset(swidth/2);
     int coff = c/2 - swidth/2; // e.g.: grid=25, width=7 -> coff = 12 - 3 = 9
