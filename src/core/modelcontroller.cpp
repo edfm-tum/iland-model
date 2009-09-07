@@ -103,6 +103,7 @@ void ModelController::runYear()
 {
     if (!canRun()) return;
     try {
+        GlobalSettings::instance()->clearDebugLists();  // clear debug data
         mModel->runYear();
         mRunYears ++;
     } catch(const IException &e) {

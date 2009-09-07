@@ -55,6 +55,8 @@ public:
 
     static float lafactor;
 
+    QString dump();
+
 private:
     // helping functions
     void calcBiomassCompartments();
@@ -84,7 +86,7 @@ private:
 
     // special functions
     bool isDebugging() { return mId == mDebugid; }
-    QString dump();
+
     void dumpList(DebugList &rTargetList);
     // static data
     static FloatGrid *mGrid;

@@ -376,7 +376,7 @@ void Tree::partitioning(double npp)
 
     // netto increments
     double net_foliage = gross_foliage - senescence_foliage;
-    double net_root = gross_root;// - senescence_root;
+    double net_root = gross_root - senescence_root;
     double net_stem = gross_stem - senescence_stem;
 
     // flow back to reserve pool:
@@ -455,11 +455,12 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
 
             ); // DBGMODE()
     d_increment = qMax(d_increment, 0.);
+    d_increment *= 100; // from m to cm
 
     // update state variables
-    mDbh += d_increment * 100;
+    mDbh += d_increment;
     mDbhDelta = d_increment; // save for next year's growth
-    mHeight += d_increment * hd_growth;
+    mHeight += d_increment * hd_growth / 100.;
 }
 
 

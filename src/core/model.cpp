@@ -191,6 +191,9 @@ void Model::beforeRun()
     StandLoader loader(this);
     loader.processInit();
 
+    Tree::setGrid(mGrid, mHeightGrid);
+    applyPattern();
+    readPattern();
 
 }
 

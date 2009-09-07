@@ -25,6 +25,7 @@ signals:
      void resizeEvent ( QResizeEvent * event );
      void mouseMoveEvent(QMouseEvent *event);
      void wheelEvent ( QWheelEvent * event );
+     void keyPressEvent(QKeyEvent *event);
  private:
      QImage m_bitmap;
      QPoint m_lastDown;

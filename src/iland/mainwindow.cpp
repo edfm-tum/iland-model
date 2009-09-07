@@ -339,6 +339,7 @@ void MainWindow::mouseClick(const QPoint& pos)
         if(distance(tit->position(),coord)<2) {
             Tree *p = &(*tit);
             qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightRessourceIndex();
+            qDebug() << tit->dump();
             ui->treeChange->setProperty("tree", (int)p);
             ui->treeDbh->setValue(p->dbh());
             ui->treeHeight->setValue(p->height());
@@ -420,6 +421,8 @@ void MainWindow::setupModel()
         vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
         // debug mode
         GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
+
+        ui->PaintWidget->update();
     }
 }
 

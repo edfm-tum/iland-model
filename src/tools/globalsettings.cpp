@@ -101,6 +101,11 @@ QString GlobalSettings::makeDebugKey(const int id, const int type)
     return QString("%1 %2").arg(id).arg(type);
 }
 
+void GlobalSettings::clearDebugLists()
+{
+    mDebugLists.clear();
+}
+
 DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
 {
     const QString &key = makeDebugKey(ID, int(dbg));

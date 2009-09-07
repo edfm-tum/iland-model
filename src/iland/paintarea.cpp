@@ -15,6 +15,8 @@ PaintArea::PaintArea(QWidget *parent)
      m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
      // enable mouse tracking
      this->setMouseTracking(true);
+     // enable keyboard focus
+     setFocusPolicy(Qt::StrongFocus);
 
  }
 
@@ -67,4 +69,31 @@ void PaintArea::mouseReleaseEvent ( QMouseEvent * event )
     }
     //emit mouseClick(event->pos());
      //emit needsPainting(painter);
+}
+
+void PaintArea::keyPressEvent(QKeyEvent *event)
+{
+    // emulate mouse actions with the keyboard
+    QPoint mousepos = this->rect().center();
+    switch (event->key()) {
+        case Qt::Key_Plus:
+        case Qt::Key_PageUp:  // zoom in
+            emit mouseWheel(mousepos, 1);
+            break;
+
+        case Qt::Key_PageDown: // zoom out
+        case Qt::Key_Minus:
+            emit mouseWheel(mousepos, -1);
+            break;
+        // pan with cursor keys
+        case Qt::Key_Left:
+            emit mouseDrag(mousepos, mousepos + QPoint(20, 0), Qt::MidButton); break;
+        case Qt::Key_Right:
+            emit mouseDrag(mousepos, mousepos + QPoint(-20, 0), Qt::MidButton); break;
+
+        case Qt::Key_Up:
+            emit mouseDrag(mousepos, mousepos + QPoint(0, 20), Qt::MidButton); break;
+        case Qt::Key_Down:
+            emit mouseDrag(mousepos, mousepos + QPoint(0, -20), Qt::MidButton); break;
+        }
 }
