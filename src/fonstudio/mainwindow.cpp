@@ -857,6 +857,7 @@ void MainWindow::on_lrProcess_clicked()
         QVector<double> rel_sum; // stores sum/px
         double sum;
         int ring_count;
+        double total_sum = 0.;
         for (int o=0; o<gr.sizeX()/2; o++) {
             sum = 0; ring_count=0;
             // top and bottom
@@ -871,21 +872,37 @@ void MainWindow::on_lrProcess_clicked()
                 sum += gr(gr.sizeX()-1-o, i);
                 ring_count+=2;
             }
+            total_sum += sum;
             sums.push_back(sum);
             rel_sum.push_back(sum / double(ring_count) );
         }
         if (gr.sizeX()% 2) {
+            total_sum += gr(gr.sizeX()/2, gr.sizeX()/2); // center pixel for unevenly sized grids
             sums.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel for unevenly sized grids
             rel_sum.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel for unevenly sized grids
         }
         int end_ring, target_grid_size;
+        /* version < 20090905: average ring value
         for (end_ring=0;end_ring<rel_sum.count();end_ring++)
             if (rel_sum[end_ring]>cut_threshold)
                 break;
-        end_ring = rel_sum.count() - end_ring; //
+        end_ring = rel_sum.count() - end_ring; // */
+
+        // version > 20090905: based on total area
+        double rsum = 0;
+        for (end_ring=0;end_ring<sums.count();end_ring++) {
+            rsum += sums[end_ring];
+            // threshold: sum of influence > threshold
+            if (rsum>cut_threshold*total_sum)
+                break;
+        }
+        end_ring = sums.count() - end_ring;
+        if (end_ring<2) // minimum ring-count=2 (i.e. 9pixel)
+            end_ring=2;
+
         target_grid_size = 2*end_ring - 1; // e.g. 3rd ring -> 5x5-matrix
         qDebug() << "break at ring" << end_ring;
-        qDebug() << "circle;sum";
+        qDebug() << "circle sum relsum";
         for (int i=0;i<sums.count();i++)
             qDebug() << i << sums[i] << rel_sum[i];
 
