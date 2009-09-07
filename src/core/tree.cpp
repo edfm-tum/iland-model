@@ -306,8 +306,8 @@ void Tree::grow()
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
     double raw_gpp_per_rad = mRU->ressourceUnitSpecies(mSpecies).prod3PG().GPPperRad();
-    // GPP (without aging-effect) [gC] / year
-    double raw_gpp = raw_gpp_per_rad * radiation;
+    // GPP (without aging-effect) [gC] / year -> kg/GPP (*0.001)
+    double raw_gpp = raw_gpp_per_rad * radiation * 0.001;
     /*
     if (mRU->index()==3) {
         qDebug() << "tree production: radiation: " << radiation << "gpp/rad:" << raw_gpp_per_rad << "gpp" << raw_gpp << "LRI:" << mLRI << "LeafArea:" << mLeafArea;
@@ -315,6 +315,14 @@ void Tree::grow()
     // apply aging
     double gpp = raw_gpp * 0.6; // aging
     double npp = gpp * 0.47; // respiration loss
+
+    DBGMODE(
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP)) {
+            DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
+            dumpList(out); // add tree headers
+            out << radiation << raw_gpp << gpp << npp;
+        }
+    ); // DBGMODE()
 
     partitioning(npp);
 
@@ -381,10 +389,11 @@ void Tree::partitioning(double npp)
                .arg(net_foliage).arg(net_stem).arg(net_root).arg(to_reserve).arg(mNPPReserve) );*/
 
     DBGMODE(
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition) && mId<300) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition)) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreePartition);
             dumpList(out); // add tree headers
-            out << npp << senescence_foliage << senescence_stem << senescence_root << net_foliage << net_stem << net_root << to_reserve << mNPPReserve;
+            out << npp << senescence_foliage << senescence_stem << senescence_root << apct_foliage << apct_wood << apct_root
+                << net_foliage << net_stem << net_root << to_reserve << mNPPReserve;
         }
     ); // DBGMODE()
 
@@ -437,7 +446,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
         //dbgstruct["sen_demand"]=sen_demand;
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && mId<300) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
             dumpList(out); // add tree headers
             out << net_stem_npp << hd_growth << factor_diameter << delta_d_estimate << d_increment;

@@ -63,6 +63,7 @@
      <string>Debug Data</string>
     </property>
     <addaction name="actionSelect_Data_Types"/>
+    <addaction name="actionTree_NPP"/>
     <addaction name="actionTree_Partition"/>
     <addaction name="actionTree_Growth"/>
    </widget>
@@ -614,6 +615,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionSelect_Data_Types">
    <property name="text">
     <string>Select Data Types</string>
+   </property>
+  </action>
+  <action name="actionTree_NPP">
+   <property name="text">
+    <string>Tree NPP</string>
    </property>
   </action>
  </widget>

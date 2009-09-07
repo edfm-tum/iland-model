@@ -45,6 +45,7 @@ private:
 
 private slots:
 
+    void on_actionTree_NPP_triggered();
     void on_actionSelect_Data_Types_triggered();
     void on_actionTree_Growth_triggered();
     void on_actionTree_Partition_triggered();

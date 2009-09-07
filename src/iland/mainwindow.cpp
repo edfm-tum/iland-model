@@ -501,14 +501,24 @@ void MainWindow::on_actionTree_Growth_triggered()
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
 
+void MainWindow::on_actionTree_NPP_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+}
+
 void MainWindow::on_actionSelect_Data_Types_triggered()
 {
     int value = 0;
     int newvalue = QInputDialog::getInt(this, "QInputDialog::getText()",
                                         "Enter code for desired outputs: add\n" \
-                                        "1 ... Tree grwoth\n" \
+                                        "1 ... Tree NPP\n" \
                                         "2 ... Tree partition\n" \
-                                        "4 ... Standlevel NPP\n" \
+                                        "4 ... Tree growth (dbh,h)\n" \
+                                        "8 ... Standlevel NPP\n" \
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
+
+

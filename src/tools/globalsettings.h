@@ -18,7 +18,7 @@ public:
     ~GlobalSettings();
     // Access
     // debugging fain grained debug outputs
-    enum DebugOutputs { dTreeGrowth=1, dTreePartition=2, dStandNPP=4 }; ///< defines available debug output types.
+    enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4, dStandNPP=8 }; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
     void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
     const bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
