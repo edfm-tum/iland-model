@@ -361,7 +361,7 @@ void Tree::partitioning(double npp)
     double b_wf = 1.32; // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)
-    apct_wood = (mLeafMass * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( mStemMass / mStemMass + b_wf );
+    apct_wood = (mLeafMass * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( mLeafMass / mStemMass + b_wf );
     apct_foliage = 1. - apct_root - apct_wood;
 
     // senescence demands of the compartemnts
@@ -376,7 +376,7 @@ void Tree::partitioning(double npp)
 
     // netto increments
     double net_foliage = gross_foliage - senescence_foliage;
-    double net_root = gross_root - senescence_root;
+    double net_root = gross_root;// - senescence_root;
     double net_stem = gross_stem - senescence_stem;
 
     // flow back to reserve pool:
@@ -406,15 +406,16 @@ void Tree::partitioning(double npp)
     mRootMass = qMax(mRootMass, 0.f);
 
     // calculate the dimensions of growth (diameter, height)
-    grow_diameter(net_stem);
-
-    // calculate stem biomass using the allometric equation
-    mStemMass = mSpecies->biomassStem(mDbh);
+    if (net_stem>0.) {
+        grow_diameter(net_stem);
+        // calculate stem biomass using the allometric equation
+        mStemMass = mSpecies->biomassStem(mDbh);
+    }
 
 }
 
 
-/** Determination of diamter and height growth based on increment of the stem mass (@net_stem_npp).
+/** Determination of diamter and height growth based on increment of the stem mass (@p net_stem_npp).
     Refer to XXX for equations and variables.
     This function updates the dbh and height of the tree.
   */
@@ -423,8 +424,8 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     // determine dh-ratio of increment
     // height increment is a function of light competition:
     double hd_growth = relative_height_growth(); // hd of height growth
-    //DBG_IF_X(rel_height_growth<0 || rel_height_growth>1., "Tree::grow_dimater", "rel_height_growth out of bound.", dump());
 
+    // Be careful with units!! this function calculates diameter increments in meter!
     const double volume_factor = mSpecies->volumeFactor();
 
     double factor_diameter = 1. / (  volume_factor * (mDbh + mDbhDelta)*(mDbh + mDbhDelta) * ( 2. * mHeight/mDbh + hd_growth) );
@@ -456,9 +457,9 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     d_increment = qMax(d_increment, 0.);
 
     // update state variables
-    mDbh += d_increment;
+    mDbh += d_increment * 100;
     mDbhDelta = d_increment; // save for next year's growth
-    mHeight += d_increment * hd_growth * 0.01;
+    mHeight += d_increment * hd_growth;
 }
 
 

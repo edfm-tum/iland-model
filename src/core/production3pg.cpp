@@ -19,14 +19,14 @@ double Production3PG::calculate()
     double month_gpp[12];
     double year_raw_gpp = 0.;
     for (int i=0;i<12;i++) {
-        month_gpp[i] = radMonth[i] * 0.5 * totalResponses[i];
+        month_gpp[i] = radMonth[i] * 2 * totalResponses[i];
         year_raw_gpp += month_gpp[i];
     }
     // calculate harshness factor
     mHarshness = 0.2; // fake
+    //year_raw_gpp *= 3;
     // PARutilized - fraction:.... to GPP:
     // year GPP/rad: gC / (yearly MJ/m2)
     mGPPperRad = year_raw_gpp / radYear;
-
     return mGPPperRad;
 }
