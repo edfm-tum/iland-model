@@ -83,6 +83,9 @@ private:
     Species *mSpecies;
     RessourceUnit *mRU;
 
+    // debugging
+    bool mDebugging;
+
     // special functions
     bool isDebugging() { return mDebugging; }
 
@@ -90,8 +93,7 @@ private:
     // static data
     static FloatGrid *mGrid;
     static FloatGrid *mHeightGrid;
-    // debugging
-    bool mDebugging;
+
 
     // statistics
     static int m_statPrint;

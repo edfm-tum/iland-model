@@ -481,6 +481,8 @@ void MainWindow::on_actionModelRun_triggered()
         return;
    int count = QInputDialog::getInt(this, "input value",
                                         "How many years to run?\n", 10);
+   DebugTimer many_runs(QString("Timer for %1 runs").arg(count));
+
    for (int i=0;i<count;i++) {
        mRemoteControl.runYear();
        checkModelState();
