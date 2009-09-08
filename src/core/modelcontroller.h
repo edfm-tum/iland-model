@@ -24,7 +24,6 @@ public slots:
 private:
     Model *mModel;
     QString mInitFile;
-    int mRunYears;
 };
 
 #endif // MODELCONTROLLER_H

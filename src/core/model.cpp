@@ -69,6 +69,7 @@ Model::~Model()
 void Model::initialize()
 {
     mSetup = false;
+   GlobalSettings::instance()->setRunYear(0);
     //
 }
 
@@ -208,6 +209,7 @@ void Model::runYear()
 
     //test();
 
+    GlobalSettings::instance()->setRunYear(GlobalSettings::instance()->runYear()+1);
 }
 
 void Model::afterStop()

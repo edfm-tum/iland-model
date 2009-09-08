@@ -53,7 +53,7 @@ QString Tree::dump()
 void Tree::dumpList(DebugList &rTargetList)
 {
     rTargetList << mId << mSpecies->id() << mDbh << mHeight  << mPosition.x() << mPosition.y()   << mRU->index() << mLRI
-                << mStemMass << mRootMass << mLeafMass << mLeafArea;
+                << mWoodyMass << mRootMass << mFoliageMass << mLeafArea;
 }
 
 void Tree::setup()
@@ -65,7 +65,7 @@ void Tree::setup()
    mStamp = mSpecies->stamp(mDbh, mHeight);
 
    calcBiomassCompartments();
-   mNPPReserve = mLeafMass; // initial value
+   mNPPReserve = mFoliageMass; // initial value
    mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
 
 }
@@ -291,11 +291,11 @@ void Tree::resetStatistics()
 /// evaluate allometries and calculate LeafArea
 void Tree::calcBiomassCompartments()
 {
-    mLeafMass = mSpecies->biomassLeaf(mDbh);
+    mFoliageMass = mSpecies->biomassFoliage(mDbh);
     mRootMass = mSpecies->biomassRoot(mDbh);
-    mStemMass = mSpecies->biomassStem(mDbh);
+    mWoodyMass = mSpecies->biomassWoody(mDbh);
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
-    mLeafArea = mLeafMass * mSpecies->specificLeafArea();
+    mLeafArea = mFoliageMass * mSpecies->specificLeafArea();
 }
 
 
@@ -348,69 +348,59 @@ void Tree::partitioning(double npp)
     double harshness = mRU->ressourceUnitSpecies(mSpecies).prod3PG().harshness();
     // add content of reserve pool
     npp += mNPPReserve;
-    const double reserve_size = mLeafMass;
+    const double foliage_mass_allo = mSpecies->biomassFoliage(mDbh);
+    const double reserve_size = 2 * foliage_mass_allo;
 
-    double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1)
+    double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1) (eta)
     // turnover rates
     const double &to_fol = mSpecies->turnoverLeaf();
-    const double &to_wood = mSpecies->turnoverStem();
     const double &to_root = mSpecies->turnoverRoot();
+    // the turnover rate of wood depends on the size of the reserve pool:
+
+    double to_wood = reserve_size / (mWoodyMass + reserve_size);
 
     apct_root = harshness;
-
-    double b_wf = 1.32; // ratio of allometric exponents... now fixed
+    double b_wf = mSpecies->allometricRatio_wf(); // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)
-    apct_wood = (mLeafMass * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( mLeafMass / mStemMass + b_wf );
+    apct_wood = (foliage_mass_allo * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( foliage_mass_allo / mWoodyMass + b_wf );
     apct_foliage = 1. - apct_root - apct_wood;
 
-    // senescence demands of the compartemnts
-    double senescence_foliage = mLeafMass * to_fol;
-    double senescence_stem = mStemMass * to_wood;
-    double senescence_root = mRootMass * to_root;
+    // Change of biomass compartments
+    // Roots
+    mRootMass *= (1. - to_root); // subtract senescence
+    mRootMass += apct_root * npp; // add net growth
 
-    // brutto compartment increments
-    double gross_foliage = npp * apct_foliage;
-    double gross_stem = npp * apct_wood;
-    double gross_root = npp * apct_root;
+    // Foliage
+    mFoliageMass *= (1. - to_fol); // subtract senescence
+    mFoliageMass += apct_foliage * npp; // add net grwoth
 
-    // netto increments
-    double net_foliage = gross_foliage - senescence_foliage;
-    double net_root = gross_root - senescence_root;
-    double net_stem = gross_stem - senescence_stem;
+    // Woody compartments
+    // (1) transfer to reserve pool
+    double gross_woody = apct_wood * npp;
+    double to_reserve = qMin(reserve_size, gross_woody);
+    mNPPReserve = to_reserve;
+    double net_woody = gross_woody - to_reserve;
 
-    // flow back to reserve pool:
-    double to_reserve = qMin(reserve_size, net_stem);
-    net_stem -= to_reserve;
-
-    /*DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
-             + QString("npp %1 npp_reserve %9 sen_fol %2 sen_stem %3 sen_root %4 net_fol %5 net_stem %6 net_root %7 to_reserve %8")
-               .arg(npp).arg(senescence_foliage).arg(senescence_stem).arg(senescence_root)
-               .arg(net_foliage).arg(net_stem).arg(net_root).arg(to_reserve).arg(mNPPReserve) );*/
+    if (net_woody > 0.) {
+        // (2) calculate part of increment that is dedicated to the stem (which is a function of diameter)
+        double net_stem = net_woody * mSpecies->allometricFractionStem(mDbh);
+        //  (3) growth of diameter and height baseed on net stem increment
+        grow_diameter(net_stem);
+    }
 
     DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition)) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreePartition);
             dumpList(out); // add tree headers
-            out << npp << senescence_foliage << senescence_stem << senescence_root << apct_foliage << apct_wood << apct_root
-                << net_foliage << net_stem << net_root << to_reserve << mNPPReserve;
+            out << npp << apct_foliage << apct_wood << apct_root
+                << mFoliageMass << mWoodyMass << mRootMass << mNPPReserve << net_woody-to_reserve;
         }
     ); // DBGMODE()
-
-    // update of compartments
-    mLeafMass += net_foliage;
-    mLeafMass = qMax(mLeafMass, 0.f);
-    mLeafArea = mLeafMass * mSpecies->specificLeafArea();
-
-    mRootMass += net_root;
-    mRootMass = qMax(mRootMass, 0.f);
-
-    // calculate the dimensions of growth (diameter, height)
-    if (net_stem>0.) {
-        grow_diameter(net_stem);
-        // calculate stem biomass using the allometric equation
-        mStemMass = mSpecies->biomassStem(mDbh);
-    }
+    /*DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
+             + QString("npp %1 npp_reserve %9 sen_fol %2 sen_stem %3 sen_root %4 net_fol %5 net_stem %6 net_root %7 to_reserve %8")
+               .arg(npp).arg(senescence_foliage).arg(senescence_stem).arg(senescence_root)
+               .arg(net_foliage).arg(net_stem).arg(net_root).arg(to_reserve).arg(mNPPReserve) );*/
 
 }
 
@@ -433,17 +423,17 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
 
     // using that dbh-increment we estimate a stem-mass-increment and the residual (Eq. 9)
     double stem_estimate = volume_factor * (mDbh + delta_d_estimate)*(mDbh + delta_d_estimate)*(mHeight + delta_d_estimate*hd_growth);
-    double stem_residual = stem_estimate - (mStemMass + net_stem_npp);
+    double stem_residual = stem_estimate - (mWoodyMass + net_stem_npp);
 
     // the final increment is then:
     double d_increment = factor_diameter * (net_stem_npp - stem_residual); // Eq. (11)
     DBG_IF_X(mId == 1 || d_increment<0., "Tree::grow_dimater", "increment < 0.", dump()
              + QString("\nhdz %1 factor_diameter %2 stem_residual %3 delta_d_estimate %4 d_increment %5 final residual(kg) %6")
                .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
-               .arg( volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mStemMass + net_stem_npp)) ));
+               .arg( volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mWoodyMass + net_stem_npp)) ));
 
     DBGMODE(
-        double res_final = volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mStemMass + net_stem_npp));
+        double res_final = volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mWoodyMass + net_stem_npp));
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
         //dbgstruct["sen_demand"]=sen_demand;

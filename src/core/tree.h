@@ -69,8 +69,8 @@ private:
     // biomass compartements
     float mLeafArea; ///< m2 leaf area??
 
-    float mLeafMass; // kg
-    float mStemMass; // kg
+    float mFoliageMass; // kg
+    float mWoodyMass; // kg
     float mRootMass; // kg
     // production relevant
     float mNPPReserve; // kg

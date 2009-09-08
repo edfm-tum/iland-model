@@ -13,7 +13,6 @@
 ModelController::ModelController()
 {
     mModel = NULL;
-    mRunYears = 0;
 }
 
 ModelController::~ModelController()
@@ -43,7 +42,7 @@ const bool ModelController::canRun()
 
 const bool ModelController::isRunning()
 {
- return mRunYears>0;
+ return GlobalSettings::instance()->runYear()>0;
 }
 
 
@@ -66,7 +65,8 @@ void ModelController::create()
     try {
     mModel = new Model();
     mModel->loadProject();
-    mRunYears = 0;
+    GlobalSettings::instance()->clearDebugLists();  // clear debug data
+
     if (mModel->isSetup())
         mModel->beforeRun();
 
@@ -82,7 +82,7 @@ void ModelController::destroy()
     if (canDestroy()) {
         delete mModel;
         mModel = 0;
-        mRunYears = 0;
+        GlobalSettings::instance()->setRunYear(0);
         qDebug() << "ModelController: Model destroyed.";
     }
 }
@@ -91,7 +91,6 @@ void ModelController::run()
     if (!canRun()) return;
     try {
         mModel->runYear();
-        mRunYears ++;
     } catch(const IException &e) {
         QString error_msg = e.toString();
         Helper::msg(error_msg);
@@ -103,9 +102,7 @@ void ModelController::runYear()
 {
     if (!canRun()) return;
     try {
-        GlobalSettings::instance()->clearDebugLists();  // clear debug data
         mModel->runYear();
-        mRunYears ++;
     } catch(const IException &e) {
         QString error_msg = e.toString();
         Helper::msg(error_msg);

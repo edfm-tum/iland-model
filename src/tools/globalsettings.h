@@ -17,6 +17,9 @@ public:
     static GlobalSettings *instance() { if (mInstance) return mInstance; mInstance = new GlobalSettings(); return mInstance; }
     ~GlobalSettings();
     // Access
+    // model clock
+    const int runYear() const { return mRunYear; }
+    void setRunYear(const int year) { mRunYear = year; }
     // debugging fain grained debug outputs
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4, dStandNPP=8 }; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
@@ -63,10 +66,10 @@ public:
 private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;
+    int mRunYear;
 
     // special debug outputs
-    QString makeDebugKey(const int id, const int type);
-    QHash<QString, DebugList> mDebugLists;
+    QMultiHash<int, DebugList> mDebugLists;
     int mDebugOutputs; // "bitmap" of enabled debugoutputs.
 
     SettingMetaDataList mSettingMetaData; ///< storage container (QHash) for settings.

@@ -96,10 +96,6 @@ void GlobalSettings::setDebugOutput(const GlobalSettings::DebugOutputs dbg, cons
         mDebugOutputs &= int(dbg) ^ 0xffffffff;
 }
 
-QString GlobalSettings::makeDebugKey(const int id, const int type)
-{
-    return QString("%1 %2").arg(id).arg(type);
-}
 
 void GlobalSettings::clearDebugLists()
 {
@@ -108,25 +104,31 @@ void GlobalSettings::clearDebugLists()
 
 DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
 {
-    const QString &key = makeDebugKey(ID, int(dbg));
-    if (mDebugLists.contains(key)) {
-        DebugList &dbglist = mDebugLists[key];
-        return dbglist; // rely here on Qt's implicit sharing!
-    }
-    DebugList &dbglist = mDebugLists[key];
-    dbglist << ID << dbg; // the first two elements should always be the ID and the type.
-    return dbglist;
+    DebugList dbglist;
+    dbglist << ID << dbg << runYear();
+    QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(ID, dbglist);
+    return *newitem;
 }
 
 const QList<DebugList> GlobalSettings::debugLists(const int ID, const DebugOutputs dbg)
 {
     QList<DebugList> result_list;
-    foreach(DebugList list, mDebugLists)
-        if (list.count()>2)  // contains data
-            if (ID==-1 ||  list[0]==ID) // id fits or is -1 for all
+    if (ID==-1) {
+        foreach(DebugList list, mDebugLists)
+            if (list.count()>2)  // contains data
                 if (int(dbg)==-1 || (list[1]).toInt() & int(dbg) ) // type fits or is -1 for all
                     result_list << list;
-
+    } else {
+        // search a specific id
+        QMultiHash<int, DebugList>::iterator res = mDebugLists.find(ID);
+        while (res != mDebugLists.end() && res.key() == ID)  {
+            DebugList &list = res.value();
+            if (list.count()>2)  // contains data
+                if (int(dbg)==-1 || (list[1]).toInt() & int(dbg) ) // type fits or is -1 for all
+                    result_list << list;
+            ++res;
+        }
+    }
     return result_list;
 }
 
@@ -134,17 +136,17 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 {
     QStringList treeCaps = QStringList() << "Id" << "Species" << "Dbh" << "Height" << "x" << "y" << "ru_index" << "LRI" << "mStem" << "mRoot" << "mFoliage" << "LA";
     switch(dbg) {
-        case dTreeNPP: return QStringList() << "id" << "type" << treeCaps
+        case dTreeNPP: return QStringList() << "id" << "type" << "year" << treeCaps
                     << "radiation" << "raw_gpp" << "gpp" << "npp";
 
-        case dTreeGrowth: return QStringList() << "id" << "type" << treeCaps
+        case dTreeGrowth: return QStringList() << "id" << "type" << "year" <<  treeCaps
                     << "netNPPStem" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
 
-        case dTreePartition: return QStringList() << "id" << "type" << treeCaps
-                    << "npp" << "senescence_foliage" << "senescence_stem" << "senescence_root" << "pct_foliage" << "pct_stem" << "pct_root"
-                    << "net_foliage" << "net_stem" << "net_root" << "to_reserve" << "mNPPReserve";
+        case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps
+                << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
+                << "mFoliageNew" << "mWoodyNew" << "mRootNew" << "mNPPReserve" << "netStemInc";
 
-        case dStandNPP: return QStringList() << "id" << "type" << "standnpp" << "hach" << "hech";
+        case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
     }
     return QStringList() << "invalid debug output!";
 }

@@ -27,20 +27,27 @@ void Species::setup()
     mName = stringVar("name");
     QString stampFile = stringVar("LIPFile");
     // load stamps
-    mStamp.load( GlobalSettings::instance()->path(stampFile, "lip") );
+    mLIPs.load( GlobalSettings::instance()->path(stampFile, "lip") );
     // attach writer stamps to reader stamps
-    mStamp.attachReaderStamps(mSet->readerStamps());
+    mLIPs.attachReaderStamps(mSet->readerStamps());
 
     // setup allometries
-    mBiomassLeaf.setAndParse(stringVar("bmLeaf"));
-    mBiomassStem.setAndParse(stringVar("bmStem"));
-    mBiomassRoot.setAndParse(stringVar("bmRoot"));
+    mFoliage_a = doubleVar("bmFoliage_a");
+    mFoliage_b = doubleVar("bmFoliage_b");
+
+    mWoody_a = doubleVar("bmWoody_a");
+    mWoody_b = doubleVar("bmWoody_b");
+
+    mRoot_a = doubleVar("bmRoot_a");
+    mRoot_b = doubleVar("bmRoot_b");
+
+    mBranch_a = doubleVar("bmBranch_a");
+    mBranch_b = doubleVar("bmBranch_b");
 
     mSpecificLeafArea = doubleVar("specificLeafArea");
 
     // turnover rates
     mTurnoverLeaf = doubleVar("turnoverLeaf");
-    mTurnoverStem = doubleVar("turnoverStem");
     mTurnoverRoot = doubleVar("turnoverRoot");
 
     // hd-relations
@@ -54,8 +61,33 @@ void Species::setup()
     // convert from [cm] to [m] of dbh by dividing through "10000": d^2*h = (d[cm]/100)^2*h = 1/10000 * d^2*h
     mVolumeFactor = mWoodDensity * mFormFactor * M_PI_4 / 10000.;
 
-    qDebug() << "biomass leaf. 10:->" << mBiomassLeaf.calculate(10.);
+    if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea == 0.) {
+        throw IException( QString("Error setting up species %1: one value is NULL in database.").arg(id()));
+    }
+}
 
+const double Species::biomassFoliage(const double dbh) const
+{
+    return mFoliage_a * pow(dbh, mFoliage_b);
+}
+
+const double Species::biomassWoody(const double dbh) const
+{
+    return mWoody_a * pow(dbh, mWoody_b);
+}
+
+const double Species::biomassRoot(const double dbh) const
+{
+    return mRoot_a * pow(dbh, mRoot_b);
+}
+
+/** calculate fraction of stem wood increment base on dbh.
+    allometric equation: a*d^b -> first derivation: a*b*d^(b-1)
+    the ratio for stem is 1 minus the ratio of twigs to total woody increment at current "dbh". */
+const double Species::allometricFractionStem(const double dbh) const
+{
+    double fraction_stem = 1. - (mBranch_a*mBranch_b*pow(dbh, mBranch_b-1.)) / (mWoody_a*mWoody_b*pow(dbh, mWoody_b-1));
+    return fraction_stem;
 }
 
 
