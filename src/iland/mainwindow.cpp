@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include <QtCore>
 #include <QTGui>
 #include <QTXml>
 
@@ -15,6 +15,8 @@
 
 #include "paintarea.h"
 
+#include "expression.h"
+#include "expressionwrapper.h"
 
 // global settings
 QDomDocument xmldoc;
@@ -548,5 +550,35 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
 
 
 
-
-
+// Expression test
+void MainWindow::on_pbCalculateExpression_clicked()
+{
+    QString expr_text=ui->expressionText->text();
+    QString expr_filter=ui->expressionFilter->text();
+    if (expr_filter.isEmpty())
+        expr_filter = "1"; // a constant true expression
+    TreeWrapper wrapper;
+    Expression expr(expr_text, &wrapper);
+    Expression filter(expr_filter, &wrapper);
+    AllTreeIterator at(GlobalSettings::instance()->model());
+    double sum = 0;
+    int count = 0, totalcount=0;
+    try {
+        while (Tree *tree=at.next()) {
+            wrapper.setTree(tree);
+            if (filter.execute()) {
+                sum += expr.execute();
+                count++;
+            }
+            totalcount++;
+        }
+    } catch (IException &e) {
+        Helper::msg(e.toString());
+    }
+    qDebug() << "Expression:" << expr_text << "results: count of total: " << count << "/" << totalcount << "sum:" << sum  << "average:" << (count>0?sum/double(count):0.);
+    // add to history
+    if (!ui->expressionHistory->currentItem() || ui->expressionHistory->currentItem()->text() != expr_text) {
+        ui->expressionHistory->insertItem(0, expr_text);
+        ui->expressionHistory->setCurrentRow(0);
+    }
+}

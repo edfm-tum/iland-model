@@ -14,7 +14,7 @@
    <string>iLand Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/iland.qrc">
     <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -114,7 +114,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QStackedWidget" name="editStack">
+      <widget class="QTabWidget" name="editStack">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -130,7 +130,10 @@
        <property name="currentIndex">
         <number>1</number>
        </property>
-       <widget class="QWidget" name="pageXML">
+       <widget class="QWidget" name="editStackPage1" native="true">
+        <attribute name="title">
+         <string>XML</string>
+        </attribute>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
@@ -185,7 +188,10 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="pageFON">
+       <widget class="QWidget" name="editStackPage2" native="true">
+        <attribute name="title">
+         <string>Other</string>
+        </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <widget class="QTabWidget" name="tabWidget">
@@ -196,7 +202,7 @@
             </sizepolicy>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="tab_2">
             <attribute name="title">
@@ -351,6 +357,50 @@
               <string>Results</string>
              </property>
             </widget>
+           </widget>
+           <widget class="QWidget" name="Seite">
+            <attribute name="title">
+             <string>Experssions</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Filter expression</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLineEdit" name="expressionText"/>
+             </item>
+             <item row="3" column="1">
+              <widget class="QPushButton" name="pbCalculateExpression">
+               <property name="text">
+                <string>calculate</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Expression history</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QListWidget" name="expressionHistory"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLineEdit" name="expressionFilter"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Aggregate Expression</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </widget>
          </item>
@@ -561,7 +611,7 @@ p, li { white-space: pre-wrap; }
   </widget>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -580,7 +630,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelCreate">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/www.png</normaloff>:/www.png</iconset>
    </property>
    <property name="text">
@@ -589,7 +639,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelDestroy">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/user-trash.png</normaloff>:/user-trash.png</iconset>
    </property>
    <property name="text">
@@ -598,7 +648,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelRun">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
    </property>
    <property name="text">
@@ -627,7 +677,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionRun_one_year">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
    </property>
    <property name="text">
@@ -636,7 +686,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionReload">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
    </property>
    <property name="text">
@@ -653,6 +703,25 @@ p, li { white-space: pre-wrap; }
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources>
+  <include location="res/iland.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>expressionHistory</sender>
+   <signal>currentTextChanged(QString)</signal>
+   <receiver>expressionText</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>96</x>
+     <y>250</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>91</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

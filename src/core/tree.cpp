@@ -413,14 +413,14 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     double hd_growth = relative_height_growth(); // hd of height growth
 
     // Be careful with units!! this function calculates diameter increments in meter!
-    const double volume_factor = mSpecies->volumeFactor();
-    double stem_mass = volume_factor * mDbh*mDbh * mHeight;
+    const double mass_factor = mSpecies->volumeFactor() * mSpecies->density();
+    double stem_mass = mass_factor * mDbh*mDbh * mHeight; // result: kg, dbh[cm], h[meter]
 
-    double factor_diameter = 1. / (  volume_factor * (mDbh + mDbhDelta)*(mDbh + mDbhDelta) * ( 2. * mHeight/mDbh + hd_growth) );
+    double factor_diameter = 1. / (  mass_factor * (mDbh + mDbhDelta)*(mDbh + mDbhDelta) * ( 2. * mHeight/mDbh + hd_growth) );
     double delta_d_estimate = factor_diameter * net_stem_npp; // estimated dbh-inc using last years increment
 
     // using that dbh-increment we estimate a stem-mass-increment and the residual (Eq. 9)
-    double stem_estimate = volume_factor * (mDbh + delta_d_estimate)*(mDbh + delta_d_estimate)*(mHeight + delta_d_estimate*hd_growth);
+    double stem_estimate = mass_factor * (mDbh + delta_d_estimate)*(mDbh + delta_d_estimate)*(mHeight + delta_d_estimate*hd_growth);
     double stem_residual = stem_estimate - (stem_mass + net_stem_npp);
 
     // the final increment is then:
@@ -428,10 +428,10 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     DBG_IF_X(mId == 1 || d_increment<0., "Tree::grow_dimater", "increment < 0.", dump()
              + QString("\nhdz %1 factor_diameter %2 stem_residual %3 delta_d_estimate %4 d_increment %5 final residual(kg) %6")
                .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
-               .arg( volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));
+               .arg( mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));
 
     DBGMODE(
-        double res_final = volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
+        double res_final = mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
         //dbgstruct["sen_demand"]=sen_demand;
@@ -440,8 +440,8 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
             dumpList(out); // add tree headers
             out << net_stem_npp << hd_growth << factor_diameter << delta_d_estimate*100 << d_increment*100;
         }
+    ); // DBGMODE()
 
-            ); // DBGMODE()
     d_increment = qMax(d_increment, 0.);
     d_increment *= 100; // from m to cm
 
@@ -474,6 +474,7 @@ inline double Tree::relative_height_growth()
 const double Tree::volume() const
 {
     /// @see Species::volumeFactor() for details
-    const double volume = mSpecies->volumeFactor() * mDbh*mDbh*mHeight;
+    const double volume_factor = mSpecies->volumeFactor();
+    const double volume =  volume_factor * mDbh*mDbh*mHeight;
     return volume;
 }

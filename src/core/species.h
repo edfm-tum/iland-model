@@ -35,6 +35,7 @@ public:
     void hdRange(const double dbh, double &rMinHD, double &rMaxHD);
     // growth
     const double volumeFactor() const { return mVolumeFactor; } ///< factor for volume calculation: V = factor * D^2*H (incorporates density and the form of the bole)
+    const double density() const { return mWoodDensity; } ///< density of stem wood [kg/m3]
     const double specificLeafArea() const { return mSpecificLeafArea; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}

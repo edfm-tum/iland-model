@@ -644,7 +644,13 @@ int  Expression::getVarIndex(const QString& variableName)
         if (idx>-1)
             return 1000 + idx;
     }
-    return m_varList.indexOf(variableName);
+    idx = m_varList.indexOf(variableName);
+    if (idx>-1)
+        return idx;
+    // if in strict mode, all variables must be already available at this stage.
+    if (m_strict)
+       throw IException(QString("Variable %1 in (strict) expression %2 not available!").arg(variableName, m_expression));
+    return -1;
 }
 
 double Expression::getModelVar(const int varIdx)

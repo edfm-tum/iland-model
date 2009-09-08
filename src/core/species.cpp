@@ -57,9 +57,9 @@ void Species::setup()
     // form/density
     mWoodDensity = doubleVar("woodDensity");
     mFormFactor = doubleVar("formFactor");
-    // volume = density*formfactor*pi/4 *d^2*h -> volume = volumefactor * d^2 * h
+    // volume = formfactor*pi/4 *d^2*h -> volume = volumefactor * d^2 * h
     // convert from [cm] to [m] of dbh by dividing through "10000": d^2*h = (d[cm]/100)^2*h = 1/10000 * d^2*h
-    mVolumeFactor = mWoodDensity * mFormFactor * M_PI_4 / 10000.;
+    mVolumeFactor = mFormFactor * M_PI_4 / 10000.;
 
     if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea == 0.) {
         throw IException( QString("Error setting up species %1: one value is NULL in database.").arg(id()));

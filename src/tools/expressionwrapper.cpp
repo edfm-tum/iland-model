@@ -17,7 +17,7 @@ double ExpressionWrapper::value(const int variableIndex)
     throw IException("expression wrapper reached base getValue");
 }
 
-QStringList treeVarList=QStringList() << "id" << "dbh" << "height" << "ruindex" << "x" << "y" << "volume";
+QStringList treeVarList=QStringList() << "id" << "dbh" << "height" << "ruindex" << "x" << "y" << "volume" << "lri";
 const QStringList TreeWrapper::getVariablesList()
 {
     return treeVarList;
@@ -39,6 +39,7 @@ double TreeWrapper::value(const int variableIndex)
         case 4: return mTree->position().x(); // x
         case 5: return mTree->position().y(); // y
         case 6: return mTree->volume(); // volume
+        case 7: return mTree->lightRessourceIndex(); // lri
     }
     throw IException("TreeWrapper::getValue: invalid index");
 }
