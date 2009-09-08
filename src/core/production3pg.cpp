@@ -24,7 +24,13 @@ double Production3PG::calculate()
     }
     // calculate harshness factor
     mHarshness = 0.2; // fake
-    //year_raw_gpp *= 3;
+
+    // global value set?
+    double dbg = GlobalSettings::instance()->settings().paramValue("npp_per_year",0);
+    if (dbg)
+        year_raw_gpp = dbg;
+
+
     // PARutilized - fraction:.... to GPP:
     // year GPP/rad: gC / (yearly MJ/m2)
     mGPPperRad = year_raw_gpp / radYear;

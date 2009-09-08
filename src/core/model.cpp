@@ -53,6 +53,7 @@ Tree *AllTreeIterator::next()
 Model::Model()
 {
     initialize();
+    GlobalSettings::instance()->setModel(this);
     QString dbg="running in release mode.";
     DBGMODE( dbg="running in debug mode."; );
     qDebug() << dbg;
@@ -61,6 +62,7 @@ Model::Model()
 Model::~Model()
 {
     clear();
+    GlobalSettings::instance()->setModel(NULL);
 }
 
 /** Initial setup of the Model.

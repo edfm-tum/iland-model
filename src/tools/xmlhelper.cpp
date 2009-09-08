@@ -49,6 +49,31 @@ void XmlHelper::loadFromFile(const QString &fileName)
     }
     mCurrentTop = mDoc.documentElement(); // top element
     mTopNode = mCurrentTop;
+
+    // fill parameter cache
+    QDomElement e = node("parameter");
+    e = e.firstChildElement();
+    mParamCache.clear();
+    while (!e.isNull()) {
+        mParamCache[e.nodeName()] = e.text();
+        e = e.nextSiblingElement();
+    }
+}
+
+/** numeric values of elements in the section <parameter> are stored in a QHash structure for faster access.
+    with paramValue() these data can be accessed.
+  */
+const double XmlHelper::paramValue(const QString &paramName, const double defaultValue) const
+{
+    if (mParamCache.contains(paramName))
+        return mParamCache.value(paramName).toDouble();
+    return defaultValue;
+}
+const QString XmlHelper::paramValueString(const QString &paramName, const QString &defaultValue) const
+{
+    if (mParamCache.contains(paramName))
+        return mParamCache.value(paramName);
+    return defaultValue;
 }
 
 bool XmlHelper::hasNode(const QString &path) const

@@ -9,6 +9,8 @@
 #include "xmlhelper.h"
 typedef QList<QVariant> DebugList;
 
+class Model;
+
 /// General settings and globally available data
 class GlobalSettings
 {
@@ -17,7 +19,9 @@ public:
     static GlobalSettings *instance() { if (mInstance) return mInstance; mInstance = new GlobalSettings(); return mInstance; }
     ~GlobalSettings();
     // Access
-    // model clock
+    // model and clock
+    void setModel(Model *model) {mModel = model; }
+    Model *model() const { return mModel; }
     const int runYear() const { return mRunYear; }
     void setRunYear(const int year) { mRunYear = year; }
     // debugging fain grained debug outputs
@@ -66,6 +70,7 @@ public:
 private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;
+    Model *mModel;
     int mRunYear;
 
     // special debug outputs

@@ -15,7 +15,6 @@ int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 float Tree::lafactor = 1.;
-int Tree::mDebugid = -1;
 
 // lifecycle
 Tree::Tree()
@@ -24,6 +23,7 @@ Tree::Tree()
     mHeight = 0;
     mSpecies = 0;
     mRU = 0;
+    mDebugging = false;
     mId = m_nextId++;
     m_statCreated++;
 }
@@ -61,13 +61,17 @@ void Tree::setup()
     if (mDbh<=0 || mHeight<=0)
         return;
     // check stamp
-   Q_ASSERT_X(mSpecies!=0, "Tree::setup()", "species is NULL");
-   mStamp = mSpecies->stamp(mDbh, mHeight);
+    Q_ASSERT_X(mSpecies!=0, "Tree::setup()", "species is NULL");
+    mStamp = mSpecies->stamp(mDbh, mHeight);
 
-   calcBiomassCompartments();
-   mNPPReserve = mFoliageMass; // initial value
-   mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
+    mFoliageMass = mSpecies->biomassFoliage(mDbh);
+    mRootMass = mSpecies->biomassRoot(mDbh) + mFoliageMass; // coarse root (allometry) + fine root (estimated size: foliage)
+    mWoodyMass = mSpecies->biomassWoody(mDbh);
 
+    // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
+    mLeafArea = mFoliageMass * mSpecies->specificLeafArea();
+    mNPPReserve = 2*mFoliageMass; // initial value
+    mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
 }
 
 //////////////////////////////////////////////////
@@ -273,7 +277,7 @@ void Tree::readStampMul()
     if (mLRI > 1)
         mLRI = 1.f;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    mRU->addWLA(mLRI * mLeafArea, mLeafArea);
+    mRU->addWLA((mLRI+1) * mLeafArea, mLeafArea);
 }
 
 void Tree::resetStatistics()
@@ -288,21 +292,11 @@ void Tree::resetStatistics()
 ////  Growth Functions
 //////////////////////////////////////////////////
 
-/// evaluate allometries and calculate LeafArea
-void Tree::calcBiomassCompartments()
-{
-    mFoliageMass = mSpecies->biomassFoliage(mDbh);
-    mRootMass = mSpecies->biomassRoot(mDbh);
-    mWoodyMass = mSpecies->biomassWoody(mDbh);
-    // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
-    mLeafArea = mFoliageMass * mSpecies->specificLeafArea();
-}
-
 
 void Tree::grow()
 {
     // step 1: get radiation from ressource unit: radiaton (MJ/tree/year) total intercepted radiation for this tree per year!
-    double radiation = mRU->interceptedRadiation(mLRI * mLeafArea);
+    double radiation = mRU->interceptedRadiation( (mLRI + 1) * mLeafArea);
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
     double raw_gpp_per_rad = mRU->ressourceUnitSpecies(mSpecies).prod3PG().GPPperRad();
@@ -317,7 +311,7 @@ void Tree::grow()
     double npp = gpp * 0.47; // respiration loss
 
     DBGMODE(
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP)) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
             dumpList(out); // add tree headers
             out << radiation << raw_gpp << gpp << npp;
@@ -368,12 +362,13 @@ void Tree::partitioning(double npp)
 
     // Change of biomass compartments
     // Roots
-    mRootMass *= (1. - to_root); // subtract senescence
-    mRootMass += apct_root * npp; // add net growth
+    double delta_root = apct_root * npp - mRootMass * to_root;
+    mRootMass += delta_root;
 
     // Foliage
-    mFoliageMass *= (1. - to_fol); // subtract senescence
-    mFoliageMass += apct_foliage * npp; // add net grwoth
+    double delta_foliage = apct_foliage * npp - mFoliageMass * to_fol;
+    mFoliageMass += delta_foliage;
+    mLeafArea = mFoliageMass * mSpecies->specificLeafArea(); // update leaf area
 
     // Woody compartments
     // (1) transfer to reserve pool
@@ -381,21 +376,23 @@ void Tree::partitioning(double npp)
     double to_reserve = qMin(reserve_size, gross_woody);
     mNPPReserve = to_reserve;
     double net_woody = gross_woody - to_reserve;
-
+    double net_stem = 0.;
     if (net_woody > 0.) {
         // (2) calculate part of increment that is dedicated to the stem (which is a function of diameter)
-        double net_stem = net_woody * mSpecies->allometricFractionStem(mDbh);
+        net_stem = net_woody * mSpecies->allometricFractionStem(mDbh);
+        mWoodyMass += net_woody;
         //  (3) growth of diameter and height baseed on net stem increment
         grow_diameter(net_stem);
     }
 
     DBGMODE(
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition)) {
+     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition)
+         && isDebugging() ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreePartition);
             dumpList(out); // add tree headers
             out << npp << apct_foliage << apct_wood << apct_root
-                << mFoliageMass << mWoodyMass << mRootMass << mNPPReserve << net_woody-to_reserve;
-        }
+                    << delta_foliage << net_woody << delta_root << mNPPReserve << net_stem;
+     }
     ); // DBGMODE()
     /*DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
              + QString("npp %1 npp_reserve %9 sen_fol %2 sen_stem %3 sen_root %4 net_fol %5 net_stem %6 net_root %7 to_reserve %8")
@@ -417,27 +414,28 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
 
     // Be careful with units!! this function calculates diameter increments in meter!
     const double volume_factor = mSpecies->volumeFactor();
+    double stem_mass = volume_factor * mDbh*mDbh * mHeight;
 
     double factor_diameter = 1. / (  volume_factor * (mDbh + mDbhDelta)*(mDbh + mDbhDelta) * ( 2. * mHeight/mDbh + hd_growth) );
     double delta_d_estimate = factor_diameter * net_stem_npp; // estimated dbh-inc using last years increment
 
     // using that dbh-increment we estimate a stem-mass-increment and the residual (Eq. 9)
     double stem_estimate = volume_factor * (mDbh + delta_d_estimate)*(mDbh + delta_d_estimate)*(mHeight + delta_d_estimate*hd_growth);
-    double stem_residual = stem_estimate - (mWoodyMass + net_stem_npp);
+    double stem_residual = stem_estimate - (stem_mass + net_stem_npp);
 
     // the final increment is then:
     double d_increment = factor_diameter * (net_stem_npp - stem_residual); // Eq. (11)
     DBG_IF_X(mId == 1 || d_increment<0., "Tree::grow_dimater", "increment < 0.", dump()
              + QString("\nhdz %1 factor_diameter %2 stem_residual %3 delta_d_estimate %4 d_increment %5 final residual(kg) %6")
                .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
-               .arg( volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mWoodyMass + net_stem_npp)) ));
+               .arg( volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));
 
     DBGMODE(
-        double res_final = volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((mWoodyMass + net_stem_npp));
+        double res_final = volume_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
         //dbgstruct["sen_demand"]=sen_demand;
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) ) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && isDebugging() ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
             dumpList(out); // add tree headers
             out << net_stem_npp << hd_growth << factor_diameter << delta_d_estimate << d_increment;

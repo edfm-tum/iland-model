@@ -289,7 +289,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             value = tree->lightRessourceIndex();
             fill_color = Helper::colorFromValue(value, 0., 1., true);
             painter.setBrush(fill_color);
-            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 5.));
+            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 4.));
             painter.drawEllipse(p, diameter, diameter);
         }
 
@@ -357,7 +357,7 @@ void MainWindow::mouseClick(const QPoint& pos)
 void MainWindow::mouseMove(const QPoint& pos)
 {
 
-    if (!mRemoteControl.isRunning())
+    if (!mRemoteControl.canRun())
         return;
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);

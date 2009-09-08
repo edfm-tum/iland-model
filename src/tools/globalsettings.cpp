@@ -77,6 +77,7 @@ GlobalSettings *GlobalSettings::mInstance = 0;
 GlobalSettings::GlobalSettings()
 {
     mDebugOutputs = 0;
+    mModel = 0;
 }
 
 
@@ -144,7 +145,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 
         case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps
                 << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
-                << "mFoliageNew" << "mWoodyNew" << "mRootNew" << "mNPPReserve" << "netStemInc";
+                << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc";
 
         case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
     }

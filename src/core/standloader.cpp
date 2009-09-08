@@ -7,6 +7,7 @@
 #include "speciesset.h"
 
 #include "helper.h"
+#include "expression.h"
 
 #include <QtCore>
 
@@ -48,10 +49,29 @@ void StandLoader::processInit()
             // copy
         }
         qDebug() << Tree::statCreated() << "trees loaded.";
-        return;
+    } else {
+        // only one stand:
+        loadFromPicus(fileName);
     }
-    // only one stand:
-    loadFromPicus(fileName);
+
+    // evaluate debugging
+    QString dbg_str = GlobalSettings::instance()->settings().paramValueString("debug_tree");
+    if (!dbg_str.isEmpty()) {
+        Expression dexp(dbg_str);
+        double *pid = dexp.addVar("id"); // binding
+        double *pru = dexp.addVar("ru"); // binding
+        AllTreeIterator at(GlobalSettings::instance()->model());
+        double result;
+        while (Tree *t = at.next()) {
+            *pid = t->id();
+            *pru = t->ru()->index();
+            result = dexp.execute();
+            if (result)
+                t->enableDebugging();
+        }
+
+
+    }
 }
 
 void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, RessourceUnit *ru)

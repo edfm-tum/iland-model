@@ -32,7 +32,7 @@ public:
 
     void setup();
 
-    void enableDebugging() { mDebugid = mId; }
+    void enableDebugging(const bool enable=true) { mDebugging = enable; }
 
 
     // grid based light-concurrency functions
@@ -59,7 +59,6 @@ public:
 
 private:
     // helping functions
-    void calcBiomassCompartments();
     void partitioning(double npp);
     // state variables
     int mId;
@@ -85,14 +84,14 @@ private:
     RessourceUnit *mRU;
 
     // special functions
-    bool isDebugging() { return mId == mDebugid; }
+    bool isDebugging() { return mDebugging; }
 
     void dumpList(DebugList &rTargetList);
     // static data
     static FloatGrid *mGrid;
     static FloatGrid *mHeightGrid;
     // debugging
-    static int mDebugid;
+    bool mDebugging;
 
     // statistics
     static int m_statPrint;
