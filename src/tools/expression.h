@@ -1,26 +1,17 @@
 #ifndef LOGICEXPRESSION_H
 #define LOGICEXPRESSION_H
 
-
-enum ETokType {etNumber, etOperator, etVariable, etFunction, etLogical, etCompare, etStop, etUnknown, etDelimeter};
-enum EValueClasses {evcBHD, evcHoehe, evcAlter};
-struct ExtExecListItem {
-    ETokType Type;
-    double  Value;
-    int     Index;
-};
-enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
-
-
-
+class ExpressionWrapper;
 class Expression
 {
 public:
         ~Expression();
         Expression() {} // empty constructor
-        Expression(const QString &aExpression);
-        void setExpression(const QString &aExpression);
-        void setAndParse(const QString &expr);
+        Expression(const QString &aExpression) { setExpression(aExpression); }
+        Expression(const QString &expression, ExpressionWrapper *wrapper) { setExpression(expression); mModelObject = wrapper;  }
+        void setExpression(const QString &aExpression); ///< set expression
+        void setAndParse(const QString &expr); ///< set expression and parse instantly
+        void setModelObject(ExpressionWrapper *wrapper) { mModelObject = wrapper; }
         /// calculate formula and return result. variable values need to be set using "setVar()"
         double execute();
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
@@ -46,12 +37,18 @@ public:
         */
         const bool isStrict() { return m_strict;}
         void setStrict(bool str) { m_strict=str; }
-
         void   setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace);
         void enableIncSum();
-
         double udfRandom(int type, double p1, double p2); ///< user defined function rnd() (normal distribution does not work now!)
 private:
+        enum ETokType {etNumber, etOperator, etVariable, etFunction, etLogical, etCompare, etStop, etUnknown, etDelimeter};
+        enum EValueClasses {evcBHD, evcHoehe, evcAlter};
+        struct ExtExecListItem {
+            ETokType Type;
+            double  Value;
+            int     Index;
+        };
+        enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
         double m_result;
 
         bool m_parsed;
@@ -59,22 +56,22 @@ private:
         bool m_constExpression;
         QString m_tokString;
         QString m_expression;
-        ExtExecListItem *m_execList;
+        Expression::ExtExecListItem *m_execList;
         int m_execListSize; // size of buffer
         int m_execIndex;
         double m_varSpace[10];
         QStringList m_varList;
         QStringList m_externVarNames;
         double *m_externVarSpace;
-        ETokType m_state;
-        ETokType m_lastState;
+        Expression::ETokType m_state;
+        Expression::ETokType m_lastState;
         char *m_pos;
         char *m_expr;
         QString m_token;
         QString m_prepStr;
         int   m_tokCount;
-        ETokType  next_token();
-        void  Atom();
+        Expression::ETokType  next_token();
+        void  atom();
         void  parse_levelL0();
         void  parse_levelL1();
         void  parse_level0();
@@ -82,13 +79,12 @@ private:
         void  parse_level2();
         void  parse_level3();
         void  parse_level4();
-        double  getVar(const QString& VarName);
-        int  getFuncIndex(const QString& FuncName);
-        int  getVarIndex(const QString& VarName);
-        double getModelVar(int VarIdx);
-        QStringList m_modelVarList;
-        int         m_modelVarCnt;
-        bool        m_modelVarSet;
+        int  getFuncIndex(const QString& functionName);
+        int  getVarIndex(const QString& variableName);
+        double getModelVar(const int varIdx);
+
+        // link to external model variable
+        ExpressionWrapper *mModelObject;
 
         double getExternVar(const int Index);
         // inc-sum

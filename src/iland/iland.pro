@@ -15,7 +15,7 @@ INCLUDEPATH += ../core \
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     mainwindow.cpp \
-	paintarea.cpp \
+    paintarea.cpp \
     ../core/grid.cpp \
     ../core/solarradiation.cpp \
     ../core/hemigrid.cpp \
@@ -36,8 +36,8 @@ SOURCES += main.cpp \
     ../core/standloader.cpp \
     ../core/ressourceunitspecies.cpp \
     ../core/production3pg.cpp \
-    ../core/threadrunner.cpp
-
+    ../core/threadrunner.cpp \
+    ../tools/expressionwrapper.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     paintarea.h \
@@ -45,7 +45,7 @@ HEADERS += mainwindow.h \
     ../core/solarradiation.h \
     ../core/hemigrid.h \
     ../core/tree.h \
-     ../tools/expression.h \
+    ../tools/expression.h \
     ../tools/helper.h \
     ../core/exception.h \
     ../core/global.h \
@@ -63,7 +63,7 @@ HEADERS += mainwindow.h \
     ../core/standloader.h \
     ../core/ressourceunitspecies.h \
     ../core/production3pg.h \
-    ../core/threadrunner.h
-
+    ../core/threadrunner.h \
+    ../tools/expressionwrapper.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc

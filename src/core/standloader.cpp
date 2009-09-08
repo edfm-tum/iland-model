@@ -8,6 +8,7 @@
 
 #include "helper.h"
 #include "expression.h"
+#include "expressionwrapper.h"
 
 #include <QtCore>
 
@@ -57,14 +58,18 @@ void StandLoader::processInit()
     // evaluate debugging
     QString dbg_str = GlobalSettings::instance()->settings().paramValueString("debug_tree");
     if (!dbg_str.isEmpty()) {
-        Expression dexp(dbg_str);
-        double *pid = dexp.addVar("id"); // binding
-        double *pru = dexp.addVar("ru"); // binding
+       TreeWrapper tw;
+       Expression dexp(dbg_str, &tw); // load expression dbg_str and enable external model variables
+
+
+        //double *pid = dexp.addVar("id"); // binding
+        //double *pru = dexp.addVar("ru"); // binding
         AllTreeIterator at(GlobalSettings::instance()->model());
         double result;
         while (Tree *t = at.next()) {
-            *pid = t->id();
-            *pru = t->ru()->index();
+            tw.setTree(t);
+            //*pid = t->id();
+            //*pru = t->ru()->index();
             result = dexp.execute();
             if (result)
                 t->enableDebugging();

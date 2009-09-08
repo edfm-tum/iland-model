@@ -24,6 +24,7 @@
 #include <QtCore>
 
 #include "exception.h"
+#include "expressionwrapper.h"
 
 #define opEqual 1
 #define opGreaterThen 2
@@ -34,7 +35,7 @@
 #define opAnd 7
 #define opOr  8
 
-QString FuncList="sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg";
+QString mathFuncList="sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg";
 const int  MaxArgCount[15]={1,1,1,1,  1, 1,   -1, -1, 3, 1, -1, 2, 4, 2, 2};
 #define    AGGFUNCCOUNT 6
 QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
@@ -42,9 +43,8 @@ QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "varian
 // static vars für simquery
 //bool TSimQuery::DoFreezeClasses=false;
 //bool TSimQuery::ClassesFrozen=false;
-//#define m_modelVarCnt 4
-//AnsiString m_modelVarList[m_modelVarCnt]={"bhd", "height", "age", "art"};
-ETokType  Expression::next_token()
+
+Expression::ETokType  Expression::next_token()
 {
     m_tokCount++;
     m_lastState=m_state;
@@ -157,9 +157,9 @@ void Expression::setExpression(const QString& aExpression)
         m_varSpace[i]=0.;
     m_parsed=false;
 
+    mModelObject = 0;
     m_externVarSpace=0;
-    m_modelVarCnt=0;
-    m_modelVarSet=false;
+
     m_strict=true; // default....
     m_incSumEnabled=false;
     // Buffer:
@@ -168,10 +168,6 @@ void Expression::setExpression(const QString& aExpression)
 
 }
 
-Expression::Expression(const QString& aExpression)
-{
-    setExpression(aExpression);
-}
 
 // mutex used to serialize expression parsing.
 QMutex mutex;
@@ -316,7 +312,7 @@ void  Expression::parse_level1()
 
 }
 
-void  Expression::Atom()
+void  Expression::atom()
 {
     if (m_state==etVariable || m_state==etNumber) {
         if (m_state==etNumber) {
@@ -327,7 +323,7 @@ void  Expression::Atom()
             checkBuffer(m_execIndex);
         }
         if (m_state==etVariable) {
-            m_result=getVar(m_token);
+            m_result=0; //getVar(m_token);
             m_execList[m_execIndex].Type=etVariable;
             m_execList[m_execIndex].Value=0;
             m_execList[m_execIndex++].Index=getVarIndex(m_token);
@@ -380,7 +376,7 @@ void  Expression::parse_level4()
 {
     // Klammer und Funktionen
     QString func;
-    Atom();
+    atom();
     //double temp=FResult;
     if (m_token=="(" || m_state==etFunction) {
         func=m_token;
@@ -416,48 +412,6 @@ void  Expression::parse_level4()
     }
 }
 
-double  Expression::getVar(const QString& VarName)
-{
-    // zuerst schauen, ob in system-liste....
-    int idx;
-    if (!m_modelVarList.isEmpty())
-    {
-        idx=m_modelVarList.indexOf(VarName.toLower());
-        //idx=AnsiIndexStr(VarName.toLower(), m_modelVarList, m_modelVarCnt-1);
-        if (idx>-1) {
-            m_tokString+="\nModellvar: " + VarName;
-            return 0; // no need to add...
-        }
-    }
-    /*
-        if (Script)
-        {
-            EDatatype aType;
-            int ref;
-            idx=Script->GetName(VarName, aType, ref);
-            if (aType==edtNumber)
-              return 0;  // nur numerische
-        }*/
-    if (!m_externVarNames.isEmpty())
-    {
-        idx=m_externVarNames.indexOf(VarName);
-        if (idx>-1) {
-            m_tokString+="\nExternvar: " + VarName;
-            return 0; // no need to add...
-        }
-    }
-    idx=m_varList.indexOf(VarName);
-    if (idx==-1) {
-        if (m_strict)
-            throw IException("Undefined symbol: " + VarName);
-        m_varList+=VarName;
-        idx = m_varList.size()-1;
-        m_tokString+="\nVariable: "+VarName;
-    }
-
-    return m_varSpace[idx];
-}
-
 void  Expression::setVar(const QString& Var, double Value)
 {
     if (!m_parsed)
@@ -477,14 +431,14 @@ double  Expression::calculate(double Val1, double Val2)
     return execute();
 }
 
-int  Expression::getFuncIndex(const QString& FuncName)
+int  Expression::getFuncIndex(const QString& functionName)
 {
-    int pos=FuncList.indexOf(FuncName);
+    int pos=mathFuncList.indexOf(functionName);
     if (pos<0)
-        throw IException("Function " + FuncName + " not defined!");
+        throw IException("Function " + functionName + " not defined!");
     int idx=0;
     for (int i=1;i<pos;i++)
-        if (FuncList[i]==' ') ++idx;
+        if (mathFuncList[i]==' ') ++idx;
     return idx;
 }
 
@@ -654,9 +608,14 @@ double *  Expression::getVarAdress(const QString& VarName)
         throw IException(QString("Expression::getVarAdress: Invalid variable <%1> ").arg(VarName));
 }
 
-int  Expression::getVarIndex(const QString& VarName)
+int  Expression::getVarIndex(const QString& variableName)
 {
     int idx;
+    if (mModelObject) {
+        idx = mModelObject->variableIndex(variableName);
+        if (idx>-1)
+            return 100 + idx;
+    }
 
     /*if (Script)
         {
@@ -666,49 +625,26 @@ int  Expression::getVarIndex(const QString& VarName)
            if (idx>-1)
               return 1000+idx;
         }*/
-    if (!m_modelVarList.isEmpty()) {
-        idx=m_modelVarList.indexOf(VarName.toLower());
-        if (idx>-1) {
-            return 100 + idx; //
-        }
-    }
+
     // externe variablen
     if (!m_externVarNames.isEmpty())
     {
-        idx=m_externVarNames.indexOf(VarName);
+        idx=m_externVarNames.indexOf(variableName);
         if (idx>-1)
             return 1000 + idx;
     }
-    return m_varList.indexOf(VarName);
+    return m_varList.indexOf(variableName);
 }
 
-double Expression::getModelVar(int VarIdx)
+double Expression::getModelVar(const int varIdx)
 {
     // der weg nach draussen....
-    //int idx=VarIdx - 100; // intern als 100+x gespeichert...
+    int idx=varIdx - 100; // intern als 100+x gespeichert...
+    if (mModelObject)
+        return mModelObject->value(idx);
     // hier evtl. verschiedene objekte unterscheiden (Zahlenraum???)
     throw IException("Expression::getModelVar: invalid modell variable!");
-    //return TestBaum->getVar(idx);
-    //return FSimObject->getVar(idx);
 }
-
-/*void   Expression::SetModellObject(TSimObject *Obj)
-{
-   if (!m_modelVarSet) {
-     m_modelVarList=Obj->GetVarList(m_modelVarCnt);
-     m_modelVarSet=true;
-   }
-   FSimObject=Obj;
-}
-void   Expression::SetModellBaum(TBaum *tree)
-{
-  if (!m_modelVarSet) {
-     m_modelVarList=tree->GetVarList(m_modelVarCnt);
-     m_modelVarSet=true;
-  }
-  TestBaum=tree;
-}*/
-
 
 void Expression::setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace)
 {
