@@ -45,6 +45,8 @@ private:
 
 private slots:
 
+    void on_actionReload_triggered();
+    void on_actionRun_one_year_triggered();
     void on_actionTree_NPP_triggered();
     void on_actionSelect_Data_Types_triggered();
     void on_actionTree_Growth_triggered();

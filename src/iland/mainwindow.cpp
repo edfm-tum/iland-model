@@ -35,10 +35,13 @@ double nrandom(const float& p1, const float& p2)
 
 void myMessageOutput(QtMsgType type, const char *msg)
  {
-     switch (type) {
+    QString str(msg);
+
+    switch (type) {
      case QtDebugMsg:
          MainWindow::logSpace()->appendPlainText(QString(msg));
          MainWindow::logSpace()->ensureCursorVisible();
+         fprintf(stderr, "%s\n", msg);
          break;
      case QtWarningMsg:
          MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
@@ -50,7 +53,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
          break;
      case QtFatalMsg:
          fprintf(stderr, "Fatal: %s\n", msg);
-         abort();
+         Helper::msg("Fatal message encountered!");
      }
 
 
@@ -108,12 +111,9 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     on_actionEdit_XML_settings_triggered();
-    // update
 
     qDebug() << "threadcount: " << QThread::idealThreadCount();
-
     checkModelState();
-
 }
 
 MainWindow::~MainWindow()
@@ -127,6 +127,8 @@ void MainWindow::checkModelState()
     ui->actionModelCreate->setEnabled(mRemoteControl.canCreate());
     ui->actionModelDestroy->setEnabled(mRemoteControl.canDestroy());
     ui->actionModelRun->setEnabled(mRemoteControl.canRun());
+    ui->actionRun_one_year->setEnabled(mRemoteControl.canRun());
+    ui->actionReload->setEnabled(mRemoteControl.canDestroy());
 }
 
 
@@ -419,9 +421,6 @@ void MainWindow::setupModel()
     if (model) {
         // set viewport of paintwidget
         vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
-        // debug mode
-        GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
-
         ui->PaintWidget->update();
     }
 }
@@ -448,7 +447,6 @@ void MainWindow::on_openFile_clicked()
     ui->iniEdit->setPlainText(xmlFile);
 }
 
-
 void MainWindow::on_actionTreelist_triggered()
 {
     QApplication::clipboard()->setText(dumpTreelist());
@@ -462,8 +460,6 @@ void MainWindow::on_actionFON_grid_triggered()
     QApplication::clipboard()->setText(gr);
     qDebug() << "grid copied to clipboard.";
 }
-
-
 
 
 void MainWindow::on_actionModelCreate_triggered()
@@ -483,12 +479,33 @@ void MainWindow::on_actionModelRun_triggered()
 {
    if (!mRemoteControl.canRun())
         return;
+   int count = QInputDialog::getInt(this, "input value",
+                                        "How many years to run?\n", 10);
+   for (int i=0;i<count;i++) {
+       mRemoteControl.runYear();
+       checkModelState();
+       ui->PaintWidget->update();
+       QApplication::processEvents();
+   }
+}
+
+void MainWindow::on_actionRun_one_year_triggered()
+{
+   if (!mRemoteControl.canRun())
+        return;
    mRemoteControl.runYear();
    checkModelState();
    ui->PaintWidget->update();
 }
 
+void MainWindow::on_actionReload_triggered()
+{
+    if (!mRemoteControl.canDestroy())
+        return;
+    mRemoteControl.destroy();
+    setupModel();
 
+}
 
 void MainWindow::on_actionTree_Partition_triggered()
 {
@@ -511,6 +528,8 @@ void MainWindow::on_actionTree_NPP_triggered()
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
 
+
+
 void MainWindow::on_actionSelect_Data_Types_triggered()
 {
     int value = 0;
@@ -523,5 +542,9 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
+
+
+
+
 
 

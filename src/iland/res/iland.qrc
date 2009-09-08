@@ -10,5 +10,9 @@
         <file>go-next.png</file>
         <file>process-stop.png</file>
         <file>user-trash.png</file>
+        <file>Play.png</file>
+        <file>Pause.png</file>
+        <file>Play All.png</file>
+        <file>Backup Green Button.png</file>
     </qresource>
 </RCC>

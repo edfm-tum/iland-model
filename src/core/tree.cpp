@@ -438,7 +438,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && isDebugging() ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
             dumpList(out); // add tree headers
-            out << net_stem_npp << hd_growth << factor_diameter << delta_d_estimate << d_increment;
+            out << net_stem_npp << hd_growth << factor_diameter << delta_d_estimate*100 << d_increment*100;
         }
 
             ); // DBGMODE()
@@ -448,7 +448,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     // update state variables
     mDbh += d_increment;
     mDbhDelta = d_increment; // save for next year's growth
-    mHeight += d_increment * hd_growth / 100.;
+    mHeight += d_increment * hd_growth / 100.; // d[cm]/100 * hd[m/m] = d[m] * hd[m/m] = h[m]
 }
 
 

@@ -99,17 +99,21 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Ressour
     if (!lines[0].contains(sep))
         sep=';';
     QStringList headers = lines[0].split(sep);
-    //int iSpecies = headers.indexOf("species");
-    //int iCount = headers.indexOf("count");
+
     int iX = headers.indexOf("x");
     int iY = headers.indexOf("y");
     int iBhd = headers.indexOf("bhdfrom");
     int iHeight = headers.indexOf("treeheight");
     int iSpecies = headers.indexOf("species");
+    if (iX==-1 || iY==-1 || iBhd==-1 || iSpecies==-1 || iHeight==-1)
+        throw IException(QString("Initfile %1 is not valid!").arg(fileName));
 
+    double dbh;
     for (int i=1;i<lines.count();i++) {
         QString &line = lines[i];
-        //qDebug() << "line" << i << ":" << line;
+        dbh = line.section(sep, iBhd, iBhd).toDouble();
+        if (dbh<5.)
+            continue;
         Tree &tree = ru->newTree();
         QPointF f;
         if (iX>=0 && iY>=0) {
@@ -118,24 +122,19 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Ressour
            f+=offset;
            tree.setPosition(f);
         }
-        if (iBhd>=0)
-            tree.setDbh(line.section(sep, iBhd, iBhd).toDouble());
-        if (tree.dbh() < 5)
-            continue; // 5cm: lower threshold for the moment
-        if (iHeight>=0)
-            tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
 
-        if (iSpecies>=0) {
-            int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
-            QString speciesid="piab";
-            if (idx>0)
-                speciesid = iLandSpeciesIds[idx];
-            Species *s = speciesSet->species(speciesid);
+        tree.setDbh(dbh);
+        tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
+        int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
+        QString speciesid="piab";
+        if (idx>0)
+            speciesid = iLandSpeciesIds[idx];
+        Species *s = speciesSet->species(speciesid);
+        if (!ru || !s)
+            throw IException("Loading init-file: either ressource unit or species invalid.");
 
-            tree.setRU(ru);
-            tree.setSpecies(s);
-        }
-
+        tree.setRU(ru);
+        tree.setSpecies(s);
         tree.setup();
     }
     //qDebug() << "loaded init-file contained" << lines.count() <<"lines.";

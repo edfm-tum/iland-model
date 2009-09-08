@@ -90,9 +90,12 @@
    <addaction name="actionEdit_XML_settings"/>
    <addaction name="separator"/>
    <addaction name="actionModelCreate"/>
+   <addaction name="actionModelDestroy"/>
+   <addaction name="separator"/>
+   <addaction name="actionReload"/>
+   <addaction name="actionRun_one_year"/>
    <addaction name="actionModelRun"/>
    <addaction name="separator"/>
-   <addaction name="actionModelDestroy"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockEditor">
@@ -596,7 +599,7 @@ p, li { white-space: pre-wrap; }
   <action name="actionModelRun">
    <property name="icon">
     <iconset>
-     <normaloff>:/go-next.png</normaloff>:/go-next.png</iconset>
+     <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
    </property>
    <property name="text">
     <string>Run Model</string>
@@ -620,6 +623,24 @@ p, li { white-space: pre-wrap; }
   <action name="actionTree_NPP">
    <property name="text">
     <string>Tree NPP</string>
+   </property>
+  </action>
+  <action name="actionRun_one_year">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
+   </property>
+   <property name="text">
+    <string>Run one year</string>
+   </property>
+  </action>
+  <action name="actionReload">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload</string>
    </property>
   </action>
  </widget>
