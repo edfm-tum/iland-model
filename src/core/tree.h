@@ -11,34 +11,32 @@ class RessourceUnit;
 class Tree
 {
 public:
+    // lifecycle
     Tree();
+    void setup();
+
+    // access to properties
     const int id() const { return mId; }
     void setNewId() { mId = m_nextId++; }
     void setPosition(const QPointF pos) { mPosition=pos; }
     const QPointF position() const { return mPosition; }
-
     void setDbh(const float dbh) { mDbh=dbh; }
     const float dbh() const { return mDbh; }
-
     void setHeight(const float height) { mHeight=height; }
     const float height() const { return mHeight; }
-
     const float lightRessourceIndex() const { return mLRI; }
-
     const Species* species() const { return mSpecies; }
     void setSpecies(Species *ts) { mSpecies=ts; }
     const RessourceUnit *ru() const { return mRU; }
     void setRU(RessourceUnit *ru) { mRU = ru; }
+    const double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
 
-    void setup();
-
+    // actions
     void enableDebugging(const bool enable=true) { mDebugging = enable; }
-
-
     // grid based light-concurrency functions
     void applyStamp(); ///< apply LightInfluencePattern onto the global grid
     double readStamp();
-    void readStampMul(); ///< calculate the lightRessourceIndex
+    void readStampMul(); ///< calculate the lightRessourceIndex with multiplicative approach
     void heightGrid(); ///< calculate the height grid
 
     // growth, etc.

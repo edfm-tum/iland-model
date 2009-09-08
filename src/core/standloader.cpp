@@ -60,8 +60,6 @@ void StandLoader::processInit()
     if (!dbg_str.isEmpty()) {
        TreeWrapper tw;
        Expression dexp(dbg_str, &tw); // load expression dbg_str and enable external model variables
-
-
         //double *pid = dexp.addVar("id"); // binding
         //double *pru = dexp.addVar("ru"); // binding
         AllTreeIterator at(GlobalSettings::instance()->model());
@@ -74,8 +72,6 @@ void StandLoader::processInit()
             if (result)
                 t->enableDebugging();
         }
-
-
     }
 }
 

@@ -465,3 +465,15 @@ inline double Tree::relative_height_growth()
     double hd_ratio = hd_high - (hd_high-hd_low)*mLRI;
     return hd_ratio;
 }
+
+
+//////////////////////////////////////////////////
+////  value functions
+//////////////////////////////////////////////////
+
+const double Tree::volume() const
+{
+    /// @see Species::volumeFactor() for details
+    const double volume = mSpecies->volumeFactor() * mDbh*mDbh*mHeight;
+    return volume;
+}

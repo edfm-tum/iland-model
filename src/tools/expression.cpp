@@ -7,7 +7,7 @@
     - sin cos tan
     - exp ln sqrt
     - min max: variable number of arguments, e.g: min(x,y,z)
-    - if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway.
+    - if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway!
     - incsum: ?? incremental sum - currently not supported.
     - polygon: special function for polygons. polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn): return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value.
     - sigmoid: returns a sigmoid function. sigmoid(value, type, param1, param2). see udfSigmoid() for details.
@@ -17,7 +17,18 @@
     - and
     - or
     - not
-
+  @par Using Model Variables
+  With the help of descendants of ExpressionWrapper values of model objects can be accessed. Example Usage:
+  @code
+  TreeWrapper wrapper;
+  Expression basalArea("dbh*dbh*3.1415/4", &wrapper); // expression for basal area, add wrapper (see also setModelObject())
+  AllTreeIterator at(GlobalSettings::instance()->model()); // iterator to iterate over all tree in the model
+  double sum;
+  while (Tree *tree = at.next()) {
+      at.setTree(tree); // set actual tree
+      sum += basalArea.execute(); // execute calculation
+  }
+  @endcode
 
 */
 #include "expression.h"
