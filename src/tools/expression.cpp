@@ -31,8 +31,8 @@
   @endcode
 
 */
-#include "expression.h"
 #include <QtCore>
+#include "expression.h"
 
 #include "exception.h"
 #include "expressionwrapper.h"
@@ -101,10 +101,12 @@ Expression::ETokType  Expression::next_token()
         return etNumber;
     }
 
-    if (*m_pos>='a' && *m_pos<='z'|| *m_pos>='A' && *m_pos<='Z') {
+    if ((*m_pos>='a' && *m_pos<='z') || (*m_pos>='A' && *m_pos<='Z')) {
         // function ... find brace
         m_token="";
-        while ((*m_pos>='a' && *m_pos<='z' || *m_pos>='A' && *m_pos<='Z' || *m_pos>='0' && *m_pos<='9' || *m_pos=='_' || *m_pos=='.') && *m_pos!='(' && m_pos!=0)
+        while (( (*m_pos>='a' && *m_pos<='z') || (*m_pos>='A' && *m_pos<='Z')
+                || (*m_pos>='0' && *m_pos<='9') || (*m_pos=='_' || *m_pos=='.') )
+            && *m_pos!='(' && m_pos!=0 )
             m_token+=*m_pos++;
         // wenn am Ende Klammer, dann Funktion, sonst Variable.
         if (*m_pos=='(' || *m_pos=='{') {

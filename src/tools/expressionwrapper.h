@@ -5,10 +5,10 @@
 class ExpressionWrapper
 {
 public:
+    ExpressionWrapper();
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
-    virtual const int variableIndex(const QString &variableName) { return -1;}
-    ExpressionWrapper();
+    virtual int variableIndex(const QString &variableName);
 };
 
 class Tree;
@@ -21,7 +21,7 @@ public:
     void setTree(Tree* tree) { mTree = tree; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
-    virtual const int variableIndex(const QString &variableName);
+    virtual int variableIndex(const QString &variableName);
 
 private:
     const Tree *mTree;

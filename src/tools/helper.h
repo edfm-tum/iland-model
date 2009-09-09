@@ -49,14 +49,14 @@ public:
     void setData(QVector<double> &data) { mData=data; calculate(); }
     void calculate();
     // getters
-    const double sum() const { return mSum; } ///< sum of values
-    const double mean() const { return mMean; } ///< arithmetic mean
-    const double min() const { return mMin; } ///< minimum value
-    const double max() const { return mMax; } ///< maximum value
-    const double median() const { return mMedian; } ///< 2nd quartil = median
-    const double percentile25() const { return mP25; } ///< 1st quartil
-    const double percentile75() const { return mP75; } ///< 3rd quartil
-    const double percentile(const int perc); ///< get value of a given percentile (0..100)
+    double sum() const { return mSum; } ///< sum of values
+    double mean() const { return mMean; } ///< arithmetic mean
+    double min() const { return mMin; } ///< minimum value
+    double max() const { return mMax; } ///< maximum value
+    double median() const { return mMedian; } ///< 2nd quartil = median
+    double percentile25() const { return mP25; } ///< 1st quartil
+    double percentile75() const { return mP75; } ///< 3rd quartil
+    double percentile(const int perc); ///< get value of a given percentile (0..100)
     // additional functions
     static QVector<int> calculateRanks(const QVector<double> &data, bool descending=false); ///< rank data.
     static void normalize(QVector<double> &data, double targetSum); ///< normalize, i.e. the sum of all items after processing is targetSum
@@ -113,7 +113,7 @@ public:
     UpdateState(): mCurrentVal(0), mVal(0) {}
     bool needsUpdate(); // needs local state-object an update?
     void update(); // update with master
-    const int value() const { return mVal; } // return current value
+    int value() const { return mVal; } // return current value
     void invalidate(bool self=false); // master object enters a new state
     void addChild(UpdateState* state) { mChilds.push_back(state); }
     void saveState(UpdateState* state);
@@ -143,8 +143,8 @@ public:
     void zoomTo(const QPoint &screen_point, const double factor);
     void moveTo(const QPoint &screen_from, const QPoint &screen_to);
     // conversion of length
-    const double pixelToMeter(const int pixel) { return pixel/m_scale_worldtoscreen; }
-    const int meterToPixel(const double meter) { return qRound(meter * m_scale_worldtoscreen);}
+    double pixelToMeter(const int pixel) { return pixel/m_scale_worldtoscreen; }
+    int meterToPixel(const double meter) { return qRound(meter * m_scale_worldtoscreen);}
     // setters...
     void setViewRect(const QRectF &viewrect) { m_viewport = viewrect; }
     void setWorldRect(const QRectF &worldrect) { m_world = worldrect; }

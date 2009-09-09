@@ -5,6 +5,8 @@
 
 
 #include <stdexcept>
+#include <limits>
+
 
 /** @class Grid class (template).
 
@@ -33,14 +35,14 @@ public:
     bool setup(const QRectF& rect, const double cellsize);
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
 
-    const int sizeX() const { return mSizeX; }
-    const int sizeY() const { return mSizeY; }
-    const float metricSizeX() const { return mSizeX*mCellsize; }
-    const float metricSizeY() const { return mSizeY*mCellsize; }
+    int sizeX() const { return mSizeX; }
+    int sizeY() const { return mSizeY; }
+    float metricSizeX() const { return mSizeX*mCellsize; }
+    float metricSizeY() const { return mSizeY*mCellsize; }
     QRectF metricRect() const { return mRect; }
-    const float cellsize() const { return mCellsize; }
-    const int count() const { return mCount; }
-    const bool isEmpty() const { return mData==NULL; }
+    float cellsize() const { return mCellsize; }
+    int count() const { return mCount; }
+    bool isEmpty() const { return mData==NULL; }
     // operations
     // query
     /// access (const) with index variables. use int.

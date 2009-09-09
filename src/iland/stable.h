@@ -17,6 +17,7 @@
 //#include <QTXml>
 
 //
+#include <stdlib.h>
 #include <math.h>
 
 // globals of project

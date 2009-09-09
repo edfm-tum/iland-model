@@ -11,7 +11,7 @@ class RessourceUnit
 public:
     RessourceUnit(const int index);
     // access
-    const int index() const { return mIndex; }
+    int index() const { return mIndex; }
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
     /// get RU-Species-container of @p species from the RU
     RessourceUnitSpecies &ressourceUnitSpecies(const Species *species);

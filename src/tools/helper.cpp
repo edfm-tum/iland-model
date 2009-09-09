@@ -3,6 +3,7 @@
 #include <QtGui>
 //#include "cycle.h"
 #include "ticktack.h"
+#include <limits>
 
 Helper::Helper()
 {
@@ -125,7 +126,7 @@ void StatData::calculate()
 }
 
 
-const double StatData::percentile(const int perc)
+double StatData::percentile(const int perc)
 {
 // double *Values, int ValueCount,
     // code von: Fast median search: an ANSI C implementation, Nicolas Devillard, http://ndevilla.free.fr/median/median/index.html

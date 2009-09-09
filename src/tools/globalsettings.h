@@ -2,7 +2,7 @@
 #define GLOBALSETTINGS_H
 
 #include <QtCore>
-//#include <QtSql>
+#include <QtSql>
 //#include <QtXml>
 
 #include "settingmetadata.h"
@@ -22,13 +22,13 @@ public:
     // model and clock
     void setModel(Model *model) {mModel = model; }
     Model *model() const { return mModel; }
-    const int runYear() const { return mRunYear; }
+    int runYear() const { return mRunYear; }
     void setRunYear(const int year) { mRunYear = year; }
     // debugging fain grained debug outputs
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4, dStandNPP=8 }; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
     void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
-    const bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
+    bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
     DebugList &debugList(const int ID, const DebugOutputs dbg); ///< returns a ref to a list ready to be filled with debug output of a type/id combination.
     const QList<DebugList> debugLists(const int ID, const DebugOutputs dbg); ///< return a list of debug outputs
     QStringList debugListCaptions(const DebugOutputs dbg); ///< returns stringlist of captions for a specific output type

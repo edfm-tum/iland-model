@@ -7,7 +7,7 @@ class ThreadRunner
 {
 public:
     ThreadRunner();
-    const bool multithreading() const { return mMultithreaded; }
+    bool multithreading() const { return mMultithreaded; }
     void setMultithreading(const bool do_multithreading) { mMultithreaded = do_multithreading; }
     void setup(const QList<RessourceUnit*> &ressourceUnitList);
     void run( RessourceUnit* (*funcptr)(RessourceUnit*) );

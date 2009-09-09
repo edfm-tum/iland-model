@@ -16,10 +16,10 @@ public:
     ~Stamp();
     Stamp(const int size):m_data(NULL) { setup(size); }
     void setOffset(const int offset) { m_offset = offset; }
-    const int offset() const { return m_offset; } ///< delta between edge of the stamp and the logical center point (of the tree). e.g. a 5x5 stamp in an 8x8-grid has an offset from 2.
-    const int count() const { return m_size*m_size; } ///< count of pixels (rectangle)
-    const int size() const { return m_offset*2+1; } ///< logical size of the stamp
-    const int dataSize() const { return m_size; } ///< internal size of the stamp; e.g. 4 -> 4x4 stamp with 16 pixels.
+    int offset() const { return m_offset; } ///< delta between edge of the stamp and the logical center point (of the tree). e.g. a 5x5 stamp in an 8x8-grid has an offset from 2.
+    int count() const { return m_size*m_size; } ///< count of pixels (rectangle)
+    int size() const { return m_offset*2+1; } ///< logical size of the stamp
+    int dataSize() const { return m_size; } ///< internal size of the stamp; e.g. 4 -> 4x4 stamp with 16 pixels.
     /// get a full access pointer to internal data
     float *data() { return m_data; }
     /// get pointer to the element after the last element (iterator style)
@@ -34,10 +34,10 @@ public:
     const Stamp *reader() const { return m_reader; }
     void setReader(Stamp *reader) { m_reader = reader; }
     /// sum of relevant subarea of the stamp (i.e. crown)
-    const float readSum() const { return m_readsum; }
+    float readSum() const { return m_readsum; }
     void setReadSum(float sum) { m_readsum = sum; }
     /// height dominance value in at the tree center
-    const float dominanceValue() const { return m_dominance; }
+    float dominanceValue() const { return m_dominance; }
     void setDominanceValue(float dom) { m_dominance = dom; }
     // loading/saving
     void loadFromFile(const QString &fileName);

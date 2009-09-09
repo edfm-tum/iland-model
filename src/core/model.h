@@ -43,7 +43,7 @@ private:
     void grow();
 
     void test();
-    const bool multithreading() const { return threadRunner.multithreading(); }
+    bool multithreading() const { return threadRunner.multithreading(); }
     ThreadRunner threadRunner;
     bool mSetup;
     /// container holding all ressource units

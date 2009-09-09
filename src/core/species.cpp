@@ -12,6 +12,7 @@
 #include "species.h"
 #include "speciesset.h"
 #include "stampcontainer.h"
+#include "exception.h"
 
 
 
@@ -66,17 +67,17 @@ void Species::setup()
     }
 }
 
-const double Species::biomassFoliage(const double dbh) const
+double Species::biomassFoliage(const double dbh) const
 {
     return mFoliage_a * pow(dbh, mFoliage_b);
 }
 
-const double Species::biomassWoody(const double dbh) const
+double Species::biomassWoody(const double dbh) const
 {
     return mWoody_a * pow(dbh, mWoody_b);
 }
 
-const double Species::biomassRoot(const double dbh) const
+double Species::biomassRoot(const double dbh) const
 {
     return mRoot_a * pow(dbh, mRoot_b);
 }
@@ -84,7 +85,7 @@ const double Species::biomassRoot(const double dbh) const
 /** calculate fraction of stem wood increment base on dbh.
     allometric equation: a*d^b -> first derivation: a*b*d^(b-1)
     the ratio for stem is 1 minus the ratio of twigs to total woody increment at current "dbh". */
-const double Species::allometricFractionStem(const double dbh) const
+double Species::allometricFractionStem(const double dbh) const
 {
     double fraction_stem = 1. - (mBranch_a*mBranch_b*pow(dbh, mBranch_b-1.)) / (mWoody_a*mWoody_b*pow(dbh, mWoody_b-1));
     return fraction_stem;

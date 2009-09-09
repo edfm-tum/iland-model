@@ -11,10 +11,10 @@ public:
     ~ModelController();
     Model *model() const { return mModel; }
     // bool checkers...
-    const bool canCreate(); ///< return true if the model can be created (settings loaded and model does not exist)
-    const bool canDestroy(); ///< model may be destroyed
-    const bool canRun(); ///< model may be run
-    const bool isRunning(); ///< model is runni
+    bool canCreate(); ///< return true if the model can be created (settings loaded and model does not exist)
+    bool canDestroy(); ///< model may be destroyed
+    bool canRun(); ///< model may be run
+    bool isRunning(); ///< model is runni
 public slots:
     void setFileName(QString initFileName); ///< set project file name
     void create(); ///< create the model

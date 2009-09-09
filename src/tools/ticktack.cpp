@@ -1,9 +1,12 @@
 #include "ticktack.h"
-#include <windows.h>
+#include <QtCore>
 
 /* TODO: this is purely WINDOWS - provide a version for other BS, change the build-system
    to only use this on Win.
 */
+#ifdef Q_WS_WIN
+#include <windows.h>
+
 class TTickTack
 {
   private:
@@ -30,8 +33,16 @@ _LARGE_INTEGER getCount()
 
     }
 };
-
-
+#else
+// fake implementation
+class TTickTack
+{
+public:
+    TTickTack() {}
+    void reset() {}
+    double elapsed() { return 1.; }
+};
+#endif
 
 TickTack::TickTack()
 {

@@ -21,26 +21,26 @@ ModelController::~ModelController()
 }
 
 
-const bool ModelController::canCreate()
+bool ModelController::canCreate()
 {
     if (mModel)
         return false;
     return true;
 }
 
-const bool ModelController::canDestroy()
+bool ModelController::canDestroy()
 {
     return mModel != NULL;
 }
 
-const bool ModelController::canRun()
+bool ModelController::canRun()
 {
     if (mModel && mModel->isSetup())
         return true;
     return false;
 }
 
-const bool ModelController::isRunning()
+bool ModelController::isRunning()
 {
  return GlobalSettings::instance()->runYear()>0;
 }

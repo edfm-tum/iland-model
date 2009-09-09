@@ -483,7 +483,7 @@ inline double Tree::relative_height_growth()
 ////  value functions
 //////////////////////////////////////////////////
 
-const double Tree::volume() const
+double Tree::volume() const
 {
     /// @see Species::volumeFactor() for details
     const double volume_factor = mSpecies->volumeFactor();

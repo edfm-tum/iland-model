@@ -8,13 +8,19 @@
 ExpressionWrapper::ExpressionWrapper()
 {
 }
+int ExpressionWrapper::variableIndex(const QString &variableName)
+{
+    throw IException(QString("expression wrapper reached base variableIndex name %1").arg(variableName));
+}
+
 const QStringList ExpressionWrapper::getVariablesList()
 {
     throw IException("expression wrapper reached base getVariableList");
 }
+
 double ExpressionWrapper::value(const int variableIndex)
 {
-    throw IException("expression wrapper reached base getValue");
+    throw IException(QString("expression wrapper reached base getValue index %1").arg(variableIndex));
 }
 
 QStringList treeVarList=QStringList() << "id" << "dbh" << "height" << "ruindex" << "x" << "y" << "volume" << "lri";
@@ -23,7 +29,7 @@ const QStringList TreeWrapper::getVariablesList()
     return treeVarList;
 }
 
-const int TreeWrapper::variableIndex(const QString &variableName)
+int TreeWrapper::variableIndex(const QString &variableName)
 {
     return getVariablesList().indexOf(variableName);
 }

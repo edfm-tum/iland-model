@@ -30,12 +30,12 @@ public:
 
         //const double result(){ return m_result; } ///< get the result of the last calcuation.
         //const bool logicResult() { return m_logicResult; } ///< get the logical result (true/false) of the last calculation.
-        const bool isConstExpression() { return m_constExpression; } /// returns true if current expression is a constant.
+        bool isConstExpression() { return m_constExpression; } /// returns true if current expression is a constant.
         /** strict property: if true, variables must be named before execution.
           When strict=true, all variables in the expression must be added by setVar or addVar.
           if false, variable values are assigned depending on occurence. strict is false is the default for "calculate()".
         */
-        const bool isStrict() { return m_strict;}
+        bool isStrict() { return m_strict;}
         void setStrict(bool str) { m_strict=str; }
         void   setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace);
         void enableIncSum();

@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QtCore>
-#include <QTGui>
-#include <QTXml>
+#include <QtGui>
+#include <QtXml>
 
 #include "model.h"
 #include "standloader.h"
@@ -285,7 +285,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     if (show_impact) {
         AllTreeIterator treelist(model);
         Tree *tree;
-        while (tree = treelist.next()) {
+        while ((tree = treelist.next())) {
             if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
                 continue;
             }

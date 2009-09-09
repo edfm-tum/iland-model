@@ -16,8 +16,8 @@ public:
    QString value(const QString &path, const QString &defaultValue="") const; ///< retrieve value (as string) from node @p path.
    QString dump(const QString &path, int levels=-1);
    QDomElement top() const { return mTopNode;}
-   const double paramValue(const QString &paramName, const double defaultValue=0.) const; ///< get value of special "parameter" space
-   const QString paramValueString(const QString &paramName, const QString &defaultValue="") const; ///< get value of special "parameter" space
+   double paramValue(const QString &paramName, const double defaultValue=0.) const; ///< get value of special "parameter" space
+   QString paramValueString(const QString &paramName, const QString &defaultValue="") const; ///< get value of special "parameter" space
 private:
    void dump_rec(QDomElement c, QStringList &stack, QStringList &out, int idx=-1);
    QDomDocument mDoc;

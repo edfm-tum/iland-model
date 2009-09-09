@@ -19,24 +19,24 @@ public:
     const QString &id() const { return mId; }
     /// the full name (e.g. Picea Abies) of the species
     const QString &name() const { return mName; }
-    const int index() const { return mIndex; } ///< unique index of species within current set
+    int index() const { return mIndex; } ///< unique index of species within current set
 
     // calculations: allometries
-    const double biomassFoliage(const double dbh) const;
-    const double biomassWoody(const double dbh) const;
-    const double biomassRoot(const double dbh) const;
-    const double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
-    const double allometricFractionStem(const double dbh) const;
+    double biomassFoliage(const double dbh) const;
+    double biomassWoody(const double dbh) const;
+    double biomassRoot(const double dbh) const;
+    double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
+    double allometricFractionStem(const double dbh) const;
 
     // turnover rates
-    const double turnoverLeaf() const { return mTurnoverLeaf; }
-    const double turnoverRoot() const { return mTurnoverRoot; }
+    double turnoverLeaf() const { return mTurnoverLeaf; }
+    double turnoverRoot() const { return mTurnoverRoot; }
     // hd-values
     void hdRange(const double dbh, double &rMinHD, double &rMaxHD);
     // growth
-    const double volumeFactor() const { return mVolumeFactor; } ///< factor for volume calculation: V = factor * D^2*H (incorporates density and the form of the bole)
-    const double density() const { return mWoodDensity; } ///< density of stem wood [kg/m3]
-    const double specificLeafArea() const { return mSpecificLeafArea; }
+    double volumeFactor() const { return mVolumeFactor; } ///< factor for volume calculation: V = factor * D^2*H (incorporates density and the form of the bole)
+    double density() const { return mWoodDensity; } ///< density of stem wood [kg/m3]
+    double specificLeafArea() const { return mSpecificLeafArea; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance

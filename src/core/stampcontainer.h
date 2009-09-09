@@ -21,7 +21,7 @@ public:
     void addReaderStamp(Stamp *stamp, const float crown_radius_m);
     const Stamp* stamp(const float bhd_cm, const float height_m) const;
     const Stamp* readerStamp(const float crown_radius_m) const; ///< retrieve reader-stamp. @param radius of crown in m. @return the appropriate stamp or NULL if not found.
-    const int count() const { return m_stamps.count(); }
+    int count() const { return m_stamps.count(); }
     /// save the content of the StampContainer to the output stream (binary encoding)
     void save(QDataStream &out);
     /// load the content of the StampContainer to the output stream (binary encoding)
