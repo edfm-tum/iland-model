@@ -49,6 +49,7 @@ public:
     void setData(QVector<double> &data) { mData=data; calculate(); }
     void calculate();
     // getters
+    const double sum() const { return mSum; } ///< sum of values
     const double mean() const { return mMean; } ///< arithmetic mean
     const double min() const { return mMin; } ///< minimum value
     const double max() const { return mMax; } ///< maximum value
@@ -62,6 +63,7 @@ public:
 
 private:
    QVector<double> mData;
+   double mSum;
    double mMean;
    double mMin;
    double mMax;

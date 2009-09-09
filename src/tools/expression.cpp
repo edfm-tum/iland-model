@@ -457,32 +457,25 @@ double  Expression::execute()
 {
     if (!m_parsed)
         parse();
-    ExtExecListItem *Exec=m_execList;
+    ExtExecListItem *exec=m_execList;
     int i;
     m_result=0.;
     double Stack[20];
     bool   LogicStack[20];
     bool   *lp=LogicStack;
-    double *p=Stack;  // Kopf
+    double *p=Stack;  // p=head pointer
     *lp++=true; // zumindest eins am anfang...
-    if (Exec->Type==etStop) {
+    if (exec->Type==etStop) {
         // leere expr.
         //m_logicResult=false;
         m_result=0.;
         return 0.;
     }
-    //m_tokString="Start\n";
-    while (Exec->Type!=etStop) {
-        /* switch (Exec->Type) {
-         case etOperator: m_tokString+="Operator " + AnsiString((char)Exec->Index)+"\n"; break;
-         case etNumber: m_tokString+=AnsiString(Exec->Value)+"\n";  break;
-         case etVariable: m_tokString+="Variable"+AnsiString(Exec->Index)+"\n"; break;
-         case etFunction: m_tokString+="Function"+AnsiString(Exec->Index)+" Args: "+AnsiString(Exec->Value) +"\n"; break;
-      }  */
-        switch (Exec->Type) {
+    while (exec->Type!=etStop) {
+        switch (exec->Type) {
         case etOperator:
             p--;
-            switch (Exec->Index) {
+            switch (exec->Index) {
                   case '+': *(p-1)=*(p-1) + *p;  break;
                   case '-': *(p-1)=*(p-1)-*p;  break;
                   case '*': *(p-1)=*(p-1) * *p;  break;
@@ -492,19 +485,19 @@ double  Expression::execute()
                   }
             break;
         case etVariable:
-            if (Exec->Index<100)
-                *p++=m_varSpace[Exec->Index];
-            else if (Exec->Index<1000)
-                *p++=getModelVar(Exec->Index);
+            if (exec->Index<100)
+                *p++=m_varSpace[exec->Index];
+            else if (exec->Index<1000)
+                *p++=getModelVar(exec->Index);
             else
-                *p++=getExternVar(Exec->Index);
+                *p++=getExternVar(exec->Index);
             break;
         case etNumber:
-            *p++=Exec->Value;
+            *p++=exec->Value;
             break;
         case etFunction:
             p--;
-            switch (Exec->Index) {
+            switch (exec->Index) {
                  case 0: *p=sin(*p); break;
                  case 1: *p=cos(*p); break;
                  case 2: *p=tan(*p); break;
@@ -513,11 +506,11 @@ double  Expression::execute()
                  case 5: *p=sqrt(*p); break;
                      // min, max, if:  variable zahl von argumenten
                  case 6:      // min
-                     for (i=0;i<Exec->Value-1;i++,p--)
+                     for (i=0;i<exec->Value-1;i++,p--)
                          *(p-1)=(*p<*(p-1))?*p:*(p-1);
                      break;
                  case 7:  //max
-                     for (i=0;i<Exec->Value-1;i++,p--)
+                     for (i=0;i<exec->Value-1;i++,p--)
                          *(p-1)=(*p>*(p-1))?*p:*(p-1);
                      break;
                  case 8: // if
@@ -532,8 +525,8 @@ double  Expression::execute()
                      *p=m_incSumVar;
                      break;
                  case 10: // Polygon-Funktion
-                     *(p-(int)(Exec->Value-1))=udfPolygon(*(p-(int)(Exec->Value-1)), p, (int)Exec->Value);
-                     p-=(int) (Exec->Value-1);
+                     *(p-(int)(exec->Value-1))=udfPolygon(*(p-(int)(exec->Value-1)), p, (int)exec->Value);
+                     p-=(int) (exec->Value-1);
                      break;
                  case 11: // Modulo-Division: erg=rest von arg1/arg2
                      p--; // p zeigt auf ergebnis...
@@ -546,7 +539,7 @@ double  Expression::execute()
                  case 13: case 14: // rnd(from, to) bzw. rndg(mean, stddev)
                              p--;
                      // index-13: 1 bei rnd, 0 bei rndg
-                     *p=udfRandom(Exec->Index-13, *p, *(p+1));
+                     *p=udfRandom(exec->Index-13, *p, *(p+1));
                      break;
                  }
             p++;
@@ -554,7 +547,7 @@ double  Expression::execute()
         case etLogical:
             p--;
             lp--;
-            switch (Exec->Index) {
+            switch (exec->Index) {
                 case opAnd: *(lp-1)=(*(lp-1) && *lp);  break;
                 case opOr:  *(lp-1)=(*(lp-1) || *lp);  break;
             }
@@ -566,7 +559,7 @@ double  Expression::execute()
         case etCompare: {
             p--;
             bool LogicResult=false;
-            switch (Exec->Index) {
+            switch (exec->Index) {
                  case opEqual: LogicResult=(*(p-1)==*p); break;
                  case opNotEqual: LogicResult=(*(p-1)!=*p); break;
                  case opLowerThen: LogicResult=(*(p-1)<*p); break;
@@ -576,9 +569,7 @@ double  Expression::execute()
                  }
             if (LogicResult) {
                 *(p-1)=1;   // 1 means true...
-                //m_tokString+="TRUE\n";
             } else {
-                //m_tokString+="FALSE\n";
                 *(p-1)=0;
             }
 
@@ -587,8 +578,7 @@ double  Expression::execute()
         case etStop: case etUnknown: case etDelimeter: throw IException("invalid token during execution.");
         } // switch()
 
-        Exec++;
-        //m_tokString+="m_pos: " + AnsiString(p-Stack) + "; Value: " + AnsiString(*(p-1))+"\n";
+        exec++;
     }
     if (p-Stack!=1)
         throw IException("Expression::execute: stack unbalanced!");
@@ -653,7 +643,7 @@ int  Expression::getVarIndex(const QString& variableName)
     return -1;
 }
 
-double Expression::getModelVar(const int varIdx)
+inline double Expression::getModelVar(const int varIdx)
 {
     // der weg nach draussen....
     int idx=varIdx - 100; // intern als 100+x gespeichert...

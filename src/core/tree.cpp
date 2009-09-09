@@ -320,7 +320,7 @@ void Tree::grow()
 
     partitioning(npp);
 
-     mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
+    mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
 
 }
 
@@ -438,7 +438,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && isDebugging() ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
             dumpList(out); // add tree headers
-            out << net_stem_npp << hd_growth << factor_diameter << delta_d_estimate*100 << d_increment*100;
+            out << net_stem_npp << stem_mass << hd_growth << factor_diameter << delta_d_estimate*100 << d_increment*100;
         }
     ); // DBGMODE()
 

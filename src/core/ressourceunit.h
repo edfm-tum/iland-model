@@ -17,6 +17,7 @@ public:
     RessourceUnitSpecies &ressourceUnitSpecies(const Species *species);
     const QRectF &boundingBox() const { return mBoundingBox; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
+    const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
 
     // actions
     /// returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.

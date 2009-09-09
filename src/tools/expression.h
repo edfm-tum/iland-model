@@ -81,7 +81,7 @@ private:
         void  parse_level4();
         int  getFuncIndex(const QString& functionName);
         int  getVarIndex(const QString& variableName);
-        double getModelVar(const int varIdx);
+        inline double getModelVar(const int varIdx);
 
         // link to external model variable
         ExpressionWrapper *mModelObject;

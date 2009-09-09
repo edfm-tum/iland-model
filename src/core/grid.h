@@ -248,7 +248,7 @@ QPoint Grid<T>::indexOf(T* element) const
 template <class T>
 T  Grid<T>::max() const
 {
-    T maxv = std::numeric_limits<T>::min();
+    T maxv = -std::numeric_limits<T>::max();
     T* p;
     T* pend = end();
     for (p=begin(); p!=pend;++p)

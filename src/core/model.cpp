@@ -25,28 +25,26 @@
   */
 Tree *AllTreeIterator::next()
 {
+
     if (!mTreeEnd) {
         // initialize to first ressource unit
         mRUIterator = mModel->ruList().constBegin();
         if (mRUIterator == mModel->ruList().constEnd()) return NULL;
-        mTreeEnd = &((*mRUIterator)->trees().back());
+        mTreeEnd = &((*mRUIterator)->trees().back()) + 1; // let end point to "1 after end" (STL-style)
         mCurrent = &((*mRUIterator)->trees().front());
-        mCurrent--; // set ptr 1 behind the begin
     }
-
-    mCurrent++;
-
     if (mCurrent==mTreeEnd) {
         mRUIterator++; // switch to next RU
         if (mRUIterator == mModel->ruList().constEnd()) {
-            return NULL; // finished
+            mCurrent = NULL;
+            return NULL; // finished!!
         }else {
-            mTreeEnd = &((*mRUIterator)->trees().back());
+            mTreeEnd = &((*mRUIterator)->trees().back()) + 1;
             mCurrent = &((*mRUIterator)->trees().front());
-            mCurrent--;  // intialize this RU
         }
     }
-    return mCurrent;
+
+    return mCurrent++;
 }
 
 
@@ -112,7 +110,13 @@ void Model::setupSpace()
             new_ru->setSpeciesSet(species_set);
             mRU.append(new_ru); // store in list
             new_ru->setBoundingBox(r);
-            *p = new_ru; // store in grid
+        }
+        ru_index=0;
+        // now store the pointers in the grid.
+        // Important: This has to be done after the mRU-QList is complete - otherwise pointers would
+        // point to invalid memory when QList's memory is reorganized (expanding)
+        for (p=mRUmap.begin();p!=mRUmap.end(); ++p) {
+            *p = mRU.value(ru_index++);
         }
         qDebug() << "created a grid of RessourceUnits: count=" << mRU.count();
         // setup the helper that does the multithreading
@@ -130,6 +134,7 @@ void Model::setupSpace()
   */
 void Model::clear()
 {
+    mSetup = false;
     qDebug() << "Model clear: attempting to clear" << mRU.count() << "RU, " << mSpeciesSets.count() << "SpeciesSets, " << mGridList.count() << "Grids.";
     // clear ressource units
     qDeleteAll(mRU); // delete ressource units (and trees)
@@ -141,7 +146,6 @@ void Model::clear()
     qDeleteAll(mGridList); // delete all grids
     mGridList.clear();
 
-    mSetup = false;
     qDebug() << "Model ressources freed.";
 }
 
@@ -193,6 +197,7 @@ void Model::beforeRun()
     DebugTimer loadtrees("load trees");
     StandLoader loader(this);
     loader.processInit();
+    Tree::lafactor = GlobalSettings::instance()->settings().paramValue("lafactor",1.);
 
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();

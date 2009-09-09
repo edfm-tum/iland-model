@@ -103,7 +103,7 @@ StatData::StatData(QVector<double> &data)
 void StatData::calculate()
 {
    if (mData.isEmpty()) {
-       mMedian=mP25=mP75=mMean=mMin=mMax=0.;
+       mSum=mMedian=mP25=mP75=mMean=mMin=mMax=0.;
        return;
    }
    mP25 = percentile(25);
@@ -113,14 +113,14 @@ void StatData::calculate()
    mMax = - std::numeric_limits<double>::max();
    QVector<double>::const_iterator end = mData.constEnd();
    QVector<double>::const_iterator i = mData.constBegin();
-   double sum = 0.;
+   mSum = 0.;
    while (i!=end) {
-       sum += *i;
+       mSum += *i;
        mMin = qMin(*i, mMin);
        mMax = qMax(*i, mMax);
        ++i;
    }
-   mMean = sum / double(mData.count());
+   mMean = mSum / double(mData.count());
    //qDebug() << QString("p25: %1 Median: %2 p75: %3 min: %4 max: %5").arg(mP25).arg(mMedian).arg(mP75).arg(mMin).arg(mMax);
 }
 

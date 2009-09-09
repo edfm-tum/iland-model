@@ -158,6 +158,12 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
 
     // extra work: search in list...
     //if (bhd_cm > m_maxBhd)
+    if (cls_bhd<cBHDclassCount && cls_bhd>=0) {
+        qDebug() << "HD for stamp out of range bhd " << bhd_cm << "and h="<< height_m << "(using smallest/largeset HD)";
+        if (cls_hd>=cHDclassCount)
+            return m_lookup(cls_bhd, cHDclassCount-1); // highest
+        return m_lookup(cls_bhd, 0); // smallest
+    }
     qDebug() << "No stamp defined for bhd " << bhd_cm << "and h="<< height_m;
     return NULL;
 

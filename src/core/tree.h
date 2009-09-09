@@ -25,9 +25,9 @@ public:
     void setHeight(const float height) { mHeight=height; }
     const float height() const { return mHeight; }
     const float lightRessourceIndex() const { return mLRI; }
-    const Species* species() const { return mSpecies; }
+    const Species* species() const { Q_ASSERT(mRU!=0); return mSpecies; }
     void setSpecies(Species *ts) { mSpecies=ts; }
-    const RessourceUnit *ru() const { return mRU; }
+    const RessourceUnit *ru() const { Q_ASSERT(mRU!=0); return mRU; }
     void setRU(RessourceUnit *ru) { mRU = ru; }
     const double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
 
