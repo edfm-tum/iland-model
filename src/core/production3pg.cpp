@@ -10,7 +10,7 @@ Production3PG::Production3PG()
 
 // fake: monthly radiation (sum month MJ/m2)
 const double radMonth[] = {30., 80., 200., 350., 450., 500., 550., 400., 300., 150., 100.,30. };
-// fake: aggregated response values per month
+// fake: aggregated response values per month GO to webbrowser!!
 const double totalResponses[] = {0., 0.05, 0.4, 0.6, 0.8, 0.8, 0.8, 0.5, 0.5, 0.1, 0. ,0. };
 const double radYear = 3140.; // the sum of radMonth [MJ/m2]
 
