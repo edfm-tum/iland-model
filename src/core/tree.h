@@ -54,6 +54,7 @@ public:
     static float lafactor;
 
     QString dump();
+    void dumpList(DebugList &rTargetList);
 
 private:
     // helping functions
@@ -87,7 +88,7 @@ private:
     // special functions
     bool isDebugging() { return mDebugging; }
 
-    void dumpList(DebugList &rTargetList);
+
     // static data
     static FloatGrid *mGrid;
     static FloatGrid *mHeightGrid;

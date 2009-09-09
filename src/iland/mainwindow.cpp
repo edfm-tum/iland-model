@@ -166,22 +166,19 @@ QString MainWindow::dumpTreelist()
         return "";
 
     Model *model = mRemoteControl.model();
-    RessourceUnit *ru = model->ru();
-    QVector<Tree> &mTrees = ru->trees();
-    QStringList result;
-    result+=QString("id;x;y;dbh;height;fonvalue");
-    QVector<Tree>::iterator tit;
-    Tree *tree;
 
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        tree = &(*tit);
-        result+=QString("%1;%2;%3;%4;%5;%6")
-                .arg(tree->id())
-                .arg(tree->position().x())
-                .arg(tree->position().y())
-                .arg(tree->dbh())
-                .arg(tree->height())
-                .arg(tree->lightRessourceIndex());
+    AllTreeIterator at(model);
+    DebugList treelist;
+    QString line;
+    QStringList result;
+    result << "id;species;dbh;height;x;y;RU#;LRI;mWoody;mRoot;mFoliage;LA";
+    while (Tree *tree = at.next()) {
+        treelist.clear();
+        tree->dumpList(treelist);
+        line = "";
+        foreach(QVariant value, treelist)
+            line+=value.toString() + ";";
+        result << line;
     }
     QString resStr = result.join("\n");
     return resStr;
@@ -429,6 +426,7 @@ void MainWindow::setupModel()
         vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
         ui->PaintWidget->update();
     }
+     ui->treeChange->setProperty("tree",0);
 }
 
 

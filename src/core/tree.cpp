@@ -84,6 +84,8 @@ void Tree::setup()
 
 void Tree::applyStamp()
 {
+    if (!mStamp)
+        return;
     Q_ASSERT(mGrid!=0 && mStamp!=0 && mRU!=0);
 
     QPoint pos = mGrid->indexAt(mPosition);
@@ -274,8 +276,8 @@ void Tree::readStampMul()
     //    m_statAboveZ++;
     //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
     //}
-    if (mLRI > 1)
-        mLRI = 1.f;
+    if (mLRI > 0.5)
+        mLRI = 0.5;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
     mRU->addWLA((mLRI+1) * mLeafArea, mLeafArea);
 }
@@ -393,7 +395,17 @@ void Tree::partitioning(double npp)
             out << npp << apct_foliage << apct_wood << apct_root
                     << delta_foliage << net_woody << delta_root << mNPPReserve << net_stem;
      }
+
     ); // DBGMODE()
+    //DBGMODE(
+      if (mWoodyMass<0. || mWoodyMass>10000 || mFoliageMass<0. || mFoliageMass>1000. || mRootMass<0. || mRootMass>10000
+         || mNPPReserve>2000.) {
+         qDebug() << "Tree:partitioning: invalid pools.";
+         qDebug() << GlobalSettings::instance()->debugListCaptions(GlobalSettings::DebugOutputs(0));
+         DebugList dbg; dumpList(dbg);
+         qDebug() << dbg;
+     } //);
+
     /*DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
              + QString("npp %1 npp_reserve %9 sen_fol %2 sen_stem %3 sen_root %4 net_fol %5 net_stem %6 net_root %7 to_reserve %8")
                .arg(npp).arg(senescence_foliage).arg(senescence_stem).arg(senescence_root)
@@ -425,7 +437,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
 
     // the final increment is then:
     double d_increment = factor_diameter * (net_stem_npp - stem_residual); // Eq. (11)
-    DBG_IF_X(mId == 1 || d_increment<0., "Tree::grow_dimater", "increment < 0.", dump()
+    DBG_IF_X(d_increment<0. || d_increment>0.1, "Tree::grow_dimater", "increment out of range.", dump()
              + QString("\nhdz %1 factor_diameter %2 stem_residual %3 delta_d_estimate %4 d_increment %5 final residual(kg) %6")
                .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
                .arg( mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));

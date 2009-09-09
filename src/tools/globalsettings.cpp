@@ -137,6 +137,8 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 {
     QStringList treeCaps = QStringList() << "Id" << "Species" << "Dbh" << "Height" << "x" << "y" << "ru_index" << "LRI"
                            << "mWoody" << "mRoot" << "mFoliage" << "LA";
+    if ( int(dbg)==0)
+        return treeCaps;
     switch(dbg) {
         case dTreeNPP: return QStringList() << "id" << "type" << "year" << treeCaps
                     << "radiation" << "raw_gpp" << "gpp" << "npp";
