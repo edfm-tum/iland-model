@@ -24,7 +24,7 @@ public:
     Tree &newTree();
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float WLA, const float LA) { mAggregatedWLA += WLA; mAggregatedLA += LA; }
-    double interceptedRadiation(const float WLA) const { return mIntercepted_per_WLA * WLA;  } ///< returns the total! intercepted radiation.
+    double interceptedRadiation(const double LA, const double LRI) { return mRadiation_m2 * LA * (LRI + mLRIcorrection); }
 
     // model flow
     void newYear(); ///< reset values for a new simulation year
@@ -41,8 +41,8 @@ private:
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
     float mAggregatedLA; ///< sum of leafArea
     float mAggregatedWLA; ///< sum of lightResponseIndex * LeafArea for all trees
-    double mInterceptedRadiation; ///< total amount of radiation intercepted per year by this RU (full area) Unit???
-    double mIntercepted_per_WLA; ///< intercepted / aggregated_wla
+    double mLRIcorrection; ///< correction factor to scale LRIs to WLA
+    double mRadiation_m2; ///< total incoming radiation per m2 and yaer
 
 };
 

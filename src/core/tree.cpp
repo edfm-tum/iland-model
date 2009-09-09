@@ -297,8 +297,8 @@ void Tree::resetStatistics()
 
 void Tree::grow()
 {
-    // step 1: get radiation from ressource unit: radiaton (MJ/tree/year) total intercepted radiation for this tree per year!
-    double radiation = mRU->interceptedRadiation( (mLRI + 1) * mLeafArea);
+    // step 1: get radiation from ressource unit: radiation (MJ/tree/year) total intercepted radiation for this tree per year!
+    double radiation = mRU->interceptedRadiation(mLeafArea, mLRI);
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
     double raw_gpp_per_rad = mRU->ressourceUnitSpecies(mSpecies).prod3PG().GPPperRad();
