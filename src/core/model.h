@@ -10,6 +10,12 @@
 
 class RessourceUnit;
 class SpeciesSet;
+struct HeightGridValue
+{
+    float height;
+    int count;
+};
+typedef Grid<HeightGridValue> HeightGrid;
 
 class Model
 {
@@ -26,7 +32,7 @@ public:
     const QList<RessourceUnit*> &ruList() {return mRU; }
     // global grids
     FloatGrid *grid() { return mGrid; }
-    FloatGrid *heightGrid() { return mHeightGrid; }
+    HeightGrid *heightGrid() { return mHeightGrid; }
     const Grid<RessourceUnit*> &RUgrid() { return mRUmap; }
 
     // setup/maintenance
@@ -38,9 +44,11 @@ private:
     void initialize(); ///< basic startup without creating a simulation
     void setupSpace(); ///< setup the "world"(spatial grids, ...), create ressource units
 
-    void applyPattern();
-    void readPattern();
-    void grow();
+    void applyPattern(); ///< apply LIP-patterns of all trees
+    void readPattern(); ///< retrieve LRI for trees
+    void grow(); ///< grow - both on RU-level and tree-level
+
+    void calculateStockedArea(); ///< calculate area stocked with trees for each RU
 
     void test();
     bool multithreading() const { return threadRunner.multithreading(); }
@@ -54,8 +62,7 @@ private:
     QList<SpeciesSet*> mSpeciesSets;
     // global grids...
     FloatGrid *mGrid;
-    FloatGrid *mHeightGrid;
-    QList<FloatGrid*> mGridList;
+    HeightGrid *mHeightGrid;
 };
 
 class Tree;

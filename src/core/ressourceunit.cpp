@@ -49,6 +49,7 @@ void RessourceUnit::newYear()
 {
     mAggregatedWLA = 0.f;
     mAggregatedLA = 0.f;
+    mPixelCount = mStockedPixelCount = 0;
     // clear statistics global and per species...
 }
 
@@ -57,13 +58,16 @@ void RessourceUnit::newYear()
     - The 3PG production for each species and ressource unit is invoked  */
 void RessourceUnit::production()
 {
-    if (mAggregatedWLA==0) {
+    if (mAggregatedWLA==0 || mPixelCount==0) {
         // nothing to do...
         return;
     }
+
+    // the pixel counters are filled during the height-grid-calculations
+    mStockedArea = 100. * mStockedPixelCount;
+
     // calculate the leaf area index (LAI)
-    const double stockedRUArea = 10000; // m2 of stocked area
-    double LAI = mAggregatedLA / stockedRUArea;
+    double LAI = mAggregatedLA / mStockedArea;
     // calculate the intercepted radiation fraction using the law of Beer Lambert
     const double k = 0.6;
     double interception_fraction = 1. - exp(-k * LAI);
@@ -71,10 +75,10 @@ void RessourceUnit::production()
     mRadiation_m2 = 3140; // incoming radiation sum of year in MJ/m2*year
 
     // Formula for distribution: g = (SA*pPAR - sum(LRI*LA))/sum(LA)
-    mLRIcorrection = (stockedRUArea*interception_fraction - mAggregatedWLA) / mAggregatedLA;
+    mLRIcorrection = (mStockedArea*interception_fraction - mAggregatedWLA) / mAggregatedLA;
 
-    qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 g: %3")
-            .arg(LAI).arg(interception_fraction).arg(mLRIcorrection);
+    qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 g: %3 stocked area: %4")
+            .arg(LAI).arg(interception_fraction).arg(mLRIcorrection).arg(mStockedArea);
 
 
     // invoke species specific calculation (3PG)

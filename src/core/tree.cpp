@@ -6,14 +6,20 @@
 #include "stamp.h"
 #include "species.h"
 #include "ressourceunit.h"
+#include "model.h"
 
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
-FloatGrid *Tree::mHeightGrid = 0;
+HeightGrid *Tree::mHeightGrid = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
+
+void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
+{
+    mGrid = gridToStamp; mHeightGrid = dominanceGrid;
+}
 
 // lifecycle
 Tree::Tree()
@@ -110,7 +116,7 @@ void Tree::applyStamp()
             // suppose there is no stamping outside
             grid_x = pos.x() + x;
 
-            local_dom = mHeightGrid->valueAtIndex(grid_x/5, grid_y/5);
+            local_dom = mHeightGrid->valueAtIndex(grid_x/5, grid_y/5).height;
             value = (*mStamp)(x,y); // stampvalue
             value = 1. - value*mOpacity / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
@@ -134,6 +140,9 @@ void Tree::heightGrid()
 
     QPoint p = mHeightGrid->indexAt(mPosition); // pos of tree on height grid
     QPoint competition_grid = mGrid->indexAt(mPosition);
+
+    // count trees that are on height-grid cells (used for stockable area)
+    mHeightGrid->valueAtIndex(p).count++;
 
     int index_eastwest = competition_grid.x() % 5; // 4: very west, 0 east edge
     int index_northsouth = competition_grid.y() % 5; // 4: northern edge, 0: southern edge
@@ -164,7 +173,7 @@ void Tree::heightGrid()
         ring = qMax(abs(ix), abs(iy));
         QPoint pos(ix+p.x(), iy+p.y());
         if (mHeightGrid->isIndexValid(pos)) {
-            float &rHGrid = mHeightGrid->valueAtIndex(pos);
+            float &rHGrid = mHeightGrid->valueAtIndex(pos).height;
             if (rHGrid > mHeight) // skip calculation if grid is higher than tree
                 continue;
             int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
@@ -200,7 +209,7 @@ double Tree::readStamp()
     }
     float eigenvalue = mStamp->readSum() * mOpacity;
     mLRI = sum - eigenvalue;// additive
-    float dom_height = (*mHeightGrid)[mPosition];
+    float dom_height = (*mHeightGrid)[mPosition].height;
     if (dom_height>0.)
        mLRI = mLRI / dom_height;
 
@@ -255,7 +264,7 @@ void Tree::readStampMul()
 
             //p = pos_reader + QPoint(x,y);
             //if (m_grid->isIndexValid(p)) {
-            local_dom = mHeightGrid->valueAtIndex((rx+x)/5, ry/5); // ry: gets ++ed in outer loop, rx not
+            local_dom = mHeightGrid->valueAtIndex((rx+x)/5, ry/5).height; // ry: gets ++ed in outer loop, rx not
             //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
 
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;

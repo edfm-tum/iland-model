@@ -7,6 +7,7 @@
 class Species;
 class Stamp;
 class RessourceUnit;
+struct HeightGridValue;
 
 class Tree
 {
@@ -45,7 +46,7 @@ public:
     double relative_height_growth();
 
     // static functions
-    static void setGrid(FloatGrid* gridToStamp, FloatGrid *dominanceGrid) { mGrid = gridToStamp; mHeightGrid = dominanceGrid; }
+    static void setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid);
     // statistics
     static void resetStatistics();
     static int statPrints() { return m_statPrint; }
@@ -91,7 +92,7 @@ private:
 
     // static data
     static FloatGrid *mGrid;
-    static FloatGrid *mHeightGrid;
+    static Grid<HeightGridValue> *mHeightGrid;
 
 
     // statistics

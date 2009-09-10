@@ -302,7 +302,7 @@ QString GlobalSettings::path(const QString &fileName, const QString &type)
         d = QDir::currentPath();
     }
 
-    return d.filePath(fileName);
+    return d.filePath(fileName); // let QDir build the correct path
 }
 
 /// returns true if file @p fileName exists.

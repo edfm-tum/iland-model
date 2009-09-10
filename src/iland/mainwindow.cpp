@@ -1,3 +1,4 @@
+#include "global.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QtCore>
@@ -94,14 +95,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuView->addAction( ui->dockWidget->toggleViewAction() );
     ui->menuView->addAction( ui->dockModelDrill->toggleViewAction() );
 
-
     ui->pbResults->setMenu(ui->menuOutput_menu);
 
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
 
     // load xml file
-
     QString argText = QApplication::arguments().last();
     if (QApplication::arguments().count()>1 && !argText.isEmpty())
         ui->initFileName->setText(argText);
@@ -120,11 +119,23 @@ MainWindow::MainWindow(QWidget *parent)
     on_actionEdit_XML_settings_triggered();
 
     qDebug() << "threadcount: " << QThread::idealThreadCount();
+
+    // load window settings
+    QString fileName = QDir::current().filePath("gui.txt");
+    if (QFile::exists(fileName)) {
+
+        QByteArray state = Helper::loadFile(fileName);
+        restoreState(state);
+    }
     checkModelState();
 }
 
 MainWindow::~MainWindow()
 {
+    QString fileName = QDir::current().filePath("gui.txt");
+    QByteArray state = saveState();
+    Helper::saveToFile(fileName, state);
+
     delete ui;
 }
 
@@ -195,7 +206,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     Model *model = mRemoteControl.model();
 
     FloatGrid *grid = model->grid();
-    FloatGrid *domGrid = model->heightGrid();
+    HeightGrid *domGrid = model->heightGrid();
     // do the actual painting
     if (!grid)
         return;
@@ -255,7 +266,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     value = grid->valueAtIndex(QPoint(ix, iy));
                     if (show_scale40) {
                         k = grid->cellCenterPoint(QPoint(ix, iy));
-                        hdom = qMax(2.f, domGrid->valueAt(k)); // 2m: as in stamp grid
+                        hdom = qMax(2.f, domGrid->valueAt(k).height); // 2m: as in stamp grid
                         value = 1.f -  (1.f - value) * hdom / scale_value;
                     }
                     QRectF f = grid->cellRect(QPoint(ix,iy));
@@ -273,7 +284,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             for (iy=0;iy<domGrid->sizeY();iy++) {
                 for (ix=0;ix<domGrid->sizeX();ix++) {
                     QPoint p(ix,iy);
-                    value = domGrid->valueAtIndex(p);
+                    value = domGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(domGrid->cellRect(p));
                     fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
                     painter.fillRect(r, fill_color);
@@ -395,7 +406,7 @@ void MainWindow::mouseMove(const QPoint& pos)
         if (ui->visFon->isChecked())
            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*grid).valueAt(p)));
         if( ui->visDomGrid->isChecked())
-            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mRemoteControl.model()->heightGrid()).valueAt(p)));
+            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height));
     }
 }
 

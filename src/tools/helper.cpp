@@ -32,6 +32,32 @@ void Helper::saveToTextFile(const QString& fileName, const QString& text)
     QTextStream s(&file);
     s << text;
 }
+QByteArray Helper::loadFile(const QString& fileName)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        return QByteArray();
+    }
+    QTextStream s(&file);
+    QByteArray result;
+    s >> result;
+
+    return result;
+}
+
+void Helper::saveToFile(const QString &fileName, const QByteArray &data)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly)) {
+        return;
+    }
+    QTextStream s(&file);
+    s << data;
+}
+
+
 
 void Helper::msg(const QString &message, QWidget *parent)
 {

@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>956</width>
-    <height>657</height>
+    <height>735</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>iLand Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/iland.qrc">
     <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -420,35 +420,28 @@
         <item row="0" column="0">
          <widget class="QRadioButton" name="visFon">
           <property name="text">
-           <string>FON</string>
+           <string>LIF</string>
           </property>
           <property name="checked">
            <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="2">
+        <item row="2" column="0" colspan="2">
          <widget class="QRadioButton" name="visImpact">
           <property name="text">
            <string>Trees</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="3">
-         <widget class="QRadioButton" name="visDomGrid">
-          <property name="text">
-           <string>dominace grid</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="3">
+        <item row="4" column="0" colspan="3">
          <widget class="QCheckBox" name="visAutoScale">
           <property name="text">
            <string>Autoscale colors</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QCheckBox" name="visDomHeight">
           <property name="toolTip">
            <string>for vis. of influence grid: when checked, the color shows the FON-value if scaled to the height in combo-box right, and not for the value of the actual height-dominance-grid.</string>
@@ -458,7 +451,7 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1" colspan="2">
+        <item row="5" column="2">
          <widget class="QComboBox" name="visScaleValue">
           <property name="toolTip">
            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
@@ -504,23 +497,23 @@ p, li { white-space: pre-wrap; }
           </item>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="6" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>Expression</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="0" colspan="2">
+        <item row="7" column="0" colspan="2">
          <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
-        <item row="6" column="2">
+        <item row="7" column="2">
          <widget class="QPushButton" name="pbExecExpression">
           <property name="toolTip">
            <string>Execute expression for each tree and draw trees accordingly.</string>
           </property>
           <property name="icon">
-           <iconset>
+           <iconset resource="res/iland.qrc">
             <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
           </property>
           <property name="iconSize">
@@ -531,10 +524,17 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item row="7" column="0">
+        <item row="8" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
            <string>(value)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="visDomGrid">
+          <property name="text">
+           <string>dominace grid</string>
           </property>
          </widget>
         </item>
@@ -578,7 +578,7 @@ p, li { white-space: pre-wrap; }
   </widget>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -597,7 +597,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelCreate">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/www.png</normaloff>:/www.png</iconset>
    </property>
    <property name="text">
@@ -606,7 +606,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelDestroy">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/user-trash.png</normaloff>:/user-trash.png</iconset>
    </property>
    <property name="text">
@@ -615,7 +615,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelRun">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
    </property>
    <property name="text">
@@ -644,7 +644,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionRun_one_year">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
    </property>
    <property name="text">
@@ -653,7 +653,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionReload">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
    </property>
    <property name="text">
@@ -670,7 +670,9 @@ p, li { white-space: pre-wrap; }
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="res/iland.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>expressionHistory</sender>

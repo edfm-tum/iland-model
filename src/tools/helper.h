@@ -19,6 +19,8 @@ public:
     Helper();
     static QString loadTextFile(const QString& fileName);
     static void saveToTextFile(const QString& fileName, const QString& text);
+    static QByteArray loadFile(const QString &fileName);
+    static void saveToFile(const QString &fileName, const QByteArray &data);
     static void msg(const QString &message, QWidget *parent=0);
     static bool question(const QString &message, QWidget *parent=0);
     /// open a File Dialog and let the user choose a file.

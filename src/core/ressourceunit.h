@@ -30,6 +30,8 @@ public:
     void newYear(); ///< reset values for a new simulation year
     void production(); ///< called after the LIP/LIF calc, before growth of individual trees
 
+    // stocked area calculation
+    void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     // setup/maintenance
     void setSpeciesSet(SpeciesSet *set);
     void setBoundingBox(const QRectF &bb) { mBoundingBox = bb; }
@@ -43,6 +45,9 @@ private:
     float mAggregatedWLA; ///< sum of lightResponseIndex * LeafArea for all trees
     double mLRIcorrection; ///< correction factor to scale LRIs to WLA
     double mRadiation_m2; ///< total incoming radiation per m2 and yaer
+    int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
+    int mStockedPixelCount;  ///< count of pixels that are stocked with trees
+    float mStockedArea; ///< size of stocked area
 
 };
 

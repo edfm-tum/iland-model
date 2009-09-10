@@ -68,8 +68,10 @@ Model::~Model()
   */
 void Model::initialize()
 {
-    mSetup = false;
+   mSetup = false;
    GlobalSettings::instance()->setRunYear(0);
+   mGrid = 0;
+   mHeightGrid = 0;
     //
 }
 
@@ -86,11 +88,13 @@ void Model::setupSpace()
     QRectF total_grid(QPointF(-buffer, -buffer), QPointF(width+buffer, height+buffer));
     qDebug() << "setup grid rectangle:" << total_grid;
 
+    if (mGrid)
+        delete mGrid;
     mGrid = new FloatGrid(total_grid, cellSize);
-    mGridList.push_back(mGrid);
     mGrid->wipe(1.f);
-    mHeightGrid = new FloatGrid(total_grid, cellSize*5);
-    mGridList.push_back(mHeightGrid); // could be solved better...
+    if (mHeightGrid)
+        delete mHeightGrid;
+    mHeightGrid = new HeightGrid(total_grid, cellSize*5);
     mHeightGrid->wipe();
 
     // simple case: create ressource units in a regular grid.
@@ -135,7 +139,7 @@ void Model::setupSpace()
 void Model::clear()
 {
     mSetup = false;
-    qDebug() << "Model clear: attempting to clear" << mRU.count() << "RU, " << mSpeciesSets.count() << "SpeciesSets, " << mGridList.count() << "Grids.";
+    qDebug() << "Model clear: attempting to clear" << mRU.count() << "RU, " << mSpeciesSets.count() << "SpeciesSets.";
     // clear ressource units
     qDeleteAll(mRU); // delete ressource units (and trees)
     mRU.clear();
@@ -143,8 +147,11 @@ void Model::clear()
     qDeleteAll(mSpeciesSets); // delete species sets
     mSpeciesSets.clear();
 
-    qDeleteAll(mGridList); // delete all grids
-    mGridList.clear();
+    // delete the grids
+    if (mGrid)
+        delete mGrid;
+    if (mHeightGrid)
+        delete mHeightGrid;
 
     qDebug() << "Model ressources freed.";
 }
@@ -283,8 +290,8 @@ void Model::applyPattern()
 
     DebugTimer t("applyPattern()");
     // intialize grids...
-    mGrid->initialize(1.);
-    mHeightGrid->initialize(0.);
+    mGrid->wipe(1.f);
+    mHeightGrid->wipe();
 
     threadRunner.run(nc_applyPattern);
 }
@@ -297,7 +304,10 @@ void Model::readPattern()
 
 void Model::grow()
 {
-    { DebugTimer t("growRU()");
+    {
+        DebugTimer t("growRU()");
+        calculateStockedArea();
+
         foreach(RessourceUnit *ru, mRU) {
             ru->production();
         }
@@ -305,4 +315,24 @@ void Model::grow()
 
     DebugTimer t("grow()");
     threadRunner.run(nc_grow);
+}
+
+/**
+  */
+void Model::calculateStockedArea()
+{
+    // iterate over the whole heightgrid and count pixels for each ressource unit
+    HeightGridValue *end = mHeightGrid->end();
+    QPointF cp;
+    RessourceUnit *ru;
+    for (HeightGridValue *i=mHeightGrid->begin(); i!=end; ++i) {
+        cp = mHeightGrid->cellCenterPoint(mHeightGrid->indexOf(i));
+        if (mRUmap.coordValid(cp)) {
+            ru = mRUmap.valueAt(cp);
+            if (ru) {
+                ru->countStockedPixel( (*i).count>0 );
+            }
+        }
+
+    }
 }
