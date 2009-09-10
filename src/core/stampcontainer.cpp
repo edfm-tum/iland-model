@@ -131,6 +131,8 @@ const Stamp* StampContainer::readerStamp(const float crown_radius_m) const
         cls_hd=cHDclassCount-1;
     int cls_bhd = int(crown_radius_m);
     const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
+    if (stamp)
+        const_cast<Stamp*>(stamp)->setCrownRadius(crown_radius_m);
     if (!stamp)
         qDebug() << "Stamp::readerStamp(): no stamp found for radius" << crown_radius_m;
     return stamp;

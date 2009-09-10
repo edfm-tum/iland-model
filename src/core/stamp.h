@@ -32,13 +32,17 @@ public:
     inline float operator()(const int x, const int y) const { return *data(x,y); }
     inline float offsetValue(const int x, const int y, const int offset) const { return *data(x+offset, y+offset); }
     const Stamp *reader() const { return m_reader; }
-    void setReader(Stamp *reader) { m_reader = reader; }
+    void setReader(Stamp *reader) { m_reader = reader; setCrownRadius(reader->crownRadius()); /*calculates also the Area*/ }
     /// sum of relevant subarea of the stamp (i.e. crown)
     float readSum() const { return m_readsum; }
     void setReadSum(float sum) { m_readsum = sum; }
     /// height dominance value in at the tree center
-    float dominanceValue() const { return m_dominance; }
+    float dominanceValue() const { return m_dominance;  }
     void setDominanceValue(float dom) { m_dominance = dom; }
+    // property crown radius
+    float crownRadius() const { return m_crownRadius; }
+    float crownArea() const { return m_crownArea; }
+    void setCrownRadius(const float r) { m_crownRadius = r; m_crownArea=r*r*M_PI; }
     // loading/saving
     void loadFromFile(const QString &fileName);
     void load(QDataStream &in); ///< load from stream (predefined binary structure)
@@ -48,6 +52,8 @@ private:
     float *m_data;
     float m_readsum;
     float m_dominance;
+    float m_crownRadius;
+    float m_crownArea;
     int m_size;
     int m_offset;
     Stamp *m_reader; ///< pointer to the appropriate reader stamp (if available)

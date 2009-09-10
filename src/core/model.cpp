@@ -197,7 +197,7 @@ void Model::beforeRun()
     DebugTimer loadtrees("load trees");
     StandLoader loader(this);
     loader.processInit();
-    Tree::lafactor = GlobalSettings::instance()->settings().paramValue("lafactor",1.);
+//    Tree::lafactor = GlobalSettings::instance()->settings().paramValue("lafactor",1.);
 
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();

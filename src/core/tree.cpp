@@ -14,15 +14,14 @@ int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
-float Tree::lafactor = 1.;
 
 // lifecycle
 Tree::Tree()
 {
-    mDbh = 0;
-    mHeight = 0;
-    mSpecies = 0;
-    mRU = 0;
+    mDbh = mHeight = 0;
+    mRU = 0; mSpecies = 0;
+    mOpacity=mFoliageMass=mWoodyMass=mRootMass=mLeafArea=0.;
+    mDbhDelta=mNPPReserve=mLRI=0.;
     mDebugging = false;
     mId = m_nextId++;
     m_statCreated++;
@@ -70,6 +69,7 @@ void Tree::setup()
 
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
     mLeafArea = mFoliageMass * mSpecies->specificLeafArea();
+    mOpacity = 1. - exp(-0.5 * mLeafArea / mStamp->crownArea());
     mNPPReserve = 2*mFoliageMass; // initial value
     mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
 }
@@ -112,7 +112,7 @@ void Tree::applyStamp()
 
             local_dom = mHeightGrid->valueAtIndex(grid_x/5, grid_y/5);
             value = (*mStamp)(x,y); // stampvalue
-            value = 1. - value*lafactor / local_dom; // calculated value
+            value = 1. - value*mOpacity / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
 
             *grid_value++ *= value;
@@ -198,7 +198,7 @@ double Tree::readStamp()
                sum += mGrid->valueAtIndex(p) * (*stamp)(x,y);
         }
     }
-    float eigenvalue = mStamp->readSum() * lafactor;
+    float eigenvalue = mStamp->readSum() * mOpacity;
     mLRI = sum - eigenvalue;// additive
     float dom_height = (*mHeightGrid)[mPosition];
     if (dom_height>0.)
@@ -258,7 +258,7 @@ void Tree::readStampMul()
             local_dom = mHeightGrid->valueAtIndex((rx+x)/5, ry/5); // ry: gets ++ed in outer loop, rx not
             //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
 
-            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*lafactor / local_dom; // old: dom_height;
+            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value++ / own_value; // remove impact of focal tree
             //if (value>0.)
@@ -323,6 +323,9 @@ void Tree::grow()
     partitioning(npp);
 
     mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
+    // calculate the CrownFactor which reflects the opacity of the crown
+    mOpacity = 1. - exp(-0.5 * mLeafArea / mStamp->crownArea());
+
 
 }
 

@@ -18,7 +18,7 @@
     <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_6">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
     <property name="margin">
      <number>0</number>
     </property>
@@ -46,7 +46,7 @@
      <x>0</x>
      <y>0</y>
      <width>956</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -407,7 +407,7 @@
     <string>Console</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>2</number>
+    <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -539,6 +539,41 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
        </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockModelDrill">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Data</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <item>
+      <widget class="QTreeWidget" name="dataTree">
+       <attribute name="headerDefaultSectionSize">
+        <number>64</number>
+       </attribute>
+       <attribute name="headerDefaultSectionSize">
+        <number>64</number>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Value</string>
+        </property>
+       </column>
       </widget>
      </item>
     </layout>

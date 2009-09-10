@@ -11,6 +11,7 @@
 #include "modelcontroller.h"
 
 class Model;
+class Tree;
 
 namespace Ui
 {
@@ -42,6 +43,7 @@ private:
     QString dumpTreelist();
     void applyCycles(int cycle_count=1);
     void checkModelState();
+    void showTreeDetails(Tree* tree);
 
 private slots:
 

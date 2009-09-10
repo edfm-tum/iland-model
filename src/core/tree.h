@@ -51,8 +51,6 @@ public:
     static int statPrints() { return m_statPrint; }
     static int statCreated() { return m_statCreated; }
 
-    static float lafactor;
-
     QString dump();
     void dumpList(QList<QVariant> &rTargetList);
 
@@ -65,7 +63,9 @@ private:
     float mHeight; ///< tree height [m]
     QPointF mPosition;
     // biomass compartements
-    float mLeafArea; ///< m2 leaf area??
+    float mLeafArea; ///< m2 leaf area
+    float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)
+
 
     float mFoliageMass; // kg
     float mWoodyMass; // kg

@@ -353,6 +353,8 @@ void MainWindow::mouseClick(const QPoint& pos)
             Tree *p = &(*tit);
             qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightRessourceIndex();
             qDebug() << tit->dump();
+            showTreeDetails(p);
+
             ui->treeChange->setProperty("tree", (int)p);
             ui->treeDbh->setValue(p->dbh());
             ui->treeHeight->setValue(p->height());
@@ -365,6 +367,20 @@ void MainWindow::mouseClick(const QPoint& pos)
             break;
         }
    }
+}
+
+void MainWindow::showTreeDetails(Tree *tree)
+{
+    ui->dataTree->clear();
+    TreeWrapper tw;
+    tw.setTree(tree);
+    const QStringList &names = tw.getVariablesList();
+    QList<QTreeWidgetItem *> items;
+    foreach(QString name, names) {
+        items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(tw.value(name)) ));
+    }
+    ui->dataTree->addTopLevelItems(items);
+    // items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("item: %1").arg(i))));
 }
 
 void MainWindow::mouseMove(const QPoint& pos)
