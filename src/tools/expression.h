@@ -28,8 +28,6 @@ public:
 
         void  parse(); ///< force a parsing of the expression
 
-        //const double result(){ return m_result; } ///< get the result of the last calcuation.
-        //const bool logicResult() { return m_logicResult; } ///< get the logical result (true/false) of the last calculation.
         bool isConstExpression() { return m_constExpression; } /// returns true if current expression is a constant.
         /** strict property: if true, variables must be named before execution.
           When strict=true, all variables in the expression must be added by setVar or addVar.
@@ -37,6 +35,7 @@ public:
         */
         bool isStrict() { return m_strict;}
         void setStrict(bool str) { m_strict=str; }
+        void setCatchExceptions(bool docatch=true) { m_catchExceptions = docatch; }
         void   setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace);
         void enableIncSum();
         double udfRandom(int type, double p1, double p2); ///< user defined function rnd() (normal distribution does not work now!)
@@ -50,6 +49,7 @@ private:
         };
         enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
         double m_result;
+        bool m_catchExceptions;
 
         bool m_parsed;
         double m_strict;

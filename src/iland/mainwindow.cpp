@@ -205,7 +205,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_scale40 = ui->visDomHeight->isChecked();
     float scale_value = ui->visScaleValue->currentText().toFloat();
 
-    //    // get maximum value
 
     float maxval=1.f; // default maximum
     if (!auto_scale_color)
@@ -283,6 +282,14 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         } // if (show_dem)
     }
     if (show_impact) {
+        QString single_tree_expr = ui->lTreeExpr->text();
+        if (single_tree_expr.isEmpty())
+            single_tree_expr = "1-lri";
+        TreeWrapper tw;
+
+        Expression tree_value(single_tree_expr, &tw);    // get maximum value
+        tree_value.setCatchExceptions(); // silent catching...
+
         AllTreeIterator treelist(model);
         Tree *tree;
         while ((tree = treelist.next())) {
@@ -291,8 +298,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             }
             QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
-            value = tree->lightRessourceIndex();
-            fill_color = Helper::colorFromValue(value, 0., 1., true);
+            tw.setTree(tree);
+            value = tree_value.execute();
+            fill_color = Helper::colorFromValue(value, 0., 1., false);
             painter.setBrush(fill_color);
             int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 4.));
             painter.drawEllipse(p, diameter, diameter);
@@ -642,4 +650,10 @@ void MainWindow::on_pbCalculateExpression_clicked()
         ui->expressionHistory->insertItem(0, expr_text);
         ui->expressionHistory->setCurrentRow(0);
     }
+}
+
+void MainWindow::on_pbExecExpression_clicked()
+{
+    // just repaint...
+    ui->PaintWidget->update();
 }

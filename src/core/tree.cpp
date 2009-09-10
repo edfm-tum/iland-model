@@ -276,10 +276,10 @@ void Tree::readStampMul()
     //    m_statAboveZ++;
     //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
     //}
-    if (mLRI > 0.5)
-        mLRI = 0.5;
+    if (mLRI > 1.)
+        mLRI = 1.;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    mRU->addWLA((mLRI+1) * mLeafArea, mLeafArea);
+    mRU->addWLA(mLRI*mLeafArea, mLeafArea);
 }
 
 void Tree::resetStatistics()

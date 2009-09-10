@@ -37,6 +37,8 @@
 #include "exception.h"
 #include "expressionwrapper.h"
 
+#include "helper.h"
+
 #define opEqual 1
 #define opGreaterThen 2
 #define opLowerThen 3
@@ -169,6 +171,7 @@ void Expression::setExpression(const QString& aExpression)
     for (int i=0; i<10; i++)
         m_varSpace[i]=0.;
     m_parsed=false;
+    m_catchExceptions = false;
 
     mModelObject = 0;
     m_externVarSpace=0;
@@ -214,7 +217,10 @@ void  Expression::parse()
         checkBuffer(m_execIndex);
         m_parsed=true;
     } catch (const IException& e) {
-        throw IException(QString("Expression::parse: Error in: %1 : %2").arg(m_expr, e.toString()));
+        QString msg =QString("Expression::parse: Error in: %1 : %2").arg(m_expr, e.toString());
+        if (m_catchExceptions)
+            Helper::msg(msg);
+        throw IException(msg);
     }
 }
 

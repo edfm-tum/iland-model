@@ -99,6 +99,9 @@ private:
     static int m_statAboveZ;
     static int m_statCreated;
     static int m_nextId;
+
+    // friends
+    friend class TreeWrapper;
 };
 
 

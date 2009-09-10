@@ -45,6 +45,7 @@ private:
 
 private slots:
 
+    void on_pbExecExpression_clicked();
     void on_pbCalculateExpression_clicked();
     void on_actionReload_triggered();
     void on_actionRun_one_year_triggered();
