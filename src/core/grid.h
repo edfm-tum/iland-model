@@ -35,7 +35,7 @@ public:
     bool setup(const QRectF& rect, const double cellsize);
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
     void wipe(); ///< write 0-bytes with memcpy to the whole area
-    void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int"
+    void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int" ERRORNOUS!!!
 
     int sizeX() const { return mSizeX; }
     int sizeY() const { return mSizeY; }
@@ -286,6 +286,7 @@ void  Grid<T>::wipe()
 template <class T>
 void  Grid<T>::wipe(const T value)
 {
+    /* this does not work properly !!! */
     if (sizeof(T)==sizeof(int)) {
         float temp = value;
         float *pf = &temp;
