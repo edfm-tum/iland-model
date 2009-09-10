@@ -92,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuView->addAction( ui->dockEditor->toggleViewAction() );
     ui->menuView->addAction( ui->dockLogviewer->toggleViewAction() );
     ui->menuView->addAction( ui->dockWidget->toggleViewAction() );
+    ui->menuView->addAction( ui->dockModelDrill->toggleViewAction() );
 
 
     ui->pbResults->setMenu(ui->menuOutput_menu);

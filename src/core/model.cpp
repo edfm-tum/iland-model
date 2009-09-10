@@ -88,10 +88,10 @@ void Model::setupSpace()
 
     mGrid = new FloatGrid(total_grid, cellSize);
     mGridList.push_back(mGrid);
-    mGrid->initialize(1.f); // set to unity...
+    mGrid->wipe(1.f);
     mHeightGrid = new FloatGrid(total_grid, cellSize*5);
     mGridList.push_back(mHeightGrid); // could be solved better...
-    mHeightGrid->initialize(0.f); // zero grid
+    mHeightGrid->wipe();
 
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();

@@ -6,7 +6,7 @@
 
 #include <stdexcept>
 #include <limits>
-
+#include <cstring>
 
 /** @class Grid class (template).
 
@@ -34,6 +34,8 @@ public:
     bool setup(const float cellsize, const int sizex, const int sizey);
     bool setup(const QRectF& rect, const double cellsize);
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
+    void wipe(); ///< write 0-bytes with memcpy to the whole area
+    void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int"
 
     int sizeX() const { return mSizeX; }
     int sizeY() const { return mSizeY; }
@@ -274,6 +276,20 @@ T  Grid<T>::avg() const
     if (count())
         return sum() / T(count());
     else return 0;
+}
+
+template <class T>
+void  Grid<T>::wipe()
+{
+    memset(mData, 0, mCount*sizeof(T));
+}
+template <class T>
+void  Grid<T>::wipe(const T value)
+{
+    if (sizeof(T)==sizeof(int))
+        memset(mData, int(value), mCount*sizeof(T));
+    else
+        initialize(value);
 }
 
 ////////////////////////////////////////////////////////////7
