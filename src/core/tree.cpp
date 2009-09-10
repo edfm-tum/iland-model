@@ -333,7 +333,7 @@ void Tree::grow()
 
     mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
     // calculate the CrownFactor which reflects the opacity of the crown
-    mOpacity = 1. - exp(-0.5 * mLeafArea / mStamp->crownArea());
+    mOpacity = 1. - exp(-0.7 * mLeafArea / mStamp->crownArea());
 
 
 }
@@ -429,22 +429,25 @@ void Tree::partitioning(double npp)
 /** Determination of diamter and height growth based on increment of the stem mass (@p net_stem_npp).
     Refer to XXX for equations and variables.
     This function updates the dbh and height of the tree.
+    The equations are based on dbh in meters!
   */
 inline void Tree::grow_diameter(const double &net_stem_npp)
 {
     // determine dh-ratio of increment
     // height increment is a function of light competition:
     double hd_growth = relative_height_growth(); // hd of height growth
+    double d_m = mDbh / 100.; // current diameter in [m]
+    const double d_delta_m = mDbhDelta / 100.; // increment of last year in [m]
 
-    // Be careful with units!! this function calculates diameter increments in meter!
     const double mass_factor = mSpecies->volumeFactor() * mSpecies->density();
-    double stem_mass = mass_factor * mDbh*mDbh * mHeight; // result: kg, dbh[cm], h[meter]
+    double stem_mass = mass_factor * d_m*d_m * mHeight; // result: kg, dbh[cm], h[meter]
 
-    double factor_diameter = 1. / (  mass_factor * (mDbh + mDbhDelta)*(mDbh + mDbhDelta) * ( 2. * mHeight/mDbh + hd_growth) );
+    // factor is in diameter increment per NPP [m/kg]
+    double factor_diameter = 1. / (  mass_factor * (d_m + d_delta_m)*(d_m + d_delta_m) * ( 2. * mHeight/d_m + hd_growth) );
     double delta_d_estimate = factor_diameter * net_stem_npp; // estimated dbh-inc using last years increment
 
     // using that dbh-increment we estimate a stem-mass-increment and the residual (Eq. 9)
-    double stem_estimate = mass_factor * (mDbh + delta_d_estimate)*(mDbh + delta_d_estimate)*(mHeight + delta_d_estimate*hd_growth);
+    double stem_estimate = mass_factor * (d_m + delta_d_estimate)*(d_m + delta_d_estimate)*(mHeight + delta_d_estimate*hd_growth);
     double stem_residual = stem_estimate - (stem_mass + net_stem_npp);
 
     // the final increment is then:
@@ -455,24 +458,24 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
                .arg( mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));
 
     DBGMODE(
-        double res_final = mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
+        double res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
-        DBG_IF_X(d_increment > 10. || d_increment*hd_growth/100. >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
+        DBG_IF_X(d_increment > 10. || d_increment*hd_growth >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
         //dbgstruct["sen_demand"]=sen_demand;
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && isDebugging() ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
             dumpList(out); // add tree headers
             out << net_stem_npp << stem_mass << hd_growth << factor_diameter << delta_d_estimate*100 << d_increment*100;
         }
+
     ); // DBGMODE()
 
     d_increment = qMax(d_increment, 0.);
-    d_increment *= 100; // from m to cm
 
     // update state variables
-    mDbh += d_increment;
-    mDbhDelta = d_increment; // save for next year's growth
-    mHeight += d_increment * hd_growth / 100.; // d[cm]/100 * hd[m/m] = d[m] * hd[m/m] = h[m]
+    mDbh += d_increment*100; // convert from [m] to [cm]
+    mDbhDelta = d_increment*100; // save for next year's growth
+    mHeight += d_increment * hd_growth;
 }
 
 

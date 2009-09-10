@@ -286,9 +286,12 @@ void  Grid<T>::wipe()
 template <class T>
 void  Grid<T>::wipe(const T value)
 {
-    if (sizeof(T)==sizeof(int))
-        memset(mData, int(value), mCount*sizeof(T));
-    else
+    if (sizeof(T)==sizeof(int)) {
+        float temp = value;
+        float *pf = &temp;
+
+        memset(mData, *((int*)pf), mCount*sizeof(T));
+    } else
         initialize(value);
 }
 

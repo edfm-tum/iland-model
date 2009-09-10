@@ -290,7 +290,7 @@ void Model::applyPattern()
 
     DebugTimer t("applyPattern()");
     // intialize grids...
-    mGrid->wipe(1.f);
+    mGrid->initialize(1.f);
     mHeightGrid->wipe();
 
     threadRunner.run(nc_applyPattern);

@@ -391,8 +391,14 @@ void MainWindow::showTreeDetails(Tree *tree)
     foreach(QString name, names) {
         items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(tw.value(name)) ));
     }
+    // query some additional debug data
+//    QList<DebugList> dbglst = GlobalSettings::instance()->debugLists(tree->id());
+//    foreach (const DebugList &dl, dbglist) {
+//        foreach(const QVariant &va
+//    }
+
+    // finally add to widget
     ui->dataTree->addTopLevelItems(items);
-    // items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("item: %1").arg(i))));
 }
 
 void MainWindow::mouseMove(const QPoint& pos)

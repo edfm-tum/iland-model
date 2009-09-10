@@ -76,9 +76,8 @@ void RessourceUnit::production()
 
     // Formula for distribution: g = (SA*pPAR - sum(LRI*LA))/sum(LA)
     mLRIcorrection = (mStockedArea*interception_fraction - mAggregatedWLA) / mAggregatedLA;
-
-    qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 g: %3 stocked area: %4")
-            .arg(LAI).arg(interception_fraction).arg(mLRIcorrection).arg(mStockedArea);
+    DBGMODE(qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 g: %3 stocked area: %4")
+            .arg(LAI).arg(interception_fraction).arg(mLRIcorrection).arg(mStockedArea); );
 
 
     // invoke species specific calculation (3PG)
