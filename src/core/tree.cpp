@@ -128,10 +128,63 @@ void Tree::applyStamp()
     m_statPrint++; // count # of stamp applications...
 }
 
+/// helper function for gluing the edges together
+/// index: index at grid
+/// count: number of pixels that are the simulation area (e.g. 100m and 2m pixel -> 50)
+/// buffer: size of buffer around simulation area (in pixels)
+int torusIndex(int index, int count, int buffer)
+{
+    return buffer + (index-buffer+count)%count;
+}
+
+
+/** Apply LIPs. This "Torus" functions wraps the influence at the edges of a 1ha simulation area.
+  */
+void Tree::applyStampTorus()
+{
+    if (!mStamp)
+        return;
+    Q_ASSERT(mGrid!=0 && mStamp!=0 && mRU!=0);
+
+    QPoint pos = mGrid->indexAt(mPosition);
+    int offset = mStamp->offset();
+    pos-=QPoint(offset, offset);
+
+    float local_dom; // height of Z* on the current position
+    int x,y;
+    float value;
+    int gr_stamp = mStamp->size();
+    int grid_x, grid_y;
+    float *grid_value;
+    if (!mGrid->isIndexValid(pos) || !mGrid->isIndexValid(pos+QPoint(gr_stamp, gr_stamp))) {
+        // todo: in this case we should use another algorithm!!! necessary????
+        return;
+    }
+    int bufferOffset = mGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
+    int xt, yt; // wraparound coordinates
+    for (y=0;y<gr_stamp; ++y) {
+        grid_y = pos.y() + y;
+        yt = torusIndex(grid_y, 50,bufferOffset); // 50 cells per 100m
+        for (x=0;x<gr_stamp;++x) {
+            // suppose there is no stamping outside
+            grid_x = pos.x() + x;
+            xt = torusIndex(grid_x,50,bufferOffset);
+
+            local_dom = mHeightGrid->valueAtIndex(xt/5,yt/5).height;
+            value = (*mStamp)(x,y); // stampvalue
+            value = 1. - value*mOpacity / local_dom; // calculated value
+            value = qMax(value, 0.02f); // limit value
+
+            grid_value = mGrid->ptr(xt, yt); // use wraparound coordinates
+            *grid_value *= value;
+        }
+    }
+
+    m_statPrint++; // count # of stamp applications...
+}
 
 /** heightGrid()
   This function calculates the "dominant height field". This grid is coarser as the fine-scaled light-grid.
-
 */
 void Tree::heightGrid()
 {
@@ -186,52 +239,9 @@ void Tree::heightGrid()
     } // for (y)
 }
 
-double Tree::readStamp()
-{
-    if (!mStamp)
-        return 0.;
-    const Stamp *stamp = mStamp->reader();
-    if (!stamp)
-        return 0.;
-    QPoint pos = mGrid->indexAt(mPosition);
-    int offset = stamp->offset();
-    pos-=QPoint(offset, offset);
-    QPoint p;
-
-    int x,y;
-    double sum=0.;
-    for (x=0;x<stamp->size();++x) {
-        for (y=0;y<stamp->size(); ++y) {
-           p = pos + QPoint(x,y);
-           if (mGrid->isIndexValid(p))
-               sum += mGrid->valueAtIndex(p) * (*stamp)(x,y);
-        }
-    }
-    float eigenvalue = mStamp->readSum() * mOpacity;
-    mLRI = sum - eigenvalue;// additive
-    float dom_height = (*mHeightGrid)[mPosition].height;
-    if (dom_height>0.)
-       mLRI = mLRI / dom_height;
-
-    //mImpact = sum + eigenvalue;// multiplicative
-    // read dominance field...
-
-    if (dom_height < mHeight) {
-        // if tree is higher than Z*, the dominance height
-        // a part of the crown is in "full light".
-        // total value = zstar/treeheight*value + 1-zstar/height
-        // reformulated to:
-        mLRI =  mLRI * dom_height/mHeight ;
-        m_statAboveZ++;
-    }
-    if (fabs(mLRI < 0.000001))
-        mLRI = 0.f;
-    qDebug() << "Tree #"<< id() << "value" << sum << "eigenvalue" << eigenvalue << "Impact" << mLRI;
-    return mLRI;
-}
 
 
-void Tree::readStampMul()
+void Tree::readStamp()
 {
     if (!mStamp)
         return;
@@ -290,6 +300,126 @@ void Tree::readStampMul()
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
     mRU->addWLA(mLRI*mLeafArea, mLeafArea);
 }
+
+void Tree::heightGridTorus()
+{
+    // height of Z*
+    const float cellsize = mHeightGrid->cellsize();
+
+    QPoint p = mHeightGrid->indexAt(mPosition); // pos of tree on height grid
+    QPoint competition_grid = mGrid->indexAt(mPosition);
+
+    // count trees that are on height-grid cells (used for stockable area)
+    mHeightGrid->valueAtIndex(p).count++;
+
+    int index_eastwest = competition_grid.x() % 5; // 4: very west, 0 east edge
+    int index_northsouth = competition_grid.y() % 5; // 4: northern edge, 0: southern edge
+    int dist[9];
+    dist[3] = index_northsouth * 2 + 1; // south
+    dist[1] = index_eastwest * 2 + 1; // west
+    dist[5] = 10 - dist[3]; // north
+    dist[7] = 10 - dist[1]; // east
+    dist[8] = qMax(dist[5], dist[7]); // north-east
+    dist[6] = qMax(dist[3], dist[7]); // south-east
+    dist[0] = qMax(dist[3], dist[1]); // south-west
+    dist[2] = qMax(dist[5], dist[1]); // north-west
+    dist[4] = 0; // center cell
+    /* the scheme of indices is as follows:  if sign(ix)= -1, if ix<0, 0 for ix=0, 1 for ix>0 (detto iy), then:
+       index = 4 + 3*sign(ix) + sign(iy) transforms combinations of directions to unique ids (0..8), which are used above.
+        e.g.: sign(ix) = -1, sign(iy) = 1 (=north-west) -> index = 4 + -3 + 1 = 2
+    */
+
+
+    int ringcount = int(floor(mHeight / cellsize)) + 1;
+    int ix, iy;
+    int ring;
+    QPoint pos;
+    float hdom;
+    int bufferOffset = mHeightGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
+    for (ix=-ringcount;ix<=ringcount;ix++)
+        for (iy=-ringcount; iy<=+ringcount; iy++) {
+        ring = qMax(abs(ix), abs(iy));
+        QPoint pos(ix+p.x(), iy+p.y());
+        if (mHeightGrid->isIndexValid(pos)) {
+            float &rHGrid = mHeightGrid->valueAtIndex(torusIndex(pos.x(),10,bufferOffset), torusIndex(pos.y(),10,bufferOffset)).height;
+            if (rHGrid > mHeight) // skip calculation if grid is higher than tree
+                continue;
+            int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
+            hdom = mHeight - dist[direction];
+            if (ring>1)
+                hdom -= (ring-1)*10;
+
+            rHGrid = qMax(rHGrid, hdom); // write value
+        } // is valid
+    } // for (y)
+}
+
+/// Torus version of read stamp (glued edges)
+void Tree::readStampTorus()
+{
+    if (!mStamp)
+        return;
+    const Stamp *reader = mStamp->reader();
+    if (!reader)
+        return;
+    QPoint pos_reader = mGrid->indexAt(mPosition);
+
+    int offset_reader = reader->offset();
+    int offset_writer = mStamp->offset();
+    int d_offset = offset_writer - offset_reader; // offset on the *stamp* to the crown-cells
+
+    QPoint pos_writer=pos_reader - QPoint(offset_writer, offset_writer);
+    pos_reader-=QPoint(offset_reader, offset_reader);
+    QPoint p;
+
+    //float dom_height = (*m_dominanceGrid)[m_Position];
+    float local_dom;
+
+    int x,y;
+    double sum=0.;
+    double value, own_value;
+    float *grid_value;
+    int reader_size = reader->size();
+    int rx = pos_reader.x();
+    int ry = pos_reader.y();
+    int xt, yt; // wrapped coords
+    int bufferOffset = mGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
+
+    for (y=0;y<reader_size; ++y, ++ry) {
+        grid_value = mGrid->ptr(rx, ry);
+        for (x=0;x<reader_size;++x) {
+            xt = torusIndex(rx+x,50, bufferOffset);
+            yt = torusIndex(ry+y,50, bufferOffset);
+            grid_value = mGrid->ptr(xt,yt);
+            //p = pos_reader + QPoint(x,y);
+            //if (m_grid->isIndexValid(p)) {
+            local_dom = mHeightGrid->valueAtIndex(xt/5, yt/5).height; // ry: gets ++ed in outer loop, rx not
+            //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
+
+            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
+            own_value = qMax(own_value, 0.02);
+            value =  *grid_value / own_value; // remove impact of focal tree
+            //if (value>0.)
+            sum += value * (*reader)(x,y);
+
+            //} // isIndexValid
+        }
+    }
+    mLRI = sum;
+    // read dominance field...
+    // this applies only if some trees are potentially *higher* than the dominant height grid
+    //if (dom_height < m_Height) {
+        // if tree is higher than Z*, the dominance height
+        // a part of the crown is in "full light".
+    //    m_statAboveZ++;
+    //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
+    //}
+    if (mLRI > 1.)
+        mLRI = 1.;
+    //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
+    mRU->addWLA(mLRI*mLeafArea, mLeafArea);
+}
+
 
 void Tree::resetStatistics()
 {

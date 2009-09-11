@@ -36,9 +36,12 @@ public:
     void enableDebugging(const bool enable=true) { mDebugging = enable; }
     // grid based light-concurrency functions
     void applyStamp(); ///< apply LightInfluencePattern onto the global grid
-    double readStamp();
-    void readStampMul(); ///< calculate the lightRessourceIndex with multiplicative approach
+    void readStamp(); ///< calculate the lightRessourceIndex with multiplicative approach
     void heightGrid(); ///< calculate the height grid
+
+    void applyStampTorus(); ///< apply LightInfluencePattern on a closed 1ha area
+    void readStampTorus(); ///< calculate LRI from a closed 1ha area
+    void heightGridTorus(); ///< calculate the height grid
 
     // growth, etc.
     void grow();

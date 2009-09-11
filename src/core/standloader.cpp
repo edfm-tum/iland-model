@@ -12,8 +12,8 @@
 
 #include <QtCore>
 
-QStringList picusSpeciesIds = QStringList() << "0" << "17";
-QStringList iLandSpeciesIds = QStringList() << "piab" << "fasy";
+QStringList picusSpeciesIds = QStringList() << "0" << "1" << "17";
+QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
 
 
 
@@ -99,7 +99,7 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Ressour
     char sep='\t';
     if (!lines[0].contains(sep))
         sep=';';
-    QStringList headers = lines[0].split(sep);
+    QStringList headers = lines[0].trimmed().split(sep);
 
     int iX = headers.indexOf("x");
     int iY = headers.indexOf("y");

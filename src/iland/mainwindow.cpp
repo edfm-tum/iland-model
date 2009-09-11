@@ -351,7 +351,7 @@ void MainWindow::mouseClick(const QPoint& pos)
     ui->treeChange->setProperty("tree",0);
 
     // find adjactent tree
-    if (!mRemoteControl.isRunning())
+    if (!mRemoteControl.canRun())
         return;
 
     // test ressource units...
@@ -360,11 +360,19 @@ void MainWindow::mouseClick(const QPoint& pos)
     qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
+    Tree *closestTree=0;
+    double min_distance = 100000000, current_dist;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        if(distance(tit->position(),coord)<2) {
-            Tree *p = &(*tit);
+        current_dist = distance(tit->position(),coord);
+        if (current_dist<min_distance) {
+            closestTree = &(*tit);
+            min_distance = current_dist;
+        }
+    }
+    if (min_distance<5 && closestTree) {
+            Tree *p = closestTree;
             qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightRessourceIndex();
-            qDebug() << tit->dump();
+            qDebug() <<p->dump();
             showTreeDetails(p);
 
             ui->treeChange->setProperty("tree", (int)p);
@@ -376,9 +384,8 @@ void MainWindow::mouseClick(const QPoint& pos)
             wantDrag=true;
             ui->PaintWidget->setCursor(Qt::SizeAllCursor);
             ui->PaintWidget->update();
-            break;
-        }
-   }
+    }
+
 }
 
 void MainWindow::showTreeDetails(Tree *tree)

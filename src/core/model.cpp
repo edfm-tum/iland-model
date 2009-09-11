@@ -238,14 +238,23 @@ RessourceUnit* nc_applyPattern(RessourceUnit *unit)
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator tend = unit->trees().end();
 
-    // height dominance grid
-    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
-        (*tit).heightGrid(); // just do it ;)
-    }
 
     // light concurrence influence
-    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
-        (*tit).applyStamp(); // just do it ;)
+    if (GlobalSettings::instance()->settings().paramValue("torus",0)==0) {
+        // height dominance grid
+        for (tit=unit->trees().begin(); tit!=tend; ++tit)
+            (*tit).heightGrid(); // just do it ;)
+
+        for (tit=unit->trees().begin(); tit!=tend; ++tit)
+            (*tit).applyStamp(); // just do it ;)
+
+    } else {
+        // height dominance grid
+        for (tit=unit->trees().begin(); tit!=tend; ++tit)
+            (*tit).heightGridTorus(); // just do it ;)
+
+        for (tit=unit->trees().begin(); tit!=tend; ++tit)
+            (*tit).applyStampTorus(); // do it the wraparound way
     }
     return unit;
 }
@@ -255,8 +264,12 @@ RessourceUnit *nc_readPattern(RessourceUnit *unit)
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
 
-    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
-        (*tit).readStampMul(); // multipliactive approach
+    if (GlobalSettings::instance()->settings().paramValue("torus",0)==0) {
+        for (tit=unit->trees().begin(); tit!=tend; ++tit)
+            (*tit).readStamp(); // multipliactive approach
+    } else {
+        for (tit=unit->trees().begin(); tit!=tend; ++tit)
+            (*tit).readStampTorus(); // do it the wraparound way
     }
     return unit;
 }
