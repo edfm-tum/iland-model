@@ -18,9 +18,10 @@ public:
 
     // access to properties
     int id() const { return mId; }
-    void setNewId() { mId = m_nextId++; }
-    void setPosition(const QPointF pos) { mPosition=pos; }
-    const QPointF position() const { return mPosition; }
+    void setNewId() { mId = m_nextId++; } ///< force a new id for this object (after copying trees)
+    /// @property position The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
+    const QPointF position() const { Q_ASSERT(mGrid!=0); return mGrid->cellCenterPoint(mPositionIndex); }
+    void setPosition(const QPointF pos) { Q_ASSERT(mGrid!=0); mPositionIndex = mGrid->indexAt(pos); }
     void setDbh(const float dbh) { mDbh=dbh; }
     float dbh() const { return mDbh; }
     void setHeight(const float height) { mHeight=height; }
@@ -65,7 +66,7 @@ private:
     int mId;
     float mDbh; ///< diameter at breast height [cm]
     float mHeight; ///< tree height [m]
-    QPointF mPosition;
+    QPoint mPositionIndex; ///< index of the trees position on the basic LIF grid
     // biomass compartements
     float mLeafArea; ///< m2 leaf area
     float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)

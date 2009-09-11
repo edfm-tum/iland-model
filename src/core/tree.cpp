@@ -50,14 +50,14 @@ QString Tree::dump()
 {
     QString result = QString("id %1 species %2 dbh %3 h %4 x/y %5/%6 ru# %7 LRI %8")
                             .arg(mId).arg(mSpecies->id()).arg(mDbh).arg(mHeight)
-                            .arg(mPosition.x()).arg(mPosition.y())
+                            .arg(position().x()).arg(position().y())
                             .arg(mRU->index()).arg(mLRI);
     return result;
 }
 
 void Tree::dumpList(DebugList &rTargetList)
 {
-    rTargetList << mId << mSpecies->id() << mDbh << mHeight  << mPosition.x() << mPosition.y()   << mRU->index() << mLRI
+    rTargetList << mId << mSpecies->id() << mDbh << mHeight  << position().x() << position().y()   << mRU->index() << mLRI
                 << mWoodyMass << mRootMass << mFoliageMass << mLeafArea;
 }
 
@@ -93,8 +93,7 @@ void Tree::applyStamp()
     if (!mStamp)
         return;
     Q_ASSERT(mGrid!=0 && mStamp!=0 && mRU!=0);
-
-    QPoint pos = mGrid->indexAt(mPosition);
+    QPoint pos = mPositionIndex;
     int offset = mStamp->offset();
     pos-=QPoint(offset, offset);
 
@@ -146,7 +145,7 @@ void Tree::applyStampTorus()
         return;
     Q_ASSERT(mGrid!=0 && mStamp!=0 && mRU!=0);
 
-    QPoint pos = mGrid->indexAt(mPosition);
+    QPoint pos = mPositionIndex;
     int offset = mStamp->offset();
     pos-=QPoint(offset, offset);
 
@@ -191,14 +190,13 @@ void Tree::heightGrid()
     // height of Z*
     const float cellsize = mHeightGrid->cellsize();
 
-    QPoint p = mHeightGrid->indexAt(mPosition); // pos of tree on height grid
-    QPoint competition_grid = mGrid->indexAt(mPosition);
+    QPoint p = QPoint(mPositionIndex.x()/5, mPositionIndex.y()/5); // pos of tree on height grid
 
     // count trees that are on height-grid cells (used for stockable area)
     mHeightGrid->valueAtIndex(p).count++;
 
-    int index_eastwest = competition_grid.x() % 5; // 4: very west, 0 east edge
-    int index_northsouth = competition_grid.y() % 5; // 4: northern edge, 0: southern edge
+    int index_eastwest = mPositionIndex.x() % 5; // 4: very west, 0 east edge
+    int index_northsouth = mPositionIndex.y() % 5; // 4: northern edge, 0: southern edge
     int dist[9];
     dist[3] = index_northsouth * 2 + 1; // south
     dist[1] = index_eastwest * 2 + 1; // west
@@ -248,7 +246,7 @@ void Tree::readStamp()
     const Stamp *reader = mStamp->reader();
     if (!reader)
         return;
-    QPoint pos_reader = mGrid->indexAt(mPosition);
+    QPoint pos_reader = mPositionIndex;
 
     int offset_reader = reader->offset();
     int offset_writer = mStamp->offset();
@@ -306,14 +304,13 @@ void Tree::heightGridTorus()
     // height of Z*
     const float cellsize = mHeightGrid->cellsize();
 
-    QPoint p = mHeightGrid->indexAt(mPosition); // pos of tree on height grid
-    QPoint competition_grid = mGrid->indexAt(mPosition);
+    QPoint p = QPoint(mPositionIndex.x()/5, mPositionIndex.y()/5); // pos of tree on height grid
 
     // count trees that are on height-grid cells (used for stockable area)
     mHeightGrid->valueAtIndex(p).count++;
 
-    int index_eastwest = competition_grid.x() % 5; // 4: very west, 0 east edge
-    int index_northsouth = competition_grid.y() % 5; // 4: northern edge, 0: southern edge
+    int index_eastwest = mPositionIndex.x() % 5; // 4: very west, 0 east edge
+    int index_northsouth = mPositionIndex.y() % 5; // 4: northern edge, 0: southern edge
     int dist[9];
     dist[3] = index_northsouth * 2 + 1; // south
     dist[1] = index_eastwest * 2 + 1; // west
@@ -362,7 +359,7 @@ void Tree::readStampTorus()
     const Stamp *reader = mStamp->reader();
     if (!reader)
         return;
-    QPoint pos_reader = mGrid->indexAt(mPosition);
+    QPoint pos_reader = mPositionIndex;
 
     int offset_reader = reader->offset();
     int offset_writer = mStamp->offset();

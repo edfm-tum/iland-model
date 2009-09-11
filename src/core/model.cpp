@@ -91,11 +91,12 @@ void Model::setupSpace()
     if (mGrid)
         delete mGrid;
     mGrid = new FloatGrid(total_grid, cellSize);
-    mGrid->wipe(1.f);
+    mGrid->initialize(1.f);
     if (mHeightGrid)
         delete mHeightGrid;
     mHeightGrid = new HeightGrid(total_grid, cellSize*5);
     mHeightGrid->wipe();
+    Tree::setGrid(mGrid, mHeightGrid);
 
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();
