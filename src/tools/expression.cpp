@@ -766,10 +766,6 @@ void Expression::checkBuffer(int Index)
     m_execListSize=NewSize;
 }
 
-double nrandom(const double& p1, const double& p2)
-{
-    return p1 + (p2-p1)*(rand()/double(RAND_MAX));
-}
 
 double Expression::udfRandom(int type, double p1, double p2)
 {

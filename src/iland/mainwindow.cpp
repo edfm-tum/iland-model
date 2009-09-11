@@ -19,6 +19,7 @@
 #include "expression.h"
 #include "expressionwrapper.h"
 
+#include "tests.h"
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
@@ -599,54 +600,7 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
 }
 
 
-void little_test()
-{
-    // (1) for each
-    double sum;
-    int count;
-    {
-        DebugTimer t("plain loop");
-        for (int i=0;i<10;i++) {
-            sum=0;
-            count=0;
-            foreach(const RessourceUnit *ru,GlobalSettings::instance()->model()->ruList()) {
-                foreach(const Tree &tree, ru->constTrees()) {
-                    sum+=tree.volume();
-                    count++;
-                }
-            }
 
-        }
-        qDebug() << "Sum of volume" << sum << "count" << count;
-    }
-    {
-        DebugTimer t("plain loop (iterator)");
-        for (int i=0;i<10;i++) {
-            AllTreeIterator at(GlobalSettings::instance()->model());
-            sum = 0.;
-            count = 0;
-            while (Tree *tree=at.next()) {
-                sum += pow(tree->dbh(),2.1); count++;
-            }
-        }
-        qDebug() << "Sum of volume" << sum << "count" << count;
-    }
-    {
-        TreeWrapper tw;
-        Expression expr("dbh^2.1", &tw);
-        DebugTimer t("Expression loop");
-        for (int i=0;i<10;i++) {
-
-            AllTreeIterator at(GlobalSettings::instance()->model());
-            sum = 0.;
-            while (Tree *tree=at.next()) {
-                tw.setTree(tree);
-                sum += expr.execute();
-            }
-        }
-        qDebug() << "Sum of volume" << sum;
-    }
-}
 
 // Expression test
 void MainWindow::on_pbCalculateExpression_clicked()
@@ -654,7 +608,14 @@ void MainWindow::on_pbCalculateExpression_clicked()
     QString expr_text=ui->expressionText->text();
     QString expr_filter=ui->expressionFilter->text();
     if (expr_text == "test") {
-        little_test();
+        Tests t;
+        int which = QInputDialog::getInt(this, "Which test",
+                                        "which test?\n0: expression speed\n1: tree clear\n2:kill trees", 0);
+        switch (which) {
+            case 0: t.speedOfExpression();break;
+            case 1: t.clearTrees(); break;
+            case 2: t.killTrees(); break;
+        }
         return;
     }
     if (expr_filter.isEmpty())

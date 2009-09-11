@@ -33,6 +33,7 @@ public:
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     // setup/maintenance
+    void cleanTreeList();
     void setSpeciesSet(SpeciesSet *set);
     void setBoundingBox(const QRectF &bb) { mBoundingBox = bb; }
 private:

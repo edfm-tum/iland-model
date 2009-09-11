@@ -70,8 +70,11 @@ class AllTreeIterator
 {
 public:
     AllTreeIterator(Model* model): mModel(model), mTreeEnd(0),mCurrent(0) {}
+    void reset() { mTreeEnd=0; mCurrent=0; }
     Tree *next();
-    //Tree *operator*() { return (Tree*) int(this->mCurrent)-sizeof(Tree*);  }
+    Tree *nextLiving();
+    Tree *current() const;
+    Tree *operator*() const { return current();  }
     RessourceUnit *currentRU() const { return *mRUIterator; }
 private:
     Model *mModel;

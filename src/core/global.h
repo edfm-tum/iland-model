@@ -43,5 +43,14 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 #  endif
 #endif
 
-
+/// nrandom returns a random number from [p1, p2]
+inline double nrandom(const double& p1, const double& p2)
+{
+    return p1 + (p2-p1)*(rand()/double(RAND_MAX));
+}
+/// returns a random number in [0,1]
+inline double random()
+{
+    return rand()/double(RAND_MAX);
+}
 #endif // GLOBAL_H

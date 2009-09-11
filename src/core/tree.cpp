@@ -26,9 +26,9 @@ Tree::Tree()
 {
     mDbh = mHeight = 0;
     mRU = 0; mSpecies = 0;
+    mFlags = 0;
     mOpacity=mFoliageMass=mWoodyMass=mRootMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=0.;
-    mDebugging = false;
     mId = m_nextId++;
     m_statCreated++;
 }
@@ -629,6 +629,6 @@ double Tree::volume() const
 {
     /// @see Species::volumeFactor() for details
     const double volume_factor = mSpecies->volumeFactor();
-    const double volume =  volume_factor * mDbh*mDbh*mHeight;
+    const double volume =  volume_factor * mDbh*mDbh*mHeight * 0.0001; // dbh in cm: cm/100 * cm/100 = cm*cm * 0.0001 = m2
     return volume;
 }

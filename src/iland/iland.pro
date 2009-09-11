@@ -6,7 +6,7 @@ QT += script
 QT += sql
 TARGET = iland
 TEMPLATE = app
-CONFIG	 += precompile_header
+CONFIG += precompile_header
 
 # includepath: adds directories to the standard include (no directory needed when #include a file).
 INCLUDEPATH += ../core \
@@ -36,7 +36,8 @@ SOURCES += main.cpp \
     ../core/ressourceunitspecies.cpp \
     ../core/production3pg.cpp \
     ../core/threadrunner.cpp \
-    ../tools/expressionwrapper.cpp
+    ../tools/expressionwrapper.cpp \
+    tests.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     paintarea.h \
@@ -61,6 +62,7 @@ HEADERS += mainwindow.h \
     ../core/ressourceunitspecies.h \
     ../core/production3pg.h \
     ../core/threadrunner.h \
-    ../tools/expressionwrapper.h
+    ../tools/expressionwrapper.h \
+    tests.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc

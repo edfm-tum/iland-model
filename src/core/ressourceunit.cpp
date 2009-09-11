@@ -16,6 +16,7 @@ RessourceUnit::RessourceUnit(const int index)
 {
     mSpeciesSet = 0;
     mIndex = index;
+    mTrees.reserve(100); // start with space for 100 trees.
 }
 
 /// set species and setup the species-per-RU-data
@@ -44,6 +45,39 @@ Tree &RessourceUnit::newTree()
     return mTrees.back();
 }
 
+/// remove dead trees from tree list
+/// reduce size of vector if lots of space is free
+/// tests showed that this way of cleanup is very fast,
+/// because no memory allocations are performed (simple memmove())
+/// when trees are moved.
+void RessourceUnit::cleanTreeList()
+{
+    QVector<Tree>::iterator last=mTrees.end()-1;
+    QVector<Tree>::iterator current = mTrees.begin();
+    while (last>=current && (*last).dead())
+        --last;
+
+    while (current<last) {
+        if ((*current).dead()) {
+            *current = *last; // copy data!
+            --last; //
+            while (last>=current && (*last).dead())
+                --last;
+        }
+        ++current;
+    }
+    ++last; // last points now to the first dead tree
+
+    // free ressources
+    mTrees.erase(last, mTrees.end());
+    if (mTrees.capacity()>100) {
+        if (mTrees.count() / double(mTrees.capacity()) < 0.2) {
+            int target_size = mTrees.count()*2;
+            qDebug() << "reduce size from "<<mTrees.capacity() << "to" << target_size;
+            mTrees.reserve(qMax(target_size, 100));
+        }
+    }
+}
 
 void RessourceUnit::newYear()
 {

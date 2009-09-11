@@ -46,6 +46,16 @@ Tree *AllTreeIterator::next()
 
     return mCurrent++;
 }
+Tree *AllTreeIterator::nextLiving()
+{
+    while (Tree *t = next())
+        if (!t->dead()) return t;
+    return NULL;
+}
+Tree *AllTreeIterator::current() const
+{
+    return mCurrent?mCurrent-1:NULL;
+}
 
 
 Model::Model()

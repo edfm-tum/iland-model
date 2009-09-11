@@ -32,9 +32,10 @@ public:
     const RessourceUnit *ru() const { Q_ASSERT(mRU!=0); return mRU; }
     void setRU(RessourceUnit *ru) { mRU = ru; }
     double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
-
+    bool dead() const { return flag(Tree::TreeDead); }
     // actions
-    void enableDebugging(const bool enable=true) { mDebugging = enable; }
+    void die() { setFlag(Tree::TreeDead, true); }
+    void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
     // grid based light-concurrency functions
     void applyStamp(); ///< apply LightInfluencePattern onto the global grid
     void readStamp(); ///< calculate the lightRessourceIndex with multiplicative approach
@@ -87,11 +88,14 @@ private:
     Species *mSpecies;
     RessourceUnit *mRU;
 
-    // debugging
-    bool mDebugging;
+    // various flags
+    int mFlags;
+    enum Flags { TreeDead=1, TreeDebugging=2 };
+    void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
+    bool flag(const Tree::Flags flag) const { return mFlags & flag; }
 
     // special functions
-    bool isDebugging() { return mDebugging; }
+    bool isDebugging() { return flag(Tree::TreeDebugging); }
 
 
     // static data

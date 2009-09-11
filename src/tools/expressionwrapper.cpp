@@ -32,7 +32,8 @@ double ExpressionWrapper::value(const QString &variableName)
 
 QStringList treeVarList=QStringList() << "id" << "dbh" << "height" << "ruindex" // 0..3
                         << "x" << "y" << "volume" << "lri" << "la" << "leafarea" // 4-9
-                        << "woodymass" << "rootmass" << "foliagemass" << "opacity"; // 10-
+                        << "woodymass" << "rootmass" << "foliagemass" << "opacity" // 10-13
+                        << "dead";
 const QStringList TreeWrapper::getVariablesList()
 {
     return treeVarList;
@@ -52,6 +53,12 @@ double TreeWrapper::value(const QString &variableName)
 double TreeWrapper::value(const int variableIndex)
 {
     Q_ASSERT(mTree!=0);
+    // testcode....
+//    const_cast<Tree*>(mTree)->setFlag(Tree::TreeDead, true);
+//    qDebug() << "flagtest" << mTree->dead();
+//    const_cast<Tree*>(mTree)->setFlag(Tree::TreeDead, false);
+//    qDebug() << mTree->dead();
+
     switch (variableIndex) {
         case 0: return double(mTree->id()); // id
         case 1: return mTree->dbh(); // dbh
@@ -66,6 +73,7 @@ double TreeWrapper::value(const int variableIndex)
         case 11: return mTree->mRootMass;
         case 12: return mTree->mFoliageMass;
         case 13: return mTree->mOpacity;
+        case 14: return mTree->dead()?1.:0.;
     }
     throw IException("TreeWrapper::getValue: invalid index");
 }
