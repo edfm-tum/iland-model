@@ -54,14 +54,14 @@ void RessourceUnit::cleanTreeList()
 {
     QVector<Tree>::iterator last=mTrees.end()-1;
     QVector<Tree>::iterator current = mTrees.begin();
-    while (last>=current && (*last).dead())
+    while (last>=current && (*last).isDead())
         --last;
 
     while (current<last) {
-        if ((*current).dead()) {
+        if ((*current).isDead()) {
             *current = *last; // copy data!
             --last; //
-            while (last>=current && (*last).dead())
+            while (last>=current && (*last).isDead())
                 --last;
         }
         ++current;

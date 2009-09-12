@@ -16,10 +16,19 @@ int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 
-void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
+
+/** get distance and direction between two points.
+  returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle. */
+float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAngle)
 {
-    mGrid = gridToStamp; mHeightGrid = dominanceGrid;
+    float dx = PEnd.x() - PStart.x();
+    float dy = PEnd.y() - PStart.y();
+    float d = sqrt(dx*dx + dy*dy);
+    // direction:
+    rAngle = atan2(dx, dy);
+    return d;
 }
+
 
 // lifecycle
 Tree::Tree()
@@ -33,16 +42,9 @@ Tree::Tree()
     m_statCreated++;
 }
 
-/** get distance and direction between two points.
-  returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle. */
-float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAngle)
+void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
 {
-    float dx = PEnd.x() - PStart.x();
-    float dy = PEnd.y() - PStart.y();
-    float d = sqrt(dx*dx + dy*dy);
-    // direction:
-    rAngle = atan2(dx, dy);
-    return d;
+    mGrid = gridToStamp; mHeightGrid = dominanceGrid;
 }
 
 /// dumps some core variables of a tree to a string.
@@ -88,7 +90,7 @@ void Tree::setup()
 //#define NOFULLOPT
 
 
-void Tree::applyStamp()
+void Tree::applyLIP()
 {
     if (!mStamp)
         return;
@@ -139,7 +141,7 @@ int torusIndex(int index, int count, int buffer)
 
 /** Apply LIPs. This "Torus" functions wraps the influence at the edges of a 1ha simulation area.
   */
-void Tree::applyStampTorus()
+void Tree::applyLIP_torus()
 {
     if (!mStamp)
         return;
@@ -239,7 +241,7 @@ void Tree::heightGrid()
 
 
 
-void Tree::readStamp()
+void Tree::readLIF()
 {
     if (!mStamp)
         return;
@@ -299,7 +301,7 @@ void Tree::readStamp()
     mRU->addWLA(mLRI*mLeafArea, mLeafArea);
 }
 
-void Tree::heightGridTorus()
+void Tree::heightGrid_torus()
 {
     // height of Z*
     const float cellsize = mHeightGrid->cellsize();
@@ -352,7 +354,7 @@ void Tree::heightGridTorus()
 }
 
 /// Torus version of read stamp (glued edges)
-void Tree::readStampTorus()
+void Tree::readLIF_torus()
 {
     if (!mStamp)
         return;
@@ -458,9 +460,6 @@ void Tree::grow()
 
     partitioning(npp);
 
-    mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
-    // calculate the CrownFactor which reflects the opacity of the crown
-    mOpacity = 1. - exp(-0.7 * mLeafArea / mStamp->crownArea());
 
 
 }
@@ -474,7 +473,7 @@ QString test_cntr()
     return QString::number(cnt);
 }
 
-void Tree::partitioning(double npp)
+inline void Tree::partitioning(double npp)
 {
     DBGMODE(
         if (mId==1)
@@ -588,7 +587,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
         double res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
-        //dbgstruct["sen_demand"]=sen_demand;
+
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && isDebugging() ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
             dumpList(out); // add tree headers
@@ -603,6 +602,12 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     mDbh += d_increment*100; // convert from [m] to [cm]
     mDbhDelta = d_increment*100; // save for next year's growth
     mHeight += d_increment * hd_growth;
+
+    // update state of LIP stamp and opacity
+    mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
+    // calculate the CrownFactor which reflects the opacity of the crown
+    mOpacity = 1. - exp(-0.7 * mLeafArea / mStamp->crownArea());
+
 }
 
 

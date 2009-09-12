@@ -49,7 +49,7 @@ Tree *AllTreeIterator::next()
 Tree *AllTreeIterator::nextLiving()
 {
     while (Tree *t = next())
-        if (!t->dead()) return t;
+        if (!t->isDead()) return t;
     return NULL;
 }
 Tree *AllTreeIterator::current() const
@@ -257,15 +257,15 @@ RessourceUnit* nc_applyPattern(RessourceUnit *unit)
             (*tit).heightGrid(); // just do it ;)
 
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).applyStamp(); // just do it ;)
+            (*tit).applyLIP(); // just do it ;)
 
     } else {
         // height dominance grid
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).heightGridTorus(); // just do it ;)
+            (*tit).heightGrid_torus(); // just do it ;)
 
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).applyStampTorus(); // do it the wraparound way
+            (*tit).applyLIP_torus(); // do it the wraparound way
     }
     return unit;
 }
@@ -277,10 +277,10 @@ RessourceUnit *nc_readPattern(RessourceUnit *unit)
 
     if (GlobalSettings::instance()->settings().paramValue("torus",0)==0) {
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).readStamp(); // multipliactive approach
+            (*tit).readLIF(); // multipliactive approach
     } else {
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).readStampTorus(); // do it the wraparound way
+            (*tit).readLIF(); // do it the wraparound way
     }
     return unit;
 }
