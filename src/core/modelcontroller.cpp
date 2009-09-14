@@ -43,7 +43,7 @@ bool ModelController::canRun()
 
 bool ModelController::isRunning()
 {
- return GlobalSettings::instance()->runYear()>0;
+ return GlobalSettings::instance()->currentYear()>0;
 }
 
 
@@ -82,7 +82,7 @@ void ModelController::destroy()
     if (canDestroy()) {
         delete mModel;
         mModel = 0;
-        GlobalSettings::instance()->setRunYear(0);
+        GlobalSettings::instance()->setCurrentYear(0);
         qDebug() << "ModelController: Model destroyed.";
     }
 }
@@ -105,7 +105,7 @@ void ModelController::runYear()
 
     try {
         mModel->runYear();
-        dynamicOutput();
+        fetchDynamicOutput();
     } catch(const IException &e) {
         QString error_msg = e.toString();
         Helper::msg(error_msg);
@@ -120,10 +120,13 @@ void ModelController::runYear()
 //////////////////////////////////////
 void ModelController::setupDynamicOutput(QString fieldList)
 {
-    mDynFieldList = fieldList.split(",");
+    mDynFieldList = fieldList.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    mDynFieldList.prepend("count");
+    mDynFieldList.prepend("year"); // fixed fields.
     mDynData.clear();
     mDynData.append(mDynFieldList.join(";"));
 }
+
 QString ModelController::dynamicOutput()
 {
     return mDynData.join("\n");
@@ -176,5 +179,7 @@ void ModelController::fetchDynamicOutput()
         }
         line+=QString::number(value);
     }
-    mDynFieldList.append(line.join(";"));
+    line.prepend( QString::number(data.size()) );
+    line.prepend( QString::number(GlobalSettings::instance()->currentYear()) );
+    mDynData.append(line.join(";"));
 }

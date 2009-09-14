@@ -106,7 +106,7 @@ void GlobalSettings::clearDebugLists()
 DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
 {
     DebugList dbglist;
-    dbglist << ID << dbg << runYear();
+    dbglist << ID << dbg << currentYear();
     QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(ID, dbglist);
     return *newitem;
 }

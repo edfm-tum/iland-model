@@ -22,8 +22,8 @@ public:
     // model and clock
     void setModel(Model *model) {mModel = model; }
     Model *model() const { return mModel; }
-    int runYear() const { return mRunYear; }
-    void setRunYear(const int year) { mRunYear = year; }
+    int currentYear() const { return mRunYear; }
+    void setCurrentYear(const int year) { mRunYear = year; }
     // debugging fain grained debug outputs
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4, dStandNPP=8 }; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }

@@ -79,7 +79,7 @@ Model::~Model()
 void Model::initialize()
 {
    mSetup = false;
-   GlobalSettings::instance()->setRunYear(0);
+   GlobalSettings::instance()->setCurrentYear(0);
    mGrid = 0;
    mHeightGrid = 0;
     //
@@ -234,7 +234,7 @@ void Model::runYear()
 
     //test();
 
-    GlobalSettings::instance()->setRunYear(GlobalSettings::instance()->runYear()+1);
+    GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
 
 void Model::afterStop()
