@@ -480,6 +480,10 @@ void MainWindow::setupModel()
         ui->PaintWidget->update();
     }
      ui->treeChange->setProperty("tree",0);
+     // setup dynamic output
+     QString dout = GlobalSettings::instance()->settings().value("output.dynamic");
+     if (!dout.isEmpty())
+         mRemoteControl.setupDynamicOutput(dout);
 }
 
 
@@ -661,4 +665,10 @@ void MainWindow::on_pbExecExpression_clicked()
 {
     // just repaint...
     ui->PaintWidget->update();
+}
+
+void MainWindow::on_actionDynamic_Output_triggered()
+{
+    QApplication::clipboard()->setText(mRemoteControl.dynamicOutput());
+    qDebug() << "copied dynamic output to clipboard";
 }

@@ -280,7 +280,7 @@ RessourceUnit *nc_readPattern(RessourceUnit *unit)
             (*tit).readLIF(); // multipliactive approach
     } else {
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).readLIF(); // do it the wraparound way
+            (*tit).readLIF_torus(); // do it the wraparound way
     }
     return unit;
 }

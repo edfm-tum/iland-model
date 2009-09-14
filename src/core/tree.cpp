@@ -450,21 +450,19 @@ void Tree::grow()
     double raw_gpp_per_rad = mRU->ressourceUnitSpecies(species()).prod3PG().GPPperRad();
     // GPP (without aging-effect) [gC] / year -> kg/GPP (*0.001)
     double raw_gpp = raw_gpp_per_rad * radiation * 0.001;
-    /*
-    if (mRU->index()==3) {
-        qDebug() << "tree production: radiation: " << radiation << "gpp/rad:" << raw_gpp_per_rad << "gpp" << raw_gpp << "LRI:" << mLRI << "LeafArea:" << mLeafArea;
-    }*/
+
     // apply aging
     double gpp = raw_gpp * 0.6; // aging
-    double npp = gpp * 0.47; // respiration loss
+    d.NPP = gpp * 0.47; // respiration loss
 
     DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
             dumpList(out); // add tree headers
-            out << radiation << raw_gpp << gpp << npp;
+            out << radiation << raw_gpp << gpp << d.NPP;
         }
     ); // DBGMODE()
+
 
     partitioning(d); // split npp to compartments and grow (diameter, height)
 
