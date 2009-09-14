@@ -399,13 +399,16 @@ void MainWindow::showTreeDetails(Tree *tree)
     foreach(QString name, names) {
         items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(tw.value(name)) ));
     }
-    // query some additional debug data
-//    QList<DebugList> dbglst = GlobalSettings::instance()->debugLists(tree->id());
-//    foreach (const DebugList &dl, dbglist) {
-//        foreach(const QVariant &va
-//    }
+    QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(tree->id());
 
-    // finally add to widget
+    QList<QPair<QString, QVariant> >::const_iterator i = dbgdata.constBegin();
+    while (i != dbgdata.constEnd()) {
+     //cout << i.key() << ": " << i.value() << endl;
+        items.append(new QTreeWidgetItem(QStringList()
+                                         << (*i).first
+                                         << (*i).second.toString()) );
+        ++i;
+     }
     ui->dataTree->addTopLevelItems(items);
 }
 

@@ -176,8 +176,26 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
     return result;
 }
 
+QList<QPair<QString, QVariant> > GlobalSettings::debugValues(const int ID)
+{
+
+    QList<QPair<QString, QVariant> > result;
+    QMultiHash<int, DebugList>::iterator res = mDebugLists.find(ID);
+    while (res != mDebugLists.end() && res.key() == ID)  {
+        DebugList &list = res.value();
+        if (list.count()>2) { // contains data
+           QStringList cap = debugListCaptions( DebugOutputs(list[1].toInt()) );
+           result.append(QPair<QString, QVariant>("Debug data", "Debug data") );
+           for (int i=3;i<list.count();++i)
+               result.append(QPair<QString, QVariant>(cap[i], list[i]));
+        }
+        ++res;
+    }
+    return result;
+}
+
 /** retrieve a const pointer to a stored SettingMetaData object.
- if @p name is not found, a NULL returned.
+ if @p name is not found, NULL is returned.
  */
 const SettingMetaData *GlobalSettings::settingMetaData(const QString &name)
 {
