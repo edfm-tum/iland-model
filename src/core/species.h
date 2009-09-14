@@ -37,6 +37,9 @@ public:
     double volumeFactor() const { return mVolumeFactor; } ///< factor for volume calculation: V = factor * D^2*H (incorporates density and the form of the bole)
     double density() const { return mWoodDensity; } ///< density of stem wood [kg/m3]
     double specificLeafArea() const { return mSpecificLeafArea; }
+    // mortality
+    double deathProb_intrinsic() const { return mDeathProb_intrinsic; }
+    double deathProb_stress() const { return mDeathProb_stress; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance
@@ -60,7 +63,6 @@ private:
     double mBranch_a, mBranch_b; ///< allometry (biomass = a * dbh^b) for branches
 
     double mSpecificLeafArea; ///< conversion factor from kg OTS to m2 LeafArea
-
     // turnover rates
     double mTurnoverLeaf; ///< yearly turnover rate leafs
     double mTurnoverRoot; ///< yearly turnover rate root
@@ -71,6 +73,9 @@ private:
     double mWoodDensity; ///< density of the wood [kg/m3]
     double mFormFactor; ///< taper form factor of the stem [-] used for volume / stem-mass calculation calculation
     double mVolumeFactor; ///< factor for volume calculation
+    // mortality
+    double mDeathProb_intrinsic;  ///< prob. of intrinsic death per year [0..1]
+    double mDeathProb_stress; ///< max. prob. of death per year when tree suffering maximum stress
 };
 
 

@@ -16,6 +16,13 @@ int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 
+/// internal data structure which is passed between function
+struct TreeGrowthData
+{
+    double NPP; ///< total NPP
+    double NPP_stem;  ///< NPP used for growth of stem (dbh,h)
+    double stress_index; ///< stress index used for mortality calculation
+};
 
 /** get distance and direction between two points.
   returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle. */
@@ -37,7 +44,7 @@ Tree::Tree()
     mRU = 0; mSpecies = 0;
     mFlags = 0;
     mOpacity=mFoliageMass=mWoodyMass=mRootMass=mLeafArea=0.;
-    mDbhDelta=mNPPReserve=mLRI=0.;
+    mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
     mId = m_nextId++;
     m_statCreated++;
 }
@@ -51,7 +58,7 @@ void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
 QString Tree::dump()
 {
     QString result = QString("id %1 species %2 dbh %3 h %4 x/y %5/%6 ru# %7 LRI %8")
-                            .arg(mId).arg(mSpecies->id()).arg(mDbh).arg(mHeight)
+                            .arg(mId).arg(species()->id()).arg(mDbh).arg(mHeight)
                             .arg(position().x()).arg(position().y())
                             .arg(mRU->index()).arg(mLRI);
     return result;
@@ -59,7 +66,7 @@ QString Tree::dump()
 
 void Tree::dumpList(DebugList &rTargetList)
 {
-    rTargetList << mId << mSpecies->id() << mDbh << mHeight  << position().x() << position().y()   << mRU->index() << mLRI
+    rTargetList << mId << species()->id() << mDbh << mHeight  << position().x() << position().y()   << mRU->index() << mLRI
                 << mWoodyMass << mRootMass << mFoliageMass << mLeafArea;
 }
 
@@ -68,15 +75,15 @@ void Tree::setup()
     if (mDbh<=0 || mHeight<=0)
         return;
     // check stamp
-    Q_ASSERT_X(mSpecies!=0, "Tree::setup()", "species is NULL");
-    mStamp = mSpecies->stamp(mDbh, mHeight);
+    Q_ASSERT_X(species()!=0, "Tree::setup()", "species is NULL");
+    mStamp = species()->stamp(mDbh, mHeight);
 
-    mFoliageMass = mSpecies->biomassFoliage(mDbh);
-    mRootMass = mSpecies->biomassRoot(mDbh) + mFoliageMass; // coarse root (allometry) + fine root (estimated size: foliage)
-    mWoodyMass = mSpecies->biomassWoody(mDbh);
+    mFoliageMass = species()->biomassFoliage(mDbh);
+    mRootMass = species()->biomassRoot(mDbh) + mFoliageMass; // coarse root (allometry) + fine root (estimated size: foliage)
+    mWoodyMass = species()->biomassWoody(mDbh);
 
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
-    mLeafArea = mFoliageMass * mSpecies->specificLeafArea();
+    mLeafArea = mFoliageMass * species()->specificLeafArea();
     mOpacity = 1. - exp(-0.5 * mLeafArea / mStamp->crownArea());
     mNPPReserve = 2*mFoliageMass; // initial value
     mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
@@ -435,11 +442,12 @@ void Tree::resetStatistics()
 
 void Tree::grow()
 {
+    TreeGrowthData d;
     // step 1: get radiation from ressource unit: radiation (MJ/tree/year) total intercepted radiation for this tree per year!
     double radiation = mRU->interceptedRadiation(mLeafArea, mLRI);
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
-    double raw_gpp_per_rad = mRU->ressourceUnitSpecies(mSpecies).prod3PG().GPPperRad();
+    double raw_gpp_per_rad = mRU->ressourceUnitSpecies(species()).prod3PG().GPPperRad();
     // GPP (without aging-effect) [gC] / year -> kg/GPP (*0.001)
     double raw_gpp = raw_gpp_per_rad * radiation * 0.001;
     /*
@@ -458,10 +466,11 @@ void Tree::grow()
         }
     ); // DBGMODE()
 
-    partitioning(npp);
+    partitioning(d); // split npp to compartments and grow (diameter, height)
 
+    mortality(d);
 
-
+    mStressIndex = d.stress_index;
 }
 
 
@@ -473,42 +482,48 @@ QString test_cntr()
     return QString::number(cnt);
 }
 
-inline void Tree::partitioning(double npp)
+inline void Tree::partitioning(TreeGrowthData &d)
 {
     DBGMODE(
         if (mId==1)
             test_cntr();
     );
-    double harshness = mRU->ressourceUnitSpecies(mSpecies).prod3PG().harshness();
+    double npp = d.NPP;
+    double harshness = mRU->ressourceUnitSpecies(species()).prod3PG().harshness();
     // add content of reserve pool
     npp += mNPPReserve;
-    const double foliage_mass_allo = mSpecies->biomassFoliage(mDbh);
+    const double foliage_mass_allo = species()->biomassFoliage(mDbh);
     const double reserve_size = 2 * foliage_mass_allo;
 
     double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1) (eta)
     // turnover rates
-    const double &to_fol = mSpecies->turnoverLeaf();
-    const double &to_root = mSpecies->turnoverRoot();
+    const double &to_fol = species()->turnoverLeaf();
+    const double &to_root = species()->turnoverRoot();
     // the turnover rate of wood depends on the size of the reserve pool:
 
     double to_wood = reserve_size / (mWoodyMass + reserve_size);
 
     apct_root = harshness;
-    double b_wf = mSpecies->allometricRatio_wf(); // ratio of allometric exponents... now fixed
+    double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)
     apct_wood = (foliage_mass_allo * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( foliage_mass_allo / mWoodyMass + b_wf );
     apct_foliage = 1. - apct_root - apct_wood;
 
     // Change of biomass compartments
+    double sen_root = mRootMass*to_root;
+    double sen_foliage = mFoliageMass*to_fol;
     // Roots
-    double delta_root = apct_root * npp - mRootMass * to_root;
+    double delta_root = apct_root * npp - sen_root;
     mRootMass += delta_root;
 
     // Foliage
-    double delta_foliage = apct_foliage * npp - mFoliageMass * to_fol;
+    double delta_foliage = apct_foliage * npp - sen_foliage;
     mFoliageMass += delta_foliage;
-    mLeafArea = mFoliageMass * mSpecies->specificLeafArea(); // update leaf area
+    mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area
+
+    // stress index
+    d.stress_index =qMax(1. - npp / (reserve_size + sen_foliage ), 0.);
 
     // Woody compartments
     // (1) transfer to reserve pool
@@ -519,10 +534,11 @@ inline void Tree::partitioning(double npp)
     double net_stem = 0.;
     if (net_woody > 0.) {
         // (2) calculate part of increment that is dedicated to the stem (which is a function of diameter)
-        net_stem = net_woody * mSpecies->allometricFractionStem(mDbh);
+        net_stem = net_woody * species()->allometricFractionStem(mDbh);
+        d.NPP_stem = net_stem;
         mWoodyMass += net_woody;
         //  (3) growth of diameter and height baseed on net stem increment
-        grow_diameter(net_stem);
+        grow_diameter(d);
     }
 
     DBGMODE(
@@ -557,15 +573,17 @@ inline void Tree::partitioning(double npp)
     This function updates the dbh and height of the tree.
     The equations are based on dbh in meters!
   */
-inline void Tree::grow_diameter(const double &net_stem_npp)
+inline void Tree::grow_diameter(TreeGrowthData &d)
 {
     // determine dh-ratio of increment
     // height increment is a function of light competition:
     double hd_growth = relative_height_growth(); // hd of height growth
     double d_m = mDbh / 100.; // current diameter in [m]
+    double net_stem_npp = d.NPP_stem;
+
     const double d_delta_m = mDbhDelta / 100.; // increment of last year in [m]
 
-    const double mass_factor = mSpecies->volumeFactor() * mSpecies->density();
+    const double mass_factor = species()->volumeFactor() * species()->density();
     double stem_mass = mass_factor * d_m*d_m * mHeight; // result: kg, dbh[cm], h[meter]
 
     // factor is in diameter increment per NPP [m/kg]
@@ -604,7 +622,7 @@ inline void Tree::grow_diameter(const double &net_stem_npp)
     mHeight += d_increment * hd_growth;
 
     // update state of LIP stamp and opacity
-    mStamp = mSpecies->stamp(mDbh, mHeight); // get new stamp for updated dimensions
+    mStamp = species()->stamp(mDbh, mHeight); // get new stamp for updated dimensions
     // calculate the CrownFactor which reflects the opacity of the crown
     mOpacity = 1. - exp(-0.7 * mLeafArea / mStamp->crownArea());
 
@@ -625,6 +643,17 @@ inline double Tree::relative_height_growth()
     return hd_ratio;
 }
 
+void Tree::mortality(TreeGrowthData &d)
+{
+    double p_death,  p_stress;
+    p_stress = d.stress_index * species()->deathProb_stress();
+    p_death = species()->deathProb_intrinsic() + p_stress;
+    double p = random(); //0..1
+    if (p<p_death) {
+        // die...
+        die();
+    }
+}
 
 //////////////////////////////////////////////////
 ////  value functions
@@ -633,7 +662,7 @@ inline double Tree::relative_height_growth()
 double Tree::volume() const
 {
     /// @see Species::volumeFactor() for details
-    const double volume_factor = mSpecies->volumeFactor();
+    const double volume_factor = species()->volumeFactor();
     const double volume =  volume_factor * mDbh*mDbh*mHeight * 0.0001; // dbh in cm: cm/100 * cm/100 = cm*cm * 0.0001 = m2
     return volume;
 }

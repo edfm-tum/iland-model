@@ -8,6 +8,7 @@ class Species;
 class Stamp;
 class RessourceUnit;
 struct HeightGridValue;
+struct TreeGrowthData;
 
 class Tree
 {
@@ -64,9 +65,11 @@ public:
 
 private:
     // helping functions
-    void partitioning(double npp); ///< split NPP into various plant pools.
+    void partitioning(TreeGrowthData &d); ///< split NPP into various plant pools.
     double relative_height_growth(); ///< estimate height growth based on light status.
-    void grow_diameter(const double &net_stem_npp); ///< actual growth of the tree's stem.
+    void grow_diameter(TreeGrowthData &d); ///< actual growth of the tree's stem.
+    void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
+
     // state variables
     int mId;
     float mDbh; ///< diameter at breast height [cm]
@@ -80,10 +83,12 @@ private:
     float mRootMass; // kg
     // production relevant
     float mNPPReserve; // kg
-    float mDbhDelta; ///< diameter growth [cm]
     float mLRI; ///< resulting lightRessourceIndex
-    // Stamp, Species, Ressource Unit
+    // auxiliary
+    float mDbhDelta; ///< diameter growth [cm]
+    float mStressIndex; ///< stress index (used for mortality)
 
+    // Stamp, Species, Ressource Unit
     const Stamp *mStamp;
     Species *mSpecies;
     RessourceUnit *mRU;

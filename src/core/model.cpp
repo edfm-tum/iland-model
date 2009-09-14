@@ -339,6 +339,14 @@ void Model::grow()
 
     DebugTimer t("grow()");
     threadRunner.run(nc_grow);
+
+    int b,n;
+    foreach(RessourceUnit *ru, mRU) {
+        b = ru->trees().count();
+       ru->cleanTreeList();
+       n = ru->trees().count();
+       qDebug() << (b-n) << "trees died (of" << b << ").";
+   }
 }
 
 /**
