@@ -492,6 +492,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     npp += mNPPReserve;
     const double foliage_mass_allo = species()->biomassFoliage(mDbh);
     const double reserve_size = 2 * foliage_mass_allo;
+    double refill_reserve = qMin(reserve_size, 2.*mFoliageMass); // not always try to refill reserve 100%
 
     double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1) (eta)
     // turnover rates
@@ -499,14 +500,26 @@ inline void Tree::partitioning(TreeGrowthData &d)
     const double &to_root = species()->turnoverRoot();
     // the turnover rate of wood depends on the size of the reserve pool:
 
-    double to_wood = reserve_size / (mWoodyMass + reserve_size);
+
+    double to_wood = refill_reserve / (mWoodyMass + refill_reserve);
+
 
     apct_root = harshness;
     double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)
-    apct_wood = (foliage_mass_allo * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( foliage_mass_allo / mWoodyMass + b_wf );
+    apct_wood = (mFoliageMass * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( foliage_mass_allo / mWoodyMass + b_wf );
+    if (apct_wood<0)
+        apct_wood = 0.;
     apct_foliage = 1. - apct_root - apct_wood;
+
+
+    //DBGMODE(
+            if (apct_foliage<0 || apct_wood<0)
+                qDebug() << "transfer to foliage or wood < 0";
+             if (npp<0)
+                 qDebug() << "NPP < 0";
+         //   );
 
     // Change of biomass compartments
     double sen_root = mRootMass*to_root;
@@ -518,6 +531,8 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;
     mFoliageMass += delta_foliage;
+    if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
+
     mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area
 
     // stress index
@@ -643,6 +658,10 @@ inline double Tree::relative_height_growth()
 
 void Tree::mortality(TreeGrowthData &d)
 {
+    // death if leaf area is 0
+    if (mFoliageMass<0.00001)
+        die();
+
     double p_death,  p_stress;
     p_stress = d.stress_index * species()->deathProb_stress();
     p_death = species()->deathProb_intrinsic() + p_stress;

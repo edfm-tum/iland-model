@@ -186,7 +186,10 @@ QList<QPair<QString, QVariant> > GlobalSettings::debugValues(const int ID)
         if (list.count()>2) { // contains data
            QStringList cap = debugListCaptions( DebugOutputs(list[1].toInt()) );
            result.append(QPair<QString, QVariant>("Debug data", "Debug data") );
-           for (int i=3;i<list.count();++i)
+           int first_index = 3;
+           if (list[3]=="Id")  // skip default data fields (not needed for drill down)
+               first_index=14;
+           for (int i=first_index;i<list.count();++i)
                result.append(QPair<QString, QVariant>(cap[i], list[i]));
         }
         ++res;

@@ -147,6 +147,9 @@ void ModelController::fetchDynamicOutput()
     double value;
     QStringList line;
     foreach (QString field, mDynFieldList) {
+        if (field=="count" || field=="year")
+            continue;
+
         var = field.split(QRegExp("\\W+"), QString::SkipEmptyParts);
         if (var.count()!=2)
                 throw IException(QString("Invalid variable name for dynamic output:") + field);
