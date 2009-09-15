@@ -9,6 +9,7 @@
 
 #include "model.h"
 #include "helper.h"
+#include "expression.h"
 #include "expressionwrapper.h"
 
 ModelController::ModelController()
@@ -138,6 +139,7 @@ void ModelController::fetchDynamicOutput()
 {
     if (mDynFieldList.isEmpty())
         return;
+    DebugTimer t("dynamic output");
     QStringList var;
     QString lastVar = "";
     QVector<double> data;
@@ -147,23 +149,39 @@ void ModelController::fetchDynamicOutput()
     StatData stat;
     double value;
     QStringList line;
+    Expression custom_expr;
+    bool simple_expression;
     foreach (QString field, mDynFieldList) {
         if (field=="count" || field=="year")
             continue;
-
-        var = field.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+        if (field.at(0)=='(') {
+            var = field.split(QRegExp("\\((\\w+)\\)\\.(\\w+)"), QString::SkipEmptyParts);
+            simple_expression = false;
+        } else {
+            var = field.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+            simple_expression = true;
+        }
         if (var.count()!=2)
                 throw IException(QString("Invalid variable name for dynamic output:") + field);
         if (var.first()!=lastVar) {
             // load new field
             data.clear();
             at.reset();
-            var_index = tw.variableIndex(var.first());
-            if (var_index<0) {
-                throw IException(QString("Invalid variable name for dynamic output:") + var.first());
+            if (simple_expression) {
+                var_index = tw.variableIndex(var.first());
+                if (var_index<0) {
+                    throw IException(QString("Invalid variable name for dynamic output:") + var.first());
+                }
+            } else {
+                custom_expr.setExpression(var.first());
+                custom_expr.setModelObject(&tw);
             }
             while (Tree *t = at.next()) {
                 tw.setTree(t);
+                if (simple_expression)
+                    value = tw.value(var_index);
+                else
+                    value = custom_expr.execute();
                 data.push_back(tw.value(var_index));
             }
             stat.setData(data);
