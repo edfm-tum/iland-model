@@ -14,7 +14,7 @@
    <string>iLand Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/iland.qrc">
     <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -408,7 +408,7 @@
     <string>Console</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -514,7 +514,7 @@ p, li { white-space: pre-wrap; }
            <string>Execute expression for each tree and draw trees accordingly.</string>
           </property>
           <property name="icon">
-           <iconset>
+           <iconset resource="res/iland.qrc">
             <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
           </property>
           <property name="iconSize">
@@ -582,7 +582,7 @@ p, li { white-space: pre-wrap; }
   </widget>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -601,7 +601,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelCreate">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/www.png</normaloff>:/www.png</iconset>
    </property>
    <property name="text">
@@ -610,7 +610,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelDestroy">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/user-trash.png</normaloff>:/user-trash.png</iconset>
    </property>
    <property name="text">
@@ -619,7 +619,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelRun">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
    </property>
    <property name="text">
@@ -648,7 +648,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionRun_one_year">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
    </property>
    <property name="text">
@@ -657,7 +657,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionReload">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
    </property>
    <property name="text">
@@ -679,7 +679,9 @@ p, li { white-space: pre-wrap; }
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="res/iland.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>expressionHistory</sender>

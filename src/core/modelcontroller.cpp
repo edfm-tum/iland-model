@@ -69,7 +69,7 @@ void ModelController::create()
 
     if (mModel->isSetup())
         mModel->beforeRun();
-
+        GlobalSettings::instance()->clearDebugLists();
     } catch(const IException &e) {
         QString error_msg = e.toString();
         Helper::msg(error_msg);
@@ -101,7 +101,8 @@ void ModelController::run()
 void ModelController::runYear()
 {
     if (!canRun()) return;
-    GlobalSettings::instance()->clearDebugLists();  // clear debug data
+    if (GlobalSettings::instance()->settings().paramValue("debug_clear",0.)==1.)
+        GlobalSettings::instance()->clearDebugLists();  // clear debug data
 
     try {
         mModel->runYear();

@@ -448,12 +448,12 @@ void Tree::grow()
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
     double raw_gpp_per_rad = mRU->ressourceUnitSpecies(species()).prod3PG().GPPperRad();
-    // GPP (without aging-effect) [gC] / year -> kg/GPP (*0.001)
-    double raw_gpp = raw_gpp_per_rad * radiation * 0.001;
+    // GPP (without aging-effect) [gC] / year -> kg Biomass /GPP (*0.001 *2)
+    double raw_gpp = raw_gpp_per_rad * radiation * 0.001 * 2;
 
     // apply aging
     double gpp = raw_gpp * 0.6; // aging
-    d.NPP = gpp * 0.47; // respiration loss
+    d.NPP = gpp * 0.47; // respiration loss, transformation kg
 
     DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
@@ -472,20 +472,10 @@ void Tree::grow()
 }
 
 
-// just used to test the DBG_IF_x macros...
-QString test_cntr()
-{
-    static int cnt = 0;
-    cnt++;
-    return QString::number(cnt);
-}
-
 inline void Tree::partitioning(TreeGrowthData &d)
 {
-    DBGMODE(
-        if (mId==1)
-            test_cntr();
-    );
+    if (isDebugging())
+        enableDebugging(true);
     double npp = d.NPP;
     double harshness = mRU->ressourceUnitSpecies(species()).prod3PG().harshness();
     // add content of reserve pool
@@ -503,12 +493,11 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     double to_wood = refill_reserve / (mWoodyMass + refill_reserve);
 
-
     apct_root = harshness;
     double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)
-    apct_wood = (mFoliageMass * to_wood / npp + b_wf*(1.-apct_root) - b_wf * to_fol/npp) / ( foliage_mass_allo / mWoodyMass + b_wf );
+    apct_wood = (foliage_mass_allo * to_wood / npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo / mWoodyMass + b_wf );
     if (apct_wood<0)
         apct_wood = 0.;
     apct_foliage = 1. - apct_root - apct_wood;
@@ -545,6 +534,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     mNPPReserve = to_reserve;
     double net_woody = gross_woody - to_reserve;
     double net_stem = 0.;
+    mDbhDelta = 0.;
     if (net_woody > 0.) {
         // (2) calculate part of increment that is dedicated to the stem (which is a function of diameter)
         net_stem = net_woody * species()->allometricFractionStem(mDbh);
