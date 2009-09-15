@@ -350,7 +350,7 @@ void  Expression::atom()
             m_constExpression=false;
         }
         next_token();
-    } else if (m_state==etStop)
+    } else if (m_state==etStop || m_state==etUnknown)
         throw IException("Unexpected end of m_expression.");
 }
 

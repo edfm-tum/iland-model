@@ -154,8 +154,11 @@ void ModelController::fetchDynamicOutput()
     foreach (QString field, mDynFieldList) {
         if (field=="count" || field=="year")
             continue;
-        if (field.at(0)=='(') {
-            var = field.split(QRegExp("\\((\\w+)\\)\\.(\\w+)"), QString::SkipEmptyParts);
+        if (field.count()>0 && field.at(0)=='[') {
+            QRegExp rex("\\[(.+)\\]\\.(\\w+)");
+            rex.indexIn(field);
+            var = rex.capturedTexts();
+            var.pop_front(); // drop first element (contains the full string)
             simple_expression = false;
         } else {
             var = field.split(QRegExp("\\W+"), QString::SkipEmptyParts);
@@ -169,9 +172,9 @@ void ModelController::fetchDynamicOutput()
             at.reset();
             if (simple_expression) {
                 var_index = tw.variableIndex(var.first());
-                if (var_index<0) {
+                if (var_index<0)
                     throw IException(QString("Invalid variable name for dynamic output:") + var.first());
-                }
+
             } else {
                 custom_expr.setExpression(var.first());
                 custom_expr.setModelObject(&tw);
@@ -182,7 +185,7 @@ void ModelController::fetchDynamicOutput()
                     value = tw.value(var_index);
                 else
                     value = custom_expr.execute();
-                data.push_back(tw.value(var_index));
+                data.push_back(value);
             }
             stat.setData(data);
         }
