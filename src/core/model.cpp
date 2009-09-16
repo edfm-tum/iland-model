@@ -345,7 +345,7 @@ void Model::grow()
         b = ru->trees().count();
        ru->cleanTreeList();
        n = ru->trees().count();
-       qDebug() << (b-n) << "trees died (of" << b << ").";
+       //qDebug() << (b-n) << "trees died (of" << b << ").";
    }
 }
 

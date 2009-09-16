@@ -169,7 +169,7 @@ void ModelController::fetchDynamicOutput()
         if (var.first()!=lastVar) {
             // load new field
             data.clear();
-            at.reset();
+            at.reset(); var_index = 0;
             if (simple_expression) {
                 var_index = tw.variableIndex(var.first());
                 if (var_index<0)
