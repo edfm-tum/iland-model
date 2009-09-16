@@ -497,7 +497,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)
-    apct_wood = (foliage_mass_allo * to_wood / npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo / mWoodyMass + b_wf );
+    apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mWoodyMass + b_wf );
     if (apct_wood<0)
         apct_wood = 0.;
     apct_foliage = 1. - apct_root - apct_wood;
@@ -525,7 +525,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area
 
     // stress index
-    d.stress_index =qMax(1. - npp / (reserve_size + sen_foliage), 0.);
+    d.stress_index =qMax(1. - (npp-reserve_size) / to_fol*foliage_mass_allo, 0.);
 
     // Woody compartments
     // (1) transfer to reserve pool
@@ -655,7 +655,9 @@ void Tree::mortality(TreeGrowthData &d)
         die();
 
     double p_death,  p_stress;
-    p_stress = d.stress_index * species()->deathProb_stress();
+    //p_stress = d.stress_index * species()->deathProb_stress();
+    if (d.stress_index>0)
+        p_stress = species()->deathProb_stress();
     p_death = species()->deathProb_intrinsic() + p_stress;
     double p = random(); //0..1
     if (p<p_death) {
