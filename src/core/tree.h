@@ -19,6 +19,7 @@ public:
 
     // access to properties
     int id() const { return mId; }
+    int age() const { return mAge; }
     /// @property position The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
     const QPointF position() const { Q_ASSERT(mGrid!=0); return mGrid->cellCenterPoint(mPositionIndex); }
     float dbh() const { return mDbh; }
@@ -71,7 +72,8 @@ private:
     void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
 
     // state variables
-    int mId;
+    int mId; ///< unique ID of tree
+    int mAge; ///< age of tree in years
     float mDbh; ///< diameter at breast height [cm]
     float mHeight; ///< tree height [m]
     QPoint mPositionIndex; ///< index of the trees position on the basic LIF grid

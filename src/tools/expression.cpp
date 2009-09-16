@@ -342,7 +342,7 @@ void  Expression::atom()
             checkBuffer(m_execIndex);
         }
         if (m_state==etVariable) {
-            m_result=0; //getVar(m_token);
+            addVar(m_token);
             m_execList[m_execIndex].Type=etVariable;
             m_execList[m_execIndex].Value=0;
             m_execList[m_execIndex++].Index=getVarIndex(m_token);
@@ -431,7 +431,7 @@ void  Expression::parse_level4()
     }
 }
 
-void  Expression::setVar(const QString& Var, double Value)
+void Expression::setVar(const QString& Var, double Value)
 {
     if (!m_parsed)
         parse();
@@ -442,7 +442,7 @@ void  Expression::setVar(const QString& Var, double Value)
         throw IException("Invalid variable " + Var);
 }
 
-double  Expression::calculate(double Val1, double Val2)
+double Expression::calculate(double Val1, double Val2)
 {
     m_varSpace[0]=Val1;
     m_varSpace[1]=Val2;
@@ -450,7 +450,7 @@ double  Expression::calculate(double Val1, double Val2)
     return execute();
 }
 
-int  Expression::getFuncIndex(const QString& functionName)
+int Expression::getFuncIndex(const QString& functionName)
 {
     int pos=mathFuncList.indexOf(functionName);
     if (pos<0)
@@ -461,7 +461,7 @@ int  Expression::getFuncIndex(const QString& functionName)
     return idx;
 }
 
-double  Expression::execute()
+double Expression::execute()
 {
     if (!m_parsed)
         parse();

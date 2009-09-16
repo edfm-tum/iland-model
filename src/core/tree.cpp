@@ -42,7 +42,7 @@ Tree::Tree()
 {
     mDbh = mHeight = 0;
     mRU = 0; mSpecies = 0;
-    mFlags = 0;
+    mFlags = mAge = 0;
     mOpacity=mFoliageMass=mWoodyMass=mRootMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
     mId = m_nextId++;
@@ -443,6 +443,7 @@ void Tree::resetStatistics()
 void Tree::grow()
 {
     TreeGrowthData d;
+    mAge++; // increase age
     // step 1: get radiation from ressource unit: radiation (MJ/tree/year) total intercepted radiation for this tree per year!
     double radiation = mRU->interceptedRadiation(mLeafArea, mLRI);
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
@@ -452,14 +453,15 @@ void Tree::grow()
     double raw_gpp = raw_gpp_per_rad * radiation * 0.001 * 2;
 
     // apply aging
-    double gpp = raw_gpp * 0.6; // aging
+    const double aging_factor = mSpecies->aging(mHeight, mAge);
+    double gpp = raw_gpp * aging_factor;
     d.NPP = gpp * 0.47; // respiration loss, transformation kg
 
     DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
             dumpList(out); // add tree headers
-            out << radiation << raw_gpp << gpp << d.NPP;
+            out << radiation << raw_gpp << gpp << d.NPP << aging_factor;
         }
     ); // DBGMODE()
 

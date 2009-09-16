@@ -61,22 +61,29 @@ void Species::setup()
     // volume = formfactor*pi/4 *d^2*h -> volume = volumefactor * d^2 * h
     mVolumeFactor = mFormFactor * M_PI_4;
 
-    // mortality
-    // the probabilites (mDeathProb_...) are the yearly prob. of death.
-    // from a population a fraction of p_lucky remains after ageMax years.
-    double p_lucky = doubleVar("ProbIntrinsic");
-    double age_max = doubleVar("AgeMax");
-    double p_lucky_stress = doubleVar("ProbStress");
-    if (p_lucky * age_max * p_lucky_stress == 0.) {
-        throw IException( QString("Error setting up species %1: invalid mortality parameters.").arg(id()));
-    }
-
-    mDeathProb_intrinsic = 1. - pow(p_lucky, 1. / age_max);
-    mDeathProb_stress = 1. - pow(p_lucky_stress, 0.1); // 10 years (after 10 stress years (full stress), p_lucky_stress percent survive
 
     if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea == 0.) {
         throw IException( QString("Error setting up species %1: one value is NULL in database.").arg(id()));
     }
+    // Aging
+    mMaximumAge = doubleVar("maximumAge");
+    mMaximumHeight = doubleVar("maximumHeight");
+    mAging.setAndParse(stringVar("aging"));
+    if (mMaximumAge*mMaximumHeight==0)
+        throw IException( QString("Error setting up species %1:invalid aging parameters.").arg(id()));
+
+    // mortality
+    // the probabilites (mDeathProb_...) are the yearly prob. of death.
+    // from a population a fraction of p_lucky remains after ageMax years.
+    double p_lucky = doubleVar("ProbIntrinsic");
+    double p_lucky_stress = doubleVar("ProbStress");
+    if (p_lucky * mMaximumAge * p_lucky_stress == 0.) {
+        throw IException( QString("Error setting up species %1: invalid mortality parameters.").arg(id()));
+    }
+
+    mDeathProb_intrinsic = 1. - pow(p_lucky, 1. / mMaximumAge);
+    mDeathProb_stress = 1. - pow(p_lucky_stress, 0.1); // 10 years (after 10 stress years (full stress), p_lucky_stress percent survive
+
 }
 
 double Species::biomassFoliage(const double dbh) const
@@ -103,5 +110,19 @@ double Species::allometricFractionStem(const double dbh) const
     return fraction_stem;
 }
 
+/** Aging formula.
+   calculates a relative "age" by combining a height- and an age-related term using a harmonic mean,
+   and feeding this into the Landsberg and Waring formula.
+  */
+double Species::aging(const float height, const int age)
+{
+    double rel_height = qMin(height/mMaximumHeight, 1.);
+    double rel_age = qMin(age/mMaximumAge, 1.);
+    // harmonic mean: http://en.wikipedia.org/wiki/Harmonic_mean
+    double x = 1. - 2. / (1./(1.-rel_height) + 1./(1.-rel_age));
+    double aging_factor = mAging.calculate(x);
+
+    return qMax(qMin(aging_factor, 1.),0.); // limit to [0..1]
+}
 
 

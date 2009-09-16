@@ -40,6 +40,8 @@ public:
     // mortality
     double deathProb_intrinsic() const { return mDeathProb_intrinsic; }
     double deathProb_stress() const { return mDeathProb_stress; }
+    // aging
+    double aging(const float height, const int age);
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance
@@ -76,6 +78,10 @@ private:
     // mortality
     double mDeathProb_intrinsic;  ///< prob. of intrinsic death per year [0..1]
     double mDeathProb_stress; ///< max. prob. of death per year when tree suffering maximum stress
+    // Aging
+    double mMaximumAge; ///< maximum age of species (years)
+    double mMaximumHeight; ///< maximum height of species (m) for aging
+    Expression mAging;
 };
 
 
