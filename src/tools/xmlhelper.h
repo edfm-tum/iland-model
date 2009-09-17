@@ -18,6 +18,7 @@ public:
    QDomElement top() const { return mTopNode;}
    double paramValue(const QString &paramName, const double defaultValue=0.) const; ///< get value of special "parameter" space
    QString paramValueString(const QString &paramName, const QString &defaultValue="") const; ///< get value of special "parameter" space
+   bool paramValueBool(const QString &paramName, const bool &defaultValue=true) const; ///< get value of special "parameter" space
 private:
    void dump_rec(QDomElement c, QStringList &stack, QStringList &out, int idx=-1);
    QDomDocument mDoc;

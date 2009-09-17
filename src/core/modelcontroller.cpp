@@ -102,7 +102,7 @@ void ModelController::run()
 void ModelController::runYear()
 {
     if (!canRun()) return;
-    if (GlobalSettings::instance()->settings().paramValue("debug_clear",0.)==1.)
+    if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
 
     try {
@@ -122,10 +122,16 @@ void ModelController::runYear()
 //////////////////////////////////////
 void ModelController::setupDynamicOutput(QString fieldList)
 {
-    if (fieldList.isEmpty()) {
-        mDynFieldList.clear();
-    } else {
-        mDynFieldList = fieldList.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    mDynFieldList.clear();
+    if (!fieldList.isEmpty()) {
+        QRegExp rx("((?:\\[.+\\]|\\w+)\\.\\w+)");
+        int pos=0;
+        while ((pos = rx.indexIn(fieldList, pos)) != -1) {
+            mDynFieldList.append(rx.cap(1));
+            pos += rx.matchedLength();
+        }
+
+        //mDynFieldList = fieldList.split(QRegExp("(?:\\[.+\\]|\\w+)\\.\\w+"), QString::SkipEmptyParts);
         mDynFieldList.prepend("count");
         mDynFieldList.prepend("year"); // fixed fields.
     }

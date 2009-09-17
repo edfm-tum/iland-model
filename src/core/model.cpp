@@ -251,7 +251,7 @@ RessourceUnit* nc_applyPattern(RessourceUnit *unit)
 
 
     // light concurrence influence
-    if (GlobalSettings::instance()->settings().paramValue("torus",0)==0) {
+    if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
         // height dominance grid
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
             (*tit).heightGrid(); // just do it ;)
@@ -275,7 +275,7 @@ RessourceUnit *nc_readPattern(RessourceUnit *unit)
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
 
-    if (GlobalSettings::instance()->settings().paramValue("torus",0)==0) {
+    if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
         for (tit=unit->trees().begin(); tit!=tend; ++tit)
             (*tit).readLIF(); // multipliactive approach
     } else {

@@ -76,6 +76,15 @@ QString XmlHelper::paramValueString(const QString &paramName, const QString &def
     return defaultValue;
 }
 
+bool XmlHelper::paramValueBool(const QString &paramName, const bool &defaultValue) const
+{
+    if (mParamCache.contains(paramName)) {
+        QString v = mParamCache.value(paramName);
+       return (v=="1" || v=="true");
+    }
+    return defaultValue;
+}
+
 bool XmlHelper::hasNode(const QString &path) const
 {
     return !node(path).isNull();
