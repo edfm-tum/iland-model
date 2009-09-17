@@ -122,9 +122,13 @@ void ModelController::runYear()
 //////////////////////////////////////
 void ModelController::setupDynamicOutput(QString fieldList)
 {
-    mDynFieldList = fieldList.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-    mDynFieldList.prepend("count");
-    mDynFieldList.prepend("year"); // fixed fields.
+    if (fieldList.isEmpty()) {
+        mDynFieldList.clear();
+    } else {
+        mDynFieldList = fieldList.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        mDynFieldList.prepend("count");
+        mDynFieldList.prepend("year"); // fixed fields.
+    }
     mDynData.clear();
     mDynData.append(mDynFieldList.join(";"));
 }

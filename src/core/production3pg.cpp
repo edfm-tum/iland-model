@@ -23,7 +23,7 @@ double Production3PG::calculate()
         year_raw_gpp += month_gpp[i];
     }
     // calculate harshness factor
-    mHarshness = 0.2; // fake
+    mHarshness = 0.4; // fake
 
     // global value set?
     double dbg = GlobalSettings::instance()->settings().paramValue("npp_per_year",0);

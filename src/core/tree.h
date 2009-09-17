@@ -41,6 +41,7 @@ public:
     void setHeight(const float height) { mHeight=height; }
     void setSpecies(Species *ts) { mSpecies=ts; }
     void setRU(RessourceUnit *ru) { mRU = ru; }
+    void setAge(const int age) { mAge = age; }
 
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid

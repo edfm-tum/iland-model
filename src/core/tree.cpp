@@ -527,7 +527,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area
 
     // stress index
-    d.stress_index =qMax(1. - (npp-reserve_size) / to_fol*foliage_mass_allo, 0.);
+    d.stress_index =qMax(1. - (npp-reserve_size) / foliage_mass_allo, 0.);
 
     // Woody compartments
     // (1) transfer to reserve pool
@@ -657,9 +657,9 @@ void Tree::mortality(TreeGrowthData &d)
         die();
 
     double p_death,  p_stress;
-    //p_stress = d.stress_index * species()->deathProb_stress();
-    if (d.stress_index>0)
-        p_stress = species()->deathProb_stress();
+    p_stress = d.stress_index * species()->deathProb_stress();
+    //if (d.stress_index>0)
+    //    p_stress = species()->deathProb_stress();
     p_death = species()->deathProb_intrinsic() + p_stress;
     double p = random(); //0..1
     if (p<p_death) {

@@ -482,8 +482,10 @@ void MainWindow::setupModel()
      ui->treeChange->setProperty("tree",0);
      // setup dynamic output
      QString dout = GlobalSettings::instance()->settings().value("output.dynamic");
-     if (!dout.isEmpty())
+     if (GlobalSettings::instance()->settings().value("output.enabled","true")=="true" && !dout.isEmpty())
          mRemoteControl.setupDynamicOutput(dout);
+     else
+         mRemoteControl.setupDynamicOutput("");
 }
 
 
