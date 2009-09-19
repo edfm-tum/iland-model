@@ -37,7 +37,10 @@ SOURCES += main.cpp \
     ../core/production3pg.cpp \
     ../core/threadrunner.cpp \
     ../tools/expressionwrapper.cpp \
-    tests.cpp
+    tests.cpp \
+    ../output/output.cpp \
+    ../output/treeout.cpp \
+    ../output/outputmanager.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     paintarea.h \
@@ -63,6 +66,9 @@ HEADERS += mainwindow.h \
     ../core/production3pg.h \
     ../core/threadrunner.h \
     ../tools/expressionwrapper.h \
-    tests.h
+    tests.h \
+    ../output/output.h \
+    ../output/treeout.h \
+    ../output/outputmanager.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
