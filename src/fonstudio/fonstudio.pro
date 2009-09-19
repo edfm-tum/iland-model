@@ -16,8 +16,8 @@ PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     mainwindow.cpp \
     ../core/grid.cpp \
-    ../core/solarradiation.cpp \
-    ../core/hemigrid.cpp \
+    solarradiation.cpp \
+    hemigrid.cpp \
     imagestamp.cpp \
     ../core/tree.cpp \
     paintarea.cpp \
@@ -42,8 +42,8 @@ SOURCES += main.cpp \
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
-    ../core/solarradiation.h \
-    ../core/hemigrid.h \
+    solarradiation.h \
+    hemigrid.h \
     imagestamp.h \
     ../core/tree.h \
     paintarea.h \
