@@ -12,7 +12,7 @@ TreeOut::TreeOut()
              << OutputColumn("name", "tree species name", OutString)
              << OutputColumn("v1", "a double value", OutDouble);
     // filtering
-    mFilter=0;
+
  }
 
 void TreeOut::setup()
@@ -21,7 +21,7 @@ void TreeOut::setup()
         throw IException("TreeOut::setup(): no parameter section in init file!");
     QString filter = settings().value(".filter","");
     if (filter!="") {
-        mFilter = new Expression(filter);
+        mFilter = QSharedPointer<Expression>(new Expression(filter));
     }
 }
 

@@ -11,7 +11,7 @@ public:
     virtual void exec();
     virtual void setup();
 private:
-    Expression *mFilter;
+    QSharedPointer<Expression> mFilter;
 };
 
 #endif // TREEOUT_H
