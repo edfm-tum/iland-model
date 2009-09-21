@@ -6,10 +6,56 @@
 
 /** @class Output
    The Output class abstracts output data (database, textbased, ...).
-   @par Setup of Outputs
-   @code
+   To create a new output, create a class derived from Output and perform the following steps:
+   - Overwrite constructor:
+     Create columns and set fixed properties (e.g. table name)
+   - overwrite setup()
+     this function is called after the project file is read. You can access a XmlHelper calling settings()
+     which is set to the top-node of the output (defined by tableName() set in contstructor). Access settings
+     using relative xml-pathes (see example).
+   - overwrite exec()
+     add data using the stream operators or add() function of Output. Call writeRow() after each row. Each invokation
+     of exec() is a database transaction.
+   - Add the output to the constructor of @c OutputManager
 
-   @endcode
+   @par Example
+   @code
+   // (1) Overwrite constructor and set name, description and columns
+   TreeOut::TreeOut()
+    {
+        setName("Tree Output", "tree");
+        setDescription("Output of indivdual trees.");
+        columns() << OutputColumn("id", "id of the tree", OutInteger)
+                 << OutputColumn("name", "tree species name", OutString)
+                 << OutputColumn("v1", "a double value", OutDouble);
+     }
+    // (2) optionally: some special settings (here: filter)
+    void TreeOut::setup()
+    {
+        QString filter = settings().value(".filter","");
+        if (filter!="")
+            mFilter = QSharedPointer<Expression>(new Expression(filter));
+    }
+
+    // (3) the execution
+    void TreeOut::exec()
+    {
+        AllTreeIterator at(GlobalSettings::instance()->model());
+        while (Tree *t=at.next()) {
+            if (mFilter && !mFilter->execute()) // skip if filter present
+                continue;
+            *this << t->id() << t->species()->id() << t->dbh(); // stream operators
+            writeRow(); // executes DB insert
+        }
+    }
+    // in outputmanager.cpp:
+    OutputManager::OutputManager()
+    {
+        ...
+        mOutputs.append(new TreeOut); // add the output
+        ...
+    }
+    @endcode
 
 */
 const XmlHelper &Output::settings()
@@ -121,7 +167,7 @@ void Output::open()
 
 void Output::close()
 {
-
+    endTransaction();
 }
 
 void Output::startTransaction()

@@ -12,8 +12,6 @@ TreeOut::TreeOut()
     columns() << OutputColumn("id", "id of the tree", OutInteger)
              << OutputColumn("name", "tree species name", OutString)
              << OutputColumn("v1", "a double value", OutDouble);
-    // filtering
-
  }
 
 void TreeOut::setup()
@@ -31,13 +29,13 @@ void TreeOut::exec()
 {
     AllTreeIterator at(GlobalSettings::instance()->model());
     DebugTimer t("TreeOut::exec()");
-    startTransaction();
+
     while (Tree *t=at.next()) {
         if (mFilter && !mFilter->execute()) // skip fields
             continue;
         *this << t->id() << t->species()->id() << t->dbh();
         writeRow();
     }
-    endTransaction();
+
 }
 

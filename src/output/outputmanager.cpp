@@ -41,7 +41,9 @@ bool OutputManager::execute(const QString& tableName)
 {
     Output *p = find(tableName);
     if (p) {
+        p->startTransaction();
         p->exec();
+        p->endTransaction();
         return true;
     }
     qDebug() << "output" << tableName << "not found!";

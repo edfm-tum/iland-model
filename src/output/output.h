@@ -41,6 +41,9 @@ public:
     Output & operator<< ( const double& value ) { add(value); return *this; }
     Output & operator<< ( const int value ) { add(value); return *this; }
     Output & operator<< ( const QString &value ) { add(value); return *this; }
+    // transactions
+    void startTransaction(); ///< start database transaction (does nothing when in file mode)
+    void endTransaction(); ///< ends database transaction (does nothing when in file mode)
 
 protected:
     void setName(const QString &name, const QString tableName) { mName = name; mTableName=tableName; }
@@ -57,9 +60,6 @@ protected:
     void add(const double &value1, const double &value2, const double &value3, const double &value4, const double value5) { add(value1, value2); add(value3, value4, value5); }
     inline void add(const int intValue);
     inline void add(const QString &stringValue);
-    // transactions
-    void startTransaction();
-    void endTransaction();
 
 private:
     void newRow(); ///< starts a new row
