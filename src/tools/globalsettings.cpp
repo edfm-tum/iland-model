@@ -61,6 +61,8 @@
 
 #include "settingmetadata.h"
 
+#include "../output/outputmanager.h"
+
 // debug macro helpers
 void dbg_helper(const char *where, const char *what,const char* file,int line)
 {
@@ -78,6 +80,8 @@ GlobalSettings::GlobalSettings()
 {
     mDebugOutputs = 0;
     mModel = 0;
+    // create output manager
+    mOutputManager = new OutputManager();
 }
 
 
@@ -86,6 +90,7 @@ GlobalSettings::~GlobalSettings()
     // meta data... really clear ressources...
     qDeleteAll(mSettingMetaData.values());
     mInstance = NULL;
+    delete mOutputManager;
 }
 
 // debugging

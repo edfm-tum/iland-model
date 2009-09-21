@@ -10,6 +10,7 @@
 typedef QList<QVariant> DebugList;
 
 class Model;
+class OutputManager;
 
 /// General settings and globally available data
 class GlobalSettings
@@ -64,6 +65,8 @@ public:
     // Database connections
     bool setupDatabaseConnection(const QString& dbname, const QString &fileName);
     void clearDatabaseConnections(); ///< shutdown and clear connections
+    // output manager
+    OutputManager *outputManager() { return mOutputManager; }
 
     // path
     void setupDirectories(QDomElement pathNode);
@@ -72,6 +75,7 @@ private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;
     Model *mModel;
+    OutputManager *mOutputManager;
     int mRunYear;
 
     // special debug outputs

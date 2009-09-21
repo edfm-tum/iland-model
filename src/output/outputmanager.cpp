@@ -21,9 +21,29 @@ void OutputManager::setup()
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     QString nodepath;
     foreach(Output *o, mOutputs) {
-        nodepath = QString("output.%1").arg(o->name());
+        nodepath = QString("output.%1").arg(o->tableName());
         xml.setCurrentNode(nodepath);
         qDebug() << "setup of output" << o->name();
         o->setup();
+        o->open();
     }
+}
+
+Output *OutputManager::find(const QString& tableName)
+{
+    foreach(Output* p,mOutputs)
+        if (p->tableName()==tableName)
+            return p;
+    return NULL;
+}
+
+bool OutputManager::execute(const QString& tableName)
+{
+    Output *p = find(tableName);
+    if (p) {
+        p->exec();
+        return true;
+    }
+    qDebug() << "output" << tableName << "not found!";
+    return false; // no output found
 }

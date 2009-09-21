@@ -1,4 +1,5 @@
 #include "treeout.h"
+#include "helper.h"
 #include "tree.h"
 #include "model.h"
 #include "ressourceunit.h"
@@ -17,6 +18,7 @@ TreeOut::TreeOut()
 
 void TreeOut::setup()
 {
+    qDebug() << "treeout::setup() called";
     if (!settings().isValid())
         throw IException("TreeOut::setup(): no parameter section in init file!");
     QString filter = settings().value(".filter","");
@@ -28,11 +30,14 @@ void TreeOut::setup()
 void TreeOut::exec()
 {
     AllTreeIterator at(GlobalSettings::instance()->model());
+    DebugTimer t("TreeOut::exec()");
+    startTransaction();
     while (Tree *t=at.next()) {
         if (mFilter && !mFilter->execute()) // skip fields
             continue;
-        *this << t->id() << t->species()->name() << t->dbh();
-        save();
+        *this << t->id() << t->species()->id() << t->dbh();
+        writeRow();
     }
+    endTransaction();
 }
 

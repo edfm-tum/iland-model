@@ -11,6 +11,7 @@
 #include "helper.h"
 #include "expression.h"
 #include "expressionwrapper.h"
+#include "../output/outputmanager.h"
 
 ModelController::ModelController()
 {
@@ -67,6 +68,8 @@ void ModelController::create()
     try {
     mModel = new Model();
     mModel->loadProject();
+    // setup outputs
+    GlobalSettings::instance()->outputManager()->setup();
 
     if (mModel->isSetup())
         mModel->beforeRun();

@@ -11,6 +11,8 @@
 #include "standloader.h"
 #include "tree.h"
 
+#include "../output/outputmanager.h"
+
 #include <QtCore>
 #include <QtXml>
 
@@ -182,8 +184,10 @@ void Model::loadProject()
     GlobalSettings::instance()->clearDatabaseConnections();
     // input and output connection
     QString dbPath = g->path( xml.value("database.in"), "database");
-    g->fileExists(dbPath);
+
     GlobalSettings::instance()->setupDatabaseConnection("in", dbPath);
+    dbPath = g->path( xml.value("database.out"), "database");
+    GlobalSettings::instance()->setupDatabaseConnection("out", dbPath);
 
 
     // (1) SpeciesSets: currently only one a global species set.
@@ -234,6 +238,7 @@ void Model::runYear()
 
     //test();
 
+    GlobalSettings::instance()->outputManager()->execute("tree");
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
 
