@@ -3,6 +3,7 @@
 
 #include "tree.h"
 #include "ressourceunitspecies.h"
+#include "standstatistics.h"
 
 class SpeciesSet;
 
@@ -30,6 +31,7 @@ public:
     // model flow
     void newYear(); ///< reset values for a new simulation year
     void production(); ///< called after the LIP/LIF calc, before growth of individual trees
+    void yearEnd(); ///< called after the growth of individuals
 
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
@@ -50,6 +52,7 @@ private:
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees
     float mStockedArea; ///< size of stocked area
+    StandStatistics mStatistics; ///< aggregate values on stand value
 
 };
 

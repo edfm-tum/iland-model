@@ -92,6 +92,7 @@ void RessourceUnit::newYear()
     - The 3PG production for each species and ressource unit is invoked  */
 void RessourceUnit::production()
 {
+    mStatistics.clear();
     if (mAggregatedWLA==0 || mPixelCount==0) {
         // nothing to do...
         return;
@@ -120,9 +121,22 @@ void RessourceUnit::production()
 
 
     //double raw_gpp_per_rad;
+
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         (*i).prod3PG().calculate();
+        (*i).statistics().clear();
 //        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << raw_gpp_per_rad;
     }
+}
+
+void RessourceUnit::yearEnd()
+{
+    // calculate statistics for all tree species of the ressource unit
+    int c = mRUSpecies.count();
+    for (int i=0;i<c; i++) {
+        mRUSpecies[i].statistics().calculate();
+        mStatistics.add(mRUSpecies[i].statistics());
+    }
+    mStatistics.calculate(); // aggreagte on stand level
 }
 

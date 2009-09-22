@@ -41,7 +41,8 @@ SOURCES += main.cpp \
     ../output/output.cpp \
     ../output/treeout.cpp \
     ../output/outputmanager.cpp \
-    ../output/standout.cpp
+    ../output/standout.cpp \
+    ../core/standstatistics.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     paintarea.h \
@@ -71,6 +72,7 @@ HEADERS += mainwindow.h \
     ../output/output.h \
     ../output/treeout.h \
     ../output/outputmanager.h \
-    ../output/standout.h
+    ../output/standout.h \
+    ../core/standstatistics.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc

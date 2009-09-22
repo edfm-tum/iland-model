@@ -471,6 +471,9 @@ void Tree::grow()
     mortality(d);
 
     mStressIndex = d.stress_index;
+
+    if (!isDead())
+        mRU->ressourceUnitSpecies(species()).statistics().add(this);
 }
 
 
@@ -678,4 +681,11 @@ double Tree::volume() const
     const double volume_factor = species()->volumeFactor();
     const double volume =  volume_factor * mDbh*mDbh*mHeight * 0.0001; // dbh in cm: cm/100 * cm/100 = cm*cm * 0.0001 = m2
     return volume;
+}
+
+double Tree::basalArea() const
+{
+    // A = r^2 * pi = d/2*pi; from cm->m: d/200
+    const double b = (mDbh/200.)*(mDbh/200.)*M_PI;
+    return b;
 }

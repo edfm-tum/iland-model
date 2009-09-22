@@ -29,6 +29,7 @@ public:
 
     float lightRessourceIndex() const { return mLRI; } ///< LRI of the tree (update during readStamp())
     double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
+    double basalArea() const; ///< basal area of the tree at breast height in m2
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
     // actions
     void die() { setFlag(Tree::TreeDead, true); } ///< kills the tree.
@@ -117,6 +118,7 @@ private:
 
     // friends
     friend class TreeWrapper;
+    friend class StandStatistics;
 };
 
 

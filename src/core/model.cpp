@@ -298,6 +298,7 @@ RessourceUnit *nc_grow(RessourceUnit *unit)
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
         (*tit).grow(); //
     }
+    unit->yearEnd();
     return unit;
 }
 
