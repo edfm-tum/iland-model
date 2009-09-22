@@ -34,7 +34,10 @@ void OutputManager::setup()
         xml.setCurrentNode(nodepath);
         qDebug() << "setup of output" << o->name();
         o->setup();
-        o->open();
+        bool enabled = xml.valueBool(".enabled", false);
+        o->setEnabled(enabled);
+        if (enabled)
+            o->open();
     }
 }
 

@@ -29,10 +29,12 @@ public:
     virtual void setup(); ///< setup() is called during project setup and can be ovveridden for specific setup
 
     void open(); ///< open output connection (create actual db connection, ...)
-    const bool isOpen() const { return mOpen; }
-    void close(); ///< shut down
+    bool isOpen() const { return mOpen; } ///< returns true if output is open, i.e. has a open database connection
+    void close(); ///< shut down the connection.
+    bool isEnabled() const { return mEnabled; } ///< returns true if output is enabled, i.e. is "turned on"
+    void setEnabled(const bool enabled) { mEnabled=enabled; }
 
-    virtual void exec(); ///< execute the output
+    virtual void exec(); ///< main function that executes the output
 
     // properties
     const QList<OutputColumn> getColumns() const { return mColumns; }
@@ -72,6 +74,7 @@ private:
     inline void saveDatabase(); ///< database save (does the "insert")
     OutputMode mMode;
     bool mOpen;
+    bool mEnabled;
     QString mName; ///< name of the output
     QString mTableName; ///< name of the table/output file
     QString mDescription; ///< textual description of the content

@@ -16,6 +16,8 @@ public:
    bool hasNode(const QString &path) const; ///< returns true if @p path exists.
    void setCurrentNode(const QString &path) { mCurrentTop = node(path); } ///< sets @p path as the current (relative) node.
    QString value(const QString &path, const QString &defaultValue="") const; ///< retrieve value (as string) from node @p path.
+   bool valueBool(const QString &path, const bool defaultValue) const; ///< retrieve value (as bool) from node @p path.
+   double valueDouble(const QString &path, const double defaultValue) const; ///< retrieve value (as double) from node @p path.
    QString dump(const QString &path, int levels=-1);
    QDomElement top() const { return mTopNode;}
    double paramValue(const QString &paramName, const double defaultValue=0.) const; ///< get value of special "parameter" space

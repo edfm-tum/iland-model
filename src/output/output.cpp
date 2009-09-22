@@ -80,6 +80,7 @@ Output::Output()
     mCount=0;
     mMode = OutDatabase;
     mOpen = false;
+    mEnabled = false;
     newRow();
 }
 

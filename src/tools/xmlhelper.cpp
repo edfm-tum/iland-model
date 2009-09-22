@@ -98,6 +98,25 @@ QString XmlHelper::value(const QString &path, const QString &defaultValue) const
     else
         return e.text();
 }
+bool XmlHelper::valueBool(const QString &path, const bool defaultValue) const
+{
+    QDomElement e = node(path);
+    if (e.isNull())
+        return defaultValue;
+    QString v = e.text();
+    if (v=="true" || v=="True" || v=="1")
+        return true;
+    else
+        return false;
+}
+double XmlHelper::valueDouble(const QString &path, const double defaultValue) const
+{
+    QDomElement e = node(path);
+    if (e.isNull())
+        return defaultValue;
+    else
+        return e.text().toDouble();
+}
 
 /// retreives node with given @p path and a element where isNull() is true if nothing is found.
 QDomElement XmlHelper::node(const QString &path) const
