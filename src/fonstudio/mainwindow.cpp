@@ -202,7 +202,7 @@ void MainWindow::applyCycles(int cycle_count)
     {
         DebugTimer t("initialize");
         for (i=0;i<cycle_count;i++) {
-            mDomGrid->initialize(0.f); // set dominance grid to zero.
+            mDomGrid->wipe(); // set dominance grid to zero.
             mGrid->initialize(1.f); // 1 for multiplicative
         }
     }
@@ -227,7 +227,7 @@ void MainWindow::applyCycles(int cycle_count)
                 mGrid->initialize(1.f); // reset before the ultimate application
 
             for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-                (*tit).applyStamp(); // just do it ;)
+                (*tit).applyLIP(); // just do it ;)
             }
         }
     }
@@ -237,7 +237,7 @@ void MainWindow::applyCycles(int cycle_count)
         for (i=0;i<cycle_count;i++) {
             for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
                 //(*tit).readStamp(); // just do it ;)
-                (*tit).readStampMul(); // multipliactive approach
+                (*tit).applyLIP(); // multipliactive approach
             }
         }
     }
@@ -345,7 +345,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     value = mGrid->valueAtIndex(QPoint(ix, iy));
                     if (show_scale40) {
                         k = mGrid->cellCenterPoint(QPoint(ix, iy));
-                        hdom = qMax(2.f, mDomGrid->valueAt(k)); // 2m: as in stamp grid
+                        hdom = qMax(2.f, mDomGrid->valueAt(k).height); // 2m: as in stamp grid
                         value = 1.f -  (1.f - value) * hdom / scale_value;
                     }
                     QRectF f = mGrid->cellRect(QPoint(ix,iy));
@@ -364,7 +364,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             for (iy=0;iy<mDomGrid->sizeY();iy++) {
                 for (ix=0;ix<mDomGrid->sizeX();ix++) {
                     QPoint p(ix,iy);
-                    value = mDomGrid->valueAtIndex(p);
+                    value = mDomGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(mDomGrid->cellRect(p));
                     fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
                     painter.fillRect(r, fill_color);
@@ -463,7 +463,7 @@ void MainWindow::mouseMove(const QPoint& pos)
         if (ui->visFon->isChecked())
            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mGrid).valueAt(p)));
         if( ui->visDomGrid->isChecked())
-            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mDomGrid).valueAt(p)));
+            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mDomGrid).valueAt(p).height));
     }
 }
 
@@ -525,26 +525,6 @@ void MainWindow::on_lCalcResult_linkActivated(QString link)
     qDebug() << "link activated:" << link;
 }
 
-void MainWindow::on_pbAddTrees_clicked()
-{
-    // add a number of trees
-    if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
-        return;
-    QVector<Tree> &mTrees =  mModel->ru()->trees();
-    int n = ui->eTreeCount->text().toInt();
-    float dbh = ui->eTreeDBH->text().toFloat();
-    for (int i=0;i<n; i++) {
-        Tree t;
-        t.setDbh(nrandom(dbh-2., dbh+2));
-        t.setHeight(t.dbh());
-        QPointF p(nrandom(0.,mGrid->metricSizeX()), nrandom(0., mGrid->metricSizeY()));
-        t.setPosition(p);
-        mTrees.push_back(t);
-    }
-
-    on_stampTrees_clicked();
-
-}
 
 
 
@@ -559,7 +539,7 @@ void MainWindow::addTrees(const double dbh, const int count)
         Tree t;
         t.setDbh(nrandom(dbh-2., dbh+2));
         t.setHeight(t.dbh());
-        QPointF p(nrandom(0.,mGrid->metricSizeX()), nrandom(0., mGrid->metricSizeY()));
+        QPointF p(nrandom(0.f,mGrid->metricSizeX()), nrandom(0.f, mGrid->metricSizeY()));
         t.setPosition(p);
         mTrees.push_back(t);
     }

@@ -38,7 +38,11 @@ SOURCES += main.cpp \
     ../core/standloader.cpp \
     ../core/ressourceunitspecies.cpp \
     ../core/production3pg.cpp \
-    ../core/threadrunner.cpp
+    ../core/threadrunner.cpp \
+    ../output/outputmanager.cpp \
+    ../output/output.cpp \
+    ../tools/expressionwrapper.cpp \
+    ../output/treeout.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
@@ -66,6 +70,9 @@ HEADERS += mainwindow.h \
     ../core/standloader.h \
     ../core/ressourceunitspecies.h \
     ../core/production3pg.h \
-    ../core/threadrunner.h
+    ../core/threadrunner.h \
+    ../output/outputmanager.h \
+    ../output/output.h
+
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc

@@ -1,9 +1,16 @@
+/** @class OutputManager
+   Global container that handles data output.
+
+  */
+
 #include "global.h"
 #include "outputmanager.h"
 #include <QtCore>
 
 // tree outputs
 #include "treeout.h"
+
+
 
 OutputManager::OutputManager()
 {

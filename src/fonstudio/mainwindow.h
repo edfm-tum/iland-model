@@ -9,7 +9,7 @@
 #include "imagestamp.h"
 #include "helper.h"
 
-class Model;
+#include "model.h"
 
 namespace Ui
 {
@@ -33,7 +33,7 @@ private:
     void addTrees(const double dbh, const int count);
     Ui::MainWindowClass *ui;
     FloatGrid* mGrid; // light grid
-    FloatGrid *mDomGrid; // dominance grid
+    HeightGrid *mDomGrid; // dominance grid
     ImageStamp mStamp;
     int m_gfxtype;
     float m_pixelpercell;
@@ -66,7 +66,7 @@ private slots:
     void on_actionEdit_XML_settings_triggered();
     void on_actionLightroom_triggered();
     void on_calcMatrix_clicked();
-    void on_pbAddTrees_clicked();
+
     void on_lCalcResult_linkActivated(QString link);
     void on_calcFormula_clicked();
     void on_applyXML_clicked();
