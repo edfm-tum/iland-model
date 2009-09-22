@@ -308,11 +308,12 @@ void GlobalSettings::setupDirectories(QDomElement pathNode)
     mFilePath.insert("database", path(xml.value("database", "database"), "home"));
     mFilePath.insert("temp", path(xml.value("temp", "temp"), "home"));
     mFilePath.insert("log", path(xml.value("log", "log"), "home"));
+    mFilePath.insert("script", path(xml.value("script", "script"), "home"));
     qDebug() << "current File Paths:" << mFilePath;
 }
 
 /** extend the file to a full absoulte path of the given type (temp, home, ...).
-  If @p file is already an absolute path, nothing is done.
+  If @p file is already an absolute path, nothing is done. @sa setupDirectories().
   */
 QString GlobalSettings::path(const QString &fileName, const QString &type)
 {

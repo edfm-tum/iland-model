@@ -10,6 +10,7 @@
 
 class RessourceUnit;
 class SpeciesSet;
+class Management;
 struct HeightGridValue
 {
     float height;
@@ -63,6 +64,7 @@ private:
     // global grids...
     FloatGrid *mGrid;
     HeightGrid *mHeightGrid;
+    Management *mManagement;
 };
 
 class Tree;

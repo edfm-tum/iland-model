@@ -10,6 +10,7 @@
 #include "speciesset.h"
 #include "standloader.h"
 #include "tree.h"
+#include "management.h"
 
 #include "../output/outputmanager.h"
 
@@ -84,6 +85,7 @@ void Model::initialize()
    GlobalSettings::instance()->setCurrentYear(0);
    mGrid = 0;
    mHeightGrid = 0;
+   mManagement = 0;
     //
 }
 
@@ -165,6 +167,12 @@ void Model::clear()
         delete mGrid;
     if (mHeightGrid)
         delete mHeightGrid;
+    if (mManagement)
+        delete mManagement;
+
+    mGrid = 0;
+    mHeightGrid = 0;
+    mManagement = 0;
 
     qDebug() << "Model ressources freed.";
 }
@@ -203,6 +211,16 @@ void Model::loadProject()
     mRU.push_back(ru);
 
     setupSpace();
+
+    // (3) additional issues
+    // (3.1) management
+    QString mgmtFile = xml.value("management.file");
+    if (!mgmtFile.isEmpty() && xml.valueBool("management.enabled")) {
+        mManagement = new Management();
+        QString path = GlobalSettings::instance()->path(mgmtFile, "script");
+        mManagement->loadScript(path);
+        qDebug() << "setup management using script" << path;
+    }
 }
 
 
@@ -242,6 +260,10 @@ void Model::runYear()
     om->execute("tree");
     om->execute("stand");
     om->execute("dynamicstand");
+    // management
+    if (mManagement)
+        mManagement->run();
+
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
 
