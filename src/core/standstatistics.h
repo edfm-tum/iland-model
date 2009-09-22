@@ -10,6 +10,13 @@ public:
     void add(Tree *tree); ///< call for each tree within the domain
     void clear(); ///< call before trees are aggregated
     void calculate(); ///< call after tree aggregation is finished
+    // getters
+    int count() const { return mCount; }
+    double dbh_avg() const { return mAverageDbh; }
+    double height_avg() const { return mAverageHeight; }
+    double volume() const { return mSumVolume; }
+    double basalArea() const { return mSumBasalArea; }
+
 private:
     int mCount;
     double mSumDbh;

@@ -16,6 +16,7 @@ public:
     const RessourceUnit *ru() const { return mRU; }
     Production3PG &prod3PG()  { return m3PG; }
     StandStatistics &statistics() { return mStatistics; }
+    const StandStatistics &constStatistics() const { return mStatistics; }
     // action
 
 private:

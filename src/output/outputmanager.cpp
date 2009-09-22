@@ -53,6 +53,10 @@ bool OutputManager::execute(const QString& tableName)
 {
     Output *p = find(tableName);
     if (p) {
+        if (!p->isEnabled())
+            return false;
+        if(!p->isOpen())
+            return false;
         p->startTransaction();
         p->exec();
         p->endTransaction();

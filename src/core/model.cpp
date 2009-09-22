@@ -239,6 +239,7 @@ void Model::runYear()
     //test();
 
     GlobalSettings::instance()->outputManager()->execute("tree");
+    GlobalSettings::instance()->outputManager()->execute("stand");
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
 
