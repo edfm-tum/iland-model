@@ -28,7 +28,8 @@ public:
 
         void  parse(); ///< force a parsing of the expression
 
-        bool isConstExpression() { return m_constExpression; } /// returns true if current expression is a constant.
+        bool isConstExpression() const { return m_constExpression; } ///< returns true if current expression is a constant.
+        bool isEmpty() const { return m_empty; } ///< returns true if expression is empty
         /** strict property: if true, variables must be named before execution.
           When strict=true, all variables in the expression must be added by setVar or addVar.
           if false, variable values are assigned depending on occurence. strict is false is the default for "calculate()".
@@ -53,6 +54,7 @@ private:
 
         bool m_parsed;
         double m_strict;
+        bool m_empty; // empty expression
         bool m_constExpression;
         QString m_tokString;
         QString m_expression;

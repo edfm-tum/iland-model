@@ -54,6 +54,7 @@ private:
     float mStockedArea; ///< size of stocked area
     StandStatistics mStatistics; ///< aggregate values on stand value
 
+    friend class RUWrapper;
 };
 
 #endif // RESSOURCEUNIT_H

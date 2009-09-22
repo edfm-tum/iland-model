@@ -178,6 +178,7 @@ void Expression::setExpression(const QString& aExpression)
 
     m_strict=true; // default....
     m_incSumEnabled=false;
+    m_empty=aExpression.trimmed().isEmpty();
     // Buffer:
     m_execListSize = 5; // inital value...
     m_execList = new ExtExecListItem[m_execListSize]; // init
@@ -211,11 +212,13 @@ void  Expression::parse()
                 throw IException("Expression::parse(): Syntax error, token: " + m_token);
             }
         }
+        m_empty = (m_execIndex == 0);
         m_execList[m_execIndex].Type=etStop;
         m_execList[m_execIndex].Value=0;
         m_execList[m_execIndex++].Index=0;
         checkBuffer(m_execIndex);
         m_parsed=true;
+
     } catch (const IException& e) {
         QString msg =QString("Expression::parse: Error in: %1 : %2").arg(m_expr, e.toString());
         if (m_catchExceptions)
@@ -473,7 +476,7 @@ double Expression::execute()
     bool   *lp=LogicStack;
     double *p=Stack;  // p=head pointer
     *lp++=true; // zumindest eins am anfang...
-    if (exec->Type==etStop) {
+    if (isEmpty()) {
         // leere expr.
         //m_logicResult=false;
         m_result=0.;

@@ -1,3 +1,11 @@
+/** @class ExpressionWrapper is the base class of objects that can be used with Expressions.
+  Derived from ExpressionWrapper are wrappers for e.g. Trees or RessourceUnits.
+  They must provide a getVariablesList() and a value() function.
+  Note: the must also provide "virtual double value(const QString &variableName) { return value(variableName); }"
+      because it seems not possible C++ wise to use functions from derived and base class simultaneously that only differ in the
+      argument signature.
+
+  */
 #include "global.h"
 #include "expressionwrapper.h"
 
@@ -9,23 +17,26 @@
 ExpressionWrapper::ExpressionWrapper()
 {
 }
-int ExpressionWrapper::variableIndex(const QString &variableName)
-{
-    throw IException(QString("expression wrapper reached base variableIndex name %1").arg(variableName));
-}
-
+// must be overloaded!
 const QStringList ExpressionWrapper::getVariablesList()
 {
     throw IException("expression wrapper reached base getVariableList");
 }
-
+// must be overloaded!
 double ExpressionWrapper::value(const int variableIndex)
 {
     throw IException(QString("expression wrapper reached base getValue index %1").arg(variableIndex));
 }
+
+int ExpressionWrapper::variableIndex(const QString &variableName)
+{
+    return getVariablesList().indexOf(variableName);
+}
+
 double ExpressionWrapper::value(const QString &variableName)
 {
-    throw IException(QString("expression wrapper reached base getValue index %1").arg(variableName));
+    int idx = variableIndex(variableName);
+    return value(idx);
 }
 
 
@@ -41,25 +52,10 @@ const QStringList TreeWrapper::getVariablesList()
     return treeVarList;
 }
 
-int TreeWrapper::variableIndex(const QString &variableName)
-{
-    return getVariablesList().indexOf(variableName);
-}
-
-double TreeWrapper::value(const QString &variableName)
-{
-    int idx = variableIndex(variableName);
-    return value(idx);
-}
 
 double TreeWrapper::value(const int variableIndex)
 {
     Q_ASSERT(mTree!=0);
-    // testcode....
-//    const_cast<Tree*>(mTree)->setFlag(Tree::TreeDead, true);
-//    qDebug() << "flagtest" << mTree->dead();
-//    const_cast<Tree*>(mTree)->setFlag(Tree::TreeDead, false);
-//    qDebug() << mTree->dead();
 
     switch (variableIndex) {
     case 0: return double(mTree->id()); // id
@@ -82,4 +78,29 @@ double TreeWrapper::value(const int variableIndex)
     case 18: return mTree->species()->biomassFoliage(mTree->dbh()); // allometric foliage
     }
     throw IException("TreeWrapper::getValue: invalid index");
+}
+
+
+////////////////////////////////////////////////
+//// RessourceUnit Wrapper
+////////////////////////////////////////////////
+
+QStringList ruVarList=QStringList() << "id" << "la" << "total_radiation";
+
+const QStringList RUWrapper::getVariablesList()
+{
+    return ruVarList;
+}
+
+
+double RUWrapper::value(const int variableIndex)
+{
+    Q_ASSERT(mRU!=0);
+
+    switch (variableIndex) {
+    case 0: return mRU->index();
+    case 1: return mRU->mAggregatedLA;
+    case 2: return mRU->mRadiation_m2;
+    }
+    throw IException("RUWrapper::getValue: invalid index");
 }

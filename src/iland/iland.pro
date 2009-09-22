@@ -42,7 +42,8 @@ SOURCES += main.cpp \
     ../output/treeout.cpp \
     ../output/outputmanager.cpp \
     ../output/standout.cpp \
-    ../core/standstatistics.cpp
+    ../core/standstatistics.cpp \
+    ../output/dynamicstandout.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     paintarea.h \
@@ -73,6 +74,7 @@ HEADERS += mainwindow.h \
     ../output/treeout.h \
     ../output/outputmanager.h \
     ../output/standout.h \
-    ../core/standstatistics.h
+    ../core/standstatistics.h \
+    ../output/dynamicstandout.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc

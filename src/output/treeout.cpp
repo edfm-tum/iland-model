@@ -20,6 +20,7 @@ void TreeOut::setup()
     if (!settings().isValid())
         throw IException("TreeOut::setup(): no parameter section in init file!");
     QString filter = settings().value(".filter","");
+    mFilter.clear();
     if (filter!="") {
         mFilter = QSharedPointer<Expression>(new Expression(filter));
     }
