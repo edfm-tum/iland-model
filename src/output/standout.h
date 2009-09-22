@@ -12,15 +12,6 @@ public:
     virtual void setup();
 };
 
-class DynamicStandOut : public Output
-{
-public:
-    DynamicStandOut();
-    virtual void exec();
-    virtual void setup();
-private:
-    Expression mRUFilter;
-    QStringList mDynFields;
-};
+
 
 #endif // STANDOUT_H

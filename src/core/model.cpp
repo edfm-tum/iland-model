@@ -238,8 +238,10 @@ void Model::runYear()
 
     //test();
 
-    GlobalSettings::instance()->outputManager()->execute("tree");
-    GlobalSettings::instance()->outputManager()->execute("stand");
+    OutputManager *om = GlobalSettings::instance()->outputManager();
+    om->execute("tree");
+    om->execute("stand");
+    om->execute("dynamicstand");
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
 

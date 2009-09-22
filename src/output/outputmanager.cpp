@@ -10,6 +10,7 @@
 // tree outputs
 #include "treeout.h"
 #include "standout.h"
+#include "dynamicstandout.h"
 
 
 
@@ -18,6 +19,8 @@ OutputManager::OutputManager()
     // add all the outputs
     mOutputs.append(new TreeOut);
     mOutputs.append(new StandOut);
+    mOutputs.append(new DynamicStandOut);
+
 }
 
 OutputManager::~OutputManager()

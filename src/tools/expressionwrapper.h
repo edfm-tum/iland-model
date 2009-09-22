@@ -18,7 +18,7 @@ class TreeWrapper: public ExpressionWrapper
 public:
     TreeWrapper() : mTree(0) {}
     TreeWrapper(const Tree* tree) : mTree(tree) {}
-    void setTree(Tree* tree) { mTree = tree; }
+    void setTree(const Tree* tree) { mTree = tree; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
     virtual double value(const QString &variableName) { return value(variableName); }
