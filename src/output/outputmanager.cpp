@@ -9,6 +9,7 @@
 
 // tree outputs
 #include "treeout.h"
+#include "standout.h"
 
 
 
@@ -16,6 +17,7 @@ OutputManager::OutputManager()
 {
     // add all the outputs
     mOutputs.append(new TreeOut);
+    mOutputs.append(new StandOut);
 }
 
 OutputManager::~OutputManager()

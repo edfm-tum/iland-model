@@ -20,6 +20,7 @@ public:
     /// the full name (e.g. Picea Abies) of the species
     const QString &name() const { return mName; }
     int index() const { return mIndex; } ///< unique index of species within current set
+    bool active() const { return true; } ///< active??? todo!
 
     // calculations: allometries
     double biomassFoliage(const double dbh) const;

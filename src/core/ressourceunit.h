@@ -15,6 +15,7 @@ public:
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
     /// get RU-Species-container of @p species from the RU
     RessourceUnitSpecies &ressourceUnitSpecies(const Species *species);
+    const QVector<RessourceUnitSpecies> ruSpecies() { return mRUSpecies; }
     const QRectF &boundingBox() const { return mBoundingBox; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.

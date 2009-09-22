@@ -9,7 +9,11 @@ class Output;
 class OutputColumn
 {
 public:
-    OutputColumn(const QString name, const QString description, const OutputDatatype datatype): mName(name), mDescription(description), mDatatype(datatype) {}
+    OutputColumn(const QString name, const QString description, const OutputDatatype datatype):
+            mName(name), mDescription(description), mDatatype(datatype) {}
+    static OutputColumn year() { return OutputColumn("year", "simulation year", OutInteger); }
+    static OutputColumn species() { return OutputColumn("species", "tree species", OutString); }
+    static OutputColumn ru() { return OutputColumn("ru", "id of ressource unit", OutInteger); }
 private:
     QString mName;
     QString mDescription;
@@ -49,6 +53,7 @@ protected:
     void setName(const QString &name, const QString tableName) { mName = name; mTableName=tableName; }
     void setDescription(const QString &description) { mDescription=description; }
     QList<OutputColumn> &columns()  { return mColumns; }
+    int currentYear() const { return GlobalSettings::instance()->currentYear(); }
     const XmlHelper &settings();
     // add data
     void writeRow(); ///< saves the current row/line of data to database/file. Must be called f

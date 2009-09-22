@@ -19,6 +19,7 @@ void SpeciesSet::clear()
 {
     qDeleteAll(mSpecies.values());
     mSpecies.clear();
+    mActiveSpecies.clear();
 }
 
 const Species *SpeciesSet::species(const int &index)
@@ -55,6 +56,8 @@ int SpeciesSet::setup()
         s->setup();
 
         mSpecies.insert(s->id(), s); // store
+        if (s->active())
+            mActiveSpecies.append(s);
     } // while query.next()
     qDebug() << "loaded" << mSpecies.count() << "active species:";
     qDebug() << mSpecies.keys();
