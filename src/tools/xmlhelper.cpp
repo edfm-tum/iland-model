@@ -5,8 +5,13 @@
   Use node() to get a QDomElement or use value() to directly retrieve the node value.
   Nodes could be addressed relative to a node defined by setCurrentNode() using a ".".
   The notation is as follows:
-  * a '.' character defines a hierarchy
-  * [] the Nth element of the same hierarchical layer can be retrieved by [n-1]
+  - a '.' character defines a hierarchy
+  - [] the Nth element of the same hierarchical layer can be retrieved by [n-1]
+  Use also the convenience functions valueBool() and valueDouble().
+  While all the value/node etc. functions parse the DOM tree at every call, the data accessed by paramValue() - type
+  functions is parsed only once during startup and stored in a QVariant array. Accessible are all nodes that are children of the
+   "<parameter>"-node.
+
   @code
   QDomElement e,f
   e = xml.node("first.second.third"); // e points to "third"
@@ -14,6 +19,8 @@
   f = xml.node(".second.third"); // e and f are equal
   e = xml.node("level1[2].level2[3].level3"); // 3rd element of level 1, ...
   int x = xml.value(".second", "0").toInt(); // node value of "second" or "0" if not found.
+  if (xml.valueBool("enabled")) // use of valueBool with default value (false)
+     ...
 
   @endcode
 

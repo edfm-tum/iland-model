@@ -53,4 +53,8 @@ inline double random()
 {
     return rand()/double(RAND_MAX);
 }
+inline int random(int from, int to)
+{
+    return from +  rand()%(to-from);
+}
 #endif // GLOBAL_H

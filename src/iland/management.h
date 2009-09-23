@@ -18,6 +18,7 @@ public slots:
     void kill(int number);
 private:
     QScriptEngine *mEngine;
+    int mRemoved;
 };
 
 #endif // MANAGEMENT_H

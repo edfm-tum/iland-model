@@ -254,15 +254,14 @@ void Model::runYear()
 
     grow();
 
-    //test();
+    // management
+    if (mManagement)
+        mManagement->run();
 
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree");
     om->execute("stand");
     om->execute("dynamicstand");
-    // management
-    if (mManagement)
-        mManagement->run();
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
@@ -371,11 +370,8 @@ void Model::grow()
     DebugTimer t("grow()");
     threadRunner.run(nc_grow);
 
-    int b,n;
     foreach(RessourceUnit *ru, mRU) {
-        b = ru->trees().count();
        ru->cleanTreeList();
-       n = ru->trees().count();
        //qDebug() << (b-n) << "trees died (of" << b << ").";
    }
 }
