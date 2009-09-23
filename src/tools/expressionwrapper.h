@@ -8,7 +8,7 @@ public:
     ExpressionWrapper();
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
-    virtual double value(const QString &variableName);
+    virtual double valueByName(const QString &variableName);
     virtual int variableIndex(const QString &variableName);
 };
 
@@ -21,7 +21,6 @@ public:
     void setTree(const Tree* tree) { mTree = tree; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
-    virtual double value(const QString &variableName) { return value(variableName); }
 
 private:
     const Tree *mTree;
@@ -36,7 +35,7 @@ public:
     void setResourceUnit(ResourceUnit* ressourceUnit) { mRU = ressourceUnit; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
-    virtual double value(const QString &variableName) { return value(variableName); }
+
 private:
     const ResourceUnit *mRU;
 };

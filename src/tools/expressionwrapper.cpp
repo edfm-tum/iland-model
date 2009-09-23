@@ -33,7 +33,7 @@ int ExpressionWrapper::variableIndex(const QString &variableName)
     return getVariablesList().indexOf(variableName);
 }
 
-double ExpressionWrapper::value(const QString &variableName)
+double ExpressionWrapper::valueByName(const QString &variableName)
 {
     int idx = variableIndex(variableName);
     return value(idx);

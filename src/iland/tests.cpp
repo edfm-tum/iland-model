@@ -87,7 +87,7 @@ void Tests::killTrees()
     int count=0, totalcount=0, idc=0;
     while (Tree *t = at.next()) {
         totalcount++;
-        if (random() < 0.20) {
+        if (drandom() < 0.20) {
             t->die();
             count++;
         }

@@ -399,7 +399,7 @@ void MainWindow::showTreeDetails(Tree *tree)
     const QStringList &names = tw.getVariablesList();
     QList<QTreeWidgetItem *> items;
     foreach(QString name, names) {
-        items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(tw.value(name)) ));
+        items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(tw.valueByName(name)) ));
     }
     QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(tree->id());
 
