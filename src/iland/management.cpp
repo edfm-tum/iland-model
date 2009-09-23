@@ -2,7 +2,7 @@
 #include "management.h"
 #include "helper.h"
 #include "model.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "tree.h"
 
 

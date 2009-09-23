@@ -6,7 +6,7 @@
 
 #include "xmlhelper.h"
 #include "helper.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "speciesset.h"
 #include "standloader.h"
 #include "tree.h"
@@ -185,8 +185,7 @@ void Model::loadProject()
     DebugTimer dt("load project");
     GlobalSettings *g = GlobalSettings::instance();
     const XmlHelper &xml = g->settings();
-    // fix file path
-    g->setupDirectories(xml.node("path"));
+
     g->clearDatabaseConnections();
     // database connections: reset
     GlobalSettings::instance()->clearDatabaseConnections();

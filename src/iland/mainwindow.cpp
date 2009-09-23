@@ -8,7 +8,7 @@
 #include "model.h"
 #include "standloader.h"
 #include "stampcontainer.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "speciesset.h"
 #include "tree.h"
 
@@ -110,9 +110,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (!xmlFile.isEmpty()) {
         ui->iniEdit->setPlainText(xmlFile);
-
-        if (!xmldoc.setContent(xmlFile)) {
-            QMessageBox::information(this, "title text", "Cannot set content of XML file " + ui->initFileName->text());
+        QString errMsg;
+        int errLine, errCol;
+        if (!xmldoc.setContent(xmlFile, &errMsg, &errLine, &errCol)) {
+            QMessageBox::information(this, "title text", QString("Cannot set content of XML file %1. \nat line %2 col %3: %4 ")
+                                     .arg(ui->initFileName->text()).arg(errLine).arg(errCol).arg(errMsg));
             return;
         }
     }
@@ -470,11 +472,12 @@ void MainWindow::on_actionEdit_XML_settings_triggered()
 void MainWindow::setupModel()
 {
     // load project xml file to global xml settings structure
-    GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
+    mRemoteControl.setFileName(ui->initFileName->text());
+    //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
     // create the model
     mRemoteControl.create();
     Model *model = mRemoteControl.model();
-    if (model) {
+    if (model && model->isSetup()) {
         // set viewport of paintwidget
         vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
         ui->PaintWidget->update();

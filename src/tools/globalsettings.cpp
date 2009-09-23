@@ -296,12 +296,12 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
 
 ///////// Path functions
 
-void GlobalSettings::setupDirectories(QDomElement pathNode)
+void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &projectFilePath)
 {
     mFilePath.clear();
     mFilePath.insert("exe", QCoreApplication::applicationDirPath());
     XmlHelper xml(pathNode);
-    QString homePath = xml.value("home", QCoreApplication::applicationDirPath());
+    QString homePath = xml.value("home", projectFilePath);
     mFilePath.insert("home", homePath);
     // make other paths relativ to "home" if given as relative paths
     mFilePath.insert("lip", path(xml.value("lip", "lip"), "home"));
@@ -351,6 +351,7 @@ void GlobalSettings::loadProjectFile(const QString &fileName)
     if (!QFile::exists(fileName))
         throw IException(QString("The project file %1 does not exist!").arg(fileName));
     mXml.loadFromFile(fileName);
+    setupDirectories(mXml.node("path"),QFileInfo(fileName).path());
 
 }
 

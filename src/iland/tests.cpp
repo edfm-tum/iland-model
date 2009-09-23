@@ -3,7 +3,7 @@
 
 #include "helper.h"
 #include "model.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "expressionwrapper.h"
 #include "expression.h"
 

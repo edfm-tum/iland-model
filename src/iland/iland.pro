@@ -29,11 +29,11 @@ SOURCES += main.cpp \
     ../tools/globalsettings.cpp \
     ../core/speciesset.cpp \
     ../core/model.cpp \
-    ../core/ressourceunit.cpp \
+    ../core/resourceunit.cpp \
     ../tools/xmlhelper.cpp \
     ../core/modelcontroller.cpp \
     ../core/standloader.cpp \
-    ../core/ressourceunitspecies.cpp \
+    ../core/resourceunitspecies.cpp \
     ../core/production3pg.cpp \
     ../core/threadrunner.cpp \
     ../tools/expressionwrapper.cpp \
@@ -62,11 +62,11 @@ HEADERS += mainwindow.h \
     ../tools/globalsettings.h \
     ../core/speciesset.h \
     ../core/model.h \
-    ../core/ressourceunit.h \
+    ../core/resourceunit.h \
     ../tools/xmlhelper.h \
     ../core/modelcontroller.h \
     ../core/standloader.h \
-    ../core/ressourceunitspecies.h \
+    ../core/resourceunitspecies.h \
     ../core/production3pg.h \
     ../core/threadrunner.h \
     ../tools/expressionwrapper.h \

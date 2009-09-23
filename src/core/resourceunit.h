@@ -2,7 +2,7 @@
 #define RESOURCEUNIT_H
 
 #include "tree.h"
-#include "ressourceunitspecies.h"
+#include "resourceunitspecies.h"
 #include "standstatistics.h"
 
 class SpeciesSet;

@@ -10,7 +10,7 @@
 #include "expressionwrapper.h"
 
 #include "tree.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "species.h"
 #include <QtCore>
 

@@ -1,7 +1,7 @@
 #include "standout.h"
 #include "helper.h"
 #include "model.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "species.h"
 
 
@@ -25,8 +25,8 @@ void StandOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
 
-    foreach(RessourceUnit *ru, m->ruList()) {
-        foreach(const RessourceUnitSpecies &rus, ru->ruSpecies()) {
+    foreach(ResourceUnit *ru, m->ruList()) {
+        foreach(const ResourceUnitSpecies &rus, ru->ruSpecies()) {
             const StandStatistics &stat = rus.constStatistics();
             if (stat.count()==0)
                 continue;

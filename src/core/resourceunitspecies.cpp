@@ -3,9 +3,9 @@
     within the model (e.g. fraction of utilizable Radiation)
   */
 #include "global.h"
-#include "ressourceunitspecies.h"
+#include "resourceunitspecies.h"
 
 #include "species.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 
 

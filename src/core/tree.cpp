@@ -5,7 +5,7 @@
 
 #include "stamp.h"
 #include "species.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "model.h"
 
 // static varaibles

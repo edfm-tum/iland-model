@@ -2,7 +2,7 @@
 
 #include "helper.h"
 #include "model.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "species.h"
 #include "expressionwrapper.h"
 
@@ -86,14 +86,14 @@ void DynamicStandOut::exec()
 
     Expression custom_expr;
 
-    foreach(RessourceUnit *ru, m->ruList()) {
+    foreach(ResourceUnit *ru, m->ruList()) {
         // test filter
         if (!mRUFilter.isEmpty()) {
-            ruwrapper.setRessourceUnit(ru);
+            ruwrapper.setResourceUnit(ru);
             if (!mRUFilter.execute())
                 continue;
         }
-        foreach(const RessourceUnitSpecies &rus, ru->ruSpecies()) {
+        foreach(const ResourceUnitSpecies &rus, ru->ruSpecies()) {
             if (rus.constStatistics().count()==0)
                 continue;
 

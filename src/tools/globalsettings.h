@@ -69,7 +69,7 @@ public:
     OutputManager *outputManager() { return mOutputManager; }
 
     // path
-    void setupDirectories(QDomElement pathNode);
+    void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
 
 private:
     GlobalSettings(); // private ctor

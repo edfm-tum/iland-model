@@ -1,7 +1,7 @@
 #include "global.h"
 #include "production3pg.h"
 
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "species.h"
 
 Production3PG::Production3PG()

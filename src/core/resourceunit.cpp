@@ -1,18 +1,18 @@
-/** @class RessourceUnit
-  RessourceUnit is the spatial unit that encapsulates a forest stand and links to several environmental components
+/** @class ResourceUnit
+  ResourceUnit is the spatial unit that encapsulates a forest stand and links to several environmental components
   (Climate, Soil, Water, ...).
 
   */
 #include <QtCore>
 #include "global.h"
 
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "speciesset.h"
 #include "species.h"
 #include "production3pg.h"
 
 
-RessourceUnit::RessourceUnit(const int index)
+ResourceUnit::ResourceUnit(const int index)
 {
     mSpeciesSet = 0;
     mIndex = index;
@@ -20,25 +20,25 @@ RessourceUnit::RessourceUnit(const int index)
 }
 
 /// set species and setup the species-per-RU-data
-void RessourceUnit::setSpeciesSet(SpeciesSet *set)
+void ResourceUnit::setSpeciesSet(SpeciesSet *set)
 {
     mSpeciesSet = set;
     mRUSpecies.clear();
     for (int i=0;i<set->count();i++) {
         Species *s = const_cast<Species*>(mSpeciesSet->species(i));
         if (!s)
-            throw IException("RessourceUnit::setSpeciesSet: invalid index!");
-        RessourceUnitSpecies rus(s, this);
+            throw IException("ResourceUnit::setSpeciesSet: invalid index!");
+        ResourceUnitSpecies rus(s, this);
         mRUSpecies.append(rus);
     }
 }
 
-RessourceUnitSpecies &RessourceUnit::ressourceUnitSpecies(const Species *species)
+ResourceUnitSpecies &ResourceUnit::ressourceUnitSpecies(const Species *species)
 {
     return mRUSpecies[species->index()];
 }
 
-Tree &RessourceUnit::newTree()
+Tree &ResourceUnit::newTree()
 {
     // start simple: just append to the vector...
     mTrees.append(Tree());
@@ -50,7 +50,7 @@ Tree &RessourceUnit::newTree()
 /// tests showed that this way of cleanup is very fast,
 /// because no memory allocations are performed (simple memmove())
 /// when trees are moved.
-void RessourceUnit::cleanTreeList()
+void ResourceUnit::cleanTreeList()
 {
     QVector<Tree>::iterator last=mTrees.end()-1;
     QVector<Tree>::iterator current = mTrees.begin();
@@ -79,7 +79,7 @@ void RessourceUnit::cleanTreeList()
     }
 }
 
-void RessourceUnit::newYear()
+void ResourceUnit::newYear()
 {
     mAggregatedWLA = 0.f;
     mAggregatedLA = 0.f;
@@ -90,7 +90,7 @@ void RessourceUnit::newYear()
 /** production() is the "stand-level" part of the biomass production (3PG).
     - The amount of radiation intercepted by the stand is calculated
     - The 3PG production for each species and ressource unit is invoked  */
-void RessourceUnit::production()
+void ResourceUnit::production()
 {
     mStatistics.clear();
     if (mAggregatedWLA==0 || mPixelCount==0) {
@@ -116,8 +116,8 @@ void RessourceUnit::production()
 
 
     // invoke species specific calculation (3PG)
-    QVector<RessourceUnitSpecies>::iterator i;
-    QVector<RessourceUnitSpecies>::iterator iend = mRUSpecies.end();
+    QVector<ResourceUnitSpecies>::iterator i;
+    QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
 
 
     //double raw_gpp_per_rad;
@@ -129,7 +129,7 @@ void RessourceUnit::production()
     }
 }
 
-void RessourceUnit::yearEnd()
+void ResourceUnit::yearEnd()
 {
     // calculate statistics for all tree species of the ressource unit
     int c = mRUSpecies.count();

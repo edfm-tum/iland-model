@@ -2,7 +2,7 @@
 #include "helper.h"
 #include "tree.h"
 #include "model.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "species.h"
 
 TreeOut::TreeOut()

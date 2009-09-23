@@ -8,7 +8,7 @@
 #include "grid.h"
 #include "threadrunner.h"
 
-class RessourceUnit;
+class ResourceUnit;
 class SpeciesSet;
 class Management;
 struct HeightGridValue
@@ -28,13 +28,13 @@ public:
     void runYear(); ///< run a single year
     void afterStop(); ///< finish and cleanup
     // access to elements
-    RessourceUnit *ru() { return mRU.front(); }
-    RessourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
-    const QList<RessourceUnit*> &ruList() {return mRU; }
+    ResourceUnit *ru() { return mRU.front(); }
+    ResourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
+    const QList<ResourceUnit*> &ruList() {return mRU; }
     // global grids
     FloatGrid *grid() { return mGrid; }
     HeightGrid *heightGrid() { return mHeightGrid; }
-    const Grid<RessourceUnit*> &RUgrid() { return mRUmap; }
+    const Grid<ResourceUnit*> &RUgrid() { return mRUmap; }
 
     // setup/maintenance
     void clear(); ///< free ressources
@@ -56,9 +56,9 @@ private:
     ThreadRunner threadRunner;
     bool mSetup;
     /// container holding all ressource units
-    QList<RessourceUnit*> mRU;
-    /// grid specifying a map of RessourceUnits
-    Grid<RessourceUnit*> mRUmap;
+    QList<ResourceUnit*> mRU;
+    /// grid specifying a map of ResourceUnits
+    Grid<ResourceUnit*> mRUmap;
     /// container holding all species sets
     QList<SpeciesSet*> mSpeciesSets;
     // global grids...
@@ -77,11 +77,11 @@ public:
     Tree *nextLiving();
     Tree *current() const;
     Tree *operator*() const { return current();  }
-    RessourceUnit *currentRU() const { return *mRUIterator; }
+    ResourceUnit *currentRU() const { return *mRUIterator; }
 private:
     Model *mModel;
     Tree *mTreeEnd;
     Tree *mCurrent;
-    QList<RessourceUnit*>::const_iterator mRUIterator;
+    QList<ResourceUnit*>::const_iterator mRUIterator;
 };
 #endif // MODEL_H

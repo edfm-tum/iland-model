@@ -3,7 +3,7 @@
 
 #include "grid.h"
 #include "model.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "speciesset.h"
 
 #include "helper.h"
