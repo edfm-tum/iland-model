@@ -114,10 +114,10 @@ void Model::setupSpace()
 
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();
-    if (xml.hasNode("world.ressourceUnitsAsGrid")) {
+    if (xml.valueBool("world.resourceUnitsAsGrid")) {
         mRUmap.setup(QRectF(0., 0., width, height),100.);
-        RessourceUnit **p=mRUmap.begin();
-        RessourceUnit *new_ru;
+        ResourceUnit **p=mRUmap.begin();
+        ResourceUnit *new_ru;
         mRU.first()->setBoundingBox(QRectF(0., 0., 100., 100.)); // the first
         *p = mRU.first(); // store first RU in grid.
         SpeciesSet *species_set = (*p)->speciesSet(); // copy the species sets
@@ -125,7 +125,7 @@ void Model::setupSpace()
         int ru_index = 1;
         for (; p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-            new_ru = new RessourceUnit(ru_index++);
+            new_ru = new ResourceUnit(ru_index++);
             new_ru->setSpeciesSet(species_set);
             mRU.append(new_ru); // store in list
             new_ru->setBoundingBox(r);
@@ -137,7 +137,7 @@ void Model::setupSpace()
         for (p=mRUmap.begin();p!=mRUmap.end(); ++p) {
             *p = mRU.value(ru_index++);
         }
-        qDebug() << "created a grid of RessourceUnits: count=" << mRU.count();
+        qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
         // setup the helper that does the multithreading
         threadRunner.setup(mRU);
         threadRunner.setMultithreading(xml.value("system.multithreading", "false") == "true");
@@ -205,8 +205,8 @@ void Model::loadProject()
 
     speciesSet->setup();
 
-    // (2) RessourceUnits (including everything else).
-    RessourceUnit *ru = new RessourceUnit(0);
+    // (2) ResourceUnits (including everything else).
+    ResourceUnit *ru = new ResourceUnit(0);
     ru->setSpeciesSet(speciesSet);
     mRU.push_back(ru);
 
@@ -224,7 +224,7 @@ void Model::loadProject()
 }
 
 
-RessourceUnit *Model::ru(QPointF &coord)
+ResourceUnit *Model::ru(QPointF &coord)
 {
     if (!mRUmap.isEmpty() && mRUmap.coordValid(coord))
         return mRUmap.valueAt(coord);
@@ -271,7 +271,7 @@ void Model::afterStop()
     // do some cleanup
 }
 
-RessourceUnit* nc_applyPattern(RessourceUnit *unit)
+ResourceUnit* nc_applyPattern(ResourceUnit *unit)
 {
     unit->newYear(); // reset state of some variables
 
@@ -299,7 +299,7 @@ RessourceUnit* nc_applyPattern(RessourceUnit *unit)
     return unit;
 }
 
-RessourceUnit *nc_readPattern(RessourceUnit *unit)
+ResourceUnit *nc_readPattern(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -314,7 +314,7 @@ RessourceUnit *nc_readPattern(RessourceUnit *unit)
     return unit;
 }
 
-RessourceUnit *nc_grow(RessourceUnit *unit)
+ResourceUnit *nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -362,7 +362,7 @@ void Model::grow()
         DebugTimer t("growRU()");
         calculateStockedArea();
 
-        foreach(RessourceUnit *ru, mRU) {
+        foreach(ResourceUnit *ru, mRU) {
             ru->production();
         }
     }
@@ -370,7 +370,7 @@ void Model::grow()
     DebugTimer t("grow()");
     threadRunner.run(nc_grow);
 
-    foreach(RessourceUnit *ru, mRU) {
+    foreach(ResourceUnit *ru, mRU) {
        ru->cleanTreeList();
        //qDebug() << (b-n) << "trees died (of" << b << ").";
    }
@@ -383,7 +383,7 @@ void Model::calculateStockedArea()
     // iterate over the whole heightgrid and count pixels for each ressource unit
     HeightGridValue *end = mHeightGrid->end();
     QPointF cp;
-    RessourceUnit *ru;
+    ResourceUnit *ru;
     for (HeightGridValue *i=mHeightGrid->begin(); i!=end; ++i) {
         cp = mHeightGrid->cellCenterPoint(mHeightGrid->indexOf(i));
         if (mRUmap.coordValid(cp)) {

@@ -32,8 +32,8 @@ void StandLoader::processInit()
     if (forEachCell) {
         loadFromPicus(fileName); // load in initial grid cell
         // we assume that all stands are equal, so wie simply COPY the trees and modify them afterwards
-        const Grid<RessourceUnit*> &ruGrid=mModel->RUgrid();
-        RessourceUnit **p = ruGrid.begin();
+        const Grid<ResourceUnit*> &ruGrid=mModel->RUgrid();
+        ResourceUnit **p = ruGrid.begin();
         ++p; // skip the first...
         const QVector<Tree> &tocopy = mModel->ru()->trees();
         for (; p!=ruGrid.end(); ++p) {
@@ -75,7 +75,7 @@ void StandLoader::processInit()
     }
 }
 
-void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, RessourceUnit *ru)
+void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, ResourceUnit *ru)
 {
     if (!ru)
         ru = mModel->ru();

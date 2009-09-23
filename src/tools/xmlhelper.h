@@ -11,7 +11,7 @@ public:
    XmlHelper(QDomElement topNode);
    void loadFromFile(const QString &fileName);
    /// returns true if the current (relative!) node is valid (i.e. not null).
-   const bool isValid() const { return !mCurrentTop.isNull(); }
+   bool isValid() const { return !mCurrentTop.isNull(); }
    QDomElement node(const QString &path) const;
    bool hasNode(const QString &path) const; ///< returns true if @p path exists.
    void setCurrentNode(const QString &path) { mCurrentTop = node(path); } ///< sets @p path as the current (relative) node.

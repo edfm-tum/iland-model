@@ -27,18 +27,18 @@ private:
     const Tree *mTree;
 };
 
-class RessourceUnit;
+class ResourceUnit;
 class RUWrapper: public ExpressionWrapper
 {
 public:
     RUWrapper() : mRU(0) {}
-    RUWrapper(const RessourceUnit* ressourceUnit) : mRU(ressourceUnit) {}
-    void setRessourceUnit(RessourceUnit* ressourceUnit) { mRU = ressourceUnit; }
+    RUWrapper(const ResourceUnit* ressourceUnit) : mRU(ressourceUnit) {}
+    void setResourceUnit(ResourceUnit* ressourceUnit) { mRU = ressourceUnit; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
     virtual double value(const QString &variableName) { return value(variableName); }
 private:
-    const RessourceUnit *mRU;
+    const ResourceUnit *mRU;
 };
 
 #endif // EXPRESSIONWRAPPER_H

@@ -49,11 +49,11 @@ inline double nrandom(const double& p1, const double& p2)
     return p1 + (p2-p1)*(rand()/double(RAND_MAX));
 }
 /// returns a random number in [0,1]
-inline double random()
+inline double drandom()
 {
     return rand()/double(RAND_MAX);
 }
-inline int random(int from, int to)
+inline int irandom(int from, int to)
 {
     return from +  rand()%(to-from);
 }

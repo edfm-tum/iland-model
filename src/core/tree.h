@@ -6,7 +6,7 @@
 // forwards
 class Species;
 class Stamp;
-class RessourceUnit;
+class ResourceUnit;
 struct HeightGridValue;
 struct TreeGrowthData;
 
@@ -25,9 +25,9 @@ public:
     float dbh() const { return mDbh; }
     float height() const { return mHeight; }
     const Species* species() const { Q_ASSERT(mRU!=0); return mSpecies; } ///< pointer to the tree species of the tree.
-    const RessourceUnit *ru() const { Q_ASSERT(mRU!=0); return mRU; } ///< pointer to the ressource unit the tree belongs to.
+    const ResourceUnit *ru() const { Q_ASSERT(mRU!=0); return mRU; } ///< pointer to the ressource unit the tree belongs to.
 
-    float lightRessourceIndex() const { return mLRI; } ///< LRI of the tree (update during readStamp())
+    float lightResourceIndex() const { return mLRI; } ///< LRI of the tree (update during readStamp())
     double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
     double basalArea() const; ///< basal area of the tree at breast height in m2
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
@@ -41,12 +41,12 @@ public:
     void setDbh(const float dbh) { mDbh=dbh; }
     void setHeight(const float height) { mHeight=height; }
     void setSpecies(Species *ts) { mSpecies=ts; }
-    void setRU(RessourceUnit *ru) { mRU = ru; }
+    void setRU(ResourceUnit *ru) { mRU = ru; }
     void setAge(const int age) { mAge = age; }
 
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
-    void readLIF(); ///< calculate the lightRessourceIndex with multiplicative approach
+    void readLIF(); ///< calculate the lightResourceIndex with multiplicative approach
     void heightGrid(); ///< calculate the height grid
 
     void applyLIP_torus(); ///< apply LightInfluencePattern on a closed 1ha area
@@ -87,15 +87,15 @@ private:
     float mRootMass; // kg
     // production relevant
     float mNPPReserve; // kg
-    float mLRI; ///< resulting lightRessourceIndex
+    float mLRI; ///< resulting lightResourceIndex
     // auxiliary
     float mDbhDelta; ///< diameter growth [cm]
     float mStressIndex; ///< stress index (used for mortality)
 
-    // Stamp, Species, Ressource Unit
+    // Stamp, Species, Resource Unit
     const Stamp *mStamp;
     Species *mSpecies;
-    RessourceUnit *mRU;
+    ResourceUnit *mRU;
 
     // various flags
     int mFlags;

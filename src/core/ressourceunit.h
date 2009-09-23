@@ -1,5 +1,5 @@
-#ifndef RESSOURCEUNIT_H
-#define RESSOURCEUNIT_H
+#ifndef RESOURCEUNIT_H
+#define RESOURCEUNIT_H
 
 #include "tree.h"
 #include "ressourceunitspecies.h"
@@ -7,16 +7,16 @@
 
 class SpeciesSet;
 
-class RessourceUnit
+class ResourceUnit
 {
 public:
-    RessourceUnit(const int index);
+    ResourceUnit(const int index);
     // access
     int index() const { return mIndex; }
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
     /// get RU-Species-container of @p species from the RU
-    RessourceUnitSpecies &ressourceUnitSpecies(const Species *species);
-    const QVector<RessourceUnitSpecies> ruSpecies() { return mRUSpecies; }
+    ResourceUnitSpecies &ressourceUnitSpecies(const Species *species);
+    const QVector<ResourceUnitSpecies> ruSpecies() { return mRUSpecies; }
     const QRectF &boundingBox() const { return mBoundingBox; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
@@ -42,7 +42,7 @@ public:
 private:
     int mIndex; // internal index
     SpeciesSet *mSpeciesSet; ///< pointer to the species set for this RU
-    QVector<RessourceUnitSpecies> mRUSpecies; ///< data for this ressource unit per species
+    QVector<ResourceUnitSpecies> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
     float mAggregatedLA; ///< sum of leafArea

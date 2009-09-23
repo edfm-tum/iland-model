@@ -1,5 +1,5 @@
 /** @class ExpressionWrapper is the base class of objects that can be used with Expressions.
-  Derived from ExpressionWrapper are wrappers for e.g. Trees or RessourceUnits.
+  Derived from ExpressionWrapper are wrappers for e.g. Trees or ResourceUnits.
   They must provide a getVariablesList() and a value() function.
   Note: the must also provide "virtual double value(const QString &variableName) { return value(variableName); }"
       because it seems not possible C++ wise to use functions from derived and base class simultaneously that only differ in the
@@ -65,7 +65,7 @@ double TreeWrapper::value(const int variableIndex)
     case 4: return mTree->position().x(); // x
     case 5: return mTree->position().y(); // y
     case 6: return mTree->volume(); // volume
-    case 7: return mTree->lightRessourceIndex(); // lri
+    case 7: return mTree->lightResourceIndex(); // lri
     case 8: case 9: return mTree->mLeafArea;
     case 10: return mTree->mWoodyMass;
     case 11: return mTree->mRootMass;
@@ -82,7 +82,7 @@ double TreeWrapper::value(const int variableIndex)
 
 
 ////////////////////////////////////////////////
-//// RessourceUnit Wrapper
+//// ResourceUnit Wrapper
 ////////////////////////////////////////////////
 
 QStringList ruVarList=QStringList() << "id" << "la" << "total_radiation";

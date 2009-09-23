@@ -1,19 +1,19 @@
-#ifndef RESSOURCEUNITSPECIES_H
-#define RESSOURCEUNITSPECIES_H
+#ifndef RESOURCEUNITSPECIES_H
+#define RESOURCEUNITSPECIES_H
 #include "production3pg.h"
 #include "standstatistics.h"
 
 class Species;
-class RessourceUnit;
+class ResourceUnit;
 
-class RessourceUnitSpecies
+class ResourceUnitSpecies
 {
 public:
-    RessourceUnitSpecies() : mSpecies(0), mRU(0) {}
-    RessourceUnitSpecies(Species *species, RessourceUnit *ru) { mSpecies = species; mRU = ru; }
+    ResourceUnitSpecies() : mSpecies(0), mRU(0) {}
+    ResourceUnitSpecies(Species *species, ResourceUnit *ru) { mSpecies = species; mRU = ru; }
 
     const Species *species() const { return mSpecies; }
-    const RessourceUnit *ru() const { return mRU; }
+    const ResourceUnit *ru() const { return mRU; }
     Production3PG &prod3PG()  { return m3PG; }
     StandStatistics &statistics() { return mStatistics; }
     const StandStatistics &constStatistics() const { return mStatistics; }
@@ -23,7 +23,7 @@ private:
     StandStatistics mStatistics;
     Production3PG m3PG;
     Species *mSpecies;
-    RessourceUnit *mRU;
+    ResourceUnit *mRU;
 };
 
 #endif // RESSOURCEUNITSPECIES_H

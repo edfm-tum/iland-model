@@ -357,7 +357,7 @@ void MainWindow::mouseClick(const QPoint& pos)
 
     // test ressource units...
     Model *model = mRemoteControl.model();
-    RessourceUnit *ru = model->ru(coord);
+    ResourceUnit *ru = model->ru(coord);
     qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
@@ -372,7 +372,7 @@ void MainWindow::mouseClick(const QPoint& pos)
     }
     if (min_distance<5 && closestTree) {
             Tree *p = closestTree;
-            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightRessourceIndex();
+            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
             qDebug() <<p->dump();
             showTreeDetails(p);
 
@@ -381,7 +381,7 @@ void MainWindow::mouseClick(const QPoint& pos)
             ui->treeHeight->setValue(p->height());
             ui->treePosX->setValue(p->position().x());
             ui->treePosY->setValue(p->position().y());
-            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightRessourceIndex(),5));
+            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightResourceIndex(),5));
             wantDrag=true;
             ui->PaintWidget->setCursor(Qt::SizeAllCursor);
             ui->PaintWidget->update();
@@ -634,7 +634,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
     Expression filter(expr_filter, &wrapper);
     AllTreeIterator at(GlobalSettings::instance()->model());
     int totalcount=0;
-    const RessourceUnit *ru;
+    const ResourceUnit *ru;
     QVector<double> datavector;
     try {
 

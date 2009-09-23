@@ -19,11 +19,11 @@ void ThreadRunner::print()
 }
 
 
-void ThreadRunner::setup(const QList<RessourceUnit*> &ressourceUnitList)
+void ThreadRunner::setup(const QList<ResourceUnit*> &ressourceUnitList)
 {
     mMap1.clear(); mMap2.clear();
     bool map=true;
-    foreach(RessourceUnit *unit, ressourceUnitList) {
+    foreach(ResourceUnit *unit, ressourceUnitList) {
         if (map)
             mMap1.append(unit);
         else
@@ -35,7 +35,7 @@ void ThreadRunner::setup(const QList<RessourceUnit*> &ressourceUnitList)
 }
 
 /// run a given function for each ressource unit either multithreaded or not.
-void ThreadRunner::run( RessourceUnit* (*funcptr)(RessourceUnit*) )
+void ThreadRunner::run( ResourceUnit* (*funcptr)(ResourceUnit*) )
 {
     if (mMultithreaded && mMap1.count() > 20) {
         // execute using QtConcurrent for larger amounts of ressource units...
@@ -43,7 +43,7 @@ void ThreadRunner::run( RessourceUnit* (*funcptr)(RessourceUnit*) )
         QtConcurrent::blockingMap(mMap2,funcptr);
     } else {
         // execute serialized in main thread
-        RessourceUnit *unit;
+        ResourceUnit *unit;
         foreach(unit, mMap1)
             (*funcptr)(unit);
 

@@ -1,4 +1,4 @@
-/** @class RessourceUnitSpecies contains data per RessourceUnit x Species
+/** @class ResourceUnitSpecies contains data per ResourceUnit x Species
     Data stored is either statistical (i.e. number of trees per species) or used
     within the model (e.g. fraction of utilizable Radiation)
   */

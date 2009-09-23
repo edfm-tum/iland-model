@@ -22,7 +22,7 @@ void Tests::speedOfExpression()
         for (int i=0;i<10;i++) {
             sum=0;
             count=0;
-            foreach(const RessourceUnit *ru,GlobalSettings::instance()->model()->ruList()) {
+            foreach(const ResourceUnit *ru,GlobalSettings::instance()->model()->ruList()) {
                 foreach(const Tree &tree, ru->constTrees()) {
                     sum+=tree.volume();
                     count++;
@@ -63,7 +63,7 @@ void Tests::speedOfExpression()
 
 void Tests::clearTrees()
 {
-    RessourceUnit *ru = GlobalSettings::instance()->model()->ru();
+    ResourceUnit *ru = GlobalSettings::instance()->model()->ru();
     int tc = ru->trees().count();
     // kill n percent...
     ru->trees().last().die();
@@ -107,7 +107,7 @@ void Tests::killTrees()
 
     {
     DebugTimer t("clear trees");
-    foreach(RessourceUnit *ru,GlobalSettings::instance()->model()->ruList())
+    foreach(ResourceUnit *ru,GlobalSettings::instance()->model()->ruList())
         ru->cleanTreeList();
     }
     // count all trees

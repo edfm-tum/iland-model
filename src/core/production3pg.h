@@ -1,7 +1,7 @@
 #ifndef PRODUCTION3PG_H
 #define PRODUCTION3PG_H
 
-class RessourceUnitSpecies;
+class ResourceUnitSpecies;
 class Production3PG
 {
 public:
