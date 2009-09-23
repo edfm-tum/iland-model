@@ -91,11 +91,11 @@ void Model::initialize()
 
 void Model::setupSpace()
 {
-    const XmlHelper &xml = GlobalSettings::instance()->settings();
-    double cellSize = xml.value("model.world.cellSize", "2").toDouble();
-    double width = xml.value("model.world.width", "100").toDouble();
-    double height = xml.value("model.world.height", "100").toDouble();
-    double buffer = xml.value("model.world.buffer", "50").toDouble();
+    XmlHelper xml(GlobalSettings::instance()->settings().node("world.node"));
+    double cellSize = xml.value("cellSize", "2").toDouble();
+    double width = xml.value("width", "100").toDouble();
+    double height = xml.value("height", "100").toDouble();
+    double buffer = xml.value("buffer", "50").toDouble();
     qDebug() << QString("setup of the world: %1x%2m with cell-size=%3m and %4m buffer").arg(width).arg(height).arg(cellSize).arg(buffer);
 
 

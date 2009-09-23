@@ -21,12 +21,12 @@ QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
 void StandLoader::processInit()
 {
     GlobalSettings *g = GlobalSettings::instance();
-    const XmlHelper &xml = g->settings();
+    XmlHelper xml(g->settings().node("model.initialization"));
 
-    bool for_each_ru = xml.valueBool("model.initialization.foreach");
+    bool for_each_ru = xml.valueBool("foreach");
 
-    QString mode = xml.value("model.initialization.type", ""); // now only "picus"
-    QString  fileName = xml.value("model.initialization.file", "");
+    QString mode = xml.value("type", ""); // now only "picus"
+    QString  fileName = xml.value("file", "");
     if (!QFile::exists(fileName))
         throw IException(QString("File %1 does not exist!").arg(fileName));
 

@@ -21,7 +21,8 @@
   int x = xml.value(".second", "0").toInt(); // node value of "second" or "0" if not found.
   if (xml.valueBool("enabled")) // use of valueBool with default value (false)
      ...
-
+  XmlHelper xml_sec(xml.node("first.second")); // create a xml-helper with top node=first.second
+  xml_sec.valueDouble("third"); // use this
   @endcode
 
   */
@@ -33,6 +34,9 @@ XmlHelper::XmlHelper()
 {
 }
 
+/** Create a XmlHelper instance with @p topNode as top node.
+  The xml tree is not copied.
+*/
 XmlHelper::XmlHelper(QDomElement topNode)
 {
     mTopNode = topNode;
@@ -161,7 +165,7 @@ QDomElement XmlHelper::node(const QString &path) const
                 break;
         }
     }
-    qDebug() << "node-request:" << path;
+    //qDebug() << "node-request:" << path;
     return c;
 }
 
