@@ -191,10 +191,11 @@ void Model::loadProject()
     GlobalSettings::instance()->clearDatabaseConnections();
     // input and output connection
     QString dbPath = g->path( xml.value("system.database.in"), "database");
-
     GlobalSettings::instance()->setupDatabaseConnection("in", dbPath);
     dbPath = g->path( xml.value("system.database.out"), "database");
     GlobalSettings::instance()->setupDatabaseConnection("out", dbPath);
+    dbPath = g->path( xml.value("system.database.climate"), "database");
+    GlobalSettings::instance()->setupDatabaseConnection("climate", dbPath);
 
 
     // (1) SpeciesSets: currently only one a global species set.

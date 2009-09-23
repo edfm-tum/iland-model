@@ -8,7 +8,8 @@ public:
     void speedOfExpression();
     void clearTrees();
     void killTrees();
-
+    // climate
+    void climate();
 };
 
 #endif // TESTS_H

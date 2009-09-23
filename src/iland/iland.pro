@@ -44,7 +44,9 @@ SOURCES += main.cpp \
     ../output/standout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
-    management.cpp
+    management.cpp \
+    ../core/speciesresponse.cpp \
+    ../core/climate.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     paintarea.h \
@@ -77,6 +79,8 @@ HEADERS += mainwindow.h \
     ../output/standout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
-    management.h
+    management.h \
+    ../core/speciesresponse.h \
+    ../core/climate.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc

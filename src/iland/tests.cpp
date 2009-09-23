@@ -6,6 +6,8 @@
 #include "resourceunit.h"
 #include "expressionwrapper.h"
 #include "expression.h"
+///
+#include "climate.h"
 
 Tests::Tests()
 {
@@ -120,4 +122,12 @@ void Tests::killTrees()
         //qDebug() << (*at)->id();
     }
     qDebug() << count << "trees left idsum" << idc;
+}
+
+void Tests::climate()
+{
+    Climate clim;
+    clim.setup();
+    for (int i=0;i<10;i++)
+        clim.nextYear();
 }

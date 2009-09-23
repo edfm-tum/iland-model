@@ -2,6 +2,7 @@
 #define RESOURCEUNITSPECIES_H
 #include "production3pg.h"
 #include "standstatistics.h"
+#include "speciesresponse.h"
 
 class Species;
 class ResourceUnit;
@@ -23,6 +24,7 @@ private:
     StandStatistics mStatistics;
     Production3PG m3PG;
     Species *mSpecies;
+    SpeciesResponse mResponse;
     ResourceUnit *mRU;
 };
 

@@ -39,6 +39,7 @@ public:
     // database
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
     QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
+    QSqlDatabase dbclimate() { return QSqlDatabase::database("climate"); }
     // setting-meta-data
     /// access an individual SettingMetaData named @p name.
     const SettingMetaData *settingMetaData(const QString &name);

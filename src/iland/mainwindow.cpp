@@ -622,11 +622,12 @@ void MainWindow::on_pbCalculateExpression_clicked()
     if (expr_text == "test") {
         Tests t;
         int which = QInputDialog::getInt(this, "Which test",
-                                        "which test?\n0: expression speed\n1: tree clear\n2:kill trees", 0);
+                                        "which test?\n0: expression speed\n1: tree clear\n2:kill trees\n3: climate", 0);
         switch (which) {
             case 0: t.speedOfExpression();break;
             case 1: t.clearTrees(); break;
             case 2: t.killTrees(); break;
+            case 3: t.climate(); break;
         }
         return;
     }
