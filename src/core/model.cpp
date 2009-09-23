@@ -92,10 +92,10 @@ void Model::initialize()
 void Model::setupSpace()
 {
     const XmlHelper &xml = GlobalSettings::instance()->settings();
-    double cellSize = xml.value("world.cellSize", "2").toDouble();
-    double width = xml.value("world.width", "100").toDouble();
-    double height = xml.value("world.height", "100").toDouble();
-    double buffer = xml.value("world.buffer", "50").toDouble();
+    double cellSize = xml.value("model.world.cellSize", "2").toDouble();
+    double width = xml.value("model.world.width", "100").toDouble();
+    double height = xml.value("model.world.height", "100").toDouble();
+    double buffer = xml.value("model.world.buffer", "50").toDouble();
     qDebug() << QString("setup of the world: %1x%2m with cell-size=%3m and %4m buffer").arg(width).arg(height).arg(cellSize).arg(buffer);
 
 
@@ -114,7 +114,7 @@ void Model::setupSpace()
 
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();
-    if (xml.valueBool("world.resourceUnitsAsGrid")) {
+    if (xml.valueBool("model.world.resourceUnitsAsGrid")) {
         mRUmap.setup(QRectF(0., 0., width, height),100.);
         ResourceUnit **p=mRUmap.begin();
         ResourceUnit *new_ru;
@@ -140,7 +140,7 @@ void Model::setupSpace()
         qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
         // setup the helper that does the multithreading
         threadRunner.setup(mRU);
-        threadRunner.setMultithreading(xml.value("system.multithreading", "false") == "true");
+        threadRunner.setMultithreading(xml.value("system.settings.multithreading", "false") == "true");
         threadRunner.print();
 
     }
@@ -190,15 +190,15 @@ void Model::loadProject()
     // database connections: reset
     GlobalSettings::instance()->clearDatabaseConnections();
     // input and output connection
-    QString dbPath = g->path( xml.value("database.in"), "database");
+    QString dbPath = g->path( xml.value("system.database.in"), "database");
 
     GlobalSettings::instance()->setupDatabaseConnection("in", dbPath);
-    dbPath = g->path( xml.value("database.out"), "database");
+    dbPath = g->path( xml.value("system.database.out"), "database");
     GlobalSettings::instance()->setupDatabaseConnection("out", dbPath);
 
 
     // (1) SpeciesSets: currently only one a global species set.
-    QString speciesTableName = xml.value("species.source", "species");
+    QString speciesTableName = xml.value("model.species.source", "species");
     SpeciesSet *speciesSet = new SpeciesSet();
     mSpeciesSets.push_back(speciesSet);
 
@@ -213,8 +213,8 @@ void Model::loadProject()
 
     // (3) additional issues
     // (3.1) management
-    QString mgmtFile = xml.value("management.file");
-    if (!mgmtFile.isEmpty() && xml.valueBool("management.enabled")) {
+    QString mgmtFile = xml.value("model.management.file");
+    if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
         mManagement = new Management();
         QString path = GlobalSettings::instance()->path(mgmtFile, "script");
         mManagement->loadScript(path);

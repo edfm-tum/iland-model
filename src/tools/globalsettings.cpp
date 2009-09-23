@@ -351,7 +351,7 @@ void GlobalSettings::loadProjectFile(const QString &fileName)
     if (!QFile::exists(fileName))
         throw IException(QString("The project file %1 does not exist!").arg(fileName));
     mXml.loadFromFile(fileName);
-    setupDirectories(mXml.node("path"),QFileInfo(fileName).path());
+    setupDirectories(mXml.node("system.path"),QFileInfo(fileName).path());
 
 }
 

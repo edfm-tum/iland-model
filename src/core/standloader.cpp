@@ -22,14 +22,16 @@ void StandLoader::processInit()
 {
     GlobalSettings *g = GlobalSettings::instance();
     const XmlHelper &xml = g->settings();
-    bool forEachCell = xml.hasNode("initialization.foreach");
-    QString mode = xml.value("initialization.type", ""); // now only "picus"
-    QString  fileName = xml.value("initialization.file", "");
+
+    bool for_each_ru = xml.valueBool("model.initialization.foreach");
+
+    QString mode = xml.value("model.initialization.type", ""); // now only "picus"
+    QString  fileName = xml.value("model.initialization.file", "");
     if (!QFile::exists(fileName))
         throw IException(QString("File %1 does not exist!").arg(fileName));
 
     Tree::resetStatistics();
-    if (forEachCell) {
+    if (for_each_ru) {
         loadFromPicus(fileName); // load in initial grid cell
         // we assume that all stands are equal, so wie simply COPY the trees and modify them afterwards
         const Grid<ResourceUnit*> &ruGrid=mModel->RUgrid();

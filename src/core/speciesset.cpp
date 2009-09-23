@@ -36,8 +36,8 @@ const Species *SpeciesSet::species(const int &index)
 int SpeciesSet::setup()
 {
     const XmlHelper &xml = GlobalSettings::instance()->settings();
-    QString tableName = xml.value("species.source", "species");
-    QString readerFile = xml.value("species.reader", "reader.bin");
+    QString tableName = xml.value("model.species.source", "species");
+    QString readerFile = xml.value("model.species.reader", "reader.bin");
     readerFile = GlobalSettings::instance()->path(readerFile, "lip");
     mReaderStamp.load(readerFile);
 

@@ -58,7 +58,7 @@ void XmlHelper::loadFromFile(const QString &fileName)
     mTopNode = mCurrentTop;
 
     // fill parameter cache
-    QDomElement e = node("parameter");
+    QDomElement e = node("model.parameter");
     e = e.firstChildElement();
     mParamCache.clear();
     while (!e.isNull()) {
@@ -161,6 +161,7 @@ QDomElement XmlHelper::node(const QString &path) const
                 break;
         }
     }
+    qDebug() << "node-request:" << path;
     return c;
 }
 
