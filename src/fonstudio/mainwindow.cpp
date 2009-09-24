@@ -10,7 +10,7 @@
 #include "model.h"
 #include "standloader.h"
 #include "stampcontainer.h"
-#include "ressourceunit.h"
+#include "resourceunit.h"
 #include "speciesset.h"
 #include "tree.h"
 
@@ -118,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
     // load xml file
     xmldoc.clear();
     QString argText = QApplication::arguments().last();
-    if (!argText.isEmpty())
+    if (QApplication::arguments().count()>1 && !argText.isEmpty())
         ui->initFileName->setText(argText);
 
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
@@ -193,7 +193,7 @@ void MainWindow::applyCycles(int cycle_count)
 {
     if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
         return;
-    RessourceUnit *ru = mModel->ru();
+    ResourceUnit *ru = mModel->ru();
     QVector<Tree> &mTrees = ru->trees();
     // (1) init grid
     DebugTimer t2(QString("application of %1 cycles").arg(cycle_count));
@@ -253,7 +253,7 @@ QString MainWindow::dumpTreelist()
 {
     if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
         return "";
-    RessourceUnit *ru = mModel->ru();
+    ResourceUnit *ru = mModel->ru();
     QVector<Tree> &mTrees = ru->trees();
     QStringList result;
     result+=QString("id;x;y;dbh;height;fonvalue");
@@ -268,7 +268,7 @@ QString MainWindow::dumpTreelist()
                 .arg(tree->position().y())
                 .arg(tree->dbh())
                 .arg(tree->height())
-                .arg(tree->lightRessourceIndex());
+                .arg(tree->lightResourceIndex());
     }
     QString resStr = result.join("\n");
     return resStr;
@@ -382,7 +382,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             }
             QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
-            value = tree->lightRessourceIndex();
+            value = tree->lightResourceIndex();
             fill_color = Helper::colorFromValue(value, 0., 1., true);
             painter.setBrush(fill_color);
             int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 5.));
@@ -432,20 +432,20 @@ void MainWindow::mouseClick(const QPoint& pos)
     if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
         return;
     // test ressource units...
-    RessourceUnit *ru = mModel->ru(coord);
+    ResourceUnit *ru = mModel->ru(coord);
     qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
         if(distance(tit->position(),coord)<2) {
             Tree *p = &(*tit);
-            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightRessourceIndex();
+            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
             ui->treeChange->setProperty("tree", (int)p);
             ui->treeDbh->setValue(p->dbh());
             ui->treeHeight->setValue(p->height());
             ui->treePosX->setValue(p->position().x());
             ui->treePosY->setValue(p->position().y());
-            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightRessourceIndex(),5));
+            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightResourceIndex(),5));
             wantDrag=true;
             ui->PaintWidget->setCursor(Qt::SizeAllCursor);
             ui->PaintWidget->update();

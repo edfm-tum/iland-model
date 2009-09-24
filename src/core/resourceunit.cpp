@@ -10,6 +10,7 @@
 #include "speciesset.h"
 #include "species.h"
 #include "production3pg.h"
+#include "model.h"
 
 
 ResourceUnit::ResourceUnit(const int index)
@@ -33,7 +34,7 @@ void ResourceUnit::setSpeciesSet(SpeciesSet *set)
     }
 }
 
-ResourceUnitSpecies &ResourceUnit::ressourceUnitSpecies(const Species *species)
+ResourceUnitSpecies &ResourceUnit::resourceUnitSpecies(const Species *species)
 {
     return mRUSpecies[species->index()];
 }
@@ -104,7 +105,7 @@ void ResourceUnit::production()
     // calculate the leaf area index (LAI)
     double LAI = mAggregatedLA / mStockedArea;
     // calculate the intercepted radiation fraction using the law of Beer Lambert
-    const double k = 0.6;
+    const double k = Model::settings().lightExtinctionCoefficient;
     double interception_fraction = 1. - exp(-k * LAI);
     // calculate the amount of radiation available on this ressource unit
     mRadiation_m2 = 3140; // incoming radiation sum of year in MJ/m2*year

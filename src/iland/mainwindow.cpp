@@ -146,6 +146,11 @@ MainWindow::~MainWindow()
 
     delete ui;
 }
+// simply command an update of the painting area
+void MainWindow::repaint()
+{
+    ui->PaintWidget->update();
+}
 
 // control GUI actions
 void MainWindow::checkModelState()
@@ -625,14 +630,16 @@ void MainWindow::on_pbCalculateExpression_clicked()
     QString expr_text=ui->expressionText->text();
     QString expr_filter=ui->expressionFilter->text();
     if (expr_text == "test") {
-        Tests t;
+        Tests t(this);
         int which = QInputDialog::getInt(this, "Which test",
-                                        "which test?\n0: expression speed\n1: tree clear\n2:kill trees\n3: climate", 0);
+                                        "which test?\n0: expression speed\n1: tree clear\n" \
+                                        "2:kill trees\n3: climate\n4: multiple light automation", 0);
         switch (which) {
             case 0: t.speedOfExpression();break;
             case 1: t.clearTrees(); break;
             case 2: t.killTrees(); break;
             case 3: t.climate(); break;
+            case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
         }
         return;
     }

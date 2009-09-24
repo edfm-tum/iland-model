@@ -7,6 +7,7 @@
 
 #include "grid.h"
 #include "threadrunner.h"
+#include "modelsettings.h"
 
 class ResourceUnit;
 class SpeciesSet;
@@ -40,10 +41,13 @@ public:
     void clear(); ///< free ressources
     void loadProject(); ///< setup and load a project
     bool isSetup() const { return mSetup; } ///< return true if the model world is correctly setup.
+    static const ModelSettings &settings() {return mSettings;}
+    static ModelSettings &changeSettings() {return mSettings;}
 
 private:
     void initialize(); ///< basic startup without creating a simulation
     void setupSpace(); ///< setup the "world"(spatial grids, ...), create ressource units
+
 
     void applyPattern(); ///< apply LIP-patterns of all trees
     void readPattern(); ///< retrieve LRI for trees
@@ -54,6 +58,7 @@ private:
     void test();
     bool multithreading() const { return threadRunner.multithreading(); }
     ThreadRunner threadRunner;
+    static ModelSettings mSettings;
     bool mSetup;
     /// container holding all ressource units
     QList<ResourceUnit*> mRU;

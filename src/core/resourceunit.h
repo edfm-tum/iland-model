@@ -15,7 +15,7 @@ public:
     int index() const { return mIndex; }
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
     /// get RU-Species-container of @p species from the RU
-    ResourceUnitSpecies &ressourceUnitSpecies(const Species *species);
+    ResourceUnitSpecies &resourceUnitSpecies(const Species *species);
     const QVector<ResourceUnitSpecies> ruSpecies() { return mRUSpecies; }
     const QRectF &boundingBox() const { return mBoundingBox; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
@@ -57,4 +57,4 @@ private:
     friend class RUWrapper;
 };
 
-#endif // RESSOURCEUNIT_H
+#endif // RESOURCEUNIT_H

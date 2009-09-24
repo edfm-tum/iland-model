@@ -8,9 +8,14 @@
 #include "expression.h"
 ///
 #include "climate.h"
+//
+#include "standloader.h"
 
-Tests::Tests()
+Tests::Tests(QObject *wnd)
 {
+    //QObject::connect(this, SIGNAL(needRepaint),wnd, SLOT(repaint));
+    mParent=wnd;
+
 }
 
 
@@ -140,4 +145,67 @@ void Tests::climate()
     } catch (IException &e) {
         Helper::msg(e.toString());
     }
+}
+
+
+void Tests::multipleLightRuns(const QString &fileName)
+{
+    XmlHelper xml(fileName);
+    Model *model = GlobalSettings::instance()->model();
+    if (!model || !model->ru())
+        return;
+    QVector<Tree> &mTrees =  model->ru()->trees();
+
+    QString outPath = xml.value("outputpath");
+    QString inPath = xml.value("inputpath");
+    QString inFile = xml.value("stands");
+    qDebug() << "standlist:" << inFile << "inpath:"<<inPath << "save to:"<<outPath;
+    QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', QString::SkipEmptyParts);
+
+    StandLoader loader(model);
+    try {
+        foreach (QString file, fileList) {
+            file = inPath + "\\" + file;
+            qDebug() << "processing" << file;
+            mTrees.clear();
+            loader.loadFromPicus(file);
+            // do a cycle...
+            model->runYear();
+
+            // create output file
+            QFileInfo fi(file);
+            QString outFileName = QString("%1\\out_%2.csv").arg(outPath, fi.baseName());
+            Helper::saveToTextFile(outFileName, dumpTreeList() );
+            qDebug() << mTrees.size() << "trees loaded, saved to" << outFileName;
+            mParent->metaObject()->invokeMethod(mParent,"repaint");
+            QApplication::processEvents();
+
+        }
+    } catch (IException &e) {
+        Helper::msg(e.toString());
+    }
+}
+
+QString Tests::dumpTreeList()
+{
+
+    Model *model = GlobalSettings::instance()->model();
+
+    AllTreeIterator at(model);
+    DebugList treelist;
+    QString line;
+    QStringList result;
+    result << "id;species;dbh;height;x;y;RU#;LRI;mWoody;mRoot;mFoliage;LA";
+
+    while (Tree *tree = at.next()) {
+        treelist.clear();
+        tree->dumpList(treelist);
+        line = "";
+        foreach(QVariant value, treelist)
+            line+=value.toString() + ";";
+        result << line;
+    }
+
+    QString resStr = result.join("\n");
+    return resStr;
 }

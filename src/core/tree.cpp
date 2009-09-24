@@ -448,7 +448,7 @@ void Tree::grow()
     double radiation = mRU->interceptedRadiation(mLeafArea, mLRI);
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
-    double raw_gpp_per_rad = mRU->ressourceUnitSpecies(species()).prod3PG().GPPperRad();
+    double raw_gpp_per_rad = mRU->resourceUnitSpecies(species()).prod3PG().GPPperRad();
     // GPP (without aging-effect) [gC] / year -> kg Biomass /GPP (*0.001 *2)
     double raw_gpp = raw_gpp_per_rad * radiation * 0.001 * 2;
 
@@ -468,12 +468,13 @@ void Tree::grow()
 
     partitioning(d); // split npp to compartments and grow (diameter, height)
 
-    mortality(d);
+    if (Model::settings().mortalityEnabled)
+        mortality(d);
 
     mStressIndex = d.stress_index;
 
     if (!isDead())
-        mRU->ressourceUnitSpecies(species()).statistics().add(this);
+        mRU->resourceUnitSpecies(species()).statistics().add(this);
 }
 
 
@@ -482,7 +483,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     if (isDebugging())
         enableDebugging(true);
     double npp = d.NPP;
-    double harshness = mRU->ressourceUnitSpecies(species()).prod3PG().harshness();
+    double harshness = mRU->resourceUnitSpecies(species()).prod3PG().harshness();
     // add content of reserve pool
     npp += mNPPReserve;
     const double foliage_mass_allo = species()->biomassFoliage(mDbh);
@@ -636,7 +637,8 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     // update state of LIP stamp and opacity
     mStamp = species()->stamp(mDbh, mHeight); // get new stamp for updated dimensions
     // calculate the CrownFactor which reflects the opacity of the crown
-    mOpacity = 1. - exp(-0.7 * mLeafArea / mStamp->crownArea());
+    const double k=Model::settings().lightExtinctionCoefficientOpacity;
+    mOpacity = 1. - exp(-k * mLeafArea / mStamp->crownArea());
 
 }
 

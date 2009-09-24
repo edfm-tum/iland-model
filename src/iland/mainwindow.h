@@ -26,6 +26,8 @@ public:
     MainWindow(QWidget *parent = 0);
     static QPlainTextEdit* logSpace();
     ~MainWindow();
+public slots:
+    void repaint(); ///< force a repaint of the main drawing area
 
 private:
     Ui::MainWindowClass *ui;

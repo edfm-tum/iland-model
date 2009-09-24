@@ -17,9 +17,11 @@
 OutputManager::OutputManager()
 {
     // add all the outputs
+#ifndef FONSTUDIO
     mOutputs.append(new TreeOut);
     mOutputs.append(new StandOut);
     mOutputs.append(new DynamicStandOut);
+#endif
 
 }
 

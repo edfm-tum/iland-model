@@ -11,6 +11,7 @@
 #include "standloader.h"
 #include "tree.h"
 #include "management.h"
+#include "modelsettings.h"
 
 #include "../output/outputmanager.h"
 
@@ -61,6 +62,7 @@ Tree *AllTreeIterator::current() const
 }
 
 
+ModelSettings Model::mSettings;
 Model::Model()
 {
     initialize();
@@ -199,6 +201,8 @@ void Model::loadProject()
     dbPath = g->path( xml.value("system.database.climate"), "database");
     GlobalSettings::instance()->setupDatabaseConnection("climate", dbPath, true);
 
+    mSettings.loadModelSettings();
+    mSettings.print();
 
     // (1) SpeciesSets: currently only one a global species set.
     QString speciesTableName = xml.value("model.species.source", "species");
@@ -361,6 +365,8 @@ void Model::readPattern()
 void Model::grow()
 {
     {
+        if (!settings().growthEnabled)
+            return;
         DebugTimer t("growRU()");
         calculateStockedArea();
 
