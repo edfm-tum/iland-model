@@ -529,8 +529,10 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area
 
-    // stress index
-    d.stress_index =qMax(1. - (npp-reserve_size) / foliage_mass_allo, 0.);
+    // stress index: different varaints at denominatior: to_fol*foliage_mass = leafmass to rebuild,
+    // foliage_mass_allo: simply higher chance for stress
+
+    d.stress_index =qMax(1. - (npp-reserve_size) / to_fol*foliage_mass_allo, 0.);
 
     // Woody compartments
     // (1) transfer to reserve pool

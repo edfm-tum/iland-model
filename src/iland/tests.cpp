@@ -130,8 +130,13 @@ void Tests::climate()
     try {
     clim.setup();
     DebugTimer t("climate 100yrs", true);
-    for (int i=0;i<100;i++)
+    ClimateDay *begin, *end;
+    int mon=0;
+    for (int i=0;i<100;i++) {
+        clim.monthRange(mon, &begin, &end);
         clim.nextYear();
+        mon=(mon+1)%12;
+    }
     } catch (IException &e) {
         Helper::msg(e.toString());
     }

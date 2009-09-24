@@ -9,6 +9,28 @@ Climate::Climate()
 }
 
 
+// access functions
+const ClimateDay *Climate::dayOfYear(const int dayofyear)
+{
+    return mStore.begin() + mDayIndices[mCurrentYear*12]+ dayofyear;
+}
+const ClimateDay *Climate::day(const int month, const int day)
+{
+    return mStore.begin() + mDayIndices[mCurrentYear*12 + month] + day;
+}
+void Climate::monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd)
+{
+    *rBegin = mStore.begin() + mDayIndices[mCurrentYear*12 + month];
+    *rEnd = mStore.begin() + mDayIndices[mCurrentYear*12 + month+1];
+    qDebug() << "monthRange returning: begin:"<< (*rBegin)->date() << "end-1:" << (*rEnd-1)->date();
+}
+
+int Climate::days(const int month)
+{
+    return mDayIndices[mCurrentYear*12 + month + 1]-mDayIndices[mCurrentYear*12 + month + 1];
+}
+
+
 void Climate::setup()
 {
     GlobalSettings *g=GlobalSettings::instance();
@@ -28,6 +50,8 @@ void Climate::setup()
     if (mClimateQuery.lastError().isValid()){
         throw IException(QString("Error setting up climate: %1 \n %2").arg(query, mClimateQuery.lastError().text()) );
     }
+    // load first chunk...
+    load();
 }
 
 
@@ -45,7 +69,7 @@ void Climate::load()
     int yeardays;
     for (int i=0;i<mLoadYears;i++) {
         yeardays = 0;
-        qDebug() << "loading year" << lastyear+1;
+        //qDebug() << "loading year" << lastyear+1;
         while(1==1) {
             if(!mClimateQuery.next()) {
                 // rewind to start
@@ -85,8 +109,10 @@ void Climate::load()
         }
         lastyear = cday->year;
     }
+    mDayIndices.push_back(cday- mStore.begin()); // the absolute last day...
     mMaxYear = mMinYear+mLoadYears;
     mCurrentYear = 0;
+
 }
 
 
@@ -95,5 +121,10 @@ void Climate::nextYear()
     mCurrentYear++;
     if (mCurrentYear >= mLoadYears) // overload
         load();
-    qDebug() << "current year is" << mMinYear + mCurrentYear;
+    //qDebug() << "current year is" << mMinYear + mCurrentYear;
+}
+
+void Climate::climateCalculations()
+{
+
 }

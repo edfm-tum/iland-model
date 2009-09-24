@@ -136,6 +136,8 @@ MainWindow::MainWindow(QWidget *parent)
         restoreState(state);
     }
     checkModelState();
+    setWindowTitle("iLand Viewer (#" + cur_revision.section(" ",1,1) + ")");
+    //cur_revision.section(" ",2,2);
     qDebug() << "current subversion revision" << cur_revision;
 }
 
