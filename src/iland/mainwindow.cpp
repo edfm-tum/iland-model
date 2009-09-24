@@ -37,15 +37,19 @@ double nrandom(const float& p1, const float& p2)
     return p1 + (p2-p1)*(rand()/float(RAND_MAX));
 }
 
+bool showDebugMessages=true;
 void myMessageOutput(QtMsgType type, const char *msg)
  {
     QString str(msg);
 
     switch (type) {
      case QtDebugMsg:
-         MainWindow::logSpace()->appendPlainText(QString(msg));
-         MainWindow::logSpace()->ensureCursorVisible();
-         fprintf(stderr, "%s\n", msg);
+        if (showDebugMessages) {
+            MainWindow::logSpace()->appendPlainText(QString(msg));
+            MainWindow::logSpace()->ensureCursorVisible();
+            fprintf(stderr, "%s\n", msg);
+        }
+
          break;
      case QtWarningMsg:
          MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
@@ -677,4 +681,10 @@ void MainWindow::on_actionDynamic_Output_triggered()
 {
     QApplication::clipboard()->setText(mRemoteControl.dynamicOutput());
     qDebug() << "copied dynamic output to clipboard";
+}
+
+void MainWindow::on_actionShow_Debug_Messages_triggered(bool checked)
+{
+    // enable/disble debug messages
+    showDebugMessages=checked;
 }

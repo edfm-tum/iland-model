@@ -274,21 +274,20 @@ void GlobalSettings::clearDatabaseConnections()
 {
     QSqlDatabase::removeDatabase("in");
     QSqlDatabase::removeDatabase("out");
+    QSqlDatabase::removeDatabase("climate");
 }
 
-bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QString &fileName)
+bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QString &fileName, bool fileMustExist)
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE",dbname);
     qDebug() << "setup database connection" << dbname << "to" << fileName;
     //db.setDatabaseName(":memory:");
+    if (fileMustExist)
+        if (!QFile::exists(fileName))
+            throw IException("Error setting up database connection: file " + fileName + " does not exist!");
     db.setDatabaseName(fileName);
     if (!db.open()) {
-        Helper::msg(QString("Unable to establish a database <%2> connection to %1.\n"
-                     "This software needs SQLite support. Please read "
-                     "the Qt SQL driver documentation for information how "
-                     "to build it.\n\n"
-                     "Click Cancel to exit.").arg(fileName, dbname));
-        return false;
+        throw IException(QString("Error in setting up the database connection <%2> connection to file %1.\n").arg(fileName, dbname));
     }
     return true;
 }

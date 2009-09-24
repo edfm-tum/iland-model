@@ -36,6 +36,8 @@ void StandLoader::processInit()
         // we assume that all stands are equal, so wie simply COPY the trees and modify them afterwards
         const Grid<ResourceUnit*> &ruGrid=mModel->RUgrid();
         ResourceUnit **p = ruGrid.begin();
+        if (!p)
+            throw IException("Standloader: invalid resource unit pointer!");
         ++p; // skip the first...
         const QVector<Tree> &tocopy = mModel->ru()->trees();
         for (; p!=ruGrid.end(); ++p) {

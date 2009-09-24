@@ -64,7 +64,7 @@ public:
     void loadSettingsMetaDataFromXml(const QDomElement &topNode);
 
     // Database connections
-    bool setupDatabaseConnection(const QString& dbname, const QString &fileName);
+    bool setupDatabaseConnection(const QString& dbname, const QString &fileName, bool fileMustExist);
     void clearDatabaseConnections(); ///< shutdown and clear connections
     // output manager
     OutputManager *outputManager() { return mOutputManager; }

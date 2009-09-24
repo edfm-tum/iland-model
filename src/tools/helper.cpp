@@ -315,8 +315,10 @@ void DebugTimer::interval(const QString &text)
 void DebugTimer::showElapsed()
 {
     if (!m_shown) {
-
-        qDebug() << "Timer" << m_caption << ":" << elapsed() << "ms";
+        if (m_asWarning)
+            qWarning() << "Timer" << m_caption << ":" << elapsed() << "ms";
+        else
+            qDebug() << "Timer" << m_caption << ":" << elapsed() << "ms";
     }
     m_shown=true;
 }

@@ -7,6 +7,7 @@ class XmlHelper
 {
 public:
    XmlHelper();
+   ~XmlHelper();
    XmlHelper(const QString &fileName) {loadFromFile(fileName);}
    XmlHelper(QDomElement topNode);
    void loadFromFile(const QString &fileName);

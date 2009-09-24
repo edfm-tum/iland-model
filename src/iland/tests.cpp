@@ -127,7 +127,12 @@ void Tests::killTrees()
 void Tests::climate()
 {
     Climate clim;
+    try {
     clim.setup();
-    for (int i=0;i<10;i++)
+    DebugTimer t("climate 100yrs", true);
+    for (int i=0;i<100;i++)
         clim.nextYear();
+    } catch (IException &e) {
+        Helper::msg(e.toString());
+    }
 }

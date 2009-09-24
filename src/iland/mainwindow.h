@@ -47,6 +47,7 @@ private:
 
 private slots:
 
+    void on_actionShow_Debug_Messages_triggered(bool checked);
     void on_actionDynamic_Output_triggered();
     void on_pbExecExpression_clicked();
     void on_pbCalculateExpression_clicked();

@@ -91,8 +91,8 @@ The class writes the elapsed time to qDebug() when either destructed, or when ex
 class DebugTimer
 {
 public:
-    DebugTimer() { start(); }
-    DebugTimer(const QString &caption) { m_caption = caption; start(); }
+    DebugTimer() { m_asWarning=false; start(); }
+    DebugTimer(const QString &caption, const bool asWarning=false) { m_caption = caption; m_asWarning=asWarning; start(); }
     ~DebugTimer() { showElapsed();}
     void showElapsed();
     double elapsed(); // elapsed time in milliseconds
@@ -103,6 +103,7 @@ private:
     TickTack t;
     //QTime t;
     bool m_shown;
+    bool m_asWarning;
     QString m_caption;
 };
 

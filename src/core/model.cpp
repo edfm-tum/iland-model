@@ -91,7 +91,7 @@ void Model::initialize()
 
 void Model::setupSpace()
 {
-    XmlHelper xml(GlobalSettings::instance()->settings().node("world.node"));
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.world"));
     double cellSize = xml.value("cellSize", "2").toDouble();
     double width = xml.value("width", "100").toDouble();
     double height = xml.value("height", "100").toDouble();
@@ -114,7 +114,7 @@ void Model::setupSpace()
 
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();
-    if (xml.valueBool("model.world.resourceUnitsAsGrid")) {
+    if (xml.valueBool("resourceUnitsAsGrid")) {
         mRUmap.setup(QRectF(0., 0., width, height),100.);
         ResourceUnit **p=mRUmap.begin();
         ResourceUnit *new_ru;
@@ -140,9 +140,11 @@ void Model::setupSpace()
         qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
         // setup the helper that does the multithreading
         threadRunner.setup(mRU);
-        threadRunner.setMultithreading(xml.value("system.settings.multithreading", "false") == "true");
+        threadRunner.setMultithreading(GlobalSettings::instance()->settings().valueBool("system.settings.multithreading"));
         threadRunner.print();
 
+    } else  {
+        throw IException("resourceUnitsAsGrid MUST be set to true - at least currently :)");
     }
     mSetup = true;
 }
@@ -191,11 +193,11 @@ void Model::loadProject()
     GlobalSettings::instance()->clearDatabaseConnections();
     // input and output connection
     QString dbPath = g->path( xml.value("system.database.in"), "database");
-    GlobalSettings::instance()->setupDatabaseConnection("in", dbPath);
+    GlobalSettings::instance()->setupDatabaseConnection("in", dbPath, true);
     dbPath = g->path( xml.value("system.database.out"), "database");
-    GlobalSettings::instance()->setupDatabaseConnection("out", dbPath);
+    GlobalSettings::instance()->setupDatabaseConnection("out", dbPath, false);
     dbPath = g->path( xml.value("system.database.climate"), "database");
-    GlobalSettings::instance()->setupDatabaseConnection("climate", dbPath);
+    GlobalSettings::instance()->setupDatabaseConnection("climate", dbPath, true);
 
 
     // (1) SpeciesSets: currently only one a global species set.

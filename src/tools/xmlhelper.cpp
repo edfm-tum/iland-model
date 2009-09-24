@@ -33,7 +33,10 @@
 XmlHelper::XmlHelper()
 {
 }
-
+XmlHelper::~XmlHelper()
+{
+    //qDebug() << "xml helper destroyed";
+}
 /** Create a XmlHelper instance with @p topNode as top node.
   The xml tree is not copied.
 */

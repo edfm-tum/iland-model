@@ -15,7 +15,7 @@ void Climate::setup()
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
     mLoadYears = (int) xml.valueDouble("batchYears", 1.);
-    mStore.reserve(mLoadYears * 366);
+    mStore.resize(mLoadYears * 366);
     mCurrentYear=0;
     mMinYear = 0;
     mMaxYear = 0;
@@ -36,7 +36,7 @@ void Climate::load()
     if (!mClimateQuery.isActive())
        throw IException(QString("Error loading climate file - query not active."));
 
-    mMinYear = mMaxYear + 1;
+    mMinYear = mMaxYear;
     QVector<ClimateDay>::iterator store=mStore.begin();
     mDayIndices.clear();
     ClimateDay *cday = store;
@@ -46,12 +46,14 @@ void Climate::load()
     for (int i=0;i<mLoadYears;i++) {
         yeardays = 0;
         qDebug() << "loading year" << lastyear+1;
-        if(!mClimateQuery.next()) {
-            // rewind to start
-            qDebug() << "restart of climate table";
-            if (!mClimateQuery.first())
-                throw IException("Error rewinding climate file!");
-
+        while(1==1) {
+            if(!mClimateQuery.next()) {
+                // rewind to start
+                qDebug() << "restart of climate table";
+                lastyear=-1;
+                if (!mClimateQuery.first())
+                    throw IException("Error rewinding climate file!");
+            }
             yeardays++;
             if (yeardays>366)
                 throw IException("Error in reading climate file: yeardays>366!");
@@ -91,7 +93,7 @@ void Climate::load()
 void Climate::nextYear()
 {
     mCurrentYear++;
-    if (mCurrentYear >= mMaxYear) // overload
+    if (mCurrentYear >= mLoadYears) // overload
         load();
     qDebug() << "current year is" << mMinYear + mCurrentYear;
 }
