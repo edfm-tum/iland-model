@@ -78,7 +78,6 @@ QPlainTextEdit* MainWindow::logSpace()
    return mLogSpace;
 }
 
-QString cur_revision="$Revision$";
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindowClass)
 {
@@ -136,9 +135,7 @@ MainWindow::MainWindow(QWidget *parent)
         restoreState(state);
     }
     checkModelState();
-    setWindowTitle("iLand Viewer (#" + cur_revision.section(" ",1,1) + ")");
-    //cur_revision.section(" ",2,2);
-    qDebug() << "current subversion revision" << cur_revision;
+    setWindowTitle("iLand Viewer (#" + Helper::currentRevision() + ")");
 }
 
 MainWindow::~MainWindow()

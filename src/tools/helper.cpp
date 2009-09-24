@@ -9,6 +9,13 @@ Helper::Helper()
 {
 }
 
+QString Helper::currentRevision()
+{
+    QString cur_revision="$Revision$";
+    return cur_revision.section(" ",1,1);
+
+}
+
 QString Helper::loadTextFile(const QString& fileName)
 {
     QFile file(fileName);
@@ -435,3 +442,4 @@ bool Viewport::isVisible(const QRectF &world_rect) const
     return m_viewport.contains(world_rect)
             || m_viewport.intersects(world_rect);
 }
+

@@ -34,6 +34,9 @@ public:
     static QString stripHtml(const QString &source);
 
     static QColor colorFromValue(const float value, const float min_value=0.f, const float max_value=1.f, const bool reverse=false);
+
+    static QString currentRevision(); ///< svn revision number
+
 private:
     static bool m_quiet;
     static bool m_NoDebug;
@@ -62,7 +65,6 @@ public:
     // additional functions
     static QVector<int> calculateRanks(const QVector<double> &data, bool descending=false); ///< rank data.
     static void normalize(QVector<double> &data, double targetSum); ///< normalize, i.e. the sum of all items after processing is targetSum
-
 private:
    QVector<double> mData;
    double mSum;
