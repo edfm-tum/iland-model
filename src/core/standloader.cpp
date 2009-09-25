@@ -111,7 +111,7 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Resourc
     int iHeight = headers.indexOf("treeheight");
     int iSpecies = headers.indexOf("species");
     int iAge = headers.indexOf("age");
-    if (iX==-1 || iY==-1 || iBhd==-1 || iSpecies==-1 || iHeight==-1 || iAge==-1)
+    if (iX==-1 || iY==-1 || iBhd==-1 || iSpecies==-1 || iHeight==-1)
         throw IException(QString("Initfile %1 is not valid!").arg(fileName));
 
     double dbh;
@@ -131,7 +131,10 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Resourc
 
         tree.setDbh(dbh);
         tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
-        tree.setAge(line.section(sep, iAge, iAge).toInt());
+        if (iAge>=0)
+           tree.setAge(line.section(sep, iAge, iAge).toInt());
+        else
+            tree.setAge(10);
         int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
         QString speciesid="piab";
         if (idx>0)

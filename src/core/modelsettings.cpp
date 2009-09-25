@@ -17,7 +17,7 @@ void ModelSettings::loadModelSettings()
 
 void ModelSettings::print()
 {
-    QStringList set=QStringList() << "Settings";
+    QStringList set=QStringList() << "Settings:";
     set << QString("growthEnabled=%1").arg(growthEnabled);
     set << QString("mortalityEnabled=%1").arg(mortalityEnabled);
     set << QString("lightExtinctionCoefficient=%1").arg(lightExtinctionCoefficient);
