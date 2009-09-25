@@ -13,7 +13,7 @@
 #include "management.h"
 #include "modelsettings.h"
 
-#include "../output/outputmanager.h"
+#include "outputmanager.h"
 
 #include <QtCore>
 #include <QtXml>

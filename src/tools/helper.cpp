@@ -5,14 +5,17 @@
 #include "ticktack.h"
 #include <limits>
 
+#include "version.h"
+
 Helper::Helper()
 {
 }
 
 QString Helper::currentRevision()
 {
-    QString cur_revision="$Revision$";
-    return cur_revision.section(" ",1,1);
+    //QString cur_revision="$Revision$";
+    QString cur_revision = QString(svn_revision);
+    return cur_revision; //.section(" ",1,1);
 
 }
 

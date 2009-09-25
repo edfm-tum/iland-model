@@ -61,7 +61,7 @@
 
 #include "settingmetadata.h"
 
-#include "../output/outputmanager.h"
+#include "outputmanager.h"
 
 // debug macro helpers
 void dbg_helper(const char *where, const char *what,const char* file,int line)

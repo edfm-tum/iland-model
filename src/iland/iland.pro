@@ -10,7 +10,9 @@ CONFIG += precompile_header
 
 # includepath: adds directories to the standard include (no directory needed when #include a file).
 INCLUDEPATH += ../core \
-    ../tools
+                ../tools \
+                ../output
+
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
@@ -49,7 +51,7 @@ SOURCES += main.cpp \
     ../core/climate.cpp \
     ../core/modelsettings.cpp
 HEADERS += mainwindow.h \
-    ../stable.h \
+    stable.h \
     paintarea.h \
     ../core/grid.h \
     ../core/tree.h \
@@ -86,3 +88,13 @@ HEADERS += mainwindow.h \
     ../core/modelsettings.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
+
+
+QMAKE_EXTRA_TARGETS += revtarget
+PRE_TARGETDEPS      += version.h
+revtarget.target     = version.h
+SVNREV = $$system(svnversion .)
+revtarget.commands   = @echo "const char *version = \"Alpha 1.1.0\";" \
+                             "const char *svn_revision = \"$$SVNREV\";" > $$revtarget.target
+revtarget.depends = $$SOURCES $$HEADERS $$FORMS
+

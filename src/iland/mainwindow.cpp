@@ -20,6 +20,7 @@
 #include "expressionwrapper.h"
 
 #include "tests.h"
+
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
