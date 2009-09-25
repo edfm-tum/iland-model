@@ -12,6 +12,7 @@ void ModelSettings::loadModelSettings()
     mortalityEnabled = xml.valueBool("mortalityEnabled", true);
     lightExtinctionCoefficient = xml.valueDouble("lightExtinctionCoefficient", 0.5);
     lightExtinctionCoefficientOpacity=xml.valueDouble("lightExtinctionCoefficientOpacity", 0.5);
+    temperatureTau=xml.valueDouble("temperatureTau",5);
 }
 
 void ModelSettings::print()
@@ -21,5 +22,6 @@ void ModelSettings::print()
     set << QString("mortalityEnabled=%1").arg(mortalityEnabled);
     set << QString("lightExtinctionCoefficient=%1").arg(lightExtinctionCoefficient);
     set << QString("lightExtinctionCoefficientOpacity=%1").arg(lightExtinctionCoefficientOpacity);
+    set << QString("temperatureTau=%1").arg(temperatureTau);
     qDebug() << set.join("\n");
 }

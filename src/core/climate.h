@@ -14,6 +14,7 @@ struct ClimateDay
     double radiation; // sum of day (MJ/m2)
     double vpd; // average of day [kPa]
     QString date() { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
+    bool isValid() { return (year>=0); }
 };
 class Climate
 {
@@ -28,10 +29,12 @@ public:
     /// returns two pointer (arguments!!!) to the begin and one after end of the given month (month: 0..11)
     void monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd);
     int days(const int month); ///< returns number of days of given month
+    int daysOfYear(); ///< returns number of days of current year
 
 private:
+    ClimateDay mInvalidDay;
     void load(); ///< load mLoadYears years from database
-    void climateCalculations(); ///< more calculations done after loading of climate data
+    void climateCalculations(ClimateDay &lastDay); ///< more calculations done after loading of climate data
     int mLoadYears; // count of years to load ahead
     int mCurrentYear; // current year (relative)
     int mMinYear; // lowest year in store (relative)

@@ -2,10 +2,12 @@
 */
 #include "global.h"
 #include "climate.h"
+#include "model.h"
 
 Climate::Climate()
 {
     mLoadYears = 1;
+    mInvalidDay.day=mInvalidDay.month=mInvalidDay.year=-1;
 }
 
 
@@ -16,6 +18,8 @@ const ClimateDay *Climate::dayOfYear(const int dayofyear)
 }
 const ClimateDay *Climate::day(const int month, const int day)
 {
+    if (mDayIndices.isEmpty())
+        return &mInvalidDay;
     return mStore.begin() + mDayIndices[mCurrentYear*12 + month] + day;
 }
 void Climate::monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd)
@@ -27,7 +31,13 @@ void Climate::monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd
 
 int Climate::days(const int month)
 {
-    return mDayIndices[mCurrentYear*12 + month + 1]-mDayIndices[mCurrentYear*12 + month + 1];
+    return mDayIndices[mCurrentYear*12 + month + 1]-mDayIndices[mCurrentYear*12 + month];
+}
+int Climate::daysOfYear()
+{
+    if (mDayIndices.isEmpty())
+        return -1;
+    return mDayIndices[(mCurrentYear+1)*12]-mDayIndices[mCurrentYear*12];
 }
 
 
@@ -60,8 +70,10 @@ void Climate::load()
     if (!mClimateQuery.isActive())
        throw IException(QString("Error loading climate file - query not active."));
 
+    ClimateDay lastDay = *day(11,30); // 31.december
     mMinYear = mMaxYear;
     QVector<ClimateDay>::iterator store=mStore.begin();
+
     mDayIndices.clear();
     ClimateDay *cday = store;
     int lastmon = -1;
@@ -82,7 +94,9 @@ void Climate::load()
             if (yeardays>366)
                 throw IException("Error in reading climate file: yeardays>366!");
 
+
             cday = store++; // store values directly in the QVector
+
             cday->year = mClimateQuery.value(0).toInt();
             cday->month = mClimateQuery.value(1).toInt();
             cday->day = mClimateQuery.value(2).toInt();
@@ -109,22 +123,41 @@ void Climate::load()
         }
         lastyear = cday->year;
     }
+    while (store!=mStore.end())
+        *store++ = mInvalidDay; // save a invalid day at the end...
+
     mDayIndices.push_back(cday- mStore.begin()); // the absolute last day...
     mMaxYear = mMinYear+mLoadYears;
     mCurrentYear = 0;
+    climateCalculations(lastDay);
 
 }
 
 
 void Climate::nextYear()
 {
-    mCurrentYear++;
-    if (mCurrentYear >= mLoadYears) // overload
+
+    if (mCurrentYear >= mLoadYears-1) // overload
         load();
+    else
+        mCurrentYear++;
     //qDebug() << "current year is" << mMinYear + mCurrentYear;
 }
 
-void Climate::climateCalculations()
+void Climate::climateCalculations(ClimateDay &lastDay)
 {
+    ClimateDay *c = mStore.begin();
+    const double tau = Model::settings().temperatureTau;
+    // handle first day: use tissue temperature of the last day of the last year (if available)
+    if (lastDay.isValid())
+        c->temp_delayed = lastDay.temp_delayed + 1./tau * (c->temperature - lastDay.temp_delayed);
+    else
+        c->temp_delayed = c->temperature;
+    c++;
+    while (c->isValid()) {
+        // first order dynamic delayed model (Mäkela 2008)
+        c->temp_delayed=(c-1)->temp_delayed + 1./tau * (c->temperature - (c-1)->temp_delayed);
+        ++c;
+    }
 
 }
