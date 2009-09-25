@@ -13,7 +13,7 @@ Helper::Helper()
 
 QString Helper::currentRevision()
 {
-    //QString cur_revision="$Revision$";
+    //QString cur_revision="$Revision: 202 $";
     QString cur_revision = QString(svn_revision);
     return cur_revision; //.section(" ",1,1);
 
