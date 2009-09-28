@@ -304,8 +304,14 @@ void Tree::readLIF()
     //}
     if (mLRI > 1.)
         mLRI = 1.;
+
+    double lresponse = Model::settings().lightResponse->calculate(mLRI);
+    // Finally, add LRI of this Tree to the ResourceUnit!
+    // mRU->addWLA(mLRI*mLeafArea, mLeafArea);
+    mRU->addWLA(lresponse*mLeafArea, mLeafArea);
+
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    mRU->addWLA(mLRI*mLeafArea, mLeafArea);
+    //mRU->addWLA(mLRI*mLeafArea, mLeafArea);
 }
 
 void Tree::heightGrid_torus()

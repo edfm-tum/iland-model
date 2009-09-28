@@ -195,7 +195,7 @@ QString Tests::dumpTreeList()
     DebugList treelist;
     QString line;
     QStringList result;
-    result << "id;species;dbh;height;x;y;RU#;LRI;mWoody;mRoot;mFoliage;LA";
+    result << "id;species;dbh;height;x;y;RU#;LRI;mWoody;mRoot;mFoliage;LA;";
 
     while (Tree *tree = at.next()) {
         treelist.clear();
