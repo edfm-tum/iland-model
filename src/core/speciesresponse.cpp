@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "resourceunitspecies.h"
+#include "climate.h"
 
 SpeciesResponse::SpeciesResponse()
 {
@@ -23,21 +24,21 @@ void SpeciesResponse::setup(ResourceUnitSpecies *rus)
 /// Main function that calculates monthly / annual species responses
 void SpeciesResponse::calculate()
 {
-
+    calcVpd();
 }
 
 void SpeciesResponse::calcVpd()
 {
 
-    /*double *vpd = mRu->climate()->vpd();
-
-    int begin, end;
-    for (int m=0;m<12;m++) {
-        mRu->climate()->monthRange(m, &begin, &end);
-        for (int day=begin; day<end; day++) {
-            mVpdResponse[m]+=f(vpd[day]);
+    ClimateDay *begin, *end;
+    for (int mon=0;mon<12;mon++) {
+        mRu->climate()->monthRange(mon, &begin, &end);
+        for (ClimateDay *day=begin; day!=end; ++day) {
+            mVpdResponse[mon]+=day->vpd;
         }
+        mVpdResponse[mon] /= mRu->climate()->days(mon);
+
+
     }
-    for (int m=0;m<12;m++)
-        mVpdResponse[m]/=mRu->climate()->daysOfMonth(m);*/
+
 }

@@ -29,9 +29,9 @@ void Climate::monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd
     qDebug() << "monthRange returning: begin:"<< (*rBegin)->date() << "end-1:" << (*rEnd-1)->date();
 }
 
-int Climate::days(const int month)
+double Climate::days(const int month)
 {
-    return mDayIndices[mCurrentYear*12 + month + 1]-mDayIndices[mCurrentYear*12 + month];
+    return (double) mDayIndices[mCurrentYear*12 + month + 1]-mDayIndices[mCurrentYear*12 + month];
 }
 int Climate::daysOfYear()
 {

@@ -12,6 +12,8 @@
 class ResourceUnit;
 class SpeciesSet;
 class Management;
+class Climate;
+
 struct HeightGridValue
 {
     float height;
@@ -66,6 +68,8 @@ private:
     Grid<ResourceUnit*> mRUmap;
     /// container holding all species sets
     QList<SpeciesSet*> mSpeciesSets;
+    /// container holding all the climate objects
+    QList<Climate*> mClimates;
     // global grids...
     FloatGrid *mGrid;
     HeightGrid *mHeightGrid;

@@ -13,10 +13,11 @@ public:
     ResourceUnitSpecies() : mSpecies(0), mRU(0) {}
     ResourceUnitSpecies(Species *species, ResourceUnit *ru) { mSpecies = species; mRU = ru; }
 
-    const Species *species() const { return mSpecies; }
-    const ResourceUnit *ru() const { return mRU; }
-    Production3PG &prod3PG()  { return m3PG; }
-    StandStatistics &statistics() { return mStatistics; }
+    void calculateResponses() { mResponse.calculate(); } ///< calculate environmental responses per species (vpd, temperature, ...)
+    const Species *species() const { return mSpecies; } ///< return pointer to species
+    const ResourceUnit *ru() const { return mRU; } ///< return pointer to resource unit
+    Production3PG &prod3PG()  { return m3PG; } ///< the 3pg production model of this speies x resourceunit
+    StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
     const StandStatistics &constStatistics() const { return mStatistics; }
     // action
 

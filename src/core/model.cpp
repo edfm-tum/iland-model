@@ -7,6 +7,7 @@
 #include "xmlhelper.h"
 #include "helper.h"
 #include "resourceunit.h"
+#include "climate.h"
 #include "speciesset.h"
 #include "standloader.h"
 #include "tree.h"
@@ -123,12 +124,14 @@ void Model::setupSpace()
         mRU.first()->setBoundingBox(QRectF(0., 0., 100., 100.)); // the first
         *p = mRU.first(); // store first RU in grid.
         SpeciesSet *species_set = (*p)->speciesSet(); // copy the species sets
+        Climate *clim = (*p)->climate(); // copy the climate
         p++; // no need to create the first...
         int ru_index = 1;
         for (; p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
             new_ru = new ResourceUnit(ru_index++);
             new_ru->setSpeciesSet(species_set);
+            new_ru->setClimate(clim);
             mRU.append(new_ru); // store in list
             new_ru->setBoundingBox(r);
         }
@@ -165,6 +168,9 @@ void Model::clear()
 
     qDeleteAll(mSpeciesSets); // delete species sets
     mSpeciesSets.clear();
+
+    // delete climate data
+    qDeleteAll(mClimates);
 
     // delete the grids
     if (mGrid)
@@ -214,8 +220,13 @@ void Model::loadProject()
     // (2) ResourceUnits (including everything else).
     ResourceUnit *ru = new ResourceUnit(0);
     ru->setSpeciesSet(speciesSet);
-    mRU.push_back(ru);
 
+    // Climate...
+    Climate *c = new Climate();
+    mClimates.push_back(c);
+    ru->setClimate(c);
+
+    mRU.push_back(ru);
     setupSpace();
 
     // (3) additional issues

@@ -11,11 +11,13 @@
 #include "species.h"
 #include "production3pg.h"
 #include "model.h"
+#include "climate.h"
 
 
 ResourceUnit::ResourceUnit(const int index)
 {
     mSpeciesSet = 0;
+    mClimate = 0;
     mIndex = index;
     mTrees.reserve(100); // start with space for 100 trees.
 }
@@ -123,9 +125,8 @@ void ResourceUnit::production()
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
 
 
-    //double raw_gpp_per_rad;
-
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
+        (*i).calculateResponses();
         (*i).prod3PG().calculate();
         (*i).statistics().clear();
 //        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << raw_gpp_per_rad;

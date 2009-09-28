@@ -16,6 +16,7 @@ struct ClimateDay
     QString date() { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
     bool isValid() { return (year>=0); }
 };
+
 class Climate
 {
 public:
@@ -28,7 +29,7 @@ public:
     const ClimateDay *day(const int month, const int day); ///< gets pointer to climate structure of given day (0-based indices, i.e. month=11=december!)
     /// returns two pointer (arguments!!!) to the begin and one after end of the given month (month: 0..11)
     void monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd);
-    int days(const int month); ///< returns number of days of given month
+    double days(const int month); ///< returns number of days of given month
     int daysOfYear(); ///< returns number of days of current year
 
 private:
