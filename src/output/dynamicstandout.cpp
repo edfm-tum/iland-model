@@ -97,7 +97,6 @@ void DynamicStandOut::exec()
             if (rus.constStatistics().count()==0)
                 continue;
 
-
             *this << currentYear() << ru->index() << rus.species()->id(); // keys
             // dynamic calculations
             foreach (const SDynamicField &field, mFieldList) {

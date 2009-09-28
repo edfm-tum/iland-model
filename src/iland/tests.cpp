@@ -167,6 +167,7 @@ void Tests::multipleLightRuns(const QString &fileName)
         foreach (QString file, fileList) {
             file = inPath + "\\" + file;
             qDebug() << "processing" << file;
+            Tree::resetStatistics();
             mTrees.clear();
             loader.loadFromPicus(file);
             // do a cycle...
@@ -195,7 +196,7 @@ QString Tests::dumpTreeList()
     DebugList treelist;
     QString line;
     QStringList result;
-    result << "id;species;dbh;height;x;y;RU#;LRI;mWoody;mRoot;mFoliage;LA;";
+    result << "id;species;dbh;height;x;y;RU#;LRI;mWoody;mRoot;mFoliage;LA";
 
     while (Tree *tree = at.next()) {
         treelist.clear();
@@ -203,6 +204,7 @@ QString Tests::dumpTreeList()
         line = "";
         foreach(QVariant value, treelist)
             line+=value.toString() + ";";
+        *(line.end()-1)=' ';
         result << line;
     }
 

@@ -63,7 +63,7 @@ Expression::ETokType  Expression::next_token()
     m_lastState=m_state;
     // nächsten m_token aus String lesen...
     // whitespaces eliminieren...
-    while (strchr(" \t", *m_pos) && *m_pos)
+    while (strchr(" \t\n\r", *m_pos) && *m_pos)
         m_pos++;
 
     if (*m_pos==0) {
@@ -72,7 +72,7 @@ Expression::ETokType  Expression::next_token()
         return etStop; // Ende der Vorstellung
     }
     // whitespaces eliminieren...
-    while (strchr(" \t", *m_pos))
+    while (strchr(" \t\n\r", *m_pos))
         m_pos++;
     if (*m_pos==',')
     {
@@ -152,7 +152,7 @@ void Expression::setAndParse(const QString &expr)
 /// do some preprocessing (e.g. handle the different use of ",", ".", ";")
 void Expression::setExpression(const QString& aExpression)
 {
-    m_expression=aExpression;
+    m_expression=aExpression.simplified();
     //m_expr=StrNew(PrepareExpr(m_expression).c_str());
 
     QByteArray ba = m_expression.toLocal8Bit(); // convert from unicode to 8bit

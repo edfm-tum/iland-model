@@ -62,6 +62,11 @@ bool OutputManager::execute(const QString& tableName)
             return false;
         if(!p->isOpen())
             return false;
+        if (!p->onNewRow()) {
+            qWarning() << "Output" << p->name() << "invalid (not at new row)!!!";
+            return false;
+        }
+
         p->startTransaction();
         p->exec();
         p->endTransaction();

@@ -31,7 +31,7 @@ public:
     // access to elements
     ResourceUnit *ru() { return mRU.front(); }
     ResourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
-    const QList<ResourceUnit*> &ruList() {return mRU; }
+    const QList<ResourceUnit*> &ruList() const {return mRU; }
     // global grids
     FloatGrid *grid() { return mGrid; }
     HeightGrid *heightGrid() { return mHeightGrid; }
