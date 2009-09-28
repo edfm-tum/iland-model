@@ -1,6 +1,7 @@
 #ifndef MODELSETTINGS_H
 #define MODELSETTINGS_H
 
+#include "expression.h"
 class ModelSettings
 {
 public:
@@ -16,6 +17,8 @@ public:
     double lightExtinctionCoefficientOpacity; ///< "k" for beer lambert used for opacity of single trees
     // climate
     double temperatureTau; ///< "tau"-value for delayed temperature calculation acc. to Mäkela 2008
+    // light model
+    QSharedPointer<Expression> lightResponse;
 };
 
 #endif // MODELSETTINGS_H

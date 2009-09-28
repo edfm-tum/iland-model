@@ -423,7 +423,12 @@ void Tree::readLIF_torus()
     if (mLRI > 1.)
         mLRI = 1.;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    mRU->addWLA(mLRI*mLeafArea, mLeafArea);
+
+    // calculate a light response from lri:
+    double lresponse = Model::settings().lightResponse->calculate(mLRI);
+    // Finally, add LRI of this Tree to the ResourceUnit!
+    // mRU->addWLA(mLRI*mLeafArea, mLeafArea);
+    mRU->addWLA(lresponse*mLeafArea, mLeafArea);
 }
 
 

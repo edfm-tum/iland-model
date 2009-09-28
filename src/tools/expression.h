@@ -12,6 +12,7 @@ public:
         void setExpression(const QString &aExpression); ///< set expression
         void setAndParse(const QString &expr); ///< set expression and parse instantly
         void setModelObject(ExpressionWrapper *wrapper) { mModelObject = wrapper; }
+        const QString &expression() const { return m_expression; }
         /// calculate formula and return result. variable values need to be set using "setVar()"
         double execute();
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.

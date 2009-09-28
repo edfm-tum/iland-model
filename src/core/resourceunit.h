@@ -26,6 +26,7 @@ public:
     Tree &newTree();
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float WLA, const float LA) { mAggregatedWLA += WLA; mAggregatedLA += LA; }
+    /// function that distributes Radiation according to LRI and LeafArea of the indivudal (@sa production())
     double interceptedRadiation(const double LA, const double LRI) { return mRadiation_m2 * LA * (LRI + mLRIcorrection); }
 
     // model flow

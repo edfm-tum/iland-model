@@ -111,7 +111,9 @@ void ResourceUnit::production()
     mRadiation_m2 = 3140; // incoming radiation sum of year in MJ/m2*year
 
     // Formula for distribution: g = (SA*pPAR - sum(LRI*LA))/sum(LA)
-    mLRIcorrection = (mStockedArea*interception_fraction - mAggregatedWLA) / mAggregatedLA;
+    //mLRIcorrection = (mStockedArea*interception_fraction - mAggregatedWLA) / mAggregatedLA;
+    mLRIcorrection = 0.; // addition of factor disenganged (20090928)
+
     DBGMODE(qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 g: %3 stocked area: %4")
             .arg(LAI).arg(interception_fraction).arg(mLRIcorrection).arg(mStockedArea); );
 
