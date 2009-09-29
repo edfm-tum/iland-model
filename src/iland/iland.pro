@@ -52,6 +52,7 @@ SOURCES += main.cpp \
     ../core/phenology.cpp
 HEADERS += mainwindow.h \
     stable.h \
+    version.h \
     paintarea.h \
     ../core/grid.h \
     ../core/tree.h \

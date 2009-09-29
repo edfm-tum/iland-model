@@ -107,7 +107,7 @@ void SpeciesSet::setupPhenology()
         int id;
         id = n.attribute("id", "-1").toInt();
         if (id<0) throw IException(QString("Error setting up phenology: id invalid\ndump: %1").arg(xml.dump("")));
-        xml.setCurrentNode(QString("type[%1]").arg(i));
+        xml.setCurrentNode(n);
         Phenology item( id,
                         xml.valueDouble(".vpdMin",0.5), // use relative access to node (".x")
                         xml.valueDouble(".vpdMax", 5),
