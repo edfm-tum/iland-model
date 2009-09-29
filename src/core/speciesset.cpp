@@ -35,6 +35,9 @@ const Species *SpeciesSet::species(const int &index)
   */
 int SpeciesSet::setup()
 {
+    // setup phenology
+    setupPhenology();
+
     const XmlHelper &xml = GlobalSettings::instance()->settings();
     QString tableName = xml.value("model.species.source", "species");
     QString readerFile = xml.value("model.species.reader", "reader.bin");
@@ -89,6 +92,35 @@ int SpeciesSet::setup()
     return mSpecies.count();
 
 }
+
+void SpeciesSet::setupPhenology()
+{
+    mPhenology.clear();
+    mPhenology.push_back(Phenology()); // id=0
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.species.phenology"));
+    int i=0;
+    do {
+        QDomElement n = xml.node(QString("type[%1]").arg(i));
+        if (n.isNull())
+            break;
+        i++;
+        int id;
+        id = n.attribute("id", "-1").toInt();
+        if (id<0) throw IException(QString("Error setting up phenology: id invalid\ndump: %1").arg(xml.dump("")));
+        xml.setCurrentNode(QString("type[%1]").arg(i));
+        Phenology item( id,
+                        xml.valueDouble(".vpdMin",0.5), // use relative access to node (".x")
+                        xml.valueDouble(".vpdMax", 5),
+                        xml.valueDouble(".minDayLength",10),
+                        xml.valueDouble(".maxDayLength",11),
+                        xml.valueDouble(".tempMin", 2),
+                        xml.valueDouble(".tempMax", 9) );
+
+        mPhenology.push_back(item);
+    } while(true);
+
+}
+
 /** retrieves variables from the datasource available during the setup of species.
   */
 QVariant SpeciesSet::var(const QString& varName)
@@ -159,4 +191,17 @@ double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenRes
     double response = mCO2p0 * K1*(ambientCO2 - mCO2comp) / (1 + K2*(ambientCO2-mCO2comp)); // Eq. 16
     return response;
 
+}
+
+/** return the phenology of the group... */
+const Phenology &SpeciesSet::phenology(const int phenologyGroup)
+{
+    const Phenology &p = mPhenology.at(phenologyGroup);
+    if (p.id() == phenologyGroup)
+        return p;
+    // search...
+    for (int i=0;i<mPhenology.count();i++)
+        if (mPhenology[i].id()==phenologyGroup)
+            return mPhenology[i];
+    throw IException(QString("Error at SpeciesSEt::phenology(): invalid group: %1").arg(phenologyGroup));
 }

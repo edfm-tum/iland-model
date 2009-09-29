@@ -150,6 +150,19 @@ void Tests::climate()
     }
 }
 
+
+void Tests::testSun()
+{
+    // solar radiation
+    Sun sun;
+    sun.setup(RAD(47));
+    qDebug()<<sun.dump();
+    sun.setup(RAD(70));
+    qDebug()<<sun.dump();
+    sun.setup(RAD(-20));
+    qDebug()<<sun.dump();
+}
+
 void Tests::climateResponse()
 {
 
@@ -192,12 +205,8 @@ void Tests::climateResponse()
     }
     qDebug() << line;
 
-    // solar radiation
-    Sun sun;
-    sun.setup(RAD(47));
-    qDebug()<<sun.dump();
-    sun.setup(RAD(70));
-    qDebug()<<sun.dump();
+    // sun
+    testSun();
 
 
     } catch (IException &e) {

@@ -16,6 +16,8 @@ public:
     private:
     QString dumpTreeList();
     QObject *mParent;
+ private:
+    void testSun();
 
 };
 

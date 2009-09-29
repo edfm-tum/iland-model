@@ -23,9 +23,11 @@ class Sun
 public:
     void setup(const double latitude_rad);
     QString dump();
-    const double &daylength(const int day) { return mDaylength_h[day]; }
+    const double &daylength(const int day) const { return mDaylength_h[day]; }
+    int longestDay() const { return mDayWithMaxLength; }
 private:
-    double mLatitude;
+    double mLatitude; ///< latitude in radians
+    int mDayWithMaxLength; ///< day of year with maximum day length
     double mDaylength_h[366]; ///< daylength per day in hours
 };
 

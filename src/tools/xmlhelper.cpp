@@ -107,9 +107,10 @@ bool XmlHelper::hasNode(const QString &path) const
 QString XmlHelper::value(const QString &path, const QString &defaultValue) const
 {
     QDomElement e = node(path);
-    if (e.isNull())
+    if (e.isNull()) {
+        qDebug() << "Warning: xml: node" << path << "is not present.";
         return defaultValue;
-    else {
+    } else {
         if (e.text().isEmpty())
             return defaultValue;
         else
@@ -119,9 +120,10 @@ QString XmlHelper::value(const QString &path, const QString &defaultValue) const
 bool XmlHelper::valueBool(const QString &path, const bool defaultValue) const
 {
     QDomElement e = node(path);
-    if (e.isNull())
+    if (e.isNull()) {
+        qDebug() << "Warning: xml: node" << path << "is not present.";
         return defaultValue;
-    QString v = e.text();
+    } QString v = e.text();
     if (v=="true" || v=="True" || v=="1")
         return true;
     else
@@ -130,9 +132,10 @@ bool XmlHelper::valueBool(const QString &path, const bool defaultValue) const
 double XmlHelper::valueDouble(const QString &path, const double defaultValue) const
 {
     QDomElement e = node(path);
-    if (e.isNull())
+    if (e.isNull()) {
+        qDebug() << "Warning: xml: node" << path << "is not present.";
         return defaultValue;
-    else {
+    } else {
         if (e.text().isEmpty())
             return defaultValue;
         else

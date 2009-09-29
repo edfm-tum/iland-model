@@ -10,9 +10,8 @@ CONFIG += precompile_header
 
 # includepath: adds directories to the standard include (no directory needed when #include a file).
 INCLUDEPATH += ../core \
-                ../tools \
-                ../output
-
+    ../tools \
+    ../output
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
@@ -49,7 +48,8 @@ SOURCES += main.cpp \
     ../core/management.cpp \
     ../core/speciesresponse.cpp \
     ../core/climate.cpp \
-    ../core/modelsettings.cpp
+    ../core/modelsettings.cpp \
+    ../core/phenology.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -85,16 +85,19 @@ HEADERS += mainwindow.h \
     ../core/management.h \
     ../core/speciesresponse.h \
     ../core/climate.h \
-    ../core/modelsettings.h
+    ../core/modelsettings.h \
+    ../core/phenology.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
-
-
 QMAKE_EXTRA_TARGETS += revtarget
-PRE_TARGETDEPS      += version.h
-revtarget.target     = version.h
+PRE_TARGETDEPS += version.h
+revtarget.target = version.h
 SVNREV = $$system(svnversion .)
-revtarget.commands   = @echo "const char *version = \"Alpha 1.1.0\";" \
-                             "const char *svn_revision = \"$$SVNREV\";" > $$revtarget.target
-revtarget.depends = $$SOURCES $$HEADERS $$FORMS
-
+revtarget.commands = @echo \
+    "const char *version = \"Alpha 1.1.0\";" \
+    "const char *svn_revision = \"$$SVNREV\";" \
+    > \
+    $$revtarget.target
+revtarget.depends = $$SOURCES \
+    $$HEADERS \
+    $$FORMS

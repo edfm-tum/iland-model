@@ -7,20 +7,24 @@
 void Sun::setup(double latitude_rad)
 {
     mLatitude = latitude_rad;
+    if (mLatitude>0)
+        mDayWithMaxLength = 182-10; // 21.juni
+    else
+        mDayWithMaxLength = 365-10; //southern hemisphere
     // calculate length of day using  the approximation formulae of: http://herbert.gandraxa.com/length_of_day.aspx
     const double j = M_PI / 182.625;
     const double ecliptic = RAD(23.439);
     double m;
     for (int day=0;day<366;day++) {
-        m = 1. - tan(latitude_rad)*tan(ecliptic*cos(j*day));
+        m = 1. - tan(latitude_rad)*tan(ecliptic*cos(j*(day+10))); // day=0: winter solstice => subtract 10 days
         m = limit(m, 0., 2.);
-        mDaylength_h[day] = acos(1-m)/180.;
+        mDaylength_h[day] = acos(1-m)/M_PI * 24.; // result in hours [0..24]
     }
 }
 
 QString Sun::dump()
 {
-    QString result="doy;daylength";
+    QString result=QString("lat: %1, longest day: %2\ndoy;daylength").arg(mLatitude).arg(mDayWithMaxLength);
     for (int i=0;i<366;i++)
         result+=QString("\n%1;%2").arg(i).arg(mDaylength_h[i]);
     return result;
