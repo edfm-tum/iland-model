@@ -8,6 +8,9 @@
 #include "expression.h"
 ///
 #include "climate.h"
+#include "species.h"
+#include "speciesresponse.h"
+
 //
 #include "standloader.h"
 
@@ -135,7 +138,7 @@ void Tests::climate()
     try {
     clim.setup();
     DebugTimer t("climate 100yrs", true);
-    ClimateDay *begin, *end;
+    const ClimateDay *begin, *end;
     int mon=0;
     for (int i=0;i<100;i++) {
         clim.monthRange(mon, &begin, &end);
@@ -147,6 +150,52 @@ void Tests::climate()
     }
 }
 
+void Tests::climateResponse()
+{
+
+    try {
+
+    DebugTimer t("climate 100yrs", true);
+
+    // get a climate response object....
+    Model *model = GlobalSettings::instance()->model();
+    model->ru()->climate()->setup(); // force setup
+    const ResourceUnitSpecies &rus = model->ru()->ruSpecies().first();
+
+    const_cast<ResourceUnitSpecies&>(rus).calculateResponses();
+    const SpeciesResponse *sr = rus.speciesResponse();
+    QString line;
+    for (int mon=0;mon<12;mon++) {
+        line = QString("%1;%2;%3").arg(mon)
+               .arg(sr->vpdResponse()[mon])
+               .arg(sr->tempResponse()[mon]);
+        qDebug() << line;
+    }
+    // test nitrogen response
+    line="Nitrogen response\n";
+    for (double navailable=0.; navailable<100;navailable+=10) {
+        for (double cls=1.; cls<=3.; cls+=0.2) {
+            double res = model->ru()->speciesSet()->nitrogenResponse(navailable,cls);
+            line+=QString("%1;%2;%3\n").arg(navailable).arg(cls).arg(res);
+        }
+    }
+    qDebug() << line;
+
+    line="CO2 response\n";
+    for (double nresponse=0.; nresponse<=1;nresponse+=0.1) {
+        for (double h2o=0.; h2o<=1; h2o+=0.1) {
+            for (double co2=250; co2<600; co2+=50) {
+                double res = model->ru()->speciesSet()->co2Response(co2, nresponse, h2o);
+                line+=QString("%1;%2;%3;%4\n").arg(nresponse).arg(h2o).arg(co2).arg(res);
+            }
+        }
+    }
+    qDebug() << line;
+
+    } catch (IException &e) {
+        Helper::msg(e.toString());
+    }
+}
 
 void Tests::multipleLightRuns(const QString &fileName)
 {

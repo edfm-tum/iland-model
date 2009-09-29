@@ -84,6 +84,16 @@ void Species::setup()
     mDeathProb_intrinsic = 1. - pow(p_lucky, 1. / mMaximumAge);
     mDeathProb_stress = 1. - pow(p_lucky_stress, 0.1); // 10 years (after 10 stress years (full stress), p_lucky_stress percent survive
 
+    // envirionmental responses
+    mRespVpdExponent = doubleVar("respVpdExponent");
+    mRespTempMin  =doubleVar("respTempMin");
+    mRespTempMax  =doubleVar("respTempMax");
+    if (mRespVpdExponent>=0) throw IException( QString("vpd exponent >=0 for species").arg(id()));
+    if (mRespTempMax==0. || mRespTempMin>=mRespTempMax) throw IException( QString("temperature response parameters invalid for species").arg(id()));
+
+    mRespNitrogenClass = doubleVar("respNitrogenClass");
+    if (mRespNitrogenClass<1 || mRespNitrogenClass>3) throw IException( QString("nitrogen class invalid (must be >=1 and <=3) for species").arg(id()));
+
 }
 
 double Species::biomassFoliage(const double dbh) const

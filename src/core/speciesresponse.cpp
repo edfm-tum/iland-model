@@ -9,36 +9,43 @@
 
 SpeciesResponse::SpeciesResponse()
 {
+    mSpecies=0;
+    mRu=0;
 }
-
-void SpeciesResponse::setup(ResourceUnitSpecies *rus)
+void SpeciesResponse::clear()
 {
-    mSpecies = rus->species();
-    mRu = rus->ru();
     for (int i=0;i<12;i++)
         mVpdResponse[i]=mSoilWaterResponse[i]=mTempResponse[i]=0.;
 
     mCO2Response=mNitrogenResponse=0.;
+
+}
+void SpeciesResponse::setup(ResourceUnitSpecies *rus)
+{
+    mSpecies = rus->species();
+    mRu = rus->ru();
+    clear();
 }
 
 /// Main function that calculates monthly / annual species responses
 void SpeciesResponse::calculate()
 {
-    calcVpd();
-}
+    const ClimateDay *begin, *end;
+    double no_of_days;
 
-void SpeciesResponse::calcVpd()
-{
-
-    ClimateDay *begin, *end;
+    clear(); // reset values
     for (int mon=0;mon<12;mon++) {
         mRu->climate()->monthRange(mon, &begin, &end);
-        for (ClimateDay *day=begin; day!=end; ++day) {
-            mVpdResponse[mon]+=day->vpd;
+        no_of_days = 0;
+        for (const ClimateDay *day=begin; day!=end; ++day, no_of_days++) {
+            // VPD response
+            mVpdResponse[mon]+=mSpecies->vpdResponse( day->vpd );
+            // Temperature Response
+            mTempResponse[mon]+=mSpecies->temperatureResponse(day->temp_delayed);
         }
-        mVpdResponse[mon] /= mRu->climate()->days(mon);
-
-
+        mVpdResponse[mon] /= no_of_days; // vpd: average of month
+        mTempResponse[mon] /= no_of_days; // temperature: average value of daily responses
     }
-
 }
+
+

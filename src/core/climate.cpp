@@ -14,18 +14,18 @@ Climate::Climate()
 // access functions
 const ClimateDay *Climate::dayOfYear(const int dayofyear)
 {
-    return mStore.begin() + mDayIndices[mCurrentYear*12]+ dayofyear;
+    return mStore.constBegin() + mDayIndices[mCurrentYear*12]+ dayofyear;
 }
 const ClimateDay *Climate::day(const int month, const int day)
 {
     if (mDayIndices.isEmpty())
         return &mInvalidDay;
-    return mStore.begin() + mDayIndices[mCurrentYear*12 + month] + day;
+    return mStore.constBegin() + mDayIndices[mCurrentYear*12 + month] + day;
 }
-void Climate::monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd)
+void Climate::monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd)
 {
-    *rBegin = mStore.begin() + mDayIndices[mCurrentYear*12 + month];
-    *rEnd = mStore.begin() + mDayIndices[mCurrentYear*12 + month+1];
+    *rBegin = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month];
+    *rEnd = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month+1];
     qDebug() << "monthRange returning: begin:"<< (*rBegin)->date() << "end-1:" << (*rEnd-1)->date();
 }
 
@@ -108,7 +108,7 @@ void Climate::load()
                 // new month...
                 lastmon = cday->month;
                 // save relative position of the beginning of the new month
-                mDayIndices.push_back( cday - mStore.begin() );
+                mDayIndices.push_back( cday - mStore.constBegin() );
             }
             if (yeardays==1) {
                 // check on first day of the year

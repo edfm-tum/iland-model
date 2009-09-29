@@ -634,13 +634,15 @@ void MainWindow::on_pbCalculateExpression_clicked()
         Tests t(this);
         int which = QInputDialog::getInt(this, "Which test",
                                         "which test?\n0: expression speed\n1: tree clear\n" \
-                                        "2:kill trees\n3: climate\n4: multiple light automation", 0);
+                                        "2:kill trees\n3: climate\n4: multiple light automation\n" \
+                                        "5: species response", 0);
         switch (which) {
             case 0: t.speedOfExpression();break;
             case 1: t.clearTrees(); break;
             case 2: t.killTrees(); break;
             case 3: t.climate(); break;
             case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
+            case 5: t.climateResponse(); break;
         }
         return;
     }

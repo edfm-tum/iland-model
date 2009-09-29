@@ -10,6 +10,8 @@ public:
     SpeciesResponse();
     // actions
     void setup(ResourceUnitSpecies *rus);
+    /// calculate the species specific environmental response values for the resource unit.
+    /// this function called before the 3pg production.
     void calculate();
     // access responses
     const double *vpdResponse() const { return mVpdResponse; }
@@ -18,7 +20,7 @@ public:
     double co2Response() const { return mCO2Response; }
     double nitrogenResponse() const { return mNitrogenResponse; }
 private:
-    void calcVpd();
+    void clear();
     const ResourceUnit *mRu;
     const Species *mSpecies;
     double mVpdResponse[12];

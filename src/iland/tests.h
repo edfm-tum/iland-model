@@ -10,6 +10,7 @@ public:
     void killTrees();
     // climate
     void climate();
+    void climateResponse();
     // light based tests for multiple stands
     void multipleLightRuns(const QString &fileName);
     private:

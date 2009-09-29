@@ -43,6 +43,10 @@ public:
     double deathProb_stress() const { return mDeathProb_stress; }
     // aging
     double aging(const float height, const int age);
+    // environmental responses
+    double vpdResponse(const double &vpd) const;
+    double temperatureResponse(const double &delayed_temp) const;
+    double nitrogenResponse(const double &availableNitrogen) const { return mSet->nitrogenResponse(availableNitrogen, mRespNitrogenClass); }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance
@@ -82,6 +86,11 @@ private:
     // Aging
     double mMaximumAge; ///< maximum age of species (years)
     double mMaximumHeight; ///< maximum height of species (m) for aging
+    // environmental responses
+    double mRespVpdExponent; ///< exponent in vpd response calculation (Mäkela 2008)
+    double mRespTempMin; ///< temperature response calculation offset
+    double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
+    double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
     Expression mAging;
 };
 
@@ -91,6 +100,24 @@ inline void Species::hdRange(const double dbh, double &rLowHD, double &rHighHD)
 {
     rLowHD = mHDlow.calculate(dbh);
     rHighHD = mHDhigh.calculate(dbh);
+}
+/** vpdResponse calculates response on vpd.
+    Input: vpd [kPa]*/
+inline double Species::vpdResponse(const double &vpd) const
+{
+    return exp(mRespVpdExponent * vpd);
+}
+
+/** temperatureResponse calculates response on delayed daily temperature.
+    Input: average temperature [°C]
+    Note: slightly different from Mäkela 2008: the maximum parameter (Sk) in iLand is interpreted as the absolute
+          temperature yielding a response of 1; in Mäkela 2008, Sk is the width of the range (relative to the lower threhold)
+*/
+inline double Species::temperatureResponse(const double &delayed_temp) const
+{
+    double x = qMax(delayed_temp-mRespTempMin, 0.);
+    x = qMin(x/(mRespTempMax-mRespTempMin), 1.);
+    return x;
 }
 
 #endif // SPECIES_H

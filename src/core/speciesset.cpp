@@ -63,6 +63,29 @@ int SpeciesSet::setup()
     qDebug() << mSpecies.keys();
 
     mSetupQuery = 0;
+
+    // setup nitrogen response
+    XmlHelper resp(xml.node("model.species.nitrogenResponseClasses"));
+    if (!resp.isValid())
+        throw IException("model.species.nitrogenResponseClasses not present!");
+    mNitrogen_1a = resp.valueDouble("class_1_a");
+    mNitrogen_1b = resp.valueDouble("class_1_b");
+    mNitrogen_2a = resp.valueDouble("class_2_a");
+    mNitrogen_2b = resp.valueDouble("class_2_b");
+    mNitrogen_3a = resp.valueDouble("class_3_a");
+    mNitrogen_3b = resp.valueDouble("class_3_b");
+    if (mNitrogen_1a*mNitrogen_1b*mNitrogen_2a*mNitrogen_2b*mNitrogen_3a*mNitrogen_3b == 0)
+        throw IException("at least one parameter of model.species.nitrogenResponseClasses is not valid (value=0)!");
+
+    // setup CO2 response
+    XmlHelper co2(xml.node("model.species.CO2Response"));
+    mCO2base = co2.valueDouble("baseConcentration");
+    mCO2comp = co2.valueDouble("compensationPoint");
+    mCO2beta0 = co2.valueDouble("beta0");
+    mCO2p0 = co2.valueDouble("p0");
+    if (mCO2base*mCO2comp*(mCO2base-mCO2comp)*mCO2beta0*mCO2p0==0)
+        throw IException("at least one parameter of model.species.CO2Response is not valid!");
+
     return mSpecies.count();
 
 }
@@ -80,4 +103,57 @@ QVariant SpeciesSet::var(const QString& varName)
     // lookup in defaults
     //qDebug() << "variable" << varName << "not found - using default.";
     //return GlobalSettings::instance()->settingDefaultValue(varName);
+}
+
+inline double SpeciesSet::nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const
+{
+    if (availableNitrogen<=NB)
+        return 0;
+    double x = 1. - exp(NA * (availableNitrogen-NB));
+    return x;
+}
+
+/// calculate nitrogen response for a given amount of available nitrogen and a respone class
+/// for fractional values, the response value is interpolated between the fixedly defined classes (1,2,3)
+double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double &responseClass) const
+{
+    double value1, value2, value3;
+    if (responseClass>2.) {
+        if (responseClass==3.)
+            return nitrogenResponse(availableNitrogen, mNitrogen_3a, mNitrogen_3b);
+        else {
+            // interpolate between 2 and 3
+            value2 = nitrogenResponse(availableNitrogen, mNitrogen_2a, mNitrogen_2b);
+            value3 = nitrogenResponse(availableNitrogen, mNitrogen_3a, mNitrogen_3b);
+            return value2 + (responseClass-2)*(value3-value2);
+        }
+    }
+    if (responseClass==2)
+        return nitrogenResponse(availableNitrogen, mNitrogen_2a, mNitrogen_2b);
+    if (responseClass==1)
+        return nitrogenResponse(availableNitrogen, mNitrogen_1a, mNitrogen_1b);
+    // last ressort: interpolate between 1 and 2
+    value1 = nitrogenResponse(availableNitrogen, mNitrogen_1a, mNitrogen_1b);
+    value2 = nitrogenResponse(availableNitrogen, mNitrogen_2a, mNitrogen_2b);
+    return value1 + (responseClass-1)*(value2-value1);
+}
+
+/** calculation for the CO2 response for the ambientCO2 for the water- and nitrogen responses given.
+    The calculation follows Friedlingsstein 1995 (see also links to equations in code)
+*/
+double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const
+{
+    double co2_water = 2. - soilWaterResponse;
+    double beta = mCO2beta0 * co2_water * nitrogenResponse;
+
+    double r =1. +  M_LN2 * beta; // NPP increase for a doubling of atmospheric CO2 (Eq. 17)
+
+    // fertilization function (cf. Farquhar, 1980) based on Michaelis-Menten expressions
+    double deltaC = mCO2base - mCO2comp;
+    double K2 = ((2*mCO2base - mCO2comp) - r*deltaC ) / ((r-1.)*deltaC*(2*mCO2base - mCO2comp)); // Eq. 16
+    double K1 = (1. + K2*deltaC) / deltaC;
+
+    double response = mCO2p0 * K1*(ambientCO2 - mCO2comp) / (1 + K2*(ambientCO2-mCO2comp)); // Eq. 16
+    return response;
+
 }

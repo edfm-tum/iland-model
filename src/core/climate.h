@@ -13,8 +13,8 @@ struct ClimateDay
     double preciptitation; // sum of day [mm]
     double radiation; // sum of day (MJ/m2)
     double vpd; // average of day [kPa]
-    QString date() { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
-    bool isValid() { return (year>=0); }
+    QString date() const { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
+    bool isValid() const  { return (year>=0); }
 };
 
 class Climate
@@ -28,7 +28,7 @@ public:
     const ClimateDay *dayOfYear(const int dayofyear); ///< get pointer to climate structure by day of year (0-based-index)
     const ClimateDay *day(const int month, const int day); ///< gets pointer to climate structure of given day (0-based indices, i.e. month=11=december!)
     /// returns two pointer (arguments!!!) to the begin and one after end of the given month (month: 0..11)
-    void monthRange(const int month, ClimateDay **rBegin, ClimateDay **rEnd);
+    void monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd);
     double days(const int month); ///< returns number of days of given month
     int daysOfYear(); ///< returns number of days of current year
 
