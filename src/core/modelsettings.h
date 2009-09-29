@@ -19,6 +19,9 @@ public:
     double temperatureTau; ///< "tau"-value for delayed temperature calculation acc. to Mäkela 2008
     // light model
     QSharedPointer<Expression> lightResponse;
+    // site variables (for now!)
+    double latitude; ///< latitude of project site in radians
+    double nitrogenAvailable; ///< nitrogen content (kg/m2/year) -> will be moved!
 };
 
 #endif // MODELSETTINGS_H

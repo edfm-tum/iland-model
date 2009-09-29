@@ -143,6 +143,9 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
 */
 double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const
 {
+    if (nitrogenResponse==0)
+        return 0.;
+
     double co2_water = 2. - soilWaterResponse;
     double beta = mCO2beta0 * co2_water * nitrogenResponse;
 

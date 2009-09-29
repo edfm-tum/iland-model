@@ -4,6 +4,28 @@
 #include "climate.h"
 #include "model.h"
 
+void Sun::setup(double latitude_rad)
+{
+    mLatitude = latitude_rad;
+    // calculate length of day using  the approximation formulae of: http://herbert.gandraxa.com/length_of_day.aspx
+    const double j = M_PI / 182.625;
+    const double ecliptic = RAD(23.439);
+    double m;
+    for (int day=0;day<366;day++) {
+        m = 1. - tan(latitude_rad)*tan(ecliptic*cos(j*day));
+        m = limit(m, 0., 2.);
+        mDaylength_h[day] = acos(1-m)/180.;
+    }
+}
+
+QString Sun::dump()
+{
+    QString result="doy;daylength";
+    for (int i=0;i<366;i++)
+        result+=QString("\n%1;%2").arg(i).arg(mDaylength_h[i]);
+    return result;
+}
+
 Climate::Climate()
 {
     mLoadYears = 1;

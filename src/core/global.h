@@ -57,4 +57,9 @@ inline int irandom(int from, int to)
 {
     return from +  rand()%(to-from);
 }
+
+inline double limit(const double value, const double lower, const double upper)
+{
+    return qMax(qMin(value, upper), lower);
+}
 #endif // GLOBAL_H

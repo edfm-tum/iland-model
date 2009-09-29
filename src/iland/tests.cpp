@@ -155,7 +155,7 @@ void Tests::climateResponse()
 
     try {
 
-    DebugTimer t("climate 100yrs", true);
+    DebugTimer t("climate Responses", true);
 
     // get a climate response object....
     Model *model = GlobalSettings::instance()->model();
@@ -191,6 +191,14 @@ void Tests::climateResponse()
         }
     }
     qDebug() << line;
+
+    // solar radiation
+    Sun sun;
+    sun.setup(RAD(47));
+    qDebug()<<sun.dump();
+    sun.setup(RAD(70));
+    qDebug()<<sun.dump();
+
 
     } catch (IException &e) {
         Helper::msg(e.toString());

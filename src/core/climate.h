@@ -2,7 +2,7 @@
 #define CLIMATE_H
 
 #include <QtSql>
-
+/// current climate variables of a day. @sa Climate.
 struct ClimateDay
 {
     int year; // year
@@ -15,6 +15,18 @@ struct ClimateDay
     double vpd; // average of day [kPa]
     QString date() const { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
     bool isValid() const  { return (year>=0); }
+};
+
+/// Sun handles calculations of day lengths, etc.
+class Sun
+{
+public:
+    void setup(const double latitude_rad);
+    QString dump();
+    const double &daylength(const int day) { return mDaylength_h[day]; }
+private:
+    double mLatitude;
+    double mDaylength_h[366]; ///< daylength per day in hours
 };
 
 class Climate
