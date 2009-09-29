@@ -30,6 +30,7 @@ void SpeciesResponse::setup(ResourceUnitSpecies *rus)
 /// Main function that calculates monthly / annual species responses
 void SpeciesResponse::calculate()
 {
+    return; // do nothing!
     const ClimateDay *begin, *end;
     double no_of_days;
 

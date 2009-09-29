@@ -155,7 +155,7 @@ void Climate::load()
     mDayIndices.push_back(cday- mStore.begin()); // the absolute last day...
     mMaxYear = mMinYear+mLoadYears;
     mCurrentYear = 0;
-    climateCalculations(lastDay);
+    climateCalculations(lastDay); // perform additional calculations based on the climate data loaded from the database
 
 }
 

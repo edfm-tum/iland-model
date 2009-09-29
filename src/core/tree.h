@@ -88,6 +88,7 @@ private:
     // production relevant
     float mNPPReserve; // kg
     float mLRI; ///< resulting lightResourceIndex
+    float mLightResponse; ///< light response used for distribution of biomass on RU level
     // auxiliary
     float mDbhDelta; ///< diameter growth [cm]
     float mStressIndex; ///< stress index (used for mortality)

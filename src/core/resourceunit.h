@@ -27,7 +27,7 @@ public:
     /// returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
     Tree &newTree();
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
-    void addWLA(const float WLA, const float LA) { mAggregatedWLA += WLA; mAggregatedLA += LA; }
+    void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
     /// function that distributes Radiation according to LRI and LeafArea of the indivudal (@sa production())
     double interceptedRadiation(const double LA, const double LRI) { return mRadiation_m2 * LA * (LRI + mLRIcorrection); }
 

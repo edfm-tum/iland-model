@@ -305,10 +305,10 @@ void Tree::readLIF()
     if (mLRI > 1.)
         mLRI = 1.;
 
-    double lresponse = Model::settings().lightResponse->calculate(mLRI);
+    mLightResponse = Model::settings().lightResponse->calculate(mLRI);
     // Finally, add LRI of this Tree to the ResourceUnit!
-    // mRU->addWLA(mLRI*mLeafArea, mLeafArea);
-    mRU->addWLA(lresponse*mLeafArea, mLeafArea);
+    mRU->addWLA(mLeafArea, mLightResponse);
+
 
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
     //mRU->addWLA(mLRI*mLeafArea, mLeafArea);
@@ -431,10 +431,9 @@ void Tree::readLIF_torus()
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
 
     // calculate a light response from lri:
-    double lresponse = Model::settings().lightResponse->calculate(mLRI);
+    mLightResponse = Model::settings().lightResponse->calculate(mLRI);
     // Finally, add LRI of this Tree to the ResourceUnit!
-    // mRU->addWLA(mLRI*mLeafArea, mLeafArea);
-    mRU->addWLA(lresponse*mLeafArea, mLeafArea);
+    mRU->addWLA(mLeafArea, mLightResponse);
 }
 
 
@@ -456,7 +455,7 @@ void Tree::grow()
     TreeGrowthData d;
     mAge++; // increase age
     // step 1: get radiation from ressource unit: radiation (MJ/tree/year) total intercepted radiation for this tree per year!
-    double radiation = mRU->interceptedRadiation(mLeafArea, mLRI);
+    double radiation = mRU->interceptedRadiation(mLeafArea, mLightResponse);
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
     double raw_gpp_per_rad = mRU->resourceUnitSpecies(species()).prod3PG().GPPperRad();
