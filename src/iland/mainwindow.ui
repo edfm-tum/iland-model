@@ -356,65 +356,42 @@
             <attribute name="title">
              <string>Seite</string>
             </attribute>
-            <widget class="QPushButton" name="reloadJavaScript">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>10</y>
-               <width>101</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>reload script</string>
-             </property>
-            </widget>
-            <widget class="QLineEdit" name="scriptCommand">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>60</y>
-               <width>261</width>
-               <height>20</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_5">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>40</y>
-               <width>111</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Enter command:</string>
-             </property>
-            </widget>
-            <widget class="QTextEdit" name="scriptResult">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>110</y>
-               <width>261</width>
-               <height>191</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_6">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>90</y>
-               <width>81</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Script Output</string>
-             </property>
-            </widget>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <item row="0" column="0">
+              <widget class="QPushButton" name="reloadJavaScript">
+               <property name="text">
+                <string>reload script</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>Clear Output</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Enter command:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="QLineEdit" name="scriptCommand"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>Script Output</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <widget class="QTextEdit" name="scriptResult"/>
+             </item>
+            </layout>
            </widget>
           </widget>
          </item>
@@ -766,12 +743,28 @@ p, li { white-space: pre-wrap; }
    <slot>setText(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>96</x>
-     <y>250</y>
+     <x>167</x>
+     <y>495</y>
     </hint>
     <hint type="destinationlabel">
-     <x>91</x>
-     <y>199</y>
+     <x>167</x>
+     <y>447</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>scriptResult</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>245</x>
+     <y>192</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>226</x>
+     <y>308</y>
     </hint>
    </hints>
   </connection>

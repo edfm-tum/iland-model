@@ -474,8 +474,8 @@ void Tree::grow()
             out << radiation << raw_gpp << gpp << d.NPP << aging_factor;
         }
     ); // DBGMODE()
-
-    partitioning(d); // split npp to compartments and grow (diameter, height)
+    if (d.NPP>0.)
+        partitioning(d); // split npp to compartments and grow (diameter, height)
 
     if (Model::settings().mortalityEnabled)
         mortality(d);
@@ -535,6 +535,8 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;
     mFoliageMass += delta_foliage;
+    if (_isnan(mFoliageMass))
+        qDebug() << "foliage mass invalid!";
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
 
     mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area

@@ -85,10 +85,6 @@ void Management::remain(int number)
     mRemoved += to_kill;
 }
 
-void Management::kill(int number)
-{
-    qDebug() << "kill called with" << number;
-}
 
 // from the range percentile range pctfrom to pctto (each 1..100)
 int Management::kill(int pctfrom, int pctto, int number)
@@ -99,10 +95,10 @@ int Management::kill(int pctfrom, int pctto, int number)
     int index_to = limit(int(pctto/100. * mTrees.count()), 0, mTrees.count());
     if (index_from>=index_to)
         return 0;
-
+    qDebug() << "attempting to remove" << number << "trees between indices" << index_from << "and" << index_to;
     int i;
     int count = number;
-    if (index_from-index_to <= number)  {
+    if (index_to-index_from <= number)  {
         // kill all
         for (i=index_from; i<index_to; i++)
             mTrees.at(i).first->die();
@@ -115,6 +111,7 @@ int Management::kill(int pctfrom, int pctto, int number)
             if (mTrees[rnd_index].first->isDead()) {
                 if (--cancel<0) {
                     qDebug() << "Management::kill: canceling search." << number << "trees left.";
+                    count-=number; // not all trees were killed
                     break;
                 }
                 continue;
@@ -124,6 +121,7 @@ int Management::kill(int pctfrom, int pctto, int number)
             mTrees[rnd_index].first->die();
         }
     }
+    qDebug() << count << "removed.";
     return count; // killed
 }
 

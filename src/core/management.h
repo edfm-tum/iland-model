@@ -18,10 +18,9 @@ public:
     QString executeScript(QString cmd="");
     static QObject *scriptOutput;
 public slots:
-    void remain(int number);
-    void kill(int number);
-    int kill(int pctfrom, int pctto, int number);
-    double percentile(int pct);
+    void remain(int number); ///< remove randomly number of trees
+    int kill(int pctfrom, int pctto, int number); ///< remove "number" in the percentile interval "from" - "to". remove all if "number" is higher than the count. return the number of removed trees.
+    double percentile(int pct); ///< get value for the pct th percentile (1..100)
     int load() { return load(QString()); } ///< load all trees
     int load(QString filter); ///< load all trees passing the filter in a list
     void sort(QString statement); ///< sort trees in the list according to a criterion
