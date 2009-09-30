@@ -26,13 +26,11 @@ double Production3PG::calculate()
     mHarshness = 0.4; // fake
 
     // global value set?
-    double dbg = GlobalSettings::instance()->settings().paramValue("npp_per_year",0);
+    double dbg = GlobalSettings::instance()->settings().paramValue("gpp_per_year",0);
     if (dbg)
         year_raw_gpp = dbg;
 
-
-    // PARutilized - fraction:.... to GPP:
-    // year GPP/rad: gC / (yearly MJ/m2)
+    // year GPP/rad: kg Biomass / (yearly MJ/m2)
     mGPPperRad = year_raw_gpp / radYear;
     return mGPPperRad;
 }

@@ -459,8 +459,8 @@ void Tree::grow()
     // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
     double raw_gpp_per_rad = mRU->resourceUnitSpecies(species()).prod3PG().GPPperRad();
-    // GPP (without aging-effect) [gC] / year -> kg Biomass /GPP (*0.001 *2)
-    double raw_gpp = raw_gpp_per_rad * radiation * 0.001 * 2;
+    // GPP (without aging-effect) kg Biomass / year -> kg Biomass /GPP
+    double raw_gpp = raw_gpp_per_rad * radiation;
 
     // apply aging
     const double aging_factor = mSpecies->aging(mHeight, mAge);
@@ -474,7 +474,6 @@ void Tree::grow()
             out << radiation << raw_gpp << gpp << d.NPP << aging_factor;
         }
     ); // DBGMODE()
-
 
     partitioning(d); // split npp to compartments and grow (diameter, height)
 

@@ -102,8 +102,8 @@ void ResourceUnit::production()
     }
 
     // the pixel counters are filled during the height-grid-calculations
-    mStockedArea = 100. * mStockedPixelCount;
-
+    mStockedArea = 100. * mStockedPixelCount; // m2
+    //double stocked_fraction = mStockedPixelCount/double(mPixelCount);
     // calculate the leaf area index (LAI)
     double LAI = mAggregatedLA / mStockedArea;
     // calculate the intercepted radiation fraction using the law of Beer Lambert
@@ -112,18 +112,14 @@ void ResourceUnit::production()
     // calculate the amount of radiation available on this ressource unit
     mRadiation_m2 = 3140; // incoming radiation sum of year in MJ/m2*year
 
-    // Formula for distribution: g = (SA*pPAR - sum(LRI*LA))/sum(LA)
-    //mLRIcorrection = (mStockedArea*interception_fraction - mAggregatedWLA) / mAggregatedLA;
-    mLRIcorrection = 0.; // addition of factor disenganged (20090928)
+    mRadiation_perWLA = interception_fraction *  mRadiation_m2 / mAggregatedWLA;
 
-    DBGMODE(qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 g: %3 stocked area: %4")
-            .arg(LAI).arg(interception_fraction).arg(mLRIcorrection).arg(mStockedArea); );
-
+    DBGMODE(qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 radiation per WLA: %3 stocked area: %4")
+            .arg(LAI).arg(interception_fraction).arg(mRadiation_perWLA).arg(mStockedArea); );
 
     // invoke species specific calculation (3PG)
     QVector<ResourceUnitSpecies>::iterator i;
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
-
 
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         (*i).calculateResponses();
