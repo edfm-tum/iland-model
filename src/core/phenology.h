@@ -1,13 +1,14 @@
 #ifndef PHENOLOGY_H
 #define PHENOLOGY_H
+class Climate;
 
 class Phenology
 {
 public:
-    Phenology() { mId=0; mMinVpd=mMaxVpd=mMinDayLength=mMaxDayLength=mMinTemp=mMaxTemp=0.; }
-    Phenology(const int id, const double minVpd, const double maxVpd,
+    Phenology() {mClimate=0; mId=0; mMinVpd=mMaxVpd=mMinDayLength=mMaxDayLength=mMinTemp=mMaxTemp=0.; }
+    Phenology(const int id, Climate* climate, const double minVpd, const double maxVpd,
               const double minDayLength, const double maxDayLength,
-              const double minTemp, const double maxTemp): mId(id), mMinVpd(minVpd), mMaxVpd(maxVpd),
+              const double minTemp, const double maxTemp): mId(id), mClimate(climate), mMinVpd(minVpd), mMaxVpd(maxVpd),
                                 mMinDayLength(minDayLength), mMaxDayLength(maxDayLength), mMinTemp(minTemp), mMaxTemp(maxTemp) {}
     // access
     const int id() const { return mId; }
@@ -19,6 +20,7 @@ public:
 
 private:
     int mId; ///< identifier of this Phenology group
+    Climate *mClimate; ///< link to relevant climate source
     double mMinVpd; ///< minimum vpd [kPa]
     double mMaxVpd; ///< maximum vpd [kPa]
     double mMinDayLength; ///< minimum daylength [hours]

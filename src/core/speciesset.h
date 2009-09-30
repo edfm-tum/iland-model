@@ -3,7 +3,7 @@
 #include <QtSql>
 
 #include "stampcontainer.h"
-#include "phenology.h"
+
 class Species;
 
 class SpeciesSet
@@ -21,17 +21,14 @@ public:
     // calculations
     double nitrogenResponse(const double availableNitrogen, const double &responseClass) const;
     double co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const;
-    const Phenology &phenology(const int phenologyGroup);
     // maintenance
     void clear();
     int setup();
 private:
     double nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const;
-    void setupPhenology();
     QList<Species*> mActiveSpecies;
     QMap<QString, Species*> mSpecies;
     QSqlQuery *mSetupQuery;
-    QList<Phenology> mPhenology;
     StampContainer mReaderStamp;
     // nitrogen response classes
     double mNitrogen_1a, mNitrogen_1b; ///< parameters of nitrogen response class 1

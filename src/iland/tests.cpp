@@ -163,6 +163,15 @@ void Tests::testSun()
     qDebug()<<sun.dump();
 }
 
+void Tests::testPheno(Climate *clim)
+{
+    Phenology pheno(1,clim,0.9, 4.1, 10., 11., 2. ,9.);
+    pheno.calculate();
+    qDebug() << "Phenology is the key:";
+    for (int i=0;i<12;i++)
+        qDebug() << i << pheno.month()[i];
+}
+
 void Tests::climateResponse()
 {
 
@@ -172,7 +181,8 @@ void Tests::climateResponse()
 
     // get a climate response object....
     Model *model = GlobalSettings::instance()->model();
-    model->ru()->climate()->setup(); // force setup
+    //model->ru()->climate()->setup(); // force setup
+
     const ResourceUnitSpecies &rus = model->ru()->ruSpecies().first();
 
     const_cast<ResourceUnitSpecies&>(rus).calculateResponses();
@@ -206,9 +216,10 @@ void Tests::climateResponse()
     qDebug() << line;
 
     // sun
-    testSun();
+    //testSun();
+    testPheno(model->ru()->climate());
 
-
+    // test phenology
     } catch (IException &e) {
         Helper::msg(e.toString());
     }

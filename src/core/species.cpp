@@ -94,6 +94,8 @@ void Species::setup()
     mRespNitrogenClass = doubleVar("respNitrogenClass");
     if (mRespNitrogenClass<1 || mRespNitrogenClass>3) throw IException( QString("nitrogen class invalid (must be >=1 and <=3) for species").arg(id()));
 
+    // phenology
+    mPhenologyClass = (int)doubleVar("phenologyClass");
 }
 
 double Species::biomassFoliage(const double dbh) const

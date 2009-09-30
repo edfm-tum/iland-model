@@ -86,12 +86,14 @@ private:
     // Aging
     double mMaximumAge; ///< maximum age of species (years)
     double mMaximumHeight; ///< maximum height of species (m) for aging
+    Expression mAging;
     // environmental responses
     double mRespVpdExponent; ///< exponent in vpd response calculation (Mäkela 2008)
     double mRespTempMin; ///< temperature response calculation offset
     double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
     double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
-    Expression mAging;
+    double mPhenologyClass;
+
 };
 
 

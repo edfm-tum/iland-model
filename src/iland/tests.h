@@ -1,6 +1,7 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+class Climate;
 class Tests
 {
 public:
@@ -18,6 +19,7 @@ public:
     QObject *mParent;
  private:
     void testSun();
+    void testPheno(Climate *clim);
 
 };
 

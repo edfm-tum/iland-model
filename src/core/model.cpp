@@ -254,7 +254,10 @@ void Model::beforeRun()
     DebugTimer loadtrees("load trees");
     StandLoader loader(this);
     loader.processInit();
-//    Tree::lafactor = GlobalSettings::instance()->settings().paramValue("lafactor",1.);
+
+    // load climate
+    foreach(Climate *c, mClimates)
+        c->setup();
 
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();
@@ -264,11 +267,13 @@ void Model::beforeRun()
 
 void Model::runYear()
 {
-    // process a cycle
+    foreach(Climate *c, mClimates)
+        c->nextYear();
+
+    // process a cycle of individual growth
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();
     readPattern();
-
     grow();
 
     // management

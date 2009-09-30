@@ -34,14 +34,12 @@ Climate::Climate()
 {
     mLoadYears = 1;
     mInvalidDay.day=mInvalidDay.month=mInvalidDay.year=-1;
+    mBegin = mEnd = 0;
 }
 
 
 // access functions
-const ClimateDay *Climate::dayOfYear(const int dayofyear)
-{
-    return mStore.constBegin() + mDayIndices[mCurrentYear*12]+ dayofyear;
-}
+
 const ClimateDay *Climate::day(const int month, const int day)
 {
     if (mDayIndices.isEmpty())
@@ -52,7 +50,7 @@ void Climate::monthRange(const int month, const ClimateDay **rBegin, const Clima
 {
     *rBegin = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month];
     *rEnd = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month+1];
-    qDebug() << "monthRange returning: begin:"<< (*rBegin)->date() << "end-1:" << (*rEnd-1)->date();
+    qDebug() << "monthRange returning: begin:"<< (*rBegin)->toString() << "end-1:" << (*rEnd-1)->toString();
 }
 
 double Climate::days(const int month)
@@ -63,9 +61,16 @@ int Climate::daysOfYear()
 {
     if (mDayIndices.isEmpty())
         return -1;
-    return mDayIndices[(mCurrentYear+1)*12]-mDayIndices[mCurrentYear*12];
+    return mEnd - mBegin;
 }
 
+void Climate::toDate(const int yearday, int *rDay, int *rMonth, int *rYear)
+{
+    const ClimateDay *d = dayOfYear(yearday);
+    if (rDay) *rDay = d->day-1;
+    if (rMonth) *rMonth = d->month-1;
+    if (rYear) *rYear = d->year;
+}
 
 void Climate::setup()
 {
@@ -88,6 +93,9 @@ void Climate::setup()
     }
     // load first chunk...
     load();
+    setupPhenology(); // load phenology
+    // setup sun
+    mSun.setup(Model::settings().latitude);
 }
 
 
@@ -155,6 +163,9 @@ void Climate::load()
     mDayIndices.push_back(cday- mStore.begin()); // the absolute last day...
     mMaxYear = mMinYear+mLoadYears;
     mCurrentYear = 0;
+    mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
+    mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+
     climateCalculations(lastDay); // perform additional calculations based on the climate data loaded from the database
 
 }
@@ -167,7 +178,11 @@ void Climate::nextYear()
         load();
     else
         mCurrentYear++;
-    //qDebug() << "current year is" << mMinYear + mCurrentYear;
+
+    mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
+    mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    for(int i=0;i<mPhenology.count(); ++i)
+        mPhenology[i].calculate();
 }
 
 void Climate::climateCalculations(ClimateDay &lastDay)
@@ -186,4 +201,46 @@ void Climate::climateCalculations(ClimateDay &lastDay)
         ++c;
     }
 
+}
+
+
+void Climate::setupPhenology()
+{
+    mPhenology.clear();
+    mPhenology.push_back(Phenology()); // id=0
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.species.phenology"));
+    int i=0;
+    do {
+        QDomElement n = xml.node(QString("type[%1]").arg(i));
+        if (n.isNull())
+            break;
+        i++;
+        int id;
+        id = n.attribute("id", "-1").toInt();
+        if (id<0) throw IException(QString("Error setting up phenology: id invalid\ndump: %1").arg(xml.dump("")));
+        xml.setCurrentNode(n);
+        Phenology item( id,
+                        this,
+                        xml.valueDouble(".vpdMin",0.5), // use relative access to node (".x")
+                        xml.valueDouble(".vpdMax", 5),
+                        xml.valueDouble(".dayLengthMin",10),
+                        xml.valueDouble(".dayLengthMax",11),
+                        xml.valueDouble(".tempMin", 2),
+                        xml.valueDouble(".tempMax", 9) );
+
+        mPhenology.push_back(item);
+    } while(true);
+}
+
+/** return the phenology of the group... */
+const Phenology &Climate::phenology(const int phenologyGroup)
+{
+    const Phenology &p = mPhenology.at(phenologyGroup);
+    if (p.id() == phenologyGroup)
+        return p;
+    // search...
+    for (int i=0;i<mPhenology.count();i++)
+        if (mPhenology[i].id()==phenologyGroup)
+            return mPhenology[i];
+    throw IException(QString("Error at SpeciesSEt::phenology(): invalid group: %1").arg(phenologyGroup));
 }

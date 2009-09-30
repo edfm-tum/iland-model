@@ -49,7 +49,8 @@ SOURCES += main.cpp \
     ../core/speciesresponse.cpp \
     ../core/climate.cpp \
     ../core/modelsettings.cpp \
-    ../core/phenology.cpp
+    ../core/phenology.cpp \
+    ../tools/floatingaverage.cpp
 HEADERS += mainwindow.h \
     stable.h \
     version.h \
@@ -87,7 +88,8 @@ HEADERS += mainwindow.h \
     ../core/speciesresponse.h \
     ../core/climate.h \
     ../core/modelsettings.h \
-    ../core/phenology.h
+    ../core/phenology.h \
+    ../tools/floatingaverage.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
 QMAKE_EXTRA_TARGETS += revtarget
