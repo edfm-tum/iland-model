@@ -34,6 +34,7 @@ public:
     ResourceUnit *ru() { return mRU.front(); }
     ResourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
     const QList<ResourceUnit*> &ruList() const {return mRU; }
+    Management *management() const { return mManagement; }
     // global grids
     FloatGrid *grid() { return mGrid; }
     HeightGrid *heightGrid() { return mHeightGrid; }
@@ -43,8 +44,8 @@ public:
     void clear(); ///< free ressources
     void loadProject(); ///< setup and load a project
     bool isSetup() const { return mSetup; } ///< return true if the model world is correctly setup.
-    static const ModelSettings &settings() {return mSettings;}
-    static ModelSettings &changeSettings() {return mSettings;}
+    static const ModelSettings &settings() {return mSettings;} ///< access to global model settings.
+    static ModelSettings &changeSettings() {return mSettings;} ///< write access to global model settings.
 
 private:
     void initialize(); ///< basic startup without creating a simulation

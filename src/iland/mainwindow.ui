@@ -194,7 +194,7 @@
             </sizepolicy>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="tab_2">
             <attribute name="title">
@@ -351,6 +351,70 @@
               </widget>
              </item>
             </layout>
+           </widget>
+           <widget class="QWidget" name="pageScript">
+            <attribute name="title">
+             <string>Seite</string>
+            </attribute>
+            <widget class="QPushButton" name="reloadJavaScript">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>101</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>reload script</string>
+             </property>
+            </widget>
+            <widget class="QLineEdit" name="scriptCommand">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>60</y>
+               <width>261</width>
+               <height>20</height>
+              </rect>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_5">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>40</y>
+               <width>111</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Enter command:</string>
+             </property>
+            </widget>
+            <widget class="QTextEdit" name="scriptResult">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>110</y>
+               <width>261</width>
+               <height>191</height>
+              </rect>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_6">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>90</y>
+               <width>81</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Script Output</string>
+             </property>
+            </widget>
            </widget>
           </widget>
          </item>

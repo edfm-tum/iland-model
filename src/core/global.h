@@ -19,8 +19,14 @@
 void dbg_helper(const char *where, const char *what,const char* file,int line);
 void dbg_helper_ext(const char *where, const char *what,const char* file,int line, const QString &s);
 
+// change to enabled detailed debug messages.
+// if NO_DEBUG_MSGS is defined, NO debug outputs are generated.
+#if defined(QT_NO_DEBUG)
+#define NO_DEBUG_MSGS
+#endif
+
 #if !defined(DBG_IF)
-#  ifndef QT_NO_DEBUG
+#  ifndef NO_DEBUG_MSGS
 #    define DBG_IF(cond, where, what) ((cond) ? dbg_helper(where, what, __FILE__, __LINE__) : qt_noop())
 #  else
 #    define DBG_IF(cond, where, what) qt_noop()
@@ -28,7 +34,7 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 #endif
 
 #if !defined(DBG_IF_X)
-#  ifndef QT_NO_DEBUG
+#  ifndef NO_DEBUG_MSGS
 #    define DBG_IF_X(cond, where, what,more) ((cond) ? dbg_helper_ext(where, what, __FILE__, __LINE__,more) : qt_noop())
 #  else
 #    define DBG_IF_X(cond, where, what,more) qt_noop()
@@ -36,7 +42,7 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 #endif
 
 #if !defined(DBGMODE)
-#  ifndef QT_NO_DEBUG
+#  ifndef NO_DEBUG_MSGS
 #    define DBGMODE(stmts) { stmts }
 #  else
 #    define DBGMODE(stmts) qt_noop()
@@ -59,6 +65,10 @@ inline int irandom(int from, int to)
 }
 
 inline double limit(const double value, const double lower, const double upper)
+{
+    return qMax(qMin(value, upper), lower);
+}
+inline int limit(const int value, const int lower, const int upper)
 {
     return qMax(qMin(value, upper), lower);
 }

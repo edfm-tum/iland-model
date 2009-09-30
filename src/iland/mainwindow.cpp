@@ -1,9 +1,10 @@
-#include "global.h"
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include <QtCore>
 #include <QtGui>
 #include <QtXml>
+
+#include "global.h"
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 #include "model.h"
 #include "standloader.h"
@@ -18,6 +19,7 @@
 
 #include "expression.h"
 #include "expressionwrapper.h"
+#include "management.h"
 
 #include "tests.h"
 
@@ -698,4 +700,28 @@ void MainWindow::on_actionShow_Debug_Messages_triggered(bool checked)
 {
     // enable/disble debug messages
     showDebugMessages=checked;
+}
+
+void MainWindow::on_reloadJavaScript_clicked()
+{
+    Management *mgmt = GlobalSettings::instance()->model()->management();
+    if (!mgmt) return;
+    if (mgmt->scriptFile().isEmpty())
+        Helper::msg("no mangement script file specified");
+    mgmt->loadScript(mgmt->scriptFile());
+    qDebug() << "reloaded" << mgmt->scriptFile();
+    Management::scriptOutput = ui->scriptResult;
+
+}
+
+void MainWindow::on_scriptCommand_returnPressed()
+{
+    // do something....
+    Management *mgmt = GlobalSettings::instance()->model()->management();
+    if (!mgmt)
+        return;
+    qDebug() << "executing" << ui->scriptCommand->text();
+    QString result = mgmt->executeScript(ui->scriptCommand->text());
+    if (!result.isEmpty())
+        ui->scriptResult->append(result);
 }
