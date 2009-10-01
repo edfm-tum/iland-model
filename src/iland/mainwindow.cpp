@@ -502,6 +502,7 @@ void MainWindow::setupModel()
          mRemoteControl.setupDynamicOutput(dout);
      else
          mRemoteControl.setupDynamicOutput("");
+     ui->modelRunProgress->setValue(0);
 }
 
 
@@ -561,10 +562,11 @@ void MainWindow::on_actionModelRun_triggered()
    int count = QInputDialog::getInt(this, "input value",
                                         "How many years to run?\n", 10);
    DebugTimer many_runs(QString("Timer for %1 runs").arg(count));
-
+   ui->modelRunProgress->setMaximum(count-1);
    for (int i=0;i<count;i++) {
        mRemoteControl.runYear();
        checkModelState();
+       ui->modelRunProgress->setValue(i);
        ui->PaintWidget->update();
        QApplication::processEvents();
    }

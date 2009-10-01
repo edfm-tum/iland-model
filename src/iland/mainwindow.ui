@@ -399,6 +399,28 @@
        </widget>
       </widget>
      </item>
+     <item>
+      <widget class="QProgressBar" name="modelRunProgress">
+       <property name="styleSheet">
+        <string notr="true">QProgressBar {    border: 1px solid grey;
+    border-radius: 2px;
+    max-height: 16px; 
+  qproperty-margin: 30;
+text-align: right;
+}
+QProgressBar::chunk {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,  stop: 0 #a6a7aa, stop: 0.3 #666666 stop: 1 #203030);
+    width: 1px;
+ }</string>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+       <property name="textVisible">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
   </widget>
