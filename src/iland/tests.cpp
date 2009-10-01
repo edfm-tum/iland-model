@@ -137,7 +137,8 @@ void Tests::climate()
     Climate clim;
     try {
     clim.setup();
-    DebugTimer t("climate 100yrs", true);
+    DebugTimer t("climate 100yrs");
+    t.setAsWarning();
     const ClimateDay *begin, *end;
     int mon=0;
     for (int i=0;i<100;i++) {
@@ -177,7 +178,8 @@ void Tests::climateResponse()
 
     try {
 
-    DebugTimer t("climate Responses", true);
+    DebugTimer t("climate Responses");
+    t.setAsWarning();
 
     // get a climate response object....
     Model *model = GlobalSettings::instance()->model();

@@ -140,6 +140,7 @@ MainWindow::MainWindow(QWidget *parent)
     checkModelState();
     setWindowTitle("iLand Viewer (#" + Helper::currentRevision() + ")");
     ui->statusBar->addPermanentWidget(ui->modelRunProgress);
+    ui->modelRunProgress->setValue(0);
 }
 
 MainWindow::~MainWindow()
@@ -563,7 +564,9 @@ void MainWindow::on_actionModelRun_triggered()
    int count = QInputDialog::getInt(this, "input value",
                                         "How many years to run?\n", 10);
    DebugTimer many_runs(QString("Timer for %1 runs").arg(count));
+   many_runs.setAsWarning();
    ui->modelRunProgress->setMaximum(count-1);
+   DebugTimer::clearAllTimers();
    for (int i=0;i<count;i++) {
        mRemoteControl.runYear();
        checkModelState();
@@ -571,6 +574,7 @@ void MainWindow::on_actionModelRun_triggered()
        ui->PaintWidget->update();
        QApplication::processEvents();
    }
+   DebugTimer::printAllTimers();
 }
 
 void MainWindow::on_actionRun_one_year_triggered()
@@ -707,6 +711,8 @@ void MainWindow::on_actionShow_Debug_Messages_triggered(bool checked)
 
 void MainWindow::on_reloadJavaScript_clicked()
 {
+    if (!GlobalSettings::instance()->model())
+        return;
     Management *mgmt = GlobalSettings::instance()->model()->management();
     if (!mgmt) return;
     if (mgmt->scriptFile().isEmpty())
@@ -720,6 +726,8 @@ void MainWindow::on_reloadJavaScript_clicked()
 void MainWindow::on_scriptCommand_returnPressed()
 {
     // do something....
+    if (!GlobalSettings::instance()->model())
+        return;
     Management *mgmt = GlobalSettings::instance()->model()->management();
     if (!mgmt)
         return;

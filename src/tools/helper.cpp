@@ -6,6 +6,8 @@
 #include <limits>
 
 #include "version.h"
+// static members
+QHash<QString, double> DebugTimer::mTimingList;
 
 Helper::Helper()
 {
@@ -314,6 +316,41 @@ void DebugTimer::sampleClock(int ms)
     qDebug() << ms << "ms -> ticks/msec" << m_tick_p_s << "ticks elapsed" << tickselapsed;
 
 }*/
+DebugTimer::~DebugTimer()
+{
+    mTimingList[m_caption]+=elapsed();
+    if (!m_silent)
+        showElapsed();
+}
+
+DebugTimer::DebugTimer(const QString &caption, bool silent)
+{
+    m_caption = caption;
+    m_silent=silent;
+    m_asWarning=false;
+    if (!mTimingList.contains(caption))
+        mTimingList[caption]=0.;
+    start();
+}
+
+void DebugTimer::clearAllTimers()
+{
+    QHash<QString, double>::iterator i = mTimingList.begin();
+     while (i != mTimingList.end()) {
+         i.value() = 0.;
+         ++i;
+     }
+}
+void DebugTimer::printAllTimers()
+{
+    QHash<QString, double>::iterator i = mTimingList.begin();
+    qWarning() << "Total timers\n================";
+     while (i != mTimingList.end()) {
+         if (i.value()>0)
+            qWarning() << i.key() << ":" << i.value() << "ms";
+         ++i;
+     }
+}
 
 void DebugTimer::interval(const QString &text)
 {
