@@ -76,6 +76,7 @@ private:
     OutputMode mMode;
     bool mOpen;
     bool mEnabled;
+    bool mTransactionOpen; ///< for database outputs: if true, currently a transaction is open
     QString mName; ///< name of the output
     QString mTableName; ///< name of the table/output file
     QString mDescription; ///< textual description of the content

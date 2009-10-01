@@ -90,16 +90,23 @@ void ModelController::destroy()
         qDebug() << "ModelController: Model destroyed.";
     }
 }
-void ModelController::run()
+
+void ModelController::run(int years)
 {
-    if (!canRun()) return;
-    try {
-        mModel->runYear();
-    } catch(const IException &e) {
-        QString error_msg = e.toString();
-        Helper::msg(error_msg);
-        qDebug() << error_msg;
+    if (!canRun())
+        return;
+    DebugTimer many_runs(QString("Timer for %1 runs").arg(years));
+    many_runs.setAsWarning();
+
+    DebugTimer::clearAllTimers();
+    for (int i=0;i<years;i++) {
+        runYear();
+        emit year(i);
     }
+    GlobalSettings::instance()->outputManager()->save();
+    DebugTimer::printAllTimers();
+    emit finished(QString());
+
 }
 
 void ModelController::runYear()
@@ -118,7 +125,14 @@ void ModelController::runYear()
     }
 }
 
+bool ModelController::pause()
+{
+    return true;
+}
 
+void ModelController::cancel()
+{
+}
 //////////////////////////////////////
 // dynamic outut
 //////////////////////////////////////

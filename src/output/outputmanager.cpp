@@ -54,6 +54,12 @@ Output *OutputManager::find(const QString& tableName)
     return NULL;
 }
 
+void OutputManager::save()
+{
+    foreach(Output *p, mOutputs)
+        p->endTransaction();
+}
+
 bool OutputManager::execute(const QString& tableName)
 {
     Output *p = find(tableName);
@@ -67,9 +73,9 @@ bool OutputManager::execute(const QString& tableName)
             return false;
         }
 
-        p->startTransaction();
+        p->startTransaction(); // just assure a transaction is open.... nothing happens if already inside a transaction
         p->exec();
-        p->endTransaction();
+
         return true;
     }
     qDebug() << "output" << tableName << "not found!";

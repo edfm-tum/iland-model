@@ -28,6 +28,8 @@ public:
     ~MainWindow();
 public slots:
     void repaint(); ///< force a repaint of the main drawing area
+    void yearSimulated(int year);
+    void modelFinished(QString errorMessage);
 
 private:
     Ui::MainWindowClass *ui;

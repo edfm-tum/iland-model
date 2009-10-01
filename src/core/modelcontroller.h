@@ -18,12 +18,17 @@ public:
     // dynamic outputs (variable fields)
     void setupDynamicOutput(QString fieldList);
     QString dynamicOutput();
+signals:
+    void finished(QString errorMessage);
+    void year(int year);
 public slots:
     void setFileName(QString initFileName); ///< set project file name
     void create(); ///< create the model
     void destroy(); ///< delete the model
-    void run(); ///< run the model
+    void run(int years); ///< run the model
     void runYear(); ///< runs a single time step
+    bool pause(); ///< pause execution, and if paused, continue to run. returns state *after* change, i.e. true=now in paused mode
+    void cancel(); ///< cancel execution of the model
 private:
     void fetchDynamicOutput();
     Model *mModel;

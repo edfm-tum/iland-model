@@ -10,6 +10,7 @@ public:
     void setup(); ///< setup of the outputs + switch on/off (from project file)
     Output *find(const QString& tableName); ///< search for output and return pointer, NULL otherwise
     bool execute(const QString& tableName); ///< execute output with a given name. returns true if executed.
+    void save(); ///< save transactions of all outputs
 private:
     QList<Output*> mOutputs; ///< list of outputs in system
 };

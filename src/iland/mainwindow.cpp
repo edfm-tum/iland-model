@@ -141,6 +141,9 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("iLand Viewer (#" + Helper::currentRevision() + ")");
     ui->statusBar->addPermanentWidget(ui->modelRunProgress);
     ui->modelRunProgress->setValue(0);
+    // remote control of model
+    connect(&mRemoteControl, SIGNAL(year(int)),this,SLOT(yearSimulated(int)));
+    connect(&mRemoteControl, SIGNAL(finished(QString)), this, SLOT(modelFinished(QString)));
 }
 
 MainWindow::~MainWindow()
@@ -481,7 +484,18 @@ void MainWindow::on_actionEdit_XML_settings_triggered()
     ui->PaintWidget->update();
 }
 
+void MainWindow::yearSimulated(int year)
+{
+       checkModelState();
+       ui->modelRunProgress->setValue(year);
+       ui->PaintWidget->update();
+       QApplication::processEvents();
+}
 
+void MainWindow::modelFinished(QString errorMessage)
+{
+
+}
 
 
 void MainWindow::setupModel()
@@ -563,18 +577,10 @@ void MainWindow::on_actionModelRun_triggered()
         return;
    int count = QInputDialog::getInt(this, "input value",
                                         "How many years to run?\n", 10);
-   DebugTimer many_runs(QString("Timer for %1 runs").arg(count));
-   many_runs.setAsWarning();
+
    ui->modelRunProgress->setMaximum(count-1);
-   DebugTimer::clearAllTimers();
-   for (int i=0;i<count;i++) {
-       mRemoteControl.runYear();
-       checkModelState();
-       ui->modelRunProgress->setValue(i);
-       ui->PaintWidget->update();
-       QApplication::processEvents();
-   }
-   DebugTimer::printAllTimers();
+   mRemoteControl.run(count);
+
 }
 
 void MainWindow::on_actionRun_one_year_triggered()
