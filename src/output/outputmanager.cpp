@@ -5,6 +5,7 @@
 
 #include "global.h"
 #include "outputmanager.h"
+#include "helper.h"
 #include <QtCore>
 
 // tree outputs
@@ -62,6 +63,7 @@ void OutputManager::save()
 
 bool OutputManager::execute(const QString& tableName)
 {
+    DebugTimer t("OutputManager::execute()");
     Output *p = find(tableName);
     if (p) {
         if (!p->isEnabled())

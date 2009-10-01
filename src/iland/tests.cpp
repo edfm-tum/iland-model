@@ -70,9 +70,28 @@ void Tests::speedOfExpression()
         qDebug() << "Sum of volume" << sum;
     }
 }
+void wamodTest()
+{
+    // master id einlesen
+
+    QDir dir("E:\\Daten\\BOKU\\wamod\\september\\mort");
+    QStringList files=dir.entryList(QStringList() << "*.adt");
+    QString stmt;
+    int item=1;
+    QString result;
+    foreach(QString file, files) {
+        stmt = QString("insert into treecollect (runid,reason,n_ha,basal_area) select %1,Reason,count(*), sum(basalArea_cm2) from \"E:\\Daten\\BOKU\\wamod\\september\\mort\\%2\" group by Reason;")
+                        .arg(item).arg(file);
+        result+=stmt+"\r\n";
+        item++;
+    }
+    Helper::saveToTextFile("E:\\Daten\\BOKU\\wamod\\september\\sqlscript.txt",result);
+}
 
 void Tests::clearTrees()
 {
+    wamodTest();
+    return;
     ResourceUnit *ru = GlobalSettings::instance()->model()->ru();
     int tc = ru->trees().count();
     // kill n percent...

@@ -267,6 +267,7 @@ void Model::beforeRun()
 
 void Model::runYear()
 {
+    DebugTimer t("Model::runYear()");
     foreach(Climate *c, mClimates)
         c->nextYear();
 

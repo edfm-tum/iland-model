@@ -16,6 +16,8 @@
 ModelController::ModelController()
 {
     mModel = NULL;
+    mPaused = false;
+    mYearsToRun = 0;
 }
 
 ModelController::~ModelController()
@@ -91,30 +93,44 @@ void ModelController::destroy()
     }
 }
 
+void ModelController::runloop()
+{
+
+    if (mPaused)
+        return;
+    if (GlobalSettings::instance()->currentYear() < mYearsToRun) {
+        bool err = runYear();
+        emit(GlobalSettings::instance()->currentYear());
+        if (!err)
+            QTimer::singleShot(0,this, SLOT(runloop()));
+    }
+}
+
 void ModelController::run(int years)
 {
     if (!canRun())
         return;
     DebugTimer many_runs(QString("Timer for %1 runs").arg(years));
     many_runs.setAsWarning();
+    mPaused = false;
+    mYearsToRun = years;
 
     DebugTimer::clearAllTimers();
-    for (int i=0;i<years;i++) {
-        runYear();
-        emit year(i);
-    }
+
+    runloop(); // start the running loop
+
     GlobalSettings::instance()->outputManager()->save();
     DebugTimer::printAllTimers();
     emit finished(QString());
 
 }
 
-void ModelController::runYear()
+bool ModelController::runYear()
 {
-    if (!canRun()) return;
+    if (!canRun()) return false;
     if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
-
+    bool err=false;
     try {
         mModel->runYear();
         fetchDynamicOutput();
@@ -122,12 +138,26 @@ void ModelController::runYear()
         QString error_msg = e.toString();
         Helper::msg(error_msg);
         qDebug() << error_msg;
+        err=true;
     }
+    return err;
 }
 
 bool ModelController::pause()
 {
-    return true;
+    if(!isRunning())
+        return mPaused;
+
+    if (mPaused) {
+        // currently in pause - mode -> continue
+        mPaused = false;
+        QTimer::singleShot(0,this, SLOT(runloop())); // continue loop
+    } else {
+        // currently running -> set to pause mode
+        GlobalSettings::instance()->outputManager()->save();
+        mPaused = true;
+    }
+    return mPaused;
 }
 
 void ModelController::cancel()

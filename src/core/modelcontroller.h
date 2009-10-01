@@ -26,12 +26,16 @@ public slots:
     void create(); ///< create the model
     void destroy(); ///< delete the model
     void run(int years); ///< run the model
-    void runYear(); ///< runs a single time step
+    bool runYear(); ///< runs a single time step
     bool pause(); ///< pause execution, and if paused, continue to run. returns state *after* change, i.e. true=now in paused mode
     void cancel(); ///< cancel execution of the model
+private slots:
+    void runloop();
 private:
     void fetchDynamicOutput();
     Model *mModel;
+    bool mPaused;
+    int mYearsToRun;
     QString mInitFile;
     QStringList mDynFieldList;
     QStringList mDynData;
