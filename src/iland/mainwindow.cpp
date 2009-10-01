@@ -139,6 +139,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     checkModelState();
     setWindowTitle("iLand Viewer (#" + Helper::currentRevision() + ")");
+    ui->statusBar->addPermanentWidget(ui->modelRunProgress);
 }
 
 MainWindow::~MainWindow()
