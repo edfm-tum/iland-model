@@ -147,7 +147,7 @@ QString ModelController::dynamicOutput()
     return mDynData.join("\n");
 }
 
-const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75";
+const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75" << "p5"<< "p10" << "p90" << "p95";
 void ModelController::fetchDynamicOutput()
 {
     if (mDynFieldList.isEmpty())
@@ -212,6 +212,10 @@ void ModelController::fetchDynamicOutput()
             case 4: value = stat.percentile25(); break;
             case 5: value = stat.median(); break;
             case 6: value = stat.percentile75(); break;
+            case 7: value = stat.percentile(5); break;
+            case 8: value = stat.percentile(10); break;
+            case 9: value = stat.percentile(90); break;
+            case 10: value = stat.percentile(95); break;
             default: throw IException(QString("Invalid aggregate expression for dynamic output: %1\nallowed:%2")
                                   .arg(var[1]).arg(aggList.join(" ")));
         }

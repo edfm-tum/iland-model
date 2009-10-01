@@ -14,7 +14,7 @@ DynamicStandOut::DynamicStandOut()
     // other colums are added during setup...
 }
 
-const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75";
+const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75" << "p5"<< "p10" << "p90" << "p95";
 
 void DynamicStandOut::setup()
 {
@@ -121,14 +121,19 @@ void DynamicStandOut::exec()
                 // aggregate
                 double value;
                 switch (field.agg_index) {
-                    case 0: value = stat.mean(); break;
-                    case 1: value = stat.sum(); break;
-                    case 2: value = stat.min(); break;
-                    case 3: value = stat.max(); break;
-                    case 4: value = stat.percentile25(); break;
-                    case 5: value = stat.median(); break;
-                    case 6: value = stat.percentile75(); break;
-                    default: value = 0.; break;
+                case 0: value = stat.mean(); break;
+                case 1: value = stat.sum(); break;
+                case 2: value = stat.min(); break;
+                case 3: value = stat.max(); break;
+                case 4: value = stat.percentile25(); break;
+                case 5: value = stat.median(); break;
+                case 6: value = stat.percentile75(); break;
+                case 7: value = stat.percentile(5); break;
+                case 8: value = stat.percentile(10); break;
+                case 9: value = stat.percentile(90); break;
+                case 10: value = stat.percentile(95); break;
+
+                default: value = 0.; break;
                 }
                 // add current value to output
                 *this << value;
