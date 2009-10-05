@@ -449,23 +449,28 @@ void Tree::resetStatistics()
 ////  Growth Functions
 //////////////////////////////////////////////////
 
-
+/** grow() is the main function of the yearly tree growth.
+  The main steps are:
+  - Production of GPP/NPP   @sa http://iland.boku.ac.at/primary+production
+  - Partitioning of NPP to biomass compartments of the tree @sa http://iland.boku.ac.at/allocation (???)
+  - Growth of the stem http://iland.boku.ac.at/stem+growth (???)
+  Additionally, the age of the tree is increased and the mortality sub routine is executed.*/
 void Tree::grow()
 {
     TreeGrowthData d;
     mAge++; // increase age
     // step 1: get radiation from ressource unit: radiation (MJ/tree/year) total intercepted radiation for this tree per year!
     double radiation = mRU->interceptedRadiation(mLeafArea, mLightResponse);
-    // step 2: get fraction of PARutilized, i.e. fraction of intercepted rad that is utiliziable (per year)
 
+    // step 2: calculate GPP of the tree based on the amount of absorved radiation and the species' production efficiency
     double raw_gpp_per_rad = mRU->resourceUnitSpecies(species()).prod3PG().GPPperRad();
     // GPP (without aging-effect) kg Biomass / year -> kg Biomass /GPP
     double raw_gpp = raw_gpp_per_rad * radiation;
 
-    // apply aging
+    // apply aging according to the state of the individuum
     const double aging_factor = mSpecies->aging(mHeight, mAge);
-    double gpp = raw_gpp * aging_factor;
-    d.NPP = gpp * 0.47; // respiration loss, transformation kg
+    double gpp = raw_gpp * aging_factor; //
+    d.NPP = gpp * 0.47; // respiration loss, cf. Waring et al 1998.
 
     DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
@@ -486,13 +491,13 @@ void Tree::grow()
         mRU->resourceUnitSpecies(species()).statistics().add(this);
 }
 
-
+/** partitioning of this years assimilates (NPP) to biomass compartments.
+  Conceptionally, the algorithm is based on Duursma, 2007. */
 inline void Tree::partitioning(TreeGrowthData &d)
 {
     if (isDebugging())
         enableDebugging(true);
     double npp = d.NPP;
-    double harshness = mRU->resourceUnitSpecies(species()).prod3PG().harshness();
     // add content of reserve pool
     npp += mNPPReserve;
     const double foliage_mass_allo = species()->biomassFoliage(mDbh);
@@ -508,7 +513,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     double to_wood = refill_reserve / (mWoodyMass + refill_reserve);
 
-    apct_root = harshness;
+    apct_root = mRU->resourceUnitSpecies(species()).prod3PG().rootFraction();
     double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)
@@ -595,8 +600,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 /** Determination of diamter and height growth based on increment of the stem mass (@p net_stem_npp).
     Refer to XXX for equations and variables.
     This function updates the dbh and height of the tree.
-    The equations are based on dbh in meters!
-  */
+    The equations are based on dbh in meters! */
 inline void Tree::grow_diameter(TreeGrowthData &d)
 {
     // determine dh-ratio of increment

@@ -18,8 +18,8 @@ const double radYear = 3140.; // the sum of radMonth [MJ/m2]
 /**
   This is based on the utilizable photosynthetic active radiation.
   @sa http://iland.boku.ac.at/primary+production
-  The resulting radiation is per m2!       */
-inline double Production3PG::calculateUtilizablePAR(const int month)
+  The resulting radiation is MJ/m2       */
+inline double Production3PG::calculateUtilizablePAR(const int month) const
 {
     // calculate the available radiation
 
@@ -35,14 +35,20 @@ inline double Production3PG::calculateUtilizablePAR(const int month)
 }
 /** calculate the alphac (=photosynthetic efficiency) for the given month.
    this is based on a global efficiency, and modified per species.
-   epsilon is in gC/MMOl??!?!?!?
+   epsilon is in gC/MJ Radiation
   */
-inline double Production3PG::calculateEpsilon(const int month)
+inline double Production3PG::calculateEpsilon(const int month) const
 {
     double epsilon = Model::settings().epsilon; // maximum radiation use efficiency
     epsilon *= mResponse->nitrogenResponse() *
                mResponse->co2Response();
     return epsilon;
+}
+
+inline double Production3PG::abovegroundFraction() const
+{
+    double harsh =  1 - 0.8/(1 + 2.5 * mResponse->nitrogenResponse());
+    return harsh;
 }
 
 /** calculate the alphac (=photosynthetic efficiency) for given month.
@@ -59,16 +65,18 @@ double Production3PG::calculate()
     for (int i=0;i<12;i++) {
         utilizable_rad = calculateUtilizablePAR(i); // utilizable radiation of the month times ...
         epsilon = calculateEpsilon(i); // ... photosynthetic efficiency ...
-        mGPP[i] =utilizable_rad * epsilon; // ... results in GPP of the month
-        year_raw_gpp += month_gpp[i];
+        mGPP[i] =utilizable_rad * epsilon; // ... results in GPP of the month (gC/m2)
+        year_raw_gpp += mGPP[i]; // gC/m2
     }
-    // calculate harshness factor
-    mHarshness = 0.4; // fake
+    // calculate fac
+    mRootFraction = 1. - abovegroundFraction();
 
     // global value set?
     double dbg = GlobalSettings::instance()->settings().paramValue("gpp_per_year",0);
-    if (dbg)
+    if (dbg) {
         year_raw_gpp = dbg;
+        mRootFraction = 0.4;
+    }
 
     // year GPP/rad: kg Biomass / (yearly MJ/m2)
     mGPPperRad = year_raw_gpp / radYear;
