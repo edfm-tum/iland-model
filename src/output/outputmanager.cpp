@@ -64,6 +64,7 @@ void OutputManager::save()
 bool OutputManager::execute(const QString& tableName)
 {
     DebugTimer t("OutputManager::execute()");
+    t.setSilent();
     Output *p = find(tableName);
     if (p) {
         if (!p->isEnabled())

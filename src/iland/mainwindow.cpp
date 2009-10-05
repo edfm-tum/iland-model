@@ -168,6 +168,8 @@ void MainWindow::checkModelState()
     ui->actionModelRun->setEnabled(mRemoteControl.canRun());
     ui->actionRun_one_year->setEnabled(mRemoteControl.canRun());
     ui->actionReload->setEnabled(mRemoteControl.canDestroy());
+    ui->actionStop->setEnabled(mRemoteControl.isRunning());
+    ui->actionPause->setEnabled(mRemoteControl.isRunning());
 }
 
 
@@ -494,7 +496,8 @@ void MainWindow::yearSimulated(int year)
 
 void MainWindow::modelFinished(QString errorMessage)
 {
-
+    qDebug() << "Finished!";
+    checkModelState();
 }
 
 
@@ -599,6 +602,16 @@ void MainWindow::on_actionReload_triggered()
     mRemoteControl.destroy();
     setupModel();
 
+}
+
+void MainWindow::on_actionPause_triggered()
+{
+    mRemoteControl.pause();
+}
+
+void MainWindow::on_actionStop_triggered()
+{
+    mRemoteControl.cancel();
 }
 
 void MainWindow::on_actionTree_Partition_triggered()
@@ -742,3 +755,5 @@ void MainWindow::on_scriptCommand_returnPressed()
     if (!result.isEmpty())
         ui->scriptResult->append(result);
 }
+
+

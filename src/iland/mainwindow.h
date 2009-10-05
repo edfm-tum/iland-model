@@ -51,6 +51,8 @@ private:
 
 private slots:
 
+    void on_actionStop_triggered();
+    void on_actionPause_triggered();
     void on_scriptCommand_returnPressed();
     void on_reloadJavaScript_clicked();
     void on_actionShow_Debug_Messages_triggered(bool checked);

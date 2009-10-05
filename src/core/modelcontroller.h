@@ -15,6 +15,7 @@ public:
     bool canDestroy(); ///< model may be destroyed
     bool canRun(); ///< model may be run
     bool isRunning(); ///< model is running
+    bool isFinished(); ///< returns true if there is a valid model state, but the run is finished
     // dynamic outputs (variable fields)
     void setupDynamicOutput(QString fieldList);
     QString dynamicOutput();
@@ -35,6 +36,9 @@ private:
     void fetchDynamicOutput();
     Model *mModel;
     bool mPaused;
+    bool mRunning;
+    bool mFinished;
+    bool mCanceled;
     int mYearsToRun;
     QString mInitFile;
     QStringList mDynFieldList;

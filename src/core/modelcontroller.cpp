@@ -17,6 +17,7 @@ ModelController::ModelController()
 {
     mModel = NULL;
     mPaused = false;
+    mRunning = false;
     mYearsToRun = 0;
 }
 
@@ -47,7 +48,15 @@ bool ModelController::canRun()
 
 bool ModelController::isRunning()
 {
- return GlobalSettings::instance()->currentYear()>0;
+    return mRunning;
+}
+
+bool ModelController::isFinished()
+{
+    if (!mModel)
+        return false;
+    return canRun() && !isRunning()  && mFinished;
+
 }
 
 
@@ -98,12 +107,31 @@ void ModelController::runloop()
 
     if (mPaused)
         return;
-    if (GlobalSettings::instance()->currentYear() < mYearsToRun) {
-        bool err = runYear();
-        emit(GlobalSettings::instance()->currentYear());
-        if (!err)
+    bool doStop = false;
+    bool hasError = false;
+
+    if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
+        hasError = runYear();
+        mRunning = true;
+        emit year(GlobalSettings::instance()->currentYear());
+        if (!hasError)
             QTimer::singleShot(0,this, SLOT(runloop()));
+        else
+           doStop = true; // an error occured
+
+    } else {
+        doStop = true; // all years simulated
     }
+
+    if (doStop || mCanceled) {
+                // finished
+        mRunning = false;
+        GlobalSettings::instance()->outputManager()->save();
+        DebugTimer::printAllTimers();
+        mFinished = true;
+        emit finished(QString());
+    }
+    QApplication::processEvents();
 }
 
 void ModelController::run(int years)
@@ -113,15 +141,16 @@ void ModelController::run(int years)
     DebugTimer many_runs(QString("Timer for %1 runs").arg(years));
     many_runs.setAsWarning();
     mPaused = false;
+    mFinished = false;
+    mCanceled = false;
     mYearsToRun = years;
+    GlobalSettings::instance()->setCurrentYear(0); // reset clock
 
     DebugTimer::clearAllTimers();
 
     runloop(); // start the running loop
 
-    GlobalSettings::instance()->outputManager()->save();
-    DebugTimer::printAllTimers();
-    emit finished(QString());
+
 
 }
 
@@ -162,7 +191,9 @@ bool ModelController::pause()
 
 void ModelController::cancel()
 {
+    mCanceled = true;
 }
+
 //////////////////////////////////////
 // dynamic outut
 //////////////////////////////////////
