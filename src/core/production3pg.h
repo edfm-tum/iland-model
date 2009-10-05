@@ -2,6 +2,7 @@
 #define PRODUCTION3PG_H
 
 class SpeciesResponse;
+class ProductionOut;
 class Production3PG
 {
 public:
@@ -15,9 +16,12 @@ private:
     inline double calculateEpsilon(const int month) const;
     inline double abovegroundFraction() const; ///< calculate fraction of biomass
     const SpeciesResponse *mResponse; ///< species specific responses
+    double mUPAR[12]; ///< utilizable radiation MJ
     double mGPP[12]; ///< monthly Gross Primary Production gC/MJ radiation
     double mRootFraction; ///< fraction of production that flows into roots
     double mGPPperRad; ///< kg GPP Biomass / MJ PAR
+
+    friend class ProductionOut;
 };
 
 #endif // PRODUCTION3PG_H

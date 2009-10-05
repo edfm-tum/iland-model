@@ -12,17 +12,17 @@
 #include "treeout.h"
 #include "standout.h"
 #include "dynamicstandout.h"
+#include "productionout.h"
 
 
 
 OutputManager::OutputManager()
 {
     // add all the outputs
-#ifndef FONSTUDIO
     mOutputs.append(new TreeOut);
     mOutputs.append(new StandOut);
     mOutputs.append(new DynamicStandOut);
-#endif
+    mOutputs.append(new ProductionOut);
 
 }
 

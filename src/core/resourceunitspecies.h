@@ -16,7 +16,7 @@ public:
     const SpeciesResponse *speciesResponse() const { return &mResponse; }
     const Species *species() const { return mSpecies; } ///< return pointer to species
     const ResourceUnit *ru() const { return mRU; } ///< return pointer to resource unit
-    const Production3PG &prod3PG()  { return m3PG; } ///< the 3pg production model of this speies x resourceunit
+    const Production3PG &prod3PG() const { return m3PG; } ///< the 3pg production model of this speies x resourceunit
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
     const StandStatistics &constStatistics() const { return mStatistics; }
     // action

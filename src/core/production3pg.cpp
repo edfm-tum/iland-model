@@ -57,16 +57,16 @@ double Production3PG::calculate()
 {
     Q_ASSERT(mResponse!=0);
     // Radiation: sum over all days of each month with foliage
-    double year_raw_gpp = 0.;
+    double year_raw_gpp_c = 0.;
     for (int i=0;i<12;i++) {
-        mAlphaC[i] = 0.; mGPP[i] = 0.;  mNPP[i] = 0.;
+        mGPP[i] = 0.; mUPAR[i]=0.;
     }
     double utilizable_rad, epsilon;
     for (int i=0;i<12;i++) {
-        utilizable_rad = calculateUtilizablePAR(i); // utilizable radiation of the month times ...
+        mUPAR[i] = calculateUtilizablePAR(i); // utilizable radiation of the month times ...
         epsilon = calculateEpsilon(i); // ... photosynthetic efficiency ...
         mGPP[i] =utilizable_rad * epsilon; // ... results in GPP of the month (gC/m2)
-        year_raw_gpp += mGPP[i]; // gC/m2
+        year_raw_gpp_c += mGPP[i]; // gC/m2
     }
     // calculate fac
     mRootFraction = 1. - abovegroundFraction();
@@ -74,11 +74,12 @@ double Production3PG::calculate()
     // global value set?
     double dbg = GlobalSettings::instance()->settings().paramValue("gpp_per_year",0);
     if (dbg) {
-        year_raw_gpp = dbg;
+        year_raw_gpp_c = dbg * 1000. / 2.; // to g Carbon / m2
         mRootFraction = 0.4;
     }
 
-    // year GPP/rad: kg Biomass / (yearly MJ/m2)
-    mGPPperRad = year_raw_gpp / radYear;
-    return mGPPperRad;
+    // year GPP/rad: kg Biomass (Carbon) * 2 / (yearly MJ/m2)
+    double year_gpp_biomass = year_raw_gpp_c * 2 / 1000.; // conversion from gC/m2 -> kg/m2
+    mGPPperRad = year_gpp_biomass / radYear;
+    return mGPPperRad; // kg Biomass/MJ
 }
