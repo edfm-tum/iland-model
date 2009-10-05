@@ -14,7 +14,7 @@ double ramp(const double &value, const double minValue, const double maxValue)
 }
 
 /** calculates the phenology according to Jolly et al. 2005.
-  The calculation is performed for a given "group" and a "climate".
+  The calculation is performed for a given "group" and a present "climate".
 */
 void Phenology::calculate()
 {
@@ -60,6 +60,8 @@ void Phenology::calculate()
         throw IException(QString("Phenology::calculation(): was not able to determine the length of the vegetation period for group %1." ).arg(id()));
     qDebug() << "Jolly-phenology. start" << mClimate->dayOfYear(day_start)->toString() << "stop" << mClimate->dayOfYear(day_stop)->toString();
     iday = 0;
+    mDayStart = day_start;
+    mDayEnd = day_stop;
     int bDay, bMon, eDay, eMon;
     // convert yeardays to dates
     mClimate->toDate(day_start, &bDay, &bMon);

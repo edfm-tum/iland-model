@@ -4,6 +4,9 @@
 #include "climate.h"
 #include "model.h"
 
+double ClimateDay::co2 = 350.; // base value of ambient CO2-concentration (ppm)
+
+
 void Sun::setup(double latitude_rad)
 {
     mLatitude = latitude_rad;

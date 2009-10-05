@@ -9,3 +9,8 @@
 #include "resourceunit.h"
 
 
+void ResourceUnitSpecies::calculate()
+{
+    mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
+    m3PG.calculate();///< production of NPP
+}

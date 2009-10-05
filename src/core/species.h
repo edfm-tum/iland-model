@@ -14,6 +14,7 @@ class Species
 {
 public:
     Species(SpeciesSet *set) { mSet = set; mIndex=set->count(); }
+    const SpeciesSet *speciesSet() const { return mSet; }
     // properties
     /// @property id 4-character unique identification of the tree species
     const QString &id() const { return mId; }
@@ -21,6 +22,7 @@ public:
     const QString &name() const { return mName; }
     int index() const { return mIndex; } ///< unique index of species within current set
     bool active() const { return true; } ///< active??? todo!
+    int phenologyClass() const { return mPhenologyClass; }
 
     // calculations: allometries
     double biomassFoliage(const double dbh) const;
@@ -92,7 +94,7 @@ private:
     double mRespTempMin; ///< temperature response calculation offset
     double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
     double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
-    double mPhenologyClass;
+    int mPhenologyClass;
 
 };
 

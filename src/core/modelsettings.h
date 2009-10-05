@@ -22,6 +22,8 @@ public:
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year) -> will be moved!
+    // production
+    double epsilon; ///< maximum light use efficency used for the 3PG model
 };
 
 #endif // MODELSETTINGS_H

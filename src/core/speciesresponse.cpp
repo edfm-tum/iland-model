@@ -1,4 +1,15 @@
 /** @class SpeciesResponse calculates production relevant responses for a tree species on resource unit level.
+    SpeciesResponse combines data from different sources and converts information about the environment
+    into responses of a species. The spatial level is the "ResourceUnit", where homogenetiy of environmental factors
+    is assumed. The temporal aggregation depends on the factor, but usually, the daily environmental data is
+    aggregated to monthly response values (which subsequently are used during 3PG production).
+ Sources are:
+    - vapour pressure deficit (dryness of atmosphere): directly from climate data (daily)
+    - soil water status (dryness of soil): TODO (daily)
+    - temperature: directly from climate data (daily)
+    - phenology: @sa Phenology, combines several sources (quasi-monthly)
+    - CO2: @sa SpeciesSet::co2Response() based on ambient CO2 level (climate data), nitrogen and soil water responses (yearly)
+    - nitrogen: based on the amount of available nitrogen (yearly)
 */
 #include "speciesresponse.h"
 
@@ -6,6 +17,7 @@
 #include "species.h"
 #include "resourceunitspecies.h"
 #include "climate.h"
+#include "model.h"
 
 SpeciesResponse::SpeciesResponse()
 {
@@ -15,9 +27,9 @@ SpeciesResponse::SpeciesResponse()
 void SpeciesResponse::clear()
 {
     for (int i=0;i<12;i++)
-        mVpdResponse[i]=mSoilWaterResponse[i]=mTempResponse[i]=0.;
+        mVpdResponse[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=0.;
 
-    mCO2Response=mNitrogenResponse=0.;
+    mCO2Response=mNitrogenResponse=mSoilWaterResponseYear=0.;
 
 }
 void SpeciesResponse::setup(ResourceUnitSpecies *rus)
@@ -35,6 +47,26 @@ void SpeciesResponse::calculate()
     double no_of_days;
 
     clear(); // reset values
+
+    // calculate yearly responses
+    mSoilWaterResponseYear = 0.5; // TODO
+    double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year
+    double nitrogen =  Model::settings().nitrogenAvailable;
+
+    // Nitrogen response: a yearly value based on available nitrogen
+    mNitrogenResponse = mSpecies->nitrogenResponse( nitrogen );
+
+    // CO2 response: a yearly value based on atmospheric CO2 concentration and the response to nutrients and water in the soil.
+    mCO2Response = mSpecies->speciesSet()->co2Response(ambient_co2,
+                                                       mNitrogenResponse,
+                                                       mSoilWaterResponseYear);
+
+    const Phenology &pheno = mRu->climate()->phenology(mSpecies->phenologyClass());
+    int veg_begin = pheno.vegetationPeriodStart();
+    int veg_end = pheno.vegetationPeriodEnd();
+
+    // calculate monthly responses
+    int doy=0;
     for (int mon=0;mon<12;mon++) {
         mRu->climate()->monthRange(mon, &begin, &end);
         no_of_days = 0;
@@ -43,6 +75,11 @@ void SpeciesResponse::calculate()
             mVpdResponse[mon]+=mSpecies->vpdResponse( day->vpd );
             // Temperature Response
             mTempResponse[mon]+=mSpecies->temperatureResponse(day->temp_delayed);
+            // radiation: only count days in vegetation period
+            if (doy>=veg_begin && doy<=veg_end)
+                mRadiation[mon] += day->radiation;
+
+            doy++;
         }
         mVpdResponse[mon] /= no_of_days; // vpd: average of month
         mTempResponse[mon] /= no_of_days; // temperature: average value of daily responses
