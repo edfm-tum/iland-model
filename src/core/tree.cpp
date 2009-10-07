@@ -459,13 +459,15 @@ void Tree::grow()
 {
     TreeGrowthData d;
     mAge++; // increase age
-    // step 1: get radiation from ressource unit: radiation (MJ/tree/year) total intercepted radiation for this tree per year!
-    double radiation = mRU->interceptedRadiation(mLeafArea, mLightResponse);
+    // step 1: get "interception area" of the tree individual [m2]
+    // the sum of all area of all trees of a unit equal the total stocked area * interception_factor(Beer-Lambert)
+    double effective_area = mRU->interceptedArea(mLeafArea, mLightResponse);
 
-    // step 2: calculate GPP of the tree based on the amount of absorved radiation and the species' production efficiency
-    double raw_gpp_per_rad = mRU->resourceUnitSpecies(species()).prod3PG().GPPperRad();
-    // GPP (without aging-effect) kg Biomass / year -> kg Biomass /GPP
-    double raw_gpp = raw_gpp_per_rad * radiation;
+    // step 2: calculate GPP of the tree based
+    // (1) get the amount of GPP for a "unit area" of the tree species
+    double raw_gpp_per_area = mRU->resourceUnitSpecies(species()).prod3PG().GPPperArea();
+    // (2) GPP (without aging-effect) in kg Biomass / year
+    double raw_gpp = raw_gpp_per_area * effective_area;
 
     // apply aging according to the state of the individuum
     const double aging_factor = mSpecies->aging(mHeight, mAge);
@@ -476,7 +478,7 @@ void Tree::grow()
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
             dumpList(out); // add tree headers
-            out << radiation << raw_gpp << gpp << d.NPP << aging_factor;
+            out << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
         }
     ); // DBGMODE()
     if (d.NPP>0.)

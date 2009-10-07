@@ -14,8 +14,3 @@ void ResourceUnitSpecies::calculate()
     mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
     m3PG.calculate();///< production of NPP
 }
-
-void ResourceUnitSpecies::print() const
-{
-    qDebug() << "resourceunitspecies" << this << "co2response" << mResponse.co2Response() << "species" << mSpecies->id();
-}

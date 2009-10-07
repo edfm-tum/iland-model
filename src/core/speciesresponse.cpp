@@ -77,6 +77,8 @@ void SpeciesResponse::calculate()
             // radiation: only count days in vegetation period
             if (doy>=veg_begin && doy<=veg_end)
                 mRadiation[mon] += day->radiation;
+            // soil water: fake
+            mSoilWaterResponse[mon] = mSoilWaterResponseYear;
 
             doy++;
         }

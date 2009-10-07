@@ -108,7 +108,7 @@ void Output::openDatabase()
         sql+=",";
     }
     sql[sql.length()-1]=')'; // replace last "," with )
-    qDebug()<< sql;
+    //qDebug()<< sql;
     QSqlQuery creator(db);
     QString drop=QString("drop table if exists %1").arg(tableName());
     creator.exec(drop); // drop table (if exists)
@@ -121,7 +121,7 @@ void Output::openDatabase()
     insert[insert.length()-1]=')';
     values[values.length()-1]=')';
     insert += QString(" values (") + values;
-    qDebug() << insert;
+    //qDebug() << insert;
     mInserter = QSqlQuery(db);
     mInserter.prepare(insert);
     if (mInserter.lastError().isValid()){

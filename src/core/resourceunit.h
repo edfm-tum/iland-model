@@ -28,8 +28,8 @@ public:
     Tree &newTree();
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
-    /// function that distributes Radiation according to LRI and LeafArea of the indivudal (@sa production())
-    double interceptedRadiation(const double LA, const double LRI) { return mRadiation_perWLA * LA * LRI; }
+    /// function that distributes effective interception area according to the weight of Light response and LeafArea of the indivudal (@sa production())
+    double interceptedArea(const double LA, const double LRI) { return mEffectiveArea_perWLA * LA * LRI; }
 
     // model flow
     void newYear(); ///< reset values for a new simulation year
@@ -51,9 +51,9 @@ private:
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
     float mAggregatedLA; ///< sum of leafArea
-    float mAggregatedWLA; ///< sum of lightResponseIndex * LeafArea for all trees
-    double mRadiation_perWLA; ///< correction factor to scale LRIs to WLA
-    double mRadiation_m2; ///< total incoming radiation per m2 and yaer
+    float mAggregatedWLA; ///< sum of lightResponse * LeafArea for all trees
+    double mEffectiveArea_perWLA; ///<
+
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees
     float mStockedArea; ///< size of stocked area

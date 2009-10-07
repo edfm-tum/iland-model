@@ -107,20 +107,23 @@ void ResourceUnit::production()
     }
 
     // the pixel counters are filled during the height-grid-calculations
-    mStockedArea = 100. * mStockedPixelCount; // m2
-    //double stocked_fraction = mStockedPixelCount/double(mPixelCount);
+    mStockedArea = 100. * mStockedPixelCount; // m2 (1 height grid pixel = 10x10m)
+
     // calculate the leaf area index (LAI)
     double LAI = mAggregatedLA / mStockedArea;
     // calculate the intercepted radiation fraction using the law of Beer Lambert
     const double k = Model::settings().lightExtinctionCoefficient;
     double interception_fraction = 1. - exp(-k * LAI);
-    // calculate the amount of radiation available on this ressource unit
-    mRadiation_m2 = 3140; // incoming radiation sum of year in MJ/m2*year
 
-    mRadiation_perWLA = interception_fraction *  mRadiation_m2 / mAggregatedWLA;
+    // calculate the total weighted leaf area on this RU:
+    mEffectiveArea_perWLA = interception_fraction *  mStockedArea / mAggregatedWLA;
 
-    DBGMODE(qDebug() << QString("production: LAI: %1 avg. WLA: %4 intercepted-fraction: %2 radiation per WLA: %3 stocked area: %4")
-            .arg(LAI).arg(interception_fraction).arg(mRadiation_perWLA).arg(mStockedArea); );
+    DBGMODE(qDebug() << QString("production: LAI: %1 (intercepted fraction: %2, stocked area: %4). Effective Area / wla: %3")
+            .arg(LAI)
+            .arg(interception_fraction)
+            .arg(mEffectiveArea_perWLA)
+            .arg(mStockedArea);
+    );
 
     // invoke species specific calculation (3PG)
     //QVector<ResourceUnitSpecies>::iterator i;
@@ -128,13 +131,10 @@ void ResourceUnit::production()
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
 
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        i->print();
         i->calculate();
         i->statistics().clear();
-        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << i->prod3PG().GPPperRad();
+        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << i->prod3PG().GPPperArea();
     }
-    foreach(const ResourceUnitSpecies &rus, mRUSpecies)
-        rus.print();
 }
 
 void ResourceUnit::yearEnd()

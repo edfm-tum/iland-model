@@ -20,7 +20,6 @@ public:
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
     const StandStatistics &constStatistics() const { return mStatistics; }
     // action
-    void print() const;
     void calculate();
 
 private:

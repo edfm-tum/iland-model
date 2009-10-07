@@ -10,7 +10,7 @@ public:
     void setResponse(const SpeciesResponse *response) { mResponse=response;}
     double calculate(); ///< return  year GPP/rad: kg Biomass/MJ PAR/m2
     double rootFraction() const { return mRootFraction; } /// fraction of biomass that should be distributed to roots
-    double GPPperRad() const { return mGPPperRad; } ///< get GPP production per MJ radiaton (kg Biomass)
+    double GPPperArea() const { return mGPPperArea; } ///< get GPP production per MJ radiaton (kg Biomass)
 private:
     inline double calculateUtilizablePAR(const int month) const;
     inline double calculateEpsilon(const int month) const;
@@ -19,7 +19,7 @@ private:
     double mUPAR[12]; ///< utilizable radiation MJ
     double mGPP[12]; ///< monthly Gross Primary Production gC/MJ radiation
     double mRootFraction; ///< fraction of production that flows into roots
-    double mGPPperRad; ///< kg GPP Biomass / MJ PAR
+    double mGPPperArea; ///< kg GPP Biomass / m2 interception area
 
     friend class ProductionOut;
 };
