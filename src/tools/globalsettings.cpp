@@ -289,6 +289,11 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
     if (!db.open()) {
         throw IException(QString("Error in setting up the database connection <%2> connection to file %1.\n").arg(fileName, dbname));
     }
+    if (dbname == "out") {
+        // some special commands (pragmas: see also: http://www.sqlite.org/pragma.html)
+        db.exec("pragma temp_store(2)"); // temp storage in memory
+        db.exec("pragma synchronous(1)"); // medium synchronization between memory and disk (faster than "full", more than "none")
+    }
     return true;
 }
 
