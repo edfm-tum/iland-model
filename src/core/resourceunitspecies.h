@@ -11,7 +11,7 @@ class ResourceUnitSpecies
 {
 public:
     ResourceUnitSpecies() : mSpecies(0), mRU(0) {}
-    ResourceUnitSpecies(Species *species, ResourceUnit *ru) { mSpecies = species; mRU = ru; mResponse.setup(this); }
+    void setup(Species *species, ResourceUnit *ru) { mSpecies = species; mRU = ru; mResponse.setup(this); m3PG.setResponse(&mResponse); }
 
     const SpeciesResponse *speciesResponse() const { return &mResponse; }
     const Species *species() const { return mSpecies; } ///< return pointer to species
@@ -20,6 +20,7 @@ public:
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
     const StandStatistics &constStatistics() const { return mStatistics; }
     // action
+    void print() const;
     void calculate();
 
 private:

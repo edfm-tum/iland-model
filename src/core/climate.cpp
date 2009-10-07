@@ -53,7 +53,7 @@ void Climate::monthRange(const int month, const ClimateDay **rBegin, const Clima
 {
     *rBegin = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month];
     *rEnd = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month+1];
-    qDebug() << "monthRange returning: begin:"<< (*rBegin)->toString() << "end-1:" << (*rEnd-1)->toString();
+    //qDebug() << "monthRange returning: begin:"<< (*rBegin)->toString() << "end-1:" << (*rEnd-1)->toString();
 }
 
 double Climate::days(const int month)

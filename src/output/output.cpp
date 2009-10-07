@@ -195,7 +195,7 @@ void Output::saveDatabase()
         mInserter.bindValue(i,mRow[i]);
     mInserter.exec();
     if (mInserter.lastError().isValid()){
-        throw IException(QString("Error during writing output: %1").arg( mInserter.lastError().text()) );
+        throw IException(QString("Error during saving of output tables: %1").arg( mInserter.lastError().text()) );
     }
 
     newRow();

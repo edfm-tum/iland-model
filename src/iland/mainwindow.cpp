@@ -20,6 +20,7 @@
 #include "expression.h"
 #include "expressionwrapper.h"
 #include "management.h"
+#include "outputmanager.h"
 
 #include "tests.h"
 
@@ -591,6 +592,7 @@ void MainWindow::on_actionRun_one_year_triggered()
    if (!mRemoteControl.canRun())
         return;
    mRemoteControl.runYear();
+   GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
    checkModelState();
    ui->PaintWidget->update();
 }

@@ -7,6 +7,7 @@
 #include "global.h"
 
 #include "resourceunit.h"
+#include "resourceunitspecies.h"
 #include "speciesset.h"
 #include "species.h"
 #include "production3pg.h"
@@ -27,12 +28,16 @@ void ResourceUnit::setSpeciesSet(SpeciesSet *set)
 {
     mSpeciesSet = set;
     mRUSpecies.clear();
+    mRUSpecies.resize(set->count()); // ensure that the vector space is not relocated
     for (int i=0;i<set->count();i++) {
         Species *s = const_cast<Species*>(mSpeciesSet->species(i));
         if (!s)
             throw IException("ResourceUnit::setSpeciesSet: invalid index!");
-        ResourceUnitSpecies rus(s, this);
-        mRUSpecies.append(rus);
+
+        /* be careful: setup() is called with a pointer somewhere to the content of the mRUSpecies container.
+           If the container memory is relocated (QVector), the pointer gets invalid!!!
+           Therefore, a resize() is called before the loop (no resize()-operations during the loop)! */
+        mRUSpecies[i].setup(s,this); // setup this element
     }
 }
 
@@ -118,14 +123,18 @@ void ResourceUnit::production()
             .arg(LAI).arg(interception_fraction).arg(mRadiation_perWLA).arg(mStockedArea); );
 
     // invoke species specific calculation (3PG)
-    QVector<ResourceUnitSpecies>::iterator i;
+    //QVector<ResourceUnitSpecies>::iterator i;
+    ResourceUnitSpecies *i;
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
 
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        (*i).calculate();
-        (*i).statistics().clear();
-//        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << raw_gpp_per_rad;
+        i->print();
+        i->calculate();
+        i->statistics().clear();
+        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << i->prod3PG().GPPperRad();
     }
+    foreach(const ResourceUnitSpecies &rus, mRUSpecies)
+        rus.print();
 }
 
 void ResourceUnit::yearEnd()

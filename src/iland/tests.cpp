@@ -189,7 +189,7 @@ void Tests::climateResponse()
 
     const ResourceUnitSpecies &rus = model->ru()->ruSpecies().first();
 
-    const_cast<ResourceUnitSpecies&>(rus).calculateResponses();
+    const_cast<ResourceUnitSpecies&>(rus).calculate();
     const SpeciesResponse *sr = rus.speciesResponse();
     QString line;
     for (int mon=0;mon<12;mon++) {

@@ -284,6 +284,7 @@ void Model::runYear()
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree");
     om->execute("stand");
+    om->execute("production_month");
     om->execute("dynamicstand");
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
