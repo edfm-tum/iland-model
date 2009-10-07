@@ -34,6 +34,7 @@ OutputManager::~OutputManager()
 
 void OutputManager::setup()
 {
+    close();
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     QString nodepath;
     foreach(Output *o, mOutputs) {
@@ -62,21 +63,30 @@ void OutputManager::save()
     endTransaction();
 }
 
+void OutputManager::close()
+{
+    qDebug() << "outputs closed";
+    foreach(Output *p, mOutputs)
+        p->close();
+}
+
 void OutputManager::startTransaction()
 {
     if (!mTransactionOpen && GlobalSettings::instance()->dbout().isValid()) {
-        GlobalSettings::instance()->dbout().transaction();
-        qDebug() << "opening transaction";
-        mTransactionOpen = true;
+        if (GlobalSettings::instance()->dbout().transaction()) {
+            qDebug() << "opening transaction";
+            mTransactionOpen = true;
+        }
     }
 }
 void OutputManager::endTransaction()
 {
     if (mTransactionOpen && GlobalSettings::instance()->dbout().isValid()) {
-         GlobalSettings::instance()->dbout().commit();
-         mTransactionOpen = false;
-         qDebug() << "database transaction commited";
-     }
+        if (GlobalSettings::instance()->dbout().commit()) {
+            mTransactionOpen = false;
+            qDebug() << "database transaction commited";
+        }
+    }
 }
 
 bool OutputManager::execute(const QString& tableName)

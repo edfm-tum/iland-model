@@ -169,6 +169,20 @@ void Output::open()
 
 void Output::close()
 {
+    if (!isOpen())
+        return;
+    mOpen = false;
+    switch (mMode) {
+        case OutDatabase:
+            // calling finish() ensures, that the query and all locks are freed.
+            // having (old) locks on database connections, degrades insert performance.
+            if (mInserter.isValid())
+                mInserter.finish();
+         break;
+        default:
+         qWarning() << "Output::close with invalid mode";
+    }
+
 }
 
 
