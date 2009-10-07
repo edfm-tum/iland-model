@@ -54,7 +54,6 @@ SOURCES += main.cpp \
     ../output/productionout.cpp
 HEADERS += mainwindow.h \
     stable.h \
-    version.h \
     paintarea.h \
     ../core/grid.h \
     ../core/tree.h \

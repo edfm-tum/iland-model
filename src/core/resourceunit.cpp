@@ -133,7 +133,7 @@ void ResourceUnit::production()
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         i->calculate();
         i->statistics().clear();
-        qDebug() << "species" << (*i).species()->id() << "raw_gpp_per_rad" << i->prod3PG().GPPperArea();
+        qDebug() << "species" << (*i).species()->id() << "raw_gpp_m2" << i->prod3PG().GPPperArea();
     }
 }
 

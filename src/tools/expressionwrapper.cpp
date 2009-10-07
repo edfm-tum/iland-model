@@ -86,7 +86,7 @@ double TreeWrapper::value(const int variableIndex)
 //// ResourceUnit Wrapper
 ////////////////////////////////////////////////
 
-QStringList ruVarList=QStringList() << "id" << "la" << "total_radiation";
+QStringList ruVarList=QStringList() << "id" << "la" << "total_effective_area";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -101,7 +101,7 @@ double RUWrapper::value(const int variableIndex)
     switch (variableIndex) {
     case 0: return mRU->index();
     case 1: return mRU->mAggregatedLA;
-    case 2: return mRU->mRadiation_m2;
+    case 2: return mRU->mEffectiveArea_perWLA;
     }
     throw IException("RUWrapper::getValue: invalid index");
 }

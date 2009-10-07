@@ -45,6 +45,7 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
 
 void ProductionOut::exec()
 {
+    DebugTimer t("ProductionOut");
     Model *m = GlobalSettings::instance()->model();
 
     foreach(ResourceUnit *ru, m->ruList()) {

@@ -18,6 +18,7 @@
 
 OutputManager::OutputManager()
 {
+    mTransactionOpen = false;
     // add all the outputs
     mOutputs.append(new TreeOut);
     mOutputs.append(new StandOut);
@@ -45,6 +46,7 @@ void OutputManager::setup()
         if (enabled)
             o->open();
     }
+    endTransaction(); // just to be sur
 }
 
 Output *OutputManager::find(const QString& tableName)
@@ -57,8 +59,24 @@ Output *OutputManager::find(const QString& tableName)
 
 void OutputManager::save()
 {
-    foreach(Output *p, mOutputs)
-        p->endTransaction();
+    endTransaction();
+}
+
+void OutputManager::startTransaction()
+{
+    if (!mTransactionOpen && GlobalSettings::instance()->dbout().isValid()) {
+        GlobalSettings::instance()->dbout().transaction();
+        qDebug() << "opening transaction";
+        mTransactionOpen = true;
+    }
+}
+void OutputManager::endTransaction()
+{
+    if (mTransactionOpen && GlobalSettings::instance()->dbout().isValid()) {
+         GlobalSettings::instance()->dbout().commit();
+         mTransactionOpen = false;
+         qDebug() << "database transaction commited";
+     }
 }
 
 bool OutputManager::execute(const QString& tableName)
@@ -76,7 +94,7 @@ bool OutputManager::execute(const QString& tableName)
             return false;
         }
 
-        p->startTransaction(); // just assure a transaction is open.... nothing happens if already inside a transaction
+        startTransaction(); // just assure a transaction is open.... nothing happens if already inside a transaction
         p->exec();
 
         return true;

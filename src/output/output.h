@@ -48,9 +48,6 @@ public:
     Output & operator<< ( const double& value ) { add(value); return *this; }
     Output & operator<< ( const int value ) { add(value); return *this; }
     Output & operator<< ( const QString &value ) { add(value); return *this; }
-    // transactions
-    void startTransaction(); ///< start database transaction (does nothing when in file mode)
-    void endTransaction(); ///< ends database transaction (does nothing when in file mode)
 
 protected:
     void setName(const QString &name, const QString tableName) { mName = name; mTableName=tableName; }
@@ -70,13 +67,12 @@ protected:
     inline void add(const QString &stringValue);
 
 private:
-    void newRow(); ///< starts a new row
-    void openDatabase(); ///< database open
-    inline void saveDatabase(); ///< database save (does the "insert")
+    void newRow(); ///< starts a new row (resets the internal counter)
+    void openDatabase(); ///< database open, create output table and prepare insert statement
+    inline void saveDatabase(); ///< database save (exeute the "insert" statement)
     OutputMode mMode;
     bool mOpen;
     bool mEnabled;
-    bool mTransactionOpen; ///< for database outputs: if true, currently a transaction is open
     QString mName; ///< name of the output
     QString mTableName; ///< name of the table/output file
     QString mDescription; ///< textual description of the content

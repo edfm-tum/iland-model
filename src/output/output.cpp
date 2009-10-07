@@ -81,7 +81,6 @@ Output::Output()
     mMode = OutDatabase;
     mOpen = false;
     mEnabled = false;
-    mTransactionOpen = false;
     newRow();
 }
 
@@ -170,22 +169,6 @@ void Output::open()
 
 void Output::close()
 {
-    endTransaction();
-}
-
-void Output::startTransaction()
-{
-    if (mMode==OutDatabase && mTransactionOpen==false) {
-        GlobalSettings::instance()->dbout().transaction();
-        mTransactionOpen = true;
-    }
-}
-void Output::endTransaction()
-{
-    if (mMode==OutDatabase && mTransactionOpen) {
-         GlobalSettings::instance()->dbout().commit();
-         mTransactionOpen = false;
-     }
 }
 
 

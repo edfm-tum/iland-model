@@ -13,6 +13,10 @@ public:
     void save(); ///< save transactions of all outputs
 private:
     QList<Output*> mOutputs; ///< list of outputs in system
+    // transactions
+    void startTransaction(); ///< start database transaction  (if output database is open, i.e. >0 DB outputs are active)
+    void endTransaction(); ///< ends database transaction
+    bool mTransactionOpen; ///< for database outputs: if true, currently a transaction is open
 };
 
 #endif // OUTPUTMANAGER_H
