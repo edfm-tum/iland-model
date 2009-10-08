@@ -73,7 +73,8 @@ void WaterCycle::run()
         // calculate the relative water content
         mRelativeContent[doy] = relContent();
         // (5) transpiration of the vegetation
-        et = mCanopy.evapotranspiration();
+        et = mCanopy.evapotranspiration(day, mRU->climate()->daylength_h(doy));
+
         mContent -= et;
         if (mContent<0.) {
             qDebug() << "water content below zero";
@@ -163,7 +164,7 @@ void Canopy::setup(XmlHelper *xml)
     mMaxCanopyConductance = xml->valueDouble("maxCanopyConductance", 0.02);
     mHeatCapacityAir = xml->valueDouble("heatCapacityAir", 1012);
     mAirDensity = xml->valueDouble("airDensity", 1.204);
-    mPsychrometricConstant = mHeatCapacityAir*1013./2450000./0.622;
+    mPsychometricConstant = mHeatCapacityAir*1013./2450000./0.622;
 }
 
 void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadleave, const double maxCanopyConductance)
@@ -177,11 +178,12 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
 /** calculate the daily evaporation/transpiration using the Penman-Monteith-Equation.
    The application of the equation follows broadly Running (1988).
    Returns the total sum of evaporation+transpiration in mm of the day. */
-double Canopy::evapotranspiration()
+double Canopy::evapotranspiration(const ClimateDay *climate, const double daylength_h)
 {
-    double vpd_mbar = 5. / 10.; // todo: connect ;) take care to units!
-    double temperature = 10.; // average temperature of the day (°C)
-    double rad = 500.; // W/m2
+    double vpd_mbar = climate->vpd * 10.; // convert from kPa to mbar
+    double temperature = climate->temperature; // average temperature of the day (°C)
+    double daylength = daylength_h * 3600.; // daylength in seconds (convert from length in hours)
+    double rad = climate->radiation / daylength * 1000000; //convert from MJ/m2 (day sum) to average radiation flow W/m2 [MJ=MWs -> /s * 1,000,000
     const double aerodynamic_resistance = 5.; // m/s: aerodynamic resistance of the canopy is considered being constant
     const double latent_heat = 2257000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
 
@@ -197,7 +199,10 @@ double Canopy::evapotranspiration()
 
     //=((((C37*C24)+(C31*C32)*C25/C33)/(C37+C34*(1+1/C29/C33)))/(C35*1000))*C26*C27
     double et;
-    et = svp_slope*rad + mHeatCapacityAir*mAirDensity * vpd_mbar/aerodynamic_resistance;
+    double dim = svp_slope + mPsychometricConstant*(1. + mCanopyConductance / aerodynamic_resistance);
+    double dayl = 86400 * latent_heat;
+    double upper = svp_slope*rad + mHeatCapacityAir*mAirDensity * vpd_mbar/aerodynamic_resistance;
+    et = upper / dim * dayl;
     return et;
 }
 

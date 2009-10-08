@@ -2,6 +2,7 @@
 #define WATERCYCLE_H
 class ResourceUnit;
 class XmlHelper;
+class ClimateDay;
 
 /// Water contains helper classes for the water cycle calculations
 namespace Water
@@ -30,7 +31,7 @@ public:
     // actions
     /// process the canopy layer. returns the amount of precipitation that leaves the canopy-layer.
     double flow(const double &preciptitation_mm, const double &temperature);
-    double evapotranspiration();
+    double evapotranspiration(const ClimateDay *climate, const double daylength_h);
     // properties
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
 
@@ -44,7 +45,7 @@ private:
     double mMaxCanopyConductance; // maximum canopy conductance (m/s)
     double mHeatCapacityAir; // Specific heat capacity of air [J  / (kg °C)]
     double mAirDensity; // density of air [kg / m3]
-    double mPsychrometricConstant; // mbar/°C
+    double mPsychometricConstant; // mbar/°C
 
 };
 

@@ -52,8 +52,9 @@ public:
     const ClimateDay *end() { return mEnd; } ///< STL-like pointer iterator
     void toDate(const int yearday, int *rDay=0, int *rMonth=0, int *rYear=0); ///< decode "yearday" to the actual year, month, day if provided
     // access to other subsystems
-    const Phenology &phenology(const int phenologyGroup); ///< phenology class of given type
-    const Sun &sun() { return mSun; } ///< solar radiation class
+    const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
+    const Sun &sun() const { return mSun; } ///< solar radiation class
+    double daylength_h(const int doy) const { return sun().daylength(doy); } ///< length of the day in hours
 
 private:
     Sun mSun; ///< class doing solar radiation calculations

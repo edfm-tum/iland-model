@@ -236,7 +236,7 @@ void Climate::setupPhenology()
 }
 
 /** return the phenology of the group... */
-const Phenology &Climate::phenology(const int phenologyGroup)
+const Phenology &Climate::phenology(const int phenologyGroup) const
 {
     const Phenology &p = mPhenology.at(phenologyGroup);
     if (p.id() == phenologyGroup)
