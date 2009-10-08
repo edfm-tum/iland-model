@@ -2,9 +2,15 @@
   Call clear() to clear the statistics, then call add() for each tree and finally calculate().
   To aggregate on a higher level, use add() for each StandStatistics object to include, and then
   calculate() on the higher level.
+  Todo-List for new items:
+  - add a member variable and a getter
+  - add to "add(Tree)" and "calculate()"
+  - add to "add(StandStatistics)" as well!
   */
 #include "standstatistics.h"
 #include "tree.h"
+#include "resourceunit.h"
+#include "resourceunitspecies.h"
 
 
 void StandStatistics::clear()
@@ -22,6 +28,7 @@ void StandStatistics::add(Tree *tree)
     mSumHeight+=tree->height();
     mSumBasalArea+=tree->basalArea();
     mSumVolume += tree->volume();
+    mLeafAreaIndex += tree->leafArea(); // warning: sum of leafarea!
 }
 
 void StandStatistics::calculate()
@@ -30,6 +37,8 @@ void StandStatistics::calculate()
     if (mCount) {
         mAverageDbh = mSumDbh / dcount;
         mAverageHeight = mSumHeight / dcount;
+        if (mRUS)
+            mLeafAreaIndex /= mRUS->ru()->area(); // convert from leafarea to LAI
     }
 }
 
@@ -40,4 +49,5 @@ void StandStatistics::add(const StandStatistics &stat)
     mSumDbh+=stat.mSumDbh;
     mSumHeight+=stat.mSumHeight;
     mSumVolume+=stat.mSumVolume;
+    mLeafAreaIndex += stat.mLeafAreaIndex;
 }

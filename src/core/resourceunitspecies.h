@@ -11,7 +11,7 @@ class ResourceUnitSpecies
 {
 public:
     ResourceUnitSpecies() : mSpecies(0), mRU(0) {}
-    void setup(Species *species, ResourceUnit *ru) { mSpecies = species; mRU = ru; mResponse.setup(this); m3PG.setResponse(&mResponse); }
+    void setup(Species *species, ResourceUnit *ru);
 
     const SpeciesResponse *speciesResponse() const { return &mResponse; }
     const Species *species() const { return mSpecies; } ///< return pointer to species
@@ -23,11 +23,11 @@ public:
     void calculate();
 
 private:
-    StandStatistics mStatistics;
-    Production3PG m3PG;
-    Species *mSpecies;
-    SpeciesResponse mResponse;
-    ResourceUnit *mRU;
+    StandStatistics mStatistics; ///< statistics per of a species on this resource unit
+    Production3PG m3PG; ///< NPP prodution unit of this species
+    SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
+    Species *mSpecies; ///< speices
+    ResourceUnit *mRU; ///< resource unit
 };
 
 #endif // RESSOURCEUNITSPECIES_H

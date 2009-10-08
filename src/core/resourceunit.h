@@ -12,17 +12,19 @@ class ResourceUnit
 {
 public:
     ResourceUnit(const int index);
-    // access
+    // access to elements
     int index() const { return mIndex; }
     Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
     /// get RU-Species-container of @p species from the RU
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species);
-    const QVector<ResourceUnitSpecies> ruSpecies() { return mRUSpecies; }
+    const QVector<ResourceUnitSpecies> ruSpecies() const { return mRUSpecies; }
     const QRectF &boundingBox() const { return mBoundingBox; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
-
+    // properties
+    double area() const { return mPixelCount*100; } ///< get the resuorce unit area in m2
+    double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
     // actions
     /// returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
     Tree &newTree();
@@ -56,7 +58,7 @@ private:
 
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees
-    float mStockedArea; ///< size of stocked area
+    double mStockedArea; ///< size of stocked area
     StandStatistics mStatistics; ///< aggregate values on stand value
 
     friend class RUWrapper;

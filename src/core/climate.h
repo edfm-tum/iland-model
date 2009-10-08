@@ -13,7 +13,7 @@ struct ClimateDay
     double temp_delayed; // temperature delayed (after Maekela, 2008) for response calculations
     double preciptitation; // sum of day [mm]
     double radiation; // sum of day (MJ/m2)
-    double vpd; // average of day [kPa]
+    double vpd; // average of day [kPa] = [0.1 mbar] (1 bar = 100kPa)
     static double co2; // ambient CO2 content in ppm
     QString toString() const { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
     bool isValid() const  { return (year>=0); }

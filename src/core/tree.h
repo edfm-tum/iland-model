@@ -22,12 +22,14 @@ public:
     int age() const { return mAge; }
     /// @property position The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
     const QPointF position() const { Q_ASSERT(mGrid!=0); return mGrid->cellCenterPoint(mPositionIndex); }
-    float dbh() const { return mDbh; }
-    float height() const { return mHeight; }
     const Species* species() const { Q_ASSERT(mRU!=0); return mSpecies; } ///< pointer to the tree species of the tree.
     const ResourceUnit *ru() const { Q_ASSERT(mRU!=0); return mRU; } ///< pointer to the ressource unit the tree belongs to.
 
-    float lightResourceIndex() const { return mLRI; } ///< LRI of the tree (update during readStamp())
+    // properties
+    float dbh() const { return mDbh; } ///< dimater at breast height in cm
+    float height() const { return mHeight; } ///< tree height in m
+    float lightResourceIndex() const { return mLRI; } ///< LRI of the tree (updated during readStamp())
+    float leafArea() const { return mLeafArea; } ///< leaf area (m2) of the tree
     double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
     double basalArea() const; ///< basal area of the tree at breast height in m2
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
