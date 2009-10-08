@@ -7,6 +7,14 @@
 
 #include "species.h"
 #include "resourceunit.h"
+void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
+{
+    mSpecies = species;
+    mRU = ru;
+    mResponse.setup(this);
+    m3PG.setResponse(&mResponse);
+    mStatistics.setResourceUnitSpecies(this);
+}
 
 
 void ResourceUnitSpecies::calculate()
