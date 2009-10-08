@@ -22,7 +22,9 @@ public:
     const QString &name() const { return mName; }
     int index() const { return mIndex; } ///< unique index of species within current set
     bool active() const { return true; } ///< active??? todo!
-    int phenologyClass() const { return mPhenologyClass; }
+    int phenologyClass() const { return mPhenologyClass; } ///< phenology class defined in project file. class 0 = evergreen
+    bool isConiferous() const { return mConiferous; }
+    bool isEvergreen() const { return mEvergreen; }
 
     // calculations: allometries
     double biomassFoliage(const double dbh) const;
@@ -49,6 +51,7 @@ public:
     double vpdResponse(const double &vpd) const;
     double temperatureResponse(const double &delayed_temp) const;
     double nitrogenResponse(const double &availableNitrogen) const { return mSet->nitrogenResponse(availableNitrogen, mRespNitrogenClass); }
+    double canopyConductance() const { return mMaxCanopyConductance; } ///< maximum canopy conductance in m/s
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance
@@ -56,8 +59,9 @@ public:
 private:
     Q_DISABLE_COPY(Species);
     // helpers during setup
+    bool boolVar(const QString s) { return mSet->var(s).toBool(); } ///< during setup: get value of variable @p s as a boolean variable.
     double doubleVar(const QString s) { return mSet->var(s).toDouble(); }///< during setup: get value of variable @p s as a double.
-    double intVar(const QString s) { return mSet->var(s).toInt(); } ///< during setup: get value of variable @p s as an integer.
+    int intVar(const QString s) { return mSet->var(s).toInt(); } ///< during setup: get value of variable @p s as an integer.
     QString stringVar(const QString s) { return mSet->var(s).toString(); } ///< during setup: get value of variable @p s as a string.
 
     SpeciesSet *mSet; ///< ptr. to the "parent" set
@@ -65,6 +69,8 @@ private:
     QString mId;
     QString mName;
     int mIndex; ///< internal index within the SpeciesSet
+    bool mConiferous; ///< true if confierous species (vs. broadleaved)
+    bool mEvergreen; ///< true if evergreen species
     // biomass allometries:
     double mFoliage_a, mFoliage_b;  ///< allometry (biomass = a * dbh^b) for foliage
     double mWoody_a, mWoody_b; ///< allometry (biomass = a * dbh^b) for woody compartments aboveground
@@ -94,6 +100,8 @@ private:
     double mRespTempMin; ///< temperature response calculation offset
     double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
     double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
+    // water
+    double mMaxCanopyConductance; ///< maximum canopy conductance for transpiration (m/s)
     int mPhenologyClass;
 
 };

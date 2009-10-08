@@ -31,6 +31,9 @@ void Species::setup()
     mLIPs.load( GlobalSettings::instance()->path(stampFile, "lip") );
     // attach writer stamps to reader stamps
     mLIPs.attachReaderStamps(mSet->readerStamps());
+    // general properties
+    mConiferous = boolVar("isConiferous");
+    mEvergreen = boolVar("isEvergreen");
 
     // setup allometries
     mFoliage_a = doubleVar("bmFoliage_a");
@@ -96,6 +99,9 @@ void Species::setup()
 
     // phenology
     mPhenologyClass = (int)doubleVar("phenologyClass");
+
+    // water
+    mMaxCanopyConductance = doubleVar("maxCanopyConductance");
 }
 
 double Species::biomassFoliage(const double dbh) const
