@@ -51,7 +51,8 @@ SOURCES += main.cpp \
     ../core/modelsettings.cpp \
     ../core/phenology.cpp \
     ../tools/floatingaverage.cpp \
-    ../output/productionout.cpp
+    ../output/productionout.cpp \
+    ../core/watercycle.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -90,7 +91,8 @@ HEADERS += mainwindow.h \
     ../core/modelsettings.h \
     ../core/phenology.h \
     ../tools/floatingaverage.h \
-    ../output/productionout.h
+    ../output/productionout.h \
+    ../core/watercycle.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
 QMAKE_EXTRA_TARGETS += revtarget
