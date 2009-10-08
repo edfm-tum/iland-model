@@ -14,12 +14,14 @@ public:
     void climateResponse();
     // light based tests for multiple stands
     void multipleLightRuns(const QString &fileName);
+    void testWater();
     private:
     QString dumpTreeList();
     QObject *mParent;
  private:
     void testSun();
     void testPheno(Climate *clim);
+
 
 };
 

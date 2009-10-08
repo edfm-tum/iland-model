@@ -40,6 +40,7 @@ public:
 
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
+    void createStandStatistics();
     // setup/maintenance
     void cleanTreeList();
     void setSpeciesSet(SpeciesSet *set);

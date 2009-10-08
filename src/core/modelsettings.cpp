@@ -17,7 +17,9 @@ void ModelSettings::loadModelSettings()
     lightResponse = QSharedPointer<Expression>(new Expression(xml.value("lightResponse", "lri")));
     epsilon = xml.valueDouble("epsilon",1.8); // max light use efficiency (aka alpha_c)
     airDensity = xml.valueDouble("airDensity", 1.2);
+    airPressure = xml.valueDouble("airPressure", 1013);
     heatCapacityAir = xml.valueDouble("heatCapacityAir", 1012);
+
 
     XmlHelper site(GlobalSettings::instance()->settings().node("model.site"));
     latitude = RAD(site.valueDouble("latitude",48.));
@@ -37,6 +39,7 @@ void ModelSettings::print()
     set << QString("lightResponse=%1").arg(lightResponse->expression());
     set << QString("epsilon=%1").arg(epsilon);
     set << QString("airDensity=%1").arg(airDensity);
+    set << QString("airPressure=%1").arg(airPressure);
     set << QString("heatCapacityAir=%1").arg(heatCapacityAir);
 
     set << QString("latitude=%1").arg(GRAD(latitude));

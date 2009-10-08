@@ -262,6 +262,7 @@ void Model::beforeRun()
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();
     readPattern();
+    calculateStockedArea();
 
 }
 
@@ -402,7 +403,8 @@ void Model::grow()
    }
 }
 
-/**
+/** calculate for each resource unit the fraction of area which is stocked.
+  This is done by checking the pixels of the global height grid.
   */
 void Model::calculateStockedArea()
 {
@@ -420,4 +422,11 @@ void Model::calculateStockedArea()
         }
 
     }
+}
+
+/// Force the creation of stand statistics...
+void Model::createStandStatistics()
+{
+    foreach(ResourceUnit *ru, mRU)
+        ru->createStandStatistics();
 }

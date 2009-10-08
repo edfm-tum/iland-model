@@ -20,8 +20,9 @@ public:
     // light model
     QSharedPointer<Expression> lightResponse;
     // water
-    double heatCapacityAir;
-    double airDensity;
+    double heatCapacityAir; // Specific heat capacity of air [J  / (kg °C)]
+    double airPressure; // atmospheric pressure (mbar)
+    double airDensity; // density of air [kg / m3]
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year) -> will be moved!

@@ -10,6 +10,7 @@
 #include "climate.h"
 #include "species.h"
 #include "speciesresponse.h"
+#include "watercycle.h"
 
 //
 #include "standloader.h"
@@ -164,6 +165,15 @@ void Tests::testSun()
     qDebug()<<sun.dump();
     sun.setup(RAD(-20));
     qDebug()<<sun.dump();
+}
+
+void Tests::testWater()
+{
+    Model *model = GlobalSettings::instance()->model();
+    model->createStandStatistics(); // force this!
+    WaterCycle wc;
+    wc.setup(model->ru());
+    wc.run();
 }
 
 void Tests::testPheno(Climate *clim)

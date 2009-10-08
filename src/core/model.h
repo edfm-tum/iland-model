@@ -47,6 +47,9 @@ public:
     static const ModelSettings &settings() {return mSettings;} ///< access to global model settings.
     static ModelSettings &changeSettings() {return mSettings;} ///< write access to global model settings.
 
+    // actions
+    void createStandStatistics();
+
 private:
     void initialize(); ///< basic startup without creating a simulation
     void setupSpace(); ///< setup the "world"(spatial grids, ...), create ressource units

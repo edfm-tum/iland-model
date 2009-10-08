@@ -10,7 +10,7 @@ public:
     void setResourceUnitSpecies(const ResourceUnitSpecies *rus) { mRUS=rus; }
 
     void add(const StandStatistics &stat); ///< add aggregates of @p stat to own aggregates
-    void add(Tree *tree); ///< call for each tree within the domain
+    void add(const Tree *tree); ///< call for each tree within the domain
     void clear(); ///< call before trees are aggregated
     void calculate(); ///< call after all trees are processed (postprocessing)
     // getters

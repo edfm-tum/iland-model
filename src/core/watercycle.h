@@ -44,7 +44,7 @@ private:
     // Penman-Monteith parameters
     double mHeatCapacityAir; // Specific heat capacity of air [J  / (kg °C)]
     double mAirDensity; // density of air [kg / m3]
-    double mPsychometricConstant; // mbar/°C
+    double mPsychrometricConstant; // mbar/°C
 
 };
 
@@ -62,7 +62,7 @@ public:
     // properties
     double bucketSize() const { return mBucketSize; } ///< bucket size in mm
     double content() const { return mContent; } ///< current water content in mm
-    double relContent() const { Q_ASSERT(mBucketSize>0); return mContent/mBucketSize; }
+    double relContent() const { Q_ASSERT(mBucketSize>0); return qMin(mContent/mBucketSize, 1.); }
 private:
     const ResourceUnit *mRU; ///< resource unit to which this watercycle is connected
     Water::Canopy mCanopy; ///< object representing the forest canopy (interception, evaporation)

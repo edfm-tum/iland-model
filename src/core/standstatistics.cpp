@@ -19,9 +19,10 @@ void StandStatistics::clear()
     mCount = 0;
     mSumDbh=mSumHeight = mAverageDbh=mAverageHeight =0.;
     mSumBasalArea = mSumVolume = 0.;
+    mLeafAreaIndex = 0.;
 }
 
-void StandStatistics::add(Tree *tree)
+void StandStatistics::add(const Tree *tree)
 {
     mCount++;
     mSumDbh+=tree->dbh();

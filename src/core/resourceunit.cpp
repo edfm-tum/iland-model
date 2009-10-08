@@ -95,6 +95,8 @@ void ResourceUnit::newYear()
     // clear statistics global and per species...
 }
 
+
+
 /** production() is the "stand-level" part of the biomass production (3PG).
     - The amount of radiation intercepted by the stand is calculated
     - The 3PG production for each species and ressource unit is invoked  */
@@ -129,7 +131,6 @@ void ResourceUnit::production()
     //QVector<ResourceUnitSpecies>::iterator i;
     ResourceUnitSpecies *i;
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
-
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         i->calculate();
         i->statistics().clear();
@@ -148,3 +149,20 @@ void ResourceUnit::yearEnd()
     mStatistics.calculate(); // aggreagte on stand level
 }
 
+void ResourceUnit::createStandStatistics()
+{
+    // clear statistics
+    mStatistics.clear();
+    for (int i=0;i<mRUSpecies.count();i++)
+        mRUSpecies[i].statistics().clear();
+    // for all trees
+    foreach(const Tree &t, mTrees) {
+        if (!t.isDead())
+            resourceUnitSpecies(t.species()).statistics().add(&t);
+    }
+    // summarize statistics
+    for (int i=0;i<mRUSpecies.count();i++) {
+        mRUSpecies[i].statistics().calculate();
+        mStatistics.add(mRUSpecies[i].statistics());
+    }
+}

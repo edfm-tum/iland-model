@@ -17,6 +17,7 @@ struct ClimateDay
     static double co2; // ambient CO2 content in ppm
     QString toString() const { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
     bool isValid() const  { return (year>=0); }
+    int id() const { return year*10000 + month*100 + day; }
 };
 
 /// Sun handles calculations of day lengths, etc.
@@ -47,8 +48,8 @@ public:
     /// returns two pointer (arguments!!!) to the begin and one after end of the given month (month: 0..11)
     void monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd);
     double days(const int month); ///< returns number of days of given month
-    int daysOfYear(); ///< returns number of days of current year
-    const ClimateDay *begin() { return mBegin; } ///< STL-like (pointer)-iterator
+    int daysOfYear(); ///< returns number of days of current year. points to the first day of the current year.
+    const ClimateDay *begin() { return mBegin; } ///< STL-like (pointer)-iterator to the day *after* last day of the current year
     const ClimateDay *end() { return mEnd; } ///< STL-like pointer iterator
     void toDate(const int yearday, int *rDay=0, int *rMonth=0, int *rYear=0); ///< decode "yearday" to the actual year, month, day if provided
     // access to other subsystems
