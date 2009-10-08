@@ -73,6 +73,7 @@
     <addaction name="actionTree_NPP"/>
     <addaction name="actionTree_Partition"/>
     <addaction name="actionTree_Growth"/>
+    <addaction name="actionWater_Output"/>
     <addaction name="actionDynamic_Output"/>
    </widget>
    <addaction name="menuOutput_menu"/>
@@ -776,6 +777,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionWater_Output">
+   <property name="text">
+    <string>Water Output</string>
    </property>
   </action>
  </widget>

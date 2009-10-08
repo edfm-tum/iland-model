@@ -19,9 +19,13 @@ public:
     double temperatureTau; ///< "tau"-value for delayed temperature calculation acc. to Mäkela 2008
     // light model
     QSharedPointer<Expression> lightResponse;
+    // water
+    double heatCapacityAir;
+    double airDensity;
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year) -> will be moved!
+    double waterholdingCapacity; ///< waterholding capacity (mm) -> will be removed!!!
     // production
     double epsilon; ///< maximum light use efficency used for the 3PG model
 };

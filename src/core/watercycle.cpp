@@ -3,18 +3,18 @@
 #include "climate.h"
 #include "resourceunit.h"
 #include "species.h"
-#include "xmlhelper.h"
+#include "model.h"
 
 WaterCycle::WaterCycle()
 {
     mBucketSize = 0;
 }
 
-void WaterCycle::setup(const ResourceUnit *ru, XmlHelper *xml)
+void WaterCycle::setup(const ResourceUnit *ru)
 {
     mRU = ru;
     // get values...
-    mBucketSize = xml->valueDouble("waterHoldingCapacity",100.);
+    mBucketSize = Model::settings().waterholdingCapacity;
     mContent = mBucketSize / 2.; // start half filled
 
     mCanopy.setup(xml);
@@ -56,7 +56,7 @@ void WaterCycle::run()
 
 
     // main loop over all days of the year
-    double prec_mm, prec_after_interception, prec_to_soil, et;
+    double prec_mm, prec_after_interception, prec_to_soil, et, excess;
     const ClimateDay *day = mRU->climate()->begin();
     const ClimateDay *end = mRU->climate()->end();
     int doy=0;
@@ -80,13 +80,26 @@ void WaterCycle::run()
             qDebug() << "water content below zero";
             mContent = 0.;
         }
-
+        excess = 0.;
         if (mContent>mBucketSize) {
             // excess water runoff
-            double excess = mContent - mBucketSize;
+            excess = mContent - mBucketSize;
             total_excess += excess;
             mContent = mBucketSize;
         }
+        DBGMODE(
+            if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
+                DebugList &out = GlobalSettings::instance()->debugList(day->year*1000+day->day, GlobalSettings::dWaterCycle);
+                // climatic variables
+                out << day->year << day->day << day->temperature << day->vpd << day->preciptitation << day->radiation;
+                // fluxes
+                out << prec_after_interception << prec_to_soil << et << mRelativeContent[doy] << excess;
+                // other states
+                out << mSnowPack.snowPack();
+
+            }
+        ); // DBGMODE()
+
     }
 }
 
@@ -158,12 +171,11 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
 
 }
 
-/// sets up the canopy. expects water-related parameters in the top node of the xml.
-void Canopy::setup(XmlHelper *xml)
+/// sets up the canopy. fetch some global parameter values...
+void Canopy::setup()
 {
-    mMaxCanopyConductance = xml->valueDouble("maxCanopyConductance", 0.02);
-    mHeatCapacityAir = xml->valueDouble("heatCapacityAir", 1012);
-    mAirDensity = xml->valueDouble("airDensity", 1.204);
+    //mHeatCapacityAir = xml->valueDouble("heatCapacityAir", 1012);
+    //mAirDensity = xml->valueDouble("airDensity", 1.204);
     mPsychometricConstant = mHeatCapacityAir*1013./2450000./0.622;
 }
 
@@ -172,7 +184,7 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
     mLAINeedle = LAIneedle;
     mLAIBroadleaved=LAIbroadleave;
     mLAI=LAIneedle+LAIbroadleave;
-    mCanopyConductance = maxCanopyConductance;
+    mAvgMaxCanopyConductance = maxCanopyConductance;
 }
 
 /** calculate the daily evaporation/transpiration using the Penman-Monteith-Equation.
@@ -190,19 +202,27 @@ double Canopy::evapotranspiration(const ClimateDay *climate, const double daylen
     // (1) calculate some intermediaries
     // current canopy conductance: is calculated following Landsberg & Waring
     double current_canopy_conductance;
+    current_canopy_conductance = mAvgMaxCanopyConductance * exp(-2.5 * vpd_mbar);
 
-    current_canopy_conductance = mMaxCanopyConductance * exp(-2.5 * vpd_mbar);
     // saturation vapor pressure (Running 1988, Eq. 1)
     double svp = 6.1078 * exp((17.269 * temperature) / (237.3 + temperature) );
     // the slope of svp is, thanks to http://www.wolframalpha.com/input/?i=derive+y%3D6.1078+exp+((17.269x)/(237.3%2Bx))
     double svp_slope = svp * ( 17.269/(237.3+temperature) - 17.269*temperature/((237.3+temperature)*(237.3+temperature)) );
 
-    //=((((C37*C24)+(C31*C32)*C25/C33)/(C37+C34*(1+1/C29/C33)))/(C35*1000))*C26*C27
-    double et;
-    double dim = svp_slope + mPsychometricConstant*(1. + mCanopyConductance / aerodynamic_resistance);
+    double et; // transpiration in mm (follows Eq.(8) of Running, 1988).
+    // note: RC (resistance of canopy) = 1/CC (conductance of canopy)
+    double dim = svp_slope + mPsychometricConstant*(1. + 1. / (current_canopy_conductance*aerodynamic_resistance));
     double dayl = 86400 * latent_heat;
     double upper = svp_slope*rad + mHeatCapacityAir*mAirDensity * vpd_mbar/aerodynamic_resistance;
     et = upper / dim * dayl;
+
+    // now calculate the evaporation from intercepted preciptitaion in the canopy: 1+rc/ra -> 1
+    if (mInterception>0.) {
+        double dim_transp = svp_slope + mPsychometricConstant;
+        double pot_transp = upper / dim_transp * dayl;
+        double transp = qMax(pot_transp, mInterception);
+        mInterception -= transp;
+    }
     return et;
 }
 

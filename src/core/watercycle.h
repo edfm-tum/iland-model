@@ -1,7 +1,6 @@
 #ifndef WATERCYCLE_H
 #define WATERCYCLE_H
 class ResourceUnit;
-class XmlHelper;
 class ClimateDay;
 
 /// Water contains helper classes for the water cycle calculations
@@ -26,7 +25,7 @@ class Canopy
 {
 public:
     // setup
-    void setup(XmlHelper *xml); ///< setup and load parameter values
+    void setup(); ///< setup and load parameter values
     void setStandParameters(const double LAIneedle, const double LAIbroadleave, const double maxCanopyConductance);
     // actions
     /// process the canopy layer. returns the amount of precipitation that leaves the canopy-layer.
@@ -34,15 +33,15 @@ public:
     double evapotranspiration(const ClimateDay *climate, const double daylength_h);
     // properties
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
+    double avgMaxCanopyConductance() const { return mAvgMaxCanopyConductance; } ///< averaged maximum canopy conductance of current species distribution (m/s)
 
 private:
     double mLAINeedle; // leaf area index of coniferous species
     double mLAIBroadleaved; // leaf area index of broadlevaed species
     double mLAI; // total leaf area index
-    double mCanopyConductance; // maximum weighted canopy conductance (m/s)
+    double mAvgMaxCanopyConductance; // maximum weighted canopy conductance (m/s)
     double mInterception; ///< intercepted precipitation of the current day
     // Penman-Monteith parameters
-    double mMaxCanopyConductance; // maximum canopy conductance (m/s)
     double mHeatCapacityAir; // Specific heat capacity of air [J  / (kg °C)]
     double mAirDensity; // density of air [kg / m3]
     double mPsychometricConstant; // mbar/°C
@@ -57,7 +56,7 @@ class WaterCycle
 {
 public:
     WaterCycle();
-    void setup(const ResourceUnit *ru, XmlHelper *xml);
+    void setup(const ResourceUnit *ru);
     // actions
     void run(); ///< run the current year
     // properties

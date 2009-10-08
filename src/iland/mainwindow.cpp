@@ -637,6 +637,12 @@ void MainWindow::on_actionTree_NPP_triggered()
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
 
+void MainWindow::on_actionWater_Output_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+}
 
 
 void MainWindow::on_actionSelect_Data_Types_triggered()
@@ -648,6 +654,7 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "2 ... Tree partition\n" \
                                         "4 ... Tree growth (dbh,h)\n" \
                                         "8 ... Standlevel NPP\n" \
+                                        "16...Water Cycle\n" \
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
@@ -757,5 +764,7 @@ void MainWindow::on_scriptCommand_returnPressed()
     if (!result.isEmpty())
         ui->scriptResult->append(result);
 }
+
+
 
 
