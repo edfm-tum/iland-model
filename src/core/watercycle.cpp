@@ -75,7 +75,9 @@ void WaterCycle::run()
         // (5) transpiration of the vegetation
         et = mCanopy.evapotranspiration(day, mRU->climate()->daylength_h(doy));
 
-        mContent -= et;
+        mContent -= et; // reduce content (transpiration)
+        mContent += mCanopy.interception(); // add intercepted water that is *not* evaporated to the soil again
+        
         if (mContent<0.) {
             qDebug() << "water content below zero";
             mContent = 0.;
@@ -167,7 +169,7 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
     mInterception = qMin( max_storage_mm, max_interception_mm );
 
     // (4) reduce preciptitaion by the amount that is intercepted by the canopy
-    Q_ASSERT(preciptitation_mm > mInterception);
+    DBG_IF(preciptitation_mm < mInterception,"water_cycle", "prec < interception");
     return preciptitation_mm - mInterception;
 
 }

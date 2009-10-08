@@ -13,14 +13,28 @@
 #include "production3pg.h"
 #include "model.h"
 #include "climate.h"
+#include "watercycle.h"
+#include "helper.h"
 
+ResourceUnit::~ResourceUnit()
+{
+    if (mWater)
+        delete mWater;
+}
 
 ResourceUnit::ResourceUnit(const int index)
 {
     mSpeciesSet = 0;
     mClimate = 0;
     mIndex = index;
+    mWater = new WaterCycle();
+
     mTrees.reserve(100); // start with space for 100 trees.
+}
+
+void ResourceUnit::setup()
+{
+    mWater->setup(this);
 }
 
 /// set species and setup the species-per-RU-data
@@ -102,9 +116,10 @@ void ResourceUnit::newYear()
     - The 3PG production for each species and ressource unit is invoked  */
 void ResourceUnit::production()
 {
-    mStatistics.clear();
+
     if (mAggregatedWLA==0 || mPixelCount==0) {
         // nothing to do...
+        mStatistics.clear();
         return;
     }
 
@@ -126,11 +141,17 @@ void ResourceUnit::production()
             .arg(mEffectiveArea_perWLA)
             .arg(mStockedArea);
     );
+    // soil water model - this determines soil water contents needed for response calculations
+    {
+    DebugTimer tw("water:run");
+    mWater->run();
+    }
 
     // invoke species specific calculation (3PG)
     //QVector<ResourceUnitSpecies>::iterator i;
     ResourceUnitSpecies *i;
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
+    mStatistics.clear();
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         i->calculate();
         i->statistics().clear();
@@ -149,18 +170,20 @@ void ResourceUnit::yearEnd()
     mStatistics.calculate(); // aggreagte on stand level
 }
 
+/// refresh of tree based statistics.
 void ResourceUnit::createStandStatistics()
 {
-    // clear statistics
+    // clear statistics (ru-level and ru-species level)
     mStatistics.clear();
     for (int i=0;i<mRUSpecies.count();i++)
         mRUSpecies[i].statistics().clear();
-    // for all trees
+
+    // add all trees to the statistics objects of the species
     foreach(const Tree &t, mTrees) {
         if (!t.isDead())
             resourceUnitSpecies(t.species()).statistics().add(&t);
     }
-    // summarize statistics
+    // summarize statistics for the whole resource unit
     for (int i=0;i<mRUSpecies.count();i++) {
         mRUSpecies[i].statistics().calculate();
         mStatistics.add(mRUSpecies[i].statistics());

@@ -7,11 +7,13 @@
 
 class SpeciesSet;
 class Climate;
+class WaterCycle;
 
 class ResourceUnit
 {
 public:
     ResourceUnit(const int index);
+    ~ResourceUnit();
     // access to elements
     int index() const { return mIndex; }
     Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
@@ -44,12 +46,14 @@ public:
     // setup/maintenance
     void cleanTreeList();
     void setSpeciesSet(SpeciesSet *set);
+    void setup(); ///< setup operations after the creation of the model space.
     void setClimate(Climate* climate) { mClimate = climate; }
     void setBoundingBox(const QRectF &bb) { mBoundingBox = bb; }
 private:
     int mIndex; // internal index
     Climate *mClimate; ///< pointer to the climate object of this RU
     SpeciesSet *mSpeciesSet; ///< pointer to the species set for this RU
+    WaterCycle *mWater; ///< link to the Soil water calculation engine
     QVector<ResourceUnitSpecies> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU

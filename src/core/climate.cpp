@@ -141,6 +141,13 @@ void Climate::load()
             cday->preciptitation = mClimateQuery.value(4).toDouble();
             cday->radiation = mClimateQuery.value(5).toDouble();
             cday->vpd = mClimateQuery.value(6).toDouble();
+            // sanity checeks
+            DBG_IF(cday->month<1 || cday->day<1 || cday->month>12 || cday->day>31,"Climate:load", "invalid dates");
+            DBG_IF(cday->temperature<-70 || cday->temperature>50,"Climate:load", "temperature out of range (-70..+50°C)");
+            DBG_IF(cday->preciptitation<0 || cday->preciptitation>50,"Climate:load", "precipitation out of range (0..50mm)");
+            DBG_IF(cday->radiation<0 || cday->radiation>50,"Climate:load", "radiation out of range (0..50 MJ/m2/day)");
+            DBG_IF(cday->vpd<0 || cday->vpd>10,"Climate:load", "vpd out of range (0..10 kPa)");
+
             if (cday->month != lastmon) {
                 // new month...
                 lastmon = cday->month;

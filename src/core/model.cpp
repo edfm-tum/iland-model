@@ -132,6 +132,7 @@ void Model::setupSpace()
             new_ru = new ResourceUnit(ru_index++);
             new_ru->setSpeciesSet(species_set);
             new_ru->setClimate(clim);
+            new_ru->setup();
             mRU.append(new_ru); // store in list
             new_ru->setBoundingBox(r);
         }
@@ -226,6 +227,8 @@ void Model::loadProject()
     mClimates.push_back(c);
     ru->setClimate(c);
 
+    ru->setup();
+
     mRU.push_back(ru);
     setupSpace();
 
@@ -262,8 +265,8 @@ void Model::beforeRun()
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();
     readPattern();
-    calculateStockedArea();
 
+    createStandStatistics();
 }
 
 void Model::runYear()
@@ -424,9 +427,12 @@ void Model::calculateStockedArea()
     }
 }
 
-/// Force the creation of stand statistics...
+/// Force the creation of stand statistics.
+/// - stocked area (for resourceunit-areas)
+/// - ru - statistics
 void Model::createStandStatistics()
 {
+    calculateStockedArea();
     foreach(ResourceUnit *ru, mRU)
         ru->createStandStatistics();
 }
