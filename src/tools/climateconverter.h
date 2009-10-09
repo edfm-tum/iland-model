@@ -9,6 +9,10 @@ class ClimateConverter : public QObject
     Q_OBJECT
     Q_PROPERTY(QString fileName WRITE setFileName READ fileName);
     Q_PROPERTY(QString tableName WRITE setTableName READ tableName);
+    Q_PROPERTY(QString database WRITE setDatabase READ database);
+    Q_PROPERTY(bool captions WRITE setCaptions READ captions);
+
+
     Q_PROPERTY(QString year WRITE setYear READ year);
     Q_PROPERTY(QString month WRITE setMonth READ month);
     Q_PROPERTY(QString day WRITE setDay READ day);
@@ -16,12 +20,15 @@ class ClimateConverter : public QObject
     Q_PROPERTY(QString prec WRITE setPrec READ prec);
     Q_PROPERTY(QString rad WRITE setRad READ rad);
     Q_PROPERTY(QString vpd WRITE setVpd READ vpd);
+
 public:
     ClimateConverter(QObject *parent=0);
     static void addToScriptEngine(QScriptEngine &engine); ///< add this class to scripting engine
     // getters
     const QString fileName() const { return mFileName; }
     const QString tableName() const { return mTableName; }
+    const QString database() const { return mDatabase; }
+    bool captions() const { return mCaptions; }
     const QString year() const { return mYear; }
     const QString month() const { return mMonth; }
     const QString day() const { return mDay; }
@@ -33,6 +40,8 @@ public:
     // setters
     void setFileName(const QString fileName) { mFileName = fileName; }
     void setTableName(const QString tableName) { mTableName = tableName; }
+    void setDatabase(const QString db) { mDatabase = db; }
+    void setCaptions(const bool on) { mCaptions = on; }
     void setYear(const QString value) { mYear = value; }
     void setMonth(const QString value) { mMonth = value; }
     void setDay(const QString value) { mDay = value; }
@@ -49,6 +58,8 @@ private:
     double *mVars[100];
     QString mFileName;
     QString mTableName;
+    QString mDatabase;
+    bool mCaptions;
 
     QString mYear;
     QString mMonth;

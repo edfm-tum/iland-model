@@ -4,13 +4,13 @@
 
 CSVFile::CSVFile()
 {
+    mHasCaptions = true;
     clear();
 }
 
 void CSVFile::clear()
 {
     mColCount = mRowCount = -1;
-    mHasCaptions = true;
     mCaptions.clear();
     mRows.clear();
 }
@@ -36,14 +36,20 @@ bool CSVFile::loadFile(const QString &fileName)
     int c_tab = first.count('\t');
     int c_semi = first.count(';');
     int c_comma = first.count(',');
-    if (c_tab+c_semi+c_comma == 0) {
+    int c_space = first.count(' ');
+    if (c_tab+c_semi+c_comma+c_space == 0) {
         qDebug() << "CSVFile::loadFile: cannot recognize separator. first line:" << first;
         return false;
     }
-    mSeparator="\t";
+    mSeparator=" ";
     if (c_tab > c_semi && c_tab>c_comma) mSeparator="\t";
     if (c_semi > c_tab && c_semi>c_comma) mSeparator=";";
     if (c_comma > c_tab && c_comma>c_semi) mSeparator=",";
+    if (mSeparator==" ") {
+      for (int i=0;i<mRows.count();i++)
+        mRows[i] = mRows[i].simplified();
+      first = mRows.first();
+    }
 
     // captions
     if (mHasCaptions) {

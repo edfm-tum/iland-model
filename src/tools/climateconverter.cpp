@@ -24,7 +24,7 @@ void ClimateConverter::addToScriptEngine(QScriptEngine &engine)
 
 ClimateConverter::ClimateConverter(QObject *parent)
 {
-
+    mCaptions = true;
     bindExpression(mExpYear, 0);
     bindExpression(mExpMonth, 1);
     bindExpression(mExpDay, 2);
@@ -54,43 +54,70 @@ void ClimateConverter::run()
     mExpRad.setExpression(mRad);
     mExpVpd.setExpression(mVpd);
     // prepare output database
-    QSqlQuery creator(GlobalSettings::instance()->dbclimate());
+    if (mDatabase.isEmpty()) {
+        qDebug() << "ClimateConverter: database is empty!";
+        return;
+    }
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE","cctemp");
+    db.setDatabaseName(mDatabase);
+    if (!db.open()) {
+        qDebug() << "ClimateConverter: invalid database: " << db.lastError().text();
+        return;
+    }
+
+    QSqlQuery creator(db);
     if (mTableName.isEmpty()) {
         qDebug() << "ClimateConverter::run: invalid climate database or table name.";
     }
-    QString sql=QString("CREATE TABLE \"%1\" ( " \
-                "\"year\" INTEGER,    \"month\" INTEGER,    \"day\" INTEGER, " \
-                "\"temp\" REAL,    \"prec\" REAL,    \"rad\" REAL,    \"vpd\" REAL").arg(mTableName);
+    QString sql=QString("CREATE TABLE %1 ( " \
+                "year INTEGER, month INTEGER, day INTEGER, " \
+                "temp REAL, prec REAL, rad REAL, vpd REAL)").arg(mTableName);
 
-    //QString sql = QString("insert into %1
     QString drop=QString("drop table if exists %1").arg(mTableName);
+
     creator.exec(drop); // drop table (if exists)
+    if (creator.lastError().isValid()) {
+        qDebug() << "ClimateConverter: Sql-Error (drop):" << creator.lastError().text();
+        return;
+    }
     creator.exec(sql); // (re-)create table
+    if (creator.lastError().isValid()) {
+        qDebug() << "ClimateConverter: Sql-Error (create table):" << creator.lastError().text();
+        return;
+    }
+
     // prepare insert statement
     sql = QString("insert into %1 (year, month, day, temp, prec, rad, vpd) values (?,?,?, ?,?,?,?)").arg(mTableName);
     creator.prepare(sql);
-
+    if (creator.lastError().isValid()) {
+        qDebug() << "ClimateConverter: Sql-Error (prepare):" << creator.lastError().text();
+        return;
+    }
     // load file
     if (mFileName.isEmpty()) {
         qDebug() << "ClimateConverter::run: empty filename.";
         return;
     }
-    CSVFile file(mFileName);
+    CSVFile file;
+    file.setHasCaptions(mCaptions);
+    file.loadFile(mFileName);
     if (!file.rowCount()) {
         qDebug() << "ClimateConverter::run: cannot load file:" << mFileName;
         return;
     }
+
     // do this for each row
     double value;
     int year, month, day;
     double temp, prec, rad, vpd;
     int rows=0;
+    db.transaction();
     for (int row=0;row<file.rowCount(); row++) {
         // fetch values from input file
         for (int col=0;col<file.colCount(); col++) {
             value = file.cell(row, col).toDouble();
             // store value in each of the expression variables
-            for (int j=0;j<6;j++)
+            for (int j=0;j<7;j++)
                 *(mVars[j*10 + col]) = value; // store in the locataion mVars[x] points to.
         }
         // calculate new values....
@@ -101,7 +128,7 @@ void ClimateConverter::run()
         prec = mExpPrec.execute();
         rad = mExpRad.execute();
         vpd = mExpVpd.execute();
-        qDebug() << year << month << day << temp << prec << rad << vpd;
+        //qDebug() << year << month << day << temp << prec << rad << vpd;
         // bind values
         creator.bindValue(0,year);
         creator.bindValue(1,month);
@@ -114,7 +141,13 @@ void ClimateConverter::run()
         rows++;
         if (creator.lastError().isValid()) {
             qDebug() << "ClimateConverter: Sql-Error:" << creator.lastError().text();
+            return;
         }
     }
+    db.commit();
+    creator.clear();
+    db.close();
+    QSqlDatabase::removeDatabase("cctemp");
     qDebug() << "ClimateConverter::run: processing complete." << rows << "rows inserted.";
+
 }
