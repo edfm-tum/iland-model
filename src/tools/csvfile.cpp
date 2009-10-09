@@ -2,7 +2,32 @@
 #include <QtCore>
 #include "helper.h"
 
-CSVFile::CSVFile()
+/** @class CSVFile provides access to table data stored in text files (CSV style).
+  Tables have optionally headers in first line (hasCaptions()) and can use various
+  delimiters ("tab",";",","," "). If separated by spaces, consecuteive spaces are merged.
+  Table dimensions can be accessed with colCount() and rowCount(), cell values as QVariant are retrieved
+  by value(). full rows are retrieved using row().
+  Files are loaded by loadFile() or by passing a filename to the constructor:
+  @code
+  CSVFile file(fileName);
+  for (int row=0; row<file.rowCount(); row++)
+     for (int col=0; col<file.colCount(); col++)
+       value = file.value(row, col);
+  @endcode
+  Planned is also a "streaming" mode for large files (loadFile(), while(file.next()) file.value(x) ), but not finsihed yet.
+
+*/
+#include <QtScript>
+Q_SCRIPT_DECLARE_QMETAOBJECT(CSVFile, QObject*)
+void CSVFile::addToScriptEngine(QScriptEngine &engine)
+{
+    // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
+    QScriptValue cc_class = engine.scriptValueFromQMetaObject<CSVFile>();
+    // the script name for the object is "ClimateConverter".
+    engine.globalObject().setProperty("CSVFile", cc_class);
+}
+
+CSVFile::CSVFile(QObject *parent)
 {
     mHasCaptions = true;
     clear();
@@ -67,13 +92,13 @@ bool CSVFile::loadFile(const QString &fileName)
     return true;
 }
 
-QVariant CSVFile::cell(const int row, const int col)
+QVariant CSVFile::value(const int row, const int col)
 {
     if (mStreamingMode)
         return QVariant();
 
     if (row<0 || row>=mRowCount || col<0 || col>mColCount) {
-        qDebug() << "CSVFile::cell: invalid index: row col:" << row << col << ". Size is:" << mRowCount << mColCount;
+        qDebug() << "CSVFile::value: invalid index: row col:" << row << col << ". Size is:" << mRowCount << mColCount;
         return QVariant();
     }
     QStringList line = mRows[row].split(mSeparator);
@@ -81,6 +106,19 @@ QVariant CSVFile::cell(const int row, const int col)
     if (col<line.count()) {
         result = line[col];
     }
+    return result;
+}
+QVariant CSVFile::row(const int row)
+{
+    if (mStreamingMode)
+        return QVariant();
+
+    if (row<0 || row>=mRowCount) {
+        qDebug() << "CSVFile::row: invalid index: row " << row << ". Size is:" << mRowCount ;
+        return QVariant();
+    }
+
+    QVariant result = mRows[row];
     return result;
 }
 

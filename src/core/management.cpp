@@ -7,6 +7,7 @@
 #include "expressionwrapper.h"
 
 #include "climateconverter.h"
+#include "csvfile.h"
 
 #include <QtScript>
 #include <QTextEdit>
@@ -48,6 +49,7 @@ Management::Management()
     mEngine->globalObject().setProperty("print",dbgprint);
     // other object types
     ClimateConverter::addToScriptEngine(*mEngine);
+    CSVFile::addToScriptEngine(*mEngine);
 
 }
 

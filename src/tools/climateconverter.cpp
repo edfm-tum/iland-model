@@ -115,7 +115,7 @@ void ClimateConverter::run()
     for (int row=0;row<file.rowCount(); row++) {
         // fetch values from input file
         for (int col=0;col<file.colCount(); col++) {
-            value = file.cell(row, col).toDouble();
+            value = file.value(row, col).toDouble();
             // store value in each of the expression variables
             for (int j=0;j<7;j++)
                 *(mVars[j*10 + col]) = value; // store in the locataion mVars[x] points to.

@@ -310,5 +310,5 @@ void Tests::testCSVFile()
     file.loadFile("e:\\csvtest.txt");
     for (int row=0;row<file.rowCount(); row++)
         for (int col=0;col<file.colCount(); col++)
-            qDebug() << "row col" << row << file.columnName(col) << "value" << file.cell(row, col);
+            qDebug() << "row col" << row << file.columnName(col) << "value" << file.value(row, col);
 }
