@@ -6,7 +6,7 @@ class Expression
 {
 public:
         ~Expression();
-        Expression() {} // empty constructor
+        Expression();
         Expression(const QString &aExpression) { setExpression(aExpression); }
         Expression(const QString &expression, ExpressionWrapper *wrapper) { setExpression(expression); mModelObject = wrapper;  }
         void setExpression(const QString &aExpression); ///< set expression

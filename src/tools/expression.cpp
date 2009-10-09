@@ -53,9 +53,12 @@ const int  MaxArgCount[15]={1,1,1,1,  1, 1,   -1, -1, 3, 1, -1, 2, 4, 2, 2};
 #define    AGGFUNCCOUNT 6
 QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
 
-// static vars für simquery
-//bool TSimQuery::DoFreezeClasses=false;
-//bool TSimQuery::ClassesFrozen=false;
+Expression::Expression()
+{
+    mModelObject = 0;
+    m_externVarSpace=0;
+}
+
 
 Expression::ETokType  Expression::next_token()
 {
@@ -153,19 +156,11 @@ void Expression::setAndParse(const QString &expr)
 void Expression::setExpression(const QString& aExpression)
 {
     m_expression=aExpression.simplified();
-    //m_expr=StrNew(PrepareExpr(m_expression).c_str());
 
     QByteArray ba = m_expression.toLocal8Bit(); // convert from unicode to 8bit
     m_expr=new char[ba.length()+1]; // reserve memory...
     strcpy(m_expr, ba.constData());
 
-    /* string-replace: "german" version of Expression
-
-    m_pos=m_expr; // set pointer to begin of m_expression
-    while (*m_pos) {  // selbergestricktes string-replace (dezimalpunkt)
-        if (*m_pos==',') *m_pos='.';
-        m_pos++;
-    }*/
     m_pos=m_expr;  // set starting point...
 
     for (int i=0; i<10; i++)

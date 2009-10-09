@@ -6,6 +6,7 @@
 #include "tree.h"
 #include "expressionwrapper.h"
 
+#include "climateconverter.h"
 
 #include <QtScript>
 #include <QTextEdit>
@@ -45,6 +46,8 @@ Management::Management()
     QScriptValue dbgprint = mEngine->newFunction(script_debug);
     mEngine->globalObject().setProperty("management", objectValue);
     mEngine->globalObject().setProperty("print",dbgprint);
+    // other object types
+    ClimateConverter::addToScriptEngine(*mEngine);
 
 }
 
