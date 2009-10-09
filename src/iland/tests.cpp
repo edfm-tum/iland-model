@@ -11,6 +11,7 @@
 #include "species.h"
 #include "speciesresponse.h"
 #include "watercycle.h"
+#include "csvfile.h"
 
 //
 #include "standloader.h"
@@ -301,4 +302,13 @@ QString Tests::dumpTreeList()
 
     QString resStr = result.join("\n");
     return resStr;
+}
+
+void Tests::testCSVFile()
+{
+    CSVFile file;
+    file.loadFile("e:\\csvtest.txt");
+    for (int row=0;row<file.rowCount(); row++)
+        for (int col=0;col<file.colCount(); col++)
+            qDebug() << "row col" << row << file.columnName(col) << "value" << file.cell(row, col);
 }

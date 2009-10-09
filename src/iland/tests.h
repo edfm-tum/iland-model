@@ -15,6 +15,7 @@ public:
     // light based tests for multiple stands
     void multipleLightRuns(const QString &fileName);
     void testWater();
+    void testCSVFile();
     private:
     QString dumpTreeList();
     QObject *mParent;

@@ -1,6 +1,17 @@
+#include "global.h"
 #include "climateconverter.h"
-#include <QtScript>
+#include "csvfile.h"
 
+
+#include <QtScript>
+#include <QtSql>
+
+/** @class ClimateConverter converts text-file-based data into the iLand climate data format.
+  For the iLand format see the wiki (ClimateFormat). For each column (i.e. year,month, day,
+  temp, prec, rad, vpd), an expression providing access to the columns of the input file calculates
+  the respective output value. Propertes tableName and fileName define the input file and the
+  name of the output table (located in the "climate"-database of iLand) respectively.
+*/
 Q_SCRIPT_DECLARE_QMETAOBJECT(ClimateConverter, QObject*)
 
 void ClimateConverter::addToScriptEngine(QScriptEngine &engine)
@@ -27,6 +38,7 @@ ClimateConverter::ClimateConverter(QObject *parent)
 
 void ClimateConverter::bindExpression(Expression &expr, int index)
 {
+    expr.setExpression(QString("c%1").arg(index) ); // "cX" is the default expression
     for (int i=0;i<10;i++)
         mVars[index*10 + i] = expr.addVar( QString("c%1").arg(i) );
 }
@@ -41,18 +53,68 @@ void ClimateConverter::run()
     mExpPrec.setExpression(mPrec);
     mExpRad.setExpression(mRad);
     mExpVpd.setExpression(mVpd);
+    // prepare output database
+    QSqlQuery creator(GlobalSettings::instance()->dbclimate());
+    if (mTableName.isEmpty()) {
+        qDebug() << "ClimateConverter::run: invalid climate database or table name.";
+    }
+    QString sql=QString("CREATE TABLE \"%1\" ( " \
+                "\"year\" INTEGER,    \"month\" INTEGER,    \"day\" INTEGER, " \
+                "\"temp\" REAL,    \"prec\" REAL,    \"rad\" REAL,    \"vpd\" REAL").arg(mTableName);
 
-    for (int i=0;i<10;i++) {
-        for (int j=0;j<6;j++) {
-            *(mVars[j*10 + i]) = 1.2;
+    //QString sql = QString("insert into %1
+    QString drop=QString("drop table if exists %1").arg(mTableName);
+    creator.exec(drop); // drop table (if exists)
+    creator.exec(sql); // (re-)create table
+    // prepare insert statement
+    sql = QString("insert into %1 (year, month, day, temp, prec, rad, vpd) values (?,?,?, ?,?,?,?)").arg(mTableName);
+    creator.prepare(sql);
+
+    // load file
+    if (mFileName.isEmpty()) {
+        qDebug() << "ClimateConverter::run: empty filename.";
+        return;
+    }
+    CSVFile file(mFileName);
+    if (!file.rowCount()) {
+        qDebug() << "ClimateConverter::run: cannot load file:" << mFileName;
+        return;
+    }
+    // do this for each row
+    double value;
+    int year, month, day;
+    double temp, prec, rad, vpd;
+    int rows=0;
+    for (int row=0;row<file.rowCount(); row++) {
+        // fetch values from input file
+        for (int col=0;col<file.colCount(); col++) {
+            value = file.cell(row, col).toDouble();
+            // store value in each of the expression variables
+            for (int j=0;j<6;j++)
+                *(mVars[j*10 + col]) = value; // store in the locataion mVars[x] points to.
+        }
+        // calculate new values....
+        year = (int)mExpYear.execute();
+        month = (int)mExpMonth.execute();
+        day = (int)mExpDay.execute();
+        temp = mExpTemp.execute();
+        prec = mExpPrec.execute();
+        rad = mExpRad.execute();
+        vpd = mExpVpd.execute();
+        qDebug() << year << month << day << temp << prec << rad << vpd;
+        // bind values
+        creator.bindValue(0,year);
+        creator.bindValue(1,month);
+        creator.bindValue(2,day);
+        creator.bindValue(3,temp);
+        creator.bindValue(4,prec);
+        creator.bindValue(5,rad);
+        creator.bindValue(6,vpd);
+        creator.exec();
+        rows++;
+        if (creator.lastError().isValid()) {
+            qDebug() << "ClimateConverter: Sql-Error:" << creator.lastError().text();
         }
     }
-    int year = (int)mExpYear.execute();
-    int month = (int)mExpMonth.execute();
-    int day = (int)mExpDay.execute();
-    double temp = mExpTemp.execute();
-    double prec = mExpPrec.execute();
-    double rad = mExpRad.execute();
-    double vpd = mExpVpd.execute();
-    qDebug() << year << month << day << temp << prec << rad << vpd;
+    qDebug() << "ClimateConverter::run: processing complete." << rows << "rows inserted.";
 }
