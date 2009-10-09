@@ -15,14 +15,13 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mRU = ru;
     // get values...
     mBucketSize = Model::settings().waterholdingCapacity;
-    mContent = mBucketSize / 2.; // start half filled
-
+    mContent = mBucketSize; // start with full water content (in the middle of winter)
     mCanopy.setup();
 }
 
 void WaterCycle::getStandValues()
 {
-    mLAIBroadleaved=mLAIBroadleaved=0.;
+    mLAINeedle=mLAIBroadleaved=0.;
     mCanopyConductance=0.;
     double lai;
     foreach(const ResourceUnitSpecies &rus, mRU->ruSpecies()) {
@@ -220,7 +219,7 @@ double Canopy::evapotranspiration(const ClimateDay *climate, const double daylen
     double et; // transpiration in mm (follows Eq.(8) of Running, 1988).
     // note: RC (resistance of canopy) = 1/CC (conductance of canopy)
     double dim = svp_slope + mPsychrometricConstant*(1. + 1. / (current_canopy_conductance*aerodynamic_resistance));
-    double dayl = daylength / latent_heat;
+    double dayl = daylength*mLAI / latent_heat;
     double upper = svp_slope*rad + mHeatCapacityAir*mAirDensity * vpd_mbar/aerodynamic_resistance;
     et = upper / dim * dayl;
 
@@ -228,7 +227,7 @@ double Canopy::evapotranspiration(const ClimateDay *climate, const double daylen
     if (mInterception>0.) {
         double dim_transp = svp_slope + mPsychrometricConstant;
         double pot_transp = upper / dim_transp * dayl;
-        double transp = qMax(pot_transp, mInterception);
+        double transp = qMin(pot_transp, mInterception);
         mInterception -= transp;
     }
     return et;
