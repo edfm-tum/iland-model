@@ -1,4 +1,5 @@
-/** @class ThreadRunner encapsulates the invokation of multiple threads for paralellized tasks.
+/** @class ThreadRunner
+  Encapsulates the invokation of multiple threads for paralellized tasks.
   To avoid lost updates during the light influence pattern application, all the resourceUnits
   are divided in two lists based on the index (even vs. uneven). These (for almost all cases)
   ensures, that no directly neighboring resourceUnits are processed.

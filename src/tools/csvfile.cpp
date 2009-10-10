@@ -2,7 +2,8 @@
 #include <QtCore>
 #include "helper.h"
 
-/** @class CSVFile provides access to table data stored in text files (CSV style).
+/** @class CSVFile
+  Provides access to table data stored in text files (CSV style).
   Tables have optionally headers in first line (hasCaptions()) and can use various
   delimiters ("tab",";",","," "). If separated by spaces, consecuteive spaces are merged.
   Table dimensions can be accessed with colCount() and rowCount(), cell values as QVariant are retrieved

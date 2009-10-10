@@ -1,5 +1,5 @@
 /** @class SpeciesResponse
-    Environmental responses calculates production relevant responses for a tree species on resource unit level.
+    Environmental responses relevant for production of a tree species on resource unit level.
     SpeciesResponse combines data from different sources and converts information about the environment
     into responses of a species. The spatial level is the "ResourceUnit", where homogenetiy of environmental factors
     is assumed. The temporal aggregation depends on the factor, but usually, the daily environmental data is

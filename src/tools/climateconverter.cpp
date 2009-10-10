@@ -6,7 +6,8 @@
 #include <QtScript>
 #include <QtSql>
 
-/** @class ClimateConverter converts text-file-based data into the iLand climate data format.
+/** @class ClimateConverter
+  Converts text-file-based data into the iLand climate data format.
   For the iLand format see the wiki (ClimateFormat). For each column (i.e. year,month, day,
   temp, prec, rad, vpd), an expression providing access to the columns of the input file calculates
   the respective output value. Propertes tableName and fileName define the input file and the

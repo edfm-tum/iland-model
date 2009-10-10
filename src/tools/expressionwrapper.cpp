@@ -1,9 +1,11 @@
-/** @class ExpressionWrapper is the base class of objects that can be used with Expressions.
+/** @class ExpressionWrapper
+  The base class for objects that can be used within Expressions.
   Derived from ExpressionWrapper are wrappers for e.g. Trees or ResourceUnits.
   They must provide a getVariablesList() and a value() function.
   Note: the must also provide "virtual double value(const QString &variableName) { return value(variableName); }"
       because it seems not possible C++ wise to use functions from derived and base class simultaneously that only differ in the
       argument signature.
+  @sa Expression
 
   */
 #include "global.h"

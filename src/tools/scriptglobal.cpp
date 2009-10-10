@@ -4,7 +4,8 @@
 #include "globalsettings.h"
 #include "helper.h"
 
-/** @class ScriptGlobal This is a global interface providing useful functionality for javascripts.
+/** @class ScriptGlobal
+   This is a global interface providing useful functionality for javascripts.
   Within javascript-code an instance of this class can be accessed as "Globals" in the global scope
  (no instantiation necessary).
  @paragraph General properties

@@ -1,4 +1,5 @@
-/** @class StandStatistics collects information on stand level for each tree species.
+/** @class StandStatistics
+  Collects information on stand level for each tree species.
   Call clear() to clear the statistics, then call add() for each tree and finally calculate().
   To aggregate on a higher level, use add() for each StandStatistics object to include, and then
   calculate() on the higher level.
