@@ -17,6 +17,18 @@ to come.
 
  */
 /** @defgroup script iLand scripting
-The iLand classes and APIs for scripting (i.e. JavaScript) are described on this page.
+The iLand classes and APIs for scripting (i.e.\ JavaScript) are described on this page.
  */
 
+/** \page Javascript Objects
+
+ Some general intro to javascript in iLand
+
+- \subpage globals Object in global space
+- \subpage climateconverter ClimateConverter
+- \subpage csvfile CSVFile
+
+
+Now you can proceed to the \ref advanced "advanced section".
+
+*/
