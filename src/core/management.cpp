@@ -8,6 +8,7 @@
 
 #include "climateconverter.h"
 #include "csvfile.h"
+#include "scriptglobal.h"
 
 #include <QtScript>
 #include <QTextEdit>
@@ -47,9 +48,15 @@ Management::Management()
     QScriptValue dbgprint = mEngine->newFunction(script_debug);
     mEngine->globalObject().setProperty("management", objectValue);
     mEngine->globalObject().setProperty("print",dbgprint);
+
+    // globals object: instatiate here, but ownership goes to script engine
+    ScriptGlobal *global = new ScriptGlobal();
+    QScriptValue glb = mEngine->newQObject(global,QScriptEngine::ScriptOwnership);
+    mEngine->globalObject().setProperty("Globals", glb);
     // other object types
     ClimateConverter::addToScriptEngine(*mEngine);
     CSVFile::addToScriptEngine(*mEngine);
+
 
 }
 

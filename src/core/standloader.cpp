@@ -105,6 +105,7 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Resourc
         sep=';';
     QStringList headers = lines[0].trimmed().split(sep);
 
+    int iID = headers.indexOf("id");
     int iX = headers.indexOf("x");
     int iY = headers.indexOf("y");
     int iBhd = headers.indexOf("bhdfrom");
@@ -128,6 +129,8 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Resourc
            f+=offset;
            tree.setPosition(f);
         }
+        if (iID>=0)
+            tree.setId(line.section(sep, iID, iID).toInt() );
 
         tree.setDbh(dbh);
         tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.

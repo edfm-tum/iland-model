@@ -54,7 +54,8 @@ SOURCES += main.cpp \
     ../output/productionout.cpp \
     ../core/watercycle.cpp \
     ../tools/climateconverter.cpp \
-    ../tools/csvfile.cpp
+    ../tools/csvfile.cpp \
+    ../tools/scriptglobal.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -96,7 +97,8 @@ HEADERS += mainwindow.h \
     ../output/productionout.h \
     ../core/watercycle.h \
     ../tools/climateconverter.h \
-    ../tools/csvfile.h
+    ../tools/csvfile.h \
+    ../tools/scriptglobal.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
 QMAKE_EXTRA_TARGETS += revtarget
@@ -111,3 +113,4 @@ revtarget.commands = @echo \
 revtarget.depends = $$SOURCES \
     $$HEADERS \
     $$FORMS
+OTHER_FILES += maindoc.cpp

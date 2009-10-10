@@ -323,9 +323,11 @@ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &proje
   */
 QString GlobalSettings::path(const QString &fileName, const QString &type)
 {
-    QFileInfo fileinfo(fileName);
-    if (fileinfo.isAbsolute())
-        return fileName;
+    if (!fileName.isEmpty()) {
+        QFileInfo fileinfo(fileName);
+        if (fileinfo.isAbsolute())
+            return fileName;
+    }
 
     QDir d;
     if (mFilePath.contains(type))

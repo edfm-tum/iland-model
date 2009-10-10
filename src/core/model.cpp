@@ -1,5 +1,5 @@
 /** @class Model
-  Model is the main model container.
+  Main object of the iLand model composited of various sub models / sub components.
   */
 #include "global.h"
 #include "model.h"

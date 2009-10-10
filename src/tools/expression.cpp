@@ -1,4 +1,7 @@
-/** @class Expression engine for mathematical expressions.
+/** @class Expression
+  An expression engine for mathematical expressions provided as strings.
+  @ingroup tools
+  @ingroup script
   The main purpose is fast execution speed.
   notes regarding the syntax:
   +,-,*,/ as expected, additionally "^" for power.

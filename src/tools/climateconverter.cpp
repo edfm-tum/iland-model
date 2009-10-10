@@ -12,8 +12,11 @@
   the respective output value. Propertes tableName and fileName define the input file and the
   name of the output table (located in the "climate"-database of iLand) respectively.
 */
+/** @group script
+  @class ClimateConverter
+  This is the Scripting related documentation for the ClimateConverter tool.
+*/
 Q_SCRIPT_DECLARE_QMETAOBJECT(ClimateConverter, QObject*)
-
 void ClimateConverter::addToScriptEngine(QScriptEngine &engine)
 {
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148

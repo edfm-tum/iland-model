@@ -1,4 +1,5 @@
-/** @class Species encapsulates a single tree species.
+/** @class Species
+  The behavior and general properties of tree species.
   Because the individual trees are designed as leightweight as possible, lots of stuff is done by the Species.
   Inter alia, Species do:
   - store all the precalcualted patterns for light competition (LIP, stamps)

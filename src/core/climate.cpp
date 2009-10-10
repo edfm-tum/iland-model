@@ -1,4 +1,7 @@
-/** @class Climate encapsulates calculations related to a climate dataset.
+/** @class Climate
+  Climate handles climate input data and performs some basic related calculations on that data.
+  @ingroup core
+  @sa http://iland.boku.ac.at/ClimateData
 */
 #include "global.h"
 #include "climate.h"

@@ -8,7 +8,7 @@
 #include <limits>
 #include <cstring>
 
-/** @class Grid class (template).
+/** Grid class (template).
 
 Orientation
 The grid is oriented as typically coordinates on the northern hemisphere: greater y-values -> north, greater x-values-> east.
