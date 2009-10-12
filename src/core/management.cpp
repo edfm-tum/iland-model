@@ -98,6 +98,13 @@ void Management::remain(int number)
 }
 
 
+void Management::kill()
+{
+    for (int i=0;i<mTrees.count();i++)
+        mTrees[i].first->die();
+    mTrees.clear();
+}
+
 // from the range percentile range pctfrom to pctto (each 1..100)
 int Management::kill(int pctfrom, int pctto, int number)
 {
