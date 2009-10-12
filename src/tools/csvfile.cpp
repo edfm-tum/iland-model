@@ -31,6 +31,7 @@ void CSVFile::addToScriptEngine(QScriptEngine &engine)
 CSVFile::CSVFile(QObject *parent)
 {
     mHasCaptions = true;
+    mFlat = false;
     clear();
 }
 
@@ -57,25 +58,28 @@ bool CSVFile::loadFile(const QString &fileName)
     for (int i=0;i<mRows.count();i++)
         mRows[i] = mRows[i].trimmed();
 
-    // detect separator
+    mSeparator = ";"; // default
     QString first = mRows.first();
-    int c_tab = first.count('\t');
-    int c_semi = first.count(';');
-    int c_comma = first.count(',');
-    int c_space = first.count(' ');
-    if (c_tab+c_semi+c_comma+c_space == 0) {
-        qDebug() << "CSVFile::loadFile: cannot recognize separator. first line:" << first;
-        return false;
-    }
-    mSeparator=" ";
-    if (c_tab > c_semi && c_tab>c_comma) mSeparator="\t";
-    if (c_semi > c_tab && c_semi>c_comma) mSeparator=";";
-    if (c_comma > c_tab && c_comma>c_semi) mSeparator=",";
-    if (mSeparator==" ") {
-      for (int i=0;i<mRows.count();i++)
-        mRows[i] = mRows[i].simplified();
-      first = mRows.first();
-    }
+    if (!mFlat) {
+        // detect separator
+        int c_tab = first.count('\t');
+        int c_semi = first.count(';');
+        int c_comma = first.count(',');
+        int c_space = first.count(' ');
+        if (c_tab+c_semi+c_comma+c_space == 0) {
+            qDebug() << "CSVFile::loadFile: cannot recognize separator. first line:" << first;
+            return false;
+        }
+        mSeparator=" ";
+        if (c_tab > c_semi && c_tab>c_comma) mSeparator="\t";
+        if (c_semi > c_tab && c_semi>c_comma) mSeparator=";";
+        if (c_comma > c_tab && c_comma>c_semi) mSeparator=",";
+        if (mSeparator==" ") {
+            for (int i=0;i<mRows.count();i++)
+                mRows[i] = mRows[i].simplified();
+            first = mRows.first();
+        }
+    } // !mFlat
 
     // captions
     if (mHasCaptions) {
@@ -87,6 +91,7 @@ bool CSVFile::loadFile(const QString &fileName)
         for (int i=0;i<mCaptions.count();i++)
             mCaptions[i] = QString("c%1").arg(i);
     }
+
     mColCount = mCaptions.count();
     mRowCount = mRows.count();
     mStreamingMode = false;

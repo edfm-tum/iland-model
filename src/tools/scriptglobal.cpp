@@ -7,10 +7,21 @@
 /** @class ScriptGlobal
    This is a global interface providing useful functionality for javascripts.
   Within javascript-code an instance of this class can be accessed as "Globals" in the global scope
- (no instantiation necessary).
- @paragraph General properties
+ (no instantiation necessary).*/
 
+/** \page globals Globals documentation
+  Here are objects visible in the global space of javascript.
+  \section sec An example section
+  This page contains the subsections \ref subsection1 and \ref subsection2.
+  For more info see page \ref page2.
+  \subsection subsection1 The first subsection
+  Text.
+  \subsection subsection2 The second subsection
+ - year integer. Current simulation year
+ - currentDir current working directory. default value is the "script" directory defined in the project file.
+  More text.
 */
+
 
 Q_SCRIPT_DECLARE_QMETAOBJECT(ScriptGlobal, QObject*)
 void ScriptGlobal::addToScriptEngine(QScriptEngine &engine)

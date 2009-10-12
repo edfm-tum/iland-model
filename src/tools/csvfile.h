@@ -8,6 +8,7 @@ class CSVFile : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool captions WRITE setHasCaptions READ hasCaptions);
+    Q_PROPERTY(bool flat WRITE setFlat READ flat);
     Q_PROPERTY(int colCount READ colCount);
     Q_PROPERTY(int rowCount READ rowCount);
 public:
@@ -20,10 +21,12 @@ public:
     // properties
     bool streamingMode() const { return mStreamingMode; }
     bool hasCaptions() const { return mHasCaptions; }
+    bool flat() const { return mFlat; } ///< simple list, not multiple columns
     int rowCount() const { return mRowCount; } ///< number or rows (excl. captions), or -1.
     int colCount() const { return mColCount; } ///< number of columns, or -1
     // setters
     void setHasCaptions(const bool hasCaps) { mHasCaptions = hasCaps; }
+    void setFlat(const bool isflat) { mFlat = isflat; }
     static void addToScriptEngine(QScriptEngine &engine);
 public slots:
     bool loadFile(const QString &fileName); ///< load @p fileName. load the complete file at once.
@@ -34,6 +37,7 @@ public slots:
 private:
     void clear();
     bool mHasCaptions;
+    bool mFlat;
     bool mStreamingMode;
     QStringList mCaptions;
     QStringList mRows;

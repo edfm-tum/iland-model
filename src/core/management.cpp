@@ -154,6 +154,37 @@ void Management::run()
    }
 }
 
+int Management::filter(QVariantList idList)
+{
+    QHash<int, int> ids;
+    foreach(const QVariant &v, idList)
+        ids[v.toInt()] = 1;
+
+    QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
+    while (tp!=mTrees.end()) {
+        if (!ids.contains(tp->first->id()) )
+            tp = mTrees.erase(tp);
+        else
+            tp++;
+    }
+    return mTrees.count();
+}
+
+int Management::filter(QString filter)
+{
+    TreeWrapper tw;
+    Expression expr(filter,&tw);
+    qDebug() << "filtering with" << filter;
+    QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
+    while (tp!=mTrees.end()) {
+        tw.setTree(tp->first);
+        if (!expr.execute())
+             tp = mTrees.erase(tp);
+        else
+            tp++;
+    }
+    return mTrees.count();
+}
 
 int Management::load(QString filter)
 {
