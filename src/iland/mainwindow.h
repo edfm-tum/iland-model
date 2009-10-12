@@ -51,6 +51,7 @@ private:
 
 private slots:
 
+    void on_actionOutput_table_description_triggered();
     void on_actionWater_Output_triggered();
     void on_actionStop_triggered();
     void on_actionPause_triggered();

@@ -12,6 +12,7 @@ public:
     bool execute(const QString& tableName); ///< execute output with a given name. returns true if executed.
     void save(); ///< save transactions of all outputs
     void close(); ///< close all outputs
+    QString wikiFormat(); ///< wiki-format of all outputs
 private:
     QList<Output*> mOutputs; ///< list of outputs in system
     // transactions

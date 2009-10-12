@@ -112,3 +112,11 @@ bool OutputManager::execute(const QString& tableName)
     qDebug() << "output" << tableName << "not found!";
     return false; // no output found
 }
+
+QString OutputManager::wikiFormat()
+{
+    QString result;
+    foreach(const Output *o, mOutputs)
+        result+=o->wikiFormat() + "\n\n";
+    return result;
+}

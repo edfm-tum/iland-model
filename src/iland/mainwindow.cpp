@@ -773,3 +773,10 @@ void MainWindow::on_scriptCommand_returnPressed()
 
 
 
+
+void MainWindow::on_actionOutput_table_description_triggered()
+{
+    QString txt = GlobalSettings::instance()->outputManager()->wikiFormat();
+    QApplication::clipboard()->setText(txt);
+    qDebug() << "Description copied to clipboard!";
+}

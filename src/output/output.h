@@ -46,7 +46,7 @@ public:
     const QString name() const { return mName;  } ///< descriptive name of the ouptut
     const QString description() const { return mDescription; } ///< description of output
     const QString tableName() const { return mTableName; } ///< internal output name (no spaces allowed)
-    QString wikiFormat(); ///< return output description in a (tiki)-wiki format
+    QString wikiFormat() const; ///< return output description in a (tiki)-wiki format
 
     // save data
     Output & operator<< ( const double& value ) { add(value); return *this; }

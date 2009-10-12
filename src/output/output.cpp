@@ -198,13 +198,13 @@ void Output::saveDatabase()
     newRow();
 }
 
-QString Output::wikiFormat()
+QString Output::wikiFormat() const
 {
-    QString result=QString("!!%1\nTable Name: %2\n%3\n").arg(name(), tableName(), description());
+    QString result=QString("!!%1\nTable Name: %2\n%3\n\n").arg(name(), tableName(), description());
     // loop over columns...
-    result += "||"; // table begin
+    result += "||__caption__|__datatype__|__description__\n"; // table begin
     foreach(const OutputColumn &col, mColumns)
-        result+=QString("%1|%2%3\n").arg(col.name(), col.datatype(), col.description());
+        result+=QString("%1|%2|%3\n").arg(col.name(), col.datatype(), col.description());
     result[result.length()-1]=' '; // clear last newline
     result+="||\n";
     return result;
