@@ -14,19 +14,22 @@ class ResourceUnit
 public:
     ResourceUnit(const int index);
     ~ResourceUnit();
+
     // access to elements
-    int index() const { return mIndex; }
-    Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
+    const Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
+    const WaterCycle *waterCycle() const { return mWater; } ///< water model of the unit
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
-    /// get RU-Species-container of @p species from the RU
-    ResourceUnitSpecies &resourceUnitSpecies(const Species *species);
+    ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
     const QVector<ResourceUnitSpecies> ruSpecies() const { return mRUSpecies; }
-    const QRectF &boundingBox() const { return mBoundingBox; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
+
     // properties
+    int index() const { return mIndex; }
+    const QRectF &boundingBox() const { return mBoundingBox; }
     double area() const { return mPixelCount*100; } ///< get the resuorce unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
+
     // actions
     /// returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
     Tree &newTree();

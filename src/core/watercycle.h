@@ -60,9 +60,10 @@ public:
     // actions
     void run(); ///< run the current year
     // properties
+    const double &relContent(const int doy) const { return mRelativeContent[doy]; }
     double bucketSize() const { return mBucketSize; } ///< bucket size in mm
-    double content() const { return mContent; } ///< current water content in mm
-    double relContent() const { Q_ASSERT(mBucketSize>0); return qMin(mContent/mBucketSize, 1.); }
+    double currentContent() const { return mContent; } ///< current water content in mm
+    double currentRelContent() const { Q_ASSERT(mBucketSize>0); return qMin(mContent/mBucketSize, 1.); }
 private:
     const ResourceUnit *mRU; ///< resource unit to which this watercycle is connected
     Water::Canopy mCanopy; ///< object representing the forest canopy (interception, evaporation)

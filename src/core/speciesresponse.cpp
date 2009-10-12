@@ -19,6 +19,7 @@
 #include "resourceunitspecies.h"
 #include "climate.h"
 #include "model.h"
+#include "watercycle.h"
 
 SpeciesResponse::SpeciesResponse()
 {
@@ -49,24 +50,14 @@ void SpeciesResponse::calculate()
     clear(); // reset values
 
     // calculate yearly responses
-    mSoilWaterResponseYear = 0.5; // TODO
-    double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year
-    double nitrogen =  Model::settings().nitrogenAvailable;
-
-    // Nitrogen response: a yearly value based on available nitrogen
-    mNitrogenResponse = mSpecies->nitrogenResponse( nitrogen );
-
-    // CO2 response: a yearly value based on atmospheric CO2 concentration and the response to nutrients and water in the soil.
-    mCO2Response = mSpecies->speciesSet()->co2Response(ambient_co2,
-                                                       mNitrogenResponse,
-                                                       mSoilWaterResponseYear);
-
+    const WaterCycle *water = mRu->waterCycle();
     const Phenology &pheno = mRu->climate()->phenology(mSpecies->phenologyClass());
     int veg_begin = pheno.vegetationPeriodStart();
     int veg_end = pheno.vegetationPeriodEnd();
 
     // calculate monthly responses
     int doy=0;
+    double water_resp;
     for (int mon=0;mon<12;mon++) {
         mRu->climate()->monthRange(mon, &begin, &end);
         no_of_days = 0;
@@ -76,16 +67,35 @@ void SpeciesResponse::calculate()
             // Temperature Response
             mTempResponse[mon]+=mSpecies->temperatureResponse(day->temp_delayed);
             // radiation: only count days in vegetation period
-            if (doy>=veg_begin && doy<=veg_end)
+            water_resp = mSpecies->soilwaterResponse(water->relContent(doy));
+            if (doy>=veg_begin && doy<=veg_end) {
                 mRadiation[mon] += day->radiation;
+                mSoilWaterResponseYear += water_resp;
+            }
             // soil water: fake
-            mSoilWaterResponse[mon] = mSoilWaterResponseYear;
+            mSoilWaterResponse[mon] += water_resp;
+
 
             doy++;
         }
         mVpdResponse[mon] /= no_of_days; // vpd: average of month
         mTempResponse[mon] /= no_of_days; // temperature: average value of daily responses
     }
+
+    if (pheno.vegetationPeriodLength()>0)
+        mSoilWaterResponseYear /= pheno.vegetationPeriodLength();
+
+    const double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year
+    const double nitrogen =  Model::settings().nitrogenAvailable;
+
+    // Nitrogen response: a yearly value based on available nitrogen
+    mNitrogenResponse = mSpecies->nitrogenResponse( nitrogen );
+
+    // CO2 response: a yearly value based on atmospheric CO2 concentration and the response to nutrients and water in the soil.
+    mCO2Response = mSpecies->speciesSet()->co2Response(ambient_co2,
+                                                       mNitrogenResponse,
+                                                       mSoilWaterResponseYear);
+
 }
 
 

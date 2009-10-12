@@ -177,7 +177,7 @@ void Tests::testWater()
     wc.run();
 }
 
-void Tests::testPheno(Climate *clim)
+void Tests::testPheno(const Climate *clim)
 {
     Phenology pheno(1,clim,0.9, 4.1, 10., 11., 2. ,9.);
     pheno.calculate();

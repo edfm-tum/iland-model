@@ -124,7 +124,7 @@ void Model::setupSpace()
         mRU.first()->setBoundingBox(QRectF(0., 0., 100., 100.)); // the first
         *p = mRU.first(); // store first RU in grid.
         SpeciesSet *species_set = (*p)->speciesSet(); // copy the species sets
-        Climate *clim = (*p)->climate(); // copy the climate
+        Climate *clim = const_cast<Climate*>((*p)->climate()); // copy the climate
         p++; // no need to create the first...
         int ru_index = 1;
         for (; p!=mRUmap.end(); ++p) {

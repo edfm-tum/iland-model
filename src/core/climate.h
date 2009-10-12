@@ -43,15 +43,15 @@ public:
     // activity
     void nextYear();
     // access to climate data
-    const ClimateDay *dayOfYear(const int dayofyear) { return mBegin + dayofyear;} ///< get pointer to climate structure by day of year (0-based-index)
-    const ClimateDay *day(const int month, const int day); ///< gets pointer to climate structure of given day (0-based indices, i.e. month=11=december!)
+    const ClimateDay *dayOfYear(const int dayofyear) const { return mBegin + dayofyear;} ///< get pointer to climate structure by day of year (0-based-index)
+    const ClimateDay *day(const int month, const int day) const; ///< gets pointer to climate structure of given day (0-based indices, i.e. month=11=december!)
     /// returns two pointer (arguments!!!) to the begin and one after end of the given month (month: 0..11)
-    void monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd);
-    double days(const int month); ///< returns number of days of given month
-    int daysOfYear(); ///< returns number of days of current year. points to the first day of the current year.
-    const ClimateDay *begin() { return mBegin; } ///< STL-like (pointer)-iterator to the day *after* last day of the current year
-    const ClimateDay *end() { return mEnd; } ///< STL-like pointer iterator
-    void toDate(const int yearday, int *rDay=0, int *rMonth=0, int *rYear=0); ///< decode "yearday" to the actual year, month, day if provided
+    void monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd) const;
+    double days(const int month) const; ///< returns number of days of given month
+    int daysOfYear() const; ///< returns number of days of current year. points to the first day of the current year.
+    const ClimateDay *begin() const { return mBegin; } ///< STL-like (pointer)-iterator to the day *after* last day of the current year
+    const ClimateDay *end() const { return mEnd; } ///< STL-like pointer iterator
+    void toDate(const int yearday, int *rDay=0, int *rMonth=0, int *rYear=0) const; ///< decode "yearday" to the actual year, month, day if provided
     // access to other subsystems
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
     const Sun &sun() const { return mSun; } ///< solar radiation class

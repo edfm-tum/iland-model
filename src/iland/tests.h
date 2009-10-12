@@ -21,7 +21,7 @@ public:
     QObject *mParent;
  private:
     void testSun();
-    void testPheno(Climate *clim);
+    void testPheno(const Climate *clim);
 
 
 };

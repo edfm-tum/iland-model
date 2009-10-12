@@ -46,31 +46,31 @@ Climate::Climate()
 
 // access functions
 
-const ClimateDay *Climate::day(const int month, const int day)
+const ClimateDay *Climate::day(const int month, const int day) const
 {
     if (mDayIndices.isEmpty())
         return &mInvalidDay;
     return mStore.constBegin() + mDayIndices[mCurrentYear*12 + month] + day;
 }
-void Climate::monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd)
+void Climate::monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd) const
 {
     *rBegin = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month];
     *rEnd = mStore.constBegin() + mDayIndices[mCurrentYear*12 + month+1];
     //qDebug() << "monthRange returning: begin:"<< (*rBegin)->toString() << "end-1:" << (*rEnd-1)->toString();
 }
 
-double Climate::days(const int month)
+double Climate::days(const int month) const
 {
     return (double) mDayIndices[mCurrentYear*12 + month + 1]-mDayIndices[mCurrentYear*12 + month];
 }
-int Climate::daysOfYear()
+int Climate::daysOfYear() const
 {
     if (mDayIndices.isEmpty())
         return -1;
     return mEnd - mBegin;
 }
 
-void Climate::toDate(const int yearday, int *rDay, int *rMonth, int *rYear)
+void Climate::toDate(const int yearday, int *rDay, int *rMonth, int *rYear) const
 {
     const ClimateDay *d = dayOfYear(yearday);
     if (rDay) *rDay = d->day-1;
@@ -148,7 +148,7 @@ void Climate::load()
             // sanity checeks
             DBG_IF(cday->month<1 || cday->day<1 || cday->month>12 || cday->day>31,"Climate:load", "invalid dates");
             DBG_IF(cday->temperature<-70 || cday->temperature>50,"Climate:load", "temperature out of range (-70..+50°C)");
-            DBG_IF(cday->preciptitation<0 || cday->preciptitation>100,"Climate:load", "precipitation out of range (0..100mm)");
+            DBG_IF(cday->preciptitation<0 || cday->preciptitation>200,"Climate:load", "precipitation out of range (0..200mm)");
             DBG_IF(cday->radiation<0 || cday->radiation>50,"Climate:load", "radiation out of range (0..50 MJ/m2/day)");
             DBG_IF(cday->vpd<0 || cday->vpd>10,"Climate:load", "vpd out of range (0..10 kPa)");
 

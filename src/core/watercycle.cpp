@@ -70,7 +70,7 @@ void WaterCycle::run()
         // (4) add rest to soil
         mContent += prec_to_soil;
         // calculate the relative water content
-        mRelativeContent[doy] = relContent();
+        mRelativeContent[doy] = currentRelContent();
         // (5) transpiration of the vegetation
         et = mCanopy.evapotranspiration(day, mRU->climate()->daylength_h(doy));
 
