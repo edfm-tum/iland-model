@@ -65,7 +65,7 @@ double Production3PG::calculate()
         epsilon = calculateEpsilon(i); // ... photosynthetic efficiency ...
         mUPAR[i] = utilizable_rad ;
         mGPP[i] =utilizable_rad * epsilon * gC_to_kg_biomass; // ... results in GPP of the month kg Biomass/m2 (converted from gC/m2)
-        year_raw_gpp += mGPP[i]; // gC/m2
+        year_raw_gpp += mGPP[i]; // kg Biomass/m2
     }
     // calculate fac
     mRootFraction = 1. - abovegroundFraction();

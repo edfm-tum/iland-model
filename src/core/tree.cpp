@@ -305,9 +305,8 @@ void Tree::readLIF()
     if (mLRI > 1.)
         mLRI = 1.;
 
-    mLightResponse = Model::settings().lightResponse->calculate(mLRI);
     // Finally, add LRI of this Tree to the ResourceUnit!
-    mRU->addWLA(mLeafArea, mLightResponse);
+    mRU->addWLA(mLeafArea, mLRI);
 
 
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
@@ -418,22 +417,12 @@ void Tree::readLIF_torus()
         }
     }
     mLRI = sum;
-    // read dominance field...
-    // this applies only if some trees are potentially *higher* than the dominant height grid
-    //if (dom_height < m_Height) {
-        // if tree is higher than Z*, the dominance height
-        // a part of the crown is in "full light".
-    //    m_statAboveZ++;
-    //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
-    //}
     if (mLRI > 1.)
         mLRI = 1.;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
 
-    // calculate a light response from lri:
-    mLightResponse = Model::settings().lightResponse->calculate(mLRI);
     // Finally, add LRI of this Tree to the ResourceUnit!
-    mRU->addWLA(mLeafArea, mLightResponse);
+    mRU->addWLA(mLeafArea, mLRI);
 }
 
 
@@ -443,6 +432,15 @@ void Tree::resetStatistics()
     m_statCreated=0;
     m_statAboveZ=0;
     m_nextId=1;
+}
+
+void Tree::calcLightResponse()
+{
+    // calculate a light response from lri:
+    double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.);
+    mLightResponse = limit(Model::settings().lightResponse->calculate(lri), 0., 1.);
+    mRU->addLR(mLeafArea, mLightResponse);
+
 }
 
 //////////////////////////////////////////////////
@@ -478,7 +476,7 @@ void Tree::grow()
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
             dumpList(out); // add tree headers
-            out << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
+            out << mLightResponse << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
         }
     ); // DBGMODE()
     if (d.NPP>0.)

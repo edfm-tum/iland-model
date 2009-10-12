@@ -254,19 +254,27 @@ ResourceUnit *Model::ru(QPointF &coord)
 void Model::beforeRun()
 {
     // initialize stands
+    {
     DebugTimer loadtrees("load trees");
     StandLoader loader(this);
     loader.processInit();
+    }
 
     // load climate
+    {
+    DebugTimer loadclim("load climate");
     foreach(Climate *c, mClimates)
         c->setup();
 
+    }
+
+    { DebugTimer loadinit("load standstatistics");
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern();
     readPattern();
 
     createStandStatistics();
+    }
 }
 
 void Model::runYear()
@@ -346,9 +354,16 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
+    // calculate light responses
+    // responses are based on *modified* values for LightResourceIndex
+    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+        (*tit).calcLightResponse();
+    }
+
+    unit->calculateInterceptedArea();
 
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
-        (*tit).grow(); //
+        (*tit).grow(); // actual growth of individual trees
     }
     unit->yearEnd();
     return unit;
@@ -398,7 +413,7 @@ void Model::grow()
     }
 
     DebugTimer t("grow()");
-    threadRunner.run(nc_grow);
+    threadRunner.run(nc_grow); // actual growth of individual trees
 
     foreach(ResourceUnit *ru, mRU) {
        ru->cleanTreeList();

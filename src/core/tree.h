@@ -56,6 +56,7 @@ public:
     void readLIF_torus(); ///< calculate LRI from a closed 1ha area
     void heightGrid_torus(); ///< calculate the height grid
 
+    void calcLightResponse(); ///< calculate light response
     // growth, etc.
     void grow(); ///< main growth function to update the tree state.
 

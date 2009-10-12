@@ -17,7 +17,7 @@ public:
     const double *vpdResponse() const { return mVpdResponse; }
     const double *tempResponse() const { return mTempResponse; }
     const double *soilWaterResponse() const { return mSoilWaterResponse; }
-    const double *absorbedRadiation() const { return mRadiation; }
+    const double *absorbedRadiation() const { return mRadiation; } ///< radiation sum in MJ/m2
     double co2Response() const { return mCO2Response; }
     double nitrogenResponse() const { return mNitrogenResponse; }
 private:

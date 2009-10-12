@@ -16,7 +16,7 @@ ProductionOut::ProductionOut()
               << OutputColumn("waterResponse", "respose value soil water", OutDouble)
               << OutputColumn("nitrogenResponse", "respose value nitrogen", OutDouble)
               << OutputColumn("co2Response", "respose value co2", OutDouble)
-              << OutputColumn("radiation_m2", "utilizable (!) PAR per m2", OutDouble)
+              << OutputColumn("radiation_m2", "utilizable (!) PAR in MJ per m2 and month", OutDouble)
               << OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble);
               //<< OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble)
               //<< OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble);

@@ -146,7 +146,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
         return treeCaps;
     switch(dbg) {
         case dTreeNPP: return QStringList() << "id" << "type" << "year" << treeCaps
-                    << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging";
+                    <<"lightResponse" << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging";
 
         case dTreeGrowth: return QStringList() << "id" << "type" << "year" <<  treeCaps
                     << "netNPPStem" << "massStemOld" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";

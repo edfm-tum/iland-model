@@ -32,8 +32,11 @@ public:
     Tree &newTree();
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
+    void addLR(const float LA, const float LightResponse) { mAggregatedLR += LA*LightResponse; }
     /// function that distributes effective interception area according to the weight of Light response and LeafArea of the indivudal (@sa production())
-    double interceptedArea(const double LA, const double LRI) { return mEffectiveArea_perWLA * LA * LRI; }
+    double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
+    void calculateInterceptedArea();
+    const double &LRImodifier() const { return mLRI_modification; }
 
     // model flow
     void newYear(); ///< reset values for a new simulation year
@@ -57,9 +60,12 @@ private:
     QVector<ResourceUnitSpecies> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
-    float mAggregatedLA; ///< sum of leafArea
-    float mAggregatedWLA; ///< sum of lightResponse * LeafArea for all trees
+    double mAggregatedLA; ///< sum of leafArea
+    double mAggregatedWLA; ///< sum of lightResponse * LeafArea for all trees
+    double mAggregatedLR; ///< sum of lightresponse*LA of the current unit
+    double mEffectiveArea; ///< total "effective" area per resource unit, i.e. area of RU - non-stocked - beerLambert-loss
     double mEffectiveArea_perWLA; ///<
+    double mLRI_modification;
 
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees

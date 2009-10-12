@@ -103,8 +103,10 @@ void ResourceUnit::cleanTreeList()
 
 void ResourceUnit::newYear()
 {
-    mAggregatedWLA = 0.f;
-    mAggregatedLA = 0.f;
+    mAggregatedWLA = 0.;
+    mAggregatedLA = 0.;
+    mAggregatedLR = 0.;
+    mEffectiveArea = 0.;
     mPixelCount = mStockedPixelCount = 0;
     // clear statistics global and per species...
 }
@@ -131,14 +133,16 @@ void ResourceUnit::production()
     // calculate the intercepted radiation fraction using the law of Beer Lambert
     const double k = Model::settings().lightExtinctionCoefficient;
     double interception_fraction = 1. - exp(-k * LAI);
+    mEffectiveArea = mStockedArea * interception_fraction; // m2
 
     // calculate the total weighted leaf area on this RU:
-    mEffectiveArea_perWLA = interception_fraction *  mStockedArea / mAggregatedWLA;
+    mLRI_modification = interception_fraction *  mStockedArea / mAggregatedWLA;
 
-    DBGMODE(qDebug() << QString("production: LAI: %1 (intercepted fraction: %2, stocked area: %4). Effective Area / wla: %3")
+
+    DBGMODE(qDebug() << QString("production: LAI: %1 (intercepted fraction: %2, stocked area: %4). LRI-Multiplier: %3")
             .arg(LAI)
             .arg(interception_fraction)
-            .arg(mEffectiveArea_perWLA)
+            .arg(mLRI_modification)
             .arg(mStockedArea);
     );
     // soil water model - this determines soil water contents needed for response calculations
@@ -157,6 +161,13 @@ void ResourceUnit::production()
         i->statistics().clear();
         qDebug() << "species" << (*i).species()->id() << "raw_gpp_m2" << i->prod3PG().GPPperArea();
     }
+}
+
+void ResourceUnit::calculateInterceptedArea()
+{
+    Q_ASSERT(mAggregatedLR>0.);
+    mEffectiveArea_perWLA = mEffectiveArea / mAggregatedLR;
+    qDebug() << "RU: aggregated lightresponse:" << mAggregatedLR  << "eff.area./wla:" << mEffectiveArea_perWLA;
 }
 
 void ResourceUnit::yearEnd()
