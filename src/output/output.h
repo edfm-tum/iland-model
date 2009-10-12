@@ -14,6 +14,9 @@ public:
     static OutputColumn year() { return OutputColumn("year", "simulation year", OutInteger); }
     static OutputColumn species() { return OutputColumn("species", "tree species", OutString); }
     static OutputColumn ru() { return OutputColumn("ru", "id of ressource unit", OutInteger); }
+    const QString &name() const { return mName; }
+    const QString &description() const { return mDescription; }
+    QString datatype() const { switch(mDatatype) { case OutInteger: return QString("integer"); case OutDouble: return QString("double"); default: return QString("string"); } }
 private:
     QString mName;
     QString mDescription;
@@ -41,8 +44,9 @@ public:
     const QList<OutputColumn> getColumns() const { return mColumns; }
 
     const QString name() const { return mName;  } ///< descriptive name of the ouptut
-    const QString description() const { return mDescription; }
+    const QString description() const { return mDescription; } ///< description of output
     const QString tableName() const { return mTableName; } ///< internal output name (no spaces allowed)
+    QString wikiFormat(); ///< return output description in a (tiki)-wiki format
 
     // save data
     Output & operator<< ( const double& value ) { add(value); return *this; }
