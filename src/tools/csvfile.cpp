@@ -42,14 +42,9 @@ void CSVFile::clear()
     mRows.clear();
 }
 
-bool CSVFile::loadFile(const QString &fileName)
+bool CSVFile::loadFromString(const QString &content)
 {
     clear();
-    QString content = Helper::loadTextFile(fileName);
-    if (content.isEmpty()) {
-        qDebug() << "CSVFile::loadFile" << fileName << "does not exist or is empty.";
-        return false;
-    }
     // split into rows
     mRows = content.split("\n", QString::SkipEmptyParts);
     if (mRows.count()==0)
@@ -96,6 +91,16 @@ bool CSVFile::loadFile(const QString &fileName)
     mRowCount = mRows.count();
     mStreamingMode = false;
     return true;
+
+}
+bool CSVFile::loadFile(const QString &fileName)
+{
+    QString content = Helper::loadTextFile(fileName);
+    if (content.isEmpty()) {
+        qDebug() << "CSVFile::loadFile" << fileName << "does not exist or is empty.";
+        return false;
+    }
+    return loadFromString(content);
 }
 
 QVariant CSVFile::value(const int row, const int col)

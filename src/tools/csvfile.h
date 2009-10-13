@@ -19,18 +19,20 @@ public:
     QVariant colValue(const int col); ///< get value of column with index @p col. Use in streaming mode.
     bool next(); ///< advance to next record (i.e. line). return false if end of file is reached.
     // properties
-    bool streamingMode() const { return mStreamingMode; }
-    bool hasCaptions() const { return mHasCaptions; }
+    bool streamingMode() const { return mStreamingMode; } ///< return true, if in "streaming mode" (for large files)
+    bool hasCaptions() const { return mHasCaptions; } ///< true, if first line contains headers
     bool flat() const { return mFlat; } ///< simple list, not multiple columns
     int rowCount() const { return mRowCount; } ///< number or rows (excl. captions), or -1.
     int colCount() const { return mColCount; } ///< number of columns, or -1
     // setters
     void setHasCaptions(const bool hasCaps) { mHasCaptions = hasCaps; }
     void setFlat(const bool isflat) { mFlat = isflat; }
-    static void addToScriptEngine(QScriptEngine &engine);
+    static void addToScriptEngine(QScriptEngine &engine); // called during setup of ScriptEngine
 public slots:
     bool loadFile(const QString &fileName); ///< load @p fileName. load the complete file at once.
+    bool loadFromString(const QString &content); ///< load from a string.
     QString columnName(const int col) { if (col<mColCount) return mCaptions[col]; return QString(); } ///< get caption of ith column.
+    int columnIndex(const QString &columnName) const { return mCaptions.indexOf(columnName); } ///< index of column or -1 if not available
     QVariant value(const int row, const int col); ///< get value of cell denoted by @p row and @p cell. Not available in streaming mode.
     QVariant row(const int row); ///< retrieve content of the full row @p row as a Variant
 
