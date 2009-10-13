@@ -30,7 +30,8 @@ public:
     // actions
     /// process the canopy layer. returns the amount of precipitation that leaves the canopy-layer.
     double flow(const double &preciptitation_mm, const double &temperature);
-    double evapotranspiration(const ClimateDay *climate, const double daylength_h);
+    double evapotranspirationBGC(const ClimateDay *climate, const double daylength_h);
+    double evapotranspiration3PG(const ClimateDay *climate, const double daylength_h);
     // properties
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
     double avgMaxCanopyConductance() const { return mAvgMaxCanopyConductance; } ///< averaged maximum canopy conductance of current species distribution (m/s)

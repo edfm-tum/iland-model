@@ -72,7 +72,7 @@ void WaterCycle::run()
         // calculate the relative water content
         mRelativeContent[doy] = currentRelContent();
         // (5) transpiration of the vegetation
-        et = mCanopy.evapotranspiration(day, mRU->climate()->daylength_h(doy));
+        et = mCanopy.evapotranspiration3PG(day, mRU->climate()->daylength_h(doy));
 
         mContent -= et; // reduce content (transpiration)
         mContent += mCanopy.interception(); // add intercepted water that is *not* evaporated to the soil again
@@ -196,7 +196,7 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
 /** calculate the daily evaporation/transpiration using the Penman-Monteith-Equation.
    The application of the equation follows broadly Running (1988).
    Returns the total sum of evaporation+transpiration in mm of the day. */
-double Canopy::evapotranspiration(const ClimateDay *climate, const double daylength_h)
+double Canopy::evapotranspirationBGC(const ClimateDay *climate, const double daylength_h)
 {
     double vpd_mbar = climate->vpd * 10.; // convert from kPa to mbar
     double temperature = climate->temperature; // average temperature of the day (°C)
@@ -233,5 +233,45 @@ double Canopy::evapotranspiration(const ClimateDay *climate, const double daylen
     return et;
 }
 
+
+/** calculate the daily evaporation/transpiration using the Penman-Monteith-Equation.
+   This version is based on 3PG. See the Visual Basic Code in 3PGjs.xls.
+   Returns the total sum of evaporation+transpiration in mm of the day. */
+double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double daylength_h)
+{
+    double vpd_mbar = climate->vpd * 10.; // convert from kPa to mbar
+    double temperature = climate->temperature; // average temperature of the day (°C)
+    double daylength = daylength_h * 3600.; // daylength in seconds (convert from length in hours)
+    double rad = climate->radiation / daylength * 1000000; //convert from MJ/m2 (day sum) to average radiation flow W/m2 [MJ=MWs -> /s * 1,000,000
+
+    //: Landsberg original: const double e20 = 2.2;  //rate of change of saturated VP with T at 20C
+    const double VPDconv = 0.000622; //convert VPD to saturation deficit = 18/29/1000
+    const double latent_heat = 2460000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
+
+    double gBL  = 0.2; // boundary layer conductance
+    // canopy conductance scales linearly from 0 to LAI=3 and is constant for LAI > 3.
+    double gC = mAvgMaxCanopyConductance * exp(-2.5 * climate->vpd);
+    if (mLAI<3.)
+        gC *= mLAI / 3.;
+
+    double defTerm = mAirDensity * latent_heat * (vpd_mbar * VPDconv) * gBL;
+        // saturation vapor pressure (Running 1988, Eq. 1) in mbar
+    double svp = 6.1078 * exp((17.269 * temperature) / (237.3 + temperature) );
+    // the slope of svp is, thanks to http://www.wolframalpha.com/input/?i=derive+y%3D6.1078+exp+((17.269x)/(237.3%2Bx))
+    double svp_slope = svp * ( 17.269/(237.3+temperature) - 17.269*temperature/((237.3+temperature)*(237.3+temperature)) );
+
+    double div = (1. + svp_slope + gBL / gC);
+    double Etransp = (svp_slope * rad + defTerm) / div;
+    double canopy_transiration = Etransp / latent_heat * daylength;
+
+    if (mInterception>0.) {
+        // we assume that for evaporation from leaf surface gBL/gC -> 0
+        double div_evap = 1 + svp_slope;
+        double evap = (svp_slope*rad + defTerm) / div_evap / latent_heat * daylength;
+        evap = qMin(evap, mInterception);
+        mInterception -= evap;
+    }
+    return canopy_transiration;
+}
 
 } // end namespace
