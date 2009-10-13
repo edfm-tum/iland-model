@@ -11,7 +11,7 @@
      Create columns and set fixed properties (e.g. table name)
    - overwrite setup()
      this function is called after the project file is read. You can access a XmlHelper calling settings()
-     which is set to the top-node of the output (defined by tableName() set in contstructor). Access settings
+     which is set to the top-node of the output (defined by tableName() which is set in the constructor). Access settings
      using relative xml-pathes (see example).
    - overwrite exec()
      add data using the stream operators or add() function of Output. Call writeRow() after each row. Each invokation
@@ -58,10 +58,9 @@
     @endcode
 
 */
-const XmlHelper &Output::settings()
-{
-    return GlobalSettings::instance()->settings();
-}
+const GlobalSettings *Output::gl = GlobalSettings::instance();
+
+
 void Output::exec()
 {
     qDebug() << "Output::exec() called! (should be overrided!)";

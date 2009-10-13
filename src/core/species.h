@@ -52,7 +52,7 @@ public:
     double temperatureResponse(const double &delayed_temp) const;
     double nitrogenResponse(const double &availableNitrogen) const { return mSet->nitrogenResponse(availableNitrogen, mRespNitrogenClass); }
     double canopyConductance() const { return mMaxCanopyConductance; } ///< maximum canopy conductance in m/s
-    double soilwaterResponse(const double &relativeSoilWaterContent) const { return relativeSoilWaterContent; }
+    double soilwaterResponse(const double &relativeSoilWaterContent) const { return 1.; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance

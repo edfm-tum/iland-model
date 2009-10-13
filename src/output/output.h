@@ -57,8 +57,8 @@ protected:
     void setName(const QString &name, const QString tableName) { mName = name; mTableName=tableName; }
     void setDescription(const QString &description) { mDescription=description; }
     QList<OutputColumn> &columns()  { return mColumns; }
-    int currentYear() const { return GlobalSettings::instance()->currentYear(); }
-    const XmlHelper &settings();
+    int currentYear() const { return gl->currentYear(); }
+    const XmlHelper &settings() const { return gl->settings(); } ///< access XML settings (see class description)
     // add data
     void writeRow(); ///< saves the current row/line of data to database/file. Must be called f
 
@@ -71,6 +71,7 @@ protected:
     inline void add(const QString &stringValue);
 
 private:
+    static const GlobalSettings *gl; ///< pointer to globalsettings object
     void newRow(); ///< starts a new row (resets the internal counter)
     void openDatabase(); ///< database open, create output table and prepare insert statement
     inline void saveDatabase(); ///< database save (exeute the "insert" statement)

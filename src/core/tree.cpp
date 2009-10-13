@@ -16,13 +16,7 @@ int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 
-/// internal data structure which is passed between function
-struct TreeGrowthData
-{
-    double NPP; ///< total NPP
-    double NPP_stem;  ///< NPP used for growth of stem (dbh,h)
-    double stress_index; ///< stress index used for mortality calculation
-};
+
 
 /** get distance and direction between two points.
   returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle. */
@@ -488,7 +482,7 @@ void Tree::grow()
     mStressIndex = d.stress_index;
 
     if (!isDead())
-        mRU->resourceUnitSpecies(species()).statistics().add(this);
+        mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
 }
 
 /** partitioning of this years assimilates (NPP) to biomass compartments.

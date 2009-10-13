@@ -278,7 +278,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
            }
 
     } else {
-        // for rather small grids, the inverse tactic (draw each pixel!)
+        // for rather small grids, apply the inverse tactic (draw each pixel!)
         if (show_fon) {
 
             //QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
@@ -338,7 +338,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             value = tree_value.execute();
             fill_color = Helper::colorFromValue(value, 0., 1., false);
             painter.setBrush(fill_color);
-            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 4.));
+            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 2.));
             painter.drawEllipse(p, diameter, diameter);
         }
 

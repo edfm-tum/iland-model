@@ -275,6 +275,9 @@ void Model::beforeRun()
 
     createStandStatistics();
     }
+    // outputs
+    GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
+    GlobalSettings::instance()->setCurrentYear(1); // set to first year
 }
 
 void Model::runYear()

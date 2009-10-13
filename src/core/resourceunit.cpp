@@ -192,7 +192,7 @@ void ResourceUnit::createStandStatistics()
     // add all trees to the statistics objects of the species
     foreach(const Tree &t, mTrees) {
         if (!t.isDead())
-            resourceUnitSpecies(t.species()).statistics().add(&t);
+            resourceUnitSpecies(t.species()).statistics().add(&t, 0);
     }
     // summarize statistics for the whole resource unit
     for (int i=0;i<mRUSpecies.count();i++) {

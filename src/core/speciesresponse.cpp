@@ -80,6 +80,7 @@ void SpeciesResponse::calculate()
         }
         mVpdResponse[mon] /= no_of_days; // vpd: average of month
         mTempResponse[mon] /= no_of_days; // temperature: average value of daily responses
+        mSoilWaterResponse[mon] /= no_of_days; // water response: average of daily responses
     }
 
     if (pheno.vegetationPeriodLength()>0)

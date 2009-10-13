@@ -52,7 +52,7 @@ public:
     bool fileExists(const QString &fileName, const QString &type="home");
 
     // xml project file
-    const XmlHelper &settings() { return mXml; }
+    const XmlHelper &settings() const { return mXml; }
 
     // setup and maintenance
 
