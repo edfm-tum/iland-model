@@ -483,6 +483,8 @@ void Tree::grow()
 
     if (!isDead())
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
+    else
+        mRU->resourceUnitSpecies(species()).statisticsDead().add(this, &d);
 }
 
 /** partitioning of this years assimilates (NPP) to biomass compartments.

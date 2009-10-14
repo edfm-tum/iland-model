@@ -133,5 +133,6 @@ struct TreeGrowthData
     double NPP_above; ///< NPP aboveground (kg) (NPP - fraction roots), no consideration of tree senescence
     double NPP_stem;  ///< NPP used for growth of stem (dbh,h)
     double stress_index; ///< stress index used for mortality calculation
+    TreeGrowthData(): NPP(0.), NPP_above(0.), NPP_stem(0.) {}
 };
 #endif // TREE_H

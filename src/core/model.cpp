@@ -303,6 +303,7 @@ void Model::runYear()
     om->execute("stand");
     om->execute("production_month");
     om->execute("dynamicstand");
+    om->execute("standdead");
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }

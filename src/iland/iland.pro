@@ -55,7 +55,8 @@ SOURCES += main.cpp \
     ../core/watercycle.cpp \
     ../tools/climateconverter.cpp \
     ../tools/csvfile.cpp \
-    ../tools/scriptglobal.cpp
+    ../tools/scriptglobal.cpp \
+    ../output/standdeadout.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -98,7 +99,8 @@ HEADERS += mainwindow.h \
     ../core/watercycle.h \
     ../tools/climateconverter.h \
     ../tools/csvfile.h \
-    ../tools/scriptglobal.h
+    ../tools/scriptglobal.h \
+    ../output/standdeadout.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
 QMAKE_EXTRA_TARGETS += revtarget

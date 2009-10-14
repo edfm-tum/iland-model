@@ -159,6 +159,7 @@ void ResourceUnit::production()
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         i->calculate();
         i->statistics().clear();
+        i->statisticsDead().clear();
         qDebug() << "species" << (*i).species()->id() << "raw_gpp_m2" << i->prod3PG().GPPperArea();
     }
 }
@@ -176,6 +177,7 @@ void ResourceUnit::yearEnd()
     int c = mRUSpecies.count();
     for (int i=0;i<c; i++) {
         mRUSpecies[i].statistics().calculate();
+        mRUSpecies[i].statisticsDead().calculate();
         mStatistics.add(mRUSpecies[i].statistics());
     }
     mStatistics.calculate(); // aggreagte on stand level
@@ -186,8 +188,10 @@ void ResourceUnit::createStandStatistics()
 {
     // clear statistics (ru-level and ru-species level)
     mStatistics.clear();
-    for (int i=0;i<mRUSpecies.count();i++)
+    for (int i=0;i<mRUSpecies.count();i++) {
         mRUSpecies[i].statistics().clear();
+        mRUSpecies[i].statisticsDead().clear();
+    }
 
     // add all trees to the statistics objects of the species
     foreach(const Tree &t, mTrees) {
