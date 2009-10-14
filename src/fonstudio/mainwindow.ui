@@ -216,7 +216,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>260</x>
-          <y>230</y>
+          <y>240</y>
           <width>81</width>
           <height>23</height>
          </rect>
