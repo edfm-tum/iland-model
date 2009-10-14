@@ -277,8 +277,10 @@ void Model::beforeRun()
 
     createStandStatistics();
     }
-    // outputs
+    // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
+
     GlobalSettings::instance()->setCurrentYear(1); // set to first year
 }
 

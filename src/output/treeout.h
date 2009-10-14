@@ -1,6 +1,6 @@
 #ifndef TREEOUT_H
 #define TREEOUT_H
-
+#include "expression.h"
 #include "output.h"
 
 class Expression;
@@ -11,7 +11,7 @@ public:
     virtual void exec();
     virtual void setup();
 private:
-    QSharedPointer<Expression> mFilter;
+    Expression mFilter;
 };
 
 #endif // TREEOUT_H

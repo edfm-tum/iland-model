@@ -39,6 +39,7 @@ Tree::Tree()
     mFlags = mAge = 0;
     mOpacity=mFoliageMass=mWoodyMass=mRootMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
+    mLightResponse = 0.;
     mId = m_nextId++;
     m_statCreated++;
 }

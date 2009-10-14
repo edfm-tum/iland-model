@@ -9,6 +9,7 @@ class Stamp;
 class ResourceUnit;
 struct HeightGridValue;
 struct TreeGrowthData;
+class TreeOut;
 
 class Tree
 {
@@ -124,6 +125,7 @@ private:
     // friends
     friend class TreeWrapper;
     friend class StandStatistics;
+    friend class TreeOut;
 };
 
 /// internal data structure which is passed between function and to statistics
