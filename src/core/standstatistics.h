@@ -22,6 +22,7 @@ public:
     double basalArea() const { return mSumBasalArea; } ///< sum of basal area of all trees (m2)
     double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]
     double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground)
+    double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)
 
 private:
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species
@@ -34,6 +35,7 @@ private:
     double mAverageHeight;
     double mLeafAreaIndex;
     double mNPP;
+    double mNPPabove;
 };
 
 #endif // STANDSTATISTICS_H

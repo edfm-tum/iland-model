@@ -92,6 +92,8 @@ void Model::initialize()
     //
 }
 
+/** sets up the simulation space.
+*/
 void Model::setupSpace()
 {
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.world"));

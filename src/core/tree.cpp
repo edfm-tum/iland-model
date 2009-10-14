@@ -508,6 +508,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     double to_wood = refill_reserve / (mWoodyMass + refill_reserve);
 
     apct_root = mRU->resourceUnitSpecies(species()).prod3PG().rootFraction();
+    d.NPP_above = d.NPP * (1. - apct_root); // aboveground: total NPP - fraction to roots
     double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents... now fixed
 
     // Duursma 2007, Eq. (20)

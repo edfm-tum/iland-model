@@ -17,7 +17,8 @@ StandOut::StandOut()
               << OutputColumn("height_avg_m", "average tree height (m)", OutDouble)
               << OutputColumn("volume_m3", "volume (geomery, taper factor) in m3", OutDouble)
               << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble)
-              << OutputColumn("NPP_kg", "sum of NPP (aboveground + belowground)", OutDouble);
+              << OutputColumn("NPP_kg", "sum of NPP (aboveground + belowground) kg Biomass/ha", OutDouble)
+              << OutputColumn("NPPabove_kg", "sum of NPP (abovegroundground) kg Biomass/ha", OutDouble);
 
  }
 
@@ -35,7 +36,8 @@ void StandOut::exec()
             if (stat.count()==0)
                 continue;
             *this << currentYear() << ru->index() << rus.species()->id(); // keys
-            *this << stat.count() << stat.dbh_avg() << stat.height_avg() << stat.volume() << stat.basalArea() << stat.npp();
+            *this << stat.count() << stat.dbh_avg() << stat.height_avg() << stat.volume() << stat.basalArea()
+                    << stat.npp() << stat.nppAbove();
             writeRow();
         }
     }

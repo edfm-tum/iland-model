@@ -21,7 +21,7 @@ void StandStatistics::clear()
     mSumDbh=mSumHeight = mAverageDbh=mAverageHeight =0.;
     mSumBasalArea = mSumVolume = 0.;
     mLeafAreaIndex = 0.;
-    mNPP = 0.;
+    mNPP = mNPPabove = 0.;
 }
 
 void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
@@ -34,6 +34,7 @@ void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
     mLeafAreaIndex += tree->leafArea(); // warning: sum of leafarea!
     if (tgd) {
         mNPP += tgd->NPP;
+        mNPPabove += tgd->NPP_above;
     }
 }
 
@@ -57,4 +58,5 @@ void StandStatistics::add(const StandStatistics &stat)
     mSumVolume+=stat.mSumVolume;
     mLeafAreaIndex += stat.mLeafAreaIndex;
     mNPP += stat.mNPP;
+    mNPPabove += stat.mNPPabove;
 }

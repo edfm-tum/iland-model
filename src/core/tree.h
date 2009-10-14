@@ -129,7 +129,8 @@ private:
 /// internal data structure which is passed between function and to statistics
 struct TreeGrowthData
 {
-    double NPP; ///< total NPP
+    double NPP; ///< total NPP (kg)
+    double NPP_above; ///< NPP aboveground (kg) (NPP - fraction roots), no consideration of tree senescence
     double NPP_stem;  ///< NPP used for growth of stem (dbh,h)
     double stress_index; ///< stress index used for mortality calculation
 };

@@ -237,6 +237,12 @@ bool Grid<T>::setup(const QRectF& rect, const double cellsize)
     return setup(cellsize, dx, dy);
 }
 
+/** retrieve from the index from an element reversely from a pointer to that element.
+    The internal memory layout is (for dimx=6, dimy=3):
+0  1  2  3  4  5
+6  7  8  9  10 11
+12 13 14 15 16 17
+Note: north and south are reversed, thus the item with index 0 is located in the south-western edge of the grid! */
 template <class T>
 QPoint Grid<T>::indexOf(T* element) const
 {

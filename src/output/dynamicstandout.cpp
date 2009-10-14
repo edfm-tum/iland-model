@@ -9,7 +9,9 @@
 DynamicStandOut::DynamicStandOut()
 {
     setName("dynamic stand output by species/RU", "dynamicstand");
-    setDescription("Userdefined outputs for tree aggregates for each stand. see TreeAggregates");
+    setDescription("Userdefined outputs for tree aggregates for each stand.\n"\
+                   "Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) "\
+                   "are calculated.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species();
     // other colums are added during setup...
 }
