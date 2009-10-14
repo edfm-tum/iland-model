@@ -3,7 +3,7 @@
   Derived from ExpressionWrapper are wrappers for e.g. Trees or ResourceUnits.
   They must provide a getVariablesList() and a value() function.
   Note: the must also provide "virtual double value(const QString &variableName) { return value(variableName); }"
-      because it seems not possible C++ wise to use functions from derived and base class simultaneously that only differ in the
+      because it seems to be not possible in C++ to use functions from derived and base class simultaneously that only differ in the
       argument signature.
   @sa Expression
 
@@ -20,6 +20,9 @@ ExpressionWrapper::ExpressionWrapper()
 {
 }
 // must be overloaded!
+QStringList baseVarList=QStringList() << "year";
+const int baseVarListCount = baseVarList.count();
+
 const QStringList ExpressionWrapper::getVariablesList()
 {
     throw IException("expression wrapper reached base getVariableList");
@@ -27,7 +30,11 @@ const QStringList ExpressionWrapper::getVariablesList()
 // must be overloaded!
 double ExpressionWrapper::value(const int variableIndex)
 {
-    throw IException(QString("expression wrapper reached base getValue index %1").arg(variableIndex));
+    switch (variableIndex) {
+        case 0: // year
+            return (double) GlobalSettings::instance()->currentYear();
+    }
+    throw IException(QString("expression wrapper reached base with invalid index index %1").arg(variableIndex));
 }
 
 int ExpressionWrapper::variableIndex(const QString &variableName)
@@ -44,7 +51,7 @@ double ExpressionWrapper::valueByName(const QString &variableName)
 
 
 
-QStringList treeVarList=QStringList() << "id" << "dbh" << "height" << "ruindex" // 0..3
+QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << "height" << "ruindex" // 0..3
                         << "x" << "y" << "volume" << "lri" << "la" << "leafarea" << "lightresponse" // 4-10
                         << "woodymass" << "rootmass" << "foliagemass" << "age" << "opacity" // 11-15
                         << "dead" << "stress" << "deltad" //16-18
@@ -59,7 +66,7 @@ double TreeWrapper::value(const int variableIndex)
 {
     Q_ASSERT(mTree!=0);
 
-    switch (variableIndex) {
+    switch (variableIndex - baseVarListCount) {
     case 0: return double(mTree->id()); // id
     case 1: return mTree->dbh(); // dbh
     case 2: return mTree->height(); // height
@@ -80,7 +87,7 @@ double TreeWrapper::value(const int variableIndex)
     case 18: return mTree->mDbhDelta; // increment of last year
     case 19: return mTree->species()->biomassFoliage(mTree->dbh()); // allometric foliage
     }
-    throw IException("TreeWrapper::getValue: invalid index");
+    return ExpressionWrapper::value(variableIndex);
 }
 
 
@@ -88,7 +95,7 @@ double TreeWrapper::value(const int variableIndex)
 //// ResourceUnit Wrapper
 ////////////////////////////////////////////////
 
-QStringList ruVarList=QStringList() << "id" << "la" << "total_effective_area";
+QStringList ruVarList=QStringList() << baseVarList << "id" << "la" << "total_effective_area";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -100,10 +107,10 @@ double RUWrapper::value(const int variableIndex)
 {
     Q_ASSERT(mRU!=0);
 
-    switch (variableIndex) {
+    switch (variableIndex - baseVarListCount) {
     case 0: return mRU->index();
     case 1: return mRU->mAggregatedLA;
     case 2: return mRU->mEffectiveArea_perWLA;
     }
-    throw IException("RUWrapper::getValue: invalid index");
+    return ExpressionWrapper::value(variableIndex);
 }
