@@ -18,47 +18,21 @@
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout" rowstretch="1,5,2" columnstretch="1,2">
+   <layout class="QGridLayout" name="gridLayout" rowstretch="0,5,2">
     <property name="margin">
      <number>3</number>
     </property>
     <property name="spacing">
      <number>3</number>
     </property>
-    <item row="1" column="1">
-     <widget class="PaintArea" name="PaintWidget" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>2</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="cursor">
-       <cursorShape>CrossCursor</cursorShape>
-      </property>
-      <property name="autoFillBackground">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="QPlainTextEdit" name="logOutput">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>2</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>200</height>
-       </size>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0" colspan="2">
      <widget class="QWidget" name="mainCaption" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
         <width>16777215</width>
@@ -102,7 +76,7 @@ color: rgb(85, 0, 0);</string>
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="pageXML">
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -176,8 +150,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="testLRO">
         <property name="geometry">
          <rect>
-          <x>270</x>
-          <y>160</y>
+          <x>260</x>
+          <y>210</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -189,8 +163,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLineEdit" name="lr_x">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>100</y>
+          <x>30</x>
+          <y>150</y>
           <width>41</width>
           <height>20</height>
          </rect>
@@ -202,8 +176,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLineEdit" name="lr_z">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>140</y>
+          <x>30</x>
+          <y>190</y>
           <width>41</width>
           <height>20</height>
          </rect>
@@ -215,8 +189,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLineEdit" name="lr_y">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>120</y>
+          <x>30</x>
+          <y>170</y>
           <width>41</width>
           <height>20</height>
          </rect>
@@ -228,8 +202,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lroTestHemi">
         <property name="geometry">
          <rect>
-          <x>270</x>
-          <y>100</y>
+          <x>260</x>
+          <y>150</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -241,8 +215,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lrCalcFullGrid">
         <property name="geometry">
          <rect>
-          <x>270</x>
-          <y>180</y>
+          <x>260</x>
+          <y>230</y>
           <width>81</width>
           <height>23</height>
          </rect>
@@ -254,8 +228,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lrLightGrid">
         <property name="geometry">
          <rect>
-          <x>90</x>
-          <y>50</y>
+          <x>40</x>
+          <y>230</y>
           <width>75</width>
           <height>23</height>
          </rect>
@@ -267,8 +241,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QSlider" name="lrSliderX">
         <property name="geometry">
          <rect>
-          <x>90</x>
-          <y>100</y>
+          <x>80</x>
+          <y>150</y>
           <width>160</width>
           <height>21</height>
          </rect>
@@ -286,8 +260,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QSlider" name="lrSliderY">
         <property name="geometry">
          <rect>
-          <x>90</x>
-          <y>120</y>
+          <x>80</x>
+          <y>170</y>
           <width>160</width>
           <height>21</height>
          </rect>
@@ -305,8 +279,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QSlider" name="lrSliderZ">
         <property name="geometry">
          <rect>
-          <x>90</x>
-          <y>140</y>
+          <x>80</x>
+          <y>190</y>
           <width>160</width>
           <height>21</height>
          </rect>
@@ -321,8 +295,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLineEdit" name="lrAzim">
         <property name="geometry">
          <rect>
-          <x>160</x>
-          <y>180</y>
+          <x>150</x>
+          <y>230</y>
           <width>41</width>
           <height>20</height>
          </rect>
@@ -334,8 +308,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLineEdit" name="lrElevation">
         <property name="geometry">
          <rect>
-          <x>210</x>
-          <y>180</y>
+          <x>200</x>
+          <y>230</y>
           <width>41</width>
           <height>20</height>
          </rect>
@@ -347,8 +321,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLabel" name="label_4">
         <property name="geometry">
          <rect>
-          <x>160</x>
-          <y>160</y>
+          <x>150</x>
+          <y>210</y>
           <width>46</width>
           <height>14</height>
          </rect>
@@ -360,8 +334,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLabel" name="label_5">
         <property name="geometry">
          <rect>
-          <x>210</x>
-          <y>160</y>
+          <x>200</x>
+          <y>210</y>
           <width>46</width>
           <height>14</height>
          </rect>
@@ -373,8 +347,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lrProcess">
         <property name="geometry">
          <rect>
-          <x>30</x>
-          <y>250</y>
+          <x>10</x>
+          <y>80</y>
           <width>141</width>
           <height>23</height>
          </rect>
@@ -386,10 +360,10 @@ color: rgb(85, 0, 0);</string>
        <widget class="QLabel" name="lrHemiValue">
         <property name="geometry">
          <rect>
-          <x>280</x>
-          <y>130</y>
-          <width>46</width>
-          <height>14</height>
+          <x>296</x>
+          <y>180</y>
+          <width>20</width>
+          <height>20</height>
          </rect>
         </property>
         <property name="text">
@@ -399,8 +373,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lrLoadStamps">
         <property name="geometry">
          <rect>
-          <x>30</x>
-          <y>280</y>
+          <x>10</x>
+          <y>110</y>
           <width>141</width>
           <height>23</height>
          </rect>
@@ -412,8 +386,8 @@ color: rgb(85, 0, 0);</string>
        <widget class="QPushButton" name="lrReadStamps">
         <property name="geometry">
          <rect>
-          <x>30</x>
-          <y>220</y>
+          <x>10</x>
+          <y>50</y>
           <width>141</width>
           <height>23</height>
          </rect>
@@ -424,527 +398,40 @@ color: rgb(85, 0, 0);</string>
        </widget>
       </widget>
       <widget class="QWidget" name="pageFON">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QTabWidget" name="tabWidget">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>2</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="currentIndex">
-           <number>0</number>
-          </property>
-          <widget class="QWidget" name="tab">
-           <attribute name="title">
-            <string>Stamping</string>
-           </attribute>
-           <widget class="QPushButton" name="stampTrees">
-            <property name="geometry">
-             <rect>
-              <x>90</x>
-              <y>10</y>
-              <width>75</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>stamp trees</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="fonRun">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>10</y>
-              <width>75</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Setup FON</string>
-            </property>
-           </widget>
-           <widget class="QGroupBox" name="gEditTree">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>40</y>
-              <width>331</width>
-              <height>111</height>
-             </rect>
-            </property>
-            <property name="title">
-             <string>Edit tree</string>
-            </property>
-            <widget class="QDoubleSpinBox" name="treeDbh">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>30</y>
-               <width>62</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>diameter (cm)</string>
-             </property>
-             <property name="maximum">
-              <double>299.990000000000009</double>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="treeHeight">
-             <property name="geometry">
-              <rect>
-               <x>90</x>
-               <y>30</y>
-               <width>62</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>Height [m]</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="treeChange">
-             <property name="geometry">
-              <rect>
-               <x>220</x>
-               <y>10</y>
-               <width>75</width>
-               <height>21</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Change</string>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="treePosX">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>60</y>
-               <width>62</width>
-               <height>22</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QDoubleSpinBox" name="treePosY">
-             <property name="geometry">
-              <rect>
-               <x>90</x>
-               <y>60</y>
-               <width>62</width>
-               <height>22</height>
-              </rect>
-             </property>
-            </widget>
-            <widget class="QLabel" name="treeImpact">
-             <property name="geometry">
-              <rect>
-               <x>220</x>
-               <y>60</y>
-               <width>91</width>
-               <height>41</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>(value)</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="pbSetAsDebug">
-             <property name="geometry">
-              <rect>
-               <x>220</x>
-               <y>40</y>
-               <width>75</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>debug tree</string>
-             </property>
-            </widget>
-           </widget>
-           <widget class="QGroupBox" name="groupBox">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>150</y>
-              <width>331</width>
-              <height>111</height>
-             </rect>
-            </property>
-            <property name="title">
-             <string>Visualization Options</string>
-            </property>
-            <widget class="QRadioButton" name="visFon">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>20</y>
-               <width>84</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>FON</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-            <widget class="QRadioButton" name="visImpact">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>40</y>
-               <width>111</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Impact values</string>
-             </property>
-            </widget>
-            <widget class="QRadioButton" name="visDomGrid">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>60</y>
-               <width>101</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>dominace grid</string>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="visAutoScale">
-             <property name="geometry">
-              <rect>
-               <x>210</x>
-               <y>20</y>
-               <width>111</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Autoscale colors</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="fonValue">
-             <property name="geometry">
-              <rect>
-               <x>210</x>
-               <y>70</y>
-               <width>101</width>
-               <height>31</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>(value)</string>
-             </property>
-            </widget>
-            <widget class="QCheckBox" name="visDomHeight">
-             <property name="geometry">
-              <rect>
-               <x>210</x>
-               <y>40</y>
-               <width>51</width>
-               <height>18</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>for vis. of influence grid: when checked, the color shows the FON-value if scaled to the height in combo-box right, and not for the value of the actual height-dominance-grid.</string>
-             </property>
-             <property name="text">
-              <string>scale</string>
-             </property>
-            </widget>
-            <widget class="QComboBox" name="visScaleValue">
-             <property name="geometry">
-              <rect>
-               <x>260</x>
-               <y>40</y>
-               <width>51</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;for vis. of influence grid: height value in meters.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>5</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>10</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>20</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>30</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>40</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>50</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>80</string>
-              </property>
-             </item>
-            </widget>
-           </widget>
-           <widget class="QPushButton" name="pbResults">
-            <property name="geometry">
-             <rect>
-              <x>270</x>
-              <y>10</y>
-              <width>71</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="toolTip">
-             <string>copies tree results in clipboard.</string>
-            </property>
-            <property name="text">
-             <string>Results</string>
-            </property>
-           </widget>
-          </widget>
-          <widget class="QWidget" name="tab_2">
-           <attribute name="title">
-            <string>Testing</string>
-           </attribute>
-           <widget class="QWidget" name="layoutWidget">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>20</y>
-              <width>255</width>
-              <height>22</height>
-             </rect>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Formula</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="formula"/>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="layoutWidget_2">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>50</y>
-              <width>255</width>
-              <height>53</height>
-             </rect>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
-              <widget class="QLineEdit" name="lVar1">
-               <property name="maximumSize">
-                <size>
-                 <width>65</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lVar2">
-               <property name="maximumSize">
-                <size>
-                 <width>65</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="lCalcResult">
-               <property name="text">
-                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Result&lt;/span&gt;&lt;a href=&quot;http://www.orf.at&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;hoi&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="calcFormula">
-               <property name="text">
-                <string>Calculate</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QLabel" name="label">
-            <property name="geometry">
-             <rect>
-              <x>30</x>
-              <y>130</y>
-              <width>46</width>
-              <height>14</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Count</string>
-            </property>
-           </widget>
-           <widget class="QLineEdit" name="eTreeCount">
-            <property name="geometry">
-             <rect>
-              <x>70</x>
-              <y>130</y>
-              <width>41</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>100</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="pbAddTrees">
-            <property name="geometry">
-             <rect>
-              <x>200</x>
-              <y>130</y>
-              <width>75</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Add</string>
-            </property>
-           </widget>
-           <widget class="QLineEdit" name="eTreeDBH">
-            <property name="geometry">
-             <rect>
-              <x>150</x>
-              <y>130</y>
-              <width>41</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>30</string>
-            </property>
-           </widget>
-           <widget class="QLabel" name="label_2">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>130</y>
-              <width>46</width>
-              <height>14</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>DBH</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="calcMatrix">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>160</y>
-              <width>151</width>
-              <height>21</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>ISOFON - calc matrix</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="execManyStands">
-            <property name="geometry">
-             <rect>
-              <x>120</x>
-              <y>190</y>
-              <width>151</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="toolTip">
-             <string>parse setting &quot;standlist&quot; in XML-input file, then load/stamp/save results for each stand listed.</string>
-            </property>
-            <property name="text">
-             <string>execute many stands</string>
-            </property>
-           </widget>
-          </widget>
-          <widget class="QWidget" name="tabPerf">
-           <attribute name="title">
-            <string>Timing</string>
-           </attribute>
-           <widget class="QLineEdit" name="lApplyManyCount">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>20</y>
-              <width>51</width>
-              <height>20</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>10</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="pbMultipleApplication">
-            <property name="geometry">
-             <rect>
-              <x>70</x>
-              <y>20</y>
-              <width>81</width>
-              <height>23</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>x apply</string>
-            </property>
-           </widget>
-          </widget>
-         </widget>
-        </item>
-       </layout>
+       <layout class="QVBoxLayout" name="verticalLayout_2"/>
       </widget>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="PaintArea" name="PaintWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>2</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="cursor">
+       <cursorShape>CrossCursor</cursorShape>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="QPlainTextEdit" name="logOutput">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>2</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>200</height>
+       </size>
+      </property>
      </widget>
     </item>
    </layout>
@@ -985,7 +472,6 @@ p, li { white-space: pre-wrap; }
    </attribute>
    <addaction name="actionEdit_XML_settings"/>
    <addaction name="actionLightroom"/>
-   <addaction name="actionFON_action"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
@@ -998,18 +484,6 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="toolTip">
     <string>switch to lightroom</string>
-   </property>
-  </action>
-  <action name="actionFON_action">
-   <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
-     <normaloff>:/audio-input-microphone.png</normaloff>:/audio-input-microphone.png</iconset>
-   </property>
-   <property name="text">
-    <string>FON action</string>
-   </property>
-   <property name="toolTip">
-    <string>FON test area</string>
    </property>
   </action>
   <action name="actionEdit_XML_settings">
@@ -1047,12 +521,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>lr_z</tabstop>
   <tabstop>iniEdit</tabstop>
   <tabstop>pbCreateLightroom</tabstop>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>stampTrees</tabstop>
-  <tabstop>formula</tabstop>
-  <tabstop>lVar1</tabstop>
-  <tabstop>lVar2</tabstop>
-  <tabstop>calcFormula</tabstop>
   <tabstop>logOutput</tabstop>
   <tabstop>testLRO</tabstop>
   <tabstop>initFileName</tabstop>

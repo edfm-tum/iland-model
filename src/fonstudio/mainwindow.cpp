@@ -1,21 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QTGui>
-#include <QTXml>
-
+#include <QtGui>
+#include <QtXml>
 #include <imagestamp.h>
 #include "lightroom.h"
-
-#include "model.h"
-#include "standloader.h"
 #include "stampcontainer.h"
-#include "resourceunit.h"
 #include "speciesset.h"
-#include "tree.h"
-
 #include "exception.h"
-
 #include "paintarea.h"
 
 
@@ -42,20 +34,6 @@ QString setting(const QString& paramname)
         return "ERROR";
 }
 
-QDomElement getNode(const QString xmlkey)
-{
-    QDomElement docElem = xmldoc.documentElement(); // top element
-    QStringList keys = xmlkey.split(".");
-    QDomElement next = docElem;
-    foreach(QString k, keys) {
-        QDomElement next = next.firstChildElement(k);
-        if (next.isNull()) {
-            qDebug() << "XML key " << xmlkey << " not valid!";
-            return docElem;
-        }
-    }
-    return next;
-}
 
 double nrandom(const float& p1, const float& p2)
 {
@@ -96,9 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindowClass)
 {
     ui->setupUi(this);
-    mGrid=0;
-    mDomGrid=0;
-    mModel = 0;
+
     connect( ui->PaintWidget, SIGNAL(needsPainting(QPainter&)),
              this, SLOT(repaintArea(QPainter&)) );
     connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
@@ -111,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(mouseWheel(const QPoint&, int)));
 
 
-    ui->pbResults->setMenu(ui->menuOutput_menu);
+
 
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
@@ -144,8 +120,6 @@ MainWindow::~MainWindow()
     delete ui;
     if (lightroom)
         delete lightroom;
-    if (mModel)
-        delete mModel;
 }
 
 void MainWindow::on_applyXML_clicked()
@@ -160,9 +134,7 @@ void MainWindow::on_applyXML_clicked()
                                  QString("Error applying xml line %1, col %2.\nMessage: %3").arg(errLine).arg(errCol).arg(errMsg));
         return;
     }
-
-    Globals->loadSettingsMetaDataFromXml(xmldoc.documentElement().firstChildElement("globalsettings"));
-
+    qDebug() << "XML file read.";
 }
 
 
@@ -175,238 +147,12 @@ void MainWindow::on_saveFile_clicked()
 }
 
 
-void MainWindow::readwriteCycle()
-{
-
-    if (!mModel || !mModel->isSetup())
-        return;
-    mModel->runYear();
-    GlobalSettings *g = GlobalSettings::instance();
-    QList<DebugList> ddl = g->debugLists(-1, GlobalSettings::DebugOutputs(-1)); // get all debug data
-    qDebug() << ddl;
-    qDebug() << g->debugListCaptions(GlobalSettings::dTreeGrowth);
-    ui->PaintWidget->update(); // repaint...
-
-}
-
-void MainWindow::applyCycles(int cycle_count)
-{
-    if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
-        return;
-    ResourceUnit *ru = mModel->ru();
-    QVector<Tree> &mTrees = ru->trees();
-    // (1) init grid
-    DebugTimer t2(QString("application of %1 cycles").arg(cycle_count));
-    int i;
-    QVector<Tree>::iterator tit;
-    {
-        DebugTimer t("initialize");
-        for (i=0;i<cycle_count;i++) {
-            mDomGrid->wipe(); // set dominance grid to zero.
-            mGrid->initialize(1.f); // 1 for multiplicative
-        }
-    }
-
-    {
-        DebugTimer t("dominance grid");
-        for (i=0;i<cycle_count;i++) {
-            // height dominance grid
-            for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-                (*tit).heightGrid(); // just do it ;)
-            }
-        }
-    }
-
-    Tree::setGrid(mGrid, mDomGrid); // set static target grids
-    Tree::resetStatistics();
-    {
-        DebugTimer t("apply grid");
-        for (i=0;i<cycle_count;i++) {
-            // height dominance grid
-            if (cycle_count>1 && i==cycle_count-1)
-                mGrid->initialize(1.f); // reset before the ultimate application
-
-            for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-                (*tit).applyLIP(); // just do it ;)
-            }
-        }
-    }
-
-    {
-        DebugTimer t("read grid");
-        for (i=0;i<cycle_count;i++) {
-            for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-                //(*tit).readStamp(); // just do it ;)
-                (*tit).applyLIP(); // multipliactive approach
-            }
-        }
-    }
-    qDebug() << "ms/cycle (avg):" << t2.elapsed() / double(cycle_count) << "total time" << t2.elapsed();
-}
-
-void MainWindow::on_stampTrees_clicked()
-{
-    readwriteCycle();
-}
-
-QString MainWindow::dumpTreelist()
-{
-    if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
-        return "";
-    ResourceUnit *ru = mModel->ru();
-    QVector<Tree> &mTrees = ru->trees();
-    QStringList result;
-    result+=QString("id;x;y;dbh;height;fonvalue");
-    QVector<Tree>::iterator tit;
-    Tree *tree;
-
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        tree = &(*tit);
-        result+=QString("%1;%2;%3;%4;%5;%6")
-                .arg(tree->id())
-                .arg(tree->position().x())
-                .arg(tree->position().y())
-                .arg(tree->dbh())
-                .arg(tree->height())
-                .arg(tree->lightResourceIndex());
-    }
-    QString resStr = result.join("\n");
-    return resStr;
-}
-
-
-void MainWindow::paintFON(QPainter &painter, QRect rect)
-{
-    DebugTimer drawtimer("painting");
-
-    if (!mModel  || !mModel->isSetup() ) {
-        qDebug() << "model is not setup - no drawing";
-        return;
-    }
-
-
-    // do the actual painting
-    if (!mGrid)
-        return;
-    bool auto_scale_color = ui->visAutoScale->isChecked();
-    bool show_fon = ui->visFon->isChecked();
-    bool show_dom = ui->visDomGrid->isChecked();
-    bool show_impact = ui->visImpact->isChecked();
-    bool show_scale40 = ui->visDomHeight->isChecked();
-    float scale_value = ui->visScaleValue->currentText().toFloat();
-
-    //    // get maximum value
-
-    float maxval=1.f; // default maximum
-    if (!auto_scale_color)
-        maxval = mGrid->max();
-    if (maxval==0.)
-        return;
-    // clear background
-    painter.fillRect(ui->PaintWidget->rect(), Qt::white);
-    // draw rectangle around the grid
-    QRectF r = mGrid->metricRect();
-    QRect rs = vp.toScreen(r);
-    painter.setPen(Qt::black);
-    painter.drawRect(rs);
-
-    int ix,iy;
-    QColor fill_color;
-    float value;
-
-    if (show_fon ) { // !=0: no sense!
-        // start from each pixel and query value in grid for the pixel
-        int x,y;
-        int sizex = rect.width();
-        int sizey = rect.height();
-        QPointF world;
-        QRgb col;
-        QImage &img = ui->PaintWidget->drawImage();
-        for (x=0;x<sizex;x++)
-            for (y=0;y<sizey;y++) {
-                world = vp.toWorld(QPoint(x,y));
-                if (mGrid->coordValid(world)) {
-                   value = mGrid->valueAt(world);
-                   col = Helper::colorFromValue(value, 0., maxval, true).rgb();
-                   img.setPixel(x,y,col);
-               }
-           }
-
-    } else {
-        // for rather small grids, the inverse tactic (draw each pixel!)
-        if (show_fon) {
-
-            QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
-            QPointF k;
-            float hdom;
-            for (iy=0;iy<mGrid->sizeY();iy++) {
-                for (ix=0;ix<mGrid->sizeX();ix++) {
-
-                    value = mGrid->valueAtIndex(QPoint(ix, iy));
-                    if (show_scale40) {
-                        k = mGrid->cellCenterPoint(QPoint(ix, iy));
-                        hdom = qMax(2.f, mDomGrid->valueAt(k).height); // 2m: as in stamp grid
-                        value = 1.f -  (1.f - value) * hdom / scale_value;
-                    }
-                    QRectF f = mGrid->cellRect(QPoint(ix,iy));
-                    QRect r = vp.toScreen(f);
-
-                    fill_color = Helper::colorFromValue(value, 0., maxval, true);
-                    painter.fillRect(r, fill_color);
-
-                }
-            }
-        } // if (show_fon)
-
-        if (show_dom) {
-            // paint the lower-res-grid;
-
-            for (iy=0;iy<mDomGrid->sizeY();iy++) {
-                for (ix=0;ix<mDomGrid->sizeX();ix++) {
-                    QPoint p(ix,iy);
-                    value = mDomGrid->valueAtIndex(p).height;
-                    QRect r = vp.toScreen(mDomGrid->cellRect(p));
-                    fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
-                    painter.fillRect(r, fill_color);
-                }
-            }
-
-        } // if (show_dem)
-    }
-    if (show_impact) {
-        AllTreeIterator treelist(mModel);
-        Tree *tree;
-        while (tree = treelist.next()) {
-            if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
-                continue;
-            }
-            QPointF pos = tree->position();
-            QPoint p = vp.toScreen(pos);
-            value = tree->lightResourceIndex();
-            fill_color = Helper::colorFromValue(value, 0., 1., true);
-            painter.setBrush(fill_color);
-            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 5.));
-            painter.drawEllipse(p, diameter, diameter);
-        }
-
-    } // if (show_impact)
-    // show selected tree
-    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
-    if (t) {
-        QPointF pos = t->position();
-        painter.setPen(Qt::black);
-        QPoint p = vp.toScreen(pos);
-        painter.drawRect( p.x()-1, p.y()-1, 3,3);
-    }
-}
-
-
 void MainWindow::repaintArea(QPainter &painter)
 {
     // select drawing type...
     switch (m_gfxtype) {
         case 0: // paint FON cells
-            paintFON(painter, ui->PaintWidget->rect()); break;
+            return;
         case 1:  // paint Lightroom - studio --- painting is done on the background image of PaintArea
             break;
         case 2: // paint Lightroom
@@ -414,205 +160,6 @@ void MainWindow::repaintArea(QPainter &painter)
     }
     // fix viewpoint
     vp.setScreenRect(ui->PaintWidget->rect());
-}
-
-void MainWindow::on_visFon_toggled() { ui->PaintWidget->update(); }
-void MainWindow::on_visDomGrid_toggled() { on_visFon_toggled(); }
-void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
-bool wantDrag=false;
-void MainWindow::mouseClick(const QPoint& pos)
-{
-    QPointF coord=vp.toWorld(pos);
-    qDebug() << "to world:" << coord;
-    wantDrag = false;
-    ui->PaintWidget->setCursor(Qt::CrossCursor);
-    ui->treeChange->setProperty("tree",0);
-
-    // find adjactent tree
-    if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
-        return;
-    // test ressource units...
-    ResourceUnit *ru = mModel->ru(coord);
-    qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
-    QVector<Tree> &mTrees =  ru->trees();
-    QVector<Tree>::iterator tit;
-    for (tit=mTrees.begin(); tit!=mTrees.end(); ++tit) {
-        if(distance(tit->position(),coord)<2) {
-            Tree *p = &(*tit);
-            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
-            ui->treeChange->setProperty("tree", (int)p);
-            ui->treeDbh->setValue(p->dbh());
-            ui->treeHeight->setValue(p->height());
-            ui->treePosX->setValue(p->position().x());
-            ui->treePosY->setValue(p->position().y());
-            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightResourceIndex(),5));
-            wantDrag=true;
-            ui->PaintWidget->setCursor(Qt::SizeAllCursor);
-            ui->PaintWidget->update();
-            break;
-        }
-   }
-}
-
-void MainWindow::mouseMove(const QPoint& pos)
-{
-    if (!mGrid || mGrid->isEmpty())
-        return;
-    QPointF p = vp.toWorld(pos);
-    if (mGrid->coordValid(p)) {
-        if (ui->visFon->isChecked())
-           ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mGrid).valueAt(p)));
-        if( ui->visDomGrid->isChecked())
-            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mDomGrid).valueAt(p).height));
-    }
-}
-
-void MainWindow::mouseWheel(const QPoint& pos, int steps)
-{
-    qDebug() << "mouse-wheel" << steps;
-    vp.zoomTo(pos, qMax(1-(2*steps/10.),0.2));
-    ui->PaintWidget->update();
-}
-
-void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton button)
-{
-    qDebug() << "drag" << button;
-    ui->PaintWidget->setCursor(Qt::CrossCursor);
-    // padding
-    if (button == Qt::MidButton) {
-        vp.moveTo(from, to);
-        ui->PaintWidget->update();
-        return;
-    }
-    if (!wantDrag)
-        return;
-    qDebug() << "drag from" << from << "to" << to;
-    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
-    if (!t)
-        return;
-    QPointF pos = vp.toWorld(to);
-    // calculate new position...
-    t->setPosition(pos);
-    on_stampTrees_clicked(); // restamp
-}
-
-
-void MainWindow::on_calcFormula_clicked()
-{
-    QString expression = ui->formula->text();
-    Expression expr(expression);
-    // add vars to expression
-    double *v1 = expr.addVar("x");
-    double *v2 = expr.addVar("y");
-
-    // set current values
-    *v1 = ui->lVar1->text().toDouble();
-    *v2 = ui->lVar2->text().toDouble();
-    double result = 0;
-    try {
-        result = expr.execute();
-    } catch (const IException &e) {
-        Helper::msg(e.toString());
-    }
-
-    ui->lCalcResult->setText(QString("%1").arg(result));
-}
-
-
-
-void MainWindow::on_lCalcResult_linkActivated(QString link)
-{
-    qDebug() << "link activated:" << link;
-}
-
-
-
-
-
-void MainWindow::addTrees(const double dbh, const int count)
-{
-    // add a number of trees
-    if (!mModel || !mModel->ru() || mModel->ru()->trees().size()==0)
-        return;
-    QVector<Tree> &mTrees =  mModel->ru()->trees();
-    for (int i=0;i<count; i++) {
-        Tree t;
-        t.setDbh(nrandom(dbh-2., dbh+2));
-        t.setHeight(t.dbh());
-        QPointF p(nrandom(0.f,mGrid->metricSizeX()), nrandom(0.f, mGrid->metricSizeY()));
-        t.setPosition(p);
-        mTrees.push_back(t);
-    }
-}
-
-void MainWindow::on_calcMatrix_clicked()
-{
-    /*
-    QStringList dbhs = setting("seriesDbh").split(" ");
-    QStringList ns = setting("seriesStemnumber").split(" ");
-    QStringList result, line;
-    result.append("result;" + dbhs.join(";"));
-    int stemCount, dbh;
-    double val=0.;
-    QTime timer;
-    timer.start();
-    for (int n=0; n<ns.count(); ++n) {
-        line.clear(); line.append(ns[n]);
-        for (int d=0; d<dbhs.count(); ++d) {
-            stemCount = ns[n].toInt();
-            dbh = dbhs.at(d).toInt();
-            // clear trees
-            mTrees.clear();
-            addTrees(dbh, stemCount);
-            // stamp
-            //stampTrees(); // dropped func
-            //val = retrieveFon();
-            line.append( QString::number(val) );
-            qDebug() << "dbh" << dbh << "n" << stemCount << "result" << val;
-        }
-        result.append(line.join(";"));
-        QApplication::processEvents();
-    }
-    // calculate iso-fones
-    double isoresult;
-
-    float n_min, n_max, below_val;
-    QStringList isofones = setting("seriesIsofones").split(" ");
-    QStringList isoresults;
-    isoresults.append("isofon;" + dbhs.join(";") );
-    for (int i=0; i<isofones.count(); ++i) {
-        double isofon = isofones[i].toFloat();
-        isoresult=0;
-        line.clear(); line.append(isofones[i]);
-        for (int d=0; d<dbhs.count(); d++) {
-            isoresult = result[ns.count()-1].section(';',0,0).toFloat(); // in case no result found (greter than maximum)
-            for (int n=0; n<ns.count(); ++n) {
-                val = result[n+1].section(';',d+1, d+1).toFloat();
-                if (val < isofon && n<ns.count()-1 ) {
-                    continue;
-                }
-                if (n==0) {
-                    // class break before --> use min
-                    isoresult=result[1].section(';',0,0).toFloat();
-                }  else {
-                    // break in between...
-                    n_min = result[n].section(';',0,0).toFloat();
-                    n_max = result[n+1].section(';',0,0).toFloat();
-                    below_val = result[n].section(';',d+1,d+1).toFloat();
-                    // linear interpolation
-                    isoresult = n_max + (isofon-val)/(val - below_val) * (n_max - n_min);
-                }
-                break;
-            } // stemnumbers
-            line.append(QString::number(isoresult) );
-        } // dbhs
-        isoresults.append(line.join(";") );
-    } // isoresults
-    result.append("");
-    result.append(isoresults);
-    qDebug() << "finished, elapsed " << timer.elapsed();
-    QApplication::clipboard()->setText(result.join("\n"));
-*/
 }
 
 void MainWindow::on_actionLightroom_triggered()
@@ -642,9 +189,12 @@ void MainWindow::on_actionFON_action_triggered()
 
 void MainWindow::on_pbCreateLightroom_clicked()
 {
-    if (xmldoc.isNull()) MSGRETURN("XML not loaded");
-    QDomElement docElem = xmldoc.documentElement(); // top element
-    QDomElement docLightroom = docElem.firstChildElement("lightroom");
+    if (xmldoc.isNull()) {
+        Helper::msg("!!XML not loaded!!");
+        return;
+    }
+    QDomElement docLightroom = xmldoc.documentElement(); // top element
+
     if (docLightroom.isNull()) MSGRETURN("cant find node 'lightroom' in xml");
     int x,y,z;
     x = docLightroom.firstChildElement("size").attribute("x").toInt();
@@ -730,66 +280,26 @@ void MainWindow::on_lrCalcFullGrid_clicked()
 }
 
 
-
-void MainWindow::setupModel()
-{
-    try {
-        if (mModel)
-            delete mModel;
-
-        mModel = new Model();
-        GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
-        mModel->loadProject();
-        mGrid = mModel->grid();
-        mDomGrid= mModel->heightGrid();
-        // set viewport of paintwidget
-        vp = Viewport(mModel->grid()->metricRect(), ui->PaintWidget->rect());
-        // debug mode
-        GlobalSettings::instance()->setDebugOutput(GlobalSettings::dTreeGrowth);
-    } catch(const IException &e) {
-        QString error_msg = e.toString();
-        Helper::msg(error_msg);
-        qDebug() << error_msg;
-
-        //Helper::msg( error_msg );
-    }
-}
-
-void MainWindow::on_fonRun_clicked()
-{
-        try {
-        setupModel();
-        if (mModel->ruList().count()==0)
-            return;
-
-        mModel->beforeRun(); // load stand
-
-        // start first cycle...
-        readwriteCycle();
-    } catch(const IException &e) {
-        Helper::msg(e.toString());
-        qDebug() << e.toString();
-    }
-    catch(...) {
-        qDebug() << "some other error...";
-    }
-
-}
-
 void MainWindow::on_lrProcess_clicked()
 {
-    QDomElement docElem = xmldoc.documentElement();
-    QDomElement trees = docElem.firstChildElement("lightroom").firstChildElement("trees");
-            //getNode("lightroom.trees");
-    QString path =  docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("path").text();
-    QString target_name = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("file").text();
-    qDebug() << "store to " << path;
-    QDomElement tree = docElem.firstChildElement("lightroom").firstChildElement("trees").firstChildElement("tree");
-    //int avg_cells = docElem.firstChildElement("lightroom").firstChildElement("size").attribute("average").toInt();
+    if (xmldoc.isNull()) {
+        Helper::msg("!!XML not loaded!!");
+        return;
+    }
 
-    double cut_threshold = docElem.firstChildElement("lightroom").firstChildElement("cutvalue").text().toDouble();
-    QString stamp_desc = docElem.firstChildElement("lightroom").firstChildElement("desc").text();
+    QDomElement docElem = xmldoc.documentElement();
+    QDomElement trees = docElem.firstChildElement("trees");
+    QString output_file = docElem.firstChildElement("outputStamp").text();
+    QDomElement tree = docElem.firstChildElement("trees").firstChildElement("tree");
+
+    double cut_threshold = docElem.firstChildElement("cutvalue").text().toDouble();
+    QString stamp_desc = docElem.firstChildElement("desc").text();
+    QString binaryReaderStampFile =  docElem.firstChildElement("readerStamp").text();
     qDebug() << "cutting stamps when averaged absoulte value of rings is below"<<cut_threshold;
+    qDebug() << "reading binary stamp reader file" << binaryReaderStampFile;
+
+    if (!Helper::question(QString("Create writer stamps?\ntarget=%1, reader stamps=%2").arg(output_file, binaryReaderStampFile)))
+        return;
     float crown, height, bhd;
     QString formula, name, result;
 
@@ -797,9 +307,7 @@ void MainWindow::on_lrProcess_clicked()
     lightroom->setLightRoomObject(lro);
 
     StampContainer readers;
-    xmlparams = docElem.firstChildElement("params");
-    QString binaryReaderStampFile =  xmlparams.firstChildElement("binaryReaderStamp").text();
-    qDebug() << "reading binary stamp reader file" << binaryReaderStampFile;
+
     QFile infile(binaryReaderStampFile);
     infile.open(QIODevice::ReadOnly);
     QDataStream in(&infile);
@@ -929,7 +437,7 @@ void MainWindow::on_lrProcess_clicked()
     }
     qDebug() << "finished!!!";
     // write container to a file....
-    QFile file(path + "\\" + target_name);
+    QFile file(output_file);
     file.open(QIODevice::WriteOnly);
     container.setDescription(stamp_desc); // provided in xml...
     QDataStream out(&file);   // we will serialize the data into the file
@@ -938,6 +446,7 @@ void MainWindow::on_lrProcess_clicked()
     qDebug() << "current content of the container:";
     qDebug() << container.dump();
 }
+
 
 void MainWindow::on_lrLoadStamps_clicked()
 {
@@ -972,20 +481,6 @@ void MainWindow::on_lrLoadStamps_clicked()
 
 }
 
-void MainWindow::on_treeChange_clicked()
-{
-    int pt = ui->treeChange->property("tree").toInt();
-    if (!pt)
-        return;
-    Tree *t = (Tree*)pt;
-    t->setDbh(    ui->treeDbh->value() );
-    t->setHeight(ui->treeHeight->value() );
-    QPointF newPos(ui->treePosX->value(), ui->treePosY->value() );
-    t->setPosition(newPos);
-    t->setup();
-    // changed, now recalc...
-    on_stampTrees_clicked();
-}
 
 // create "reader" stamps....
 void MainWindow::on_lrReadStamps_clicked()
@@ -1023,7 +518,10 @@ void MainWindow::on_lrReadStamps_clicked()
 
     } // for (radius)
     qDebug() << "tested a total of" << totcount;
-    QFile file("e:\\daten\\iland\\light\\fons\\readerstamp.bin");
+    QString targetFile = xmldoc.documentElement().firstChildElement("readerStamp").text();
+    if (!Helper::question(QString("Save readerfile to %1?").arg(targetFile)))
+        return;
+    QFile file(targetFile);
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);   // we will serialize the data into the file
     container.setDescription("Reader-stamps for crown-radii ranging from 0.5m to 8m, stepwidth is 0.1m.");
@@ -1033,15 +531,7 @@ void MainWindow::on_lrReadStamps_clicked()
 
 }
 
-void MainWindow::on_pbSetAsDebug_clicked()
-{
-    int pt = ui->treeChange->property("tree").toInt();
-    if (!pt)
-        return;
-    Tree *t = (Tree*)pt;
-    t->enableDebugging();
 
-}
 
 void MainWindow::on_openFile_clicked()
 {
@@ -1053,58 +543,3 @@ void MainWindow::on_openFile_clicked()
     ui->iniEdit->setPlainText(xmlFile);
 }
 
-
-void MainWindow::on_actionTreelist_triggered()
-{
-    QApplication::clipboard()->setText(dumpTreelist());
-    qDebug() << "treelist copied to clipboard.";
-}
-
-void MainWindow::on_actionFON_grid_triggered()
-{
-    if (!mGrid)
-        return;
-    QString gr = gridToString(*mGrid);
-    QApplication::clipboard()->setText(gr);
-    qDebug() << "grid copied to clipboard.";
-}
-
-void MainWindow::on_execManyStands_clicked()
-{
-    if (!mModel || !mModel->ru())
-        return;
-    QVector<Tree> &mTrees =  mModel->ru()->trees();
-    QDomElement xmlAuto = xmldoc.documentElement().firstChildElement("automation");
-    QString outPath = xmlAuto.firstChildElement("outputpath").text();
-    QString inPath = xmlAuto.firstChildElement("inputpath").text();
-    QString inFile = xmlAuto.firstChildElement("stands").text();
-    qDebug() << "standlist:" << inFile << "inpath:"<<inPath << "save to:"<<outPath;
-    QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', QString::SkipEmptyParts);
-
-    StandLoader loader(mModel);
-
-    foreach (QString file, fileList) {
-        file = inPath + "\\" + file;
-        qDebug() << "processing" << file;
-        mTrees.clear();
-        loader.loadFromPicus(file);
-        // do a cycle...
-        readwriteCycle();
-
-        // create output file
-        QFileInfo fi(file);
-        QString outFileName = QString("%1\\out_%2.csv").arg(outPath, fi.baseName());
-        Helper::saveToTextFile(outFileName, dumpTreelist() );
-        qDebug() << mTrees.size() << "trees loaded, saved to" << outFileName;
-        QApplication::processEvents();
-
-    }
-
-
-}
-
-void MainWindow::on_pbMultipleApplication_clicked()
-{
-    int c=ui->lApplyManyCount->text().toInt();
-    applyCycles(c);
-}

@@ -10,6 +10,7 @@ public:
     StandLoader(Model *model): mModel(model) {}
     void processInit();
     void loadFromPicus(const QString &fileName, QPointF offset=QPointF(), ResourceUnit *ru=NULL);
+
 private:
     Model *mModel;
 };
