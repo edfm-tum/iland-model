@@ -7,16 +7,41 @@
 
 WaterCycle::WaterCycle()
 {
-    mBucketSize = 0;
+    mSoilDepth = 0;
 }
 
 void WaterCycle::setup(const ResourceUnit *ru)
 {
     mRU = ru;
     // get values...
-    mBucketSize = Model::settings().waterholdingCapacity;
-    mContent = mBucketSize; // start with full water content (in the middle of winter)
+    mFieldCapacity = 0.; // on top
+
+    mSoilDepth = Model::settings().waterholdingCapacity;
     mCanopy.setup();
+    mPsi_koeff_b = -3;
+    mPsi_ref = -0.35; // kPa
+    mRho_ref = 0.42;
+    mPermanentWiltingPoint = heightFromPsi(-1500);
+    mFieldCapacity = heightFromPsi(-15);
+    mContent = mFieldCapacity; // start with full water content (in the middle of winter)
+}
+
+/** functions to calculate
+*/
+inline double WaterCycle::psiFromHeight(const double mm) const
+{
+    // psi_x = psi_ref * ( rho_x / rho_ref) ^ b
+    if (mm<0.001)
+        return -100000000;
+    double psi_x = mPsi_ref * pow((mm / mSoilDepth / mRho_ref),mPsi_koeff_b);
+    return psi_x;
+}
+
+inline double WaterCycle::heightFromPsi(const double psi_kpa) const
+{
+    // rho_x = rho_ref * (psi_x / psi_ref)^(1/b)
+    double h = mSoilDepth * mRho_ref * pow(psi_kpa / mPsi_ref, 1./mPsi_koeff_b);
+    return h;
 }
 
 void WaterCycle::getStandValues()
@@ -69,32 +94,35 @@ void WaterCycle::run()
         prec_to_soil = mSnowPack.flow(prec_after_interception, day->temperature);
         // (4) add rest to soil
         mContent += prec_to_soil;
+
+        excess = 0.;
+        if (mContent>mFieldCapacity) {
+            // excess water runoff
+            excess = mContent - mFieldCapacity;
+            total_excess += excess;
+            mContent = mFieldCapacity;
+        }
+
         // calculate the relative water content
         mRelativeContent[doy] = currentRelContent();
+        mPsi[doy] = psiFromHeight(mContent);
         // (5) transpiration of the vegetation
         et = mCanopy.evapotranspiration3PG(day, mRU->climate()->daylength_h(doy));
 
         mContent -= et; // reduce content (transpiration)
         mContent += mCanopy.interception(); // add intercepted water that is *not* evaporated to the soil again
         
-        if (mContent<0.) {
-            qDebug() << "water content below zero";
-            mContent = 0.;
+        if (mContent<mPermanentWiltingPoint) {
+            mContent = mPermanentWiltingPoint;
         }
-        excess = 0.;
-        if (mContent>mBucketSize) {
-            // excess water runoff
-            excess = mContent - mBucketSize;
-            total_excess += excess;
-            mContent = mBucketSize;
-        }
+
         DBGMODE(
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dWaterCycle);
                 // climatic variables
                 out << day->id() << day->temperature << day->vpd << day->preciptitation << day->radiation;
                 // fluxes
-                out << prec_after_interception << prec_to_soil << et << mRelativeContent[doy] << excess;
+                out << prec_after_interception << prec_to_soil << et << mRelativeContent[doy]*mSoilDepth << mPsi[doy] << excess;
                 // other states
                 out << mSnowPack.snowPack();
 

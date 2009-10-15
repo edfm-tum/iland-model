@@ -345,11 +345,14 @@ void DebugTimer::printAllTimers()
 {
     QHash<QString, double>::iterator i = mTimingList.begin();
     qWarning() << "Total timers\n================";
-     while (i != mTimingList.end()) {
+    double total=0.;
+    while (i != mTimingList.end()) {
          if (i.value()>0)
             qWarning() << i.key() << ":" << i.value() << "ms";
+         total+=i.value();
          ++i;
      }
+    qWarning() << "Sum: " << total << "ms";
 }
 
 void DebugTimer::interval(const QString &text)

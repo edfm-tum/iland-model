@@ -67,7 +67,7 @@ void SpeciesResponse::calculate()
             // Temperature Response
             mTempResponse[mon]+=mSpecies->temperatureResponse(day->temp_delayed);
             // radiation: only count days in vegetation period
-            water_resp = mSpecies->soilwaterResponse(water->relContent(doy));
+            water_resp = mSpecies->soilwaterResponse(water->psi_kPa(doy));
             if (doy>=veg_begin && doy<=veg_end) {
                 mRadiation[mon] += day->radiation;
                 mSoilWaterResponseYear += water_resp;

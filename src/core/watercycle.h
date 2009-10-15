@@ -62,16 +62,25 @@ public:
     void run(); ///< run the current year
     // properties
     const double &relContent(const int doy) const { return mRelativeContent[doy]; }
-    double bucketSize() const { return mBucketSize; } ///< bucket size in mm
+    const double &psi_kPa(const int doy) const { return mPsi[doy]; }
+    double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm
-    double currentRelContent() const { Q_ASSERT(mBucketSize>0); return qMin(mContent/mBucketSize, 1.); }
+    double currentRelContent() const { Q_ASSERT(mSoilDepth>0); return qMin(mContent/mSoilDepth, 1.); }
 private:
+    inline double psiFromHeight(const double mm) const;
+    inline double heightFromPsi(const double psi_kpa) const;
+    double mPsi_koeff_b; ///< see psiFromHeight()
+    double mPsi_ref; ///< see psiFromHeight()
+    double mRho_ref; ///< see psiFromHeight()
     const ResourceUnit *mRU; ///< resource unit to which this watercycle is connected
     Water::Canopy mCanopy; ///< object representing the forest canopy (interception, evaporation)
     Water::SnowPack mSnowPack; ///< object representing the snow cover (aggregation, melting)
-    double mBucketSize; ///< water holding capacity (mm) of the soil water bucket.
+    double mSoilDepth; ///< depth of the soil (without rocks) in mm
     double mContent; ///< current water content in mm water column of the soil.
+    double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
+    double mPermanentWiltingPoint; ///< bucket "height" of PWP (eq. approx. -1.5MPa, but depends on vegetation) (mm)
     double mRelativeContent[366]; ///< relative water content for each day of the year
+    double mPsi[366]; ///< soil water potential for each day in kPa
     void getStandValues(); ///< helper function to retrieve LAI per species group
     double mLAINeedle;
     double mLAIBroadleaved;

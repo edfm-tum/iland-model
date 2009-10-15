@@ -49,10 +49,10 @@ public:
     double aging(const float height, const int age);
     // environmental responses
     double vpdResponse(const double &vpd) const;
-    double temperatureResponse(const double &delayed_temp) const;
+    inline double temperatureResponse(const double &delayed_temp) const;
     double nitrogenResponse(const double &availableNitrogen) const { return mSet->nitrogenResponse(availableNitrogen, mRespNitrogenClass); }
     double canopyConductance() const { return mMaxCanopyConductance; } ///< maximum canopy conductance in m/s
-    double soilwaterResponse(const double &relativeSoilWaterContent) const { return 1.; }
+    inline double soilwaterResponse(const double &psi_kPa) const; ///< input: matrix potential (kPa) (e.g. -15)
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance
@@ -102,6 +102,7 @@ private:
     double mRespTempMin; ///< temperature response calculation offset
     double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
     double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
+    double mPsiMax; ///< maximum water potential (MPa), i.e. wilting point (is below zero!)
     // water
     double mMaxCanopyConductance; ///< maximum canopy conductance for transpiration (m/s)
     int mPhenologyClass;
@@ -132,6 +133,15 @@ inline double Species::temperatureResponse(const double &delayed_temp) const
     double x = qMax(delayed_temp-mRespTempMin, 0.);
     x = qMin(x/(mRespTempMax-mRespTempMin), 1.);
     return x;
+}
+/** soilwaterResponse is a function of the current matrix potential of the soil.
+
+  */
+inline double Species::soilwaterResponse(const double &psi_kPa) const
+{
+    const double psi_mpa = psi_kPa / 1000.; // convert to MPa
+    double result = limit( 1. - psi_mpa / mPsiMax, 0., 1.);
+    return result;
 }
 
 #endif // SPECIES_H

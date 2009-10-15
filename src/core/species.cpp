@@ -103,6 +103,7 @@ void Species::setup()
 
     // water
     mMaxCanopyConductance = doubleVar("maxCanopyConductance");
+    mPsiMax = -fabs(doubleVar("psiMax")); // force a negative value
 }
 
 double Species::biomassFoliage(const double dbh) const
