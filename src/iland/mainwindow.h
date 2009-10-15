@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     static QPlainTextEdit* logSpace();
+    static void bufferedLog(bool bufferLog);
     ~MainWindow();
 public slots:
     void repaint(); ///< force a repaint of the main drawing area

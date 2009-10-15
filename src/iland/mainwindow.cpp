@@ -44,6 +44,15 @@ double nrandom(const float& p1, const float& p2)
 bool showDebugMessages=true;
 QStringList bufferedMessages;
 bool doBufferMessages = false;
+
+void dumpMessages()
+{
+    foreach(const QString &s, bufferedMessages)
+        MainWindow::logSpace()->appendPlainText(s);
+    bufferedMessages.clear();
+    MainWindow::logSpace()->ensureCursorVisible();
+}
+
 void myMessageOutput(QtMsgType type, const char *msg)
  {
     QString str(msg);
@@ -52,7 +61,6 @@ void myMessageOutput(QtMsgType type, const char *msg)
      case QtDebugMsg:
         if (showDebugMessages) {
             bufferedMessages.append(QString(msg));
-            fprintf(stderr, "%s\n", msg);
         }
 
          break;
@@ -60,7 +68,6 @@ void myMessageOutput(QtMsgType type, const char *msg)
          //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
          //MainWindow::logSpace()->ensureCursorVisible();
           bufferedMessages.append(QString(msg));
-         fprintf(stderr, "WARNING: %s\n", msg);
          break;
      case QtCriticalMsg:
          fprintf(stderr, "Critical: %s\n", msg);
@@ -73,10 +80,16 @@ void myMessageOutput(QtMsgType type, const char *msg)
                                 MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
 
          //Helper::msg("Fatal message encountered!");
+
      }
-
-
+     if (!doBufferMessages)
+             dumpMessages();
  }
+
+void MainWindow::bufferedLog(bool bufferLog)
+{
+    doBufferMessages= bufferLog;
+}
 
 QPlainTextEdit *MainWindow::mLogSpace=NULL;
 
@@ -85,13 +98,7 @@ QPlainTextEdit* MainWindow::logSpace()
    return mLogSpace;
 }
 
-void dumpMessages()
-{
-    foreach(const QString &s, bufferedMessages)
-        MainWindow::logSpace()->appendPlainText(s);
-    bufferedMessages.clear();
-    MainWindow::logSpace()->ensureCursorVisible();
-}
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindowClass)

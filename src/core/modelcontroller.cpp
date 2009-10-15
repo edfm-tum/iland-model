@@ -13,6 +13,8 @@
 #include "expressionwrapper.h"
 #include "../output/outputmanager.h"
 
+#include "mainwindow.h" // for the debug message buffering
+
 ModelController::ModelController()
 {
     mModel = NULL;
@@ -111,7 +113,8 @@ void ModelController::runloop()
     bool hasError = false;
 
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
-        hasError = runYear();
+        MainWindow::bufferedLog(true); // start buffering
+        hasError = runYear(); // do the work
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
         if (!hasError)
@@ -129,8 +132,10 @@ void ModelController::runloop()
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
         mFinished = true;
+        MainWindow::bufferedLog(false); // stop buffering
         emit finished(QString());
     }
+
     QApplication::processEvents();
 }
 
@@ -138,6 +143,7 @@ void ModelController::run(int years)
 {
     if (!canRun())
         return;
+    MainWindow::bufferedLog(true);
     DebugTimer many_runs(QString("Timer for %1 runs").arg(years));
     many_runs.setAsWarning();
     mPaused = false;
@@ -161,6 +167,7 @@ bool ModelController::runYear()
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
     bool err=false;
     try {
+        MainWindow::bufferedLog(true);
         mModel->runYear();
         fetchDynamicOutput();
     } catch(const IException &e) {
@@ -169,6 +176,7 @@ bool ModelController::runYear()
         qDebug() << error_msg;
         err=true;
     }
+    MainWindow::bufferedLog(false);
     return err;
 }
 
@@ -185,6 +193,7 @@ bool ModelController::pause()
         // currently running -> set to pause mode
         GlobalSettings::instance()->outputManager()->save();
         mPaused = true;
+        MainWindow::bufferedLog(false);
     }
     return mPaused;
 }
