@@ -53,6 +53,7 @@ public:
     double nitrogenResponse(const double &availableNitrogen) const { return mSet->nitrogenResponse(availableNitrogen, mRespNitrogenClass); }
     double canopyConductance() const { return mMaxCanopyConductance; } ///< maximum canopy conductance in m/s
     inline double soilwaterResponse(const double &psi_kPa) const; ///< input: matrix potential (kPa) (e.g. -15)
+    double psiMax() const { return mPsiMax; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance

@@ -49,17 +49,23 @@ void WaterCycle::getStandValues()
     mLAINeedle=mLAIBroadleaved=0.;
     mCanopyConductance=0.;
     double lai;
+    double psi_max = 0.;
     foreach(const ResourceUnitSpecies &rus, mRU->ruSpecies()) {
         lai = rus.constStatistics().leafAreaIndex();
         if (rus.species()->isConiferous())
             mLAINeedle+=lai;
         else
             mLAIBroadleaved+=lai;
-        mCanopyConductance += rus.species()->canopyConductance() * lai;
+        mCanopyConductance += rus.species()->canopyConductance() * lai; // weigh with LAI
+        psi_max += rus.species()->psiMax() * lai; // weigh with LAI
     }
     double total_lai = mLAIBroadleaved+mLAINeedle;
     if (total_lai>0.) {
         mCanopyConductance /= total_lai;
+        mPermanentWiltingPoint = heightFromPsi(1000. * psi_max / total_lai); // (psi/total_lai) = weighted average Psi (MPa) -> convert to kPa
+    } else {
+        mCanopyConductance = 0.02;
+        mPermanentWiltingPoint = heightFromPsi(-1500);// -1.5MPa
     }
     if (total_lai < 3.) {
         // following Landsberg and Waring: when LAI is < 3, a linear "ramp" from 0 to 3 is assumed
