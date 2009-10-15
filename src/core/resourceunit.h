@@ -50,9 +50,9 @@ public:
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics();
     // setup/maintenance
-    void cleanTreeList();
-    void setSpeciesSet(SpeciesSet *set);
+    void cleanTreeList(); ///< remove dead trees from the tree storage.
     void setup(); ///< setup operations after the creation of the model space.
+    void setSpeciesSet(SpeciesSet *set);
     void setClimate(Climate* climate) { mClimate = climate; }
     void setBoundingBox(const QRectF &bb) { mBoundingBox = bb; }
 private:

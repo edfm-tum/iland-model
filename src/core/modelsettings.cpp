@@ -22,10 +22,11 @@ void ModelSettings::loadModelSettings()
 
 
     XmlHelper site(GlobalSettings::instance()->settings().node("model.site"));
-    latitude = RAD(site.valueDouble("latitude",48.));
     nitrogenAvailable = site.valueDouble("availableNitrogen", 40);
-    waterholdingCapacity = site.valueDouble("waterholdingCapacity", 100);
+    waterholdingCapacity = site.valueDouble("soilDepth", 100);
 
+    XmlHelper world(GlobalSettings::instance()->settings().node("model.world"));
+    latitude = RAD(world.valueDouble("latitude",48.));
 }
 
 void ModelSettings::print()
