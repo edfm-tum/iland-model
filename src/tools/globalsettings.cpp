@@ -91,6 +91,8 @@ GlobalSettings::~GlobalSettings()
     qDeleteAll(mSettingMetaData.values());
     mInstance = NULL;
     delete mOutputManager;
+    // clear all databases
+    clearDatabaseConnections();
 }
 
 // debugging

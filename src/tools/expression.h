@@ -15,10 +15,12 @@ public:
         const QString &expression() const { return m_expression; }
         /// calculate formula and return result. variable values need to be set using "setVar()"
         double execute();
+        double executeLocked() { QMutexLocker m(&m_execMutex); return execute();  } ///< thread safe version
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
            the return is the result of the calculation.
            e.g.: x+3*y --> Val1->x, Val2->y*/
         double calculate(double Val1=0., double Val2=0.);
+        double calculateLocked(double Val1=0., double Val2=0.) { QMutexLocker m(&m_execMutex); return calculate(Val1, Val2); } ///< threadsafe version
 
         /// set the value of the variable named "Var". Note: using addVar to obtain a pointer may be more efficient for multiple executions.
         void  setVar(const QString& Var, double Value);
@@ -96,7 +98,7 @@ private:
         double  udfPolygon(double Value, double* Stack, int ArgCount); ///< special function polygon()
         double udfSigmoid(double Value, double sType, double p1, double p2); ///< special function sigmoid()
         void checkBuffer(int Index);
-        QVector<double> m_linearizedSpace;
+        QMutex m_execMutex;
 };
 
 #endif // LOGICEXPRESSION_H

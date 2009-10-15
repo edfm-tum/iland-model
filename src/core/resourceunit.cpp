@@ -137,6 +137,8 @@ void ResourceUnit::production()
 
     // calculate the total weighted leaf area on this RU:
     mLRI_modification = interception_fraction *  mStockedArea / mAggregatedWLA;
+    if (mLRI_modification == 0.)
+        qDebug() << "lri modifaction==0!";
 
 
     DBGMODE(qDebug() << QString("production: LAI: %1 (intercepted fraction: %2, stocked area: %4). LRI-Multiplier: %3")
@@ -166,6 +168,10 @@ void ResourceUnit::production()
 
 void ResourceUnit::calculateInterceptedArea()
 {
+    if (mAggregatedLR==0) {
+        mEffectiveArea_perWLA = 0.;
+        return;
+    }
     Q_ASSERT(mAggregatedLR>0.);
     mEffectiveArea_perWLA = mEffectiveArea / mAggregatedLR;
     qDebug() << "RU: aggregated lightresponse:" << mAggregatedLR  << "eff.area./wla:" << mEffectiveArea_perWLA;

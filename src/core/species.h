@@ -59,6 +59,7 @@ public:
     void setup();
 private:
     Q_DISABLE_COPY(Species);
+    QMutex mMutex;
     // helpers during setup
     bool boolVar(const QString s) { return mSet->var(s).toBool(); } ///< during setup: get value of variable @p s as a boolean variable.
     double doubleVar(const QString s) { return mSet->var(s).toDouble(); }///< during setup: get value of variable @p s as a double.
@@ -104,13 +105,13 @@ private:
     // water
     double mMaxCanopyConductance; ///< maximum canopy conductance for transpiration (m/s)
     int mPhenologyClass;
-
 };
 
 
 // inlined functions...
 inline void Species::hdRange(const double dbh, double &rLowHD, double &rHighHD)
 {
+    QMutexLocker m(&mMutex); // serialize access
     rLowHD = mHDlow.calculate(dbh);
     rHighHD = mHDhigh.calculate(dbh);
 }

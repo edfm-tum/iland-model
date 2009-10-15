@@ -42,6 +42,8 @@ double nrandom(const float& p1, const float& p2)
 }
 
 bool showDebugMessages=true;
+QStringList bufferedMessages;
+bool doBufferMessages = false;
 void myMessageOutput(QtMsgType type, const char *msg)
  {
     QString str(msg);
@@ -49,15 +51,15 @@ void myMessageOutput(QtMsgType type, const char *msg)
     switch (type) {
      case QtDebugMsg:
         if (showDebugMessages) {
-            MainWindow::logSpace()->appendPlainText(QString(msg));
-            MainWindow::logSpace()->ensureCursorVisible();
+            bufferedMessages.append(QString(msg));
             fprintf(stderr, "%s\n", msg);
         }
 
          break;
      case QtWarningMsg:
-         MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
-         MainWindow::logSpace()->ensureCursorVisible();
+         //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
+         //MainWindow::logSpace()->ensureCursorVisible();
+          bufferedMessages.append(QString(msg));
          fprintf(stderr, "WARNING: %s\n", msg);
          break;
      case QtCriticalMsg:
@@ -65,11 +67,12 @@ void myMessageOutput(QtMsgType type, const char *msg)
          break;
      case QtFatalMsg:
          fprintf(stderr, "Fatal: %s\n", msg);
-         MainWindow::logSpace()->appendPlainText(QString(msg));
-         Helper::saveToTextFile(GlobalSettings::instance()->path("fatallog.txt","temp"),
-                                MainWindow::logSpace()->toPlainText());
+         bufferedMessages.append(QString(msg));
 
-         Helper::msg("Fatal message encountered!");
+         Helper::saveToTextFile(GlobalSettings::instance()->path("fatallog.txt","temp"),
+                                MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
+
+         //Helper::msg("Fatal message encountered!");
      }
 
 
@@ -80,6 +83,14 @@ QPlainTextEdit *MainWindow::mLogSpace=NULL;
 QPlainTextEdit* MainWindow::logSpace()
 {
    return mLogSpace;
+}
+
+void dumpMessages()
+{
+    foreach(const QString &s, bufferedMessages)
+        MainWindow::logSpace()->appendPlainText(s);
+    bufferedMessages.clear();
+    MainWindow::logSpace()->ensureCursorVisible();
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -147,6 +158,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mRemoteControl, SIGNAL(finished(QString)), this, SLOT(modelFinished(QString)));
 }
 
+
 MainWindow::~MainWindow()
 {
     QString fileName = QDir::current().filePath("gui.txt");
@@ -171,6 +183,7 @@ void MainWindow::checkModelState()
     ui->actionReload->setEnabled(mRemoteControl.canDestroy());
     ui->actionStop->setEnabled(mRemoteControl.isRunning());
     ui->actionPause->setEnabled(mRemoteControl.isRunning());
+    dumpMessages();
 }
 
 
@@ -338,7 +351,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             value = tree_value.execute();
             fill_color = Helper::colorFromValue(value, 0., 1., false);
             painter.setBrush(fill_color);
-            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 2.));
+            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 3.));
             painter.drawEllipse(p, diameter, diameter);
         }
 

@@ -72,6 +72,7 @@ void Output::setup()
 
 Output::~Output()
 {
+    mInserter.clear();
 }
 
 Output::Output()
