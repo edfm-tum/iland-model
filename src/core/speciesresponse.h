@@ -18,12 +18,14 @@ public:
     const double *tempResponse() const { return mTempResponse; }
     const double *soilWaterResponse() const { return mSoilWaterResponse; }
     const double *absorbedRadiation() const { return mRadiation; } ///< radiation sum in MJ/m2
+    const double *minimumResponses() const { return mResponseMinima; }
     double co2Response() const { return mCO2Response; }
     double nitrogenResponse() const { return mNitrogenResponse; }
 private:
     void clear();
     const ResourceUnit *mRu;
     const Species *mSpecies;
+    double mResponseMinima[12]; ///< response min (vpd/temp/water) averaged
     double mRadiation[12]; ///<  radiation sums per month (within vegetation period)
     double mVpdResponse[12];
     double mTempResponse[12];

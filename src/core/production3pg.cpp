@@ -23,10 +23,15 @@ inline double Production3PG::calculateUtilizablePAR(const int month) const
     if (mResponse->absorbedRadiation()[month]==0.)
         return 0.;
     // see Equation (3)
+    // multiplicative approach: responses are averaged one by one and multiplied on a monthly basis
+//    double response = mResponse->absorbedRadiation()[month] *
+//                      mResponse->vpdResponse()[month] *
+//                      mResponse->soilWaterResponse()[month] *
+//                      mResponse->tempResponse()[month];
+    // minimum approach: for each day the minimum aof vpd, temp, soilwater is calculated, then averaged for each month
     double response = mResponse->absorbedRadiation()[month] *
-                      mResponse->vpdResponse()[month] *
-                      mResponse->soilWaterResponse()[month] *
-                      mResponse->tempResponse()[month];
+                      mResponse->minimumResponses()[month];
+
     return response;
 }
 /** calculate the alphac (=photosynthetic efficiency) for the given month.

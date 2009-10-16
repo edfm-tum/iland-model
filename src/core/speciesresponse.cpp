@@ -29,7 +29,7 @@ SpeciesResponse::SpeciesResponse()
 void SpeciesResponse::clear()
 {
     for (int i=0;i<12;i++)
-        mVpdResponse[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=0.;
+        mResponseMinima[i]=mVpdResponse[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=0.;
 
     mCO2Response=mNitrogenResponse=mSoilWaterResponseYear=0.;
 
@@ -58,20 +58,31 @@ void SpeciesResponse::calculate()
     // calculate monthly responses
     int doy=0;
     double water_resp;
+    double vpd_resp;
+    double temp_resp;
+    double min_resp;
     for (int mon=0;mon<12;mon++) {
         mRu->climate()->monthRange(mon, &begin, &end);
         no_of_days = 0;
         for (const ClimateDay *day=begin; day!=end; ++day, no_of_days++) {
             // VPD response
-            mVpdResponse[mon]+=mSpecies->vpdResponse( day->vpd );
+            vpd_resp =mSpecies->vpdResponse( day->vpd );
+            mVpdResponse[mon]+= vpd_resp;
             // Temperature Response
-            mTempResponse[mon]+=mSpecies->temperatureResponse(day->temp_delayed);
+            temp_resp = mSpecies->temperatureResponse(day->temp_delayed);
+            mTempResponse[mon]+= temp_resp;
+
             // radiation: only count days in vegetation period
             water_resp = mSpecies->soilwaterResponse(water->psi_kPa(doy));
             if (doy>=veg_begin && doy<=veg_end) {
                 mRadiation[mon] += day->radiation;
                 mSoilWaterResponseYear += water_resp;
             }
+
+            // minimum response
+            min_resp = qMin(qMin(vpd_resp, temp_resp), water_resp);
+            mResponseMinima[mon] += min_resp;
+
             // soil water: fake
             mSoilWaterResponse[mon] += water_resp;
 
@@ -81,6 +92,7 @@ void SpeciesResponse::calculate()
         mVpdResponse[mon] /= no_of_days; // vpd: average of month
         mTempResponse[mon] /= no_of_days; // temperature: average value of daily responses
         mSoilWaterResponse[mon] /= no_of_days; // water response: average of daily responses
+        mResponseMinima[mon] /= no_of_days; // minimum responses: average of daily responses
     }
 
     if (pheno.vegetationPeriodLength()>0)
