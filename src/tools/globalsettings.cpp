@@ -159,7 +159,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 
         case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
         case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "temp" << "vpd" << "prec" << "rad"
-                                        << "after_intercept" << "after_snow" << "et_flux" << "content" << "psi_kpa" << "excess" << "snow_height";
+                                        << "after_intercept" << "after_snow" << "et_flux" << "evaporation_canopy" << "content" << "psi_kpa" << "excess" << "snow_height";
     }
     return QStringList() << "invalid debug output!";
 }

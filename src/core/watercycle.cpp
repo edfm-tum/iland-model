@@ -119,21 +119,23 @@ void WaterCycle::run()
         mContent += mCanopy.interception(); // add intercepted water that is *not* evaporated to the soil again
         
         if (mContent<mPermanentWiltingPoint) {
+            et -= mPermanentWiltingPoint - mContent; // reduce et (for bookkeeping)
             mContent = mPermanentWiltingPoint;
         }
 
-        DBGMODE(
+        //DBGMODE(
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dWaterCycle);
                 // climatic variables
                 out << day->id() << day->temperature << day->vpd << day->preciptitation << day->radiation;
                 // fluxes
-                out << prec_after_interception << prec_to_soil << et << mRelativeContent[doy]*mSoilDepth << mPsi[doy] << excess;
+                out << prec_after_interception << prec_to_soil << et << mCanopy.evaporationCanopy()
+                        << mRelativeContent[doy]*mSoilDepth << mPsi[doy] << excess;
                 // other states
                 out << mSnowPack.snowPack();
 
             }
-        ); // DBGMODE()
+        //); // DBGMODE()
 
     }
 }
@@ -173,6 +175,7 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
 {
     // sanity checks
     mInterception = 0.;
+    mEvaporation = 0.;
     if (!mLAI)
         return preciptitation_mm;
     if (!preciptitation_mm)
@@ -259,10 +262,10 @@ double Canopy::evapotranspirationBGC(const ClimateDay *climate, const double day
 
     // now calculate the evaporation from intercepted preciptitaion in the canopy: 1+rc/ra -> 1
     if (mInterception>0.) {
-        double dim_transp = svp_slope + mPsychrometricConstant;
-        double pot_transp = upper / dim_transp * dayl;
-        double transp = qMin(pot_transp, mInterception);
-        mInterception -= transp;
+        double dim_evap = svp_slope + mPsychrometricConstant;
+        double pot_evap = upper / dim_evap * dayl;
+        double evap = qMin(pot_evap, mInterception);
+        mEvaporation = evap;
     }
     return et;
 }
@@ -303,7 +306,7 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
         double div_evap = 1 + svp_slope;
         double evap = (svp_slope*rad + defTerm) / div_evap / latent_heat * daylength;
         evap = qMin(evap, mInterception);
-        mInterception -= evap;
+        mEvaporation = evap;
     }
     return canopy_transiration;
 }

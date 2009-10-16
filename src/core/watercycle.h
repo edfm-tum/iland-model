@@ -34,6 +34,7 @@ public:
     double evapotranspiration3PG(const ClimateDay *climate, const double daylength_h);
     // properties
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
+    double evaporationCanopy() const { return mEvaporation; } ///< evaporation from canopy (mm)
     double avgMaxCanopyConductance() const { return mAvgMaxCanopyConductance; } ///< averaged maximum canopy conductance of current species distribution (m/s)
 
 private:
@@ -41,7 +42,8 @@ private:
     double mLAIBroadleaved; // leaf area index of broadlevaed species
     double mLAI; // total leaf area index
     double mAvgMaxCanopyConductance; // maximum weighted canopy conductance (m/s)
-    double mInterception; ///< intercepted precipitation of the current day
+    double mInterception; ///< intercepted precipitation of the current day (mm)
+    double mEvaporation; ///< water that evaporated from foliage surface to atmosphere (mm)
     // Penman-Monteith parameters
     double mHeatCapacityAir; // Specific heat capacity of air [J  / (kg °C)]
     double mAirDensity; // density of air [kg / m3]
