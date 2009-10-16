@@ -22,7 +22,8 @@ TreeOut::TreeOut()
             << OutputColumn("leafArea_m2", "current leaf area of the tree (m2)", OutDouble)
             << OutputColumn("foliageMass", "current mass of foliage (kg)", OutDouble)
             << OutputColumn("woodyMass", "kg Biomass in woody department", OutDouble)
-            << OutputColumn("rootMass", "kg Biomass in root department", OutDouble)
+            << OutputColumn("fineRootMass", "kg Biomass in fine-root department", OutDouble)
+            << OutputColumn("coarseRootMass", "kg Biomass in coarse-root department", OutDouble)
             << OutputColumn("lri", "LightResourceIndex of the tree (raw light index from iLand)", OutDouble)
             << OutputColumn("lightResponse", "light response value (including species specific response to the light level)", OutDouble)
             << OutputColumn("reserve_kg", "NPP currently available in the reserve pool (kg Biomass)", OutDouble);
@@ -53,7 +54,7 @@ void TreeOut::exec()
         }
         *this << currentYear() << t->ru()->index() << t->species()->id();
         *this << t->id() << t->dbh() << t->height() << (t->isDead()?1:0) << t->basalArea() << t->volume();
-        *this << t->leafArea() << t->mFoliageMass << t->mWoodyMass << t->mRootMass;
+        *this << t->leafArea() << t->mFoliageMass << t->mWoodyMass <<  t->mFineRootMass << t->mCoarseRootMass;
         *this << t->lightResourceIndex() << t->mLightResponse << t->mNPPReserve;
         writeRow();
     }

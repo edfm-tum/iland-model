@@ -32,6 +32,7 @@ public:
     double biomassRoot(const double dbh) const;
     double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
     double allometricFractionStem(const double dbh) const;
+    double finerootFoliageRatio() const { return mFinerootFoliageRatio; } ///< ratio of fineroot mass (kg) to foliage mass (kg)
 
     // turnover rates
     double turnoverLeaf() const { return mTurnoverLeaf; }
@@ -85,6 +86,7 @@ private:
     // turnover rates
     double mTurnoverLeaf; ///< yearly turnover rate leafs
     double mTurnoverRoot; ///< yearly turnover rate root
+    double mFinerootFoliageRatio; ///< ratio of fineroot mass (kg) to foliage mass (kg)
     // height-diameter-relationships
     Expression mHDlow; ///< minimum HD-relation as f(d) (open grown tree)
     Expression mHDhigh; ///< maximum HD-relation as f(d)

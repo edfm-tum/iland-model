@@ -89,7 +89,8 @@ private:
     float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)
     float mFoliageMass; // kg
     float mWoodyMass; // kg
-    float mRootMass; // kg
+    float mFineRootMass; // kg
+    float mCoarseRootMass; // kg
     // production relevant
     float mNPPReserve; // kg
     float mLRI; ///< resulting lightResourceIndex

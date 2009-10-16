@@ -37,7 +37,7 @@ Tree::Tree()
     mDbh = mHeight = 0;
     mRU = 0; mSpecies = 0;
     mFlags = mAge = 0;
-    mOpacity=mFoliageMass=mWoodyMass=mRootMass=mLeafArea=0.;
+    mOpacity=mFoliageMass=mWoodyMass=mCoarseRootMass=mFineRootMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
     mLightResponse = 0.;
     mId = m_nextId++;
@@ -62,7 +62,7 @@ QString Tree::dump()
 void Tree::dumpList(DebugList &rTargetList)
 {
     rTargetList << mId << species()->id() << mDbh << mHeight  << position().x() << position().y()   << mRU->index() << mLRI
-                << mWoodyMass << mRootMass << mFoliageMass << mLeafArea;
+                << mWoodyMass << mCoarseRootMass << mFoliageMass << mLeafArea;
 }
 
 void Tree::setup()
@@ -74,13 +74,14 @@ void Tree::setup()
     mStamp = species()->stamp(mDbh, mHeight);
 
     mFoliageMass = species()->biomassFoliage(mDbh);
-    mRootMass = species()->biomassRoot(mDbh) + mFoliageMass; // coarse root (allometry) + fine root (estimated size: foliage)
+    mCoarseRootMass = species()->biomassRoot(mDbh); // coarse root (allometry)
+    mFineRootMass = mFoliageMass * species()->finerootFoliageRatio(); //  fine root (size defined  by finerootFoliageRatio)
     mWoodyMass = species()->biomassWoody(mDbh);
 
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
     mLeafArea = mFoliageMass * species()->specificLeafArea();
-    mOpacity = 1. - exp(-0.5 * mLeafArea / mStamp->crownArea());
-    mNPPReserve = 2*mFoliageMass; // initial value
+    mOpacity = 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea());
+    mNPPReserve = (1+species()->finerootFoliageRatio())*mFoliageMass; // initial value
     mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
 }
 
@@ -498,7 +499,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // add content of reserve pool
     npp += mNPPReserve;
     const double foliage_mass_allo = species()->biomassFoliage(mDbh);
-    const double reserve_size = 2 * foliage_mass_allo;
+    const double reserve_size = foliage_mass_allo * (1. + mSpecies->finerootFoliageRatio());
     double refill_reserve = qMin(reserve_size, 2.*mFoliageMass); // not always try to refill reserve 100%
 
     double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1) (eta)
@@ -529,11 +530,20 @@ inline void Tree::partitioning(TreeGrowthData &d)
          //   );
 
     // Change of biomass compartments
-    double sen_root = mRootMass*to_root;
-    double sen_foliage = mFoliageMass*to_fol;
+    double sen_root = mFineRootMass * to_root;
+    double sen_foliage = mFoliageMass * to_fol;
     // Roots
-    double delta_root = apct_root * npp - sen_root;
-    mRootMass += delta_root;
+    mFineRootMass -= sen_root; // reduce only fine root pool
+    double delta_root = apct_root * npp;
+    // 1st, refill the fine root pool
+    double fineroot_miss = mFoliageMass * mSpecies->finerootFoliageRatio() - mFineRootMass;
+    if (fineroot_miss>0.){
+        double delta_fineroot = qMin(fineroot_miss, delta_root);
+        mFineRootMass += delta_fineroot;
+        delta_root -= delta_fineroot;
+    }
+    // 2nd, the rest of NPP allocated to roots go to coarse roots
+    mCoarseRootMass += delta_root;
 
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;
@@ -547,7 +557,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // stress index: different varaints at denominator: to_fol*foliage_mass = leafmass to rebuild,
     // foliage_mass_allo: simply higher chance for stress
     // note: npp = NPP + reserve (see above)
-    d.stress_index =qMax(1. - (npp) / ( to_fol*foliage_mass_allo + reserve_size), 0.);
+    d.stress_index =qMax(1. - (npp) / ( to_fol*foliage_mass_allo + to_root*foliage_mass_allo*species()->finerootFoliageRatio() + reserve_size), 0.);
 
     // Woody compartments
     // (1) transfer to reserve pool
@@ -574,12 +584,12 @@ inline void Tree::partitioning(TreeGrowthData &d)
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreePartition);
             dumpList(out); // add tree headers
             out << npp << apct_foliage << apct_wood << apct_root
-                    << delta_foliage << net_woody << delta_root << mNPPReserve << net_stem;
+                    << delta_foliage << net_woody << delta_root << mNPPReserve << net_stem << d.stress_index;
      }
 
     ); // DBGMODE()
     //DBGMODE(
-      if (mWoodyMass<0. || mWoodyMass>10000 || mFoliageMass<0. || mFoliageMass>1000. || mRootMass<0. || mRootMass>10000
+      if (mWoodyMass<0. || mWoodyMass>10000 || mFoliageMass<0. || mFoliageMass>1000. || mCoarseRootMass<0. || mCoarseRootMass>10000
          || mNPPReserve>2000.) {
          qDebug() << "Tree:partitioning: invalid pools.";
          qDebug() << GlobalSettings::instance()->debugListCaptions(GlobalSettings::DebugOutputs(0));

@@ -50,6 +50,7 @@ void Species::setup()
     mBranch_b = doubleVar("bmBranch_b");
 
     mSpecificLeafArea = doubleVar("specificLeafArea");
+    mFinerootFoliageRatio = doubleVar("finerootFoliageRatio");
 
     // turnover rates
     mTurnoverLeaf = doubleVar("turnoverLeaf");
@@ -66,7 +67,7 @@ void Species::setup()
     mVolumeFactor = mFormFactor * M_PI_4;
 
 
-    if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea == 0.) {
+    if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea*mFinerootFoliageRatio == 0.) {
         throw IException( QString("Error setting up species %1: one value is NULL in database.").arg(id()));
     }
     // Aging
@@ -104,6 +105,7 @@ void Species::setup()
     // water
     mMaxCanopyConductance = doubleVar("maxCanopyConductance");
     mPsiMax = -fabs(doubleVar("psiMax")); // force a negative value
+
     // light
     mLightResponseClass = doubleVar("lightResponseClass");
     if (mLightResponseClass<1. || mLightResponseClass>5.)

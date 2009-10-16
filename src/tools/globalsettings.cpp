@@ -155,7 +155,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 
         case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps
                 << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
-                << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc";
+                << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
 
         case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
         case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "temp" << "vpd" << "prec" << "rad"
