@@ -45,6 +45,10 @@ int SpeciesSet::setup()
     mSetupQuery = &query;
     QString sql = QString("select * from %1").arg(tableName);
     query.exec(sql);
+    if (query.lastError().isValid()){
+        throw IException(QString("Error loading species set: %1 \n %2").arg(sql, query.lastError().text()) );
+    }
+
     clear();
     qDebug() << "attempting to load a species set from" << tableName;
     while (query.next()) {

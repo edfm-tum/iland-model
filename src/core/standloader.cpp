@@ -138,13 +138,18 @@ void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, Resourc
            tree.setAge(line.section(sep, iAge, iAge).toInt());
         else
             tree.setAge(10);
-        int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
-        QString speciesid="piab";
-        if (idx>0)
+        QString speciesid = line.section(sep, iSpecies, iSpecies);
+        bool ok;
+        int picusid = speciesid.toInt(&ok);
+        if (ok) {
+            int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
+            if (idx==-1)
+                throw IException(QString("Loading init-file: invalid Picus-species-id. Species: %1").arg(picusid));
             speciesid = iLandSpeciesIds[idx];
+        }
         Species *s = speciesSet->species(speciesid);
         if (!ru || !s)
-            throw IException("Loading init-file: either ressource unit or species invalid.");
+            throw IException(QString("Loading init-file: either ressource unit or species invalid. Species: %1").arg(speciesid));
 
         tree.setRU(ru);
         tree.setSpecies(s);
