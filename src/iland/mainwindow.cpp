@@ -249,6 +249,7 @@ QString MainWindow::dumpTreelist()
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
+    drawtimer.setSilent();
 
     if (!mRemoteControl.canRun())
         return;
@@ -477,7 +478,7 @@ void MainWindow::mouseMove(const QPoint& pos)
 
 void MainWindow::mouseWheel(const QPoint& pos, int steps)
 {
-    qDebug() << "mouse-wheel" << steps;
+    //qDebug() << "mouse-wheel" << steps;
     vp.zoomTo(pos, qMax(1-(2*steps/10.),0.2));
     ui->PaintWidget->update();
 }
@@ -804,4 +805,9 @@ void MainWindow::on_actionOutput_table_description_triggered()
     QString txt = GlobalSettings::instance()->outputManager()->wikiFormat();
     QApplication::clipboard()->setText(txt);
     qDebug() << "Description copied to clipboard!";
+}
+
+void MainWindow::on_actionTimers_triggered()
+{
+    DebugTimer::printAllTimers();
 }

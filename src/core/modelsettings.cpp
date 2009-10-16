@@ -14,7 +14,6 @@ void ModelSettings::loadModelSettings()
     lightExtinctionCoefficient = xml.valueDouble("lightExtinctionCoefficient", 0.5);
     lightExtinctionCoefficientOpacity=xml.valueDouble("lightExtinctionCoefficientOpacity", 0.5);
     temperatureTau=xml.valueDouble("temperatureTau",5);
-    lightResponse = QSharedPointer<Expression>(new Expression(xml.value("lightResponse", "lri")));
     epsilon = xml.valueDouble("epsilon",1.8); // max light use efficiency (aka alpha_c)
     airDensity = xml.valueDouble("airDensity", 1.2);
     airPressure = xml.valueDouble("airPressure", 1013);
@@ -37,7 +36,6 @@ void ModelSettings::print()
     set << QString("lightExtinctionCoefficient=%1").arg(lightExtinctionCoefficient);
     set << QString("lightExtinctionCoefficientOpacity=%1").arg(lightExtinctionCoefficientOpacity);
     set << QString("temperatureTau=%1").arg(temperatureTau);
-    set << QString("lightResponse=%1").arg(lightResponse->expression());
     set << QString("epsilon=%1").arg(epsilon);
     set << QString("airDensity=%1").arg(airDensity);
     set << QString("airPressure=%1").arg(airPressure);

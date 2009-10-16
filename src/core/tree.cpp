@@ -433,7 +433,7 @@ void Tree::calcLightResponse()
 {
     // calculate a light response from lri:
     double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.);
-    mLightResponse = limit(Model::settings().lightResponse->calculateLocked(lri), 0., 1.);
+    mLightResponse = mSpecies->lightResponse(lri);
     mRU->addLR(mLeafArea, mLightResponse);
 
 }

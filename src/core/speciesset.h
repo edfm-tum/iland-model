@@ -3,7 +3,7 @@
 #include <QtSql>
 
 #include "stampcontainer.h"
-
+#include "expression.h"
 class Species;
 
 class SpeciesSet
@@ -21,10 +21,12 @@ public:
     // calculations
     double nitrogenResponse(const double availableNitrogen, const double &responseClass) const;
     double co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const;
+    double lightResponse(const double lightResourceIndex, const double lightResponseClass) ;
     // maintenance
     void clear();
     int setup();
 private:
+    QMutex mMutex;
     double nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const;
     QList<Species*> mActiveSpecies;
     QMap<QString, Species*> mSpecies;
@@ -37,6 +39,9 @@ private:
     // CO2 response
     double mCO2base, mCO2comp; ///< CO2 concentration of measurements (base) and CO2 compensation point (comp)
     double mCO2p0, mCO2beta0; ///< p0: production multiplier, beta0: relative productivity increase
+    // Light Response classes
+    Expression mLightResponseIntolerant; ///< light response function for the the most shade tolerant species
+    Expression mLightResponseTolerant; ///< light response function for the most shade intolerant species
 };
 
 #endif // SPECIESSET_H

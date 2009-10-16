@@ -90,6 +90,13 @@ int SpeciesSet::setup()
     if (mCO2base*mCO2comp*(mCO2base-mCO2comp)*mCO2beta0*mCO2p0==0)
         throw IException("at least one parameter of model.species.CO2Response is not valid!");
 
+    // setup Light responses
+    XmlHelper light(xml.node("model.species.lightResponse"));
+    mLightResponseTolerant.setAndParse(light.value("shadeTolerant"));
+    mLightResponseIntolerant.setAndParse(light.value("shadeIntolerant"));
+    if (mLightResponseTolerant.expression().isEmpty() || mLightResponseIntolerant.expression().isEmpty())
+        throw IException("at least one parameter of model.species.lightResponse is empty!");
+
     return mSpecies.count();
 
 }
@@ -166,5 +173,19 @@ double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenRes
     return response;
 
 }
+
+/** calculates the lightResponse based on a value for LRI and the species lightResponseClass.
+    LightResponse is classified from 1 (very shade inolerant) and 5 (very shade tolerant) and interpolated for values between 1 and 5.
+    Returns a value between 0..1 */
+double SpeciesSet::lightResponse(const double lightResourceIndex, const double lightResponseClass)
+{
+    QMutexLocker l(&mMutex); // serialize access to calculations
+    double low = mLightResponseIntolerant.calculate(lightResourceIndex);
+    double high = mLightResponseTolerant.calculate(lightResourceIndex);
+    double result = low + 0.25*(lightResponseClass-1.)*(high-low);
+    return limit(result, 0., 1.);
+
+}
+
 
 

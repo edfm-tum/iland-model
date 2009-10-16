@@ -104,6 +104,10 @@ void Species::setup()
     // water
     mMaxCanopyConductance = doubleVar("maxCanopyConductance");
     mPsiMax = -fabs(doubleVar("psiMax")); // force a negative value
+    // light
+    mLightResponseClass = doubleVar("lightResponseClass");
+    if (mLightResponseClass<1. || mLightResponseClass>5.)
+        throw IException( QString("invalid light response class for species %1. Allowed: 1..5.").arg(id()));
 }
 
 double Species::biomassFoliage(const double dbh) const
