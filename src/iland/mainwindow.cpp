@@ -50,6 +50,11 @@ void dumpMessages()
     foreach(const QString &s, bufferedMessages)
         MainWindow::logSpace()->appendPlainText(s);
     bufferedMessages.clear();
+    // it does *not* work to just MainWindow::logSpace()->textCursor().movePosition()!
+    // you have to "setTextCursor()".
+    QTextCursor cursor = MainWindow::logSpace()->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    MainWindow::logSpace()->setTextCursor(cursor);
     MainWindow::logSpace()->ensureCursorVisible();
 }
 
