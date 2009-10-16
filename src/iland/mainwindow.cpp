@@ -395,7 +395,7 @@ bool wantDrag=false;
 void MainWindow::mouseClick(const QPoint& pos)
 {
     QPointF coord=vp.toWorld(pos);
-    qDebug() << "to world:" << coord;
+    //qDebug() << "to world:" << coord;
     wantDrag = false;
     ui->PaintWidget->setCursor(Qt::CrossCursor);
     ui->treeChange->setProperty("tree",0);
@@ -407,7 +407,7 @@ void MainWindow::mouseClick(const QPoint& pos)
     // test ressource units...
     Model *model = mRemoteControl.model();
     ResourceUnit *ru = model->ru(coord);
-    qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
+    //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     Tree *closestTree=0;
@@ -421,8 +421,8 @@ void MainWindow::mouseClick(const QPoint& pos)
     }
     if (min_distance<5 && closestTree) {
             Tree *p = closestTree;
-            qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
-            qDebug() <<p->dump();
+            //qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
+            //qDebug() <<p->dump();
             showTreeDetails(p);
 
             ui->treeChange->setProperty("tree", (int)p);
