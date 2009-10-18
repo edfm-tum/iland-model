@@ -150,7 +150,7 @@ void ModelController::run(int years)
     mFinished = false;
     mCanceled = false;
     mYearsToRun = years;
-    GlobalSettings::instance()->setCurrentYear(0); // reset clock
+    GlobalSettings::instance()->setCurrentYear(1); // reset clock
 
     DebugTimer::clearAllTimers();
 

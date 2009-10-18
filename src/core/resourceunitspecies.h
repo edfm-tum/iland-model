@@ -21,10 +21,13 @@ public:
     StandStatistics &statisticsDead() { return mStatisticsDead; } ///< statistics of this species on the resourceunit
     const StandStatistics &constStatistics() const { return mStatistics; } ///< const accessor
     const StandStatistics &constStatisticsDead() const { return mStatisticsDead; } ///< const accessor
+    void updateGWL();
+    double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3)
     // action
     void calculate();
 
 private:
+    double mRemovedGrowth; ///< m3 volume of trees removed/managed (to calculate GWL)
     StandStatistics mStatistics; ///< statistics of a species on this resource unit
     StandStatistics mStatisticsDead; ///< statistics of died trees (this year) of a species on this resource unit
     Production3PG m3PG; ///< NPP prodution unit of this species

@@ -292,14 +292,15 @@ void Model::runYear()
 
     // process a cycle of individual growth
     Tree::setGrid(mGrid, mHeightGrid);
-    applyPattern();
-    readPattern();
-    grow();
+    applyPattern(); // create Light Influence Patterns
+    readPattern(); // readout light state of individual trees
+    grow(); // let the trees grow (growth on stand-level, tree-level, mortality)
 
     // management
     if (mManagement)
         mManagement->run();
 
+    // create outputs
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree");
     om->execute("stand");

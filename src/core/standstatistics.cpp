@@ -19,7 +19,7 @@ void StandStatistics::clear()
     // reset all values
     mCount = 0;
     mSumDbh=mSumHeight = mAverageDbh=mAverageHeight =0.;
-    mSumBasalArea = mSumVolume = 0.;
+    mSumBasalArea = mSumVolume = mGWL = 0.;
     mLeafAreaIndex = 0.;
     mNPP = mNPPabove = 0.;
 }
@@ -38,6 +38,7 @@ void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
     }
 }
 
+// note: mRUS = 0 for aggregated statistics
 void StandStatistics::calculate()
 {
     double dcount = (double) mCount;
@@ -46,6 +47,19 @@ void StandStatistics::calculate()
         mAverageHeight = mSumHeight / dcount;
         if (mRUS)
             mLeafAreaIndex /= mRUS->ru()->area(); // convert from leafarea to LAI
+    }
+    // scale values to per hectare if resource unit <> 1ha
+    if (mRUS) {
+        mGWL = mSumVolume + mRUS->removedVolume();
+        double area_factor =  10000. / mRUS->ru()->area();
+        if (area_factor!=1.) {
+            mCount = int(mCount * area_factor);
+            mSumBasalArea *= area_factor;
+            mSumVolume *= area_factor;
+            mNPP *= area_factor;
+            mNPPabove *= area_factor;
+            mGWL *= area_factor;
+        }
     }
 }
 
@@ -59,4 +73,5 @@ void StandStatistics::add(const StandStatistics &stat)
     mLeafAreaIndex += stat.mLeafAreaIndex;
     mNPP += stat.mNPP;
     mNPPabove += stat.mNPPabove;
+    mGWL+=stat.mGWL;
 }

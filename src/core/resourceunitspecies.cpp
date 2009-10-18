@@ -15,6 +15,8 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mResponse.setup(this);
     m3PG.setResponse(&mResponse);
     mStatistics.setResourceUnitSpecies(this);
+    mStatisticsDead.setResourceUnitSpecies(this);
+    mRemovedGrowth = 0.;
 }
 
 
@@ -22,4 +24,12 @@ void ResourceUnitSpecies::calculate()
 {
     mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
     m3PG.calculate();///< production of NPP
+}
+
+
+void ResourceUnitSpecies::updateGWL()
+{
+    // removed growth is the running sum of all removed
+    // tree volume. the current "GWL" therefore is current volume (standing) + mRemovedGrowth.
+    mRemovedGrowth+=statisticsDead().volume();
 }

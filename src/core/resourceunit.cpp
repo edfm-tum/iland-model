@@ -52,6 +52,7 @@ void ResourceUnit::setSpeciesSet(SpeciesSet *set)
            If the container memory is relocated (QVector), the pointer gets invalid!!!
            Therefore, a resize() is called before the loop (no resize()-operations during the loop)! */
         mRUSpecies[i].setup(s,this); // setup this element
+
     }
 }
 
@@ -182,8 +183,9 @@ void ResourceUnit::yearEnd()
     // calculate statistics for all tree species of the ressource unit
     int c = mRUSpecies.count();
     for (int i=0;i<c; i++) {
-        mRUSpecies[i].statistics().calculate();
-        mRUSpecies[i].statisticsDead().calculate();
+        mRUSpecies[i].statisticsDead().calculate(); // calculate the dead trees
+        mRUSpecies[i].updateGWL(); // get sum od dead trees
+        mRUSpecies[i].statistics().calculate(); // calculate the living (and add removed volume to gwl)
         mStatistics.add(mRUSpecies[i].statistics());
     }
     mStatistics.calculate(); // aggreagte on stand level

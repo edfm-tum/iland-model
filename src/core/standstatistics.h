@@ -18,11 +18,12 @@ public:
     int count() const { return mCount; }
     double dbh_avg() const { return mAverageDbh; } ///< average dbh (cm)
     double height_avg() const { return mAverageHeight; } ///< average tree height (m)
-    double volume() const { return mSumVolume; } ///< sum of tree volume (m3)
-    double basalArea() const { return mSumBasalArea; } ///< sum of basal area of all trees (m2)
-    double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]
-    double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground)
-    double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)
+    double volume() const { return mSumVolume; } ///< sum of tree volume (m3/ha)
+    double gwl() const { return mGWL;} ///< total increment (m3/ha)
+    double basalArea() const { return mSumBasalArea; } ///< sum of basal area of all trees (m2/ha)
+    double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]/ha
+    double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground)/ha
+    double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)/ha
 
 private:
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species
@@ -31,6 +32,7 @@ private:
     double mSumHeight;
     double mSumBasalArea;
     double mSumVolume;
+    double mGWL;
     double mAverageDbh;
     double mAverageHeight;
     double mLeafAreaIndex;

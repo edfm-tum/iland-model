@@ -485,8 +485,7 @@ void Tree::grow()
 
     if (!isDead())
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
-    else
-        mRU->resourceUnitSpecies(species()).statisticsDead().add(this, &d);
+
 }
 
 /** partitioning of this years assimilates (NPP) to biomass compartments.
@@ -678,6 +677,15 @@ inline double Tree::relative_height_growth()
     // scale according to LRI: if receiving much light (LRI=1), the result is hd_low (for open grown trees)
     double hd_ratio = hd_high - (hd_high-hd_low)*mLRI;
     return hd_ratio;
+}
+
+/** This function is called if a tree dies or is removed (management).
+  @sa ResourceUnit::cleanTreeList()
+*/
+void Tree::die(TreeGrowthData *d)
+{
+    setFlag(Tree::TreeDead, true); // set flag that tree is dead
+    mRU->resourceUnitSpecies(species()).statisticsDead().add(this, d); // add tree to statistics
 }
 
 void Tree::mortality(TreeGrowthData &d)

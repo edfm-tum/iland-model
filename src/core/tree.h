@@ -35,7 +35,7 @@ public:
     double basalArea() const; ///< basal area of the tree at breast height in m2
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
     // actions
-    void die() { setFlag(Tree::TreeDead, true); } ///< kills the tree.
+    void die(TreeGrowthData *d=0); ///< kills the tree.
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
 
     // setters for initialization

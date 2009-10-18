@@ -9,7 +9,8 @@ StandDeadOut::StandDeadOut()
 {
     setName("Dead trees by species/RU", "standdead");
     setDescription("Died trees in current year on the level of RU x species. The output is created after the growth of the year, " \
-                   "i.e. the growth of year trees are dying in is included! ");
+                   "i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that " \
+                   "are removed during management. ");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species()
               << OutputColumn("count_ha", "tree count (living)", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
