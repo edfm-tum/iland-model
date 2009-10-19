@@ -1,5 +1,6 @@
 #ifndef TESTS_H
 #define TESTS_H
+#include <QtCore>
 
 class Climate;
 class Tests
@@ -16,6 +17,7 @@ public:
     void multipleLightRuns(const QString &fileName);
     void testWater();
     void testCSVFile();
+    void testXml();
     private:
     QString dumpTreeList();
     QObject *mParent;

@@ -29,6 +29,7 @@ public:
     const QRectF &boundingBox() const { return mBoundingBox; }
     double area() const { return mPixelCount*100; } ///< get the resuorce unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
+    double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
 
     // actions
     /// returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.

@@ -40,6 +40,7 @@ class Climate
 public:
     Climate();
     void setup(); ///< setup routine that opens database connection
+    bool isSetup() const { return mIsSetup; }
     // activity
     void nextYear();
     // access to climate data
@@ -58,6 +59,7 @@ public:
     double daylength_h(const int doy) const { return sun().daylength(doy); } ///< length of the day in hours
 
 private:
+    bool mIsSetup;
     Sun mSun; ///< class doing solar radiation calculations
     void load(); ///< load mLoadYears years from database
     void setupPhenology(); ///< setup of phenology groups

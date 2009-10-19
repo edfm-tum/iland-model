@@ -123,7 +123,8 @@ bool XmlHelper::valueBool(const QString &path, const bool defaultValue) const
     if (e.isNull()) {
         qDebug() << "Warning: xml: node" << path << "is not present.";
         return defaultValue;
-    } QString v = e.text();
+    }
+    QString v = e.text();
     if (v=="true" || v=="True" || v=="1")
         return true;
     else
@@ -173,6 +174,21 @@ QDomElement XmlHelper::node(const QString &path) const
     }
     //qDebug() << "node-request:" << path;
     return c;
+}
+
+// writers
+bool XmlHelper::setNodeValue(QDomElement &node, const QString &value)
+{
+    if (!node.isNull() && node.hasChildNodes()) {
+        node.firstChild().toText().setData(value);
+        return true;
+    }
+    return false;
+}
+bool XmlHelper::setNodeValue(const QString &path, const QString &value)
+{
+    QDomElement e = node(path);
+    return setNodeValue(e,value);
 }
 
 // private recursive loop

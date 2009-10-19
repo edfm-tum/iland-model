@@ -700,7 +700,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "2:kill trees\n3: climate\n4: multiple light automation\n" \
                                         "5: species response\n" \
                                         "6: watercycle\n" \
-                                        "7: CSV File", 0);
+                                        "7: CSV File\n" \
+                                        "8: Xml setters", 0);
         switch (which) {
             case 0: t.speedOfExpression();break;
             case 1: t.clearTrees(); break;
@@ -710,6 +711,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
             case 5: t.climateResponse(); break;
             case 6: t.testWater(); break;
             case 7: t.testCSVFile(); break;
+            case 8: t.testXml(); break;
 
         }
         return;

@@ -41,6 +41,7 @@ Climate::Climate()
     mLoadYears = 1;
     mInvalidDay.day=mInvalidDay.month=mInvalidDay.year=-1;
     mBegin = mEnd = 0;
+    mIsSetup = false;
 }
 
 
@@ -103,6 +104,7 @@ void Climate::setup()
     // setup sun
     mSun.setup(Model::settings().latitude);
     mCurrentYear--; // go to "-1" -> the first call to next year will go to year 0.
+    mIsSetup = true;
 }
 
 

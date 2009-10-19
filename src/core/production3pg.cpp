@@ -78,7 +78,7 @@ double Production3PG::calculate()
     // global value set?
     double dbg = GlobalSettings::instance()->settings().paramValue("gpp_per_year",0);
     if (dbg) {
-        year_raw_gpp = dbg ;
+        year_raw_gpp = dbg;
         mRootFraction = 0.4;
     }
 

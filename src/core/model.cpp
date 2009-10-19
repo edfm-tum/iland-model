@@ -214,7 +214,6 @@ void Model::loadProject()
     mSettings.print();
 
     // (1) SpeciesSets: currently only one a global species set.
-    QString speciesTableName = xml.value("model.species.source", "species");
     SpeciesSet *speciesSet = new SpeciesSet();
     mSpeciesSets.push_back(speciesSet);
 
@@ -266,7 +265,8 @@ void Model::beforeRun()
     {
     DebugTimer loadclim("load climate");
     foreach(Climate *c, mClimates)
-        c->setup();
+        if (!c->isSetup())
+            c->setup();
 
     }
 

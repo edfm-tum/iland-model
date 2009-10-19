@@ -12,6 +12,8 @@
 #include "speciesresponse.h"
 #include "watercycle.h"
 #include "csvfile.h"
+#include "xmlhelper.h"
+#include "environment.h"
 
 //
 #include "standloader.h"
@@ -23,6 +25,21 @@ Tests::Tests(QObject *wnd)
 
 }
 
+
+void Tests::testXml()
+{
+    XmlHelper xml( GlobalSettings::instance()->settings().node("model.species") );
+    qDebug() << xml.value("source");
+    QDomElement e = xml.node("source");
+    xml.setNodeValue(e, "chief wiggum");
+    qDebug() <<  xml.value("source"); // should print chief wiggum
+    xml.setNodeValue("model.species.source","species");
+    qDebug() << "and back:" << xml.value("source");
+
+    // Test of environment
+    Environment environment;
+    environment.loadFromFile(GlobalSettings::instance()->path("envtest.txt"));
+}
 
 void Tests::speedOfExpression()
 {

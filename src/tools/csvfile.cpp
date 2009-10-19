@@ -103,7 +103,7 @@ bool CSVFile::loadFile(const QString &fileName)
     return loadFromString(content);
 }
 
-QVariant CSVFile::value(const int row, const int col)
+QVariant CSVFile::value(const int row, const int col) const
 {
     if (mStreamingMode)
         return QVariant();
@@ -138,3 +138,12 @@ bool CSVFile::openFile(const QString &fileName)
     mStreamingMode = true;
     return false;
 }
+
+QStringList CSVFile::column(const int col) const
+{
+    QStringList result;
+    for (int row=0;row<rowCount();row++)
+        result+=value(row,col).toString();
+    return result;
+}
+
