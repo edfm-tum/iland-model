@@ -468,13 +468,13 @@ void Tree::grow()
     double gpp = raw_gpp * aging_factor; //
     d.NPP = gpp * 0.47; // respiration loss, cf. Waring et al 1998.
 
-    DBGMODE(
+    //DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
             dumpList(out); // add tree headers
             out << mLightResponse << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
         }
-    ); // DBGMODE()
+    //); // DBGMODE()
     if (d.NPP>0.)
         partitioning(d); // split npp to compartments and grow (diameter, height)
 
@@ -577,7 +577,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
         grow_diameter(d);
     }
 
-    DBGMODE(
+    //DBGMODE(
      if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition)
          && isDebugging() ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreePartition);
@@ -586,7 +586,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
                     << delta_foliage << net_woody << delta_root << mNPPReserve << net_stem << d.stress_index;
      }
 
-    ); // DBGMODE()
+    //); // DBGMODE()
     //DBGMODE(
       if (mWoodyMass<0. || mWoodyMass>10000 || mFoliageMass<0. || mFoliageMass>1000. || mCoarseRootMass<0. || mCoarseRootMass>10000
          || mNPPReserve>2000.) {
