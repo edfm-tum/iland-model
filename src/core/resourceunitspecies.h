@@ -18,9 +18,12 @@ public:
     const ResourceUnit *ru() const { return mRU; } ///< return pointer to resource unit
     const Production3PG &prod3PG() const { return m3PG; } ///< the 3pg production model of this speies x resourceunit
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
-    StandStatistics &statisticsDead() { return mStatisticsDead; } ///< statistics of this species on the resourceunit
+    StandStatistics &statisticsDead() { return mStatisticsDead; } ///< statistics of died trees
+    StandStatistics &statisticsMgmt() { return mStatisticsMgmt; } ///< statistics of removed trees
     const StandStatistics &constStatistics() const { return mStatistics; } ///< const accessor
     const StandStatistics &constStatisticsDead() const { return mStatisticsDead; } ///< const accessor
+    const StandStatistics &constStatisticsMgmt() const { return mStatisticsMgmt; } ///< const accessor
+
     void updateGWL();
     double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3)
     // action
@@ -30,6 +33,7 @@ private:
     double mRemovedGrowth; ///< m3 volume of trees removed/managed (to calculate GWL)
     StandStatistics mStatistics; ///< statistics of a species on this resource unit
     StandStatistics mStatisticsDead; ///< statistics of died trees (this year) of a species on this resource unit
+    StandStatistics mStatisticsMgmt; ///< statistics of removed trees (this year) of a species on this resource unit
     Production3PG m3PG; ///< NPP prodution unit of this species
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
     Species *mSpecies; ///< speices

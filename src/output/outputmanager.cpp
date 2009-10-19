@@ -12,6 +12,7 @@
 #include "treeout.h"
 #include "standout.h"
 #include "standdeadout.h"
+#include "managementout.h"
 #include "dynamicstandout.h"
 #include "productionout.h"
 
@@ -26,6 +27,7 @@ OutputManager::OutputManager()
     mOutputs.append(new DynamicStandOut);
     mOutputs.append(new ProductionOut);
     mOutputs.append(new StandDeadOut);
+    mOutputs.append(new ManagementOut);
 
 }
 

@@ -57,7 +57,8 @@ SOURCES += main.cpp \
     ../tools/csvfile.cpp \
     ../tools/scriptglobal.cpp \
     ../output/standdeadout.cpp \
-    ../core/environment.cpp
+    ../core/environment.cpp \
+    ../output/managementout.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -102,7 +103,8 @@ HEADERS += mainwindow.h \
     ../tools/csvfile.h \
     ../tools/scriptglobal.h \
     ../output/standdeadout.h \
-    ../core/environment.h
+    ../core/environment.h \
+    ../output/managementout.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
 QMAKE_EXTRA_TARGETS += revtarget

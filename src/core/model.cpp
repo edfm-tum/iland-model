@@ -290,26 +290,37 @@ void Model::runYear()
     foreach(Climate *c, mClimates)
         c->nextYear();
 
+    // reset statistics
+    foreach(ResourceUnit *ru, mRU)
+        ru->newYear();
+
+    // management
+    if (mManagement)
+        mManagement->run();
+
     // process a cycle of individual growth
     Tree::setGrid(mGrid, mHeightGrid);
     applyPattern(); // create Light Influence Patterns
     readPattern(); // readout light state of individual trees
     grow(); // let the trees grow (growth on stand-level, tree-level, mortality)
 
-    // management
-    if (mManagement)
-        mManagement->run();
+    // calculate statistics
+    foreach(ResourceUnit *ru, mRU)
+        ru->yearEnd();
 
     // create outputs
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree");
-    om->execute("stand");
-    om->execute("production_month");
+    om->execute("stand"); //resource unit level x species
+    om->execute("production_month"); // 3pg responses growth per species x RU x month
     om->execute("dynamicstand");
-    om->execute("standdead");
+    om->execute("standdead"); // resource unit level x species
+    om->execute("management"); // resource unit level x species
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
+
+
 
 void Model::afterStop()
 {
@@ -318,7 +329,6 @@ void Model::afterStop()
 
 ResourceUnit* nc_applyPattern(ResourceUnit *unit)
 {
-    unit->newYear(); // reset state of some variables
 
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator tend = unit->trees().end();
@@ -374,7 +384,6 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
         (*tit).grow(); // actual growth of individual trees
     }
-    unit->yearEnd();
     return unit;
 }
 

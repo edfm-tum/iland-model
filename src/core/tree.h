@@ -36,6 +36,7 @@ public:
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
     // actions
     void die(TreeGrowthData *d=0); ///< kills the tree.
+    void remove(); ///< remove the tree (management)
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
 
     // setters for initialization

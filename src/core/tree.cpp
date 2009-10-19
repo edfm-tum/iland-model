@@ -679,13 +679,18 @@ inline double Tree::relative_height_growth()
     return hd_ratio;
 }
 
-/** This function is called if a tree dies or is removed (management).
-  @sa ResourceUnit::cleanTreeList()
-*/
+/** This function is called if a tree dies.
+  @sa ResourceUnit::cleanTreeList(), remove() */
 void Tree::die(TreeGrowthData *d)
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     mRU->resourceUnitSpecies(species()).statisticsDead().add(this, d); // add tree to statistics
+}
+
+void Tree::remove()
+{
+    setFlag(Tree::TreeDead, true); // set flag that tree is dead
+    mRU->resourceUnitSpecies(species()).statisticsMgmt().add(this, 0);
 }
 
 void Tree::mortality(TreeGrowthData &d)

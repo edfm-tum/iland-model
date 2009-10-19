@@ -92,12 +92,14 @@ void ResourceUnit::cleanTreeList()
     ++last; // last points now to the first dead tree
 
     // free ressources
-    mTrees.erase(last, mTrees.end());
-    if (mTrees.capacity()>100) {
-        if (mTrees.count() / double(mTrees.capacity()) < 0.2) {
-            int target_size = mTrees.count()*2;
-            qDebug() << "reduce size from "<<mTrees.capacity() << "to" << target_size;
-            mTrees.reserve(qMax(target_size, 100));
+    if (last!=mTrees.end()) {
+        mTrees.erase(last, mTrees.end());
+        if (mTrees.capacity()>100) {
+            if (mTrees.count() / double(mTrees.capacity()) < 0.2) {
+                int target_size = mTrees.count()*2;
+                qDebug() << "reduce size from "<<mTrees.capacity() << "to" << target_size;
+                mTrees.reserve(qMax(target_size, 100));
+            }
         }
     }
 }
@@ -110,9 +112,16 @@ void ResourceUnit::newYear()
     mEffectiveArea = 0.;
     mPixelCount = mStockedPixelCount = 0;
     // clear statistics global and per species...
+    ResourceUnitSpecies *i;
+    QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
+    mStatistics.clear();
+    for (i=mRUSpecies.begin(); i!=iend; ++i) {
+        i->statistics().clear();
+        i->statisticsDead().clear();
+        i->statisticsMgmt().clear();
+    }
+
 }
-
-
 
 /** production() is the "stand-level" part of the biomass production (3PG).
     - The amount of radiation intercepted by the stand is calculated
@@ -122,7 +131,6 @@ void ResourceUnit::production()
 
     if (mAggregatedWLA==0 || mPixelCount==0) {
         // nothing to do...
-        mStatistics.clear();
         return;
     }
 
@@ -155,14 +163,11 @@ void ResourceUnit::production()
     }
 
     // invoke species specific calculation (3PG)
-    //QVector<ResourceUnitSpecies>::iterator i;
     ResourceUnitSpecies *i;
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
-    mStatistics.clear();
+
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         i->calculate();
-        i->statistics().clear();
-        i->statisticsDead().clear();
         qDebug() << "species" << (*i).species()->id() << "raw_gpp_m2" << i->prod3PG().GPPperArea();
     }
 }
@@ -184,7 +189,8 @@ void ResourceUnit::yearEnd()
     int c = mRUSpecies.count();
     for (int i=0;i<c; i++) {
         mRUSpecies[i].statisticsDead().calculate(); // calculate the dead trees
-        mRUSpecies[i].updateGWL(); // get sum od dead trees
+        mRUSpecies[i].statisticsMgmt().calculate(); // stats of removed trees
+        mRUSpecies[i].updateGWL(); // get sum of dead trees (died + removed)
         mRUSpecies[i].statistics().calculate(); // calculate the living (and add removed volume to gwl)
         mStatistics.add(mRUSpecies[i].statistics());
     }
@@ -199,6 +205,7 @@ void ResourceUnit::createStandStatistics()
     for (int i=0;i<mRUSpecies.count();i++) {
         mRUSpecies[i].statistics().clear();
         mRUSpecies[i].statisticsDead().clear();
+        mRUSpecies[i].statisticsMgmt().clear();
     }
 
     // add all trees to the statistics objects of the species

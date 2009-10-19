@@ -91,7 +91,7 @@ void Management::remain(int number)
     qDebug() << trees.count() << " standing, targetsize" << number << ", hence " << to_kill << "trees to remove";
     for (int i=0;i<to_kill;i++) {
         int index = irandom(0, trees.count());
-        trees[index]->die();
+        trees[index]->remove();
         trees.removeAt(index);
     }
     mRemoved += to_kill;
@@ -101,7 +101,7 @@ void Management::remain(int number)
 void Management::kill()
 {
     for (int i=0;i<mTrees.count();i++)
-        mTrees[i].first->die();
+        mTrees[i].first->remove();
     mTrees.clear();
 }
 
@@ -120,7 +120,7 @@ int Management::kill(int pctfrom, int pctto, int number)
     if (index_to-index_from <= number)  {
         // kill all
         for (i=index_from; i<index_to; i++)
-            mTrees.at(i).first->die();
+            mTrees.at(i).first->remove();
         count = index_to - index_from;
     } else {
         // kill randomly the provided number
@@ -137,7 +137,7 @@ int Management::kill(int pctfrom, int pctto, int number)
             }
             cancel = 1000;
             number--;
-            mTrees[rnd_index].first->die();
+            mTrees[rnd_index].first->remove();
         }
     }
     qDebug() << count << "removed.";
