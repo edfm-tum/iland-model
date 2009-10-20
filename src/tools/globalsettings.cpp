@@ -317,6 +317,7 @@ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &proje
     mFilePath.insert("temp", path(xml.value("temp", "temp"), "home"));
     mFilePath.insert("log", path(xml.value("log", "log"), "home"));
     mFilePath.insert("script", path(xml.value("script", "script"), "home"));
+    mFilePath.insert("init", path(xml.value("script", "script"), "init"));
     qDebug() << "current File Paths:" << mFilePath;
 }
 
