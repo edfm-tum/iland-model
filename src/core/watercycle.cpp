@@ -15,8 +15,8 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mRU = ru;
     // get values...
     mFieldCapacity = 0.; // on top
-
-    mSoilDepth = Model::settings().waterholdingCapacity * 10; // convert from cm to mm
+    const XmlHelper &xml=GlobalSettings::instance()->settings();
+    mSoilDepth = xml.valueDouble("model.site.soilDepth", 0.) * 10; // convert from cm to mm
     mCanopy.setup();
     mPsi_koeff_b = -3;
     mPsi_ref = -0.35; // kPa

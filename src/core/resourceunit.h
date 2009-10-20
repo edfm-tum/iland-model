@@ -8,6 +8,10 @@
 class SpeciesSet;
 class Climate;
 class WaterCycle;
+struct ResourceUnitVariables
+{
+    double nitrogenAvailable; ///< nitrogen content (kg/m2/year)
+};
 
 class ResourceUnit
 {
@@ -23,6 +27,7 @@ public:
     const QVector<ResourceUnitSpecies> ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
+    const ResourceUnitVariables &resouceUnitVariables() const { return mUnitVariables; } ///< access to variables that are specific to resourceUnit (e.g. nitrogenAvailable)
 
     // properties
     int index() const { return mIndex; }
@@ -75,6 +80,7 @@ private:
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees
     double mStockedArea; ///< size of stocked area
     StandStatistics mStatistics; ///< aggregate values on stand value
+    ResourceUnitVariables mUnitVariables;
 
     friend class RUWrapper;
 };

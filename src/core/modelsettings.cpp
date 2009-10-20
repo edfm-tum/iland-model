@@ -20,10 +20,6 @@ void ModelSettings::loadModelSettings()
     heatCapacityAir = xml.valueDouble("heatCapacityAir", 1012);
 
 
-    XmlHelper site(GlobalSettings::instance()->settings().node("model.site"));
-    nitrogenAvailable = site.valueDouble("availableNitrogen", 40);
-    waterholdingCapacity = site.valueDouble("soilDepth", 100);
-
     XmlHelper world(GlobalSettings::instance()->settings().node("model.world"));
     latitude = RAD(world.valueDouble("latitude",48.));
 }
@@ -42,8 +38,6 @@ void ModelSettings::print()
     set << QString("heatCapacityAir=%1").arg(heatCapacityAir);
 
     set << QString("latitude=%1").arg(GRAD(latitude));
-    set << QString("availableNitrogen=%1").arg(nitrogenAvailable);
-    set << QString("waterholdingCapacity=%1").arg(waterholdingCapacity);
 
     qDebug() << set.join("\n");
 }

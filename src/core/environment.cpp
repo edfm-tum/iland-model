@@ -28,6 +28,10 @@ bool Environment::loadFromFile(const QString &fileName)
     return loadFromString(source);
 }
 
+// ******** specific keys *******
+const QString speciesKey = "model.species.source";
+const QString climateKey = "model.climate.tableName";
+
 bool Environment::loadFromString(const QString &source)
 {
     try {
@@ -42,6 +46,8 @@ bool Environment::loadFromString(const QString &source)
         mSpeciesSets.clear(); // note: the objects are not destroyed - potential memory leak.
         mClimate.clear();
         mRowCoordinates.clear();
+        mCreatedObjects.clear();
+
         int index;
         // setup coordinates (x,y)
         int ix,iy;
@@ -56,9 +62,7 @@ bool Environment::loadFromString(const QString &source)
             mRowCoordinates[key] = row;
         }
 
-        // ******** specific keys *******
-        const QString speciesKey = "model.species.source";
-        const QString climateKey = "model.climate.tableName";
+
 
         // ******** setup of Species Sets *******
         if ((index = mKeys.indexOf(speciesKey))>-1) {
@@ -72,6 +76,7 @@ bool Environment::loadFromString(const QString &source)
                 SpeciesSet *set = new SpeciesSet();
                 set->setup();
                 mSpeciesSets.push_back(set);
+                mCreatedObjects[name] = (void*)set;
             }
             qDebug() << mSpeciesSets.count() << "species sets created.";
         }
@@ -88,6 +93,7 @@ bool Environment::loadFromString(const QString &source)
                 Climate *climate = new Climate();
                 climate->setup();
                 mClimate.push_back(climate);
+                mCreatedObjects[name]=(void*)climate;
             }
             qDebug() << mClimate.count() << "climates created";
         }
@@ -101,20 +107,12 @@ bool Environment::loadFromString(const QString &source)
     }
 }
 
-Climate *Environment::climate()
-{
-
-}
-
-SpeciesSet *Environment::speciesSet()
-{
-
-}
 
 void Environment::setPosition(const QPointF position)
 {
-    if (!mInfile)
-        throw IException("Environment:setposition: input file not loaded.");
+    // no changes occur, when the "environment" is not loaded
+    if (!isSetup())
+        return;
 
     int ix, iy;
     ix = int(position.x() / 100.); // suppose size of 1 ha for each coordinate
@@ -126,11 +124,17 @@ void Environment::setPosition(const QPointF position)
         QString value;
         qDebug() << "settting up point" << position << "with row" << row;
         for (int col=0;col<mInfile->colCount(); col++) {
-            if (mKeys[col]=="x" || mKeys[col]=="y")
+            if (mKeys[col]=="x" || mKeys[col]=="y") // ignore "x" and "y" keys
                 continue;
             value = mInfile->value(row,col).toString();
             qDebug() << "set" << mKeys[col] << "to" << value;
             xml.setNodeValue(mKeys[col], value);
+            // special handling for constructed objects:
+            if (mKeys[col]==speciesKey)
+                mCurrentSpeciesSet = (SpeciesSet*)mCreatedObjects[value];
+            if (mKeys[col]==climateKey)
+                mCurrentClimate = (Climate*)mCreatedObjects[value];
+
         }
 
     } else

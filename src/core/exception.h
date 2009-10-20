@@ -1,7 +1,7 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 #include <stdexcept>
-
+#include <QtCore/QString>
 /** Exception IException is the iLand model exception class.
     The class uses a string to store exception messages.
   */

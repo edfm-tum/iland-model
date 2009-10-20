@@ -16,67 +16,91 @@ QStringList picusSpeciesIds = QStringList() << "0" << "1" << "17";
 QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
 
 
+void StandLoader::loadForUnit()
+{
 
+}
+
+void StandLoader::copyTrees()
+{
+    // we assume that all stands are equal, so wie simply COPY the trees and modify them afterwards
+    const Grid<ResourceUnit*> &ruGrid=mModel->RUgrid();
+    ResourceUnit **p = ruGrid.begin();
+    if (!p)
+        throw IException("Standloader: invalid resource unit pointer!");
+    ++p; // skip the first...
+    const QVector<Tree> &tocopy = mModel->ru()->trees();
+    for (; p!=ruGrid.end(); ++p) {
+        QRectF rect = (*p)->boundingBox();
+        foreach(const Tree& tree, tocopy) {
+            Tree &newtree = (*p)->newTree();
+            newtree = tree; // copy tree data...
+            newtree.setPosition(tree.position()+(*p)->boundingBox().topLeft());
+            newtree.setRU(*p);
+            newtree.setNewId();
+        }
+    }
+    qDebug() << Tree::statCreated() << "trees loaded / copied.";
+}
 
 void StandLoader::processInit()
 {
     GlobalSettings *g = GlobalSettings::instance();
     XmlHelper xml(g->settings().node("model.initialization"));
 
-    bool for_each_ru = xml.valueBool("foreach");
-
-    QString mode = xml.value("type", ""); // now only "picus"
+    QString copy_mode = xml.value("mode", "copy");
+    QString type = xml.value("type", "");
     QString  fileName = xml.value("file", "");
-    if (!QFile::exists(fileName))
-        throw IException(QString("File %1 does not exist!").arg(fileName));
 
     Tree::resetStatistics();
-    if (for_each_ru) {
-        loadFromPicus(fileName); // load in initial grid cell
-        // we assume that all stands are equal, so wie simply COPY the trees and modify them afterwards
-        const Grid<ResourceUnit*> &ruGrid=mModel->RUgrid();
-        ResourceUnit **p = ruGrid.begin();
-        if (!p)
-            throw IException("Standloader: invalid resource unit pointer!");
-        ++p; // skip the first...
-        const QVector<Tree> &tocopy = mModel->ru()->trees();
-        for (; p!=ruGrid.end(); ++p) {
-            QRectF rect = (*p)->boundingBox();
-            foreach(const Tree& tree, tocopy) {
-                Tree &newtree = (*p)->newTree();
-                newtree = tree; // copy tree data...
-                newtree.setPosition(tree.position()+(*p)->boundingBox().topLeft());
-                newtree.setRU(*p);
-                newtree.setNewId();
-            }
-            //(*p)->trees()
-            // loadFromPicus(fileName, rect.topLeft(), *p); -> do that for differing stands
-            // copy
-        }
-        qDebug() << Tree::statCreated() << "trees loaded.";
-    } else {
-        // only one stand:
-        loadFromPicus(fileName);
+
+    // one global init-file for the whole area:
+    if (copy_mode=="single")
+        loadInitFile(fileName, type);
+        return;
+
+    // copy trees from first unit to all other units:
+    if (copy_mode=="copy") {
+        loadInitFile(fileName, type);
+        copyTrees();
+        return;
     }
 
+    // call a single tree init for each resource unit
+    if (copy_mode=="unit") {
+    }
+    throw IException("StandLoader::processInit: invalid initalization.mode!");
+}
+
+void StandLoader::evaluateDebugTrees()
+{
     // evaluate debugging
     QString dbg_str = GlobalSettings::instance()->settings().paramValueString("debug_tree");
     if (!dbg_str.isEmpty()) {
        TreeWrapper tw;
        Expression dexp(dbg_str, &tw); // load expression dbg_str and enable external model variables
-        //double *pid = dexp.addVar("id"); // binding
-        //double *pru = dexp.addVar("ru"); // binding
         AllTreeIterator at(GlobalSettings::instance()->model());
         double result;
         while (Tree *t = at.next()) {
             tw.setTree(t);
-            //*pid = t->id();
-            //*pru = t->ru()->index();
             result = dexp.execute();
             if (result)
                 t->enableDebugging();
         }
     }
+}
+
+void StandLoader::loadInitFile(const QString &fileName, const QString &type, QPointF offset, ResourceUnit *ru)
+{
+    if (!QFile::exists(fileName))
+        throw IException(QString("StandLoader::loadInitFile: File %1 does not exist!").arg(fileName));
+
+    if (type=="picus")
+        return loadFromPicus(fileName, offset, ru);
+    if (type=="iland")
+        return;
+
+    throw IException("StandLoader::loadInitFile: unknown initalization.type!");
 }
 
 void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, ResourceUnit *ru)

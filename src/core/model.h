@@ -13,6 +13,7 @@ class ResourceUnit;
 class SpeciesSet;
 class Management;
 class Climate;
+class Environment;
 
 struct HeightGridValue
 {
@@ -78,6 +79,7 @@ private:
     FloatGrid *mGrid;
     HeightGrid *mHeightGrid;
     Management *mManagement;
+    Environment *mEnvironment;
 };
 
 class Tree;

@@ -35,6 +35,9 @@ ResourceUnit::ResourceUnit(const int index)
 void ResourceUnit::setup()
 {
     mWater->setup(this);
+    // setup variables
+    mUnitVariables.nitrogenAvailable = GlobalSettings::instance()->settings().valueDouble("model.site.availableNitrogen", 40);
+
 }
 
 /// set species and setup the species-per-RU-data

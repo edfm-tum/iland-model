@@ -5,6 +5,7 @@
 #include "model.h"
 
 #include "xmlhelper.h"
+#include "environment.h"
 #include "helper.h"
 #include "resourceunit.h"
 #include "climate.h"
@@ -26,8 +27,7 @@
   while (Tree *tree = trees.next()) { // returns NULL when finished.
      tree->something(); // do something
   }
-  @endcode
-  */
+  @endcode  */
 Tree *AllTreeIterator::next()
 {
 
@@ -80,7 +80,6 @@ Model::~Model()
 }
 
 /** Initial setup of the Model.
-
   */
 void Model::initialize()
 {
@@ -89,7 +88,7 @@ void Model::initialize()
    mGrid = 0;
    mHeightGrid = 0;
    mManagement = 0;
-    //
+   mEnvironment = 0;
 }
 
 /** sets up the simulation space.
@@ -102,7 +101,6 @@ void Model::setupSpace()
     double height = xml.value("height", "100").toDouble();
     double buffer = xml.value("buffer", "50").toDouble();
     qDebug() << QString("setup of the world: %1x%2m with cell-size=%3m and %4m buffer").arg(width).arg(height).arg(cellSize).arg(buffer);
-
 
     QRectF total_grid(QPointF(-buffer, -buffer), QPointF(width+buffer, height+buffer));
     qDebug() << "setup grid rectangle:" << total_grid;
@@ -117,28 +115,25 @@ void Model::setupSpace()
     mHeightGrid->wipe();
     Tree::setGrid(mGrid, mHeightGrid);
 
+
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();
     if (xml.valueBool("resourceUnitsAsGrid")) {
-        mRUmap.setup(QRectF(0., 0., width, height),100.);
-        ResourceUnit **p=mRUmap.begin();
-        ResourceUnit *new_ru;
-        mRU.first()->setBoundingBox(QRectF(0., 0., 100., 100.)); // the first
-        *p = mRU.first(); // store first RU in grid.
-        SpeciesSet *species_set = (*p)->speciesSet(); // copy the species sets
-        Climate *clim = const_cast<Climate*>((*p)->climate()); // copy the climate
-        p++; // no need to create the first...
-        int ru_index = 1;
-        for (; p!=mRUmap.end(); ++p) {
+        mRUmap.setup(QRectF(0., 0., width, height),100.); // Grid, that holds positions of resource units
+        ResourceUnit **p=mRUmap.begin(); // ptr to ptr!
+        ResourceUnit *new_ru; // ptr to ptr!
+        int ru_index = 0;
+        for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-            new_ru = new ResourceUnit(ru_index++);
-            new_ru->setSpeciesSet(species_set);
-            new_ru->setClimate(clim);
+            mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
+            new_ru = new ResourceUnit(ru_index++); // create resource unit
+            new_ru->setClimate( mEnvironment->climate() );
+            new_ru->setSpeciesSet( mEnvironment->speciesSet() );
             new_ru->setup();
-            mRU.append(new_ru); // store in list
             new_ru->setBoundingBox(r);
+            mRU.append(new_ru);
         }
-        ru_index=0;
+
         // now store the pointers in the grid.
         // Important: This has to be done after the mRU-QList is complete - otherwise pointers would
         // point to invalid memory when QList's memory is reorganized (expanding)
@@ -182,10 +177,13 @@ void Model::clear()
         delete mHeightGrid;
     if (mManagement)
         delete mManagement;
+    if (mEnvironment)
+        delete mEnvironment;
 
     mGrid = 0;
     mHeightGrid = 0;
     mManagement = 0;
+    mEnvironment = 0;
 
     qDebug() << "Model ressources freed.";
 }
@@ -213,25 +211,33 @@ void Model::loadProject()
     mSettings.loadModelSettings();
     mSettings.print();
 
-    // (1) SpeciesSets: currently only one a global species set.
-    SpeciesSet *speciesSet = new SpeciesSet();
-    mSpeciesSets.push_back(speciesSet);
+    // load environment (multiple climates, speciesSets, ...
+    if (mEnvironment)
+        delete mEnvironment;
+    mEnvironment = new Environment();
 
-    speciesSet->setup();
+    if (xml.valueBool("model.world.environmentEnabled", false)) {
+        QString envFile = xml.value("model.world.environmentFile");
+        mEnvironment->loadFromFile(envFile);
+        // retrieve species sets and climates:
+        mSpeciesSets << mEnvironment->speciesSetList();
+        mClimates << mEnvironment->climateList();
+    } else {
+        // load and prepare default values
+        // (2) SpeciesSets: currently only one a global species set.
+        SpeciesSet *speciesSet = new SpeciesSet();
+        mSpeciesSets.push_back(speciesSet);
+        speciesSet->setup();
+        // Climate...
+        Climate *c = new Climate();
+        mClimates.push_back(c);
+        mEnvironment->setDefaultValues(c, speciesSet);
+    } // environment?
 
-    // (2) ResourceUnits (including everything else).
-    ResourceUnit *ru = new ResourceUnit(0);
-    ru->setSpeciesSet(speciesSet);
 
-    // Climate...
-    Climate *c = new Climate();
-    mClimates.push_back(c);
-    ru->setClimate(c);
-
-    ru->setup();
-
-    mRU.push_back(ru);
     setupSpace();
+    if (mRU.isEmpty())
+        throw IException("Setup of Model: no resource units present!");
 
     // (3) additional issues
     // (3.1) management
@@ -249,7 +255,7 @@ ResourceUnit *Model::ru(QPointF &coord)
 {
     if (!mRUmap.isEmpty() && mRUmap.coordValid(coord))
         return mRUmap.valueAt(coord);
-    return ru(); // default RU if only one created
+    return ru(); // default RU if there is only one
 }
 
 void Model::beforeRun()

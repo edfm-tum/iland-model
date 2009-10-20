@@ -99,7 +99,7 @@ void SpeciesResponse::calculate()
         mSoilWaterResponseYear /= pheno.vegetationPeriodLength();
 
     const double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year
-    const double nitrogen =  Model::settings().nitrogenAvailable;
+    const double nitrogen = mRu->resouceUnitVariables().nitrogenAvailable;
 
     // Nitrogen response: a yearly value based on available nitrogen
     mNitrogenResponse = mSpecies->nitrogenResponse( nitrogen );

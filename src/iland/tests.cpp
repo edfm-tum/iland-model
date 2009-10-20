@@ -14,6 +14,7 @@
 #include "csvfile.h"
 #include "xmlhelper.h"
 #include "environment.h"
+#include "exception.h"
 
 //
 #include "standloader.h"
@@ -39,6 +40,19 @@ void Tests::testXml()
     // Test of environment
     Environment environment;
     environment.loadFromFile(GlobalSettings::instance()->path("envtest.txt"));
+    try {
+        environment.setPosition(QPointF(34,10)); // 0/0
+        environment.setPosition(QPointF(150,10)); // 1/0
+        environment.setPosition(QPointF(250,10)); // 2/0
+        Climate *c = environment.climate();
+        SpeciesSet *s = environment.speciesSet();
+        qDebug() << s->count();
+        qDebug() << c->daylength_h(160);
+        environment.setPosition(QPointF(20,200)); // 0/2
+        environment.setPosition(QPointF(-34,10)); // exception
+    } catch (const IException &ex) {
+        qDebug() << ex.toString();
+    }
 }
 
 void Tests::speedOfExpression()
