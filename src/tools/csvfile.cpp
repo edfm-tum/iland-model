@@ -53,6 +53,10 @@ bool CSVFile::loadFromString(const QString &content)
     for (int i=0;i<mRows.count();i++)
         mRows[i] = mRows[i].trimmed();
 
+    // drop comments (i.e. lines at the beginning that start with '#'
+    while (!mRows.isEmpty() && mRows.front().startsWith('#'))
+        mRows.pop_front();
+
     mSeparator = ";"; // default
     QString first = mRows.first();
     if (!mFlat) {
