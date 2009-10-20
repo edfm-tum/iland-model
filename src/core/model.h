@@ -18,7 +18,14 @@ class Environment;
 struct HeightGridValue
 {
     float height;
-    int count;
+    int count() const { return mCount & 0x0000ffff; } /// get count of trees on pixel
+    void increaseCount() { mCount++; } ///< increase the number of trees on pixel
+    bool isValid() const { return (mCount >> 16)==0; }
+    void setValid(const bool valid) { setBit(mCount, 16, !valid); }
+private:
+
+    int mCount; // the lower 16 bits are to count, the heigher for flags. bit 16: valid (0=valid, 1=outside of project area)
+
 };
 typedef Grid<HeightGridValue> HeightGrid;
 

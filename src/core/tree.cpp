@@ -198,7 +198,7 @@ void Tree::heightGrid()
     QPoint p = QPoint(mPositionIndex.x()/5, mPositionIndex.y()/5); // pos of tree on height grid
 
     // count trees that are on height-grid cells (used for stockable area)
-    mHeightGrid->valueAtIndex(p).count++;
+    mHeightGrid->valueAtIndex(p).increaseCount();
 
     int index_eastwest = mPositionIndex.x() % 5; // 4: very west, 0 east edge
     int index_northsouth = mPositionIndex.y() % 5; // 4: northern edge, 0: southern edge
@@ -317,7 +317,7 @@ void Tree::heightGrid_torus()
     QPoint p = QPoint(mPositionIndex.x()/5, mPositionIndex.y()/5); // pos of tree on height grid
 
     // count trees that are on height-grid cells (used for stockable area)
-    mHeightGrid->valueAtIndex(p).count++;
+    mHeightGrid->valueAtIndex(p).increaseCount();
 
     int index_eastwest = mPositionIndex.x() % 5; // 4: very west, 0 east edge
     int index_northsouth = mPositionIndex.y() % 5; // 4: northern edge, 0: southern edge

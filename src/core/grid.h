@@ -55,6 +55,7 @@ public:
 
     inline T& valueAtIndex(const QPoint& pos); ///< value at position defined by indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return valueAtIndex(QPoint(ix,iy)); } ///< const value at position defined by indices (x,y)
+    T& valueAtIndex(const int index) {return mData[index]; } ///< get a ref ot value at (one-dimensional) index 'index'.
 
     const T& constValueAtIndex(const QPoint& pos) const; ///< value at position defined by a (integer) QPoint
     const T& constValueAtIndex(const int ix, const int iy) const { return constValueAtIndex(QPoint(ix,iy)); }
@@ -319,6 +320,11 @@ QImage gridToImage(const FloatGrid &grid,
                    bool black_white=false,
                    double min_value=0., double max_value=1.,
                    bool reverse=false);
+
+/** load into 'rGrid' the content of the image pointed at by 'fileName'.
+    Pixels are converted to grey-scale and then transformend to a value ranging from 0..1 (black..white).
+  */
+bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid);
 
 /// template version for non-float grids (see also version for FloatGrid)
 template <class T>

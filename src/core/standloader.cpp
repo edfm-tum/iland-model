@@ -164,14 +164,19 @@ void StandLoader::loadFromPicus(const QString &fileName, ResourceUnit *ru)
         dbh = line.section(sep, iBhd, iBhd).toDouble();
         if (dbh<5.)
             continue;
-        Tree &tree = ru->newTree();
+
         QPointF f;
         if (iX>=0 && iY>=0) {
            f.setX( line.section(sep, iX, iX).toDouble() );
            f.setY( line.section(sep, iY, iY).toDouble() );
            f+=offset;
-           tree.setPosition(f);
+
         }
+        // position valid?
+        if (!mModel->heightGrid()->valueAt(f).isValid())
+            continue;
+        Tree &tree = ru->newTree();
+        tree.setPosition(f);
         if (iID>=0)
             tree.setId(line.section(sep, iID, iID).toInt() );
 

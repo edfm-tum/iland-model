@@ -72,4 +72,11 @@ inline int limit(const int value, const int lower, const int upper)
 {
     return qMax(qMin(value, upper), lower);
 }
+inline void setBit(int &rTarget, const int bit, const bool value)
+{
+    if (value)
+        rTarget |= (1 << bit);  // set bit
+    else
+        rTarget &= ( (1 << bit) ^ 0xffffff ); // clear bit
+}
 #endif // GLOBAL_H

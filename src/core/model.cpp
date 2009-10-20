@@ -112,7 +112,7 @@ void Model::setupSpace()
     if (mHeightGrid)
         delete mHeightGrid;
     mHeightGrid = new HeightGrid(total_grid, cellSize*5);
-    mHeightGrid->wipe();
+    mHeightGrid->wipe(); // set all to zero
     Tree::setGrid(mGrid, mHeightGrid);
 
 
@@ -132,15 +132,29 @@ void Model::setupSpace()
             new_ru->setup();
             new_ru->setBoundingBox(r);
             mRU.append(new_ru);
+            *p = new_ru; // save also in the RUmap grid
         }
 
         // now store the pointers in the grid.
         // Important: This has to be done after the mRU-QList is complete - otherwise pointers would
         // point to invalid memory when QList's memory is reorganized (expanding)
+        ru_index = 0;
         for (p=mRUmap.begin();p!=mRUmap.end(); ++p) {
             *p = mRU.value(ru_index++);
         }
         qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
+        // setup of the project area mask
+        if (xml.hasNode("areaMask.imageFile")) {
+            // to be extended!!! e.g. to load ESRI-style text files....
+            // setup a grid with the same size as the height grid...
+            FloatGrid tempgrid((int)mHeightGrid->cellsize(), mHeightGrid->sizeX(), mHeightGrid->sizeY());
+            QString fileName = GlobalSettings::instance()->path(xml.value("areaMask.imageFile"));
+            loadGridFromImage(fileName, tempgrid); // fetch from image
+            for (int i=0;i<tempgrid.count(); i++)
+                mHeightGrid->valueAtIndex(i).setValid( tempgrid.valueAtIndex(i)>0.99 );
+            qDebug() << "loaded project area mask from" << fileName;
+        }
+
         // setup the helper that does the multithreading
         threadRunner.setup(mRU);
         threadRunner.setMultithreading(GlobalSettings::instance()->settings().valueBool("system.settings.multithreading"));
@@ -240,7 +254,8 @@ void Model::loadProject()
         throw IException("Setup of Model: no resource units present!");
 
     // (3) additional issues
-    // (3.1) management
+
+    // (3.2) management
     QString mgmtFile = xml.value("model.management.file");
     if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
         mManagement = new Management();
@@ -316,10 +331,10 @@ void Model::runYear()
 
     // create outputs
     OutputManager *om = GlobalSettings::instance()->outputManager();
-    om->execute("tree");
+    om->execute("tree"); // single tree output
     om->execute("stand"); //resource unit level x species
     om->execute("production_month"); // 3pg responses growth per species x RU x month
-    om->execute("dynamicstand");
+    om->execute("dynamicstand"); // output with user-defined columns (based on species x RU)
     om->execute("standdead"); // resource unit level x species
     om->execute("management"); // resource unit level x species
 
@@ -459,7 +474,7 @@ void Model::calculateStockedArea()
         if (mRUmap.coordValid(cp)) {
             ru = mRUmap.valueAt(cp);
             if (ru) {
-                ru->countStockedPixel( (*i).count>0 );
+                ru->countStockedPixel( (*i).count()>0 );
             }
         }
 

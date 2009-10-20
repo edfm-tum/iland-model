@@ -1,5 +1,6 @@
 #include <QtGui>
 #include "grid.h"
+#include "exception.h"
 
 
 QString gridToString(const FloatGrid &grid)
@@ -42,4 +43,19 @@ QImage gridToImage(const FloatGrid &grid,
         //res+="\r\n";
     }
     return res;
+}
+
+bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid)
+{
+    QImage image;
+    if (!image.load(fileName))
+        throw IException(QString("Grid::loadFromImage: could not load image file %1.").arg(fileName));
+    double value;
+    for (int x=0;x<image.width(); x++)
+        for (int y=0;y<image.height(); y++) {
+            value = qGray(image.pixel(x,y))/255.;
+            if (rGrid.isIndexValid(QPoint(x,y)))
+                rGrid.valueAtIndex(x,y) = value;
+        }
+    return true;
 }

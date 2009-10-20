@@ -79,13 +79,14 @@ void ModelController::create()
     if (!canCreate())
         return;
     try {
-    mModel = new Model();
-    mModel->loadProject();
-    // setup outputs
-    GlobalSettings::instance()->outputManager()->setup();
+        DebugTimer::clearAllTimers();
+        mModel = new Model();
+        mModel->loadProject();
+        // setup outputs
+        GlobalSettings::instance()->outputManager()->setup();
 
-    if (mModel->isSetup())
-        mModel->beforeRun();
+        if (mModel->isSetup())
+            mModel->beforeRun();
         GlobalSettings::instance()->clearDebugLists();
     } catch(const IException &e) {
         QString error_msg = e.toString();
