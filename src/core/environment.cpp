@@ -22,7 +22,7 @@ Environment::~Environment()
 
 bool Environment::loadFromFile(const QString &fileName)
 {
-    QString source = Helper::loadTextFile(fileName);
+    QString source = Helper::loadTextFile(GlobalSettings::instance()->path(fileName));
     if (source.isEmpty())
         throw IException(QString("Environment: input file does not exist or is empty (%1)").arg(fileName));
     return loadFromString(source);

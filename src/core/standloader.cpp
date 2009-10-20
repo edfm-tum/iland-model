@@ -9,6 +9,7 @@
 #include "helper.h"
 #include "expression.h"
 #include "expressionwrapper.h"
+#include "environment.h"
 
 #include <QtCore>
 
@@ -43,6 +44,8 @@ void StandLoader::copyTrees()
     qDebug() << Tree::statCreated() << "trees loaded / copied.";
 }
 
+/** main routine of the stand setup.
+*/
 void StandLoader::processInit()
 {
     GlobalSettings *g = GlobalSettings::instance();
@@ -55,9 +58,10 @@ void StandLoader::processInit()
     Tree::resetStatistics();
 
     // one global init-file for the whole area:
-    if (copy_mode=="single")
+    if (copy_mode=="single") {
         loadInitFile(fileName, type);
         return;
+    }
 
     // copy trees from first unit to all other units:
     if (copy_mode=="copy") {
@@ -68,6 +72,16 @@ void StandLoader::processInit()
 
     // call a single tree init for each resource unit
     if (copy_mode=="unit") {
+        foreach( const ResourceUnit *const_ru, g->model()->ruList()) {
+            ResourceUnit *ru = const_cast<ResourceUnit*>(const_ru);
+            // set environment
+            g->model()->environment()->setPosition(ru->boundingBox().center());
+            type = xml.value("type", "");
+            fileName = xml.value("file", "");
+            loadInitFile(fileName, type, ru);
+            qDebug() << "loaded" << fileName << "on" << ru->boundingBox() << "," << ru->trees().count() << "trees.";
+        }
+        return;
     }
     throw IException("StandLoader::processInit: invalid initalization.mode!");
 }
@@ -90,24 +104,29 @@ void StandLoader::evaluateDebugTrees()
     }
 }
 
-void StandLoader::loadInitFile(const QString &fileName, const QString &type, QPointF offset, ResourceUnit *ru)
+void StandLoader::loadInitFile(const QString &fileName, const QString &type, ResourceUnit *ru)
 {
-    if (!QFile::exists(fileName))
-        throw IException(QString("StandLoader::loadInitFile: File %1 does not exist!").arg(fileName));
+    QString pathFileName = GlobalSettings::instance()->path(fileName, "init");
+    if (!QFile::exists(pathFileName))
+        throw IException(QString("StandLoader::loadInitFile: File %1 does not exist!").arg(pathFileName));
 
     if (type=="picus")
-        return loadFromPicus(fileName, offset, ru);
+        return loadFromPicus(pathFileName, ru);
     if (type=="iland")
         return;
 
     throw IException("StandLoader::loadInitFile: unknown initalization.type!");
 }
 
-void StandLoader::loadFromPicus(const QString &fileName, QPointF offset, ResourceUnit *ru)
+void StandLoader::loadFromPicus(const QString &fileName, ResourceUnit *ru)
 {
     if (!ru)
         ru = mModel->ru();
-    SpeciesSet *speciesSet = mModel->ru()->speciesSet(); // of default RU
+    Q_ASSERT(ru!=0);
+
+    QPointF offset = ru->boundingBox().topLeft();
+
+    SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
 
     QString text = Helper::loadTextFile(fileName);
     if (text.isEmpty()) {

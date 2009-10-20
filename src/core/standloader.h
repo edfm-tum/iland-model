@@ -10,10 +10,10 @@ class StandLoader
 public:
     StandLoader(Model *model): mModel(model) {}
     void processInit();
-    void loadFromPicus(const QString &fileName, QPointF offset=QPointF(), ResourceUnit *ru=NULL);
+    void loadFromPicus(const QString &fileName, ResourceUnit *ru=NULL);
 
 private:
-    void loadInitFile(const QString &fileName, const QString &type, QPointF offset=QPointF(), ResourceUnit *ru=NULL);
+    void loadInitFile(const QString &fileName, const QString &type, ResourceUnit *ru=NULL);
     void loadForUnit();
     void copyTrees();
     void evaluateDebugTrees();

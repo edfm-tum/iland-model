@@ -36,6 +36,7 @@ public:
     ResourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }
+    Environment *environment() {return mEnvironment; }
     // global grids
     FloatGrid *grid() { return mGrid; }
     HeightGrid *heightGrid() { return mHeightGrid; }
