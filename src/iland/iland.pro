@@ -58,7 +58,8 @@ SOURCES += main.cpp \
     ../tools/scriptglobal.cpp \
     ../output/standdeadout.cpp \
     ../core/environment.cpp \
-    ../output/managementout.cpp
+    ../output/managementout.cpp \
+    ../tools/sqlhelper.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -104,7 +105,8 @@ HEADERS += mainwindow.h \
     ../tools/scriptglobal.h \
     ../output/standdeadout.h \
     ../core/environment.h \
-    ../output/managementout.h
+    ../output/managementout.h \
+    ../tools/sqlhelper.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
 QMAKE_EXTRA_TARGETS += revtarget

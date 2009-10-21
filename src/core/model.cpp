@@ -3,6 +3,7 @@
   */
 #include "global.h"
 #include "model.h"
+#include "sqlhelper.h"
 
 #include "xmlhelper.h"
 #include "environment.h"
@@ -214,11 +215,10 @@ void Model::loadProject()
     g->clearDatabaseConnections();
     // database connections: reset
     GlobalSettings::instance()->clearDatabaseConnections();
-    // input and output connection
+    // input and climate connection
+    // see initOutputDatabase() for output database
     QString dbPath = g->path( xml.value("system.database.in"), "database");
     GlobalSettings::instance()->setupDatabaseConnection("in", dbPath, true);
-    dbPath = g->path( xml.value("system.database.out"), "database");
-    GlobalSettings::instance()->setupDatabaseConnection("out", dbPath, false);
     dbPath = g->path( xml.value("system.database.climate"), "database");
     GlobalSettings::instance()->setupDatabaseConnection("climate", dbPath, true);
 
@@ -273,6 +273,24 @@ ResourceUnit *Model::ru(QPointF &coord)
     return ru(); // default RU if there is only one
 }
 
+void Model::initOutputDatabase()
+{
+    GlobalSettings *g = GlobalSettings::instance();
+    QString dbPath = g->path(g->settings().value("system.database.out"), "output");
+    // create run-metadata
+    int maxid = SqlHelper::queryValue("select max(id) from runs", g->dbin()).toInt();
+
+    maxid++;
+    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+    SqlHelper::execQuery(QString("insert into runs (id, timestamp) values (%1, '%2')").arg(maxid).arg(timestamp), g->dbin());
+    // replace path information
+    dbPath.replace("$id$", QString::number(maxid));
+    dbPath.replace("$date$", timestamp);
+    // setup final path
+   g->setupDatabaseConnection("out", dbPath, false);
+
+}
+
 void Model::beforeRun()
 {
     // initialize stands
@@ -298,6 +316,9 @@ void Model::beforeRun()
 
     createStandStatistics();
     }
+    // setup output database
+    initOutputDatabase();
+
     // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0

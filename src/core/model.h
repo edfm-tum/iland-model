@@ -62,6 +62,7 @@ public:
 private:
     void initialize(); ///< basic startup without creating a simulation
     void setupSpace(); ///< setup the "world"(spatial grids, ...), create ressource units
+    void initOutputDatabase(); ///< setup output database (run metadata, ...)
 
 
     void applyPattern(); ///< apply LIP-patterns of all trees

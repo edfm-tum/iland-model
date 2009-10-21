@@ -82,11 +82,12 @@ void ModelController::create()
         DebugTimer::clearAllTimers();
         mModel = new Model();
         mModel->loadProject();
+        if (!mModel->isSetup())
+            return;
+
+        mModel->beforeRun();
         // setup outputs
         GlobalSettings::instance()->outputManager()->setup();
-
-        if (mModel->isSetup())
-            mModel->beforeRun();
         GlobalSettings::instance()->clearDebugLists();
     } catch(const IException &e) {
         QString error_msg = e.toString();
