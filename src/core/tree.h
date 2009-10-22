@@ -43,6 +43,7 @@ public:
     void setNewId() { mId = m_nextId++; } ///< force a new id for this object (after copying trees)
     void setId(const int id) { mId = id; } ///< set a spcific ID (if provided in stand init file).
     void setPosition(const QPointF pos) { Q_ASSERT(mGrid!=0); mPositionIndex = mGrid->indexAt(pos); }
+    void setPosition(const QPoint posIndex) { mPositionIndex = posIndex; }
     void setDbh(const float dbh) { mDbh=dbh; }
     void setHeight(const float height) { mHeight=height; }
     void setSpecies(Species *ts) { mSpecies=ts; }

@@ -37,8 +37,8 @@ public:
     double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
 
     // actions
-    /// returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
-    Tree &newTree();
+    Tree &newTree();  ///< returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
+    int newTreeIndex(); ///< returns the index of a newly inserted tree
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
     void addLR(const float LA, const float LightResponse) { mAggregatedLR += LA*LightResponse; }

@@ -20,7 +20,9 @@ QVariant SqlHelper::queryValue(const QString &query, const QSqlDatabase &databas
     return QVariant();
 }
 
-bool SqlHelper::execQuery(const QString &query, const QSqlDatabase &database)
+/** execute 'query' against database 'database'.
+Use for insert, update, ... statements without return values. */
+bool SqlHelper::executeSql(const QString &query, const QSqlDatabase &database)
 {
     QSqlQuery q(database);
     bool success = q.exec(query);

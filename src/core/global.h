@@ -79,4 +79,8 @@ inline void setBit(int &rTarget, const int bit, const bool value)
     else
         rTarget &= ( (1 << bit) ^ 0xffffff ); // clear bit
 }
+inline bool isBitSet(const int value, const int bit)
+{
+    return value & (1 << bit);
+}
 #endif // GLOBAL_H

@@ -282,7 +282,7 @@ void Model::initOutputDatabase()
 
     maxid++;
     QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-    SqlHelper::execQuery(QString("insert into runs (id, timestamp) values (%1, '%2')").arg(maxid).arg(timestamp), g->dbin());
+    SqlHelper::executeSql(QString("insert into runs (id, timestamp) values (%1, '%2')").arg(maxid).arg(timestamp), g->dbin());
     // replace path information
     dbPath.replace("$id$", QString::number(maxid));
     dbPath.replace("$date$", timestamp);

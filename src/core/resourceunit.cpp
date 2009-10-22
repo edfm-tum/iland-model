@@ -70,6 +70,12 @@ Tree &ResourceUnit::newTree()
     mTrees.append(Tree());
     return mTrees.back();
 }
+int ResourceUnit::newTreeIndex()
+{
+    // start simple: just append to the vector...
+    mTrees.append(Tree());
+    return mTrees.count()-1;
+}
 
 /// remove dead trees from tree list
 /// reduce size of vector if lots of space is free

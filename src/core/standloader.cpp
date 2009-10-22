@@ -10,6 +10,7 @@
 #include "expression.h"
 #include "expressionwrapper.h"
 #include "environment.h"
+#include "csvfile.h"
 
 #include <QtCore>
 
@@ -113,7 +114,7 @@ void StandLoader::loadInitFile(const QString &fileName, const QString &type, Res
     if (type=="picus")
         return loadFromPicus(pathFileName, ru);
     if (type=="iland")
-        return;
+        return loadiLandFile(pathFileName, ru);
 
     throw IException("StandLoader::loadInitFile: unknown initalization.type!");
 }
@@ -206,4 +207,138 @@ void StandLoader::loadFromPicus(const QString &fileName, ResourceUnit *ru)
     //qDebug() << "loaded init-file contained" << lines.count() <<"lines.";
     //qDebug() << "lines: " << lines;
 
+}
+
+struct InitFileItem
+{
+    Species *species;
+    int count;
+    double dbh_from, dbh_to;
+    double hd;
+    int age;
+};
+ QVector<InitFileItem> init_items;
+ void executeiLandInit(ResourceUnit *ru);
+void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
+{
+    if (!ru)
+        ru = mModel->ru();
+    Q_ASSERT(ru!=0);
+    SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
+    Q_ASSERT(speciesSet!=0);
+
+    if (!QFile::exists(fileName))
+        throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
+    DebugTimer t("StandLoader::loadiLandFile");
+    CSVFile infile(fileName);
+    int icount = infile.columnIndex("count");
+    int ispecies = infile.columnIndex("species");
+    int idbh_from = infile.columnIndex("dbh_from");
+    int idbh_to = infile.columnIndex("dbh_to");
+    int ihd = infile.columnIndex("hd");
+    int iage = infile.columnIndex("age");
+    if (icount<0 || ispecies<0 || idbh_from<0 || idbh_to<0 || ihd<0 || iage<0)
+        throw IException(QString("load-ini-file: file '%1' containts not all required fields (count, species, dbh_from, dbh_to, hd, age).").arg(fileName));
+
+    init_items.clear(); // init_items: declared as a global
+    InitFileItem item;
+    for (int row=0;row<infile.rowCount();row++) {
+         item.count = infile.value(row, icount).toInt();
+         item.dbh_from = infile.value(row, idbh_from).toDouble();
+         item.dbh_to = infile.value(row, idbh_to).toDouble();
+         item.hd = infile.value(row, ihd).toDouble();
+         item.age = infile.value(row, iage).toInt();
+         item.species = speciesSet->species(infile.value(row, ispecies).toString());
+         if (!item.species) {
+             throw IException(QString("load-ini-file: unknown speices '%1' in file '%2', line %3.")
+                              .arg(infile.value(row, ispecies).toString())
+                              .arg(fileName)
+                              .arg(row));
+         }
+         init_items.push_back(item);
+    }
+    // exeucte the
+    executeiLandInit(ru);
+
+}
+
+// evenlist: tentative order of pixel-indices (within a 5x5 grid) used as tree positions.
+// e.g. 12 = centerpixel, 0: upper left corner, ...
+int evenlist[25] = { 12, 6, 18, 16, 8, 22, 2, 10, 14, 0, 24, 20, 4,
+                     1, 13, 15, 19, 21, 3, 7, 11, 17, 23, 5, 9};
+// sort function
+bool sortPairLessThan(const QPair<int, double> &s1, const QPair<int, double> &s2)
+ {
+     return s1.second < s2.second;
+ }
+void executeiLandInit(ResourceUnit *ru)
+{
+    QPointF offset = ru->boundingBox().topLeft();
+    QPoint offsetIdx = GlobalSettings::instance()->model()->grid()->indexAt(offset);
+
+    // a multimap holds a list for all trees.
+    // key is the index of a 10x10m pixel within the resource unit
+    QMultiMap<int, int> tree_map;
+    QVector<QPair<int, double> > tcount; // counts
+    for (int i=0;i<100;i++)
+        tcount.push_back(QPair<int,double>(i,0.));
+
+    int key;
+    double r;
+    const double exponent = 2.;
+    foreach(const InitFileItem &item, init_items) {
+        for (int i=0;i<item.count;i++) {
+            // create trees
+            r = drandom(); // 0..1
+            key = 99 - int(100 * pow(r, exponent)); // more "hits" for lower indices = higher likelihood to go to pixels with lower basal area
+            key = limit(key, 0, 99);
+            int tree_idx = ru->newTreeIndex();
+            Tree &tree = ru->trees()[tree_idx]; // get reference to modify tree
+            tree.setDbh(nrandom(item.dbh_from, item.dbh_to));
+            tree.setHeight(tree.dbh()/100. * item.hd); // dbh from cm->m, *hd-ratio -> meter height
+            tree.setSpecies(item.species);
+            tree.setAge(item.age);
+            tree.setRU(ru);
+            tree.setup();
+            // key: rank of target pixel
+            // first: index of target pixel
+            // second: sum of target pixel
+            tree_map.insert(tcount[key].first, tree_idx); // store tree in map
+            tcount[key].second+=tree.basalArea(); // aggregate the basal area for each 10m pixel
+            if (i%20==0)
+                qSort(tcount.begin(), tcount.end(), sortPairLessThan);
+        }
+        qSort(tcount.begin(), tcount.end(), sortPairLessThan);
+    }
+
+    int bits, index, pos;
+    int c;
+    QList<int> trees;
+    QPoint tree_pos;
+    int tree_no=0;
+    for (int i=0;i<100;i++) {
+        trees = tree_map.values(i);
+        c = trees.count();
+        bits = 0;
+        index = -1;
+        foreach(int tree_idx, trees) {
+            if (c>18) {
+                index = (index + 1)%25;
+            } else {
+                int stop=1000;
+                do {
+                    index = limit(int(25 * pow(drandom(), exponent)), 0, 24);
+                } while (isBitSet(bits, index)==true && stop--);
+                if (!stop)
+                    qDebug() << "executeiLandInit: found no free bit.";
+                setBit(bits, index, true); // mark position as used
+            }
+            pos = evenlist[index];
+            tree_pos = offsetIdx  // position of resource unit
+                       + QPoint(5*(i/10), 5*(i%10)) // relative position of 10x10m pixel
+                       + QPoint(pos/5, pos%5); // relative position within 10x10m pixel
+            //qDebug() << tree_no++ << "to" << index;
+            ru->trees()[tree_idx].setPosition(tree_pos);
+        }
+    }
 }
