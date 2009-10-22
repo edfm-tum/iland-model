@@ -15,6 +15,7 @@
 #include "xmlhelper.h"
 #include "environment.h"
 #include "exception.h"
+#include "random.h"
 
 //
 #include "standloader.h"
@@ -342,4 +343,14 @@ void Tests::testCSVFile()
     for (int row=0;row<file.rowCount(); row++)
         for (int col=0;col<file.colCount(); col++)
             qDebug() << "row col" << row << file.columnName(col) << "value" << file.value(row, col);
+}
+
+
+void Tests::testRandom()
+{
+    RandomCustomPDF pdf("x^2");
+    QStringList list;
+    for (int i=0;i<1000;i++)
+        list << QString::number(pdf.get());
+    qDebug() << list.join("\n");
 }

@@ -53,8 +53,8 @@ bool CSVFile::loadFromString(const QString &content)
     for (int i=0;i<mRows.count();i++)
         mRows[i] = mRows[i].trimmed();
 
-    // drop comments (i.e. lines at the beginning that start with '#'
-    while (!mRows.isEmpty() && mRows.front().startsWith('#'))
+    // drop comments (i.e. lines at the beginning that start with '#', also ignore '<' (are in tags of picus-ini-files)
+    while (!mRows.isEmpty() && (mRows.front().startsWith('#') || mRows.front().startsWith('<')))
         mRows.pop_front();
     while (mRows.last().isEmpty())
         mRows.removeLast();

@@ -701,7 +701,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "5: species response\n" \
                                         "6: watercycle\n" \
                                         "7: CSV File\n" \
-                                        "8: Xml setters", 0);
+                                        "8: Xml setters\n" \
+                                        "9: random functions.", 0);
         switch (which) {
             case 0: t.speedOfExpression();break;
             case 1: t.clearTrees(); break;
@@ -712,6 +713,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
             case 6: t.testWater(); break;
             case 7: t.testCSVFile(); break;
             case 8: t.testXml(); break;
+            case 9: t.testRandom(); break;
 
         }
         return;

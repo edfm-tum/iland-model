@@ -49,19 +49,26 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 #  endif
 #endif
 
+// cool random number generator (using the mersenne-twister) by http://www-personal.umich.edu/~wagnerr/MersenneTwister.html
+#include "../3rdparty/MersenneTwister.h"
+// access the Mersenne-Twister-Random-Numbers
+MTRand &mtRand(); // static object lives in globalsettings
 /// nrandom returns a random number from [p1, p2]
 inline double nrandom(const double& p1, const double& p2)
 {
-    return p1 + (p2-p1)*(rand()/double(RAND_MAX));
+    return p1 + mtRand().rand(p2-p1);
+    //return p1 + (p2-p1)*(rand()/double(RAND_MAX));
 }
 /// returns a random number in [0,1]
 inline double drandom()
 {
-    return rand()/double(RAND_MAX);
+    return mtRand().rand();
+    //return rand()/double(RAND_MAX);
 }
 inline int irandom(int from, int to)
 {
-    return from +  rand()%(to-from);
+    return from + mtRand().randInt(to-from);
+    //return from +  rand()%(to-from);
 }
 
 inline double limit(const double value, const double lower, const double upper)

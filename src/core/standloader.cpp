@@ -317,7 +317,7 @@ void executeiLandInit(ResourceUnit *ru)
     int c;
     QList<int> trees;
     QPoint tree_pos;
-    int tree_no=0;
+
     for (int i=0;i<100;i++) {
         trees = tree_map.values(i);
         c = trees.count();

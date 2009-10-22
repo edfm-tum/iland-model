@@ -1,7 +1,6 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include <QVector>
 #include <QtCore>
 
 #include "ticktack.h"

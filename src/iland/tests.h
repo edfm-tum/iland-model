@@ -18,6 +18,7 @@ public:
     void testWater();
     void testCSVFile();
     void testXml();
+    void testRandom();
     private:
     QString dumpTreeList();
     QObject *mParent;

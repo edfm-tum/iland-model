@@ -59,7 +59,8 @@ SOURCES += main.cpp \
     ../output/standdeadout.cpp \
     ../core/environment.cpp \
     ../output/managementout.cpp \
-    ../tools/sqlhelper.cpp
+    ../tools/sqlhelper.cpp \
+    ../tools/random.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -106,7 +107,9 @@ HEADERS += mainwindow.h \
     ../output/standdeadout.h \
     ../core/environment.h \
     ../output/managementout.h \
-    ../tools/sqlhelper.h
+    ../tools/sqlhelper.h \
+    ../tools/random.h \
+    ../3rdparty/MersenneTwister.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
 QMAKE_EXTRA_TARGETS += revtarget

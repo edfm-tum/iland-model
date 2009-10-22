@@ -62,6 +62,12 @@
 #include "settingmetadata.h"
 
 #include "outputmanager.h"
+#include "../3rdparty/MersenneTwister.h"
+MTRand _mtrand;
+MTRand &mtRand()
+{
+    return _mtrand;
+}
 
 // debug macro helpers
 void dbg_helper(const char *where, const char *what,const char* file,int line)
