@@ -273,6 +273,8 @@ bool sortPairLessThan(const QPair<int, double> &s1, const QPair<int, double> &s2
  }
 void executeiLandInit(ResourceUnit *ru)
 {
+    const double exponent = GlobalSettings::instance()->settings().valueDouble("model.initialization.aggregationTendency", 2.);
+    qDebug() << "using aggregation exponent" << exponent;
     QPointF offset = ru->boundingBox().topLeft();
     QPoint offsetIdx = GlobalSettings::instance()->model()->grid()->indexAt(offset);
 
@@ -285,12 +287,12 @@ void executeiLandInit(ResourceUnit *ru)
 
     int key;
     double r;
-    const double exponent = 2.;
+
     foreach(const InitFileItem &item, init_items) {
         for (int i=0;i<item.count;i++) {
             // create trees
             r = drandom(); // 0..1
-            key = 99 - int(100 * pow(r, exponent)); // more "hits" for lower indices = higher likelihood to go to pixels with lower basal area
+            key = int(100 * pow(r, exponent)); // more "hits" for lower indices = higher likelihood to go to pixels with lower basal area
             key = limit(key, 0, 99);
             int tree_idx = ru->newTreeIndex();
             Tree &tree = ru->trees()[tree_idx]; // get reference to modify tree
