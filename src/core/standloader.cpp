@@ -1,22 +1,27 @@
 #include "global.h"
 #include "standloader.h"
 
+
 #include "grid.h"
 #include "model.h"
 #include "resourceunit.h"
 #include "speciesset.h"
 
 #include "helper.h"
+#include "random.h"
 #include "expression.h"
 #include "expressionwrapper.h"
 #include "environment.h"
 #include "csvfile.h"
 
-#include <QtCore>
 
 QStringList picusSpeciesIds = QStringList() << "0" << "1" << "17";
 QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
-
+StandLoader::~StandLoader()
+{
+    if (mRandom)
+        delete mRandom;
+}
 
 void StandLoader::loadForUnit()
 {
@@ -209,16 +214,7 @@ void StandLoader::loadFromPicus(const QString &fileName, ResourceUnit *ru)
 
 }
 
-struct InitFileItem
-{
-    Species *species;
-    int count;
-    double dbh_from, dbh_to;
-    double hd;
-    int age;
-};
- QVector<InitFileItem> init_items;
- void executeiLandInit(ResourceUnit *ru);
+
 void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
 {
     if (!ru)
@@ -240,7 +236,7 @@ void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
     if (icount<0 || ispecies<0 || idbh_from<0 || idbh_to<0 || ihd<0 || iage<0)
         throw IException(QString("load-ini-file: file '%1' containts not all required fields (count, species, dbh_from, dbh_to, hd, age).").arg(fileName));
 
-    init_items.clear(); // init_items: declared as a global
+    mInitItems.clear(); // init_items: declared as a global
     InitFileItem item;
     for (int row=0;row<infile.rowCount();row++) {
          item.count = infile.value(row, icount).toInt();
@@ -255,10 +251,21 @@ void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
                               .arg(fileName)
                               .arg(row));
          }
-         init_items.push_back(item);
+         mInitItems.push_back(item);
     }
+    // setup the random distribution
+    QString density_func = GlobalSettings::instance()->settings().value("model.initialization.randomFunction", "1-x^2");
+    qDebug() << "density function:" << density_func;
+    if (!mRandom || (mRandom->densityFunction()!= density_func)) {
+        if (mRandom)
+            delete mRandom;
+        mRandom=new RandomCustomPDF(density_func);
+        qDebug() << "new probabilty density function:" << density_func;
+    }
+
     // exeucte the
     executeiLandInit(ru);
+    ru->cleanTreeList();
 
 }
 
@@ -266,15 +273,18 @@ void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
 // e.g. 12 = centerpixel, 0: upper left corner, ...
 int evenlist[25] = { 12, 6, 18, 16, 8, 22, 2, 10, 14, 0, 24, 20, 4,
                      1, 13, 15, 19, 21, 3, 7, 11, 17, 23, 5, 9};
+int unevenlist[25] = { 11,13,7,17, 1,19,5,21, 9,23,3,15,
+                       6,18,2,10,4,24,12,0,8,14,20,22};
+
+
 // sort function
 bool sortPairLessThan(const QPair<int, double> &s1, const QPair<int, double> &s2)
  {
      return s1.second < s2.second;
  }
-void executeiLandInit(ResourceUnit *ru)
+void StandLoader::executeiLandInit(ResourceUnit *ru)
 {
-    const double exponent = GlobalSettings::instance()->settings().valueDouble("model.initialization.aggregationTendency", 2.);
-    qDebug() << "using aggregation exponent" << exponent;
+
     QPointF offset = ru->boundingBox().topLeft();
     QPoint offsetIdx = GlobalSettings::instance()->model()->grid()->indexAt(offset);
 
@@ -286,14 +296,10 @@ void executeiLandInit(ResourceUnit *ru)
         tcount.push_back(QPair<int,double>(i,0.));
 
     int key;
-    double r;
 
-    foreach(const InitFileItem &item, init_items) {
+    foreach(const InitFileItem &item, mInitItems) {
         for (int i=0;i<item.count;i++) {
             // create trees
-            r = drandom(); // 0..1
-            key = int(100 * pow(r, exponent)); // more "hits" for lower indices = higher likelihood to go to pixels with lower basal area
-            key = limit(key, 0, 99);
             int tree_idx = ru->newTreeIndex();
             Tree &tree = ru->trees()[tree_idx]; // get reference to modify tree
             tree.setDbh(nrandom(item.dbh_from, item.dbh_to));
@@ -305,9 +311,10 @@ void executeiLandInit(ResourceUnit *ru)
             // key: rank of target pixel
             // first: index of target pixel
             // second: sum of target pixel
+            key = limit(int(100*mRandom->get()), 0, 99); // get from random number generator
             tree_map.insert(tcount[key].first, tree_idx); // store tree in map
             tcount[key].second+=tree.basalArea(); // aggregate the basal area for each 10m pixel
-            if (i%20==0)
+            if (i%30==0)
                 qSort(tcount.begin(), tcount.end(), sortPairLessThan);
         }
         qSort(tcount.begin(), tcount.end(), sortPairLessThan);
@@ -321,21 +328,40 @@ void executeiLandInit(ResourceUnit *ru)
     for (int i=0;i<100;i++) {
         trees = tree_map.values(i);
         c = trees.count();
+        QPointF pixel_center = ru->boundingBox().topLeft() + QPointF((i/10)*10. + 5., (i%10)*10. + 5.);
+        if (!mModel->heightGrid()->valueAt(pixel_center).isValid()) {
+            // no trees on that pixel: let trees die
+            foreach(int tree_idx, trees) {
+                ru->trees()[tree_idx].die();
+            }
+            continue;
+        }
+
         bits = 0;
         index = -1;
+        double r;
         foreach(int tree_idx, trees) {
             if (c>18) {
                 index = (index + 1)%25;
             } else {
                 int stop=1000;
+                index = 0;
                 do {
-                    index = limit(int(25 * pow(drandom(), exponent)), 0, 24);
+                    //r = drandom();
+                    //if (r<0.5)  // skip position with a prob. of 50% -> adds a little "noise"
+                    //    index++;
+                    //index = (index + 1)%25; // increase and roll over
+
+                    // search a random position
+                    r = drandom();
+                    index = limit(int(25 *  r*r), 0, 24); // use rnd()^2 to search for locations -> higher number of low indices (i.e. 50% of lookups in first 25% of locations)
                 } while (isBitSet(bits, index)==true && stop--);
                 if (!stop)
                     qDebug() << "executeiLandInit: found no free bit.";
                 setBit(bits, index, true); // mark position as used
             }
-            pos = evenlist[index];
+            // get position from fixed lists (one for even, one for uneven resource units)
+            pos = ru->index()%2?evenlist[index]:unevenlist[index];
             tree_pos = offsetIdx  // position of resource unit
                        + QPoint(5*(i/10), 5*(i%10)) // relative position of 10x10m pixel
                        + QPoint(pos/5, pos%5); // relative position within 10x10m pixel

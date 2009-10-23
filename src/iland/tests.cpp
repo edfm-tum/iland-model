@@ -2,6 +2,7 @@
 #include "tests.h"
 
 #include "helper.h"
+#include "random.h"
 #include "model.h"
 #include "resourceunit.h"
 #include "expressionwrapper.h"
@@ -15,7 +16,6 @@
 #include "xmlhelper.h"
 #include "environment.h"
 #include "exception.h"
-#include "random.h"
 
 //
 #include "standloader.h"
@@ -349,8 +349,10 @@ void Tests::testCSVFile()
 void Tests::testRandom()
 {
     RandomCustomPDF pdf("x^2");
+    RandomCustomPDF *pdf2 = new RandomCustomPDF("x^3");
     QStringList list;
     for (int i=0;i<1000;i++)
         list << QString::number(pdf.get());
     qDebug() << list.join("\n");
+    delete pdf2;
 }

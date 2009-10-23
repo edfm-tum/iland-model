@@ -469,7 +469,7 @@ void MainWindow::mouseMove(const QPoint& pos)
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);
     if (grid->coordValid(p)) {
-        if (ui->visFon->isChecked())
+        if (ui->visFon->isChecked() || ui->visImpact->isChecked())
            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*grid).valueAt(p)));
         if( ui->visDomGrid->isChecked())
             ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height));

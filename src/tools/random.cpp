@@ -3,10 +3,7 @@
 #include "expression.h"
 #include "exception.h"
 
-#include "../3rdparty/MersenneTwister.h"
-Random::Random()
-{
-}
+
 /** @class RandomIndex Access each index of a given size in a random order.
   Example-Usage:
   @code
@@ -186,6 +183,7 @@ void RandomCustomPDF::setup(const QString &funcExpr,
                             const bool isSumFunc,
                             const int stepCount)
 {
+    mFunction = funcExpr;
     mSteps=stepCount;
     mSumFunction = isSumFunc;
     if (mExpression)

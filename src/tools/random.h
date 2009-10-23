@@ -1,12 +1,7 @@
-#ifndef RANDOM_H
-#define RANDOM_H
+#ifndef RANDOMTOOLS_H
+#define RANDOMTOOLS_H
 
 #include <QtCore/QString>
-class Random
-{
-public:
-    Random();
-};
 
 // RandomIndex: get indicies in a random order
 class RandomIndex
@@ -42,19 +37,22 @@ private:
         void updateValues();
 
 };
+
 class Expression;
 class RandomCustomPDF
 {
-
 public:
         RandomCustomPDF();
         RandomCustomPDF(const QString &densityFunction){ mExpression=0; setup(densityFunction);}
         ~RandomCustomPDF();
         void setup(const QString &funcExpr, const double lowerBound=0., const double upperBound=1., const bool isSumFunc=false, const int stepCount=100);
+        // properties
+        const QString &densityFunction() const { return mFunction; }
         // operation
         double get(); ///< get a random number
         double getProbOfRange(const double lowerBound, const double upperBound); ///< get probability of random numbers between given bounds.
 private:
+        QString mFunction;
         RandomWeighted mRandomIndex;
         Expression *mExpression;
         int mSteps;
@@ -64,4 +62,4 @@ private:
 };
 
 
-#endif // RANDOM_H
+#endif // RANDOMTOOLS_H
