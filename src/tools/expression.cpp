@@ -14,7 +14,7 @@
     - incsum: ?? incremental sum - currently not supported.
     - polygon: special function for polygons. polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn): return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value.
     - sigmoid: returns a sigmoid function. sigmoid(value, type, param1, param2). see udfSigmoid() for details.
-    - rnd rndg: random functions; rnd(from, to): uniform random number, rndg(mean, stddev): gaussian randomnumber (Note: gaussian currently not supported)
+    - rnd rndg: random functions; rnd(from, to): uniform random number, rndg(mean, stddev): gaussian randomnumber (mean and stddev in percent!)
     The Expression class also supports some logical operations:
     (logical) True equals to "1", "False" to zero. The precedence rules for parentheses...
     - and
@@ -35,6 +35,8 @@
 
 */
 #include <QtCore>
+#include <QtCore/QMutex>
+#include "global.h"
 #include "expression.h"
 
 #include "exception.h"
@@ -344,7 +346,8 @@ void  Expression::atom()
             checkBuffer(m_execIndex);
         }
         if (m_state==etVariable) {
-            addVar(m_token);
+            if (!m_strict) // in strict mode, the variable must be available by external bindings. in "lax" mode, the variable is added when encountered first.
+                addVar(m_token);
             m_execList[m_execIndex].Type=etVariable;
             m_execList[m_execIndex].Value=0;
             m_execList[m_execIndex++].Index=getVarIndex(m_token);
@@ -648,8 +651,11 @@ int  Expression::getVarIndex(const QString& variableName)
     if (idx>-1)
         return idx;
     // if in strict mode, all variables must be already available at this stage.
-    if (m_strict)
-       throw IException(QString("Variable %1 in (strict) expression %2 not available!").arg(variableName, m_expression));
+    if (m_strict) {
+        m_errorMsg = QString("Variable '%1' in (strict) expression '%2' not available!").arg(variableName, m_expression);
+        if (!m_catchExceptions)
+            throw IException(m_errorMsg);
+   }
     return -1;
 }
 
@@ -776,8 +782,7 @@ double Expression::udfRandom(int type, double p1, double p2)
     if (type == 0)
         return nrandom(p1, p2);
     else    // gaussverteilt
-        throw IException("std-deviated random numbers not supported.");
-    //return RandG(p1, p2);
+        return mtRand().randNorm(p1, p2);
 }
 
 

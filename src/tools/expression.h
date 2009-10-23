@@ -41,7 +41,7 @@ public:
         const QString &lastError() const { return m_errorMsg; }
         /** strict property: if true, variables must be named before execution.
           When strict=true, all variables in the expression must be added by setVar or addVar.
-          if false, variable values are assigned depending on occurence. strict is false is the default for "calculate()".
+          if false, variable values are assigned depending on occurence. strict is false by default for calls to "calculate()".
         */
         bool isStrict() { return m_strict;}
         void setStrict(bool str) { m_strict=str; }
