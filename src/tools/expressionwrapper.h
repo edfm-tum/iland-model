@@ -1,6 +1,6 @@
 #ifndef EXPRESSIONWRAPPER_H
 #define EXPRESSIONWRAPPER_H
-#include <QtCore>
+#include <QtCore/QString>
 
 class ExpressionWrapper
 {

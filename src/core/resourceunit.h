@@ -4,7 +4,8 @@
 #include "tree.h"
 #include "resourceunitspecies.h"
 #include "standstatistics.h"
-
+#include <QtCore/QVector>
+#include <QtCore/QRectF>
 class SpeciesSet;
 class Climate;
 class WaterCycle;

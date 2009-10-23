@@ -12,6 +12,7 @@
 
 class Model;
 class Tree;
+class ResourceUnit;
 
 namespace Ui
 {
@@ -49,6 +50,7 @@ private:
     void applyCycles(int cycle_count=1);
     void checkModelState();
     void showTreeDetails(Tree* tree);
+    void showResourceUnitDetails(const ResourceUnit *ru);
 
 private slots:
 

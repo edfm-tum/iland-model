@@ -14,6 +14,9 @@
 #include "tree.h"
 #include "resourceunit.h"
 #include "species.h"
+#include "watercycle.h"
+#include "standstatistics.h"
+
 #include <QtCore>
 
 ExpressionWrapper::ExpressionWrapper()
@@ -95,7 +98,9 @@ double TreeWrapper::value(const int variableIndex)
 //// ResourceUnit Wrapper
 ////////////////////////////////////////////////
 
-QStringList ruVarList=QStringList() << baseVarList << "id" << "la" << "total_effective_area";
+QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveArea"
+                      << "nitrogenAvailable" << "soilDepth" << "stockedArea"
+                      << "count" << "volume" << "avgDbh" << "avgHeight" << "basalArea" << "leafAreaIndex";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -109,8 +114,17 @@ double RUWrapper::value(const int variableIndex)
 
     switch (variableIndex - baseVarListCount) {
     case 0: return mRU->index();
-    case 1: return mRU->mAggregatedLA;
-    case 2: return mRU->mEffectiveArea_perWLA;
+    case 1: return mRU->mEffectiveArea_perWLA;
+    case 2: return mRU->mUnitVariables.nitrogenAvailable;
+    case 3: return mRU->waterCycle()->soilDepth();
+    case 4: return mRU->stockedArea();
+    case 5: return mRU->mStatistics.count();
+    case 6: return mRU->mStatistics.volume();
+    case 7: return mRU->mStatistics.dbh_avg();
+    case 8: return mRU->mStatistics.height_avg();
+    case 9: return mRU->mStatistics.basalArea();
+    case 10: return mRU->mStatistics.leafAreaIndex();
+
     }
     return ExpressionWrapper::value(variableIndex);
 }

@@ -397,16 +397,21 @@ void MainWindow::mouseClick(const QPoint& pos)
     //qDebug() << "to world:" << coord;
     wantDrag = false;
     ui->PaintWidget->setCursor(Qt::CrossCursor);
-    ui->treeChange->setProperty("tree",0);
-
+    Model *model = mRemoteControl.model();
+    ResourceUnit *ru = model->ru(coord);
     // find adjactent tree
     if (!mRemoteControl.canRun())
         return;
 
+    if (ui->visResourceUnits->isChecked()) {
+        if (!ru) return;
+        showResourceUnitDetails(ru);
+        return;
+    }
     // test ressource units...
-    Model *model = mRemoteControl.model();
-    ResourceUnit *ru = model->ru(coord);
+
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
+    ui->treeChange->setProperty("tree",0);
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     Tree *closestTree=0;
@@ -435,6 +440,19 @@ void MainWindow::mouseClick(const QPoint& pos)
             ui->PaintWidget->update();
     }
 
+}
+
+void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
+{
+    ui->dataTree->clear();
+    RUWrapper ruw;
+    ruw.setResourceUnit(ru);
+    const QStringList &names = ruw.getVariablesList();
+    QList<QTreeWidgetItem *> items;
+    foreach(QString name, names) {
+        items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(ruw.valueByName(name)) ));
+    }
+    ui->dataTree->addTopLevelItems(items);
 }
 
 void MainWindow::showTreeDetails(Tree *tree)
