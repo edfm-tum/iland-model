@@ -14,7 +14,7 @@
    <string>iLand Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/iland.qrc">
     <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -501,10 +501,10 @@ QProgressBar::chunk {
         <string>Visualization Options</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
+        <item row="0" column="0" colspan="3">
          <widget class="QRadioButton" name="visFon">
           <property name="text">
-           <string>LIF</string>
+           <string>Light influence field</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -514,7 +514,7 @@ QProgressBar::chunk {
         <item row="2" column="0" colspan="2">
          <widget class="QRadioButton" name="visImpact">
           <property name="text">
-           <string>Trees</string>
+           <string>individual Trees</string>
           </property>
          </widget>
         </item>
@@ -526,78 +526,34 @@ QProgressBar::chunk {
          </widget>
         </item>
         <item row="5" column="0">
-         <widget class="QCheckBox" name="visDomHeight">
-          <property name="toolTip">
-           <string>for vis. of influence grid: when checked, the color shows the FON-value if scaled to the height in combo-box right, and not for the value of the actual height-dominance-grid.</string>
-          </property>
-          <property name="text">
-           <string>scale</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="2">
-         <widget class="QComboBox" name="visScaleValue">
-          <property name="toolTip">
-           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;for vis. of influence grid: height value in meters.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <item>
-           <property name="text">
-            <string>5</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>10</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>20</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>30</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>40</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>50</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>80</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item row="6" column="0">
          <widget class="QLabel" name="label_4">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>12</height>
+           </size>
+          </property>
           <property name="text">
            <string>Expression</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="0" colspan="2">
+        <item row="6" column="0" colspan="2">
          <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
-        <item row="7" column="2">
+        <item row="6" column="2">
          <widget class="QPushButton" name="pbExecExpression">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="toolTip">
            <string>Execute expression for each tree and draw trees accordingly.</string>
           </property>
           <property name="icon">
-           <iconset>
+           <iconset resource="res/iland.qrc">
             <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
           </property>
           <property name="iconSize">
@@ -608,7 +564,7 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item row="8" column="0" colspan="3">
+        <item row="7" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
            <string>(value)</string>
@@ -619,6 +575,13 @@ p, li { white-space: pre-wrap; }
          <widget class="QRadioButton" name="visDomGrid">
           <property name="text">
            <string>dominace grid</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QRadioButton" name="visResourceUnits">
+          <property name="text">
+           <string>resource units</string>
           </property>
          </widget>
         </item>
@@ -665,7 +628,7 @@ p, li { white-space: pre-wrap; }
   </widget>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -684,7 +647,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelCreate">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/www.png</normaloff>:/www.png</iconset>
    </property>
    <property name="text">
@@ -693,7 +656,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelDestroy">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/user-trash.png</normaloff>:/user-trash.png</iconset>
    </property>
    <property name="text">
@@ -702,7 +665,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionModelRun">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
    </property>
    <property name="text">
@@ -731,7 +694,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionRun_one_year">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
    </property>
    <property name="text">
@@ -740,7 +703,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionReload">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
    </property>
    <property name="text">
@@ -765,7 +728,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionPause">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Pause.png</normaloff>:/Pause.png</iconset>
    </property>
    <property name="text">
@@ -774,7 +737,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/process-stop.png</normaloff>:/process-stop.png</iconset>
    </property>
    <property name="text">
@@ -806,7 +769,9 @@ p, li { white-space: pre-wrap; }
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="res/iland.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>expressionHistory</sender>

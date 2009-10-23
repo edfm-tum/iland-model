@@ -32,7 +32,7 @@ class RUWrapper: public ExpressionWrapper
 public:
     RUWrapper() : mRU(0) {}
     RUWrapper(const ResourceUnit* resourceUnit) : mRU(resourceUnit) {}
-    void setResourceUnit(ResourceUnit* resourceUnit) { mRU = resourceUnit; }
+    void setResourceUnit(const ResourceUnit* resourceUnit) { mRU = resourceUnit; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
 

@@ -170,6 +170,7 @@ void Expression::setExpression(const QString& aExpression)
         m_varSpace[i]=0.;
     m_parsed=false;
     m_catchExceptions = false;
+    m_errorMsg = "";
 
     mModelObject = 0;
     m_externVarSpace=0;
@@ -218,10 +219,10 @@ void  Expression::parse()
         m_parsed=true;
 
     } catch (const IException& e) {
-        QString msg =QString("Expression::parse: Error in: %1 : %2").arg(m_expr, e.toString());
+        m_errorMsg =QString("Expression::parse: Error in: %1 : %2").arg(m_expr, e.toString());
         if (m_catchExceptions)
-            Helper::msg(msg);
-        throw IException(msg);
+            Helper::msg(m_errorMsg);
+        throw IException(m_errorMsg);
     }
 }
 

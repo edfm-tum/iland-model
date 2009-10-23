@@ -1,5 +1,7 @@
 #ifndef LOGICEXPRESSION_H
 #define LOGICEXPRESSION_H
+#include <QtCore/QString>
+#include <QtCore/QMutexLocker>
 
 class ExpressionWrapper;
 class Expression
@@ -9,12 +11,14 @@ public:
         Expression();
         Expression(const QString &aExpression) { setExpression(aExpression); }
         Expression(const QString &expression, ExpressionWrapper *wrapper) { setExpression(expression); mModelObject = wrapper;  }
+        // intialization
         void setExpression(const QString &aExpression); ///< set expression
         void setAndParse(const QString &expr); ///< set expression and parse instantly
         void setModelObject(ExpressionWrapper *wrapper) { mModelObject = wrapper; }
         const QString &expression() const { return m_expression; }
-        /// calculate formula and return result. variable values need to be set using "setVar()"
-        double execute();
+
+        // calculations
+        double execute(); ///< calculate formula and return result. variable values need to be set using "setVar()"
         double executeLocked() { QMutexLocker m(&m_execMutex); return execute();  } ///< thread safe version
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
            the return is the result of the calculation.
@@ -22,6 +26,7 @@ public:
         double calculate(double Val1=0., double Val2=0.);
         double calculateLocked(double Val1=0., double Val2=0.) { QMutexLocker m(&m_execMutex); return calculate(Val1, Val2); } ///< threadsafe version
 
+        //variables
         /// set the value of the variable named "Var". Note: using addVar to obtain a pointer may be more efficient for multiple executions.
         void  setVar(const QString& Var, double Value);
         /// adds variable "VarName" and returns a double pointer to the variable. Use *ptr to set the value (before calling execute())
@@ -33,6 +38,7 @@ public:
 
         bool isConstExpression() const { return m_constExpression; } ///< returns true if current expression is a constant.
         bool isEmpty() const { return m_empty; } ///< returns true if expression is empty
+        const QString &lastError() const { return m_errorMsg; }
         /** strict property: if true, variables must be named before execution.
           When strict=true, all variables in the expression must be added by setVar or addVar.
           if false, variable values are assigned depending on occurence. strict is false is the default for "calculate()".
@@ -54,6 +60,7 @@ private:
         enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
         double m_result;
         bool m_catchExceptions;
+        QString m_errorMsg;
 
         bool m_parsed;
         double m_strict;

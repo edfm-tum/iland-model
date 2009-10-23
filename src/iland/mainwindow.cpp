@@ -263,10 +263,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool auto_scale_color = ui->visAutoScale->isChecked();
     bool show_fon = ui->visFon->isChecked();
     bool show_dom = ui->visDomGrid->isChecked();
-    bool show_impact = ui->visImpact->isChecked();
-    bool show_scale40 = ui->visDomHeight->isChecked();
-    float scale_value = ui->visScaleValue->currentText().toFloat();
-
+    bool show_trees = ui->visImpact->isChecked();
+    bool show_ru = ui->visResourceUnits->isChecked();
 
     float maxval=1.f; // default maximum
     if (!auto_scale_color)
@@ -285,7 +283,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QColor fill_color;
     float value;
 
-    if (show_fon ) { // !=0: no sense!
+    if (show_fon ) {
+
         // start from each pixel and query value in grid for the pixel
         int x,y;
         int sizex = rect.width();
@@ -295,55 +294,52 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         QImage &img = ui->PaintWidget->drawImage();
         for (x=0;x<sizex;x++)
             for (y=0;y<sizey;y++) {
-                world = vp.toWorld(QPoint(x,y));
-                if (grid->coordValid(world)) {
-                   value = grid->valueAt(world);
-                   col = Helper::colorFromValue(value, 0., maxval, true).rgb();
-                   img.setPixel(x,y,col);
-               }
-           }
-
-    } else {
-        // for rather small grids, apply the inverse tactic (draw each pixel!)
-        if (show_fon) {
-
-            //QRectF cell(0,0,m_pixelpercell, m_pixelpercell);
-            QPointF k;
-            float hdom;
-            for (iy=0;iy<grid->sizeY();iy++) {
-                for (ix=0;ix<grid->sizeX();ix++) {
-
-                    value = grid->valueAtIndex(QPoint(ix, iy));
-                    if (show_scale40) {
-                        k = grid->cellCenterPoint(QPoint(ix, iy));
-                        hdom = qMax(2.f, domGrid->valueAt(k).height); // 2m: as in stamp grid
-                        value = 1.f -  (1.f - value) * hdom / scale_value;
-                    }
-                    QRectF f = grid->cellRect(QPoint(ix,iy));
-                    QRect r = vp.toScreen(f);
-
-                    fill_color = Helper::colorFromValue(value, 0., maxval, true);
-                    painter.fillRect(r, fill_color);
-
-                }
+            world = vp.toWorld(QPoint(x,y));
+            if (grid->coordValid(world)) {
+                value = grid->valueAt(world);
+                col = Helper::colorFromValue(value, 0., maxval, true).rgb();
+                img.setPixel(x,y,col);
             }
-        } // if (show_fon)
+        }
 
-        if (show_dom) {
-            // paint the lower-res-grid;
-            for (iy=0;iy<domGrid->sizeY();iy++) {
-                for (ix=0;ix<domGrid->sizeX();ix++) {
-                    QPoint p(ix,iy);
-                    value = domGrid->valueAtIndex(p).height;
-                    QRect r = vp.toScreen(domGrid->cellRect(p));
-                    fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
-                    painter.fillRect(r, fill_color);
-                }
-            }
-
-        } // if (show_dem)
     }
-    if (show_impact) {
+
+    if (show_dom) {
+        // paint the lower-res-grid;
+        for (iy=0;iy<domGrid->sizeY();iy++) {
+            for (ix=0;ix<domGrid->sizeX();ix++) {
+                QPoint p(ix,iy);
+                value = domGrid->valueAtIndex(p).height;
+                QRect r = vp.toScreen(domGrid->cellRect(p));
+                fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
+                painter.fillRect(r, fill_color);
+            }
+        }
+
+    } // if (show_dom)
+
+    if (show_ru){
+        QString ru_expr = ui->lTreeExpr->text();
+        if (ru_expr.isEmpty())
+            ru_expr = "id";
+        RUWrapper ru_wrapper;
+
+        Expression ru_value(ru_expr, &ru_wrapper);
+        ru_value.setCatchExceptions(); // silent catching...
+
+        // paint resource units
+        foreach (const ResourceUnit *ru, model->ruList()) {
+            ru_wrapper.setResourceUnit(ru);
+            QRect r = vp.toScreen(ru->boundingBox());
+            value = ru_value.execute();
+            fill_color = Helper::colorFromValue(value, 0., 1.);
+            painter.fillRect(r, fill_color);
+        }
+        if (!ru_value.lastError().isEmpty())
+            qDebug() << "Expression error while painting: " << ru_value.lastError();
+    }
+
+    if (show_trees) {
         QString single_tree_expr = ui->lTreeExpr->text();
         if (single_tree_expr.isEmpty())
             single_tree_expr = "1-lri";
@@ -367,9 +363,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 3.));
             painter.drawEllipse(p, diameter, diameter);
         }
+        if (!tree_value.lastError().isEmpty())
+            qDebug() << "Expression error while painting: " << tree_value.lastError();
 
-    } // if (show_impact)
-    // show selected tree
+    } // if (show_trees)
+
+    // highlight selected tree
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
     if (t) {
         QPointF pos = t->position();
@@ -469,10 +468,14 @@ void MainWindow::mouseMove(const QPoint& pos)
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);
     if (grid->coordValid(p)) {
+        QString location=QString("%1 / %2").arg(p.x()).arg(p.y());
+
         if (ui->visFon->isChecked() || ui->visImpact->isChecked())
-           ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*grid).valueAt(p)));
+           location += QString("\n %1").arg((*grid).valueAt(p));
         if( ui->visDomGrid->isChecked())
-            ui->fonValue->setText(QString("%1 / %2\n%3").arg(p.x()).arg(p.y()).arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height));
+            location += QString("\n %1").arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height);
+
+        ui->fonValue->setText(location);
     }
 }
 
