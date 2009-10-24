@@ -816,9 +816,13 @@ void MainWindow::on_scriptCommand_returnPressed()
     if (!mgmt)
         return;
     qDebug() << "executing" << ui->scriptCommand->text();
-    QString result = mgmt->executeScript(ui->scriptCommand->text());
-    if (!result.isEmpty())
-        ui->scriptResult->append(result);
+    try {
+        QString result = mgmt->executeScript(ui->scriptCommand->text());
+        if (!result.isEmpty())
+            ui->scriptResult->append(result);
+    } catch(const IException &e) {
+        Helper::msg(e.toString());
+    }
 }
 
 

@@ -293,7 +293,7 @@ void Tests::multipleLightRuns(const QString &fileName)
             qDebug() << "processing" << file;
             Tree::resetStatistics();
             mTrees.clear();
-            loader.loadFromPicus(file);
+            loader.loadPicusFile(file);
             // do a cycle...
             model->runYear();
 

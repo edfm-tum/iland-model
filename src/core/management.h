@@ -26,6 +26,7 @@ public slots:
     double percentile(int pct); ///< get value for the pct th percentile (1..100)
     int load() { return load(QString()); } ///< load all trees, return number of trees
     int load(QString filter); ///< load all trees passing the filter in a list, return number of trees
+    int load(int ruindex); ///< load all trees of a resource index
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees

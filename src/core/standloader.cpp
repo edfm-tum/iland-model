@@ -117,36 +117,39 @@ void StandLoader::loadInitFile(const QString &fileName, const QString &type, Res
         throw IException(QString("StandLoader::loadInitFile: File %1 does not exist!").arg(pathFileName));
 
     if (type=="picus")
-        return loadFromPicus(pathFileName, ru);
+        return loadPicusFile(pathFileName, ru);
     if (type=="iland")
         return loadiLandFile(pathFileName, ru);
 
     throw IException("StandLoader::loadInitFile: unknown initalization.type!");
 }
 
-void StandLoader::loadFromPicus(const QString &fileName, ResourceUnit *ru)
+void StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru)
+{
+    QString content = Helper::loadTextFile(fileName);
+    if (content.isEmpty()) {
+        qDebug() << "file not found: " + fileName;
+        return;
+    }
+    loadSingleTreeList(content, ru, fileName);
+}
+
+void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, const QString &fileName)
 {
     if (!ru)
         ru = mModel->ru();
     Q_ASSERT(ru!=0);
 
     QPointF offset = ru->boundingBox().topLeft();
-
     SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
-
-    QString text = Helper::loadTextFile(fileName);
-    if (text.isEmpty()) {
-        qDebug() << "file not found: " + fileName;
-        return;
-    }
 
     // cut out the <trees> </trees> part....
     QRegExp rx(".*<trees>(.*)</trees>.*");
-    rx.indexIn(text, 0);
+    rx.indexIn(content, 0);
     if (rx.capturedTexts().count()<1)
         return;
-    text = rx.cap(1).trimmed();
-    QStringList lines=text.split('\n');
+    QString my_content = rx.cap(1).trimmed();
+    QStringList lines=my_content.split('\n');
     if (lines.count()<2)
         return;
     char sep='\t';
@@ -211,11 +214,9 @@ void StandLoader::loadFromPicus(const QString &fileName, ResourceUnit *ru)
     }
     //qDebug() << "loaded init-file contained" << lines.count() <<"lines.";
     //qDebug() << "lines: " << lines;
-
 }
 
-
-void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
+void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, const QString &fileName)
 {
     if (!ru)
         ru = mModel->ru();
@@ -223,10 +224,10 @@ void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
     SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
     Q_ASSERT(speciesSet!=0);
 
-    if (!QFile::exists(fileName))
-        throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
     DebugTimer t("StandLoader::loadiLandFile");
-    CSVFile infile(fileName);
+    CSVFile infile;
+    infile.loadFromString(content);
+
     int icount = infile.columnIndex("count");
     int ispecies = infile.columnIndex("species");
     int idbh_from = infile.columnIndex("dbh_from");
@@ -236,7 +237,7 @@ void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
     if (icount<0 || ispecies<0 || idbh_from<0 || idbh_to<0 || ihd<0 || iage<0)
         throw IException(QString("load-ini-file: file '%1' containts not all required fields (count, species, dbh_from, dbh_to, hd, age).").arg(fileName));
 
-    mInitItems.clear(); // init_items: declared as a global
+    mInitItems.clear();
     InitFileItem item;
     for (int row=0;row<infile.rowCount();row++) {
          item.count = infile.value(row, icount).toInt();
@@ -267,6 +268,14 @@ void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
     executeiLandInit(ru);
     ru->cleanTreeList();
 
+}
+
+void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
+{
+    if (!QFile::exists(fileName))
+        throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
+    QString content = Helper::loadTextFile(fileName);
+    loadDistributionList(content, ru, fileName);
 }
 
 // evenlist: tentative order of pixel-indices (within a 5x5 grid) used as tree positions.

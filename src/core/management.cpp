@@ -15,19 +15,40 @@
 QObject *Management::scriptOutput = 0;
 
 QScriptValue script_debug(QScriptContext *ctx, QScriptEngine *eng)
- {
-     QString value = ctx->argument(0).toString();
-     if (Management::scriptOutput) {
-         QTextEdit *e = qobject_cast<QTextEdit*>(Management::scriptOutput);
-         if (e)
-             e->append(value);
-     } else {
-         qDebug() << "Script:" << value;
-     }
-     return QScriptValue();
-     //return ctx->thisObject().property(name);
- }
+{
+    QString value;
+    for (int i = 0; i < ctx->argumentCount(); ++i) {
+        if (i > 0)
+            value.append(" ");
+        value.append(ctx->argument(i).toString());
+    }
+    if (Management::scriptOutput) {
+        QTextEdit *e = qobject_cast<QTextEdit*>(Management::scriptOutput);
+        if (e)
+            e->append(value);
+    } else {
+        qDebug() << "Script:" << value;
+    }
+    return eng->undefinedValue();
+}
 
+QScriptValue script_include(QScriptContext *ctx, QScriptEngine *eng)
+{
+    QString fileName = ctx->argument(0).toString();
+    QString path =GlobalSettings::instance()->path(fileName, "script") ;
+    QString includeFile=Helper::loadTextFile(path);
+    eng->evaluate(includeFile, fileName);
+    if (eng->hasUncaughtException())
+        qDebug() << "Error in include:" << eng->uncaughtException().toString();
+    return QScriptValue();
+}
+
+QScriptValue script_alert(QScriptContext *ctx, QScriptEngine *eng)
+{
+    QString value = ctx->argument(0).toString();
+    Helper::msg(value);
+    return eng->undefinedValue();
+}
 // global output function
 QString Management::executeScript(QString cmd)
 {
@@ -46,8 +67,12 @@ Management::Management()
     mEngine = new QScriptEngine();
     QScriptValue objectValue = mEngine->newQObject(this);
     QScriptValue dbgprint = mEngine->newFunction(script_debug);
+    QScriptValue sinclude = mEngine->newFunction(script_include);
+    QScriptValue alert = mEngine->newFunction(script_alert);
     mEngine->globalObject().setProperty("management", objectValue);
     mEngine->globalObject().setProperty("print",dbgprint);
+    mEngine->globalObject().setProperty("include",sinclude);
+    mEngine->globalObject().setProperty("alert", alert);
 
     // globals object: instatiate here, but ownership goes to script engine
     ScriptGlobal *global = new ScriptGlobal();
@@ -190,6 +215,18 @@ int Management::filter(QString filter)
         else
             tp++;
     }
+    return mTrees.count();
+}
+
+int Management::load(int ruindex)
+{
+    Model *m = GlobalSettings::instance()->model();
+    ResourceUnit *ru = m->ru(ruindex);
+    if (!ru)
+        return -1;
+    mTrees.clear();
+    for (int i=0;i<ru->trees().count();i++)
+        mTrees.push_back(QPair<Tree*,double>(ru->tree(i), 0.));
     return mTrees.count();
 }
 

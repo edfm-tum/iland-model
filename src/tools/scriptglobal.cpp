@@ -3,6 +3,9 @@
 #include "model.h"
 #include "globalsettings.h"
 #include "helper.h"
+#include "standloader.h"
+
+class ResourceUnit;
 
 /** @class ScriptGlobal
    This is a global interface providing useful functionality for javascripts.
@@ -39,15 +42,38 @@ ScriptGlobal::ScriptGlobal(QObject *parent)
     mCurrentDir = GlobalSettings::instance()->path(QString(), "script") + QDir::separator();
 }
 
+QVariant ScriptGlobal::setting(QString key)
+{
+    const XmlHelper &xml = GlobalSettings::instance()->settings();
+    if (!xml.hasNode(key)) {
+        qDebug() << "scriptglobal: setting key " << key << "not valid.";
+        return QVariant(); // undefined???
+    }
+    return QVariant(xml.value(key));
+}
+void ScriptGlobal::set(QString key, QString value)
+{
+    XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
+    if (!xml.hasNode(key)) {
+        qDebug() << "scriptglobal: setting key " << key << "not valid.";
+        return;
+    }
+    xml.setNodeValue(key, value);
+}
+
 int ScriptGlobal::year() const
 {
     return GlobalSettings::instance()->currentYear();
 }
-
+int ScriptGlobal::resourceUnitCount() const
+{
+    Q_ASSERT(mModel!=0);
+    return mModel->ruList().count();
+}
 // wrapped helper functions
 QString ScriptGlobal::loadTextFile(QString fileName)
 {
-    return Helper::loadTextFile(fileName);
+    return Helper::loadTextFile(GlobalSettings::instance()->path(fileName));
 }
 void ScriptGlobal::saveTextFile(QString fileName, QString content)
 {
@@ -56,4 +82,23 @@ void ScriptGlobal::saveTextFile(QString fileName, QString content)
 bool ScriptGlobal::fileExists(QString fileName)
 {
    return QFile::exists(fileName);
+}
+
+// add trees
+void ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
+{
+    StandLoader loader(mModel);
+    ResourceUnit *ru = mModel->ru(resourceIndex);
+    if (!ru)
+        throw IException(QString("addSingleTrees: invalid resource unit (index: %1").arg(resourceIndex));
+    loader.loadSingleTreeList(content, ru, "called_from_script");
+}
+
+void ScriptGlobal::addTrees(const int resourceIndex, QString content)
+{
+    StandLoader loader(mModel);
+    ResourceUnit *ru = mModel->ru(resourceIndex);
+    if (!ru)
+        throw IException(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
+    loader.loadDistributionList(content, ru, "called_from_script");
 }

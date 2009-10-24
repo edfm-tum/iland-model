@@ -12,9 +12,10 @@ public:
     StandLoader(Model *model): mModel(model), mRandom(0) {}
     ~StandLoader();
     void processInit();
-    void loadFromPicus(const QString &fileName, ResourceUnit *ru=NULL);
+    void loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL);
     void loadiLandFile(const QString &fileName, ResourceUnit *ru=NULL);
-
+    void loadSingleTreeList(const QString &content, ResourceUnit*ru = NULL, const QString &fileName="");
+    void loadDistributionList(const QString &content, ResourceUnit *ru = NULL, const QString &fileName="");
 private:
     struct InitFileItem
     {

@@ -78,6 +78,7 @@ void ModelController::create()
 {
     if (!canCreate())
         return;
+    MainWindow::bufferedLog(true);
     try {
         DebugTimer::clearAllTimers();
         mModel = new Model();
@@ -94,6 +95,7 @@ void ModelController::create()
         Helper::msg(error_msg);
         qDebug() << error_msg;
     }
+    MainWindow::bufferedLog(false);
 }
 
 void ModelController::destroy()

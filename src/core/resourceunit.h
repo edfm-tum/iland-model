@@ -28,6 +28,7 @@ public:
     const QVector<ResourceUnitSpecies> ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
+    Tree *tree(const int index) { return &(mTrees[index]);} ///< get pointer to a tree
     const ResourceUnitVariables &resouceUnitVariables() const { return mUnitVariables; } ///< access to variables that are specific to resourceUnit (e.g. nitrogenAvailable)
 
     // properties
