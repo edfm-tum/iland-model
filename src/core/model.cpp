@@ -145,7 +145,7 @@ void Model::setupSpace()
         }
         qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
         // setup of the project area mask
-        if (xml.hasNode("areaMask.imageFile")) {
+        if (xml.valueBool("areaMask.enabled", false) && xml.hasNode("areaMask.imageFile")) {
             // to be extended!!! e.g. to load ESRI-style text files....
             // setup a grid with the same size as the height grid...
             FloatGrid tempgrid((int)mHeightGrid->cellsize(), mHeightGrid->sizeX(), mHeightGrid->sizeY());
