@@ -136,9 +136,9 @@ void Tree::applyLIP()
 /// index: index at grid
 /// count: number of pixels that are the simulation area (e.g. 100m and 2m pixel -> 50)
 /// buffer: size of buffer around simulation area (in pixels)
-int torusIndex(int index, int count, int buffer)
+inline int torusIndex(int index, int count, int buffer, int ru_index)
 {
-    return buffer + (index-buffer+count)%count;
+    return buffer + ru_index + (index-buffer+count)%count;
 }
 
 
@@ -149,8 +149,11 @@ void Tree::applyLIP_torus()
     if (!mStamp)
         return;
     Q_ASSERT(mGrid!=0 && mStamp!=0 && mRU!=0);
+    int bufferOffset = mGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
+    QPoint pos = QPoint((mPositionIndex.x()-bufferOffset)%50 + bufferOffset,
+                        (mPositionIndex.y()-bufferOffset)%50 + bufferOffset); // offset within the ha
+    QPoint ru_offset = QPoint(mPositionIndex.x() - pos.x(), mPositionIndex.y() - pos.y()); // offset of the corner of the resource index
 
-    QPoint pos = mPositionIndex;
     int offset = mStamp->offset();
     pos-=QPoint(offset, offset);
 
@@ -164,15 +167,15 @@ void Tree::applyLIP_torus()
         // todo: in this case we should use another algorithm!!! necessary????
         return;
     }
-    int bufferOffset = mGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
+
     int xt, yt; // wraparound coordinates
     for (y=0;y<gr_stamp; ++y) {
         grid_y = pos.y() + y;
-        yt = torusIndex(grid_y, 50,bufferOffset); // 50 cells per 100m
+        yt = torusIndex(grid_y, 50,bufferOffset, ru_offset.y()); // 50 cells per 100m
         for (x=0;x<gr_stamp;++x) {
             // suppose there is no stamping outside
             grid_x = pos.x() + x;
-            xt = torusIndex(grid_x,50,bufferOffset);
+            xt = torusIndex(grid_x,50,bufferOffset, ru_offset.x());
 
             local_dom = mHeightGrid->valueAtIndex(xt/5,yt/5).height;
             value = (*mStamp)(x,y); // stampvalue
@@ -315,9 +318,15 @@ void Tree::heightGrid_torus()
     const float cellsize = mHeightGrid->cellsize();
 
     QPoint p = QPoint(mPositionIndex.x()/5, mPositionIndex.y()/5); // pos of tree on height grid
+    int bufferOffset = mHeightGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
 
     // count trees that are on height-grid cells (used for stockable area)
     mHeightGrid->valueAtIndex(p).increaseCount();
+
+    // torus coordinates
+    p.setX((p.x()-bufferOffset)%10 + bufferOffset);
+    p.setY((p.y()-bufferOffset)%10 + bufferOffset);
+    QPoint ru_offset =QPoint(mPositionIndex.x()/5 - p.x(), mPositionIndex.y()/5 - p.y());
 
     int index_eastwest = mPositionIndex.x() % 5; // 4: very west, 0 east edge
     int index_northsouth = mPositionIndex.y() % 5; // 4: northern edge, 0: southern edge
@@ -340,15 +349,15 @@ void Tree::heightGrid_torus()
     int ringcount = int(floor(mHeight / cellsize)) + 1;
     int ix, iy;
     int ring;
-    QPoint pos;
     float hdom;
-    int bufferOffset = mHeightGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
     for (ix=-ringcount;ix<=ringcount;ix++)
         for (iy=-ringcount; iy<=+ringcount; iy++) {
         ring = qMax(abs(ix), abs(iy));
         QPoint pos(ix+p.x(), iy+p.y());
-        if (mHeightGrid->isIndexValid(pos)) {
-            float &rHGrid = mHeightGrid->valueAtIndex(torusIndex(pos.x(),10,bufferOffset), torusIndex(pos.y(),10,bufferOffset)).height;
+        QPoint p_torus(torusIndex(pos.x(),10,bufferOffset,ru_offset.x()),
+                       torusIndex(pos.y(),10,bufferOffset,ru_offset.y()));
+        if (mHeightGrid->isIndexValid(p_torus)) {
+            float &rHGrid = mHeightGrid->valueAtIndex(p_torus.x(),p_torus.y()).height;
             if (rHGrid > mHeight) // skip calculation if grid is higher than tree
                 continue;
             int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
@@ -369,17 +378,18 @@ void Tree::readLIF_torus()
     const Stamp *reader = mStamp->reader();
     if (!reader)
         return;
-    QPoint pos_reader = mPositionIndex;
+    int bufferOffset = mGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
+
+    QPoint pos_reader = QPoint((mPositionIndex.x()-bufferOffset)%50 + bufferOffset,
+                               (mPositionIndex.y()-bufferOffset)%50 + bufferOffset); // offset within the ha
+    QPoint ru_offset = QPoint(mPositionIndex.x() - pos_reader.x(), mPositionIndex.y() - pos_reader.y()); // offset of the corner of the resource index
 
     int offset_reader = reader->offset();
     int offset_writer = mStamp->offset();
     int d_offset = offset_writer - offset_reader; // offset on the *stamp* to the crown-cells
 
-    QPoint pos_writer=pos_reader - QPoint(offset_writer, offset_writer);
     pos_reader-=QPoint(offset_reader, offset_reader);
-    QPoint p;
 
-    //float dom_height = (*m_dominanceGrid)[m_Position];
     float local_dom;
 
     int x,y;
@@ -390,13 +400,12 @@ void Tree::readLIF_torus()
     int rx = pos_reader.x();
     int ry = pos_reader.y();
     int xt, yt; // wrapped coords
-    int bufferOffset = mGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
 
     for (y=0;y<reader_size; ++y, ++ry) {
         grid_value = mGrid->ptr(rx, ry);
         for (x=0;x<reader_size;++x) {
-            xt = torusIndex(rx+x,50, bufferOffset);
-            yt = torusIndex(ry+y,50, bufferOffset);
+            xt = torusIndex(rx+x,50, bufferOffset, ru_offset.x());
+            yt = torusIndex(ry+y,50, bufferOffset, ru_offset.y());
             grid_value = mGrid->ptr(xt,yt);
             //p = pos_reader + QPoint(x,y);
             //if (m_grid->isIndexValid(p)) {
