@@ -508,7 +508,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     npp += mNPPReserve;
     const double foliage_mass_allo = species()->biomassFoliage(mDbh);
     const double reserve_size = foliage_mass_allo * (1. + mSpecies->finerootFoliageRatio());
-    double refill_reserve = qMin(reserve_size, 2.*mFoliageMass); // not always try to refill reserve 100%
+    double refill_reserve = qMin(reserve_size, (1. + mSpecies->finerootFoliageRatio())*mFoliageMass); // not always try to refill reserve 100%
 
     double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1) (eta)
     // turnover rates
