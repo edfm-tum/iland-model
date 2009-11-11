@@ -442,6 +442,7 @@ void Tree::resetStatistics()
 void Tree::calcLightResponse()
 {
     // calculate a light response from lri:
+    // http://iland.boku.ac.at/individual+tree+light+availability
     double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.);
     mLightResponse = mSpecies->lightResponse(lri);
     mRU->addLR(mLeafArea, mLightResponse);
@@ -454,8 +455,8 @@ void Tree::calcLightResponse()
 
 /** grow() is the main function of the yearly tree growth.
   The main steps are:
-  - Production of GPP/NPP   @sa http://iland.boku.ac.at/primary+production
-  - Partitioning of NPP to biomass compartments of the tree @sa http://iland.boku.ac.at/allocation (???)
+  - Production of GPP/NPP   @sa http://iland.boku.ac.at/primary+production http://iland.boku.ac.at/individual+tree+light+availability
+  - Partitioning of NPP to biomass compartments of the tree @sa http://iland.boku.ac.at/allocation
   - Growth of the stem http://iland.boku.ac.at/stem+growth (???)
   Additionally, the age of the tree is increased and the mortality sub routine is executed.*/
 void Tree::grow()
@@ -498,7 +499,8 @@ void Tree::grow()
 }
 
 /** partitioning of this years assimilates (NPP) to biomass compartments.
-  Conceptionally, the algorithm is based on Duursma, 2007. */
+  Conceptionally, the algorithm is based on Duursma, 2007.
+  @sa http://iland.boku.ac.at/allocation */
 inline void Tree::partitioning(TreeGrowthData &d)
 {
     if (isDebugging())
@@ -521,7 +523,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     apct_root = mRU->resourceUnitSpecies(species()).prod3PG().rootFraction();
     d.NPP_above = d.NPP * (1. - apct_root); // aboveground: total NPP - fraction to roots
-    double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents... now fixed
+    double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents (b_woody / b_foliage)
 
     // Duursma 2007, Eq. (20)
     apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mWoodyMass + b_wf );
@@ -540,7 +542,9 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Change of biomass compartments
     double sen_root = mFineRootMass * to_root;
     double sen_foliage = mFoliageMass * to_fol;
+
     // Roots
+    // http://iland.boku.ac.at/allocation#belowground_NPP
     mFineRootMass -= sen_root; // reduce only fine root pool
     double delta_root = apct_root * npp;
     // 1st, refill the fine root pool
@@ -568,6 +572,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     d.stress_index =qMax(1. - (npp) / ( to_fol*foliage_mass_allo + to_root*foliage_mass_allo*species()->finerootFoliageRatio() + reserve_size), 0.);
 
     // Woody compartments
+    // see also: http://iland.boku.ac.at/allocation#reserve_and_allocation_to_stem_growth
     // (1) transfer to reserve pool
     double gross_woody = apct_wood * npp;
     double to_reserve = qMin(reserve_size, gross_woody);

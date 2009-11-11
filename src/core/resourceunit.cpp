@@ -134,7 +134,8 @@ void ResourceUnit::newYear()
 
 /** production() is the "stand-level" part of the biomass production (3PG).
     - The amount of radiation intercepted by the stand is calculated
-    - The 3PG production for each species and ressource unit is invoked  */
+    - The 3PG production for each species and ressource unit is invoked
+    see also: http://iland.boku.ac.at/individual+tree+light+availability */
 void ResourceUnit::production()
 {
 
