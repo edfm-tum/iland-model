@@ -69,6 +69,7 @@ void WaterCycle::getStandValues()
     }
     if (total_lai < 3.) {
         // following Landsberg and Waring: when LAI is < 3, a linear "ramp" from 0 to 3 is assumed
+        // http://iland.boku.ac.at/water+cycle#transpiration_and_canopy_conductance
         mCanopyConductance *= total_lai / 3.;
     }
     qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
@@ -76,6 +77,7 @@ void WaterCycle::getStandValues()
 
 /// Main Water Cycle function. This function triggers all water related tasks for
 /// one simulation year.
+/// @sa http://iland.boku.ac.at/water+cycle
 void WaterCycle::run()
 {
     // preparations (once a year)
@@ -170,7 +172,8 @@ double SnowPack::flow(const double &preciptitation_mm, const double &temperature
 /** Interception in crown canopy.
     Calculates the amount of preciptitation that does not reach the ground and
     is stored in the canopy. The approach is adopted from Picus 1.3.
-    Returns the amount of precipitation (mm) that surpasses the canopy layer. */
+    Returns the amount of precipitation (mm) that surpasses the canopy layer.
+    @sa http://iland.boku.ac.at/water+cycle#precipitation_and_interception */
 double Canopy::flow(const double &preciptitation_mm, const double &temperature)
 {
     // sanity checks
@@ -194,10 +197,10 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
 
     if (mLAIBroadleaved>0.) {
         // (1) calculate maximum fraction of thru-flow the crown (based on precipitation)
-        double max_flow_broad = 0.9 * sqrt(1.03 - exp(-0.055*preciptitation_mm));
+        double max_flow_broad = 0.9 * pow(1.22 - exp(-0.055*preciptitation_mm), 0.35);
         max_interception_mm += preciptitation_mm *  (1. - max_flow_broad * mLAIBroadleaved/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
-        double max_storage_broad = 4. * (1. - exp(-0.55*mLAIBroadleaved) );
+        double max_storage_broad = 2. * (1. - exp(-0.5*mLAIBroadleaved) );
         max_storage_mm += max_storage_broad;
     }
 

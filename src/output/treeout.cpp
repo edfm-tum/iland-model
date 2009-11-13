@@ -24,7 +24,7 @@ TreeOut::TreeOut()
             << OutputColumn("woodyMass", "kg Biomass in woody department", OutDouble)
             << OutputColumn("fineRootMass", "kg Biomass in fine-root department", OutDouble)
             << OutputColumn("coarseRootMass", "kg Biomass in coarse-root department", OutDouble)
-            << OutputColumn("lri", "LightResourceIndex of the tree (raw light index from iLand)", OutDouble)
+            << OutputColumn("lri", "LightResourceIndex of the tree (raw light index from iLand, without applying resource-unit modifications)", OutDouble)
             << OutputColumn("lightResponse", "light response value (including species specific response to the light level)", OutDouble)
             << OutputColumn("stressIndex", "scalar (0..1) indicating the stress level (see [Mortality]).", OutDouble)
             << OutputColumn("reserve_kg", "NPP currently available in the reserve pool (kg Biomass)", OutDouble);

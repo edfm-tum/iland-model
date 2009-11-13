@@ -482,7 +482,7 @@ void Tree::grow()
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeNPP);
             dumpList(out); // add tree headers
-            out << mLightResponse << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
+            out << mLRI * mRU->LRImodifier() << mLightResponse << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
         }
     //); // DBGMODE()
     if (d.NPP>0.)

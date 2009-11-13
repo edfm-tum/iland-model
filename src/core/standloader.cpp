@@ -66,6 +66,7 @@ void StandLoader::processInit()
     // one global init-file for the whole area:
     if (copy_mode=="single") {
         loadInitFile(fileName, type);
+        evaluateDebugTrees();
         return;
     }
 
@@ -73,6 +74,7 @@ void StandLoader::processInit()
     if (copy_mode=="copy") {
         loadInitFile(fileName, type);
         copyTrees();
+        evaluateDebugTrees();
         return;
     }
 
@@ -87,8 +89,10 @@ void StandLoader::processInit()
             loadInitFile(fileName, type, ru);
             qDebug() << "loaded" << fileName << "on" << ru->boundingBox() << "," << ru->trees().count() << "trees.";
         }
+        evaluateDebugTrees();
         return;
     }
+
     throw IException("StandLoader::processInit: invalid initalization.mode!");
 }
 
@@ -96,6 +100,7 @@ void StandLoader::evaluateDebugTrees()
 {
     // evaluate debugging
     QString dbg_str = GlobalSettings::instance()->settings().paramValueString("debug_tree");
+    int counter=0;
     if (!dbg_str.isEmpty()) {
        TreeWrapper tw;
        Expression dexp(dbg_str, &tw); // load expression dbg_str and enable external model variables
@@ -104,10 +109,13 @@ void StandLoader::evaluateDebugTrees()
         while (Tree *t = at.next()) {
             tw.setTree(t);
             result = dexp.execute();
-            if (result)
+            if (result) {
                 t->enableDebugging();
+                counter++;
+            }
         }
     }
+    qDebug() << "evaluateDebugTrees: enabled debugging for" << counter << "trees.";
 }
 
 void StandLoader::loadInitFile(const QString &fileName, const QString &type, ResourceUnit *ru)

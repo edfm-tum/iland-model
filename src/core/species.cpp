@@ -80,14 +80,15 @@ void Species::setup()
     // mortality
     // the probabilites (mDeathProb_...) are the yearly prob. of death.
     // from a population a fraction of p_lucky remains after ageMax years.
-    double p_lucky = doubleVar("ProbIntrinsic");
-    double p_lucky_stress = doubleVar("ProbStress");
-    if (p_lucky * mMaximumAge * p_lucky_stress == 0.) {
+    double p_lucky = doubleVar("probIntrinsic");
+    double p_lucky_stress = doubleVar("probStress");
+    double p_lucky_years = doubleVar("probStressYears");
+    if (p_lucky * mMaximumAge * p_lucky_stress * p_lucky_years == 0.) {
         throw IException( QString("Error setting up species %1: invalid mortality parameters.").arg(id()));
     }
 
     mDeathProb_intrinsic = 1. - pow(p_lucky, 1. / mMaximumAge);
-    mDeathProb_stress = 1. - pow(p_lucky_stress, 0.1); // 10 years (after 10 stress years (full stress), p_lucky_stress percent survive
+    mDeathProb_stress = 1. - pow(p_lucky_stress, 1. / p_lucky_years); // 10 years (after 10 stress years (full stress), p_lucky_stress percent survive
 
     // envirionmental responses
     mRespVpdExponent = doubleVar("respVpdExponent");
