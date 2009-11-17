@@ -19,7 +19,7 @@ public:
     const double *soilWaterResponse() const { return mSoilWaterResponse; }
     const double *absorbedRadiation() const { return mRadiation; } ///< radiation sum in MJ/m2
     const double *minimumResponses() const { return mResponseMinima; }
-    double co2Response() const { return mCO2Response; }
+    const double *co2Response() const { return mCO2Response; }
     double nitrogenResponse() const { return mNitrogenResponse; }
 private:
     void clear();
@@ -32,7 +32,7 @@ private:
     double mSoilWaterResponse[12];
     double mSoilWaterResponseYear;
     double mNitrogenResponse;
-    double mCO2Response;
+    double mCO2Response[12];
 };
 
 #endif // SPECIESRESPONSE_H

@@ -42,7 +42,7 @@ inline double Production3PG::calculateEpsilon(const int month) const
 {
     double epsilon = Model::settings().epsilon; // maximum radiation use efficiency
     epsilon *= mResponse->nitrogenResponse() *
-               mResponse->co2Response();
+               mResponse->co2Response()[month];
     return epsilon;
 }
 

@@ -39,7 +39,7 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
         *this <<  resp->minimumResponses()[i]
               <<  resp->vpdResponse()[i] << resp->tempResponse()[i]
               << resp->soilWaterResponse()[i] << resp->nitrogenResponse()
-              << resp->co2Response() << prod.mUPAR[i]
+              << resp->co2Response()[i] << prod.mUPAR[i]
               << prod.mGPP[i];
         writeRow();
     }
