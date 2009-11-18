@@ -1,5 +1,11 @@
 #include <QtGui/QApplication>
 #include "mainwindow.h"
+#include "../3rdparty/MersenneTwister.h"
+MTRand _mtrand;
+MTRand &mtRand()
+{
+    return _mtrand;
+}
 
 int main(int argc, char *argv[])
 {

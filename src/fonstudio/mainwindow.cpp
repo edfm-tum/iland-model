@@ -77,16 +77,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect( ui->PaintWidget, SIGNAL(needsPainting(QPainter&)),
              this, SLOT(repaintArea(QPainter&)) );
-    connect (ui->PaintWidget, SIGNAL(mouseClick(QPoint)),
-             this, SLOT(mouseClick(const QPoint&)));
-    connect(ui->PaintWidget, SIGNAL(mouseDrag(QPoint,QPoint,Qt::MouseButton)),
-            this, SLOT(mouseDrag(const QPoint&, const QPoint &, const Qt::MouseButton)));
-    connect(ui->PaintWidget, SIGNAL(mouseMove(QPoint)),
-            this, SLOT(mouseMove(const QPoint&)));
-    connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
-            this, SLOT(mouseWheel(const QPoint&, int)));
-
-
 
 
     mLogSpace = ui->logOutput;

@@ -30,9 +30,6 @@ SOURCES += main.cpp \
     ../tools/settingmetadata.cpp \
     ../tools/xmlhelper.cpp \
     ../core/threadrunner.cpp
-
-
-
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
@@ -51,9 +48,8 @@ HEADERS += mainwindow.h \
     ../tools/settingmetadata.h \
     ../core/speciesset.h \
     ../tools/xmlhelper.h \
-    ../core/threadrunner.h
-
-
+    ../core/threadrunner.h \
+    ../3rdparty/MersenneTwister.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
 DEFINES += FONSTUDIO
