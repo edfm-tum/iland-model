@@ -89,6 +89,7 @@ void Species::setup()
 
     mDeathProb_intrinsic = 1. - pow(p_lucky, 1. / mMaximumAge);
     mDeathProb_stress = 1. - pow(p_lucky_stress, 1. / p_lucky_years); // 10 years (after 10 stress years (full stress), p_lucky_stress percent survive
+    qDebug() << "species" << name() << "probStress" << p_lucky_stress << "probStressYears" << p_lucky_years << "resulting probability:" << mDeathProb_stress;
 
     // envirionmental responses
     mRespVpdExponent = doubleVar("respVpdExponent");
