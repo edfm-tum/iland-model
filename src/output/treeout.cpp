@@ -14,6 +14,8 @@ TreeOut::TreeOut()
                    "Initial values (without any growth) are output as 'startyear-1'.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species()
             << OutputColumn("id", "id of the tree", OutInteger)
+            << OutputColumn("x", "position of the tree, x-direction (m)", OutDouble)
+            << OutputColumn("y", "position of the tree, y-direction (m)", OutDouble)
             << OutputColumn("dbh", "dbh (cm) of the tree", OutDouble)
             << OutputColumn("height", "height (m) of the tree", OutDouble)
             << OutputColumn("isDead", "1: tree is dead, 0: tree lives", OutDouble)
@@ -54,7 +56,7 @@ void TreeOut::exec()
                 continue;
         }
         *this << currentYear() << t->ru()->index() << t->species()->id();
-        *this << t->id() << t->dbh() << t->height() << (t->isDead()?1:0) << t->basalArea() << t->volume();
+        *this << t->id() << t->position().x() << t->position().y() << t->dbh() << t->height() << (t->isDead()?1:0) << t->basalArea() << t->volume();
         *this << t->leafArea() << t->mFoliageMass << t->mWoodyMass <<  t->mFineRootMass << t->mCoarseRootMass;
         *this << t->lightResourceIndex() << t->mLightResponse << t->mStressIndex << t->mNPPReserve;
         writeRow();

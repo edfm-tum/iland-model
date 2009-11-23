@@ -650,7 +650,7 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
                .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
                .arg( mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));
 
-    DBGMODE(
+    //DBGMODE(
         double res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
         DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
@@ -661,7 +661,7 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
             out << net_stem_npp << stem_mass << hd_growth << factor_diameter << delta_d_estimate*100 << d_increment*100;
         }
 
-    ); // DBGMODE()
+    //); // DBGMODE()
 
     d_increment = qMax(d_increment, 0.);
 
