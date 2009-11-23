@@ -55,7 +55,7 @@ public:
     double canopyConductance() const { return mMaxCanopyConductance; } ///< maximum canopy conductance in m/s
     inline double soilwaterResponse(const double &psi_kPa) const; ///< input: matrix potential (kPa) (e.g. -15)
     double lightResponse(const double lightResourceIndex) {return mSet->lightResponse(lightResourceIndex, mLightResponseClass); }
-    double psiMax() const { return mPsiMax; }
+    double psiMin() const { return mPsiMin; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
     // maintenance
@@ -106,7 +106,7 @@ private:
     double mRespTempMin; ///< temperature response calculation offset
     double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
     double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
-    double mPsiMax; ///< maximum water potential (MPa), i.e. wilting point (is below zero!)
+    double mPsiMin; ///< minimum water potential (MPa), i.e. wilting point (is below zero!)
     // water
     double mMaxCanopyConductance; ///< maximum canopy conductance for transpiration (m/s)
     int mPhenologyClass;
@@ -145,7 +145,7 @@ inline double Species::temperatureResponse(const double &delayed_temp) const
 inline double Species::soilwaterResponse(const double &psi_kPa) const
 {
     const double psi_mpa = psi_kPa / 1000.; // convert to MPa
-    double result = limit( 1. - psi_mpa / mPsiMax, 0., 1.);
+    double result = limit( 1. - psi_mpa / mPsiMin, 0., 1.);
     return result;
 }
 

@@ -106,7 +106,7 @@ void Species::setup()
 
     // water
     mMaxCanopyConductance = doubleVar("maxCanopyConductance");
-    mPsiMax = -fabs(doubleVar("psiMax")); // force a negative value
+    mPsiMin = -fabs(doubleVar("psiMin")); // force a negative value
 
     // light
     mLightResponseClass = doubleVar("lightResponseClass");
