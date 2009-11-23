@@ -125,5 +125,3 @@ revtarget.depends = $$SOURCES \
     $$HEADERS \
     $$FORMS
 OTHER_FILES += maindoc.cpp
-
-QMAKE_POST_LINK += $$system(copy release/iland.exe ../../executable)
