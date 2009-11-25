@@ -80,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     mLogSpace = ui->logOutput;
-    qInstallMsgHandler(myMessageOutput);
+    //qInstallMsgHandler(myMessageOutput);
     // load xml file
     xmldoc.clear();
     QString argText = QApplication::arguments().last();
@@ -480,7 +480,7 @@ void MainWindow::on_lrReadStamps_clicked()
     StampContainer container;
     int totcount=0;
     DebugTimer t;
-    for (double radius=0.5; radius<=8; radius+=0.1) {
+    for (double radius=0.5; radius<=15; radius+=0.1) {
         qDebug() << "creation of reader stamp for radius" << radius;
         grid.initialize(0.);
         float x,y;
@@ -514,7 +514,7 @@ void MainWindow::on_lrReadStamps_clicked()
     QFile file(targetFile);
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);   // we will serialize the data into the file
-    container.setDescription("Reader-stamps for crown-radii ranging from 0.5m to 8m, stepwidth is 0.1m.");
+    container.setDescription("Reader-stamps for crown-radii ranging from 0.5m to 15m, stepwidth is 0.1m.");
     container.save(out);
     qDebug() << container.dump();
 

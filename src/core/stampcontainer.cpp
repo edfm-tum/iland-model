@@ -8,7 +8,7 @@ const int StampContainer::cHDclassWidth=10;
 const int StampContainer::cBHDclassLow = 4; ///< bhd classes start with 4: class 0 = 4-8, class1 = 8..112
 const int StampContainer::cHDclassLow = 35; ///< hd classes offset is 35: class 0 = 35-45, class 1 = 45-55
 const int StampContainer::cBHDclassCount = 50; ///< class count, 50: highest class = 50*4 +- 2 = 198 - 202
-const int StampContainer::cHDclassCount = 10; ///< class count. highest class: 135-145
+const int StampContainer::cHDclassCount = 15; ///< class count. highest class:  185-195
 
 
 StampContainer::StampContainer()
@@ -242,7 +242,7 @@ void StampContainer::load(QDataStream &in)
         in >> crownradius;
         in >> readsum;
         in >> domvalue;
-        //qDebug() << "stamp bhd hdvalue type readsum dominance" << bhd << hdvalue << type << readsum << domvalue;
+        //qDebug() << "stamp bhd hdvalue type readsum dominance type" << bhd << hdvalue << type << readsum << domvalue << type;
 
         Stamp *stamp = newStamp( Stamp::StampType(type) );
         stamp->load(in);
