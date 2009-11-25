@@ -112,6 +112,7 @@ HEADERS += mainwindow.h \
     ../3rdparty/MersenneTwister.h
 FORMS += mainwindow.ui
 RESOURCES += res/iland.qrc
+
 QMAKE_EXTRA_TARGETS += revtarget
 PRE_TARGETDEPS += version.h
 revtarget.target = version.h
@@ -119,9 +120,9 @@ SVNREV = $$system(svnversion .)
 revtarget.commands = @echo \
     "const char *version = \"Alpha 1.1.0\";" \
     "const char *svn_revision = \"$$SVNREV\";" \
-    > \
-    $$revtarget.target
+    >  $$revtarget.target
 revtarget.depends = $$SOURCES \
     $$HEADERS \
     $$FORMS
+
 OTHER_FILES += maindoc.cpp

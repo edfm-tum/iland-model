@@ -45,7 +45,7 @@ public:
     double specificLeafArea() const { return mSpecificLeafArea; }
     // mortality
     double deathProb_intrinsic() const { return mDeathProb_intrinsic; }
-    double deathProb_stress() const { return mDeathProb_stress; }
+    inline double deathProb_stress(const double &stress_index) const;
     // aging
     double aging(const float height, const int age);
     // environmental responses
@@ -146,6 +146,15 @@ inline double Species::soilwaterResponse(const double &psi_kPa) const
 {
     const double psi_mpa = psi_kPa / 1000.; // convert to MPa
     double result = limit( 1. - psi_mpa / mPsiMin, 0., 1.);
+    return result;
+}
+
+/** calculate probabilty of death based on the current stress index. */
+inline double Species::deathProb_stress(const double &stress_index) const
+{
+    if (stress_index==0)
+        return 0.;
+    double result = 1. - exp(-mDeathProb_stress*stress_index);
     return result;
 }
 

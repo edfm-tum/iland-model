@@ -713,11 +713,10 @@ void Tree::mortality(TreeGrowthData &d)
     if (mFoliageMass<0.00001)
         die();
 
-    double p_death,  p_stress;
-    p_stress = d.stress_index * species()->deathProb_stress();
-    //if (d.stress_index>0)
-    //    p_stress = species()->deathProb_stress();
-    p_death = species()->deathProb_intrinsic() + p_stress;
+    double p_death,  p_stress, p_intrinsic;
+    p_intrinsic = species()->deathProb_intrinsic();
+    p_stress = species()->deathProb_stress(d.stress_index);
+    p_death =  p_intrinsic + p_stress;
     double p = drandom(); //0..1
     if (p<p_death) {
         // die...
