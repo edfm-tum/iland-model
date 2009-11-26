@@ -85,8 +85,8 @@ bool Environment::loadFromString(const QString &source)
         } else {
             // no species sets specified
             SpeciesSet *speciesSet = new SpeciesSet();
-            mSpeciesSets.push_back(speciesSet);
             speciesSet->setup();
+            mSpeciesSets.push_back(speciesSet);
             mCurrentSpeciesSet = speciesSet;
         }
 
