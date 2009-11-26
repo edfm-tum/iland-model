@@ -69,6 +69,8 @@ private:
     int mCurrentYear; // current year (relative)
     int mMinYear; // lowest year in store (relative)
     int mMaxYear;  // highest year in store (relative)
+    double mTemperatureShift; // add this to daily temp
+    double mPrecipitationShift; // multiply prec with that
     ClimateDay *mBegin; // pointer to the first day of the current year
     ClimateDay *mEnd; // pointer to the last day of the current year (+1)
     QVector<ClimateDay> mStore; ///< storage of climate data

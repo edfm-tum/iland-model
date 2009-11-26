@@ -85,6 +85,8 @@ void Climate::setup()
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
     mLoadYears = (int) xml.valueDouble("batchYears", 1.);
+    mTemperatureShift = xml.valueDouble("temperatureShift", 0.);
+    mPrecipitationShift = xml.valueDouble("precipitationShift", 1.);
     mStore.resize(mLoadYears * 366);
     mCurrentYear=0;
     mMinYear = 0;
@@ -143,8 +145,8 @@ void Climate::load()
             cday->year = mClimateQuery.value(0).toInt();
             cday->month = mClimateQuery.value(1).toInt();
             cday->day = mClimateQuery.value(2).toInt();
-            cday->temperature = mClimateQuery.value(3).toDouble();
-            cday->preciptitation = mClimateQuery.value(4).toDouble();
+            cday->temperature = mClimateQuery.value(3).toDouble() + mTemperatureShift;
+            cday->preciptitation = mClimateQuery.value(4).toDouble() * mPrecipitationShift;
             cday->radiation = mClimateQuery.value(5).toDouble();
             cday->vpd = mClimateQuery.value(6).toDouble();
             // sanity checeks
