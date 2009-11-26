@@ -24,6 +24,7 @@ private:
         double dbh_from, dbh_to;
         double hd;
         int age;
+        double density;
     };
     void loadInitFile(const QString &fileName, const QString &type, ResourceUnit *ru=NULL);
     void executeiLandInit(ResourceUnit *ru);

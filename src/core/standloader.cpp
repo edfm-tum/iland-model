@@ -242,6 +242,7 @@ void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru,
     int idbh_to = infile.columnIndex("dbh_to");
     int ihd = infile.columnIndex("hd");
     int iage = infile.columnIndex("age");
+    int idensity = infile.columnIndex("density");
     if (icount<0 || ispecies<0 || idbh_from<0 || idbh_to<0 || ihd<0 || iage<0)
         throw IException(QString("load-ini-file: file '%1' containts not all required fields (count, species, dbh_from, dbh_to, hd, age).").arg(fileName));
 
@@ -254,6 +255,15 @@ void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru,
          item.hd = infile.value(row, ihd).toDouble();
          item.age = infile.value(row, iage).toInt();
          item.species = speciesSet->species(infile.value(row, ispecies).toString());
+         if (idensity>=0)
+             item.density = infile.value(row, idensity).toDouble();
+         else
+             item.density = 0.;
+         if (item.density<-1 || item.density>1)
+             throw IException(QString("load-ini-file: invalid value for density. Allowed range is -1..1: '%1' in file '%2', line %3.")
+                              .arg(item.density)
+                              .arg(fileName)
+                              .arg(row));
          if (!item.species) {
              throw IException(QString("load-ini-file: unknown speices '%1' in file '%2', line %3.")
                               .arg(infile.value(row, ispecies).toString())
@@ -296,9 +306,12 @@ int unevenlist[25] = { 11,13,7,17, 1,19,5,21, 9,23,3,15,
 
 // sort function
 bool sortPairLessThan(const QPair<int, double> &s1, const QPair<int, double> &s2)
- {
-     return s1.second < s2.second;
- }
+{
+    return s1.second < s2.second;
+}
+
+/**
+*/
 void StandLoader::executeiLandInit(ResourceUnit *ru)
 {
 
@@ -313,8 +326,9 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
         tcount.push_back(QPair<int,double>(i,0.));
 
     int key;
-
+    double rand_val, rand_fraction;
     foreach(const InitFileItem &item, mInitItems) {
+        rand_fraction = fabs(double(item.density));
         for (int i=0;i<item.count;i++) {
             // create trees
             int tree_idx = ru->newTreeIndex();
@@ -325,10 +339,17 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             tree.setAge(item.age);
             tree.setRU(ru);
             tree.setup();
+
+            // calculate random value. "density" is from 1..-1.
+            rand_val = mRandom->get();
+            if (item.density<0)
+                rand_val = 1. - rand_val;
+            rand_val = (rand_val * rand_fraction + drandom()*(1.-rand_fraction))/2.;
+
             // key: rank of target pixel
             // first: index of target pixel
             // second: sum of target pixel
-            key = limit(int(100*mRandom->get()), 0, 99); // get from random number generator
+            key = limit(int(100*rand_val), 0, 99); // get from random number generator
             tree_map.insert(tcount[key].first, tree_idx); // store tree in map
             tcount[key].second+=tree.basalArea(); // aggregate the basal area for each 10m pixel
             if (i%30==0)
