@@ -18,8 +18,6 @@ Environment::~Environment()
 {
     if (mInfile) {
         delete mInfile;
-        qDeleteAll(mSpeciesSets);
-        qDeleteAll(mClimate);
     }
 }
 
@@ -102,6 +100,7 @@ bool Environment::loadFromString(const QString &source)
                 Climate *climate = new Climate();
                 climate->setup();
                 mClimate.push_back(climate);
+                mCreatedObjects[name]=(void*)climate;
             }
             qDebug() << mClimate.count() << "climates created";
         } else {
@@ -109,7 +108,6 @@ bool Environment::loadFromString(const QString &source)
             Climate *c = new Climate();
             c->setup();
             mClimate.push_back(c);
-            mCreatedObjects["default_climate"]=(void*)c; // prepare clean cleanup
             mCurrentClimate = c;
         }
         return true;
@@ -152,6 +150,6 @@ void Environment::setPosition(const QPointF position)
 
         }
 
-    } else
-        throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1/%2").arg(position.x()).arg(position.y()));
+    } //else
+      //  throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1/%2").arg(position.x()).arg(position.y()));
 }
