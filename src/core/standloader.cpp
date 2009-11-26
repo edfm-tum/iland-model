@@ -327,6 +327,7 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
 
     int key;
     double rand_val, rand_fraction;
+    int total_count = 0;
     foreach(const InitFileItem &item, mInitItems) {
         rand_fraction = fabs(double(item.density));
         for (int i=0;i<item.count;i++) {
@@ -339,12 +340,13 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             tree.setAge(item.age);
             tree.setRU(ru);
             tree.setup();
+            total_count++;
 
             // calculate random value. "density" is from 1..-1.
             rand_val = mRandom->get();
             if (item.density<0)
                 rand_val = 1. - rand_val;
-            rand_val = (rand_val * rand_fraction + drandom()*(1.-rand_fraction))/2.;
+            rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
 
             // key: rank of target pixel
             // first: index of target pixel
@@ -352,8 +354,11 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             key = limit(int(100*rand_val), 0, 99); // get from random number generator
             tree_map.insert(tcount[key].first, tree_idx); // store tree in map
             tcount[key].second+=tree.basalArea(); // aggregate the basal area for each 10m pixel
-            if (i%30==0)
+            if ( (total_count < 20 && i%2==0)
+                || (total_count<100 && i%10==0 )
+                || (i%30==0) ) {
                 qSort(tcount.begin(), tcount.end(), sortPairLessThan);
+            }
         }
         qSort(tcount.begin(), tcount.end(), sortPairLessThan);
     }
