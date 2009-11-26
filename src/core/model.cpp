@@ -35,12 +35,26 @@ Tree *AllTreeIterator::next()
     if (!mTreeEnd) {
         // initialize to first ressource unit
         mRUIterator = mModel->ruList().constBegin();
-        if (mRUIterator == mModel->ruList().constEnd()) return NULL;
+        // fast forward to the first RU with trees
+        while (mRUIterator!=mModel->ruList().constEnd()) {
+            if ((*mRUIterator)->trees().count()>0)
+                break;
+            mRUIterator++;
+        }
+            // finished if all RU processed
+        if (mRUIterator == mModel->ruList().constEnd())
+            return NULL;
         mTreeEnd = &((*mRUIterator)->trees().back()) + 1; // let end point to "1 after end" (STL-style)
         mCurrent = &((*mRUIterator)->trees().front());
     }
     if (mCurrent==mTreeEnd) {
-        mRUIterator++; // switch to next RU
+        mRUIterator++; // switch to next RU (loop until RU with trees is found)
+        while (mRUIterator!=mModel->ruList().constEnd()) {
+            if ((*mRUIterator)->trees().count()>0) {
+                break;
+            }
+            mRUIterator++;
+        }
         if (mRUIterator == mModel->ruList().constEnd()) {
             mCurrent = NULL;
             return NULL; // finished!!

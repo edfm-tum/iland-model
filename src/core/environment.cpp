@@ -16,8 +16,11 @@ Environment::Environment()
 }
 Environment::~Environment()
 {
-    if (mInfile)
+    if (mInfile) {
         delete mInfile;
+        qDeleteAll(mSpeciesSets);
+        qDeleteAll(mClimate);
+    }
 }
 
 bool Environment::loadFromFile(const QString &fileName)
@@ -79,6 +82,12 @@ bool Environment::loadFromString(const QString &source)
                 mCreatedObjects[name] = (void*)set;
             }
             qDebug() << mSpeciesSets.count() << "species sets created.";
+        } else {
+            // no species sets specified
+            SpeciesSet *speciesSet = new SpeciesSet();
+            mSpeciesSets.push_back(speciesSet);
+            speciesSet->setup();
+            mCurrentSpeciesSet = speciesSet;
         }
 
         // ******** setup of Climate *******
@@ -93,9 +102,15 @@ bool Environment::loadFromString(const QString &source)
                 Climate *climate = new Climate();
                 climate->setup();
                 mClimate.push_back(climate);
-                mCreatedObjects[name]=(void*)climate;
             }
             qDebug() << mClimate.count() << "climates created";
+        } else {
+            // no climate defined - setup default climate
+            Climate *c = new Climate();
+            c->setup();
+            mClimate.push_back(c);
+            mCreatedObjects["default_climate"]=(void*)c; // prepare clean cleanup
+            mCurrentClimate = c;
         }
         return true;
 
