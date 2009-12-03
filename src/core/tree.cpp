@@ -658,8 +658,8 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
                .arg( mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));
 
     //DBGMODE(
-        double res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
-        DBG_IF_X(res_final > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
+       // double res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
+        DBG_IF_X((mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp))) > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
 
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && isDebugging() ) {
@@ -696,7 +696,9 @@ inline double Tree::relative_height_growth()
     DBG_IF_X(hd_low < 20 || hd_high>250, "Tree::relative_height_growth", "hd out of range ", dump() + QString(" hd-low: %1 hd-high: %2").arg(hd_low).arg(hd_high));
 
     // scale according to LRI: if receiving much light (LRI=1), the result is hd_low (for open grown trees)
-    double hd_ratio = hd_high - (hd_high-hd_low)*mLRI;
+    // use the corrected LRI (see tracker#11)
+    double lri = limit(mLRI * mRU->LRImodifier(),0.,1.);
+    double hd_ratio = hd_high - (hd_high-hd_low)*lri;
     return hd_ratio;
 }
 
