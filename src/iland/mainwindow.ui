@@ -49,7 +49,7 @@
      <x>0</x>
      <y>0</y>
      <width>956</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -141,7 +141,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="editStackPage1">
         <attribute name="title">
@@ -159,15 +159,41 @@
            </item>
            <item>
             <widget class="QPushButton" name="openFile">
+             <property name="toolTip">
+              <string>Select a project file </string>
+             </property>
              <property name="text">
-              <string>Open</string>
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="res/iland.qrc">
+               <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>16</width>
+               <height>16</height>
+              </size>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="saveFile">
+             <property name="toolTip">
+              <string>Save the current project file</string>
+             </property>
              <property name="text">
-              <string>Save</string>
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="res/iland.qrc">
+               <normaloff>:/document-save.png</normaloff>:/document-save.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>16</width>
+               <height>16</height>
+              </size>
              </property>
             </widget>
            </item>
@@ -208,7 +234,7 @@
             </sizepolicy>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="tab_2">
             <attribute name="title">

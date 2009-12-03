@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/" >
+    <qresource prefix="/">
         <file>phone-icon.jpg</file>
         <file>phone-icon.png</file>
         <file>camera.png</file>
@@ -14,5 +14,7 @@
         <file>Pause.png</file>
         <file>Play All.png</file>
         <file>Backup Green Button.png</file>
+        <file>document-save.png</file>
+        <file>document-open.png</file>
     </qresource>
 </RCC>

@@ -56,7 +56,7 @@ QString Management::executeScript(QString cmd)
     if (mEngine)
         mEngine->evaluate(cmd);
     if (mEngine->hasUncaughtException()) {
-        int line = mEngine->uncaughtExceptionLineNumber();
+        //int line = mEngine->uncaughtExceptionLineNumber();
         QString msg = QString( "Script Error occured: %1\n").arg( mEngine->uncaughtException().toString());
         msg+=mEngine->uncaughtExceptionBacktrace().join("\n");
         return msg;

@@ -415,6 +415,8 @@ void Tree::readLIF_torus()
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value / own_value; // remove impact of focal tree
+            //if (_isnan(value))
+            //    qDebug() << "isnan" << id();
             //if (value>0.)
             sum += value * (*reader)(x,y);
 
@@ -422,6 +424,11 @@ void Tree::readLIF_torus()
         }
     }
     mLRI = sum;
+    if (_isnan(mLRI)) {
+        qDebug() << "LRI invalid (nan)!" << id();
+        mLRI=0.;
+        //qDebug() << reader->dump();
+    }
     if (mLRI > 1.)
         mLRI = 1.;
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;

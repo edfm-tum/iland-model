@@ -30,6 +30,21 @@ void Stamp::setup(const int size)
         m_data[i]=0.;
 }
 
+QString Stamp::dump() const
+{
+    QString result, line;
+    int x,y;
+    for (y=0;y<m_size;++y)  {
+        line="";
+        for (x=0;x<m_size;++x)  {
+            line+= QString::number(*data(x,y)) + " ";
+        }
+        line+="\r\n";
+        result+=line;
+    }
+    return result;
+}
+
 void Stamp::loadFromFile(const QString &fileName)
 {
     QString txt = Helper::loadTextFile(fileName);

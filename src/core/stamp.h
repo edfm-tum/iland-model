@@ -47,6 +47,7 @@ public:
     void loadFromFile(const QString &fileName);
     void load(QDataStream &in); ///< load from stream (predefined binary structure)
     void save(QDataStream &out); ///< save to stream (predefined binary structure)
+    QString dump() const;
 private:
     void setup(const int size);
     float *m_data;
