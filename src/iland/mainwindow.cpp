@@ -5,6 +5,7 @@
 #include "global.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "aboutdialog.h"
 
 #include "model.h"
 #include "standloader.h"
@@ -166,7 +167,6 @@ MainWindow::MainWindow(QWidget *parent)
         restoreState(state);
     }
     checkModelState();
-    setWindowTitle("iLand Viewer (#" + Helper::currentRevision() + ")");
     ui->statusBar->addPermanentWidget(ui->modelRunProgress);
     ui->modelRunProgress->setValue(0);
     // remote control of model
@@ -846,4 +846,15 @@ void MainWindow::on_actionOutput_table_description_triggered()
 void MainWindow::on_actionTimers_triggered()
 {
     DebugTimer::printAllTimers();
+}
+
+void MainWindow::on_actionOnline_ressources_triggered()
+{
+    QDesktopServices::openUrl(QUrl("http://iland.boku.ac.at/"));
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    AboutDialog dialog;
+    dialog.exec();
 }

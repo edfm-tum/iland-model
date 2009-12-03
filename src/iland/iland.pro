@@ -60,10 +60,13 @@ SOURCES += main.cpp \
     ../core/environment.cpp \
     ../output/managementout.cpp \
     ../tools/sqlhelper.cpp \
-    ../tools/random.cpp
+    ../tools/random.cpp \
+    aboutdialog.cpp \
+    version.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
+    version.h \
     ../core/grid.h \
     ../core/tree.h \
     ../tools/expression.h \
@@ -109,20 +112,21 @@ HEADERS += mainwindow.h \
     ../output/managementout.h \
     ../tools/sqlhelper.h \
     ../tools/random.h \
-    ../3rdparty/MersenneTwister.h
-FORMS += mainwindow.ui
+    ../3rdparty/MersenneTwister.h \
+    aboutdialog.h
+FORMS += mainwindow.ui \
+    aboutdialog.ui
 RESOURCES += res/iland.qrc
 
-#QMAKE_EXTRA_TARGETS += revtarget
-#PRE_TARGETDEPS += version.h
-#revtarget.target = version.h
-#SVNREV = $$system(svnversion .)
-#revtarget.commands = @echo \
-#    "const char *version = \"Alpha 1.1.0\";" \
-#    "const char *svn_revision = \"$$SVNREV\";" \
-#    >  $$revtarget.target
-#revtarget.depends = $$SOURCES \
-#    $$HEADERS \
-#    $$FORMS
-
+# QMAKE_EXTRA_TARGETS += revtarget
+# PRE_TARGETDEPS += version.h
+# revtarget.target = version.h
+# SVNREV = $$system(svnversion .)
+# revtarget.commands = @echo \
+# "const char *version = \"Alpha 1.1.0\";" \
+# "const char *svn_revision = \"$$SVNREV\";" \
+# >  $$revtarget.target
+# revtarget.depends = $$SOURCES \
+# $$HEADERS \
+# $$FORMS
 OTHER_FILES += maindoc.cpp

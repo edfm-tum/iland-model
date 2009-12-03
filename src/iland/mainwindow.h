@@ -54,6 +54,8 @@ private:
 
 private slots:
 
+    void on_actionAbout_triggered();
+    void on_actionOnline_ressources_triggered();
     void on_actionTimers_triggered();
     void on_actionOutput_table_description_triggered();
     void on_actionWater_Output_triggered();
