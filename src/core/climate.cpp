@@ -150,7 +150,9 @@ void Climate::load()
             cday->preciptitation = mClimateQuery.value(4).toDouble() * mPrecipitationShift;
             cday->radiation = mClimateQuery.value(5).toDouble();
             cday->vpd = mClimateQuery.value(6).toDouble();
-            // sanity checeks
+            // sanity checks
+            if (cday->month<1 || cday->day<1 || cday->month>12 || cday->day>31)
+                qDebug() << QString("Invalid dates in climate table %1: year %2 month %3 day %4!").arg(name()).arg(cday->year).arg(cday->month).arg(cday->day);
             DBG_IF(cday->month<1 || cday->day<1 || cday->month>12 || cday->day>31,"Climate:load", "invalid dates");
             DBG_IF(cday->temperature<-70 || cday->temperature>50,"Climate:load", "temperature out of range (-70..+50°C)");
             DBG_IF(cday->preciptitation<0 || cday->preciptitation>200,"Climate:load", "precipitation out of range (0..200mm)");

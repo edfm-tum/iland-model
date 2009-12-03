@@ -86,6 +86,8 @@ void StandLoader::processInit()
             g->model()->environment()->setPosition(ru->boundingBox().center());
             type = xml.value("type", "");
             fileName = xml.value("file", "");
+            if (fileName.isEmpty())
+                continue;
             loadInitFile(fileName, type, ru);
             qDebug() << "loaded" << fileName << "on" << ru->boundingBox() << "," << ru->trees().count() << "trees.";
         }

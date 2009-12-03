@@ -155,6 +155,7 @@ void Environment::setPosition(const QPointF position)
 
         }
 
-    } //else
-      //  throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1/%2").arg(position.x()).arg(position.y()));
+    } else
+        throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1m/%2m (mapped to indices %3/%4).")
+                         .arg(position.x()).arg(position.y()).arg(ix).arg(iy));
 }
