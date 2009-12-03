@@ -54,6 +54,7 @@ private:
 
 private slots:
 
+    void on_actionDaily_responses_Output_triggered();
     void on_actionAbout_triggered();
     void on_actionOnline_ressources_triggered();
     void on_actionTimers_triggered();

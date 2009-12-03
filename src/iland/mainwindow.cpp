@@ -697,7 +697,13 @@ void MainWindow::on_actionWater_Output_triggered()
     QApplication::clipboard()->setText(result.join("\n"));
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
+void MainWindow::on_actionDaily_responses_Output_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 
+}
 
 void MainWindow::on_actionSelect_Data_Types_triggered()
 {
@@ -709,6 +715,7 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "4 ... Tree growth (dbh,h)\n" \
                                         "8 ... Standlevel NPP\n" \
                                         "16...Water Cycle\n" \
+                                        "32...Daily responses\n"
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
@@ -858,3 +865,5 @@ void MainWindow::on_actionAbout_triggered()
     AboutDialog dialog;
     dialog.exec();
 }
+
+

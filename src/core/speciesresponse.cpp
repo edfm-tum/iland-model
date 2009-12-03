@@ -83,9 +83,19 @@ void SpeciesResponse::calculate()
             mRadiation[month] += day->radiation;
         } else {
             utilizeable_radiation = 0.; // no utilizable radiation outside of vegetation period
+            min_resp = 0.;
         }
         mUtilizableRadiation[month]+= utilizeable_radiation;
         doy++;
+        //DBGMODE(
+            if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses)) {
+                DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dDailyResponses);
+                // climatic variables
+                out << mSpecies->id() << day->id() << mRu->index(); // date << day->temperature << day->vpd << day->preciptitation << day->radiation;
+                out << water_resp << temp_resp << vpd_resp << day->radiation << utilizeable_radiation;
+            }
+        //); // DBGMODE()
+
     }
     // monthly values
     for (int i=0;i<12;i++) {
