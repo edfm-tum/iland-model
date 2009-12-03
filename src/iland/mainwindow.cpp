@@ -631,9 +631,11 @@ void MainWindow::on_actionModelRun_triggered()
 {
    if (!mRemoteControl.canRun())
         return;
+   bool ok;
    int count = QInputDialog::getInt(this, "input value",
-                                        "How many years to run?\n", 10);
-
+                                        "How many years to run?\n", 10, 0, 1000, 1, &ok);
+   if (!ok)
+       return;
    ui->modelRunProgress->setMaximum(count-1);
    mRemoteControl.run(count);
 
