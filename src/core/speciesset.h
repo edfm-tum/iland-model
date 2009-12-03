@@ -11,6 +11,7 @@ class SpeciesSet
 public:
     SpeciesSet();
     ~SpeciesSet();
+    const QString &name() const { return mName; } ///< table name of the species set
     // access
     QList<Species*> activeSpecies() { return mActiveSpecies; }
     Species *species(const QString &speciesId) { return mSpecies.value(speciesId); }
@@ -26,6 +27,7 @@ public:
     void clear();
     int setup();
 private:
+    QString mName;
     QMutex mMutex;
     double nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const;
     QList<Species*> mActiveSpecies;

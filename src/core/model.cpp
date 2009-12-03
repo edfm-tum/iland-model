@@ -246,7 +246,8 @@ void Model::loadProject()
 
     if (xml.valueBool("model.world.environmentEnabled", false)) {
         QString envFile = xml.value("model.world.environmentFile");
-        mEnvironment->loadFromFile(envFile);
+        if (!mEnvironment->loadFromFile(envFile))
+            return;
         // retrieve species sets and climates:
         mSpeciesSets << mEnvironment->speciesSetList();
         mClimates << mEnvironment->climateList();

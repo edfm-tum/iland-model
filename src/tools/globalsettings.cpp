@@ -336,7 +336,7 @@ QString GlobalSettings::path(const QString &fileName, const QString &type)
     if (!fileName.isEmpty()) {
         QFileInfo fileinfo(fileName);
         if (fileinfo.isAbsolute())
-            return fileName;
+            return QDir::cleanPath(fileName);
     }
 
     QDir d;
@@ -347,7 +347,7 @@ QString GlobalSettings::path(const QString &fileName, const QString &type)
         d = QDir::currentPath();
     }
 
-    return d.filePath(fileName); // let QDir build the correct path
+    return QDir::cleanPath(d.filePath(fileName)); // let QDir build the correct path
 }
 
 /// returns true if file @p fileName exists.

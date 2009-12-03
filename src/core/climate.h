@@ -41,6 +41,7 @@ public:
     Climate();
     void setup(); ///< setup routine that opens database connection
     bool isSetup() const { return mIsSetup; }
+    const QString &name() const { return mName; } ///< table name of this climate
     // activity
     void nextYear();
     // access to climate data
@@ -60,6 +61,7 @@ public:
 
 private:
     bool mIsSetup;
+    QString mName;
     Sun mSun; ///< class doing solar radiation calculations
     void load(); ///< load mLoadYears years from database
     void setupPhenology(); ///< setup of phenology groups

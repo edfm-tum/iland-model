@@ -75,16 +75,16 @@ bool Environment::loadFromString(const QString &source)
                 xml.setNodeValue(speciesKey,name); // set xml value
                 // create species sets
                 SpeciesSet *set = new SpeciesSet();
-                set->setup();
                 mSpeciesSets.push_back(set);
                 mCreatedObjects[name] = (void*)set;
+                set->setup();
             }
             qDebug() << mSpeciesSets.count() << "species sets created.";
         } else {
             // no species sets specified
             SpeciesSet *speciesSet = new SpeciesSet();
-            speciesSet->setup();
             mSpeciesSets.push_back(speciesSet);
+            speciesSet->setup();
             mCurrentSpeciesSet = speciesSet;
         }
 
@@ -98,22 +98,27 @@ bool Environment::loadFromString(const QString &source)
                 xml.setNodeValue(climateKey,name); // set xml value
                 // create climate sets
                 Climate *climate = new Climate();
-                climate->setup();
                 mClimate.push_back(climate);
                 mCreatedObjects[name]=(void*)climate;
+                climate->setup();
             }
             qDebug() << mClimate.count() << "climates created";
         } else {
             // no climate defined - setup default climate
             Climate *c = new Climate();
-            c->setup();
             mClimate.push_back(c);
+            c->setup();
             mCurrentClimate = c;
         }
         return true;
 
     } catch(const IException &e) {
-        QString error_msg = QString("An error occured during the setup of the environment: \n%1").arg(e.toString());
+        QString addMsg;
+        if (!mClimate.isEmpty())
+            addMsg = QString("last Climate: %1 ").arg(mClimate.last()->name());
+        if (!mSpeciesSets.isEmpty())
+            addMsg += QString("last Speciesset table: %1").arg(mSpeciesSets.last()->name());
+        QString error_msg = QString("An error occured during the setup of the environment: \n%1\n%2").arg(e.toString()).arg(addMsg);
         qDebug() << error_msg;
         Helper::msg(error_msg);
         return false;

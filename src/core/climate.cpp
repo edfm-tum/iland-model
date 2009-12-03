@@ -84,6 +84,7 @@ void Climate::setup()
     GlobalSettings *g=GlobalSettings::instance();
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
+    mName = tableName;
     mLoadYears = (int) xml.valueDouble("batchYears", 1.);
     mTemperatureShift = xml.valueDouble("temperatureShift", 0.);
     mPrecipitationShift = xml.valueDouble("precipitationShift", 1.);
