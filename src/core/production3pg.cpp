@@ -17,11 +17,7 @@ Production3PG::Production3PG()
   The resulting radiation is MJ/m2       */
 inline double Production3PG::calculateUtilizablePAR(const int month) const
 {
-    // calculate the available radiation
-
-    // there is no production outside of the vegetation period
-    if (mResponse->absorbedRadiation()[month]==0.)
-        return 0.;
+    // calculate the available radiation. This is done at SpeciesResponse-Level
     // see Equation (3)
     // multiplicative approach: responses are averaged one by one and multiplied on a monthly basis
 //    double response = mResponse->absorbedRadiation()[month] *
@@ -29,8 +25,9 @@ inline double Production3PG::calculateUtilizablePAR(const int month) const
 //                      mResponse->soilWaterResponse()[month] *
 //                      mResponse->tempResponse()[month];
     // minimum approach: for each day the minimum aof vpd, temp, soilwater is calculated, then averaged for each month
-    double response = mResponse->absorbedRadiation()[month] *
-                      mResponse->minimumResponses()[month];
+    //double response = mResponse->absorbedRadiation()[month] *
+    //                  mResponse->minimumResponses()[month];
+    double response = mResponse->utilizableRadiation()[month];
 
     return response;
 }

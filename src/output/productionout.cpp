@@ -11,16 +11,13 @@ ProductionOut::ProductionOut()
     setDescription("Details about the 3PG production submodule on monthly basis and for each species and resource unit.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species()
               << OutputColumn("month", "month of year", OutInteger)
-              << OutputColumn("minResponse", "Average of daily minimum respones values of vpd, temperature, soilwater", OutDouble)
-              << OutputColumn("vpdResponse", "monthly average of daily respose value VPD", OutDouble)
               << OutputColumn("tempResponse", "monthly average of daily respose value temperature", OutDouble)
               << OutputColumn("waterResponse", "monthly average of daily respose value soil water", OutDouble)
               << OutputColumn("nitrogenResponse", "yearly respose value nitrogen", OutDouble)
               << OutputColumn("co2Response", "yearly respose value co2", OutDouble)
-              << OutputColumn("radiation_m2", "utilizable (!) PAR in MJ per m2 and month", OutDouble)
+              << OutputColumn("radiation_m2", "utilizable  PAR in MJ per m2 and month (sum of daily rad*min(respVpd,respWater,respTemp))", OutDouble)
+              << OutputColumn("utilizableRadiation_m2", "radiation (within vegetation period) PAR in MJ per m2 and month", OutDouble)
               << OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble);
-              //<< OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble)
-              //<< OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble);
 
  }
 
@@ -36,10 +33,12 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
         *this << currentYear() << rus->ru()->index() << rus->species()->id();
         *this << (i+1); // month
         // responses
-        *this <<  resp->minimumResponses()[i]
-              <<  resp->vpdResponse()[i] << resp->tempResponse()[i]
-              << resp->soilWaterResponse()[i] << resp->nitrogenResponse()
-              << resp->co2Response()[i] << prod.mUPAR[i]
+        *this <<  resp->tempResponse()[i]
+              << resp->soilWaterResponse()[i]
+              << resp->nitrogenResponse()
+              << resp->co2Response()[i]
+              << resp->absorbedRadiation()[i]
+              << prod.mUPAR[i]
               << prod.mGPP[i];
         writeRow();
     }

@@ -29,9 +29,9 @@ SpeciesResponse::SpeciesResponse()
 void SpeciesResponse::clear()
 {
     for (int i=0;i<12;i++)
-        mCO2Response[i]=mResponseMinima[i]=mVpdResponse[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=0.;
+        mCO2Response[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=mUtilizableRadiation[i]=0.;
 
-    mNitrogenResponse=mSoilWaterResponseYear=0.;
+    mNitrogenResponse=0.;
 
 }
 void SpeciesResponse::setup(ResourceUnitSpecies *rus)
@@ -44,8 +44,6 @@ void SpeciesResponse::setup(ResourceUnitSpecies *rus)
 /// Main function that calculates monthly / annual species responses
 void SpeciesResponse::calculate()
 {
-    const ClimateDay *begin, *end;
-    double no_of_days;
 
     clear(); // reset values
 
@@ -61,57 +59,39 @@ void SpeciesResponse::calculate()
     mNitrogenResponse = mSpecies->nitrogenResponse( nitrogen );
     const double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year
 
-    // calculate monthly responses
+    double water_resp, vpd_resp, temp_resp, min_resp;
+    double  utilizeable_radiation;
     int doy=0;
-    double water_resp;
-    double vpd_resp;
-    double temp_resp;
-    double min_resp;
-    for (int mon=0;mon<12;mon++) {
-        mRu->climate()->monthRange(mon, &begin, &end);
-        no_of_days = 0;
-        for (const ClimateDay *day=begin; day!=end; ++day, no_of_days++) {
-            // VPD response
-            vpd_resp =mSpecies->vpdResponse( day->vpd );
-            mVpdResponse[mon]+= vpd_resp;
-            // Temperature Response
-            temp_resp = mSpecies->temperatureResponse(day->temp_delayed);
-            mTempResponse[mon]+= temp_resp;
+    const ClimateDay  *end = mRu->climate()->end();
+    for (const ClimateDay *day=mRu->climate()->begin(); day!=end; ++day) {
+        // environmental responses
+        water_resp = mSpecies->soilwaterResponse(water->psi_kPa(doy));
+        vpd_resp = mSpecies->vpdResponse( day->vpd );
+        temp_resp = mSpecies->temperatureResponse(day->temp_delayed);
+        mSoilWaterResponse[day->month] += water_resp;
+        mTempResponse[day->month] += temp_resp;
 
-            // radiation: only count days in vegetation period
-            water_resp = mSpecies->soilwaterResponse(water->psi_kPa(doy));
-            if (doy>=veg_begin && doy<=veg_end) {
-                mRadiation[mon] += day->radiation;
-                mSoilWaterResponseYear += water_resp;
-            }
-
-            // minimum response
+        if (doy>=veg_begin && doy<=veg_end) {
+            // environmental responses for the day
+            // combine responses
             min_resp = qMin(qMin(vpd_resp, temp_resp), water_resp);
-            mResponseMinima[mon] += min_resp;
-
-            // soil water
-            mSoilWaterResponse[mon] += water_resp;
-
-            doy++;
+            // calculate utilizable radiation, Eq. 4, http://iland.boku.ac.at/primary+production
+            utilizeable_radiation = day->radiation * min_resp;
+            mRadiation[day->month] += day->radiation;
+        } else {
+            utilizeable_radiation = 0.; // no utilizable radiation outside of vegetation period
         }
-        mVpdResponse[mon] /= no_of_days; // vpd: average of month
-        mTempResponse[mon] /= no_of_days; // temperature: average value of daily responses
-        mSoilWaterResponse[mon] /= no_of_days; // water response: average of daily responses
-        mResponseMinima[mon] /= no_of_days; // minimum responses: average of daily responses
-        // CO2 response: a monthly value based on atmospheric CO2 concentration and the response to nutrients and water in the soil.
-        mCO2Response[mon] = mSpecies->speciesSet()->co2Response(ambient_co2,
-                                                           mNitrogenResponse,
-                                                           mSoilWaterResponse[mon]);
-
-
+        mUtilizableRadiation[day->month]+= utilizeable_radiation;
+        doy++;
     }
-
-    if (pheno.vegetationPeriodLength()>0)
-        mSoilWaterResponseYear /= pheno.vegetationPeriodLength();
-    else
-        mSoilWaterResponseYear = 0.;
-
-
+    // monthly values
+    for (int i=0;i<12;i++) {
+        mSoilWaterResponse[i]/=mRu->climate()->days(i);
+        mTempResponse[i]/=mRu->climate()->days(i);
+        mCO2Response[i] = mSpecies->speciesSet()->co2Response(ambient_co2,
+                                                           mNitrogenResponse,
+                                                           mSoilWaterResponse[i]);
+    }
 
 }
 
