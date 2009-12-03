@@ -341,6 +341,16 @@ void Model::beforeRun()
     GlobalSettings::instance()->setCurrentYear(1); // set to first year
 }
 
+/** Main model runner.
+  The sequence of actions is as follows:
+  (1) Load the climate of the new year
+  (2) Reset statistics for resource unit as well as for dead/managed trees
+  (3) Invoke Management. Also the dedicated spot for the actions of other disturbances.
+  (4) *after* that, calculate Light patterns
+  (5) 3PG on stand level, tree growth. Clear stand-statistcs before they are filled by single-tree-growth. calculate water cycle (with LAIs before management)
+  (6) calculate statistics for the year
+  (7) write database outputs
+  */
 void Model::runYear()
 {
     DebugTimer t("Model::runYear()");
@@ -474,6 +484,13 @@ void Model::readPattern()
     threadRunner.run(nc_readPattern);
 }
 
+/** Main function for the growth of stands and trees.
+   This includes several steps.
+   (1) calculate the stocked area (i.e. count pixels in height grid)
+   (2) 3PG production (including response calculation, water cycle)
+   (3) single tree growth (including mortality)
+   (4) cleanup of tree lists (remove dead trees)
+  */
 void Model::grow()
 {
     {

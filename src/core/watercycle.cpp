@@ -26,7 +26,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
 }
 
-/** functions to calculate
+/** function to calculate the water pressure [saugspannung] for a given amount of water.
 */
 inline double WaterCycle::psiFromHeight(const double mm) const
 {
@@ -37,6 +37,7 @@ inline double WaterCycle::psiFromHeight(const double mm) const
     return psi_x;
 }
 
+/// calculate the height of the water column for a given pressure
 inline double WaterCycle::heightFromPsi(const double psi_kpa) const
 {
     // rho_x = rho_ref * (psi_x / psi_ref)^(1/b)
@@ -44,6 +45,8 @@ inline double WaterCycle::heightFromPsi(const double psi_kpa) const
     return h;
 }
 
+/// get canopy characteristics of the resource unit.
+/// It is important, that species-statistics are valid when this function is called (LAI)!
 void WaterCycle::getStandValues()
 {
     mLAINeedle=mLAIBroadleaved=0.;

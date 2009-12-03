@@ -26,6 +26,7 @@ ResourceUnit::ResourceUnit(const int index)
 {
     mSpeciesSet = 0;
     mClimate = 0;
+    mPixelCount=0;
     mIndex = index;
     mWater = new WaterCycle();
 
@@ -125,7 +126,6 @@ void ResourceUnit::newYear()
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
     mStatistics.clear();
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        i->statistics().clear();
         i->statisticsDead().clear();
         i->statisticsMgmt().clear();
     }
@@ -134,7 +134,9 @@ void ResourceUnit::newYear()
 
 /** production() is the "stand-level" part of the biomass production (3PG).
     - The amount of radiation intercepted by the stand is calculated
-    - The 3PG production for each species and ressource unit is invoked
+    - the water cycle is calculated
+    - statistics for each species are cleared
+    - The 3PG production for each species and ressource unit is called (calculates species-responses and NPP production)
     see also: http://iland.boku.ac.at/individual+tree+light+availability */
 void ResourceUnit::production()
 {
@@ -177,6 +179,7 @@ void ResourceUnit::production()
     QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
 
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
+        i->statistics().clear();
         i->calculate();
         qDebug() << "species" << (*i).species()->id() << "raw_gpp_m2" << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:" << productiveArea()*i->prod3PG().GPPperArea();
     }
@@ -228,4 +231,5 @@ void ResourceUnit::createStandStatistics()
         mRUSpecies[i].statistics().calculate();
         mStatistics.add(mRUSpecies[i].statistics());
     }
+    mStatistics.calculate();
 }
