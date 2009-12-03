@@ -29,7 +29,7 @@ SpeciesResponse::SpeciesResponse()
 void SpeciesResponse::clear()
 {
     for (int i=0;i<12;i++)
-        mCO2Response[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=mUtilizableRadiation[i]=0.;
+        mCO2Response[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=mUtilizableRadiation[i]=mVpdResponse[i]=0.;
 
     mNitrogenResponse=0.;
 
@@ -62,14 +62,17 @@ void SpeciesResponse::calculate()
     double water_resp, vpd_resp, temp_resp, min_resp;
     double  utilizeable_radiation;
     int doy=0;
-    const ClimateDay  *end = mRu->climate()->end();
+    int month;
+    const ClimateDay *end = mRu->climate()->end();
     for (const ClimateDay *day=mRu->climate()->begin(); day!=end; ++day) {
+        month = day->month - 1;
         // environmental responses
         water_resp = mSpecies->soilwaterResponse(water->psi_kPa(doy));
         vpd_resp = mSpecies->vpdResponse( day->vpd );
         temp_resp = mSpecies->temperatureResponse(day->temp_delayed);
-        mSoilWaterResponse[day->month] += water_resp;
-        mTempResponse[day->month] += temp_resp;
+        mSoilWaterResponse[month] += water_resp;
+        mTempResponse[month] += temp_resp;
+        mVpdResponse[month] += vpd_resp;
 
         if (doy>=veg_begin && doy<=veg_end) {
             // environmental responses for the day
@@ -77,17 +80,19 @@ void SpeciesResponse::calculate()
             min_resp = qMin(qMin(vpd_resp, temp_resp), water_resp);
             // calculate utilizable radiation, Eq. 4, http://iland.boku.ac.at/primary+production
             utilizeable_radiation = day->radiation * min_resp;
-            mRadiation[day->month] += day->radiation;
+            mRadiation[month] += day->radiation;
         } else {
             utilizeable_radiation = 0.; // no utilizable radiation outside of vegetation period
         }
-        mUtilizableRadiation[day->month]+= utilizeable_radiation;
+        mUtilizableRadiation[month]+= utilizeable_radiation;
         doy++;
     }
     // monthly values
     for (int i=0;i<12;i++) {
-        mSoilWaterResponse[i]/=mRu->climate()->days(i);
-        mTempResponse[i]/=mRu->climate()->days(i);
+        double days = mRu->climate()->days(i);
+        mSoilWaterResponse[i]/=days;
+        mTempResponse[i]/=days;
+        mVpdResponse[i]/=days;
         mCO2Response[i] = mSpecies->speciesSet()->co2Response(ambient_co2,
                                                            mNitrogenResponse,
                                                            mSoilWaterResponse[i]);

@@ -13,8 +13,9 @@ ProductionOut::ProductionOut()
               << OutputColumn("month", "month of year", OutInteger)
               << OutputColumn("tempResponse", "monthly average of daily respose value temperature", OutDouble)
               << OutputColumn("waterResponse", "monthly average of daily respose value soil water", OutDouble)
-              << OutputColumn("nitrogenResponse", "yearly respose value nitrogen", OutDouble)
+              << OutputColumn("vpdResponse", "monthly vapour pressure deficit respose.", OutDouble)
               << OutputColumn("co2Response", "yearly respose value co2", OutDouble)
+              << OutputColumn("nitrogenResponse", "yearly respose value nitrogen", OutDouble)
               << OutputColumn("radiation_m2", "utilizable  PAR in MJ per m2 and month (sum of daily rad*min(respVpd,respWater,respTemp))", OutDouble)
               << OutputColumn("utilizableRadiation_m2", "radiation (within vegetation period) PAR in MJ per m2 and month", OutDouble)
               << OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble);
@@ -35,8 +36,9 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
         // responses
         *this <<  resp->tempResponse()[i]
               << resp->soilWaterResponse()[i]
-              << resp->nitrogenResponse()
+              << resp->vpdResponse()[i]
               << resp->co2Response()[i]
+              << resp->nitrogenResponse()
               << resp->absorbedRadiation()[i]
               << prod.mUPAR[i]
               << prod.mGPP[i];

@@ -236,8 +236,7 @@ void Tests::climateResponse()
     const SpeciesResponse *sr = rus.speciesResponse();
     QString line;
     for (int mon=0;mon<12;mon++) {
-        line = QString("%1;%2;%3").arg(mon)
-               .arg(sr->vpdResponse()[mon])
+        line = QString("%1;%2").arg(mon)
                .arg(sr->tempResponse()[mon]);
         qDebug() << line;
     }
