@@ -132,11 +132,15 @@ MainWindow::MainWindow(QWidget *parent)
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
 
-    // load xml file
+    // load xml file: use either a command-line argument (if present), or load the content of a small text file....
     QString argText = QApplication::arguments().last();
-    if (QApplication::arguments().count()>1 && !argText.isEmpty())
+    if (QApplication::arguments().count()>1 && !argText.isEmpty()) {
         ui->initFileName->setText(argText);
-
+    } else {
+        QString lastXml = Helper::loadTextFile( QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt" );
+        if (!lastXml.isEmpty() && QFile::exists(lastXml))
+            ui->initFileName->setText(lastXml);
+    }
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
 
     if (!xmlFile.isEmpty()) {
@@ -570,6 +574,7 @@ void MainWindow::setupModel()
      else
          mRemoteControl.setupDynamicOutput("");
      ui->modelRunProgress->setValue(0);
+     Helper::saveToTextFile(QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt", ui->initFileName->text());
 }
 
 
