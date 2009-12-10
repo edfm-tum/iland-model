@@ -121,7 +121,7 @@ void WaterCycle::run()
         et = mCanopy.evapotranspiration3PG(day, mRU->climate()->daylength_h(doy));
 
         mContent -= et; // reduce content (transpiration)
-        mContent += mCanopy.interception(); // add intercepted water that is *not* evaporated to the soil again
+        mContent += mSnowPack.add(mCanopy.interception(),day->temperature); // add intercepted water that is *not* evaporated to the soil again (or add to snow if temp too low)
         
         if (mContent<mPermanentWiltingPoint) {
             et -= mPermanentWiltingPoint - mContent; // reduce et (for bookkeeping)
@@ -171,6 +171,17 @@ double SnowPack::flow(const double &preciptitation_mm, const double &temperature
 
 }
 
+
+inline double SnowPack::add(const double &preciptitation_mm, const double &temperature)
+{
+    // do nothing for temps > 0°
+    if (temperature>0.)
+        return preciptitation_mm;
+
+    // temps < 0°: add to snow
+    mSnowPack += preciptitation_mm;
+    return 0.;
+}
 
 /** Interception in crown canopy.
     Calculates the amount of preciptitation that does not reach the ground and

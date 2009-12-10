@@ -15,6 +15,8 @@ public:
     void setup() { mSnowPack=0.; }
     /// process the snow layer. Returns the mm of preciptitation/melt water that leaves the snow layer.
     double flow(const double &preciptitation_mm, const double &temperature);
+    /// additional precipitation (e.g. non evaporated water of canopy interception).
+    inline double add(const double &preciptitation_mm, const double &temperature);
     double snowPack() const { return mSnowPack; } ///< current snowpack height (mm)
 private:
     double mSnowPack; ///< height of snowpack (mm water column)
