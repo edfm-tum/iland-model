@@ -88,6 +88,9 @@ void Climate::setup()
     mLoadYears = (int) xml.valueDouble("batchYears", 1.);
     mTemperatureShift = xml.valueDouble("temperatureShift", 0.);
     mPrecipitationShift = xml.valueDouble("precipitationShift", 1.);
+    if (mTemperatureShift!=0. || mPrecipitationShift!=1.)
+        qDebug() << "Climate modifaction: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
+
     mStore.resize(mLoadYears * 366);
     mCurrentYear=0;
     mMinYear = 0;

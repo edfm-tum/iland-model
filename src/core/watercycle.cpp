@@ -117,7 +117,7 @@ void WaterCycle::run()
         // calculate the relative water content
         mRelativeContent[doy] = currentRelContent();
         mPsi[doy] = psiFromHeight(mContent);
-        // (5) transpiration of the vegetation
+        // (5) transpiration of the vegetation (and of water intercepted in canopy)
         et = mCanopy.evapotranspiration3PG(day, mRU->climate()->daylength_h(doy));
 
         mContent -= et; // reduce content (transpiration)
@@ -221,8 +221,10 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
     // (3) calculate actual interception and store for evaporation calculation
     mInterception = qMin( max_storage_mm, max_interception_mm );
 
-    // (4) reduce preciptitaion by the amount that is intercepted by the canopy
-    DBG_IF(preciptitation_mm < mInterception,"water_cycle", "prec < interception");
+    // (4) limit interception with amount of precipitation
+    mInterception = qMin( mInterception, preciptitation_mm);
+
+    // (5) reduce preciptitaion by the amount that is intercepted by the canopy
     return preciptitation_mm - mInterception;
 
 }
@@ -282,6 +284,7 @@ double Canopy::evapotranspirationBGC(const ClimateDay *climate, const double day
         double dim_evap = svp_slope + mPsychrometricConstant;
         double pot_evap = upper / dim_evap * dayl;
         double evap = qMin(pot_evap, mInterception);
+        mInterception -= evap; // reduce interception
         mEvaporation = evap;
     }
     return et;
@@ -316,16 +319,17 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
 
     double div = (1. + svp_slope + gBL / gC);
     double Etransp = (svp_slope * rad + defTerm) / div;
-    double canopy_transiration = Etransp / latent_heat * daylength;
+    double canopy_transpiration = Etransp / latent_heat * daylength;
 
     if (mInterception>0.) {
         // we assume that for evaporation from leaf surface gBL/gC -> 0
         double div_evap = 1 + svp_slope;
         double evap = (svp_slope*rad + defTerm) / div_evap / latent_heat * daylength;
         evap = qMin(evap, mInterception);
-        mEvaporation = evap;
+        mInterception -= evap; // reduce interception
+        mEvaporation = evap; // evaporation from intercepted water
     }
-    return canopy_transiration;
+    return canopy_transpiration;
 }
 
 } // end namespace

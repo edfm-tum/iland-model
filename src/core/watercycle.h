@@ -32,8 +32,8 @@ public:
     // actions
     /// process the canopy layer. returns the amount of precipitation that leaves the canopy-layer.
     double flow(const double &preciptitation_mm, const double &temperature);
-    double evapotranspirationBGC(const ClimateDay *climate, const double daylength_h);
-    double evapotranspiration3PG(const ClimateDay *climate, const double daylength_h);
+    double evapotranspirationBGC(const ClimateDay *climate, const double daylength_h); ///< evapotranspiration from soil
+    double evapotranspiration3PG(const ClimateDay *climate, const double daylength_h); ///< evapotranspiration from soil (mm). returns
     // properties
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
     double evaporationCanopy() const { return mEvaporation; } ///< evaporation from canopy (mm)
