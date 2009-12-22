@@ -82,7 +82,7 @@ private:
     double mSoilDepth; ///< depth of the soil (without rocks) in mm
     double mContent; ///< current water content in mm water column of the soil.
     double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
-    double mPermanentWiltingPoint; ///< bucket "height" of PWP (eq. approx. -1.5MPa, but depends on vegetation) (mm)
+    double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -3MPa) (mm)
     double mRelativeContent[366]; ///< relative water content for each day of the year
     double mPsi[366]; ///< soil water potential for each day in kPa
     void getStandValues(); ///< helper function to retrieve LAI per species group

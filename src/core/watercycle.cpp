@@ -17,27 +17,42 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mFieldCapacity = 0.; // on top
     const XmlHelper &xml=GlobalSettings::instance()->settings();
     mSoilDepth = xml.valueDouble("model.site.soilDepth", 0.) * 10; // convert from cm to mm
+    double pct_sand = xml.valueDouble("model.site.pctSand");
+    double pct_silt = xml.valueDouble("model.site.pctSilt");
+    double pct_clay = xml.valueDouble("model.site.pctClay");
+    if (pct_sand + pct_silt + pct_clay != 100.)
+        throw IException(QString("Setup Watercycle: soil composition percentages do not sum up to 100. Sand: %1, Silt: %2 Clay: %3").arg(pct_sand).arg(pct_silt).arg(pct_clay));
+
+    // calculate soil characteristics based on empirical functions (Schwalm & Ek, 2004)
+    // note: the variables are percentages [0..100]
+    mPsi_ref = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
+    mPsi_koeff_b = -( 3.1 + 0.157*pct_clay - 0.003*pct_sand );  // Eq. 84
+    mRho_ref = 0.01 * (50.5 - 0.142*pct_sand - 0.037*pct_clay); // Eq. 78
     mCanopy.setup();
-    mPsi_koeff_b = -3;
-    mPsi_ref = -0.35; // kPa
-    mRho_ref = 0.42;
-    mPermanentWiltingPoint = heightFromPsi(-1500);
+    //mPsi_koeff_b = -3;
+    //mPsi_ref = -0.35; // kPa
+    //mRho_ref = 0.42;
+    mPermanentWiltingPoint = heightFromPsi(-3000); // maximum psi is set to a constant of -3MPa
     mFieldCapacity = heightFromPsi(-15);
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
+    qDebug() << "setup of water: Psi_ref"
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
-*/
+    returns water potential in kPa.
+  see http://iland.boku.ac.at/water+cycle#transpiration_and_canopy_conductance */
 inline double WaterCycle::psiFromHeight(const double mm) const
 {
     // psi_x = psi_ref * ( rho_x / rho_ref) ^ b
     if (mm<0.001)
         return -100000000;
     double psi_x = mPsi_ref * pow((mm / mSoilDepth / mRho_ref),mPsi_koeff_b);
-    return psi_x;
+    return psi_x; // pis
 }
 
 /// calculate the height of the water column for a given pressure
+/// return water amount in mm
+/// see http://iland.boku.ac.at/water+cycle#transpiration_and_canopy_conductance
 inline double WaterCycle::heightFromPsi(const double psi_kpa) const
 {
     // rho_x = rho_ref * (psi_x / psi_ref)^(1/b)
@@ -52,7 +67,6 @@ void WaterCycle::getStandValues()
     mLAINeedle=mLAIBroadleaved=0.;
     mCanopyConductance=0.;
     double lai;
-    double psi_min = 0.;
     foreach(const ResourceUnitSpecies &rus, mRU->ruSpecies()) {
         lai = rus.constStatistics().leafAreaIndex();
         if (rus.species()->isConiferous())
@@ -60,15 +74,12 @@ void WaterCycle::getStandValues()
         else
             mLAIBroadleaved+=lai;
         mCanopyConductance += rus.species()->canopyConductance() * lai; // weigh with LAI
-        psi_min += rus.species()->psiMin() * lai; // weigh with LAI
     }
     double total_lai = mLAIBroadleaved+mLAINeedle;
     if (total_lai>0.) {
         mCanopyConductance /= total_lai;
-        mPermanentWiltingPoint = heightFromPsi(1000. * psi_min / total_lai); // (psi/total_lai) = weighted average Psi (MPa) -> convert to kPa
     } else {
         mCanopyConductance = 0.02;
-        mPermanentWiltingPoint = heightFromPsi(-1500);// -1.5MPa
     }
     if (total_lai < 3.) {
         // following Landsberg and Waring: when LAI is < 3, a linear "ramp" from 0 to 3 is assumed
@@ -92,8 +103,9 @@ void WaterCycle::run()
 
     // main loop over all days of the year
     double prec_mm, prec_after_interception, prec_to_soil, et, excess;
-    const ClimateDay *day = mRU->climate()->begin();
-    const ClimateDay *end = mRU->climate()->end();
+    const Climate *climate = mRU->climate();
+    const ClimateDay *day = climate->begin();
+    const ClimateDay *end = climate->end();
     int doy=0;
     double total_excess = 0.;
     for (; day<end; ++day, ++doy) {
@@ -118,11 +130,13 @@ void WaterCycle::run()
         mRelativeContent[doy] = currentRelContent();
         mPsi[doy] = psiFromHeight(mContent);
         // (5) transpiration of the vegetation (and of water intercepted in canopy)
-        et = mCanopy.evapotranspiration3PG(day, mRU->climate()->daylength_h(doy));
+        et = mCanopy.evapotranspiration3PG(day, climate->daylength_h(doy));
 
         mContent -= et; // reduce content (transpiration)
-        mContent += mSnowPack.add(mCanopy.interception(),day->temperature); // add intercepted water that is *not* evaporated to the soil again (or add to snow if temp too low)
+        // add intercepted water (that is *not* evaporated) again to the soil (or add to snow if temp too low -> call to snowpack)
+        mContent += mSnowPack.add(mCanopy.interception(),day->temperature);
         
+        // do not remove water below the PWP (fixed value)
         if (mContent<mPermanentWiltingPoint) {
             et -= mPermanentWiltingPoint - mContent; // reduce et (for bookkeeping)
             mContent = mPermanentWiltingPoint;
