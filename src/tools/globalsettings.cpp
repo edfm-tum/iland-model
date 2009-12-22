@@ -123,7 +123,10 @@ DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
     QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(ID, dbglist);
     return *newitem;
 }
-
+bool debuglist_sorter (const DebugList &i,const DebugList &j)
+{
+    return (i[0].toInt() < j[0].toInt());
+}
 const QList<DebugList> GlobalSettings::debugLists(const int ID, const DebugOutputs dbg)
 {
     QList<DebugList> result_list;
@@ -143,6 +146,8 @@ const QList<DebugList> GlobalSettings::debugLists(const int ID, const DebugOutpu
             ++res;
         }
     }
+    // sort result list
+    std::sort(result_list.begin(), result_list.end(), debuglist_sorter);
     return result_list;
 }
 

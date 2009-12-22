@@ -29,13 +29,11 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mPsi_koeff_b = -( 3.1 + 0.157*pct_clay - 0.003*pct_sand );  // Eq. 84
     mRho_ref = 0.01 * (50.5 - 0.142*pct_sand - 0.037*pct_clay); // Eq. 78
     mCanopy.setup();
-    //mPsi_koeff_b = -3;
-    //mPsi_ref = -0.35; // kPa
-    //mRho_ref = 0.42;
-    mPermanentWiltingPoint = heightFromPsi(-3000); // maximum psi is set to a constant of -3MPa
+
+    mPermanentWiltingPoint = heightFromPsi(-4000); // maximum psi is set to a constant of -4MPa
     mFieldCapacity = heightFromPsi(-15);
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
-    qDebug() << "setup of water: Psi_ref"
+    qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.

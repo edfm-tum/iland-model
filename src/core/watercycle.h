@@ -71,18 +71,18 @@ public:
     double currentContent() const { return mContent; } ///< current water content in mm
     double currentRelContent() const { Q_ASSERT(mSoilDepth>0); return qMin(mContent/mSoilDepth, 1.); }
 private:
-    inline double psiFromHeight(const double mm) const;
-    inline double heightFromPsi(const double psi_kpa) const;
+    inline double psiFromHeight(const double mm) const; // kPa for water height "mm"
+    inline double heightFromPsi(const double psi_kpa) const; // water height (mm) at water potential psi (kilopascal)
     double mPsi_koeff_b; ///< see psiFromHeight()
-    double mPsi_ref; ///< see psiFromHeight()
-    double mRho_ref; ///< see psiFromHeight()
+    double mPsi_ref; ///< see psiFromHeight(), kPa
+    double mRho_ref; ///< see psiFromHeight(), [-], m3/m3
     const ResourceUnit *mRU; ///< resource unit to which this watercycle is connected
     Water::Canopy mCanopy; ///< object representing the forest canopy (interception, evaporation)
     Water::SnowPack mSnowPack; ///< object representing the snow cover (aggregation, melting)
     double mSoilDepth; ///< depth of the soil (without rocks) in mm
     double mContent; ///< current water content in mm water column of the soil.
     double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
-    double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -3MPa) (mm)
+    double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -4MPa) (mm)
     double mRelativeContent[366]; ///< relative water content for each day of the year
     double mPsi[366]; ///< soil water potential for each day in kPa
     void getStandValues(); ///< helper function to retrieve LAI per species group
