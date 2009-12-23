@@ -188,6 +188,10 @@ bool XmlHelper::setNodeValue(QDomElement &node, const QString &value)
 bool XmlHelper::setNodeValue(const QString &path, const QString &value)
 {
     QDomElement e = node(path);
+    if (e.isNull()) {
+        qDebug() << "XML: attempting to set value of" << path << ": node not present.";
+        return false;
+    }
     return setNodeValue(e,value);
 }
 

@@ -364,6 +364,11 @@ void Model::beforeRun()
 void Model::runYear()
 {
     DebugTimer t("Model::runYear()");
+    // execute scheduled events for the current year
+    if (mTimeEvents)
+        mTimeEvents->run();
+
+    // load the next year of the climate database
     foreach(Climate *c, mClimates)
         c->nextYear();
 
@@ -376,7 +381,6 @@ void Model::runYear()
         mManagement->run();
 
     // process a cycle of individual growth
-    Tree::setGrid(mGrid, mHeightGrid);
     applyPattern(); // create Light Influence Patterns
     readPattern(); // readout light state of individual trees
     grow(); // let the trees grow (growth on stand-level, tree-level, mortality)
