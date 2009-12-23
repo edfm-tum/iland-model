@@ -7,6 +7,7 @@
 
 #include "xmlhelper.h"
 #include "environment.h"
+#include "timeevents.h"
 #include "helper.h"
 #include "resourceunit.h"
 #include "climate.h"
@@ -104,6 +105,7 @@ void Model::initialize()
    mHeightGrid = 0;
    mManagement = 0;
    mEnvironment = 0;
+   mTimeEvents = 0;
 }
 
 /** sets up the simulation space.
@@ -208,11 +210,14 @@ void Model::clear()
         delete mManagement;
     if (mEnvironment)
         delete mEnvironment;
+    if (mTimeEvents)
+        delete mTimeEvents;
 
     mGrid = 0;
     mHeightGrid = 0;
     mManagement = 0;
     mEnvironment = 0;
+    mTimeEvents = 0;
 
     qDebug() << "Model ressources freed.";
 }
@@ -263,6 +268,11 @@ void Model::loadProject()
         mEnvironment->setDefaultValues(c, speciesSet);
     } // environment?
 
+    // time series data
+    if (xml.valueBool("model.world.timeSeriesEnabled", false)) {
+        mTimeEvents = new TimeEvents();
+        mTimeEvents->loadFromFile(xml.value("model.world.timeSeriesFile")) ;
+    }
 
     setupSpace();
     if (mRU.isEmpty())

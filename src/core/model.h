@@ -14,6 +14,7 @@ class SpeciesSet;
 class Management;
 class Climate;
 class Environment;
+class TimeEvents;
 
 struct HeightGridValue
 {
@@ -90,6 +91,7 @@ private:
     HeightGrid *mHeightGrid;
     Management *mManagement;
     Environment *mEnvironment;
+    TimeEvents *mTimeEvents;
 };
 
 class Tree;

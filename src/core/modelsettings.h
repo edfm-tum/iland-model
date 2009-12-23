@@ -23,8 +23,6 @@ public:
     double airDensity; // density of air [kg / m3]
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
-    //double nitrogenAvailable; ///< nitrogen content (kg/m2/year) -> will be moved!
-    //double waterholdingCapacity; ///< waterholding capacity (mm) -> will be removed!!!
     // production
     double epsilon; ///< maximum light use efficency used for the 3PG model
 };

@@ -108,6 +108,18 @@ bool CSVFile::loadFile(const QString &fileName)
     }
     return loadFromString(content);
 }
+QVariantList CSVFile::values(const int row) const
+{
+    QVariantList list;
+    if (row<0 || row>=mRowCount) {
+        qDebug() << "CSVFile::values: invalid row:" << row;
+        return list;
+    }
+    QStringList line = mRows[row].split(mSeparator);
+    foreach(QString item, line)
+        list.append(item);
+    return list;
+}
 
 QVariant CSVFile::value(const int row, const int col) const
 {

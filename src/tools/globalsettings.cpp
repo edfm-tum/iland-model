@@ -54,7 +54,7 @@
 #include <QtCore>
 #include <QtXml>
 #include <QtSql>
-
+#include <algorithm>
 #include "global.h"
 #include "helper.h"
 #include "xmlhelper.h"

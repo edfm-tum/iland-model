@@ -6,7 +6,10 @@ class Climate;
 class SpeciesSet;
 class CSVFile;
 
-
+/** Environment specifes the geographical properties of the landscape.
+    This is achieved by specifying (user defined) values (e.g. soil depth) for each resource unit.
+    Resource units are specified by x/y indices.
+    see http://iland.boku.ac.at/initialize+the+landscape */
 class Environment
 {
 public:
@@ -25,9 +28,8 @@ public:
     SpeciesSet *speciesSet() const {return mCurrentSpeciesSet;} ///< get species set on current pos
 
 private:
-    Climate *mCurrentClimate;
-    SpeciesSet *mCurrentSpeciesSet;
-    void createModelElements();
+    Climate *mCurrentClimate; ///< climate at current location
+    SpeciesSet *mCurrentSpeciesSet; ///< species set at current location
     QList<Climate*> mClimate; ///< created climates.
     QList<SpeciesSet*> mSpeciesSets; ///< created species sets
     QStringList mKeys;

@@ -125,7 +125,9 @@ bool Environment::loadFromString(const QString &source)
     }
 }
 
-
+/** sets the "pointer" to a "position" (metric coordinates).
+    All specified values are set (also the climate/species-set pointers).
+*/
 void Environment::setPosition(const QPointF position)
 {
     // no changes occur, when the "environment" is not loaded
