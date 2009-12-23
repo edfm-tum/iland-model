@@ -46,6 +46,9 @@ void TimeEvents::run()
 {
     int current_year = GlobalSettings::instance()->currentYear();
     QList<QPair<QString, QVariant> > entries = mData.values(current_year);
+    if (entries.count()==0)
+        return;
+
     QString key;
     int values_set = 0;
     for (int i=0;i<entries.count();i++) {
@@ -53,6 +56,7 @@ void TimeEvents::run()
         // special values: if (key=="xxx" ->
         // no special value: a xml node...
         const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, entries[i].second.toString());
+        qDebug() << "TimeEvents: set" << key << "to" << entries[i].second.toString();
         values_set++;
     }
     if (values_set)

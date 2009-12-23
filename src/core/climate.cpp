@@ -203,6 +203,8 @@ void Climate::nextYear()
     else
         mCurrentYear++;
 
+    ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
+    qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
     mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
     mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
     for(int i=0;i<mPhenology.count(); ++i)

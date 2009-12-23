@@ -269,9 +269,9 @@ void Model::loadProject()
     } // environment?
 
     // time series data
-    if (xml.valueBool("model.world.timeSeriesEnabled", false)) {
+    if (xml.valueBool("model.world.timeEventsEnabled", false)) {
         mTimeEvents = new TimeEvents();
-        mTimeEvents->loadFromFile(xml.value("model.world.timeSeriesFile")) ;
+        mTimeEvents->loadFromFile(xml.value("model.world.timeEventsFile")) ;
     }
 
     setupSpace();
