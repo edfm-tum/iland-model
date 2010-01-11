@@ -57,7 +57,7 @@ void SpeciesResponse::calculate()
     const double nitrogen = mRu->resouceUnitVariables().nitrogenAvailable;
     // Nitrogen response: a yearly value based on available nitrogen
     mNitrogenResponse = mSpecies->nitrogenResponse( nitrogen );
-    const double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year
+    const double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year (co2 is static)
 
     double water_resp, vpd_resp, temp_resp, min_resp;
     double  utilizeable_radiation;
