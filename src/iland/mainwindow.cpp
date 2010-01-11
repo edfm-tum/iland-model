@@ -552,7 +552,7 @@ void MainWindow::modelFinished(QString errorMessage)
     checkModelState();
 }
 
-
+/// creates the iLand model
 void MainWindow::setupModel()
 {
     // load project xml file to global xml settings structure
@@ -575,6 +575,8 @@ void MainWindow::setupModel()
          mRemoteControl.setupDynamicOutput("");
      ui->modelRunProgress->setValue(0);
      Helper::saveToTextFile(QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt", ui->initFileName->text());
+     // magic debug output number
+     GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
 }
 
 
@@ -638,6 +640,8 @@ void MainWindow::on_actionModelRun_triggered()
        return;
    ui->modelRunProgress->setMaximum(count-1);
    mRemoteControl.run(count);
+   // process debug outputs...
+   saveDebugOutputs();
 
 }
 
@@ -702,7 +706,26 @@ void MainWindow::on_actionDaily_responses_Output_triggered()
     QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";");
     QApplication::clipboard()->setText(result.join("\n"));
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+}
 
+void MainWindow::saveDebugOutputs()
+{
+    // save to files if switch is true
+    if (!GlobalSettings::instance()->settings().valueBool("system.settings.debugOutputAutoSave"))
+        return;
+
+    QString p = GlobalSettings::instance()->path("debug_", "temp");
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition))
+        Helper::saveToTextFile(p + "tree_partition.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";").join("\n"));
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth))
+        Helper::saveToTextFile(p + "tree_growth.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";").join("\n"));
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP))
+        Helper::saveToTextFile(p + "tree_npp.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";").join("\n"));
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle))
+        Helper::saveToTextFile(p + "water_cycle.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";").join("\n"));
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses))
+        Helper::saveToTextFile(p + "daily_responses.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";").join("\n"));
+    qDebug() << "saved debug outputs to" << p;
 }
 
 void MainWindow::on_actionSelect_Data_Types_triggered()

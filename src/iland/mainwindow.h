@@ -51,6 +51,8 @@ private:
     void checkModelState();
     void showTreeDetails(Tree* tree);
     void showResourceUnitDetails(const ResourceUnit *ru);
+    // debug data and outputs
+    void saveDebugOutputs();
 
 private slots:
 
