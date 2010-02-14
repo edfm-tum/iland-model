@@ -33,7 +33,7 @@ public:
     static void addToScriptEngine(QScriptEngine &engine); // called during setup of ScriptEngine
 public slots:
     bool loadFile(const QString &fileName); ///< load @p fileName. load the complete file at once.
-    bool loadFromString(const QString &content); ///< load from a string.
+    bool loadFromString(const QString &content); ///< load content from a given string.
     QString columnName(const int col) { if (col<mColCount) return mCaptions[col]; return QString(); } ///< get caption of ith column.
     int columnIndex(const QString &columnName) const { return mCaptions.indexOf(columnName); } ///< index of column or -1 if not available
     QVariant value(const int row, const int col) const; ///< get value of cell denoted by @p row and @p cell. Not available in streaming mode.
