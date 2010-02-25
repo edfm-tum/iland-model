@@ -86,6 +86,25 @@ void Climate::setup()
     QString tableName =xml.value("tableName");
     mName = tableName;
     mLoadYears = (int) xml.valueDouble("batchYears", 1.);
+    mDoRandomSampling = xml.valueBool("randomSamplingEnabled", false);
+    mRandomYearList.clear();
+    mRandomListIndex = -1;
+    QString list = xml.value("randomSamplingList");
+    if (!list.isEmpty()) {
+        QStringList strlist = list.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+        foreach(const QString &s,strlist)
+            mRandomYearList.push_back(s.toInt());
+        // check for validity
+        foreach(int year, mRandomYearList)
+            if (year < 0 || year>=mLoadYears)
+                throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1!!!");
+    }
+    if (mDoRandomSampling) {
+        if (mRandomYearList.count()>0)
+            qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << " of years. ";
+        else
+            qDebug() << "Climate: Random sampling enabled (without a fixed list).";
+    }
     mTemperatureShift = xml.valueDouble("temperatureShift", 0.);
     mPrecipitationShift = xml.valueDouble("precipitationShift", 1.);
     if (mTemperatureShift!=0. || mPrecipitationShift!=1.)
@@ -198,10 +217,28 @@ void Climate::load()
 void Climate::nextYear()
 {
 
-    if (mCurrentYear >= mLoadYears-1) // overload
-        load();
-    else
-        mCurrentYear++;
+    if (!mDoRandomSampling) {
+        // default behaviour: simply advance to next year, call load() if end reached
+        if (mCurrentYear >= mLoadYears-1) // overload
+            load();
+        else
+            mCurrentYear++;
+    } else {
+        // random sampling
+        if (mRandomYearList.isEmpty()) {
+            // random without list
+            mCurrentYear = irandom(0,mLoadYears-1);
+        } else {
+            // random with list
+            mRandomListIndex++;
+            if (mRandomListIndex>=mRandomYearList.count())
+                mRandomListIndex=0;
+            mCurrentYear = mRandomYearList[mRandomListIndex];
+            if (mCurrentYear >= mLoadYears)
+                throw IException(QString("Climate: load year with random sampling: the actual year %1 is invalid. Only %2 years are loaded from the climate database.").arg(mCurrentYear).arg(mLoadYears) );
+        }
+        qDebug() << "Climate: current year (randomized):" << mCurrentYear;
+    }
 
     ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
     qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";

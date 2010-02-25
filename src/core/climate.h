@@ -61,6 +61,7 @@ public:
 
 private:
     bool mIsSetup;
+    bool mDoRandomSampling; ///< if true, the sequence of years is randomized
     QString mName;
     Sun mSun; ///< class doing solar radiation calculations
     void load(); ///< load mLoadYears years from database
@@ -79,6 +80,8 @@ private:
     QVector<int> mDayIndices; ///< store indices for month / years within store
     QSqlQuery mClimateQuery; ///< sql query for db access
     QList<Phenology> mPhenology; ///< phenology calculations
+    QVector<int> mRandomYearList; ///< for random sampling of years
+    int mRandomListIndex; ///< current index of the randomYearList for random sampling
 };
 
 #endif // CLIMATE_H
