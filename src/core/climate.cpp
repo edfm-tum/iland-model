@@ -226,7 +226,7 @@ void Climate::nextYear()
     } else {
         // random sampling
         if (mRandomYearList.isEmpty()) {
-            // random without list
+            // random without list (note: irandom may return the upper bound)
             mCurrentYear = irandom(0,mLoadYears-1);
         } else {
             // random with list

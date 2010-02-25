@@ -119,7 +119,7 @@ void Management::remain(int number)
     int to_kill = trees.count() - number;
     qDebug() << trees.count() << " standing, targetsize" << number << ", hence " << to_kill << "trees to remove";
     for (int i=0;i<to_kill;i++) {
-        int index = irandom(0, trees.count());
+        int index = irandom(0, trees.count()-1);
         trees[index]->remove();
         trees.removeAt(index);
     }

@@ -354,4 +354,10 @@ void Tests::testRandom()
         list << QString::number(pdf.get());
     qDebug() << list.join("\n");
     delete pdf2;
+    // simple random test
+    list.clear();
+    for (int i=0;i<1000;i++)
+        list << QString::number(irandom(0,5));
+    qDebug() << "irandom test (0,5): " << list;
+
 }
