@@ -55,8 +55,10 @@ void TimeEvents::run()
         key = entries[i].first; // key
         // special values: if (key=="xxx" ->
         // no special value: a xml node...
-        const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, entries[i].second.toString());
-        qDebug() << "TimeEvents: set" << key << "to" << entries[i].second.toString();
+        if (! const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, entries[i].second.toString()))
+            qDebug() << "TimeEvents: Error: Key " << key << "not found! (tried to set to" << entries[i].second.toString() << ")";
+        else
+            qDebug() << "TimeEvents: set" << key << "to" << entries[i].second.toString();
         values_set++;
     }
     if (values_set)
