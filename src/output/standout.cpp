@@ -20,7 +20,8 @@ StandOut::StandOut()
               << OutputColumn("gwl_m3", "'gesamtwuchsleistung' (total growth including removed/dead trees) volume (geomery, taper factor) in m3", OutDouble)
               << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble)
               << OutputColumn("NPP_kg", "sum of NPP (aboveground + belowground) kg Biomass/ha", OutDouble)
-              << OutputColumn("NPPabove_kg", "sum of NPP (abovegroundground) kg Biomass/ha", OutDouble);
+              << OutputColumn("NPPabove_kg", "sum of NPP (abovegroundground) kg Biomass/ha", OutDouble)
+              << OutputColumn("LAI", "Leafareaindex (m2/m2)", OutDouble);
 
  }
 
@@ -40,7 +41,7 @@ void StandOut::exec()
             *this << currentYear() << ru->index() << rus.species()->id(); // keys
             *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                     << stat.volume() << stat.gwl() << stat.basalArea()
-                    << stat.npp() << stat.nppAbove();
+                    << stat.npp() << stat.nppAbove() << stat.leafAreaIndex();
             writeRow();
         }
     }

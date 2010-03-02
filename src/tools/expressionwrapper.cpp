@@ -55,10 +55,10 @@ double ExpressionWrapper::valueByName(const QString &variableName)
 
 
 QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << "height" << "ruindex" // 0..3
-                        << "x" << "y" << "volume" << "lri" << "la" << "leafarea" << "lightresponse" // 4-10
-                        << "woodymass" << "rootmass" << "foliagemass" << "age" << "opacity" // 11-15
-                        << "dead" << "stress" << "deltad" //16-18
-                        << "afoliagemass"; // 19
+                        << "x" << "y" << "volume" << "lri" <<  "leafarea" << "lightresponse" // 4-9
+                        << "woodymass" << "rootmass" << "foliagemass" << "age" << "opacity" // 10-14
+                        << "dead" << "stress" << "deltad" //15-17
+                        << "afoliagemass"; // 18
 const QStringList TreeWrapper::getVariablesList()
 {
     return treeVarList;
@@ -78,17 +78,17 @@ double TreeWrapper::value(const int variableIndex)
     case 5: return mTree->position().y(); // y
     case 6: return mTree->volume(); // volume
     case 7: return mTree->lightResourceIndex(); // lri
-    case 8: case 9: return mTree->mLeafArea;
-    case 10: return mTree->mLightResponse;
-    case 11: return mTree->mWoodyMass;
-    case 12: return mTree->mCoarseRootMass + mTree->mFineRootMass; // sum of coarse and fine roots
-    case 13: return mTree->mFoliageMass;
-    case 14: return mTree->age();
-    case 15: return mTree->mOpacity;
-    case 16: return mTree->isDead()?1.:0.;
-    case 17: return mTree->mStressIndex;
-    case 18: return mTree->mDbhDelta; // increment of last year
-    case 19: return mTree->species()->biomassFoliage(mTree->dbh()); // allometric foliage
+    case 8: return mTree->mLeafArea;
+    case 9: return mTree->mLightResponse;
+    case 10: return mTree->mWoodyMass;
+    case 11: return mTree->mCoarseRootMass + mTree->mFineRootMass; // sum of coarse and fine roots
+    case 12: return mTree->mFoliageMass;
+    case 13: return mTree->age();
+    case 14: return mTree->mOpacity;
+    case 15: return mTree->isDead()?1.:0.;
+    case 16: return mTree->mStressIndex;
+    case 17: return mTree->mDbhDelta; // increment of last year
+    case 18: return mTree->species()->biomassFoliage(mTree->dbh()); // allometric foliage
     }
     return ExpressionWrapper::value(variableIndex);
 }
