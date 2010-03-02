@@ -31,39 +31,32 @@ void DynamicStandOut::setup()
 
     // setup fields
    if (!fieldList.isEmpty()) {
-        QRegExp rx("((?:\\[.+\\]|\\w+)\\.\\w+)");
+       QRegExp rx("([^\\.]+).(\\w+)[,\\s]*"); // two parts: before dot and after dot, and , + whitespace at the end
         int pos=0;
-        QString field;
-        QStringList fieldParts;
-        QRegExp field_rx("\\[(.+)\\]\\.(\\w+)");
+        QString field, aggregation;
         TreeWrapper tw;
         while ((pos = rx.indexIn(fieldList, pos)) != -1) {
             pos += rx.matchedLength();
-            field = rx.cap(1); // field
+
+            field = rx.cap(1); // field / expresssion
+            aggregation = rx.cap(2);
             mFieldList.append(SDynamicField());
             // parse field
-            if (field.count()>0 && field.at(0)!='[') {
+            if (field.count()>0 && !field.contains('(')) {
                 // simple expression
-                fieldParts = field.split(QRegExp("\\W+"), QString::SkipEmptyParts);
-                mFieldList.back().var_index = tw.variableIndex(fieldParts.first());
+                mFieldList.back().var_index = tw.variableIndex(field);
             } else {
                 // complex expression
-                field_rx.indexIn(field);
-                fieldParts = field_rx.capturedTexts();
-                fieldParts.pop_front();
                 mFieldList.back().var_index=-1;
-                mFieldList.back().expression = fieldParts.first();
+                mFieldList.back().expression = field;
             }
-            if (fieldParts.count()!=2)
-                throw IException(QString("Invalid variable name for dynamic output:") + field);
 
-             mFieldList.back().agg_index = aggList.indexOf(fieldParts[1]);
-             if (mFieldList.back().agg_index==-1)
+            mFieldList.back().agg_index = aggList.indexOf(aggregation);
+            if (mFieldList.back().agg_index==-1)
                  throw IException(QString("Invalid aggregate expression for dynamic output: %1\nallowed:%2")
-                                          .arg(fieldParts[1]).arg(aggList.join(" ")));
+                                          .arg(aggregation).arg(aggList.join(" ")));
 
-             QString stripped_field=field;
-             stripped_field.replace(".", "_");
+             QString stripped_field=QString("%1_%2").arg(field, aggregation);
              stripped_field.replace(QRegExp("[\\[\\]\\,\\(\\)<>=!\\s]"), "_");
              stripped_field.replace("__", "_");
              columns() << OutputColumn(stripped_field, field, OutDouble);
