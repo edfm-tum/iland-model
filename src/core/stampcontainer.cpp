@@ -4,10 +4,10 @@
 
 //constants
 const int StampContainer::cBHDclassWidth=4;
-const int StampContainer::cHDclassWidth=10;
 const int StampContainer::cBHDclassLow = 4; ///< bhd classes start with 4: class 0 = 4-8, class1 = 8..112
+const int StampContainer::cBHDclassCount = 70; ///< class count, see getKey(): for lower dbhs classes are smaller
+const int StampContainer::cHDclassWidth=10;
 const int StampContainer::cHDclassLow = 35; ///< hd classes offset is 35: class 0 = 35-45, class 1 = 45-55
-const int StampContainer::cBHDclassCount = 50; ///< class count, 50: highest class = 50*4 +- 2 = 198 - 202
 const int StampContainer::cHDclassCount = 15; ///< class count. highest class:  185-195
 
 
@@ -79,13 +79,16 @@ void StampContainer::finalizeSetup()
         }
 
     }
-    //qDebug() << dump();
+    if (!GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps"), false)
+        qDebug() << dump();
 }
 
 
  void StampContainer::addStamp(Stamp* stamp, const int cls_dbh, const int cls_hd, const float crown_radius_m, const float dbh, const float hd_value)
  {
     if (m_useLookup) {
+        if (cls_dbh<0 || cls_dbh>=cBHDclassCount || cls_hd<0 || cls_hd>=cHDclassCount)
+            throw IException(QString("StampContainer::addStamp: Stamp out of range. dbh=%1 hd=%2.").arg(dbh).arg(hd_value));
         m_lookup.valueAtIndex(cls_dbh, cls_hd) = stamp; // save address in look up table
     } // if (useLookup)
 
