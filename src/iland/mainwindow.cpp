@@ -609,7 +609,7 @@ void MainWindow::on_actionTreelist_triggered()
 
 void MainWindow::on_actionFON_grid_triggered()
 {
-    if (!mRemoteControl.isRunning()) return;
+    //if (!mRemoteControl.isRunning()) return;
     QString gr = gridToString(*mRemoteControl.model()->grid());
     QApplication::clipboard()->setText(gr);
     qDebug() << "grid copied to clipboard.";

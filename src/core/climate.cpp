@@ -90,16 +90,17 @@ void Climate::setup()
     mRandomYearList.clear();
     mRandomListIndex = -1;
     QString list = xml.value("randomSamplingList");
-    if (!list.isEmpty()) {
-        QStringList strlist = list.split(QRegExp("\\W+"), QString::SkipEmptyParts);
-        foreach(const QString &s,strlist)
-            mRandomYearList.push_back(s.toInt());
-        // check for validity
-        foreach(int year, mRandomYearList)
-            if (year < 0 || year>=mLoadYears)
-                throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1!!!");
-    }
     if (mDoRandomSampling) {
+        if (!list.isEmpty()) {
+            QStringList strlist = list.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+            foreach(const QString &s,strlist)
+                mRandomYearList.push_back(s.toInt());
+            // check for validity
+            foreach(int year, mRandomYearList)
+                if (year < 0 || year>=mLoadYears)
+                    throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1!!!");
+        }
+
         if (mRandomYearList.count()>0)
             qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << " of years. ";
         else

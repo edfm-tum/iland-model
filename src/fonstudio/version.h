@@ -1,1 +1,4 @@
-const char *version = "Alpha 1.1.0"; const char *svn_revision = "237:249"; 
+// global functions for current version and svn-revision. version.cpp gets updated automatically.
+const char *currentVersion();
+const char *svnRevision();
+

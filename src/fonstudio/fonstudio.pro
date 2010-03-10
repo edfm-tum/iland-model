@@ -29,7 +29,8 @@ SOURCES += main.cpp \
     ../tools/ticktack.cpp \
     ../tools/settingmetadata.cpp \
     ../tools/xmlhelper.cpp \
-    ../core/threadrunner.cpp
+    ../core/threadrunner.cpp \
+    version.cpp
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
@@ -49,7 +50,8 @@ HEADERS += mainwindow.h \
     ../core/speciesset.h \
     ../tools/xmlhelper.h \
     ../core/threadrunner.h \
-    ../3rdparty/MersenneTwister.h
+    ../3rdparty/MersenneTwister.h \
+    version.h
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
 DEFINES += FONSTUDIO
