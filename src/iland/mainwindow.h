@@ -25,7 +25,8 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = 0);
-    static QPlainTextEdit* logSpace();
+    static QPlainTextEdit* logSpace() { return mLogSpace; }
+    static QTextStream* logStream() { return mLogStream;}
     static void bufferedLog(bool bufferLog);
     ~MainWindow();
 public slots:
@@ -42,6 +43,7 @@ private:
 
 
     static QPlainTextEdit *mLogSpace;
+    static QTextStream *mLogStream;
     void loadPicusIniFile(const QString &fileName);
     // painter functions
     void paintFON(QPainter &painter, QRect rect);

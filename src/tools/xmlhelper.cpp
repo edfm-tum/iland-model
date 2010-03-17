@@ -93,8 +93,9 @@ QString XmlHelper::paramValueString(const QString &paramName, const QString &def
 bool XmlHelper::paramValueBool(const QString &paramName, const bool &defaultValue) const
 {
     if (mParamCache.contains(paramName)) {
-        QString v = mParamCache.value(paramName);
-       return (v=="1" || v=="true");
+        QString v = mParamCache.value(paramName).trimmed();
+        bool ret = (v=="1" || v=="true");
+        return ret;
     }
     return defaultValue;
 }

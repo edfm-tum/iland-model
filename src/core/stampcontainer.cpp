@@ -79,7 +79,7 @@ void StampContainer::finalizeSetup()
         }
 
     }
-    if (!GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps"), false)
+    if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
         qDebug() << dump();
 }
 

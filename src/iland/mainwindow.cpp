@@ -48,20 +48,27 @@ bool doBufferMessages = false;
 
 void dumpMessages()
 {
-    foreach(const QString &s, bufferedMessages)
-        MainWindow::logSpace()->appendPlainText(s);
+    if (MainWindow::logStream()) {
+        foreach(const QString &s, bufferedMessages)
+            *MainWindow::logStream() << s << endl;
+
+    } else {
+        foreach(const QString &s, bufferedMessages)
+            MainWindow::logSpace()->appendPlainText(s);
+
+        // it does *not* work to just MainWindow::logSpace()->textCursor().movePosition()!
+        // you have to "setTextCursor()".
+        QTextCursor cursor = MainWindow::logSpace()->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        MainWindow::logSpace()->setTextCursor(cursor);
+        MainWindow::logSpace()->ensureCursorVisible();
+    }
+
     bufferedMessages.clear();
-    // it does *not* work to just MainWindow::logSpace()->textCursor().movePosition()!
-    // you have to "setTextCursor()".
-    QTextCursor cursor = MainWindow::logSpace()->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    MainWindow::logSpace()->setTextCursor(cursor);
-    MainWindow::logSpace()->ensureCursorVisible();
 }
 
 void myMessageOutput(QtMsgType type, const char *msg)
  {
-    QString str(msg);
 
     switch (type) {
      case QtDebugMsg:
@@ -94,16 +101,11 @@ void myMessageOutput(QtMsgType type, const char *msg)
 
 void MainWindow::bufferedLog(bool bufferLog)
 {
-    doBufferMessages= bufferLog;
+    doBufferMessages = bufferLog;
 }
 
 QPlainTextEdit *MainWindow::mLogSpace=NULL;
-
-QPlainTextEdit* MainWindow::logSpace()
-{
-   return mLogSpace;
-}
-
+QTextStream *MainWindow::mLogStream=NULL;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -558,6 +560,23 @@ void MainWindow::setupModel()
     // load project xml file to global xml settings structure
     mRemoteControl.setFileName(ui->initFileName->text());
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
+
+    // setup logging
+    if (GlobalSettings::instance()->settings().value("system.logging.logTarget", "console") == "file") {
+        QString fname = GlobalSettings::instance()->settings().value("system.logging.logFile", "logfile.txt");
+        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+        fname.replace("$date$", timestamp);
+        QFile file(fname);
+
+        if (!file.open(QIODevice::WriteOnly)) {
+            qDebug() << "cannot open logfile" << fname;
+        } else {
+            if (mLogStream)
+                delete mLogStream;
+            mLogStream = new QTextStream(&file);
+        }
+    }
+
     // create the model
     mRemoteControl.create();
     Model *model = mRemoteControl.model();
