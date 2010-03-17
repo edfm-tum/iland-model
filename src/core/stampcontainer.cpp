@@ -63,7 +63,7 @@ void StampContainer::finalizeSetup()
             if (s) {
                 // fill up values left from this value
                 for (int hfill=0;hfill<h;hfill++)
-                    m_lookup.valueAtIndex(b,h) = s;
+                    m_lookup.valueAtIndex(b,hfill) = s;
                 break;
             }
         }
@@ -223,6 +223,7 @@ void StampContainer::load(const QString &fileName)
         throw IException(QString("The LIP stampfile %1 cannot be found!").arg(fileName));
     readerfile.open(QIODevice::ReadOnly);
     QDataStream rin(&readerfile);
+    qDebug() << "loading stamp file" << fileName;
     load(rin);
     readerfile.close();
 }
