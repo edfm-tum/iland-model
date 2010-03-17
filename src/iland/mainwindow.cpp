@@ -45,10 +45,21 @@ double nrandom(const float& p1, const float& p2)
 bool showDebugMessages=true;
 QStringList bufferedMessages;
 bool doBufferMessages = false;
+bool doLogToWindow = false;
+void logToWindow(bool mode)
+{
+   doLogToWindow = mode;
+}
+class LogToWindow
+{
+public:
+    LogToWindow() { logToWindow(true);}
+    ~LogToWindow() { logToWindow(false);}
+};
 
 void dumpMessages()
 {
-    if (MainWindow::logStream()) {
+    if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
             *MainWindow::logStream() << s << endl;
 
@@ -103,6 +114,34 @@ void MainWindow::bufferedLog(bool bufferLog)
 {
     doBufferMessages = bufferLog;
 }
+
+void MainWindow::setupFileLogging(const bool do_start)
+{
+    if (mLogStream) {
+        if (mLogStream->device())
+            delete mLogStream->device();
+        delete mLogStream;
+        mLogStream = NULL;
+    }
+    if (!do_start)
+        return;
+
+    if (GlobalSettings::instance()->settings().value("system.logging.logTarget", "console") == "file") {
+        QString fname = GlobalSettings::instance()->settings().value("system.logging.logFile", "logfile.txt");
+        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+        fname.replace("$date$", timestamp);
+        QFile *file = new QFile(GlobalSettings::instance()->path(fname, "log"));
+
+        if (!file->open(QIODevice::WriteOnly)) {
+            qDebug() << "cannot open logfile" << fname;
+        } else {
+            qDebug() << "Log output is redirected to logfile" << fname;
+            mLogStream = new QTextStream(file);
+        }
+    }
+
+}
+
 
 QPlainTextEdit *MainWindow::mLogSpace=NULL;
 QTextStream *MainWindow::mLogStream=NULL;
@@ -562,20 +601,7 @@ void MainWindow::setupModel()
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
 
     // setup logging
-    if (GlobalSettings::instance()->settings().value("system.logging.logTarget", "console") == "file") {
-        QString fname = GlobalSettings::instance()->settings().value("system.logging.logFile", "logfile.txt");
-        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-        fname.replace("$date$", timestamp);
-        QFile file(fname);
-
-        if (!file.open(QIODevice::WriteOnly)) {
-            qDebug() << "cannot open logfile" << fname;
-        } else {
-            if (mLogStream)
-                delete mLogStream;
-            mLogStream = new QTextStream(&file);
-        }
-    }
+    setupFileLogging(true);
 
     // create the model
     mRemoteControl.create();
@@ -894,6 +920,7 @@ void MainWindow::on_actionOutput_table_description_triggered()
 
 void MainWindow::on_actionTimers_triggered()
 {
+    LogToWindow l;
     DebugTimer::printAllTimers();
 }
 

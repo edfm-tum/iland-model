@@ -55,6 +55,7 @@ private:
     void showResourceUnitDetails(const ResourceUnit *ru);
     // debug data and outputs
     void saveDebugOutputs();
+    void setupFileLogging(const bool do_start);
 
 private slots:
 
