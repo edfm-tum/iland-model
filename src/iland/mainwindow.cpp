@@ -106,13 +106,15 @@ void myMessageOutput(QtMsgType type, const char *msg)
          //Helper::msg("Fatal message encountered!");
 
      }
-     if (!doBufferMessages)
+     if (!doBufferMessages || bufferedMessages.count()>5000)
              dumpMessages();
  }
 
 void MainWindow::bufferedLog(bool bufferLog)
 {
     doBufferMessages = bufferLog;
+    if (bufferLog==false)
+        dumpMessages();
 }
 
 void MainWindow::setupFileLogging(const bool do_start)
@@ -130,7 +132,8 @@ void MainWindow::setupFileLogging(const bool do_start)
         QString fname = GlobalSettings::instance()->settings().value("system.logging.logFile", "logfile.txt");
         QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
         fname.replace("$date$", timestamp);
-        QFile *file = new QFile(GlobalSettings::instance()->path(fname, "log"));
+        fname = GlobalSettings::instance()->path(fname, "log");
+        QFile *file = new QFile(fname);
 
         if (!file->open(QIODevice::WriteOnly)) {
             qDebug() << "cannot open logfile" << fname;

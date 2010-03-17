@@ -96,6 +96,7 @@ void ModelController::create()
         qDebug() << error_msg;
     }
     MainWindow::bufferedLog(false);
+    qDebug() << "Model created.";
 }
 
 void ModelController::destroy()

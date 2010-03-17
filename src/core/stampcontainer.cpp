@@ -8,7 +8,7 @@ const int StampContainer::cBHDclassLow = 4; ///< bhd classes start with 4: class
 const int StampContainer::cBHDclassCount = 70; ///< class count, see getKey(): for lower dbhs classes are smaller
 const int StampContainer::cHDclassWidth=10;
 const int StampContainer::cHDclassLow = 35; ///< hd classes offset is 35: class 0 = 35-45, class 1 = 45-55
-const int StampContainer::cHDclassCount = 15; ///< class count. highest class:  185-195
+const int StampContainer::cHDclassCount = 16; ///< class count. highest class:  185-195
 
 
 StampContainer::StampContainer()
