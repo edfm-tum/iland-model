@@ -59,6 +59,10 @@ private:
 
 private slots:
 
+    void on_pbLogFilterClear_clicked();
+    void on_pbFilterExecute_clicked();
+    void on_pbLogClearText_clicked();
+    void on_pbLogToClipboard_clicked();
     void on_actionDaily_responses_Output_triggered();
     void on_actionAbout_triggered();
     void on_actionOnline_ressources_triggered();

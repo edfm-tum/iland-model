@@ -939,3 +939,55 @@ void MainWindow::on_actionAbout_triggered()
 }
 
 
+/* Logging and filtering of logging */
+void MainWindow::on_pbLogToClipboard_clicked()
+{
+    // copy content of log window to clipboard
+    QApplication::clipboard()->setText(ui->logOutput->toPlainText());
+
+}
+
+void MainWindow::on_pbLogClearText_clicked()
+{
+    ui->logOutput->clear();
+    ui->logOutput->setProperty("fullText","");
+    ui->pbLogFilterClear->setEnabled(false);
+}
+
+void MainWindow::on_pbFilterExecute_clicked()
+{
+    QStringList lines;
+    QString search_for = ui->logFilterExpression->text();
+    if (search_for.isEmpty())
+        return;
+    QString full_content;
+    if (ui->logOutput->property("fullText").toString().isEmpty()) {
+        full_content = ui->logOutput->toPlainText();
+        ui->logOutput->setProperty("fullText",full_content);
+    } else
+        full_content = ui->logOutput->property("fullText").toString();
+    QStringList debugLines = full_content.split("\n");
+    int i=0;
+    foreach(const QString &line, debugLines) {
+        i++; // line counter
+        if (line.contains(search_for))
+            lines.push_back(QString("%1: %2").arg(i).arg(line) );
+    }
+    if (lines.count()>0) {
+        ui->logOutput->setPlainText(lines.join("\n"));
+    } else {
+        ui->logOutput->setPlainText("Search term not found!");
+    }
+    ui->pbLogFilterClear->setEnabled(true);
+}
+
+void MainWindow::on_pbLogFilterClear_clicked()
+{
+    QString text = ui->logOutput->property("fullText").toString();
+    if (text.isEmpty())
+        return;
+    ui->logOutput->setPlainText(text);
+    ui->logOutput->setProperty("fullText","");
+    ui->pbLogFilterClear->setEnabled(false);
+
+}
