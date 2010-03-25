@@ -144,12 +144,16 @@ void WaterCycle::run()
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dWaterCycle);
                 // climatic variables
-                out << day->id() << day->temperature << day->vpd << day->preciptitation << day->radiation;
+                out << day->id() << mRU->index() << day->temperature << day->vpd << day->preciptitation << day->radiation;
                 // fluxes
                 out << prec_after_interception << prec_to_soil << et << mCanopy.evaporationCanopy()
                         << mRelativeContent[doy]*mSoilDepth << mPsi[doy] << excess;
                 // other states
                 out << mSnowPack.snowPack();
+                //special sanity check:
+                if (prec_to_soil>0. && mCanopy.interception()>0.)
+                    if (mSnowPack.snowPack()==0. && day->preciptitation==0)
+                        qDebug() << "watercontent increase without precipititaion";
 
             }
         //); // DBGMODE()
