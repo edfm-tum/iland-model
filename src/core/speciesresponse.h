@@ -21,6 +21,10 @@ public:
     const double *vpdResponse() const {return mVpdResponse; }
     const double *co2Response() const { return mCO2Response; }
     double nitrogenResponse() const { return mNitrogenResponse; }
+    /// response calculation called during water cycle
+    /// calculates minimum-response of vpd-response and soilwater response
+    void soilAtmosphereResponses(const double psi_kPa, const double vpd, double &rMinResponse) const;
+
 private:
     void clear();
     const ResourceUnit *mRu;

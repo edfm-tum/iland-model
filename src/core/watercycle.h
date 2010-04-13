@@ -33,7 +33,7 @@ public:
     /// process the canopy layer. returns the amount of precipitation that leaves the canopy-layer.
     double flow(const double &preciptitation_mm, const double &temperature);
     double evapotranspirationBGC(const ClimateDay *climate, const double daylength_h); ///< evapotranspiration from soil
-    double evapotranspiration3PG(const ClimateDay *climate, const double daylength_h); ///< evapotranspiration from soil (mm). returns
+    double evapotranspiration3PG(const ClimateDay *climate, const double daylength_h, const double combined_response); ///< evapotranspiration from soil (mm). returns
     // properties
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
     double evaporationCanopy() const { return mEvaporation; } ///< evaporation from canopy (mm)
@@ -86,6 +86,7 @@ private:
     double mRelativeContent[366]; ///< relative water content for each day of the year
     double mPsi[366]; ///< soil water potential for each day in kPa
     void getStandValues(); ///< helper function to retrieve LAI per species group
+    inline double calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa);
     double mLAINeedle;
     double mLAIBroadleaved;
     double mCanopyConductance;

@@ -87,13 +87,31 @@ void WaterCycle::getStandValues()
     qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
 }
 
+/// calculate combined VPD and soilwaterresponse for all species
+/// on the RU. This is used for the calc. of the transpiration.
+inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
+{
+    const ResourceUnitSpecies *i;
+    const QVector<ResourceUnitSpecies>::const_iterator iend = mRU->ruSpecies().end();
+    double min_response;
+    double total_response = 0;
+    for (i=mRU->ruSpecies().begin();i<iend;++i) {
+        if (i->LAIfactor()>0) {
+            i->speciesResponse()->soilAtmosphereResponses(psi_kpa, vpd_kpa, min_response);
+            total_response += min_response * i->LAIfactor();
+        }
+    }
+    return total_response;
+}
+
+
 /// Main Water Cycle function. This function triggers all water related tasks for
 /// one simulation year.
 /// @sa http://iland.boku.ac.at/water+cycle
 void WaterCycle::run()
 {
     // preparations (once a year)
-    getStandValues(); // fetch canopy characteristics from iLand
+    getStandValues(); // fetch canopy characteristics from iLand (including weighted average for mCanopyConductance)
     mCanopy.setStandParameters(mLAINeedle,
                                mLAIBroadleaved,
                                mCanopyConductance);
@@ -126,9 +144,12 @@ void WaterCycle::run()
 
         // calculate the relative water content
         mRelativeContent[doy] = currentRelContent();
-        mPsi[doy] = psiFromHeight(mContent);
+        double current_psi = psiFromHeight(mContent);
+        mPsi[doy] = current_psi;
         // (5) transpiration of the vegetation (and of water intercepted in canopy)
-        et = mCanopy.evapotranspiration3PG(day, climate->daylength_h(doy));
+        // calculate the LAI-weighted response values for soil water and vpd:
+        double combined_response = calculateSoilAtmosphereResponse( current_psi, day->vpd);
+        et = mCanopy.evapotranspiration3PG(day, climate->daylength_h(doy), combined_response);
 
         mContent -= et; // reduce content (transpiration)
         // add intercepted water (that is *not* evaporated) again to the soil (or add to snow if temp too low -> call to snowpack)
@@ -310,7 +331,7 @@ double Canopy::evapotranspirationBGC(const ClimateDay *climate, const double day
 /** calculate the daily evaporation/transpiration using the Penman-Monteith-Equation.
    This version is based on 3PG. See the Visual Basic Code in 3PGjs.xls.
    Returns the total sum of evaporation+transpiration in mm of the day. */
-double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double daylength_h)
+double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double daylength_h, const double combined_response)
 {
     double vpd_mbar = climate->vpd * 10.; // convert from kPa to mbar
     double temperature = climate->temperature; // average temperature of the day (°C)
@@ -322,10 +343,8 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     const double latent_heat = 2460000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
 
     double gBL  = 0.2; // boundary layer conductance
-    // canopy conductance scales linearly from 0 to LAI=3 and is constant for LAI > 3.
-    double gC = mAvgMaxCanopyConductance * exp(-2.5 * climate->vpd);
-    if (mLAI<3.)
-        gC *= mLAI / 3.;
+    double gC = mAvgMaxCanopyConductance * combined_response;
+
 
     double defTerm = mAirDensity * latent_heat * (vpd_mbar * VPDconv) * gBL;
         // saturation vapor pressure (Running 1988, Eq. 1) in mbar

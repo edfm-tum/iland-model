@@ -41,6 +41,18 @@ void SpeciesResponse::setup(ResourceUnitSpecies *rus)
     clear();
 }
 
+/// calculate responses for VPD and Soil Water. Return the minimum of those responses
+/// @param psi_kPa psi of the soil in kPa
+/// @param vpd vapor pressure deficit in kPa
+/// @return minimum of soil water and vpd response
+void SpeciesResponse::soilAtmosphereResponses(const double psi_kPa, const double vpd, double &rMinResponse) const
+{
+    double water_resp = mSpecies->soilwaterResponse(psi_kPa);
+    double vpd_resp = mSpecies->vpdResponse( vpd );
+    rMinResponse = qMin(water_resp, vpd_resp);
+}
+
+
 /// Main function that calculates monthly / annual species responses
 void SpeciesResponse::calculate()
 {

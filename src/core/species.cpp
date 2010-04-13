@@ -96,7 +96,7 @@ void Species::setup()
     mRespVpdExponent = doubleVar("respVpdExponent");
     mRespTempMin  =doubleVar("respTempMin");
     mRespTempMax  =doubleVar("respTempMax");
-    if (mRespVpdExponent>=0) throw IException( QString("vpd exponent >=0 for species").arg(id()));
+    if (mRespVpdExponent>=0) throw IException( QString("Error: vpd exponent >=0 for species (must be a negative value).").arg(id()));
     if (mRespTempMax==0. || mRespTempMin>=mRespTempMax) throw IException( QString("temperature response parameters invalid for species").arg(id()));
 
     mRespNitrogenClass = doubleVar("respNitrogenClass");

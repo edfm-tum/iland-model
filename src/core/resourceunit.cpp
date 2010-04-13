@@ -168,6 +168,14 @@ void ResourceUnit::production()
             .arg(mLRI_modification)
             .arg(mStockedArea);
     );
+
+    // calculate LAI fractions
+    ResourceUnitSpecies *i;
+    QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
+    for (i=mRUSpecies.begin(); i!=iend; ++i) {
+         i->setLAIfactor(i->statistics().leafAreaIndex() / leafAreaIndex());
+    }
+
     // soil water model - this determines soil water contents needed for response calculations
     {
     DebugTimer tw("water:run");
@@ -175,9 +183,6 @@ void ResourceUnit::production()
     }
 
     // invoke species specific calculation (3PG)
-    ResourceUnitSpecies *i;
-    QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
-
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         i->statistics().clear();
         i->calculate();

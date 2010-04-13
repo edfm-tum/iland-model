@@ -30,6 +30,7 @@ public:
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
     Tree *tree(const int index) { return &(mTrees[index]);} ///< get pointer to a tree
     const ResourceUnitVariables &resouceUnitVariables() const { return mUnitVariables; } ///< access to variables that are specific to resourceUnit (e.g. nitrogenAvailable)
+    const StandStatistics &statistics() const {return mStatistics; }
 
     // properties
     int index() const { return mIndex; }
@@ -37,6 +38,7 @@ public:
     double area() const { return mPixelCount*100; } ///< get the resuorce unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
     double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
+    double leafAreaIndex() const { return mAggregatedLA / area(); } ///< Total Leaf Area Index
 
     // actions
     Tree &newTree();  ///< returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
