@@ -49,16 +49,21 @@ inline double Production3PG::abovegroundFraction() const
     return harsh;
 }
 
-/** calculate the alphac (=photosynthetic efficiency) for given month.
+void Production3PG::clear()
+{
+    for (int i=0;i<12;i++) {
+        mGPP[i] = 0.; mUPAR[i]=0.;
+    }
+}
+
+/** calculate the GPP
   @sa http://iland.boku.ac.at/primary+production */
 double Production3PG::calculate()
 {
     Q_ASSERT(mResponse!=0);
     // Radiation: sum over all days of each month with foliage
     double year_raw_gpp = 0.;
-    for (int i=0;i<12;i++) {
-        mGPP[i] = 0.; mUPAR[i]=0.;
-    }
+    clear();
     double utilizable_rad, epsilon;
     // conversion from gC to kg Biomass: C/Biomass=0.5
     const double gC_to_kg_biomass = 2. / 1000.;

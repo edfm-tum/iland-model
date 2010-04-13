@@ -12,7 +12,8 @@ public:
     void setup(ResourceUnitSpecies *rus);
     /// calculate the species specific environmental response values for the resource unit.
     /// this function called before the 3pg production.
-    void calculate();
+    void calculate(); ///< calculate responses for current year
+    void clear(); ///< set all responses to 0
     // access responses
     const double *tempResponse() const { return mTempResponse; }
     const double *soilWaterResponse() const { return mSoilWaterResponse; }
@@ -26,7 +27,6 @@ public:
     void soilAtmosphereResponses(const double psi_kPa, const double vpd, double &rMinResponse) const;
 
 private:
-    void clear();
     const ResourceUnit *mRu;
     const Species *mSpecies;
 

@@ -58,7 +58,7 @@ QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << "height
                         << "x" << "y" << "volume" << "lri" <<  "leafarea" << "lightresponse" // 4-9
                         << "woodymass" << "rootmass" << "foliagemass" << "age" << "opacity" // 10-14
                         << "dead" << "stress" << "deltad" //15-17
-                        << "afoliagemass"; // 18
+                        << "afoliagemass" << "speciesindex"; // 18, 19
 const QStringList TreeWrapper::getVariablesList()
 {
     return treeVarList;
@@ -89,6 +89,7 @@ double TreeWrapper::value(const int variableIndex)
     case 16: return mTree->mStressIndex;
     case 17: return mTree->mDbhDelta; // increment of last year
     case 18: return mTree->species()->biomassFoliage(mTree->dbh()); // allometric foliage
+    case 19: return mTree->species()->index();
     }
     return ExpressionWrapper::value(variableIndex);
 }

@@ -23,8 +23,15 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
 
 void ResourceUnitSpecies::calculate()
 {
-    mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
-    m3PG.calculate();///< production of NPP
+    if (mLAIfactor>0) {
+        mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
+        m3PG.calculate();///< production of NPP
+    } else {
+        // if no LAI is present, then just clear the respones.
+        // note: must be changed when regeneration is added...
+        mResponse.clear();
+        m3PG.clear();
+    }
 }
 
 

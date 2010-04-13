@@ -408,6 +408,7 @@ void Model::afterStop()
     // do some cleanup
 }
 
+/// multithreaded running function for LIP printing
 ResourceUnit* nc_applyPattern(ResourceUnit *unit)
 {
 
@@ -435,6 +436,7 @@ ResourceUnit* nc_applyPattern(ResourceUnit *unit)
     return unit;
 }
 
+/// multithreaded running function for LIP value extraction
 ResourceUnit *nc_readPattern(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
@@ -450,6 +452,7 @@ ResourceUnit *nc_readPattern(ResourceUnit *unit)
     return unit;
 }
 
+/// multithreaded running function for the growth of individual trees
 ResourceUnit *nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
@@ -465,6 +468,13 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
         (*tit).grow(); // actual growth of individual trees
     }
+    return unit;
+}
+
+/// multithreaded running function for the resource level production
+ResourceUnit *nc_production(ResourceUnit *unit)
+{
+    unit->production();
     return unit;
 }
 
@@ -507,16 +517,12 @@ void Model::readPattern()
   */
 void Model::grow()
 {
-    {
-        if (!settings().growthEnabled)
-            return;
-        DebugTimer t("growRU()");
-        calculateStockedArea();
 
-        foreach(ResourceUnit *ru, mRU) {
-            ru->production();
-        }
-    }
+    if (!settings().growthEnabled)
+        return;
+    { DebugTimer t("growRU()");
+    calculateStockedArea();
+    threadRunner.run(nc_production); }
 
     DebugTimer t("grow()");
     threadRunner.run(nc_grow); // actual growth of individual trees

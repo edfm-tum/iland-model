@@ -9,6 +9,7 @@ public:
     Production3PG();
     void setResponse(const SpeciesResponse *response) { mResponse=response;}
     double calculate(); ///< return  year GPP/rad: kg Biomass/MJ PAR/m2
+    void clear(); ///< clear production values
     double rootFraction() const { return mRootFraction; } /// fraction of biomass that should be distributed to roots
     double GPPperArea() const { return mGPPperArea; } ///<  GPP production (yearly) (kg Biomass) per m2 (effective area)
 private:

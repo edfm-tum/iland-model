@@ -29,7 +29,7 @@ public:
     double LAIfactor() const { return mLAIfactor; } ///< relative fraction of LAI of this species (0..1)
     void setLAIfactor(const double newLAIfraction) { mLAIfactor=newLAIfraction; if (mLAIfactor<0 || mLAIfactor>1) qDebug() << "invalid LAIfactor"<<mLAIfactor; }
     // action
-    void calculate();
+    void calculate(); ///< calculate response for species, calculate actual 3PG production
 
 private:
     double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year
