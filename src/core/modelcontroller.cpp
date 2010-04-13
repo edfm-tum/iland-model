@@ -112,6 +112,7 @@ void ModelController::destroy()
 void ModelController::runloop()
 {
 
+    QApplication::processEvents();
     if (mPaused)
         return;
     bool doStop = false;

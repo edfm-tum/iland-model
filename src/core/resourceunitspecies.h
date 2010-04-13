@@ -27,7 +27,7 @@ public:
     void updateGWL();
     double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3)
     double LAIfactor() const { return mLAIfactor; } ///< relative fraction of LAI of this species (0..1)
-    void setLAIfactor(const double newLAIfraction) { mLAIfactor=newLAIfraction; if (mLAIfactor<0 || mLAIfactor>1) qDebug() << "invalid LAIfactor"<<mLAIfactor; }
+    void setLAIfactor(const double newLAIfraction) { mLAIfactor=newLAIfraction; if (mLAIfactor<0 || mLAIfactor>1.00001) qDebug() << "invalid LAIfactor"<<mLAIfactor; }
     // action
     void calculate(); ///< calculate response for species, calculate actual 3PG production
 

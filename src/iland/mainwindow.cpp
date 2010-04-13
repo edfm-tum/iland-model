@@ -57,8 +57,10 @@ public:
     ~LogToWindow() { logToWindow(false);}
 };
 
+QMutex dump_message_mutex;
 void dumpMessages()
 {
+    QMutexLocker m(&dump_message_mutex); // serialize access
     if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
             *MainWindow::logStream() << s << endl;

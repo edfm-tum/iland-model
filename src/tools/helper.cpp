@@ -139,15 +139,22 @@ StatData::StatData(QVector<double> &data)
     calculate();
 }
 
+void StatData::calculatePercentiles() const
+{
+    mP25 = percentile(25);
+    mP75 = percentile(75);
+    mMedian = percentile(50);
+}
+
 void StatData::calculate()
 {
    if (mData.isEmpty()) {
        mSum=mMedian=mP25=mP75=mMean=mMin=mMax=0.;
        return;
    }
-   mP25 = percentile(25);
-   mP75 = percentile(75);
-   mMedian = percentile(50);
+   mP25 = std::numeric_limits<double>::max();
+   mP75 = std::numeric_limits<double>::max();
+   mMedian = std::numeric_limits<double>::max();
    mMin = std::numeric_limits<double>::max();
    mMax = - std::numeric_limits<double>::max();
    QVector<double>::const_iterator end = mData.constEnd();
@@ -164,7 +171,7 @@ void StatData::calculate()
 }
 
 
-double StatData::percentile(const int perc)
+double StatData::percentile(const int perc) const
 {
 // double *Values, int ValueCount,
     // code von: Fast median search: an ANSI C implementation, Nicolas Devillard, http://ndevilla.free.fr/median/median/index.html

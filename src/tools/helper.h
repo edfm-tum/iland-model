@@ -57,22 +57,23 @@ public:
     double mean() const { return mMean; } ///< arithmetic mean
     double min() const { return mMin; } ///< minimum value
     double max() const { return mMax; } ///< maximum value
-    double median() const { return mMedian; } ///< 2nd quartil = median
-    double percentile25() const { return mP25; } ///< 1st quartil
-    double percentile75() const { return mP75; } ///< 3rd quartil
-    double percentile(const int perc); ///< get value of a given percentile (0..100)
+    double median() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mMedian; } ///< 2nd quartil = median
+    double percentile25() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mP25; } ///< 1st quartil
+    double percentile75() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mP75; } ///< 3rd quartil
+    double percentile(const int perc) const; ///< get value of a given percentile (0..100)
     // additional functions
     static QVector<int> calculateRanks(const QVector<double> &data, bool descending=false); ///< rank data.
     static void normalize(QVector<double> &data, double targetSum); ///< normalize, i.e. the sum of all items after processing is targetSum
 private:
-   QVector<double> mData;
+   mutable QVector<double> mData; // mutable to allow late calculation of percentiles (e.g. a call to "median()".)
    double mSum;
    double mMean;
    double mMin;
    double mMax;
-   double mP25;
-   double mP75;
-   double mMedian;
+   mutable double mP25;
+   mutable double mP75;
+   mutable double mMedian;
+   void calculatePercentiles() const;
 };
 
 /** Timer class that writes timings to the Debug-Output-Channel

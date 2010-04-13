@@ -187,7 +187,7 @@ void ResourceUnit::production()
         i->statistics().clear();
         i->calculate();
         if (i->LAIfactor()>0)
-            qDebug() << "species" << (*i).species()->id() << "raw_gpp_m2" << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:" << productiveArea()*i->prod3PG().GPPperArea();
+            qDebug() << "species" << (*i).species()->id() << "LAIfraction" << i->LAIfactor() << "raw_gpp_m2" << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:" << productiveArea()*i->prod3PG().GPPperArea();
     }
 }
 

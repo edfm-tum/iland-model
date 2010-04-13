@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include <QtSql>
-//#include <QtXml>
+#include <QtSql/QSqlDatabase>
 
 #include "settingmetadata.h"
 #include "xmlhelper.h"
