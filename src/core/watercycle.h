@@ -47,9 +47,7 @@ private:
     double mInterception; ///< intercepted precipitation of the current day (mm)
     double mEvaporation; ///< water that evaporated from foliage surface to atmosphere (mm)
     // Penman-Monteith parameters
-    double mHeatCapacityAir; // Specific heat capacity of air [J  / (kg °C)]
     double mAirDensity; // density of air [kg / m3]
-    double mPsychrometricConstant; // mbar/°C
 
 };
 
@@ -65,7 +63,7 @@ public:
     // actions
     void run(); ///< run the current year
     // properties
-    const double &relContent(const int doy) const { return mRelativeContent[doy]; }
+    //const double &relContent(const int doy) const { return mRelativeContent[doy]; }
     const double &psi_kPa(const int doy) const { return mPsi[doy]; }
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm

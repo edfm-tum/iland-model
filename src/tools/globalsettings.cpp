@@ -169,8 +169,9 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                 << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
 
         case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
-        case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "temp" << "vpd" << "prec" << "rad"
-                                        << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted" << "content" << "psi_kpa" << "excess_mm" << "snow_height";
+        case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
+                                        << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
+                                        << "content" << "psi_kpa" << "excess_mm" << "snow_height";
         case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index"
                                         << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
     }

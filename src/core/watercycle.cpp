@@ -77,12 +77,12 @@ void WaterCycle::getStandValues()
     if (total_lai>0.) {
         mCanopyConductance /= total_lai;
     } else {
-        mCanopyConductance = 0.02;
+        mCanopyConductance = Model::settings().boundaryLayerConductance; // defaults to 0.02
     }
-    if (total_lai < 3.) {
-        // following Landsberg and Waring: when LAI is < 3, a linear "ramp" from 0 to 3 is assumed
+    if (total_lai < Model::settings().laiThresholdForClosedStands) {
+        // following Landsberg and Waring: when LAI is < 3 (default for laiThresholdForClosedStands), a linear "ramp" from 0 to 3 is assumed
         // http://iland.boku.ac.at/water+cycle#transpiration_and_canopy_conductance
-        mCanopyConductance *= total_lai / 3.;
+        mCanopyConductance *= total_lai / Model::settings().laiThresholdForClosedStands;
     }
     qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
 }
@@ -166,6 +166,7 @@ void WaterCycle::run()
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dWaterCycle);
                 // climatic variables
                 out << day->id() << mRU->index() << day->temperature << day->vpd << day->preciptitation << day->radiation;
+                out << combined_response; // combined response of all species on RU (min(water, vpd))
                 // fluxes
                 out << prec_after_interception << prec_to_soil << et << mCanopy.evaporationCanopy()
                         << mRelativeContent[doy]*mSoilDepth << mPsi[doy] << excess;
@@ -269,13 +270,7 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
 /// sets up the canopy. fetch some global parameter values...
 void Canopy::setup()
 {
-    mHeatCapacityAir = Model::settings().heatCapacityAir; // J/kg/°C
     mAirDensity = Model::settings().airDensity; // kg / m3
-    double airPressure = Model::settings().airPressure; // mbar
-    double heat_capacity_kJ = mHeatCapacityAir / 1000; // convert to: kJ/kg/°C
-    const double latent_heat_water = 2450;// kJ/kg
-    // calc psychrometric constant (in mbar/°C): see also http://en.wikipedia.org/wiki/Psychrometric_constant
-    mPsychrometricConstant = heat_capacity_kJ*airPressure/latent_heat_water/0.622;
 }
 
 void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadleave, const double maxCanopyConductance)
@@ -286,46 +281,6 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
     mAvgMaxCanopyConductance = maxCanopyConductance;
 }
 
-/** calculate the daily evaporation/transpiration using the Penman-Monteith-Equation.
-   The application of the equation follows broadly Running (1988).
-   Returns the total sum of evaporation+transpiration in mm of the day. */
-double Canopy::evapotranspirationBGC(const ClimateDay *climate, const double daylength_h)
-{
-    double vpd_mbar = climate->vpd * 10.; // convert from kPa to mbar
-    double temperature = climate->temperature; // average temperature of the day (°C)
-    double daylength = daylength_h * 3600.; // daylength in seconds (convert from length in hours)
-    double rad = climate->radiation / daylength * 1000000; //convert from MJ/m2 (day sum) to average radiation flow W/m2 [MJ=MWs -> /s * 1,000,000
-    const double aerodynamic_resistance = 5.; // m/s: aerodynamic resistance of the canopy is considered being constant
-    const double latent_heat = 2257000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
-
-    // (1) calculate some intermediaries
-    // current canopy conductance: is calculated following Landsberg & Waring
-    // note: here we use vpd again in kPa.
-    double current_canopy_conductance;
-    current_canopy_conductance = mAvgMaxCanopyConductance * exp(-2.5 * climate->vpd);
-
-    // saturation vapor pressure (Running 1988, Eq. 1) in mbar
-    double svp = 6.1078 * exp((17.269 * temperature) / (237.3 + temperature) );
-    // the slope of svp is, thanks to http://www.wolframalpha.com/input/?i=derive+y%3D6.1078+exp+((17.269x)/(237.3%2Bx))
-    double svp_slope = svp * ( 17.269/(237.3+temperature) - 17.269*temperature/((237.3+temperature)*(237.3+temperature)) );
-
-    double et; // transpiration in mm (follows Eq.(8) of Running, 1988).
-    // note: RC (resistance of canopy) = 1/CC (conductance of canopy)
-    double dim = svp_slope + mPsychrometricConstant*(1. + 1. / (current_canopy_conductance*aerodynamic_resistance));
-    double dayl = daylength*mLAI / latent_heat;
-    double upper = svp_slope*rad + mHeatCapacityAir*mAirDensity * vpd_mbar/aerodynamic_resistance;
-    et = upper / dim * dayl;
-
-    // now calculate the evaporation from intercepted preciptitaion in the canopy: 1+rc/ra -> 1
-    if (mInterception>0.) {
-        double dim_evap = svp_slope + mPsychrometricConstant;
-        double pot_evap = upper / dim_evap * dayl;
-        double evap = qMin(pot_evap, mInterception);
-        mInterception -= evap; // reduce interception
-        mEvaporation = evap;
-    }
-    return et;
-}
 
 
 /** calculate the daily evaporation/transpiration using the Penman-Monteith-Equation.
@@ -342,7 +297,12 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     const double VPDconv = 0.000622; //convert VPD to saturation deficit = 18/29/1000
     const double latent_heat = 2460000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
 
-    double gBL  = 0.2; // boundary layer conductance
+    double gBL  = Model::settings().boundaryLayerConductance; // boundary layer conductance
+
+    // canopy conductance.
+    // The species traits are weighted by LAI on the RU.
+    // maximum canopy conductance: see getStandValues()
+    // current response: see calculateSoilAtmosphereResponse(). This is basically a weighted average of min(water_response, vpd_response) for each species
     double gC = mAvgMaxCanopyConductance * combined_response;
 
 

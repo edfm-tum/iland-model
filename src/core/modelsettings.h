@@ -18,9 +18,9 @@ public:
     // climate
     double temperatureTau; ///< "tau"-value for delayed temperature calculation acc. to Mäkela 2008
     // water
-    double heatCapacityAir; // Specific heat capacity of air [J  / (kg °C)]
-    double airPressure; // atmospheric pressure (mbar)
     double airDensity; // density of air [kg / m3]
+    double laiThresholdForClosedStands; // for calculation of max-canopy-conductance
+    double boundaryLayerConductance; // 3pg-evapotranspiration
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
     // production
