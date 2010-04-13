@@ -17,7 +17,7 @@ void ModelSettings::loadModelSettings()
     epsilon = xml.valueDouble("epsilon",1.8); // max light use efficiency (aka alpha_c)
     airDensity = xml.valueDouble("airDensity", 1.2);
     laiThresholdForClosedStands = xml.valueDouble("laiThresholdForClosedStands", 3.);
-    boundaryLayerConductance = xml.valueDouble("boundaryLayerConductance", 0.02);
+    boundaryLayerConductance = xml.valueDouble("boundaryLayerConductance", 0.2);
     XmlHelper world(GlobalSettings::instance()->settings().node("model.world"));
     latitude = RAD(world.valueDouble("latitude",48.));
 }

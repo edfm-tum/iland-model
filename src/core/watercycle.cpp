@@ -77,7 +77,7 @@ void WaterCycle::getStandValues()
     if (total_lai>0.) {
         mCanopyConductance /= total_lai;
     } else {
-        mCanopyConductance = Model::settings().boundaryLayerConductance; // defaults to 0.02
+        mCanopyConductance = Model::settings().boundaryLayerConductance; // defaults to 0.2
     }
     if (total_lai < Model::settings().laiThresholdForClosedStands) {
         // following Landsberg and Waring: when LAI is < 3 (default for laiThresholdForClosedStands), a linear "ramp" from 0 to 3 is assumed
