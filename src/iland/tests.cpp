@@ -16,7 +16,7 @@
 #include "xmlhelper.h"
 #include "environment.h"
 #include "exception.h"
-
+#include "seeddispersal.h"
 //
 #include "standloader.h"
 
@@ -360,4 +360,10 @@ void Tests::testRandom()
         list << QString::number(irandom(0,5));
     qDebug() << "irandom test (0,5): " << list;
 
+}
+
+void Tests::testSeedDispersal()
+{
+    SeedDispersal sd;
+    sd.setup();
 }

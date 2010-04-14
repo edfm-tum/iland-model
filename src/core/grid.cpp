@@ -1,7 +1,7 @@
 #include <QtGui>
 #include "grid.h"
 #include "exception.h"
-
+#include "global.h"
 
 QString gridToString(const FloatGrid &grid)
 {
@@ -32,7 +32,7 @@ QImage gridToImage(const FloatGrid &grid,
             rval = std::min(max_value, rval);
             if (reverse) rval = max_value - rval;
             if (black_white) {
-                grey = int(255*rval);
+                grey = int(255 * ( (rval-min_value) / (max_value-min_value)));
                 col = QColor(grey,grey,grey).rgb();
             } else {
                 col = QColor::fromHsvF(0.66666666666*rval, 0.95, 0.95).rgb();

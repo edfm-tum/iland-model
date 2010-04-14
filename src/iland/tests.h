@@ -19,6 +19,7 @@ public:
     void testCSVFile();
     void testXml();
     void testRandom();
+    void testSeedDispersal();
     private:
     QString dumpTreeList();
     QObject *mParent;

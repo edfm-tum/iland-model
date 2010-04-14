@@ -8,6 +8,8 @@
 #include <limits>
 #include <cstring>
 
+#include "global.h"
+
 /** Grid class (template).
 
 Orientation
@@ -43,8 +45,8 @@ public:
     float metricSizeY() const { return mSizeY*mCellsize; }
     QRectF metricRect() const { return mRect; }
     float cellsize() const { return mCellsize; }
-    int count() const { return mCount; }
-    bool isEmpty() const { return mData==NULL; }
+    int count() const { return mCount; } ///< returns the number of elements of the grid
+    bool isEmpty() const { return mData==NULL; } ///< returns false if the grid was not setup
     // operations
     // query
     /// access (const) with index variables. use int.
@@ -70,7 +72,8 @@ public:
     bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
 
     QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mRect.left()) / mCellsize),  int((pos.y()-mRect.top())/mCellsize)); } ///< get index of value at position pos (metric)
-    bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } ///< get index of value at position pos (index)
+    bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } ///< return true, if position is within the grid
+    bool isIndexValid(const int x, const int y) const {return (x>=0 && x<mSizeX && y>=0 && y<mSizeY); } ///< return true, if index is within the grid
     /// force @param pos to contain valid indices with respect to this grid.
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} ///< ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
     /// get the (metric) centerpoint of cell with index @p pos
@@ -94,7 +97,9 @@ public:
     /// normalized returns a normalized grid, in a way that the sum()  = @param targetvalue.
     /// if the grid is empty or the sum is 0, no modifications are performed.
     Grid<T> normalized(const T targetvalue) const;
-    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); }
+    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); } ///< get a pointer to the element denoted by "x" and "y"
+    inline double distance(const QPoint &p1, const QPoint &p2); ///< distance (metric) between p1 and p2
+    const QPoint randomPosition() const; ///< returns a (valid) random position within the grid
 private:
 
     T* mData;
@@ -303,9 +308,23 @@ void  Grid<T>::wipe(const T value)
         initialize(value);
 }
 
-////////////////////////////////////////////////////////////7
+template <class T>
+double Grid<T>::distance(const QPoint &p1, const QPoint &p2)
+{
+    QPointF fp1=cellCenterPoint(p1);
+    QPointF fp2=cellCenterPoint(p2);
+    double distance = sqrt( (fp1.x()-fp2.x())*(fp1.x()-fp2.x()) + (fp1.y()-fp2.y())*(fp1.y()-fp2.y()));
+    return distance;
+}
+
+template <class T>
+const QPoint Grid<T>::randomPosition() const
+{
+    return QPoint(irandom(0,mSizeX-1), irandom(0, mSizeY-1));
+}
+////////////////////////////////////////////////////////////
 // global functions
-////////////////////////////////////////////////////////////7
+////////////////////////////////////////////////////////////
 
 /// dumps a FloatGrid to a String.
 /// rows will be y-lines, columns x-values. (see grid.cpp)
