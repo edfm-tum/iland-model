@@ -80,9 +80,11 @@ void dumpMessages()
     bufferedMessages.clear();
 }
 
+QMutex qdebug_mutex;
 void myMessageOutput(QtMsgType type, const char *msg)
  {
 
+    QMutexLocker m(&qdebug_mutex);
     switch (type) {
      case QtDebugMsg:
         if (showDebugMessages) {
@@ -810,7 +812,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "6: watercycle\n" \
                                         "7: CSV File\n" \
                                         "8: Xml setters\n" \
-                                        "9: random functions.", 0);
+                                        "9: random functions\n" \
+                                        "10: seed dispersal.", 0);
         switch (which) {
             case 0: t.speedOfExpression();break;
             case 1: t.clearTrees(); break;
@@ -822,6 +825,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
             case 7: t.testCSVFile(); break;
             case 8: t.testXml(); break;
             case 9: t.testRandom(); break;
+            case 10: t.testSeedDispersal(); break;
 
         }
         return;

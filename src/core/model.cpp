@@ -522,11 +522,12 @@ void Model::grow()
         return;
     { DebugTimer t("growRU()");
     calculateStockedArea();
-    foreach(ResourceUnit *ru, mRU)
-       ru->production();
+    // single-threaded:
+    //foreach(ResourceUnit *ru, mRU)
+    //   ru->production();
 
-    // multithreaded run crashes???
-    //threadRunner.run(nc_production);
+    // multithreaded: mutex for the message handler in mainwindow solved the crashes.
+    threadRunner.run(nc_production);
     }
 
     DebugTimer t("growTrees()");
