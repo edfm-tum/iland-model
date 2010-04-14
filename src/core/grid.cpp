@@ -50,6 +50,8 @@ bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid)
     QImage image;
     if (!image.load(fileName))
         throw IException(QString("Grid::loadFromImage: could not load image file %1.").arg(fileName));
+    if (rGrid.isEmpty())
+        rGrid.setup(1., image.size().width(), image.size().height() );
     double value;
     for (int x=0;x<image.width(); x++)
         for (int y=0;y<image.height(); y++) {

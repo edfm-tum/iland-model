@@ -366,4 +366,14 @@ void Tests::testSeedDispersal()
 {
     SeedDispersal sd;
     sd.setup();
+    sd.loadFromImage("e:\\temp\\test.jpg");
+    QImage img = gridToImage(sd.seedMap(), true, -1., 1.);
+    img.save("e:\\temp\\seedmap.png");
+    sd.execute();
+//    sd.edgeDetection();
+//    gridToImage(sd.seedMap(), true, -1., 1.).save("seedmap_edge.png");
+//    sd.distribute();
+    img = gridToImage(sd.seedMap(), true, -1., 1.);
+    img.save("e:\\temp\\seedmap_e.png");
+
 }

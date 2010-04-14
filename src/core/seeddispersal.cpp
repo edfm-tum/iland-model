@@ -28,7 +28,7 @@ void SeedDispersal::setup()
     mSeedMap.initialize(0.);
 
     // setup of seed kernel
-    const int max_radius = 10; // pixels
+    const int max_radius = 15; // pixels
     float cellsize = mSeedMap.cellsize();
 
     mSeedKernel.clear();
@@ -41,20 +41,43 @@ void SeedDispersal::setup()
         double d = mSeedKernel.distance(center, mSeedKernel.indexOf(p));
         *p = qMax( 1. - d / max_dist, 0.);
     }
+
     //Helper::saveToTextFile("seedkernel.csv",gridToString(mSeedKernel));
 
     // randomize seed map.... set 1/3 to "filled"
-    for (int i=0;i<mSeedMap.count(); i++)
-        mSeedMap.valueAtIndex(mSeedMap.randomPosition()) = 1.;
+    //for (int i=0;i<mSeedMap.count(); i++)
+    //    mSeedMap.valueAtIndex(mSeedMap.randomPosition()) = 1.;
 
 
-    QImage img = gridToImage(mSeedMap, true, -1., 1.);
-    img.save("seedmap.png");
-    { DebugTimer t("edgedetect");
-        edgeDetection();
-        distribute();}
-    img = gridToImage(mSeedMap, true, -1., 1.);
-    img.save("seedmap_e.png");
+//    QImage img = gridToImage(mSeedMap, true, -1., 1.);
+//    img.save("seedmap.png");
+
+//    img = gridToImage(mSeedMap, true, -1., 1.);
+//    img.save("seedmap_e.png");
+}
+
+/// debug function: loads a image of arbirtrary size...
+void SeedDispersal::loadFromImage(const QString &fileName)
+{
+    mSeedMap.clear();
+    loadGridFromImage(fileName, mSeedMap);
+    for (float* p=mSeedMap.begin();p!=mSeedMap.end();++p)
+        *p = *p>0.8?1.f:0.f;
+
+}
+
+void SeedDispersal::clear()
+{
+    mSeedMap.initialize(0.f);
+}
+
+void SeedDispersal::execute()
+{
+    DebugTimer t("seed dispersal");
+    // (1) detect edges
+    edgeDetection();
+    // (2) distribute seed probabilites from edges
+    distribute();
 }
 
 /** scans the seed image and detects "edges".
@@ -92,15 +115,17 @@ void SeedDispersal::distribute()
     float *end = mSeedMap.end();
     float *p = mSeedMap.begin();
     for(;p!=end;++p) {
-        if (*p==-1) {
+        if (*p==-1.f) {
             // edge pixel found. Now apply the kernel....
             QPoint pt=mSeedMap.indexOf(p);
             for (y=-mOffset;y<=mOffset;++y)
                 for (x=-mOffset;x<=mOffset;++x)
                     if (mSeedMap.isIndexValid(pt.x()+x, pt.y()+y)) {
                         float &val = mSeedMap.valueAtIndex(pt.x()+x, pt.y()+y);
-                        val = qMin(fabs(val) + mSeedKernel.valueAtIndex(x+mOffset, y+mOffset),1. );
+                        if (val!=-1)
+                            val = qMin(1.f - (1.f - val)*(1.f-mSeedKernel.valueAtIndex(x+mOffset, y+mOffset)),1.f );
                     }
+            *p=1.f; // mark as processed
         } // *p==1
     } // for()
 }
