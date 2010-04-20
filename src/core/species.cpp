@@ -149,7 +149,7 @@ double Species::aging(const float height, const int age)
     double rel_age = qMin(age/mMaximumAge, 1.);
     // harmonic mean: http://en.wikipedia.org/wiki/Harmonic_mean
     double x = 1. - 2. / (1./(1.-rel_height) + 1./(1.-rel_age));
-    double aging_factor = mAging.calculate(x);
+    double aging_factor = mAging.calculateLocked(x);
 
     return qMax(qMin(aging_factor, 1.),0.); // limit to [0..1]
 }

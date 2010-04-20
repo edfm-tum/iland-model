@@ -193,6 +193,8 @@ QMutex mutex;
 void  Expression::parse()
 {
     QMutexLocker locker(&mutex);
+    if (m_parsed)
+        return;
     try {
         m_tokString="";
         m_state=etUnknown;

@@ -39,6 +39,7 @@ public:
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
     double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
     double leafAreaIndex() const { return mAggregatedLA / area(); } ///< Total Leaf Area Index
+    double leafArea() const { return mAggregatedLA; } ///< total leaf area of resource unit (m2)
 
     // actions
     Tree &newTree();  ///< returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
@@ -47,14 +48,22 @@ public:
     void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
     void addLR(const float LA, const float LightResponse) { mAggregatedLR += LA*LightResponse; }
     /// function that distributes effective interception area according to the weight of Light response and LeafArea of the indivudal (@sa production())
-    double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
     void calculateInterceptedArea();
+    void addTreeAging(const double leaf_area, const double aging_factor) { mAverageAging += leaf_area*aging_factor; } ///< aggregate the tree aging values (weighted by leaf area)
+
+    // properties
+    double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
     const double &LRImodifier() const { return mLRI_modification; }
+    double averageAging() const { return mAverageAging; } ///< leaf area weighted average aging
 
     // model flow
     void newYear(); ///< reset values for a new simulation year
-    void production(); ///< called after the LIP/LIF calc, before growth of individual trees
-    void yearEnd(); ///< called after the growth of individuals
+    // LIP/LIF-cylcle -> Model
+    void production(); ///< called after the LIP/LIF calc, before growth of individual trees. Production (3PG), Water-cycle
+    void beforeGrow(); ///< called before growth of individuals
+    // the growth of individuals -> Model
+    void afterGrow(); ///< called after the growth of individuals
+    void yearEnd(); ///< called at the end of a year (after regeneration??)
 
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
@@ -79,6 +88,7 @@ private:
     double mEffectiveArea; ///< total "effective" area per resource unit, i.e. area of RU - non-stocked - beerLambert-loss
     double mEffectiveArea_perWLA; ///<
     double mLRI_modification;
+    double mAverageAging; ///< leaf-area weighted average aging f this species on this RU.
 
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees

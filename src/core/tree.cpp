@@ -83,6 +83,9 @@ void Tree::setup()
     mOpacity = 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea());
     mNPPReserve = (1+species()->finerootFoliageRatio())*mFoliageMass; // initial value
     mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
+
+    // initial value for tree aging...
+    mRU->addTreeAging(mLeafArea,mSpecies->aging(mHeight, mAge));
 }
 
 //////////////////////////////////////////////////
@@ -482,6 +485,7 @@ void Tree::grow()
 
     // apply aging according to the state of the individuum
     const double aging_factor = mSpecies->aging(mHeight, mAge);
+    mRU->addTreeAging(mLeafArea, aging_factor);
     double gpp = raw_gpp * aging_factor; //
     d.NPP = gpp * 0.47; // respiration loss, cf. Waring et al 1998.
 

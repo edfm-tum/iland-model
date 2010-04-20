@@ -339,6 +339,7 @@ void Model::beforeRun()
     applyPattern();
     readPattern();
 
+    // force the compilation of initial stand statistics
     createStandStatistics();
     }
     // setup output database
@@ -535,6 +536,7 @@ void Model::grow()
 
     foreach(ResourceUnit *ru, mRU) {
        ru->cleanTreeList();
+       ru->afterGrow();
        //qDebug() << (b-n) << "trees died (of" << b << ").";
    }
 }

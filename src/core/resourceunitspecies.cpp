@@ -8,6 +8,14 @@
 
 #include "species.h"
 #include "resourceunit.h"
+
+double ResourceUnitSpecies::leafArea() const
+{
+    // Leaf area of the species:
+    // total leaf area on the RU * fraction of leafarea
+    return mLAIfactor * ru()->leafAreaIndex();
+}
+
 void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
 {
     mSpecies = species;
@@ -28,7 +36,7 @@ void ResourceUnitSpecies::calculate()
         m3PG.calculate();///< production of NPP
     } else {
         // if no LAI is present, then just clear the respones.
-        // note: must be changed when regeneration is added...
+        // note: subject to change when regeneration is added...
         mResponse.clear();
         m3PG.clear();
     }

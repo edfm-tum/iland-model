@@ -28,11 +28,13 @@ public:
     double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3)
     double LAIfactor() const { return mLAIfactor; } ///< relative fraction of LAI of this species (0..1)
     void setLAIfactor(const double newLAIfraction) { mLAIfactor=newLAIfraction; if (mLAIfactor<0 || mLAIfactor>1.00001) qDebug() << "invalid LAIfactor"<<mLAIfactor; }
+    // properties
+    double leafArea() const; ///< total leaf area of the species on the RU (m2).
     // action
     void calculate(); ///< calculate response for species, calculate actual 3PG production
 
 private:
-    double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year
+    double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.
     double mRemovedGrowth; ///< m3 volume of trees removed/managed (to calculate GWL)
     StandStatistics mStatistics; ///< statistics of a species on this resource unit
     StandStatistics mStatisticsDead; ///< statistics of died trees (this year) of a species on this resource unit

@@ -101,7 +101,8 @@ double TreeWrapper::value(const int variableIndex)
 
 QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveArea"
                       << "nitrogenAvailable" << "soilDepth" << "stockedArea"
-                      << "count" << "volume" << "avgDbh" << "avgHeight" << "basalArea" << "leafAreaIndex";
+                      << "count" << "volume" << "avgDbh" << "avgHeight" << "basalArea"
+                      << "leafAreaIndex" << "aging";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -125,6 +126,7 @@ double RUWrapper::value(const int variableIndex)
     case 8: return mRU->mStatistics.height_avg();
     case 9: return mRU->mStatistics.basalArea();
     case 10: return mRU->mStatistics.leafAreaIndex();
+    case 11: return mRU->mAverageAging;
 
     }
     return ExpressionWrapper::value(variableIndex);

@@ -38,6 +38,7 @@ void ResourceUnit::setup()
     mWater->setup(this);
     // setup variables
     mUnitVariables.nitrogenAvailable = GlobalSettings::instance()->settings().valueDouble("model.site.availableNitrogen", 40);
+    mAverageAging = 0.;
 
 }
 
@@ -187,7 +188,10 @@ void ResourceUnit::production()
         i->statistics().clear();
         i->calculate();
         if (i->LAIfactor()>0)
-            qDebug() << "species" << (*i).species()->id() << "LAIfraction" << i->LAIfactor() << "raw_gpp_m2" << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:" << productiveArea()*i->prod3PG().GPPperArea();
+            qDebug() << "ru" << mIndex << "species" << (*i).species()->id() << "LAIfraction" << i->LAIfactor() << "raw_gpp_m2"
+                     << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"
+                     << productiveArea()*i->prod3PG().GPPperArea()
+                     << "aging(lastyear):" << averageAging();
     }
 }
 
@@ -200,6 +204,20 @@ void ResourceUnit::calculateInterceptedArea()
     Q_ASSERT(mAggregatedLR>0.);
     mEffectiveArea_perWLA = mEffectiveArea / mAggregatedLR;
     qDebug() << "RU: aggregated lightresponse:" << mAggregatedLR  << "eff.area./wla:" << mEffectiveArea_perWLA;
+}
+
+// function is called immediately before the growth of individuals
+void ResourceUnit::beforeGrow()
+{
+    mAverageAging = 0.;
+}
+
+// function is called after finishing the indivdual growth / mortality.
+void ResourceUnit::afterGrow()
+{
+    mAverageAging = leafArea()>0.?mAverageAging/leafArea():0; // calculate aging value (calls to addAverageAging() by individual trees)
+    if (mAverageAging>0. && mAverageAging<0.00001)
+        qDebug() << "ru" << mIndex << "aging <0.00001";
 }
 
 void ResourceUnit::yearEnd()
@@ -238,4 +256,5 @@ void ResourceUnit::createStandStatistics()
         mStatistics.add(mRUSpecies[i].statistics());
     }
     mStatistics.calculate();
+    mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*area()):0.;
 }
