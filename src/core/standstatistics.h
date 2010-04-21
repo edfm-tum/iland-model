@@ -21,7 +21,7 @@ public:
     double volume() const { return mSumVolume; } ///< sum of tree volume (m3/ha)
     double gwl() const { return mGWL;} ///< total increment (m3/ha)
     double basalArea() const { return mSumBasalArea; } ///< sum of basal area of all trees (m2/ha)
-    double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]/ha
+    double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]/ha stocked area.
     double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground)/ha
     double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)/ha
 

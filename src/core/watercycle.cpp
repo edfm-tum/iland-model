@@ -101,6 +101,9 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
             total_response += min_response * i->LAIfactor();
         }
     }
+    // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
+    // conceptually: response = min(vpd_response, water_response)*aging
+    total_response *= mRU->averageAging();
     return total_response;
 }
 
