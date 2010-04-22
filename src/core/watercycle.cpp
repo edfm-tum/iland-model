@@ -31,7 +31,15 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mCanopy.setup();
 
     mPermanentWiltingPoint = heightFromPsi(-4000); // maximum psi is set to a constant of -4MPa
-    mFieldCapacity = heightFromPsi(-15);
+    if (xml.valueBool("model.settings.waterUseSoilSaturation",false)==false) {
+        mFieldCapacity = heightFromPsi(-15);
+    } else {
+        // =-EXP((1.54-0.0095* pctSand +0.0063* pctSilt)*LN(10))*0.000098
+        double psi_sat = -exp((1.54-0.0095 * pct_sand + 0.0063*pct_silt)*log(10.))*0.000098;
+        mFieldCapacity = heightFromPsi(psi_sat);
+        qDebug() << "psi: saturation " << psi_sat << "field capacity:" << mFieldCapacity;
+    }
+
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
     qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
 }
