@@ -108,7 +108,7 @@ private:
 
     // various flags
     int mFlags;
-    enum Flags { TreeDead=1, TreeDebugging=2, TreeHasRealAge };
+    enum Flags { TreeDead=1, TreeDebugging=2, TreeHasRealAge=4 }; ///< (binary coded) tree flags
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
     bool flag(const Tree::Flags flag) const { return mFlags & flag; }
 

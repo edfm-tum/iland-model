@@ -47,7 +47,7 @@ public:
     double deathProb_intrinsic() const { return mDeathProb_intrinsic; }
     inline double deathProb_stress(const double &stress_index) const;
     // aging
-    double aging(const float height, const int age, const double useAge);
+    double aging(const float height, const int age, const bool useAge);
     // environmental responses
     double vpdResponse(const double &vpd) const;
     inline double temperatureResponse(const double &delayed_temp) const;
