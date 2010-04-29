@@ -773,6 +773,8 @@ void MainWindow::saveDebugOutputs()
         Helper::saveToTextFile(p + "tree_growth.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";").join("\n"));
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP))
         Helper::saveToTextFile(p + "tree_npp.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";").join("\n"));
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandNPP))
+        Helper::saveToTextFile(p + "stand_npp.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandNPP, ";").join("\n"));
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle))
         Helper::saveToTextFile(p + "water_cycle.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";").join("\n"));
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses))
@@ -782,7 +784,7 @@ void MainWindow::saveDebugOutputs()
 
 void MainWindow::on_actionSelect_Data_Types_triggered()
 {
-    int value = 0;
+    int value = GlobalSettings::instance()->currentDebugOutput();
     int newvalue = QInputDialog::getInt(this, "QInputDialog::getText()",
                                         "Enter code for desired outputs: add\n" \
                                         "1 ... Tree NPP\n" \

@@ -116,8 +116,10 @@ void GlobalSettings::clearDebugLists()
     mDebugLists.clear();
 }
 
+QMutex debugListMutex;
 DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
 {
+    QMutexLocker m(&debugListMutex); // serialize creation of debug outputs
     DebugList dbglist;
     dbglist << ID << dbg << currentYear();
     QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(ID, dbglist);
