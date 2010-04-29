@@ -999,3 +999,8 @@ void MainWindow::on_pbLogFilterClear_clicked()
     ui->pbLogFilterClear->setEnabled(false);
 
 }
+
+void MainWindow::on_actionClearDebugOutput_triggered()
+{
+    GlobalSettings::instance()->clearDebugLists();
+}

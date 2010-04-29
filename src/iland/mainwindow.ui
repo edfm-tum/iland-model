@@ -72,6 +72,7 @@
      <string>Debug Data</string>
     </property>
     <addaction name="actionSelect_Data_Types"/>
+    <addaction name="actionClearDebugOutput"/>
     <addaction name="actionTree_NPP"/>
     <addaction name="actionTree_Partition"/>
     <addaction name="actionTree_Growth"/>
@@ -870,6 +871,11 @@ QProgressBar::chunk {
     <string>Daily responses Output</string>
    </property>
   </action>
+  <action name="actionClearDebugOutput">
+   <property name="text">
+    <string>Clear Debug Output</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -891,12 +897,12 @@ QProgressBar::chunk {
    <slot>setText(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>377</y>
+     <x>104</x>
+     <y>160</y>
     </hint>
     <hint type="destinationlabel">
-     <x>64</x>
-     <y>249</y>
+     <x>60</x>
+     <y>153</y>
     </hint>
    </hints>
   </connection>
@@ -907,12 +913,12 @@ QProgressBar::chunk {
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>195</x>
-     <y>187</y>
+     <x>104</x>
+     <y>142</y>
     </hint>
     <hint type="destinationlabel">
-     <x>108</x>
-     <y>358</y>
+     <x>104</x>
+     <y>158</y>
     </hint>
    </hints>
   </connection>
@@ -927,8 +933,8 @@ QProgressBar::chunk {
      <y>565</y>
     </hint>
     <hint type="destinationlabel">
-     <x>365</x>
-     <y>570</y>
+     <x>402</x>
+     <y>567</y>
     </hint>
    </hints>
   </connection>

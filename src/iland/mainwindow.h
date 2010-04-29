@@ -59,6 +59,7 @@ private:
 
 private slots:
 
+    void on_actionClearDebugOutput_triggered();
     void on_pbLogFilterClear_clicked();
     void on_pbFilterExecute_clicked();
     void on_pbLogClearText_clicked();
