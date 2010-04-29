@@ -14,7 +14,7 @@ public:
     void processInit();
     void loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL);
     void loadiLandFile(const QString &fileName, ResourceUnit *ru=NULL);
-    void loadSingleTreeList(const QString &content, ResourceUnit*ru = NULL, const QString &fileName="");
+    int loadSingleTreeList(const QString &content, ResourceUnit*ru = NULL, const QString &fileName="");
     void loadDistributionList(const QString &content, ResourceUnit *ru = NULL, const QString &fileName="");
 private:
     struct InitFileItem

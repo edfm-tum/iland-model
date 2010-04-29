@@ -26,6 +26,7 @@ public slots:
     QVariant setting(QString key); ///< get a value from the global xml-settings (returns undefined if not present)
     void set(QString key, QString value); ///< set the value of a setting
     // file stuff
+    QString defaultDirectory(QString dir);
     QString loadTextFile(QString fileName); ///< load content from a text file in a String (@sa CSVFile)
     void saveTextFile(QString fileName, QString content); ///< save string (@p content) to a text file.
     bool fileExists(QString fileName); ///< return true if the given file exists.

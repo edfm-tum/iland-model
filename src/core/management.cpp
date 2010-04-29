@@ -192,9 +192,13 @@ void Management::run()
 
 int Management::filter(QVariantList idList)
 {
-    QHash<int, int> ids;
+    QVector<int> ids;
     foreach(const QVariant &v, idList)
-        ids[v.toInt()] = 1;
+        if (!v.isNull())
+            ids << v.toInt();
+//    QHash<int, int> ids;
+//    foreach(const QVariant &v, idList)
+//        ids[v.toInt()] = 1;
 
     QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
     while (tp!=mTrees.end()) {
@@ -203,6 +207,7 @@ int Management::filter(QVariantList idList)
         else
             tp++;
     }
+    qDebug() << "Management::filter by id-list:" << mTrees.count();
     return mTrees.count();
 }
 

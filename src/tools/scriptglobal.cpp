@@ -61,6 +61,12 @@ void ScriptGlobal::set(QString key, QString value)
     xml.setNodeValue(key, value);
 }
 
+QString ScriptGlobal::defaultDirectory(QString dir)
+{
+    QString result = GlobalSettings::instance()->path(QString(), dir) + QDir::separator();
+    return result;
+}
+
 int ScriptGlobal::year() const
 {
     return GlobalSettings::instance()->currentYear();
@@ -91,7 +97,8 @@ void ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
     ResourceUnit *ru = mModel->ru(resourceIndex);
     if (!ru)
         throw IException(QString("addSingleTrees: invalid resource unit (index: %1").arg(resourceIndex));
-    loader.loadSingleTreeList(content, ru, "called_from_script");
+    int cnt = loader.loadSingleTreeList(content, ru, "called_from_script");
+    qDebug() << "script: addSingleTrees:" << cnt <<"trees loaded.";
 }
 
 void ScriptGlobal::addTrees(const int resourceIndex, QString content)

@@ -144,7 +144,10 @@ void StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru)
     loadSingleTreeList(content, ru, fileName);
 }
 
-void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, const QString &fileName)
+/** load a list of trees (given by content) to a resource unit. Param fileName is just for error reporting.
+  returns the number of loaded trees.
+  */
+int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, const QString &fileName)
 {
     if (!ru)
         ru = mModel->ru();
@@ -159,13 +162,13 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
         QRegExp rx(".*<trees>(.*)</trees>.*");
         rx.indexIn(content, 0);
         if (rx.capturedTexts().count()<1)
-            return;
+            return 0;
         my_content = rx.cap(1).trimmed();
     }
 
     QStringList lines=my_content.split('\n');
     if (lines.count()<2)
-        return;
+        return 0;
     // drop comments
     while (!lines.isEmpty() && lines.front().startsWith('#') )
         lines.pop_front();
@@ -196,6 +199,7 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
 
     double dbh;
     bool ok;
+    int cnt=0;
     QString speciesid;
     for (int i=1;i<lines.count();i++) {
         QString &line = lines[i];
@@ -221,7 +225,7 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
         tree.setDbh(dbh);
         tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/height_conversion); // convert from Picus-cm to m if necessary
 
-        speciesid = line.section(sep, iSpecies, iSpecies);
+        speciesid = line.section(sep, iSpecies, iSpecies).trimmed();
         int picusid = speciesid.toInt(&ok);
         if (ok) {
             int idx = picusSpeciesIds.indexOf(picusid);
@@ -231,7 +235,7 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
         }
         Species *s = speciesSet->species(speciesid);
         if (!ru || !s)
-            throw IException(QString("Loading init-file: either ressource unit or species invalid. Species: %1").arg(speciesid));
+            throw IException(QString("Loading init-file: either resource unit or species invalid. Species: %1").arg(speciesid));
         tree.setSpecies(s);
 
         ok = true;
@@ -242,7 +246,9 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
 
         tree.setRU(ru);
         tree.setup();
+        cnt++;
     }
+    return cnt;
     //qDebug() << "loaded init-file contained" << lines.count() <<"lines.";
     //qDebug() << "lines: " << lines;
 }
