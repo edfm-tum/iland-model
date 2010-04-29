@@ -2,16 +2,19 @@
 #define SEEDDISPERSAL_H
 
 #include "grid.h"
+class Species;
 
 class SeedDispersal
 {
 public:
-    SeedDispersal(): mSetup(false) {}
+    SeedDispersal(Species *species=0): mIndexFactor(10), mSetup(false), mSpecies(species) {}
     ~SeedDispersal();
     bool isSetup() const { return mSetup; }
     void setup();
     // access
     const Grid<float> seedMap() const { return mSeedMap; } ///< access to the seedMap
+    const Species *species() const {return mSpecies; }
+    void setMatureTree(const QPoint &lip_index) { mSeedMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor)=1.f; }
     // operations
     void clear(); ///< clears the grid
     void execute(); ///< execute the seed dispersal
@@ -19,10 +22,12 @@ public:
     void edgeDetection();
     void distribute();
 private:
+    int mIndexFactor;
     Grid<float> mSeedMap; ///< (large) seedmap. Is filled by individual trees and then processed
     Grid<float> mSeedKernel; ///< species specific "seed kernel" (small)
     int mOffset; ///< index of center pixel of kernel
     bool mSetup;
+    Species *mSpecies;
 };
 
 #endif // SEEDDISPERSAL_H

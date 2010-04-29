@@ -28,6 +28,7 @@ void SeedDispersal::setup()
     mSeedMap.initialize(0.);
 
     // setup of seed kernel
+    mIndexFactor = 20 / cPxSize; // ratio seed grid / lip-grid:
     const int max_radius = 15; // pixels
     float cellsize = mSeedMap.cellsize();
 

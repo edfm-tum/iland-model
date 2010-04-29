@@ -14,6 +14,7 @@
 #include "speciesset.h"
 #include "stampcontainer.h"
 #include "exception.h"
+#include "seeddispersal.h"
 
 
 
@@ -161,4 +162,16 @@ double Species::aging(const float height, const int age, const bool useAge)
     return qMax(qMin(aging_factor, 1.),0.); // limit to [0..1]
 }
 
-
+/** Seed production.
+   This function produces seeds if the tree is larger than a species-specific height ("maturity")
+   If seeds are produced, this information is stored in a "SeedMap"
+  */
+void Species::seedProduction(const float height, const QPoint &position_index)
+{
+    if (!mSeedDispersal)
+        return; // disabled
+    if (height > 30) {
+        // do something
+        mSeedDispersal->setMatureTree(position_index);
+    }
+}

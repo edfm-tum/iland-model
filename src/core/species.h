@@ -13,7 +13,7 @@ class Stamp;
 class Species
 {
 public:
-    Species(SpeciesSet *set) { mSet = set; mIndex=set->count(); }
+    Species(SpeciesSet *set) { mSet = set; mIndex=set->count(); mSeedDispersal=0; }
     const SpeciesSet *speciesSet() const { return mSet; }
     // properties
     /// @property id 4-character unique identification of the tree species
@@ -48,6 +48,9 @@ public:
     inline double deathProb_stress(const double &stress_index) const;
     // aging
     double aging(const float height, const int age, const bool useAge);
+    // regeneration
+    void seedProduction(const float height, const QPoint &position_index);
+    void setSeedDispersal(SeedDispersal *seed_dispersal) {mSeedDispersal=seed_dispersal; }
     // environmental responses
     double vpdResponse(const double &vpd) const;
     inline double temperatureResponse(const double &delayed_temp) const;
@@ -111,6 +114,8 @@ private:
     double mMaxCanopyConductance; ///< maximum canopy conductance for transpiration (m/s)
     int mPhenologyClass;
     double mLightResponseClass; ///< light response class (1..5) (1=shade intolerant)
+    // regeneration
+    SeedDispersal *mSeedDispersal; ///< link to the seed dispersal map of the species
 };
 
 

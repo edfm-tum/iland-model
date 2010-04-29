@@ -91,6 +91,17 @@ private:
     XmlHelper mXml; ///< xml-based hierarchical settings
 };
 
+// constants
+// We assume:
+// Light-Grid: 2x2m
+// Height-Grid: 10x10m
+// Resource-Unit: 100x100m
+const int cPxSize = 2; // size of light grid
+const int cRUSize = 100; // size of resource unit
+const int cPxPerHeight = 5; // 10 / 2
+const int cPxPerRU = 50; // 100/2
+const int cHeightPerRU = 10; // 100/10
+
 /// shortcut to the GlobalSettings Singleton object.
 #define Globals (GlobalSettings::instance())
 

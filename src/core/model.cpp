@@ -279,6 +279,10 @@ void Model::loadProject()
         throw IException("Setup of Model: no resource units present!");
 
     // (3) additional issues
+    // (3.1) setup of regeneration
+    if (xml.valueBool("model.settings.regenerationEnabled", false)) {
+
+    }
 
     // (3.2) management
     QString mgmtFile = xml.value("model.management.file");

@@ -5,6 +5,7 @@
 #include "stampcontainer.h"
 #include "expression.h"
 class Species;
+class SeedDispersal;
 
 class SpeciesSet
 {
@@ -44,6 +45,9 @@ private:
     // Light Response classes
     Expression mLightResponseIntolerant; ///< light response function for the the most shade tolerant species
     Expression mLightResponseTolerant; ///< light response function for the most shade intolerant species
+    /// container holding the seed maps
+    QList<SeedDispersal*> mSeedDispersal;
+
 };
 
 #endif // SPECIESSET_H
