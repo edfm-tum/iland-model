@@ -15,7 +15,7 @@
 #include "csvfile.h"
 
 // provide a mapping between "Picus"-style and "iLand"-style species Ids
-QStringList picusSpeciesIds = QStringList() << "0" << "1" << "17";
+QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
 QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
 StandLoader::~StandLoader()
 {
@@ -126,12 +126,12 @@ void StandLoader::loadInitFile(const QString &fileName, const QString &type, Res
     if (!QFile::exists(pathFileName))
         throw IException(QString("StandLoader::loadInitFile: File %1 does not exist!").arg(pathFileName));
 
-    if (type=="picus")
+    if (type=="picus" || type=="single")
         return loadPicusFile(pathFileName, ru);
-    if (type=="iland")
+    if (type=="iland" || type=="distribution")
         return loadiLandFile(pathFileName, ru);
 
-    throw IException("StandLoader::loadInitFile: unknown initalization.type!");
+    throw IException(QLatin1String("StandLoader::loadInitFile: unknown initalization.type:")+type);
 }
 
 void StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru)
@@ -153,15 +153,25 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
     QPointF offset = ru->boundingBox().topLeft();
     SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
 
-    // cut out the <trees> </trees> part....
-    QRegExp rx(".*<trees>(.*)</trees>.*");
-    rx.indexIn(content, 0);
-    if (rx.capturedTexts().count()<1)
-        return;
-    QString my_content = rx.cap(1).trimmed();
+    QString my_content(content);
+    // cut out the <trees> </trees> part if present
+    if (content.contains("<trees>")) {
+        QRegExp rx(".*<trees>(.*)</trees>.*");
+        rx.indexIn(content, 0);
+        if (rx.capturedTexts().count()<1)
+            return;
+        my_content = rx.cap(1).trimmed();
+    }
+
     QStringList lines=my_content.split('\n');
     if (lines.count()<2)
         return;
+    // drop comments
+    while (!lines.isEmpty() && lines.front().startsWith('#') )
+        lines.pop_front();
+    while (!lines.isEmpty() && lines.last().isEmpty())
+        lines.removeLast();
+
     char sep='\t';
     if (!lines[0].contains(sep))
         sep=';';
@@ -171,13 +181,22 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
     int iX = headers.indexOf("x");
     int iY = headers.indexOf("y");
     int iBhd = headers.indexOf("bhdfrom");
+    if (iBhd<0)
+        iBhd = headers.indexOf("dbh");
+    double height_conversion = 100.;
     int iHeight = headers.indexOf("treeheight");
+    if (iHeight<0) {
+        iHeight = headers.indexOf("height");
+        height_conversion = 1.; // in meter
+    }
     int iSpecies = headers.indexOf("species");
     int iAge = headers.indexOf("age");
     if (iX==-1 || iY==-1 || iBhd==-1 || iSpecies==-1 || iHeight==-1)
-        throw IException(QString("Initfile %1 is not valid!").arg(fileName));
+        throw IException(QString("Initfile %1 is not valid!\nObligatory columns are: x,y, bhdfrom or dbh, species, treeheight or height.").arg(fileName));
 
     double dbh;
+    bool ok;
+    QString speciesid;
     for (int i=1;i<lines.count();i++) {
         QString &line = lines[i];
         dbh = line.section(sep, iBhd, iBhd).toDouble();
@@ -200,17 +219,17 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
             tree.setId(line.section(sep, iID, iID).toInt() );
 
         tree.setDbh(dbh);
-        tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
-        if (iAge>=0) {
-           tree.setAge(line.section(sep, iAge, iAge).toInt(), true); // this is a *real* age - used also in the aging calculations
-       } else {
-            tree.setAge(0, false); // no real tree age available
-        }
-        QString speciesid = line.section(sep, iSpecies, iSpecies);
-        bool ok;
+        tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/height_conversion); // convert from Picus-cm to m if necessary
+        ok = true;
+        if (iAge>=0)
+           tree.setAge(line.section(sep, iAge, iAge).toInt(&ok), true); // this is a *real* age - used also in the aging calculations
+        if (iAge<0 || !ok || tree.age()==0)
+           tree.setAge(0, false); // no real tree age available
+
+        speciesid = line.section(sep, iSpecies, iSpecies);
         int picusid = speciesid.toInt(&ok);
         if (ok) {
-            int idx = picusSpeciesIds.indexOf(line.section(sep, iSpecies, iSpecies));
+            int idx = picusSpeciesIds.indexOf(picusid);
             if (idx==-1)
                 throw IException(QString("Loading init-file: invalid Picus-species-id. Species: %1").arg(picusid));
             speciesid = iLandSpeciesIds[idx];
@@ -251,15 +270,18 @@ void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru,
 
     mInitItems.clear();
     InitFileItem item;
+    bool ok;
     for (int row=0;row<infile.rowCount();row++) {
          item.count = infile.value(row, icount).toInt();
          item.dbh_from = infile.value(row, idbh_from).toDouble();
          item.dbh_to = infile.value(row, idbh_to).toDouble();
          item.hd = infile.value(row, ihd).toDouble();
+         ok = true;
          if (iage>=0)
-             item.age = infile.value(row, iage).toInt();
-         else
-             item.age = -1;
+             item.age = infile.value(row, iage).toInt(&ok);
+         if (iage<0 || !ok)
+             item.age = 0;
+
          item.species = speciesSet->species(infile.value(row, ispecies).toString());
          if (idensity>=0)
              item.density = infile.value(row, idensity).toDouble();
@@ -343,7 +365,7 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             tree.setDbh(nrandom(item.dbh_from, item.dbh_to));
             tree.setHeight(tree.dbh()/100. * item.hd); // dbh from cm->m, *hd-ratio -> meter height
             tree.setSpecies(item.species);
-            if (item.age<0)
+            if (item.age<=0)
                 tree.setAge(0,false);
             else
                 tree.setAge(item.age, true);
