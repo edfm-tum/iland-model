@@ -47,7 +47,8 @@ public:
     double deathProb_intrinsic() const { return mDeathProb_intrinsic; }
     inline double deathProb_stress(const double &stress_index) const;
     // aging
-    double aging(const float height, const int age, const bool useAge);
+    double aging(const float height, const int age);
+    int estimateAge(const float height) const;///< estimate age for a tree with the current age
     // regeneration
     void seedProduction(const float height, const QPoint &position_index);
     void setSeedDispersal(SeedDispersal *seed_dispersal) {mSeedDispersal=seed_dispersal; }

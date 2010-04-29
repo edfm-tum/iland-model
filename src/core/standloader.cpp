@@ -220,11 +220,6 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
 
         tree.setDbh(dbh);
         tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/height_conversion); // convert from Picus-cm to m if necessary
-        ok = true;
-        if (iAge>=0)
-           tree.setAge(line.section(sep, iAge, iAge).toInt(&ok), true); // this is a *real* age - used also in the aging calculations
-        if (iAge<0 || !ok || tree.age()==0)
-           tree.setAge(0, false); // no real tree age available
 
         speciesid = line.section(sep, iSpecies, iSpecies);
         int picusid = speciesid.toInt(&ok);
@@ -237,9 +232,15 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
         Species *s = speciesSet->species(speciesid);
         if (!ru || !s)
             throw IException(QString("Loading init-file: either ressource unit or species invalid. Species: %1").arg(speciesid));
+        tree.setSpecies(s);
+
+        ok = true;
+        if (iAge>=0)
+           tree.setAge(line.section(sep, iAge, iAge).toInt(&ok), tree.height()); // this is a *real* age
+        if (iAge<0 || !ok || tree.age()==0)
+           tree.setAge(0, tree.height()); // no real tree age available
 
         tree.setRU(ru);
-        tree.setSpecies(s);
         tree.setup();
     }
     //qDebug() << "loaded init-file contained" << lines.count() <<"lines.";
@@ -366,9 +367,9 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             tree.setHeight(tree.dbh()/100. * item.hd); // dbh from cm->m, *hd-ratio -> meter height
             tree.setSpecies(item.species);
             if (item.age<=0)
-                tree.setAge(0,false);
+                tree.setAge(0,tree.height());
             else
-                tree.setAge(item.age, true);
+                tree.setAge(item.age, tree.height());
             tree.setRU(ru);
             tree.setup();
             total_count++;

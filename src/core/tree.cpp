@@ -85,7 +85,16 @@ void Tree::setup()
     mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
 
     // initial value for tree aging...
-    mRU->addTreeAging(mLeafArea,mSpecies->aging(mHeight, mAge,flag(Tree::TreeHasRealAge)));
+    mRU->addTreeAging(mLeafArea,mSpecies->aging(mHeight, mAge));
+}
+
+void Tree::setAge(const int age, const float treeheight)
+{
+    mAge = age;
+    if (age==0) {
+        // estimate age using the tree height
+        mAge = mSpecies->estimateAge(treeheight);
+    }
 }
 
 //////////////////////////////////////////////////
@@ -486,7 +495,7 @@ void Tree::grow()
     double raw_gpp = raw_gpp_per_area * effective_area;
 
     // apply aging according to the state of the individuum
-    const double aging_factor = mSpecies->aging(mHeight, mAge, flag(Tree::TreeHasRealAge));
+    const double aging_factor = mSpecies->aging(mHeight, mAge);
     mRU->addTreeAging(mLeafArea, aging_factor);
     double gpp = raw_gpp * aging_factor; //
     d.NPP = gpp * 0.47; // respiration loss, cf. Waring et al 1998.

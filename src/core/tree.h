@@ -48,7 +48,7 @@ public:
     void setHeight(const float height) { mHeight=height; }
     void setSpecies(Species *ts) { mSpecies=ts; }
     void setRU(ResourceUnit *ru) { mRU = ru; }
-    void setAge(const int age, const bool isRealAge) { mAge = age; setFlag(Tree::TreeHasRealAge,isRealAge);}
+    void setAge(const int age, const float treeheight);
 
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
@@ -108,7 +108,7 @@ private:
 
     // various flags
     int mFlags;
-    enum Flags { TreeDead=1, TreeDebugging=2, TreeHasRealAge=4 }; ///< (binary coded) tree flags
+    enum Flags { TreeDead=1, TreeDebugging=2 }; ///< (binary coded) tree flags
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
     bool flag(const Tree::Flags flag) const { return mFlags & flag; }
 
