@@ -56,7 +56,7 @@ bool CSVFile::loadFromString(const QString &content)
     // drop comments (i.e. lines at the beginning that start with '#', also ignore '<' (are in tags of picus-ini-files)
     while (!mRows.isEmpty() && (mRows.front().startsWith('#') || mRows.front().startsWith('<')))
         mRows.pop_front();
-    while (mRows.last().isEmpty())
+    while (!mRows.isEmpty() && mRows.last().isEmpty())
         mRows.removeLast();
 
     mSeparator = ";"; // default
