@@ -14,7 +14,7 @@
 #include "environment.h"
 #include "csvfile.h"
 
-
+// provide a mapping between "Picus"-style and "iLand"-style species Ids
 QStringList picusSpeciesIds = QStringList() << "0" << "1" << "17";
 QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
 StandLoader::~StandLoader()
@@ -201,10 +201,11 @@ void StandLoader::loadSingleTreeList(const QString &content, ResourceUnit*ru, co
 
         tree.setDbh(dbh);
         tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/100.); // convert from Picus-cm to m.
-        if (iAge>=0)
-           tree.setAge(line.section(sep, iAge, iAge).toInt());
-        else
-            tree.setAge(10);
+        if (iAge>=0) {
+           tree.setAge(line.section(sep, iAge, iAge).toInt(), true); // this is a *real* age - used also in the aging calculations
+       } else {
+            tree.setAge(0, false); // no real tree age available
+        }
         QString speciesid = line.section(sep, iSpecies, iSpecies);
         bool ok;
         int picusid = speciesid.toInt(&ok);
@@ -255,7 +256,10 @@ void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru,
          item.dbh_from = infile.value(row, idbh_from).toDouble();
          item.dbh_to = infile.value(row, idbh_to).toDouble();
          item.hd = infile.value(row, ihd).toDouble();
-         item.age = infile.value(row, iage).toInt();
+         if (iage>=0)
+             item.age = infile.value(row, iage).toInt();
+         else
+             item.age = -1;
          item.species = speciesSet->species(infile.value(row, ispecies).toString());
          if (idensity>=0)
              item.density = infile.value(row, idensity).toDouble();
@@ -339,7 +343,10 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             tree.setDbh(nrandom(item.dbh_from, item.dbh_to));
             tree.setHeight(tree.dbh()/100. * item.hd); // dbh from cm->m, *hd-ratio -> meter height
             tree.setSpecies(item.species);
-            tree.setAge(item.age);
+            if (item.age<0)
+                tree.setAge(0,false);
+            else
+                tree.setAge(item.age, true);
             tree.setRU(ru);
             tree.setup();
             total_count++;

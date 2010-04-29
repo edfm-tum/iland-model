@@ -142,13 +142,20 @@ double Species::allometricFractionStem(const double dbh) const
 /** Aging formula.
    calculates a relative "age" by combining a height- and an age-related term using a harmonic mean,
    and feeding this into the Landsberg and Waring formula.
+   see http://iland.boku.ac.at/primary+production#respiration_and_aging
+   @param useAge set to true if "real" tree age is available. If false, only the tree height is used.
   */
-double Species::aging(const float height, const int age)
+double Species::aging(const float height, const int age, const double useAge)
 {
     double rel_height = qMin(height/mMaximumHeight, 1.);
-    double rel_age = qMin(age/mMaximumAge, 1.);
-    // harmonic mean: http://en.wikipedia.org/wiki/Harmonic_mean
-    double x = 1. - 2. / (1./(1.-rel_height) + 1./(1.-rel_age));
+    double x;
+    if (useAge) {
+        double rel_age = qMin(age/mMaximumAge, 1.);
+        // harmonic mean: http://en.wikipedia.org/wiki/Harmonic_mean
+        x = 1. - 2. / (1./(1.-rel_height) + 1./(1.-rel_age));
+    } else {
+        x = rel_height;
+    }
     double aging_factor = mAging.calculateLocked(x);
 
     return qMax(qMin(aging_factor, 1.),0.); // limit to [0..1]
