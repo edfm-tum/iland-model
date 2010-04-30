@@ -17,6 +17,11 @@
 #include "seeddispersal.h"
 
 
+Species::~Species()
+{
+    if (mSeedDispersal)
+        delete mSeedDispersal;
+}
 
 /** main setup routine for tree species.
   Data is fetched from the open query (or file, ...) in the parent SpeciesSet using xyzVar() functions.

@@ -645,7 +645,7 @@ void MainWindow::on_pbSetAsDebug_clicked()
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-ini file for FonStudio...");
+    QString fileName = Helper::fileDialog("select XML-project file");
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);

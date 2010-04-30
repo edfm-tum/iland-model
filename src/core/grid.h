@@ -89,6 +89,9 @@ public:
     T max() const; ///< retrieve the maximum value of a grid
     T sum() const; ///< retrieve the sum of the grid
     T avg() const; ///< retrieve the average value of a grid
+    // modifying operations
+    void add(const T& summand);
+    void multiply(const T& factor);
     /// creates a grid with lower resolution and averaged cell values.
     /// @param factor factor by which grid size is reduced (e.g. 3 -> 3x3=9 pixels are averaged to 1 result pixel)
     /// @param offsetx, offsety: start averaging with an offset from 0/0 (e.g.: x=1, y=2, factor=3: -> 1/2-3/4 -> 0/0)
@@ -289,6 +292,24 @@ T  Grid<T>::avg() const
         return sum() / T(count());
     else return 0;
 }
+
+template <class T>
+void Grid<T>::add(const T& summand)
+{
+    T* pend = end();
+    for (T *p=begin(); p!=pend;*p+=summand,++p)
+       ;
+}
+
+template <class T>
+void Grid<T>::multiply(const T& factor)
+{
+    T* pend = end();
+    for (T *p=begin(); p!=pend;*p*=factor,++p)
+       ;
+}
+
+
 
 template <class T>
 void  Grid<T>::wipe()

@@ -14,8 +14,13 @@ class Species
 {
 public:
     Species(SpeciesSet *set) { mSet = set; mIndex=set->count(); mSeedDispersal=0; }
+    ~Species();
+    // maintenance
+    void setup();
+
     const SpeciesSet *speciesSet() const { return mSet; }
     // properties
+    SeedDispersal *seedDispersal() const { return mSeedDispersal; }
     /// @property id 4-character unique identification of the tree species
     const QString &id() const { return mId; }
     /// the full name (e.g. Picea Abies) of the species
@@ -25,6 +30,7 @@ public:
     int phenologyClass() const { return mPhenologyClass; } ///< phenology class defined in project file. class 0 = evergreen
     bool isConiferous() const { return mConiferous; }
     bool isEvergreen() const { return mEvergreen; }
+
 
     // calculations: allometries
     double biomassFoliage(const double dbh) const;
@@ -62,8 +68,6 @@ public:
     double psiMin() const { return mPsiMin; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
-    // maintenance
-    void setup();
 private:
     Q_DISABLE_COPY(Species);
     QMutex mMutex;

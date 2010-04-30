@@ -280,8 +280,10 @@ void Model::loadProject()
 
     // (3) additional issues
     // (3.1) setup of regeneration
-    if (xml.valueBool("model.settings.regenerationEnabled", false)) {
-
+    changeSettings().regenerationEnabled = xml.valueBool("model.settings.regenerationEnabled", false);
+    if (settings().regenerationEnabled) {
+        foreach(SpeciesSet *ss, mSpeciesSets)
+            ss->setupRegeneration();
     }
 
     // (3.2) management
@@ -381,6 +383,8 @@ void Model::runYear()
     foreach(ResourceUnit *ru, mRU)
         ru->newYear();
 
+    foreach(SpeciesSet *set, mSpeciesSets)
+        set->newYear();
     // management
     if (mManagement)
         mManagement->run();
@@ -389,6 +393,12 @@ void Model::runYear()
     applyPattern(); // create Light Influence Patterns
     readPattern(); // readout light state of individual trees
     grow(); // let the trees grow (growth on stand-level, tree-level, mortality)
+
+    // regeneration
+    if (settings().regenerationEnabled) {
+        foreach(SpeciesSet *set, mSpeciesSets)
+            set->regeneration();
+    }
 
     // calculate statistics
     foreach(ResourceUnit *ru, mRU)

@@ -27,6 +27,10 @@ public:
     // maintenance
     void clear();
     int setup();
+    void setupRegeneration(); ///< setup of regenartion related data
+    // running
+    void newYear(); ///< is called at the beginning of a year
+    void regeneration(); ///< run regeneration (after growth)
 private:
     QString mName;
     QMutex mMutex;

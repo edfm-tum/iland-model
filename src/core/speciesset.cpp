@@ -101,19 +101,38 @@ int SpeciesSet::setup()
     if (mLightResponseTolerant.expression().isEmpty() || mLightResponseIntolerant.expression().isEmpty())
         throw IException("at least one parameter of model.species.lightResponse is empty!");
 
-    // setup of regeneration related stuff like seed dispersal maps
-    if (xml.valueBool("model.settings.regenerationEnabled", false)) {
-        foreach(Species *s, mActiveSpecies) {
-            SeedDispersal *sd = new SeedDispersal(s);
-            sd->setup(); // setup memory for the seed map (grid)
-            s->setSeedDispersal(sd); // establish the link between species and the map
-
-        }
-    }
     return mSpecies.count();
 
 }
 
+void SpeciesSet::setupRegeneration()
+{
+    foreach(Species *s, mActiveSpecies) {
+        SeedDispersal *sd = new SeedDispersal(s);
+        sd->setup(); // setup memory for the seed map (grid)
+        s->setSeedDispersal(sd); // establish the link between species and the map
+    }
+    qDebug() << "Setup of seed dispersal maps finished.";
+}
+
+void SpeciesSet::regeneration()
+{
+    foreach(Species *s, mActiveSpecies) {
+        s->seedDispersal()->execute();
+    }
+    qDebug() << "seed dispersal finished.";
+
+}
+
+/** newYear is called by Model::runYear at the beginning of a year before any growth occurs.
+  This is used for various initializations, e.g. to clear seed dispersal maps
+  */
+void SpeciesSet::newYear()
+{
+    foreach(Species *s, mActiveSpecies) {
+        s->seedDispersal()->clear();
+    }
+}
 
 /** retrieves variables from the datasource available during the setup of species.
   */
