@@ -90,8 +90,10 @@ bool ScriptGlobal::fileExists(QString fileName)
    return QFile::exists(fileName);
 }
 
-// add trees
-void ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
+/// add trees on given resource unit
+/// @param content init file in a string (containing headers)
+/// @return number of trees added
+int ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
 {
     StandLoader loader(mModel);
     ResourceUnit *ru = mModel->ru(resourceIndex);
@@ -99,13 +101,14 @@ void ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
         throw IException(QString("addSingleTrees: invalid resource unit (index: %1").arg(resourceIndex));
     int cnt = loader.loadSingleTreeList(content, ru, "called_from_script");
     qDebug() << "script: addSingleTrees:" << cnt <<"trees loaded.";
+    return cnt;
 }
 
-void ScriptGlobal::addTrees(const int resourceIndex, QString content)
+int ScriptGlobal::addTrees(const int resourceIndex, QString content)
 {
     StandLoader loader(mModel);
     ResourceUnit *ru = mModel->ru(resourceIndex);
     if (!ru)
         throw IException(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
-    loader.loadDistributionList(content, ru, "called_from_script");
+    return loader.loadDistributionList(content, ru, "called_from_script");
 }

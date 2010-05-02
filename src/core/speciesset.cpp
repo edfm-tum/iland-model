@@ -1,11 +1,13 @@
 #include <QtCore>
 #include <QtSql>
 #include "global.h"
+#include "globalsettings.h"
 #include "xmlhelper.h"
 #include "speciesset.h"
 #include "species.h"
 #include "model.h"
 #include "seeddispersal.h"
+#include "modelsettings.h"
 
 SpeciesSet::SpeciesSet()
 {
@@ -117,6 +119,8 @@ void SpeciesSet::setupRegeneration()
 
 void SpeciesSet::regeneration()
 {
+    if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
+        return;
     foreach(Species *s, mActiveSpecies) {
         s->seedDispersal()->execute();
     }
@@ -129,6 +133,8 @@ void SpeciesSet::regeneration()
   */
 void SpeciesSet::newYear()
 {
+    if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
+        return;
     foreach(Species *s, mActiveSpecies) {
         s->seedDispersal()->clear();
     }

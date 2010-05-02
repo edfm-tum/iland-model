@@ -23,10 +23,6 @@ StandLoader::~StandLoader()
         delete mRandom;
 }
 
-void StandLoader::loadForUnit()
-{
-
-}
 
 void StandLoader::copyTrees()
 {
@@ -120,7 +116,7 @@ void StandLoader::evaluateDebugTrees()
     qDebug() << "evaluateDebugTrees: enabled debugging for" << counter << "trees.";
 }
 
-void StandLoader::loadInitFile(const QString &fileName, const QString &type, ResourceUnit *ru)
+int StandLoader::loadInitFile(const QString &fileName, const QString &type, ResourceUnit *ru)
 {
     QString pathFileName = GlobalSettings::instance()->path(fileName, "init");
     if (!QFile::exists(pathFileName))
@@ -134,14 +130,14 @@ void StandLoader::loadInitFile(const QString &fileName, const QString &type, Res
     throw IException(QLatin1String("StandLoader::loadInitFile: unknown initalization.type:")+type);
 }
 
-void StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru)
+int StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru)
 {
     QString content = Helper::loadTextFile(fileName);
     if (content.isEmpty()) {
         qDebug() << "file not found: " + fileName;
-        return;
+        return 0;
     }
-    loadSingleTreeList(content, ru, fileName);
+    return loadSingleTreeList(content, ru, fileName);
 }
 
 /** load a list of trees (given by content) to a resource unit. Param fileName is just for error reporting.
@@ -253,7 +249,15 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
     //qDebug() << "lines: " << lines;
 }
 
-void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, const QString &fileName)
+/** initialize trees on a resource unit based on dbh distributions.
+  use a fairly clever algorithm to determine tree positions.
+  see http://iland.boku.ac.at/initialize+trees
+  @param content tree init file (including headers) in a string
+  @param ru resource unit
+  @param fileName source file name (for error reporting)
+  @return number of trees added
+  */
+int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, const QString &fileName)
 {
     if (!ru)
         ru = mModel->ru();
@@ -278,8 +282,10 @@ void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru,
     mInitItems.clear();
     InitFileItem item;
     bool ok;
+    int total_count = 0;
     for (int row=0;row<infile.rowCount();row++) {
          item.count = infile.value(row, icount).toInt();
+         total_count += item.count;
          item.dbh_from = infile.value(row, idbh_from).toDouble();
          item.dbh_to = infile.value(row, idbh_to).toDouble();
          item.hd = infile.value(row, ihd).toDouble();
@@ -320,15 +326,16 @@ void StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru,
     // exeucte the
     executeiLandInit(ru);
     ru->cleanTreeList();
+    return total_count;
 
 }
 
-void StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
+int StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru)
 {
     if (!QFile::exists(fileName))
         throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
     QString content = Helper::loadTextFile(fileName);
-    loadDistributionList(content, ru, fileName);
+    return loadDistributionList(content, ru, fileName);
 }
 
 // evenlist: tentative order of pixel-indices (within a 5x5 grid) used as tree positions.

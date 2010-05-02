@@ -31,8 +31,8 @@ public slots:
     void saveTextFile(QString fileName, QString content); ///< save string (@p content) to a text file.
     bool fileExists(QString fileName); ///< return true if the given file exists.
     // add trees
-    void addSingleTrees(const int resourceIndex, QString content); ///< add single trees
-    void addTrees(const int resourceIndex, QString content); ///< add tree distribution
+    int addSingleTrees(const int resourceIndex, QString content); ///< add single trees
+    int addTrees(const int resourceIndex, QString content); ///< add tree distribution
 private:
     QString mCurrentDir;
     Model *mModel;

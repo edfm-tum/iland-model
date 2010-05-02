@@ -153,7 +153,7 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
     getKey(bhd_cm, hd_value, cls_bhd, cls_hd);
 
     // check loopup table
-    if (cls_bhd<cBHDclassCount && cls_bhd>=0 && cls_hd < cHDclassCount && cls_bhd>=0) {
+    if (cls_bhd<cBHDclassCount && cls_bhd>=0 && cls_hd < cHDclassCount && cls_hd>=0) {
         const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
         if (stamp)
             return stamp;
