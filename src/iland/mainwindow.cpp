@@ -402,6 +402,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         AllTreeIterator treelist(model);
         Tree *tree;
+        painter.setPen(Qt::gray);
         while ((tree = treelist.next())) {
             if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
                 continue;
@@ -911,8 +912,10 @@ void MainWindow::on_scriptCommand_returnPressed()
     qDebug() << "executing" << ui->scriptCommand->text();
     try {
         QString result = mgmt->executeScript(ui->scriptCommand->text());
-        if (!result.isEmpty())
+        if (!result.isEmpty()) {
             ui->scriptResult->append(result);
+            qDebug() << result;
+        }
     } catch(const IException &e) {
         Helper::msg(e.toString());
     }
@@ -994,8 +997,14 @@ void MainWindow::on_pbLogFilterClear_clicked()
     QString text = ui->logOutput->property("fullText").toString();
     if (text.isEmpty())
         return;
+    //QString sel = ui->logOutput->textCursor().selectedText();
+    //int line = sel.toInt();
+    int line = atoi(ui->logOutput->textCursor().block().text().toLocal8Bit());
     ui->logOutput->setPlainText(text);
     ui->logOutput->setProperty("fullText","");
+    //int bl = ui->logOutput->document()->findBlockByNumber(line).position();
+    ui->logOutput->setTextCursor(QTextCursor(ui->logOutput->document()->findBlockByNumber(line)));
+    ui->logOutput->ensureCursorVisible();
     ui->pbLogFilterClear->setEnabled(false);
 
 }
