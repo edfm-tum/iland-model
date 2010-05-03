@@ -86,10 +86,8 @@ void ModelController::create()
         if (!mModel->isSetup())
             return;
 
+        // initialization of trees, output on startup
         mModel->beforeRun();
-        // setup outputs
-        GlobalSettings::instance()->outputManager()->setup();
-        GlobalSettings::instance()->clearDebugLists();
     } catch(const IException &e) {
         QString error_msg = e.toString();
         Helper::msg(error_msg);

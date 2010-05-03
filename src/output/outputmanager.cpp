@@ -51,7 +51,7 @@ void OutputManager::setup()
         if (enabled)
             o->open();
     }
-    endTransaction(); // just to be sur
+    endTransaction(); // just to be sure
 }
 
 Output *OutputManager::find(const QString& tableName)
@@ -74,6 +74,8 @@ void OutputManager::close()
         p->close();
 }
 
+/** start a database transaction.
+    do nothing if transaction is already open. */
 void OutputManager::startTransaction()
 {
     if (!mTransactionOpen && GlobalSettings::instance()->dbout().isValid()) {

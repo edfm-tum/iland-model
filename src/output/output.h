@@ -1,11 +1,15 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
+#include <QtCore/QString>
+#include <QtCore/QVariant>
+#include <QtSql/QSqlQuery>
 
 enum OutputDatatype { OutInteger, OutDouble, OutString };
 enum OutputMode { OutDatabase, OutFile, OutText };
 
 class XmlHelper;
 class Output;
+class GlobalSettings;
 class OutputColumn
 {
 public:

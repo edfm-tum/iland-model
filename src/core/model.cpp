@@ -324,6 +324,12 @@ void Model::initOutputDatabase()
 
 void Model::beforeRun()
 {
+    // setup outputs
+    // setup output database
+    initOutputDatabase();
+    GlobalSettings::instance()->outputManager()->setup();
+    GlobalSettings::instance()->clearDebugLists();
+
     // initialize stands
     {
     DebugTimer loadtrees("load trees");
@@ -348,12 +354,11 @@ void Model::beforeRun()
     // force the compilation of initial stand statistics
     createStandStatistics();
     }
-    // setup output database
-    initOutputDatabase();
 
     // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
 
     GlobalSettings::instance()->setCurrentYear(1); // set to first year
 }
