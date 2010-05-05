@@ -113,12 +113,14 @@ void  StampContainer::addStamp(Stamp* stamp, const float dbh, const float hd_val
 
 void StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
 {
-    double rest = crown_radius_m - floor(crown_radius_m) + 0.001;
-    int cls_hd = int( rest * cHDclassCount ); // 0 .. 9.99999999
+    double rest = fmod(crown_radius_m, 1.)+0.0001;
+    int cls_hd = int( rest * 10 ); // 0 .. 9.99999999
     if (cls_hd>=cHDclassCount)
         cls_hd=cHDclassCount-1;
     int cls_dbh = int(crown_radius_m);
     //qDebug() << "Readerstamp r="<< crown_radius_m<<" index dbh hd:" << cls_dbh << cls_hd;
+    stamp->setCrownRadius(crown_radius_m);
+
     // prepare special keys for reader stamps
     addStamp(stamp,cls_dbh, cls_hd, crown_radius_m, 0., 0.); // set crownradius, but not dbh/hd
 }
@@ -129,13 +131,11 @@ Internally, readers are stored in the same lookup-table, but using a encoding/de
 const Stamp* StampContainer::readerStamp(const float crown_radius_m) const
 {
     // Readers: from 0..10m in 50 steps???
-    int cls_hd = int( (fmod(crown_radius_m, 1.)+0.001) * cHDclassCount ); // 0 .. 9.99999999
+    int cls_hd = int( (fmod(crown_radius_m, 1.)+0.0001) * 10 ); // 0 .. 9.99999999
     if (cls_hd>=cHDclassCount)
         cls_hd=cHDclassCount-1;
     int cls_bhd = int(crown_radius_m);
     const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
-    if (stamp)
-        const_cast<Stamp*>(stamp)->setCrownRadius(crown_radius_m);
     if (!stamp)
         qDebug() << "Stamp::readerStamp(): no stamp found for radius" << crown_radius_m;
     return stamp;

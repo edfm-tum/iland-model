@@ -413,11 +413,10 @@ void Tree::readLIF_torus()
     int ry = pos_reader.y();
     int xt, yt; // wrapped coords
 
-    for (y=0;y<reader_size; ++y, ++ry) {
-        grid_value = mGrid->ptr(rx, ry);
+    for (y=0;y<reader_size; ++y) {
+        yt = torusIndex(ry+y,cPxPerRU, bufferOffset, ru_offset.y());
         for (x=0;x<reader_size;++x) {
             xt = torusIndex(rx+x,cPxPerRU, bufferOffset, ru_offset.x());
-            yt = torusIndex(ry+y,cPxPerRU, bufferOffset, ru_offset.y());
             grid_value = mGrid->ptr(xt,yt);
             //p = pos_reader + QPoint(x,y);
             //if (m_grid->isIndexValid(p)) {
@@ -427,9 +426,13 @@ void Tree::readLIF_torus()
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value / own_value; // remove impact of focal tree
+            // debug for one tree in HJA
+            //if (id()==178020)
+            //    qDebug() << x << y << xt << yt << *grid_value << local_dom << own_value << value << (*reader)(x,y);
             //if (_isnan(value))
             //    qDebug() << "isnan" << id();
-            //if (value>0.)
+            if (value * (*reader)(x,y)>1.)
+                qDebug() << "LIFTorus: value>1.";
             sum += value * (*reader)(x,y);
 
             //} // isIndexValid
