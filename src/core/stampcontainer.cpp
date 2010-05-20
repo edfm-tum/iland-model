@@ -10,6 +10,8 @@ const int StampContainer::cHDclassWidth=10;
 const int StampContainer::cHDclassLow = 35; ///< hd classes offset is 35: class 0 = 35-45, class 1 = 45-55
 const int StampContainer::cHDclassCount = 16; ///< class count. highest class:  185-195
 
+// static values
+Grid<float> StampContainer::m_distance;
 
 StampContainer::StampContainer()
 {
@@ -56,6 +58,7 @@ void StampContainer::finalizeSetup()
         return;
     Stamp *s;
     int h;
+    int max_size=0;
     for (int b=0;b<cBHDclassCount;b++) {
         // find lowest value...
         for (h=0;h<cHDclassCount;h++) {
@@ -77,12 +80,28 @@ void StampContainer::finalizeSetup()
         for (;h<cHDclassCount;h++) {
             m_lookup.valueAtIndex(b,h)=s;
         }
-
+        if(s)
+            max_size = std::max(max_size, s->dataSize());
+    }
+    // distance grid
+    if (m_distance.sizeX()<max_size) {
+        setupDistanceGrid(max_size);
     }
     //if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
     //    qDebug() << dump();
 }
 
+void StampContainer::setupDistanceGrid(const int size)
+{
+    const float px_size = cPxSize;
+    m_distance.setup(px_size, size, size);
+    float *p=m_distance.begin();
+    QPoint idx;
+    for (;p!=m_distance.end();++p) {
+        idx = m_distance.indexOf(p);
+        *p = sqrt(double(idx.x()*idx.x()) + double(idx.y()*idx.y()))*px_size;
+    }
+}
 
  void StampContainer::addStamp(Stamp* stamp, const int cls_dbh, const int cls_hd, const float crown_radius_m, const float dbh, const float hd_value)
  {

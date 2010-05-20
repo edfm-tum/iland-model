@@ -35,6 +35,8 @@ public:
         The reader-stamp is returned by a call to the reader()-function of the Stamp itself.
         @param Container holding the reader stamps.*/
     void attachReaderStamps(const StampContainer &source);
+    /// static function to retrieve distance grid. See Stamp::distanceToCenter
+    static const Grid<float> &distanceGrid()  { return m_distance; }
     void invert(); ///< invert stamps (value = 1. - value) (for multiplicative overlay)
     // description
     const QString &description() { return m_desc; }
@@ -43,6 +45,7 @@ public:
 
 private:
     void finalizeSetup(); ///< complete lookup-grid by filling up zero values
+    void setupDistanceGrid(const int size); ///< setup the grid holding precalculated distance values
 
     static const int cBHDclassWidth;
     static const int cHDclassWidth;
@@ -62,6 +65,7 @@ private:
     bool m_useLookup; // use lookup table?
     QList<StampItem> m_stamps;
     Grid<Stamp*> m_lookup;
+    static Grid<float> m_distance; ///< grid holding precalculated distances to the stamp center
     QString m_desc;
 };
 

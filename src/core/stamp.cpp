@@ -28,6 +28,12 @@ void Stamp::setup(const int size)
         m_data[i]=0.;
 }
 
+float Stamp::distanceToCenter(const int ix, const int iy) const
+{
+    //
+    return StampContainer::distanceGrid().constValueAtIndex(abs(ix-m_offset), abs(iy-m_offset));
+}
+
 QString Stamp::dump() const
 {
     QString result, line;

@@ -2,7 +2,7 @@
 #define HELPER_H
 
 #include <QtCore>
-
+#include <limits>
 #include "ticktack.h"
 #include <limits>
 #define QUIETDEBUG(x) if (!Helper::quiet()) { qDebug() << x; }

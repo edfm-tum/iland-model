@@ -38,6 +38,7 @@ public:
     float crownRadius() const { return m_crownRadius; }
     float crownArea() const { return m_crownArea; }
     void setCrownRadius(const float r) { m_crownRadius = r; m_crownArea=r*r*M_PI; }
+    float distanceToCenter(const int ix, const int iy) const;// { return StampContainer::distanceGrid().constValueAtIndex(abs(ix-m_offset), abs(iy-m_offset)); }
     // loading/saving
     void loadFromFile(const QString &fileName);
     void load(QDataStream &in); ///< load from stream (predefined binary structure)

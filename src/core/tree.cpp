@@ -116,7 +116,7 @@ void Tree::applyLIP()
 
     float local_dom; // height of Z* on the current position
     int x,y;
-    float value;
+    float value, z, z_zstar;
     int gr_stamp = mStamp->size();
     int grid_x, grid_y;
     float *grid_value_ptr;
@@ -134,8 +134,11 @@ void Tree::applyLIP()
             grid_x++;
 
             local_dom = mHeightGrid->valueAtIndex(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
+            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height
+            z_zstar = (z>=local_dom)?1.f:z/local_dom;
             value = (*mStamp)(x,y); // stampvalue
-            value = 1. - value*mOpacity / local_dom; // calculated value
+            value = 1. - value*mOpacity * z_zstar; // calculated value
+            // old: value = 1. - value*mOpacity / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
 
             *grid_value_ptr++ *= value;
@@ -208,54 +211,57 @@ void Tree::applyLIP_torus()
 */
 void Tree::heightGrid()
 {
-    // height of Z*
-    const float cellsize = mHeightGrid->cellsize();
 
     QPoint p = QPoint(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight); // pos of tree on height grid
 
     // count trees that are on height-grid cells (used for stockable area)
     mHeightGrid->valueAtIndex(p).increaseCount();
+    if (mHeight > mHeightGrid->valueAtIndex(p).height)
+        mHeightGrid->valueAtIndex(p).height=mHeight;
+    // without spread of the height grid
 
-    int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
-    int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
-    int dist[9];
-    dist[3] = index_northsouth * 2 + 1; // south
-    dist[1] = index_eastwest * 2 + 1; // west
-    dist[5] = 10 - dist[3]; // north
-    dist[7] = 10 - dist[1]; // east
-    dist[8] = qMax(dist[5], dist[7]); // north-east
-    dist[6] = qMax(dist[3], dist[7]); // south-east
-    dist[0] = qMax(dist[3], dist[1]); // south-west
-    dist[2] = qMax(dist[5], dist[1]); // north-west
-    dist[4] = 0; // center cell
-    /* the scheme of indices is as follows:  if sign(ix)= -1, if ix<0, 0 for ix=0, 1 for ix>0 (detto iy), then:
-       index = 4 + 3*sign(ix) + sign(iy) transforms combinations of directions to unique ids (0..8), which are used above.
-        e.g.: sign(ix) = -1, sign(iy) = 1 (=north-west) -> index = 4 + -3 + 1 = 2
-    */
-
-
-    int ringcount = int(floor(mHeight / cellsize)) + 1;
-    int ix, iy;
-    int ring;
-    QPoint pos;
-    float hdom;
-
-    for (ix=-ringcount;ix<=ringcount;ix++)
-        for (iy=-ringcount; iy<=+ringcount; iy++) {
-        ring = qMax(abs(ix), abs(iy));
-        QPoint pos(ix+p.x(), iy+p.y());
-        if (mHeightGrid->isIndexValid(pos)) {
-            float &rHGrid = mHeightGrid->valueAtIndex(pos).height;
-            if (rHGrid > mHeight) // skip calculation if grid is higher than tree
-                continue;
-            int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
-            hdom = mHeight - dist[direction];
-            if (ring>1)
-                hdom -= (ring-1)*10;
-
-            rHGrid = qMax(rHGrid, hdom); // write value
-        } // is valid
-    } // for (y)
+//    // height of Z*
+//    const float cellsize = mHeightGrid->cellsize();
+//
+//    int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
+//    int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
+//    int dist[9];
+//    dist[3] = index_northsouth * 2 + 1; // south
+//    dist[1] = index_eastwest * 2 + 1; // west
+//    dist[5] = 10 - dist[3]; // north
+//    dist[7] = 10 - dist[1]; // east
+//    dist[8] = qMax(dist[5], dist[7]); // north-east
+//    dist[6] = qMax(dist[3], dist[7]); // south-east
+//    dist[0] = qMax(dist[3], dist[1]); // south-west
+//    dist[2] = qMax(dist[5], dist[1]); // north-west
+//    dist[4] = 0; // center cell
+//    /* the scheme of indices is as follows:  if sign(ix)= -1, if ix<0, 0 for ix=0, 1 for ix>0 (detto iy), then:
+//       index = 4 + 3*sign(ix) + sign(iy) transforms combinations of directions to unique ids (0..8), which are used above.
+//        e.g.: sign(ix) = -1, sign(iy) = 1 (=north-west) -> index = 4 + -3 + 1 = 2
+//    */
+//
+//
+//    int ringcount = int(floor(mHeight / cellsize)) + 1;
+//    int ix, iy;
+//    int ring;
+//    float hdom;
+//
+//    for (ix=-ringcount;ix<=ringcount;ix++)
+//        for (iy=-ringcount; iy<=+ringcount; iy++) {
+//        ring = qMax(abs(ix), abs(iy));
+//        QPoint pos(ix+p.x(), iy+p.y());
+//        if (mHeightGrid->isIndexValid(pos)) {
+//            float &rHGrid = mHeightGrid->valueAtIndex(pos).height;
+//            if (rHGrid > mHeight) // skip calculation if grid is higher than tree
+//                continue;
+//            int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
+//            hdom = mHeight - dist[direction];
+//            if (ring>1)
+//                hdom -= (ring-1)*10;
+//
+//            rHGrid = qMax(rHGrid, hdom); // write value
+//        } // is valid
+//    } // for (y)
 }
 
 

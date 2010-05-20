@@ -120,7 +120,7 @@ HEADERS += mainwindow.h \
     ../core/seeddispersal.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
-RESOURCES += res/iland.qrc
+RESOURCES += ./res/iland.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget
 # PRE_TARGETDEPS += version.h
