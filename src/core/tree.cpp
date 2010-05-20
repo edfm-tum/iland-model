@@ -119,25 +119,26 @@ void Tree::applyLIP()
     float value;
     int gr_stamp = mStamp->size();
     int grid_x, grid_y;
-    float *grid_value;
+    float *grid_value_ptr;
     if (!mGrid->isIndexValid(pos) || !mGrid->isIndexValid(pos+QPoint(gr_stamp, gr_stamp))) {
         // todo: in this case we should use another algorithm!!!
         return;
     }
-
+    grid_y = pos.y();
     for (y=0;y<gr_stamp; ++y) {
-        grid_y = pos.y() + y;
-        grid_value = mGrid->ptr(pos.x(), grid_y);
+        grid_y++;
+        grid_value_ptr = mGrid->ptr(pos.x(), grid_y);
+        grid_x = pos.x();
         for (x=0;x<gr_stamp;++x) {
             // suppose there is no stamping outside
-            grid_x = pos.x() + x;
+            grid_x++;
 
-            local_dom = mHeightGrid->valueAtIndex(grid_x/5, grid_y/5).height;
+            local_dom = mHeightGrid->valueAtIndex(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
             value = (*mStamp)(x,y); // stampvalue
             value = 1. - value*mOpacity / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
 
-            *grid_value++ *= value;
+            *grid_value_ptr++ *= value;
         }
     }
 
