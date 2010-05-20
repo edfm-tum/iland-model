@@ -241,7 +241,7 @@ void HemiGrid::paintGrid(QImage &image) const
             r = sqrt(x*x + y*y);
             if (r>=1)
                 continue;
-            phi = atan2(x,y);
+            phi = atan2(y,x);
             elevation = M_PI_2 - (r * M_PI_2);
             value = rGet(phi, elevation);
             value /= mmax;

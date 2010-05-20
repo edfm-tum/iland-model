@@ -31,6 +31,8 @@ class HemiGrid
 
     /// get azimuth angle associated with given index. @return from -pi .. pi.
     double azimuth(const int iAzimuth) { return iAzimuth/double(mMatrixCountAzimuth) * M_PI*2 - M_PI; }
+    /// get azimuth angle associated with given index. @return 0 (North) -> pi/2 (West) -> pi (South) -> 3pi/2 (East)
+    double azimuthNorth(const int iAzimuth) { double d = iAzimuth/double(mMatrixCountAzimuth) * M_PI*2 - M_PI/2.; return d; }
     /// get elevation angle associated with given index. @return from 0..pi/2
     double elevation(const int iElevation) { return iElevation/double(mMatrixCountElevation) * M_PI_2; }
 

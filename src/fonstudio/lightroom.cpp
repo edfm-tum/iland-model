@@ -76,7 +76,7 @@ double LightRoom::calculateGridAtPoint(const double p_x, const double p_y, const
     int c_test = 0;
     for (;ie<max_e;ie++){
         for (ia=0;ia<max_a;ia++) {
-            azimuth = m_shadowGrid.azimuth(ia);
+            azimuth = m_shadowGrid.azimuthNorth(ia);
             elevation = m_shadowGrid.elevation(ie);
             hit = m_roomObject->hittest(p_x, p_y, p_z,azimuth,elevation);
             // if inside the crown: do nothing and return.
