@@ -4,7 +4,7 @@
 #include <QtCore>
 
 #include "ticktack.h"
-
+#include <limits>
 #define QUIETDEBUG(x) if (!Helper::quiet()) { qDebug() << x; }
 
 /** Helper contains a bunch of (static) helper functions.

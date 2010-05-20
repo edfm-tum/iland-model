@@ -39,6 +39,7 @@ private:
 
 private slots:
 
+    void on_reloadFile_clicked();
     void on_openFile_clicked();
 
     void on_lrReadStamps_clicked();

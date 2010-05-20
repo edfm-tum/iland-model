@@ -9,7 +9,8 @@
 #include "speciesset.h"
 #include "exception.h"
 #include "paintarea.h"
-
+#include  "globalsettings.h"
+GlobalSettings *GlobalSettings::mInstance = 0;
 
 // global settings
 QDomDocument xmldoc;
@@ -278,7 +279,7 @@ void MainWindow::on_lrProcess_clicked()
     }
 
     QDomElement docElem = xmldoc.documentElement();
-    QDomElement trees = docElem.firstChildElement("trees");
+
     QString output_file = docElem.firstChildElement("outputStamp").text();
     QDomElement tree = docElem.firstChildElement("trees").firstChildElement("tree");
 
@@ -288,10 +289,10 @@ void MainWindow::on_lrProcess_clicked()
     qDebug() << "cutting stamps when averaged absoulte value of rings is below"<<cut_threshold;
     qDebug() << "reading binary stamp reader file" << binaryReaderStampFile;
 
-    if (!Helper::question(QString("Create writer stamps?\ntarget=%1, reader stamps=%2").arg(output_file, binaryReaderStampFile)))
+    if (!Helper::question(QString("Create writer stamps?\ntarget=%1, \nreader stamps=%2").arg(output_file, binaryReaderStampFile)))
         return;
     float crown, height, bhd;
-    QString formula, name, result;
+    QString formula, name;
 
     LightRoomObject *lro = new LightRoomObject();
     lightroom->setLightRoomObject(lro);
@@ -416,10 +417,8 @@ void MainWindow::on_lrProcess_clicked()
                 for (int y=0;y<readerstamp->size(); y++)
                     sum += *(readerstamp->data(x,y)) * *(stamp->data(x+offset, y+offset));
             qDebug() << "sum of reader-area over stamp" << sum;
-            stamp->setReadSum(sum);
         } else qDebug() << "!!! no readerstamp available!!!";
 
-        stamp->setDominanceValue( lightroom->centerValue() );
         double hd = qRound( height*100 / bhd );
         container.addStamp(stamp,bhd, hd, lro->maxRadius()); // 3rd param was: ,
         ///////////////////////////
@@ -454,21 +453,6 @@ void MainWindow::on_lrLoadStamps_clicked()
         qDebug() << container.dump();
         // and the reader-stamps....
     }
-    {
-        QString fileName = Helper::fileDialog("Name for reader stamp file");
-        if (fileName.isEmpty())
-            return;
-        QFile infile(fileName);
-        infile.open(QIODevice::ReadOnly);
-        QDataStream in(&infile);
-        StampContainer container;
-        container.load(in);
-        infile.close();
-        qDebug() << "Dumping content of Reader-container" << fileName;
-        qDebug() << container.dump();
-        // and the reader-stamps....
-    }
-
 }
 
 
@@ -512,10 +496,13 @@ void MainWindow::on_lrReadStamps_clicked()
     if (!Helper::question(QString("Save readerfile to %1?").arg(targetFile)))
         return;
     QFile file(targetFile);
-    file.open(QIODevice::WriteOnly);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qDebug() << "Error opening reader file" << targetFile << "with error:" << file.errorString();
+    }
     QDataStream out(&file);   // we will serialize the data into the file
     container.setDescription("Reader-stamps for crown-radii ranging from 0.5m to 15m, stepwidth is 0.1m.");
     container.save(out);
+    file.close();
     qDebug() << container.dump();
 
 
@@ -533,3 +520,9 @@ void MainWindow::on_openFile_clicked()
     ui->iniEdit->setPlainText(xmlFile);
 }
 
+
+void MainWindow::on_reloadFile_clicked()
+{
+    QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
+    ui->iniEdit->setPlainText(xmlFile);
+}

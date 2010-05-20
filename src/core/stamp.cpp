@@ -18,9 +18,7 @@ void Stamp::setup(const int size)
     int c=size*size;
     m_size=size;
     m_offset=0;
-    m_readsum = 0.f;
     m_reader = 0;
-    m_dominance=0.f;
     m_crownArea=0.f;
     m_crownRadius=0.f;
     if (m_data)

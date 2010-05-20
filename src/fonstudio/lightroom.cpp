@@ -117,7 +117,7 @@ void LightRoom::calculateFullGrid()
 
     float *values = new float[m_countZ];
 
-    double h_realized;
+    //double h_realized;
     double sum;
 
     while (v!=vend) {
@@ -144,12 +144,16 @@ void LightRoom::calculateFullGrid()
         // 20090711: again average it, but now include the tree top.
         // 20090713: go back to sum...
         // 20090812: remove the weighting for the 10m cells again.
+        // 20100520: again, use the average value (per meter)
         for(int i=0;i<z;i++)
             sum+=values[i];
-        //if (z)
-        //    sum/=float(z);
-        h_realized = sum*m_cellsize; // multiply with height (shadow * meter)
-        *v = h_realized; // store in matrix
+        // average::
+        if (z)
+            sum/=float(z);
+        *v = sum; // result: average shadow / meter height (within the 45° cone)
+        // sum
+        //h_realized = sum*m_cellsize; // multiply with height (shadow * meter)
+        //*v = h_realized; // store in matrix
 
         v++;
         c++;

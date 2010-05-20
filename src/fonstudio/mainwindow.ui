@@ -14,7 +14,7 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res/fonstudio.qrc">
+   <iconset>
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -53,7 +53,7 @@
 color: rgb(85, 0, 0);</string>
        </property>
        <property name="text">
-        <string>caption</string>
+        <string>Lightroom application</string>
        </property>
        <property name="textFormat">
         <enum>Qt::PlainText</enum>
@@ -90,7 +90,20 @@ color: rgb(85, 0, 0);</string>
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="reloadFile">
+            <property name="toolTip">
+             <string>Reload file from drive</string>
+            </property>
+            <property name="text">
+             <string>Reload</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="openFile">
+            <property name="toolTip">
+             <string>open file using file dialog</string>
+            </property>
             <property name="text">
              <string>Open</string>
             </property>
@@ -98,6 +111,9 @@ color: rgb(85, 0, 0);</string>
           </item>
           <item>
            <widget class="QPushButton" name="saveFile">
+            <property name="toolTip">
+             <string>save current XML to file</string>
+            </property>
             <property name="text">
              <string>Save</string>
             </property>
@@ -105,6 +121,9 @@ color: rgb(85, 0, 0);</string>
           </item>
           <item>
            <widget class="QPushButton" name="applyXML">
+            <property name="toolTip">
+             <string>load xml file into the system (necessary!)</string>
+            </property>
             <property name="text">
              <string>Apply!</string>
             </property>
@@ -442,7 +461,7 @@ color: rgb(85, 0, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>869</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -476,7 +495,7 @@ color: rgb(85, 0, 0);</string>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -488,7 +507,7 @@ color: rgb(85, 0, 0);</string>
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset resource="res/fonstudio.qrc">
+    <iconset>
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -530,9 +549,7 @@ color: rgb(85, 0, 0);</string>
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources>
-  <include location="res/fonstudio.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>lrSliderX</sender>

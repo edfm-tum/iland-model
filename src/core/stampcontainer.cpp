@@ -79,8 +79,8 @@ void StampContainer::finalizeSetup()
         }
 
     }
-    if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
-        qDebug() << dump();
+    //if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
+    //    qDebug() << dump();
 }
 
 
@@ -232,7 +232,17 @@ void StampContainer::load(QDataStream &in)
 {
     qint32 type;
     qint32 count;
-    float bhd, hdvalue, readsum, domvalue, crownradius;
+    float bhd, hdvalue, crownradius;
+    quint32 magic;
+    in >> magic;
+    if (magic!=0xFEED0001)
+        throw IException("StampContainer: invalid file type!");
+    quint16 version;
+    in >> version;
+    if (version != 100)
+        throw IException(QString("StampContainer: invalid file version: %1").arg(version));
+    in.setVersion(QDataStream::Qt_4_5);
+
     in >> count; // read count of stamps
     qDebug() << count << "stamps to read";
     QString desc;
@@ -244,14 +254,11 @@ void StampContainer::load(QDataStream &in)
         in >> bhd;
         in >> hdvalue;
         in >> crownradius;
-        in >> readsum;
-        in >> domvalue;
         //qDebug() << "stamp bhd hdvalue type readsum dominance type" << bhd << hdvalue << type << readsum << domvalue << type;
 
         Stamp *stamp = newStamp( Stamp::StampType(type) );
         stamp->load(in);
-        stamp->setReadSum(readsum);
-        stamp->setDominanceValue(domvalue);
+
         if (bhd > 0.f)
             addStamp(stamp, bhd, hdvalue, crownradius);
         else
@@ -280,6 +287,10 @@ void StampContainer::save(QDataStream &out)
 {
     qint32 type;
     qint32 size = m_stamps.count();
+    out << (quint32)0xFEED0001; // magic number
+    out << (quint16)100; // version
+    out.setVersion(QDataStream::Qt_4_5);
+
     out << size; // count of stamps...
     out << m_desc; // text...
     foreach(StampItem si, m_stamps) {
@@ -288,8 +299,6 @@ void StampContainer::save(QDataStream &out)
         out << si.dbh;
         out << si.hd;
         out << si.crown_radius;
-        out << si.stamp->readSum();
-        out << si.stamp->dominanceValue();
         si.stamp->save(out);
     }
 
