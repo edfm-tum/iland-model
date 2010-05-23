@@ -126,15 +126,14 @@ void Tree::applyLIP()
     }
     grid_y = pos.y();
     for (y=0;y<gr_stamp; ++y) {
-        grid_y++;
+
         grid_value_ptr = mGrid->ptr(pos.x(), grid_y);
         grid_x = pos.x();
         for (x=0;x<gr_stamp;++x) {
             // suppose there is no stamping outside
-            grid_x++;
 
             local_dom = mHeightGrid->valueAtIndex(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
-            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height
+            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
             value = (*mStamp)(x,y); // stampvalue
             value = 1. - value*mOpacity * z_zstar; // calculated value
@@ -142,7 +141,10 @@ void Tree::applyLIP()
             value = qMax(value, 0.02f); // limit value
 
             *grid_value_ptr++ *= value;
+
+            grid_x++;
         }
+        grid_y++;
     }
 
     m_statPrint++; // count # of stamp applications...
@@ -279,17 +281,15 @@ void Tree::readLIF()
     int offset_writer = mStamp->offset();
     int d_offset = offset_writer - offset_reader; // offset on the *stamp* to the crown-cells
 
-    QPoint pos_writer=pos_reader - QPoint(offset_writer, offset_writer);
     pos_reader-=QPoint(offset_reader, offset_reader);
-    QPoint p;
 
-    //float dom_height = (*m_dominanceGrid)[m_Position];
     float local_dom;
 
     int x,y;
     double sum=0.;
     double value, own_value;
     float *grid_value;
+    float z, z_zstar;
     int reader_size = reader->size();
     int rx = pos_reader.x();
     int ry = pos_reader.y();
@@ -297,18 +297,19 @@ void Tree::readLIF()
         grid_value = mGrid->ptr(rx, ry);
         for (x=0;x<reader_size;++x) {
 
-            //p = pos_reader + QPoint(x,y);
-            //if (m_grid->isIndexValid(p)) {
             local_dom = mHeightGrid->valueAtIndex((rx+x)/cPxPerHeight, ry/cPxPerHeight).height; // ry: gets ++ed in outer loop, rx not
-            //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
+            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z_zstar = (z>=local_dom)?1.f:z/local_dom;
 
-            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
+            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;
+            // old: own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value++ / own_value; // remove impact of focal tree
+            
+            //qDebug() << x << y << local_dom << z << z_zstar << own_value << value << *(grid_value-1) << (*reader)(x,y) << mStamp->offsetValue(x,y,d_offset);
             //if (value>0.)
             sum += value * (*reader)(x,y);
 
-            //} // isIndexValid
         }
     }
     mLRI = sum;
@@ -320,6 +321,7 @@ void Tree::readLIF()
     //    m_statAboveZ++;
     //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
     //}
+
     if (mLRI > 1.)
         mLRI = 1.;
 

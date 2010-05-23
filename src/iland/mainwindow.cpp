@@ -266,8 +266,8 @@ void MainWindow::readwriteCycle()
     if (!mRemoteControl.canRun())
         return;
 
-    mRemoteControl.runYear();
-
+    Model *model = mRemoteControl.model();
+    model->onlyApplyLightPattern();
 }
 
 
@@ -577,6 +577,7 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
     // calculate new position...
     t->setPosition(pos);
     readwriteCycle();
+    ui->PaintWidget->update();
 }
 
 

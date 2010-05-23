@@ -23,6 +23,7 @@ struct HeightGridValue
     void increaseCount() { mCount++; } ///< increase the number of trees on pixel
     bool isValid() const { return (mCount >> 16)==0; }
     void setValid(const bool valid) { setBit(mCount, 16, !valid); }
+    void init(const float aheight, const int acount) { height=aheight;mCount=acount; }
 private:
 
     int mCount; // the lower 16 bits are to count, the heigher for flags. bit 16: valid (0=valid, 1=outside of project area)
@@ -57,7 +58,7 @@ public:
     bool isSetup() const { return mSetup; } ///< return true if the model world is correctly setup.
     static const ModelSettings &settings() {return mSettings;} ///< access to global model settings.
     static ModelSettings &changeSettings() {return mSettings;} ///< write access to global model settings.
-
+    void onlyApplyLightPattern() { applyPattern(); readPattern(); }
     // actions
     void createStandStatistics();
 

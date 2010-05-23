@@ -518,6 +518,9 @@ void Model::applyPattern()
     // intialize grids...
     mGrid->initialize(1.f);
     mHeightGrid->wipe();
+//    HeightGridValue hgv;
+//    hgv.init(5.f, 0);
+//    mHeightGrid->initialize(hgv);
 
     threadRunner.run(nc_applyPattern);
 }
