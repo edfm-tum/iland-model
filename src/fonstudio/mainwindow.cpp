@@ -284,6 +284,21 @@ void MainWindow::on_lrProcess_clicked()
     QDomElement tree = docElem.firstChildElement("trees").firstChildElement("tree");
 
     double cut_threshold = docElem.firstChildElement("cutvalue").text().toDouble();
+    QString agg_mode = docElem.firstChildElement("aggregationMode").text();
+    int mode=-1;
+    if (agg_mode=="sum") {
+        mode=1;
+        qDebug() << "aggregation mode set to 'sum'";
+    }
+    if (agg_mode=="mean") {
+        qDebug() << "aggregation mode set to 'mean'";
+        mode=0;
+    }
+    if (mode==-1) {
+        Helper::msg("Error: invalid or no aggregationMode specified!");
+        return;
+    }
+
     QString stamp_desc = docElem.firstChildElement("desc").text();
     QString binaryReaderStampFile =  docElem.firstChildElement("readerStamp").text();
     qDebug() << "cutting stamps when averaged absoulte value of rings is below"<<cut_threshold;
@@ -296,6 +311,7 @@ void MainWindow::on_lrProcess_clicked()
 
     LightRoomObject *lro = new LightRoomObject();
     lightroom->setLightRoomObject(lro);
+    lightroom->setAggregationMode(mode);
 
     StampContainer readers;
 

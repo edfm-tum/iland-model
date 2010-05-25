@@ -6,6 +6,7 @@
 LightRoom::LightRoom()
 {
     m_roomObject = 0;
+    m_aggregationMode = 0;
 }
 
 /** setup routine.
@@ -147,13 +148,16 @@ void LightRoom::calculateFullGrid()
         // 20100520: again, use the average value (per meter)
         for(int i=0;i<z;i++)
             sum+=values[i];
-        // average::
-        if (z)
-            sum/=float(z);
-        *v = sum; // result: average shadow / meter height (within the 45° cone)
+        if (m_aggregationMode==0) {
+            // average shadow / meter height (within the 45° cone)
+            if (z)
+                sum/=float(z);
+        } else {
+            // aggregation: sum
+            sum *= m_cellsize;  // multiply with height (shadow * meter)
+        }
+        *v = sum; // store in matrix
         // sum
-        //h_realized = sum*m_cellsize; // multiply with height (shadow * meter)
-        //*v = h_realized; // store in matrix
 
         v++;
         c++;

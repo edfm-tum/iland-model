@@ -48,6 +48,7 @@ public:
                const double cellsize, const double hemigridsize,
                const double latitude=48., const double diffus_frac=0.5);
     void setLightRoomObject(LightRoomObject *lro) { if (m_roomObject) delete m_roomObject; m_roomObject = lro; }
+    void setAggregationMode(const int mode ) { m_aggregationMode = mode; }
     /// calculate a full hemiview image from given point
     double calculateGridAtPoint(const double p_x, const double p_y, const double p_z, bool fillShadowGrid=true);
     /// calculate a hemigrid for each node of the grid (store results in m_3dvalues).
@@ -70,6 +71,7 @@ private:
     HemiGrid m_solarGrid; ///< grid used for solar radiation (direct + diffus)
     HemiGrid m_shadowGrid; ///< grid used for shadow calculations
    double m_centervalue; ///< value (shadow*height) of the tree center (relative) [-]
+   int m_aggregationMode; ///< aggregation mod
 
     LightRoomObject *m_roomObject;
 };
