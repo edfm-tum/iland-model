@@ -81,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     mLogSpace = ui->logOutput;
-    //qInstallMsgHandler(myMessageOutput);
+    qInstallMsgHandler(myMessageOutput);
     // load xml file
     xmldoc.clear();
     QString argText = QApplication::arguments().last();
