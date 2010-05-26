@@ -108,6 +108,8 @@ void Output::openDatabase()
     }
     sql[sql.length()-1]=')'; // replace last "," with )
     //qDebug()<< sql;
+    if (mInserter.isValid())
+        mInserter.clear();
     QSqlQuery creator(db);
     QString drop=QString("drop table if exists %1").arg(tableName());
     creator.exec(drop); // drop table (if exists)
@@ -178,6 +180,7 @@ void Output::close()
             // having (old) locks on database connections, degrades insert performance.
             if (mInserter.isValid())
                 mInserter.finish();
+            mInserter = QSqlQuery(); // clear inserter
          break;
         default:
          qWarning() << "Output::close with invalid mode";

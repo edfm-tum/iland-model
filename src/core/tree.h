@@ -34,6 +34,7 @@ public:
     double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
     double basalArea() const; ///< basal area of the tree at breast height in m2
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
+    float crownRadius() const; ///< fetch crown radius (m) from the attached stamp
     // actions
     void die(TreeGrowthData *d=0); ///< kills the tree.
     void remove(); ///< remove the tree (management)

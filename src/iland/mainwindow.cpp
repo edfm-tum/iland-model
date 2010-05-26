@@ -413,7 +413,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             value = tree_value.execute();
             fill_color = Helper::colorFromValue(value, 0., 1., false);
             painter.setBrush(fill_color);
-            int diameter = qMax(1,vp.meterToPixel( tree->dbh()/100. * 3.));
+            int diameter = qMax(1,vp.meterToPixel( tree->crownRadius()));
             painter.drawEllipse(p, diameter, diameter);
         }
         if (!tree_value.lastError().isEmpty())

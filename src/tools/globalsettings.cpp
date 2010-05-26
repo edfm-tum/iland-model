@@ -299,6 +299,8 @@ void GlobalSettings::clearDatabaseConnections()
 
 bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QString &fileName, bool fileMustExist)
 {
+
+    QSqlDatabase::database(dbname).close(); // close database
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE",dbname); // addDatabase replaces a connection with the same name
     qDebug() << "setup database connection" << dbname << "to" << fileName;
     //db.setDatabaseName(":memory:");

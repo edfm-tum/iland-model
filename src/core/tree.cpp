@@ -44,6 +44,12 @@ Tree::Tree()
     m_statCreated++;
 }
 
+float Tree::crownRadius() const
+{
+    Q_ASSERT(mStamp!=0);
+    return mStamp->crownRadius();
+}
+
 void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
 {
     mGrid = gridToStamp; mHeightGrid = dominanceGrid;
@@ -121,7 +127,7 @@ void Tree::applyLIP()
     int grid_x, grid_y;
     float *grid_value_ptr;
     if (!mGrid->isIndexValid(pos) || !mGrid->isIndexValid(pos+QPoint(gr_stamp, gr_stamp))) {
-        // todo: in this case we should use another algorithm!!!
+        // this should not happen because of the buffer
         return;
     }
     grid_y = pos.y();
@@ -185,7 +191,7 @@ void Tree::applyLIP_torus()
         // todo: in this case we should use another algorithm!!! necessary????
         return;
     }
-
+    float z, z_zstar;
     int xt, yt; // wraparound coordinates
     for (y=0;y<gr_stamp; ++y) {
         grid_y = pos.y() + y;
@@ -196,8 +202,12 @@ void Tree::applyLIP_torus()
             xt = torusIndex(grid_x,cPxPerRU,bufferOffset, ru_offset.x());
 
             local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight,yt/cPxPerHeight).height;
+
+            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z_zstar = (z>=local_dom)?1.f:z/local_dom;
             value = (*mStamp)(x,y); // stampvalue
-            value = 1. - value*mOpacity / local_dom; // calculated value
+            value = 1. - value*mOpacity * z_zstar; // calculated value
+            // old: value = 1. - value*mOpacity / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
 
             grid_value = mGrid->ptr(xt, yt); // use wraparound coordinates
@@ -284,6 +294,95 @@ void Tree::heightGrid()
 //    } // for (y)
 }
 
+void Tree::heightGrid_torus()
+{
+    // height of Z*
+
+    QPoint p = QPoint(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight); // pos of tree on height grid
+    int bufferOffset = mHeightGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer (i.e.: size of buffer in height-pixels)
+    p.setX((p.x()-bufferOffset)%10 + bufferOffset); // 10: 10 x 10m pixeln in 100m
+    p.setY((p.y()-bufferOffset)%10 + bufferOffset);
+
+
+    // torus coordinates: ru_offset = coords of lower left corner of 1ha patch
+    QPoint ru_offset =QPoint(mPositionIndex.x()/cPxPerHeight - p.x(), mPositionIndex.y()/cPxPerHeight - p.y());
+
+    // count trees that are on height-grid cells (used for stockable area)
+    HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x(),10,bufferOffset,ru_offset.x()),
+                                                   torusIndex(p.y(),10,bufferOffset,ru_offset.y()));
+    v.increaseCount();
+    v.height = qMax(v.height, mHeight);
+
+
+    int r = mStamp->reader()->offset(); // distance between edge and the center pixel. e.g.: if r = 2 -> stamp=5x5
+    int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
+    int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
+    if (index_eastwest - r < 0) { // east
+        HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x()-1,10,bufferOffset,ru_offset.x()),
+                                                       torusIndex(p.y(),10,bufferOffset,ru_offset.y()));
+        v.height = qMax(v.height, mHeight-5);
+    }
+    if (index_eastwest + r >= cPxPerHeight) {  // west
+        HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x()+1,10,bufferOffset,ru_offset.x()),
+                                                       torusIndex(p.y(),10,bufferOffset,ru_offset.y()));
+        v.height = qMax(v.height, mHeight-5);
+    }
+    if (index_northsouth - r < 0) {  // south
+        HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x(),10,bufferOffset,ru_offset.x()),
+                                                       torusIndex(p.y()-1,10,bufferOffset,ru_offset.y()));
+        v.height = qMax(v.height, mHeight-5);
+    }
+    if (index_northsouth + r >= cPxPerHeight) {  // north
+        HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x(),10,bufferOffset,ru_offset.x()),
+                                                       torusIndex(p.y()+1,10,bufferOffset,ru_offset.y()));
+        v.height = qMax(v.height, mHeight-5);
+    }
+
+
+
+
+//    int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
+//    int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
+//    int dist[9];
+//    dist[3] = index_northsouth * 2 + 1; // south
+//    dist[1] = index_eastwest * 2 + 1; // west
+//    dist[5] = 10 - dist[3]; // north
+//    dist[7] = 10 - dist[1]; // east
+//    dist[8] = qMax(dist[5], dist[7]); // north-east
+//    dist[6] = qMax(dist[3], dist[7]); // south-east
+//    dist[0] = qMax(dist[3], dist[1]); // south-west
+//    dist[2] = qMax(dist[5], dist[1]); // north-west
+//    dist[4] = 0; // center cell
+//    /* the scheme of indices is as follows:  if sign(ix)= -1, if ix<0, 0 for ix=0, 1 for ix>0 (detto iy), then:
+//       index = 4 + 3*sign(ix) + sign(iy) transforms combinations of directions to unique ids (0..8), which are used above.
+//        e.g.: sign(ix) = -1, sign(iy) = 1 (=north-west) -> index = 4 + -3 + 1 = 2
+//    */
+//
+//
+//    int ringcount = int(floor(mHeight / cellsize)) + 1;
+//    int ix, iy;
+//    int ring;
+//    float hdom;
+//    for (ix=-ringcount;ix<=ringcount;ix++)
+//        for (iy=-ringcount; iy<=+ringcount; iy++) {
+//        ring = qMax(abs(ix), abs(iy));
+//        QPoint pos(ix+p.x(), iy+p.y());
+//        QPoint p_torus(torusIndex(pos.x(),10,bufferOffset,ru_offset.x()),
+//                       torusIndex(pos.y(),10,bufferOffset,ru_offset.y()));
+//        if (mHeightGrid->isIndexValid(p_torus)) {
+//            float &rHGrid = mHeightGrid->valueAtIndex(p_torus.x(),p_torus.y()).height;
+//            if (rHGrid > mHeight) // skip calculation if grid is higher than tree
+//                continue;
+//            int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
+//            hdom = mHeight - dist[direction];
+//            if (ring>1)
+//                hdom -= (ring-1)*10;
+//
+//            rHGrid = qMax(rHGrid, hdom); // write value
+//        } // is valid
+//    } // for (y)
+}
+
 
 
 void Tree::readLIF()
@@ -351,64 +450,6 @@ void Tree::readLIF()
     //mRU->addWLA(mLRI*mLeafArea, mLeafArea);
 }
 
-void Tree::heightGrid_torus()
-{
-    // height of Z*
-    const float cellsize = mHeightGrid->cellsize();
-
-    QPoint p = QPoint(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight); // pos of tree on height grid
-    int bufferOffset = mHeightGrid->indexAt(QPointF(0.,0.)).x(); // offset of buffer
-
-    // count trees that are on height-grid cells (used for stockable area)
-    mHeightGrid->valueAtIndex(p).increaseCount();
-
-    // torus coordinates
-    p.setX((p.x()-bufferOffset)%10 + bufferOffset);
-    p.setY((p.y()-bufferOffset)%10 + bufferOffset);
-    QPoint ru_offset =QPoint(mPositionIndex.x()/cPxPerHeight - p.x(), mPositionIndex.y()/cPxPerHeight - p.y());
-
-    int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
-    int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
-    int dist[9];
-    dist[3] = index_northsouth * 2 + 1; // south
-    dist[1] = index_eastwest * 2 + 1; // west
-    dist[5] = 10 - dist[3]; // north
-    dist[7] = 10 - dist[1]; // east
-    dist[8] = qMax(dist[5], dist[7]); // north-east
-    dist[6] = qMax(dist[3], dist[7]); // south-east
-    dist[0] = qMax(dist[3], dist[1]); // south-west
-    dist[2] = qMax(dist[5], dist[1]); // north-west
-    dist[4] = 0; // center cell
-    /* the scheme of indices is as follows:  if sign(ix)= -1, if ix<0, 0 for ix=0, 1 for ix>0 (detto iy), then:
-       index = 4 + 3*sign(ix) + sign(iy) transforms combinations of directions to unique ids (0..8), which are used above.
-        e.g.: sign(ix) = -1, sign(iy) = 1 (=north-west) -> index = 4 + -3 + 1 = 2
-    */
-
-
-    int ringcount = int(floor(mHeight / cellsize)) + 1;
-    int ix, iy;
-    int ring;
-    float hdom;
-    for (ix=-ringcount;ix<=ringcount;ix++)
-        for (iy=-ringcount; iy<=+ringcount; iy++) {
-        ring = qMax(abs(ix), abs(iy));
-        QPoint pos(ix+p.x(), iy+p.y());
-        QPoint p_torus(torusIndex(pos.x(),10,bufferOffset,ru_offset.x()),
-                       torusIndex(pos.y(),10,bufferOffset,ru_offset.y()));
-        if (mHeightGrid->isIndexValid(p_torus)) {
-            float &rHGrid = mHeightGrid->valueAtIndex(p_torus.x(),p_torus.y()).height;
-            if (rHGrid > mHeight) // skip calculation if grid is higher than tree
-                continue;
-            int direction = 4 + (ix?(ix<0?-3:3):0) + (iy?(iy<0?-1:1):0); // 4 + 3*sgn(x) + sgn(y)
-            hdom = mHeight - dist[direction];
-            if (ring>1)
-                hdom -= (ring-1)*10;
-
-            rHGrid = qMax(rHGrid, hdom); // write value
-        } // is valid
-    } // for (y)
-}
-
 /// Torus version of read stamp (glued edges)
 void Tree::readLIF_torus()
 {
@@ -435,6 +476,7 @@ void Tree::readLIF_torus()
     double sum=0.;
     double value, own_value;
     float *grid_value;
+    float z, z_zstar;
     int reader_size = reader->size();
     int rx = pos_reader.x();
     int ry = pos_reader.y();
@@ -445,14 +487,16 @@ void Tree::readLIF_torus()
         for (x=0;x<reader_size;++x) {
             xt = torusIndex(rx+x,cPxPerRU, bufferOffset, ru_offset.x());
             grid_value = mGrid->ptr(xt,yt);
-            //p = pos_reader + QPoint(x,y);
-            //if (m_grid->isIndexValid(p)) {
-            local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight, yt/cPxPerHeight).height; // ry: gets ++ed in outer loop, rx not
-            //local_dom = m_dominanceGrid->valueAt( m_grid->cellCoordinates(p) );
 
-            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
+            local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight, yt/cPxPerHeight).height; // ry: gets ++ed in outer loop, rx not
+            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z_zstar = (z>=local_dom)?1.f:z/local_dom;
+
+            own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;
+            // old: own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
-            value =  *grid_value / own_value; // remove impact of focal tree
+            value =  *grid_value++ / own_value; // remove impact of focal tree
+
             // debug for one tree in HJA
             //if (id()==178020)
             //    qDebug() << x << y << xt << yt << *grid_value << local_dom << own_value << value << (*reader)(x,y);
