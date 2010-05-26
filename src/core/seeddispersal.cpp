@@ -54,7 +54,7 @@ void SeedDispersal::setup()
 //        *p = qMax( 1. - d / max_dist, 0.);
 //    }
 
-    //Helper::saveToTextFile("seedkernel.csv",gridToString(mSeedKernel));
+    //Helper::saveToTextFile("e:\\temp\\seedmaps\\seedkernel.csv",gridToString(mSeedKernel));
 
     // randomize seed map.... set 1/3 to "filled"
     //for (int i=0;i<mSeedMap.count(); i++)

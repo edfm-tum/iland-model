@@ -235,16 +235,16 @@ void Tree::heightGrid()
     int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
     int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
     if (index_eastwest - r < 0) { // east
-        mHeightGrid->valueAtIndex(p.x()-1, p.y()).height=qMax(mHeightGrid->valueAtIndex(p.x()-1, p.y()).height,mHeight-5.f);
+        mHeightGrid->valueAtIndex(p.x()-1, p.y()).height=qMax(mHeightGrid->valueAtIndex(p.x()-1, p.y()).height,mHeight);
     }
     if (index_eastwest + r >= cPxPerHeight) {  // west
-        mHeightGrid->valueAtIndex(p.x()+1, p.y()).height=qMax(mHeightGrid->valueAtIndex(p.x()+1, p.y()).height,mHeight-5.f);
+        mHeightGrid->valueAtIndex(p.x()+1, p.y()).height=qMax(mHeightGrid->valueAtIndex(p.x()+1, p.y()).height,mHeight);
     }
     if (index_northsouth - r < 0) {  // south
-        mHeightGrid->valueAtIndex(p.x(), p.y()-1).height=qMax(mHeightGrid->valueAtIndex(p.x(), p.y()-1).height,mHeight-5.f);
+        mHeightGrid->valueAtIndex(p.x(), p.y()-1).height=qMax(mHeightGrid->valueAtIndex(p.x(), p.y()-1).height,mHeight);
     }
     if (index_northsouth + r >= cPxPerHeight) {  // north
-        mHeightGrid->valueAtIndex(p.x(), p.y()+1).height=qMax(mHeightGrid->valueAtIndex(p.x(), p.y()+1).height,mHeight-5.f);
+        mHeightGrid->valueAtIndex(p.x(), p.y()+1).height=qMax(mHeightGrid->valueAtIndex(p.x(), p.y()+1).height,mHeight);
     }
 
 
@@ -320,22 +320,22 @@ void Tree::heightGrid_torus()
     if (index_eastwest - r < 0) { // east
         HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x()-1,10,bufferOffset,ru_offset.x()),
                                                        torusIndex(p.y(),10,bufferOffset,ru_offset.y()));
-        v.height = qMax(v.height, mHeight-5);
+        v.height = qMax(v.height, mHeight);
     }
     if (index_eastwest + r >= cPxPerHeight) {  // west
         HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x()+1,10,bufferOffset,ru_offset.x()),
                                                        torusIndex(p.y(),10,bufferOffset,ru_offset.y()));
-        v.height = qMax(v.height, mHeight-5);
+        v.height = qMax(v.height, mHeight);
     }
     if (index_northsouth - r < 0) {  // south
         HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x(),10,bufferOffset,ru_offset.x()),
                                                        torusIndex(p.y()-1,10,bufferOffset,ru_offset.y()));
-        v.height = qMax(v.height, mHeight-5);
+        v.height = qMax(v.height, mHeight);
     }
     if (index_northsouth + r >= cPxPerHeight) {  // north
         HeightGridValue &v = mHeightGrid->valueAtIndex(torusIndex(p.x(),10,bufferOffset,ru_offset.x()),
                                                        torusIndex(p.y()+1,10,bufferOffset,ru_offset.y()));
-        v.height = qMax(v.height, mHeight-5);
+        v.height = qMax(v.height, mHeight);
     }
 
 
