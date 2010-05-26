@@ -517,10 +517,11 @@ void Model::applyPattern()
     DebugTimer t("applyPattern()");
     // intialize grids...
     mGrid->initialize(1.f);
-    mHeightGrid->wipe();
-//    HeightGridValue hgv;
-//    hgv.init(5.f, 0);
-//    mHeightGrid->initialize(hgv);
+    //mHeightGrid->wipe();
+    HeightGridValue hgv;
+    // initialize height grid with a value of 4m. This is the height of the regeneration layer
+    hgv.init(4.f, 0);
+    mHeightGrid->initialize(hgv);
 
     threadRunner.run(nc_applyPattern);
 }

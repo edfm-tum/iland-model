@@ -220,6 +220,24 @@ void Tree::heightGrid()
     mHeightGrid->valueAtIndex(p).increaseCount();
     if (mHeight > mHeightGrid->valueAtIndex(p).height)
         mHeightGrid->valueAtIndex(p).height=mHeight;
+
+    int r = mStamp->reader()->offset(); // distance between edge and the center pixel. e.g.: if r = 2 -> stamp=5x5
+    int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
+    int index_northsouth = mPositionIndex.y() % cPxPerHeight; // 4: northern edge, 0: southern edge
+    if (index_eastwest - r < 0) { // east
+        mHeightGrid->valueAtIndex(p.x()-1, p.y()).height=qMax(mHeightGrid->valueAtIndex(p.x()-1, p.y()).height,mHeight-5.f);
+    }
+    if (index_eastwest + r >= cPxPerHeight) {  // west
+        mHeightGrid->valueAtIndex(p.x()+1, p.y()).height=qMax(mHeightGrid->valueAtIndex(p.x()+1, p.y()).height,mHeight-5.f);
+    }
+    if (index_northsouth - r < 0) {  // south
+        mHeightGrid->valueAtIndex(p.x(), p.y()-1).height=qMax(mHeightGrid->valueAtIndex(p.x(), p.y()-1).height,mHeight-5.f);
+    }
+    if (index_northsouth + r >= cPxPerHeight) {  // north
+        mHeightGrid->valueAtIndex(p.x(), p.y()+1).height=qMax(mHeightGrid->valueAtIndex(p.x(), p.y()+1).height,mHeight-5.f);
+    }
+
+
     // without spread of the height grid
 
 //    // height of Z*
