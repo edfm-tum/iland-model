@@ -167,6 +167,8 @@ void ModelController::run(int years)
 bool ModelController::runYear()
 {
     if (!canRun()) return false;
+    DebugTimer t("ModelController:runYear");
+
     if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
     bool err=false;
