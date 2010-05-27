@@ -448,8 +448,9 @@ void Tests::testMultithreadExecute()
 
 void Tests::testLinearExpressions()
 {
-    Expression a("1.3 * x^2.0121");
-    Expression b("1.3 * x^2.0121");
+    Expression a("40*(1-(1-(x/40)^(1/3))*exp(-0.03))^3"); // test function: sapling growth
+    Expression b("40*(1-(1-(x/40)^(1/3))*exp(-0.03))^3");
+
     b.linearize(2., 140.);
     b.calculate(58.);
     for (double x=5.; x<150.; x++) {
