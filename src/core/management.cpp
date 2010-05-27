@@ -219,8 +219,8 @@ int Management::filter(QString filter)
     QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
     while (tp!=mTrees.end()) {
         tw.setTree(tp->first);
-        if (!expr.execute())
-             tp = mTrees.erase(tp);
+        if (!expr.calculate(tw))
+            tp = mTrees.erase(tp);
         else
             tp++;
     }

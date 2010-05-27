@@ -72,7 +72,6 @@ public:
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
 private:
     Q_DISABLE_COPY(Species);
-    QMutex mMutex;
     // helpers during setup
     bool boolVar(const QString s) { return mSet->var(s).toBool(); } ///< during setup: get value of variable @p s as a boolean variable.
     double doubleVar(const QString s) { return mSet->var(s).toDouble(); }///< during setup: get value of variable @p s as a double.
@@ -131,7 +130,6 @@ private:
 // inlined functions...
 inline void Species::hdRange(const double dbh, double &rLowHD, double &rHighHD)
 {
-    QMutexLocker m(&mMutex); // serialize access
     rLowHD = mHDlow.calculate(dbh);
     rHighHD = mHDhigh.calculate(dbh);
 }

@@ -218,7 +218,6 @@ double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenRes
     @sa http://iland.boku.ac.at/allocation#reserve_and_allocation_to_stem_growth */
 double SpeciesSet::lightResponse(const double lightResourceIndex, const double lightResponseClass)
 {
-    QMutexLocker l(&mMutex); // serialize access to calculations
     double low = mLightResponseIntolerant.calculate(lightResourceIndex);
     double high = mLightResponseTolerant.calculate(lightResourceIndex);
     double result = low + 0.25*(lightResponseClass-1.)*(high-low);

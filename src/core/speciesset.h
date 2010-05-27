@@ -33,7 +33,6 @@ public:
     void regeneration(); ///< run regeneration (after growth)
 private:
     QString mName;
-    QMutex mMutex;
     double nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const;
     QList<Species*> mActiveSpecies;
     QMap<QString, Species*> mSpecies;
