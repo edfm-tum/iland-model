@@ -284,6 +284,7 @@ void MainWindow::on_lrProcess_clicked()
     QDomElement tree = docElem.firstChildElement("trees").firstChildElement("tree");
 
     double cut_threshold = docElem.firstChildElement("cutvalue").text().toDouble();
+    QString cut_mode = docElem.firstChildElement("cutoffMode").text();
     QString agg_mode = docElem.firstChildElement("aggregationMode").text();
     int mode=-1;
     if (agg_mode=="sum") {
@@ -350,6 +351,7 @@ void MainWindow::on_lrProcess_clicked()
         // calculate sums...
         QVector<double> sums; // stores sum per ring (rectangle)
         QVector<double> rel_sum; // stores sum/px
+        QVector<double> max_vals; // stores values in north direction
         double sum;
         int ring_count;
         double total_sum = 0.;
@@ -370,11 +372,13 @@ void MainWindow::on_lrProcess_clicked()
             total_sum += sum;
             sums.push_back(sum);
             rel_sum.push_back(sum / double(ring_count) );
+            max_vals.push_back(gr(gr.sizeX()/2, gr.sizeX()-1-o)); // bottom....
         }
         if (gr.sizeX()% 2) {
             total_sum += gr(gr.sizeX()/2, gr.sizeX()/2); // center pixel for unevenly sized grids
             sums.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel for unevenly sized grids
             rel_sum.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel for unevenly sized grids
+            max_vals.push_back(gr(gr.sizeX()/2, gr.sizeX()/2)); // center pixel
         }
         int end_ring, target_grid_size;
         /* version < 20090905: average ring value
@@ -384,22 +388,34 @@ void MainWindow::on_lrProcess_clicked()
         end_ring = rel_sum.count() - end_ring; // */
 
         // version > 20090905: based on total area
-        double rsum = 0;
-        for (end_ring=0;end_ring<sums.count();end_ring++) {
-            rsum += sums[end_ring];
-            // threshold: sum of influence > threshold
-            if (rsum>cut_threshold*total_sum)
-                break;
+        if (cut_mode == "sum") {
+            double rsum = 0;
+            for (end_ring=0;end_ring<sums.count();end_ring++) {
+                rsum += sums[end_ring];
+                // threshold: sum of influence > threshold
+                if (rsum>cut_threshold*total_sum)
+                    break;
+            }
+        } else if (cut_mode == "north") {
+            // 20100527: based on direction with maximum values
+            for (end_ring=0;end_ring<sums.count();end_ring++) {
+                if (max_vals[end_ring]>cut_threshold)
+                   break;
+            }
+
+        } else {
+           qDebug() << "ERROR: invalid cutoffMode (possible values: sum, north)!!! Exiting.";
+           return;
         }
         end_ring = sums.count() - end_ring;
         if (end_ring<2) // minimum ring-count=2 (i.e. 9pixel)
             end_ring=2;
 
         target_grid_size = 2*end_ring - 1; // e.g. 3rd ring -> 5x5-matrix
-        qDebug() << "break at ring" << end_ring;
-        qDebug() << "circle sum relsum";
+        qDebug() << "break at ring" << end_ring << "with cutoff mode" << cut_mode;
+        qDebug() << "circle sum relsum maxvals";
         for (int i=0;i<sums.count();i++)
-            qDebug() << i << sums[i] << rel_sum[i];
+            qDebug() << i << sums[i] << rel_sum[i] << max_vals[i];
 
 
         // test: use subpixel averages ....
