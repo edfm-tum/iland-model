@@ -54,8 +54,10 @@ void SeedDispersal::setup()
     // the central pixel still gets the value of 1 (i.e. 100% probability)
     createKernel(mKernelNonSeedYear, mTM_maxseed*mNonSeedYearFraction);
 
-    Helper::saveToTextFile("e:\\temp\\seedmaps\\seedkernelYes.csv",gridToString(mKernelSeedYear));
-    Helper::saveToTextFile("e:\\temp\\seedmaps\\seedkernelNo.csv",gridToString(mKernelNonSeedYear));
+    if (QFile::exists("c:\\temp\\seedmaps")) {
+        Helper::saveToTextFile("c:\\temp\\seedmaps\\seedkernelYes.csv",gridToString(mKernelSeedYear));
+        Helper::saveToTextFile("c:\\temp\\seedmaps\\seedkernelNo.csv",gridToString(mKernelNonSeedYear));
+    }
 
 
     // setup of seed kernel
@@ -177,7 +179,8 @@ void SeedDispersal::clear()
 void SeedDispersal::execute()
 {
     static int img_counter = 0;
-    gridToImage(seedMap(), true, 0., 1.).save(QString("e:\\temp\\seedmaps\\seed_before%1.png").arg(img_counter));
+    if (QFile::exists("c:\\temp\\seedmaps"))
+        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_before%1.png").arg(img_counter));
     {
     DebugTimer t("seed dispersal");
     // (1) detect edges
@@ -185,7 +188,8 @@ void SeedDispersal::execute()
     // (2) distribute seed probabilites from edges
     distribute();
     }
-    gridToImage(seedMap(), true, 0., 1.).save(QString("e:\\temp\\seedmaps\\seed_after%1.png").arg(img_counter++));
+    if (QFile::exists("c:\\temp\\seedmaps"))
+        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_after%1.png").arg(img_counter++));
 }
 
 /** scans the seed image and detects "edges".
