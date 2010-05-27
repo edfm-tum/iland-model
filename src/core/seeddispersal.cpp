@@ -39,7 +39,25 @@ void SeedDispersal::setup()
     mIndexFactor = int(seedmap_size) / cPxSize; // ratio seed grid / lip-grid:
     qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels, offset to (0/0): " << mIndexOffset;
 
-    createKernel();
+    // settings
+    mTM_maxseed = 10000;
+    mNonSeedYearFraction = 0.25;
+    mTM_as1 = 100.;
+    mTM_as2 = 0.;
+    mTM_ks = 0.;
+    mTM_required_seeds = 1.;
+
+    createKernel(mKernelSeedYear, mTM_maxseed);
+
+    // the kernel for non seed years looks similar, but is simply linearly scaled down
+    // using the species parameter NonSeedYearFraction.
+    // the central pixel still gets the value of 1 (i.e. 100% probability)
+    createKernel(mKernelNonSeedYear, mTM_maxseed*mNonSeedYearFraction);
+
+    Helper::saveToTextFile("e:\\temp\\seedmaps\\seedkernelYes.csv",gridToString(mKernelSeedYear));
+    Helper::saveToTextFile("e:\\temp\\seedmaps\\seedkernelNo.csv",gridToString(mKernelNonSeedYear));
+
+
     // setup of seed kernel
 //    const int max_radius = 15; // pixels
 //
@@ -54,7 +72,6 @@ void SeedDispersal::setup()
 //        *p = qMax( 1. - d / max_dist, 0.);
 //    }
 
-    //Helper::saveToTextFile("e:\\temp\\seedmaps\\seedkernel.csv",gridToString(mSeedKernel));
 
     // randomize seed map.... set 1/3 to "filled"
     //for (int i=0;i<mSeedMap.count(); i++)
@@ -69,48 +86,47 @@ void SeedDispersal::setup()
 }
 
 // ************ Kernel **************
-void SeedDispersal::createKernel()
+void SeedDispersal::createKernel(Grid<float> &kernel, const float max_seed)
 {
-    mTM_as1 = 100.;
-    mTM_as2 = 0.;
-    mTM_ks = 0.;
-    mTM_maxseed = 10000.;
-    mTM_required_seeds = 1.;
+
     double max_dist = treemig_distanceTo(0.0001);
     double cell_size = mSeedMap.cellsize();
-    int max_radius = qRound(max_dist / cell_size);
+    int max_radius = int(max_dist / cell_size);
     // e.g.: cell_size: regeneration grid (e.g. 400qm), px-size: light-grid (4qm)
     double occupation = cell_size*cell_size / (cPxSize*cPxSize * mTM_required_seeds); //cell.size.disp^2/(cell.size.regen^2*requ.seeds)
 
-    mSeedKernel.clear();
-    mSeedKernel.setup(mSeedMap.cellsize(), 2*max_radius + 1 , 2*max_radius + 1);
-    mKernelOffset = max_radius;
+    kernel.clear();
+
+    kernel.setup(mSeedMap.cellsize(), 2*max_radius + 1 , 2*max_radius + 1);
+    int kernel_offset = max_radius;
 
     // filling of the kernel.... use the treemig
-    QPoint center = QPoint(mKernelOffset, mKernelOffset);
-    const float *sk_end = mSeedKernel.end();
-    for (float *p=mSeedKernel.begin(); p!=sk_end;++p) {
-        double d = mSeedKernel.distance(center, mSeedKernel.indexOf(p));
+    QPoint center = QPoint(kernel_offset, kernel_offset);
+    const float *sk_end = kernel.end();
+    for (float *p=kernel.begin(); p!=sk_end;++p) {
+        double d = kernel.distance(center, kernel.indexOf(p));
         *p = d<=max_dist?treemig(d):0.f;
     }
 
     // normalize
-    double sum = mSeedKernel.sum();
+    double sum = kernel.sum();
     if (sum==0. || occupation==0.)
         throw IException("create seed kernel: sum of probabilities = 0!");
 
     // the sum of all kernel cells has to equal 1
-    mSeedKernel.multiply(1./sum);
+    kernel.multiply(1./sum);
     // probabilities are derived in multiplying by seed number, and dividing by occupancy criterion
-    mSeedKernel.multiply( mTM_maxseed / occupation);
+    kernel.multiply( max_seed / occupation);
     // all cells that get more seeds than the occupancy criterion are considered to have no seed limitation for regeneration
-    for (float *p=mSeedKernel.begin(); p!=sk_end;++p) {
+    for (float *p=kernel.begin(); p!=sk_end;++p) {
         *p = qMin(*p, 1.f);
     }
     // set the parent cell to 1
-    mSeedKernel.valueAtIndex(mKernelOffset, mKernelOffset)=1.f;
+    kernel.valueAtIndex(kernel_offset, kernel_offset)=1.f;
+
+
     // some final statistics....
-    qDebug() << "kernel setup.Species:"<< mSpecies->id() << "kernel-size: " << mSeedKernel.sizeX() << "x" << mSeedKernel.sizeY() << "pixels, sum: " << mSeedKernel.sum();
+    qDebug() << "kernel setup.Species:"<< mSpecies->id() << "kernel-size: " << kernel.sizeX() << "x" << kernel.sizeY() << "pixels, sum: " << kernel.sum();
 }
 
 /* R-Code:
@@ -206,16 +222,19 @@ void SeedDispersal::distribute()
 
     float *end = mSeedMap.end();
     float *p = mSeedMap.begin();
+    // choose the kernel depending whether there is a seed year for the current species or not
+    Grid<float> &kernel = species()->isSeedYear()?mKernelSeedYear:mKernelNonSeedYear;
+    int offset = kernel.sizeX() / 2; // offset is the index of the center pixel
     for(;p!=end;++p) {
         if (*p==-1.f) {
             // edge pixel found. Now apply the kernel....
             QPoint pt=mSeedMap.indexOf(p);
-            for (y=-mKernelOffset;y<=mKernelOffset;++y)
-                for (x=-mKernelOffset;x<=mKernelOffset;++x)
+            for (y=-offset;y<=offset;++y)
+                for (x=-offset;x<=offset;++x)
                     if (mSeedMap.isIndexValid(pt.x()+x, pt.y()+y)) {
                         float &val = mSeedMap.valueAtIndex(pt.x()+x, pt.y()+y);
                         if (val!=-1)
-                            val = qMin(1.f - (1.f - val)*(1.f-mSeedKernel.valueAtIndex(x+mKernelOffset, y+mKernelOffset)),1.f );
+                            val = qMin(1.f - (1.f - val)*(1.f-kernel.valueAtIndex(x+offset, y+offset)),1.f );
                     }
             *p=1.f; // mark as processed
         } // *p==1

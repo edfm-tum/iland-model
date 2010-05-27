@@ -17,6 +17,7 @@ public:
     ~Species();
     // maintenance
     void setup();
+    void newYear();
 
     const SpeciesSet *speciesSet() const { return mSet; }
     // properties
@@ -30,6 +31,7 @@ public:
     int phenologyClass() const { return mPhenologyClass; } ///< phenology class defined in project file. class 0 = evergreen
     bool isConiferous() const { return mConiferous; }
     bool isEvergreen() const { return mEvergreen; }
+    bool isSeedYear() const { return mIsSeedYear; }
 
 
     // calculations: allometries
@@ -121,6 +123,8 @@ private:
     double mLightResponseClass; ///< light response class (1..5) (1=shade intolerant)
     // regeneration
     SeedDispersal *mSeedDispersal; ///< link to the seed dispersal map of the species
+    double mSeedYearProbability; ///< probability that a year is a seed year (=1/avg.timespan between seedyears)
+    bool mIsSeedYear; ///< true, if current year is a seed year. see also:
 };
 
 

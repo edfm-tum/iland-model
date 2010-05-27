@@ -136,7 +136,7 @@ void SpeciesSet::newYear()
     if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
         return;
     foreach(Species *s, mActiveSpecies) {
-        s->seedDispersal()->clear();
+        s->newYear();
     }
 }
 

@@ -24,17 +24,18 @@ public:
     // debug and helpers
     void loadFromImage(const QString &fileName); ///< debug function...
 private:
-    void createKernel(); ///< initializes / creates the kernel
+    void createKernel(Grid<float> &kernel, const float max_seed); ///< initializes / creates the kernel
     double treemig(const double &distance);
     double treemig_distanceTo(const double value);
     double mTM_as1, mTM_as2, mTM_ks; ///< seed dispersal paramaters (treemig)
     double mTM_maxseed; ///< maximum seeds per source cell
     double mTM_required_seeds; ///< seeds required per destination regeneration pixel
+    double mNonSeedYearFraction; ///< fraction of the seed production in non-seed-years
     int mIndexFactor; ///< multiplier between light-pixel-size and seed-pixel-size
     QPoint mIndexOffset; ///< offset of (0/0) in light-pixel coordinates
     Grid<float> mSeedMap; ///< (large) seedmap. Is filled by individual trees and then processed
-    Grid<float> mSeedKernel; ///< species specific "seed kernel" (small)
-    int mKernelOffset; ///< index of center pixel of kernel
+    Grid<float> mKernelSeedYear; ///< species specific "seed kernel" (small) for seed years
+    Grid<float> mKernelNonSeedYear; ///< species specific "seed kernel" (small) for non-seed-years
     bool mSetup;
     Species *mSpecies;
 };

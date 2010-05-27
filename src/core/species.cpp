@@ -119,6 +119,9 @@ void Species::setup()
     mLightResponseClass = doubleVar("lightResponseClass");
     if (mLightResponseClass<1. || mLightResponseClass>5.)
         throw IException( QString("invalid light response class for species %1. Allowed: 1..5.").arg(id()));
+
+    // regeneration
+    mSeedYearProbability = 0.25;
 }
 
 double Species::biomassFoliage(const double dbh) const
@@ -181,5 +184,21 @@ void Species::seedProduction(const float height, const QPoint &position_index)
     if (height > 30) {
         // do something
         mSeedDispersal->setMatureTree(position_index);
+    }
+}
+
+
+/** newYear is called by the SpeciesSet at the beginning of a year before any growth occurs.
+  This is used for various initializations, e.g. to clear seed dispersal maps
+  */
+void Species::newYear()
+{
+    if (seedDispersal()) {
+        // decide whether current year is a seed year
+        mIsSeedYear = (drandom() < mSeedYearProbability);
+        if (mIsSeedYear)
+            qDebug() << "species" << id() << "has a seed year.";
+        // clear seed map
+        seedDispersal()->clear();
     }
 }
