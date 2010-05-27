@@ -818,21 +818,22 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "8: Xml setters\n" \
                                         "9: random functions\n" \
                                         "10: seed dispersal.\n" \
-                                        "11: multiple thread expression", 0);
+                                        "11: multiple thread expression" \
+                                        "12: linearized expressions", 0);
         switch (which) {
-            case 0: t.speedOfExpression();break;
-            case 1: t.clearTrees(); break;
-            case 2: t.killTrees(); break;
-            case 3: t.climate(); break;
-            case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
-            case 5: t.climateResponse(); break;
-            case 6: t.testWater(); break;
-            case 7: t.testCSVFile(); break;
-            case 8: t.testXml(); break;
-            case 9: t.testRandom(); break;
-            case 10: t.testSeedDispersal(); break;
+        case 0: t.speedOfExpression();break;
+        case 1: t.clearTrees(); break;
+        case 2: t.killTrees(); break;
+        case 3: t.climate(); break;
+        case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
+        case 5: t.climateResponse(); break;
+        case 6: t.testWater(); break;
+        case 7: t.testCSVFile(); break;
+        case 8: t.testXml(); break;
+        case 9: t.testRandom(); break;
+        case 10: t.testSeedDispersal(); break;
         case 11: t.testMultithreadExecute(); break;
-
+        case 12: t.testLinearExpressions(); break;
         }
         return;
     }

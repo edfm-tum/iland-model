@@ -16,15 +16,19 @@ public:
         void setAndParse(const QString &expr); ///< set expression and parse instantly
         void setModelObject(ExpressionWrapper *wrapper) { mModelObject = wrapper; }
         const QString &expression() const { return m_expression; }
+        void  parse(); ///< force a parsing of the expression
+        void linearize(const double low_value, const double high_value, const int steps=1000);
 
         // calculations
         double execute(double *varlist=0, ExpressionWrapper *object=0); ///< calculate formula and return result. variable values need to be set using "setVar()"
         double executeLocked() { QMutexLocker m(&m_execMutex); return execute();  } ///< thread safe version
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
            the return is the result of the calculation.
-           e.g.: x+3*y --> Val1->x, Val2->y*/
-        double calculate(double Val1=0., double Val2=0.);
+           e.g.: x+3*y --> Val1->x, Val2->y
+           forceExecution: do not apply linearization */
+        double calculate(double Val1=0., double Val2=0., bool forceExecution=false);
         /// calculate formula with object
+        ///
         double calculate(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.);
 
         //variables
@@ -35,7 +39,6 @@ public:
         /// retrieve again the value pointer of a variable.
         double *  getVarAdress(const QString& VarName);
 
-        void  parse(); ///< force a parsing of the expression
 
         bool isConstExpression() const { return m_constExpression; } ///< returns true if current expression is a constant.
         bool isEmpty() const { return m_empty; } ///< returns true if expression is empty
@@ -107,6 +110,12 @@ private:
         double udfSigmoid(double Value, double sType, double p1, double p2); ///< special function sigmoid()
         void checkBuffer(int Index);
         QMutex m_execMutex;
+        // linearization
+        inline double linearizedValue(const double x);
+        bool mIsLinearized;
+        QVector<double> mLinearized;
+        double mLinearLow, mLinearHigh;
+        double mLinearStep;
 };
 
 #endif // LOGICEXPRESSION_H

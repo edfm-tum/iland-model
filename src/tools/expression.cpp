@@ -188,6 +188,7 @@ void Expression::setExpression(const QString& aExpression)
     m_execListSize = 5; // inital value...
     m_execList = new ExtExecListItem[m_execListSize]; // init
 
+    mIsLinearized = false; // linearization is switched off
 }
 
 
@@ -453,8 +454,10 @@ void Expression::setVar(const QString& Var, double Value)
         throw IException("Invalid variable " + Var);
 }
 
-double Expression::calculate(double Val1, double Val2)
+double Expression::calculate(double Val1, double Val2, bool forceExecution)
 {
+    if (mIsLinearized && !forceExecution)
+        return linearizedValue(Val1);
     double var_space[10];
     var_space[0]=Val1;
     var_space[1]=Val2;
@@ -804,4 +807,35 @@ double Expression::udfRandom(int type, double p1, double p2)
         return mtRand().randNorm(p1, p2);
 }
 
+/** Linarize an expression, i.e. approximate the function by linear interpolation.
+    This is an option for performance critical calculations that include time consuming mathematic functions (e.g. exp())
+    low_value: linearization start at this value. values below produce an error
+    high_value: upper limit
+    steps: number of steps the function is split into
+  */
+void Expression::linearize(const double low_value, const double high_value, const int steps)
+{
+    mLinearized.clear();
+    mLinearLow = low_value;
+    mLinearHigh  = high_value;
+    mLinearStep = (high_value - low_value) / (double(steps));
+    for (int i=0;i<=steps;i++) {
+        double x = mLinearLow + i*mLinearStep;
+        double r = calculate(x);
+        mLinearized.push_back(r);
+    }
+    mIsLinearized = true;
+}
 
+/// calculate the linear approximation of the result value
+double Expression::linearizedValue(const double x)
+{
+    if (x<mLinearLow || x>mLinearHigh)
+        return calculate(x,0.,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
+    int lower = (x-mLinearLow) / mLinearStep; // the lower point
+    Q_ASSERT(lower+1<mLinearized.count());
+    const QVector<double> &data = mLinearized;
+    // linear interpolation
+    double result = data[lower] + (data[lower+1]-data[lower])/mLinearStep*(x-(mLinearLow+lower*mLinearStep));
+    return result;
+}

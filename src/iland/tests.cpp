@@ -445,3 +445,27 @@ void Tests::testMultithreadExecute()
     }
     qDebug() << "finished: errors: " << tme_count;
 }
+
+void Tests::testLinearExpressions()
+{
+    Expression a("1.3 * x^2.0121");
+    Expression b("1.3 * x^2.0121");
+    b.linearize(2., 140.);
+    b.calculate(58.);
+    for (double x=5.; x<150.; x++) {
+        double ra = a.calculate(x);
+        double rb = b.calculate(x);
+        qDebug() << x << ra << rb << rb-ra;
+    }
+    // test b
+    { DebugTimer t("straight");
+        for (int i=0;i<1000000;i++) {
+            double x = a.calculate(3.4);
+        }
+    }
+    { DebugTimer t("linear");
+        for (int i=0;i<1000000;i++) {
+            double x = b.calculate(3.4);
+        }
+    }
+}
