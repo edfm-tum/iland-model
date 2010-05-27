@@ -1,6 +1,7 @@
 #ifndef TESTS_H
 #define TESTS_H
-#include <QtCore>
+#include <QtCore/QString>
+#include <QtCore/QObject>
 
 class Climate;
 class Tests
@@ -20,6 +21,7 @@ public:
     void testXml();
     void testRandom();
     void testSeedDispersal();
+    void testMultithreadExecute();
     private:
     QString dumpTreeList();
     QObject *mParent;

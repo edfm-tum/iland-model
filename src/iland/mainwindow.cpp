@@ -817,7 +817,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "7: CSV File\n" \
                                         "8: Xml setters\n" \
                                         "9: random functions\n" \
-                                        "10: seed dispersal.", 0);
+                                        "10: seed dispersal.\n" \
+                                        "11: multiple thread expression", 0);
         switch (which) {
             case 0: t.speedOfExpression();break;
             case 1: t.clearTrees(); break;
@@ -830,6 +831,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
             case 8: t.testXml(); break;
             case 9: t.testRandom(); break;
             case 10: t.testSeedDispersal(); break;
+        case 11: t.testMultithreadExecute(); break;
 
         }
         return;

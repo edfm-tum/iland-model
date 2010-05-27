@@ -33,6 +33,10 @@
   }
   @endcode
 
+  Be careful with multithreading:
+  Now the calculate(double v1, double v2) as well as the calculate(wrapper, v1,v2) are thread safe. execute() accesses the internal variable list and is therefore not thredsafe.
+  A threadsafe version exists (executeLocked()). Special attention is needed when using setVar() or addVar().
+
 */
 #include <QtCore>
 #include <QtCore/QMutex>
@@ -451,11 +455,22 @@ void Expression::setVar(const QString& Var, double Value)
 
 double Expression::calculate(double Val1, double Val2)
 {
-    m_varSpace[0]=Val1;
-    m_varSpace[1]=Val2;
+    double var_space[10];
+    var_space[0]=Val1;
+    var_space[1]=Val2;
     m_strict=false;
-    return execute();
+    return execute(var_space); // execute with local variables on stack
 }
+
+double Expression::calculate(ExpressionWrapper &object, const double variable_value1, const double variable_value2)
+{
+    double var_space[10];
+    var_space[0] = variable_value1;
+    var_space[1]=variable_value2;
+    m_strict=false;
+    return execute(var_space,&object); // execute with local variables on stack
+}
+
 
 int Expression::getFuncIndex(const QString& functionName)
 {
@@ -468,10 +483,11 @@ int Expression::getFuncIndex(const QString& functionName)
     return idx;
 }
 
-double Expression::execute()
+double Expression::execute(double *varlist, ExpressionWrapper *object)
 {
     if (!m_parsed)
         parse();
+    double *varSpace = varlist?varlist:m_varSpace;
     ExtExecListItem *exec=m_execList;
     int i;
     m_result=0.;
@@ -501,9 +517,9 @@ double Expression::execute()
             break;
         case etVariable:
             if (exec->Index<100)
-                *p++=m_varSpace[exec->Index];
+                *p++=varSpace[exec->Index];
             else if (exec->Index<1000)
-                *p++=getModelVar(exec->Index);
+                *p++=getModelVar(exec->Index,object);
             else
                 *p++=getExternVar(exec->Index);
             break;
@@ -661,12 +677,13 @@ int  Expression::getVarIndex(const QString& variableName)
     return -1;
 }
 
-inline double Expression::getModelVar(const int varIdx)
+inline double Expression::getModelVar(const int varIdx, ExpressionWrapper *object)
 {
     // der weg nach draussen....
+    ExpressionWrapper *model_object = object?object:mModelObject;
     int idx=varIdx - 100; // intern als 100+x gespeichert...
-    if (mModelObject)
-        return mModelObject->value(idx);
+    if (model_object)
+        return model_object->value(idx);
     // hier evtl. verschiedene objekte unterscheiden (Zahlenraum???)
     throw IException("Expression::getModelVar: invalid modell variable!");
 }

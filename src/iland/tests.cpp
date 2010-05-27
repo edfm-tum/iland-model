@@ -377,3 +377,71 @@ void Tests::testSeedDispersal()
     img.save("e:\\temp\\seedmap_e.png");
 
 }
+
+Expression tme_exp;
+int tme_count;
+double tme_test1(const double &x) {
+    double result = tme_exp.calculate(x);
+    if (result!=1)
+        tme_count++;
+    return result;
+}
+double tme_test2(const double &x) {
+    tme_exp.setVar("x",x);
+    double result = tme_exp.execute();
+    if (result!=1)
+        tme_count++;
+    return result;
+}
+QMutex tme_mutex;
+double tme_test3(const double &x) {
+    QMutexLocker l(&tme_mutex);
+    tme_exp.setVar("x",x);
+    double result = tme_exp.execute();
+    if (result!=1)
+        tme_count++;
+    return result;
+}
+void Tests::testMultithreadExecute()
+{
+    tme_exp.setExpression("(x+x+x+x)/(sqrt(x*x)*4)");
+    tme_exp.setStrict(false);
+    try {
+        tme_exp.parse();
+    } catch(const IException &e) {
+        QString error_msg = e.toString();
+        Helper::msg(error_msg);
+        qDebug() << error_msg;
+    }
+    QVector<double> data;
+    for (int i=1;i<1000000;i++)
+        data.push_back(nrandom(1,2000));
+    qDebug() << "test multiple threads, part 1 (thread safe):";
+    tme_count = 0;
+    { DebugTimer t("threadsafe");
+        QtConcurrent::blockingMap(data,(*tme_test1)); }
+    qDebug() << "finished: errors: " << tme_count;
+
+    tme_exp.setStrict(false);
+    tme_exp.addVar("x");
+    try {
+        tme_exp.parse();
+    } catch(const IException &e) {
+        QString error_msg = e.toString();
+        Helper::msg(error_msg);
+        qDebug() << error_msg;
+    }
+    qDebug() << "test multiple threads, part 2 (non thread safe):";
+    tme_count = 0;
+    { DebugTimer t("no_thread");
+    QtConcurrent::blockingMap(data,(*tme_test2));
+    }
+    qDebug() << "finished: errors: " << tme_count;
+
+    qDebug() << "test multiple threads, part 3 (mutex locker):";
+    tme_count = 0;
+    { DebugTimer t("mutex");
+        QtConcurrent::blockingMap(data,(*tme_test3));
+    }
+    qDebug() << "finished: errors: " << tme_count;
+}

@@ -18,13 +18,14 @@ public:
         const QString &expression() const { return m_expression; }
 
         // calculations
-        double execute(); ///< calculate formula and return result. variable values need to be set using "setVar()"
+        double execute(double *varlist=0, ExpressionWrapper *object=0); ///< calculate formula and return result. variable values need to be set using "setVar()"
         double executeLocked() { QMutexLocker m(&m_execMutex); return execute();  } ///< thread safe version
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
            the return is the result of the calculation.
            e.g.: x+3*y --> Val1->x, Val2->y*/
         double calculate(double Val1=0., double Val2=0.);
-        double calculateLocked(double Val1=0., double Val2=0.) { QMutexLocker m(&m_execMutex); return calculate(Val1, Val2); } ///< threadsafe version
+        /// calculate formula with object
+        double calculate(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.);
 
         //variables
         /// set the value of the variable named "Var". Note: using addVar to obtain a pointer may be more efficient for multiple executions.
@@ -93,7 +94,7 @@ private:
         void  parse_level4();
         int  getFuncIndex(const QString& functionName);
         int  getVarIndex(const QString& variableName);
-        inline double getModelVar(const int varIdx);
+        inline double getModelVar(const int varIdx, ExpressionWrapper *object=0);
 
         // link to external model variable
         ExpressionWrapper *mModelObject;
