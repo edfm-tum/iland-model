@@ -17,6 +17,7 @@ class ClimateConverter : public QObject
     Q_PROPERTY(QString month WRITE setMonth READ month);
     Q_PROPERTY(QString day WRITE setDay READ day);
     Q_PROPERTY(QString temp WRITE setTemp READ temp);
+    Q_PROPERTY(QString minTemp WRITE setMinTemp READ minTemp);
     Q_PROPERTY(QString prec WRITE setPrec READ prec);
     Q_PROPERTY(QString rad WRITE setRad READ rad);
     Q_PROPERTY(QString vpd WRITE setVpd READ vpd);
@@ -33,6 +34,7 @@ public:
     const QString month() const { return mMonth; }
     const QString day() const { return mDay; }
     const QString temp() const { return mTemp; }
+    const QString minTemp() const { return mMinTemp; }
     const QString prec() const { return mPrec; }
     const QString rad() const { return mRad; }
     const QString vpd() const { return mVpd; }
@@ -46,6 +48,7 @@ public:
     void setMonth(const QString value) { mMonth = value; }
     void setDay(const QString value) { mDay = value; }
     void setTemp(const QString value) { mTemp = value; }
+    void setMinTemp(const QString value) { mMinTemp = value; }
     void setPrec(const QString value) { mPrec = value; }
     void setRad(const QString value) { mRad = value; }
     void setVpd(const QString value) { mVpd = value; }
@@ -65,6 +68,7 @@ private:
     QString mMonth;
     QString mDay;
     QString mTemp;
+    QString mMinTemp;
     QString mPrec;
     QString mRad;
     QString mVpd;
@@ -73,6 +77,7 @@ private:
     Expression mExpMonth;
     Expression mExpDay;
     Expression mExpTemp;
+    Expression mExpMinTemp;
     Expression mExpPrec;
     Expression mExpRad;
     Expression mExpVpd;

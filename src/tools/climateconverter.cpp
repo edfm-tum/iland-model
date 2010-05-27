@@ -34,11 +34,14 @@ ClimateConverter::ClimateConverter(QObject *parent)
     bindExpression(mExpDay, 2);
 
     bindExpression(mExpTemp, 3);
-    bindExpression(mExpPrec, 4);
-    bindExpression(mExpRad, 5);
-    bindExpression(mExpVpd, 6);
+    bindExpression(mExpMinTemp, 4);
 
+    bindExpression(mExpPrec, 5);
+    bindExpression(mExpRad, 6);
+    bindExpression(mExpVpd, 7);
 }
+
+
 
 void ClimateConverter::bindExpression(Expression &expr, int index)
 {
@@ -54,6 +57,7 @@ void ClimateConverter::run()
     mExpDay.setExpression(mDay);
 
     mExpTemp.setExpression(mTemp);
+    mExpMinTemp.setExpression(mMinTemp);
     mExpPrec.setExpression(mPrec);
     mExpRad.setExpression(mRad);
     mExpVpd.setExpression(mVpd);
@@ -75,7 +79,7 @@ void ClimateConverter::run()
     }
     QString sql=QString("CREATE TABLE %1 ( " \
                 "year INTEGER, month INTEGER, day INTEGER, " \
-                "temp REAL, prec REAL, rad REAL, vpd REAL)").arg(mTableName);
+                "temp REAL, min_temp REAL, prec REAL, rad REAL, vpd REAL)").arg(mTableName);
 
     QString drop=QString("drop table if exists %1").arg(mTableName);
 
@@ -91,7 +95,7 @@ void ClimateConverter::run()
     }
 
     // prepare insert statement
-    sql = QString("insert into %1 (year, month, day, temp, prec, rad, vpd) values (?,?,?, ?,?,?,?)").arg(mTableName);
+    sql = QString("insert into %1 (year, month, day, temp, min_temp, prec, rad, vpd) values (?,?,?, ?,?,?,?,?)").arg(mTableName);
     creator.prepare(sql);
     if (creator.lastError().isValid()) {
         qDebug() << "ClimateConverter: Sql-Error (prepare):" << creator.lastError().text();
@@ -113,7 +117,7 @@ void ClimateConverter::run()
     // do this for each row
     double value;
     int year, month, day;
-    double temp, prec, rad, vpd;
+    double temp, min_temp, prec, rad, vpd;
     int rows=0;
     db.transaction();
     for (int row=0;row<file.rowCount(); row++) {
@@ -121,7 +125,7 @@ void ClimateConverter::run()
         for (int col=0;col<file.colCount(); col++) {
             value = file.value(row, col).toDouble();
             // store value in each of the expression variables
-            for (int j=0;j<7;j++)
+            for (int j=0;j<8;j++)
                 *(mVars[j*10 + col]) = value; // store in the locataion mVars[x] points to.
         }
         // calculate new values....
@@ -129,6 +133,7 @@ void ClimateConverter::run()
         month = (int)mExpMonth.execute();
         day = (int)mExpDay.execute();
         temp = mExpTemp.execute();
+        min_temp = mExpMinTemp.execute();
         prec = mExpPrec.execute();
         rad = mExpRad.execute();
         vpd = mExpVpd.execute();
@@ -138,9 +143,10 @@ void ClimateConverter::run()
         creator.bindValue(1,month);
         creator.bindValue(2,day);
         creator.bindValue(3,temp);
-        creator.bindValue(4,prec);
-        creator.bindValue(5,rad);
-        creator.bindValue(6,vpd);
+        creator.bindValue(4,min_temp);
+        creator.bindValue(5,prec);
+        creator.bindValue(6,rad);
+        creator.bindValue(7,vpd);
         creator.exec();
         rows++;
         if (creator.lastError().isValid()) {

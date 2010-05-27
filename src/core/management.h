@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QList>
-
+#include <QtCore/QVariantList>
 
 class Tree;
 class QScriptEngine;

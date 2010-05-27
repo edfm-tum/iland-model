@@ -9,7 +9,8 @@ struct ClimateDay
     int year; // year
     int month; // month
     int day; // day of year
-    double temperature; // average day °C
+    double temperature; // average day °C (of the light hours)
+    double min_temperature; // minimum temperature of the day
     double temp_delayed; // temperature delayed (after Maekela, 2008) for response calculations
     double preciptitation; // sum of day [mm]
     double radiation; // sum of day (MJ/m2)

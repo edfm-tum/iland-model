@@ -14,7 +14,7 @@
    <string>iLand Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res/iland.qrc">
+   <iconset>
     <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -151,7 +151,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="editStackPage1">
         <attribute name="title">
@@ -176,7 +176,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="res/iland.qrc">
+              <iconset>
                <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
              </property>
              <property name="iconSize">
@@ -196,7 +196,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="res/iland.qrc">
+              <iconset>
                <normaloff>:/document-save.png</normaloff>:/document-save.png</iconset>
              </property>
              <property name="iconSize">
@@ -244,7 +244,7 @@
             </sizepolicy>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="tab_2">
             <attribute name="title">
@@ -406,39 +406,57 @@
             <attribute name="title">
              <string>Scripting</string>
             </attribute>
-            <layout class="QGridLayout" name="gridLayout_4">
-             <item row="0" column="0">
-              <widget class="QPushButton" name="reloadJavaScript">
-               <property name="text">
-                <string>reload script</string>
-               </property>
-              </widget>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="QToolButton" name="selectJavaScript">
+                 <property name="toolTip">
+                  <string>Select a javascript file and load it.</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="reloadJavaScript">
+                 <property name="text">
+                  <string>reload script</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton">
+                 <property name="text">
+                  <string>Clear Output</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="pushButton">
-               <property name="text">
-                <string>Clear Output</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
+             <item>
               <widget class="QLabel" name="label_5">
                <property name="text">
                 <string>Enter command:</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="0" colspan="2">
+             <item>
               <widget class="QLineEdit" name="scriptCommand"/>
              </item>
-             <item row="3" column="0">
+             <item>
               <widget class="QLabel" name="label_6">
                <property name="text">
                 <string>Script Output</string>
                </property>
               </widget>
              </item>
-             <item row="4" column="0" colspan="2">
+             <item>
               <widget class="QTextEdit" name="scriptResult"/>
              </item>
             </layout>
@@ -650,7 +668,7 @@ QProgressBar::chunk {
            <string>Execute expression for each tree and draw trees accordingly.</string>
           </property>
           <property name="icon">
-           <iconset resource="res/iland.qrc">
+           <iconset>
             <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
           </property>
           <property name="iconSize">
@@ -725,7 +743,7 @@ QProgressBar::chunk {
   </widget>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -744,7 +762,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionModelCreate">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/www.png</normaloff>:/www.png</iconset>
    </property>
    <property name="text">
@@ -753,7 +771,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionModelDestroy">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/user-trash.png</normaloff>:/user-trash.png</iconset>
    </property>
    <property name="text">
@@ -762,7 +780,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionModelRun">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
    </property>
    <property name="text">
@@ -791,7 +809,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionRun_one_year">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
    </property>
    <property name="text">
@@ -800,7 +818,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionReload">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
    </property>
    <property name="text">
@@ -825,7 +843,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionPause">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/Pause.png</normaloff>:/Pause.png</iconset>
    </property>
    <property name="text">
@@ -834,7 +852,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset resource="res/iland.qrc">
+    <iconset>
      <normaloff>:/process-stop.png</normaloff>:/process-stop.png</iconset>
    </property>
    <property name="text">
@@ -886,9 +904,7 @@ QProgressBar::chunk {
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="res/iland.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>expressionHistory</sender>

@@ -891,13 +891,31 @@ void MainWindow::on_actionShow_Debug_Messages_triggered(bool checked)
 void MainWindow::on_reloadJavaScript_clicked()
 {
     if (!GlobalSettings::instance()->model())
-        return;
+        MSGRETURN("no model available.");
     Management *mgmt = GlobalSettings::instance()->model()->management();
-    if (!mgmt) return;
+    if (!mgmt)
+        MSGRETURN("Error: no valid Management object available! (no model created).");
     if (mgmt->scriptFile().isEmpty())
         Helper::msg("no mangement script file specified");
     mgmt->loadScript(mgmt->scriptFile());
     qDebug() << "reloaded" << mgmt->scriptFile();
+    Management::scriptOutput = ui->scriptResult;
+}
+
+void MainWindow::on_selectJavaScript_clicked()
+{
+    if (!GlobalSettings::instance()->model())
+        return;
+    Management *mgmt = GlobalSettings::instance()->model()->management();
+    if (!mgmt) {
+        Helper::msg("Error: no valid Management object available! (no model created).", this);
+        return;
+    }
+    QString fileName = Helper::fileDialog("select a Javascript file:");
+    if (fileName.isEmpty())
+        return;
+    mgmt->loadScript(fileName);
+    qDebug() << "loaded Javascript file" << mgmt->scriptFile();
     Management::scriptOutput = ui->scriptResult;
 
 }
@@ -1014,3 +1032,5 @@ void MainWindow::on_actionClearDebugOutput_triggered()
 {
     GlobalSettings::instance()->clearDebugLists();
 }
+
+

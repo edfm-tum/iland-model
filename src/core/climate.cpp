@@ -117,7 +117,7 @@ void Climate::setup()
     mMaxYear = 0;
 
     // setup query
-    QString query=QString("select year,month,day,temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
+    QString query=QString("select year,month,day,temp,min_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
     // here add more options...
     mClimateQuery = QSqlQuery(g->dbclimate());
     mClimateQuery.exec(query);
@@ -170,9 +170,10 @@ void Climate::load()
             cday->month = mClimateQuery.value(1).toInt();
             cday->day = mClimateQuery.value(2).toInt();
             cday->temperature = mClimateQuery.value(3).toDouble() + mTemperatureShift;
-            cday->preciptitation = mClimateQuery.value(4).toDouble() * mPrecipitationShift;
-            cday->radiation = mClimateQuery.value(5).toDouble();
-            cday->vpd = mClimateQuery.value(6).toDouble();
+            cday->min_temperature = mClimateQuery.value(4).toDouble() + mTemperatureShift;
+            cday->preciptitation = mClimateQuery.value(5).toDouble() * mPrecipitationShift;
+            cday->radiation = mClimateQuery.value(6).toDouble();
+            cday->vpd = mClimateQuery.value(7).toDouble();
             // sanity checks
             if (cday->month<1 || cday->day<1 || cday->month>12 || cday->day>31)
                 qDebug() << QString("Invalid dates in climate table %1: year %2 month %3 day %4!").arg(name()).arg(cday->year).arg(cday->month).arg(cday->day);
