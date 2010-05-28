@@ -430,6 +430,11 @@ void Tree::readLIF()
         }
     }
     mLRI = sum;
+    // LRI correction...
+    double hrel = mHeight / mHeightGrid->valueAtIndex(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight).height;
+    if (hrel<1.)
+        mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
+
     // read dominance field...
     // this applies only if some trees are potentially *higher* than the dominant height grid
     //if (dom_height < m_Height) {
@@ -510,6 +515,13 @@ void Tree::readLIF_torus()
         }
     }
     mLRI = sum;
+
+    // LRI correction...
+    double hrel = mHeight / mHeightGrid->valueAtIndex(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight).height;
+    if (hrel<1.)
+        mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
+
+
     if (_isnan(mLRI)) {
         qDebug() << "LRI invalid (nan)!" << id();
         mLRI=0.;
