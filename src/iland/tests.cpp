@@ -460,14 +460,22 @@ void Tests::testLinearExpressions()
     }
     // test b
     { DebugTimer t("straight");
-        for (int i=0;i<100000;i++) {
+        for (int i=0;i<1000000;i++) {
             a.calculate(3.4);
         }
     }
     { DebugTimer t("linear");
-        for (int i=0;i<100000;i++) {
+        for (int i=0;i<1000000;i++) {
             b.calculate(3.4);
         }
+    }
+    { DebugTimer t("nativ");
+        double x=3;
+        double y=0;
+        for (int i=0;i<1000000;i++) {
+           y+= 40.*pow(1.-(1.-pow((x/40.),1./3.))*exp(-0.03),3.);
+        }
+        qDebug() << y;
     }
     /// test matrix-case
 //    Expression c("x*x+exp(y*y)");
