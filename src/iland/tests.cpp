@@ -460,13 +460,47 @@ void Tests::testLinearExpressions()
     }
     // test b
     { DebugTimer t("straight");
+        for (int i=0;i<100000;i++) {
+            a.calculate(3.4);
+        }
+    }
+    { DebugTimer t("linear");
+        for (int i=0;i<100000;i++) {
+            b.calculate(3.4);
+        }
+    }
+    /// test matrix-case
+//    Expression c("x*x+exp(y*y)");
+//    Expression d("x*x+exp(y*y)");
+    Expression c("exp(2*ln(x)*(1-y/2))");
+    Expression d("exp(2*ln(x)*(1-y/2))");
+    d.linearize2d(0., 1., 0., 1.);
+    qDebug() << d.calculate(0, 0.8);
+    for (double x=0.; x<1.; x+=0.1) {
+        for (double y=0.; y<1.; y+=0.1) {
+            double ra = c.calculate(x,y);
+            double rb = d.calculate(x,y);
+            qDebug() << x << y << ra << rb << rb-ra;
+        }
+    }
+    qDebug() << "random test";
+    for (int i=0;i<100;i++) {
+        double x = drandom();
+        double y = drandom();
+        double ra = c.calculate(x,y);
+        double rb = d.calculate(x,y);
+        qDebug() << x << y << ra << rb << rb-ra;
+
+    }
+    qDebug() << "performance";
+    { DebugTimer t("straight");
         for (int i=0;i<1000000;i++) {
-            double x = a.calculate(3.4);
+            c.calculate(0.33, 0.454);
         }
     }
     { DebugTimer t("linear");
         for (int i=0;i<1000000;i++) {
-            double x = b.calculate(3.4);
+            d.calculate(0.33, 0.454);
         }
     }
 }

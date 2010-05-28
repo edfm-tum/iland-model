@@ -188,7 +188,7 @@ void Expression::setExpression(const QString& aExpression)
     m_execListSize = 5; // inital value...
     m_execList = new ExtExecListItem[m_execListSize]; // init
 
-    mIsLinearized = false; // linearization is switched off
+    mLinearizeMode = 0; // linearization is switched off
 }
 
 
@@ -456,8 +456,11 @@ void Expression::setVar(const QString& Var, double Value)
 
 double Expression::calculate(double Val1, double Val2, bool forceExecution)
 {
-    if (mIsLinearized && !forceExecution)
-        return linearizedValue(Val1);
+    if (mLinearizeMode>0 && !forceExecution) {
+        if (mLinearizeMode==1)
+            return linearizedValue(Val1);
+        return linearizedValue2d(Val1, Val2); // matrix case
+    }
     double var_space[10];
     var_space[0]=Val1;
     var_space[1]=Val2;
@@ -824,8 +827,35 @@ void Expression::linearize(const double low_value, const double high_value, cons
         double r = calculate(x);
         mLinearized.push_back(r);
     }
-    mIsLinearized = true;
+    mLinearizeMode = 1;
 }
+
+/// like 'linearize()' but for 2d-matrices
+void Expression::linearize2d(const double low_x, const double high_x,
+                             const double low_y, const double high_y,
+                             const int stepsx, const int stepsy)
+{
+    mLinearized.clear();
+    mLinearLow = low_x;
+    mLinearHigh  = high_x;
+    mLinearLowY = low_y;
+    mLinearHighY = high_y;
+
+    mLinearStep = (high_x - low_x) / (double(stepsx));
+    mLinearStepY = (high_y - low_y) / (double(stepsy));
+    for (int i=0;i<=stepsx;i++) {
+        for (int j=0;j<=stepsy;j++) {
+            double x = mLinearLow + i*mLinearStep;
+            double y = mLinearLowY + j*mLinearStepY;
+            double r = calculate(x,y);
+            mLinearized.push_back(r);
+        }
+    }
+    mLinearStepCountY = stepsy + 1;
+    mLinearizeMode = 2;
+
+}
+
 
 /// calculate the linear approximation of the result value
 double Expression::linearizedValue(const double x)
@@ -837,5 +867,23 @@ double Expression::linearizedValue(const double x)
     const QVector<double> &data = mLinearized;
     // linear interpolation
     double result = data[lower] + (data[lower+1]-data[lower])/mLinearStep*(x-(mLinearLow+lower*mLinearStep));
+    return result;
+}
+
+/// calculate the linear approximation of the result value
+double Expression::linearizedValue2d(const double x, const double y)
+{
+    if (x<mLinearLow || x>mLinearHigh || y<mLinearLowY || y>mLinearHighY)
+        return calculate(x,y,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
+    int lowerx = (x-mLinearLow) / mLinearStep; // the lower point (x-axis)
+    int lowery = (y-mLinearLowY) / mLinearStepY; // the lower point (y-axis)
+    int idx = mLinearStepCountY*lowerx + lowery;
+    Q_ASSERT(idx + mLinearStepCountY+1 <mLinearized.count());
+    const QVector<double> &data = mLinearized;
+    // linear interpolation
+    // mean slope in x - direction
+    double slope_x = ( (data[idx+mLinearStepCountY]-data[idx])/mLinearStepY + (data[idx+mLinearStepCountY+1]-data[idx+1])/mLinearStepY ) / 2.;
+    double slope_y = ( (data[idx+1]-data[idx])/mLinearStep + (data[idx+mLinearStepCountY+1]-data[idx+mLinearStepCountY])/mLinearStep ) / 2.;
+    double result = data[idx] + (x-(mLinearLow+lowerx*mLinearStep))*slope_x + (y-(mLinearLowY+lowery*mLinearStepY))*slope_y;
     return result;
 }

@@ -18,6 +18,7 @@ public:
         const QString &expression() const { return m_expression; }
         void  parse(); ///< force a parsing of the expression
         void linearize(const double low_value, const double high_value, const int steps=1000);
+        void linearize2d(const double low_x, const double high_x, const double low_y, const double high_y, const int stepsx=50, const int stepsy=50);
 
         // calculations
         double execute(double *varlist=0, ExpressionWrapper *object=0); ///< calculate formula and return result. variable values need to be set using "setVar()"
@@ -112,10 +113,14 @@ private:
         QMutex m_execMutex;
         // linearization
         inline double linearizedValue(const double x);
-        bool mIsLinearized;
+        inline double linearizedValue2d(const double x, const double y);
+        int mLinearizeMode;
         QVector<double> mLinearized;
         double mLinearLow, mLinearHigh;
         double mLinearStep;
+        double mLinearLowY, mLinearHighY;
+        double mLinearStepY;
+        int mLinearStepCountY;
 };
 
 #endif // LOGICEXPRESSION_H
