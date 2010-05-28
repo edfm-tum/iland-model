@@ -21,16 +21,16 @@ public:
         void linearize2d(const double low_x, const double high_x, const double low_y, const double high_y, const int stepsx=50, const int stepsy=50);
 
         // calculations
-        double execute(double *varlist=0, ExpressionWrapper *object=0); ///< calculate formula and return result. variable values need to be set using "setVar()"
+        double execute(double *varlist=0, ExpressionWrapper *object=0) const; ///< calculate formula and return result. variable values need to be set using "setVar()"
         double executeLocked() { QMutexLocker m(&m_execMutex); return execute();  } ///< thread safe version
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
            the return is the result of the calculation.
            e.g.: x+3*y --> Val1->x, Val2->y
            forceExecution: do not apply linearization */
-        double calculate(double Val1=0., double Val2=0., bool forceExecution=false);
+        double calculate(const double Val1=0., const double Val2=0., const bool forceExecution=false) const;
         /// calculate formula with object
         ///
-        double calculate(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.);
+        double calculate(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.) const;
 
         //variables
         /// set the value of the variable named "Var". Note: using addVar to obtain a pointer may be more efficient for multiple executions.
@@ -53,7 +53,7 @@ public:
         void setCatchExceptions(bool docatch=true) { m_catchExceptions = docatch; }
         void   setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace);
         void enableIncSum();
-        double udfRandom(int type, double p1, double p2); ///< user defined function rnd() (normal distribution does not work now!)
+        double udfRandom(int type, double p1, double p2) const; ///< user defined function rnd() (normal distribution does not work now!)
 private:
         enum ETokType {etNumber, etOperator, etVariable, etFunction, etLogical, etCompare, etStop, etUnknown, etDelimeter};
         enum EValueClasses {evcBHD, evcHoehe, evcAlter};
@@ -63,12 +63,11 @@ private:
             int     Index;
         };
         enum EDatatype {edtInfo, edtNumber, edtString, edtObject, edtVoid, edtObjVar, edtReference, edtObjectReference};
-        double m_result;
         bool m_catchExceptions;
         QString m_errorMsg;
 
         bool m_parsed;
-        double m_strict;
+        mutable bool m_strict;
         bool m_empty; // empty expression
         bool m_constExpression;
         QString m_tokString;
@@ -98,22 +97,22 @@ private:
         void  parse_level4();
         int  getFuncIndex(const QString& functionName);
         int  getVarIndex(const QString& variableName);
-        inline double getModelVar(const int varIdx, ExpressionWrapper *object=0);
+        inline double getModelVar(const int varIdx, ExpressionWrapper *object=0) const ;
 
         // link to external model variable
         ExpressionWrapper *mModelObject;
 
-        double getExternVar(const int Index);
+        double getExternVar(const int Index) const;
         // inc-sum
-        double m_incSumVar;
+        mutable double m_incSumVar;
         bool   m_incSumEnabled;
-        double  udfPolygon(double Value, double* Stack, int ArgCount); ///< special function polygon()
-        double udfSigmoid(double Value, double sType, double p1, double p2); ///< special function sigmoid()
+        double  udfPolygon(double Value, double* Stack, int ArgCount) const; ///< special function polygon()
+        double udfSigmoid(double Value, double sType, double p1, double p2) const; ///< special function sigmoid()
         void checkBuffer(int Index);
         QMutex m_execMutex;
         // linearization
-        inline double linearizedValue(const double x);
-        inline double linearizedValue2d(const double x, const double y);
+        inline double linearizedValue(const double x) const;
+        inline double linearizedValue2d(const double x, const double y) const;
         int mLinearizeMode;
         QVector<double> mLinearized;
         double mLinearLow, mLinearHigh;

@@ -24,6 +24,7 @@ public:
     double nitrogenResponse(const double availableNitrogen, const double &responseClass) const;
     double co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const;
     double lightResponse(const double lightResourceIndex, const double lightResponseClass) ;
+    double LRIcorrection(const double lightResourceIndex, const double relativeHeight) const  { return mLRICorrection.calculate(lightResourceIndex, relativeHeight);}
     // maintenance
     void clear();
     int setup();
@@ -48,6 +49,7 @@ private:
     // Light Response classes
     Expression mLightResponseIntolerant; ///< light response function for the the most shade tolerant species
     Expression mLightResponseTolerant; ///< light response function for the most shade intolerant species
+    Expression mLRICorrection; ///< function to modfiy LRI during read
     /// container holding the seed maps
     QList<SeedDispersal*> mSeedDispersal;
 

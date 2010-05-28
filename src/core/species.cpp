@@ -154,7 +154,7 @@ double Species::allometricFractionStem(const double dbh) const
    see http://iland.boku.ac.at/primary+production#respiration_and_aging
    @param useAge set to true if "real" tree age is available. If false, only the tree height is used.
   */
-double Species::aging(const float height, const int age)
+double Species::aging(const float height, const int age) const
 {
     double rel_height = qMin(height/mMaximumHeight, 1.);
     double rel_age = qMin(age/mMaximumAge, 1.);

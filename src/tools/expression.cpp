@@ -346,9 +346,9 @@ void  Expression::atom()
 {
     if (m_state==etVariable || m_state==etNumber) {
         if (m_state==etNumber) {
-            m_result=m_token.toDouble();
+            double result=m_token.toDouble();
             m_execList[m_execIndex].Type=etNumber;
-            m_execList[m_execIndex].Value=m_result;
+            m_execList[m_execIndex].Value=result;
             m_execList[m_execIndex++].Index=-1;
             checkBuffer(m_execIndex);
         }
@@ -454,7 +454,7 @@ void Expression::setVar(const QString& Var, double Value)
         throw IException("Invalid variable " + Var);
 }
 
-double Expression::calculate(double Val1, double Val2, bool forceExecution)
+double Expression::calculate(const double Val1, const double Val2, const bool forceExecution) const
 {
     if (mLinearizeMode>0 && !forceExecution) {
         if (mLinearizeMode==1)
@@ -468,7 +468,7 @@ double Expression::calculate(double Val1, double Val2, bool forceExecution)
     return execute(var_space); // execute with local variables on stack
 }
 
-double Expression::calculate(ExpressionWrapper &object, const double variable_value1, const double variable_value2)
+double Expression::calculate(ExpressionWrapper &object, const double variable_value1, const double variable_value2) const
 {
     double var_space[10];
     var_space[0] = variable_value1;
@@ -489,14 +489,14 @@ int Expression::getFuncIndex(const QString& functionName)
     return idx;
 }
 
-double Expression::execute(double *varlist, ExpressionWrapper *object)
+double Expression::execute(double *varlist, ExpressionWrapper *object) const
 {
     if (!m_parsed)
-        parse();
-    double *varSpace = varlist?varlist:m_varSpace;
+        const_cast<Expression*>(this)->parse();
+    const double *varSpace = varlist?varlist:m_varSpace;
     ExtExecListItem *exec=m_execList;
     int i;
-    m_result=0.;
+    double result=0.;
     double Stack[20];
     bool   LogicStack[20];
     bool   *lp=LogicStack;
@@ -505,7 +505,6 @@ double Expression::execute(double *varlist, ExpressionWrapper *object)
     if (isEmpty()) {
         // leere expr.
         //m_logicResult=false;
-        m_result=0.;
         return 0.;
     }
     while (exec->Type!=etStop) {
@@ -619,9 +618,9 @@ double Expression::execute(double *varlist, ExpressionWrapper *object)
     }
     if (p-Stack!=1)
         throw IException("Expression::execute: stack unbalanced!");
-    m_result=*(p-1);
+    result=*(p-1);
     //m_logicResult=*(lp-1);
-    return m_result;
+    return result;
 }
 
 double * Expression::addVar(const QString& VarName)
@@ -683,7 +682,7 @@ int  Expression::getVarIndex(const QString& variableName)
     return -1;
 }
 
-inline double Expression::getModelVar(const int varIdx, ExpressionWrapper *object)
+inline double Expression::getModelVar(const int varIdx, ExpressionWrapper *object) const
 {
     // der weg nach draussen....
     ExpressionWrapper *model_object = object?object:mModelObject;
@@ -701,7 +700,7 @@ void Expression::setExternalVarSpace(const QStringList& ExternSpaceNames, double
     m_externVarNames=ExternSpaceNames;
 }
 
-double Expression::getExternVar(int Index)
+double Expression::getExternVar(int Index) const
 {
     //if (Script)
     //   return Script->GetNumVar(Index-1000);
@@ -718,7 +717,7 @@ void Expression::enableIncSum()
 }
 
 // "Userdefined Function" Polygon
-double  Expression::udfPolygon(double Value, double* Stack, int ArgCount)
+double  Expression::udfPolygon(double Value, double* Stack, int ArgCount) const
 {
     // Polygon-Funktion: auf dem Stack liegen (x/y) Paare, aus denen ein "Polygon"
     // aus Linien zusammengesetzt ist. return ist der y-Wert zu x (Value).
@@ -753,7 +752,7 @@ double  Expression::udfPolygon(double Value, double* Stack, int ArgCount)
 }
 
 // userdefined func sigmoid....
-double Expression::udfSigmoid(double Value, double sType, double p1, double p2)
+double Expression::udfSigmoid(double Value, double sType, double p1, double p2) const
 {
     // sType: typ der Funktion:
     // 0: logistische f
@@ -800,7 +799,7 @@ void Expression::checkBuffer(int Index)
 }
 
 
-double Expression::udfRandom(int type, double p1, double p2)
+double Expression::udfRandom(int type, double p1, double p2) const
 {
     // random / gleichverteilt - normalverteilt
 
@@ -858,7 +857,7 @@ void Expression::linearize2d(const double low_x, const double high_x,
 
 
 /// calculate the linear approximation of the result value
-double Expression::linearizedValue(const double x)
+double Expression::linearizedValue(const double x) const
 {
     if (x<mLinearLow || x>mLinearHigh)
         return calculate(x,0.,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
@@ -871,7 +870,7 @@ double Expression::linearizedValue(const double x)
 }
 
 /// calculate the linear approximation of the result value
-double Expression::linearizedValue2d(const double x, const double y)
+double Expression::linearizedValue2d(const double x, const double y) const
 {
     if (x<mLinearLow || x>mLinearHigh || y<mLinearLowY || y>mLinearHighY)
         return calculate(x,y,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop

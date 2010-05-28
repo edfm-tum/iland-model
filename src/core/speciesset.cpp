@@ -102,7 +102,8 @@ int SpeciesSet::setup()
     mLightResponseIntolerant.setAndParse(light.value("shadeIntolerant"));
     if (mLightResponseTolerant.expression().isEmpty() || mLightResponseIntolerant.expression().isEmpty())
         throw IException("at least one parameter of model.species.lightResponse is empty!");
-
+    // lri-correction
+    mLRICorrection.setAndParse(light.value("LRImodifier","1"));
     return mSpecies.count();
 
 }
