@@ -62,6 +62,7 @@ const int  MaxArgCount[15]={1,1,1,1,  1, 1,   -1, -1, 3, 1, -1, 2, 4, 2, 2};
 #define    AGGFUNCCOUNT 6
 QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
 
+bool Expression::mLinearizationAllowed = false;
 Expression::Expression()
 {
     mModelObject = 0;
@@ -817,6 +818,9 @@ double Expression::udfRandom(int type, double p1, double p2) const
   */
 void Expression::linearize(const double low_value, const double high_value, const int steps)
 {
+    if (!mLinearizationAllowed)
+        return;
+
     mLinearized.clear();
     mLinearLow = low_value;
     mLinearHigh  = high_value;
@@ -834,6 +838,8 @@ void Expression::linearize2d(const double low_x, const double high_x,
                              const double low_y, const double high_y,
                              const int stepsx, const int stepsy)
 {
+    if (!mLinearizationAllowed)
+        return;
     mLinearized.clear();
     mLinearLow = low_x;
     mLinearHigh  = high_x;
@@ -859,10 +865,11 @@ void Expression::linearize2d(const double low_x, const double high_x,
 /// calculate the linear approximation of the result value
 double Expression::linearizedValue(const double x) const
 {
-    if (x<mLinearLow || x>mLinearHigh)
+    if (x<mLinearLow || x>=mLinearHigh)
         return calculate(x,0.,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
     int lower = (x-mLinearLow) / mLinearStep; // the lower point
-    Q_ASSERT(lower+1<mLinearized.count());
+    if (lower+1>=mLinearized.count())
+      Q_ASSERT(lower+1<mLinearized.count());
     const QVector<double> &data = mLinearized;
     // linear interpolation
     double result = data[lower] + (data[lower+1]-data[lower])/mLinearStep*(x-(mLinearLow+lower*mLinearStep));
@@ -872,7 +879,7 @@ double Expression::linearizedValue(const double x) const
 /// calculate the linear approximation of the result value
 double Expression::linearizedValue2d(const double x, const double y) const
 {
-    if (x<mLinearLow || x>mLinearHigh || y<mLinearLowY || y>mLinearHighY)
+    if (x<mLinearLow || x>=mLinearHigh || y<mLinearLowY || y>=mLinearHighY)
         return calculate(x,y,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
     int lowerx = (x-mLinearLow) / mLinearStep; // the lower point (x-axis)
     int lowery = (y-mLinearLowY) / mLinearStepY; // the lower point (y-axis)

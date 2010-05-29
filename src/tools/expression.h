@@ -19,7 +19,7 @@ public:
         void  parse(); ///< force a parsing of the expression
         void linearize(const double low_value, const double high_value, const int steps=1000);
         void linearize2d(const double low_x, const double high_x, const double low_y, const double high_y, const int stepsx=50, const int stepsy=50);
-
+        static void setLinearizationEnabled(const bool enable) {mLinearizationAllowed = enable; }
         // calculations
         double execute(double *varlist=0, ExpressionWrapper *object=0) const; ///< calculate formula and return result. variable values need to be set using "setVar()"
         double executeLocked() { QMutexLocker m(&m_execMutex); return execute();  } ///< thread safe version
@@ -120,6 +120,7 @@ private:
         double mLinearLowY, mLinearHighY;
         double mLinearStepY;
         int mLinearStepCountY;
+        static bool mLinearizationAllowed;
 };
 
 #endif // LOGICEXPRESSION_H

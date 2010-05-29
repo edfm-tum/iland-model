@@ -249,7 +249,10 @@ void Model::loadProject()
         mtRand().seed(seed);
     else
         mtRand().seed(); // seed with a random value
-
+    // linearization of expressions: if true *and* linearize() is explicitely called, then
+    // function results will be cached over a defined range of values.
+    bool do_linearization = xml.valueBool("system.settings.expressionLinearizationEnabled", false);
+    Expression::setLinearizationEnabled(do_linearization);
     // load environment (multiple climates, speciesSets, ...
     if (mEnvironment)
         delete mEnvironment;

@@ -100,10 +100,14 @@ int SpeciesSet::setup()
     XmlHelper light(xml.node("model.species.lightResponse"));
     mLightResponseTolerant.setAndParse(light.value("shadeTolerant"));
     mLightResponseIntolerant.setAndParse(light.value("shadeIntolerant"));
+    mLightResponseTolerant.linearize(0., 1.);
+    mLightResponseIntolerant.linearize(0., 1.);
     if (mLightResponseTolerant.expression().isEmpty() || mLightResponseIntolerant.expression().isEmpty())
         throw IException("at least one parameter of model.species.lightResponse is empty!");
     // lri-correction
     mLRICorrection.setAndParse(light.value("LRImodifier","1"));
+    // x: LRI, y: relative heigth
+    mLRICorrection.linearize2d(0., 1., 0., 1.);
     return mSpecies.count();
 
 }

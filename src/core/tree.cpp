@@ -714,7 +714,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     //); // DBGMODE()
     //DBGMODE(
-      if (mWoodyMass<0. || mWoodyMass>40000 || mFoliageMass<0. || mFoliageMass>2000. || mCoarseRootMass<0. || mCoarseRootMass>30000
+      if (mWoodyMass<0. || mWoodyMass>50000 || mFoliageMass<0. || mFoliageMass>2000. || mCoarseRootMass<0. || mCoarseRootMass>30000
          || mNPPReserve>4000.) {
          qDebug() << "Tree:partitioning: invalid or unlikely pools.";
          qDebug() << GlobalSettings::instance()->debugListCaptions(GlobalSettings::DebugOutputs(0));
