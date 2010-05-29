@@ -67,6 +67,7 @@ private:
     Grid<Stamp*> m_lookup;
     static Grid<float> m_distance; ///< grid holding precalculated distances to the stamp center
     QString m_desc;
+    QString m_fileName;
 };
 
 #endif // STAMPCONTAINER_H

@@ -87,8 +87,8 @@ void StampContainer::finalizeSetup()
     if (m_distance.sizeX()<max_size) {
         setupDistanceGrid(max_size);
     }
-    //if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
-    //    qDebug() << dump();
+    if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
+        qDebug() << dump();
 }
 
 void StampContainer::setupDistanceGrid(const int size)
@@ -176,7 +176,7 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
         const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
         if (stamp)
             return stamp;
-        qDebug() << "StampContainer::stamp(): not in list: bhd height:" << bhd_cm << height_m;
+        qDebug() << "StampContainer::stamp(): not in list: bhd height:" << bhd_cm << height_m << "in" << m_fileName;
         return m_stamps.first().stamp; // default value: the first stamp in the list....
     }
 
@@ -240,6 +240,7 @@ void StampContainer::load(const QString &fileName)
     QFile readerfile(fileName);
     if (!readerfile.exists())
         throw IException(QString("The LIP stampfile %1 cannot be found!").arg(fileName));
+    m_fileName = fileName;
     readerfile.open(QIODevice::ReadOnly);
     QDataStream rin(&readerfile);
     qDebug() << "loading stamp file" << fileName;
@@ -329,6 +330,7 @@ QString StampContainer::dump()
     QString line;
     int x,y;
     int maxidx;
+    res = QString("****** Dump of StampContainer %1 **********\r\n").arg(m_fileName);
     foreach (StampItem si, m_stamps) {
         line = QString("%5 -> size: %1 offset: %2 dbh: %3 hd-ratio: %4\r\n")
                .arg(sqrt(si.stamp->count())).arg(si.stamp->offset())
