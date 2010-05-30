@@ -110,7 +110,7 @@ void StampContainer::setupDistanceGrid(const int size)
             throw IException(QString("StampContainer::addStamp: Stamp out of range. dbh=%1 hd=%2.").arg(dbh).arg(hd_value));
         m_lookup.valueAtIndex(cls_dbh, cls_hd) = stamp; // save address in look up table
     } // if (useLookup)
-
+    stamp->setCrownRadius(crown_radius_m);
     StampItem si;
     si.dbh = dbh;
     si.hd = hd_value;

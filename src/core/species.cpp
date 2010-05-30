@@ -65,6 +65,8 @@ void Species::setup()
     // hd-relations
     mHDlow.setAndParse(stringVar("HDlow"));
     mHDhigh.setAndParse(stringVar("HDhigh"));
+    mHDlow.linearize(0., 100.); // input: dbh (cm). above 100cm the formula will be directly executed
+    mHDhigh.linearize(0., 100.);
 
     // form/density
     mWoodDensity = doubleVar("woodDensity");
@@ -80,6 +82,7 @@ void Species::setup()
     mMaximumAge = doubleVar("maximumAge");
     mMaximumHeight = doubleVar("maximumHeight");
     mAging.setAndParse(stringVar("aging"));
+    mAging.linearize(0.,1.); // input is harmonic mean of relative age and relative height
     if (mMaximumAge*mMaximumHeight==0)
         throw IException( QString("Error setting up species %1:invalid aging parameters.").arg(id()));
 
