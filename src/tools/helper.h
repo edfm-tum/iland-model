@@ -106,10 +106,10 @@ The class writes the elapsed time to qDebug() when either destructed, or when ex
 class DebugTimer
 {
 public:
-    DebugTimer() { m_asWarning=false; m_silent=false; start(); }
+    DebugTimer() { m_hideShort=false; m_silent=false; start(); }
     DebugTimer(const QString &caption, bool silent=false);
-    void setAsWarning() { m_asWarning=true; }
     void setSilent() { m_silent=true; }
+    void setHideShort(bool hide_short_messages) { m_hideShort = hide_short_messages; }
     ~DebugTimer();
     void showElapsed();
     double elapsed(); // elapsed time in milliseconds
@@ -120,9 +120,8 @@ public:
 private:
     static QHash<QString, double> mTimingList;
     TickTack t;
-    //QTime t;
+    bool m_hideShort; // if true, hide messages for short operations (except an explicit call to showElapsed())
     bool m_shown;
-    bool m_asWarning;
     bool m_silent;
     QString m_caption;
 };

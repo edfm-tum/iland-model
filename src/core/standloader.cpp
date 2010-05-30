@@ -43,7 +43,7 @@ void StandLoader::copyTrees()
             newtree.setNewId();
         }
     }
-    qDebug() << Tree::statCreated() << "trees loaded / copied.";
+    if (logLevelInfo()) qDebug() << Tree::statCreated() << "trees loaded / copied.";
 }
 
 /** main routine of the stand setup.
@@ -85,7 +85,7 @@ void StandLoader::processInit()
             if (fileName.isEmpty())
                 continue;
             loadInitFile(fileName, type, ru);
-            qDebug() << "loaded" << fileName << "on" << ru->boundingBox() << "," << ru->trees().count() << "trees.";
+            if (logLevelInfo()) qDebug() << "loaded" << fileName << "on" << ru->boundingBox() << "," << ru->trees().count() << "trees.";
         }
         evaluateDebugTrees();
         return;
@@ -265,7 +265,7 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
     SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
     Q_ASSERT(speciesSet!=0);
 
-    DebugTimer t("StandLoader::loadiLandFile");
+    //DebugTimer t("StandLoader::loadiLandFile");
     CSVFile infile;
     infile.loadFromString(content);
 
@@ -315,12 +315,12 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
     }
     // setup the random distribution
     QString density_func = GlobalSettings::instance()->settings().value("model.initialization.randomFunction", "1-x^2");
-    qDebug() << "density function:" << density_func;
+    if (logLevelInfo())  qDebug() << "density function:" << density_func;
     if (!mRandom || (mRandom->densityFunction()!= density_func)) {
         if (mRandom)
             delete mRandom;
         mRandom=new RandomCustomPDF(density_func);
-        qDebug() << "new probabilty density function:" << density_func;
+        if (logLevelInfo()) qDebug() << "new probabilty density function:" << density_func;
     }
 
     // exeucte the

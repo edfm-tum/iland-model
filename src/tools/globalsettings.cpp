@@ -79,6 +79,35 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
     qDebug() << "Warning in " << where << ":"<< what << ". (file: " << file << "line:" << line << "more:" << s;
 }
 
+int _loglevel=0;
+ // true, if detailed debug information is logged
+bool logLevelDebug()
+{
+    return _loglevel<1;
+}
+
+// true, if only important aggreate info is logged
+bool logLevelInfo()
+{
+    return _loglevel<2;
+}
+
+// true if only severe warnings/errors are logged.
+bool logLevelWarning()
+{
+    return _loglevel<3;
+}
+void setLogLevel(int loglevel)
+{
+    _loglevel=loglevel;
+    switch (loglevel) {
+    case 0: qDebug() << "Loglevel set to Debug."; break;
+    case 1: qDebug() << "Loglevel set to Info."; break;
+    case 2: qDebug() << "Loglevel set to Warning."; break;
+    case 3: qDebug() << "Loglevel set to Error/Quiet."; break;
+    default: qDebug() << "invalid log level" << loglevel; break;
+    }
+}
 
 GlobalSettings *GlobalSettings::mInstance = 0;
 

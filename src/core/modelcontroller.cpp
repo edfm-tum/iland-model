@@ -149,7 +149,6 @@ void ModelController::run(int years)
         return;
     MainWindow::bufferedLog(true);
     DebugTimer many_runs(QString("Timer for %1 runs").arg(years));
-    many_runs.setAsWarning();
     mPaused = false;
     mFinished = false;
     mCanceled = false;

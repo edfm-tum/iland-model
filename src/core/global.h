@@ -49,6 +49,11 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 #  endif
 #endif
 
+// log level functions
+bool logLevelDebug(); // true, if detailed debug information is logged
+bool logLevelInfo(); // true, if only important aggreate info is logged
+bool logLevelWarning(); // true if only severe warnings/errors are logged.
+void setLogLevel(int loglevel); // setter function
 // cool random number generator (using the mersenne-twister) by http://www-personal.umich.edu/~wagnerr/MersenneTwister.html
 #include "../3rdparty/MersenneTwister.h"
 // access the Mersenne-Twister-Random-Numbers

@@ -37,11 +37,11 @@ void WaterCycle::setup(const ResourceUnit *ru)
         // =-EXP((1.54-0.0095* pctSand +0.0063* pctSilt)*LN(10))*0.000098
         double psi_sat = -exp((1.54-0.0095 * pct_sand + 0.0063*pct_silt)*log(10.))*0.000098;
         mFieldCapacity = heightFromPsi(psi_sat);
-        qDebug() << "psi: saturation " << psi_sat << "field capacity:" << mFieldCapacity;
+        if (logLevelDebug()) qDebug() << "psi: saturation " << psi_sat << "field capacity:" << mFieldCapacity;
     }
 
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
-    qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
+    if (logLevelDebug()) qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
@@ -92,7 +92,7 @@ void WaterCycle::getStandValues()
         // http://iland.boku.ac.at/water+cycle#transpiration_and_canopy_conductance
         mCanopyConductance *= total_lai / Model::settings().laiThresholdForClosedStands;
     }
-    qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
+    if (logLevelInfo()) qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
 }
 
 /// calculate combined VPD and soilwaterresponse for all species

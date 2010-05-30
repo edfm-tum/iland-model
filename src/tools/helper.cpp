@@ -325,8 +325,10 @@ void DebugTimer::sampleClock(int ms)
 }*/
 DebugTimer::~DebugTimer()
 {
-    mTimingList[m_caption]+=elapsed();
-    if (!m_silent)
+    double t = elapsed();
+    mTimingList[m_caption]+=t;
+    // show message if timer is not set to silent, and if time > 1ms (if timer is set to hideShort (which is the default))
+    if (!m_silent && (!m_hideShort || t>1.))
         showElapsed();
 }
 
@@ -334,7 +336,7 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
 {
     m_caption = caption;
     m_silent=silent;
-    m_asWarning=false;
+    m_hideShort=true;
     if (!mTimingList.contains(caption))
         mTimingList[caption]=0.;
     start();
@@ -372,9 +374,6 @@ void DebugTimer::interval(const QString &text)
 void DebugTimer::showElapsed()
 {
     if (!m_shown) {
-        if (m_asWarning)
-            qWarning() << "Timer" << m_caption << ":" << elapsed() << "ms";
-        else
             qDebug() << "Timer" << m_caption << ":" << elapsed() << "ms";
     }
     m_shown=true;

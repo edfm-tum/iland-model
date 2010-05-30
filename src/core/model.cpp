@@ -253,6 +253,16 @@ void Model::loadProject()
     // function results will be cached over a defined range of values.
     bool do_linearization = xml.valueBool("system.settings.expressionLinearizationEnabled", false);
     Expression::setLinearizationEnabled(do_linearization);
+    if (do_linearization)
+        qDebug() << "The linearization of certains expressions is enabled (performance optimization).";
+
+    // log level
+    QString log_level = xml.value("system.settings.logLevel", "debug").toLower();
+    if (log_level=="debug") setLogLevel(0);
+    if (log_level=="info") setLogLevel(1);
+    if (log_level=="warning") setLogLevel(2);
+    if (log_level=="error") setLogLevel(3);
+
     // load environment (multiple climates, speciesSets, ...
     if (mEnvironment)
         delete mEnvironment;

@@ -187,7 +187,7 @@ void ResourceUnit::production()
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
         i->statistics().clear();
         i->calculate();
-        if (i->LAIfactor()>0)
+        if (logLevelInfo() &&  i->LAIfactor()>0)
             qDebug() << "ru" << mIndex << "species" << (*i).species()->id() << "LAIfraction" << i->LAIfactor() << "raw_gpp_m2"
                      << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"
                      << productiveArea()*i->prod3PG().GPPperArea()
@@ -203,7 +203,7 @@ void ResourceUnit::calculateInterceptedArea()
     }
     Q_ASSERT(mAggregatedLR>0.);
     mEffectiveArea_perWLA = mEffectiveArea / mAggregatedLR;
-    qDebug() << "RU: aggregated lightresponse:" << mAggregatedLR  << "eff.area./wla:" << mEffectiveArea_perWLA;
+    if (logLevelDebug()) qDebug() << "RU: aggregated lightresponse:" << mAggregatedLR  << "eff.area./wla:" << mEffectiveArea_perWLA;
 }
 
 // function is called immediately before the growth of individuals

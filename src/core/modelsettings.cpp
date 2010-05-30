@@ -24,6 +24,7 @@ void ModelSettings::loadModelSettings()
 
 void ModelSettings::print()
 {
+    if (!logLevelInfo()) return;
     QStringList set=QStringList() << "Settings:";
     set << QString("growthEnabled=%1").arg(growthEnabled);
     set << QString("mortalityEnabled=%1").arg(mortalityEnabled);
