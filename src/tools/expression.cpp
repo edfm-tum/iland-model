@@ -867,7 +867,7 @@ double Expression::linearizedValue(const double x) const
 {
     if (x<mLinearLow || x>=mLinearHigh)
         return calculate(x,0.,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
-    int lower = (x-mLinearLow) / mLinearStep; // the lower point
+    int lower = int((x-mLinearLow) / mLinearStep); // the lower point
     if (lower+1>=mLinearized.count())
       Q_ASSERT(lower+1<mLinearized.count());
     const QVector<double> &data = mLinearized;
@@ -881,8 +881,8 @@ double Expression::linearizedValue2d(const double x, const double y) const
 {
     if (x<mLinearLow || x>=mLinearHigh || y<mLinearLowY || y>=mLinearHighY)
         return calculate(x,y,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
-    int lowerx = (x-mLinearLow) / mLinearStep; // the lower point (x-axis)
-    int lowery = (y-mLinearLowY) / mLinearStepY; // the lower point (y-axis)
+    int lowerx = int((x-mLinearLow) / mLinearStep); // the lower point (x-axis)
+    int lowery = int((y-mLinearLowY) / mLinearStepY); // the lower point (y-axis)
     int idx = mLinearStepCountY*lowerx + lowery;
     Q_ASSERT(idx + mLinearStepCountY+1 <mLinearized.count());
     const QVector<double> &data = mLinearized;
