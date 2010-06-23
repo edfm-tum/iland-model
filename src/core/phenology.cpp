@@ -80,4 +80,30 @@ void Phenology::calculate()
                 mPhenoFraction[i] -=  (mClimate->days(eMon) - (bDay+1)) / double(mClimate->days(eMon));
         }
     }
+
+    calculateChillDays();
+}
+
+
+// *********** Chill-day calculations ********
+void Phenology::calculateChillDays()
+{
+    int iday = 0;
+    mChillDaysBefore = 0;
+    int days_after = 0;
+    for (const ClimateDay *day = mClimate->begin(); day!=mClimate->end(); ++day, ++iday) {
+        if (day->temperature>=-5 && day->temperature<5) {
+            if (iday<mDayStart)
+                mChillDaysBefore++;
+            if (iday>mDayEnd)
+                days_after++;
+        }
+    }
+    if (GlobalSettings::instance()->currentYear()==1) {
+        // for the first simulation year, use the value of this autumn for the last years autumn
+        mChillDaysAfterLastYear = days_after;
+    } else {
+        mChillDaysAfterLastYear  = mChillDaysAfter;
+    }
+    mChillDaysAfter = days_after;
 }

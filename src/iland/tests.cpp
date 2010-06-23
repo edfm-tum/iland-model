@@ -17,6 +17,7 @@
 #include "environment.h"
 #include "exception.h"
 #include "seeddispersal.h"
+#include "establishment.h"
 //
 #include "standloader.h"
 
@@ -442,6 +443,14 @@ void Tests::testMultithreadExecute()
         QtConcurrent::blockingMap(data,(*tme_test3));
     }
     qDebug() << "finished: errors: " << tme_count;
+}
+
+void Tests::testEstablishment()
+{
+    Model *model = GlobalSettings::instance()->model();
+    //model->ru(0)
+    Establishment est(model->ru(0)->climate(),&(model->ru(0)->ruSpecies()[0]));
+    est.calculate();
 }
 
 void Tests::testLinearExpressions()

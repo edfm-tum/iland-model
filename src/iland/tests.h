@@ -23,6 +23,7 @@ public:
     void testSeedDispersal();
     void testMultithreadExecute();
     void testLinearExpressions();
+    void testEstablishment();
     private:
     QString dumpTreeList();
     QObject *mParent;

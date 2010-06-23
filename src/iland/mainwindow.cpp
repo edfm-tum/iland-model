@@ -818,8 +818,9 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "8: Xml setters\n" \
                                         "9: random functions\n" \
                                         "10: seed dispersal.\n" \
-                                        "11: multiple thread expression" \
-                                        "12: linearized expressions", 0);
+                                        "11: multiple thread expression\n" \
+                                        "12: linearized expressions\n" \
+                                        "13: establishment", 0);
         switch (which) {
         case 0: t.speedOfExpression();break;
         case 1: t.clearTrees(); break;
@@ -834,6 +835,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
         case 10: t.testSeedDispersal(); break;
         case 11: t.testMultithreadExecute(); break;
         case 12: t.testLinearExpressions(); break;
+        case 13: t.testEstablishment(); break;
         }
         return;
     }

@@ -24,7 +24,7 @@ void CSVFile::addToScriptEngine(QScriptEngine &engine)
 {
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
     QScriptValue cc_class = engine.scriptValueFromQMetaObject<CSVFile>();
-    // the script name for the object is "ClimateConverter".
+    // the script name for the object is "CSVFile".
     engine.globalObject().setProperty("CSVFile", cc_class);
 }
 

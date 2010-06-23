@@ -64,7 +64,8 @@ SOURCES += main.cpp \
     aboutdialog.cpp \
     version.cpp \
     ../core/timeevents.cpp \
-    ../core/seeddispersal.cpp
+    ../core/seeddispersal.cpp \
+    ../core/establishment.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -117,7 +118,8 @@ HEADERS += mainwindow.h \
     ../3rdparty/MersenneTwister.h \
     aboutdialog.h \
     ../core/timeevents.h \
-    ../core/seeddispersal.h
+    ../core/seeddispersal.h \
+    ../core/establishment.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc
