@@ -74,7 +74,17 @@ double Production3PG::calculate()
         mGPP[i] =utilizable_rad * epsilon * gC_to_kg_biomass; // ... results in GPP of the month kg Biomass/m2 (converted from gC/m2)
         year_raw_gpp += mGPP[i]; // kg Biomass/m2
     }
-    // calculate fac
+
+    // calculate f_env,yr: see http://iland.boku.ac.at/sapling+growth+and+competition
+    double f_sum = 0.;
+    for (int i=0;i<12;i++)
+        f_sum += mUPAR[i] / gC_to_kg_biomass; // == uAPar * epsilon_eff
+
+    // still missing: the factor f_ref: parameter that scales response values to the range 0..1 (1 for best growth conditions)
+    const double perf_factor = 1.;
+    mEnvYear = f_sum / (Model::settings().epsilon * mResponse->yearlyRadiation() * perf_factor);
+
+    // calculate fraction for belowground biomass
     mRootFraction = 1. - abovegroundFraction();
 
     // global value set?

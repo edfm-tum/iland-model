@@ -18,8 +18,11 @@ double ramp(const double &value, const double minValue, const double maxValue)
 */
 void Phenology::calculate()
 {
-    if (id()==0)
+    if (id()==0) {
+        // for needles: just calculate the chilling requirement for the establishment
+        calculateChillDays(200); // todo: *change*
         return;
+    }
     const ClimateDay  *end = mClimate->end();
     double vpd,temp,daylength;
     double gsi; // combined factor of effect of vpd, temperature and day length
@@ -86,16 +89,17 @@ void Phenology::calculate()
 
 
 // *********** Chill-day calculations ********
-void Phenology::calculateChillDays()
+void Phenology::calculateChillDays(const int end_of_season)
 {
     int iday = 0;
     mChillDaysBefore = 0;
     int days_after = 0;
+    int last_day = end_of_season>0?end_of_season:mDayEnd;
     for (const ClimateDay *day = mClimate->begin(); day!=mClimate->end(); ++day, ++iday) {
         if (day->temperature>=-5 && day->temperature<5) {
             if (iday<mDayStart)
                 mChillDaysBefore++;
-            if (iday>mDayEnd)
+            if (iday>last_day)
                 days_after++;
         }
     }

@@ -12,6 +12,7 @@ public:
     void clear(); ///< clear production values
     double rootFraction() const { return mRootFraction; } /// fraction of biomass that should be distributed to roots
     double GPPperArea() const { return mGPPperArea; } ///<  GPP production (yearly) (kg Biomass) per m2 (effective area)
+    double fEnvYear() const { return mEnvYear; } ///< f_env,yr: aggregate environmental factor [0..1}
 private:
     inline double calculateUtilizablePAR(const int month) const;
     inline double calculateEpsilon(const int month) const;
@@ -21,6 +22,7 @@ private:
     double mGPP[12]; ///< monthly Gross Primary Production gC/MJ radiation
     double mRootFraction; ///< fraction of production that flows into roots
     double mGPPperArea; ///< kg GPP Biomass / m2 interception area
+    double mEnvYear; ///< f_env,yr: factor that aggregates the environment for the species over the year (weighted with the radiation pattern)
 
     friend class ProductionOut;
 };

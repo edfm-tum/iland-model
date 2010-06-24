@@ -130,6 +130,7 @@ void Climate::setup()
     // setup sun
     mSun.setup(Model::settings().latitude);
     mCurrentYear--; // go to "-1" -> the first call to next year will go to year 0.
+    mRad_cacheYear = -1;
     mIsSetup = true;
 }
 
@@ -272,7 +273,7 @@ void Climate::climateCalculations(ClimateDay &lastDay)
 void Climate::setupPhenology()
 {
     mPhenology.clear();
-    mPhenology.push_back(Phenology()); // id=0
+    mPhenology.push_back(Phenology(this)); // id=0
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.species.phenology"));
     int i=0;
     do {
@@ -308,4 +309,18 @@ const Phenology &Climate::phenology(const int phenologyGroup) const
         if (mPhenology[i].id()==phenologyGroup)
             return mPhenology[i];
     throw IException(QString("Error at SpeciesSet::phenology(): invalid group: %1").arg(phenologyGroup));
+}
+
+// calculate total sum of the radiation of the current year
+double Climate::totalRadiation() const
+{
+    if (mCurrentYear == mRad_cacheYear)
+        return mRad_cache;
+    // calculate
+    mRad_cacheYear = mCurrentYear;
+    mRad_cache = 0.;
+    for (const ClimateDay *d=begin(); d!=end(); ++d)
+        mRad_cache+=d->radiation;
+
+    return mRad_cache;
 }

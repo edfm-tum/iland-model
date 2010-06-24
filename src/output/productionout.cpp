@@ -39,7 +39,7 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
               << resp->vpdResponse()[i]
               << resp->co2Response()[i]
               << resp->nitrogenResponse()
-              << resp->absorbedRadiation()[i]
+              << resp->globalRadiation()[i]
               << prod.mUPAR[i]
               << prod.mGPP[i];
         writeRow();

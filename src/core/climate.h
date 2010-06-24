@@ -55,6 +55,8 @@ public:
     const ClimateDay *begin() const { return mBegin; } ///< STL-like (pointer)-iterator  to the first day of the current year
     const ClimateDay *end() const { return mEnd; } ///< STL-like pointer iterator to the day *after* last day of the current year
     void toDate(const int yearday, int *rDay=0, int *rMonth=0, int *rYear=0) const; ///< decode "yearday" to the actual year, month, day if provided
+    //
+    double totalRadiation() const; ///< return radiation sum (MJ) of the whole year
     // access to other subsystems
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
     const Sun &sun() const { return mSun; } ///< solar radiation class
@@ -83,6 +85,8 @@ private:
     QList<Phenology> mPhenology; ///< phenology calculations
     QVector<int> mRandomYearList; ///< for random sampling of years
     int mRandomListIndex; ///< current index of the randomYearList for random sampling
+    mutable int mRad_cacheYear; // for totalRadiation()
+    mutable double mRad_cache;  // this year's value for total radiation (MJ/m2)
 };
 
 #endif // CLIMATE_H

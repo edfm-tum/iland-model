@@ -36,7 +36,8 @@ Establishment::Establishment(const Climate *climate, const ResourceUnitSpecies *
 
 void Establishment::calculate()
 {
-    // 3 steps
+    // 3 steps: environmental drivers
+
     //
     calculateAbioticEnvironment();
 }
@@ -97,12 +98,12 @@ void Establishment::calculateAbioticEnvironment()
             if (GDD_BudBirst > p.bud_birst)
                 buds_are_birst = true;
 
-            if (buds_are_birst && day->min_temperature <= 0.)
+            if (doy<180 && buds_are_birst && day->min_temperature <= 0.)
                 frost_after_bud++;
         }
     }
     // chilling requirement
-    if (pheno.chillingDays() > p.chill_requirement)
+    if (chill_ok)
         p_chill = true;
 
     // GDD requirements

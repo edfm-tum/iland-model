@@ -5,7 +5,7 @@ class Climate;
 class Phenology
 {
 public:
-    Phenology() {mClimate=0; mId=0; mMinVpd=mMaxVpd=mMinDayLength=mMaxDayLength=mMinTemp=mMaxTemp=0.; mDayStart=0;mDayEnd=365;mChillDaysBefore=-1; mChillDaysAfter=0;mChillDaysAfterLastYear=0;}
+    Phenology(const Climate* climate) {mClimate=climate; mId=0; mMinVpd=mMaxVpd=mMinDayLength=mMaxDayLength=mMinTemp=mMaxTemp=0.; mDayStart=0;mDayEnd=365;mChillDaysBefore=-1; mChillDaysAfter=0;mChillDaysAfterLastYear=0;}
     Phenology(const int id, const Climate* climate, const double minVpd, const double maxVpd,
               const double minDayLength, const double maxDayLength,
               const double minTemp, const double maxTemp): mId(id), mClimate(climate), mMinVpd(minVpd), mMaxVpd(maxVpd),
@@ -38,7 +38,7 @@ private:
     int mDayStart; ///< start of vegetation period (in day of year)
     int mDayEnd; ///< end of vegetation period (in days of year, 1.1. = 0)
     // some special calculations used for establishment
-    void calculateChillDays();
+    void calculateChillDays(const int end_of_season=-1);
     int mChillDaysBefore, mChillDaysAfter; ///< number of days that meet chilling requirements (>-5°, <+5°C) before and after the vegetation period in this yeaer
     int mChillDaysAfterLastYear; ///< chilling days of the last years autumn/winter
 };

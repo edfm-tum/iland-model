@@ -31,7 +31,8 @@ void SpeciesResponse::clear()
     for (int i=0;i<12;i++)
         mCO2Response[i]=mSoilWaterResponse[i]=mTempResponse[i]=mRadiation[i]=mUtilizableRadiation[i]=mVpdResponse[i]=0.;
 
-    mNitrogenResponse=0.;
+    mNitrogenResponse = 0.;
+    mTotalRadiation = 0.;
 
 }
 void SpeciesResponse::setup(ResourceUnitSpecies *rus)
@@ -109,6 +110,7 @@ void SpeciesResponse::calculate()
         //); // DBGMODE()
 
     }
+    mTotalRadiation = mRu->climate()->totalRadiation();
     // monthly values
     for (int i=0;i<12;i++) {
         double days = mRu->climate()->days(i);

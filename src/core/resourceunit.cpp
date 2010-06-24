@@ -191,7 +191,7 @@ void ResourceUnit::production()
             qDebug() << "ru" << mIndex << "species" << (*i).species()->id() << "LAIfraction" << i->LAIfactor() << "raw_gpp_m2"
                      << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"
                      << productiveArea()*i->prod3PG().GPPperArea()
-                     << "aging(lastyear):" << averageAging();
+                     << "aging(lastyear):" << averageAging() << "f_env,yr:" << i->prod3PG().fEnvYear();
     }
 }
 
