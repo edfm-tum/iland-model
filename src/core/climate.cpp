@@ -314,10 +314,10 @@ const Phenology &Climate::phenology(const int phenologyGroup) const
 // calculate total sum of the radiation of the current year
 double Climate::totalRadiation() const
 {
-    if (mCurrentYear == mRad_cacheYear)
+    if (mRad_cacheYear == begin()->year)
         return mRad_cache;
     // calculate
-    mRad_cacheYear = mCurrentYear;
+    mRad_cacheYear = begin()->year;
     mRad_cache = 0.;
     for (const ClimateDay *d=begin(); d!=end(); ++d)
         mRad_cache+=d->radiation;
