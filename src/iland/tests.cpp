@@ -361,6 +361,19 @@ void Tests::testRandom()
 
 }
 
+void Tests::testGridRunner()
+{
+    Grid<float> &lif = *GlobalSettings::instance()->model()->grid();
+    //QRectF box = GlobalSettings::instance()->model()->ru(0)->boundingBox();
+    QRectF box2 = QRectF(10,10,10,10);
+    GridRunner<float> runner(lif, box2);
+    int i=0;
+    while (float *p=runner.next()) {
+        QPoint point = lif.indexOf(p);
+        qDebug() << i++ << point.x() << point.y() << *p << p;
+    }
+}
+
 void Tests::testSeedDispersal()
 {
     SeedDispersal sd;

@@ -43,6 +43,7 @@ private:
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
     Species *mSpecies; ///< speices
     ResourceUnit *mRU; ///< resource unit
+    int mLastYear;
 };
 
 #endif // RESSOURCEUNITSPECIES_H

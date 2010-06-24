@@ -185,7 +185,6 @@ void ResourceUnit::production()
 
     // invoke species specific calculation (3PG)
     for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        i->statistics().clear();
         i->calculate();
         if (logLevelInfo() &&  i->LAIfactor()>0)
             qDebug() << "ru" << mIndex << "species" << (*i).species()->id() << "LAIfraction" << i->LAIfactor() << "raw_gpp_m2"

@@ -820,7 +820,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "10: seed dispersal.\n" \
                                         "11: multiple thread expression\n" \
                                         "12: linearized expressions\n" \
-                                        "13: establishment", 0);
+                                        "13: establishment\n"
+                                        "14: GridRunner", 0);
         switch (which) {
         case 0: t.speedOfExpression();break;
         case 1: t.clearTrees(); break;
@@ -836,6 +837,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
         case 11: t.testMultithreadExecute(); break;
         case 12: t.testLinearExpressions(); break;
         case 13: t.testEstablishment(); break;
+        case 14: t.testGridRunner(); break;
         }
         return;
     }

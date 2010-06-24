@@ -116,6 +116,22 @@ private:
 
 typedef Grid<float> FloatGrid;
 
+/** @class GridRunner is a helper class to iterate over a rectangular fraction of a grid
+*/
+template <class T>
+class GridRunner {
+public:
+    GridRunner(Grid<T> &target_grid, const QRectF &rectangle);
+    T* next(); ///< to to next element, return NULL if finished
+private:
+    T* mLast;
+    T* mCurrent;
+    size_t mLineLength;
+    size_t mCols;
+    size_t mCurrentCol;
+};
+
+
 // copy constructor
 template <class T>
 Grid<T>::Grid(const Grid<T>& toCopy)
@@ -343,6 +359,37 @@ const QPoint Grid<T>::randomPosition() const
 {
     return QPoint(irandom(0,mSizeX-1), irandom(0, mSizeY-1));
 }
+
+////////////////////////////////////////////////////////////
+// grid runner
+////////////////////////////////////////////////////////////
+template <class T>
+GridRunner<T>::GridRunner(Grid<T> &target_grid, const QRectF &rectangle)
+{
+    QPoint upper_left = target_grid.indexAt(rectangle.topLeft());
+    QPoint lower_right = target_grid.indexAt(rectangle.bottomRight());
+    mCurrent = target_grid.ptr(upper_left.x(), upper_left.y());
+    mLast = target_grid.ptr(lower_right.x()-1, lower_right.y()-1);
+    mCols = lower_right.x() - upper_left.x(); //
+    mLineLength =  target_grid.sizeX() - mCols;
+    mCurrentCol = 0;
+}
+
+template <class T>
+T* GridRunner<T>::next()
+{
+    if (mCurrent>mLast)
+        return NULL;
+    T* t = mCurrent;
+    mCurrent++;
+    mCurrentCol++;
+    if (mCurrentCol >= mCols) {
+        mCurrent += mLineLength; // skip to next line
+        mCurrentCol = 0;
+    }
+    return t;
+}
+
 ////////////////////////////////////////////////////////////
 // global functions
 ////////////////////////////////////////////////////////////

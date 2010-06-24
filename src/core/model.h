@@ -48,8 +48,8 @@ public:
     Management *management() const { return mManagement; }
     Environment *environment() {return mEnvironment; }
     // global grids
-    FloatGrid *grid() { return mGrid; }
-    HeightGrid *heightGrid() { return mHeightGrid; }
+    FloatGrid *grid() { return mGrid; } ///< this is the global 'LIF'-grid (light patterns) (currently 2x2m)
+    HeightGrid *heightGrid() { return mHeightGrid; } ///< stores maximum heights of trees and some flags (currently 10x10m)
     const Grid<ResourceUnit*> &RUgrid() { return mRUmap; }
 
     // setup/maintenance

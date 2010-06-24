@@ -24,6 +24,7 @@ public:
     void testMultithreadExecute();
     void testLinearExpressions();
     void testEstablishment();
+    void testGridRunner();
     private:
     QString dumpTreeList();
     QObject *mParent;

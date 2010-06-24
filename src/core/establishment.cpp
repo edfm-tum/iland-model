@@ -2,7 +2,9 @@
 
 #include "climate.h"
 #include "species.h"
+#include "resourceunit.h"
 #include "resourceunitspecies.h"
+#include "seeddispersal.h"
 
 struct EstablishmentParameters
 {
@@ -34,12 +36,41 @@ Establishment::Establishment(const Climate *climate, const ResourceUnitSpecies *
     mPAbiotic = 0.;
 }
 
+// see http://iland.boku.ac.at/establishment
 void Establishment::calculate()
 {
-    // 3 steps: environmental drivers
+    mPAbiotic = 0.;
+    // Step 1: determine, whether there are seeds in the current resource unit
+    const Grid<float> &seed_map = mRUS->species()->seedDispersal()->seedMap();
+    const QRectF &rect = mRUS->ru()->boundingBox();
+    QPoint p = seed_map.indexAt(rect.topLeft());
+    // resource units: fixed size of 100x100m
+    int px_in_ru = cRUSize / seed_map.cellsize();
+    int ix,iy;
+    bool seeds_found = false;
+    for (iy=0;iy<px_in_ru;++iy)
+        for (ix=0;ix<px_in_ru;++ix)
+            if (seed_map(p.x()+ix, p.y()+iy)>0.f) {
+                seeds_found = true;
+                break;
+            }
+    if (!seeds_found) {
+        return;
+    }
 
-    //
+    // 2nd step: environmental drivers
     calculateAbioticEnvironment();
+    if (mPAbiotic == 0.)
+        return;
+    // the effect of water, nitrogen, co2, .... is a bulk factor: f_env,yr
+    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(); // calculate the 3pg module (this is done only if that did not happen up to now)
+    double f_env_yr = mRUS->prod3PG().fEnvYear();
+    mPAbiotic *= f_env_yr;
+    if (mPAbiotic == 0.)
+        return;
+
+    // 3rd step: check actual pixels in the LIF grid
+
 }
 
 

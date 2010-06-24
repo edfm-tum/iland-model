@@ -26,11 +26,17 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mStatisticsDead.setResourceUnitSpecies(this);
     mStatisticsMgmt.setResourceUnitSpecies(this);
     mRemovedGrowth = 0.;
+    mLastYear = -1;
 }
 
 
 void ResourceUnitSpecies::calculate()
 {
+    if (mLastYear == GlobalSettings::instance()->currentYear())
+        return;
+    mLastYear = GlobalSettings::instance()->currentYear();
+
+    statistics().clear();
     if (mLAIfactor>0) {
         mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
         m3PG.calculate();///< production of NPP
