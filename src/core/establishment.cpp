@@ -36,6 +36,8 @@ Establishment::Establishment(const Climate *climate, const ResourceUnitSpecies *
 
 void Establishment::calculate()
 {
+    // 3 steps
+    //
     calculateAbioticEnvironment();
 }
 
@@ -71,6 +73,10 @@ void Establishment::calculateAbioticEnvironment()
         if (day->min_temperature < p.min_temp)
             p_min_temp = false;
 
+        // count frost free days
+        if (day->min_temperature > 0.)
+            frost_free++;
+
         // chilling requirement, GDD, bud birst
         if (day->temperature>=-5. && day->temperature<5.)
             chill_days++;
@@ -78,7 +84,7 @@ void Establishment::calculateAbioticEnvironment()
             chill_ok=true;
         // GDDs above the base temperature are counted if beginning from the day where the chilling requirements are met
         // up to a fixed day ending the veg period
-        if (doy>=pheno.vegetationPeriodStart() && doy<=pheno.vegetationPeriodEnd()) {
+        if (doy<=pheno.vegetationPeriodEnd()) {
             // accumulate growing degree days
             if (chill_ok && day->temperature > p.GDD_baseTemperature) {
                 GDD += day->temperature - p.GDD_baseTemperature;
@@ -93,10 +99,6 @@ void Establishment::calculateAbioticEnvironment()
 
             if (buds_are_birst && day->min_temperature <= 0.)
                 frost_after_bud++;
-
-            // count frost free days
-            if (day->min_temperature > 0.)
-                frost_free++;
         }
     }
     // chilling requirement

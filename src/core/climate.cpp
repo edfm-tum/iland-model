@@ -307,5 +307,5 @@ const Phenology &Climate::phenology(const int phenologyGroup) const
     for (int i=0;i<mPhenology.count();i++)
         if (mPhenology[i].id()==phenologyGroup)
             return mPhenology[i];
-    throw IException(QString("Error at SpeciesSEt::phenology(): invalid group: %1").arg(phenologyGroup));
+    throw IException(QString("Error at SpeciesSet::phenology(): invalid group: %1").arg(phenologyGroup));
 }
