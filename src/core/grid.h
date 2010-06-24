@@ -79,7 +79,7 @@ public:
     /// get the (metric) centerpoint of cell with index @p pos
     QPointF cellCenterPoint(const QPoint &pos) { return QPointF( (pos.x()+0.5)*mCellsize+mRect.left(), (pos.y()+0.5)*mCellsize + mRect.top());} ///< get metric coordinates of the cells center
     /// get the metric rectangle of the cell with index @pos
-    QRectF cellRect(const QPoint &pos) { QRectF r( QPointF(mRect.left() + mCellsize*pos.x(), mRect.top() + pos.y()*mCellsize),
+    QRectF cellRect(const QPoint &pos) const { QRectF r( QPointF(mRect.left() + mCellsize*pos.x(), mRect.top() + pos.y()*mCellsize),
                                                    QSizeF(mCellsize, mCellsize)); return r; } ///< return coordinates of rect given by @param pos.
 
     inline  T* begin() const { return mData; } ///< get "iterator" pointer
@@ -121,9 +121,11 @@ typedef Grid<float> FloatGrid;
 template <class T>
 class GridRunner {
 public:
-    GridRunner(Grid<T> &target_grid, const QRectF &rectangle);
+    GridRunner(Grid<T> &target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
+    GridRunner(const Grid<T> &target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
     T* next(); ///< to to next element, return NULL if finished
 private:
+    void setup(const Grid<T> &target_grid, const QRectF &rectangle);
     T* mLast;
     T* mCurrent;
     size_t mLineLength;
@@ -364,12 +366,12 @@ const QPoint Grid<T>::randomPosition() const
 // grid runner
 ////////////////////////////////////////////////////////////
 template <class T>
-GridRunner<T>::GridRunner(Grid<T> &target_grid, const QRectF &rectangle)
+void GridRunner<T>::setup(const Grid<T> &target_grid, const QRectF &rectangle)
 {
     QPoint upper_left = target_grid.indexAt(rectangle.topLeft());
     QPoint lower_right = target_grid.indexAt(rectangle.bottomRight());
-    mCurrent = target_grid.ptr(upper_left.x(), upper_left.y());
-    mLast = target_grid.ptr(lower_right.x()-1, lower_right.y()-1);
+    mCurrent = const_cast<Grid<T> &>(target_grid).ptr(upper_left.x(), upper_left.y());
+    mLast = const_cast<Grid<T> &>(target_grid).ptr(lower_right.x()-1, lower_right.y()-1);
     mCols = lower_right.x() - upper_left.x(); //
     mLineLength =  target_grid.sizeX() - mCols;
     mCurrentCol = 0;

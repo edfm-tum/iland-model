@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
 #include "seeddispersal.h"
+#include "model.h"
 
 struct EstablishmentParameters
 {
@@ -36,25 +37,40 @@ Establishment::Establishment(const Climate *climate, const ResourceUnitSpecies *
     mPAbiotic = 0.;
 }
 
+inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
+{
+
+     double rel_height = 4. / GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight).height;
+
+     double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
+     float p_est = mPAbiotic * lif_corrected;
+
+     // draw a random number and check against the combined establishment probability
+     double p_rand = drandom();
+     if (p_rand < p_est) {
+         return true; // establishment
+     }
+     return false; // no establishment
+}
+
 // see http://iland.boku.ac.at/establishment
 void Establishment::calculate()
 {
     mPAbiotic = 0.;
     // Step 1: determine, whether there are seeds in the current resource unit
     const Grid<float> &seed_map = mRUS->species()->seedDispersal()->seedMap();
-    const QRectF &rect = mRUS->ru()->boundingBox();
-    QPoint p = seed_map.indexAt(rect.topLeft());
-    // resource units: fixed size of 100x100m
-    int px_in_ru = cRUSize / seed_map.cellsize();
-    int ix,iy;
-    bool seeds_found = false;
-    for (iy=0;iy<px_in_ru;++iy)
-        for (ix=0;ix<px_in_ru;++ix)
-            if (seed_map(p.x()+ix, p.y()+iy)>0.f) {
-                seeds_found = true;
-                break;
-            }
-    if (!seeds_found) {
+    const QRectF &ru_rect = mRUS->ru()->boundingBox();
+    GridRunner<float> runner(seed_map, ru_rect);
+    // check every pixel inside the bounding box of the resource unit
+    int with_seeds = 0, total=0;
+    while (float *p = runner.next()) {
+        if (*p>0.f) {
+            with_seeds++;
+        }
+        total++;
+    }
+
+    if (with_seeds==0 || total==0) {
         return;
     }
 
@@ -69,9 +85,39 @@ void Establishment::calculate()
     if (mPAbiotic == 0.)
         return;
 
+    int n_established = 0;
     // 3rd step: check actual pixels in the LIF grid
+    if (with_seeds/double(total) > 0.4 ) {
+        // a large part has available seeds. simply scan the pixels...
+        QPoint lif_index;
+        Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
+         GridRunner<float> lif_runner(lif_map, ru_rect);
+         while (float *lif_px = lif_runner.next()) {
+             lif_index = lif_map.indexOf(lif_px);
+             // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
+             if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map.cellCenterPoint(lif_index) )))
+                 n_established++;
+         }
 
+    } else {
+        // relatively few seed-pixels are filled. So examine seed pixels first, and check light only on "filled" pixels
+        GridRunner<float> seed_runner(seed_map, ru_rect);
+        Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
+        // check every pixel inside the bounding box of the pixel with
+        while (float *p = seed_runner.next()) {
+            if (*p>0.f) {
+                // pixel with seeds: now really iterate over lif pixels
+                GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_map.indexOf(p)));
+                while (float *lif_px = lif_runner.next()) {
+                    if (establishTree(lif_map.indexOf(lif_px), *lif_px ,*p))
+                        n_established++;
+                }
+            }
+        }
+    }
+    // finished!!!
 }
+
 
 
 /** Calculate the abiotic environemnt for seedling for a given species and a given resource unit.
