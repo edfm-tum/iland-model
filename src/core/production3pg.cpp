@@ -9,6 +9,7 @@
 Production3PG::Production3PG()
 {
     mResponse=0;
+    mEnvYear = 0.;
 }
 
 /**
@@ -54,6 +55,7 @@ void Production3PG::clear()
     for (int i=0;i<12;i++) {
         mGPP[i] = 0.; mUPAR[i]=0.;
     }
+    mEnvYear = 0.;
 }
 
 /** calculate the GPP

@@ -26,6 +26,13 @@ void Sun::setup(double latitude_rad)
         m = limit(m, 0., 2.);
         mDaylength_h[day] = acos(1-m)/M_PI * 24.; // result in hours [0..24]
     }
+    mDayWith10_5hrs = 0;
+    for (int day=mDayWithMaxLength;day<366;day++) {
+        if (mDaylength_h[day]<10.5) {
+            mDayWith10_5hrs = day;
+            break;
+        }
+   }
 }
 
 QString Sun::dump()

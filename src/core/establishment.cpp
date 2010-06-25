@@ -29,21 +29,37 @@ struct EstablishmentParameters
     the quality of the biotic environment, mainly light: based on the LIF-values
 
   */
+Establishment::Establishment()
+{
+    mRegenerationProbability = 0.;
+    mPAbiotic = 0.;
+}
+
 Establishment::Establishment(const Climate *climate, const ResourceUnitSpecies *rus)
+{
+    setup(climate, rus);
+}
+
+void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus)
 {
     mClimate = climate;
     mRUS = rus;
     mRegenerationProbability = 0.;
     mPAbiotic = 0.;
+    mPxDensity = 0.;
+    mNumberEstablished = 0;
 }
 
 inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
 {
 
-     double rel_height = 4. / GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight).height;
+    double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight).height;
+    if (h_height_grid==0)
+        throw IException(QString("establishTree: height grid at %1/%2 has value 0").arg(pos_lif.x()).arg(pos_lif.y()));
+    double rel_height = 4. / h_height_grid;
 
      double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
-     float p_est = mPAbiotic * lif_corrected;
+     float p_est = mPAbiotic * lif_corrected * seed_value;
 
      // draw a random number and check against the combined establishment probability
      double p_rand = drandom();
@@ -57,6 +73,8 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
 void Establishment::calculate()
 {
     mPAbiotic = 0.;
+    mNumberEstablished = 0;
+    mPxDensity = 0.;
     // Step 1: determine, whether there are seeds in the current resource unit
     const Grid<float> &seed_map = mRUS->species()->seedDispersal()->seedMap();
     const QRectF &ru_rect = mRUS->ru()->boundingBox();
@@ -67,19 +85,22 @@ void Establishment::calculate()
         if (*p>0.f) {
             with_seeds++;
         }
+        mPxDensity += *p;
         total++;
     }
-
-    if (with_seeds==0 || total==0) {
+    if (total==0)
+        throw IException("Establishment: number of seed map pixels on resource unit " + QString::number(mRUS->ru()->index()) + " is 0.");
+    mPxDensity /= double(total);
+    if (with_seeds==0)
         return;
-    }
 
     // 2nd step: environmental drivers
     calculateAbioticEnvironment();
     if (mPAbiotic == 0.)
         return;
+
     // the effect of water, nitrogen, co2, .... is a bulk factor: f_env,yr
-    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(); // calculate the 3pg module (this is done only if that did not happen up to now)
+    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (this is done only if that did not happen up to now)
     double f_env_yr = mRUS->prod3PG().fEnvYear();
     mPAbiotic *= f_env_yr;
     if (mPAbiotic == 0.)
@@ -116,6 +137,7 @@ void Establishment::calculate()
         }
     }
     // finished!!!
+    mNumberEstablished = n_established;
 }
 
 
@@ -146,6 +168,10 @@ void Establishment::calculateAbioticEnvironment()
     int frost_after_bud = 0;
     bool chill_ok = false;
     bool buds_are_birst = false;
+    int veg_period_end = pheno.vegetationPeriodEnd();
+    if (veg_period_end >= 365)
+        veg_period_end = mClimate->sun().dayShorter10_5hrs();
+
     for (; day!=mClimate->end(); ++day, ++doy) {
         // minimum temperature: if temp too low -> set prob. to zero
         if (day->min_temperature < p.min_temp)
@@ -162,7 +188,7 @@ void Establishment::calculateAbioticEnvironment()
             chill_ok=true;
         // GDDs above the base temperature are counted if beginning from the day where the chilling requirements are met
         // up to a fixed day ending the veg period
-        if (doy<=pheno.vegetationPeriodEnd()) {
+        if (doy<=veg_period_end) {
             // accumulate growing degree days
             if (chill_ok && day->temperature > p.GDD_baseTemperature) {
                 GDD += day->temperature - p.GDD_baseTemperature;
@@ -175,7 +201,7 @@ void Establishment::calculateAbioticEnvironment()
             if (GDD_BudBirst > p.bud_birst)
                 buds_are_birst = true;
 
-            if (doy<180 && buds_are_birst && day->min_temperature <= 0.)
+            if (doy<veg_period_end && buds_are_birst && day->min_temperature <= 0.)
                 frost_after_bud++;
         }
     }
@@ -194,7 +220,9 @@ void Establishment::calculateAbioticEnvironment()
     // if all requirements are met:
     if (p_chill && p_min_temp & p_gdd & p_frost_free) {
         // negative effect of frost events after bud birst
-        double frost_effect = pow(p.frost_tolerance, sqrt(double(frost_after_bud)));
+        double frost_effect = 1.;
+        if (frost_after_bud>0)
+            frost_effect = pow(p.frost_tolerance, sqrt(double(frost_after_bud)));
         mPAbiotic = frost_effect;
     } else {
         mPAbiotic = 0.; // if any of the requirements is not met

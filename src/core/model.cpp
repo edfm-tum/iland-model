@@ -85,7 +85,7 @@ Model::Model()
     initialize();
     GlobalSettings::instance()->setModel(this);
     QString dbg="running in release mode.";
-    DBGMODE( dbg="running in debug mode."; );
+    DBGMODE( dbg="running in debug mode." );
     qDebug() << dbg;
 }
 
@@ -341,6 +341,23 @@ void Model::initOutputDatabase()
 
 }
 
+
+/// multithreaded running function for the resource level production
+ResourceUnit *nc_establishment(ResourceUnit *unit)
+{
+    try {
+        foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
+            const_cast<ResourceUnitSpecies&>(rus).calclulateEstablishment();
+        }
+    } catch (const IException& e) {
+        Helper::msg(e.toString());
+    }
+    return unit;
+}
+
+/// beforeRun performs several steps before the models starts running.
+/// inter alia: * setup of the stands
+///             * setup of the climates
 void Model::beforeRun()
 {
     // setup outputs
@@ -389,8 +406,9 @@ void Model::beforeRun()
   (3) Invoke Management. Also the dedicated spot for the actions of other disturbances.
   (4) *after* that, calculate Light patterns
   (5) 3PG on stand level, tree growth. Clear stand-statistcs before they are filled by single-tree-growth. calculate water cycle (with LAIs before management)
-  (6) calculate statistics for the year
-  (7) write database outputs
+  (6) execute Regeneration
+  (7) calculate statistics for the year
+  (8) write database outputs
   */
 void Model::runYear()
 {
@@ -420,8 +438,17 @@ void Model::runYear()
 
     // regeneration
     if (settings().regenerationEnabled) {
+        // seed dispersal
+
+        DebugTimer tseed("seed dispersal");
         foreach(SpeciesSet *set, mSpeciesSets)
             set->regeneration();
+
+        tseed.showElapsed();
+        // establishment
+        DebugTimer t("establishment");
+        executePerResourceUnit( nc_establishment , false /* true: force single thraeded operation */);
+
     }
 
     // calculate statistics
@@ -516,6 +543,7 @@ ResourceUnit *nc_production(ResourceUnit *unit)
     unit->production();
     return unit;
 }
+
 
 void Model::test()
 {

@@ -20,7 +20,8 @@ void Phenology::calculate()
 {
     if (id()==0) {
         // for needles: just calculate the chilling requirement for the establishment
-        calculateChillDays(200); // todo: *change*
+        // i.e.: use the "bottom line" of 10.5 hrs daylength for the end of the vegetation season
+        calculateChillDays(mClimate->sun().dayShorter10_5hrs());
         return;
     }
     const ClimateDay  *end = mClimate->end();

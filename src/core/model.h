@@ -61,6 +61,8 @@ public:
     void onlyApplyLightPattern() { applyPattern(); readPattern(); }
     // actions
     void createStandStatistics();
+    /// execute a function for each resource unit using multiple threads. "funcptr" is a ptr to a simple function
+    void executePerResourceUnit(ResourceUnit * (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false) { threadRunner.run(funcptr, forceSingleThreaded);}
 
 private:
     void initialize(); ///< basic startup without creating a simulation

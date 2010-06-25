@@ -30,10 +30,12 @@ public:
     const double &daylength(const int day) const { return mDaylength_h[day]; }
     int longestDay() const { return mDayWithMaxLength; }
     bool northernHemishere() const { return mDayWithMaxLength<300; }
+    int dayShorter10_5hrs() const { return mDayWith10_5hrs; }
 private:
     double mLatitude; ///< latitude in radians
     int mDayWithMaxLength; ///< day of year with maximum day length
     double mDaylength_h[366]; ///< daylength per day in hours
+    int mDayWith10_5hrs; // last day of year with a day length > 10.5 hours (see Establishment)
 };
 
 class Climate

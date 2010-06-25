@@ -3,6 +3,7 @@
 #include "production3pg.h"
 #include "standstatistics.h"
 #include "speciesresponse.h"
+#include "establishment.h"
 
 class Species;
 class ResourceUnit;
@@ -31,7 +32,8 @@ public:
     // properties
     double leafArea() const; ///< total leaf area of the species on the RU (m2).
     // action
-    void calculate(); ///< calculate response for species, calculate actual 3PG production
+    void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
+    void calclulateEstablishment(); ///< perform establishment calculations
 
 private:
     double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.
@@ -41,6 +43,7 @@ private:
     StandStatistics mStatisticsMgmt; ///< statistics of removed trees (this year) of a species on this resource unit
     Production3PG m3PG; ///< NPP prodution unit of this species
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
+    Establishment mEstablishment; ///< establishment for seedlings and sapling growth
     Species *mSpecies; ///< speices
     ResourceUnit *mRU; ///< resource unit
     int mLastYear;

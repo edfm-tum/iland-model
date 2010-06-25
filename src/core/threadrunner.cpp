@@ -36,9 +36,9 @@ void ThreadRunner::setup(const QList<ResourceUnit*> &resourceUnitList)
 }
 
 /// run a given function for each ressource unit either multithreaded or not.
-void ThreadRunner::run( ResourceUnit* (*funcptr)(ResourceUnit*) )
+void ThreadRunner::run( ResourceUnit* (*funcptr)(ResourceUnit*), const bool forceSingleThreaded )
 {
-    if (mMultithreaded && mMap1.count() > 3) {
+    if (mMultithreaded && mMap1.count() > 3 && forceSingleThreaded==false) {
         // execute using QtConcurrent for larger amounts of ressource units...
         QtConcurrent::blockingMap(mMap1,funcptr);
         QtConcurrent::blockingMap(mMap2,funcptr);

@@ -9,6 +9,7 @@
 #include "species.h"
 #include "resourceunit.h"
 
+
 double ResourceUnitSpecies::leafArea() const
 {
     // Leaf area of the species:
@@ -22,22 +23,24 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mRU = ru;
     mResponse.setup(this);
     m3PG.setResponse(&mResponse);
+    mEstablishment.setup(ru->climate(), this);
     mStatistics.setResourceUnitSpecies(this);
     mStatisticsDead.setResourceUnitSpecies(this);
     mStatisticsMgmt.setResourceUnitSpecies(this);
+
     mRemovedGrowth = 0.;
     mLastYear = -1;
 }
 
 
-void ResourceUnitSpecies::calculate()
+void ResourceUnitSpecies::calculate(const bool fromEstablishment)
 {
     if (mLastYear == GlobalSettings::instance()->currentYear())
         return;
     mLastYear = GlobalSettings::instance()->currentYear();
 
     statistics().clear();
-    if (mLAIfactor>0) {
+    if (mLAIfactor>0 || fromEstablishment==true) {
         mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
         m3PG.calculate();///< production of NPP
     } else {
@@ -54,4 +57,17 @@ void ResourceUnitSpecies::updateGWL()
     // removed growth is the running sum of all removed
     // tree volume. the current "GWL" therefore is current volume (standing) + mRemovedGrowth.
     mRemovedGrowth+=statisticsDead().volume() + statisticsMgmt().volume();
+}
+
+void ResourceUnitSpecies::calclulateEstablishment()
+{
+    mEstablishment.calculate();
+
+    if ( logLevelDebug() )
+        qDebug() << "establishment of RU" << mRU->index() << "species" << species()->id()
+        << "seeds density:" << mEstablishment.avgSeedDensity()
+        << "abiotic environment:" << mEstablishment.abioticEnvironment()
+        << "f_env,yr:" << m3PG.fEnvYear()
+        << "N(established):" << mEstablishment.numberEstablished();
+
 }
