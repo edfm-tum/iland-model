@@ -38,7 +38,7 @@ void Phenology::calculate()
         if (day_wait_for>=0 && iday<day_wait_for)
             continue;
         vpd = 1. - ramp(day->vpd, mMinVpd, mMaxVpd); // high value for low vpd
-        temp = ramp(day->temperature, mMinTemp, mMaxTemp);
+        temp = ramp(day->min_temperature, mMinTemp, mMaxTemp);
         daylength = ramp( mClimate->sun().daylength(iday), mMinDayLength, mMaxDayLength);
         gsi = vpd * temp * daylength;
         gsi = floater.add(gsi);
