@@ -60,7 +60,9 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
 
      double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
      float p_est = mPAbiotic * lif_corrected * seed_value;
-
+     // statistics
+     mLIFcount++;
+     mSumLIFvalue+=lif_value;
      // draw a random number and check against the combined establishment probability
      double p_rand = drandom();
      if (p_rand < p_est) {
@@ -75,6 +77,11 @@ void Establishment::calculate()
     mPAbiotic = 0.;
     mNumberEstablished = 0;
     mPxDensity = 0.;
+    mTACA_chill=mTACA_frostfree=mTACA_gdd=mTACA_gdd=mTACA_min_temp=false;
+    mTACA_frostAfterBuds=0;
+    mSumLIFvalue = 0.;
+    mLIFcount = 0;
+
     // Step 1: determine, whether there are seeds in the current resource unit
     const Grid<float> &seed_map = mRUS->species()->seedDispersal()->seedMap();
     const QRectF &ru_rect = mRUS->ru()->boundingBox();
@@ -153,10 +160,11 @@ void Establishment::calculateAbioticEnvironment()
     EstablishmentParameters p; // should then be part of the species parameter set
     const Phenology &pheno = mClimate->phenology(mRUS->species()->phenologyClass());
 
-    bool p_min_temp = true; // minimum temperature threshold
-    bool p_chill = false;  // (total) chilling requirement
-    bool p_gdd = false;   // gdd-thresholds
-    bool p_frost_free = false; // frost free days in vegetation period
+    mTACA_min_temp = true; // minimum temperature threshold
+    mTACA_chill = false;  // (total) chilling requirement
+    mTACA_gdd = false;   // gdd-thresholds
+    mTACA_frostfree = false; // frost free days in vegetation period
+    mTACA_frostAfterBuds = 0; // frost days after bud birst
 
 
     const ClimateDay *day = mClimate->begin();
@@ -165,7 +173,7 @@ void Establishment::calculateAbioticEnvironment()
     double GDD_BudBirst = 0.;
     int chill_days = pheno.chillingDaysLastYear(); // chilling days of the last autumn
     int frost_free = 0;
-    int frost_after_bud = 0;
+    mTACA_frostAfterBuds = 0;
     bool chill_ok = false;
     bool buds_are_birst = false;
     int veg_period_end = pheno.vegetationPeriodEnd();
@@ -175,7 +183,7 @@ void Establishment::calculateAbioticEnvironment()
     for (; day!=mClimate->end(); ++day, ++doy) {
         // minimum temperature: if temp too low -> set prob. to zero
         if (day->min_temperature < p.min_temp)
-            p_min_temp = false;
+            mTACA_min_temp = false;
 
         // count frost free days
         if (day->min_temperature > 0.)
@@ -202,27 +210,27 @@ void Establishment::calculateAbioticEnvironment()
                 buds_are_birst = true;
 
             if (doy<veg_period_end && buds_are_birst && day->min_temperature <= 0.)
-                frost_after_bud++;
+                mTACA_frostAfterBuds++;
         }
     }
     // chilling requirement
     if (chill_ok)
-        p_chill = true;
+        mTACA_chill = true;
 
     // GDD requirements
     if (GDD>p.GDD_min && GDD<p.GDD_max)
-        p_gdd = true;
+        mTACA_gdd = true;
 
     // frost free days in the vegetation period
     if (frost_free > p.frost_free)
-        p_frost_free = true;
+        mTACA_frostfree = true;
 
     // if all requirements are met:
-    if (p_chill && p_min_temp & p_gdd & p_frost_free) {
+    if (mTACA_chill && mTACA_min_temp & mTACA_gdd & mTACA_frostfree) {
         // negative effect of frost events after bud birst
         double frost_effect = 1.;
-        if (frost_after_bud>0)
-            frost_effect = pow(p.frost_tolerance, sqrt(double(frost_after_bud)));
+        if (mTACA_frostAfterBuds>0)
+            frost_effect = pow(p.frost_tolerance, sqrt(double(mTACA_frostAfterBuds)));
         mPAbiotic = frost_effect;
     } else {
         mPAbiotic = 0.; // if any of the requirements is not met

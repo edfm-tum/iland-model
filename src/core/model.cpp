@@ -85,7 +85,7 @@ Model::Model()
     initialize();
     GlobalSettings::instance()->setModel(this);
     QString dbg="running in release mode.";
-    DBGMODE( dbg="running in debug mode." );
+    DBGMODE( dbg="running in debug mode."; );
     qDebug() << dbg;
 }
 
@@ -447,7 +447,7 @@ void Model::runYear()
         tseed.showElapsed();
         // establishment
         DebugTimer t("establishment");
-        executePerResourceUnit( nc_establishment , false /* true: force single thraeded operation */);
+        executePerResourceUnit( nc_establishment , true /* true: force single thraeded operation */);
 
     }
 

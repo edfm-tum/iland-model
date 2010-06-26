@@ -762,6 +762,14 @@ void MainWindow::on_actionDaily_responses_Output_triggered()
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
 
+void MainWindow::on_action_debugEstablishment_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+}
+
+
 void MainWindow::saveDebugOutputs()
 {
     // save to files if switch is true
@@ -781,6 +789,8 @@ void MainWindow::saveDebugOutputs()
         Helper::saveToTextFile(p + "water_cycle.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";").join("\n"));
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses))
         Helper::saveToTextFile(p + "daily_responses.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";").join("\n"));
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment))
+        Helper::saveToTextFile(p + "establishment.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";").join("\n"));
     qDebug() << "saved debug outputs to" << p;
 }
 
@@ -794,7 +804,8 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "4 ... Tree growth (dbh,h)\n" \
                                         "8 ... Standlevel NPP\n" \
                                         "16...Water Cycle\n" \
-                                        "32...Daily responses\n"
+                                        "32...Daily responses\n" \
+                                        "64...Establishment\n"
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
@@ -1039,5 +1050,6 @@ void MainWindow::on_actionClearDebugOutput_triggered()
 {
     GlobalSettings::instance()->clearDebugLists();
 }
+
 
 

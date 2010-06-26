@@ -27,7 +27,7 @@ public:
     void setCurrentYear(const int year) { mRunYear = year; }
     // debugging fain grained debug outputs
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
-                        dStandNPP=8, dWaterCycle=16, dDailyResponses=32 }; ///< defines available debug output types.
+                        dStandNPP=8, dWaterCycle=16, dDailyResponses=32, dEstablishment=64 }; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
     void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
     bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.

@@ -14,7 +14,7 @@
    <string>iLand Viewer</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/iland.qrc">
     <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -77,8 +77,9 @@
     <addaction name="actionTree_Partition"/>
     <addaction name="actionTree_Growth"/>
     <addaction name="actionWater_Output"/>
-    <addaction name="actionDynamic_Output"/>
     <addaction name="actionDaily_responses_Output"/>
+    <addaction name="action_debugEstablishment"/>
+    <addaction name="actionDynamic_Output"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -176,7 +177,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="res/iland.qrc">
                <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
              </property>
              <property name="iconSize">
@@ -196,7 +197,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset>
+              <iconset resource="res/iland.qrc">
                <normaloff>:/document-save.png</normaloff>:/document-save.png</iconset>
              </property>
              <property name="iconSize">
@@ -418,7 +419,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset>
+                  <iconset resource="res/iland.qrc">
                    <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
                  </property>
                 </widget>
@@ -668,7 +669,7 @@ QProgressBar::chunk {
            <string>Execute expression for each tree and draw trees accordingly.</string>
           </property>
           <property name="icon">
-           <iconset>
+           <iconset resource="res/iland.qrc">
             <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
           </property>
           <property name="iconSize">
@@ -743,7 +744,7 @@ QProgressBar::chunk {
   </widget>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -762,7 +763,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionModelCreate">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/www.png</normaloff>:/www.png</iconset>
    </property>
    <property name="text">
@@ -771,7 +772,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionModelDestroy">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/user-trash.png</normaloff>:/user-trash.png</iconset>
    </property>
    <property name="text">
@@ -780,7 +781,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionModelRun">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
    </property>
    <property name="text">
@@ -809,7 +810,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionRun_one_year">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
    </property>
    <property name="text">
@@ -818,7 +819,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionReload">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
    </property>
    <property name="text">
@@ -843,7 +844,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionPause">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/Pause.png</normaloff>:/Pause.png</iconset>
    </property>
    <property name="text">
@@ -852,7 +853,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/iland.qrc">
      <normaloff>:/process-stop.png</normaloff>:/process-stop.png</iconset>
    </property>
    <property name="text">
@@ -894,6 +895,11 @@ QProgressBar::chunk {
     <string>Clear Debug Output</string>
    </property>
   </action>
+  <action name="action_debugEstablishment">
+   <property name="text">
+    <string>Establishment</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -904,7 +910,9 @@ QProgressBar::chunk {
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="res/iland.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>expressionHistory</sender>

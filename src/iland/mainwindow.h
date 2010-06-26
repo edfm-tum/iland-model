@@ -59,6 +59,7 @@ private:
 
 private slots:
 
+    void on_action_debugEstablishment_triggered();
     void on_selectJavaScript_clicked();
     void on_actionClearDebugOutput_triggered();
     void on_pbLogFilterClear_clicked();

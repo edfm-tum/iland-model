@@ -189,22 +189,28 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
     if ( int(dbg)==0)
         return treeCaps;
     switch(dbg) {
-        case dTreeNPP: return QStringList() << "id" << "type" << "year" << treeCaps
-                    << "LRI_modRU" <<"lightResponse" << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging";
+    case dTreeNPP: return QStringList() << "id" << "type" << "year" << treeCaps
+                << "LRI_modRU" <<"lightResponse" << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging";
 
-        case dTreeGrowth: return QStringList() << "id" << "type" << "year" <<  treeCaps
-                    << "netNPPStem" << "massStemOld" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
+    case dTreeGrowth: return QStringList() << "id" << "type" << "year" <<  treeCaps
+                << "netNPPStem" << "massStemOld" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
 
-        case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps
+    case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps
                 << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
                 << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
 
-        case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
-        case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
-                                        << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
-                                        << "content" << "psi_kpa" << "excess_mm" << "snow_height";
-        case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index"
-                                        << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
+    case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
+
+    case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
+                << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
+                << "content" << "psi_kpa" << "excess_mm" << "snow_height";
+
+    case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index"
+                << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
+
+    case dEstablishment: return QStringList() << "id" << "type" << "year" << "species" << "RU_index"
+                 << "avgSeedDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "TACAAbioticEnv"
+                 << "fEndYr" << "avgLIFValue" <<"N_Established";
     }
     return QStringList() << "invalid debug output!";
 }

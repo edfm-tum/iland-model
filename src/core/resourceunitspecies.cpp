@@ -62,6 +62,18 @@ void ResourceUnitSpecies::updateGWL()
 void ResourceUnitSpecies::calclulateEstablishment()
 {
     mEstablishment.calculate();
+    //DBGMODE(
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment)) {
+            DebugList &out = GlobalSettings::instance()->debugList(ru()->index(), GlobalSettings::dEstablishment);
+            // establishment details
+            out << mSpecies->id() << ru()->index();
+            out << mEstablishment.avgSeedDensity();
+            out << mEstablishment.TACAminTemp() << mEstablishment.TACAchill() << mEstablishment.TACAfrostFree() << mEstablishment.TACgdd();
+            out << mEstablishment.TACAfrostDaysAfterBudBirst() << mEstablishment.abioticEnvironment();
+            out << m3PG.fEnvYear() << mEstablishment.avgLIFValue() << mEstablishment.numberEstablished();
+        }
+    //); // DBGMODE()
+
 
     if ( logLevelDebug() )
         qDebug() << "establishment of RU" << mRU->index() << "species" << species()->id()
