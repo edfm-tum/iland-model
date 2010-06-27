@@ -376,7 +376,7 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             // create trees
             int tree_idx = ru->newTreeIndex();
             Tree &tree = ru->trees()[tree_idx]; // get reference to modify tree
-            tree.setDbh(nrandom(item.dbh_from, item.dbh_to));
+            tree.setDbh(nrandom(ru->randomGenerator(), item.dbh_from, item.dbh_to));
             tree.setHeight(tree.dbh()/100. * item.hd); // dbh from cm->m, *hd-ratio -> meter height
             tree.setSpecies(item.species);
             if (item.age<=0)
@@ -391,7 +391,7 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             rand_val = mRandom->get();
             if (item.density<0)
                 rand_val = 1. - rand_val;
-            rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
+            rand_val = rand_val * rand_fraction + drandom(ru->randomGenerator())*(1.-rand_fraction);
 
             // key: rank of target pixel
             // first: index of target pixel

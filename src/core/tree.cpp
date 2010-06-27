@@ -831,7 +831,7 @@ void Tree::mortality(TreeGrowthData &d)
     p_intrinsic = species()->deathProb_intrinsic();
     p_stress = species()->deathProb_stress(d.stress_index);
     p_death =  p_intrinsic + p_stress;
-    double p = drandom(); //0..1
+    double p = drandom(ru()->randomGenerator()); //0..1
     if (p<p_death) {
         // die...
         die();

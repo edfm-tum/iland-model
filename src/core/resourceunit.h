@@ -9,6 +9,8 @@
 class SpeciesSet;
 class Climate;
 class WaterCycle;
+class MTRand;
+
 struct ResourceUnitVariables
 {
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year)
@@ -19,6 +21,9 @@ class ResourceUnit
 public:
     ResourceUnit(const int index);
     ~ResourceUnit();
+    // getter for a thread-local random number generator object. if setRandomGenerator() is used, this saves some overhead
+    MTRand &randomGenerator() const { if (mRandomGenerator) return *mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
+    void setRandomGenerator() { mRandomGenerator = &GlobalSettings::instance()->randomGenerator(); }
 
     // access to elements
     const Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
@@ -96,6 +101,7 @@ private:
     StandStatistics mStatistics; ///< aggregate values on stand value
     ResourceUnitVariables mUnitVariables;
 
+    MTRand *mRandomGenerator;
     friend class RUWrapper;
 };
 

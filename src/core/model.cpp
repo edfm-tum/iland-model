@@ -345,6 +345,8 @@ void Model::initOutputDatabase()
 /// multithreaded running function for the resource level production
 ResourceUnit *nc_establishment(ResourceUnit *unit)
 {
+    unit->setRandomGenerator();
+
     try {
         foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies&>(rus).calclulateEstablishment();
@@ -480,6 +482,7 @@ ResourceUnit* nc_applyPattern(ResourceUnit *unit)
 
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator tend = unit->trees().end();
+    unit->setRandomGenerator();
 
 
     // light concurrence influence
@@ -523,6 +526,7 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
+    unit->setRandomGenerator();
     // calculate light responses
     // responses are based on *modified* values for LightResourceIndex
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
@@ -540,6 +544,7 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 /// multithreaded running function for the resource level production
 ResourceUnit *nc_production(ResourceUnit *unit)
 {
+    unit->setRandomGenerator();
     unit->production();
     return unit;
 }
