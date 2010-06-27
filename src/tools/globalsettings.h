@@ -7,6 +7,8 @@
 
 #include "settingmetadata.h"
 #include "xmlhelper.h"
+#include "../3rdparty/MersenneTwister.h"
+
 typedef QList<QVariant> DebugList;
 
 class Model;
@@ -74,6 +76,8 @@ public:
     // path
     void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
 
+    MTRand& randomGenerator(); // get a random generator instance per thread
+
 private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;
@@ -87,6 +91,7 @@ private:
 
     SettingMetaDataList mSettingMetaData; ///< storage container (QHash) for settings.
     QHash<QString, QString> mFilePath; ///< storage for file paths
+    QHash<QThread*, MTRand> mRandomGenerators; /// store a random generator for each thread
 
     XmlHelper mXml; ///< xml-based hierarchical settings
 };

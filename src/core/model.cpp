@@ -447,7 +447,7 @@ void Model::runYear()
         tseed.showElapsed();
         // establishment
         DebugTimer t("establishment");
-        executePerResourceUnit( nc_establishment , true /* true: force single thraeded operation */);
+        executePerResourceUnit( nc_establishment , false /* true: force single thraeded operation */);
 
     }
 

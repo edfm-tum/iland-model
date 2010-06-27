@@ -50,7 +50,7 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
     mNumberEstablished = 0;
 }
 
-inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
+inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value, MTRand &rnd)
 {
 
     double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight).height;
@@ -64,7 +64,7 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      mLIFcount++;
      mSumLIFvalue+=lif_value;
      // draw a random number and check against the combined establishment probability
-     double p_rand = drandom();
+     double p_rand = drandom(rnd);
      if (p_rand < p_est) {
          return true; // establishment
      }
@@ -81,6 +81,8 @@ void Establishment::calculate()
     mTACA_frostAfterBuds=0;
     mSumLIFvalue = 0.;
     mLIFcount = 0;
+
+    MTRand &randomGenerator = GlobalSettings::instance()->randomGenerator();
 
     // Step 1: determine, whether there are seeds in the current resource unit
     const Grid<float> &seed_map = mRUS->species()->seedDispersal()->seedMap();
@@ -123,7 +125,7 @@ void Establishment::calculate()
          while (float *lif_px = lif_runner.next()) {
              lif_index = lif_map.indexOf(lif_px);
              // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
-             if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map.cellCenterPoint(lif_index) )))
+             if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map.cellCenterPoint(lif_index) ), randomGenerator))
                  n_established++;
          }
 
@@ -137,7 +139,7 @@ void Establishment::calculate()
                 // pixel with seeds: now really iterate over lif pixels
                 GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_map.indexOf(p)));
                 while (float *lif_px = lif_runner.next()) {
-                    if (establishTree(lif_map.indexOf(lif_px), *lif_px ,*p))
+                    if (establishTree(lif_map.indexOf(lif_px), *lif_px ,*p, randomGenerator))
                         n_established++;
                 }
             }
