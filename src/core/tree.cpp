@@ -606,7 +606,7 @@ void Tree::grow()
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
 
     // regeneration
-    mSpecies->seedProduction(mHeight, mPositionIndex);
+    mSpecies->seedProduction(mAge, mPositionIndex);
 
 }
 

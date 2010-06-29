@@ -39,24 +39,25 @@ void SeedDispersal::setup()
     mIndexFactor = int(seedmap_size) / cPxSize; // ratio seed grid / lip-grid:
     qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels, offset to (0/0): " << mIndexOffset;
 
-    // settings
-    mTM_maxseed = 10000;
-    mNonSeedYearFraction = 0.25;
-    mTM_as1 = 100.;
-    mTM_as2 = 0.;
-    mTM_ks = 0.;
-    mTM_required_seeds = 1.;
+    if (mSpecies==0)
+        throw IException("Setup of SeedDispersal: Species not defined.");
 
-    createKernel(mKernelSeedYear, mTM_maxseed);
+    // settings
+    mTM_occupancy = 1.; // is currently constant
+    mSpecies->treeMigKernel(mTM_as1, mTM_as2, mTM_ks); // set values
+    mTM_fecundity_cell = mSpecies->fecundity_m2() * seedmap_size*seedmap_size * mTM_occupancy; // scale to production for the whole cell
+    mNonSeedYearFraction = mSpecies->nonSeedYearFraction();
+
+    createKernel(mKernelSeedYear, mTM_fecundity_cell);
 
     // the kernel for non seed years looks similar, but is simply linearly scaled down
     // using the species parameter NonSeedYearFraction.
     // the central pixel still gets the value of 1 (i.e. 100% probability)
-    createKernel(mKernelNonSeedYear, mTM_maxseed*mNonSeedYearFraction);
+    createKernel(mKernelNonSeedYear, mTM_fecundity_cell*mNonSeedYearFraction);
 
     if (QFile::exists("c:\\temp\\seedmaps")) {
-        Helper::saveToTextFile("c:\\temp\\seedmaps\\seedkernelYes.csv",gridToString(mKernelSeedYear));
-        Helper::saveToTextFile("c:\\temp\\seedmaps\\seedkernelNo.csv",gridToString(mKernelNonSeedYear));
+        Helper::saveToTextFile(QString("c:\\temp\\seedmaps\\seedkernelYes_%1.csv").arg(mSpecies->id()),gridToString(mKernelSeedYear));
+        Helper::saveToTextFile(QString("c:\\temp\\seedmaps\\seedkernelNo_%1.csv").arg(mSpecies->id()),gridToString(mKernelNonSeedYear));
     }
 
 
@@ -95,7 +96,7 @@ void SeedDispersal::createKernel(Grid<float> &kernel, const float max_seed)
     double cell_size = mSeedMap.cellsize();
     int max_radius = int(max_dist / cell_size);
     // e.g.: cell_size: regeneration grid (e.g. 400qm), px-size: light-grid (4qm)
-    double occupation = cell_size*cell_size / (cPxSize*cPxSize * mTM_required_seeds); //cell.size.disp^2/(cell.size.regen^2*requ.seeds)
+    double occupation = cell_size*cell_size / (cPxSize*cPxSize * mTM_occupancy);
 
     kernel.clear();
 
@@ -178,9 +179,9 @@ void SeedDispersal::clear()
 
 void SeedDispersal::execute()
 {
-    static int img_counter = 0;
+    int year = GlobalSettings::instance()->currentYear();
     if (QFile::exists("c:\\temp\\seedmaps"))
-        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_before%1.png").arg(img_counter));
+        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_before_%1_%2.png").arg(mSpecies->id()).arg(year));
     {
     DebugTimer t("seed dispersal");
     // (1) detect edges
@@ -189,7 +190,7 @@ void SeedDispersal::execute()
     distribute();
     }
     if (QFile::exists("c:\\temp\\seedmaps"))
-        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_after%1.png").arg(img_counter++));
+        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_after_%1_%2.png").arg(mSpecies->id()).arg(year));
 }
 
 /** scans the seed image and detects "edges".

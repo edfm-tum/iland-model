@@ -124,7 +124,17 @@ void Species::setup()
         throw IException( QString("invalid light response class for species %1. Allowed: 1..5.").arg(id()));
 
     // regeneration
-    mSeedYearProbability = 0.25;
+    int seed_year_interval = intVar("seedYearInterval");
+    if (seed_year_interval==0)
+        throw IException(QString("seedYearInterval = 0 for %1").arg(id()));
+    mSeedYearProbability = 1 / (double)seed_year_interval;
+    mMaturityYears = intVar("maturityYears");
+    mTM_as1 = doubleVar("seedKernel_as1");
+    mTM_as2 = doubleVar("seedKernel_as2");
+    mTM_ks = doubleVar("seedKernel_ks0");
+    mFecundity_m2 = doubleVar("fecundity_m2");
+    mNonSeedYearFraction = doubleVar("nonSeedYearFraction");
+
 }
 
 double Species::biomassFoliage(const double dbh) const
@@ -177,15 +187,14 @@ int Species::estimateAge(const float height) const
 }
 
 /** Seed production.
-   This function produces seeds if the tree is larger than a species-specific height ("maturity")
+   This function produces seeds if the tree is older than a species-specific age ("maturity")
    If seeds are produced, this information is stored in a "SeedMap"
   */
-void Species::seedProduction(const float height, const QPoint &position_index)
+void Species::seedProduction(const int age, const QPoint &position_index)
 {
     if (!mSeedDispersal)
-        return; // disabled
-    if (height > 30) {
-        // do something
+        return; // regeneration is disabled
+    if (age > mMaturityYears) {
         mSeedDispersal->setMatureTree(position_index);
     }
 }

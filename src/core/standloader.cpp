@@ -78,6 +78,7 @@ void StandLoader::processInit()
     if (copy_mode=="unit") {
         foreach( const ResourceUnit *const_ru, g->model()->ruList()) {
             ResourceUnit *ru = const_cast<ResourceUnit*>(const_ru);
+            ru->setRandomGenerator(); //
             // set environment
             g->model()->environment()->setPosition(ru->boundingBox().center());
             type = xml.value("type", "");

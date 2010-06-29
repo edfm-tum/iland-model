@@ -58,7 +58,7 @@ public:
     double aging(const float height, const int age) const;
     int estimateAge(const float height) const;///< estimate age for a tree with the current age
     // regeneration
-    void seedProduction(const float height, const QPoint &position_index);
+    void seedProduction(const int age, const QPoint &position_index);
     void setSeedDispersal(SeedDispersal *seed_dispersal) {mSeedDispersal=seed_dispersal; }
     // environmental responses
     double vpdResponse(const double &vpd) const;
@@ -68,6 +68,10 @@ public:
     inline double soilwaterResponse(const double &psi_kPa) const; ///< input: matrix potential (kPa) (e.g. -15)
     double lightResponse(const double lightResourceIndex) {return mSet->lightResponse(lightResourceIndex, mLightResponseClass); }
     double psiMin() const { return mPsiMin; }
+    // parameters for seed dispersal
+    void treeMigKernel(double &ras1, double &ras2, double &ks) const { ras1=mTM_as1; ras2=mTM_as2; ks=mTM_ks; }
+    double fecundity_m2() const { return mFecundity_m2; }
+    double nonSeedYearFraction() const { return mNonSeedYearFraction; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
 private:
@@ -122,8 +126,16 @@ private:
     double mLightResponseClass; ///< light response class (1..5) (1=shade intolerant)
     // regeneration
     SeedDispersal *mSeedDispersal; ///< link to the seed dispersal map of the species
+    int mMaturityYears; ///< a tree produces seeds if it is older than this parameter
     double mSeedYearProbability; ///< probability that a year is a seed year (=1/avg.timespan between seedyears)
     bool mIsSeedYear; ///< true, if current year is a seed year. see also:
+    double mNonSeedYearFraction;  ///< fraction of the seed production in non-seed-years
+    // regeneration - seed dispersal
+    double mFecundity_m2; ///< "surviving seeds" (cf. Moles et al) per m2, see also http://iland.boku.ac.at/fecundity
+    double mTM_as1; ///< seed dispersal paramaters (treemig)
+    double mTM_as2; ///< seed dispersal paramaters (treemig)
+    double mTM_ks; ///< seed dispersal paramaters (treemig)
+
 };
 
 

@@ -28,8 +28,8 @@ private:
     double treemig(const double &distance);
     double treemig_distanceTo(const double value);
     double mTM_as1, mTM_as2, mTM_ks; ///< seed dispersal paramaters (treemig)
-    double mTM_maxseed; ///< maximum seeds per source cell
-    double mTM_required_seeds; ///< seeds required per destination regeneration pixel
+    double mTM_fecundity_cell; ///< maximum seeds per source cell
+    double mTM_occupancy; ///< seeds required per destination regeneration pixel
     double mNonSeedYearFraction; ///< fraction of the seed production in non-seed-years
     int mIndexFactor; ///< multiplier between light-pixel-size and seed-pixel-size
     QPoint mIndexOffset; ///< offset of (0/0) in light-pixel coordinates
