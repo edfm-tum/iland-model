@@ -135,6 +135,16 @@ void Species::setup()
     mFecundity_m2 = doubleVar("fecundity_m2");
     mNonSeedYearFraction = doubleVar("nonSeedYearFraction");
 
+    // establishment parameters
+    mEstablishmentParams.min_temp = doubleVar("estMinTemp");
+    mEstablishmentParams.chill_requirement = intVar("estChillRequirement");
+    mEstablishmentParams.GDD_min = intVar("estGDDMin");
+    mEstablishmentParams.GDD_max = intVar("estGDDMax");
+    mEstablishmentParams.GDD_baseTemperature = doubleVar("estGDDBaseTemp");
+    mEstablishmentParams.bud_birst = intVar("estBudBirstGDD");
+    mEstablishmentParams.frost_free = intVar("estFrostFreeDays");
+    mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
+
 }
 
 double Species::biomassFoliage(const double dbh) const

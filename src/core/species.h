@@ -10,6 +10,21 @@ class StampContainer; // forwards
 class Stamp;
 
 
+/// parameters for establishment
+struct EstablishmentParameters
+{
+    double min_temp; //degC
+    int chill_requirement; // days of chilling requirement
+    int GDD_min, GDD_max; // GDD thresholds
+    double GDD_baseTemperature; // for GDD-calc: GDD=sum(T - baseTemp)
+    int bud_birst; // GDDs needed until bud burst
+    int frost_free; // minimum number of annual frost-free days required
+    double frost_tolerance; //factor in growing season frost tolerance calculation
+    EstablishmentParameters(): min_temp(-37), chill_requirement(56), GDD_min(177), GDD_max(3261), GDD_baseTemperature(3.4),
+                               bud_birst(255), frost_free(65), frost_tolerance(0.5) {}
+};
+
+
 class Species
 {
 public:
@@ -72,6 +87,7 @@ public:
     void treeMigKernel(double &ras1, double &ras2, double &ks) const { ras1=mTM_as1; ras2=mTM_as2; ks=mTM_ks; }
     double fecundity_m2() const { return mFecundity_m2; }
     double nonSeedYearFraction() const { return mNonSeedYearFraction; }
+    const EstablishmentParameters &establishmentParameters() const { return mEstablishmentParams; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
 private:
@@ -135,6 +151,7 @@ private:
     double mTM_as1; ///< seed dispersal paramaters (treemig)
     double mTM_as2; ///< seed dispersal paramaters (treemig)
     double mTM_ks; ///< seed dispersal paramaters (treemig)
+    EstablishmentParameters mEstablishmentParams;
 
 };
 

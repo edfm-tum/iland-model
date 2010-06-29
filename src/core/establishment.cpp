@@ -7,18 +7,6 @@
 #include "seeddispersal.h"
 #include "model.h"
 
-struct EstablishmentParameters
-{
-    double min_temp; //degC
-    int chill_requirement; // days of chilling requirement
-    int GDD_min, GDD_max; // GDD thresholds
-    double GDD_baseTemperature; // for GDD-calc: GDD=sum(T - baseTemp)
-    int bud_birst; // GDDs needed until bud burst
-    int frost_free; // minimum number of annual frost-free days required
-    double frost_tolerance; //factor in growing season frost tolerance calculation
-    EstablishmentParameters(): min_temp(-37), chill_requirement(56), GDD_min(177), GDD_max(3261), GDD_baseTemperature(3.4),
-                               bud_birst(255), frost_free(65), frost_tolerance(0.5) {}
-};
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
@@ -48,6 +36,8 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
     mPAbiotic = 0.;
     mPxDensity = 0.;
     mNumberEstablished = 0;
+    if (climate==0 || rus==0 || rus->species()==0 || rus->ru()==0)
+        throw IException("Establishment::setup: important variable is null.");
 }
 
 inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
@@ -157,7 +147,7 @@ void Establishment::calculate()
  */
 void Establishment::calculateAbioticEnvironment()
 {
-    EstablishmentParameters p; // should then be part of the species parameter set
+    const EstablishmentParameters &p = mRUS->species()->establishmentParameters();
     const Phenology &pheno = mClimate->phenology(mRUS->species()->phenologyClass());
 
     mTACA_min_temp = true; // minimum temperature threshold
