@@ -53,6 +53,7 @@ public:
     double biomassFoliage(const double dbh) const;
     double biomassWoody(const double dbh) const;
     double biomassRoot(const double dbh) const;
+    double biomassBranch(const double dbh) const;
     double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
     double allometricFractionStem(const double dbh) const;
     double finerootFoliageRatio() const { return mFinerootFoliageRatio; } ///< ratio of fineroot mass (kg) to foliage mass (kg)
@@ -151,7 +152,7 @@ private:
     double mTM_as1; ///< seed dispersal paramaters (treemig)
     double mTM_as2; ///< seed dispersal paramaters (treemig)
     double mTM_ks; ///< seed dispersal paramaters (treemig)
-    EstablishmentParameters mEstablishmentParams;
+    EstablishmentParameters mEstablishmentParams; ///< collection of parameters used for establishment
 
 };
 

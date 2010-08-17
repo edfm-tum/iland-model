@@ -65,7 +65,10 @@ SOURCES += main.cpp \
     version.cpp \
     ../core/timeevents.cpp \
     ../core/seeddispersal.cpp \
-    ../core/establishment.cpp
+    ../core/establishment.cpp \
+    ../core/soil.cpp \
+    ../core/snags.cpp \
+    ../core/sapling.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -119,7 +122,10 @@ HEADERS += mainwindow.h \
     aboutdialog.h \
     ../core/timeevents.h \
     ../core/seeddispersal.h \
-    ../core/establishment.h
+    ../core/establishment.h \
+    ../core/soil.h \
+    ../core/snags.h \
+    ../core/sapling.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

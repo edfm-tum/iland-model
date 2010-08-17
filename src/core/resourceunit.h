@@ -21,18 +21,23 @@ class ResourceUnit
 public:
     ResourceUnit(const int index);
     ~ResourceUnit();
+    // setup/maintenance
+    void setup(); ///< setup operations after the creation of the model space.
+    void setSpeciesSet(SpeciesSet *set);
+    void setClimate(Climate* climate) { mClimate = climate; }
+    void setBoundingBox(const QRectF &bb) { mBoundingBox = bb; }
     // getter for a thread-local random number generator object. if setRandomGenerator() is used, this saves some overhead
     MTRand &randomGenerator() const { if (mRandomGenerator) return *mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
-    void setRandomGenerator() { mRandomGenerator = &GlobalSettings::instance()->randomGenerator(); }
+    void setRandomGenerator() { mRandomGenerator = &GlobalSettings::instance()->randomGenerator(); } // fetch random generator of the current thread
 
     // access to elements
     const Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
-    const WaterCycle *waterCycle() const { return mWater; } ///< water model of the unit
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
+    const WaterCycle *waterCycle() const { return mWater; } ///< water model of the unit
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
     const QVector<ResourceUnitSpecies> ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
-    const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the tree list.
+    const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the (const) tree list.
     Tree *tree(const int index) { return &(mTrees[index]);} ///< get pointer to a tree
     const ResourceUnitVariables &resouceUnitVariables() const { return mUnitVariables; } ///< access to variables that are specific to resourceUnit (e.g. nitrogenAvailable)
     const StandStatistics &statistics() const {return mStatistics; }
@@ -45,21 +50,29 @@ public:
     double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
     double leafAreaIndex() const { return mAggregatedLA / area(); } ///< Total Leaf Area Index
     double leafArea() const { return mAggregatedLA; } ///< total leaf area of resource unit (m2)
+    double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
+    const double &LRImodifier() const { return mLRI_modification; }
+    double averageAging() const { return mAverageAging; } ///< leaf area weighted average aging
 
     // actions
     Tree &newTree();  ///< returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
     int newTreeIndex(); ///< returns the index of a newly inserted tree
+    void cleanTreeList(); ///< remove dead trees from the tree storage.
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
     void addLR(const float LA, const float LightResponse) { mAggregatedLR += LA*LightResponse; }
     /// function that distributes effective interception area according to the weight of Light response and LeafArea of the indivudal (@sa production())
     void calculateInterceptedArea();
     void addTreeAging(const double leaf_area, const double aging_factor) { mAverageAging += leaf_area*aging_factor; } ///< aggregate the tree aging values (weighted by leaf area)
+    // stocked area calculation
+    void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
+    void createStandStatistics();
+    // sapling growth
+    void setSaplingHeightMap(int *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
+    /// get ref. to sapling height information (can be used for read & write access!).
+    /// pixel_index: index of LIF pixel within the current RU.
+    int &saplingHeightAt(const int pixel_index) { Q_ASSERT(mSaplingHeightMap && pixel_index>=0 && pixel_index<2500); return mSaplingHeightMap[pixel_index];}
 
-    // properties
-    double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
-    const double &LRImodifier() const { return mLRI_modification; }
-    double averageAging() const { return mAverageAging; } ///< leaf area weighted average aging
 
     // model flow
     void newYear(); ///< reset values for a new simulation year
@@ -70,15 +83,6 @@ public:
     void afterGrow(); ///< called after the growth of individuals
     void yearEnd(); ///< called at the end of a year (after regeneration??)
 
-    // stocked area calculation
-    void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
-    void createStandStatistics();
-    // setup/maintenance
-    void cleanTreeList(); ///< remove dead trees from the tree storage.
-    void setup(); ///< setup operations after the creation of the model space.
-    void setSpeciesSet(SpeciesSet *set);
-    void setClimate(Climate* climate) { mClimate = climate; }
-    void setBoundingBox(const QRectF &bb) { mBoundingBox = bb; }
 private:
     int mIndex; // internal index
     Climate *mClimate; ///< pointer to the climate object of this RU
@@ -94,6 +98,7 @@ private:
     double mEffectiveArea_perWLA; ///<
     double mLRI_modification;
     double mAverageAging; ///< leaf-area weighted average aging f this species on this RU.
+    int *mSaplingHeightMap; ///< pointer to array that holds max-height for each 2x2m pixel. Note: this information is not persistent
 
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees

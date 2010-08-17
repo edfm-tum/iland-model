@@ -161,6 +161,11 @@ double Species::biomassRoot(const double dbh) const
 {
     return mRoot_a * pow(dbh, mRoot_b);
 }
+//????? is that really so????? what is exactly the woody biomass, stem biomass, branch biomass??
+double Species::biomassBranch(const double dbh) const
+{
+    return mBranch_a * pow(dbh, mBranch_b);
+}
 
 /** calculate fraction of stem wood increment base on dbh.
     allometric equation: a*d^b -> first derivation: a*b*d^(b-1)

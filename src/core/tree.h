@@ -35,6 +35,13 @@ public:
     double basalArea() const; ///< basal area of the tree at breast height in m2
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
     float crownRadius() const; ///< fetch crown radius (m) from the attached stamp
+    // biomass properties
+    float biomassFoliage() const { return mFoliageMass; } ///< mass (kg) of foliage
+    float biomassBranch() const { return 0.; } ///< mass (kg) of branches
+    float biomassFineRoot() const { return mFineRootMass; } ///< mass (kg) of fine roots
+    float biomassCoarseRoot() const { return mCoarseRootMass; } ///< mass (kg) of coarse roots
+    float biomassStem() const { return mWoodyMass; } ///< mass (kg) of stem
+
     // actions
     void die(TreeGrowthData *d=0); ///< kills the tree.
     void remove(); ///< remove the tree (management)
@@ -90,10 +97,10 @@ private:
     // biomass compartements
     float mLeafArea; ///< m2 leaf area
     float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)
-    float mFoliageMass; // kg
-    float mWoodyMass; // kg
-    float mFineRootMass; // kg
-    float mCoarseRootMass; // kg
+    float mFoliageMass; // kg of foliage (dry)
+    float mWoodyMass; // kg biomass of aboveground woody biomass (stems and branches)
+    float mFineRootMass; // kg biomass of fine roots (linked to foliage mass)
+    float mCoarseRootMass; // kg biomass of coarse roots (allometric equation)
     // production relevant
     float mNPPReserve; // kg
     float mLRI; ///< resulting lightResourceIndex

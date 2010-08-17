@@ -14,6 +14,7 @@ public:
     ResourceUnitSpecies() : mLAIfactor(0.), mSpecies(0), mRU(0) {}
     void setup(Species *species, ResourceUnit *ru);
 
+    // access
     const SpeciesResponse *speciesResponse() const { return &mResponse; }
     const Species *species() const { return mSpecies; } ///< return pointer to species
     const ResourceUnit *ru() const { return mRU; } ///< return pointer to resource unit
@@ -25,6 +26,7 @@ public:
     const StandStatistics &constStatisticsDead() const { return mStatisticsDead; } ///< const accessor
     const StandStatistics &constStatisticsMgmt() const { return mStatisticsMgmt; } ///< const accessor
 
+   // actions
     void updateGWL();
     double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3)
     double LAIfactor() const { return mLAIfactor; } ///< relative fraction of LAI of this species (0..1)

@@ -107,6 +107,9 @@ const int cPxPerHeight = 5; // 10 / 2
 const int cPxPerRU = 50; // 100/2
 const int cHeightPerRU = 10; // 100/10
 
+// other constants
+const double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon
+
 /// shortcut to the GlobalSettings Singleton object.
 #define Globals (GlobalSettings::instance())
 
