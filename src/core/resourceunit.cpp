@@ -27,6 +27,8 @@ ResourceUnit::ResourceUnit(const int index)
     mSpeciesSet = 0;
     mClimate = 0;
     mPixelCount=0;
+    mStockedArea = 0;
+    mStockedPixelCount = 0;
     mIndex = index;
     mSaplingHeightMap = 0;
     mWater = new WaterCycle();
@@ -269,7 +271,7 @@ void ResourceUnit::setSaplingHeightAt(const QPoint &position, const float height
     Q_ASSERT(mSaplingHeightMap);
     int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
     if (pixel_index<0 || pixel_index>=cPxPerRU*cPxPerRU)
-        qDebug() << "setSaplingHeightAt-Error";
+        qDebug() << "setSaplingHeightAt-Error for position" << position << "for RU at" << boundingBox() << "with corner" << mCornerCoord;
     else
         mSaplingHeightMap[pixel_index]=height;
 }

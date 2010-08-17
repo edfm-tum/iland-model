@@ -12,7 +12,7 @@
 #include "tree.h"
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
-
+#include "sapling.h"
 
 void StandStatistics::clear()
 {
@@ -22,6 +22,7 @@ void StandStatistics::clear()
     mSumBasalArea = mSumVolume = mGWL = 0.;
     mLeafAreaIndex = 0.;
     mNPP = mNPPabove = 0.;
+    mCohortCount = mSaplingCount = 0;
 }
 
 void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
@@ -59,6 +60,8 @@ void StandStatistics::calculate()
             mNPP *= area_factor;
             mNPPabove *= area_factor;
             mGWL *= area_factor;
+            mCohortCount *= area_factor;
+            mSaplingCount *= area_factor;
         }
     }
 }
@@ -74,4 +77,13 @@ void StandStatistics::add(const StandStatistics &stat)
     mNPP += stat.mNPP;
     mNPPabove += stat.mNPPabove;
     mGWL+=stat.mGWL;
+    mCohortCount += stat.mCohortCount;
+    mSaplingCount += stat.mSaplingCount;
+}
+
+/// call for regeneration layer of a species in resource unit
+void StandStatistics::add(const Sapling *sapling)
+{
+    mCohortCount = sapling->livingSaplings();
+    mSaplingCount = sapling->livingSaplings(); // to change!!!
 }

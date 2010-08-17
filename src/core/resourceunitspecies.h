@@ -5,7 +5,7 @@
 #include "speciesresponse.h"
 #include "establishment.h"
 #include "sapling.h"
-
+#include "grid.h"
 class Species;
 class ResourceUnit;
 
@@ -39,6 +39,8 @@ public:
     void calclulateEstablishment(); ///< perform establishment calculations
     void calclulateSaplingGrowth(); ///< growth of saplings
     void addSapling(const QPoint position) { mSapling.addSapling(position); }
+    // visualization/graphical output
+    void visualGrid(Grid<float> &grid) const;
 
 private:
     double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.

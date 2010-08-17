@@ -3,6 +3,7 @@
 #include "species.h"
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
+#include "tree.h"
 
 /** @class Sapling
     Sapling stores saplings and computes sapling growth (before recruitment).
@@ -46,7 +47,7 @@ void Sapling::cleanupStorage()
     }
     if (back != mSaplingTrees.end()-1) {
         // free resources...
-        mSaplingTrees.erase(back, mSaplingTrees.end());
+        mSaplingTrees.erase(back+1, mSaplingTrees.end());
     }
 }
 
@@ -63,7 +64,8 @@ void Sapling::addSapling(const QPoint &pos_lif)
 
 /// growth function for an indivudal sapling.
 /// returns true, if sapling survives, false if sapling dies or is recruited to iLand.
-bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, const Species* species)
+/// see also http://iland.boku.ac.at/recruitment
+bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* species)
 {
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
@@ -76,26 +78,41 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, const Specie
     if (h_pot<0. || delta_h_pot<0. || lif_value<0. || lif_value>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";
 
-    // check mortality?
+    // check mortality of saplings
     if (delta_h_factor < species->saplingGrowthParameters().stressThreshold) {
-        tree.stress_years++;
-        if (tree.stress_years > species->saplingGrowthParameters().maxStressYears) {
+        tree.age.stress_years++;
+        if (tree.age.stress_years > species->saplingGrowthParameters().maxStressYears) {
             // sapling dies...
             tree.pixel=0;
             mDied++;
             return false;
         }
+    } else {
+        tree.age.stress_years=0; // reset stress counter
     }
     DBG_IF(delta_h_pot*delta_h_factor < 0.f || delta_h_pot*delta_h_factor > 2., "Sapling::growSapling", "inplausible height growth.");
 
     // grow
     tree.height += delta_h_pot * delta_h_factor;
+    tree.age.age++; // increase age of sapling by 1
 
     // recruitment?
     if (tree.height > 4.f) {
-        // do something...
         mRecruited++;
         tree.pixel=0;
+        QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
+        ResourceUnit *ru = const_cast<ResourceUnit*> (mRUS->ru());
+        float dbh = tree.height / species->saplingGrowthParameters().hdSapling * 100.f;
+        // add a new tree
+        Tree &bigtree = ru->newTree();
+        bigtree.setPosition(p);
+
+        bigtree.setDbh(dbh);
+        bigtree.setHeight(tree.height);
+        bigtree.setSpecies( species );
+        bigtree.setAge(tree.age.age,tree.height);
+        bigtree.setRU(ru);
+        bigtree.setup();
         return false;
     }
     return true;
@@ -110,7 +127,7 @@ void Sapling::calculateGrowth()
 
     clearStatistics();
     ResourceUnit *ru = const_cast<ResourceUnit*> (mRUS->ru() );
-    const Species *species = mRUS->species();
+    Species *species = const_cast<Species*>(mRUS->species());
 
     // calculate necessary growth modifier (this is done only once per year)
     mRUS->calculate(true); // calculate the 3pg module (this is done only if that did not happen up to now); true: call comes from regeneration
@@ -132,16 +149,32 @@ void Sapling::calculateGrowth()
                 if (tree.height>h) {
                     ru->setSaplingHeightAt(p,tree.height);
                     mAvgHeight+=tree.height;
+                    mAvgAge+=tree.age.age;
                 }
             }
         }
     }
-    if (mLiving)
+    if (mLiving) {
         mAvgHeight /= double(mLiving);
+        mAvgAge /= double(mLiving);
+    }
 
     if (mSaplingTrees.count() > mLiving*1.3)
         cleanupStorage();
-    qDebug() << ru->index() << species->id()<< ": (add/died/recr./living/avg.height):" << mAdded << mDied << mRecruited << mLiving << mAvgHeight;
-    if (ru->index()==123)
-        qDebug() << "hoho";
+
+    mRUS->statistics().add(this);
+    //qDebug() << ru->index() << species->id()<< ": (living/avg.height):" <<  mLiving << mAvgHeight;
+}
+
+void Sapling::fillHeightGrid(Grid<float> &grid) const
+{
+    QVector<SaplingTree>::const_iterator it;
+    for (it = mSaplingTrees.begin(); it!=mSaplingTrees.end(); ++it) {
+        if (it->isValid()) {
+             QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(it->pixel);
+             if (grid.valueAtIndex(p)<it->height)
+                 grid.valueAtIndex(p) = it->height;
+        }
+    }
+
 }

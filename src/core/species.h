@@ -30,9 +30,9 @@ struct SaplingGrowthParameters
     Expression heightGrowthPotential; ///< formula that expresses height growth potential
     int maxStressYears; ///< trees die, if they are "stressed" for this number of consectuive years
     double stressThreshold; ///< tree is considered as "stressed" if f_env_yr is below that threhold
-    double hdSapling; ///< fixed height-diameter ratio used for saplings
+    float hdSapling; ///< fixed height-diameter ratio used for saplings
     double ReineckesR; ///< Reineckes R, i.e. maximum stem number for a dg of 25cm
-    SaplingGrowthParameters(): maxStressYears(5), stressThreshold(0.05), hdSapling(80.), ReineckesR(1450.) {}
+    SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReineckesR(1450.) {}
 };
 
 

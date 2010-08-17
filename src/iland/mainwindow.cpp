@@ -329,6 +329,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_dom = ui->visDomGrid->isChecked();
     bool show_trees = ui->visImpact->isChecked();
     bool show_ru = ui->visResourceUnits->isChecked();
+    bool show_regeneration = ui->visRegeneration->isChecked();
 
     float maxval=1.f; // default maximum
     if (!auto_scale_color)
@@ -366,6 +367,40 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             }
         }
 
+    }
+
+    if (show_regeneration ) {
+
+        if (mRegenerationGrid.isEmpty())
+            mRegenerationGrid.setup(*model->grid()); // copy
+        static int last_year=0;
+        if (last_year!=GlobalSettings::instance()->currentYear()) {
+            last_year=GlobalSettings::instance()->currentYear();
+            // fill grid...
+            DebugTimer t("create regeneration map...");
+            mRegenerationGrid.wipe(0.f);
+            foreach(const ResourceUnit *ru, model->ruList()) {
+                foreach(const ResourceUnitSpecies &rus, ru->ruSpecies()) {
+                    rus.visualGrid(mRegenerationGrid);
+                }
+            }
+        }
+        // start from each pixel and query value in grid for the pixel
+        int x,y;
+        int sizex = rect.width();
+        int sizey = rect.height();
+        QPointF world;
+        QRgb col;
+        QImage &img = ui->PaintWidget->drawImage();
+        for (x=0;x<sizex;x++)
+            for (y=0;y<sizey;y++) {
+            world = vp.toWorld(QPoint(x,y));
+            if (mRegenerationGrid.coordValid(world)) {
+                value = mRegenerationGrid.valueAt(world);
+                col = Helper::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
+                img.setPixel(x,y,col);
+            }
+        }
     }
 
     if (show_dom) {
@@ -557,6 +592,8 @@ void MainWindow::mouseMove(const QPoint& pos)
            location += QString("\n %1").arg((*grid).valueAt(p));
         if( ui->visDomGrid->isChecked())
             location += QString("\n %1").arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height);
+        if( ui->visRegeneration->isChecked())
+            location += QString("\n %1").arg(mRegenerationGrid.valueAt(p));
 
         ui->fonValue->setText(location);
     }

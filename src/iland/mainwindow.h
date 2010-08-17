@@ -56,6 +56,8 @@ private:
     // debug data and outputs
     void saveDebugOutputs();
     void setupFileLogging(const bool do_start);
+    // visualization helper grid
+    Grid<float> mRegenerationGrid;
 
 private slots:
 

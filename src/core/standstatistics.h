@@ -3,6 +3,7 @@
 class Tree;
 struct TreeGrowthData;
 class ResourceUnitSpecies;
+class Sapling;
 
 class StandStatistics
 {
@@ -12,6 +13,7 @@ public:
 
     void add(const StandStatistics &stat); ///< add aggregates of @p stat to own aggregates
     void add(const Tree *tree, const TreeGrowthData *tgd); ///< call for each tree within the domain
+    void add(const Sapling *sapling); ///< call for regeneration layer of a species in resource unit
     void clear(); ///< call before trees are aggregated
     void calculate(); ///< call after all trees are processed (postprocessing)
     // getters
@@ -24,6 +26,8 @@ public:
     double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]/ha stocked area.
     double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground)/ha
     double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)/ha
+    int cohortCount() const { return mCohortCount; } ///< number of cohorts of saplings / ha
+    int saplingCount() const { return mSaplingCount; } ///< number individuals in regeneration layer (represented by "cohortCount" cohorts) N/ha
 
 private:
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species
@@ -38,6 +42,9 @@ private:
     double mLeafAreaIndex;
     double mNPP;
     double mNPPabove;
+    // regeneration layer
+    int mCohortCount;
+    int mSaplingCount;
 };
 
 #endif // STANDSTATISTICS_H
