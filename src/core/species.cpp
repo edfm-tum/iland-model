@@ -145,6 +145,11 @@ void Species::setup()
     mEstablishmentParams.frost_free = intVar("estFrostFreeDays");
     mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
 
+    // sapling and sapling growth parameters
+    mSaplingGrowthParams.heightGrowthPotential.setAndParse("40*(1-(1-(h/40)^(1/3))*exp(-0.04))^3"); // dummy!
+    mSaplingGrowthParams.heightGrowthPotential.linearize(0., 1.);
+
+
 }
 
 double Species::biomassFoliage(const double dbh) const

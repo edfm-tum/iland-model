@@ -70,10 +70,11 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, const Specie
     double delta_h_pot = h_pot - tree.height;
 
     // (2) reduce height growth potential with species growth response f_env_yr and with light state (i.e. LIF-value) of home-pixel.
-
     double lif_value = *tree.pixel;
-
     double delta_h_factor = f_env_yr * lif_value; // relative growth
+
+    if (h_pot<0. || delta_h_pot<0. || lif_value<0. || lif_value>1. || delta_h_factor<0. || delta_h_factor>1. )
+        qDebug() << "invalid values in Sapling::growSapling";
 
     // check mortality?
     if (delta_h_factor < species->saplingGrowthParameters().stressThreshold) {
@@ -115,20 +116,21 @@ void Sapling::calculateGrowth()
     mRUS->calculate(true); // calculate the 3pg module (this is done only if that did not happen up to now); true: call comes from regeneration
     double f_env_yr = mRUS->prod3PG().fEnvYear();
 
-    QVector<SaplingTree>::iterator it;
-    QVector<SaplingTree>::iterator tend=mSaplingTrees.end();
     mLiving=0;
-    for (it = mSaplingTrees.begin(); it!=tend; ++it) {
+    QVector<SaplingTree>::iterator it;
+    for (it = mSaplingTrees.begin(); it!=mSaplingTrees.end(); ++it) {
         SaplingTree &tree = *it;
+        if (tree.height<0)
+            qDebug() << "h<0";
         if (tree.isValid()) {
             // growing
             if (growSapling(tree, f_env_yr, species)) {
                 // book keeping (only for survivors)
+                mLiving++;
                 QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
                 float h = ru->saplingHeightAt(p);
                 if (tree.height>h) {
                     ru->setSaplingHeightAt(p,tree.height);
-                    mLiving++;
                     mAvgHeight+=tree.height;
                 }
             }
@@ -139,4 +141,7 @@ void Sapling::calculateGrowth()
 
     if (mSaplingTrees.count() > mLiving*1.3)
         cleanupStorage();
+    qDebug() << ru->index() << species->id()<< ": (add/died/recr./living/avg.height):" << mAdded << mDied << mRecruited << mLiving << mAvgHeight;
+    if (ru->index()==123)
+        qDebug() << "hoho";
 }

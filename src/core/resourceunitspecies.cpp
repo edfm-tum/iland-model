@@ -24,6 +24,7 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mResponse.setup(this);
     m3PG.setResponse(&mResponse);
     mEstablishment.setup(ru->climate(), this);
+    mSapling.setup(this);
     mStatistics.setResourceUnitSpecies(this);
     mStatisticsDead.setResourceUnitSpecies(this);
     mStatisticsMgmt.setResourceUnitSpecies(this);

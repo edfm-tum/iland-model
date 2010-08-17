@@ -70,7 +70,7 @@ public:
     // sapling growth
     void setSaplingHeightMap(float *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
     float saplingHeightAt(const QPoint &position) const { Q_ASSERT(mSaplingHeightMap); int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y()); return mSaplingHeightMap[pixel_index];}
-    void setSaplingHeightAt(const QPoint &position, const float height) { Q_ASSERT(mSaplingHeightMap); int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y()); mSaplingHeightMap[pixel_index]=height;}
+    void setSaplingHeightAt(const QPoint &position, const float height);
 
 
     // model flow

@@ -263,3 +263,14 @@ void ResourceUnit::createStandStatistics()
     mStatistics.calculate();
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*area()):0.;
 }
+
+void ResourceUnit::setSaplingHeightAt(const QPoint &position, const float height)
+{
+    Q_ASSERT(mSaplingHeightMap);
+    int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
+    if (pixel_index<0 || pixel_index>=cPxPerRU*cPxPerRU)
+        qDebug() << "setSaplingHeightAt-Error";
+    else
+        mSaplingHeightMap[pixel_index]=height;
+}
+

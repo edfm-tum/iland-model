@@ -2,6 +2,8 @@
 #include <QtGui>
 #include <QtXml>
 
+#include <signal.h>
+
 #include "global.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -114,6 +116,14 @@ void myMessageOutput(QtMsgType type, const char *msg)
              dumpMessages();
  }
 
+// handle signal...
+// source: http://cplusplus.com/forum/unices/13455/
+void handle_signal( int signo ) {
+    qDebug() << "*** Received signal "<< signo << "****";
+    dumpMessages();
+
+}
+
 void MainWindow::bufferedLog(bool bufferLog)
 {
     doBufferMessages = bufferLog;
@@ -180,6 +190,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     mLogSpace = ui->logOutput;
     qInstallMsgHandler(myMessageOutput);
+    // install signal handler
+    signal( SIGSEGV, handle_signal );
 
     // load xml file: use either a command-line argument (if present), or load the content of a small text file....
     QString argText = QApplication::arguments().last();

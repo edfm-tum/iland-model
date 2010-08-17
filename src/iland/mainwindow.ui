@@ -627,21 +627,21 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="2">
+        <item row="3" column="0" colspan="2">
          <widget class="QRadioButton" name="visImpact">
           <property name="text">
            <string>individual Trees</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0" colspan="3">
+        <item row="5" column="0" colspan="3">
          <widget class="QCheckBox" name="visAutoScale">
           <property name="text">
            <string>Autoscale colors</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="8" column="0">
          <widget class="QLabel" name="label_4">
           <property name="maximumSize">
            <size>
@@ -654,10 +654,10 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="6" column="0" colspan="2">
+        <item row="9" column="0" colspan="2">
          <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
-        <item row="6" column="2">
+        <item row="9" column="2">
          <widget class="QPushButton" name="pbExecExpression">
           <property name="maximumSize">
            <size>
@@ -680,7 +680,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="7" column="0" colspan="3">
+        <item row="10" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
            <string>(value)</string>
@@ -694,10 +694,17 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="3" column="0" colspan="2">
+        <item row="4" column="0" colspan="2">
          <widget class="QRadioButton" name="visResourceUnits">
           <property name="text">
            <string>resource units</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QRadioButton" name="visRegeneration">
+          <property name="text">
+           <string>Regeneration</string>
           </property>
          </widget>
         </item>
