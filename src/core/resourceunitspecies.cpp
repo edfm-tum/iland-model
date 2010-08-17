@@ -83,3 +83,8 @@ void ResourceUnitSpecies::calclulateEstablishment()
         << "N(established):" << mEstablishment.numberEstablished();
 
 }
+
+void ResourceUnitSpecies::calclulateSaplingGrowth()
+{
+    mSapling.calculateGrowth();
+}

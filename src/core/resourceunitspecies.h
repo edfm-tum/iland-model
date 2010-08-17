@@ -4,6 +4,7 @@
 #include "standstatistics.h"
 #include "speciesresponse.h"
 #include "establishment.h"
+#include "sapling.h"
 
 class Species;
 class ResourceUnit;
@@ -36,6 +37,7 @@ public:
     // action
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
     void calclulateEstablishment(); ///< perform establishment calculations
+    void calclulateSaplingGrowth(); ///< growth of saplings
 
 private:
     double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.
@@ -46,6 +48,7 @@ private:
     Production3PG m3PG; ///< NPP prodution unit of this species
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
     Establishment mEstablishment; ///< establishment for seedlings and sapling growth
+    Sapling mSapling; ///< saplings storage/growth
     Species *mSpecies; ///< speices
     ResourceUnit *mRU; ///< resource unit
     int mLastYear;

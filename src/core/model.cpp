@@ -347,7 +347,18 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
 {
     unit->setRandomGenerator();
 
+    // define a height map for the current resource unit on the stack and clear it
+    int sapling_map[cPxPerRU*cPxPerRU];
+    memset(sapling_map, 0, cPxPerRU*cPxPerRU);
+    unit->setSaplingHeightMap(sapling_map);
+
     try {
+        // (1) calculate the growth of (already established) saplings
+        foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
+            const_cast<ResourceUnitSpecies&>(rus).calclulateEstablishment();
+        }
+
+        // (2) calculate the establishment probabilities of new saplings
         foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies&>(rus).calclulateEstablishment();
         }

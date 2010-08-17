@@ -24,6 +24,17 @@ struct EstablishmentParameters
                                bud_birst(255), frost_free(65), frost_tolerance(0.5) {}
 };
 
+/// parameters for sapling growth
+struct SaplingGrowthParameters
+{
+    Expression heightGrowthPotential; ///< formula that expresses height growth potential
+    int maxStressYears; ///< trees die, if they are "stressed" for this number of consectuive years
+    double stressThreshold; ///< tree is considered as "stressed" if f_env_yr is below that threhold
+    double hdSapling; ///< fixed height-diameter ratio used for saplings
+    double ReineckesR; ///< Reineckes R, i.e. maximum stem number for a dg of 25cm
+    SaplingGrowthParameters(): maxStressYears(5), stressThreshold(0.05), hdSapling(80.), ReineckesR(1450.) {}
+};
+
 
 class Species
 {
@@ -89,6 +100,7 @@ public:
     double fecundity_m2() const { return mFecundity_m2; }
     double nonSeedYearFraction() const { return mNonSeedYearFraction; }
     const EstablishmentParameters &establishmentParameters() const { return mEstablishmentParams; }
+    const SaplingGrowthParameters &saplingGrowthParameters() const { return mSaplingGrowthParams; }
 
     const Stamp* stamp(const float dbh, const float height) const { return mLIPs.stamp(dbh, height);}
 private:
@@ -153,6 +165,7 @@ private:
     double mTM_as2; ///< seed dispersal paramaters (treemig)
     double mTM_ks; ///< seed dispersal paramaters (treemig)
     EstablishmentParameters mEstablishmentParams; ///< collection of parameters used for establishment
+    SaplingGrowthParameters mSaplingGrowthParams; ///< collection of parameters for sapling growth
 
 };
 

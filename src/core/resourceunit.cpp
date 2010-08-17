@@ -28,6 +28,7 @@ ResourceUnit::ResourceUnit(const int index)
     mClimate = 0;
     mPixelCount=0;
     mIndex = index;
+    mSaplingHeightMap = 0;
     mWater = new WaterCycle();
 
     mTrees.reserve(100); // start with space for 100 trees.
