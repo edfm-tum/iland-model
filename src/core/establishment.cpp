@@ -43,6 +43,11 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
 inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
 {
 
+    // check window of opportunity...if regeneration (of any species) on the current pixel is above breast height (1.3m), then
+    // no establishment is possible
+    if (mRUS->ru()->saplingHeightAt(pos_lif) > 1.3)
+        return false;
+
     double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight).height;
     if (h_height_grid==0)
         throw IException(QString("establishTree: height grid at %1/%2 has value 0").arg(pos_lif.x()).arg(pos_lif.y()));
@@ -56,6 +61,7 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      // draw a random number and check against the combined establishment probability
      double p_rand = drandom(mRUS->ru()->randomGenerator());
      if (p_rand < p_est) {
+         const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(pos_lif);
          return true; // establishment
      }
      return false; // no establishment

@@ -25,7 +25,7 @@ public:
     void setup(); ///< setup operations after the creation of the model space.
     void setSpeciesSet(SpeciesSet *set);
     void setClimate(Climate* climate) { mClimate = climate; }
-    void setBoundingBox(const QRectF &bb) { mBoundingBox = bb; }
+    void setBoundingBox(const QRectF &bb);
     // getter for a thread-local random number generator object. if setRandomGenerator() is used, this saves some overhead
     MTRand &randomGenerator() const { if (mRandomGenerator) return *mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
     void setRandomGenerator() { mRandomGenerator = &GlobalSettings::instance()->randomGenerator(); } // fetch random generator of the current thread
@@ -68,10 +68,9 @@ public:
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics();
     // sapling growth
-    void setSaplingHeightMap(int *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
-    /// get ref. to sapling height information (can be used for read & write access!).
-    /// pixel_index: index of LIF pixel within the current RU.
-    int &saplingHeightAt(const int pixel_index) { Q_ASSERT(mSaplingHeightMap && pixel_index>=0 && pixel_index<2500); return mSaplingHeightMap[pixel_index];}
+    void setSaplingHeightMap(float *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
+    float saplingHeightAt(const QPoint &position) const { Q_ASSERT(mSaplingHeightMap); int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y()); return mSaplingHeightMap[pixel_index];}
+    void setSaplingHeightAt(const QPoint &position, const float height) { Q_ASSERT(mSaplingHeightMap); int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y()); mSaplingHeightMap[pixel_index]=height;}
 
 
     // model flow
@@ -91,6 +90,7 @@ private:
     QVector<ResourceUnitSpecies> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
+    QPoint mCornerCoord; ///< coordinates on the LIF grid of the upper left corner of the RU
     double mAggregatedLA; ///< sum of leafArea
     double mAggregatedWLA; ///< sum of lightResponse * LeafArea for all trees
     double mAggregatedLR; ///< sum of lightresponse*LA of the current unit
@@ -98,7 +98,7 @@ private:
     double mEffectiveArea_perWLA; ///<
     double mLRI_modification;
     double mAverageAging; ///< leaf-area weighted average aging f this species on this RU.
-    int *mSaplingHeightMap; ///< pointer to array that holds max-height for each 2x2m pixel. Note: this information is not persistent
+    float *mSaplingHeightMap; ///< pointer to array that holds max-height for each 2x2m pixel. Note: this information is not persistent
 
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees

@@ -42,6 +42,11 @@ void ResourceUnit::setup()
     mAverageAging = 0.;
 
 }
+void ResourceUnit::setBoundingBox(const QRectF &bb)
+{
+    mBoundingBox = bb;
+    mCornerCoord = GlobalSettings::instance()->model()->grid()->indexAt(bb.topLeft());
+}
 
 /// set species and setup the species-per-RU-data
 void ResourceUnit::setSpeciesSet(SpeciesSet *set)

@@ -38,6 +38,7 @@ public:
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
     void calclulateEstablishment(); ///< perform establishment calculations
     void calclulateSaplingGrowth(); ///< growth of saplings
+    void addSapling(const QPoint position) { mSapling.addSapling(position); }
 
 private:
     double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.

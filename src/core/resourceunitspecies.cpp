@@ -71,6 +71,7 @@ void ResourceUnitSpecies::calclulateEstablishment()
             out << mEstablishment.TACAminTemp() << mEstablishment.TACAchill() << mEstablishment.TACAfrostFree() << mEstablishment.TACgdd();
             out << mEstablishment.TACAfrostDaysAfterBudBirst() << mEstablishment.abioticEnvironment();
             out << m3PG.fEnvYear() << mEstablishment.avgLIFValue() << mEstablishment.numberEstablished();
+            out << mSapling.livingSaplings() << mSapling.averageHeight() << mSapling.newSaplings() << mSapling.diedSaplings() << mSapling.recruitedSaplings();
         }
     //); // DBGMODE()
 
