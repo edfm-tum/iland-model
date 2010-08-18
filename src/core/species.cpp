@@ -146,9 +146,12 @@ void Species::setup()
     mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
 
     // sapling and sapling growth parameters
-    mSaplingGrowthParams.heightGrowthPotential.setAndParse("40*(1-(1-(h/40)^(1/3))*exp(-0.1))^3"); // dummy!
+    mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));
     mSaplingGrowthParams.heightGrowthPotential.linearize(0., 1.);
-
+    mSaplingGrowthParams.hdSapling = doubleVar("sapHDSapling");
+    mSaplingGrowthParams.stressThreshold = doubleVar("sapStressThreshold");
+    mSaplingGrowthParams.maxStressYears = intVar("sapMaxStressYears");
+    mSaplingGrowthParams.ReineckesR = doubleVar("sapReineckesR");
 
 }
 

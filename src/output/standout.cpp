@@ -21,7 +21,8 @@ StandOut::StandOut()
               << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble)
               << OutputColumn("NPP_kg", "sum of NPP (aboveground + belowground) kg Biomass/ha", OutDouble)
               << OutputColumn("NPPabove_kg", "sum of NPP (abovegroundground) kg Biomass/ha", OutDouble)
-              << OutputColumn("LAI", "Leafareaindex (m2/m2)", OutDouble);
+              << OutputColumn("LAI", "Leafareaindex (m2/m2)", OutDouble)
+              << OutputColumn("cohortCount_ha", "number of cohorts in the regeneration layer (<4m) /ha", OutInteger);
 
  }
 
@@ -41,7 +42,7 @@ void StandOut::exec()
             *this << currentYear() << ru->index() << rus->species()->id(); // keys
             *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                     << stat.volume() << stat.gwl() << stat.basalArea()
-                    << stat.npp() << stat.nppAbove() << stat.leafAreaIndex();
+                    << stat.npp() << stat.nppAbove() << stat.leafAreaIndex() << stat.cohortCount();
             writeRow();
         }
     }
