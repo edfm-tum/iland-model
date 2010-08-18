@@ -90,11 +90,11 @@ void DynamicStandOut::exec()
             if (!mRUFilter.execute())
                 continue;
         }
-        foreach(const ResourceUnitSpecies &rus, ru->ruSpecies()) {
-            if (rus.constStatistics().count()==0)
+        foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+            if (rus->constStatistics().count()==0)
                 continue;
 
-            *this << currentYear() << ru->index() << rus.species()->id(); // keys
+            *this << currentYear() << ru->index() << rus->species()->id(); // keys
             // dynamic calculations
             foreach (const SDynamicField &field, mFieldList) {
 
@@ -105,7 +105,7 @@ void DynamicStandOut::exec()
                 }
                 data.clear();
                 foreach(const Tree &tree, ru->trees()) {
-                    if (tree.species()->index()!=rus.species()->index())
+                    if (tree.species()->index()!=rus->species()->index())
                         continue;
                     tw.setTree(&tree);
                     if (field.var_index>=0)

@@ -34,11 +34,11 @@ void StandOut::exec()
     Model *m = GlobalSettings::instance()->model();
 
     foreach(ResourceUnit *ru, m->ruList()) {
-        foreach(const ResourceUnitSpecies &rus, ru->ruSpecies()) {
-            const StandStatistics &stat = rus.constStatistics();
+        foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+            const StandStatistics &stat = rus->constStatistics();
             if (stat.count()==0)
                 continue;
-            *this << currentYear() << ru->index() << rus.species()->id(); // keys
+            *this << currentYear() << ru->index() << rus->species()->id(); // keys
             *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                     << stat.volume() << stat.gwl() << stat.basalArea()
                     << stat.npp() << stat.nppAbove() << stat.leafAreaIndex();

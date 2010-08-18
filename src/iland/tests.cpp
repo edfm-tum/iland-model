@@ -229,10 +229,10 @@ void Tests::climateResponse()
     Model *model = GlobalSettings::instance()->model();
     //model->ru()->climate()->setup(); // force setup
 
-    const ResourceUnitSpecies &rus = model->ru()->ruSpecies().first();
+    ResourceUnitSpecies *rus = model->ru()->ruSpecies().first();
 
-    const_cast<ResourceUnitSpecies&>(rus).calculate();
-    const SpeciesResponse *sr = rus.speciesResponse();
+    rus->calculate();
+    const SpeciesResponse *sr = rus->speciesResponse();
     QString line;
     for (int mon=0;mon<12;mon++) {
         line = QString("%1;%2").arg(mon)
@@ -462,7 +462,7 @@ void Tests::testEstablishment()
 {
     Model *model = GlobalSettings::instance()->model();
     //model->ru(0)
-    Establishment est(model->ru(0)->climate(),&(model->ru(0)->ruSpecies()[0]));
+    Establishment est(model->ru(0)->climate(),model->ru(0)->ruSpecies().first());
     est.calculate();
 }
 

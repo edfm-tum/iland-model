@@ -73,13 +73,13 @@ void WaterCycle::getStandValues()
     mLAINeedle=mLAIBroadleaved=0.;
     mCanopyConductance=0.;
     double lai;
-    foreach(const ResourceUnitSpecies &rus, mRU->ruSpecies()) {
-        lai = rus.constStatistics().leafAreaIndex();
-        if (rus.species()->isConiferous())
+    foreach(ResourceUnitSpecies *rus, mRU->ruSpecies()) {
+        lai = rus->constStatistics().leafAreaIndex();
+        if (rus->species()->isConiferous())
             mLAINeedle+=lai;
         else
             mLAIBroadleaved+=lai;
-        mCanopyConductance += rus.species()->canopyConductance() * lai; // weigh with LAI
+        mCanopyConductance += rus->species()->canopyConductance() * lai; // weigh with LAI
     }
     double total_lai = mLAIBroadleaved+mLAINeedle;
     if (total_lai>0.) {
@@ -99,16 +99,15 @@ void WaterCycle::getStandValues()
 /// on the RU. This is used for the calc. of the transpiration.
 inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
 {
-    const ResourceUnitSpecies *i;
-    const QVector<ResourceUnitSpecies>::const_iterator iend = mRU->ruSpecies().end();
     double min_response;
     double total_response = 0;
-    for (i=mRU->ruSpecies().begin();i<iend;++i) {
-        if (i->LAIfactor()>0) {
-            i->speciesResponse()->soilAtmosphereResponses(psi_kpa, vpd_kpa, min_response);
-            total_response += min_response * i->LAIfactor();
+    foreach(ResourceUnitSpecies *rus, mRU->ruSpecies()) {
+        if (rus->LAIfactor()>0) {
+            rus->speciesResponse()->soilAtmosphereResponses(psi_kpa, vpd_kpa, min_response);
+            total_response += min_response * rus->LAIfactor();
         }
     }
+
     // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
     // conceptually: response = min(vpd_response, water_response)*aging
     total_response *= mRU->averageAging();

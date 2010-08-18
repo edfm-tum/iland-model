@@ -380,8 +380,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             DebugTimer t("create regeneration map...");
             mRegenerationGrid.wipe(0.f);
             foreach(const ResourceUnit *ru, model->ruList()) {
-                foreach(const ResourceUnitSpecies &rus, ru->ruSpecies()) {
-                    rus.visualGrid(mRegenerationGrid);
+                foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+                    rus->visualGrid(mRegenerationGrid);
                 }
             }
         }

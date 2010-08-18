@@ -24,6 +24,7 @@ ResourceUnit::~ResourceUnit()
 
 ResourceUnit::ResourceUnit(const int index)
 {
+    qDeleteAll(mRUSpecies);
     mSpeciesSet = 0;
     mClimate = 0;
     mPixelCount=0;
@@ -54,24 +55,28 @@ void ResourceUnit::setBoundingBox(const QRectF &bb)
 void ResourceUnit::setSpeciesSet(SpeciesSet *set)
 {
     mSpeciesSet = set;
-    mRUSpecies.clear();
-    mRUSpecies.resize(set->count()); // ensure that the vector space is not relocated
+    qDeleteAll(mRUSpecies);
+
+    //mRUSpecies.resize(set->count()); // ensure that the vector space is not relocated
     for (int i=0;i<set->count();i++) {
         Species *s = const_cast<Species*>(mSpeciesSet->species(i));
         if (!s)
             throw IException("ResourceUnit::setSpeciesSet: invalid index!");
 
+        ResourceUnitSpecies *rus = new ResourceUnitSpecies();
+        mRUSpecies.push_back(rus);
+        rus->setup(s, this);
         /* be careful: setup() is called with a pointer somewhere to the content of the mRUSpecies container.
            If the container memory is relocated (QVector), the pointer gets invalid!!!
            Therefore, a resize() is called before the loop (no resize()-operations during the loop)! */
-        mRUSpecies[i].setup(s,this); // setup this element
+        //mRUSpecies[i].setup(s,this); // setup this element
 
     }
 }
 
 ResourceUnitSpecies &ResourceUnit::resourceUnitSpecies(const Species *species)
 {
-    return mRUSpecies[species->index()];
+    return *mRUSpecies[species->index()];
 }
 
 Tree &ResourceUnit::newTree()
@@ -131,12 +136,12 @@ void ResourceUnit::newYear()
     mEffectiveArea = 0.;
     mPixelCount = mStockedPixelCount = 0;
     // clear statistics global and per species...
-    ResourceUnitSpecies *i;
-    QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
+    QList<ResourceUnitSpecies*>::const_iterator i;
+    QList<ResourceUnitSpecies*>::const_iterator iend = mRUSpecies.constEnd();
     mStatistics.clear();
-    for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        i->statisticsDead().clear();
-        i->statisticsMgmt().clear();
+    for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
+        (*i)->statisticsDead().clear();
+        (*i)->statisticsMgmt().clear();
     }
 
 }
@@ -179,10 +184,10 @@ void ResourceUnit::production()
     );
 
     // calculate LAI fractions
-    ResourceUnitSpecies *i;
-    QVector<ResourceUnitSpecies>::iterator iend = mRUSpecies.end();
-    for (i=mRUSpecies.begin(); i!=iend; ++i) {
-         i->setLAIfactor(i->statistics().leafAreaIndex() / leafAreaIndex());
+    QList<ResourceUnitSpecies*>::const_iterator i;
+    QList<ResourceUnitSpecies*>::const_iterator iend = mRUSpecies.constEnd();
+    for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
+         (*i)->setLAIfactor((*i)->statistics().leafAreaIndex() / leafAreaIndex());
     }
 
     // soil water model - this determines soil water contents needed for response calculations
@@ -192,13 +197,13 @@ void ResourceUnit::production()
     }
 
     // invoke species specific calculation (3PG)
-    for (i=mRUSpecies.begin(); i!=iend; ++i) {
-        i->calculate();
-        if (logLevelInfo() &&  i->LAIfactor()>0)
-            qDebug() << "ru" << mIndex << "species" << (*i).species()->id() << "LAIfraction" << i->LAIfactor() << "raw_gpp_m2"
-                     << i->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"
-                     << productiveArea()*i->prod3PG().GPPperArea()
-                     << "aging(lastyear):" << averageAging() << "f_env,yr:" << i->prod3PG().fEnvYear();
+    for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
+        (*i)->calculate();
+        if (logLevelInfo() &&  (*i)->LAIfactor()>0)
+            qDebug() << "ru" << mIndex << "species" << (*i)->species()->id() << "LAIfraction" << (*i)->LAIfactor() << "raw_gpp_m2"
+                     << (*i)->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"
+                     << productiveArea()*(*i)->prod3PG().GPPperArea()
+                     << "aging(lastyear):" << averageAging() << "f_env,yr:" << (*i)->prod3PG().fEnvYear();
     }
 }
 
@@ -232,11 +237,11 @@ void ResourceUnit::yearEnd()
     // calculate statistics for all tree species of the ressource unit
     int c = mRUSpecies.count();
     for (int i=0;i<c; i++) {
-        mRUSpecies[i].statisticsDead().calculate(); // calculate the dead trees
-        mRUSpecies[i].statisticsMgmt().calculate(); // stats of removed trees
-        mRUSpecies[i].updateGWL(); // get sum of dead trees (died + removed)
-        mRUSpecies[i].statistics().calculate(); // calculate the living (and add removed volume to gwl)
-        mStatistics.add(mRUSpecies[i].statistics());
+        mRUSpecies[i]->statisticsDead().calculate(); // calculate the dead trees
+        mRUSpecies[i]->statisticsMgmt().calculate(); // stats of removed trees
+        mRUSpecies[i]->updateGWL(); // get sum of dead trees (died + removed)
+        mRUSpecies[i]->statistics().calculate(); // calculate the living (and add removed volume to gwl)
+        mStatistics.add(mRUSpecies[i]->statistics());
     }
     mStatistics.calculate(); // aggreagte on stand level
 }
@@ -247,9 +252,9 @@ void ResourceUnit::createStandStatistics()
     // clear statistics (ru-level and ru-species level)
     mStatistics.clear();
     for (int i=0;i<mRUSpecies.count();i++) {
-        mRUSpecies[i].statistics().clear();
-        mRUSpecies[i].statisticsDead().clear();
-        mRUSpecies[i].statisticsMgmt().clear();
+        mRUSpecies[i]->statistics().clear();
+        mRUSpecies[i]->statisticsDead().clear();
+        mRUSpecies[i]->statisticsMgmt().clear();
     }
 
     // add all trees to the statistics objects of the species
@@ -259,8 +264,8 @@ void ResourceUnit::createStandStatistics()
     }
     // summarize statistics for the whole resource unit
     for (int i=0;i<mRUSpecies.count();i++) {
-        mRUSpecies[i].statistics().calculate();
-        mStatistics.add(mRUSpecies[i].statistics());
+        mRUSpecies[i]->statistics().calculate();
+        mStatistics.add(mRUSpecies[i]->statistics());
     }
     mStatistics.calculate();
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*area()):0.;
@@ -279,8 +284,8 @@ void ResourceUnit::setSaplingHeightAt(const QPoint &position, const float height
 /// clear all saplings of all species on a given position (after recruitment)
 void ResourceUnit::clearSaplings(const QPoint &position)
 {
-    for (QVector<ResourceUnitSpecies>::const_iterator i=mRUSpecies.constBegin(); i!=mRUSpecies.constEnd(); ++i)
-        i->clearSaplings(position);
+    foreach(ResourceUnitSpecies* rus, mRUSpecies)
+        rus->clearSaplings(position);
 
 }
 

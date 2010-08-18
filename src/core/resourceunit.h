@@ -35,7 +35,7 @@ public:
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
     const WaterCycle *waterCycle() const { return mWater; } ///< water model of the unit
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
-    const QVector<ResourceUnitSpecies> ruSpecies() const { return mRUSpecies; }
+    const QList<ResourceUnitSpecies*> ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the (const) tree list.
     Tree *tree(const int index) { return &(mTrees[index]);} ///< get pointer to a tree
@@ -89,7 +89,7 @@ private:
     Climate *mClimate; ///< pointer to the climate object of this RU
     SpeciesSet *mSpeciesSet; ///< pointer to the species set for this RU
     WaterCycle *mWater; ///< link to the Soil water calculation engine
-    QVector<ResourceUnitSpecies> mRUSpecies; ///< data for this ressource unit per species
+    QList<ResourceUnitSpecies*> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
     QPoint mCornerCoord; ///< coordinates on the LIF grid of the upper left corner of the RU

@@ -52,8 +52,8 @@ void ProductionOut::exec()
     Model *m = GlobalSettings::instance()->model();
 
     foreach(ResourceUnit *ru, m->ruList()) {
-        foreach(const ResourceUnitSpecies &rus, ru->ruSpecies()) {
-            execute(&rus);
+        foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+            execute(rus);
         }
     }
 }

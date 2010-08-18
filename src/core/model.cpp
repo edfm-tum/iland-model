@@ -355,14 +355,14 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
     try {
         { DebugTimer t("SaplingGrowth");
         // (1) calculate the growth of (already established) saplings (populate sapling map)
-        foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
-            const_cast<ResourceUnitSpecies&>(rus).calclulateSaplingGrowth();
+        foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
+            const_cast<ResourceUnitSpecies*>(rus)->calclulateSaplingGrowth();
         }
         }
         DebugTimer t("OnlyEstablishment");
         // (2) calculate the establishment probabilities of new saplings
-        foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
-            const_cast<ResourceUnitSpecies&>(rus).calclulateEstablishment();
+        foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
+            const_cast<ResourceUnitSpecies*>(rus)->calclulateEstablishment();
         }
     } catch (const IException& e) {
         Helper::msg(e.toString());
