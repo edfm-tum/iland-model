@@ -103,8 +103,8 @@ void Establishment::calculate()
         return;
 
     // the effect of water, nitrogen, co2, .... is a bulk factor: f_env,yr
-    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (this is done only if that did not happen up to now)
     double f_env_yr = mRUS->prod3PG().fEnvYear();
+    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (only if that not done already)
     mPAbiotic *= f_env_yr;
     if (mPAbiotic == 0.)
         return;
@@ -115,13 +115,15 @@ void Establishment::calculate()
         // a large part has available seeds. simply scan the pixels...
         QPoint lif_index;
         Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
-         GridRunner<float> lif_runner(lif_map, ru_rect);
-         while (float *lif_px = lif_runner.next()) {
-             lif_index = lif_map.indexOf(lif_px);
-             // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
-             if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map.cellCenterPoint(lif_index) )))
-                 n_established++;
-         }
+        GridRunner<float> lif_runner(lif_map, ru_rect);
+        while (float *lif_px = lif_runner.next()) {
+            lif_index = lif_map.indexOf(lif_px);
+            if (!ru_rect.contains(lif_map.cellCenterPoint(lif_index)))
+                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map.cellCenterPoint(lif_index) << "not in" << ru_rect;
+            // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
+            if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map.cellCenterPoint(lif_index) )))
+                n_established++;
+        }
 
     } else {
         // relatively few seed-pixels are filled. So examine seed pixels first, and check light only on "filled" pixels
@@ -133,6 +135,8 @@ void Establishment::calculate()
                 // pixel with seeds: now really iterate over lif pixels
                 GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_map.indexOf(p)));
                 while (float *lif_px = lif_runner.next()) {
+                    if (!ru_rect.contains(lif_map.cellCenterPoint(lif_map.indexOf(lif_px))))
+                        qDebug() << "(b) establish problem:" << lif_map.indexOf(lif_px) << "point: " << lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) << "not in" << ru_rect;
                     if (establishTree(lif_map.indexOf(lif_px), *lif_px ,*p))
                         n_established++;
                 }

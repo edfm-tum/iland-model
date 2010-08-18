@@ -353,11 +353,13 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
     unit->setSaplingHeightMap(sapling_map);
 
     try {
+        { DebugTimer t("SaplingGrowth");
         // (1) calculate the growth of (already established) saplings (populate sapling map)
         foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies&>(rus).calclulateSaplingGrowth();
         }
-
+        }
+        DebugTimer t("OnlyEstablishment");
         // (2) calculate the establishment probabilities of new saplings
         foreach (const ResourceUnitSpecies &rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies&>(rus).calclulateEstablishment();

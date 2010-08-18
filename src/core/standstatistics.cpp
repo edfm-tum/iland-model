@@ -23,6 +23,8 @@ void StandStatistics::clear()
     mLeafAreaIndex = 0.;
     mNPP = mNPPabove = 0.;
     mCohortCount = mSaplingCount = 0;
+    mAverageSaplingAge = 0.;
+    mSumSaplingAge = 0.;
 }
 
 void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
@@ -49,6 +51,9 @@ void StandStatistics::calculate()
         if (mRUS)
             mLeafAreaIndex /= mRUS->ru()->area(); // convert from leafarea to LAI
     }
+    if (mCohortCount)
+        mAverageSaplingAge = mSumSaplingAge / double(mCohortCount);
+
     // scale values to per hectare if resource unit <> 1ha
     if (mRUS) {
         mGWL = mSumVolume + mRUS->removedVolume();
@@ -79,6 +84,7 @@ void StandStatistics::add(const StandStatistics &stat)
     mGWL+=stat.mGWL;
     mCohortCount += stat.mCohortCount;
     mSaplingCount += stat.mSaplingCount;
+    mSumSaplingAge += stat.mSumSaplingAge;
 }
 
 /// call for regeneration layer of a species in resource unit
@@ -86,4 +92,6 @@ void StandStatistics::add(const Sapling *sapling)
 {
     mCohortCount = sapling->livingSaplings();
     mSaplingCount = sapling->livingSaplings(); // to change!!!
+    mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
+    mAverageSaplingAge = sapling->averageAge();
 }

@@ -276,3 +276,11 @@ void ResourceUnit::setSaplingHeightAt(const QPoint &position, const float height
         mSaplingHeightMap[pixel_index]=height;
 }
 
+/// clear all saplings of all species on a given position (after recruitment)
+void ResourceUnit::clearSaplings(const QPoint &position)
+{
+    for (QVector<ResourceUnitSpecies>::const_iterator i=mRUSpecies.constBegin(); i!=mRUSpecies.constEnd(); ++i)
+        i->clearSaplings(position);
+
+}
+

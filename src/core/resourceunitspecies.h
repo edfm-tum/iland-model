@@ -38,11 +38,15 @@ public:
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
     void calclulateEstablishment(); ///< perform establishment calculations
     void calclulateSaplingGrowth(); ///< growth of saplings
-    void addSapling(const QPoint position) { mSapling.addSapling(position); }
+    void addSapling(const QPoint &position) { mSapling.addSapling(position); } ///< add a saplings on a given position
+    void clearSaplings(const QPoint &position) { mSapling.clearSaplings(position);} ///< clear saplings on a given position (after recruitment)
+
     // visualization/graphical output
     void visualGrid(Grid<float> &grid) const;
 
 private:
+    ResourceUnitSpecies(const ResourceUnitSpecies &); // no copy
+    ResourceUnitSpecies &operator=(const ResourceUnitSpecies &); // no copy
     double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.
     double mRemovedGrowth; ///< m3 volume of trees removed/managed (to calculate GWL)
     StandStatistics mStatistics; ///< statistics of a species on this resource unit

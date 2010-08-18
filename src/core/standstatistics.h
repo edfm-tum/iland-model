@@ -28,6 +28,7 @@ public:
     double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)/ha
     int cohortCount() const { return mCohortCount; } ///< number of cohorts of saplings / ha
     int saplingCount() const { return mSaplingCount; } ///< number individuals in regeneration layer (represented by "cohortCount" cohorts) N/ha
+    double saplingAge() const { return mAverageSaplingAge; } ///< average age of sapling (currenty not weighted with represented sapling numbers...)
 
 private:
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species
@@ -45,6 +46,8 @@ private:
     // regeneration layer
     int mCohortCount;
     int mSaplingCount;
+    double mSumSaplingAge;
+    double mAverageSaplingAge;
 };
 
 #endif // STANDSTATISTICS_H

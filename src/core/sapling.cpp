@@ -62,20 +62,43 @@ void Sapling::addSapling(const QPoint &pos_lif)
     mAdded++;
 }
 
+/// clear  saplings o on a given position (after recruitment)
+void Sapling::clearSaplings(const QPoint &position)
+{
+    float *target = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
+    QVector<SaplingTree>::const_iterator it;
+    for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+        if (it->pixel==target) {
+            // trick: use a const iterator to avoid a deep copy of the vector; then do an ugly const_cast to actually write the data
+            const SaplingTree &t = *it;
+            const_cast<SaplingTree&>(t).pixel=0;
+        }
+    }
+}
+
 /// growth function for an indivudal sapling.
 /// returns true, if sapling survives, false if sapling dies or is recruited to iLand.
 /// see also http://iland.boku.ac.at/recruitment
 bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* species)
 {
+    QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
+
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
     double delta_h_pot = h_pot - tree.height;
 
     // (2) reduce height growth potential with species growth response f_env_yr and with light state (i.e. LIF-value) of home-pixel.
     double lif_value = *tree.pixel;
-    double delta_h_factor = f_env_yr * lif_value; // relative growth
+    double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(p.x()/cPxPerHeight, p.y()/cPxPerHeight).height;
+    if (h_height_grid==0)
+        throw IException(QString("growSapling: height grid at %1/%2 has value 0").arg(p.x()).arg(p.y()));
+    double rel_height = 4. / h_height_grid;
 
-    if (h_pot<0. || delta_h_pot<0. || lif_value<0. || lif_value>1. || delta_h_factor<0. || delta_h_factor>1. )
+    double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
+
+    double delta_h_factor = f_env_yr * lif_corrected; // relative growth
+
+    if (h_pot<0. || delta_h_pot<0. || lif_corrected<0. || lif_corrected>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";
 
     // check mortality of saplings
@@ -99,8 +122,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
     // recruitment?
     if (tree.height > 4.f) {
         mRecruited++;
-        tree.pixel=0;
-        QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
+
         ResourceUnit *ru = const_cast<ResourceUnit*> (mRUS->ru());
         float dbh = tree.height / species->saplingGrowthParameters().hdSapling * 100.f;
         // add a new tree
@@ -113,6 +135,8 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         bigtree.setAge(tree.age.age,tree.height);
         bigtree.setRU(ru);
         bigtree.setup();
+        // clear all regeneration from this pixel (including this tree)
+        ru->clearSaplings(p);
         return false;
     }
     return true;
@@ -134,14 +158,14 @@ void Sapling::calculateGrowth()
     double f_env_yr = mRUS->prod3PG().fEnvYear();
 
     mLiving=0;
-    QVector<SaplingTree>::iterator it;
-    for (it = mSaplingTrees.begin(); it!=mSaplingTrees.end(); ++it) {
-        SaplingTree &tree = *it;
+    QVector<SaplingTree>::const_iterator it;
+    for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+        const SaplingTree &tree = *it;
         if (tree.height<0)
             qDebug() << "h<0";
         if (tree.isValid()) {
             // growing
-            if (growSapling(tree, f_env_yr, species)) {
+            if (growSapling(const_cast<SaplingTree&>(tree), f_env_yr, species)) {
                 // book keeping (only for survivors)
                 mLiving++;
                 QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);

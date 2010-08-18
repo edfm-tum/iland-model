@@ -67,10 +67,12 @@ public:
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics();
-    // sapling growth
+    // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
+    // the map itself is a local variable and only filled temporarily.
     void setSaplingHeightMap(float *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
     float saplingHeightAt(const QPoint &position) const { Q_ASSERT(mSaplingHeightMap); int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y()); return mSaplingHeightMap[pixel_index];}
     void setSaplingHeightAt(const QPoint &position, const float height);
+    void clearSaplings(const QPoint &position); ///< clear all saplings of all species on a given position (after recruitment)
 
 
     // model flow
