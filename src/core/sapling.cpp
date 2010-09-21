@@ -6,7 +6,7 @@
 #include "tree.h"
 
 /** @class Sapling
-    Sapling stores saplings and computes sapling growth (before recruitment).
+    Sapling stores saplings per species and resource unit and computes sapling growth (before recruitment).
     http://iland.boku.ac.at/sapling+growth+and+competition
     Saplings are established in a separate step (@sa Regeneration). If sapling reach a height of 4m, they are recruited and become "real" iLand-trees.
     Within the regeneration layer, a cohort-approach is applied.
@@ -62,7 +62,7 @@ void Sapling::addSapling(const QPoint &pos_lif)
     mAdded++;
 }
 
-/// clear  saplings o on a given position (after recruitment)
+/// clear  saplings on a given position (after recruitment)
 void Sapling::clearSaplings(const QPoint &position)
 {
     float *target = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
@@ -190,6 +190,8 @@ void Sapling::calculateGrowth()
     //qDebug() << ru->index() << species->id()<< ": (living/avg.height):" <<  mLiving << mAvgHeight;
 }
 
+/// fill a grid with the maximum height of saplings per pixel.
+/// this function is used for visualization only
 void Sapling::fillHeightGrid(Grid<float> &grid) const
 {
     QVector<SaplingTree>::const_iterator it;

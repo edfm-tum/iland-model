@@ -3,7 +3,8 @@
 #include <QtCore/QVector>
 #include <QtCore/QPoint>
 #include "grid.h"
-/// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on storage efficiency.
+
+/// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
 class SaplingTree {
 public:
     SaplingTree() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }
@@ -19,6 +20,8 @@ private:
 
 class ResourceUnitSpecies; // forward
 class Species;
+
+/// saplings from 5cm to 4m
 class Sapling
 {
 public:
@@ -30,7 +33,7 @@ public:
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     void addSapling(const QPoint &pos_lif);
-    void clearSaplings(const QPoint &position); ///< clear  saplings o on a given position (after recruitment)
+    void clearSaplings(const QPoint &position); ///< clear  saplings on a given position (after recruitment)
     // access to statistics
     int newSaplings() const { return mAdded; }
     int diedSaplings() const { return mDied; }
