@@ -95,3 +95,4 @@ void ResourceUnitSpecies::visualGrid(Grid<float> &grid) const
 {
     mSapling.fillHeightGrid(grid);
 }
+

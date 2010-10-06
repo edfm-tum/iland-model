@@ -40,6 +40,7 @@ public:
     void calclulateSaplingGrowth(); ///< growth of saplings
     void addSapling(const QPoint &position) { mSapling.addSapling(position); } ///< add a saplings on a given position
     void clearSaplings(const QPoint &position) { mSapling.clearSaplings(position);} ///< clear saplings on a given position (after recruitment)
+    bool hasSaplingAt(const QPoint &position) const { return mSapling.hasSapling(position); } ///< return true if a sapling of the current speices is present at 'position'
 
     // visualization/graphical output
     void visualGrid(Grid<float> &grid) const;

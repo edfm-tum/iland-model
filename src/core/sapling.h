@@ -34,6 +34,7 @@ public:
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     void addSapling(const QPoint &pos_lif);
     void clearSaplings(const QPoint &position); ///< clear  saplings on a given position (after recruitment)
+    bool hasSapling(const QPoint &position) const; ///< return true if sapling is present at position
     // access to statistics
     int newSaplings() const { return mAdded; }
     int diedSaplings() const { return mDied; }

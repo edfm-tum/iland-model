@@ -48,6 +48,10 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
     if (mRUS->ru()->saplingHeightAt(pos_lif) > 1.3)
         return false;
 
+    // check if sapling of the current tree species is already established -> if so, no establishment.
+    if (mRUS->hasSaplingAt(pos_lif))
+        return false;
+
     double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight).height;
     if (h_height_grid==0)
         throw IException(QString("establishTree: height grid at %1/%2 has value 0").arg(pos_lif.x()).arg(pos_lif.y()));

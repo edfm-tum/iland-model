@@ -51,6 +51,20 @@ void Sapling::cleanupStorage()
     }
 }
 
+// not a very good way of checking if sapling is present
+// maybe better: use also a (local) maximum sapling height grid
+bool Sapling::hasSapling(const QPoint &position) const
+{
+    float *target = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
+    QVector<SaplingTree>::const_iterator it;
+    for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+        if (it->pixel==target)
+            return true;
+    }
+    return false;
+}
+
+
 void Sapling::addSapling(const QPoint &pos_lif)
 {
     // adds a sapling...
