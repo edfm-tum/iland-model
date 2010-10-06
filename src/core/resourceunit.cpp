@@ -271,14 +271,16 @@ void ResourceUnit::createStandStatistics()
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*area()):0.;
 }
 
-void ResourceUnit::setSaplingHeightAt(const QPoint &position, const float height)
+void ResourceUnit::setMaxSaplingHeightAt(const QPoint &position, const float height)
 {
     Q_ASSERT(mSaplingHeightMap);
     int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
-    if (pixel_index<0 || pixel_index>=cPxPerRU*cPxPerRU)
+    if (pixel_index<0 || pixel_index>=cPxPerRU*cPxPerRU) {
         qDebug() << "setSaplingHeightAt-Error for position" << position << "for RU at" << boundingBox() << "with corner" << mCornerCoord;
-    else
-        mSaplingHeightMap[pixel_index]=height;
+    } else {
+        if (mSaplingHeightMap[pixel_index]<height)
+            mSaplingHeightMap[pixel_index]=height;
+    }
 }
 
 /// clear all saplings of all species on a given position (after recruitment)

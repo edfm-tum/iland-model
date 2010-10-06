@@ -166,15 +166,15 @@ void Sapling::calculateGrowth()
         if (tree.isValid()) {
             // growing
             if (growSapling(const_cast<SaplingTree&>(tree), f_env_yr, species)) {
+                // set the sapling height to the maximum value on the current pixel
+                QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
+                ru->setMaxSaplingHeightAt(p,tree.height);
+
                 // book keeping (only for survivors)
                 mLiving++;
-                QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
-                float h = ru->saplingHeightAt(p);
-                if (tree.height>h) {
-                    ru->setSaplingHeightAt(p,tree.height);
-                    mAvgHeight+=tree.height;
-                    mAvgAge+=tree.age.age;
-                }
+                mAvgHeight+=tree.height;
+                mAvgAge+=tree.age.age;
+
             }
         }
     }
