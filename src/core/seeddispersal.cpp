@@ -35,9 +35,8 @@ void SeedDispersal::setup()
     mSeedMap.clear();
     mSeedMap.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
     mSeedMap.initialize(0.);
-    mIndexOffset = GlobalSettings::instance()->model()->grid()->indexAt(QPointF(0., 0.));
     mIndexFactor = int(seedmap_size) / cPxSize; // ratio seed grid / lip-grid:
-    qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels, offset to (0/0): " << mIndexOffset;
+    qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels.";
 
     if (mSpecies==0)
         throw IException("Setup of SeedDispersal: Species not defined.");
