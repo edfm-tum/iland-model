@@ -213,11 +213,12 @@ int Species::estimateAge(const float height) const
    This function produces seeds if the tree is older than a species-specific age ("maturity")
    If seeds are produced, this information is stored in a "SeedMap"
   */
-void Species::seedProduction(const int age, const QPoint &position_index)
+void Species::seedProduction(const int age, const float height, const QPoint &position_index)
 {
     if (!mSeedDispersal)
         return; // regeneration is disabled
-    if (age > mMaturityYears) {
+    // no seed production if maturity age is not reached (species parameter) or if tree height is below 4m.
+    if (age > mMaturityYears && height > 4.f) {
         mSeedDispersal->setMatureTree(position_index);
     }
 }
