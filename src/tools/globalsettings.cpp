@@ -210,7 +210,8 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 
     case dEstablishment: return QStringList() << "id" << "type" << "year" << "species" << "RU_index"
                  << "avgProbDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "TACAAbioticEnv"
-                 << "fEnvYr" << "avgLIFValue" <<"N_Established" << "Living_cohorts" << "averageHeight" << "Added" << "Died" << "Recruited";
+                 << "fEnvYr" << "avgLIFValue" <<"N_Established" << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
+                 << "Added" << "Died" << "Recruited";
     }
     return QStringList() << "invalid debug output!";
 }

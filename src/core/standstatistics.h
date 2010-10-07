@@ -44,8 +44,8 @@ private:
     double mNPP;
     double mNPPabove;
     // regeneration layer
-    int mCohortCount;
-    int mSaplingCount;
+    int mCohortCount; ///< number of cohrots
+    int mSaplingCount; ///< number of sapling (Reineckes Law)
     double mSumSaplingAge;
     double mAverageSaplingAge;
 };

@@ -82,16 +82,18 @@ void StandStatistics::add(const StandStatistics &stat)
     mNPP += stat.mNPP;
     mNPPabove += stat.mNPPabove;
     mGWL+=stat.mGWL;
+    // regeneration
     mCohortCount += stat.mCohortCount;
     mSaplingCount += stat.mSaplingCount;
     mSumSaplingAge += stat.mSumSaplingAge;
+
 }
 
 /// call for regeneration layer of a species in resource unit
 void StandStatistics::add(const Sapling *sapling)
 {
     mCohortCount = sapling->livingSaplings();
-    mSaplingCount = sapling->livingSaplings(); // to change!!!
+    mSaplingCount = sapling->livingSaplings(); // to change!!! Reinecke!
     mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
     mAverageSaplingAge = sapling->averageAge();
 }

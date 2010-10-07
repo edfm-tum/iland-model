@@ -29,7 +29,7 @@ public:
     Sapling();
     void setup(ResourceUnitSpecies *masterRUS) { mRUS = masterRUS; }
     void cleanupStorage(); // maintenance operation - remove dead/recruited trees from vector
-    void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mAvgHeight=0.;mAvgAge=0.; }
+    void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     void addSapling(const QPoint &pos_lif);
@@ -42,6 +42,8 @@ public:
     int recruitedSaplings() const { return mRecruited; }
     double averageHeight() const { return mAvgHeight; }
     double averageAge() const { return mAvgAge; }
+    double averageDeltaHPot() const { return mAvgDeltaHPot; }
+    double averageDeltaHRealized() const { return mAvgHRealized; }
     // output maps
     void fillHeightGrid(Grid<float> &grid) const;
 private:
@@ -54,6 +56,8 @@ private:
     int mLiving; ///< number of trees currently in the regeneration layer
     double mAvgHeight; ///< average height of saplings (m)
     double mAvgAge; ///< average age of saplings (years)
+    double mAvgDeltaHPot; ///< average height increment potential (m)
+    double mAvgHRealized; ///< average realized height increment
 };
 
 #endif // SAPLING_H

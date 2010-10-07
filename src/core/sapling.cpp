@@ -153,6 +153,12 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         ru->clearSaplings(p);
         return false;
     }
+    // book keeping (only for survivors)
+    mLiving++;
+    mAvgHeight+=tree.height;
+    mAvgAge+=tree.age.age;
+    mAvgDeltaHPot+=delta_h_pot;
+    mAvgHRealized += delta_h_pot * delta_h_factor;
     return true;
 
 }
@@ -183,18 +189,14 @@ void Sapling::calculateGrowth()
                 // set the sapling height to the maximum value on the current pixel
                 QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
                 ru->setMaxSaplingHeightAt(p,tree.height);
-
-                // book keeping (only for survivors)
-                mLiving++;
-                mAvgHeight+=tree.height;
-                mAvgAge+=tree.age.age;
-
             }
         }
     }
     if (mLiving) {
         mAvgHeight /= double(mLiving);
         mAvgAge /= double(mLiving);
+        mAvgDeltaHPot /= double(mLiving);
+        mAvgHRealized /= double(mLiving);
     }
 
     if (mSaplingTrees.count() > mLiving*1.3)
