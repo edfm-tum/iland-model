@@ -82,8 +82,8 @@ double Production3PG::calculate()
     for (int i=0;i<12;i++)
         f_sum += mGPP[i] / gC_to_kg_biomass; // == uAPar * epsilon_eff
 
-    // still missing: the factor f_ref: parameter that scales response values to the range 0..1 (1 for best growth conditions)
-    const double perf_factor = 1.;
+    //  the factor f_ref: parameter that scales response values to the range 0..1 (1 for best growth conditions) (species parameter)
+    const double perf_factor = mResponse->species()->saplingGrowthParameters().referenceRatio;
     mEnvYear = f_sum / (Model::settings().epsilon * mResponse->yearlyRadiation() * perf_factor);
 
     // calculate fraction for belowground biomass

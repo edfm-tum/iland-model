@@ -151,6 +151,7 @@ void Species::setup()
     mSaplingGrowthParams.hdSapling = doubleVar("sapHDSapling");
     mSaplingGrowthParams.stressThreshold = doubleVar("sapStressThreshold");
     mSaplingGrowthParams.maxStressYears = intVar("sapMaxStressYears");
+    mSaplingGrowthParams.referenceRatio = doubleVar("sapReferenceRatio");
     mSaplingGrowthParams.ReineckesR = doubleVar("sapReineckesR");
 
 }

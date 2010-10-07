@@ -14,6 +14,9 @@ public:
     /// this function called before the 3pg production.
     void calculate(); ///< calculate responses for current year
     void clear(); ///< set all responses to 0
+    // access components
+    const Species *species() const { return mSpecies; }
+    const ResourceUnit *resourceUnit() const { return mRu; }
     // access responses
     const double *tempResponse() const { return mTempResponse; }
     const double *soilWaterResponse() const { return mSoilWaterResponse; }

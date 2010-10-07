@@ -32,7 +32,8 @@ struct SaplingGrowthParameters
     double stressThreshold; ///< tree is considered as "stressed" if f_env_yr is below that threhold
     float hdSapling; ///< fixed height-diameter ratio used for saplings
     double ReineckesR; ///< Reineckes R, i.e. maximum stem number for a dg of 25cm
-    SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReineckesR(1450.) {}
+    double referenceRatio; ///< f_ref (eq. 3) -> ratio reference site / optimum site
+    SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReineckesR(1450.), referenceRatio(1.) {}
 };
 
 
