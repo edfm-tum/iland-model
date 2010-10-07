@@ -3,12 +3,25 @@
 
 #include "species.h"
 #include "resourceunit.h"
+#include "model.h"
+#include "snag.h"
 
 /** @class ResourceUnitSpecies
     The class contains data available at ResourceUnit x Species scale.
     Data stored is either statistical (i.e. number of trees per species) or used
-    within the model (e.g. fraction of utilizable Radiation)
+    within the model (e.g. fraction of utilizable Radiation).
+    Important submodules are:
+    * 3PG production (Production3PG)
+    * Establishment
+    * Growth and Recruitment of Saplings
+    * Snag dynamics
   */
+ResourceUnitSpecies::~ResourceUnitSpecies()
+{
+    if (mSnag)
+        delete mSnag;
+    mSnag = 0;
+}
 
 double ResourceUnitSpecies::leafArea() const
 {
@@ -28,9 +41,17 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mStatistics.setResourceUnitSpecies(this);
     mStatisticsDead.setResourceUnitSpecies(this);
     mStatisticsMgmt.setResourceUnitSpecies(this);
+    if (mSnag)
+        delete mSnag;
+    mSnag=0;
+    if (Model::settings().carbonCycleEnabled) {
+       mSnag = new Snag;
+       mSnag->setup();
+    }
 
     mRemovedGrowth = 0.;
     mLastYear = -1;
+
 }
 
 

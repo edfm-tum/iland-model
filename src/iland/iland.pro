@@ -68,7 +68,8 @@ SOURCES += main.cpp \
     ../core/establishment.cpp \
     ../core/soil.cpp \
     ../core/snags.cpp \
-    ../core/sapling.cpp
+    ../core/sapling.cpp \
+    ../core/snag.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -125,7 +126,8 @@ HEADERS += mainwindow.h \
     ../core/establishment.h \
     ../core/soil.h \
     ../core/snags.h \
-    ../core/sapling.h
+    ../core/sapling.h \
+    ../core/snag.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

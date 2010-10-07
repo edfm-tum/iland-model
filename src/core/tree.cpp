@@ -7,6 +7,7 @@
 #include "species.h"
 #include "resourceunit.h"
 #include "model.h"
+#include "snag.h"
 
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
@@ -625,6 +626,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     double refill_reserve = qMin(reserve_size, (1. + mSpecies->finerootFoliageRatio())*mFoliageMass); // not always try to refill reserve 100%
 
     double apct_wood, apct_root, apct_foliage; // allocation percentages (sum=1) (eta)
+    ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     // turnover rates
     const double &to_fol = species()->turnoverLeaf();
     const double &to_root = species()->turnoverRoot();
@@ -633,7 +635,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     double to_wood = refill_reserve / (mWoodyMass + refill_reserve);
 
-    apct_root = mRU->resourceUnitSpecies(species()).prod3PG().rootFraction();
+    apct_root = rus.prod3PG().rootFraction();
     d.NPP_above = d.NPP * (1. - apct_root); // aboveground: total NPP - fraction to roots
     double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents (b_woody / b_foliage)
 
@@ -654,6 +656,8 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Change of biomass compartments
     double sen_root = mFineRootMass * to_root;
     double sen_foliage = mFoliageMass * to_fol;
+    if (rus.snag())
+        rus.snag()->addTurnoverLitter(this, sen_foliage, sen_root);
 
     // Roots
     // http://iland.boku.ac.at/allocation#belowground_NPP
@@ -845,13 +849,19 @@ inline double Tree::relative_height_growth()
 void Tree::die(TreeGrowthData *d)
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
-    mRU->resourceUnitSpecies(species()).statisticsDead().add(this, d); // add tree to statistics
+    ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
+    rus.statisticsDead().add(this, d); // add tree to statistics
+    if (rus.snag())
+        rus.snag()->addMortality(this);
 }
 
 void Tree::remove()
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
-    mRU->resourceUnitSpecies(species()).statisticsMgmt().add(this, 0);
+    ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
+    rus.statisticsMgmt().add(this, 0);
+    if (rus.snag())
+        rus.snag()->addHarvest(this, 1., 0., 0.); // remove 100% of the stem, let 100% of branches and foliage in the forest
 }
 
 void Tree::mortality(TreeGrowthData &d)

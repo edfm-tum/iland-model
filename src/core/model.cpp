@@ -305,6 +305,7 @@ void Model::loadProject()
             ss->setupRegeneration();
     }
 
+
     // (3.2) management
     QString mgmtFile = xml.value("model.management.file");
     if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
@@ -313,6 +314,10 @@ void Model::loadProject()
         mManagement->loadScript(path);
         qDebug() << "setup management using script" << path;
     }
+
+    // (3.3) setup of snag dynamics / soil model
+    changeSettings().carbonCycleEnabled = xml.valueBool("model.settings.carbonCycleEnabled", false);
+
 }
 
 
@@ -465,6 +470,7 @@ void Model::runYear()
         executePerResourceUnit( nc_establishment , false /* true: force single thraeded operation */);
 
     }
+    // calculate soil / snag dynamics
 
     // calculate statistics
     foreach(ResourceUnit *ru, mRU)
