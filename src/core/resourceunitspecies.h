@@ -14,7 +14,7 @@ class Snag;
 class ResourceUnitSpecies
 {
 public:
-    ResourceUnitSpecies() : mLAIfactor(0.), mSpecies(0), mRU(0) {}
+    ResourceUnitSpecies() : mLAIfactor(0.), mSnag(0), mSpecies(0), mRU(0) {}
     ~ResourceUnitSpecies();
     void setup(Species *species, ResourceUnit *ru);
 
