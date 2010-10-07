@@ -759,10 +759,11 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     double d_increment = factor_diameter * (net_stem_npp - stem_residual); // Eq. (11)
     double res_final  = 0.;
     if (fabs(stem_residual) > 1.) {
+
         // calculate final residual in stem
         res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
         if (fabs(res_final)>1.) {
-            // for large errors in estimating the diameter increment (> 1kg), we solve the increment iteratively.
+            // for large errors in stem biomass due to errors in diameter increment (> 1kg), we solve the increment iteratively.
             // first, increase increment with constant step until we overestimate the first time
             // then,
             d_increment = 0.02; // start with 2cm increment

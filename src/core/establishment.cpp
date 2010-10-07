@@ -107,8 +107,8 @@ void Establishment::calculate()
         return;
 
     // the effect of water, nitrogen, co2, .... is a bulk factor: f_env,yr
-    double f_env_yr = mRUS->prod3PG().fEnvYear();
     const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (only if that not done already)
+    double f_env_yr = mRUS->prod3PG().fEnvYear();
     mPAbiotic *= f_env_yr;
     if (mPAbiotic == 0.)
         return;
