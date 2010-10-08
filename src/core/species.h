@@ -94,7 +94,7 @@ public:
     double nitrogenResponse(const double &availableNitrogen) const { return mSet->nitrogenResponse(availableNitrogen, mRespNitrogenClass); }
     double canopyConductance() const { return mMaxCanopyConductance; } ///< maximum canopy conductance in m/s
     inline double soilwaterResponse(const double &psi_kPa) const; ///< input: matrix potential (kPa) (e.g. -15)
-    double lightResponse(const double lightResourceIndex) {return mSet->lightResponse(lightResourceIndex, mLightResponseClass); }
+    double lightResponse(const double lightResourceIndex) const {return mSet->lightResponse(lightResourceIndex, mLightResponseClass); }
     double psiMin() const { return mPsiMin; }
     // parameters for seed dispersal
     void treeMigKernel(double &ras1, double &ras2, double &ks) const { ras1=mTM_as1; ras2=mTM_as2; ks=mTM_ks; }

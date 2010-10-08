@@ -221,7 +221,7 @@ double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenRes
     LightResponse is classified from 1 (very shade inolerant) and 5 (very shade tolerant) and interpolated for values between 1 and 5.
     Returns a value between 0..1
     @sa http://iland.boku.ac.at/allocation#reserve_and_allocation_to_stem_growth */
-double SpeciesSet::lightResponse(const double lightResourceIndex, const double lightResponseClass)
+double SpeciesSet::lightResponse(const double lightResourceIndex, const double lightResponseClass) const
 {
     double low = mLightResponseIntolerant.calculate(lightResourceIndex);
     double high = mLightResponseTolerant.calculate(lightResourceIndex);

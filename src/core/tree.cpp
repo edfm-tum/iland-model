@@ -549,8 +549,8 @@ void Tree::calcLightResponse()
 {
     // calculate a light response from lri:
     // http://iland.boku.ac.at/individual+tree+light+availability
-    double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.);
-    mLightResponse = mSpecies->lightResponse(lri);
+    double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.); // Eq. (3)
+    mLightResponse = mSpecies->lightResponse(lri); // Eq. (4)
     mRU->addLR(mLeafArea, mLightResponse);
 
 }

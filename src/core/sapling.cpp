@@ -108,9 +108,11 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         throw IException(QString("growSapling: height grid at %1/%2 has value 0").arg(p.x()).arg(p.y()));
     double rel_height = 4. / h_height_grid;
 
-    double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
+    double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height); // correction based on height
+    // Note: difference to trees: no "LRIcorrection"
+    double lr = mRUS->species()->lightResponse(lif_corrected); // species specific light response (LUI, light utilization index)
 
-    double delta_h_factor = f_env_yr * lif_corrected; // relative growth
+    double delta_h_factor = f_env_yr * lr; // relative growth
 
     if (h_pot<0. || delta_h_pot<0. || lif_corrected<0. || lif_corrected>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";
