@@ -54,11 +54,20 @@ void SeedDispersal::setup()
     // the central pixel still gets the value of 1 (i.e. 100% probability)
     createKernel(mKernelNonSeedYear, mTM_fecundity_cell*mNonSeedYearFraction);
 
-    if (QFile::exists("c:\\temp\\seedmaps")) {
-        Helper::saveToTextFile(QString("c:\\temp\\seedmaps\\seedkernelYes_%1.csv").arg(mSpecies->id()),gridToString(mKernelSeedYear));
-        Helper::saveToTextFile(QString("c:\\temp\\seedmaps\\seedkernelNo_%1.csv").arg(mSpecies->id()),gridToString(mKernelNonSeedYear));
+    // debug info
+    mDumpSeedMaps = GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false);
+    if (mDumpSeedMaps) {
+        QString path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
+        Helper::saveToTextFile(QString("%1/seedkernelYes_%2.csv").arg(path).arg(mSpecies->id()),gridToString(mKernelSeedYear));
+        Helper::saveToTextFile(QString("%1/seedkernelNo_%2.csv").arg(path).arg(mSpecies->id()),gridToString(mKernelNonSeedYear));
     }
-
+    // external seeds
+    if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.externalSeedEnabled",false)) {
+        // current species in list??
+        mHasExternalSeedInput = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSpecies").contains(mSpecies->id());
+        if (mHasExternalSeedInput)
+            qDebug() << "External seed input enabled for" << mSpecies->id();
+    }
 
     // setup of seed kernel
 //    const int max_radius = 15; // pixels
@@ -174,13 +183,30 @@ void SeedDispersal::loadFromImage(const QString &fileName)
 void SeedDispersal::clear()
 {
     mSeedMap.initialize(0.f);
+    if (mHasExternalSeedInput) {
+        // if external seed input is enabled, the buffer area of the seed maps is
+        // "turned on", i.e. set to 1.
+        int buf_size = GlobalSettings::instance()->settings().valueDouble("model.world.buffer",0.) / mSeedMap.cellsize();
+        if (buf_size>0) {
+            int ix,iy;
+            for (iy=0;iy<mSeedMap.sizeY();++iy)
+                for (ix=0;ix<mSeedMap.sizeX(); ++ix)
+                    if (iy<buf_size || iy>=mSeedMap.sizeY()-buf_size || ix<buf_size || ix>=mSeedMap.sizeX()-buf_size)
+                        mSeedMap.valueAtIndex(ix,iy)=1.f;
+        } else {
+            qDebug() << "external seed input: Error: invalid buffer size???";
+        }
+    }
 }
 
 void SeedDispersal::execute()
 {
     int year = GlobalSettings::instance()->currentYear();
-    if (QFile::exists("c:\\temp\\seedmaps"))
-        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_before_%1_%2.png").arg(mSpecies->id()).arg(year));
+    QString path;
+    if (mDumpSeedMaps) {
+        path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
+        gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_before_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
+    }
     {
     DebugTimer t("seed dispersal");
     // (1) detect edges
@@ -188,8 +214,8 @@ void SeedDispersal::execute()
     // (2) distribute seed probabilites from edges
     distribute();
     }
-    if (QFile::exists("c:\\temp\\seedmaps"))
-        gridToImage(seedMap(), true, 0., 1.).save(QString("c:\\temp\\seedmaps\\seed_after_%1_%2.png").arg(mSpecies->id()).arg(year));
+    if (mDumpSeedMaps)
+        gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_after_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
 }
 
 /** scans the seed image and detects "edges".

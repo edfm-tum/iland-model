@@ -37,6 +37,8 @@ private:
     Grid<float> mKernelNonSeedYear; ///< species specific "seed kernel" (small) for non-seed-years
     bool mSetup;
     Species *mSpecies;
+    bool mDumpSeedMaps; ///< if true, seedmaps are stored as images
+    bool mHasExternalSeedInput; ///< if true, external seeds are modelled for the species
 };
 
 #endif // SEEDDISPERSAL_H
