@@ -122,15 +122,21 @@ void SpeciesSet::setupRegeneration()
     qDebug() << "Setup of seed dispersal maps finished.";
 }
 
+Species *nc_seed_distribution(Species *species)
+{
+    species->setRandomGenerator();
+    species->seedDispersal();
+    return species;
+}
 void SpeciesSet::regeneration()
 {
     if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
         return;
-    foreach(Species *s, mActiveSpecies) {
-        s->seedDispersal()->execute();
-    }
-    qDebug() << "seed dispersal finished.";
+    ThreadRunner runner(mActiveSpecies); // initialize a thread runner object with all active species
+    runner.run(nc_seed_distribution);
 
+    if (logLevelDebug())
+        qDebug() << "seed dispersal finished.";
 }
 
 /** newYear is called by Model::runYear at the beginning of a year before any growth occurs.

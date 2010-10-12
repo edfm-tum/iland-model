@@ -1,12 +1,14 @@
 #ifndef SNAG_H
 #define SNAG_H
-
+#include <QList>
+#include <QVariant>
 class Tree; // forward
 
 struct CNPool
 {
     CNPool(): C(0.), N(0.) {}
     CNPool(const double c, const double n) {C=c; N=n; }
+    bool isEmpty() const { return C==0.; }
     double C; // carbon pool (kg C/ha)
     double N; // nitrogen pool (kg N/ha)
     double CN() { return N>0?C/N:0.; } ///< current CN ratio
@@ -29,6 +31,7 @@ public:
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
     void processYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
     // access
+    bool isEmpty() const { return mTotalSnagCarbon == 0.; }
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot);
@@ -38,6 +41,7 @@ public:
     /// remove_(stem, branch, foliage)_pct: percentage of biomass compartment that is removed by the harvest operation.
     /// the harvested biomass is collected.
     void addHarvest(const Tree* tree, const double remove_stem_pct, const double remove_branch_pct, const double remove_foliage_pct );
+    QList<QVariant> debugList(); ///< return a debug output
 private:
     /// access SWDPool as function of diameter (cm)
     int poolIndex(const float dbh) { if (dbh<mDBHLower) return 0; if (dbh>mDBHHigher) return 2; return 1;}
@@ -49,6 +53,7 @@ private:
     CNPool mRefractoryFlux; ///< flux to teh refractory soil pool (kg/ha)
     CNPool mBranches[5]; ///< pool for branch biomass
     int mBranchCounter; ///< index which of the branch pools should be emptied
+    double mTotalSnagCarbon; ///< sum of carbon content in all snag compartments (kg/ha)
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
 };
 

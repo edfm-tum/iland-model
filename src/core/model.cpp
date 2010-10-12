@@ -263,6 +263,9 @@ void Model::loadProject()
     if (log_level=="warning") setLogLevel(2);
     if (log_level=="error") setLogLevel(3);
 
+    // snag dynamics / soil model enabled? (info used during setup of world)
+    changeSettings().carbonCycleEnabled = xml.valueBool("model.settings.carbonCycleEnabled", false);
+
     // load environment (multiple climates, speciesSets, ...
     if (mEnvironment)
         delete mEnvironment;
@@ -315,8 +318,6 @@ void Model::loadProject()
         qDebug() << "setup management using script" << path;
     }
 
-    // (3.3) setup of snag dynamics / soil model
-    changeSettings().carbonCycleEnabled = xml.valueBool("model.settings.carbonCycleEnabled", false);
 
 }
 
@@ -372,6 +373,17 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
     } catch (const IException& e) {
         Helper::msg(e.toString());
     }
+    return unit;
+}
+
+/// multithreaded execution of the carbon cycle routine
+ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
+{
+    // (1) do calculations on snag dynamics for each species on the resource unit
+    foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
+        const_cast<ResourceUnitSpecies*>(rus)->calculateSnagDynamics();
+    }
+    // (2) do the soil carbon and nitrogen dynamics calculations (ICBM/2N)
     return unit;
 }
 
@@ -459,18 +471,21 @@ void Model::runYear()
     // regeneration
     if (settings().regenerationEnabled) {
         // seed dispersal
-
         DebugTimer tseed("seed dispersal");
         foreach(SpeciesSet *set, mSpeciesSets)
-            set->regeneration();
+            set->regeneration(); // parallel execution for each species set
 
         tseed.showElapsed();
         // establishment
         DebugTimer t("establishment");
-        executePerResourceUnit( nc_establishment , false /* true: force single thraeded operation */);
+        executePerResourceUnit( nc_establishment, false /* true: force single thraeded operation */);
 
     }
     // calculate soil / snag dynamics
+    if (settings().carbonCycleEnabled) {
+        DebugTimer ccycle("carbon cylce");
+        executePerResourceUnit( nc_carbonCycle, false /* true: force single thraeded operation */);
+    }
 
     // calculate statistics
     foreach(ResourceUnit *ru, mRU)

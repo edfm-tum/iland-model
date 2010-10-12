@@ -8,6 +8,7 @@
 #include "global.h"
 #include "threadrunner.h"
 #include <QtCore>
+bool ThreadRunner::mMultithreaded = true; // static
 
 ThreadRunner::ThreadRunner()
 {
@@ -50,6 +51,20 @@ void ThreadRunner::run( ResourceUnit* (*funcptr)(ResourceUnit*), const bool forc
 
         foreach(unit, mMap2)
             (*funcptr)(unit);
+    }
+
+}
+
+/// run a given function for each species
+void ThreadRunner::run( Species* (*funcptr)(Species*), const bool forceSingleThreaded )
+{
+    if (mMultithreaded && mSpeciesMap.count() > 3 && forceSingleThreaded==false) {
+        QtConcurrent::blockingMap(mSpeciesMap, funcptr);
+    } else {
+        // single threaded operation
+        Species *species;
+        foreach(species, mSpeciesMap)
+            (*funcptr)(species);
     }
 
 }

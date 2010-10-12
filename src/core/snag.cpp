@@ -42,6 +42,33 @@ void Snag::setup()
         mTimeSinceDeath[i] = 0.;
         mNumberOfSnags[i] = 0.;
     }
+    mTotalSnagCarbon = 0.;
+}
+
+// debug outputs
+QList<QVariant> Snag::debugList()
+{
+    // list columns
+    // for three pools
+    QList<QVariant> list;
+
+    list << mTotalSnagCarbon;
+
+    for (int i=0;i<3;i++) {
+        // pools "swdx_c", "swdx_n", "swdx_count", "swdx_tsd", "toswdx_c", "toswdx_n"
+        list << mSWD[i].C << mSWD[i].N << mNumberOfSnags[i] << mTimeSinceDeath[i] << mToSWD[i].C << mToSWD[i].N;
+    }
+
+    // fluxes to labile soil pool and to refractory soil pool
+    list << mLabileFlux.C << mLabileFlux.N << mRefractoryFlux.C << mRefractoryFlux.N;
+
+    // branch pools (5 yrs)
+    list << mBranches[mBranchCounter].C << mBranches[mBranchCounter].N
+            << mBranches[(mBranchCounter+1)%5].C << mBranches[(mBranchCounter+1)%5].N
+            << mBranches[(mBranchCounter+2)%5].C << mBranches[(mBranchCounter+2)%5].N
+            << mBranches[(mBranchCounter+3)%5].C << mBranches[(mBranchCounter+3)%5].N
+            << mBranches[(mBranchCounter+4)%5].C << mBranches[(mBranchCounter+4)%5].N;
+    return list;
 }
 
 void Snag::newYear()
@@ -57,6 +84,9 @@ void Snag::newYear()
 // see http://iland.boku.ac.at/snag+dynamics
 void Snag::processYear()
 {
+    if (mLabileFlux.isEmpty() && mRefractoryFlux.isEmpty() && isEmpty()) // nothing to do
+        return;
+
     const SoilParameters &soil_params = soilparams; // to be updated
 
     // process branches: every year one of the five baskets is emptied and transfered to the refractory soil pool
@@ -76,8 +106,10 @@ void Snag::processYear()
         else
             tsd = 0.;
 
-        // update the swd-pool
+        // update the swd-pool: move content to the SWD pool
         mSWD[i] += mToSWD[i];
+        mToSWD[i].clear();
+
         mTimeSinceDeath[i] = tsd;
 
         if (mSWD[i].C>0.) {
@@ -101,6 +133,10 @@ void Snag::processYear()
             }
         }
     }
+    // total carbon in the snag *after* processing is the content of the
+    // standing woody debris pools + the branches
+    mTotalSnagCarbon = mSWD[0].C + mSWD[1].C + mSWD[2].C +
+                       mBranches[0].C + mBranches[1].C + mBranches[2].C + mBranches[3].C + mBranches[4].C;
 }
 
 /// foliage and fineroot litter is transferred during tree growth.
@@ -133,7 +169,7 @@ void Snag::addMortality(const Tree *tree)
 }
 
 /// add residual biomass of 'tree' after harvesting.
-/// remove_(stem, branch, foliage)_fraction: percentage of biomass compartment that is removed by the harvest operation.
+/// remove_(stem, branch, foliage)_fraction: percentage of biomass compartment that is *removed* by the harvest operation.
 /// the harvested biomass is collected.
 void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const double remove_branch_fraction, const double remove_foliage_fraction )
 {

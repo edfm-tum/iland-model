@@ -40,11 +40,15 @@ struct SaplingGrowthParameters
 class Species
 {
 public:
-    Species(SpeciesSet *set) { mSet = set; mIndex=set->count(); mSeedDispersal=0; }
+    Species(SpeciesSet *set) { mSet = set; mIndex=set->count(); mSeedDispersal=0; mRandomGenerator=0; }
     ~Species();
     // maintenance
     void setup();
     void newYear();
+    // getter for a thread-local random number generator object. if setRandomGenerator() is used, this saves some overhead
+    MTRand &randomGenerator() const { if (mRandomGenerator) return *mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
+    void setRandomGenerator() { mRandomGenerator = &GlobalSettings::instance()->randomGenerator(); } // fetch random generator of the current thread
+
 
     const SpeciesSet *speciesSet() const { return mSet; }
     // properties
@@ -111,6 +115,7 @@ private:
     double doubleVar(const QString s) { return mSet->var(s).toDouble(); }///< during setup: get value of variable @p s as a double.
     int intVar(const QString s) { return mSet->var(s).toInt(); } ///< during setup: get value of variable @p s as an integer.
     QString stringVar(const QString s) { return mSet->var(s).toString(); } ///< during setup: get value of variable @p s as a string.
+    MTRand *mRandomGenerator;
 
     SpeciesSet *mSet; ///< ptr. to the "parent" set
     StampContainer mLIPs; ///< ptr to the container of the LIP-pattern

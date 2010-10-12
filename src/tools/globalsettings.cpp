@@ -212,6 +212,13 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                  << "avgProbDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "TACAAbioticEnv"
                  << "fEnvYr" << "avgLIFValue" <<"N_Established" << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
                  << "Added" << "Died" << "Recruited" << "refRatio";
+    case dSnagDynamics: return QStringList() << "id" << "type" << "year" << "species" << "RU_index"
+                << "SnagState_c"
+                << "swd1_c" << "swd1_n" << "swd1_count" << "swd1_tsd" << "toSwd1_c" << "toSwd1_n" // pool of small dbhs
+                << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" // standing woody debris medium dbhs
+                << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n"// large trees
+                << "toLabile_c" << "toLabile_n" << "toRefr_c" << "toRefr_n"
+                << "branch1_c" << "branch1_n" << "branch2_c" << "branch2_n" << "branch3_c" << "branch3_n" << "branch4_c" << "branch4_n" << "branch5_c" << "branch5_n";
     }
     return QStringList() << "invalid debug output!";
 }

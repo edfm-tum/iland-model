@@ -6,7 +6,7 @@
 #include "establishment.h"
 #include "sapling.h"
 #include "grid.h"
-
+#include "snag.h"
 class Species;
 class ResourceUnit;
 class Snag;
@@ -47,6 +47,8 @@ public:
     bool hasSaplingAt(const QPoint &position) const { return mSapling.hasSapling(position); } ///< return true if a sapling of the current speices is present at 'position'
     // snag dynamics, soil carbon and nitrogen cycle
     Snag *snag() const { return mSnag; } ///< access the snag object
+    void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools
+    void calculateSnagDynamics(); ///< calculate snag dynamics at the end of a year
     // visualization/graphical output
     void visualGrid(Grid<float> &grid) const;
 

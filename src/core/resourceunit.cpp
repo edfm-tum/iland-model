@@ -142,6 +142,7 @@ void ResourceUnit::newYear()
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         (*i)->statisticsDead().clear();
         (*i)->statisticsMgmt().clear();
+        (*i)->snagNewYear();
     }
 
 }

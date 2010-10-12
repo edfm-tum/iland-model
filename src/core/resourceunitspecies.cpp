@@ -118,3 +118,15 @@ void ResourceUnitSpecies::visualGrid(Grid<float> &grid) const
     mSapling.fillHeightGrid(grid);
 }
 
+void ResourceUnitSpecies::calculateSnagDynamics()
+{
+    if (!snag())
+        return;
+
+    snag()->processYear();
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSnagDynamics)) {
+        DebugList &out = GlobalSettings::instance()->debugList(ru()->index(), GlobalSettings::dSnagDynamics);
+        out << snag()->debugList(); // use private variables...
+    }
+
+}
