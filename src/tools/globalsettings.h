@@ -9,6 +9,10 @@
 #include "xmlhelper.h"
 #include "../3rdparty/MersenneTwister.h"
 
+// use faster method to concatenate strings (see qt - documentation on QString)
+#define QT_USE_FAST_CONCATENATION
+#define QT_USE_FAST_OPERATOR_PLUS
+
 typedef QList<QVariant> DebugList;
 
 class Model;
