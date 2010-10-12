@@ -13,6 +13,12 @@ INCLUDEPATH += ../core \
     ../tools \
     ../output
 
+# to enable debug symbols in release code
+# debug information in release-mode executable
+QMAKE_CXXFLAGS_RELEASE += -g
+QMAKE_LFLAGS_RELEASE -= -Wl,-s
+
+
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
