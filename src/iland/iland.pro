@@ -67,7 +67,6 @@ SOURCES += main.cpp \
     ../core/seeddispersal.cpp \
     ../core/establishment.cpp \
     ../core/soil.cpp \
-    ../core/snags.cpp \
     ../core/sapling.cpp \
     ../core/snag.cpp
 HEADERS += mainwindow.h \
@@ -125,7 +124,6 @@ HEADERS += mainwindow.h \
     ../core/seeddispersal.h \
     ../core/establishment.h \
     ../core/soil.h \
-    ../core/snags.h \
     ../core/sapling.h \
     ../core/snag.h
 FORMS += mainwindow.ui \
