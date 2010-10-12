@@ -37,7 +37,8 @@ public:
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
     void processYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
     // access
-    bool isEmpty() const { return mTotalSnagCarbon == 0.; }
+    bool isStateEmpty() const { return mTotalSnagCarbon == 0.; }
+    bool isEmpty() const { return mLabileFlux.isEmpty() && mRefractoryFlux.isEmpty() && isStateEmpty(); }
     CNPool fluxToSoil() const { return mLabileFlux + mRefractoryFlux; }
     // actions
     /// add for a tree with diameter
@@ -62,7 +63,7 @@ private:
     int mBranchCounter; ///< index which of the branch pools should be emptied
     double mTotalSnagCarbon; ///< sum of carbon content in all snag compartments (kg/ha)
     CNPool mTotalIn; ///< total input to the snag state (i.e. mortality/harvest and litter)
-    CNPool mTotalOut; ///< total flux out of the system
+    CNPool mSWDtoSoil; ///< total flux from standing dead wood -> soil (kg/ha)
     CNPool mTotalToAtm; ///< flux to atmosphere (kg/ha)
     CNPool mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools

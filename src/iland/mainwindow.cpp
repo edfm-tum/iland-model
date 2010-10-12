@@ -818,6 +818,13 @@ void MainWindow::on_action_debugEstablishment_triggered()
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
 
+void MainWindow::on_actionSnag_Dynamics_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dSnagDynamics, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+
+}
 
 void MainWindow::saveDebugOutputs()
 {
@@ -1102,6 +1109,8 @@ void MainWindow::on_actionClearDebugOutput_triggered()
 {
     GlobalSettings::instance()->clearDebugLists();
 }
+
+
 
 
 

@@ -54,14 +54,14 @@ QList<QVariant> Snag::debugList()
     QList<QVariant> list;
 
     list << mTotalSnagCarbon;
+    // fluxes to labile soil pool and to refractory soil pool
+    list << mLabileFlux.C << mLabileFlux.N << mRefractoryFlux.C << mRefractoryFlux.N << mSWDtoSoil.C << mSWDtoSoil.N;
 
     for (int i=0;i<3;i++) {
         // pools "swdx_c", "swdx_n", "swdx_count", "swdx_tsd", "toswdx_c", "toswdx_n"
         list << mSWD[i].C << mSWD[i].N << mNumberOfSnags[i] << mTimeSinceDeath[i] << mToSWD[i].C << mToSWD[i].N;
     }
 
-    // fluxes to labile soil pool and to refractory soil pool
-    list << mLabileFlux.C << mLabileFlux.N << mRefractoryFlux.C << mRefractoryFlux.N;
 
     // branch pools (5 yrs)
     list << mBranches[mBranchCounter].C << mBranches[mBranchCounter].N
@@ -82,14 +82,14 @@ void Snag::newYear()
     mTotalToAtm.clear();
     mTotalToExtern.clear();
     mTotalIn.clear();
-    mTotalOut.clear();
+    mSWDtoSoil.clear();
 }
 
 // do the yearly calculation
 // see http://iland.boku.ac.at/snag+dynamics
 void Snag::processYear()
 {
-    if (mLabileFlux.isEmpty() && mRefractoryFlux.isEmpty() && isEmpty()) // nothing to do
+    if (isEmpty()) // nothing to do
         return;
 
     const SoilParameters &soil_params = soilparams; // to be updated
@@ -99,6 +99,7 @@ void Snag::processYear()
     mBranches[mBranchCounter].clear();
     mBranchCounter= (mBranchCounter+1) % 5; // increase index, roll over to 0.
 
+    mSWDtoSoil.clear();
     // process standing snags.
     // the input of the current year is in the mToSWD-Pools
     double tsd;
@@ -126,6 +127,7 @@ void Snag::processYear()
             double pDWD = soil_params.pDWDformula.calculate(tsd);
             pDWD = limit( pDWD * climate_factor_re, 0., 1.); //  modified transition rate with climate decomp factor
             // calculate flow to soil pool...
+            mSWDtoSoil += mSWD[i] * pDWD;
             mRefractoryFlux += mSWD[i] * pDWD;
             mSWD[i] *= (1.-pDWD); // reduce pool
             // calculate the stem number of remaining snags
@@ -163,8 +165,9 @@ void Snag::addMortality(const Tree *tree)
     mRefractoryFlux.addBiomass(tree->biomassCoarseRoot(), soil_params.cnWood);
 
     // branches are equally distributed over five years:
+    double biomass_branch = tree->biomassBranch() * 0.2;
     for (int i=0;i<5; i++)
-        mBranches[i].addBiomass(tree->biomassBranch() * 0.2, soil_params.cnWood);
+        mBranches[i].addBiomass(biomass_branch, soil_params.cnWood);
 
     // stem biomass is transferred to the standing woody debris pool (SWD), increase stem number of pool
     CNPool &swd = mToSWD[poolIndex(tree->dbh())]; // get right transfer pool

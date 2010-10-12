@@ -124,9 +124,9 @@ void ResourceUnitSpecies::calculateSnagDynamics()
         return;
 
     snag()->processYear();
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSnagDynamics)) {
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSnagDynamics) && !snag()->isEmpty()) {
         DebugList &out = GlobalSettings::instance()->debugList(ru()->index(), GlobalSettings::dSnagDynamics);
-        out << snag()->debugList(); // use private variables...
+        out << mSpecies->id() << ru()->index() << snag()->debugList(); // use private variables...
     }
 
 }
