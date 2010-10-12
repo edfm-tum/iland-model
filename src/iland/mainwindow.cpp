@@ -840,6 +840,8 @@ void MainWindow::saveDebugOutputs()
         Helper::saveToTextFile(p + "daily_responses.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";").join("\n"));
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment))
         Helper::saveToTextFile(p + "establishment.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";").join("\n"));
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSnagDynamics))
+        Helper::saveToTextFile(p + "establishment.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dSnagDynamics, ";").join("\n"));
     qDebug() << "saved debug outputs to" << p;
 }
 
@@ -854,7 +856,8 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "8 ... Standlevel NPP\n" \
                                         "16...Water Cycle\n" \
                                         "32...Daily responses\n" \
-                                        "64...Establishment\n"
+                                        "64...Establishment\n" \
+                                        "128...Snag dynamics\n" \
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }

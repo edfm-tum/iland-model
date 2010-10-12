@@ -4,21 +4,27 @@
 #include <QVariant>
 class Tree; // forward
 
+/** CNPool stores a duple of carbon and nitrogen (kg/ha)
+    use addBiomass(biomass, cnratio) to add biomass; use operators (+, +=, *, *=) for simple operations.
+*/
 struct CNPool
 {
     CNPool(): C(0.), N(0.) {}
+    static void setCFraction(const double fraction) { biomassCFraction = fraction; }
     CNPool(const double c, const double n) {C=c; N=n; }
-    bool isEmpty() const { return C==0.; }
+    bool isEmpty() const { return C==0.; } ///< returns true if pool is empty
     double C; // carbon pool (kg C/ha)
     double N; // nitrogen pool (kg N/ha)
     double CN() { return N>0?C/N:0.; } ///< current CN ratio
     void clear() {C=0.; N=0.; }
+    /// add biomass to the pool (kg dry mass/ha); CNratio is used to calculate the N-Content, the global C-Fraction of biomass is used to
+    /// calculate the amount of carbon of 'biomass'.
     void addBiomass(const double biomass, const double CNratio) { C+=biomass*biomassCFraction; N+=biomass*biomassCFraction/CNratio; }
     // some simple operators
     void operator+=(const CNPool &s) { C+=s.C; N+=s.N; } ///< add contents of a pool
     void operator*=(const double factor) { C*=factor; N*=factor; } ///< Multiply pool with 'factor'
-    const CNPool operator+(const CNPool &p2) { return CNPool(C+p2.C, N+p2.N); } ///< return the sum of two pools
-    const CNPool operator*(const double factor) { return CNPool(C*factor, N*factor); } ///< return the pool multiplied with 'factor'
+    const CNPool operator+(const CNPool &p2) const { return CNPool(C+p2.C, N+p2.N); } ///< return the sum of two pools
+    const CNPool operator*(const double factor) const { return CNPool(C*factor, N*factor); } ///< return the pool multiplied with 'factor'
 private:
     static double biomassCFraction;
 };
@@ -32,6 +38,7 @@ public:
     void processYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
     // access
     bool isEmpty() const { return mTotalSnagCarbon == 0.; }
+    CNPool fluxToSoil() const { return mLabileFlux + mRefractoryFlux; }
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot);
@@ -54,6 +61,10 @@ private:
     CNPool mBranches[5]; ///< pool for branch biomass
     int mBranchCounter; ///< index which of the branch pools should be emptied
     double mTotalSnagCarbon; ///< sum of carbon content in all snag compartments (kg/ha)
+    CNPool mTotalIn; ///< total input to the snag state (i.e. mortality/harvest and litter)
+    CNPool mTotalOut; ///< total flux out of the system
+    CNPool mTotalToAtm; ///< flux to atmosphere (kg/ha)
+    CNPool mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
 };
 

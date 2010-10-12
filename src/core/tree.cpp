@@ -51,6 +51,11 @@ float Tree::crownRadius() const
     return mStamp->crownRadius();
 }
 
+float Tree::biomassBranch() const
+{
+    return mSpecies->biomassBranch(mDbh);
+}
+
 void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
 {
     mGrid = gridToStamp; mHeightGrid = dominanceGrid;

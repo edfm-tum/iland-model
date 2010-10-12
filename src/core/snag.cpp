@@ -32,6 +32,7 @@ struct SoilParameters
 Snag::Snag()
 {
     soilparams.pDWDformula.setExpression("1-1/(1+exp(-6.78+0.262*tsd))");
+    CNPool::setCFraction(biomassCFraction);
 }
 
 void Snag::setup()
@@ -78,6 +79,10 @@ void Snag::newYear()
     }
     mLabileFlux.clear();
     mRefractoryFlux.clear();
+    mTotalToAtm.clear();
+    mTotalToExtern.clear();
+    mTotalIn.clear();
+    mTotalOut.clear();
 }
 
 // do the yearly calculation
@@ -108,7 +113,6 @@ void Snag::processYear()
 
         // update the swd-pool: move content to the SWD pool
         mSWD[i] += mToSWD[i];
-        mToSWD[i].clear();
 
         mTimeSinceDeath[i] = tsd;
 
