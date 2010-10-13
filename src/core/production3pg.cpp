@@ -68,7 +68,7 @@ double Production3PG::calculate()
     clear();
     double utilizable_rad, epsilon;
     // conversion from gC to kg Biomass: C/Biomass=0.5
-    const double gC_to_kg_biomass = 2. / 1000.;
+    const double gC_to_kg_biomass = 1. / (biomassCFraction * 1000.);
     for (int i=0;i<12;i++) {
         utilizable_rad = calculateUtilizablePAR(i); // utilizable radiation of the month times ...
         epsilon = calculateEpsilon(i); // ... photosynthetic efficiency ...
@@ -84,9 +84,11 @@ double Production3PG::calculate()
 
     //  the factor f_ref: parameter that scales response values to the range 0..1 (1 for best growth conditions) (species parameter)
     const double perf_factor = mResponse->species()->saplingGrowthParameters().referenceRatio;
+    // f_env,yr=(uapar*epsilon_eff) / (APAR * epsilon_0 * fref)
     mEnvYear = f_sum / (Model::settings().epsilon * mResponse->yearlyRadiation() * perf_factor);
     if (mEnvYear > 1.) {
         qDebug() << "ERROR: fEnvYear > 1 for " << mResponse->species()->id() << mEnvYear << "f_sum, epsilon, yearlyRad, perf_factor" <<  f_sum << Model::settings().epsilon <<  mResponse->yearlyRadiation() << perf_factor;
+        mEnvYear = 1.;
     }
 
     // calculate fraction for belowground biomass

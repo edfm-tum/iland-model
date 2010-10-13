@@ -137,7 +137,6 @@ void Climate::setup()
     // setup sun
     mSun.setup(Model::settings().latitude);
     mCurrentYear--; // go to "-1" -> the first call to next year will go to year 0.
-    mRad_cacheYear = -1;
     mIsSetup = true;
 }
 
@@ -254,6 +253,12 @@ void Climate::nextYear()
     qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
     mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
     mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
+    // calculate radiation sum of the year
+    mAnnualRadiation = 0.;
+    for (const ClimateDay *d=begin();d!=end();++d)
+        mAnnualRadiation+=d->radiation;
+
+    // calculate phenology
     for(int i=0;i<mPhenology.count(); ++i)
         mPhenology[i].calculate();
 }
@@ -318,16 +323,3 @@ const Phenology &Climate::phenology(const int phenologyGroup) const
     throw IException(QString("Error at SpeciesSet::phenology(): invalid group: %1").arg(phenologyGroup));
 }
 
-// calculate total sum of the radiation of the current year
-double Climate::totalRadiation() const
-{
-    if (mRad_cacheYear == begin()->year)
-        return mRad_cache;
-    // calculate
-    mRad_cacheYear = begin()->year;
-    mRad_cache = 0.;
-    for (const ClimateDay *d=begin(); d!=end(); ++d)
-        mRad_cache+=d->radiation;
-
-    return mRad_cache;
-}

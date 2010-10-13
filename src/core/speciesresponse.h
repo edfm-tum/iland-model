@@ -41,7 +41,7 @@ private:
     double mVpdResponse[12]; ///< mean of vpd-response
     double mNitrogenResponse;
     double mCO2Response[12];
-    double mTotalRadiation;  ///< total radiation of the year (MJ/day)
+    double mTotalRadiation;  ///< total radiation of the year (MJ/m2)
 };
 
 #endif // SPECIESRESPONSE_H
