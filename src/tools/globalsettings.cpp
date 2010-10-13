@@ -58,6 +58,7 @@
 #include "global.h"
 #include "helper.h"
 #include "xmlhelper.h"
+#include "stdint.h"
 
 #include "settingmetadata.h"
 

@@ -865,7 +865,7 @@ void Expression::linearize2d(const double low_x, const double high_x,
 /// calculate the linear approximation of the result value
 double Expression::linearizedValue(const double x) const
 {
-    if (x<mLinearLow || x>=mLinearHigh)
+    if (x<mLinearLow || x>mLinearHigh)
         return calculate(x,0.,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
     int lower = int((x-mLinearLow) / mLinearStep); // the lower point
     if (lower+1>=mLinearized.count())
@@ -879,7 +879,7 @@ double Expression::linearizedValue(const double x) const
 /// calculate the linear approximation of the result value
 double Expression::linearizedValue2d(const double x, const double y) const
 {
-    if (x<mLinearLow || x>=mLinearHigh || y<mLinearLowY || y>=mLinearHighY)
+    if (x<mLinearLow || x>mLinearHigh || y<mLinearLowY || y>mLinearHighY)
         return calculate(x,y,true); // standard calculation without linear optimization- but force calculation to avoid infinite loop
     int lowerx = int((x-mLinearLow) / mLinearStep); // the lower point (x-axis)
     int lowery = int((y-mLinearLowY) / mLinearStepY); // the lower point (y-axis)

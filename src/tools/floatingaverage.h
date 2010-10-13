@@ -12,7 +12,7 @@ public:
     void setup(const int size, const double InitValue = 0.);
     double add(double add_value); ///< add a value and return current average
 
-    const double average() const {return mCurrentAverage; } ///< retrieve current average
+    double average() const {return mCurrentAverage; } ///< retrieve current average
     double sum() const; ///< retrieve total sum of values.
 private:
     double mCurrentAverage;

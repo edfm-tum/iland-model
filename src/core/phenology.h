@@ -11,7 +11,7 @@ public:
               const double minTemp, const double maxTemp): mId(id), mClimate(climate), mMinVpd(minVpd), mMaxVpd(maxVpd),
                                 mMinDayLength(minDayLength), mMaxDayLength(maxDayLength), mMinTemp(minTemp), mMaxTemp(maxTemp),mChillDaysAfter(0),mChillDaysAfterLastYear(0) {}
     // access
-    const int id() const { return mId; }
+    int id() const { return mId; }
     /// calculate the phenology for the current year
     void calculate();
     /// get result of phenology calcualtion for this year (a pointer to a array of 12 values between 0..1: 0: no days with foliage)
