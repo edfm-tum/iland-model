@@ -85,7 +85,7 @@ public:
 
     inline  T* begin() const { return mData; } ///< get "iterator" pointer
     inline  T* end() const { return mEnd; } ///< get iterator end-pointer
-    QPoint indexOf(T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
+    inline QPoint indexOf(T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
     // special queries
     T max() const; ///< retrieve the maximum value of a grid
     T sum() const; ///< retrieve the sum of the grid
@@ -271,16 +271,17 @@ bool Grid<T>::setup(const QRectF& rect, const double cellsize)
 6  7  8  9  10 11
 12 13 14 15 16 17
 Note: north and south are reversed, thus the item with index 0 is located in the south-western edge of the grid! */
-template <class T>
+template <class T> inline
 QPoint Grid<T>::indexOf(T* element) const
 {
-    QPoint result(-1,-1);
+//    QPoint result(-1,-1);
     if (element==NULL || element<mData || element>=end())
-        return result;
+        return QPoint(-1, -1);
     int idx = element - mData;
-    result.setX( idx % mSizeX);
-    result.setY( idx / mSizeX);
-    return result;
+    return QPoint(idx % mSizeX,  idx / mSizeX);
+//    result.setX( idx % mSizeX);
+//    result.setY( idx / mSizeX);
+//    return result;
 }
 
 template <class T>

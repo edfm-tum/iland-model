@@ -53,8 +53,14 @@ void Sapling::cleanupStorage()
 
 // not a very good way of checking if sapling is present
 // maybe better: use also a (local) maximum sapling height grid
+// maybe better: use a bitset:
+// position: index of pixel on LIF (absolute index)
 bool Sapling::hasSapling(const QPoint &position) const
 {
+    const QPoint &offset = mRUS->ru()->cornerPointOffset();
+    int index = (position.x()- offset.x())*cPxPerRU + (position.y() - offset.y());
+    return mSapBitset[index];
+    /*
     float *target = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
     QVector<SaplingTree>::const_iterator it;
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
@@ -62,6 +68,7 @@ bool Sapling::hasSapling(const QPoint &position) const
             return true;
     }
     return false;
+    */
 }
 
 
@@ -73,6 +80,8 @@ void Sapling::addSapling(const QPoint &pos_lif)
     t.height = 0.05; // start with 5cm height
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
     t.pixel = lif_map.ptr(pos_lif.x(), pos_lif.y());
+    int index = (pos_lif.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(pos_lif.y() - mRUS->ru()->cornerPointOffset().y());
+    mSapBitset.set(index,true); // set bit: now there is a sapling there
     mAdded++;
 }
 
@@ -88,6 +97,9 @@ void Sapling::clearSaplings(const QPoint &position)
             const_cast<SaplingTree&>(t).pixel=0;
         }
     }
+    int index = (position.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(position.y() - mRUS->ru()->cornerPointOffset().y());
+    mSapBitset.set(index,false); // clear bit: now there is no sapling on this position
+
 }
 
 /// growth function for an indivudal sapling.

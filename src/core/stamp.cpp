@@ -3,10 +3,14 @@
 #include "grid.h"
 #include "stampcontainer.h"
 #include "helper.h"
+
+const Grid<float> *Stamp::mDistanceGrid = 0;
+
 Stamp::Stamp()
 {
     m_data=0;
 }
+
 Stamp::~Stamp()
 {
    if( m_data)
@@ -26,13 +30,15 @@ void Stamp::setup(const int size)
     m_data=new float[c];
     for (int i=0;i<c;i++)
         m_data[i]=0.;
+    // set static variable values
+    mDistanceGrid = &StampContainer::distanceGrid();
 }
 
-float Stamp::distanceToCenter(const int ix, const int iy) const
-{
-    //
-    return StampContainer::distanceGrid().constValueAtIndex(abs(ix-m_offset), abs(iy-m_offset));
-}
+//inline float Stamp::distanceToCenter(const int ix, const int iy) const
+//{
+//    //
+//    return StampContainer::distanceGrid().constValueAtIndex(abs(ix-m_offset), abs(iy-m_offset));
+//}
 
 QString Stamp::dump() const
 {

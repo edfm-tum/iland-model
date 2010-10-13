@@ -2,6 +2,7 @@
 #define SAPLING_H
 #include <QtCore/QVector>
 #include <QtCore/QPoint>
+#include <bitset>
 #include "grid.h"
 
 /// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
@@ -30,6 +31,7 @@ public:
     void setup(ResourceUnitSpecies *masterRUS) { mRUS = masterRUS; }
     void cleanupStorage(); // maintenance operation - remove dead/recruited trees from vector
     void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
+    void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     void addSapling(const QPoint &pos_lif);
@@ -50,6 +52,7 @@ private:
     bool growSapling(SaplingTree &tree, const double f_env_yr, Species* species);
     ResourceUnitSpecies *mRUS;
     QVector<SaplingTree> mSaplingTrees;
+    std::bitset<cPxPerRU*cPxPerRU> mSapBitset;
     int mAdded; ///< number of trees added
     int mRecruited; ///< number recruited (i.e. grown out of regeneration layer)
     int mDied; ///< number of trees died
