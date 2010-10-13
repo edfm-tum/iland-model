@@ -81,10 +81,16 @@ bool Helper::question(const QString &message, QWidget *parent)
    return QMessageBox::question(parent, "iLand", message, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
 }
 
-QString Helper::fileDialog(const QString &title)
+QString Helper::fileDialog(const QString &title, const QString &start_directory, const QString &filter)
 {
+    QString the_filter = filter;
+    if (the_filter.isEmpty())
+        the_filter = "All files (*.*)";
+    else
+        the_filter += ";;All files (*.*)"; // as 2nd filter
+
     QString fileName = QFileDialog::getOpenFileName(0,
-     title,"", "All files (*.*)");
+     title, start_directory, the_filter);
     return fileName;
 }
 

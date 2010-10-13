@@ -85,6 +85,9 @@ double Production3PG::calculate()
     //  the factor f_ref: parameter that scales response values to the range 0..1 (1 for best growth conditions) (species parameter)
     const double perf_factor = mResponse->species()->saplingGrowthParameters().referenceRatio;
     mEnvYear = f_sum / (Model::settings().epsilon * mResponse->yearlyRadiation() * perf_factor);
+    if (mEnvYear > 1.) {
+        qDebug() << "fEnvYear > 1 for " << mResponse->species()->id() << mEnvYear << "f_sum, epsilon, yearlyRad, perf_factor" <<  f_sum << Model::settings().epsilon <<  mResponse->yearlyRadiation() << perf_factor;
+    }
 
     // calculate fraction for belowground biomass
     mRootFraction = 1. - abovegroundFraction();

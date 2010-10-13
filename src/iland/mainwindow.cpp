@@ -696,7 +696,7 @@ void MainWindow::on_pbSetAsDebug_clicked()
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-project file");
+    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml");
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);
