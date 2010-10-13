@@ -111,6 +111,11 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
     // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
     // conceptually: response = min(vpd_response, water_response)*aging
     total_response *= mRU->averageAging();
+    DBGMODE( if (mRU->averageAging()>1. || mRU->averageAging()<0.)
+        qDebug() << "water cycle: average aging invalid";
+    )
+
+    //DBG_IF(mRU->averageAging()>1. || mRU->averageAging()<0.,"water cycle", "average aging invalid!" );
     return total_response;
 }
 

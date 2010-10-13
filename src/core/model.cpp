@@ -561,6 +561,7 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
     unit->setRandomGenerator();
+    unit->beforeGrow();
     // calculate light responses
     // responses are based on *modified* values for LightResourceIndex
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
@@ -579,6 +580,7 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 ResourceUnit *nc_production(ResourceUnit *unit)
 {
     unit->setRandomGenerator();
+    unit->beforeGrow(); // reset some statistics
     unit->production();
     return unit;
 }
@@ -677,6 +679,8 @@ void Model::calculateStockedArea()
 void Model::createStandStatistics()
 {
     calculateStockedArea();
-    foreach(ResourceUnit *ru, mRU)
+    foreach(ResourceUnit *ru, mRU) {
+        ru->addTreeAgingForAllTrees();
         ru->createStandStatistics();
+    }
 }

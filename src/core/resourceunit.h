@@ -64,6 +64,7 @@ public:
     /// function that distributes effective interception area according to the weight of Light response and LeafArea of the indivudal (@sa production())
     void calculateInterceptedArea();
     void addTreeAging(const double leaf_area, const double aging_factor) { mAverageAging += leaf_area*aging_factor; } ///< aggregate the tree aging values (weighted by leaf area)
+    void addTreeAgingForAllTrees(); ///< calculate average tree aging for all trees of a RU. Used directly after stand initialization.
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics();

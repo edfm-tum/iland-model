@@ -96,8 +96,6 @@ void Tree::setup()
     mNPPReserve = (1+species()->finerootFoliageRatio())*mFoliageMass; // initial value
     mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
 
-    // initial value for tree aging...
-    mRU->addTreeAging(mLeafArea,mSpecies->aging(mHeight, mAge));
 }
 
 void Tree::setAge(const int age, const float treeheight)

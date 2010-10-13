@@ -32,6 +32,7 @@ ResourceUnit::ResourceUnit(const int index)
     mStockedPixelCount = 0;
     mIndex = index;
     mSaplingHeightMap = 0;
+    mEffectiveArea_perWLA = 0.;
     mWater = new WaterCycle();
 
     mTrees.reserve(100); // start with space for 100 trees.
@@ -134,6 +135,7 @@ void ResourceUnit::newYear()
     mAggregatedLA = 0.;
     mAggregatedLR = 0.;
     mEffectiveArea = 0.;
+    mAverageAging = 0.;
     mPixelCount = mStockedPixelCount = 0;
     // clear statistics global and per species...
     QList<ResourceUnitSpecies*>::const_iterator i;
@@ -231,6 +233,8 @@ void ResourceUnit::afterGrow()
     mAverageAging = leafArea()>0.?mAverageAging/leafArea():0; // calculate aging value (calls to addAverageAging() by individual trees)
     if (mAverageAging>0. && mAverageAging<0.00001)
         qDebug() << "ru" << mIndex << "aging <0.00001";
+    if (mAverageAging<0. || mAverageAging>1.)
+        qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
 }
 
 void ResourceUnit::yearEnd()
@@ -245,9 +249,21 @@ void ResourceUnit::yearEnd()
         mStatistics.add(mRUSpecies[i]->statistics());
     }
     mStatistics.calculate(); // aggreagte on stand level
+
+}
+
+void ResourceUnit::addTreeAgingForAllTrees()
+{
+    mAverageAging = 0.;
+    foreach(const Tree &t, mTrees) {
+        addTreeAging(t.leafArea(), t.species()->aging(t.height(), t.age()));
+    }
+
 }
 
 /// refresh of tree based statistics.
+/// WARNING: this function is only called once (during startup).
+/// see function "yearEnd()" above!!!
 void ResourceUnit::createStandStatistics()
 {
     // clear statistics (ru-level and ru-species level)
@@ -270,6 +286,8 @@ void ResourceUnit::createStandStatistics()
     }
     mStatistics.calculate();
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*area()):0.;
+    if (mAverageAging<0. || mAverageAging>1.)
+        qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
 }
 
 void ResourceUnit::setMaxSaplingHeightAt(const QPoint &position, const float height)
