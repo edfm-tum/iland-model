@@ -31,9 +31,10 @@ struct SaplingGrowthParameters
     int maxStressYears; ///< trees die, if they are "stressed" for this number of consectuive years
     double stressThreshold; ///< tree is considered as "stressed" if f_env_yr is below that threhold
     float hdSapling; ///< fixed height-diameter ratio used for saplings
-    double ReineckesR; ///< Reineckes R, i.e. maximum stem number for a dg of 25cm
+    double ReinekesR; ///< Reinekes R, i.e. maximum stem number for a dg of 25cm
     double referenceRatio; ///< f_ref (eq. 3) -> ratio reference site / optimum site
-    SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReineckesR(1450.), referenceRatio(1.) {}
+    SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReinekesR(1450.), referenceRatio(1.) {}
+    double representedStemNumber(const double dbh) const { return ReinekesR*pow(dbh/25, -1.605); } ///< stem number that is represented by one cohort (N/ha) (using Reinekes Law)
 };
 
 

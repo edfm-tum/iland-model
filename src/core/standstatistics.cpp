@@ -93,7 +93,7 @@ void StandStatistics::add(const StandStatistics &stat)
 void StandStatistics::add(const Sapling *sapling)
 {
     mCohortCount = sapling->livingSaplings();
-    mSaplingCount = sapling->livingSaplings(); // to change!!! Reinecke!
+    mSaplingCount = sapling->livingSaplings(); // to change!!! Reineke!
     mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
     mAverageSaplingAge = sapling->averageAge();
 }

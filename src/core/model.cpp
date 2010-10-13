@@ -471,7 +471,7 @@ void Model::runYear()
     // regeneration
     if (settings().regenerationEnabled) {
         // seed dispersal
-        DebugTimer tseed("seed dispersal");
+        DebugTimer tseed("Regeneration and Establishment");
         foreach(SpeciesSet *set, mSpeciesSets)
             set->regeneration(); // parallel execution for each species set
 

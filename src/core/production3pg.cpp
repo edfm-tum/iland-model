@@ -86,7 +86,7 @@ double Production3PG::calculate()
     const double perf_factor = mResponse->species()->saplingGrowthParameters().referenceRatio;
     mEnvYear = f_sum / (Model::settings().epsilon * mResponse->yearlyRadiation() * perf_factor);
     if (mEnvYear > 1.) {
-        qDebug() << "fEnvYear > 1 for " << mResponse->species()->id() << mEnvYear << "f_sum, epsilon, yearlyRad, perf_factor" <<  f_sum << Model::settings().epsilon <<  mResponse->yearlyRadiation() << perf_factor;
+        qDebug() << "ERROR: fEnvYear > 1 for " << mResponse->species()->id() << mEnvYear << "f_sum, epsilon, yearlyRad, perf_factor" <<  f_sum << Model::settings().epsilon <<  mResponse->yearlyRadiation() << perf_factor;
     }
 
     // calculate fraction for belowground biomass
