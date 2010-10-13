@@ -15,8 +15,8 @@ INCLUDEPATH += ../core \
 
 # to enable debug symbols in release code
 # debug information in release-mode executable
-QMAKE_CXXFLAGS_RELEASE += -g
-QMAKE_LFLAGS_RELEASE -= -Wl,-s
+##QMAKE_CXXFLAGS_RELEASE += -g
+##QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
 
 # Use Precompiled headers (PCH)

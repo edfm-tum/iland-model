@@ -1,4 +1,5 @@
 #include "global.h"
+#include "math.h"
 #include "tree.h"
 
 #include "grid.h"
@@ -526,7 +527,7 @@ void Tree::readLIF_torus()
         mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
 
 
-    if (isnan(mLRI)) {
+    if (_isnan(mLRI)) {
         qDebug() << "LRI invalid (nan)!" << id();
         mLRI=0.;
         //qDebug() << reader->dump();
@@ -679,7 +680,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;
     mFoliageMass += delta_foliage;
-    if (isnan(mFoliageMass))
+    if (_isnan(mFoliageMass))
         qDebug() << "foliage mass invalid!";
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
 
