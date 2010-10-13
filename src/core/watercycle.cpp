@@ -113,7 +113,7 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
     total_response *= mRU->averageAging();
     DBGMODE( if (mRU->averageAging()>1. || mRU->averageAging()<0.)
         qDebug() << "water cycle: average aging invalid";
-    )
+    );
 
     //DBG_IF(mRU->averageAging()>1. || mRU->averageAging()<0.,"water cycle", "average aging invalid!" );
     return total_response;

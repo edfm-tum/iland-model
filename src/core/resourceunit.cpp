@@ -121,9 +121,11 @@ void ResourceUnit::cleanTreeList()
         mTrees.erase(last, mTrees.end());
         if (mTrees.capacity()>100) {
             if (mTrees.count() / double(mTrees.capacity()) < 0.2) {
-                int target_size = mTrees.count()*2;
-                qDebug() << "reduce size from "<<mTrees.capacity() << "to" << target_size;
-                mTrees.reserve(qMax(target_size, 100));
+                //int target_size = mTrees.count()*2;
+                //qDebug() << "reduce size from "<<mTrees.capacity() << "to" << target_size;
+                //mTrees.reserve(qMax(target_size, 100));
+                qDebug() << "reduce tree storage of RU" << index() << " from " << mTrees.capacity() << "to" << mTrees.count();
+                mTrees.squeeze();
             }
         }
     }
