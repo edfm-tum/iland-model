@@ -39,6 +39,8 @@ private:
     Species *mSpecies;
     bool mDumpSeedMaps; ///< if true, seedmaps are stored as images
     bool mHasExternalSeedInput; ///< if true, external seeds are modelled for the species
+    int mExternalSeedDirection; ///< direction of external seeds
+    int mExternalSeedBuffer; ///< how many 20m pixels away from the simulation area should the seeding start?
 };
 
 #endif // SEEDDISPERSAL_H

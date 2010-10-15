@@ -63,9 +63,23 @@ void SeedDispersal::setup()
     }
     // external seeds
     mHasExternalSeedInput = false;
+    mExternalSeedBuffer = 0;
+    mExternalSeedDirection = 0;
     if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.externalSeedEnabled",false)) {
         // current species in list??
         mHasExternalSeedInput = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSpecies").contains(mSpecies->id());
+        QString dir = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSource").toLower();
+        // encode cardinal positions as bits: e.g: "e,w" -> 6
+        mExternalSeedDirection += dir.contains("n")?1:0;
+        mExternalSeedDirection += dir.contains("e")?2:0;
+        mExternalSeedDirection += dir.contains("s")?4:0;
+        mExternalSeedDirection += dir.contains("w")?8:0;
+        QStringList buffer_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBuffer").simplified().split(',');
+        int index = buffer_list.indexOf(mSpecies->id());
+        if (index>=0) {
+            mExternalSeedBuffer = buffer_list[index+1].toInt();
+            qDebug() << "enabled special buffer for species" <<mSpecies->id() << ": distance of" << mExternalSeedBuffer << "pixels = " << mExternalSeedBuffer*20. << "m";
+        }
         if (mHasExternalSeedInput)
             qDebug() << "External seed input enabled for" << mSpecies->id();
     }
@@ -188,12 +202,27 @@ void SeedDispersal::clear()
         // if external seed input is enabled, the buffer area of the seed maps is
         // "turned on", i.e. set to 1.
         int buf_size = GlobalSettings::instance()->settings().valueDouble("model.world.buffer",0.) / mSeedMap.cellsize();
+        // if a special buffer is defined, reduce the size of the input
+        if (mExternalSeedBuffer>0)
+            buf_size -= mExternalSeedBuffer;
         if (buf_size>0) {
             int ix,iy;
             for (iy=0;iy<mSeedMap.sizeY();++iy)
                 for (ix=0;ix<mSeedMap.sizeX(); ++ix)
-                    if (iy<buf_size || iy>=mSeedMap.sizeY()-buf_size || ix<buf_size || ix>=mSeedMap.sizeX()-buf_size)
-                        mSeedMap.valueAtIndex(ix,iy)=1.f;
+                    if (iy<buf_size || iy>=mSeedMap.sizeY()-buf_size || ix<buf_size || ix>=mSeedMap.sizeX()-buf_size) {
+                        if (mExternalSeedDirection==0) {
+                            // seeds from all directions
+                            mSeedMap.valueAtIndex(ix,iy)=1.f;
+                        } else {
+                            // seeds only from specific directions
+                            float value = 0.f;
+                            if (isBitSet(mExternalSeedDirection,1) && ix>=mSeedMap.sizeX()-buf_size) value = 1; // north
+                            if (isBitSet(mExternalSeedDirection,2) && iy<buf_size) value = 1; // east
+                            if (isBitSet(mExternalSeedDirection,3) && ix<buf_size) value = 1; // south
+                            if (isBitSet(mExternalSeedDirection,4) && iy>=mSeedMap.sizeY()-buf_size) value = 1; // west
+                            mSeedMap.valueAtIndex(ix,iy)=value;
+                        }
+                    }
         } else {
             qDebug() << "external seed input: Error: invalid buffer size???";
         }
