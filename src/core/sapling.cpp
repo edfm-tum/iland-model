@@ -13,6 +13,7 @@
 
   */
 
+double Sapling::mRecruitmentVariation = 0.1; // +/- 10%
 
 Sapling::Sapling()
 {
@@ -166,8 +167,8 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
             Tree &bigtree = ru->newTree();
             bigtree.setPosition(p);
             // add variation: add +/-10% to dbh and *independently* to height.
-            bigtree.setDbh(dbh * nrandom(0.9, 1.1));
-            bigtree.setHeight(tree.height * nrandom(0.9, 1.1));
+            bigtree.setDbh(dbh * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
+            bigtree.setHeight(tree.height * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
             bigtree.setSpecies( species );
             bigtree.setAge(tree.age.age,tree.height);
             bigtree.setRU(ru);

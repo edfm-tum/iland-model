@@ -308,6 +308,7 @@ void Model::loadProject()
             ss->setupRegeneration();
     }
 
+    Sapling::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.externalSeedEnabled",0.1));
 
     // (3.2) management
     QString mgmtFile = xml.value("model.management.file");
