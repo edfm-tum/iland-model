@@ -3,10 +3,14 @@
 #include "species.h"
 #include "globalsettings.h"
 #include "expression.h"
+// for calculation of climate decomposition
+#include "resourceunit.h"
+#include "watercycle.h"
+#include "climate.h"
 
 /** @class Snag
   Snag deals with carbon / nitrogen fluxes from the forest until the reach soil pools.
-  Snag lives on the level of RU x species; carbon fluxes from trees enter Snag, and parts of the biomass of snags
+  Snag lives on the level of the ResourceUnit; carbon fluxes from trees enter Snag, and parts of the biomass of snags
   is subsequently forwarded to the soil sub model.
 
   */
@@ -31,12 +35,15 @@ struct SoilParameters
 
 Snag::Snag()
 {
+    mRU = 0;
     soilparams.pDWDformula.setExpression("1-1/(1+exp(-6.78+0.262*tsd))");
     CNPool::setCFraction(biomassCFraction);
 }
 
-void Snag::setup()
+void Snag::setup( const ResourceUnit *ru)
 {
+    mRU = ru;
+    mClimateFactor = 0.;
     // branches
     mBranchCounter=0;
     for (int i=0;i<3;i++) {
@@ -85,6 +92,24 @@ void Snag::newYear()
     mSWDtoSoil.clear();
 }
 
+/// calculate the dynamic climate modifier for decomposition 're'
+double Snag::calculateClimateFactors()
+{
+    double rel_wc;
+    double ft, fw;
+    double f_sum = 0.;
+    for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day)
+    {
+        rel_wc = mRU->waterCycle()->relContent(day->day); // relative water content (0..1) of the day
+        ft = exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13)));  // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
+        fw = pow(1.-exp(-0.2*rel_wc),5.); //  #  see Standcarb for the 'stable soil' pool
+        f_sum += ft*fw;
+    }
+    // the climate factor is defined as the arithmentic annual mean value
+    mClimateFactor = f_sum / double(mRU->climate()->daysOfYear());
+    return mClimateFactor;
+}
+
 // do the yearly calculation
 // see http://iland.boku.ac.at/snag+dynamics
 void Snag::processYear()
@@ -103,7 +128,7 @@ void Snag::processYear()
     // process standing snags.
     // the input of the current year is in the mToSWD-Pools
     double tsd;
-    const double climate_factor_re = 0.5; // todo
+    const double climate_factor_re = calculateClimateFactors();
     for (int i=0;i<3;i++) {
         // calculate 'tsd', i.e. time-since-death (see SnagDecay.xls for calculation details)
         // time_since_death = tsd_last_year*state_before / (state_before+input) + 1

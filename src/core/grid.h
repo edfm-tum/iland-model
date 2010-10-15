@@ -13,11 +13,11 @@
 /** Grid class (template).
 
 Orientation
-The grid is oriented as typically coordinates on the northern hemisphere: greater y-values -> north, greater x-values-> east.
-The projection is reversed for drawing on screen (Viewport):
+The grid is oriented as typically coordinates on the northern hemisphere: higher y-values -> north, higher x-values-> west.
+The projection is reversed for drawing on screen (Viewport).
           N
-  (2/0) (2/1) (2/2)
-E (1/0) (1/1) (2/1)  W
+  (0/2) (1/2) (2/2)
+E (0/1) (1/1) (2/1)  W
   (0/0) (1/0) (2/0)
           S
 */

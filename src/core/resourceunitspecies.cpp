@@ -46,7 +46,7 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mSnag=0;
     if (Model::settings().carbonCycleEnabled) {
        mSnag = new Snag;
-       mSnag->setup();
+       mSnag->setup(mRU);
     }
 
     mRemovedGrowth = 0.;

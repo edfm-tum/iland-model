@@ -3,6 +3,7 @@
 #include <QList>
 #include <QVariant>
 class Tree; // forward
+class ResourceUnit; // forward
 
 /** CNPool stores a duple of carbon and nitrogen (kg/ha)
     use addBiomass(biomass, cnratio) to add biomass; use operators (+, +=, *, *=) for simple operations.
@@ -33,7 +34,7 @@ class Snag
 {
 public:
     Snag();
-    void setup(); ///< initial setup routine.
+    void setup( const ResourceUnit *ru); ///< initial setup routine.
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
     void processYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
     // access
@@ -51,6 +52,9 @@ public:
     void addHarvest(const Tree* tree, const double remove_stem_pct, const double remove_branch_pct, const double remove_foliage_pct );
     QList<QVariant> debugList(); ///< return a debug output
 private:
+    double calculateClimateFactors(); ///< calculate climate factor 're' for the current year
+    double mClimateFactor; ///< current mean climate factor (influenced by temperature and soil water content)
+    const ResourceUnit *mRU; ///< link to resource unit
     /// access SWDPool as function of diameter (cm)
     int poolIndex(const float dbh) { if (dbh<mDBHLower) return 0; if (dbh>mDBHHigher) return 2; return 1;}
     CNPool mSWD[3]; ///< standing woody debris pool (0: smallest dimater class, e.g. <10cm, 1: medium, 2: largest class (e.g. >30cm)) kg/ha

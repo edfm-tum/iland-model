@@ -53,7 +53,7 @@ public:
     /// returns two pointer (arguments!!!) to the begin and one after end of the given month (month: 0..11)
     void monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd) const;
     double days(const int month) const; ///< returns number of days of given month (0..11)
-    int daysOfYear() const; ///< returns number of days of current year. points to the first day of the current year.
+    int daysOfYear() const; ///< returns number of days of current year.
     const ClimateDay *begin() const { return mBegin; } ///< STL-like (pointer)-iterator  to the first day of the current year
     const ClimateDay *end() const { return mEnd; } ///< STL-like pointer iterator to the day *after* last day of the current year
     void toDate(const int yearday, int *rDay=0, int *rMonth=0, int *rYear=0) const; ///< decode "yearday" to the actual year, month, day if provided
