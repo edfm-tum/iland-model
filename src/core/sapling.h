@@ -32,6 +32,7 @@ public:
     void cleanupStorage(); // maintenance operation - remove dead/recruited trees from vector
     void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
     void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
+    static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     void addSapling(const QPoint &pos_lif);
@@ -61,6 +62,7 @@ private:
     double mAvgAge; ///< average age of saplings (years)
     double mAvgDeltaHPot; ///< average height increment potential (m)
     double mAvgHRealized; ///< average realized height increment
+    static double mRecruitmentVariation; ///< defines range of random variation for recruited trees
 };
 
 #endif // SAPLING_H
