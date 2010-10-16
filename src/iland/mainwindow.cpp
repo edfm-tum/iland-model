@@ -773,6 +773,8 @@ void MainWindow::on_actionRun_one_year_triggered()
         return;
    mRemoteControl.runYear();
    GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
+   labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
+
    checkModelState();
    ui->PaintWidget->update();
 }

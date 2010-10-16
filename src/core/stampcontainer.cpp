@@ -82,6 +82,12 @@ void StampContainer::finalizeSetup()
         }
         if(s)
             max_size = std::max(max_size, s->dataSize());
+
+        // if no stamps in this dbh-class, copy values (from last row)
+        if (!s && b>0) {
+           for (h=0;h<cHDclassCount;h++)
+               m_lookup.valueAtIndex(b,h) = m_lookup(b-1, h);
+        }
     }
     // distance grid
     if (m_distance.sizeX()<max_size) {
@@ -168,29 +174,38 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
 
     float hd_value = 100.f * height_m / bhd_cm;
 
-    int cls_bhd, cls_hd;
-    getKey(bhd_cm, hd_value, cls_bhd, cls_hd);
+    int cls_dbh, cls_hd;
+    getKey(bhd_cm, hd_value, cls_dbh, cls_hd);
 
     // check loopup table
-    if (cls_bhd<cBHDclassCount && cls_bhd>=0 && cls_hd < cHDclassCount && cls_hd>=0) {
-        const Stamp* stamp = m_lookup(cls_bhd, cls_hd);
+    if (cls_dbh<cBHDclassCount && cls_dbh>=0 && cls_hd < cHDclassCount && cls_hd>=0) {
+        const Stamp* stamp = m_lookup(cls_dbh, cls_hd);
         if (stamp)
             return stamp;
-        qDebug() << "StampContainer::stamp(): not in list: bhd height:" << bhd_cm << height_m << "in" << m_fileName;
-        return m_stamps.first().stamp; // default value: the first stamp in the list....
+        if (logLevelDebug())
+            qDebug() << "StampContainer::stamp(): not in list: dbh height:" << bhd_cm << height_m << "in" << m_fileName;
     }
 
     // extra work: search in list...
-    //if (bhd_cm > m_maxBhd)
-    if (cls_bhd<cBHDclassCount && cls_bhd>=0) {
-        qDebug() << "HD for stamp out of range bhd " << bhd_cm << "and h="<< height_m << "(using smallest/largeset HD)";
+    // look for a stamp if the HD-ratio is out of range
+    if (cls_dbh<cBHDclassCount && cls_dbh>=0) {
+        if (logLevelDebug())
+            qDebug() << "HD for stamp out of range dbh " << bhd_cm << "and h="<< height_m << "(using smallest/largeset HD)";
         if (cls_hd>=cHDclassCount)
-            return m_lookup(cls_bhd, cHDclassCount-1); // highest
-        return m_lookup(cls_bhd, 0); // smallest
+            return m_lookup(cls_dbh, cHDclassCount-1); // highest
+        return m_lookup(cls_dbh, 0); // smallest
     }
-    qDebug() << "No stamp defined for bhd " << bhd_cm << "and h="<< height_m;
-    return NULL;
+    // look for a stamp if the DBH is out of range.
+    if (cls_hd<cHDclassCount && cls_hd>=0) {
+        if (logLevelDebug())
+            qDebug() << "DBH for stamp out of range dbh " << bhd_cm << "and h="<< height_m << "-> using largest available DBH.";
+        if (cls_dbh>=cBHDclassCount)
+            return m_lookup(cBHDclassCount-1, cls_hd); // highest
+        return m_lookup(0, cls_hd); // smallest
 
+    }
+    qDebug() << "ERROR: No stamp defined for dbh " << bhd_cm << "and h="<< height_m;
+    throw IException("StampContainer:: did not find a valid stamp.");
 }
 
 /// static factory function to create stamps with a given size
