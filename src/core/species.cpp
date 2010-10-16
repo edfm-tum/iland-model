@@ -33,6 +33,8 @@ void Species::setup()
     // setup general information
     mId = stringVar("shortName");
     mName = stringVar("name");
+    QString col_name = '#' + stringVar("displayColor");
+    mDisplayColor.setNamedColor(col_name);
     QString stampFile = stringVar("LIPFile");
     // load stamps
     mLIPs.load( GlobalSettings::instance()->path(stampFile, "lip") );
@@ -152,7 +154,7 @@ void Species::setup()
     mSaplingGrowthParams.stressThreshold = doubleVar("sapStressThreshold");
     mSaplingGrowthParams.maxStressYears = intVar("sapMaxStressYears");
     mSaplingGrowthParams.referenceRatio = doubleVar("sapReferenceRatio");
-    mSaplingGrowthParams.ReinekesR = doubleVar("sapReineckesR");
+    mSaplingGrowthParams.ReinekesR = doubleVar("sapReinekesR");
 
 }
 
@@ -193,15 +195,15 @@ double Species::allometricFractionStem(const double dbh) const
   */
 double Species::aging(const float height, const int age) const
 {
-    double rel_height = qMin(height/mMaximumHeight, 1.);
-    double rel_age = qMin(age/mMaximumAge, 1.);
+    double rel_height = qMin(height/mMaximumHeight, 0.999999); // 0.999999 -> avoid div/0
+    double rel_age = qMin(age/mMaximumAge, 0.999999);
 
     // harmonic mean: http://en.wikipedia.org/wiki/Harmonic_mean
-    double x = 1. - 2. / (1./(1.-rel_height) + 1./(1.-rel_age));
+    double x = 1. - 2. / (1./(1.-rel_height) + 1./(1.-rel_age)); // Note:
 
     double aging_factor = mAging.calculate(x);
 
-    return qMax(qMin(aging_factor, 1.),0.); // limit to [0..1]
+    return limit(aging_factor, 0., 1.); // limit to [0..1]
 }
 
 int Species::estimateAge(const float height) const
