@@ -37,7 +37,9 @@ public slots:
 private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
+    QLabel *mStatusLabel;
     // setup
+    void labelMessage(const QString message) { if (mStatusLabel) mStatusLabel->setText(message);}
     void setupModel();
     void readwriteCycle();
 
@@ -109,6 +111,7 @@ private slots:
     void on_visFon_toggled();
     void on_visDomGrid_toggled();
     void on_visImpact_toggled();
+    void on_visImpact_clicked() { on_visFon_toggled(); } // force repeaint
 };
 
 #endif // MAINWINDOW_H

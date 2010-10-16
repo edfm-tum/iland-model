@@ -16,6 +16,7 @@ public:
     bool canRun(); ///< model may be run
     bool isRunning(); ///< model is running
     bool isFinished(); ///< returns true if there is a valid model state, but the run is finished
+    int totalYears() const { return mYearsToRun; } ///< returns total number of years to simulate
     // dynamic outputs (variable fields)
     void setupDynamicOutput(QString fieldList);
     QString dynamicOutput();

@@ -49,7 +49,7 @@
      <x>0</x>
      <y>0</y>
      <width>956</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -628,7 +628,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="3" column="0" colspan="2">
+        <item row="3" column="0">
          <widget class="QRadioButton" name="visImpact">
           <property name="text">
            <string>individual Trees</string>
@@ -658,29 +658,6 @@ QProgressBar::chunk {
         <item row="9" column="0" colspan="2">
          <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
-        <item row="9" column="2">
-         <widget class="QPushButton" name="pbExecExpression">
-          <property name="maximumSize">
-           <size>
-            <width>25</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>Execute expression for each tree and draw trees accordingly.</string>
-          </property>
-          <property name="icon">
-           <iconset resource="res/iland.qrc">
-            <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>16</width>
-            <height>16</height>
-           </size>
-          </property>
-         </widget>
-        </item>
         <item row="10" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
@@ -706,6 +683,36 @@ QProgressBar::chunk {
          <widget class="QRadioButton" name="visRegeneration">
           <property name="text">
            <string>Regeneration</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="visSpeciesColor">
+          <property name="text">
+           <string>color by species</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="2">
+         <widget class="QPushButton" name="pbExecExpression">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Execute expression for each tree and draw trees accordingly.</string>
+          </property>
+          <property name="icon">
+           <iconset resource="res/iland.qrc">
+            <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
           </property>
          </widget>
         </item>
@@ -934,12 +941,12 @@ QProgressBar::chunk {
    <slot>setText(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>104</x>
-     <y>160</y>
+     <x>106</x>
+     <y>182</y>
     </hint>
     <hint type="destinationlabel">
-     <x>60</x>
-     <y>153</y>
+     <x>62</x>
+     <y>175</y>
     </hint>
    </hints>
   </connection>
@@ -950,12 +957,12 @@ QProgressBar::chunk {
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>104</x>
-     <y>142</y>
+     <x>105</x>
+     <y>165</y>
     </hint>
     <hint type="destinationlabel">
-     <x>104</x>
-     <y>158</y>
+     <x>106</x>
+     <y>180</y>
     </hint>
    </hints>
   </connection>
@@ -972,6 +979,22 @@ QProgressBar::chunk {
     <hint type="destinationlabel">
      <x>402</x>
      <y>567</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>visSpeciesColor</sender>
+   <signal>clicked()</signal>
+   <receiver>visImpact</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>849</x>
+     <y>207</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>750</x>
+     <y>211</y>
     </hint>
    </hints>
   </connection>

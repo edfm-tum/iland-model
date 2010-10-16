@@ -15,6 +15,7 @@
 #include "resourceunit.h"
 #include "speciesset.h"
 #include "tree.h"
+#include "species.h"
 
 #include "exception.h"
 
@@ -229,6 +230,9 @@ MainWindow::MainWindow(QWidget *parent)
     checkModelState();
     ui->statusBar->addPermanentWidget(ui->modelRunProgress);
     ui->modelRunProgress->setValue(0);
+    mStatusLabel = new QLabel(this);
+    labelMessage("no model created.");
+    ui->statusBar->addWidget(mStatusLabel);
     // remote control of model
     connect(&mRemoteControl, SIGNAL(year(int)),this,SLOT(yearSimulated(int)));
     connect(&mRemoteControl, SIGNAL(finished(QString)), this, SLOT(modelFinished(QString)));
@@ -328,6 +332,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_fon = ui->visFon->isChecked();
     bool show_dom = ui->visDomGrid->isChecked();
     bool show_trees = ui->visImpact->isChecked();
+    bool species_color = ui->visSpeciesColor->isChecked();
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
 
@@ -456,9 +461,15 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             }
             QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
-            tw.setTree(tree);
-            value = tree_value.execute();
-            fill_color = Helper::colorFromValue(value, 0., 1., false);
+            if (species_color) {
+                // use species specific color....
+                fill_color = tree->species()->displayColor();
+            } else {
+                // calculate expression
+                tw.setTree(tree);
+                value = tree_value.execute();
+                fill_color = Helper::colorFromValue(value, 0., 1., false);
+            }
             painter.setBrush(fill_color);
             int diameter = qMax(1,vp.meterToPixel( tree->crownRadius()));
             painter.drawEllipse(p, diameter, diameter);
@@ -641,6 +652,7 @@ void MainWindow::yearSimulated(int year)
 {
        checkModelState();
        ui->modelRunProgress->setValue(year);
+       labelMessage(QString("Running.... year %1 of %2.").arg(year).arg(mRemoteControl.totalYears()));
        ui->PaintWidget->update();
        QApplication::processEvents();
 }
@@ -648,6 +660,8 @@ void MainWindow::yearSimulated(int year)
 void MainWindow::modelFinished(QString errorMessage)
 {
     qDebug() << "Finished!";
+    labelMessage("Finished!!");
+
     checkModelState();
 }
 
@@ -657,6 +671,7 @@ void MainWindow::setupModel()
     // load project xml file to global xml settings structure
     mRemoteControl.setFileName(ui->initFileName->text());
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
+    labelMessage("Creating model...");
 
     // setup logging
     setupFileLogging(true);
@@ -680,6 +695,8 @@ void MainWindow::setupModel()
      Helper::saveToTextFile(QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt", ui->initFileName->text());
      // magic debug output number
      GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
+     labelMessage("Model created. Ready to run.");
+
 }
 
 
@@ -770,11 +787,14 @@ void MainWindow::on_actionReload_triggered()
 void MainWindow::on_actionPause_triggered()
 {
     mRemoteControl.pause();
+    if (!mRemoteControl.isRunning())
+        labelMessage("Model execution paused...");
 }
 
 void MainWindow::on_actionStop_triggered()
 {
     mRemoteControl.cancel();
+    labelMessage("Model stopped.");
 }
 
 void MainWindow::on_actionTree_Partition_triggered()
@@ -1109,8 +1129,4 @@ void MainWindow::on_actionClearDebugOutput_triggered()
 {
     GlobalSettings::instance()->clearDebugLists();
 }
-
-
-
-
 
