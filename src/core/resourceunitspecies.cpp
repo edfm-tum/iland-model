@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "model.h"
 #include "snag.h"
+#include "watercycle.h"
 
 /** @class ResourceUnitSpecies
     The class contains data available at ResourceUnit x Species scale.
@@ -63,8 +64,11 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
 
     statistics().clear();
     if (mLAIfactor>0 || fromEstablishment==true) {
-        mResponse.calculate();///< calculate environmental responses per species (vpd, temperature, ...)
-        m3PG.calculate();///< production of NPP
+        // execute the water calculation...
+        if (fromEstablishment)
+            const_cast<WaterCycle*>(mRU->waterCycle())->run(); // run the water sub model (only if this has not be done already)
+        mResponse.calculate();// calculate environmental responses per species (vpd, temperature, ...)
+        m3PG.calculate();// production of NPP
     } else {
         // if no LAI is present, then just clear the respones.
         // note: subject to change when regeneration is added...

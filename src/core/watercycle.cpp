@@ -8,6 +8,7 @@
 WaterCycle::WaterCycle()
 {
     mSoilDepth = 0;
+    mLastYear = -1;
 }
 
 void WaterCycle::setup(const ResourceUnit *ru)
@@ -42,6 +43,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
 
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
     if (logLevelDebug()) qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
+    mLastYear = -1;
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
@@ -125,6 +127,9 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
 /// @sa http://iland.boku.ac.at/water+cycle
 void WaterCycle::run()
 {
+    // necessary?
+    if (GlobalSettings::instance()->currentYear() == mLastYear)
+        return;
     // preparations (once a year)
     getStandValues(); // fetch canopy characteristics from iLand (including weighted average for mCanopyConductance)
     mCanopy.setStandParameters(mLAINeedle,
@@ -196,6 +201,8 @@ void WaterCycle::run()
         //); // DBGMODE()
 
     }
+    mLastYear = GlobalSettings::instance()->currentYear();
+
 }
 
 

@@ -203,7 +203,7 @@ void ResourceUnit::production()
 
     // invoke species specific calculation (3PG)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
-        (*i)->calculate();
+        (*i)->calculate(); // CALCULATE 3PG
         if (logLevelInfo() &&  (*i)->LAIfactor()>0)
             qDebug() << "ru" << mIndex << "species" << (*i)->species()->id() << "LAIfraction" << (*i)->LAIfactor() << "raw_gpp_m2"
                      << (*i)->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"

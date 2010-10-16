@@ -69,6 +69,7 @@ public:
     double currentContent() const { return mContent; } ///< current water content in mm
     double currentRelContent() const { Q_ASSERT(mSoilDepth>0); return qMin(mContent/mSoilDepth, 1.); }
 private:
+    int mLastYear; ///< last year of execution
     inline double psiFromHeight(const double mm) const; // kPa for water height "mm"
     inline double heightFromPsi(const double psi_kpa) const; // water height (mm) at water potential psi (kilopascal)
     double mPsi_koeff_b; ///< see psiFromHeight()
