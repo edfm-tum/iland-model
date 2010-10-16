@@ -825,7 +825,8 @@ void Expression::linearize(const double low_value, const double high_value, cons
     mLinearLow = low_value;
     mLinearHigh  = high_value;
     mLinearStep = (high_value - low_value) / (double(steps));
-    for (int i=0;i<=steps;i++) {
+    // for the high value, add another step (i.e.: include maximum value) and add one step to allow linear interpolation
+    for (int i=0;i<=steps+1;i++) {
         double x = mLinearLow + i*mLinearStep;
         double r = calculate(x);
         mLinearized.push_back(r);
@@ -848,15 +849,15 @@ void Expression::linearize2d(const double low_x, const double high_x,
 
     mLinearStep = (high_x - low_x) / (double(stepsx));
     mLinearStepY = (high_y - low_y) / (double(stepsy));
-    for (int i=0;i<=stepsx;i++) {
-        for (int j=0;j<=stepsy;j++) {
+    for (int i=0;i<=stepsx+1;i++) {
+        for (int j=0;j<=stepsy+1;j++) {
             double x = mLinearLow + i*mLinearStep;
             double y = mLinearLowY + j*mLinearStepY;
             double r = calculate(x,y);
             mLinearized.push_back(r);
         }
     }
-    mLinearStepCountY = stepsy + 1;
+    mLinearStepCountY = stepsy + 2;
     mLinearizeMode = 2;
 
 }

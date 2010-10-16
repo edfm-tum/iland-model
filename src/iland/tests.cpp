@@ -468,6 +468,7 @@ void Tests::testEstablishment()
 
 void Tests::testLinearExpressions()
 {
+    Expression::setLinearizationEnabled(true); // enable
     Expression a("40*(1-(1-(x/40)^(1/3))*exp(-0.03))^3"); // test function: sapling growth
     Expression b("40*(1-(1-(x/40)^(1/3))*exp(-0.03))^3");
 

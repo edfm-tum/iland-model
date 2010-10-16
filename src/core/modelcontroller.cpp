@@ -58,9 +58,12 @@ bool ModelController::isFinished()
     if (!mModel)
         return false;
     return canRun() && !isRunning()  && mFinished;
-
 }
 
+int ModelController::currentYear() const
+{
+    return GlobalSettings::instance()->currentYear();
+}
 
 void ModelController::setFileName(QString initFileName)
 {
@@ -86,6 +89,8 @@ void ModelController::create()
         if (!mModel->isSetup())
             return;
 
+        // reset clock...
+        GlobalSettings::instance()->setCurrentYear(1); // reset clock
         // initialization of trees, output on startup
         mModel->beforeRun();
     } catch(const IException &e) {
@@ -121,8 +126,15 @@ void ModelController::runloop()
         hasError = runYear(); // do the work
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
-        if (!hasError)
-            QTimer::singleShot(0,this, SLOT(runloop()));
+        if (!hasError) {
+            int time=0;
+            if (currentYear()%50==0)
+                time = 100; // a 100ms pause...
+            if (currentYear()%100==0) {
+                time = 500; // a 500ms pause...
+            }
+            QTimer::singleShot(time,this, SLOT(runloop()));
+        }
         else
            doStop = true; // an error occured
 
@@ -153,7 +165,7 @@ void ModelController::run(int years)
     mFinished = false;
     mCanceled = false;
     mYearsToRun = years;
-    GlobalSettings::instance()->setCurrentYear(1); // reset clock
+    //GlobalSettings::instance()->setCurrentYear(1); // reset clock
 
     DebugTimer::clearAllTimers();
 
@@ -167,6 +179,7 @@ bool ModelController::runYear()
 {
     if (!canRun()) return false;
     DebugTimer t("ModelController:runYear");
+    qDebug() << "ModelController: run year" << currentYear();
 
     if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
         GlobalSettings::instance()->clearDebugLists();  // clear debug data

@@ -721,14 +721,14 @@ inline void Tree::partitioning(TreeGrowthData &d)
      }
 
     //); // DBGMODE()
-    //DBGMODE(
+    DBGMODE(
       if (mWoodyMass<0. || mWoodyMass>50000 || mFoliageMass<0. || mFoliageMass>2000. || mCoarseRootMass<0. || mCoarseRootMass>30000
          || mNPPReserve>4000.) {
          qDebug() << "Tree:partitioning: invalid or unlikely pools.";
          qDebug() << GlobalSettings::instance()->debugListCaptions(GlobalSettings::DebugOutputs(0));
          DebugList dbg; dumpList(dbg);
          qDebug() << dbg;
-     } //);
+     } );
 
     /*DBG_IF_X(mId == 1 , "Tree::partitioning", "dump", dump()
              + QString("npp %1 npp_reserve %9 sen_fol %2 sen_stem %3 sen_root %4 net_fol %5 net_stem %6 net_root %7 to_reserve %8")
