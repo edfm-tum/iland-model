@@ -15,6 +15,7 @@
 #include "managementout.h"
 #include "dynamicstandout.h"
 #include "productionout.h"
+#include "saplingout.h"
 
 
 
@@ -28,6 +29,7 @@ OutputManager::OutputManager()
     mOutputs.append(new ProductionOut);
     mOutputs.append(new StandDeadOut);
     mOutputs.append(new ManagementOut);
+    mOutputs.append(new SaplingOut);
 
 }
 

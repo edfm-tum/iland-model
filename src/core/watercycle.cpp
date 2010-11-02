@@ -149,8 +149,8 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
     else if (total_lai_factor>0. && mRU->averageAging()>0.)
         total_response *= (1.-total_lai_factor)*1. + (total_lai_factor * mRU->averageAging()); // between 0..1: a part of the LAI is "ground cover" (aging=1)
 
-    DBGMODE( if (mRU->averageAging()>1. || mRU->averageAging()<0.)
-        qDebug() << "water cycle: average aging invalid";
+    DBGMODE( if (mRU->averageAging()>1. || mRU->averageAging()<0. || total_response<0 || total_response>1.)
+        qDebug() << "water cycle: average aging invalid. aging:" << mRU->averageAging() << "total response" << total_response;
     );
 
     //DBG_IF(mRU->averageAging()>1. || mRU->averageAging()<0.,"water cycle", "average aging invalid!" );

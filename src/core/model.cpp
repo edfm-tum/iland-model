@@ -426,6 +426,7 @@ void Model::beforeRun()
 
     // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("sapling"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
 
@@ -496,6 +497,7 @@ void Model::runYear()
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree"); // single tree output
     om->execute("stand"); //resource unit level x species
+    om->execute("sapling"); // sapling layer per RU x species
     om->execute("production_month"); // 3pg responses growth per species x RU x month
     om->execute("dynamicstand"); // output with user-defined columns (based on species x RU)
     om->execute("standdead"); // resource unit level x species

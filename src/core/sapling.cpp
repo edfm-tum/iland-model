@@ -21,6 +21,35 @@ Sapling::Sapling()
     clearStatistics();
 }
 
+/// get the *represented* (Reineke's Law) number of trees (N/ha)
+double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const
+{
+    double total = 0.;
+    double dbh_sum = 0.;
+    double h_sum = 0.;
+    double age_sum = 0.;
+    const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
+    for (QVector<SaplingTree>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+        float dbh = it->height / p.hdSapling * 100.f;
+        if (dbh<1.) // minimum size: 1cm
+            continue;
+        double n = p.representedStemNumber(dbh);
+        dbh_sum += n*dbh;
+        h_sum += n*it->height;
+        age_sum += n*it->age.age;
+        total += n;
+    }
+    if (total>0.) {
+        dbh_sum /= total;
+        h_sum /= total;
+        age_sum /= total;
+    }
+    rAvgDbh = dbh_sum;
+    rAvgHeight = h_sum;
+    rAvgAge = age_sum;
+    return total;
+}
+
 /// maintenance function to clear dead/recruited saplings from storage
 void Sapling::cleanupStorage()
 {

@@ -41,8 +41,9 @@ public:
     // access to statistics
     int newSaplings() const { return mAdded; }
     int diedSaplings() const { return mDied; }
-    int livingSaplings() const { return mLiving; }
+    int livingSaplings() const { return mLiving; } ///< get the number
     int recruitedSaplings() const { return mRecruited; }
+    double livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const; ///< returns the *represented* (Reineke's Law) number of trees (N/ha) and the mean dbh/height (cm/m)
     double averageHeight() const { return mAvgHeight; }
     double averageAge() const { return mAvgAge; }
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
