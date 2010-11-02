@@ -137,7 +137,6 @@ void ResourceUnit::newYear()
     mAggregatedLA = 0.;
     mAggregatedLR = 0.;
     mEffectiveArea = 0.;
-    mAverageAging = 0.;
     mPixelCount = mStockedPixelCount = 0;
     // clear statistics global and per species...
     QList<ResourceUnitSpecies*>::const_iterator i;

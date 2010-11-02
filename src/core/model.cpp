@@ -562,7 +562,7 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
     unit->setRandomGenerator();
-    unit->beforeGrow();
+    unit->beforeGrow(); // reset statistics
     // calculate light responses
     // responses are based on *modified* values for LightResourceIndex
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
@@ -581,7 +581,6 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 ResourceUnit *nc_production(ResourceUnit *unit)
 {
     unit->setRandomGenerator();
-    unit->beforeGrow(); // reset some statistics
     unit->production();
     return unit;
 }

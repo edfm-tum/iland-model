@@ -68,6 +68,7 @@ public:
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm
     double currentRelContent() const { Q_ASSERT(mSoilDepth>0); return qMin(mContent/mSoilDepth, 1.); }
+    double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
 private:
     int mLastYear; ///< last year of execution
     inline double psiFromHeight(const double mm) const; // kPa for water height "mm"
@@ -89,7 +90,7 @@ private:
     inline double calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa);
     double mLAINeedle;
     double mLAIBroadleaved;
-    double mCanopyConductance;
+    double mCanopyConductance; ///< m/s
 };
 
 #endif // WATERCYCLE_H

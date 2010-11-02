@@ -107,7 +107,7 @@ void WaterCycle::getStandValues()
 inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
 {
     // constant parameters used for ground vegetation:
-    const double mPsiMin = 1.6; // MPa
+    const double mPsiMin = 1.5; // MPa
     const double mRespVpdExponent = -0.6;
     // see SpeciesResponse::soilAtmosphereResponses()
     double water_resp;
@@ -144,8 +144,10 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
 
     // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
     // conceptually: response = min(vpd_response, water_response)*aging
-    if (total_lai_factor>0.)
-        total_response *= mRU->averageAging();
+    if (total_lai_factor==1.)
+        total_response *= mRU->averageAging(); // no ground cover: use aging value for all LA
+    else if (total_lai_factor>0. && mRU->averageAging()>0.)
+        total_response *= (1.-total_lai_factor)*1. + (total_lai_factor * mRU->averageAging()); // between 0..1: a part of the LAI is "ground cover" (aging=1)
 
     DBGMODE( if (mRU->averageAging()>1. || mRU->averageAging()<0.)
         qDebug() << "water cycle: average aging invalid";

@@ -56,10 +56,20 @@
     <property name="title">
      <string>Output-menu</string>
     </property>
+    <widget class="QMenu" name="menuLog_Level">
+     <property name="title">
+      <string>Log Level</string>
+     </property>
+     <addaction name="actionDebug"/>
+     <addaction name="actionInfo"/>
+     <addaction name="actionWarning"/>
+     <addaction name="actionError"/>
+    </widget>
     <addaction name="actionTreelist"/>
     <addaction name="actionFON_grid"/>
     <addaction name="actionOutput_table_description"/>
     <addaction name="actionTimers"/>
+    <addaction name="menuLog_Level"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -920,6 +930,38 @@ QProgressBar::chunk {
     <string>Snag Dynamics</string>
    </property>
   </action>
+  <action name="actionDebug">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Debug</string>
+   </property>
+  </action>
+  <action name="actionWarning">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Warning</string>
+   </property>
+  </action>
+  <action name="actionInfo">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Info</string>
+   </property>
+  </action>
+  <action name="actionError">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Error</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -941,12 +983,12 @@ QProgressBar::chunk {
    <slot>setText(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>106</x>
-     <y>182</y>
+     <x>104</x>
+     <y>160</y>
     </hint>
     <hint type="destinationlabel">
-     <x>62</x>
-     <y>175</y>
+     <x>60</x>
+     <y>153</y>
     </hint>
    </hints>
   </connection>
@@ -961,8 +1003,8 @@ QProgressBar::chunk {
      <y>165</y>
     </hint>
     <hint type="destinationlabel">
-     <x>106</x>
-     <y>180</y>
+     <x>104</x>
+     <y>158</y>
     </hint>
    </hints>
   </connection>

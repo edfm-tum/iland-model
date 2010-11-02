@@ -236,6 +236,13 @@ MainWindow::MainWindow(QWidget *parent)
     // remote control of model
     connect(&mRemoteControl, SIGNAL(year(int)),this,SLOT(yearSimulated(int)));
     connect(&mRemoteControl, SIGNAL(finished(QString)), this, SLOT(modelFinished(QString)));
+
+    // log levels
+    ui->actionDebug->setProperty("logLevel", QVariant(0));
+    ui->actionInfo->setProperty("logLevel", QVariant(1));
+    ui->actionWarning->setProperty("logLevel", QVariant(2));
+    ui->actionError->setProperty("logLevel", QVariant(3));
+
 }
 
 
@@ -1132,5 +1139,19 @@ void MainWindow::on_pbLogFilterClear_clicked()
 void MainWindow::on_actionClearDebugOutput_triggered()
 {
     GlobalSettings::instance()->clearDebugLists();
+}
+
+
+void MainWindow::on_actionDebug_triggered()
+{
+    //
+    QObject *o = QObject::sender();
+    int level = o->property("logLevel").toInt();
+    ui->actionDebug->setChecked( level == 0);
+    ui->actionInfo->setChecked( level == 1);
+    ui->actionWarning->setChecked( level == 2);
+    ui->actionError->setChecked( level == 3);
+
+    setLogLevel(level);
 }
 
