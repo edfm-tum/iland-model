@@ -16,7 +16,7 @@ public:
         void setAndParse(const QString &expr); ///< set expression and parse instantly
         void setModelObject(ExpressionWrapper *wrapper) { mModelObject = wrapper; }
         const QString &expression() const { return m_expression; }
-        void  parse(); ///< force a parsing of the expression
+        void  parse(ExpressionWrapper *wrapper=0); ///< force a parsing of the expression
         void linearize(const double low_value, const double high_value, const int steps=1000);
         void linearize2d(const double low_x, const double high_x, const double low_y, const double high_y, const int stepsx=50, const int stepsy=50);
         static void setLinearizationEnabled(const bool enable) {mLinearizationAllowed = enable; }

@@ -13,7 +13,7 @@ class CSVFile : public QObject
     Q_PROPERTY(int rowCount READ rowCount);
 public:
     CSVFile(QObject *parent=0);
-    CSVFile(const QString &fileName) { loadFile(fileName);} ///< ctor, load @p fileName.
+    CSVFile(const QString &fileName) {     mHasCaptions = true; mFlat = false; mFixedWidth=false; loadFile(fileName);} ///< ctor, load @p fileName.
     // actions
     bool openFile(const QString &fileName); ///< open file in streaming mode.
     QVariant colValue(const int col); ///< get value of column with index @p col. Use in streaming mode.
@@ -29,6 +29,7 @@ public:
     QVariantList values(const int row) const; ///< get a list of the values in row "row"
     // setters
     void setHasCaptions(const bool hasCaps) { mHasCaptions = hasCaps; }
+    void setFixedWidth(const bool hasFixedWidth) { mFixedWidth = hasFixedWidth; }
     void setFlat(const bool isflat) { mFlat = isflat; }
     static void addToScriptEngine(QScriptEngine &engine); // called during setup of ScriptEngine
 public slots:
@@ -39,9 +40,13 @@ public slots:
     QVariant value(const int row, const int col) const; ///< get value of cell denoted by @p row and @p cell. Not available in streaming mode.
     QVariant row(const int row); ///< retrieve content of the full row @p row as a Variant
 
+    void setValue(const int row, const int col, QVariant value); ///< set the value of the column
+    void saveFile(const QString &fileName); ///< save the current content to a file
+
 private:
     void clear();
     bool mHasCaptions;
+    bool mFixedWidth;
     bool mFlat;
     bool mStreamingMode;
     QStringList mCaptions;

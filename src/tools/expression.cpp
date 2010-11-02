@@ -196,12 +196,14 @@ void Expression::setExpression(const QString& aExpression)
 // mutex used to serialize expression parsing.
 QMutex mutex;
 
-void  Expression::parse()
+void  Expression::parse(ExpressionWrapper *wrapper)
 {
     QMutexLocker locker(&mutex);
     if (m_parsed)
         return;
     try {
+        if (wrapper)
+            mModelObject = wrapper;
         m_tokString="";
         m_state=etUnknown;
         m_lastState=etUnknown;
@@ -493,7 +495,7 @@ int Expression::getFuncIndex(const QString& functionName)
 double Expression::execute(double *varlist, ExpressionWrapper *object) const
 {
     if (!m_parsed)
-        const_cast<Expression*>(this)->parse();
+        const_cast<Expression*>(this)->parse(object);
     const double *varSpace = varlist?varlist:m_varSpace;
     ExtExecListItem *exec=m_execList;
     int i;

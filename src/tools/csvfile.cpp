@@ -50,9 +50,10 @@ bool CSVFile::loadFromString(const QString &content)
     if (mRows.count()==0)
         return false;
 
-    for (int i=0;i<mRows.count();i++)
-        mRows[i] = mRows[i].trimmed();
-
+    if (!mFixedWidth) {
+        for (int i=0;i<mRows.count();i++)
+            mRows[i] = mRows[i].trimmed();
+    }
     // drop comments (i.e. lines at the beginning that start with '#', also ignore '<' (are in tags of picus-ini-files)
     while (!mRows.isEmpty() && (mRows.front().startsWith('#') || mRows.front().startsWith('<')))
         mRows.pop_front();
@@ -75,11 +76,11 @@ bool CSVFile::loadFromString(const QString &content)
         if (c_tab > c_semi && c_tab>c_comma) mSeparator="\t";
         if (c_semi > c_tab && c_semi>c_comma) mSeparator=";";
         if (c_comma > c_tab && c_comma>c_semi) mSeparator=",";
-        if (mSeparator==" ") {
-            for (int i=0;i<mRows.count();i++)
-                mRows[i] = mRows[i].simplified();
-            first = mRows.first();
-        }
+//        if (mSeparator==" ") {
+//            for (int i=0;i<mRows.count();i++)
+//                mRows[i] = mRows[i].simplified();
+//            first = mRows.first();
+//        }
     } // !mFlat
 
     // captions
@@ -88,7 +89,7 @@ bool CSVFile::loadFromString(const QString &content)
         mRows.pop_front(); // drop the first line
     } else {
         // create pseudo captions
-        mCaptions = first.split(mSeparator);
+        mCaptions = first.split(mSeparator, QString::SkipEmptyParts);
         for (int i=0;i<mCaptions.count();i++)
             mCaptions[i] = QString("c%1").arg(i);
     }
@@ -130,6 +131,69 @@ QVariant CSVFile::value(const int row, const int col) const
         qDebug() << "CSVFile::value: invalid index: row col:" << row << col << ". Size is:" << mRowCount << mColCount;
         return QVariant();
     }
+
+    if (mFixedWidth) {
+        // special case with space (1..n) as separator
+        QString s = mRows[row];
+        QChar sep=mSeparator.at(0);
+        QVariant result;
+        if (col==mColCount-1) {
+            // last element:
+            result = s.mid(s.lastIndexOf(sep)+1);
+            return result;
+        }
+        int sepcount=0;
+        int lastsep=0;
+        int i=0;
+        while (s.at(i) == sep && i<s.size()) i++; // skip initial spaces
+        for (;i<s.size();i++) {
+            if (s.at(i) == sep) {
+                // skip all spaces
+                while (s.at(i)==sep)
+                    i++;
+                i--; // go back to last separator
+                // count the separators up to the wanted column
+                if (sepcount==col) {
+                    result = s.mid(lastsep,i-lastsep);
+                    return result;
+                }
+                sepcount++;
+                lastsep=i+1;
+            }
+        }
+        qDebug() << "CSVFile::value: found no result:" << row << col << ". Size is:" << mRowCount << mColCount;
+        return QVariant();
+    }
+
+    // one-character separators....
+    if (mSeparator.length()==1) {
+        QString s = mRows[row];
+        QChar sep=mSeparator.at(0);
+        QVariant result;
+        if (col==mColCount-1) {
+            // last element:
+            result = s.mid(s.lastIndexOf(sep)+1);
+            return result;
+        }
+        int sepcount=0;
+        int lastsep=0;
+        for (int i=0;i<s.size();i++) {
+            if (s.at(i) == sep) {
+                // count the separators up to the wanted column
+                if (sepcount==col) {
+                    result = s.mid(lastsep,i-lastsep);
+                    return result;
+                }
+                sepcount++;
+                lastsep=i+1;
+            }
+        }
+        qDebug() << "CSVFile::value: found no result:" << row << col << ". Size is:" << mRowCount << mColCount;
+        return QVariant();
+
+    }
+
+    // fallback, if separator is more than one character. This is very slow approach.... (old)
     QStringList line = mRows[row].split(mSeparator);
     QVariant result;
     if (col<line.count()) {
@@ -163,5 +227,62 @@ QStringList CSVFile::column(const int col) const
     for (int row=0;row<rowCount();row++)
         result+=value(row,col).toString();
     return result;
+}
+
+void CSVFile::setValue(const int row, const int col, QVariant value)
+{
+    if (row<0 || row>=mRowCount || col<0 || col>mColCount) {
+        qDebug() << "CSVFile::setValue: invalid index: row col:" << row << col << ". Size is:" << mRowCount << mColCount;
+        return;
+    }
+    if (!mFixedWidth) {
+        QStringList line = mRows[row].split(mSeparator);
+        if (col<line.count()) {
+            line[col] = value.toString();
+        }
+        mRows[row] = line.join(mSeparator);
+    } else {
+        // if sep=space, we assume a fixed format... and try to insert the new data right-padded
+        QString data = value.toString();
+        QString &s = mRows[row];
+        int field=mColCount-1;
+        QChar sep = mSeparator[0];
+        for (int i=s.size()-1; i>=0; --i) {
+            if (field == col) {
+                // replace: first, replace data with spaces...
+                int r = i; // position of last character of the data
+                while (s.at(i)!=sep) {
+                    s[i] = sep;
+                    i--;
+                }
+                // insert data
+                for (int j=0;j<data.size();j++)
+                    s[r - data.size() + j + 1] = data.at(j);
+                return; // finished
+            }
+            if (s.at(i)==sep) {
+                field--;
+                while (s.at(i)==sep && i>=0) i--; // skip multiple spaces
+                i++;
+            }
+        }
+        qDebug() << "CSVFile::saveFile: save value with fixed width: col not found.";
+    }
+}
+
+/// save the contents of the CSVFile back to a file.
+/// this removes all comments and uses the system line-end
+void CSVFile::saveFile(const QString &fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "CSVFile::saveFile: could not create file" + fileName;
+        return;
+    }
+    QTextStream str(&file);
+    if (mHasCaptions)
+        str << mCaptions.join(mSeparator) << endl;
+    foreach(const QString s, mRows)
+        str << s << endl;
 }
 
