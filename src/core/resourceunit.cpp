@@ -191,8 +191,12 @@ void ResourceUnit::production()
     // calculate LAI fractions
     QList<ResourceUnitSpecies*>::const_iterator i;
     QList<ResourceUnitSpecies*>::const_iterator iend = mRUSpecies.constEnd();
+    double ru_lai = leafAreaIndex();
+    if (ru_lai < 1.)
+        ru_lai = 1.;
+    // note: LAIFactors are only 1 if sum of LAI is > 1. (see WaterCycle)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
-         (*i)->setLAIfactor((*i)->statistics().leafAreaIndex() / leafAreaIndex());
+         (*i)->setLAIfactor((*i)->statistics().leafAreaIndex() / ru_lai);
     }
 
     // soil water model - this determines soil water contents needed for response calculations

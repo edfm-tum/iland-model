@@ -74,6 +74,7 @@ void WaterCycle::getStandValues()
 {
     mLAINeedle=mLAIBroadleaved=0.;
     mCanopyConductance=0.;
+    const double GroundVegetationCC = 0.02;
     double lai;
     foreach(ResourceUnitSpecies *rus, mRU->ruSpecies()) {
         lai = rus->constStatistics().leafAreaIndex();
@@ -84,11 +85,14 @@ void WaterCycle::getStandValues()
         mCanopyConductance += rus->species()->canopyConductance() * lai; // weigh with LAI
     }
     double total_lai = mLAIBroadleaved+mLAINeedle;
-    if (total_lai>0.) {
-        mCanopyConductance /= total_lai;
-    } else {
-        mCanopyConductance = Model::settings().boundaryLayerConductance; // defaults to 0.2
+
+    // handle cases with LAI < 1 (use generic "ground cover characteristics" instead)
+    if (total_lai<1.) {
+        mCanopyConductance+=(GroundVegetationCC)*(1. - total_lai);
+        total_lai = 1.;
     }
+    mCanopyConductance /= total_lai;
+
     if (total_lai < Model::settings().laiThresholdForClosedStands) {
         // following Landsberg and Waring: when LAI is < 3 (default for laiThresholdForClosedStands), a linear "ramp" from 0 to 3 is assumed
         // http://iland.boku.ac.at/water+cycle#transpiration_and_canopy_conductance
@@ -97,22 +101,52 @@ void WaterCycle::getStandValues()
     if (logLevelInfo()) qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
 }
 
+/// calculate responses for ground vegetation, i.e. for "unstocked" areas.
+/// this duplicates calculations done in Species.
+/// @return Minimum of vpd and soilwater response for default
+inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
+{
+    // constant parameters used for ground vegetation:
+    const double mPsiMin = 1.6; // MPa
+    const double mRespVpdExponent = -0.6;
+    // see SpeciesResponse::soilAtmosphereResponses()
+    double water_resp;
+    // see Species::soilwaterResponse:
+    const double psi_mpa = psi_kpa / 1000.; // convert to MPa
+    water_resp = limit( 1. - psi_mpa / mPsiMin, 0., 1.);
+    // see species::vpdResponse
+
+    double vpd_resp;
+    vpd_resp =  exp(mRespVpdExponent * vpd_kpa);
+    return qMin(water_resp, vpd_resp);
+}
+
 /// calculate combined VPD and soilwaterresponse for all species
 /// on the RU. This is used for the calc. of the transpiration.
 inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
 {
     double min_response;
-    double total_response = 0;
+    double total_response = 0; // LAI weighted minimum response for all speices on the RU
+    double total_lai_factor = 0.;
     foreach(ResourceUnitSpecies *rus, mRU->ruSpecies()) {
         if (rus->LAIfactor()>0) {
+            // retrieve the minimum of VPD / soil water response for that species
             rus->speciesResponse()->soilAtmosphereResponses(psi_kpa, vpd_kpa, min_response);
             total_response += min_response * rus->LAIfactor();
+            total_lai_factor += rus->LAIfactor();
         }
+    }
+
+    if (total_lai_factor<1.) {
+        // the LAI is below 1: the rest is considered as "ground vegetation"
+        total_response += calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa) * (1. - total_lai_factor);
     }
 
     // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
     // conceptually: response = min(vpd_response, water_response)*aging
-    total_response *= mRU->averageAging();
+    if (total_lai_factor>0.)
+        total_response *= mRU->averageAging();
+
     DBGMODE( if (mRU->averageAging()>1. || mRU->averageAging()<0.)
         qDebug() << "water cycle: average aging invalid";
     );

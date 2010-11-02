@@ -72,6 +72,7 @@ private:
     int mLastYear; ///< last year of execution
     inline double psiFromHeight(const double mm) const; // kPa for water height "mm"
     inline double heightFromPsi(const double psi_kpa) const; // water height (mm) at water potential psi (kilopascal)
+    inline double calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa); ///< calculate response for ground vegetation
     double mPsi_koeff_b; ///< see psiFromHeight()
     double mPsi_ref; ///< see psiFromHeight(), kPa
     double mRho_ref; ///< see psiFromHeight(), [-], m3/m3
