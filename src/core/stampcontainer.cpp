@@ -89,6 +89,15 @@ void StampContainer::finalizeSetup()
                m_lookup.valueAtIndex(b,h) = m_lookup(b-1, h);
         }
     }
+    if (!m_lookup.valueAtIndex(0,0)) {
+        // first values are missing
+        int b=0;
+        while (b<cBHDclassCount && m_lookup.valueAtIndex(b,0)==NULL)
+            b++;
+        for (int fill=0;fill<b;fill++)
+            for (h=0;h<cHDclassCount;h++)
+                m_lookup.valueAtIndex(fill, h) = m_lookup.valueAtIndex(b,h);
+    }
     // distance grid
     if (m_distance.sizeX()<max_size) {
         setupDistanceGrid(max_size);

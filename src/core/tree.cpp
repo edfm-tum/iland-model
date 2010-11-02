@@ -85,6 +85,9 @@ void Tree::setup()
     // check stamp
     Q_ASSERT_X(species()!=0, "Tree::setup()", "species is NULL");
     mStamp = species()->stamp(mDbh, mHeight);
+    if (!mStamp) {
+        throw IException("Tree::setup() with invalid stamp!");
+    }
 
     mFoliageMass = species()->biomassFoliage(mDbh);
     mCoarseRootMass = species()->biomassRoot(mDbh); // coarse root (allometry)
