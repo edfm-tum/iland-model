@@ -28,12 +28,13 @@ double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rA
     double dbh_sum = 0.;
     double h_sum = 0.;
     double age_sum = 0.;
+    double area = cPxPerRU*cPxPerRU;
     const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
     for (QVector<SaplingTree>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         float dbh = it->height / p.hdSapling * 100.f;
         if (dbh<1.) // minimum size: 1cm
             continue;
-        double n = p.representedStemNumber(dbh);
+        double n = p.representedStemNumber(dbh) / area;
         dbh_sum += n*dbh;
         h_sum += n*it->height;
         age_sum += n*it->age.age;
@@ -184,7 +185,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         ResourceUnit *ru = const_cast<ResourceUnit*> (mRUS->ru());
         float dbh = tree.height / species->saplingGrowthParameters().hdSapling * 100.f;
         // the number of trees to create: convert represented N/ha -> N/pixel
-        double n_trees = species->saplingGrowthParameters().representedStemNumber(dbh) * cPxSize*cPxSize / 10000.;
+        double n_trees = species->saplingGrowthParameters().representedStemNumber(dbh);
         int to_establish = (int) n_trees;
         // if n_trees is not an integer, choose randomly if we should add a tree.
         // e.g.: n_trees = 2.3 -> add 2 trees with 70% probability, and add 3 trees with p=30%.

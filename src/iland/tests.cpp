@@ -59,6 +59,10 @@ void Tests::testXml()
 
 void Tests::speedOfExpression()
 {
+    Q_ASSERT(1==0);
+//    int *p;
+//    p = 0;
+//    *p = 1; --> signal handler does not really work
     // (1) for each
     double sum;
     int count;

@@ -107,10 +107,10 @@ void myMessageOutput(QtMsgType type, const char *msg)
          fprintf(stderr, "Fatal: %s\n", msg);
          bufferedMessages.append(QString(msg));
 
-         Helper::saveToTextFile(GlobalSettings::instance()->path("fatallog.txt","temp"),
+         Helper::msg(QString("Fatal message encountered:\n%1").arg(msg));
+         dumpMessages();
+         Helper::saveToTextFile(GlobalSettings::instance()->path("fatallog.txt","log"),
                                 MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
-
-         //Helper::msg("Fatal message encountered!");
 
      }
      if (!doBufferMessages || bufferedMessages.count()>5000)
@@ -120,6 +120,7 @@ void myMessageOutput(QtMsgType type, const char *msg)
 // handle signal...
 // source: http://cplusplus.com/forum/unices/13455/
 void handle_signal( int signo ) {
+    Helper::msg(QString("Received Signal:\n%1").arg(signo));
     qDebug() << "*** Received signal "<< signo << "****";
     dumpMessages();
 

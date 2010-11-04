@@ -34,7 +34,8 @@ struct SaplingGrowthParameters
     double ReinekesR; ///< Reinekes R, i.e. maximum stem number for a dg of 25cm
     double referenceRatio; ///< f_ref (eq. 3) -> ratio reference site / optimum site
     SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReinekesR(1450.), referenceRatio(1.) {}
-    double representedStemNumber(const double dbh) const { return ReinekesR*pow(dbh/25, -1.605); } ///< stem number that is represented by one cohort (N/ha) (using Reinekes Law)
+    /// stem number that is represented by one cohort (N) (using Reinekes Law): Important: this is not scaled to N/ha!
+    double representedStemNumber(const double dbh) const { return ReinekesR*pow(dbh/25., -1.605); }
 };
 
 
