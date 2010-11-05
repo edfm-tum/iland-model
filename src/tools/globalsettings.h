@@ -105,11 +105,12 @@ private:
 // Light-Grid: 2x2m
 // Height-Grid: 10x10m
 // Resource-Unit: 100x100m
-const int cPxSize = 2; // size of light grid
-const int cRUSize = 100; // size of resource unit
-const int cPxPerHeight = 5; // 10 / 2
+const int cPxSize = 2; // size of light grid (m)
+const int cRUSize = 100; // size of resource unit (m)
+const int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
 const int cPxPerRU = 50; // 100/2
-const int cHeightPerRU = 10; // 100/10
+const int cHeightPerRU = 10; // 100/10 height pixels per resource unit
+const int cPxPerHectare = 2500; // pixel/ha ( 10000 / (2*2) )
 
 // other constants
 const double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon

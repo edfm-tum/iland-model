@@ -28,13 +28,12 @@ double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rA
     double dbh_sum = 0.;
     double h_sum = 0.;
     double age_sum = 0.;
-    double area = cPxPerRU*cPxPerRU;
     const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
     for (QVector<SaplingTree>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         float dbh = it->height / p.hdSapling * 100.f;
         if (dbh<1.) // minimum size: 1cm
             continue;
-        double n = p.representedStemNumber(dbh) / area;
+        double n = p.representedStemNumber(dbh); // one cohort on the pixel represents that number of trees
         dbh_sum += n*dbh;
         h_sum += n*it->height;
         age_sum += n*it->age.age;
