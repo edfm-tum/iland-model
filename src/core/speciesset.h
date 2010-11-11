@@ -35,7 +35,7 @@ public:
 private:
     QString mName;
     double nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const;
-    QList<Species*> mActiveSpecies;
+    QList<Species*> mActiveSpecies; ///< list of species that are "active" (flag active in database)
     QMap<QString, Species*> mSpecies;
     QSqlQuery *mSetupQuery;
     StampContainer mReaderStamp;

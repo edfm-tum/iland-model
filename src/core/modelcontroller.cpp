@@ -13,6 +13,9 @@
 #include "expressionwrapper.h"
 #include "../output/outputmanager.h"
 
+#include "species.h"
+#include "speciesset.h"
+
 #include "mainwindow.h" // for the debug message buffering
 
 ModelController::ModelController()
@@ -28,6 +31,20 @@ ModelController::~ModelController()
     destroy();
 }
 
+/// prepare a list of all (active) species
+QHash<QString, QString> ModelController::availableSpecies()
+{
+    QHash<QString, QString> list;
+    if (mModel) {
+        SpeciesSet *set = mModel->speciesSet();
+        if (!set)
+            throw IException("there are 0 or more than one species sets.");
+        foreach (const Species *s, set->activeSpecies()) {
+            list[s->id()] = s->name();
+        }
+    }
+    return list;
+}
 
 bool ModelController::canCreate()
 {

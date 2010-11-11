@@ -1,7 +1,7 @@
 #ifndef MODELCONTROLLER_H
 #define MODELCONTROLLER_H
 #include <QObject>
-
+#include <QHash>
 class Model;
 class ModelController: public QObject
 {
@@ -21,6 +21,9 @@ public:
     // dynamic outputs (variable fields)
     void setupDynamicOutput(QString fieldList);
     QString dynamicOutput();
+    // some informational services
+    QHash<QString, QString> availableSpecies();
+
 signals:
     void finished(QString errorMessage);
     void year(int year);

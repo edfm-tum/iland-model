@@ -244,6 +244,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionWarning->setProperty("logLevel", QVariant(2));
     ui->actionError->setProperty("logLevel", QVariant(3));
 
+    // species filter
+    connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
+
 }
 
 
@@ -349,6 +352,10 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         maxval =grid->max();
     if (maxval==0.)
         return;
+    QString species;
+    if (ui->speciesFilterBox->currentIndex()>-1)
+        species = ui->speciesFilterBox->itemData(ui->speciesFilterBox->currentIndex()).toString();
+
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
     // draw rectangle around the grid
@@ -387,14 +394,17 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (mRegenerationGrid.isEmpty())
             mRegenerationGrid.setup(*model->grid()); // copy
         static int last_year=0;
-        if (last_year!=GlobalSettings::instance()->currentYear()) {
+        static QString last_species="";
+        if (last_year!=GlobalSettings::instance()->currentYear() || species!=last_species) {
             last_year=GlobalSettings::instance()->currentYear();
+            last_species=species;
             // fill grid...
             DebugTimer t("create regeneration map...");
             mRegenerationGrid.wipe(0.f);
             foreach(const ResourceUnit *ru, model->ruList()) {
                 foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
-                    rus->visualGrid(mRegenerationGrid);
+                    if (species.isEmpty() || rus->species()->id() == species)
+                        rus->visualGrid(mRegenerationGrid);
                 }
             }
         }
@@ -467,6 +477,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
                 continue;
             }
+            // filter species...
+            if (!species.isEmpty())
+                if (tree->species()->id() != species)
+                    continue;
+
             QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
             if (species_color) {
@@ -703,6 +718,17 @@ void MainWindow::setupModel()
      Helper::saveToTextFile(QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt", ui->initFileName->text());
      // magic debug output number
      GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
+
+     // populate the tree species filter list
+     ui->speciesFilterBox->clear();
+     ui->speciesFilterBox->addItem("<all species>", "");
+     QHash<QString, QString> list = mRemoteControl.availableSpecies();
+     QHash<QString, QString>::const_iterator i = list.begin();
+     while (i!=list.constEnd()) {
+         ui->speciesFilterBox->addItem(i.value(), i.key());
+         ++i;
+     }
+
      labelMessage("Model created. Ready to run.");
 
 }

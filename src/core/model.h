@@ -47,6 +47,7 @@ public:
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }
     Environment *environment() {return mEnvironment; }
+    SpeciesSet *speciesSet() const { if (mSpeciesSets.count()==1) return mSpeciesSets.first(); return NULL; }
     // global grids
     FloatGrid *grid() { return mGrid; } ///< this is the global 'LIF'-grid (light patterns) (currently 2x2m)
     HeightGrid *heightGrid() { return mHeightGrid; } ///< stores maximum heights of trees and some flags (currently 10x10m)

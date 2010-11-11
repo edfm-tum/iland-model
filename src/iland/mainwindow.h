@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = 0);
+    // logging
     static QPlainTextEdit* logSpace() { return mLogSpace; }
     static QTextStream* logStream() { return mLogStream;}
     static void bufferedLog(bool bufferLog);
