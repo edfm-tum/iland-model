@@ -644,14 +644,13 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
 {
     qDebug() << "drag" << button;
     ui->PaintWidget->setCursor(Qt::CrossCursor);
-    // padding
-    if (button == Qt::MidButton) {
+    // move view area if not dedicately moving around a tree
+    if (!wantDrag) {
         vp.moveTo(from, to);
         ui->PaintWidget->update();
         return;
     }
-    if (!wantDrag)
-        return;
+    wantDrag = false;
     qDebug() << "drag from" << from << "to" << to;
     Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
     if (!t)

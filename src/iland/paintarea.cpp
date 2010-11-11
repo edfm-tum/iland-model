@@ -6,12 +6,6 @@
 PaintArea::PaintArea(QWidget *parent)
      : QWidget(parent)
  {
-     //QTimer *timer = new QTimer(this);
-     //connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-     //timer->start(1000);
-
-     //setWindowTitle(tr("Analog Clock"));
-     //resize(200, 200);
      m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
      // enable mouse tracking
      this->setMouseTracking(true);
@@ -31,27 +25,20 @@ void PaintArea::paintEvent(QPaintEvent *)
     QPainter painter(this);
     QPainter pxpainter(&m_bitmap);
 
-    //QPainter pxpainter(m_bitmap);
-    //painter.drawRect(0, 0, width()-1, height()-1);
-
      emit needsPainting(pxpainter);
      painter.drawImage(rect(), m_bitmap);
-     //painter.drawPixmap(rect(), m_bitmap);
-     //painter.drawPixmap(0, 0,
-//     QStylePainter spainter(this);
-//     QStyleOption opt;
-//     spainter.drawPrimitive(QStyle::PE_PanelButtonCommand, opt);
-
 }
 
 void PaintArea::mousePressEvent ( QMouseEvent * event )
 {
     m_lastDown = event->pos();
-    emit mouseClick(event->pos());
+    //emit mouseClick(event->pos());
 }
 
 void PaintArea::mouseMoveEvent( QMouseEvent * event )
 {
+    if (event->buttons() == Qt::LeftButton)
+        setCursor(Qt::ClosedHandCursor);
     emit mouseMove(event->pos());
 }
 
@@ -64,11 +51,12 @@ void PaintArea::mouseReleaseEvent ( QMouseEvent * event )
 {
     setCursor(Qt::CrossCursor);
 
-    if ( (event->pos()-m_lastDown).manhattanLength() > 3) {
+    if ( (event->pos()-m_lastDown).manhattanLength() > 2) {
         emit mouseDrag(m_lastDown, event->pos(), event->button());
+    } else {
+        // a click event...
+        emit mouseClick(event->pos());
     }
-    //emit mouseClick(event->pos());
-     //emit needsPainting(painter);
 }
 
 void PaintArea::keyPressEvent(QKeyEvent *event)
