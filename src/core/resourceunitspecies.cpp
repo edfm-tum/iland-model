@@ -60,7 +60,7 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
 {
     if (mLastYear == GlobalSettings::instance()->currentYear())
         return;
-    mLastYear = GlobalSettings::instance()->currentYear();
+
 
     statistics().clear();
     if (mLAIfactor>0 || fromEstablishment==true) {
@@ -69,6 +69,7 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
             const_cast<WaterCycle*>(mRU->waterCycle())->run(); // run the water sub model (only if this has not be done already)
         mResponse.calculate();// calculate environmental responses per species (vpd, temperature, ...)
         m3PG.calculate();// production of NPP
+        mLastYear = GlobalSettings::instance()->currentYear(); // mark this year as processed
     } else {
         // if no LAI is present, then just clear the respones.
         // note: subject to change when regeneration is added...

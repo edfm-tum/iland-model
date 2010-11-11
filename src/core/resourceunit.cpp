@@ -175,7 +175,7 @@ void ResourceUnit::production()
     mEffectiveArea = mStockedArea * interception_fraction; // m2
 
     // calculate the total weighted leaf area on this RU:
-    mLRI_modification = interception_fraction *  mStockedArea / mAggregatedWLA;
+    mLRI_modification = interception_fraction *  mStockedArea / mAggregatedWLA; // p_WLA
     if (mLRI_modification == 0.)
         qDebug() << "lri modifaction==0!";
 

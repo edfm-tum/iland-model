@@ -623,8 +623,6 @@ void Tree::grow()
   @sa http://iland.boku.ac.at/allocation */
 inline void Tree::partitioning(TreeGrowthData &d)
 {
-    if (isDebugging())
-        enableDebugging(true);
     double npp = d.NPP;
     // add content of reserve pool
     npp += mNPPReserve;

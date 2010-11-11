@@ -70,8 +70,8 @@ double Production3PG::calculate()
     // conversion from gC to kg Biomass: C/Biomass=0.5
     const double gC_to_kg_biomass = 1. / (biomassCFraction * 1000.);
     for (int i=0;i<12;i++) {
-        utilizable_rad = calculateUtilizablePAR(i); // utilizable radiation of the month times ...
-        epsilon = calculateEpsilon(i); // ... photosynthetic efficiency ...
+        utilizable_rad = calculateUtilizablePAR(i); // utilizable radiation of the month times ... (MJ/m2)
+        epsilon = calculateEpsilon(i); // ... photosynthetic efficiency ... (gC/MJ)
         mUPAR[i] = utilizable_rad ;
         mGPP[i] =utilizable_rad * epsilon * gC_to_kg_biomass; // ... results in GPP of the month kg Biomass/m2 (converted from gC/m2)
         year_raw_gpp += mGPP[i]; // kg Biomass/m2
