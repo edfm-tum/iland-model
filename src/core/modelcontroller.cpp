@@ -131,12 +131,15 @@ void ModelController::destroy()
 
 void ModelController::runloop()
 {
-
+    static QTime sLastTime = QTime::currentTime();
     QApplication::processEvents();
     if (mPaused)
         return;
     bool doStop = false;
     bool hasError = false;
+    if (GlobalSettings::instance()->currentYear()<=1) {
+        sLastTime = QTime::currentTime(); // reset clock at the beginning of the simulation
+    }
 
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
         MainWindow::bufferedLog(true); // start buffering
@@ -144,11 +147,16 @@ void ModelController::runloop()
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
         if (!hasError) {
+            int elapsed = sLastTime.msecsTo(QTime::currentTime());
             int time=0;
-            if (currentYear()%50==0)
+            if (currentYear()%50==0 && elapsed>10000)
                 time = 100; // a 100ms pause...
-            if (currentYear()%100==0) {
+            if (currentYear()%100==0 && elapsed>10000) {
                 time = 500; // a 500ms pause...
+            }
+            if (time>0) {
+                sLastTime = QTime::currentTime(); // reset clock
+                qDebug() << "--- little break ---- (after " << elapsed << "ms).";
             }
             QTimer::singleShot(time,this, SLOT(runloop()));
         }
