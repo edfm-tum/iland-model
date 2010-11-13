@@ -636,9 +636,6 @@ void Model::grow()
         return;
     { DebugTimer t("growRU()");
     calculateStockedArea();
-    // single-threaded:
-    //foreach(ResourceUnit *ru, mRU)
-    //   ru->production();
 
     // multithreaded: mutex for the message handler in mainwindow solved the crashes.
     threadRunner.run(nc_production);

@@ -61,8 +61,10 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
     if (mLastYear == GlobalSettings::instance()->currentYear())
         return;
 
+    // the call *not* from establishment
+    if (!fromEstablishment)
+        statistics().clear();
 
-    statistics().clear();
     if (mLAIfactor>0 || fromEstablishment==true) {
         // execute the water calculation...
         if (fromEstablishment)
@@ -72,7 +74,6 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
         mLastYear = GlobalSettings::instance()->currentYear(); // mark this year as processed
     } else {
         // if no LAI is present, then just clear the respones.
-        // note: subject to change when regeneration is added...
         mResponse.clear();
         m3PG.clear();
     }
