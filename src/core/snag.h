@@ -34,6 +34,7 @@ class Snag
 {
 public:
     Snag();
+    static void setupThresholds(const double lower, const double upper); ///< setup class thresholds, needs to be called only once... (static)
     void setup( const ResourceUnit *ru); ///< initial setup routine.
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
     void processYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
@@ -59,18 +60,25 @@ private:
     int poolIndex(const float dbh) { if (dbh<mDBHLower) return 0; if (dbh>mDBHHigher) return 2; return 1;}
     CNPool mSWD[3]; ///< standing woody debris pool (0: smallest dimater class, e.g. <10cm, 1: medium, 2: largest class (e.g. >30cm)) kg/ha
     double mNumberOfSnags[3]; ///< number of snags in diameter class
+    double mAvgDbh[3]; ///< average diameter in class (cm)
+    double mAvgHeight[3]; ///< average height in class (m)
+    double mAvgVolume[3]; ///< average volume in class (m3)
     double mTimeSinceDeath[3]; ///< time since death: mass-weighted age of the content of the snag pool
-    CNPool mToSWD[3]; ///< transfer pool; input of the year is collected here (by size class)
+    double mKSW[3]; ///< standing woody debris decay rate (weighted average of species values)
+    double mCurrentKSW[3]; ///< swd decay rate (average for trees of the current year)
+    double mHalfLife[3]; ///< half-life values (yrs) (averaged)
+    CNPool mToSWD[3]; ///< transfer pool; input of the year is collected here (for each size class)
     CNPool mLabileFlux; ///< flux to labile soil pools (kg/ha)
-    CNPool mRefractoryFlux; ///< flux to teh refractory soil pool (kg/ha)
+    CNPool mRefractoryFlux; ///< flux to the refractory soil pool (kg/ha)
     CNPool mBranches[5]; ///< pool for branch biomass
     int mBranchCounter; ///< index which of the branch pools should be emptied
     double mTotalSnagCarbon; ///< sum of carbon content in all snag compartments (kg/ha)
     CNPool mTotalIn; ///< total input to the snag state (i.e. mortality/harvest and litter)
-    CNPool mSWDtoSoil; ///< total flux from standing dead wood -> soil (kg/ha)
+    CNPool mSWDtoSoil; ///< total flux from standing dead wood (book-keeping) -> soil (kg/ha)
     CNPool mTotalToAtm; ///< flux to atmosphere (kg/ha)
     CNPool mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
+    static double mCarbonThreshold[3]; ///< carbon content thresholds that are used to decide if the SWD-pool should be emptied
 };
 
 #endif // SNAG_H

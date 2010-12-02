@@ -12,32 +12,52 @@
   Snag deals with carbon / nitrogen fluxes from the forest until the reach soil pools.
   Snag lives on the level of the ResourceUnit; carbon fluxes from trees enter Snag, and parts of the biomass of snags
   is subsequently forwarded to the soil sub model.
+  Carbon is stored in three classes (depending on the size)
 
   */
 // static variables
-double Snag::mDBHLower = 10.;
-double Snag::mDBHHigher = 30.;
+double Snag::mDBHLower = 0.;
+double Snag::mDBHHigher = 0.;
+double Snag::mCarbonThreshold[] = {0., 0., 0.};
+
 double CNPool::biomassCFraction = biomassCFraction; // get global from globalsettings.h
+
+void Snag::setupThresholds(const double lower, const double upper)
+{
+    if (mDBHLower == lower)
+        return;
+    mDBHLower = lower;
+    mDBHHigher = upper;
+    mCarbonThreshold[0] = lower / 2.;
+    mCarbonThreshold[1] = lower + (upper - lower)/2.;
+    mCarbonThreshold[2] = upper + (upper - lower)/2.;
+    //# threshold levels for emptying out the dbh-snag-classes
+    //# derived from Psme woody allometry, converted to C, with a threshold level set to 10%
+    //# values in kg!
+    for (int i=0;i<3;i++)
+        mCarbonThreshold[i] = 0.10568*pow(mCarbonThreshold[i],2.4247)*0.5*0.1;
+}
+
 
 // species specific soil paramters
 struct SoilParameters
 {
-    SoilParameters(): kyl(0.15), kyr(0.0807), ksw(0.015), cnFoliage(75.), cnFineroot(40.), cnWood(300.) {}
+    SoilParameters(): kyl(0.15), kyr(0.0807), ksw(0.015), cnFoliage(75.), cnFineroot(40.), cnWood(300.), halfLife(15.) {}
     double kyl; // litter decomposition rate
     double kyr; // downed woody debris (dwd) decomposition rate
     double ksw; // standing woody debris (swd) decomposition rate
     double cnFoliage; //  C/N foliage litter
     double cnFineroot; // C/N ratio fine root
     double cnWood; // C/N Wood: used for brances, stem and coarse root
-    Expression pDWDformula; // expression that calculates annual transition probability for standing to downed deadwood. variable: 'tsd' (time since death)
+    double halfLife; // half-life period of the given species (for calculation of SWD->DWD transition)
 } soilparams;
 
 
 Snag::Snag()
 {
     mRU = 0;
-    soilparams.pDWDformula.setExpression("1-1/(1+exp(-6.78+0.262*tsd))");
     CNPool::setCFraction(biomassCFraction);
+    Snag::setupThresholds(mDBHLower, mDBHHigher);
 }
 
 void Snag::setup( const ResourceUnit *ru)
@@ -49,6 +69,11 @@ void Snag::setup( const ResourceUnit *ru)
     for (int i=0;i<3;i++) {
         mTimeSinceDeath[i] = 0.;
         mNumberOfSnags[i] = 0.;
+        mAvgDbh[i] = 0.;
+        mAvgHeight[i] = 0.;
+        mAvgVolume[i] = 0.;
+        mKSW[i] = 0.;
+        mCurrentKSW[i] = 0.;
     }
     mTotalSnagCarbon = 0.;
 }
@@ -69,7 +94,6 @@ QList<QVariant> Snag::debugList()
         list << mSWD[i].C << mSWD[i].N << mNumberOfSnags[i] << mTimeSinceDeath[i] << mToSWD[i].C << mToSWD[i].N;
     }
 
-
     // branch pools (5 yrs)
     list << mBranches[mBranchCounter].C << mBranches[mBranchCounter].N
             << mBranches[(mBranchCounter+1)%5].C << mBranches[(mBranchCounter+1)%5].N
@@ -83,6 +107,7 @@ void Snag::newYear()
 {
     for (int i=0;i<3;i++) {
         mToSWD[i].clear(); // clear transfer pools to standing-woody-debris
+        mCurrentKSW[i] = 0.;
     }
     mLabileFlux.clear();
     mRefractoryFlux.clear();
@@ -93,6 +118,7 @@ void Snag::newYear()
 }
 
 /// calculate the dynamic climate modifier for decomposition 're'
+/// calculation is done on the level of ResourceUnit because the water content per day is needed.
 double Snag::calculateClimateFactors()
 {
     double rel_wc;
@@ -110,61 +136,85 @@ double Snag::calculateClimateFactors()
     return mClimateFactor;
 }
 
-// do the yearly calculation
-// see http://iland.boku.ac.at/snag+dynamics
+/// do the yearly calculation
+/// see http://iland.boku.ac.at/snag+dynamics
 void Snag::processYear()
 {
+    mSWDtoSoil.clear();
     if (isEmpty()) // nothing to do
         return;
-
-    const SoilParameters &soil_params = soilparams; // to be updated
 
     // process branches: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mBranches[mBranchCounter];
     mBranches[mBranchCounter].clear();
     mBranchCounter= (mBranchCounter+1) % 5; // increase index, roll over to 0.
 
-    mSWDtoSoil.clear();
     // process standing snags.
     // the input of the current year is in the mToSWD-Pools
-    double tsd;
+
     const double climate_factor_re = calculateClimateFactors();
     for (int i=0;i<3;i++) {
-        // calculate 'tsd', i.e. time-since-death (see SnagDecay.xls for calculation details)
-        // time_since_death = tsd_last_year*state_before / (state_before+input) + 1
-        if (mSWD[i].C>0.)
-            tsd = mTimeSinceDeath[i]*mSWD[i].C / (mSWD[i].C+mToSWD[i].C) + 1.;
-        else
-            tsd = 0.;
 
-        // update the swd-pool: move content to the SWD pool
-        mSWD[i] += mToSWD[i];
-
-        mTimeSinceDeath[i] = tsd;
-
-        if (mSWD[i].C>0.) {
-            // calculate decay of SWD.
-            // Eq. (1): mass (C) is lost, N remains unchanged.
-            double factor = exp(-soil_params.ksw * climate_factor_re * 1.);
-            mSWD[i].C *= factor;
-
-            // calculate the transition probability of SWD to downed dead wood
-            double pDWD = soil_params.pDWDformula.calculate(tsd);
-            pDWD = limit( pDWD * climate_factor_re, 0., 1.); //  modified transition rate with climate decomp factor
-            // calculate flow to soil pool...
-            mSWDtoSoil += mSWD[i] * pDWD;
-            mRefractoryFlux += mSWD[i] * pDWD;
-            mSWD[i] *= (1.-pDWD); // reduce pool
-            // calculate the stem number of remaining snags
-            mNumberOfSnags[i] = mNumberOfSnags[i] * (1. - pDWD);
-            if (mNumberOfSnags[i] < 0.5) {
-                // clear the pool: add the rest to the soil
-                mRefractoryFlux += mSWD[i];
-                mSWD[i].clear();
-            }
+        // update the swd-pool with this years' input
+        if (!mToSWD[i].isEmpty()) {
+            // update decay rate (apply average yearly input to the state parameters)
+            mKSW[i] = mKSW[i]*(mSWD[i].C/(mSWD[i].C+mToSWD[i].C)) + mCurrentKSW[i]*(mToSWD[i].C/(mSWD[i].C+mToSWD[i].C));
+            //move content to the SWD pool
+            mSWD[i] += mToSWD[i];
         }
+
+        if (mSWD[i].C > 0) {
+            // reduce the Carbon (note: the N stays, thus the CN ratio changes)
+            // use the decay rate that is derived as a weighted average of all standing woody debris
+            mSWD[i].C *= exp(-mKSW[i] *climate_factor_re * 1. ); // 1: timestep
+
+            // transition to downed woody debris
+            // update: use negative exponential decay, species parameter: half-life
+            // modified for the climatic effect on decomposition, i.e. if decomp is slower, snags stand longer and vice versa
+            // this is loosely oriented on Standcarb2 (http://andrewsforest.oregonstate.edu/pubs/webdocs/models/standcarb2.htm),
+            // where lag times for cohort transitions are linearly modified with re although here individual good or bad years have
+            // an immediate effect, the average climatic influence should come through (and it is inherently transient)
+            // note that swd.hl is species-specific, and thus a weighted average over the species in the input (=mortality)
+            // needs to be calculated, followed by a weighted update of the previous swd.hl.
+            // As weights here we use stem number, as the processes here pertain individual snags
+            // calculate the transition probability of SWD to downed dead wood
+
+            double half_life = mHalfLife[i] / climate_factor_re;
+            double rate = -M_LN2 / half_life; // M_LN2: math. constant
+
+            // higher decay rate for the class with smallest diameters
+            if (i==0)
+                rate*=2.;
+
+            double transfer = exp(rate);
+
+            // calculate flow to soil pool...
+            mSWDtoSoil += mSWD[i] * transfer;
+            mRefractoryFlux += mSWD[i] * transfer;
+            mSWD[i] *= (1.-transfer); // reduce pool
+            // calculate the stem number of remaining snags
+            mNumberOfSnags[i] = mNumberOfSnags[i] * (1. - transfer);
+            // if stems<0.5, empty the whole cohort into DWD, i.e. release the last bit of C and N and clear the stats
+            // also, if the Carbon of an average snag is less than 10% of the original average tree
+            // (derived from allometries for the three diameter classes), the whole cohort is emptied out to DWD
+            if (mNumberOfSnags[i] < 0.5 || mSWD[i].C / mNumberOfSnags[i] < mCarbonThreshold[i]) {
+                // clear the pool: add the rest to the soil, clear statistics of the pool
+                mRefractoryFlux += mSWD[i];
+                mSWDtoSoil += mSWD[i];
+                mSWD[i].clear();
+                mAvgDbh[i] = 0.;
+                mAvgHeight[i] = 0.;
+                mAvgVolume[i] = 0.;
+                mKSW[i] = 0.;
+                mCurrentKSW[i] = 0.;
+                mHalfLife[i] = 0.;
+                mTimeSinceDeath[i] = 0.;
+            }
+
+        }
+
     }
-    // total carbon in the snag *after* processing is the content of the
+    // total carbon in the snag-container on the RU *after* processing is the content of the
     // standing woody debris pools + the branches
     mTotalSnagCarbon = mSWD[0].C + mSWD[1].C + mSWD[2].C +
                        mBranches[0].C + mBranches[1].C + mBranches[2].C + mBranches[3].C + mBranches[4].C;
@@ -195,13 +245,32 @@ void Snag::addMortality(const Tree *tree)
         mBranches[i].addBiomass(biomass_branch, soil_params.cnWood);
 
     // stem biomass is transferred to the standing woody debris pool (SWD), increase stem number of pool
-    CNPool &swd = mToSWD[poolIndex(tree->dbh())]; // get right transfer pool
+    int pi = poolIndex(tree->dbh()); // get right transfer pool
+    CNPool &swd = mToSWD[pi];
     swd.addBiomass(tree->biomassStem(), soil_params.cnWood);
-    mNumberOfSnags[poolIndex(tree->dbh())]++;
+
+    // update statistics - stemnumber-weighted averages
+    // note: here the calculations are repeated for every died trees (i.e. consecutive weighting ... but delivers the same results)
+    double p_old = mNumberOfSnags[pi] / (mNumberOfSnags[pi] + 1); // weighting factor for state vars (based on stem numbers)
+    double p_new = 1. / (mNumberOfSnags[pi] + 1); // weighting factor for added tree (p_old + p_new = 1).
+    mAvgDbh[pi] = mAvgDbh[pi]*p_old + tree->dbh()*p_new;
+    mAvgHeight[pi] = mAvgHeight[pi]*p_old + tree->height()*p_new;
+    mAvgVolume[pi] = mAvgVolume[pi]*p_old + tree->volume()*p_new;
+    mTimeSinceDeath[pi] = mTimeSinceDeath[pi]*p_old + 1.*p_new;
+    mHalfLife[pi] = mHalfLife[pi]*p_old + soil_params.halfLife * p_new;
+
+    // average the decay rate (ksw); this is done based on the carbon content
+    // aggregate all trees that die in the current year (and save weighted decay rates to CurrentKSW)
+    if (tree->biomassStem()==0)
+        throw IException("Snag::addMortality: tree without stem biomass!!");
+    p_old = mToSWD[pi].C / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
+    p_new =tree->biomassStem()* biomassCFraction / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
+    mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + soil_params.ksw * p_new;
+    mNumberOfSnags[pi]++;
 }
 
 /// add residual biomass of 'tree' after harvesting.
-/// remove_(stem, branch, foliage)_fraction: percentage of biomass compartment that is *removed* by the harvest operation.
+/// remove_{stem, branch, foliage}_fraction: percentage of biomass compartment that is *removed* by the harvest operation (i.e.: not to stay in the system)
 /// the harvested biomass is collected.
 void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const double remove_branch_fraction, const double remove_foliage_fraction )
 {
@@ -218,6 +287,8 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
         mBranches[i].addBiomass(tree->biomassBranch() * remove_branch_fraction * 0.2, soil_params.cnWood);
 
     // stem biomass is transferred to the standing woody debris pool (SWD), increase stem number of pool
+    // TODO: what to do with harvest and stems??? I think harvested stems (that are not removed) should
+    // go directly to the DWD??
     CNPool &swd = mToSWD[poolIndex(tree->dbh())]; // get right transfer pool
     swd.addBiomass(tree->biomassStem() * remove_stem_fraction, soil_params.cnWood);
     if (remove_stem_fraction < 1.)
