@@ -107,10 +107,10 @@ void myMessageOutput(QtMsgType type, const char *msg)
          fprintf(stderr, "Fatal: %s\n", msg);
          bufferedMessages.append(QString(msg));
 
-         Helper::msg(QString("Fatal message encountered:\n%1").arg(msg));
+         QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
+         Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
          dumpMessages();
-         Helper::saveToTextFile(GlobalSettings::instance()->path("fatallog.txt","log"),
-                                MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
+         Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
 
      }
      if (!doBufferMessages || bufferedMessages.count()>5000)
