@@ -40,7 +40,7 @@ public:
     void close(); ///< shut down the connection.
     bool isEnabled() const { return mEnabled; } ///< returns true if output is enabled, i.e. is "turned on"
     void setEnabled(const bool enabled) { mEnabled=enabled; }
-    bool onNewRow() const { return mIndex==0; } ///< returns true if the buffer of the current row is empty
+    bool isRowEmpty() const { return mIndex==0; } ///< returns true if the buffer of the current row is empty
 
     virtual void exec(); ///< main function that executes the output
 

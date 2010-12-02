@@ -107,7 +107,7 @@ bool OutputManager::execute(const QString& tableName)
             return false;
         if(!p->isOpen())
             return false;
-        if (!p->onNewRow()) {
+        if (!p->isRowEmpty()) {
             qWarning() << "Output" << p->name() << "invalid (not at new row)!!!";
             return false;
         }

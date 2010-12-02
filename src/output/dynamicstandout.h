@@ -12,6 +12,7 @@ public:
     virtual void setup();
 private:
     Expression mRUFilter;
+    Expression mTreeFilter;
     struct SDynamicField {
         int agg_index;
         int var_index;

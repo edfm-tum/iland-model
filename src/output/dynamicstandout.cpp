@@ -12,6 +12,7 @@ DynamicStandOut::DynamicStandOut()
     setDescription("Userdefined outputs for tree aggregates for each stand.\n"\
                    "Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) "\
                    "are calculated.\n" \
+                   "You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees.\n" \
                    "Each field is defined as: ''field.aggregatio''n (separated by a dot). A ''field''' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
                    "mean, sum, min, max, p25, p50, p75, p5, 10, p90, p95 (pXX=XXth percentile).");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species();
@@ -23,10 +24,12 @@ const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" <
 void DynamicStandOut::setup()
 {
     QString filter = settings().value(".rufilter","");
+    QString tree_filter = settings().value(".treefilter","");
     QString fieldList = settings().value(".columns", "");
     if (fieldList.isEmpty())
         return;
     mRUFilter.setExpression(filter);
+    mTreeFilter.setExpression(tree_filter);
     // clear columns
     columns().erase(columns().begin()+3, columns().end());
     mFieldList.clear();
@@ -94,7 +97,7 @@ void DynamicStandOut::exec()
             if (rus->constStatistics().count()==0)
                 continue;
 
-            *this << currentYear() << ru->index() << rus->species()->id(); // keys
+
             // dynamic calculations
             foreach (const SDynamicField &field, mFieldList) {
 
@@ -104,15 +107,33 @@ void DynamicStandOut::exec()
                     custom_expr.setModelObject(&tw);
                 }
                 data.clear();
+                bool has_trees = false;
                 foreach(const Tree &tree, ru->trees()) {
                     if (tree.species()->index()!=rus->species()->index())
                         continue;
                     tw.setTree(&tree);
+
+                    // apply treefilter
+                    if (!mTreeFilter.isEmpty()) {
+                        mTreeFilter.setModelObject(&tw);
+                        if (!mTreeFilter.execute())
+                            continue;
+                    }
+                    has_trees = true;
+
                     if (field.var_index>=0)
                         data.push_back(tw.value(field.var_index));
                     else
                         data.push_back(custom_expr.execute());
                 }
+
+                // do nothing if no trees are avaiable
+                if (!has_trees)
+                    continue;
+
+                if (isRowEmpty())
+                    *this << currentYear() << ru->index() << rus->species()->id(); // keys
+
                 // calculate statistics
                 stat.setData(data);
                 // aggregate
@@ -136,8 +157,8 @@ void DynamicStandOut::exec()
                 *this << value;
 
             } // foreach (field)
-
-            writeRow();
+            if (!isRowEmpty())
+                writeRow();
         } //foreach species
     } // foreach ressource unit
 

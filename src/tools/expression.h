@@ -9,8 +9,8 @@ class Expression
 public:
         ~Expression();
         Expression();
-        Expression(const QString &aExpression) { setExpression(aExpression); }
-        Expression(const QString &expression, ExpressionWrapper *wrapper) { setExpression(expression); mModelObject = wrapper;  }
+        Expression(const QString &aExpression) { m_expr=0; m_execList=0; setExpression(aExpression); }
+        Expression(const QString &expression, ExpressionWrapper *wrapper) { m_expr=0; m_execList=0; setExpression(expression); mModelObject = wrapper;  }
         // intialization
         void setExpression(const QString &aExpression); ///< set expression
         void setAndParse(const QString &expr); ///< set expression and parse instantly

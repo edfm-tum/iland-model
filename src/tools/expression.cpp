@@ -67,6 +67,8 @@ Expression::Expression()
 {
     mModelObject = 0;
     m_externVarSpace=0;
+    m_expr = 0;
+    m_execList = 0;
 }
 
 
@@ -168,6 +170,8 @@ void Expression::setExpression(const QString& aExpression)
     m_expression=aExpression.simplified();
 
     QByteArray ba = m_expression.toLocal8Bit(); // convert from unicode to 8bit
+    if (m_expr)
+        delete[] m_expr;
     m_expr=new char[ba.length()+1]; // reserve memory...
     strcpy(m_expr, ba.constData());
 
@@ -187,7 +191,8 @@ void Expression::setExpression(const QString& aExpression)
     m_empty=aExpression.trimmed().isEmpty();
     // Buffer:
     m_execListSize = 5; // inital value...
-    m_execList = new ExtExecListItem[m_execListSize]; // init
+    if (!m_execList)
+        m_execList = new ExtExecListItem[m_execListSize]; // init
 
     mLinearizeMode = 0; // linearization is switched off
 }
@@ -231,7 +236,7 @@ void  Expression::parse(ExpressionWrapper *wrapper)
         m_parsed=true;
 
     } catch (const IException& e) {
-        m_errorMsg =QString("Expression::parse: Error in: %1 : %2").arg(m_expr, e.toString());
+        m_errorMsg =QString("Expression::parse: Error in: %1 : %2").arg(m_expression, e.toString());
         if (m_catchExceptions)
             Helper::msg(m_errorMsg);
         throw IException(m_errorMsg);
