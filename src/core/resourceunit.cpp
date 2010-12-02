@@ -14,12 +14,18 @@
 #include "model.h"
 #include "climate.h"
 #include "watercycle.h"
+#include "snag.h"
 #include "helper.h"
 
 ResourceUnit::~ResourceUnit()
 {
     if (mWater)
         delete mWater;
+    mWater = 0;
+    if (mSnag)
+        delete mSnag;
+    mSnag = 0;
+
 }
 
 ResourceUnit::ResourceUnit(const int index)
@@ -34,6 +40,7 @@ ResourceUnit::ResourceUnit(const int index)
     mSaplingHeightMap = 0;
     mEffectiveArea_perWLA = 0.;
     mWater = new WaterCycle();
+    mSnag = 0;
 
     mTrees.reserve(100); // start with space for 100 trees.
 }
@@ -41,6 +48,15 @@ ResourceUnit::ResourceUnit(const int index)
 void ResourceUnit::setup()
 {
     mWater->setup(this);
+
+    if (mSnag)
+        delete mSnag;
+    mSnag=0;
+    if (Model::settings().carbonCycleEnabled) {
+       mSnag = new Snag;
+       mSnag->setup(this);
+    }
+
     // setup variables
     mUnitVariables.nitrogenAvailable = GlobalSettings::instance()->settings().valueDouble("model.site.availableNitrogen", 40);
     mAverageAging = 0.;
@@ -138,6 +154,7 @@ void ResourceUnit::newYear()
     mAggregatedLR = 0.;
     mEffectiveArea = 0.;
     mPixelCount = mStockedPixelCount = 0;
+    snagNewYear();
     // clear statistics global and per species...
     QList<ResourceUnitSpecies*>::const_iterator i;
     QList<ResourceUnitSpecies*>::const_iterator iend = mRUSpecies.constEnd();
@@ -145,7 +162,6 @@ void ResourceUnit::newYear()
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         (*i)->statisticsDead().clear();
         (*i)->statisticsMgmt().clear();
-        (*i)->snagNewYear();
     }
 
 }
@@ -315,3 +331,17 @@ void ResourceUnit::clearSaplings(const QPoint &position)
 
 }
 
+
+void ResourceUnit::calculateSnagDynamics()
+{
+    if (!snag())
+        return;
+
+    snag()->processYear();
+    // debug output
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSnagDynamics) && !snag()->isEmpty()) {
+        DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dSnagDynamics);
+        out << index() << snag()->debugList(); // use private variables...
+    }
+
+}

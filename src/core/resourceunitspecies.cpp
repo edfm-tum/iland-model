@@ -4,7 +4,6 @@
 #include "species.h"
 #include "resourceunit.h"
 #include "model.h"
-#include "snag.h"
 #include "watercycle.h"
 
 /** @class ResourceUnitSpecies
@@ -19,9 +18,6 @@
   */
 ResourceUnitSpecies::~ResourceUnitSpecies()
 {
-    if (mSnag)
-        delete mSnag;
-    mSnag = 0;
 }
 
 double ResourceUnitSpecies::leafArea() const
@@ -42,13 +38,6 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mStatistics.setResourceUnitSpecies(this);
     mStatisticsDead.setResourceUnitSpecies(this);
     mStatisticsMgmt.setResourceUnitSpecies(this);
-    if (mSnag)
-        delete mSnag;
-    mSnag=0;
-    if (Model::settings().carbonCycleEnabled) {
-       mSnag = new Snag;
-       mSnag->setup(mRU);
-    }
 
     mRemovedGrowth = 0.;
     mLastYear = -1;
@@ -124,15 +113,4 @@ void ResourceUnitSpecies::visualGrid(Grid<float> &grid) const
     mSapling.fillHeightGrid(grid);
 }
 
-void ResourceUnitSpecies::calculateSnagDynamics()
-{
-    if (!snag())
-        return;
 
-    snag()->processYear();
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSnagDynamics) && !snag()->isEmpty()) {
-        DebugList &out = GlobalSettings::instance()->debugList(ru()->index(), GlobalSettings::dSnagDynamics);
-        out << mSpecies->id() << ru()->index() << snag()->debugList(); // use private variables...
-    }
-
-}

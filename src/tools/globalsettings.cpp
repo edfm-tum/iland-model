@@ -213,7 +213,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                  << "avgProbDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "TACAAbioticEnv"
                  << "fEnvYr" << "avgLIFValue" <<"N_Established" << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
                  << "Added" << "Died" << "Recruited" << "refRatio";
-    case dSnagDynamics: return QStringList() << "id" << "type" << "year" << "species" << "RU_index"
+    case dSnagDynamics: return QStringList() << "id" << "type" << "year" << "RU_index"
                 << "SnagState_c" << "toLabile_c" << "toLabile_n" << "toRefr_c" << "toRefr_n" << "SWDtoSoil_c" << "SWDtoSoil_n"
                 << "swd1_c" << "swd1_n" << "swd1_count" << "swd1_tsd" << "toSwd1_c" << "toSwd1_n" // pool of small dbhs
                 << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" // standing woody debris medium dbhs

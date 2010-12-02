@@ -661,8 +661,8 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Change of biomass compartments
     double sen_root = mFineRootMass * to_root;
     double sen_foliage = mFoliageMass * to_fol;
-    if (rus.snag())
-        rus.snag()->addTurnoverLitter(this, sen_foliage, sen_root);
+    if (ru()->snag())
+        ru()->snag()->addTurnoverLitter(this, sen_foliage, sen_root);
 
     // Roots
     // http://iland.boku.ac.at/allocation#belowground_NPP
@@ -856,8 +856,8 @@ void Tree::die(TreeGrowthData *d)
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, d); // add tree to statistics
-    if (rus.snag())
-        rus.snag()->addMortality(this);
+    if (ru()->snag())
+        ru()->snag()->addMortality(this);
 }
 
 void Tree::remove()
@@ -865,8 +865,8 @@ void Tree::remove()
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
-    if (rus.snag())
-        rus.snag()->addHarvest(this, 1., 0., 0.); // remove 100% of the stem, let 100% of branches and foliage in the forest
+    if (ru()->snag())
+        ru()->snag()->addHarvest(this, 1., 0., 0.); // remove 100% of the stem, let 100% of branches and foliage in the forest
 }
 
 void Tree::mortality(TreeGrowthData &d)

@@ -11,7 +11,7 @@ class ResourceUnit; // forward
 struct CNPool
 {
     CNPool(): C(0.), N(0.) {}
-    static void setCFraction(const double fraction) { biomassCFraction = fraction; }
+    static void setCFraction(const double fraction) { biomassCFraction = fraction; } ///< set the global fraction of carbon of biomass
     CNPool(const double c, const double n) {C=c; N=n; }
     bool isEmpty() const { return C==0.; } ///< returns true if pool is empty
     double C; // carbon pool (kg C/ha)

@@ -12,8 +12,9 @@ DynamicStandOut::DynamicStandOut()
     setDescription("Userdefined outputs for tree aggregates for each stand.\n"\
                    "Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) "\
                    "are calculated.\n" \
-                   "You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees.\n" \
-                   "Each field is defined as: ''field.aggregatio''n (separated by a dot). A ''field''' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
+                   "You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees. " \
+                   "Both filters are valid expressions (for resource unit level and tree level, respectively). For example, a ''treefilter'' of 'speciesindex=0' reduces the output to just one species.\n" \
+                   "Each field is defined as: ''field.aggregatio''n (separated by a dot). A ''field'' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
                    "mean, sum, min, max, p25, p50, p75, p5, 10, p90, p95 (pXX=XXth percentile).");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species();
     // other colums are added during setup...

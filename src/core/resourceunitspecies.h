@@ -9,12 +9,11 @@
 #include "snag.h"
 class Species;
 class ResourceUnit;
-class Snag;
 
 class ResourceUnitSpecies
 {
 public:
-    ResourceUnitSpecies() : mLAIfactor(0.), mSnag(0), mSpecies(0), mRU(0) {}
+    ResourceUnitSpecies() : mLAIfactor(0.), mSpecies(0), mRU(0) {}
     ~ResourceUnitSpecies();
     void setup(Species *species, ResourceUnit *ru);
 
@@ -46,10 +45,6 @@ public:
     void addSapling(const QPoint &position) { mSapling.addSapling(position); } ///< add a saplings on a given position
     void clearSaplings(const QPoint &position) { mSapling.clearSaplings(position);} ///< clear saplings on a given position (after recruitment)
     bool hasSaplingAt(const QPoint &position) const { return mSapling.hasSapling(position); } ///< return true if a sapling of the current speices is present at 'position'
-    // snag dynamics, soil carbon and nitrogen cycle
-    Snag *snag() const { return mSnag; } ///< access the snag object
-    void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools
-    void calculateSnagDynamics(); ///< calculate snag dynamics at the end of a year
     // visualization/graphical output
     void visualGrid(Grid<float> &grid) const;
 
@@ -65,7 +60,6 @@ private:
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
     Establishment mEstablishment; ///< establishment for seedlings and sapling growth
     Sapling mSapling; ///< saplings storage/growth
-    Snag *mSnag; ///< ptr to snag storage / dynamics
     Species *mSpecies; ///< link to speices
     ResourceUnit *mRU; ///< link to resource unit
     int mLastYear;

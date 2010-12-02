@@ -380,10 +380,8 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
 /// multithreaded execution of the carbon cycle routine
 ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
 {
-    // (1) do calculations on snag dynamics for each species on the resource unit
-    foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
-        const_cast<ResourceUnitSpecies*>(rus)->calculateSnagDynamics();
-    }
+    // (1) do calculations on snag dynamics for the resource unit
+    unit->calculateSnagDynamics();
     // (2) do the soil carbon and nitrogen dynamics calculations (ICBM/2N)
     return unit;
 }
