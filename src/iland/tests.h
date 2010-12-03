@@ -25,6 +25,7 @@ public:
     void testLinearExpressions();
     void testEstablishment();
     void testGridRunner();
+    void testSoil();
     private:
     QString dumpTreeList();
     QObject *mParent;

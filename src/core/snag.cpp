@@ -42,9 +42,7 @@ void Snag::setupThresholds(const double lower, const double upper)
 // species specific soil paramters
 struct SoilParameters
 {
-    SoilParameters(): kyl(0.15), kyr(0.0807), ksw(0.015), cnFoliage(75.), cnFineroot(40.), cnWood(300.), halfLife(15.) {}
-    double kyl; // litter decomposition rate
-    double kyr; // downed woody debris (dwd) decomposition rate
+    SoilParameters(): ksw(0.015), cnFoliage(75.), cnFineroot(40.), cnWood(300.), halfLife(15.) {}
     double ksw; // standing woody debris (swd) decomposition rate
     double cnFoliage; //  C/N foliage litter
     double cnFineroot; // C/N ratio fine root

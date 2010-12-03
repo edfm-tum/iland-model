@@ -20,6 +20,7 @@
 #include "establishment.h"
 //
 #include "standloader.h"
+#include "soil.h"
 
 Tests::Tests(QObject *wnd)
 {
@@ -536,4 +537,53 @@ void Tests::testLinearExpressions()
             d.calculate(0.33, 0.454);
         }
     }
+}
+
+void Tests::testSoil()
+{
+//    Y0l=33 # young C labile, i.e. litter
+//    Y0Nl=0.45 # young N labile
+//    Y0r=247 # young C refractory , i.e. dwd
+//    Y0Nr=0.99 # young N refractory
+//    O0=375 # old C, i.e soil organic matter (SOM)
+//    O0N=15 # old N
+    Soil soil;
+    // values from RS R script script_snagsoil_v5.r
+    soil.setInitialState(CNPool(33000., 450.), // young lab
+                         CNPool(247000., 990.), // young ref
+                         CNPool(375000., 15000.)); // SOM
+    CNPool in_l(3040, 3040/75.);
+    CNPool in_r(11970, 11970./250.);
+    double re = 1.1;
+
+    QStringList out;
+    out << "year;iLabC;iLabN;iRefC;iRefN;RE;ylC;ylN;yrC;yrN;somC;somN;NAvailable";
+
+    for (int i=0;i<100;i++) {
+        // run the soil model
+        soil.setClimateFactor(re);
+        if (i==1) {
+           soil.setSoilInput(in_l*5., in_r*5.); // pulse in year 2
+        } else if (i>1 && i<10) {
+            soil.setSoilInput(CNPool(), CNPool()); // no input for years 3..10
+        } else{
+            soil.setSoilInput(in_l, in_r); // normal input
+        }
+
+        soil.calculate();
+        QList<QVariant> list = soil.debugList();
+        QString line=QString::number(i)+";";
+        foreach(QVariant v, list)
+            line+=v.toString() + ";";
+        line.chop(1);
+        out << line;
+    }
+    if (fabs(soil.availableNitrogen() - 77.2196456179288) < 0.000001)
+        qDebug() << "PASSED.";
+    else
+        qDebug() << "ERROR";
+    qDebug() << "ICBM/2N run";
+    qDebug() << out;
+    Helper::saveToTextFile("e:/soil.txt", out.join("\r\n"));
+
 }
