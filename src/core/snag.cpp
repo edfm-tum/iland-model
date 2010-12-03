@@ -88,11 +88,12 @@ QList<QVariant> Snag::debugList()
     // totals
     list << mTotalSnagCarbon << mTotalIn.C << mTotalToAtm.C << mSWDtoSoil.C << mSWDtoSoil.N;
     // fluxes to labile soil pool and to refractory soil pool
-    list << mLabileFlux.C << mLabileFlux.N << mRefractoryFlux.C << mRefractoryFlux.N << mSWDtoSoil.C << mSWDtoSoil.N;
+    list << mLabileFlux.C << mLabileFlux.N << mRefractoryFlux.C << mRefractoryFlux.N;
 
     for (int i=0;i<3;i++) {
         // pools "swdx_c", "swdx_n", "swdx_count", "swdx_tsd", "toswdx_c", "toswdx_n"
         list << mSWD[i].C << mSWD[i].N << mNumberOfSnags[i] << mTimeSinceDeath[i] << mToSWD[i].C << mToSWD[i].N;
+        list << mAvgDbh[i] << mAvgHeight[i] << mAvgVolume[i];
     }
 
     // branch pools (5 yrs)
