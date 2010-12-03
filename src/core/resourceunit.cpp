@@ -75,6 +75,7 @@ void ResourceUnit::setup()
 
     // if dynamic coupling of soil nitrogen is enabled, the calculate a starting value for available n.
     if (mSoil && Model::settings().useDynamicAvailableNitrogen && Model::settings().carbonCycleEnabled) {
+        mSoil->setClimateFactor(1.);
         mSoil->calculateYear();
         mUnitVariables.nitrogenAvailable = mSoil->availableNitrogen();
     }
