@@ -132,6 +132,7 @@ double Snag::calculateClimateFactors()
 void Snag::calculateYear()
 {
     mSWDtoSoil.clear();
+    const double climate_factor_re = calculateClimateFactors(); // calculate anyway, because also the soil module needs it (and currently one can have Snag and Soil only as a couple)
     if (isEmpty()) // nothing to do
         return;
 
@@ -144,7 +145,7 @@ void Snag::calculateYear()
     // process standing snags.
     // the input of the current year is in the mToSWD-Pools
 
-    const double climate_factor_re = calculateClimateFactors();
+
     for (int i=0;i<3;i++) {
 
         // update the swd-pool with this years' input
