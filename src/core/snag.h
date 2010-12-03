@@ -14,6 +14,7 @@ struct CNPool
     static void setCFraction(const double fraction) { biomassCFraction = fraction; } ///< set the global fraction of carbon of biomass
     CNPool(const double c, const double n) {C=c; N=n; }
     bool isEmpty() const { return C==0.; } ///< returns true if pool is empty
+    bool isValid() const { return C>=0. && N>=0.; } ///< return true if pool is valid (content of C or N >=0)
     double C; // carbon pool (kg C/ha)
     double N; // nitrogen pool (kg N/ha)
     double CN() { return N>0?C/N:0.; } ///< current CN ratio

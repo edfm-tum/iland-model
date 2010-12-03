@@ -63,6 +63,20 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     mInputRef = refractory_input_kg_ha * 0.001;
 }
 
+void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPool &SOM_kg_ha)
+{
+    mYL = young_labile_kg_ha*0.001;
+    mYR = young_refractory_kg_ha*0.001;
+    mSOM = SOM_kg_ha*0.001;
+
+    if (!mYL.isValid())
+        throw IException(QString("setup of Soil: yl-pool invalid: c: %1 n: %2").arg(mYL.C).arg(mYL.N));
+    if (!mYL.isValid())
+        throw IException(QString("setup of Soil: yr-pool invalid: c: %1 n: %2").arg(mYR.C).arg(mYR.N));
+    if (!mYL.isValid())
+        throw IException(QString("setup of Soil: som-pool invalid: c: %1 n: %2").arg(mSOM.C).arg(mSOM.N));
+}
+
 /// Main calculation function
 /// must be called after snag dyanmics (i.e. to ensure input fluxes are available)
 void Soil::calculateYear()

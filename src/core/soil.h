@@ -9,7 +9,7 @@ public:
     // lifecycle
     Soil();
     /// set initial pool contents
-    void setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPool &SOM_kg_ha) { mYL = young_labile_kg_ha*0.001; mYR = young_refractory_kg_ha*0.001; mSOM = SOM_kg_ha*0.001; }
+    void setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPool &SOM_kg_ha);
 
     // actions
     void setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha); ///< provide values for input pools
