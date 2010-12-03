@@ -2,7 +2,7 @@
 #define SOIL_H
 
 #include "snag.h"
-
+struct SoilParams; // forward
 class Soil
 {
 public:
@@ -23,6 +23,8 @@ public:
     double availableNitrogen() const { return mAvailableNitrogen; } ///< return available Nitrogen (kg/ha*yr)
     QList<QVariant> debugList(); ///< return a debug output
 private:
+    void fetchParameters(); ///< set iland parameters for soil
+    static SoilParams *mParams; // static container for parameters
     // variables
     double mRE; ///< climate factor 're' (see Snag::calculateClimateFactors())
     double mAvailableNitrogen; ///< plant available nitrogen (kg/ha)

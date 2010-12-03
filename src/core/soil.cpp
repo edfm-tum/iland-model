@@ -1,24 +1,12 @@
 #include "soil.h"
+#include "globalsettings.h"
+#include "xmlhelper.h" // for load settings
 #include "exception.h"
 /** @class Soil provides an implementation of the ICBM/2N soil carbon and nitrogen dynamics model.
   The ICBM/2N model was developed by Kätterer and Andren (2001) and used by others (e.g. Xenakis et al, 2008).
   See http://iland.boku.ac.at/soil+C+and+N+cycling for a model overview and the rationale of the model choice.
 
   */
-
-
-// species specific soil paramters
-//struct SoilParameters
-//{
-//    SoilParameters(): kyl(0.15), kyr(0.0807), ksw(0.015), cnFoliage(75.), cnFineroot(40.), cnWood(300.), halfLife(15.) {}
-//    double kyl; // litter decomposition rate
-//    double kyr; // downed woody debris (dwd) decomposition rate
-//    double ksw; // standing woody debris (swd) decomposition rate
-//    double cnFoliage; //  C/N foliage litter
-//    double cnFineroot; // C/N ratio fine root
-//    double cnWood; // C/N Wood: used for brances, stem and coarse root
-//    double halfLife; // half-life period of the given species (for calculation of SWD->DWD transition)
-//};
 
 
 // site-specific parameters
@@ -29,7 +17,7 @@
 // and R-script on parameter estimation and initialization
 struct SoilParams {
     // ICBM/2N parameters
-    SoilParams(): kyl(0.15), kyr(0.0807), ko(0.02), h(0.3), qb(5.), qh(25.), leaching(0.15), el(0.0577), er(0.073) {}
+    SoilParams(): kyl(0.15), kyr(0.0807), ko(0.02), h(0.3), qb(5.), qh(25.), leaching(0.15), el(0.0577), er(0.073), is_setup(false) {}
     double kyl; ///< litter decomposition rate
     double kyr; ///< downed woody debris (dwd) decomposition rate
     double ko; ///< decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
@@ -39,7 +27,27 @@ struct SoilParams {
     double leaching; ///< how many percent of the mineralized nitrogen in O is not available for plants but is leached
     double el; ///< microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)
     double er; ///< microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)
-} soilpar;
+    bool is_setup;
+} global_soilpar;
+SoilParams *Soil::mParams = &global_soilpar; // save a ptr to the single value container as a static class variable
+
+void Soil::fetchParameters()
+{
+    if (mParams->is_setup || !GlobalSettings::instance()->model())
+        return;
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.soil"));
+    mParams->kyl = xml.valueDouble("kyl", 0.15);
+    mParams->kyr = xml.valueDouble("kyr", 0.0807);
+    mParams->ko = xml.valueDouble("ko", 0.02);
+    mParams->h =  xml.valueDouble("h", 0.3);
+    mParams->qb =  xml.valueDouble("qb", 5.);
+    mParams->qh =  xml.valueDouble("qh", 25.);
+    mParams->leaching =  xml.valueDouble("leaching", 0.15);
+    mParams->el =  xml.valueDouble("el", 0.0577);
+    mParams->er = xml.valueDouble("er", 0.073);
+
+    mParams->is_setup = true;
+}
 
 //    ko=0.02 # decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
 //    h=0.3 # humification rate
@@ -52,6 +60,7 @@ Soil::Soil()
 {
     mRE = 0.;
     mAvailableNitrogen = 0.;
+    fetchParameters();
 }
 
 void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha)
@@ -64,7 +73,7 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
 /// must be called after snag dyanmics (i.e. to ensure input fluxes are available)
 void Soil::calculateYear()
 {
-    SoilParams &sp = soilpar;
+    SoilParams &sp = *mParams;
     // checks
     if (mRE==0) {
         throw IException("Soil::calculate(): Invalid value for 're' (0.)");
@@ -131,6 +140,8 @@ QList<QVariant> Soil::debugList()
     list << mAvailableNitrogen;
     return list;
 }
+
+
 
 
 
