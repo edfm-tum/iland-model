@@ -23,10 +23,13 @@ public:
     double airDensity; // density of air [kg / m3]
     double laiThresholdForClosedStands; // for calculation of max-canopy-conductance
     double boundaryLayerConductance; // 3pg-evapotranspiration
+    // nitrogen
+    bool useDynamicAvailableNitrogen; ///< if true, iLand utilizes the dynamically calculated NAvailable
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
     // production
     double epsilon; ///< maximum light use efficency used for the 3PG model
+
 };
 
 #endif // MODELSETTINGS_H

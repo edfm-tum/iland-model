@@ -57,12 +57,7 @@ Soil::Soil()
     fetchParameters();
 }
 
-void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha)
-{
-    mInputLab = labile_input_kg_ha * 0.001; // transfer from kg/ha -> tons/ha
-    mInputRef = refractory_input_kg_ha * 0.001;
-}
-
+/// setup initial content of the soil pool (call before model start)
 void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPool &SOM_kg_ha)
 {
     mYL = young_labile_kg_ha*0.001;
@@ -76,6 +71,14 @@ void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young
     if (!mYL.isValid())
         throw IException(QString("setup of Soil: som-pool invalid: c: %1 n: %2").arg(mSOM.C).arg(mSOM.N));
 }
+
+/// set soil inputs of current year (litter and deadwood)
+void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha)
+{
+    mInputLab = labile_input_kg_ha * 0.001; // transfer from kg/ha -> tons/ha
+    mInputRef = refractory_input_kg_ha * 0.001;
+}
+
 
 /// Main calculation function
 /// must be called after snag dyanmics (i.e. to ensure input fluxes are available)
@@ -148,6 +151,8 @@ QList<QVariant> Soil::debugList()
     list << mAvailableNitrogen;
     return list;
 }
+
+
 
 
 

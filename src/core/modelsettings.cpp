@@ -20,6 +20,8 @@ void ModelSettings::loadModelSettings()
     boundaryLayerConductance = xml.valueDouble("boundaryLayerConductance", 0.2);
     XmlHelper world(GlobalSettings::instance()->settings().node("model.world"));
     latitude = RAD(world.valueDouble("latitude",48.));
+    useDynamicAvailableNitrogen = xml.valueBool("model.settings.soil.useDynamicAvailableNitrogen", false); // TODO: there is a bug in using a xml helper that whose top-node is set
+    useDynamicAvailableNitrogen = GlobalSettings::instance()->settings().valueBool("model.settings.soil.useDynamicAvailableNitrogen", false);
 }
 
 void ModelSettings::print()
@@ -33,6 +35,7 @@ void ModelSettings::print()
     set << QString("temperatureTau=%1").arg(temperatureTau);
     set << QString("epsilon=%1").arg(epsilon);
     set << QString("airDensity=%1").arg(airDensity);
+    set << QString("useDynamicAvailableNitrogen=%1").arg(useDynamicAvailableNitrogen);
 
     set << QString("latitude=%1").arg(GRAD(latitude));
 

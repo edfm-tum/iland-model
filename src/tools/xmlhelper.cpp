@@ -1,3 +1,8 @@
+#include "xmlhelper.h"
+#include "helper.h"
+#include "exception.h"
+
+
 /** @class XmlHelper
   XmlHelper wraps a XML file and provides some convenient functions to
   retrieve values. Internally XmlHelper uses a QDomDocument (the full structure is
@@ -26,9 +31,6 @@
   @endcode
 
   */
-#include "xmlhelper.h"
-#include "helper.h"
-#include "exception.h"
 
 XmlHelper::XmlHelper()
 {

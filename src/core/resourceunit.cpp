@@ -72,6 +72,12 @@ void ResourceUnit::setup()
 
     // setup variables
     mUnitVariables.nitrogenAvailable = GlobalSettings::instance()->settings().valueDouble("model.site.availableNitrogen", 40);
+
+    // if dynamic coupling of soil nitrogen is enabled, the calculate a starting value for available n.
+    if (mSoil && Model::settings().useDynamicAvailableNitrogen && Model::settings().carbonCycleEnabled) {
+        mSoil->calculateYear();
+        mUnitVariables.nitrogenAvailable = mSoil->availableNitrogen();
+    }
     mAverageAging = 0.;
 
 }
@@ -361,6 +367,9 @@ void ResourceUnit::calculateCarbonCycle()
     soil()->setSoilInput( snag()->labileFlux(), snag()->refractoryFlux());
     soil()->calculateYear(); // update the ICBM/2N model
     // use available nitrogen?
+    if (Model::settings().useDynamicAvailableNitrogen)
+        mUnitVariables.nitrogenAvailable = soil()->availableNitrogen();
+
     // debug output
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dCarbonCycle) && !snag()->isEmpty()) {
         DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dCarbonCycle);
