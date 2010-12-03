@@ -60,6 +60,11 @@ void Species::setup()
     mSpecificLeafArea = doubleVar("specificLeafArea");
     mFinerootFoliageRatio = doubleVar("finerootFoliageRatio");
 
+    // cn-ratios
+    mCNFoliage = doubleVar("cnFoliage");
+    mCNFineroot = doubleVar("cnFineRoot");
+    mCNWood = doubleVar("cnWood");
+
     // turnover rates
     mTurnoverLeaf = doubleVar("turnoverLeaf");
     mTurnoverRoot = doubleVar("turnoverRoot");
@@ -76,6 +81,9 @@ void Species::setup()
     // volume = formfactor*pi/4 *d^2*h -> volume = volumefactor * d^2 * h
     mVolumeFactor = mFormFactor * M_PI_4;
 
+    // snags
+    mSnagKSW = doubleVar("snagKSW"); // decay rate of SWD
+    mSnagHalflife = doubleVar("snagHalfLife");
 
     if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea*mFinerootFoliageRatio == 0.) {
         throw IException( QString("Error setting up species %1: one value is NULL in database.").arg(id()));

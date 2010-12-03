@@ -586,6 +586,16 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
     foreach(QString name, names) {
         items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(ruw.valueByName(name)) ));
     }
+    QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(-ru->index()); // hack: use negative values for resource units
+
+    QList<QPair<QString, QVariant> >::const_iterator i = dbgdata.constBegin();
+    while (i != dbgdata.constEnd()) {
+     //cout << i.key() << ": " << i.value() << endl;
+        items.append(new QTreeWidgetItem(QStringList()
+                                         << (*i).first
+                                         << (*i).second.toString()) );
+        ++i;
+     }
     ui->dataTree->addTopLevelItems(items);
 }
 

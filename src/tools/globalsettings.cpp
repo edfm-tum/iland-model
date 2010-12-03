@@ -152,7 +152,12 @@ DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
     QMutexLocker m(&debugListMutex); // serialize creation of debug outputs
     DebugList dbglist;
     dbglist << ID << dbg << currentYear();
-    QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(ID, dbglist);
+    int id = ID;
+    // use negative values for debug-outputs on RU - level
+    // Note: at some point we will also have to handle RUS-level...
+    if (dbg == dEstablishment || dbg == dCarbonCycle)
+        id = -id;
+    QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(id, dbglist);
     return *newitem;
 }
 bool debuglist_sorter (const DebugList &i,const DebugList &j)

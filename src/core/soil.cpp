@@ -49,12 +49,6 @@ void Soil::fetchParameters()
     mParams->is_setup = true;
 }
 
-//    ko=0.02 # decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
-//    h=0.3 # humification rate
-//    qh=25 # C/N ratio of SOM
-//    leaching=0.15 # how many percent of the mineralized nitrogen in O is not available for plants but is leached
-//    el=0.0577 # microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)
-//    er=0.0730 # microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)
 
 Soil::Soil()
 {

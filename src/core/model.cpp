@@ -265,6 +265,9 @@ void Model::loadProject()
 
     // snag dynamics / soil model enabled? (info used during setup of world)
     changeSettings().carbonCycleEnabled = xml.valueBool("model.settings.carbonCycleEnabled", false);
+    // class size of snag classes
+    Snag::setupThresholds(xml.valueDouble("model.settings.soil.swdDBHClass12"),
+                          xml.valueDouble("model.settings.soil.swdDBHClass23"));
 
     // load environment (multiple climates, speciesSets, ...
     if (mEnvironment)

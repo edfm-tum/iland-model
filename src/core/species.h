@@ -76,10 +76,16 @@ public:
     double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
     double allometricFractionStem(const double dbh) const;
     double finerootFoliageRatio() const { return mFinerootFoliageRatio; } ///< ratio of fineroot mass (kg) to foliage mass (kg)
-
+    // cn ratios
+    double cnFoliage() const { return mCNFoliage; }
+    double cnFineroot() const { return mCNFineroot; }
+    double cnWood() const { return mCNWood; }
     // turnover rates
     double turnoverLeaf() const { return mTurnoverLeaf; }
     double turnoverRoot() const { return mTurnoverRoot; }
+    // snags
+    double snagKSW() const { return mSnagKSW; }
+    double snagHalflife() const { return mSnagHalflife; }
     // hd-values
     void hdRange(const double dbh, double &rMinHD, double &rMaxHD) const;
     // growth
@@ -133,6 +139,8 @@ private:
     double mWoody_a, mWoody_b; ///< allometry (biomass = a * dbh^b) for woody compartments aboveground
     double mRoot_a, mRoot_b; ///< allometry (biomass = a * dbh^b) for roots (compound, fine and coarse roots as one pool)
     double mBranch_a, mBranch_b; ///< allometry (biomass = a * dbh^b) for branches
+    // cn-ratios
+    double mCNFoliage, mCNFineroot, mCNWood; ///< CN-ratios for various tissue types; stem, branches and coarse roots are pooled as 'wood'
 
     double mSpecificLeafArea; ///< conversion factor from kg OTS to m2 LeafArea
     // turnover rates
@@ -146,6 +154,9 @@ private:
     double mWoodDensity; ///< density of the wood [kg/m3]
     double mFormFactor; ///< taper form factor of the stem [-] used for volume / stem-mass calculation calculation
     double mVolumeFactor; ///< factor for volume calculation
+    // snag dynamics
+    double mSnagKSW; ///< standing woody debris (swd) decomposition rate
+    double mSnagHalflife; ///< half-life-period of standing snags (years)
     // mortality
     double mDeathProb_intrinsic;  ///< prob. of intrinsic death per year [0..1]
     double mDeathProb_stress; ///< max. prob. of death per year when tree suffering maximum stress
