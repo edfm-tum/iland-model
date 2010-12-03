@@ -62,7 +62,7 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
 
 /// Main calculation function
 /// must be called after snag dyanmics (i.e. to ensure input fluxes are available)
-void Soil::calculate()
+void Soil::calculateYear()
 {
     SoilParams &sp = soilpar;
     // checks

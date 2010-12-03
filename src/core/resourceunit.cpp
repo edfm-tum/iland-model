@@ -15,6 +15,7 @@
 #include "climate.h"
 #include "watercycle.h"
 #include "snag.h"
+#include "soil.h"
 #include "helper.h"
 
 ResourceUnit::~ResourceUnit()
@@ -24,8 +25,11 @@ ResourceUnit::~ResourceUnit()
     mWater = 0;
     if (mSnag)
         delete mSnag;
-    mSnag = 0;
+    if (mSoil)
+        delete mSoil;
 
+    mSnag = 0;
+    mSoil = 0;
 }
 
 ResourceUnit::ResourceUnit(const int index)
@@ -41,8 +45,7 @@ ResourceUnit::ResourceUnit(const int index)
     mEffectiveArea_perWLA = 0.;
     mWater = new WaterCycle();
     mSnag = 0;
-
-    mTrees.reserve(100); // start with space for 100 trees.
+    mSoil = 0;
 }
 
 void ResourceUnit::setup()
@@ -52,9 +55,13 @@ void ResourceUnit::setup()
     if (mSnag)
         delete mSnag;
     mSnag=0;
+    if (mSoil)
+        delete mSoil;
+    mSoil=0;
     if (Model::settings().carbonCycleEnabled) {
-       mSnag = new Snag;
-       mSnag->setup(this);
+        mSoil = new Soil;
+        mSnag = new Snag;
+        mSnag->setup(this);
     }
 
     // setup variables
@@ -99,6 +106,9 @@ ResourceUnitSpecies &ResourceUnit::resourceUnitSpecies(const Species *species)
 Tree &ResourceUnit::newTree()
 {
     // start simple: just append to the vector...
+    if (mTrees.isEmpty())
+        mTrees.reserve(100); // reserve a junk of memory for trees
+
     mTrees.append(Tree());
     return mTrees.back();
 }
@@ -332,16 +342,25 @@ void ResourceUnit::clearSaplings(const QPoint &position)
 }
 
 
-void ResourceUnit::calculateSnagDynamics()
+void ResourceUnit::calculateCarbonCycle()
 {
     if (!snag())
         return;
 
-    snag()->processYear();
+    // (1) calculate the snag dynamics
+    // because all carbon/nitrogen-flows from trees to the soil are routed through the snag-layer,
+    // all soil inputs (litter + deadwood) are collected in the Snag-object.
+    snag()->calculateYear();
+    soil()->setClimateFactor( snag()->climateFactor() ); // the climate factor is only calculated once
+    soil()->setSoilInput( snag()->labileFlux(), snag()->refractoryFlux());
+    soil()->calculateYear(); // update the ICBM/2N model
+    // use available nitrogen?
     // debug output
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSnagDynamics) && !snag()->isEmpty()) {
-        DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dSnagDynamics);
-        out << index() << snag()->debugList(); // use private variables...
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dCarbonCycle) && !snag()->isEmpty()) {
+        DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dCarbonCycle);
+        out << index();
+        out << snag()->debugList(); // snag debug outs
+        out << soil()->debugList(); // ICBM/2N debug outs
     }
 
 }

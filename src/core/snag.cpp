@@ -138,7 +138,7 @@ double Snag::calculateClimateFactors()
 
 /// do the yearly calculation
 /// see http://iland.boku.ac.at/snag+dynamics
-void Snag::processYear()
+void Snag::calculateYear()
 {
     mSWDtoSoil.clear();
     if (isEmpty()) // nothing to do

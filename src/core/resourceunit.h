@@ -10,6 +10,7 @@ class SpeciesSet;
 class Climate;
 class WaterCycle;
 class Snag;
+class Soil;
 class MTRand;
 
 struct ResourceUnitVariables
@@ -36,6 +37,8 @@ public:
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
     const WaterCycle *waterCycle() const { return mWater; } ///< water model of the unit
     Snag *snag() const { return mSnag; } ///< access the snag object
+    Soil *soil() const { return mSoil; } ///< access the soil model
+
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
     const QList<ResourceUnitSpecies*> ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
@@ -83,7 +86,7 @@ public:
     // snag / snag dynamics
     // snag dynamics, soil carbon and nitrogen cycle
     void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools
-    void calculateSnagDynamics(); ///< calculate snag dynamics at the end of a year
+    void calculateCarbonCycle(); ///< calculate snag dynamics at the end of a year
     // model flow
     void newYear(); ///< reset values for a new simulation year
     // LIP/LIF-cylcle -> Model
@@ -99,6 +102,7 @@ private:
     SpeciesSet *mSpeciesSet; ///< pointer to the species set for this RU
     WaterCycle *mWater; ///< link to the Soil water calculation engine
     Snag *mSnag; ///< ptr to snag storage / dynamics
+    Soil *mSoil; ///< ptr to CN dynamics soil submodel
     QList<ResourceUnitSpecies*> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU

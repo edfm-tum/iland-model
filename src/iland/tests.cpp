@@ -548,6 +548,7 @@ void Tests::testSoil()
 //    O0=375 # old C, i.e soil organic matter (SOM)
 //    O0N=15 # old N
     Soil soil;
+    qDebug() << "soil object has" << sizeof(soil) << "bytes.";
     // values from RS R script script_snagsoil_v5.r
     soil.setInitialState(CNPool(33000., 450.), // young lab
                          CNPool(247000., 990.), // young ref
@@ -570,7 +571,7 @@ void Tests::testSoil()
             soil.setSoilInput(in_l, in_r); // normal input
         }
 
-        soil.calculate();
+        soil.calculateYear();
         QList<QVariant> list = soil.debugList();
         QString line=QString::number(i)+";";
         foreach(QVariant v, list)
@@ -582,8 +583,8 @@ void Tests::testSoil()
         qDebug() << "PASSED.";
     else
         qDebug() << "ERROR";
-    qDebug() << "ICBM/2N run";
-    qDebug() << out;
+    qDebug() << "ICBM/2N run: saved to e:/soil.txt";
+    //qDebug() << out;
     Helper::saveToTextFile("e:/soil.txt", out.join("\r\n"));
 
 }

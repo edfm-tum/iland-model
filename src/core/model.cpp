@@ -381,7 +381,7 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
 ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
 {
     // (1) do calculations on snag dynamics for the resource unit
-    unit->calculateSnagDynamics();
+    unit->calculateCarbonCycle();
     // (2) do the soil carbon and nitrogen dynamics calculations (ICBM/2N)
     return unit;
 }

@@ -14,7 +14,7 @@ public:
     // actions
     void setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha); ///< provide values for input pools
     void setClimateFactor(const double climate_factor_re) { mRE = climate_factor_re; } ///< set the climate decomposition factor for the current year
-    void calculate(); ///< main calculation function: calculates the update of state variables
+    void calculateYear(); ///< main calculation function: calculates the update of state variables
 
     // access
     const CNPool &youngLabile() const { return mYL;} ///< young labile matter (t/ha)

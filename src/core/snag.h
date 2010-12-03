@@ -37,11 +37,13 @@ public:
     static void setupThresholds(const double lower, const double upper); ///< setup class thresholds, needs to be called only once... (static)
     void setup( const ResourceUnit *ru); ///< initial setup routine.
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
-    void processYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
+    void calculateYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
     // access
     bool isStateEmpty() const { return mTotalSnagCarbon == 0.; }
     bool isEmpty() const { return mLabileFlux.isEmpty() && mRefractoryFlux.isEmpty() && isStateEmpty(); }
-    CNPool fluxToSoil() const { return mLabileFlux + mRefractoryFlux; }
+    const CNPool &labileFlux() const { return mLabileFlux; } ///< litter flux to the soil (kg/ha)
+    const CNPool &refractoryFlux() const {return  mRefractoryFlux; } ///< deadwood flux to the soil (kg/ha)
+    double climateFactor() const { return mClimateFactor; } ///< the 're' climate factor to modify decay rates (also used in ICBM/2N model)
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot);
