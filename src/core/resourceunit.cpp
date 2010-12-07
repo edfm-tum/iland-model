@@ -65,9 +65,13 @@ void ResourceUnit::setup()
         const XmlHelper &xml=GlobalSettings::instance()->settings();
 
         // setup contents of the soil of the RU; use values for C and N (kg/ha)
-        mSoil->setInitialState(CNPool(xml.valueDouble("model.site.youngLabileC", -1), xml.valueDouble("model.site.youngLabileN", -1)),
-                               CNPool(xml.valueDouble("model.site.youngRefractoryC", -1), xml.valueDouble("model.site.youngRefractoryN", -1)),
-                               CNPool(xml.valueDouble("model.site.somC", -1), xml.valueDouble("model.site.somN", -1)));
+        mSoil->setInitialState(CNPool(xml.valueDouble("model.site.youngLabileC", -1),
+                                      xml.valueDouble("model.site.youngLabileN", -1),
+                                      xml.valueDouble("model.site.youngLabileDecompRate", -1)),
+                               CNPool(xml.valueDouble("model.site.youngRefractoryC", -1),
+                                      xml.valueDouble("model.site.youngRefractoryN", -1),
+                                      xml.valueDouble("model.site.youngRefractoryDecompRate", -1)),
+                               CNPair(xml.valueDouble("model.site.somC", -1), xml.valueDouble("model.site.somN", -1)));
     }
 
     // setup variables

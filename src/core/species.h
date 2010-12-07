@@ -84,8 +84,11 @@ public:
     double turnoverLeaf() const { return mTurnoverLeaf; }
     double turnoverRoot() const { return mTurnoverRoot; }
     // snags
-    double snagKSW() const { return mSnagKSW; }
+    double snagKsw() const { return mSnagKSW; }
     double snagHalflife() const { return mSnagHalflife; }
+    double snagKyl() const { return mSnagKYL; } ///< decomposition rate for labile matter (litter) used in soil model
+    double snagKyr() const { return mSnagKYR; } ///< decomposition rate for refractory matter (woody) used in soil model
+
     // hd-values
     void hdRange(const double dbh, double &rMinHD, double &rMaxHD) const;
     // growth
@@ -156,6 +159,8 @@ private:
     double mVolumeFactor; ///< factor for volume calculation
     // snag dynamics
     double mSnagKSW; ///< standing woody debris (swd) decomposition rate
+    double mSnagKYL; ///< decomposition rate for labile matter (litter) used in soil model
+    double mSnagKYR; ///< decomposition rate for refractory matter (woody) used in soil model
     double mSnagHalflife; ///< half-life-period of standing snags (years)
     // mortality
     double mDeathProb_intrinsic;  ///< prob. of intrinsic death per year [0..1]

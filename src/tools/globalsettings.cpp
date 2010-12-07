@@ -224,7 +224,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                 << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" << "dbh2" << "height2" << "volume2"   // standing woody debris medium dbhs
                 << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n" << "dbh3" << "height3" << "volume3"   // large trees
                 << "branch1_c" << "branch1_n" << "branch2_c" << "branch2_n" << "branch3_c" << "branch3_n" << "branch4_c" << "branch4_n" << "branch5_c" << "branch5_n"
-                   << "iLabC" << "iLabN" << "iRefC" << "iRefN" << "re" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN" << "NAvailable";
+                   << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN" << "NAvailable";
 
     }
     return QStringList() << "invalid debug output!";

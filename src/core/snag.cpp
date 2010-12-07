@@ -22,7 +22,38 @@ double Snag::mDBHLower = -1.;
 double Snag::mDBHHigher = 0.;
 double Snag::mCarbonThreshold[] = {0., 0., 0.};
 
-double CNPool::biomassCFraction = biomassCFraction; // get global from globalsettings.h
+double CNPair::biomassCFraction = biomassCFraction; // get global from globalsettings.h
+
+/// add biomass and weigh the parameter_value with the current C-content of the pool
+void CNPool::addBiomass(const double biomass, const double CNratio, const double parameter_value)
+{
+    if (biomass==0.)
+        return;
+    double new_c = biomass*biomassCFraction;
+    double p_old = C / (new_c + C);
+    mParameter = mParameter*p_old + parameter_value*(1.-p_old);
+    CNPair::addBiomass(biomass, CNratio);
+}
+
+// increase pool (and weigh the value)
+void CNPool::operator+=(const CNPool &s)
+{
+    if (s.C==0.)
+        return;
+    mParameter = parameter(s); // calculate weighted parameter
+    C+=s.C;
+    N+=s.N;
+}
+
+double CNPool::parameter(const CNPool &s) const
+{
+    if (s.C==0.)
+        return parameter();
+    double p_old = C / (s.C + C);
+    double result =  mParameter*p_old + s.parameter()*(1.-p_old);
+    return result;
+}
+
 
 void Snag::setupThresholds(const double lower, const double upper)
 {
@@ -44,7 +75,7 @@ void Snag::setupThresholds(const double lower, const double upper)
 Snag::Snag()
 {
     mRU = 0;
-    CNPool::setCFraction(biomassCFraction);
+    CNPair::setCFraction(biomassCFraction);
 }
 
 void Snag::setup( const ResourceUnit *ru)
@@ -220,8 +251,8 @@ void Snag::calculateYear()
 /// foliage and fineroot litter is transferred during tree growth.
 void Snag::addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot)
 {
-    mLabileFlux.addBiomass(litter_foliage, tree->species()->cnFoliage());
-    mLabileFlux.addBiomass(litter_fineroot, tree->species()->cnFineroot());
+    mLabileFlux.addBiomass(litter_foliage, tree->species()->cnFoliage(), tree->species()->snagKyl());
+    mLabileFlux.addBiomass(litter_fineroot, tree->species()->cnFineroot(), tree->species()->snagKyl());
 }
 
 /// after the death of the tree the five biomass compartments are processed.
@@ -231,14 +262,14 @@ void Snag::addMortality(const Tree *tree)
 
     // immediate flows: 100% of foliage, 100% of fine roots: they go to the labile pool
     // 100% of coarse root biomass: that goes to the refractory pool
-    mLabileFlux.addBiomass(tree->biomassFoliage(), species->cnFoliage());
-    mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot());
-    mRefractoryFlux.addBiomass(tree->biomassCoarseRoot(), species->cnWood());
+    mLabileFlux.addBiomass(tree->biomassFoliage(), species->cnFoliage(), tree->species()->snagKyl());
+    mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot(), tree->species()->snagKyl());
+    mRefractoryFlux.addBiomass(tree->biomassCoarseRoot(), species->cnWood(), tree->species()->snagKyr());
 
     // branches are equally distributed over five years:
     double biomass_branch = tree->biomassBranch() * 0.2;
     for (int i=0;i<5; i++)
-        mBranches[i].addBiomass(biomass_branch, species->cnWood());
+        mBranches[i].addBiomass(biomass_branch, species->cnWood(), tree->species()->snagKyr());
 
     // just for book-keeping: keep track of all inputs into branches / swd
     mTotalIn.addBiomass(tree->biomassBranch() + tree->biomassStem(), species->cnWood());
@@ -261,12 +292,12 @@ void Snag::addMortality(const Tree *tree)
         throw IException("Snag::addMortality: tree without stem biomass!!");
     p_old = mToSWD[pi].C / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
     p_new =tree->biomassStem()* biomassCFraction / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
-    mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + species->snagKSW() * p_new;
+    mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + species->snagKsw() * p_new;
     mNumberOfSnags[pi]++;
 
     // finally add the biomass
-    CNPool &swd = mToSWD[pi];
-    swd.addBiomass(tree->biomassStem(), species->cnWood());
+    CNPool &to_swd = mToSWD[pi];
+    to_swd.addBiomass(tree->biomassStem(), species->cnWood(), tree->species()->snagKyr());
 }
 
 /// add residual biomass of 'tree' after harvesting.
@@ -278,17 +309,20 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
 
     // immediate flows: 100% of residual foliage, 100% of fine roots: they go to the labile pool
     // 100% of coarse root biomass: that goes to the refractory pool
-    mLabileFlux.addBiomass(tree->biomassFoliage() * (1. - remove_foliage_fraction), species->cnFoliage());
-    mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot());
-    mRefractoryFlux.addBiomass(tree->biomassCoarseRoot(), species->cnWood());
+    mLabileFlux.addBiomass(tree->biomassFoliage() * (1. - remove_foliage_fraction), species->cnFoliage(), tree->species()->snagKyl());
+    mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot(), tree->species()->snagKyl());
+    mRefractoryFlux.addBiomass(tree->biomassCoarseRoot(), species->cnWood(), tree->species()->snagKyr());
     // for branches, add all biomass that remains in the forest to the soil
-    mRefractoryFlux.addBiomass(tree->biomassBranch()*(1.-remove_branch_fraction), species->cnWood());
+    mRefractoryFlux.addBiomass(tree->biomassBranch()*(1.-remove_branch_fraction), species->cnWood(), tree->species()->snagKyr());
     // the same treatment for stem residuals
-    mRefractoryFlux.addBiomass(tree->biomassStem() * remove_stem_fraction, species->cnWood());
+    mRefractoryFlux.addBiomass(tree->biomassStem() * remove_stem_fraction, species->cnWood(), tree->species()->snagKyr());
 
     // for book-keeping...
     mTotalToExtern.addBiomass(tree->biomassFoliage()*remove_foliage_fraction +
                               tree->biomassBranch()*remove_branch_fraction +
                               tree->biomassStem()*remove_stem_fraction, species->cnWood());
 }
+
+
+
 

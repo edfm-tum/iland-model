@@ -930,7 +930,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionSnag_Dynamics">
    <property name="text">
-    <string>Snag Dynamics</string>
+    <string>Carbon Cycle</string>
    </property>
   </action>
   <action name="actionDebug">

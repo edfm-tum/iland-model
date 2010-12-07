@@ -5,14 +5,14 @@
 class Tree; // forward
 class ResourceUnit; // forward
 
-/** CNPool stores a duple of carbon and nitrogen (kg/ha)
-    use addBiomass(biomass, cnratio) to add biomass; use operators (+, +=, *, *=) for simple operations.
-*/
-struct CNPool
+/** CNPair stores a duple of carbon and nitrogen (kg/ha)
+    use addBiomass(biomass, cnratio) to add biomass; use operators (+, +=, *, *=) for simple operations. */
+class CNPair
 {
-    CNPool(): C(0.), N(0.) {}
+public:
+    CNPair(): C(0.), N(0.) {}
     static void setCFraction(const double fraction) { biomassCFraction = fraction; } ///< set the global fraction of carbon of biomass
-    CNPool(const double c, const double n) {C=c; N=n; }
+    CNPair(const double c, const double n) {C=c; N=n; }
     bool isEmpty() const { return C==0.; } ///< returns true if pool is empty
     bool isValid() const { return C>=0. && N>=0.; } ///< return true if pool is valid (content of C or N >=0)
     double C; // carbon pool (kg C/ha)
@@ -23,12 +23,33 @@ struct CNPool
     /// calculate the amount of carbon of 'biomass'.
     void addBiomass(const double biomass, const double CNratio) { C+=biomass*biomassCFraction; N+=biomass*biomassCFraction/CNratio; }
     // some simple operators
-    void operator+=(const CNPool &s) { C+=s.C; N+=s.N; } ///< add contents of a pool
+    void operator+=(const CNPair &s) { C+=s.C; N+=s.N; } ///< add contents of a pool
     void operator*=(const double factor) { C*=factor; N*=factor; } ///< Multiply pool with 'factor'
-    const CNPool operator+(const CNPool &p2) const { return CNPool(C+p2.C, N+p2.N); } ///< return the sum of two pools
-    const CNPool operator*(const double factor) const { return CNPool(C*factor, N*factor); } ///< return the pool multiplied with 'factor'
-private:
+    const CNPair operator+(const CNPair &p2) const { return CNPair(C+p2.C, N+p2.N); } ///< return the sum of two pools
+    const CNPair operator*(const double factor) const { return CNPair(C*factor, N*factor); } ///< return the pool multiplied with 'factor'
+protected:
     static double biomassCFraction;
+};
+
+/** CNPool provides (in addition to CNPair) also a weighted parameter value (e.g. a decay rate) */
+class CNPool: public CNPair
+{
+public:
+    CNPool(): CNPair::CNPair(), mParameter(0.) {}
+    CNPool(const double c, const double n, const double param_value) {C=c; N=n; mParameter=param_value; }
+    double parameter() const { return mParameter; } ///< get weighting parameter
+    double parameter(const CNPool &s) const; ///< 'simulate' weighting (get weighted param value of 's' with the current content)
+    void clear() { CNPair::clear(); mParameter=0.; }
+
+    /// add biomass with a specific 'CNRatio' and 'parameter_value'
+    void addBiomass(const double biomass, const double CNratio, const double parameter_value);
+    void add(const CNPair &s, const double parameter_value); ///< convenience function
+    void setParameter(const double value) { mParameter = value; }
+
+    void operator+=(const CNPool &s);
+    const CNPool operator*(const double factor) const { return CNPool(C*factor, N*factor, mParameter); } ///< return the pool multiplied with 'factor'
+private:
+    double mParameter;
 };
 
 class Snag
@@ -76,10 +97,10 @@ private:
     CNPool mBranches[5]; ///< pool for branch biomass
     int mBranchCounter; ///< index which of the branch pools should be emptied
     double mTotalSnagCarbon; ///< sum of carbon content in all snag compartments (kg/ha)
-    CNPool mTotalIn; ///< total input to the snag state (i.e. mortality/harvest and litter)
-    CNPool mSWDtoSoil; ///< total flux from standing dead wood (book-keeping) -> soil (kg/ha)
-    CNPool mTotalToAtm; ///< flux to atmosphere (kg/ha)
-    CNPool mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
+    CNPair mTotalIn; ///< total input to the snag state (i.e. mortality/harvest and litter)
+    CNPair mSWDtoSoil; ///< total flux from standing dead wood (book-keeping) -> soil (kg/ha)
+    CNPair mTotalToAtm; ///< flux to atmosphere (kg/ha)
+    CNPair mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
     static double mCarbonThreshold[3]; ///< carbon content thresholds that are used to decide if the SWD-pool should be emptied
 };

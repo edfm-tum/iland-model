@@ -84,6 +84,8 @@ void Species::setup()
     // snags
     mSnagKSW = doubleVar("snagKSW"); // decay rate of SWD
     mSnagHalflife = doubleVar("snagHalfLife");
+    mSnagKYL = doubleVar("snagKYL"); // decay rate labile
+    mSnagKYR = doubleVar("snagKYR"); // decay rate refractory matter
 
     if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea*mFinerootFoliageRatio == 0.) {
         throw IException( QString("Error setting up species %1: one value is NULL in database.").arg(id()));

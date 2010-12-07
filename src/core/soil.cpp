@@ -17,11 +17,7 @@
 // and R-script on parameter estimation and initialization
 struct SoilParams {
     // ICBM/2N parameters
-    SoilParams(): kyl(0.15), kyr(0.0807), ko(0.02), h(0.3), qb(5.), qh(25.), leaching(0.15), el(0.0577), er(0.073), is_setup(false) {}
-    double kyl; ///< litter decomposition rate
-    double kyr; ///< downed woody debris (dwd) decomposition rate
-    double ko; ///< decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
-    double h; ///< humification rate
+    SoilParams(): qb(5.), qh(25.), leaching(0.15), el(0.0577), er(0.073), is_setup(false) {}
     double qb; ///< C/N ratio of soil microbes
     double qh; ///< C/N ratio of SOM
     double leaching; ///< how many percent of the mineralized nitrogen in O is not available for plants but is leached
@@ -33,13 +29,13 @@ SoilParams *Soil::mParams = &global_soilpar; // save a ptr to the single value c
 
 void Soil::fetchParameters()
 {
+    XmlHelper xml_site(GlobalSettings::instance()->settings().node("model.site"));
+    mKo = xml_site.valueDouble("ko", 0.02);
+    mH =  xml_site.valueDouble("h", 0.3);
+
     if (mParams->is_setup || !GlobalSettings::instance()->model())
         return;
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.soil"));
-    mParams->kyl = xml.valueDouble("kyl", 0.15);
-    mParams->kyr = xml.valueDouble("kyr", 0.0807);
-    mParams->ko = xml.valueDouble("ko", 0.02);
-    mParams->h =  xml.valueDouble("h", 0.3);
     mParams->qb =  xml.valueDouble("qb", 5.);
     mParams->qh =  xml.valueDouble("qh", 25.);
     mParams->leaching =  xml.valueDouble("leaching", 0.15);
@@ -54,16 +50,25 @@ Soil::Soil()
 {
     mRE = 0.;
     mAvailableNitrogen = 0.;
+    mKyl = 0.;
+    mKyr = 0.;
+    mH = 0.;
+    mKo = 0.;
     fetchParameters();
 }
 
 /// setup initial content of the soil pool (call before model start)
-void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPool &SOM_kg_ha)
+void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPair &SOM_kg_ha)
 {
     mYL = young_labile_kg_ha*0.001;
     mYR = young_refractory_kg_ha*0.001;
     mSOM = SOM_kg_ha*0.001;
 
+    mKyl = young_labile_kg_ha.parameter();
+    mKyr = young_refractory_kg_ha.parameter();
+
+    if (mKyl<=0. || mKyr<=0.)
+        throw IException(QString("setup of Soil: kyl or kyr invalid: kyl: %1 kyr: %2").arg(mKyl).arg(mKyr));
     if (!mYL.isValid())
         throw IException(QString("setup of Soil: yl-pool invalid: c: %1 n: %2").arg(mYL.C).arg(mYL.N));
     if (!mYL.isValid())
@@ -77,6 +82,10 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
 {
     mInputLab = labile_input_kg_ha * 0.001; // transfer from kg/ha -> tons/ha
     mInputRef = refractory_input_kg_ha * 0.001;
+    // calculate the decomposition rates
+    mKyl = mYL.parameter(mInputLab);
+    mKyr = mYR.parameter(mInputRef);
+
 }
 
 
@@ -91,52 +100,56 @@ void Soil::calculateYear()
     }
     const double t = 1.; // timestep (annual)
     // auxiliary calculations
-    CNPool total_in = mInputLab + mInputRef;
-    double ylss = mInputLab.C / (sp.kyl * mRE); // Yl stedy state C
-    double cl = sp.el * (1. - sp.h)/sp.qb - sp.h*(1.-sp.el)/sp.qh; // eta l in the paper
+    CNPair total_in = mInputLab + mInputRef;
+    double ylss = mInputLab.C / (mKyl * mRE); // Yl stedy state C
+    double cl = sp.el * (1. - mH)/sp.qb - mH*(1.-sp.el)/sp.qh; // eta l in the paper
     double ynlss = 0.;
     if (!mInputLab.isEmpty())
-        ynlss = mInputLab.C / (sp.kyl*mRE*(1.-sp.h)) * ((1.-sp.el)/mInputLab.CN() + cl); // Yl steady state N
+        ynlss = mInputLab.C / (mKyl*mRE*(1.-mH)) * ((1.-sp.el)/mInputLab.CN() + cl); // Yl steady state N
 
-    double yrss = mInputRef.C / (sp.kyr * mRE); // Yr steady state C
-    double cr = sp.er * (1. - sp.h)/sp.qb - sp.h*(1.-sp.er)/sp.qh; // eta r in the paper
+    double yrss = mInputRef.C / (mKyr * mRE); // Yr steady state C
+    double cr = sp.er * (1. - mH)/sp.qb - mH*(1.-sp.er)/sp.qh; // eta r in the paper
     double ynrss = 0.;
     if (!mInputRef.isEmpty())
-        ynrss = mInputRef.C / (sp.kyr*mRE*(1.-sp.h)) * ((1.-sp.er)/mInputRef.CN() + cr); // Yr steady state N
+        ynrss = mInputRef.C / (mKyr*mRE*(1.-mH)) * ((1.-sp.er)/mInputRef.CN() + cr); // Yr steady state N
 
-    double oss = sp.h*total_in.C / (sp.ko*mRE); // O steady state C
-    double onss = sp.h*total_in.C / (sp.qh*sp.ko*mRE); // O steady state N
+    double oss = mH*total_in.C / (mKo*mRE); // O steady state C
+    double onss = mH*total_in.C / (sp.qh*mKo*mRE); // O steady state N
 
-    double al = sp.h*(sp.kyl*mRE* mYL.C - mInputLab.C) / ((sp.ko-sp.kyl)*mRE);
-    double ar = sp.h*(sp.kyr*mRE* mYR.C - mInputRef.C) / ((sp.ko-sp.kyr)*mRE);
+    double al = mH*(mKyl*mRE* mYL.C - mInputLab.C) / ((mKo-mKyl)*mRE);
+    double ar = mH*(mKyr*mRE* mYR.C - mInputRef.C) / ((mKo-mKyr)*mRE);
 
     // update of state variables
     // precalculations
-    double lfactor = exp(-sp.kyl*mRE*t);
-    double rfactor = exp(-sp.kyr*mRE*t);
+    double lfactor = exp(-mKyl*mRE*t);
+    double rfactor = exp(-mKyr*mRE*t);
     // young labile pool
-    CNPool yl=mYL;
+    CNPair yl=mYL;
     mYL.C = ylss + (yl.C-ylss)*lfactor;
-    mYL.N = ynlss + (yl.N-ynlss-cl/(sp.el-sp.h)*(yl.C-ylss))*exp(-sp.kyl*mRE*(1.-sp.h)*t/(1.-sp.el))+cl/(sp.el-sp.h)*(yl.C-ylss)*lfactor;
+    mYL.N = ynlss + (yl.N-ynlss-cl/(sp.el-mH)*(yl.C-ylss))*exp(-mKyl*mRE*(1.-mH)*t/(1.-sp.el))+cl/(sp.el-mH)*(yl.C-ylss)*lfactor;
+    mYL.setParameter( mKyl ); // update decomposition rate
     // young ref. pool
-    CNPool yr=mYR;
+    CNPair yr=mYR;
     mYR.C = yrss + (yr.C-yrss)*rfactor;
-    mYR.N = ynrss + (yr.N-ynrss-cr/(sp.er-sp.h)*(yr.C-yrss))*exp(-sp.kyr*mRE*(1.-sp.h)*t/(1.-sp.er))+cr/(sp.er-sp.h)*(yr.C-yrss)*rfactor;
+    mYR.N = ynrss + (yr.N-ynrss-cr/(sp.er-mH)*(yr.C-yrss))*exp(-mKyr*mRE*(1.-mH)*t/(1.-sp.er))+cr/(sp.er-mH)*(yr.C-yrss)*rfactor;
+    mYR.setParameter( mKyr ); // update decomposition rate
     // SOM pool (old)
-    CNPool o = mSOM;
-    mSOM.C = oss + (o.C -oss - al - ar)*exp(-sp.ko*mRE*t) + al*lfactor + ar*rfactor;
-    mSOM.N = onss + (o.N - onss -(al+ar)/sp.qh)*exp(-sp.ko*mRE*t) + al/sp.qh * lfactor + ar/sp.qh * rfactor;
+    CNPair o = mSOM;
+    mSOM.C = oss + (o.C -oss - al - ar)*exp(-mKo*mRE*t) + al*lfactor + ar*rfactor;
+    mSOM.N = onss + (o.N - onss -(al+ar)/sp.qh)*exp(-mKo*mRE*t) + al/sp.qh * lfactor + ar/sp.qh * rfactor;
+
+
 
     // calculate plant available nitrogen
-    double nav = sp.kyl*mRE*(1.-sp.h)/(1.-sp.el) * (mYL.N - sp.el*mYL.C/sp.qb); // N from labile...
-    nav += sp.kyr*mRE*(1-sp.h)/(1.-sp.er)* (mYR.N - sp.er*mYR.C/sp.qb); // + N from refractory...
-    nav += sp.ko*mRE*mSOM.N*(1.-sp.leaching); // + N from SOM pool (reduced by leaching (leaching modeled only from slow SOM Pool))
+    double nav = mKyl*mRE*(1.-mH)/(1.-sp.el) * (mYL.N - sp.el*mYL.C/sp.qb); // N from labile...
+    nav += mKyr*mRE*(1-mH)/(1.-sp.er)* (mYR.N - sp.er*mYR.C/sp.qb); // + N from refractory...
+    nav += mKo*mRE*mSOM.N*(1.-sp.leaching); // + N from SOM pool (reduced by leaching (leaching modeled only from slow SOM Pool))
     mAvailableNitrogen = nav * 1000.; // from t/ha -> kg/ha
 
     // stedy state for n-available
-    //    double navss = sp.kyl*mRE*(1.-sp.h)/(1.-sp.el)*(ynlss-sp.el*ylss/sp.qb); // available nitrogen (steady state)
-    //    navss += sp.kyr*mRE*(1.-sp.h)/(1.-sp.er)*(ynrss - sp.er*yrss/sp.qb);
-    //    navss += sp.ko*mRE*onss*(1.-sp.leaching);
+    //    double navss = mKyl*mRE*(1.-mH)/(1.-sp.el)*(ynlss-sp.el*ylss/sp.qb); // available nitrogen (steady state)
+    //    navss += mKyr*mRE*(1.-mH)/(1.-sp.er)*(ynrss - sp.er*yrss/sp.qb);
+    //    navss += mKo*mRE*onss*(1.-sp.leaching);
 
 }
 
@@ -144,9 +157,9 @@ QList<QVariant> Soil::debugList()
 {
     QList<QVariant> list;
     // (1) inputs of the year
-    list << mInputLab.C << mInputLab.N << mInputRef.C << mInputRef.N << mRE;
+    list << mInputLab.C << mInputLab.N << mInputLab.parameter() << mInputRef.C << mInputRef.N << mInputRef.parameter() << mRE;
     // (2) states
-    list << mYL.C << mYL.N << mYR.C << mYR.N << mSOM.C << mSOM.N;
+    list << mKyl << mKyr << mYL.C << mYL.N << mYR.C << mYR.N << mSOM.C << mSOM.N;
     // (3) nav
     list << mAvailableNitrogen;
     return list;

@@ -202,6 +202,10 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
 
 /** calculation for the CO2 response for the ambientCO2 for the water- and nitrogen responses given.
     The calculation follows Friedlingsstein 1995 (see also links to equations in code)
+    see also: http://iland.boku.ac.at/CO2+response
+    @param ambientCO2 current CO2 concentration (ppm)
+    @param nitrogenResponse (yearly) nitrogen response of the species
+    @param soilWaterReponse soil water response (mean value for a month)
 */
 double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const
 {

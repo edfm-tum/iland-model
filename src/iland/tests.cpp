@@ -550,15 +550,15 @@ void Tests::testSoil()
     Soil soil;
     qDebug() << "soil object has" << sizeof(soil) << "bytes.";
     // values from RS R script script_snagsoil_v5.r
-    soil.setInitialState(CNPool(33000., 450.), // young lab
-                         CNPool(247000., 990.), // young ref
-                         CNPool(375000., 15000.)); // SOM
-    CNPool in_l(3040, 3040/75.);
-    CNPool in_r(11970, 11970./250.);
+    soil.setInitialState(CNPool(33000., 450., 0.1), // young lab
+                         CNPool(247000., 990., 0.1), // young ref
+                         CNPair(375000., 15000.)); // SOM
+    CNPool in_l(3040, 3040/75., 0.2);
+    CNPool in_r(11970, 11970./250., 0.2);
     double re = 1.1;
 
     QStringList out;
-    out << "year;iLabC;iLabN;iRefC;iRefN;RE;ylC;ylN;yrC;yrN;somC;somN;NAvailable";
+    out << "year;iLabC;iLabN;ikyl;iRefC;iRefN;ikyr;RE;kyl;kyr;ylC;ylN;yrC;yrN;somC;somN;NAvailable";
 
     for (int i=0;i<100;i++) {
         // run the soil model
@@ -586,5 +586,12 @@ void Tests::testSoil()
     qDebug() << "ICBM/2N run: saved to e:/soil.txt";
     //qDebug() << out;
     Helper::saveToTextFile("e:/soil.txt", out.join("\r\n"));
+
+    qDebug()<< "test weighting of CNPool (C/N/rate):";
+    CNPool c(1,1,1);
+    for (int i=0;i<10;i++) {
+        c.addBiomass(1,1,2);
+        qDebug() << c.C << c.N << c.parameter();
+    }
 
 }
