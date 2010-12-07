@@ -226,7 +226,7 @@ inline double Species::temperatureResponse(const double &delayed_temp) const
 inline double Species::soilwaterResponse(const double &psi_kPa) const
 {
     const double psi_mpa = psi_kPa / 1000.; // convert to MPa
-    double result = limit( 1. - psi_mpa / mPsiMin, 0., 1.);
+    double result = limit( (psi_mpa - mPsiMin) / (-0.015 -  mPsiMin) , 0., 1.);
     return result;
 }
 

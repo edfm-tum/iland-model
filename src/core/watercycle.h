@@ -64,6 +64,7 @@ public:
     void run(); ///< run the current year
     // properties
     const double &relContent(const int doy) const { return mRelativeContent[doy]; } ///< relative soil-water content [0..1] for day 'doy'
+    double fieldCapacity() const { return mFieldCapacity; } ///< field capacity (mm)
     const double &psi_kPa(const int doy) const { return mPsi[doy]; } ///< soil water potential for the day 'doy' (0-index) in kPa
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm
