@@ -33,6 +33,7 @@ void SpeciesResponse::clear()
 
     mNitrogenResponse = 0.;
     mTotalRadiation = 0.;
+    mTotalUtilizedRadiation = 0.;
 
 }
 void SpeciesResponse::setup(ResourceUnitSpecies *rus)
@@ -114,6 +115,7 @@ void SpeciesResponse::calculate()
     // monthly values
     for (int i=0;i<12;i++) {
         double days = mRu->climate()->days(i);
+        mTotalUtilizedRadiation += mUtilizableRadiation[i];
         mSoilWaterResponse[i]/=days;
         mTempResponse[i]/=days;
         mVpdResponse[i]/=days;

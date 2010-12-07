@@ -46,7 +46,11 @@ inline double Production3PG::calculateEpsilon(const int month) const
 
 inline double Production3PG::abovegroundFraction() const
 {
-    double harsh =  1 - 0.8/(1 + 2.5 * mResponse->nitrogenResponse());
+    double utilized_frac = 1.;
+    if (Model::settings().usePARFractionBelowGroundAllocation) {
+        utilized_frac = mResponse->totalUtilizedRadiation() / mResponse->yearlyRadiation();
+    }
+    double harsh =  1 - 0.8/(1 + 2.5 * mResponse->nitrogenResponse() * utilized_frac);
     return harsh;
 }
 

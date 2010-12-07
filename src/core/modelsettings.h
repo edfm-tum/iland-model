@@ -29,6 +29,7 @@ public:
     double latitude; ///< latitude of project site in radians
     // production
     double epsilon; ///< maximum light use efficency used for the 3PG model
+    bool usePARFractionBelowGroundAllocation; ///< if true, the 'correct' version of the calculation of belowground allocation is used (default=true)
 
 };
 
