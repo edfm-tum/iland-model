@@ -1,4 +1,4 @@
-const char *version = "Alpha 0.3";
-const char *svn_revision = "532M";
+const char *version = "0.5 beta";
+const char *svn_revision = "536";
 const char *currentVersion(){ return version;}
 const char *svnRevision(){ return svn_revision;}
