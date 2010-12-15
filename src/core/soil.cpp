@@ -146,6 +146,9 @@ void Soil::calculateYear()
     nav += mKo*mRE*mSOM.N*(1.-sp.leaching); // + N from SOM pool (reduced by leaching (leaching modeled only from slow SOM Pool))
     mAvailableNitrogen = nav * 1000.; // from t/ha -> kg/ha
 
+    if (mAvailableNitrogen<0.)
+        mAvailableNitrogen = 0.;
+
     // stedy state for n-available
     //    double navss = mKyl*mRE*(1.-mH)/(1.-sp.el)*(ynlss-sp.el*ylss/sp.qb); // available nitrogen (steady state)
     //    navss += mKyr*mRE*(1.-mH)/(1.-sp.er)*(ynrss - sp.er*yrss/sp.qb);

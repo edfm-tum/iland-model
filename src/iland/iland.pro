@@ -75,7 +75,8 @@ SOURCES += main.cpp \
     ../core/soil.cpp \
     ../core/sapling.cpp \
     ../core/snag.cpp \
-    ../output/saplingout.cpp
+    ../output/saplingout.cpp \
+    ../tools/gisgrid.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -133,7 +134,8 @@ HEADERS += mainwindow.h \
     ../core/soil.h \
     ../core/sapling.h \
     ../core/snag.h \
-    ../output/saplingout.h
+    ../output/saplingout.h \
+    ../tools/gisgrid.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

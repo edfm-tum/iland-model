@@ -431,10 +431,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
                 QPoint p(ix,iy);
-                value = domGrid->valueAtIndex(p).height;
-                QRect r = vp.toScreen(domGrid->cellRect(p));
-                fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
-                painter.fillRect(r, fill_color);
+                if (domGrid->valueAtIndex(p).isValid()) {
+                    value = domGrid->valueAtIndex(p).height;
+                    QRect r = vp.toScreen(domGrid->cellRect(p));
+                    fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
+                    painter.fillRect(r, fill_color);
+                }
             }
         }
 

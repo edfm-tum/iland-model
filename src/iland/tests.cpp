@@ -547,14 +547,16 @@ void Tests::testSoil()
 //    Y0Nr=0.99 # young N refractory
 //    O0=375 # old C, i.e soil organic matter (SOM)
 //    O0N=15 # old N
+//    kyl=0.15 # litter decomposition rate
+//    kyr=0.0807 # downed woody debris (dwd) decomposition rate
     Soil soil;
     qDebug() << "soil object has" << sizeof(soil) << "bytes.";
     // values from RS R script script_snagsoil_v5.r
-    soil.setInitialState(CNPool(33000., 450., 0.1), // young lab
-                         CNPool(247000., 990., 0.1), // young ref
+    soil.setInitialState(CNPool(33000., 450., 0.15), // young lab
+                         CNPool(247000., 990., 0.0807), // young ref
                          CNPair(375000., 15000.)); // SOM
-    CNPool in_l(3040, 3040/75., 0.2);
-    CNPool in_r(11970, 11970./250., 0.2);
+    CNPool in_l(3040, 3040/75., 0.15);
+    CNPool in_r(11970, 11970./250., 0.0807);
     double re = 1.1;
 
     QStringList out;

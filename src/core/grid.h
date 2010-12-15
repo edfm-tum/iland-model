@@ -73,6 +73,8 @@ public:
     bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
 
     QPoint indexAt(const QPointF& pos) const { return QPoint(int((pos.x()-mRect.left()) / mCellsize),  int((pos.y()-mRect.top())/mCellsize)); } ///< get index of value at position pos (metric)
+    /// get index (x/y) of the (linear) index 'index' (0..count-1)
+    QPoint indexOf(const int index) const {return QPoint(index % mSizeX,  index / mSizeX); }
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } ///< return true, if position is within the grid
     bool isIndexValid(const int x, const int y) const {return (x>=0 && x<mSizeX && y>=0 && y<mSizeY); } ///< return true, if index is within the grid
     /// force @param pos to contain valid indices with respect to this grid.
