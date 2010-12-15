@@ -21,6 +21,7 @@
 //
 #include "standloader.h"
 #include "soil.h"
+#include "gisgrid.h"
 
 Tests::Tests(QObject *wnd)
 {
@@ -594,6 +595,22 @@ void Tests::testSoil()
     for (int i=0;i<10;i++) {
         c.addBiomass(1,1,2);
         qDebug() << c.C << c.N << c.parameter();
+    }
+
+}
+
+void Tests::testMap()
+{
+    QString fileName = GlobalSettings::instance()->path("gis/montafon_grid.txt");
+    GisGrid gis_grid;
+    HeightGrid *hgrid = GlobalSettings::instance()->model()->heightGrid();
+    if (gis_grid.loadFromFile(fileName)) {
+        Grid<int> *sgrid = gis_grid.create10mGrid();
+        // setup of the mask...
+        for (int i=0;i<sgrid->count();i++)
+            hgrid->valueAtIndex(i).height = sgrid->valueAtIndex(i);
+            //mHeightGrid->valueAtIndex(i).setValid( sgrid->valueAtIndex(i)!=-1 );
+        delete sgrid;
     }
 
 }

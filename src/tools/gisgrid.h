@@ -11,12 +11,30 @@
 #include "grid.h"
 
 struct SCoordTrans {
+    SCoordTrans() { setupTransformation(0.,0.,0.,0.); }
     double RotationAngle;
     double sinRotate, cosRotate;
     double sinRotateReverse, cosRotateReverse;
     double offsetX, offsetY, offsetZ;
+    void setupTransformation(double new_offsetx, double new_offsety, double new_offsetz, double angle_degree)
+    {
+        offsetX = new_offsetx;
+        offsetY = new_offsety;
+        offsetZ = new_offsetz;
+        RotationAngle=angle_degree * M_PI / 180.;
+        sinRotate=sin(RotationAngle);
+        cosRotate=cos(RotationAngle);
+        sinRotateReverse=sin(-RotationAngle);
+        cosRotateReverse=cos(-RotationAngle);
+    }
 };
 
+/** GIS Transformation
+    The transformation is defined by three offsets (x,y,z) and a rotation information.
+    the (x/y) denotes the real-world coordinates of the left lower edge of the grid (at least for the northern hemisphere), i.e. the (0/0).
+    The z-offset is currently not used.
+
+  */
 // setup routine -- give a vector with offsets [m] and rotation angle.
 void setupGISTransformation(const double offsetx,
                             const double offsety,
@@ -27,11 +45,11 @@ void worldToModel(const QVector3D &From, QVector3D &To);
 void modelToWorld(const QVector3D &From, QVector3D &To);
 
 
-class GISGrid
+class GisGrid
 {
 public:
-    GISGrid();
-    ~GISGrid();
+    GisGrid();
+    ~GisGrid();
     // maintenance
     bool loadFromFile(const QString &fileName); ///< load ESRI style text file
     // access

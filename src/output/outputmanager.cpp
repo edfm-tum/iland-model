@@ -40,7 +40,7 @@ OutputManager::~OutputManager()
 
 void OutputManager::setup()
 {
-    close();
+    //close();
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     QString nodepath;
     foreach(Output *o, mOutputs) {

@@ -21,8 +21,8 @@ struct HeightGridValue
     float height;
     int count() const { return mCount & 0x0000ffff; } /// get count of trees on pixel
     void increaseCount() { mCount++; } ///< increase the number of trees on pixel
-    bool isValid() const { return (mCount >> 16)==0; }
-    void setValid(const bool valid) { setBit(mCount, 16, !valid); }
+    bool isValid() const { return !isBitSet(mCount, 16); } // a value of 1: not valid (returns false)
+    void setValid(const bool valid) { setBit(mCount, 16, !valid); } // set bit to 1: pixel is not valid
     void init(const float aheight, const int acount) { height=aheight;mCount=acount; }
 private:
 

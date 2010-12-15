@@ -114,7 +114,7 @@ void Output::openDatabase()
     QString drop=QString("drop table if exists %1").arg(tableName());
     creator.exec(drop); // drop table (if exists)
     creator.exec(sql); // (re-)create table
-    creator.exec("delete from " + tableName()); // clear table??? necessary?
+    //creator.exec("delete from " + tableName()); // clear table??? necessary?
 
     if (creator.lastError().isValid()){
         throw IException(QString("Error creating output: %1").arg( creator.lastError().text()) );
@@ -160,6 +160,7 @@ void Output::open()
     // setup columns
     mCount = columns().count();
     mRow.resize(mCount);
+    mOpen = true;
     newRow();
     // setup output
     switch(mMode) {

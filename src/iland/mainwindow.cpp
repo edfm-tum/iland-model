@@ -428,13 +428,19 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     if (show_dom) {
         // paint the lower-res-grid;
+        float max_val = 50.;
+        if (auto_scale_color) {
+            max_val = 0.;
+            for (HeightGridValue *v = domGrid->begin(); v!=domGrid->end(); ++v)
+                max_val = qMax(max_val, v->height);
+        }
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
                 QPoint p(ix,iy);
                 if (domGrid->valueAtIndex(p).isValid()) {
                     value = domGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(domGrid->cellRect(p));
-                    fill_color = Helper::colorFromValue(value, 0., 50.); // 0..50m
+                    fill_color = Helper::colorFromValue(value, 0., max_val); // 0..50m
                     painter.fillRect(r, fill_color);
                 }
             }
@@ -961,7 +967,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "12: linearized expressions\n" \
                                         "13: establishment\n" \
                                         "14: GridRunner\n" \
-                                         "15: Soil (ICBM/2N)", 0);
+                                         "15: Soil (ICBM/2N)\n"
+                                         "16: load Map", 0);
         switch (which) {
         case 0: t.speedOfExpression();break;
         case 1: t.clearTrees(); break;
@@ -979,6 +986,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
         case 13: t.testEstablishment(); break;
         case 14: t.testGridRunner(); break;
         case 15: t.testSoil(); break;
+        case 16: t.testMap(); break;
         }
         return;
     }

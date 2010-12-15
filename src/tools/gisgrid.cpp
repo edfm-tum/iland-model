@@ -12,14 +12,7 @@ SCoordTrans GISCoordTrans;
 // not a good place to put that code here.... please relocate!
 void setupGISTransformation(double offsetx, double offsety, double offsetz, double angle_degree)
 {
-    GISCoordTrans.offsetX = offsetx;
-    GISCoordTrans.offsetY = offsety;
-    GISCoordTrans.offsetZ = offsetz;
-    GISCoordTrans.RotationAngle=angle_degree * M_PI / 180.;
-    GISCoordTrans.sinRotate=sin(GISCoordTrans.RotationAngle);
-    GISCoordTrans.cosRotate=cos(GISCoordTrans.RotationAngle);
-    GISCoordTrans.sinRotateReverse=sin(-GISCoordTrans.RotationAngle);
-    GISCoordTrans.cosRotateReverse=cos(-GISCoordTrans.RotationAngle);
+    GISCoordTrans.setupTransformation(offsetx, offsety, offsetz, angle_degree);
 }
 
 void worldToModel(const QVector3D &From, QVector3D &To)
@@ -41,20 +34,20 @@ void modelToWorld(const QVector3D &From, QVector3D &To)
 }
 
 
-GISGrid::GISGrid()
+GisGrid::GisGrid()
 {
     mData=0;
     mNRows=0; mNCols=0;
     mCellSize = 1; // default value (for line mode)
 }
 
-GISGrid::~GISGrid()
+GisGrid::~GisGrid()
 {
     if (mData)
         delete[] mData;
 }
 
-bool GISGrid::loadFromFile(const QString &fileName)
+bool GisGrid::loadFromFile(const QString &fileName)
 {
     min_value = 1000000000;
     max_value = -1000000000;
@@ -152,7 +145,7 @@ bool GISGrid::loadFromFile(const QString &fileName)
     return true;
 }
 
-QList<double> GISGrid::distinctValues()
+QList<double> GisGrid::distinctValues()
 {
     if (!mData)
         return QList<double>();
@@ -190,14 +183,14 @@ void GISGrid::GetDistinctValues(TStringList *ResultList, double x_m, double y_m)
 }*/
 
 /// get value of grid at index positions
-double GISGrid::value(const int indexx, const int indexy) const
+double GisGrid::value(const int indexx, const int indexy) const
 {
     if (indexx>=0 && indexx < mNCols && indexy>=0 && indexy<mNRows)
         return mData[indexy*mNCols + indexx];
     return -1.;  // out of scope
 }
 
-double GISGrid::value(const double X, const double Y) const
+double GisGrid::value(const double X, const double Y) const
 {
 
     QVector3D model;
@@ -224,7 +217,7 @@ double GISGrid::value(const double X, const double Y) const
     return -1; // the ultimate NODATA- or ErrorValue
 }
 
-QVector3D GISGrid::coord(const int indexx, const int indexy) const
+QVector3D GisGrid::coord(const int indexx, const int indexy) const
 {
     QVector3D world((indexx+0.5)*mCellSize + mOrigin.x(),
                     (indexy+0.5)*mCellSize + mOrigin.y(),
@@ -234,7 +227,7 @@ QVector3D GISGrid::coord(const int indexx, const int indexy) const
     return model;
 }
 
-QRectF GISGrid::rectangle(const int indexx, const int indexy) const
+QRectF GisGrid::rectangle(const int indexx, const int indexy) const
 {
     QVector3D world(indexx*mCellSize + mOrigin.x(),
                     indexy*mCellSize + mOrigin.y(),
@@ -248,7 +241,7 @@ QRectF GISGrid::rectangle(const int indexx, const int indexy) const
     return rect;
 }
 
-QVector3D GISGrid::coord(const int Index) const
+QVector3D GisGrid::coord(const int Index) const
 {
     if (Index<0 || Index>=mDataSize)
         throw std::logic_error("gisgrid:coord: invalid index.");
@@ -345,7 +338,7 @@ bool GISGrid::GetBoundingBox(int LookFor, QRectF &Result, double x_m, double y_m
 }
 */
 
-void GISGrid::clip(const QRectF & box)
+void GisGrid::clip(const QRectF & box)
 {
     // auf das angegebene Rechteck zuschneiden, alle
     // werte drauﬂen auf -1 setzen.
@@ -362,7 +355,7 @@ void GISGrid::clip(const QRectF & box)
 
 /// create (new!!) and return a grid that covers the full iland project area
 /// and holds a list of integer keys
-Grid<int> * GISGrid::create10mGrid()
+Grid<int> * GisGrid::create10mGrid()
 {
 
     if (!GlobalSettings::instance()->model())

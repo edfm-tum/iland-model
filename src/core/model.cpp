@@ -16,6 +16,7 @@
 #include "tree.h"
 #include "management.h"
 #include "modelsettings.h"
+#include "gisgrid.h"
 
 #include "outputmanager.h"
 
@@ -160,8 +161,31 @@ void Model::setupSpace()
             *p = mRU.value(ru_index++);
         }
         qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
+        if (xml.hasNode("location")) {
+            // setup of spatial location
+            double loc_x = xml.valueDouble("location.x");
+            double loc_y = xml.valueDouble("location.y");
+            double loc_z = xml.valueDouble("location.z");
+            double loc_rot = xml.valueDouble("location.rotation");
+            setupGISTransformation(loc_x, loc_y, loc_z, loc_rot);
+            qDebug() << "setup of spatial location: x/y/z" << loc_x << loc_y << loc_z << "rotation:" << loc_rot;
+        }
+        bool mask_is_setup = false;
+        if (xml.valueBool("standGrid.enabled")) {
+            QString fileName = GlobalSettings::instance()->path(xml.value("standGrid.fileName"));
+            GisGrid gis_grid;
+            if (gis_grid.loadFromFile(fileName)) {
+                Grid<int> *sgrid = gis_grid.create10mGrid();
+                // setup of the mask...
+                for (int i=0;i<sgrid->count();i++)
+                    mHeightGrid->valueAtIndex(i).setValid( sgrid->valueAtIndex(i)!=-1 );
+                delete sgrid;
+            }
+            mask_is_setup = true;
+        }
+
         // setup of the project area mask
-        if (xml.valueBool("areaMask.enabled", false) && xml.hasNode("areaMask.imageFile")) {
+        if (!mask_is_setup && xml.valueBool("areaMask.enabled", false) && xml.hasNode("areaMask.imageFile")) {
             // to be extended!!! e.g. to load ESRI-style text files....
             // setup a grid with the same size as the height grid...
             FloatGrid tempgrid((int)mHeightGrid->cellsize(), mHeightGrid->sizeX(), mHeightGrid->sizeY());
@@ -396,6 +420,8 @@ void Model::beforeRun()
 {
     // setup outputs
     // setup output database
+    if (GlobalSettings::instance()->dbout().isOpen())
+        GlobalSettings::instance()->dbout().close();
     initOutputDatabase();
     GlobalSettings::instance()->outputManager()->setup();
     GlobalSettings::instance()->clearDebugLists();
