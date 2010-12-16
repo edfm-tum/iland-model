@@ -198,8 +198,6 @@ void WaterCycle::run()
             mContent = mFieldCapacity;
         }
 
-        // calculate the relative water content
-        mRelativeContent[doy] = currentRelContent();
         double current_psi = psiFromHeight(mContent);
         mPsi[doy] = current_psi;
         // (5) transpiration of the vegetation (and of water intercepted in canopy)
@@ -225,7 +223,7 @@ void WaterCycle::run()
                 out << combined_response; // combined response of all species on RU (min(water, vpd))
                 // fluxes
                 out << prec_after_interception << prec_to_soil << et << mCanopy.evaporationCanopy()
-                        << mRelativeContent[doy]*mSoilDepth << mPsi[doy] << excess;
+                        << mContent << mPsi[doy] << excess;
                 // other states
                 out << mSnowPack.snowPack();
                 //special sanity check:

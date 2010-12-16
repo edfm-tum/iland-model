@@ -116,12 +116,15 @@ QList<QVariant> Snag::debugList()
         list << mAvgDbh[i] << mAvgHeight[i] << mAvgVolume[i];
     }
 
-    // branch pools (5 yrs)
-    list << mBranches[mBranchCounter].C << mBranches[mBranchCounter].N
-            << mBranches[(mBranchCounter+1)%5].C << mBranches[(mBranchCounter+1)%5].N
-            << mBranches[(mBranchCounter+2)%5].C << mBranches[(mBranchCounter+2)%5].N
-            << mBranches[(mBranchCounter+3)%5].C << mBranches[(mBranchCounter+3)%5].N
-            << mBranches[(mBranchCounter+4)%5].C << mBranches[(mBranchCounter+4)%5].N;
+    // branch/coarse wood pools (5 yrs)
+    for (int i=0;i<5;i++) {
+        list << mOtherWood[i].C << mOtherWood[i].N;
+    }
+//    list << mOtherWood[mBranchCounter].C << mOtherWood[mBranchCounter].N
+//            << mOtherWood[(mBranchCounter+1)%5].C << mOtherWood[(mBranchCounter+1)%5].N
+//            << mOtherWood[(mBranchCounter+2)%5].C << mOtherWood[(mBranchCounter+2)%5].N
+//            << mOtherWood[(mBranchCounter+3)%5].C << mOtherWood[(mBranchCounter+3)%5].N
+//            << mOtherWood[(mBranchCounter+4)%5].C << mOtherWood[(mBranchCounter+4)%5].N;
     return list;
 }
 
@@ -143,14 +146,17 @@ void Snag::newYear()
 /// calculation is done on the level of ResourceUnit because the water content per day is needed.
 double Snag::calculateClimateFactors()
 {
-    double rel_wc;
+    double psi_kpa;
     double ft, fw;
+    const double min_kpa = -1500.;
     double f_sum = 0.;
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day)
     {
-        rel_wc = mRU->waterCycle()->relContent(day->day)*100.; // relative water content in per cent of the day
+        psi_kpa = mRU->waterCycle()->psi_kPa(day->day);
+
         ft = exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13)));  // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
-        fw = pow(1.-exp(-0.2*rel_wc),5.); //  #  see Standcarb for the 'stable soil' pool
+        fw = 1. - limit(psi_kpa / min_kpa, 0., 1.);
+
         f_sum += ft*fw;
     }
     // the climate factor is defined as the arithmentic annual mean value
@@ -168,15 +174,20 @@ void Snag::calculateYear()
         return;
 
     // process branches: every year one of the five baskets is emptied and transfered to the refractory soil pool
-    mRefractoryFlux+=mBranches[mBranchCounter];
-    mSWDtoSoil += mBranches[mBranchCounter];
-    mBranches[mBranchCounter].clear();
+    mRefractoryFlux+=mOtherWood[mBranchCounter];
+
+    mOtherWood[mBranchCounter].clear();
     mBranchCounter= (mBranchCounter+1) % 5; // increase index, roll over to 0.
+    // decay of branches/coarse roots
+    for (int i=0;i<5;i++) {
+        if (mOtherWood[i].C>0.) {
+            double survive_rate = exp(- climate_factor_re * mOtherWood[i].parameter() ); // parameter: the "kyr" value...
+            mOtherWood[i].C *= survive_rate;
+        }
+    }
 
     // process standing snags.
     // the input of the current year is in the mToSWD-Pools
-
-
     for (int i=0;i<3;i++) {
 
         // update the swd-pool with this years' input
@@ -245,7 +256,7 @@ void Snag::calculateYear()
     // total carbon in the snag-container on the RU *after* processing is the content of the
     // standing woody debris pools + the branches
     mTotalSnagCarbon = mSWD[0].C + mSWD[1].C + mSWD[2].C +
-                       mBranches[0].C + mBranches[1].C + mBranches[2].C + mBranches[3].C + mBranches[4].C;
+                       mOtherWood[0].C + mOtherWood[1].C + mOtherWood[2].C + mOtherWood[3].C + mOtherWood[4].C;
 }
 
 /// foliage and fineroot litter is transferred during tree growth.
@@ -261,18 +272,16 @@ void Snag::addMortality(const Tree *tree)
     const Species *species = tree->species();
 
     // immediate flows: 100% of foliage, 100% of fine roots: they go to the labile pool
-    // 100% of coarse root biomass: that goes to the refractory pool
     mLabileFlux.addBiomass(tree->biomassFoliage(), species->cnFoliage(), tree->species()->snagKyl());
     mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot(), tree->species()->snagKyl());
-    mRefractoryFlux.addBiomass(tree->biomassCoarseRoot(), species->cnWood(), tree->species()->snagKyr());
 
-    // branches are equally distributed over five years:
-    double biomass_branch = tree->biomassBranch() * 0.2;
+    // branches and coarse roots are equally distributed over five years:
+    double biomass_rest = (tree->biomassBranch()+tree->biomassCoarseRoot()) * 0.2;
     for (int i=0;i<5; i++)
-        mBranches[i].addBiomass(biomass_branch, species->cnWood(), tree->species()->snagKyr());
+        mOtherWood[i].addBiomass(biomass_rest, species->cnWood(), tree->species()->snagKyr());
 
-    // just for book-keeping: keep track of all inputs into branches / swd
-    mTotalIn.addBiomass(tree->biomassBranch() + tree->biomassStem(), species->cnWood());
+    // just for book-keeping: keep track of all inputs into branches / roots / swd
+    mTotalIn.addBiomass(tree->biomassBranch() + tree->biomassCoarseRoot() + tree->biomassStem(), species->cnWood());
     // stem biomass is transferred to the standing woody debris pool (SWD), increase stem number of pool
     int pi = poolIndex(tree->dbh()); // get right transfer pool
 
@@ -308,14 +317,19 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
     const Species *species = tree->species();
 
     // immediate flows: 100% of residual foliage, 100% of fine roots: they go to the labile pool
-    // 100% of coarse root biomass: that goes to the refractory pool
     mLabileFlux.addBiomass(tree->biomassFoliage() * (1. - remove_foliage_fraction), species->cnFoliage(), tree->species()->snagKyl());
     mLabileFlux.addBiomass(tree->biomassFineRoot(), species->cnFineroot(), tree->species()->snagKyl());
-    mRefractoryFlux.addBiomass(tree->biomassCoarseRoot(), species->cnWood(), tree->species()->snagKyr());
+
     // for branches, add all biomass that remains in the forest to the soil
     mRefractoryFlux.addBiomass(tree->biomassBranch()*(1.-remove_branch_fraction), species->cnWood(), tree->species()->snagKyr());
     // the same treatment for stem residuals
     mRefractoryFlux.addBiomass(tree->biomassStem() * remove_stem_fraction, species->cnWood(), tree->species()->snagKyr());
+
+    // split the corase wood biomass into parts (slower decay)
+    double biomass_rest = (tree->biomassCoarseRoot()) * 0.2;
+    for (int i=0;i<5; i++)
+        mOtherWood[i].addBiomass(biomass_rest, species->cnWood(), tree->species()->snagKyr());
+
 
     // for book-keeping...
     mTotalToExtern.addBiomass(tree->biomassFoliage()*remove_foliage_fraction +

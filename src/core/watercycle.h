@@ -63,12 +63,10 @@ public:
     // actions
     void run(); ///< run the current year
     // properties
-    const double &relContent(const int doy) const { return mRelativeContent[doy]; } ///< relative soil-water content [0..1] for day 'doy'
     double fieldCapacity() const { return mFieldCapacity; } ///< field capacity (mm)
     const double &psi_kPa(const int doy) const { return mPsi[doy]; } ///< soil water potential for the day 'doy' (0-index) in kPa
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm
-    double currentRelContent() const { Q_ASSERT(mSoilDepth>0); return qMin(mContent/mSoilDepth, 1.); }
     double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
 private:
     int mLastYear; ///< last year of execution
@@ -85,7 +83,6 @@ private:
     double mContent; ///< current water content in mm water column of the soil.
     double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
     double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -4MPa) (mm)
-    double mRelativeContent[366]; ///< relative water content for each day of the year
     double mPsi[366]; ///< soil water potential for each day in kPa
     void getStandValues(); ///< helper function to retrieve LAI per species group
     inline double calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa);
