@@ -7,6 +7,7 @@
 #include "resourceunit.h"
 #include "watercycle.h"
 #include "climate.h"
+#include "model.h"
 
 /** @class Snag
   Snag deals with carbon / nitrogen fluxes from the forest until the reach soil pools.
@@ -148,7 +149,7 @@ double Snag::calculateClimateFactors()
 {
     double psi_kpa;
     double ft, fw;
-    const double min_kpa = -1500.;
+    const double min_kpa = Model::settings().decayReferencePsi;
     double f_sum = 0.;
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day)
     {

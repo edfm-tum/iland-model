@@ -23,13 +23,15 @@ public:
     double airDensity; // density of air [kg / m3]
     double laiThresholdForClosedStands; // for calculation of max-canopy-conductance
     double boundaryLayerConductance; // 3pg-evapotranspiration
-    // nitrogen
+    // nitrogen and soil model
     bool useDynamicAvailableNitrogen; ///< if true, iLand utilizes the dynamically calculated NAvailable
+    double decayReferencePsi; ///< for the calculation of the climate-modifier of the snag/wood decay rate (Snag::calculateClimateFactors())
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
     // production
     double epsilon; ///< maximum light use efficency used for the 3PG model
     bool usePARFractionBelowGroundAllocation; ///< if true, the 'correct' version of the calculation of belowground allocation is used (default=true)
+
 
 };
 
