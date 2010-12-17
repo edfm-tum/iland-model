@@ -77,9 +77,6 @@ public:
     //S3dVector GetNthOccurence(int ID, int N, int left, int upper, int right, int lower);
     //void ExportToTable(AnsiString OutFileName);
 
-    /// create (new!!) and return a grid that covers the full iland project area
-    /// and holds a list of integer keys
-    Grid<int> *create10mGrid();
 private:
 
     int mDataSize;  ///< number of data items (rows*cols)

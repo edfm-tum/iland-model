@@ -42,7 +42,7 @@ public:
     void afterStop(); ///< finish and cleanup
     // access to elements
     ResourceUnit *ru() { return mRU.front(); }
-    ResourceUnit *ru(QPointF &coord); ///< ressource unit at given coordinates
+    ResourceUnit *ru(QPointF coord); ///< ressource unit at given coordinates
     ResourceUnit *ru(int index) { return (index>=0&&index<mRU.count())? mRU[index] : NULL; } ///< get resource unit by index
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }

@@ -21,7 +21,8 @@
 //
 #include "standloader.h"
 #include "soil.h"
-#include "gisgrid.h"
+
+#include "mapgrid.h"
 
 Tests::Tests(QObject *wnd)
 {
@@ -602,15 +603,16 @@ void Tests::testSoil()
 void Tests::testMap()
 {
     QString fileName = GlobalSettings::instance()->path("gis/montafon_grid.txt");
-    GisGrid gis_grid;
-    HeightGrid *hgrid = GlobalSettings::instance()->model()->heightGrid();
-    if (gis_grid.loadFromFile(fileName)) {
-        Grid<int> *sgrid = gis_grid.create10mGrid();
-        // setup of the mask...
-        for (int i=0;i<sgrid->count();i++)
-            hgrid->valueAtIndex(i).height = sgrid->valueAtIndex(i);
-            //mHeightGrid->valueAtIndex(i).setValid( sgrid->valueAtIndex(i)!=-1 );
-        delete sgrid;
-    }
 
+    // test the map-grid class
+    MapGrid map(fileName);
+    QList<ResourceUnit*> ru_list = map.resourceUnits(127);
+    qDebug() << "total bounding box" << map.boundingBox(127);
+    foreach (const ResourceUnit *ru, ru_list)
+        qDebug() << ru->index() << ru->boundingBox();
+
+
+    HeightGrid *hgrid = GlobalSettings::instance()->model()->heightGrid();
+    for (int i=0;i<map.grid().count();i++)
+        hgrid->valueAtIndex(i).height = map.grid().constValueAtIndex(map.grid().indexOf(i));
 }

@@ -16,7 +16,7 @@
 #include "tree.h"
 #include "management.h"
 #include "modelsettings.h"
-#include "gisgrid.h"
+#include "mapgrid.h"
 
 #include "outputmanager.h"
 
@@ -173,13 +173,11 @@ void Model::setupSpace()
         bool mask_is_setup = false;
         if (xml.valueBool("standGrid.enabled")) {
             QString fileName = GlobalSettings::instance()->path(xml.value("standGrid.fileName"));
-            GisGrid gis_grid;
-            if (gis_grid.loadFromFile(fileName)) {
-                Grid<int> *sgrid = gis_grid.create10mGrid();
-                // setup of the mask...
-                for (int i=0;i<sgrid->count();i++)
-                    mHeightGrid->valueAtIndex(i).setValid( sgrid->valueAtIndex(i)!=-1 );
-                delete sgrid;
+
+            MapGrid map_grid(fileName);
+            if (map_grid.isValid()) {
+                for (int i=0;i<map_grid.grid().count();i++)
+                    mHeightGrid->valueAtIndex(i).setValid( map_grid.grid().valueAtIndex(i)!=-1 );
             }
             mask_is_setup = true;
         }
@@ -350,7 +348,7 @@ void Model::loadProject()
 }
 
 
-ResourceUnit *Model::ru(QPointF &coord)
+ResourceUnit *Model::ru(QPointF coord)
 {
     if (!mRUmap.isEmpty() && mRUmap.coordValid(coord))
         return mRUmap.valueAt(coord);

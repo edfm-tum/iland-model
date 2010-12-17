@@ -353,27 +353,6 @@ void GisGrid::clip(const QRectF & box)
 
 }
 
-/// create (new!!) and return a grid that covers the full iland project area
-/// and holds a list of integer keys
-Grid<int> * GisGrid::create10mGrid()
-{
-
-    if (!GlobalSettings::instance()->model())
-        throw IException("GisGrid::create10mGrid: no valid model to retrieve height grid.");
-
-    HeightGrid *h_grid = GlobalSettings::instance()->model()->heightGrid();
-    if (!h_grid || h_grid->isEmpty())
-        throw IException("GisGrid::create10mGrid: no valid height grid to copy grid size.");
-    // create a grid with the same size as the height grid
-    // (height-grid: 10m size, covering the full extent)
-    Grid<int> *grid = new Grid<int>(h_grid->metricRect(),h_grid->cellsize());
-//    for (int *p=grid->begin();p!=grid->end;++p)
-//        grid->valueAtIndex(grid->indexOf(p)) = value(grid->cellCenterPoint(grid->indexOf(p)));
-    for (int i=0;i<grid->count();i++)
-        grid->valueAtIndex(i) = value(grid->cellCenterPoint(grid->indexOf(i)));
-
-    return grid;
-}
 
 /*
 void GISGrid::ExportToTable(AnsiString OutFileName)
