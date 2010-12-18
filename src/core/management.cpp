@@ -261,6 +261,13 @@ int Management::load(QString filter)
     return mTrees.count();
 }
 
+void Management::loadFromTreeList(QList<Tree*>tree_list)
+{
+    mTrees.clear();
+    for (int i=0;i<tree_list.count();++i)
+        mTrees.append(QPair<Tree*, double>(tree_list[i], 0.));
+}
+
 bool treePairValue(const QPair<Tree*, double> &p1, const QPair<Tree*, double> &p2)
 {
     return p1.second < p2.second;

@@ -23,6 +23,7 @@ public:
     int age() const { return mAge; }
     /// @property position The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
     const QPointF position() const { Q_ASSERT(mGrid!=0); return mGrid->cellCenterPoint(mPositionIndex); }
+    const QPoint positionIndex() const { return mPositionIndex; }
     const Species* species() const { Q_ASSERT(mRU!=0); return mSpecies; } ///< pointer to the tree species of the tree.
     const ResourceUnit *ru() const { Q_ASSERT(mRU!=0); return mRU; } ///< pointer to the ressource unit the tree belongs to.
 

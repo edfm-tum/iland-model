@@ -23,6 +23,7 @@
 #include "soil.h"
 
 #include "mapgrid.h"
+#include "management.h"
 
 Tests::Tests(QObject *wnd)
 {
@@ -604,10 +605,11 @@ void Tests::testMap()
 {
     QString fileName = GlobalSettings::instance()->path("gis/montafon_grid.txt");
 
+    int test_id = 127;
     // test the map-grid class
     MapGrid map(fileName);
-    QList<ResourceUnit*> ru_list = map.resourceUnits(127);
-    qDebug() << "total bounding box" << map.boundingBox(127);
+    QList<ResourceUnit*> ru_list = map.resourceUnits(test_id);
+    qDebug() << "total bounding box" << map.boundingBox(test_id) << "has an area of" << map.area(test_id);
     foreach (const ResourceUnit *ru, ru_list)
         qDebug() << ru->index() << ru->boundingBox();
 
@@ -615,4 +617,11 @@ void Tests::testMap()
     HeightGrid *hgrid = GlobalSettings::instance()->model()->heightGrid();
     for (int i=0;i<map.grid().count();i++)
         hgrid->valueAtIndex(i).height = map.grid().constValueAtIndex(map.grid().indexOf(i));
+
+    QList<Tree*> tree_list = map.trees(test_id);
+    qDebug() << "no of trees:" << tree_list.count();
+    Management mgmt;
+
+    mgmt.loadFromTreeList(tree_list);
+    mgmt.kill();
 }
