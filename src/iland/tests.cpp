@@ -599,6 +599,39 @@ void Tests::testSoil()
         qDebug() << c.C << c.N << c.parameter();
     }
 
+    out.clear();
+    out << "year;iLabC;iLabN;ikyl;iRefC;iRefN;ikyr;RE;kyl;kyr;ylC;ylN;yrC;yrN;somC;somN;NAvailable";
+    // test soil with debug output from iLand ...
+    CSVFile dbg_iland(GlobalSettings::instance()->path("debug_carboncycle.csv"));
+    Soil *model_soil = GlobalSettings::instance()->model()->ru()->soil(); // should now have the 'right' parameters...
+
+    model_soil->setInitialState(CNPool(dbg_iland.value(0, dbg_iland.columnIndex("ylC")).toDouble()*1000.,
+                                dbg_iland.value(0, dbg_iland.columnIndex("ylN")).toDouble()*1000.,
+                                dbg_iland.value(0, dbg_iland.columnIndex("kyl")).toDouble()), // young lab
+                         CNPool(dbg_iland.value(0, dbg_iland.columnIndex("yrC")).toDouble()*1000.,
+                                dbg_iland.value(0, dbg_iland.columnIndex("yrN")).toDouble()*1000.,
+                                dbg_iland.value(0, dbg_iland.columnIndex("kyr")).toDouble()), // young ref
+                         CNPair(dbg_iland.value(0, dbg_iland.columnIndex("somC")).toDouble()*1000.,
+                                dbg_iland.value(0, dbg_iland.columnIndex("somN")).toDouble()*1000.)); // SOM
+
+    for (int i=1;i<dbg_iland.rowCount();i++) {
+        // run the soil model
+        model_soil->setClimateFactor(dbg_iland.value(i, dbg_iland.columnIndex("re")).toDouble());
+        model_soil->setSoilInput(CNPool(dbg_iland.value(i, dbg_iland.columnIndex("iLabC")).toDouble()*1000.,
+                                 dbg_iland.value(i, dbg_iland.columnIndex("iLabN")).toDouble()*1000.,
+                                 dbg_iland.value(i, dbg_iland.columnIndex("iKyl")).toDouble()),
+                          CNPool(dbg_iland.value(i, dbg_iland.columnIndex("iRefC")).toDouble()*1000.,
+                                 dbg_iland.value(i, dbg_iland.columnIndex("iRefN")).toDouble()*1000.,
+                                 dbg_iland.value(i, dbg_iland.columnIndex("iKyr")).toDouble()));
+        model_soil->calculateYear();
+        QList<QVariant> list = model_soil->debugList();
+        QString line=QString::number(i)+";";
+        foreach(QVariant v, list)
+            line+=v.toString() + ";";
+        line.chop(1);
+        out << line;
+    }
+    Helper::saveToTextFile("e:/soil2.txt", out.join("\r\n"));
 }
 
 void Tests::testMap()

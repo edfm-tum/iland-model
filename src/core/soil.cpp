@@ -30,8 +30,8 @@ SoilParams *Soil::mParams = &global_soilpar; // save a ptr to the single value c
 void Soil::fetchParameters()
 {
     XmlHelper xml_site(GlobalSettings::instance()->settings().node("model.site"));
-    mKo = xml_site.valueDouble("ko", 0.02);
-    mH =  xml_site.valueDouble("h", 0.3);
+    mKo = xml_site.valueDouble("somDecompRate", 0.02);
+    mH =  xml_site.valueDouble("soilHumificationRate", 0.3);
 
     if (mParams->is_setup || !GlobalSettings::instance()->model())
         return;
@@ -60,7 +60,7 @@ Soil::Soil()
 /// setup initial content of the soil pool (call before model start)
 void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPair &SOM_kg_ha)
 {
-    mYL = young_labile_kg_ha*0.001;
+    mYL = young_labile_kg_ha*0.001; // pool sizes are stored in t/ha
     mYR = young_refractory_kg_ha*0.001;
     mSOM = SOM_kg_ha*0.001;
 
