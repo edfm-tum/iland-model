@@ -94,7 +94,7 @@ private:
     CNPool mToSWD[3]; ///< transfer pool; input of the year is collected here (for each size class)
     CNPool mLabileFlux; ///< flux to labile soil pools (kg/ha)
     CNPool mRefractoryFlux; ///< flux to the refractory soil pool (kg/ha)
-    CNPool mOtherWood[5]; ///< pool for branch biomass
+    CNPool mOtherWood[5]; ///< pool for branch biomass and coarse root biomass
     int mBranchCounter; ///< index which of the branch pools should be emptied
     double mTotalSnagCarbon; ///< sum of carbon content in all snag compartments (kg/ha)
     CNPair mTotalIn; ///< total input to the snag state (i.e. mortality/harvest and litter)
