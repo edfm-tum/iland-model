@@ -25,7 +25,6 @@ public:
     double boundaryLayerConductance; // 3pg-evapotranspiration
     // nitrogen and soil model
     bool useDynamicAvailableNitrogen; ///< if true, iLand utilizes the dynamically calculated NAvailable
-    double topLayerWaterContent; ///< for the calculation of the climate-modifier of the snag/wood decay rate (Snag::calculateClimateFactors())
     // site variables (for now!)
     double latitude; ///< latitude of project site in radians
     // production

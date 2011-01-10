@@ -149,7 +149,7 @@ double Snag::calculateClimateFactors()
 {
     double deficit;
     double ft, fw;
-    const double top_layer_content = Model::settings().topLayerWaterContent;
+    const double top_layer_content = mRU->waterCycle()->topLayerWaterContent();
     double f_sum = 0.;
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day)
     {
