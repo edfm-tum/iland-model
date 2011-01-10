@@ -147,16 +147,18 @@ void Snag::newYear()
 /// calculation is done on the level of ResourceUnit because the water content per day is needed.
 double Snag::calculateClimateFactors()
 {
-    double psi_kpa;
+    double deficit;
     double ft, fw;
-    const double min_kpa = Model::settings().decayReferencePsi;
+    const double top_layer_content = Model::settings().topLayerWaterContent;
     double f_sum = 0.;
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day)
     {
-        psi_kpa = mRU->waterCycle()->psi_kPa(day->day);
+        deficit = mRU->waterCycle()->waterDeficit_mm(day->day);
 
         ft = exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13)));  // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
-        fw = 1. - limit(psi_kpa / min_kpa, 0., 1.);
+        fw = 1. - limit(deficit / top_layer_content, 0., 1.);
+        // the water effect: depends on the water deficit; if the deficit is higher than the parameterized
+        // content of the top layer (where most microbial activity is located), than then fw gets 0.
 
         f_sum += ft*fw;
     }

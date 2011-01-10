@@ -200,6 +200,7 @@ void WaterCycle::run()
 
         double current_psi = psiFromHeight(mContent);
         mPsi[doy] = current_psi;
+        mWaterDeficit_mm[doy] = mFieldCapacity - mContent;
         // (5) transpiration of the vegetation (and of water intercepted in canopy)
         // calculate the LAI-weighted response values for soil water and vpd:
         double combined_response = calculateSoilAtmosphereResponse( current_psi, day->vpd);
@@ -214,6 +215,7 @@ void WaterCycle::run()
             et -= mPermanentWiltingPoint - mContent; // reduce et (for bookkeeping)
             mContent = mPermanentWiltingPoint;
         }
+
 
         //DBGMODE(
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {

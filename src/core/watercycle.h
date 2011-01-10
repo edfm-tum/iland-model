@@ -65,6 +65,7 @@ public:
     // properties
     double fieldCapacity() const { return mFieldCapacity; } ///< field capacity (mm)
     const double &psi_kPa(const int doy) const { return mPsi[doy]; } ///< soil water potential for the day 'doy' (0-index) in kPa
+    const double &waterDeficit_mm(const int doy) const { return mWaterDeficit_mm[doy]; } ///< water deficit (max-content - actual content) in mm
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm
     double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
@@ -84,6 +85,7 @@ private:
     double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
     double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -4MPa) (mm)
     double mPsi[366]; ///< soil water potential for each day in kPa
+    double mWaterDeficit_mm[366]; ///< water deficit (i.e. max-content - current content) for each day (mm).
     void getStandValues(); ///< helper function to retrieve LAI per species group
     inline double calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa);
     double mLAINeedle;
