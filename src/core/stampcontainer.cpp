@@ -243,7 +243,7 @@ void StampContainer::attachReaderStamps(const StampContainer &source)
         total++;
         //si.crown_radius
     }
-    qDebug() << "attachReaderStamps: found" << found << "stamps of" << total;
+    if (logLevelInfo()) qDebug() << "attachReaderStamps: found" << found << "stamps of" << total;
 }
 
 void StampContainer::invert()
@@ -288,10 +288,10 @@ void StampContainer::load(QDataStream &in)
     in.setVersion(QDataStream::Qt_4_5);
 
     in >> count; // read count of stamps
-    qDebug() << count << "stamps to read";
+    if (logLevelInfo()) qDebug() << count << "stamps to read";
     QString desc;
     in >> desc; // read textual description of stamp
-    qDebug() << "Stamp notes:" << desc;
+    if (logLevelInfo()) qDebug() << "Stamp notes:" << desc;
     m_desc = desc;
     for (int i=0;i<count;i++) {
         in >> type; // read type

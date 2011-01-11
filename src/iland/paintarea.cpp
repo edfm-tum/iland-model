@@ -17,7 +17,7 @@ PaintArea::PaintArea(QWidget *parent)
 void PaintArea::resizeEvent(QResizeEvent *event)
 {
     m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
-    qDebug() << "paintarea resize" << this->size();
+    //qDebug() << "paintarea resize" << this->size();
 }
 void PaintArea::paintEvent(QPaintEvent *)
 {

@@ -59,6 +59,7 @@ public:
     double cellSize() const { return mCellSize; } ///< size of a cell (meters)
     double minValue() const { return min_value; } ///< minimum data value
     double maxValue() const { return max_value; } ///< maximum data value
+    int noDataValue() const { return mNODATAValue; } ///< no data value of the grid
     /// get grid value at (X/Y); returs NODATAValue if out of range
     double value(const QPointF &p) const {return value(p.x(), p.y());}
     double value(const double X, const double Y) const;

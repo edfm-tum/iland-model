@@ -142,12 +142,12 @@ void Environment::setPosition(const QPointF position)
         XmlHelper xml(GlobalSettings::instance()->settings());
         int row = mRowCoordinates[key];
         QString value;
-        qDebug() << "settting up point" << position << "with row" << row;
+        if (logLevelInfo()) qDebug() << "settting up point" << position << "with row" << row;
         for (int col=0;col<mInfile->colCount(); col++) {
             if (mKeys[col]=="x" || mKeys[col]=="y") // ignore "x" and "y" keys
                 continue;
             value = mInfile->value(row,col).toString();
-            qDebug() << "set" << mKeys[col] << "to" << value;
+            if (logLevelInfo()) qDebug() << "set" << mKeys[col] << "to" << value;
             xml.setNodeValue(mKeys[col], value);
             // special handling for constructed objects:
             if (mKeys[col]==speciesKey)

@@ -8,6 +8,7 @@
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
   details on how the grid is mapped to the local coordinate system of the project area. From the source grid a 10m grid
   using the extent and position of the "HeightGrid" and spatial indices for faster access are generated.
+  The grid is clipped to the extent of the simulation area and -1 is used for no_data_values.
   Use boundingBox(), resourceUnits(), trees() to retrieve information for specific 'ids'. gridValue() retrieves the 'id' for a given
   location (in LIF-coordinates).
 
@@ -29,8 +30,15 @@ bool MapGrid::loadFromGrid(const GisGrid &source_grid)
     mGrid.clear();
     mGrid.setup(h_grid->metricRect(),h_grid->cellsize());
 
-    for (int i=0;i<mGrid.count();i++)
-        mGrid.valueAtIndex(i) = source_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i)));
+    const QRectF &world = GlobalSettings::instance()->model()->extent();
+    QPointF p;
+    for (int i=0;i<mGrid.count();i++) {
+        p = mGrid.cellCenterPoint(mGrid.indexOf(i));
+        if (source_grid.value(p) != source_grid.noDataValue() && world.contains(p) )
+            mGrid.valueAtIndex(i) = source_grid.value(p);
+        else
+            mGrid.valueAtIndex(i) = -1;
+    }
 
     // create spatial index
     mRectIndex.clear();
@@ -78,10 +86,9 @@ QList<int> MapGrid::gridIndices(const int id) const
 {
     QList<int> result;
     QRectF rect = mRectIndex[id].first;
-    const QRectF &world = GlobalSettings::instance()->model()->extent();
     GridRunner<int> run(mGrid, rect);
     while (int *cell = run.next()) {
-       if (*cell == id && world.contains(mGrid.cellCenterPoint(mGrid.indexOf(cell))))
+       if (*cell == id)
          result.push_back(cell - mGrid.begin());
     }
     return result;

@@ -111,8 +111,7 @@ void StandLoader::processInit()
             int key = map_file.value(i, ikey).toInt();
             if (key>0) {
                 file_name = map_file.value(i, ivalue).toString();
-                qDebug() << "loading" << file_name << "for grid id" << key;
-                qDebug() << g->model()->standGrid()->area(key);
+                if (logLevelInfo()) qDebug() << "loading" << file_name << "for grid id" << key;
                 loadInitFile(file_name, type, key, NULL);
             }
         }
@@ -518,18 +517,21 @@ inline uint qHash(const QPoint &key)
      return qHash(key.x()) ^ qHash(key.y());
  }
 
+
+// Initialization routine based on a stand map.
+// Basically a list of 10m pixels for a given stand is retrieved
+// and the filled with the same procedure as the resource unit based init
+// see http://iland.boku.ac.at/initialize+trees
 void StandLoader::executeiLandInitStand(int stand_id)
 {
 
     const MapGrid *grid = GlobalSettings::instance()->model()->standGrid();
 
     QList<int> indices = grid->gridIndices(stand_id);
-    foreach(int i, indices) {
-        qDebug() << "index" << i << "resource unit:" << grid->grid().cellCenterPoint(grid->grid().indexOf(i));
+    if (indices.isEmpty()) {
+        qDebug() << "stand" << stand_id << "not in project area. No init performed.";
+        return;
     }
-    qDebug() << "area" << grid->area(stand_id) << "count:"  << indices.count();
-
-
     // a multiHash holds a list for all trees.
     // key is the location of the 10x10m pixel
     QMultiHash<QPoint, int> tree_map;
@@ -608,11 +610,6 @@ void StandLoader::executeiLandInitStand(int stand_id)
                 int stop=1000;
                 index = 0;
                 do {
-                    //r = drandom();
-                    //if (r<0.5)  // skip position with a prob. of 50% -> adds a little "noise"
-                    //    index++;
-                    //index = (index + 1)%25; // increase and roll over
-
                     // search a random position
                     r = drandom();
                     index = limit(int(25 *  r*r), 0, 24); // use rnd()^2 to search for locations -> higher number of low indices (i.e. 50% of lookups in first 25% of locations)
@@ -625,11 +622,10 @@ void StandLoader::executeiLandInitStand(int stand_id)
             pos = p.resource_unit->index()%2?evenlist[index]:unevenlist[index];
             tree_pos = p.pixelOffset * cPxPerHeight; // convert to LIF index
             tree_pos += QPoint(pos/5, pos%5);
-//            tree_pos = offsetIdx  // position of resource unit
-//                       + QPoint(5*(i/10), 5*(i%10)) // relative position of 10x10m pixel
-//                       + QPoint(pos/5, pos%5); // relative position within 10x10m pixel
-            //qDebug() << tree_no++ << "to" << index;
+
             p.resource_unit->trees()[tree_idx].setPosition(tree_pos);
         }
     }
+    if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "with area" << "area (m2)" << grid->area(stand_id) << "count of 10m pixels:"  << indices.count() << "initialized trees:" << total_count;
+
 }

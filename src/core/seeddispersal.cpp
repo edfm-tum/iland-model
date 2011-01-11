@@ -36,7 +36,7 @@ void SeedDispersal::setup()
     mSeedMap.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
     mSeedMap.initialize(0.);
     mIndexFactor = int(seedmap_size) / cPxSize; // ratio seed grid / lip-grid:
-    qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels.";
+    if (logLevelInfo()) qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels.";
 
     if (mSpecies==0)
         throw IException("Setup of SeedDispersal: Species not defined.");
@@ -152,7 +152,7 @@ void SeedDispersal::createKernel(Grid<float> &kernel, const float max_seed)
 
 
     // some final statistics....
-    qDebug() << "kernel setup.Species:"<< mSpecies->id() << "kernel-size: " << kernel.sizeX() << "x" << kernel.sizeY() << "pixels, sum: " << kernel.sum();
+    if (logLevelInfo()) qDebug() << "kernel setup.Species:"<< mSpecies->id() << "kernel-size: " << kernel.sizeX() << "x" << kernel.sizeY() << "pixels, sum: " << kernel.sum();
 }
 
 /* R-Code:
