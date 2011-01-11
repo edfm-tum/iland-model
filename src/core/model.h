@@ -20,10 +20,11 @@ class MapGrid;
 struct HeightGridValue
 {
     float height;
-    int count() const { return mCount & 0x0000ffff; } /// get count of trees on pixel
+    int count() const { return mCount & 0x0000ffff; } ///< get count of trees on pixel
     void increaseCount() { mCount++; } ///< increase the number of trees on pixel
-    bool isValid() const { return !isBitSet(mCount, 16); } // a value of 1: not valid (returns false)
-    void setValid(const bool valid) { setBit(mCount, 16, !valid); } // set bit to 1: pixel is not valid
+    void resetCount() { mCount &= 0xffff0000; } ///< set the count to 0
+    bool isValid() const { return !isBitSet(mCount, 16); } ///< a value of 1: not valid (returns false)
+    void setValid(const bool valid) { setBit(mCount, 16, !valid); } ///< set bit to 1: pixel is not valid
     void init(const float aheight, const int acount) { height=aheight;mCount=acount; }
 private:
 
