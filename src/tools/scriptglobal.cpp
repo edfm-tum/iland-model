@@ -110,5 +110,5 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
     ResourceUnit *ru = mModel->ru(resourceIndex);
     if (!ru)
         throw IException(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
-    return loader.loadDistributionList(content, ru, "called_from_script");
+    return loader.loadDistributionList(content, ru, 0, "called_from_script");
 }

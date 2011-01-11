@@ -3,6 +3,7 @@
 #include "model.h"
 #include "resourceunit.h"
 #include "tree.h"
+#include "grid.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
   details on how the grid is mapped to the local coordinate system of the project area. From the source grid a 10m grid
@@ -58,7 +59,7 @@ bool MapGrid::loadFromFile(const QString &fileName)
 }
 
 /// return a list of all trees on the area denoted by 'id'
-QList<Tree *> MapGrid::trees(const int id)
+QList<Tree *> MapGrid::trees(const int id) const
 {
     QList<Tree*> tree_list;
     QList<ResourceUnit*> resource_units = resourceUnits(id);
@@ -69,4 +70,19 @@ QList<Tree *> MapGrid::trees(const int id)
     }
     return tree_list;
 
+}
+
+/// return a list of grid-indices of a given stand-id
+/// The selection is limited to pixels within the world's extent
+QList<int> MapGrid::gridIndices(const int id) const
+{
+    QList<int> result;
+    QRectF rect = mRectIndex[id].first;
+    const QRectF &world = GlobalSettings::instance()->model()->extent();
+    GridRunner<int> run(mGrid, rect);
+    while (int *cell = run.next()) {
+       if (*cell == id && world.contains(mGrid.cellCenterPoint(mGrid.indexOf(cell))))
+         result.push_back(cell - mGrid.begin());
+    }
+    return result;
 }

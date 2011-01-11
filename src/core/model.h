@@ -15,6 +15,7 @@ class Management;
 class Climate;
 class Environment;
 class TimeEvents;
+class MapGrid;
 
 struct HeightGridValue
 {
@@ -41,6 +42,7 @@ public:
     void runYear(); ///< run a single year
     void afterStop(); ///< finish and cleanup
     // access to elements
+    const QRectF &extent() const { return mModelRect; } ///< extent of the model (without buffer)
     ResourceUnit *ru() { return mRU.front(); }
     ResourceUnit *ru(QPointF coord); ///< ressource unit at given coordinates
     ResourceUnit *ru(int index) { return (index>=0&&index<mRU.count())? mRU[index] : NULL; } ///< get resource unit by index
@@ -51,6 +53,7 @@ public:
     // global grids
     FloatGrid *grid() { return mGrid; } ///< this is the global 'LIF'-grid (light patterns) (currently 2x2m)
     HeightGrid *heightGrid() { return mHeightGrid; } ///< stores maximum heights of trees and some flags (currently 10x10m)
+    const MapGrid *standGrid() { return mStandGrid; } ///< retrieve the spatial grid that defines the stands (10m resolution)
     const Grid<ResourceUnit*> &RUgrid() { return mRUmap; }
 
     // setup/maintenance
@@ -90,12 +93,15 @@ private:
     QList<SpeciesSet*> mSpeciesSets;
     /// container holding all the climate objects
     QList<Climate*> mClimates;
+    //
+    QRectF mModelRect; ///< extent of the model (without buffer)
     // global grids...
-    FloatGrid *mGrid;
-    HeightGrid *mHeightGrid;
-    Management *mManagement;
-    Environment *mEnvironment;
-    TimeEvents *mTimeEvents;
+    FloatGrid *mGrid; ///< the main LIF grid of the model (2x2m resolution)
+    HeightGrid *mHeightGrid; ///< grid with 10m resolution that stores maximum-heights, tree counts and some flags
+    Management *mManagement; ///< management sub-module
+    Environment *mEnvironment; ///< definition of paramter values on resource unit level (modify the settings tree)
+    TimeEvents *mTimeEvents; ///< sub module to handle predefined events in time (modifies the settings tree in time)
+    MapGrid *mStandGrid; ///< map of the stand map (10m resolution)
 };
 
 class Tree;

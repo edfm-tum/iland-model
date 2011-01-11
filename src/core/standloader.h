@@ -15,9 +15,9 @@ public:
     /// load a single tree file (picus or iland style). return number of trees loaded.
     int loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL);
     /// load a tree distribution based on dbh classes. return number of trees loaded.
-    int loadiLandFile(const QString &fileName, ResourceUnit *ru=NULL);
+    int loadiLandFile(const QString &fileName, ResourceUnit *ru=NULL, int stand_id=0);
     int loadSingleTreeList(const QString &content, ResourceUnit*ru = NULL, const QString &fileName="");
-    int loadDistributionList(const QString &content, ResourceUnit *ru = NULL, const QString &fileName="");
+    int loadDistributionList(const QString &content, ResourceUnit *ru = NULL, int stand_id=0, const QString &fileName="");
 private:
     struct InitFileItem
     {
@@ -29,8 +29,9 @@ private:
         double density;
     };
     /// load tree initialization from a file. return number of trees loaded.
-    int loadInitFile(const QString &fileName, const QString &type, ResourceUnit *ru=NULL);
+    int loadInitFile(const QString &fileName, const QString &type, int stand_id=0, ResourceUnit *ru=NULL);
     void executeiLandInit(ResourceUnit *ru); ///< shuffle tree positions
+    void executeiLandInitStand(int stand_id); ///< shuffle tree positions
     void copyTrees(); ///< helper function to quickly fill up the landscape by copying trees
     void evaluateDebugTrees(); ///< set debug-flag for trees by evaluating the param-value expression "debug_tree"
     Model *mModel;

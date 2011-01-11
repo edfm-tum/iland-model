@@ -107,6 +107,7 @@ void Model::initialize()
    mManagement = 0;
    mEnvironment = 0;
    mTimeEvents = 0;
+   mStandGrid = 0;
 }
 
 /** sets up the simulation space.
@@ -117,7 +118,9 @@ void Model::setupSpace()
     double cellSize = xml.value("cellSize", "2").toDouble();
     double width = xml.value("width", "100").toDouble();
     double height = xml.value("height", "100").toDouble();
-    double buffer = xml.value("buffer", "50").toDouble();
+    double buffer = xml.value("buffer", "60").toDouble();
+    mModelRect = QRectF(0., 0., width, height);
+
     qDebug() << QString("setup of the world: %1x%2m with cell-size=%3m and %4m buffer").arg(width).arg(height).arg(cellSize).arg(buffer);
 
     QRectF total_grid(QPointF(-buffer, -buffer), QPointF(width+buffer, height+buffer));
@@ -171,13 +174,14 @@ void Model::setupSpace()
             qDebug() << "setup of spatial location: x/y/z" << loc_x << loc_y << loc_z << "rotation:" << loc_rot;
         }
         bool mask_is_setup = false;
+
         if (xml.valueBool("standGrid.enabled")) {
             QString fileName = GlobalSettings::instance()->path(xml.value("standGrid.fileName"));
+            mStandGrid = new MapGrid(fileName);
 
-            MapGrid map_grid(fileName);
-            if (map_grid.isValid()) {
-                for (int i=0;i<map_grid.grid().count();i++)
-                    mHeightGrid->valueAtIndex(i).setValid( map_grid.grid().valueAtIndex(i)!=-1 );
+            if (mStandGrid->isValid()) {
+                for (int i=0;i<mStandGrid->grid().count();i++)
+                    mHeightGrid->valueAtIndex(i).setValid( mStandGrid->grid().constValueAtIndex(i)!=-1 );
             }
             mask_is_setup = true;
         }
@@ -234,12 +238,15 @@ void Model::clear()
         delete mEnvironment;
     if (mTimeEvents)
         delete mTimeEvents;
+    if (mStandGrid)
+        delete mStandGrid;
 
     mGrid = 0;
     mHeightGrid = 0;
     mManagement = 0;
     mEnvironment = 0;
     mTimeEvents = 0;
+    mStandGrid  = 0;
 
     qDebug() << "Model ressources freed.";
 }
