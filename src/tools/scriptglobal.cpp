@@ -4,6 +4,7 @@
 #include "globalsettings.h"
 #include "helper.h"
 #include "standloader.h"
+#include "mapgrid.h"
 
 class ResourceUnit;
 
@@ -111,4 +112,49 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
     if (!ru)
         throw IException(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
     return loader.loadDistributionList(content, ru, 0, "called_from_script");
+}
+
+
+/*
+********** MapGrid wrapper
+*/
+
+Q_SCRIPT_DECLARE_QMETAOBJECT(MapGridWrapper, QObject*)
+void MapGridWrapper::addToScriptEngine(QScriptEngine &engine)
+{
+    // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
+    QScriptValue cc_class = engine.scriptValueFromQMetaObject<MapGridWrapper>();
+    // the script name for the object is "Map".
+    engine.globalObject().setProperty("Map", cc_class);
+}
+
+MapGridWrapper::MapGridWrapper(QObject *parent)
+{
+    mMap = const_cast<MapGrid*>(GlobalSettings::instance()->model()->standGrid());
+    mCreated = false;
+}
+
+MapGridWrapper::~MapGridWrapper()
+{
+    if (mCreated)
+        delete mMap;
+}
+
+
+void MapGridWrapper::load(QString file_name)
+{
+    if (mCreated)
+        delete mMap;
+    mMap = new MapGrid(file_name);
+    mCreated = true;
+}
+
+bool MapGridWrapper::isValid() const
+{
+    return mMap->isValid();
+}
+
+void MapGridWrapper::saveAsImage(QString file)
+{
+    qDebug() << "not implemented";
 }

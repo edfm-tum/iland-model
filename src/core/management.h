@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QtCore/QVariantList>
+#include "scriptglobal.h"
 
 class Tree;
 class QScriptEngine;
@@ -28,6 +29,7 @@ public slots:
     int load(QString filter); ///< load all trees passing the filter in a list, return number of trees
     int load(int ruindex); ///< load all trees of a resource index
     void loadFromTreeList(QList<Tree*>tree_list); ///< load a previously present tree list
+    void loadFromMap(QObject* map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees

@@ -9,6 +9,7 @@
 #include "climateconverter.h"
 #include "csvfile.h"
 #include "scriptglobal.h"
+#include "mapgrid.h"
 
 #include <QtScript>
 #include <QTextEdit>
@@ -34,13 +35,18 @@ QScriptValue script_debug(QScriptContext *ctx, QScriptEngine *eng)
 
 QScriptValue script_include(QScriptContext *ctx, QScriptEngine *eng)
 {
+
     QString fileName = ctx->argument(0).toString();
     QString path =GlobalSettings::instance()->path(fileName, "script") ;
     QString includeFile=Helper::loadTextFile(path);
-    eng->evaluate(includeFile, fileName);
+
+    ctx->setActivationObject(ctx->parentContext()->activationObject());
+    ctx->setThisObject(ctx->parentContext()->thisObject());
+
+    QScriptValue ret = eng->evaluate(includeFile, fileName);
     if (eng->hasUncaughtException())
         qDebug() << "Error in include:" << eng->uncaughtException().toString();
-    return QScriptValue();
+    return ret;
 }
 
 QScriptValue script_alert(QScriptContext *ctx, QScriptEngine *eng)
@@ -85,6 +91,7 @@ Management::Management()
     // other object types
     ClimateConverter::addToScriptEngine(*mEngine);
     CSVFile::addToScriptEngine(*mEngine);
+    MapGridWrapper::addToScriptEngine(*mEngine);
 
 
 }
@@ -266,6 +273,22 @@ void Management::loadFromTreeList(QList<Tree*>tree_list)
     mTrees.clear();
     for (int i=0;i<tree_list.count();++i)
         mTrees.append(QPair<Tree*, double>(tree_list[i], 0.));
+}
+
+void Management::loadFromMap(QObject* map_grid, int key)
+{
+    MapGridWrapper *grid = qobject_cast<MapGridWrapper *>(map_grid);
+    if (!grid) {
+        qDebug() << "invalid parameter for Management::loadFromMap: Map expected!";
+        return;
+    }
+    if (grid->isValid()) {
+        QList<Tree*> tree_list = grid->map()->trees(key);
+        loadFromTreeList( tree_list );
+    } else {
+        qDebug() << "Management::loadFromMap: grid is not valid - no trees loaded";
+    }
+
 }
 
 bool treePairValue(const QPair<Tree*, double> &p1, const QPair<Tree*, double> &p2)

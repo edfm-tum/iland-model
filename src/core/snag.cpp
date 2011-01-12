@@ -151,9 +151,10 @@ double Snag::calculateClimateFactors()
     double ft, fw;
     const double top_layer_content = mRU->waterCycle()->topLayerWaterContent();
     double f_sum = 0.;
-    for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day)
+    int iday=0;
+    for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day, ++iday)
     {
-        deficit = mRU->waterCycle()->waterDeficit_mm(day->day);
+        deficit = mRU->waterCycle()->waterDeficit_mm(iday);
 
         ft = exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13)));  // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
         fw = 1. - limit(deficit / top_layer_content, 0., 1.);

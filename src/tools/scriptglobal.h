@@ -38,4 +38,27 @@ private:
     Model *mModel;
 };
 
+// Scripting Interface for MapGrid
+class MapGrid; // forward
+class MapGridWrapper: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int valid READ isValid);
+public:
+    MapGridWrapper(QObject *parent=0);
+    ~MapGridWrapper();
+    static void addToScriptEngine(QScriptEngine &engine);
+    MapGrid *map() const { return mMap; } ///< acccess for C++ classes
+    bool isValid() const; ///< returns true if map is successfully loaded
+
+public slots:
+    void load(QString file_name);
+    void saveAsImage(QString file);
+
+private:
+    MapGrid *mMap;
+    bool mCreated;
+
+};
+
 #endif // SCRIPTGLOBAL_H

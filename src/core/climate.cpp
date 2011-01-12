@@ -46,7 +46,7 @@ QString Sun::dump()
 Climate::Climate()
 {
     mLoadYears = 1;
-    mInvalidDay.day=mInvalidDay.month=mInvalidDay.year=-1;
+    mInvalidDay.dayOfMonth=mInvalidDay.month=mInvalidDay.year=-1;
     mBegin = mEnd = 0;
     mIsSetup = false;
 }
@@ -81,7 +81,7 @@ int Climate::daysOfYear() const
 void Climate::toDate(const int yearday, int *rDay, int *rMonth, int *rYear) const
 {
     const ClimateDay *d = dayOfYear(yearday);
-    if (rDay) *rDay = d->day-1;
+    if (rDay) *rDay = d->dayOfMonth-1;
     if (rMonth) *rMonth = d->month-1;
     if (rYear) *rYear = d->year;
 }
@@ -175,16 +175,16 @@ void Climate::load()
 
             cday->year = mClimateQuery.value(0).toInt();
             cday->month = mClimateQuery.value(1).toInt();
-            cday->day = mClimateQuery.value(2).toInt();
+            cday->dayOfMonth = mClimateQuery.value(2).toInt();
             cday->temperature = mClimateQuery.value(3).toDouble() + mTemperatureShift;
             cday->min_temperature = mClimateQuery.value(4).toDouble() + mTemperatureShift;
             cday->preciptitation = mClimateQuery.value(5).toDouble() * mPrecipitationShift;
             cday->radiation = mClimateQuery.value(6).toDouble();
             cday->vpd = mClimateQuery.value(7).toDouble();
             // sanity checks
-            if (cday->month<1 || cday->day<1 || cday->month>12 || cday->day>31)
-                qDebug() << QString("Invalid dates in climate table %1: year %2 month %3 day %4!").arg(name()).arg(cday->year).arg(cday->month).arg(cday->day);
-            DBG_IF(cday->month<1 || cday->day<1 || cday->month>12 || cday->day>31,"Climate:load", "invalid dates");
+            if (cday->month<1 || cday->dayOfMonth<1 || cday->month>12 || cday->dayOfMonth>31)
+                qDebug() << QString("Invalid dates in climate table %1: year %2 month %3 day %4!").arg(name()).arg(cday->year).arg(cday->month).arg(cday->dayOfMonth);
+            DBG_IF(cday->month<1 || cday->dayOfMonth<1 || cday->month>12 || cday->dayOfMonth>31,"Climate:load", "invalid dates");
             DBG_IF(cday->temperature<-70 || cday->temperature>50,"Climate:load", "temperature out of range (-70..+50°C)");
             DBG_IF(cday->preciptitation<0 || cday->preciptitation>200,"Climate:load", "precipitation out of range (0..200mm)");
             DBG_IF(cday->radiation<0 || cday->radiation>50,"Climate:load", "radiation out of range (0..50 MJ/m2/day)");
@@ -199,9 +199,9 @@ void Climate::load()
             if (yeardays==1) {
                 // check on first day of the year
                 if (lastyear!=-1 && cday->year!=lastyear+1)
-                    throw IException(QString("Error in reading climate file: invalid year break at y-m-d: %1-%2-%3!").arg(cday->year).arg(cday->month).arg(cday->day));
+                    throw IException(QString("Error in reading climate file: invalid year break at y-m-d: %1-%2-%3!").arg(cday->year).arg(cday->month).arg(cday->dayOfMonth));
             }
-            if (cday->month==12 && cday->day==31)
+            if (cday->month==12 && cday->dayOfMonth==31)
                 break;
 
             if (cday==mStore.end())

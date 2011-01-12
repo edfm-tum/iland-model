@@ -8,7 +8,7 @@ struct ClimateDay
 {
     int year; // year
     int month; // month
-    int day; // day of year
+    int dayOfMonth; // day of year
     double temperature; // average day °C (of the light hours)
     double min_temperature; // minimum temperature of the day
     double temp_delayed; // temperature delayed (after Maekela, 2008) for response calculations
@@ -16,9 +16,9 @@ struct ClimateDay
     double radiation; // sum of day (MJ/m2)
     double vpd; // average of day [kPa] = [0.1 mbar] (1 bar = 100kPa)
     static double co2; // ambient CO2 content in ppm
-    QString toString() const { return QString("%1.%2.%3").arg(day).arg(month).arg(year); }
+    QString toString() const { return QString("%1.%2.%3").arg(dayOfMonth).arg(month).arg(year); }
     bool isValid() const  { return (year>=0); }
-    int id() const { return year*10000 + month*100 + day; }
+    int id() const { return year*10000 + month*100 + dayOfMonth; }
 };
 
 /// Sun handles calculations of day lengths, etc.
