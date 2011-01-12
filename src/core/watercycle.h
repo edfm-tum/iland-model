@@ -67,7 +67,6 @@ public:
     void run(); ///< run the current year
     // properties
     double fieldCapacity() const { return mFieldCapacity; } ///< field capacity (mm)
-    double topLayerWaterContent() const { return mTopLayerWaterContent; }
     const double &psi_kPa(const int doy) const { return mPsi[doy]; } ///< soil water potential for the day 'doy' (0-index) in kPa
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm
@@ -90,7 +89,6 @@ private:
     double mContent; ///< current water content in mm water column of the soil.
     double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
     double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -4MPa) (mm)
-    double mTopLayerWaterContent; ///< water content (mm) of the top layer (microbial active -> for calculation of snag decay rates)
     double mPsi[366]; ///< soil water potential for each day in kPa
     void getStandValues(); ///< helper function to retrieve LAI per species group
     inline double calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa);
