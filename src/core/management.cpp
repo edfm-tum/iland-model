@@ -268,6 +268,8 @@ int Management::load(QString filter)
     return mTrees.count();
 }
 
+/**
+*/
 void Management::loadFromTreeList(QList<Tree*>tree_list)
 {
     mTrees.clear();
@@ -275,15 +277,27 @@ void Management::loadFromTreeList(QList<Tree*>tree_list)
         mTrees.append(QPair<Tree*, double>(tree_list[i], 0.));
 }
 
-void Management::loadFromMap(QObject* map_grid, int key)
+// loadFromMap: script access
+void Management::loadFromMap(QScriptValue map_grid_object, int key)
 {
-    MapGridWrapper *grid = qobject_cast<MapGridWrapper *>(map_grid);
-    if (!grid) {
+    MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
+    if (!wrap) {
+        context()->throwError("loadFromMap called with invalid map object!");
+        return;
+    }
+    loadFromMap(wrap->map(), key);
+}
+
+/** loadFromMap selects trees located on pixels with value 'key' within the grid 'map_grid'.
+*/
+void Management::loadFromMap(const MapGrid *map_grid, int key)
+{
+    if (!map_grid) {
         qDebug() << "invalid parameter for Management::loadFromMap: Map expected!";
         return;
     }
-    if (grid->isValid()) {
-        QList<Tree*> tree_list = grid->map()->trees(key);
+    if (map_grid->isValid()) {
+        QList<Tree*> tree_list = map_grid->trees(key);
         loadFromTreeList( tree_list );
     } else {
         qDebug() << "Management::loadFromMap: grid is not valid - no trees loaded";

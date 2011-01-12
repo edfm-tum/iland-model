@@ -8,7 +8,7 @@
 
 class Tree;
 class QScriptEngine;
-class Management : public QObject
+class Management : public QObject, protected QScriptable
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count)
@@ -29,7 +29,8 @@ public slots:
     int load(QString filter); ///< load all trees passing the filter in a list, return number of trees
     int load(int ruindex); ///< load all trees of a resource index
     void loadFromTreeList(QList<Tree*>tree_list); ///< load a previously present tree list
-    void loadFromMap(QObject* map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
+    void loadFromMap(const MapGrid *map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
+    void loadFromMap(QScriptValue map_grid_object, int key); ///< load all trees that are on the area denoted by 'key' of the given grid (script access)
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
