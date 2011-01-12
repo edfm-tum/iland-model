@@ -147,19 +147,25 @@ void Snag::newYear()
 /// calculation is done on the level of ResourceUnit because the water content per day is needed.
 double Snag::calculateClimateFactors()
 {
-    double deficit;
     double ft, fw;
-    const double top_layer_content = mRU->waterCycle()->topLayerWaterContent();
     double f_sum = 0.;
     int iday=0;
+    // calculate the water-factor for each month (see Adair et al 2008)
+    double fw_month[12];
+    double ratio;
+    for (int m=0;m<12;m++) {
+        if (mRU->waterCycle()->potentialEvapotranspiration()[m]>0.)
+            ratio = mRU->climate()->precipitationMonth()[m] /  mRU->waterCycle()->potentialEvapotranspiration()[m];
+        else
+            ratio = 0;
+        fw_month[m] = 1. / (1. + 30.*exp(-8.5*ratio));
+        qDebug() <<"month"<< m << "PET" << mRU->waterCycle()->potentialEvapotranspiration()[m] << "prec" <<mRU->climate()->precipitationMonth()[m];
+    }
+
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day, ++iday)
     {
-        deficit = mRU->waterCycle()->waterDeficit_mm(iday);
-
         ft = exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13)));  // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
-        fw = 1. - limit(deficit / top_layer_content, 0., 1.);
-        // the water effect: depends on the water deficit; if the deficit is higher than the parameterized
-        // content of the top layer (where most microbial activity is located), than then fw gets 0.
+        fw = fw_month[day->month-1];
 
         f_sum += ft*fw;
     }

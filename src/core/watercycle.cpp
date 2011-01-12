@@ -75,7 +75,7 @@ void WaterCycle::getStandValues()
 {
     mLAINeedle=mLAIBroadleaved=0.;
     mCanopyConductance=0.;
-    const double GroundVegetationCC = 0.02;
+    const double ground_vegetationCC = 0.02;
     double lai;
     foreach(ResourceUnitSpecies *rus, mRU->ruSpecies()) {
         lai = rus->constStatistics().leafAreaIndex();
@@ -89,7 +89,7 @@ void WaterCycle::getStandValues()
 
     // handle cases with LAI < 1 (use generic "ground cover characteristics" instead)
     if (total_lai<1.) {
-        mCanopyConductance+=(GroundVegetationCC)*(1. - total_lai);
+        mCanopyConductance+=(ground_vegetationCC)*(1. - total_lai);
         total_lai = 1.;
     }
     mCanopyConductance /= total_lai;
@@ -173,7 +173,6 @@ void WaterCycle::run()
                                mLAIBroadleaved,
                                mCanopyConductance);
 
-
     // main loop over all days of the year
     double prec_mm, prec_after_interception, prec_to_soil, et, excess;
     const Climate *climate = mRU->climate();
@@ -201,7 +200,7 @@ void WaterCycle::run()
 
         double current_psi = psiFromHeight(mContent);
         mPsi[doy] = current_psi;
-        mWaterDeficit_mm[doy] = mFieldCapacity - mContent;
+
         // (5) transpiration of the vegetation (and of water intercepted in canopy)
         // calculate the LAI-weighted response values for soil water and vpd:
         double combined_response = calculateSoilAtmosphereResponse( current_psi, day->vpd);
@@ -338,6 +337,10 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
     mLAIBroadleaved=LAIbroadleave;
     mLAI=LAIneedle+LAIbroadleave;
     mAvgMaxCanopyConductance = maxCanopyConductance;
+
+    // clear aggregation containers
+    for (int i=0;i<12;++i) mPET[i]=0.;
+
 }
 
 
@@ -375,13 +378,16 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     double Etransp = (svp_slope * rad + defTerm) / div;
     double canopy_transpiration = Etransp / latent_heat * daylength;
 
+    // calculate PET
+    double div_evap = 1 + svp_slope;
+    double pet_day = (svp_slope*rad + defTerm) / div_evap / latent_heat * daylength;
+    mPET[climate->month-1] += pet_day;
+
     if (mInterception>0.) {
         // we assume that for evaporation from leaf surface gBL/gC -> 0
-        double div_evap = 1 + svp_slope;
-        double evap = (svp_slope*rad + defTerm) / div_evap / latent_heat * daylength;
-        evap = qMin(evap, mInterception);
-        mInterception -= evap; // reduce interception
-        mEvaporation = evap; // evaporation from intercepted water
+        pet_day = qMin(pet_day, mInterception);
+        mInterception -= pet_day; // reduce interception
+        mEvaporation = pet_day; // evaporation from intercepted water
     }
     return canopy_transpiration;
 }

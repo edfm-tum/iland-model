@@ -253,10 +253,16 @@ void Climate::nextYear()
     qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
     mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
     mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
-    // calculate radiation sum of the year
+
+    // some aggregates:
+    // calculate radiation sum of the year and monthly precipitation
     mAnnualRadiation = 0.;
-    for (const ClimateDay *d=begin();d!=end();++d)
+    for (int i=0;i<12;i++) mPrecipitationMonth[i]=0.;
+
+    for (const ClimateDay *d=begin();d!=end();++d) {
         mAnnualRadiation+=d->radiation;
+        mPrecipitationMonth[d->month-1]+= d->preciptitation;
+    }
 
     // calculate phenology
     for(int i=0;i<mPhenology.count(); ++i)

@@ -7,8 +7,8 @@
 struct ClimateDay
 {
     int year; // year
-    int month; // month
-    int dayOfMonth; // day of year
+    int month; // month (1..12)
+    int dayOfMonth; // day of the month (1..31)
     double temperature; // average day °C (of the light hours)
     double min_temperature; // minimum temperature of the day
     double temp_delayed; // temperature delayed (after Maekela, 2008) for response calculations
@@ -59,6 +59,7 @@ public:
     void toDate(const int yearday, int *rDay=0, int *rMonth=0, int *rYear=0) const; ///< decode "yearday" to the actual year, month, day if provided
     //
     double totalRadiation() const { return mAnnualRadiation; } ///< return radiation sum (MJ) of the whole year
+    const double* precipitationMonth() const { return mPrecipitationMonth; }
     // access to other subsystems
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
     const Sun &sun() const { return mSun; } ///< solar radiation class
@@ -87,7 +88,8 @@ private:
     QList<Phenology> mPhenology; ///< phenology calculations
     QVector<int> mRandomYearList; ///< for random sampling of years
     int mRandomListIndex; ///< current index of the randomYearList for random sampling
-    double mAnnualRadiation;  // this year's value for total radiation (MJ/m2)
+    double mAnnualRadiation;  ///< this year's value for total radiation (MJ/m2)
+    double mPrecipitationMonth[12]; ///< this years preciptitation sum (mm) per month
 };
 
 #endif // CLIMATE_H
