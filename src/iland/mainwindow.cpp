@@ -456,13 +456,27 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         Expression ru_value(ru_expr, &ru_wrapper);
         ru_value.setCatchExceptions(); // silent catching...
+        double min_value = 0.;
+        double max_value = 1.; // defaults
+        double value;
+        if (auto_scale_color) {
+            min_value = 9999999999999999999.;
+            max_value = -999999999999999999.;
+            foreach (const ResourceUnit *ru, model->ruList()) {
+                ru_wrapper.setResourceUnit(ru);
+                value = ru_value.execute();
+                min_value = qMin(min_value, value);
+                max_value = qMax(max_value, value);
+            }
+            qDebug() << "scale colors: min" << min_value << "max:" << max_value;
+        }
 
         // paint resource units
         foreach (const ResourceUnit *ru, model->ruList()) {
             ru_wrapper.setResourceUnit(ru);
             QRect r = vp.toScreen(ru->boundingBox());
             value = ru_value.execute();
-            fill_color = Helper::colorFromValue(value, 0., 1.);
+            fill_color = Helper::colorFromValue(value, min_value, max_value);
             painter.fillRect(r, fill_color);
         }
         if (!ru_value.lastError().isEmpty())
