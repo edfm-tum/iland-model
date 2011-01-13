@@ -415,6 +415,7 @@ QImage gridToImage(const FloatGrid &grid,
                    double min_value=0., double max_value=1.,
                    bool reverse=false);
 
+
 /** load into 'rGrid' the content of the image pointed at by 'fileName'.
     Pixels are converted to grey-scale and then transformend to a value ranging from 0..1 (black..white).
   */

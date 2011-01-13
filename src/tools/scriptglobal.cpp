@@ -158,3 +158,9 @@ void MapGridWrapper::saveAsImage(QString file)
 {
     qDebug() << "not implemented";
 }
+
+void MapGridWrapper::paint(QString file_name, double min_value, double max_value)
+{
+    //gridToImage(mMap->grid(), false, min_value, max_value).save(file_name);
+
+}

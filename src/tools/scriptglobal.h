@@ -50,6 +50,8 @@ public:
     static void addToScriptEngine(QScriptEngine &engine);
     MapGrid *map() const { return mMap; } ///< acccess for C++ classes
     bool isValid() const; ///< returns true if map is successfully loaded
+    //
+    void paint(QString file_name, double min_value, double max_value);
 
 public slots:
     void load(QString file_name);

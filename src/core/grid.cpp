@@ -22,7 +22,6 @@ QImage gridToImage(const FloatGrid &grid,
 {
     QImage res(grid.sizeX(), grid.sizeY(), QImage::Format_ARGB32);
     QRgb col;
-    QColor qcol;
     int grey;
     double rval;
     for (int x=0;x<grid.sizeX();x++){
@@ -44,6 +43,8 @@ QImage gridToImage(const FloatGrid &grid,
     }
     return res;
 }
+
+
 
 bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid)
 {
