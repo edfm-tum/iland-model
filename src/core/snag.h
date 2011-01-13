@@ -66,6 +66,7 @@ public:
     const CNPool &labileFlux() const { return mLabileFlux; } ///< litter flux to the soil (kg/ha)
     const CNPool &refractoryFlux() const {return  mRefractoryFlux; } ///< deadwood flux to the soil (kg/ha)
     double climateFactor() const { return mClimateFactor; } ///< the 're' climate factor to modify decay rates (also used in ICBM/2N model)
+    double totalCarbon() const { return mTotalSnagCarbon; } ///< total carbon in snags (kg/ha)
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot);

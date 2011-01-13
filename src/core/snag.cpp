@@ -93,10 +93,31 @@ void Snag::setup( const ResourceUnit *ru)
         mAvgVolume[i] = 0.;
         mKSW[i] = 0.;
         mCurrentKSW[i] = 0.;
+        mHalfLife[i] = 0.;
     }
     mTotalSnagCarbon = 0.;
     if (mDBHLower<=0)
         throw IException("Snag::setupThresholds() not called or called with invalid parameters.");
+
+    // Inital values from XML file
+    XmlHelper xml=GlobalSettings::instance()->settings();
+    // put carbon of snags to the middle size class
+    xml.setCurrentNode("model.initialization.snags");
+    double kyr = xml.valueDouble(".woodDecompRate");
+    mSWD[1].C = xml.valueDouble(".swdC");
+    mSWD[1].N = mSWD[1].C / xml.valueDouble(".swdCN", 50.);
+    mSWD[1].setParameter(kyr);
+    mKSW[1] = xml.valueDouble(".swdDecompRate");
+    mNumberOfSnags[1] = xml.valueDouble(".swdCount");
+    mHalfLife[1] = xml.valueDouble(".swdHalfLife");
+    // and for the Branch/coarse root pools: split the init value into five chunks
+    CNPool other(xml.valueDouble(".otherC"), xml.valueDouble(".otherC")/xml.valueDouble(".otherCN", 50.), kyr );
+
+    mTotalSnagCarbon = other.C + mSWD[1].C;
+
+    other *= 0.2;
+    for (int i=0;i<5;i++)
+        mOtherWood[i] = other;
 }
 
 // debug outputs

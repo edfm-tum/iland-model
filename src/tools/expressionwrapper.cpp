@@ -16,6 +16,7 @@
 #include "species.h"
 #include "watercycle.h"
 #include "standstatistics.h"
+#include "soil.h"
 
 #include <QtCore>
 
@@ -103,7 +104,9 @@ QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveAre
                       << "nitrogenAvailable" << "soilDepth" << "stockedArea"
                       << "count" << "volume" << "avgDbh" << "avgHeight" << "basalArea"
                       << "leafAreaIndex" << "aging" << "cohortCount" << "saplingCount" << "saplingAge"
-                      << "canopyConductance";
+                      << "canopyConductance"
+                      << "soilC" << "soilN"
+                      << "snagC";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -132,6 +135,11 @@ double RUWrapper::value(const int variableIndex)
     case 13: return mRU->statistics().saplingCount();
     case 14: return mRU->statistics().saplingAge();
     case 15: return mRU->waterCycle()->canopyConductance();
+        // soil C + soil N
+    case 16: if (mRU->soil()) return mRU->soil()->youngLabile().C + mRU->soil()->youngRefractory().C + mRU->soil()->oldOrganicMatter().C; else return 0.;
+    case 17: if (mRU->soil()) return mRU->soil()->youngLabile().N + mRU->soil()->youngRefractory().N + mRU->soil()->oldOrganicMatter().N; else return 0.;
+        // snags
+    case 18: if (mRU->snag()) return mRU->snag()->totalCarbon(); else return 0.;
 
     }
     return ExpressionWrapper::value(variableIndex);
