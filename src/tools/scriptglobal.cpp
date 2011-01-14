@@ -114,6 +114,11 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
     return loader.loadDistributionList(content, ru, 0, "called_from_script");
 }
 
+int ScriptGlobal::addTreesOnStand(const int standID, QString content)
+{
+    StandLoader loader(mModel);
+    return loader.loadDistributionList(content, NULL, standID, "called_from_script");
+}
 
 /*
 ********** MapGrid wrapper

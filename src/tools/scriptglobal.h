@@ -33,6 +33,7 @@ public slots:
     // add trees
     int addSingleTrees(const int resourceIndex, QString content); ///< add single trees
     int addTrees(const int resourceIndex, QString content); ///< add tree distribution
+    int addTreesOnStand(const int standID, QString content); ///< add trees (distribution mode) for stand 'standID'
 private:
     QString mCurrentDir;
     Model *mModel;
