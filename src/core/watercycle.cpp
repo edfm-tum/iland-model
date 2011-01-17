@@ -354,6 +354,11 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     double daylength = daylength_h * 3600.; // daylength in seconds (convert from length in hours)
     double rad = climate->radiation / daylength * 1000000; //convert from MJ/m2 (day sum) to average radiation flow W/m2 [MJ=MWs -> /s * 1,000,000
 
+    // the radiation: based on linear empirical function
+    const double qa = -90.;
+    const double qb = 0.8;
+    double net_rad = qa + qb*rad;
+
     //: Landsberg original: const double e20 = 2.2;  //rate of change of saturated VP with T at 20C
     const double VPDconv = 0.000622; //convert VPD to saturation deficit = 18/29/1000
     const double latent_heat = 2460000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
@@ -368,18 +373,19 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
 
 
     double defTerm = mAirDensity * latent_heat * (vpd_mbar * VPDconv) * gBL;
-        // saturation vapor pressure (Running 1988, Eq. 1) in mbar
-    double svp = 6.1078 * exp((17.269 * temperature) / (237.3 + temperature) );
-    // the slope of svp is, thanks to http://www.wolframalpha.com/input/?i=derive+y%3D6.1078+exp+((17.269x)/(237.3%2Bx))
-    double svp_slope = svp * ( 17.269/(237.3+temperature) - 17.269*temperature/((237.3+temperature)*(237.3+temperature)) );
+
+    //  with temperature-dependent  slope of  vapor pressure saturation curve
+    // (following  Allen et al. (1998),  http://www.fao.org/docrep/x0490e/x0490e07.htm#atmospheric%20parameters)
+    // svp_slope in mbar.
+    double svp_slope = 4098. * (6.1078 * exp(17.269 * temperature / (temperature + 237.3))) / ((237.3+temperature)*(237.3+temperature));
 
     double div = (1. + svp_slope + gBL / gC);
-    double Etransp = (svp_slope * rad + defTerm) / div;
+    double Etransp = (svp_slope * net_rad + defTerm) / div;
     double canopy_transpiration = Etransp / latent_heat * daylength;
 
     // calculate PET
-    double div_evap = 2. + svp_slope;
-    double pet_day = (svp_slope*rad + defTerm) / div_evap / latent_heat * daylength;
+    double div_evap = 1. + svp_slope;
+    double pet_day = (svp_slope*net_rad + defTerm) / div_evap / latent_heat * daylength;
     mPET[climate->month-1] += pet_day;
 
     if (mInterception>0.) {
