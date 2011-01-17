@@ -215,6 +215,8 @@ void Tests::testWater()
     WaterCycle wc;
     wc.setup(model->ru());
     wc.run();
+    for (int i=0;i<12;i++)
+        qDebug() << wc.referenceEvapotranspiration()[i];
 }
 
 void Tests::testPheno(const Climate *clim)

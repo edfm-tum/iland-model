@@ -38,7 +38,7 @@ public:
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
     double evaporationCanopy() const { return mEvaporation; } ///< evaporation from canopy (mm)
     double avgMaxCanopyConductance() const { return mAvgMaxCanopyConductance; } ///< averaged maximum canopy conductance of current species distribution (m/s)
-    const double *potentialEvapotranspiration() const { return mPET; }
+    const double *referencelEvapotranspiration() const { return mET0; }
 
 private:
     double mLAINeedle; // leaf area index of coniferous species
@@ -49,7 +49,7 @@ private:
     double mEvaporation; ///< water that evaporated from foliage surface to atmosphere (mm)
     // Penman-Monteith parameters
     double mAirDensity; // density of air [kg / m3]
-    double mPET[12]; ///< potential evapotranspiration per month (sum of the month, mm)
+    double mET0[12]; ///< reference evapotranspiration per month (sum of the month, mm)
 
 
 };
@@ -72,7 +72,7 @@ public:
     double currentContent() const { return mContent; } ///< current water content in mm
     double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
     /// monthly values for PET (mm sum)
-    const double *potentialEvapotranspiration() const { return mCanopy.potentialEvapotranspiration(); }
+    const double *referenceEvapotranspiration() const { return mCanopy.referencelEvapotranspiration(); }
 
 private:
     int mLastYear; ///< last year of execution

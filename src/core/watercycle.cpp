@@ -338,7 +338,7 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
     mAvgMaxCanopyConductance = maxCanopyConductance;
 
     // clear aggregation containers
-    for (int i=0;i<12;++i) mPET[i]=0.;
+    for (int i=0;i<12;++i) mET0[i]=0.;
 
 }
 
@@ -383,16 +383,23 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     double Etransp = (svp_slope * net_rad + defTerm) / div;
     double canopy_transpiration = Etransp / latent_heat * daylength;
 
-    // calculate PET
-    double div_evap = 1. + svp_slope;
-    double pet_day = (svp_slope*net_rad + defTerm) / div_evap / latent_heat * daylength;
-    mPET[climate->month-1] += pet_day;
+    // calculate reference evapotranspiration
+    // see Adair et al 2008
+    const double psychrometric_const = 0.0672718682328237; // kPa/degC
+    const double windspeed = 2.; // m/s
+    double net_rad_mj_day = net_rad*daylength/1000000.; // convert W/m2 again to MJ/m2*day
+    double et0_day = 0.408*svp_slope*net_rad_mj_day  + psychrometric_const*900./(temperature+273.)*windspeed*climate->vpd;
+    double et0_div = svp_slope+psychrometric_const*(1.+0.34*windspeed);
+    et0_day = et0_day / et0_div;
+    mET0[climate->month-1] += et0_day;
 
     if (mInterception>0.) {
         // we assume that for evaporation from leaf surface gBL/gC -> 0
-        pet_day = qMin(pet_day, mInterception);
-        mInterception -= pet_day; // reduce interception
-        mEvaporation = pet_day; // evaporation from intercepted water
+        double div_evap = 1. + svp_slope;
+        double evap_canopy = (svp_slope*net_rad + defTerm) / div_evap / latent_heat * daylength;
+        evap_canopy = qMin(evap_canopy, mInterception);
+        mInterception -= evap_canopy; // reduce interception
+        mEvaporation = evap_canopy; // evaporation from intercepted water
     }
     return canopy_transpiration;
 }
