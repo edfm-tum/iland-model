@@ -860,13 +860,13 @@ void Tree::die(TreeGrowthData *d)
         ru()->snag()->addMortality(this);
 }
 
-void Tree::remove()
+void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
     if (ru()->snag())
-        ru()->snag()->addHarvest(this, 1., 0., 0.); // remove 100% of the stem, let 100% of branches and foliage in the forest
+        ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
 }
 
 void Tree::mortality(TreeGrowthData &d)

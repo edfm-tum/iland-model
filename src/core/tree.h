@@ -45,7 +45,9 @@ public:
 
     // actions
     void die(TreeGrowthData *d=0); ///< kills the tree.
-    void remove(); ///< remove the tree (management)
+    /// remove the tree (management). removalFractions for tree compartments: if 0: all biomass stays in the system, 1: all is "removed"
+    /// default values: all biomass remains in the forest (i.e.: kill()).
+    void remove(double removeFoliage=0., double removeBranch=0., double removeStem=0. );
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
 
     // setters for initialization

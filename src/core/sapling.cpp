@@ -260,9 +260,9 @@ void Sapling::calculateGrowth()
     //qDebug() << ru->index() << species->id()<< ": (living/avg.height):" <<  mLiving << mAvgHeight;
 }
 
-/// fill a grid with the maximum height of saplings per pixel.
+/// fill a grid with the maximum height of saplings per pixel (2x2m).
 /// this function is used for visualization only
-void Sapling::fillHeightGrid(Grid<float> &grid) const
+void Sapling::fillMaxHeightGrid(Grid<float> &grid) const
 {
     QVector<SaplingTree>::const_iterator it;
     for (it = mSaplingTrees.begin(); it!=mSaplingTrees.end(); ++it) {

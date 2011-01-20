@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "tree.h"
 #include "expressionwrapper.h"
+#include "sapling.h"
 
 #include "climateconverter.h"
 #include "csvfile.h"
@@ -73,7 +74,7 @@ QString Management::executeScript(QString cmd)
 
 Management::Management()
 {
-    // setup the engine
+    // setup the scripting engine
     mEngine = new QScriptEngine();
     QScriptValue objectValue = mEngine->newQObject(this);
     QScriptValue dbgprint = mEngine->newFunction(script_debug);
@@ -92,6 +93,12 @@ Management::Management()
     ClimateConverter::addToScriptEngine(*mEngine);
     CSVFile::addToScriptEngine(*mEngine);
     MapGridWrapper::addToScriptEngine(*mEngine);
+
+    // default values for removal fractions
+    // 100% of the stem, 0% of foliage and branches
+    mRemoveFoliage = 0.;
+    mRemoveBranch = 0.;
+    mRemoveStem = 1.;
 
 
 }
@@ -134,15 +141,16 @@ void Management::remain(int number)
 }
 
 
-void Management::kill()
+int Management::kill()
 {
+    int c = mTrees.count();
     for (int i=0;i<mTrees.count();i++)
         mTrees[i].first->remove();
     mTrees.clear();
+    return c;
 }
 
-// from the range percentile range pctfrom to pctto (each 1..100)
-int Management::kill(int pctfrom, int pctto, int number)
+int Management::remove_percentiles(int pctfrom, int pctto, int number, bool management)
 {
     if (mTrees.isEmpty())
         return 0;
@@ -155,8 +163,15 @@ int Management::kill(int pctfrom, int pctto, int number)
     int count = number;
     if (index_to-index_from <= number)  {
         // kill all
-        for (i=index_from; i<index_to; i++)
-            mTrees.at(i).first->remove();
+        if (management) {
+            // management
+            for (i=index_from; i<index_to; i++)
+                mTrees.at(i).first->remove(removeFoliage(), removeBranch(), removeStem());
+        } else {
+            // just kill...
+            for (i=index_from; i<index_to; i++)
+                mTrees.at(i).first->remove();
+        }
         count = index_to - index_from;
     } else {
         // kill randomly the provided number
@@ -173,12 +188,46 @@ int Management::kill(int pctfrom, int pctto, int number)
             }
             cancel = 1000;
             number--;
-            mTrees[rnd_index].first->remove();
+            if (management) {
+                mTrees[rnd_index].first->remove( removeFoliage(), removeBranch(), removeStem() );
+            } else {
+                mTrees[rnd_index].first->remove();
+            }
         }
     }
     qDebug() << count << "removed.";
-    return count; // killed
+    // clean up the tree list...
+    for (int i=mTrees.count()-1; i>=0; --i) {
+        if (mTrees[i].first->isDead())
+            mTrees.removeAt(i);
+    }
+    return count; // killed or manages
 }
+
+// from the range percentile range pctfrom to pctto (each 1..100)
+int Management::kill(int pctfrom, int pctto, int number)
+{
+    return remove_percentiles(pctfrom, pctto, number, false);
+}
+
+// from the range percentile range pctfrom to pctto (each 1..100)
+int Management::manage(int pctfrom, int pctto, int number)
+{
+    return remove_percentiles(pctfrom, pctto, number, true);
+}
+
+int Management::manage()
+{
+    int c = mTrees.count();
+    for (int i=0;i<mTrees.count();i++)
+        mTrees[i].first->remove(removeFoliage(),
+                                removeBranch(),
+                                removeStem()); // remove with current removal fractions
+    mTrees.clear();
+    return c;
+}
+
+
 
 void Management::run()
 {
@@ -288,6 +337,22 @@ void Management::loadFromMap(QScriptValue map_grid_object, int key)
     loadFromMap(wrap->map(), key);
 }
 
+void Management::killSaplings(QScriptValue map_grid_object, int key)
+{
+    MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
+    if (!wrap) {
+        context()->throwError("loadFromMap called with invalid map object!");
+        return;
+    }
+    //loadFromMap(wrap->map(), key);
+    // retrieve all sapling trees on the stand:
+    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > list = wrap->map()->saplingTrees(key);
+    // for now, just kill em all...
+    for (QList<QPair<ResourceUnitSpecies *, SaplingTree *> >::iterator it = list.begin(); it!=list.end(); ++it)
+        (*it).second->pixel = 0;
+    // the storage for unused/invalid saplingtrees is released lazily (once a year, after growth)
+}
+
 /** loadFromMap selects trees located on pixels with value 'key' within the grid 'map_grid'.
 */
 void Management::loadFromMap(const MapGrid *map_grid, int key)
@@ -333,3 +398,4 @@ double Management::percentile(int pct)
     else
         return -1;
 }
+

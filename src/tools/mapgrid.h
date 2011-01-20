@@ -6,6 +6,9 @@
 #include "gisgrid.h"
 class ResourceUnit; // forward
 class Tree; // forward
+class SaplingTree; // forward
+class ResourceUnitSpecies; // forward
+
 class MapGrid
 {
 public:
@@ -25,6 +28,8 @@ public:
     QList<Tree*> trees(const int id) const;
     /// return a list of grid-indices of a given stand-id
     QList<int> gridIndices(const int id) const;
+    /// get a list of sapling trees on a given stand.
+    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > saplingTrees(const int id) const;
     /// return true, if the point 'lif_grid_coords' (x/y integer key within the LIF-Grid)
     inline bool hasValue(const int id, const QPoint &lif_grid_coords) const { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight) == id; }
     inline int gridValue(const QPoint &lif_grid_coords) const  { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight); }

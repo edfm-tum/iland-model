@@ -4,6 +4,8 @@
 #include "resourceunit.h"
 #include "tree.h"
 #include "grid.h"
+#include "sapling.h"
+#include "resourceunit.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
   details on how the grid is mapped to the local coordinate system of the project area. From the source grid a 10m grid
@@ -92,4 +94,21 @@ QList<int> MapGrid::gridIndices(const int id) const
          result.push_back(cell - mGrid.begin());
     }
     return result;
+}
+
+QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const int id) const
+{
+    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > result;
+    QList<ResourceUnit*> resource_units = resourceUnits(id);
+    foreach(ResourceUnit *ru, resource_units) {
+        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
+            foreach(const SaplingTree &tree, rus->sapling().saplings()) {
+                if (gridValue( GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel) ) == id)
+                    result.push_back( QPair<ResourceUnitSpecies *, SaplingTree *>(rus, &const_cast<SaplingTree&>(tree)) );
+            }
+        }
+    }
+    qDebug() << "loaded" << result.count() << "sapling trees";
+    return result;
+
 }

@@ -12,6 +12,9 @@ class Management : public QObject, protected QScriptable
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count)
+    Q_PROPERTY(double removeFoliage READ removeFoliage WRITE setRemoveFoliage)
+    Q_PROPERTY(double removeBranch READ removeBranch WRITE setRemoveBranch)
+    Q_PROPERTY(double removeStem READ removeStem WRITE setRemoveStem)
 public:
     Management();
     ~Management();
@@ -20,10 +23,38 @@ public:
     QString scriptFile() const { return mScriptFile; }
     QString executeScript(QString cmd="");
     static QObject *scriptOutput;
+    // property getter & setter for removal fractions
+    /// removal fraction foliage: 0: 0% will be removed, 1: 100% will be removed from the forest by management operations (i.e. calls to manage() instead of kill())
+    double removeFoliage() const { return mRemoveFoliage; }
+    /// removal fraction branch biomass: 0: 0% will be removed, 1: 100% will be removed from the forest by management operations (i.e. calls to manage() instead of kill())
+    double removeBranch() const { return mRemoveBranch; }
+    /// removal fraction stem biomass: 0: 0% will be removed, 1: 100% will be removed from the forest by management operations (i.e. calls to manage() instead of kill())
+    double removeStem() const { return mRemoveStem; }
+
+    void setRemoveFoliage(const double fraction)  { mRemoveFoliage = fraction; }
+    void setRemoveBranch(const double fraction)  { mRemoveBranch = fraction; }
+    void setRemoveStem(const double fraction)  { mRemoveStem = fraction; }
+
+    int count() const {return mTrees.count();} ///< return number of trees currently in list
+
 public slots:
-    void remain(int number); ///< remove randomly number of trees
-    int kill(int pctfrom, int pctto, int number); ///< remove "number" in the percentile interval "from" - "to". remove all if "number" is higher than the count. return the number of removed trees.
-    void kill(); ///< kill all trees in the list
+    void remain(int number); ///< remove randomly trees until only 'number' of trees remain.
+    /** kill "number" of stems
+     *  in the percentile interval "from" - "to".
+     *  remove all if "number" is higher than the count.
+     *  return the number of removed trees. */
+    int kill(int pctfrom, int pctto, int number);
+    int kill(); ///< kill all trees in the list
+
+    // management
+    /** kill "number" of stems
+     *  in the percentile interval "from" - "to".
+     *  remove all if "number" is higher than the count.
+     * Use the removal fractions set by the removeStem, removeBranch and removeFoliage properties.
+     *  return the number of removed trees. */
+    int manage(int pctfrom, int pctto, int number);
+    int manage(); ///< manage all trees in the list
+
     double percentile(int pct); ///< get value for the pct th percentile (1..100)
     int load() { return load(QString()); } ///< load all trees, return number of trees
     int load(QString filter); ///< load all trees passing the filter in a list, return number of trees
@@ -31,11 +62,15 @@ public slots:
     void loadFromTreeList(QList<Tree*>tree_list); ///< load a previously present tree list
     void loadFromMap(const MapGrid *map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
     void loadFromMap(QScriptValue map_grid_object, int key); ///< load all trees that are on the area denoted by 'key' of the given grid (script access)
+    void killSaplings(QScriptValue map_grid_object, int key); ///< kill all saplings that are on the area denoted by 'key' of the given grid (script access)
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
-    int count() const {return mTrees.count();} ///< return number of trees curerntly in list
 private:
+    int remove_percentiles(int pctfrom, int pctto, int number, bool management);
+
+    // removal fractions
+    double mRemoveFoliage, mRemoveBranch, mRemoveStem;
     QString mScriptFile;
     QList<QPair<Tree*, double> > mTrees;
     QScriptEngine *mEngine;

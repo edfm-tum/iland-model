@@ -33,6 +33,8 @@ public:
     void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
     void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
+    // access
+    const QVector<SaplingTree> &saplings() const {return mSaplingTrees; }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     void addSapling(const QPoint &pos_lif);
@@ -49,7 +51,7 @@ public:
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
     // output maps
-    void fillHeightGrid(Grid<float> &grid) const;
+    void fillMaxHeightGrid(Grid<float> &grid) const;
 private:
     bool growSapling(SaplingTree &tree, const double f_env_yr, Species* species);
     ResourceUnitSpecies *mRUS;
