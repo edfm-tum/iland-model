@@ -23,7 +23,11 @@ public:
     // access
     QRectF boundingBox(const int id) const { return mRectIndex[id].first; } ///< returns the bounding box of a polygon
     double area(const int id) const {return mRectIndex[id].second;} ///< return the area (m2) covered by the polygon
-    QList<ResourceUnit*> resourceUnits(const int id) const { return mRUIndex.values(id);} ///< returns the list of resource units with at least one pixel within the area designated by 'id'
+    /// returns the list of resource units with at least one pixel within the area designated by 'id'
+    QList<ResourceUnit*> resourceUnits(const int id) const;
+    /// returns a list with resource units and area factors per 'id'.
+    /// the area is '1' if the resource unit is fully covered by the grid-value.
+    QList<QPair<ResourceUnit*, double> > resourceUnitAreas(const int id) const { return mRUIndex.values(id); }
     /// return a list of all trees on the area 'id'
     QList<Tree*> trees(const int id) const;
     /// return a list of grid-indices of a given stand-id
@@ -36,7 +40,7 @@ public:
 private:
     Grid<int> mGrid;
     QHash<int, QPair<QRectF,double> > mRectIndex; ///< holds the extent and area for each map-id
-    QMultiHash<int, ResourceUnit*> mRUIndex; ///< holds a list of resource units per map-id
+    QMultiHash<int, QPair<ResourceUnit*, double> > mRUIndex; ///< holds a list of resource units + areas per map-id
 };
 
 #endif // MAPGRID_H

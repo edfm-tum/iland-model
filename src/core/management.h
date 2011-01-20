@@ -63,6 +63,9 @@ public slots:
     void loadFromMap(const MapGrid *map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
     void loadFromMap(QScriptValue map_grid_object, int key); ///< load all trees that are on the area denoted by 'key' of the given grid (script access)
     void killSaplings(QScriptValue map_grid_object, int key); ///< kill all saplings that are on the area denoted by 'key' of the given grid (script access)
+    /** hacky access function to resource units covered by a polygon.
+     the parameters are "remove-fractions": i.e. value=0: no change, value=1: set to zero. */
+    void updateSoilCarbon(QScriptValue map_grid_object, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac);
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees

@@ -353,6 +353,24 @@ void Management::killSaplings(QScriptValue map_grid_object, int key)
     // the storage for unused/invalid saplingtrees is released lazily (once a year, after growth)
 }
 
+void Management::updateSoilCarbon(QScriptValue map_grid_object, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
+{
+    MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
+    if (!wrap) {
+        context()->throwError("loadFromMap called with invalid map object!");
+        return;
+    }
+    QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
+    double total_area = 0.;
+    for (int i=0;i<ru_areas.size();++i) {
+        ResourceUnit *ru = ru_areas[i].first;
+        double area_factor = ru_areas[i].second; // 0..1
+        total_area += area_factor;
+        qDebug() << ru->index() << area_factor;
+    }
+    qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
+}
+
 /** loadFromMap selects trees located on pixels with value 'key' within the grid 'map_grid'.
 */
 void Management::loadFromMap(const MapGrid *map_grid, int key)

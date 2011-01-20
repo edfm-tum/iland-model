@@ -47,13 +47,29 @@ bool MapGrid::loadFromGrid(const GisGrid &source_grid)
     mRUIndex.clear();
 
     for (int *p = mGrid.begin(); p!=mGrid.end(); ++p) {
+        if (*p==-1)
+            continue;
         QPair<QRectF,double> &data = mRectIndex[*p];
         data.first = data.first.united(mGrid.cellRect(mGrid.indexOf(p)));
         data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
-        //mRectIndex[*p]=mRectIndex[*p].united(mGrid.cellRect(mGrid.indexOf(p)));
+
         ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
-        if (!mRUIndex.contains(*p, ru))
-            mRUIndex.insertMulti(*p, ru);
+        // find all entries for the current grid id
+        QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
+
+        // look for the resource unit 'ru'
+        bool found = false;
+        while (pos!=mRUIndex.end() && pos.key() == *p) {
+            if (pos.value().first == ru) {
+                pos.value().second+= 0.01; // 1 pixel = 1% of the area
+                found=true;
+                break;
+            }
+            ++pos;
+        }
+        if (!found)
+            mRUIndex.insertMulti(*p, QPair<ResourceUnit*, double>(ru, 0.01));
+
     }
     return true;
 
@@ -66,6 +82,16 @@ bool MapGrid::loadFromFile(const QString &fileName)
         return loadFromGrid(gis_grid);
     }
     return false;
+}
+
+/// returns the list of resource units with at least one pixel within the area designated by 'id'
+QList<ResourceUnit *> MapGrid::resourceUnits(const int id) const
+{
+    QList<ResourceUnit *> result;
+    QList<QPair<ResourceUnit*, double> > list = mRUIndex.values();
+    for (int i=0;i<list.count();++i)
+        result.append( list[i].first);
+    return result;
 }
 
 /// return a list of all trees on the area denoted by 'id'
@@ -112,3 +138,5 @@ QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const 
     return result;
 
 }
+
+
