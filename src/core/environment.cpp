@@ -2,7 +2,7 @@
 #include "environment.h"
 #include "helper.h"
 #include "csvfile.h"
-
+#include "gisgrid.h"
 
 #include "climate.h"
 #include "speciesset.h"
@@ -12,13 +12,19 @@
 */
 Environment::Environment()
 {
-    mInfile=0;
+    mInfile = 0;
+    mGrid = 0;
+    mGridMode = false;
+    mCurrentSpeciesSet = 0;
+    mCurrentClimate = 0;
 }
 Environment::~Environment()
 {
     if (mInfile) {
         delete mInfile;
     }
+    if (mGrid)
+        delete mGrid;
 }
 
 bool Environment::loadFromFile(const QString &fileName)
@@ -50,17 +56,29 @@ bool Environment::loadFromString(const QString &source)
         mCreatedObjects.clear();
 
         int index;
-        // setup coordinates (x,y)
-        int ix,iy;
-        ix = mInfile->columnIndex("x");
-        iy = mInfile->columnIndex("y");
-        if (ix<0 || iy<0)
-            throw IException("Environment:: input file has no x/y coordinates!");
-        for (int row=0;row<mInfile->rowCount();row++) {
-            QString key=QString("%1_%2")
+        if (mGridMode) {
+            int id = mInfile->columnIndex("id");
+            if (id<0)
+                throw IException("Environment:: (grid mode) input file has no 'id' column!");
+            for (int row=0;row<mInfile->rowCount();row++) {
+                mRowCoordinates[mInfile->value(row, id).toString()] = row;
+            }
+
+        } else {
+            // ***  Matrix mode ******
+            // each row must contain 'x' and 'y' coordinates
+            // setup coordinates (x,y)
+            int ix,iy;
+            ix = mInfile->columnIndex("x");
+            iy = mInfile->columnIndex("y");
+            if (ix<0 || iy<0)
+                throw IException("Environment:: (matrix mode) input file has no x/y coordinates!");
+            for (int row=0;row<mInfile->rowCount();row++) {
+                QString key=QString("%1_%2")
                         .arg(mInfile->value(row, ix).toString())
                         .arg(mInfile->value(row, iy).toString());
-            mRowCoordinates[key] = row;
+                mRowCoordinates[key] = row;
+            }
         }
 
 
@@ -110,6 +128,10 @@ bool Environment::loadFromString(const QString &source)
             c->setup();
             mCurrentClimate = c;
         }
+        if (!mCurrentClimate && mClimate.count()>0)
+            mCurrentClimate = mClimate[0];
+        if (!mCurrentSpeciesSet && mSpeciesSets.count()>0)
+            mCurrentSpeciesSet = mSpeciesSets[0];
         return true;
 
     } catch(const IException &e) {
@@ -133,18 +155,28 @@ void Environment::setPosition(const QPointF position)
     // no changes occur, when the "environment" is not loaded
     if (!isSetup())
         return;
+    QString key;
+    int ix, iy, id;
+    if (mGridMode) {
+        // grid mode
+        id = mGrid->value(position);
+        key = QString::number(id);
+        if (id==-1)
+            return; // no data for the resource unit
+    } else {
+        // access data in the matrix by resource unit indices
+        ix = int(position.x() / 100.); // suppose size of 1 ha for each coordinate
+        iy = int(position.y() / 100.);
+        key=QString("%1_%2").arg(ix).arg(iy);
+    }
 
-    int ix, iy;
-    ix = int(position.x() / 100.); // suppose size of 1 ha for each coordinate
-    iy = int(position.y() / 100.);
-    QString key=QString("%1_%2").arg(ix).arg(iy);
     if (mRowCoordinates.contains(key)) {
         XmlHelper xml(GlobalSettings::instance()->settings());
         int row = mRowCoordinates[key];
         QString value;
         if (logLevelInfo()) qDebug() << "settting up point" << position << "with row" << row;
         for (int col=0;col<mInfile->colCount(); col++) {
-            if (mKeys[col]=="x" || mKeys[col]=="y") // ignore "x" and "y" keys
+            if (mKeys[col]=="x" || mKeys[col]=="y" || mKeys[col]=="id") // ignore "x" and "y" keys
                 continue;
             value = mInfile->value(row,col).toString();
             if (logLevelInfo()) qDebug() << "set" << mKeys[col] << "to" << value;
@@ -157,7 +189,20 @@ void Environment::setPosition(const QPointF position)
 
         }
 
-    } else
-        throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1m/%2m (mapped to indices %3/%4).")
-                         .arg(position.x()).arg(position.y()).arg(ix).arg(iy));
+    } else {
+        if (mGridMode)
+            throw IException(QString("Environment:setposition: invalid grid id (or not present in input file): %1m/%2m (mapped to id %3).")
+                             .arg(position.x()).arg(position.y()).arg(id));
+        else
+            throw IException(QString("Environment:setposition: invalid coordinates (or not present in input file): %1m/%2m (mapped to indices %3/%4).")
+                             .arg(position.x()).arg(position.y()).arg(ix).arg(iy));
+    }
+}
+
+bool Environment::setGridMode(const QString &grid_file_name)
+{
+    mGrid = new GisGrid();
+    mGrid->loadFromFile(grid_file_name);
+    mGridMode = true;
+    return true;
 }

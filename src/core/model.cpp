@@ -136,6 +136,40 @@ void Model::setupSpace()
     mHeightGrid->wipe(); // set all to zero
     Tree::setGrid(mGrid, mHeightGrid);
 
+    // load environment (multiple climates, speciesSets, ...
+    if (mEnvironment)
+        delete mEnvironment;
+    mEnvironment = new Environment();
+
+    if (xml.valueBool("environmentEnabled", false)) {
+        QString env_file = GlobalSettings::instance()->path(xml.value("environmentFile"));
+        bool grid_mode = (xml.value("environmentMode")=="grid");
+        QString grid_file = GlobalSettings::instance()->path(xml.value("environmentGrid"));
+        if (grid_mode && QFile::exists(grid_file))
+            mEnvironment->setGridMode(grid_file);
+
+        if (!mEnvironment->loadFromFile(env_file))
+            return;
+        // retrieve species sets and climates:
+        mSpeciesSets << mEnvironment->speciesSetList();
+        mClimates << mEnvironment->climateList();
+    } else {
+        // load and prepare default values
+        // (2) SpeciesSets: currently only one a global species set.
+        SpeciesSet *speciesSet = new SpeciesSet();
+        mSpeciesSets.push_back(speciesSet);
+        speciesSet->setup();
+        // Climate...
+        Climate *c = new Climate();
+        mClimates.push_back(c);
+        mEnvironment->setDefaultValues(c, speciesSet);
+    } // environment?
+
+    // time series data
+    if (xml.valueBool(".timeEventsEnabled", false)) {
+        mTimeEvents = new TimeEvents();
+        mTimeEvents->loadFromFile(xml.value("timeEventsFile")) ;
+    }
 
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();
@@ -297,36 +331,6 @@ void Model::loadProject()
     // class size of snag classes
     Snag::setupThresholds(xml.valueDouble("model.settings.soil.swdDBHClass12"),
                           xml.valueDouble("model.settings.soil.swdDBHClass23"));
-
-    // load environment (multiple climates, speciesSets, ...
-    if (mEnvironment)
-        delete mEnvironment;
-    mEnvironment = new Environment();
-
-    if (xml.valueBool("model.world.environmentEnabled", false)) {
-        QString envFile = xml.value("model.world.environmentFile");
-        if (!mEnvironment->loadFromFile(envFile))
-            return;
-        // retrieve species sets and climates:
-        mSpeciesSets << mEnvironment->speciesSetList();
-        mClimates << mEnvironment->climateList();
-    } else {
-        // load and prepare default values
-        // (2) SpeciesSets: currently only one a global species set.
-        SpeciesSet *speciesSet = new SpeciesSet();
-        mSpeciesSets.push_back(speciesSet);
-        speciesSet->setup();
-        // Climate...
-        Climate *c = new Climate();
-        mClimates.push_back(c);
-        mEnvironment->setDefaultValues(c, speciesSet);
-    } // environment?
-
-    // time series data
-    if (xml.valueBool("model.world.timeEventsEnabled", false)) {
-        mTimeEvents = new TimeEvents();
-        mTimeEvents->loadFromFile(xml.value("model.world.timeEventsFile")) ;
-    }
 
     setupSpace();
     if (mRU.isEmpty())

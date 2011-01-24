@@ -60,7 +60,8 @@ public:
     double minValue() const { return min_value; } ///< minimum data value
     double maxValue() const { return max_value; } ///< maximum data value
     int noDataValue() const { return mNODATAValue; } ///< no data value of the grid
-    /// get grid value at (X/Y); returs NODATAValue if out of range
+    /// get grid value at local coordinates (X/Y); returs NODATAValue if out of range
+    /// @p X and @p Y are local coordinates.
     double value(const QPointF &p) const {return value(p.x(), p.y());}
     double value(const double X, const double Y) const;
     double value(const int indexx, const int indexy) const; ///< get value of grid at index positions

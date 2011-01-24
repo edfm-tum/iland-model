@@ -5,6 +5,7 @@
 class Climate;
 class SpeciesSet;
 class CSVFile;
+class GisGrid;
 
 /** Environment specifes the geographical properties of the landscape.
     This is achieved by specifying (user defined) values (e.g. soil depth) for each resource unit.
@@ -16,6 +17,8 @@ public:
     Environment();
     ~Environment();
     bool isSetup() const { return mInfile!=0; }
+    /// switch to 'grid-mode': load the grid provided by @p grid_file_name
+    bool setGridMode(const QString &grid_file_name);
     // setup
     void setDefaultValues(Climate *climate, SpeciesSet *speciesSet) {mCurrentClimate=climate; mCurrentSpeciesSet=speciesSet; }
     bool loadFromString(const QString &source);
@@ -28,6 +31,7 @@ public:
     SpeciesSet *speciesSet() const {return mCurrentSpeciesSet;} ///< get species set on current pos
 
 private:
+    bool mGridMode;
     Climate *mCurrentClimate; ///< climate at current location
     SpeciesSet *mCurrentSpeciesSet; ///< species set at current location
     QList<Climate*> mClimate; ///< created climates.
@@ -36,6 +40,7 @@ private:
     QHash<QString, int> mRowCoordinates;
     QHash<QString, void*> mCreatedObjects;
     CSVFile *mInfile;
+    GisGrid *mGrid;
 
 };
 
