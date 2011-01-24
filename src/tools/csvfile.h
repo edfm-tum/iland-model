@@ -37,6 +37,9 @@ public slots:
     bool loadFromString(const QString &content); ///< load content from a given string.
     QString columnName(const int col) { if (col<mColCount) return mCaptions[col]; return QString(); } ///< get caption of ith column.
     int columnIndex(const QString &columnName) const { return mCaptions.indexOf(columnName); } ///< index of column or -1 if not available
+    // value function with a column name
+    QVariant value(const int row, const QString column_name) const { return value(row, columnIndex(column_name)); }
+
     QVariant value(const int row, const int col) const; ///< get value of cell denoted by @p row and @p cell. Not available in streaming mode.
     QVariant row(const int row); ///< retrieve content of the full row @p row as a Variant
 

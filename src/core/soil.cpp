@@ -168,6 +168,17 @@ QList<QVariant> Soil::debugList()
     return list;
 }
 
+void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
+{
+    // dwd
+    mYR.C *= (1. - DWDfrac);
+    // litter
+    mYL.C *= (1. - litterFrac);
+    // old soil organic matter
+    mSOM.C *= (1. - soilFrac);
+
+}
+
 
 
 

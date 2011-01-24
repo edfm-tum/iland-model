@@ -15,6 +15,11 @@ public:
     void setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha); ///< provide values for input pools
     void setClimateFactor(const double climate_factor_re) { mRE = climate_factor_re; } ///< set the climate decomposition factor for the current year
     void calculateYear(); ///< main calculation function: calculates the update of state variables
+    /// remove part of the carbon (e.g.: due to fire). N content is not changed.
+    /// @param DWDfrac fraction of downed woody debris (yR) to remove (0: nothing, 1: remove 100% percent)
+    /// @param litterFrac fraction of litter pools (yL) to remove (0: nothing, 1: remove 100% percent)
+    /// @param soilFrac fraction of soil pool (SOM) to remove (0: nothing, 1: remove 100% percent)
+    void disturbance(double DWDfrac, double litterFrac, double soilFrac);
 
     // access
     const CNPool &youngLabile() const { return mYL;} ///< young labile matter (t/ha)

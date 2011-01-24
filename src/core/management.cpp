@@ -6,6 +6,7 @@
 #include "tree.h"
 #include "expressionwrapper.h"
 #include "sapling.h"
+#include "soil.h"
 
 #include "climateconverter.h"
 #include "csvfile.h"
@@ -122,7 +123,7 @@ void Management::loadScript(const QString &fileName)
 
 }
 
-void Management::remain(int number)
+int Management::remain(int number)
 {
     qDebug() << "remain called (number): " << number;
     Model *m = GlobalSettings::instance()->model();
@@ -138,6 +139,7 @@ void Management::remain(int number)
         trees.removeAt(index);
     }
     mRemoved += to_kill;
+    return to_kill;
 }
 
 
@@ -353,7 +355,7 @@ void Management::killSaplings(QScriptValue map_grid_object, int key)
     // the storage for unused/invalid saplingtrees is released lazily (once a year, after growth)
 }
 
-void Management::updateSoilCarbon(QScriptValue map_grid_object, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
+void Management::removeSoilCarbon(QScriptValue map_grid_object, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
 {
     MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
     if (!wrap) {
@@ -366,6 +368,10 @@ void Management::updateSoilCarbon(QScriptValue map_grid_object, int key, double 
         ResourceUnit *ru = ru_areas[i].first;
         double area_factor = ru_areas[i].second; // 0..1
         total_area += area_factor;
+        // swd
+        ru->snag()->removeCarbon(1. - SWDfrac*area_factor);
+        // soil pools
+        ru->soil()->disturbance(DWDfrac*area_factor, litterFrac*area_factor, soilFrac*area_factor);
         qDebug() << ru->index() << area_factor;
     }
     qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);

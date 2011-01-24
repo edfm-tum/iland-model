@@ -43,6 +43,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
 
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
     if (logLevelDebug()) qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
+    mCanopyConductance = 0.;
     mLastYear = -1;
 }
 
