@@ -156,7 +156,7 @@ void Environment::setPosition(const QPointF position)
     if (!isSetup())
         return;
     QString key;
-    int ix, iy, id;
+    int ix=-1, iy=-1, id=-1;
     if (mGridMode) {
         // grid mode
         id = mGrid->value(position);
