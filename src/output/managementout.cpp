@@ -12,7 +12,7 @@ ManagementOut::ManagementOut()
                    "The output is created after the growth of the year, " \
                    "i.e. the growth of the year trees are dying in is included!  " \
                    " ");
-    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species()
+    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("count_ha", "tree count (living)", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
               << OutputColumn("height_avg_m", "average tree height (m)", OutDouble)
@@ -35,7 +35,7 @@ void ManagementOut::exec()
             const StandStatistics &stat = rus->constStatisticsMgmt();
             if (stat.count()==0)
                 continue;
-            *this << currentYear() << ru->index() << rus->species()->id(); // keys
+            *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
             *this << stat.count() << stat.dbh_avg() << stat.height_avg() << stat.volume() << stat.basalArea();
 
             writeRow();

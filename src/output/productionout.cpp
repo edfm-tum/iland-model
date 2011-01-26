@@ -9,7 +9,7 @@ ProductionOut::ProductionOut()
 {
     setName("Production per month, species and resource unit", "production_month");
     setDescription("Details about the 3PG production submodule on monthly basis and for each species and resource unit.");
-    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species()
+    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("month", "month of year", OutInteger)
               << OutputColumn("tempResponse", "monthly average of daily respose value temperature", OutDouble)
               << OutputColumn("waterResponse", "monthly average of daily respose value soil water", OutDouble)
@@ -31,7 +31,7 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
     const Production3PG &prod = rus->prod3PG();
     const SpeciesResponse *resp = prod.mResponse;
     for (int i=0;i<12;i++) {
-        *this << currentYear() << rus->ru()->index() << rus->species()->id();
+        *this << currentYear() << rus->ru()->index() << rus->ru()->id() << rus->species()->id();
         *this << (i+1); // month
         // responses
         *this <<  resp->tempResponse()[i]

@@ -12,7 +12,7 @@ TreeOut::TreeOut()
     setDescription("Output of indivdual trees. Use the ''filter'' property to reduce amount of data (filter by resource-unit, year, species, ...).\n" \
                    "The output is triggered after the growth of the current season (trees died in the current year show therefore '1' as ''isDead''). " \
                    "Initial values (without any growth) are output as 'startyear-1'.");
-    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species()
+    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
             << OutputColumn("id", "id of the tree", OutInteger)
             << OutputColumn("x", "position of the tree, x-direction (m)", OutDouble)
             << OutputColumn("y", "position of the tree, y-direction (m)", OutDouble)
@@ -55,7 +55,7 @@ void TreeOut::exec()
             if (!mFilter.execute())
                 continue;
         }
-        *this << currentYear() << t->ru()->index() << t->species()->id();
+        *this << currentYear() << t->ru()->index() << t->ru()->id() << t->species()->id();
         *this << t->id() << t->position().x() << t->position().y() << t->dbh() << t->height() << (t->isDead()?1:0) << t->basalArea() << t->volume();
         *this << t->leafArea() << t->mFoliageMass << t->mWoodyMass <<  t->mFineRootMass << t->mCoarseRootMass;
         *this << t->lightResourceIndex() << t->mLightResponse << t->mStressIndex << t->mNPPReserve;

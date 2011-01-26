@@ -17,7 +17,8 @@ public:
             mName(name), mDescription(description), mDatatype(datatype) {}
     static OutputColumn year() { return OutputColumn("year", "simulation year", OutInteger); }
     static OutputColumn species() { return OutputColumn("species", "tree species", OutString); }
-    static OutputColumn ru() { return OutputColumn("ru", "id of ressource unit", OutInteger); }
+    static OutputColumn ru() { return OutputColumn("ru", "index of ressource unit", OutInteger); }
+    static OutputColumn id() { return OutputColumn("rid", "id of ressource unit (-1: no ids set)", OutInteger); }
     const QString &name() const { return mName; }
     const QString &description() const { return mDescription; }
     QString datatype() const { switch(mDatatype) { case OutInteger: return QString("integer"); case OutDouble: return QString("double"); default: return QString("string"); } }

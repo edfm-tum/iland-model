@@ -16,7 +16,7 @@ DynamicStandOut::DynamicStandOut()
                    "Both filters are valid expressions (for resource unit level and tree level, respectively). For example, a ''treefilter'' of 'speciesindex=0' reduces the output to just one species.\n" \
                    "Each field is defined as: ''field.aggregatio''n (separated by a dot). A ''field'' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
                    "mean, sum, min, max, p25, p50, p75, p5, 10, p90, p95 (pXX=XXth percentile).");
-    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::species();
+    columns() << OutputColumn::year() << OutputColumn::ru()  << OutputColumn::id() << OutputColumn::species();
     // other colums are added during setup...
 }
 
@@ -32,7 +32,7 @@ void DynamicStandOut::setup()
     mRUFilter.setExpression(filter);
     mTreeFilter.setExpression(tree_filter);
     // clear columns
-    columns().erase(columns().begin()+3, columns().end());
+    columns().erase(columns().begin()+4, columns().end());
     mFieldList.clear();
 
     // setup fields
@@ -133,7 +133,7 @@ void DynamicStandOut::exec()
                     continue;
 
                 if (isRowEmpty())
-                    *this << currentYear() << ru->index() << rus->species()->id(); // keys
+                    *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
 
                 // calculate statistics
                 stat.setData(data);
