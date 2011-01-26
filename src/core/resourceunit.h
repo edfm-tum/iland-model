@@ -28,6 +28,7 @@ public:
     void setSpeciesSet(SpeciesSet *set);
     void setClimate(Climate* climate) { mClimate = climate; }
     void setBoundingBox(const QRectF &bb);
+    void setID(const int id) { mID = id; }
     // getter for a thread-local random number generator object. if setRandomGenerator() is used, this saves some overhead
     MTRand &randomGenerator() const { if (mRandomGenerator) return *mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
     void setRandomGenerator() { mRandomGenerator = &GlobalSettings::instance()->randomGenerator(); } // fetch random generator of the current thread
@@ -49,6 +50,7 @@ public:
 
     // properties
     int index() const { return mIndex; }
+    int id() const { return mID; }
     const QRectF &boundingBox() const { return mBoundingBox; }
     const QPoint &cornerPointOffset() const { return mCornerCoord; }
     double area() const { return mPixelCount*100; } ///< get the resuorce unit area in m2
@@ -97,7 +99,8 @@ public:
     void yearEnd(); ///< called at the end of a year (after regeneration??)
 
 private:
-    int mIndex; // internal index
+    int mIndex; ///< internal index
+    int mID; ///< ID provided by external stand grid
     Climate *mClimate; ///< pointer to the climate object of this RU
     SpeciesSet *mSpeciesSet; ///< pointer to the species set for this RU
     WaterCycle *mWater; ///< link to the Soil water calculation engine

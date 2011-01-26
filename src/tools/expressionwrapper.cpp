@@ -106,7 +106,7 @@ QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveAre
                       << "leafAreaIndex" << "aging" << "cohortCount" << "saplingCount" << "saplingAge"
                       << "canopyConductance"
                       << "soilC" << "soilN"
-                      << "snagC";
+                      << "snagC" << "index";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -119,7 +119,7 @@ double RUWrapper::value(const int variableIndex)
     Q_ASSERT(mRU!=0);
 
     switch (variableIndex - baseVarListCount) {
-    case 0: return mRU->index();
+    case 0: return mRU->id(); // id from grid
     case 1: return mRU->mEffectiveArea_perWLA;
     case 2: return mRU->mUnitVariables.nitrogenAvailable;
     case 3: return mRU->waterCycle()->soilDepth();
@@ -140,6 +140,7 @@ double RUWrapper::value(const int variableIndex)
     case 17: if (mRU->soil()) return mRU->soil()->youngLabile().N + mRU->soil()->youngRefractory().N + mRU->soil()->oldOrganicMatter().N; else return 0.;
         // snags
     case 18: if (mRU->snag()) return mRU->snag()->totalCarbon(); else return 0.;
+    case 19: return mRU->index(); // numeric index
 
     }
     return ExpressionWrapper::value(variableIndex);

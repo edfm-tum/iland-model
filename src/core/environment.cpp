@@ -17,6 +17,7 @@ Environment::Environment()
     mGridMode = false;
     mCurrentSpeciesSet = 0;
     mCurrentClimate = 0;
+    mCurrentID = 0;
 }
 Environment::~Environment()
 {
@@ -160,6 +161,7 @@ void Environment::setPosition(const QPointF position)
     if (mGridMode) {
         // grid mode
         id = mGrid->value(position);
+        mCurrentID = id;
         key = QString::number(id);
         if (id==-1)
             return; // no data for the resource unit

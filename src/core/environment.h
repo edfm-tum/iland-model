@@ -29,9 +29,11 @@ public:
     void setPosition(const QPointF position); ///< set position (metric coordinates). Subsequent calls to retriever functions are for the current location.
     Climate *climate() const { return mCurrentClimate;} ///< get climate at current pos
     SpeciesSet *speciesSet() const {return mCurrentSpeciesSet;} ///< get species set on current pos
+    int currentID() const { return mCurrentID; } ///< current grid id (in grid mode, otherwise 0)
 
 private:
     bool mGridMode;
+    int mCurrentID; ///< in grid mode, current id is the (grid) ID of the resource unit
     Climate *mCurrentClimate; ///< climate at current location
     SpeciesSet *mCurrentSpeciesSet; ///< species set at current location
     QList<Climate*> mClimate; ///< created climates.

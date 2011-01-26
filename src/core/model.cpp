@@ -136,6 +136,19 @@ void Model::setupSpace()
     mHeightGrid->wipe(); // set all to zero
     Tree::setGrid(mGrid, mHeightGrid);
 
+    // setup the spatial location of the project area
+    if (xml.hasNode("location")) {
+        // setup of spatial location
+        double loc_x = xml.valueDouble("location.x");
+        double loc_y = xml.valueDouble("location.y");
+        double loc_z = xml.valueDouble("location.z");
+        double loc_rot = xml.valueDouble("location.rotation");
+        setupGISTransformation(loc_x, loc_y, loc_z, loc_rot);
+        qDebug() << "setup of spatial location: x/y/z" << loc_x << loc_y << loc_z << "rotation:" << loc_rot;
+    } else {
+        setupGISTransformation(0., 0., 0., 0.);
+    }
+
     // load environment (multiple climates, speciesSets, ...
     if (mEnvironment)
         delete mEnvironment;
@@ -185,6 +198,7 @@ void Model::setupSpace()
             new_ru->setClimate( mEnvironment->climate() );
             new_ru->setSpeciesSet( mEnvironment->speciesSet() );
             new_ru->setup();
+            new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
             new_ru->setBoundingBox(r);
             mRU.append(new_ru);
             *p = new_ru; // save also in the RUmap grid
@@ -198,15 +212,7 @@ void Model::setupSpace()
             *p = mRU.value(ru_index++);
         }
         qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
-        if (xml.hasNode("location")) {
-            // setup of spatial location
-            double loc_x = xml.valueDouble("location.x");
-            double loc_y = xml.valueDouble("location.y");
-            double loc_z = xml.valueDouble("location.z");
-            double loc_rot = xml.valueDouble("location.rotation");
-            setupGISTransformation(loc_x, loc_y, loc_z, loc_rot);
-            qDebug() << "setup of spatial location: x/y/z" << loc_x << loc_y << loc_z << "rotation:" << loc_rot;
-        }
+
         bool mask_is_setup = false;
 
         if (xml.valueBool("standGrid.enabled")) {

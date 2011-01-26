@@ -46,6 +46,7 @@ ResourceUnit::ResourceUnit(const int index)
     mWater = new WaterCycle();
     mSnag = 0;
     mSoil = 0;
+    mID = 0;
 }
 
 void ResourceUnit::setup()
