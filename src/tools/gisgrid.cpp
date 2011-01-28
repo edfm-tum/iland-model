@@ -74,7 +74,7 @@ bool GisGrid::loadFromFile(const QString &fileName)
             pos++; // skip comments
             continue;
         }
-        key=line.left(line.indexOf(' '));
+        key=line.left(line.indexOf(' ')).toLower();
         if (key.length()>0 && (key.at(0).isNumber() || key.at(0)=='-')) {
             header=false;
         } else {
@@ -89,10 +89,10 @@ bool GisGrid::loadFromFile(const QString &fileName)
                 mOrigin.setY(value);
             else if (key=="cellsize")
                 mCellSize = value;
-            else if (key=="NODATA_value")
+            else if (key=="nodata_value")
                 mNODATAValue=value;
             else
-                throw std::logic_error(std::string("GISGrid: invalid key ") + key.toStdString());
+                throw IException( QString("GISGrid: invalid key %1.").arg(key));
             pos++;
         }
     } while (header);

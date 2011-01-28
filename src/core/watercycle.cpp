@@ -21,7 +21,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
     double pct_sand = xml.valueDouble("model.site.pctSand");
     double pct_silt = xml.valueDouble("model.site.pctSilt");
     double pct_clay = xml.valueDouble("model.site.pctClay");
-    if (pct_sand + pct_silt + pct_clay != 100.)
+    if (fabs(100. - (pct_sand + pct_silt + pct_clay)) > 0.01)
         throw IException(QString("Setup Watercycle: soil composition percentages do not sum up to 100. Sand: %1, Silt: %2 Clay: %3").arg(pct_sand).arg(pct_silt).arg(pct_clay));
 
     // calculate soil characteristics based on empirical functions (Schwalm & Ek, 2004)
