@@ -915,6 +915,14 @@ void MainWindow::on_actionSnag_Dynamics_triggered()
 
 }
 
+
+void MainWindow::on_actionImageToClipboard_triggered()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setImage( ui->PaintWidget->drawImage() );
+    qDebug() << "copied image to clipboard.";
+}
+
 void MainWindow::saveDebugOutputs()
 {
     // save to files if switch is true
@@ -1216,4 +1224,7 @@ void MainWindow::on_actionDebug_triggered()
 
     setLogLevel(level);
 }
+
+
+
 

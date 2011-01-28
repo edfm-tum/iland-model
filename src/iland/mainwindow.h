@@ -101,6 +101,7 @@ private slots:
     void on_actionModelCreate_triggered();
     void on_actionFON_grid_triggered();
     void on_actionTreelist_triggered();
+    void on_actionImageToClipboard_triggered();
     void on_openFile_clicked();
     void on_pbSetAsDebug_clicked();
 

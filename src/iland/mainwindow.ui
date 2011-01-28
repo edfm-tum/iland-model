@@ -54,7 +54,7 @@
    </property>
    <widget class="QMenu" name="menuOutput_menu">
     <property name="title">
-     <string>Output-menu</string>
+     <string>Misc</string>
     </property>
     <widget class="QMenu" name="menuLog_Level">
      <property name="title">
@@ -70,6 +70,8 @@
     <addaction name="actionOutput_table_description"/>
     <addaction name="actionTimers"/>
     <addaction name="menuLog_Level"/>
+    <addaction name="separator"/>
+    <addaction name="actionImageToClipboard"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -963,6 +965,14 @@ QProgressBar::chunk {
    </property>
    <property name="text">
     <string>Error</string>
+   </property>
+  </action>
+  <action name="actionImageToClipboard">
+   <property name="text">
+    <string>Copy Image to Clipboard</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>
