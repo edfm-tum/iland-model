@@ -236,10 +236,11 @@ void  Expression::parse(ExpressionWrapper *wrapper)
         m_parsed=true;
 
     } catch (const IException& e) {
-        m_errorMsg =QString("Expression::parse: Error in: %1 : %2").arg(m_expression, e.toString());
+        m_errorMsg =QString("Expression::parse: Error in: %1 : %2").arg(m_expression, e.message());
         if (m_catchExceptions)
             Helper::msg(m_errorMsg);
-        throw IException(m_errorMsg);
+        else
+            throw IException(m_errorMsg);
     }
 }
 
@@ -249,7 +250,7 @@ void  Expression::parse_levelL0()
     QString op;
     parse_levelL1();
 
-    if (m_state==etLogical)  {
+    while (m_state==etLogical)  {
         op=m_token.toLower();
         next_token();
         parse_levelL1();
@@ -257,19 +258,12 @@ void  Expression::parse_levelL0()
         if (op=="and") logicaltok=opAnd;
         if (op=="or") logicaltok=opOr;
 
-
         m_execList[m_execIndex].Type=etLogical;
         m_execList[m_execIndex].Value=0;
         m_execList[m_execIndex++].Index=logicaltok;
         checkBuffer(m_execIndex);
     }
-    /*       if (op=='+')
-          FResult=temp+FResult;
-        if (op=='-')
-          FResult=temp-FResult;     */
-    //if (m_token=="+" || m_token=="-") {
-    //   parse_level0();
-    //}
+
 }
 void  Expression::parse_levelL1()
 {
@@ -294,13 +288,6 @@ void  Expression::parse_levelL1()
         m_execList[m_execIndex++].Index=logicaltok;
         checkBuffer(m_execIndex);
     }
-    /*       if (op=='+')
-          FResult=temp+FResult;
-        if (op=='-')
-          FResult=temp-FResult;     */
-    //if (m_token=="+" || m_token=="-") {
-    //   parse_level0();
-    //}
 }
 
 void  Expression::parse_level0()
@@ -318,13 +305,6 @@ void  Expression::parse_level0()
         m_execList[m_execIndex++].Index=op.at(0);///op.constData()[0];
         checkBuffer(m_execIndex);
     }
-    /*       if (op=='+')
-          FResult=temp+FResult;
-        if (op=='-')
-          FResult=temp-FResult;     */
-    //if (m_token=="+" || m_token=="-") {
-    //   parse_level0();
-    //}
 }
 
 void  Expression::parse_level1()
@@ -343,11 +323,6 @@ void  Expression::parse_level1()
         m_execList[m_execIndex++].Index=op.at(0);
         checkBuffer(m_execIndex);
     }
-    /*       if (op=="*")
-           FResult=temp*FResult;
-        if (op=="/")
-           FResult=temp/FResult; */
-
 }
 
 void  Expression::atom()
@@ -499,8 +474,11 @@ int Expression::getFuncIndex(const QString& functionName)
 
 double Expression::execute(double *varlist, ExpressionWrapper *object) const
 {
-    if (!m_parsed)
+    if (!m_parsed) {
         const_cast<Expression*>(this)->parse(object);
+        if (!m_parsed)
+            return 0.;
+    }
     const double *varSpace = varlist?varlist:m_varSpace;
     ExtExecListItem *exec=m_execList;
     int i;
