@@ -57,6 +57,9 @@ public:
     void paint(QString file_name, double min_value, double max_value);
 
 public slots:
+    // query
+    double area(int id); ///< retrieve the area (m2) of the polygon denoted by 'id'
+    // actions
     void load(QString file_name);
     void saveAsImage(QString file);
 

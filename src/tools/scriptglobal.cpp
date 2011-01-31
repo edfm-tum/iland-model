@@ -177,3 +177,10 @@ QString MapGridWrapper::name() const
     else
         return "invalid";
 }
+double MapGridWrapper::area(int id) {
+    if (mMap && mMap->isValid())
+        return mMap->area(id);
+    else
+        return -1;
+}
+

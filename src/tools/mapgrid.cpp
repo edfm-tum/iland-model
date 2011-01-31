@@ -96,14 +96,14 @@ QList<ResourceUnit *> MapGrid::resourceUnits(const int id) const
     return result;
 }
 
-/// return a list of all trees on the area denoted by 'id'
+/// return a list of all living trees on the area denoted by 'id'
 QList<Tree *> MapGrid::trees(const int id) const
 {
     QList<Tree*> tree_list;
     QList<ResourceUnit*> resource_units = resourceUnits(id);
     foreach(ResourceUnit *ru, resource_units) {
         foreach(const Tree &tree, ru->constTrees())
-            if (gridValue(tree.positionIndex()) == id)
+            if (gridValue(tree.positionIndex()) == id && !tree.isDead())
                 tree_list.append( & const_cast<Tree&>(tree) );
     }
     return tree_list;
