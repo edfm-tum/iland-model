@@ -54,6 +54,8 @@ public:
         void   setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace);
         void enableIncSum();
         double udfRandom(int type, double p1, double p2) const; ///< user defined function rnd() (normal distribution does not work now!)
+        // other maintenance
+        static void addConstant(const QString const_name, const double const_value);
 private:
         enum ETokType {etNumber, etOperator, etVariable, etFunction, etLogical, etCompare, etStop, etUnknown, etDelimeter};
         enum EValueClasses {evcBHD, evcHoehe, evcAlter};

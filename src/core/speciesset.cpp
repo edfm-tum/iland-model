@@ -68,6 +68,8 @@ int SpeciesSet::setup()
         mSpecies.insert(s->id(), s); // store
         if (s->active())
             mActiveSpecies.append(s);
+
+        Expression::addConstant(s->id(), s->index());
     } // while query.next()
     qDebug() << "loaded" << mSpecies.count() << "active species:";
     qDebug() << "index, id, name";
