@@ -141,7 +141,7 @@ bool Environment::loadFromString(const QString &source)
             addMsg = QString("last Climate: %1 ").arg(mClimate.last()->name());
         if (!mSpeciesSets.isEmpty())
             addMsg += QString("last Speciesset table: %1").arg(mSpeciesSets.last()->name());
-        QString error_msg = QString("An error occured during the setup of the environment: \n%1\n%2").arg(e.toString()).arg(addMsg);
+        QString error_msg = QString("An error occured during the setup of the environment: \n%1\n%2").arg(e.message()).arg(addMsg);
         qDebug() << error_msg;
         Helper::msg(error_msg);
         return false;

@@ -57,7 +57,7 @@ public:
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
     double stockableArea() const { return mStockableArea; } ///< total stockable area in m2
     double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
-    double leafAreaIndex() const { return mAggregatedLA / area(); } ///< Total Leaf Area Index
+    double leafAreaIndex() const { return stockableArea()?mAggregatedLA / stockableArea():0.; } ///< Total Leaf Area Index
     double leafArea() const { return mAggregatedLA; } ///< total leaf area of resource unit (m2)
     double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
     const double &LRImodifier() const { return mLRI_modification; }

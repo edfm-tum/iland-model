@@ -48,8 +48,8 @@ void StandStatistics::calculate()
     if (mCount) {
         mAverageDbh = mSumDbh / dcount;
         mAverageHeight = mSumHeight / dcount;
-        if (mRUS)
-            mLeafAreaIndex /= mRUS->ru()->area(); // convert from leafarea to LAI
+        if (mRUS && mRUS->ru()->stockableArea()>0.)
+            mLeafAreaIndex /= mRUS->ru()->stockableArea(); // convert from leafarea to LAI
     }
     if (mCohortCount)
         mAverageSaplingAge = mSumSaplingAge / double(mCohortCount);

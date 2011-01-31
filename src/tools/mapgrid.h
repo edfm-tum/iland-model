@@ -18,6 +18,7 @@ public:
     bool loadFromFile(const QString &fileName); ///< load ESRI style text file
     bool loadFromGrid(const GisGrid &source_grid); ///< load from an already present GisGrid
     // access
+    const QString &name() const { return mName; }
     bool isValid() const { return !mGrid.isEmpty(); }
     const Grid<int> &grid() const { return mGrid; }
     // access
@@ -38,6 +39,7 @@ public:
     inline bool hasValue(const int id, const QPoint &lif_grid_coords) const { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight) == id; }
     inline int gridValue(const QPoint &lif_grid_coords) const  { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight); }
 private:
+    QString mName; ///< file name of the grid
     Grid<int> mGrid;
     QHash<int, QPair<QRectF,double> > mRectIndex; ///< holds the extent and area for each map-id
     QMultiHash<int, QPair<ResourceUnit*, double> > mRUIndex; ///< holds a list of resource units + areas per map-id

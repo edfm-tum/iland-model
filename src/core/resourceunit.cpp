@@ -334,7 +334,7 @@ void ResourceUnit::createStandStatistics()
         mStatistics.add(mRUSpecies[i]->statistics());
     }
     mStatistics.calculate();
-    mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*stockedArea()):0.;
+    mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*stockableArea()):0.;
     if (mAverageAging<0. || mAverageAging>1.)
         qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
 }

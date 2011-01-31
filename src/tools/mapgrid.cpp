@@ -78,7 +78,9 @@ bool MapGrid::loadFromGrid(const GisGrid &source_grid)
 bool MapGrid::loadFromFile(const QString &fileName)
 {
     GisGrid gis_grid;
+    mName = "invalid";
     if (gis_grid.loadFromFile(fileName)) {
+        mName = fileName;
         return loadFromGrid(gis_grid);
     }
     return false;

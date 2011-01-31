@@ -416,7 +416,7 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
             const_cast<ResourceUnitSpecies*>(rus)->calclulateEstablishment();
         }
     } catch (const IException& e) {
-        Helper::msg(e.toString());
+        Helper::msg(e.message());
     }
     return unit;
 }
@@ -725,10 +725,11 @@ void Model::calculateStockableArea()
 {
 
     foreach(ResourceUnit *ru, mRU) {
-        if (ru->id()==-1) {
-            ru->setStockableArea(0.);
-            continue;
-        }
+// //
+//        if (ru->id()==-1) {
+//            ru->setStockableArea(0.);
+//            continue;
+//        }
         GridRunner<HeightGridValue> runner(*mHeightGrid, ru->boundingBox());
         int valid=0, total=0;
         while (runner.next()) {
@@ -736,9 +737,13 @@ void Model::calculateStockableArea()
                 valid++;
             total++;
         }
-        if (total)
+        if (total) {
             ru->setStockableArea( cHeightPixelArea * valid);
-        else
+            if (valid>0 && ru->id()==-1) {
+                qDebug() << "Warning: a resource unit has id=-1 but stockable area (id was set to 0)!!! ru: " << ru->boundingBox() << "with index" << ru->index();
+                ru->setID(0);
+            }
+        } else
             throw IException("calculateStockableArea: resource unit without pixels!");
 
     }

@@ -57,7 +57,7 @@ void Tests::testXml()
         environment.setPosition(QPointF(20,200)); // 0/2
         environment.setPosition(QPointF(-34,10)); // exception
     } catch (const IException &ex) {
-        qDebug() << ex.toString();
+        qDebug() << ex.message();
     }
 }
 
@@ -191,7 +191,7 @@ void Tests::climate()
         mon=(mon+1)%12;
     }
     } catch (IException &e) {
-        Helper::msg(e.toString());
+        Helper::msg(e.message());
     }
 }
 
@@ -276,7 +276,7 @@ void Tests::climateResponse()
 
     // test phenology
     } catch (IException &e) {
-        Helper::msg(e.toString());
+        Helper::msg(e.message());
     }
 }
 
@@ -315,7 +315,7 @@ void Tests::multipleLightRuns(const QString &fileName)
 
         }
     } catch (IException &e) {
-        Helper::msg(e.toString());
+        Helper::msg(e.message());
     }
 }
 
@@ -431,7 +431,7 @@ void Tests::testMultithreadExecute()
     try {
         tme_exp.parse();
     } catch(const IException &e) {
-        QString error_msg = e.toString();
+        QString error_msg = e.message();
         Helper::msg(error_msg);
         qDebug() << error_msg;
     }
@@ -449,7 +449,7 @@ void Tests::testMultithreadExecute()
     try {
         tme_exp.parse();
     } catch(const IException &e) {
-        QString error_msg = e.toString();
+        QString error_msg = e.message();
         Helper::msg(error_msg);
         qDebug() << error_msg;
     }

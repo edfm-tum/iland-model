@@ -12,7 +12,7 @@ class IException : public std::runtime_error {
    //IException(QString msg)  { GlobalSettings::instance()->addErrorMessage(msg); }
    //QString toString() const { return GlobalSettings::instance()->errorMessage(); }
    IException(QString msg) : std::runtime_error("iLand model exception.") { add(msg); }
-   const QString &toString() const { return mMsg; }
+   const QString &message() const { return mMsg; }
    void add(const QString &msg) { if(!mMsg.isEmpty()) mMsg+="\n"; mMsg += msg; }
 private:
    QString mMsg;

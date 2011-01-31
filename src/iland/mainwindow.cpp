@@ -732,6 +732,9 @@ void MainWindow::setupModel()
 
     // create the model
     mRemoteControl.create();
+    if (!mRemoteControl.canRun())
+        return;
+
     Model *model = mRemoteControl.model();
     if (model && model->isSetup()) {
         // set viewport of paintwidget
@@ -1032,7 +1035,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
             totalcount++;
         }
     } catch (IException &e) {
-        Helper::msg(e.toString());
+        Helper::msg(e.message());
     }
     StatData stats(datavector);
     qDebug() << "Expression:" << expr_text << "filtered" << datavector.count() << "of" << totalcount;
@@ -1114,7 +1117,7 @@ void MainWindow::on_scriptCommand_returnPressed()
             qDebug() << result;
         }
     } catch(const IException &e) {
-        Helper::msg(e.toString());
+        Helper::msg(e.message());
     }
 }
 

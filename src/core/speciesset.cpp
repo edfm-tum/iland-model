@@ -70,7 +70,9 @@ int SpeciesSet::setup()
             mActiveSpecies.append(s);
     } // while query.next()
     qDebug() << "loaded" << mSpecies.count() << "active species:";
-    qDebug() << mSpecies.keys();
+    qDebug() << "index, id, name";
+    foreach(const Species *s, mActiveSpecies)
+        qDebug() << s->index() << s->id() << s->name();
 
     mSetupQuery = 0;
 

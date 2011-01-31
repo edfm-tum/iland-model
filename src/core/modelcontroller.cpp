@@ -88,7 +88,7 @@ void ModelController::setFileName(QString initFileName)
     try {
         GlobalSettings::instance()->loadProjectFile(mInitFile);
     } catch(const IException &e) {
-        QString error_msg = e.toString();
+        QString error_msg = e.message();
         Helper::msg(error_msg);
         qDebug() << error_msg;
     }
@@ -111,7 +111,7 @@ void ModelController::create()
         // initialization of trees, output on startup
         mModel->beforeRun();
     } catch(const IException &e) {
-        QString error_msg = e.toString();
+        QString error_msg = e.message();
         Helper::msg(error_msg);
         qDebug() << error_msg;
     }
@@ -214,7 +214,7 @@ bool ModelController::runYear()
         mModel->runYear();
         fetchDynamicOutput();
     } catch(const IException &e) {
-        QString error_msg = e.toString();
+        QString error_msg = e.message();
         Helper::msg(error_msg);
         qDebug() << error_msg;
         err=true;

@@ -273,15 +273,21 @@ int Management::filter(QString filter)
 {
     TreeWrapper tw;
     Expression expr(filter,&tw);
-    qDebug() << "filtering with" << filter;
+    int n_before = mTrees.count();
     QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
-    while (tp!=mTrees.end()) {
-        tw.setTree(tp->first);
-        if (!expr.calculate(tw))
-            tp = mTrees.erase(tp);
-        else
-            tp++;
+    try {
+        while (tp!=mTrees.end()) {
+            tw.setTree(tp->first);
+            if (!expr.calculate(tw))
+                tp = mTrees.erase(tp);
+            else
+                tp++;
+        }
+    } catch(const IException &e) {
+        context()->throwError(e.message());
     }
+
+    qDebug() << "filtering with" << filter << "N=" << n_before << "/" << mTrees.count()  << "trees (before/after filtering).";
     return mTrees.count();
 }
 

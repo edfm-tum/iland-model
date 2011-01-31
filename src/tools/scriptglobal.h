@@ -45,12 +45,14 @@ class MapGridWrapper: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int valid READ isValid);
+    Q_PROPERTY(QString name READ name);
 public:
     MapGridWrapper(QObject *parent=0);
     ~MapGridWrapper();
     static void addToScriptEngine(QScriptEngine &engine);
     MapGrid *map() const { return mMap; } ///< acccess for C++ classes
     bool isValid() const; ///< returns true if map is successfully loaded
+    QString name() const;
     //
     void paint(QString file_name, double min_value, double max_value);
 
