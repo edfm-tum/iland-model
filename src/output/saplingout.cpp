@@ -28,6 +28,9 @@ void SaplingOut::exec()
     Model *m = GlobalSettings::instance()->model();
     double n, avg_dbh, avg_height, avg_age;
     foreach(ResourceUnit *ru, m->ruList()) {
+        if (ru->id()==-1)
+            continue; // do not include if out of project area
+
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
             const StandStatistics &stat = rus->constStatistics();
             const Sapling &sap = rus->sapling();

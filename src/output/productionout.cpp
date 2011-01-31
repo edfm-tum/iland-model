@@ -52,6 +52,9 @@ void ProductionOut::exec()
     Model *m = GlobalSettings::instance()->model();
 
     foreach(ResourceUnit *ru, m->ruList()) {
+        if (ru->id()==-1)
+            continue; // do not include if out of project area
+
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
             execute(rus);
         }

@@ -55,6 +55,7 @@ public:
     const QPoint &cornerPointOffset() const { return mCornerCoord; }
     double area() const { return mPixelCount*100; } ///< get the resuorce unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
+    double stockableArea() const { return mStockableArea; } ///< total stockable area in m2
     double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
     double leafAreaIndex() const { return mAggregatedLA / area(); } ///< Total Leaf Area Index
     double leafArea() const { return mAggregatedLA; } ///< total leaf area of resource unit (m2)
@@ -76,6 +77,7 @@ public:
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics();
+    void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
     // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
     // the map itself is a local variable and only filled temporarily.
     void setSaplingHeightMap(float *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
@@ -122,6 +124,7 @@ private:
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees
     double mStockedArea; ///< size of stocked area
+    double mStockableArea; ///< area of stockable area (defined by project setup)
     StandStatistics mStatistics; ///< aggregate values on stand value
     ResourceUnitVariables mUnitVariables;
 

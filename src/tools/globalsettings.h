@@ -111,6 +111,7 @@ const int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
 const int cPxPerRU = 50; // 100/2
 const int cHeightPerRU = 10; // 100/10 height pixels per resource unit
 const int cPxPerHectare = 2500; // pixel/ha ( 10000 / (2*2) )
+const double cHeightPixelArea = 100.; // 100m2 area of a height pixel
 
 // other constants
 const double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon

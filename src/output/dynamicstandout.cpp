@@ -88,6 +88,9 @@ void DynamicStandOut::exec()
     Expression custom_expr;
 
     foreach(ResourceUnit *ru, m->ruList()) {
+        if (ru->id()==-1)
+            continue; // do not include if out of project area
+
         // test filter
         if (!mRUFilter.isEmpty()) {
             ruwrapper.setResourceUnit(ru);

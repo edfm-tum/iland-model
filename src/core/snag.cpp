@@ -101,9 +101,9 @@ void Snag::setup( const ResourceUnit *ru)
 
     // Inital values from XML file
     XmlHelper xml=GlobalSettings::instance()->settings();
+    double kyr = xml.valueDouble("model.site.youngRefractoryDecompRate", -1);
     // put carbon of snags to the middle size class
     xml.setCurrentNode("model.initialization.snags");
-    double kyr = xml.valueDouble(".woodDecompRate");
     mSWD[1].C = xml.valueDouble(".swdC");
     mSWD[1].N = mSWD[1].C / xml.valueDouble(".swdCN", 50.);
     mSWD[1].setParameter(kyr);

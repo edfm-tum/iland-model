@@ -80,6 +80,7 @@ private:
     void grow(); ///< grow - both on RU-level and tree-level
 
     void calculateStockedArea(); ///< calculate area stocked with trees for each RU
+    void calculateStockableArea(); ///< calculate the stockable area for each RU (i.e.: with stand grid values <> -1)
 
     void test();
     bool multithreading() const { return threadRunner.multithreading(); }

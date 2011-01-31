@@ -35,9 +35,11 @@ void StandOut::exec()
     Model *m = GlobalSettings::instance()->model();
 
     foreach(ResourceUnit *ru, m->ruList()) {
+        if (ru->id()==-1)
+            continue; // do not include if out of project area
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
             const StandStatistics &stat = rus->constStatistics();
-            if (stat.count()==0)
+            if (stat.count()==0 && stat.cohortCount()==0)
                 continue;
             *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
             *this << stat.count() << stat.dbh_avg() << stat.height_avg()

@@ -106,7 +106,7 @@ QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveAre
                       << "leafAreaIndex" << "aging" << "cohortCount" << "saplingCount" << "saplingAge"
                       << "canopyConductance"
                       << "soilC" << "soilN"
-                      << "snagC" << "index";
+                      << "snagC" << "index" << "area";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -141,6 +141,7 @@ double RUWrapper::value(const int variableIndex)
         // snags
     case 18: if (mRU->snag()) return mRU->snag()->totalCarbon(); else return 0.;
     case 19: return mRU->index(); // numeric index
+    case 20: return mRU->stockableArea(); // stockable area on resource unit
 
     }
     return ExpressionWrapper::value(variableIndex);

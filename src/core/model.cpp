@@ -226,6 +226,8 @@ void Model::setupSpace()
             mask_is_setup = true;
         }
 
+        calculateStockableArea();
+
         // setup of the project area mask
         if (!mask_is_setup && xml.valueBool("areaMask.enabled", false) && xml.hasNode("areaMask.imageFile")) {
             // to be extended!!! e.g. to load ESRI-style text files....
@@ -714,6 +716,34 @@ void Model::calculateStockedArea()
 
     }
 }
+
+/** calculate for each resource unit the stockable ara.
+  "stockability" is determined by the isValid flag of resource units which in turn
+  is derived from stand grid values.
+  */
+void Model::calculateStockableArea()
+{
+
+    foreach(ResourceUnit *ru, mRU) {
+        if (ru->id()==-1) {
+            ru->setStockableArea(0.);
+            continue;
+        }
+        GridRunner<HeightGridValue> runner(*mHeightGrid, ru->boundingBox());
+        int valid=0, total=0;
+        while (runner.next()) {
+            if ( runner.current()->isValid() )
+                valid++;
+            total++;
+        }
+        if (total)
+            ru->setStockableArea( cHeightPixelArea * valid);
+        else
+            throw IException("calculateStockableArea: resource unit without pixels!");
+
+    }
+}
+
 
 /// Force the creation of stand statistics.
 /// - stocked area (for resourceunit-areas)

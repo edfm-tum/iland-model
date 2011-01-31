@@ -128,6 +128,7 @@ public:
     GridRunner(Grid<T> &target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
     GridRunner(const Grid<T> &target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
     T* next(); ///< to to next element, return NULL if finished
+    T* current() { return mCurrent; }
 private:
     void setup(const Grid<T> &target_grid, const QRectF &rectangle);
     T* mLast;
