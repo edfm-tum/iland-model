@@ -62,6 +62,14 @@ const int  MaxArgCount[15]={1,1,1,1,  1, 1,   -1, -1, 3, 1, -1, 2, 4, 2, 2};
 #define    AGGFUNCCOUNT 6
 QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
 
+// space for constants
+QHash<QString, double> mConstants;
+
+void Expression::addConstant(const QString const_name, const double const_value)
+{
+    mConstants[const_name] = const_value;
+}
+
 bool Expression::mLinearizationAllowed = false;
 Expression::Expression()
 {
@@ -336,13 +344,24 @@ void  Expression::atom()
             checkBuffer(m_execIndex);
         }
         if (m_state==etVariable) {
-            if (!m_strict) // in strict mode, the variable must be available by external bindings. in "lax" mode, the variable is added when encountered first.
-                addVar(m_token);
-            m_execList[m_execIndex].Type=etVariable;
-            m_execList[m_execIndex].Value=0;
-            m_execList[m_execIndex++].Index=getVarIndex(m_token);
-            checkBuffer(m_execIndex);
-            m_constExpression=false;
+            if (mConstants.contains(m_token)) {
+                // constant
+                double result=mConstants[m_token];
+                m_execList[m_execIndex].Type=etNumber;
+                m_execList[m_execIndex].Value=result;
+                m_execList[m_execIndex++].Index=-1;
+                checkBuffer(m_execIndex);
+
+            } else {
+                // 'real' variable
+                if (!m_strict) // in strict mode, the variable must be available by external bindings. in "lax" mode, the variable is added when encountered first.
+                    addVar(m_token);
+                m_execList[m_execIndex].Type=etVariable;
+                m_execList[m_execIndex].Value=0;
+                m_execList[m_execIndex++].Index=getVarIndex(m_token);
+                checkBuffer(m_execIndex);
+                m_constExpression=false;
+            }
         }
         next_token();
     } else if (m_state==etStop || m_state==etUnknown)
@@ -563,6 +582,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
                      // index-13: 1 bei rnd, 0 bei rndg
                      *p=udfRandom(exec->Index-13, *p, *(p+1));
                      break;
+
                  }
             p++;
             break;
@@ -590,9 +610,9 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
                  case opLowerOrEqual: LogicResult=(*(p-1)<=*p); break;
                  }
             if (LogicResult) {
-                *(p-1)=1;   // 1 means true...
+                *(p-1)=1.;   // 1 means true...
             } else {
-                *(p-1)=0;
+                *(p-1)=0.;
             }
 
             *lp++=LogicResult;
