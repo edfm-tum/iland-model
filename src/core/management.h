@@ -38,6 +38,10 @@ public:
     int count() const {return mTrees.count();} ///< return number of trees currently in list
 
 public slots:
+    /// calculate the mean value for all trees in the internal list for 'expression' (filtered by the filter criterion)
+    double mean(QString expression, QString filter=QString()) { return aggregate_function( expression, filter, "mean"); }
+    /// calculate the sum for all trees in the internal list for the 'expression' (filtered by the filter criterion)
+    double sum(QString expression, QString filter=QString()) { return aggregate_function( expression, filter, "sum"); }
     /// remove randomly trees until only 'number' of trees remain.
     /// return number of removed trees
     int remain(int number);
@@ -47,7 +51,8 @@ public slots:
      *  return the number of removed trees. */
     int kill(int pctfrom, int pctto, int number);
     int kill(); ///< kill all trees in the list
-
+    /** kill 'fraction' of all trees with 'filter'=true */
+    int kill(QString filter, double fraction = 1.);
     // management
     /** kill "number" of stems
      *  in the percentile interval "from" - "to".
@@ -56,6 +61,8 @@ public slots:
      *  return the number of removed trees. */
     int manage(int pctfrom, int pctto, int number);
     int manage(); ///< manage all trees in the list
+    /** manage 'fraction' of all trees with 'filter'=true */
+    int manage(QString filter, double fraction = 1.);
 
     double percentile(int pct); ///< get value for the pct th percentile (1..100)
     int load() { return load(QString()); } ///< load all trees, return number of trees
@@ -71,8 +78,11 @@ public slots:
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
+    void randomize(); ///< random shuffle of all trees in the list
 private:
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
+    int remove_trees(QString expression, double fraction, bool management);
+    double aggregate_function(QString expression, QString filter, QString type);
 
     // removal fractions
     double mRemoveFoliage, mRemoveBranch, mRemoveStem;

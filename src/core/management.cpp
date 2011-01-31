@@ -152,6 +152,15 @@ int Management::kill()
     return c;
 }
 
+int Management::kill(QString filter, double fraction)
+{
+   return remove_trees(filter, fraction, false);
+}
+int Management::manage(QString filter, double fraction)
+{
+    return remove_trees(filter, fraction, true);
+}
+
 int Management::remove_percentiles(int pctfrom, int pctto, int number, bool management)
 {
     if (mTrees.isEmpty())
@@ -205,6 +214,83 @@ int Management::remove_percentiles(int pctfrom, int pctto, int number, bool mana
     }
     return count; // killed or manages
 }
+
+/** remove trees from a list and reduce the list.
+
+  */
+int Management::remove_trees(QString expression, double fraction, bool management)
+{
+    TreeWrapper tw;
+    Expression expr(expression,&tw);
+    expr.enableIncSum();
+    int n = 0;
+    QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
+    try {
+        while (tp!=mTrees.end()) {
+            tw.setTree(tp->first);
+            // if expression evaluates to true and if random number below threshold...
+            if (expr.calculate(tw) && drandom() <=fraction) {
+                // remove from system
+                if (management)
+                    tp->first->remove(removeFoliage(), removeBranch(), removeStem()); // management with removal fractions
+                else
+                    tp->first->remove(); // kill
+                // remove from tree list
+                tp = mTrees.erase(tp);
+                n++;
+            } else {
+                tp++;
+            }
+        }
+    } catch(const IException &e) {
+        context()->throwError(e.message());
+    }
+    return n;
+}
+
+// calculate aggregates for all trees in the internal list
+double Management::aggregate_function(QString expression, QString filter, QString type)
+{
+    QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
+    TreeWrapper tw;
+    Expression expr(expression,&tw);
+
+    double sum = 0.;
+    int n=0;
+    try {
+
+        if (filter.isEmpty()) {
+            // without filtering
+            while (tp!=mTrees.end()) {
+                tw.setTree(tp->first);
+                sum += expr.calculate();
+                ++n;
+                ++tp;
+            }
+        } else {
+            // with filtering
+            Expression filter_expr(filter,&tw);
+            filter_expr.enableIncSum();
+            while (tp!=mTrees.end()) {
+                tw.setTree(tp->first);
+                if (filter_expr.calculate()) {
+                    sum += expr.calculate();
+                    ++n;
+                }
+                ++tp;
+            }
+        }
+
+    } catch(const IException &e) {
+        context()->throwError(e.message());
+    }
+    if (type=="sum")
+        return sum;
+    if (type=="mean")
+        return n>0?sum/double(n):0.;
+    return 0.;
+}
+
 
 // from the range percentile range pctfrom to pctto (each 1..100)
 int Management::kill(int pctfrom, int pctto, int number)
@@ -273,12 +359,13 @@ int Management::filter(QString filter)
 {
     TreeWrapper tw;
     Expression expr(filter,&tw);
+    expr.enableIncSum();
     int n_before = mTrees.count();
     QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
     try {
         while (tp!=mTrees.end()) {
             tw.setTree(tp->first);
-            if (!expr.calculate(tw))
+            if (expr.calculate(tw))
                 tp = mTrees.erase(tp);
             else
                 tp++;
@@ -299,7 +386,8 @@ int Management::load(int ruindex)
         return -1;
     mTrees.clear();
     for (int i=0;i<ru->trees().count();i++)
-        mTrees.push_back(QPair<Tree*,double>(ru->tree(i), 0.));
+        if (!ru->tree(i)->isDead())
+            mTrees.push_back(QPair<Tree*,double>(ru->tree(i), 0.));
     return mTrees.count();
 }
 
@@ -310,13 +398,14 @@ int Management::load(QString filter)
     mTrees.clear();
     AllTreeIterator at(m);
     if (filter.isEmpty()) {
-        while (Tree *t=at.next())
+        while (Tree *t=at.nextLiving())
             if (!t->isDead())
                 mTrees.push_back(QPair<Tree*, double>(t, 0.));
     } else {
         Expression expr(filter,&tw);
+        expr.enableIncSum();
         qDebug() << "filtering with" << filter;
-        while (Tree *t=at.next()) {
+        while (Tree *t=at.nextLiving()) {
             tw.setTree(t);
             if (!t->isDead() && expr.execute())
                 mTrees.push_back(QPair<Tree*, double>(t, 0.));
@@ -428,4 +517,18 @@ double Management::percentile(int pct)
     else
         return -1;
 }
+
+/// random shuffle of all trees in the list
+void Management::randomize()
+{
+    // fill the "value" part of the tree storage with a random value for each tree
+    for (int i=0;i<mTrees.count(); ++i) {
+        mTrees[i].second = drandom();
+    }
+    // now sort the list....
+    qSort(mTrees.begin(), mTrees.end(), treePairValue);
+
+}
+
+
 

@@ -898,6 +898,7 @@ double Tree::volume() const
     return volume;
 }
 
+/// return the basal area in m2
 double Tree::basalArea() const
 {
     // A = r^2 * pi = d/2*pi; from cm->m: d/200
