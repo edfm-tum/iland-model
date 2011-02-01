@@ -290,6 +290,8 @@ void Model::clear()
     mTimeEvents = 0;
     mStandGrid  = 0;
 
+    GlobalSettings::instance()->outputManager()->close();
+
     qDebug() << "Model ressources freed.";
 }
 
