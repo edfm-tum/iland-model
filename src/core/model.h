@@ -42,6 +42,7 @@ public:
     void beforeRun(); ///< initializations
     void runYear(); ///< run a single year
     void afterStop(); ///< finish and cleanup
+
     // access to elements
     const QRectF &extent() const { return mModelRect; } ///< extent of the model (without buffer)
     ResourceUnit *ru() { return mRU.front(); }
@@ -51,6 +52,7 @@ public:
     Management *management() const { return mManagement; }
     Environment *environment() {return mEnvironment; }
     SpeciesSet *speciesSet() const { if (mSpeciesSets.count()==1) return mSpeciesSets.first(); return NULL; }
+
     // global grids
     FloatGrid *grid() { return mGrid; } ///< this is the global 'LIF'-grid (light patterns) (currently 2x2m)
     HeightGrid *heightGrid() { return mHeightGrid; } ///< stores maximum heights of trees and some flags (currently 10x10m)
@@ -64,7 +66,10 @@ public:
     static const ModelSettings &settings() {return mSettings;} ///< access to global model settings.
     static ModelSettings &changeSettings() {return mSettings;} ///< write access to global model settings.
     void onlyApplyLightPattern() { applyPattern(); readPattern(); }
+
     // actions
+    /// execute the javascript expression \p expression in the model context.
+    bool executeJavascript(const QString expression);
     void createStandStatistics();
     /// execute a function for each resource unit using multiple threads. "funcptr" is a ptr to a simple function
     void executePerResourceUnit(ResourceUnit * (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false) { threadRunner.run(funcptr, forceSingleThreaded);}

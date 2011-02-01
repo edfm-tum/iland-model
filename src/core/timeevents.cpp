@@ -2,6 +2,7 @@
 #include "timeevents.h"
 #include "helper.h"
 #include "csvfile.h"
+#include "model.h"
 
 TimeEvents::TimeEvents()
 {
@@ -54,11 +55,18 @@ void TimeEvents::run()
     for (int i=0;i<entries.count();i++) {
         key = entries[i].first; // key
         // special values: if (key=="xxx" ->
-        // no special value: a xml node...
-        if (! const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, entries[i].second.toString()))
-            qDebug() << "TimeEvents: Error: Key " << key << "not found! (tried to set to" << entries[i].second.toString() << ")";
-        else
-            qDebug() << "TimeEvents: set" << key << "to" << entries[i].second.toString();
+        if (key=="script" || key=="javascript") {
+            // execute as javascript expression within the management script context...
+            if (!entries[i].second.toString().isEmpty())
+                GlobalSettings::instance()->model()->executeJavascript(entries[i].second.toString());
+
+        } else {
+            // no special value: a xml node...
+            if (! const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, entries[i].second.toString()))
+                qDebug() << "TimeEvents: Error: Key " << key << "not found! (tried to set to" << entries[i].second.toString() << ")";
+            else
+                qDebug() << "TimeEvents: set" << key << "to" << entries[i].second.toString();
+        }
         values_set++;
     }
     if (values_set)

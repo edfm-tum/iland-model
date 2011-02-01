@@ -181,7 +181,7 @@ void Model::setupSpace()
     // time series data
     if (xml.valueBool(".timeEventsEnabled", false)) {
         mTimeEvents = new TimeEvents();
-        mTimeEvents->loadFromFile(xml.value("timeEventsFile")) ;
+        mTimeEvents->loadFromFile(GlobalSettings::instance()->path(xml.value("timeEventsFile"), "script"));
     }
 
     // simple case: create ressource units in a regular grid.
@@ -762,4 +762,11 @@ void Model::createStandStatistics()
         ru->addTreeAgingForAllTrees();
         ru->createStandStatistics();
     }
+}
+
+
+/// execute the javascript expression \p expression in the model context.
+bool Model::executeJavascript(const QString expression)
+{
+    return management()->executeScript(expression).isEmpty();
 }

@@ -31,6 +31,7 @@ public:
     Model *model() const { return mModel; }
     int currentYear() const { return mRunYear; }
     void setCurrentYear(const int year) { mRunYear = year; }
+
     // debugging fain grained debug outputs
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
                         dStandNPP=8, dWaterCycle=16, dDailyResponses=32, dEstablishment=64, dCarbonCycle=128 }; ///< defines available debug output types.
@@ -44,15 +45,17 @@ public:
     QList<QPair<QString, QVariant> > debugValues(const int ID); ///< all debug values for object with given ID
     void clearDebugLists(); ///< clear all debug data
     QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator); ///< output for all available items (trees, ...) in table form
-    // database
+
+    // database access functions
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
     QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
     QSqlDatabase dbclimate() { return QSqlDatabase::database("climate"); }
+
     // setting-meta-data
     /// access an individual SettingMetaData named @p name.
-    const SettingMetaData *settingMetaData(const QString &name);
+    const SettingMetaData *settingMetaData(const QString &name); // unused??
     /// retrieve the default value of the setting @p name.
-    QVariant settingDefaultValue(const QString &name);
+    QVariant settingDefaultValue(const QString &name); // unused?
     QList<QString> settingNames() { return mSettingMetaData.keys(); } ///< retrieve list of all names of settings.
 
     // path and directory
