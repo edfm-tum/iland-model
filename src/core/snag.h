@@ -77,9 +77,9 @@ public:
     /// the harvested biomass is collected.
     void addHarvest(const Tree* tree, const double remove_stem_pct, const double remove_branch_pct, const double remove_foliage_pct );
 
-    /// disturbance function: remove the fraction of 'factor' of carbon from the SWD pools; 0: remove nothing, 1: remove all
-    void removeCarbon(const double factor) {  mSWD[0].C *= (1. - factor); mSWD[1].C *= (1. - factor); mSWD[2].C *= (1. - factor);
-                                              for (int i=0;i<5;i++) mOtherWood[i].C *= (1. - factor); }
+    /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
+    void removeCarbon(const double factor) {  mSWD[0] *= (1. - factor); mSWD[1] *= (1. - factor); mSWD[2] *= (1. - factor);
+                                              for (int i=0;i<5;i++) mOtherWood[i] *= (1. - factor); }
     QList<QVariant> debugList(); ///< return a debug output
 private:
     double calculateClimateFactors(); ///< calculate climate factor 're' for the current year
