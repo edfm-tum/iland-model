@@ -548,6 +548,7 @@ void Model::runYear()
     om->execute("dynamicstand"); // output with user-defined columns (based on species x RU)
     om->execute("standdead"); // resource unit level x species
     om->execute("management"); // resource unit level x species
+    om->execute("carbon"); // resource unit level, carbon pools above and belowground
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }

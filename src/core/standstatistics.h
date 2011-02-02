@@ -29,8 +29,22 @@ public:
     int cohortCount() const { return mCohortCount; } ///< number of cohorts of saplings / ha
     int saplingCount() const { return mSaplingCount; } ///< number individuals in regeneration layer (represented by "cohortCount" cohorts) N/ha
     double saplingAge() const { return mAverageSaplingAge; } ///< average age of sapling (currenty not weighted with represented sapling numbers...)
+    // carbon/nitrogen cycle
+    double cStem() const { return mCStem; }
+    double nStem() const { return mNStem; }
+    double cBranch() const { return mCBranch; }
+    double nBranch() const { return mNBranch; }
+    double cFoliage() const { return mCFoliage; }
+    double nFoliage() const { return mNFoliage; }
+    double cCoarseRoot() const { return mCCoarseRoot; }
+    double nCoarseRoot() const { return mNCoarseRoot; }
+    double cFineRoot() const { return mCFineRoot; }
+    double nFineRoot() const { return mNFineRoot; }
+    double cRegeneration() const { return mCRegeneration; }
+    double nRegeneration() const { return mNRegeneration; }
 
 private:
+    inline void addBiomass(const double biomass, const double CNRatio, double *C, double *N);
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species
     int mCount;
     double mSumDbh;
@@ -48,6 +62,10 @@ private:
     int mSaplingCount; ///< number of sapling (Reinekes Law)
     double mSumSaplingAge;
     double mAverageSaplingAge;
+    // carbon and nitrogen pools
+    double mCStem, mCFoliage, mCBranch, mCCoarseRoot, mCFineRoot;
+    double mNStem, mNFoliage, mNBranch, mNCoarseRoot, mNFineRoot;
+    double mCRegeneration, mNRegeneration;
 };
 
 #endif // STANDSTATISTICS_H

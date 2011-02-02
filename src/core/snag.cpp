@@ -288,6 +288,8 @@ void Snag::calculateYear()
     // standing woody debris pools + the branches
     mTotalSnagCarbon = mSWD[0].C + mSWD[1].C + mSWD[2].C +
                        mOtherWood[0].C + mOtherWood[1].C + mOtherWood[2].C + mOtherWood[3].C + mOtherWood[4].C;
+    mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2];
+    mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
 }
 
 /// foliage and fineroot litter is transferred during tree growth.

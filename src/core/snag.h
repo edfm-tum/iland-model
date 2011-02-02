@@ -67,6 +67,8 @@ public:
     const CNPool &refractoryFlux() const {return  mRefractoryFlux; } ///< deadwood flux to the soil (kg/ha)
     double climateFactor() const { return mClimateFactor; } ///< the 're' climate factor to modify decay rates (also used in ICBM/2N model)
     double totalCarbon() const { return mTotalSnagCarbon; } ///< total carbon in snags (kg/ha)
+    const CNPair &totalSWD() const { return mTotalSWD; } ///< sum of C and N in SWD pools (stems) kg/ha
+    const CNPair &totalOtherWood() const { return mTotalOther; } ///< sum of C and N in other woody pools (branches + coarse roots) kg/ha
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot);
@@ -88,6 +90,7 @@ private:
     /// access SWDPool as function of diameter (cm)
     int poolIndex(const float dbh) { if (dbh<mDBHLower) return 0; if (dbh>mDBHHigher) return 2; return 1;}
     CNPool mSWD[3]; ///< standing woody debris pool (0: smallest dimater class, e.g. <10cm, 1: medium, 2: largest class (e.g. >30cm)) kg/ha
+    CNPair mTotalSWD; ///< sum of mSWD[x]
     double mNumberOfSnags[3]; ///< number of snags in diameter class
     double mAvgDbh[3]; ///< average diameter in class (cm)
     double mAvgHeight[3]; ///< average height in class (m)
@@ -100,6 +103,7 @@ private:
     CNPool mLabileFlux; ///< flux to labile soil pools (kg/ha)
     CNPool mRefractoryFlux; ///< flux to the refractory soil pool (kg/ha)
     CNPool mOtherWood[5]; ///< pool for branch biomass and coarse root biomass
+    CNPair mTotalOther; ///< sum of mOtherWood[x]
     int mBranchCounter; ///< index which of the branch pools should be emptied
     double mTotalSnagCarbon; ///< sum of carbon content in all snag compartments (kg/ha)
     CNPair mTotalIn; ///< total input to the snag state (i.e. mortality/harvest and litter)

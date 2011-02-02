@@ -13,6 +13,7 @@
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
 #include "sapling.h"
+#include "species.h"
 
 void StandStatistics::clear()
 {
@@ -25,6 +26,16 @@ void StandStatistics::clear()
     mCohortCount = mSaplingCount = 0;
     mAverageSaplingAge = 0.;
     mSumSaplingAge = 0.;
+    mCStem=0., mCFoliage=0., mCBranch=0., mCCoarseRoot=0., mCFineRoot=0.;
+    mNStem=0., mNFoliage=0., mNBranch=0., mNCoarseRoot=0., mNFineRoot=0.;
+    mCRegeneration=0., mNRegeneration=0.;
+
+}
+
+void StandStatistics::addBiomass(const double biomass, const double CNRatio, double *C, double *N)
+{
+    *C+=biomass*biomassCFraction;
+    *N+=biomass*biomassCFraction/CNRatio;
 }
 
 void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
@@ -39,6 +50,12 @@ void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
         mNPP += tgd->NPP;
         mNPPabove += tgd->NPP_above;
     }
+    // carbon and nitrogen pools
+    addBiomass(tree->biomassStem(), tree->species()->cnWood(), &mCStem, &mNStem);
+    addBiomass(tree->biomassBranch(), tree->species()->cnWood(), &mCBranch, &mNBranch);
+    addBiomass(tree->biomassFoliage(), tree->species()->cnFoliage(), &mCFoliage, &mNFoliage);
+    addBiomass(tree->biomassFineRoot(), tree->species()->cnFineroot(), &mCFineRoot, &mNFineRoot);
+    addBiomass(tree->biomassCoarseRoot(), tree->species()->cnWood(), &mCCoarseRoot, &mNCoarseRoot);
 }
 
 // note: mRUS = 0 for aggregated statistics
@@ -55,6 +72,7 @@ void StandStatistics::calculate()
         mAverageSaplingAge = mSumSaplingAge / double(mCohortCount);
 
     // scale values to per hectare if resource unit <> 1ha
+    // note: no scaling for carbon/nitrogen pools
     if (mRUS) {
         mGWL = mSumVolume + mRUS->removedVolume();
         double area_factor =  10000. / mRUS->ru()->area();
@@ -86,6 +104,13 @@ void StandStatistics::add(const StandStatistics &stat)
     mCohortCount += stat.mCohortCount;
     mSaplingCount += stat.mSaplingCount;
     mSumSaplingAge += stat.mSumSaplingAge;
+    // carbon/nitrogen pools
+    mCStem += stat.mCStem; mNStem += stat.mNStem;
+    mCBranch += stat.mCBranch; mNBranch += stat.mNBranch;
+    mCFoliage += stat.mCFoliage; mNFoliage += stat.mNFoliage;
+    mCFineRoot += stat.mCFineRoot; mNFineRoot += stat.mNFineRoot;
+    mCCoarseRoot += stat.mCCoarseRoot; mNCoarseRoot += stat.mNCoarseRoot;
+    mCRegeneration += stat.mCRegeneration; mNRegeneration += stat.mNRegeneration;
 
 }
 
@@ -97,4 +122,7 @@ void StandStatistics::add(const Sapling *sapling)
 
     mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
     mAverageSaplingAge = sapling->averageAge();
+
+    mCRegeneration += 1.; // todo: fix
+    mNRegeneration += 1; // todo: fix
 }
