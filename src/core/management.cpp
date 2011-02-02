@@ -467,7 +467,7 @@ void Management::removeSoilCarbon(QScriptValue map_grid_object, int key, double 
         ru->snag()->removeCarbon(1. - SWDfrac*area_factor);
         // soil pools
         ru->soil()->disturbance(DWDfrac*area_factor, litterFrac*area_factor, soilFrac*area_factor);
-        qDebug() << ru->index() << area_factor;
+        // qDebug() << ru->index() << area_factor;
     }
     qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
 }

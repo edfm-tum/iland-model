@@ -103,9 +103,11 @@ QList<Tree *> MapGrid::trees(const int id) const
     QList<ResourceUnit*> resource_units = resourceUnits(id);
     foreach(ResourceUnit *ru, resource_units) {
         foreach(const Tree &tree, ru->constTrees())
-            if (gridValue(tree.positionIndex()) == id && !tree.isDead())
+            if (gridValue(tree.positionIndex()) == id && !tree.isDead()) {
                 tree_list.append( & const_cast<Tree&>(tree) );
+            }
     }
+//    qDebug() << "MapGrid::trees: found" << c << "/" << tree_list.size();
     return tree_list;
 
 }

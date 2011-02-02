@@ -32,6 +32,7 @@ CSVFile::CSVFile(QObject *parent)
 {
     mHasCaptions = true;
     mFlat = false;
+    mFixedWidth=false;
     clear();
 }
 
@@ -45,15 +46,21 @@ void CSVFile::clear()
 bool CSVFile::loadFromString(const QString &content)
 {
     clear();
-    // split into rows
-    mRows = content.split("\n", QString::SkipEmptyParts);
+    // split into rows: use either with windows or unix style delimiter
+    if (content.left(1000).contains("\r\n"))
+        mRows = content.split("\r\n", QString::SkipEmptyParts);
+    else
+        mRows = content.split("\n", QString::SkipEmptyParts);
+
     if (mRows.count()==0)
         return false;
 
-    if (!mFixedWidth) {
-        for (int i=0;i<mRows.count();i++)
-            mRows[i] = mRows[i].trimmed();
-    }
+    // trimming of whitespaces is a problem
+    // when having e.g. tabs as delimiters...
+//    if (!mFixedWidth) {
+//        for (int i=0;i<mRows.count();i++)
+//            mRows[i] = mRows[i].trimmed();
+//    }
     // drop comments (i.e. lines at the beginning that start with '#', also ignore '<' (are in tags of picus-ini-files)
     while (!mRows.isEmpty() && (mRows.front().startsWith('#') || mRows.front().startsWith('<')))
         mRows.pop_front();
@@ -85,7 +92,7 @@ bool CSVFile::loadFromString(const QString &content)
 
     // captions
     if (mHasCaptions) {
-        mCaptions = first.split(mSeparator);
+        mCaptions = first.split(mSeparator, QString::SkipEmptyParts).replaceInStrings("\"", ""); // drop "-characters
         mRows.pop_front(); // drop the first line
     } else {
         // create pseudo captions
@@ -127,7 +134,7 @@ QVariant CSVFile::value(const int row, const int col) const
     if (mStreamingMode)
         return QVariant();
 
-    if (row<0 || row>=mRowCount || col<0 || col>mColCount) {
+    if (row<0 || row>=mRowCount || col<0 || col>=mColCount) {
         qDebug() << "CSVFile::value: invalid index: row col:" << row << col << ". Size is:" << mRowCount << mColCount;
         return QVariant();
     }
@@ -172,7 +179,11 @@ QVariant CSVFile::value(const int row, const int col) const
         QVariant result;
         if (col==mColCount-1) {
             // last element:
-            result = s.mid(s.lastIndexOf(sep)+1);
+            if (s.count(sep)==mColCount-1) {
+                result =  s.mid(s.lastIndexOf(sep)+1);
+            }
+            // if there are less than colcount-1 separators, then
+            // the last columns is empty
             return result;
         }
         int sepcount=0;
@@ -181,14 +192,20 @@ QVariant CSVFile::value(const int row, const int col) const
             if (s.at(i) == sep) {
                 // count the separators up to the wanted column
                 if (sepcount==col) {
-                    result = s.mid(lastsep,i-lastsep);
+                    if (s.at(lastsep)=='\"' && s.at(i-1)=='\"')
+                        result = s.mid(lastsep+1,i-lastsep-2); // ignore "
+                    else
+                        result = s.mid(lastsep,i-lastsep);
+
                     return result;
                 }
                 sepcount++;
                 lastsep=i+1;
             }
         }
-        qDebug() << "CSVFile::value: found no result:" << row << col << ". Size is:" << mRowCount << mColCount;
+        if (sepcount==col)
+            result = s.mid(s.lastIndexOf(sep)+1);
+        //qDebug() << "CSVFile::value: found no result:" << row << col << ". Size is:" << mRowCount << mColCount;
         return QVariant();
 
     }

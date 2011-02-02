@@ -377,10 +377,14 @@ void GridRunner<T>::setup(const Grid<T> &target_grid, const QRectF &rectangle)
     QPoint upper_left = target_grid.indexAt(rectangle.topLeft());
     QPoint lower_right = target_grid.indexAt(rectangle.bottomRight());
     mCurrent = const_cast<Grid<T> &>(target_grid).ptr(upper_left.x(), upper_left.y());
+    mCurrent--; // point to first element -1
     mLast = const_cast<Grid<T> &>(target_grid).ptr(lower_right.x()-1, lower_right.y()-1);
     mCols = lower_right.x() - upper_left.x(); //
     mLineLength =  target_grid.sizeX() - mCols;
-    mCurrentCol = 0;
+    mCurrentCol = -1;
+//    qDebug() << "GridRunner: rectangle:" << rectangle
+//             << "upper_left:" << target_grid.cellCenterPoint(target_grid.indexOf(mCurrent))
+//             << "lower_right:" << target_grid.cellCenterPoint(target_grid.indexOf(mLast));
 }
 
 template <class T>
@@ -388,14 +392,17 @@ T* GridRunner<T>::next()
 {
     if (mCurrent>mLast)
         return NULL;
-    T* t = mCurrent;
     mCurrent++;
     mCurrentCol++;
+
     if (mCurrentCol >= mCols) {
         mCurrent += mLineLength; // skip to next line
         mCurrentCol = 0;
     }
-    return t;
+    if (mCurrent>mLast)
+        return NULL;
+    else
+        return mCurrent;
 }
 
 ////////////////////////////////////////////////////////////

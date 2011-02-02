@@ -744,6 +744,11 @@ void Model::calculateStockableArea()
             if (valid>0 && ru->id()==-1) {
                 qDebug() << "Warning: a resource unit has id=-1 but stockable area (id was set to 0)!!! ru: " << ru->boundingBox() << "with index" << ru->index();
                 ru->setID(0);
+                GridRunner<HeightGridValue> runner(*mHeightGrid, ru->boundingBox());
+                while (runner.next()) {
+                    qDebug() << mHeightGrid->cellCenterPoint(mHeightGrid->indexOf( runner.current() )) << ": " << runner.current()->isValid();
+                }
+
             }
         } else
             throw IException("calculateStockableArea: resource unit without pixels!");
