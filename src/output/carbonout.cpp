@@ -8,9 +8,10 @@ CarbonOut::CarbonOut()
 {
     setName("Carbon and nitrogen pools above and belowground per RU/yr", "carbon");
     setDescription("Carbon and nitrogen pools (C and N) per resource unit / year. "\
-                   "In the output are aggregated above ground pools " \
-                   "together with below ground pools. The provided numbers are sums for resource units(kg). \n " \
+                   "In the output are aggregated above ground pools (kg/ru) " \
+                   "together with below ground pools (kg/ha). \n " \
                    "The area column contains the stockable area and can be used to scale to per unit area values. \n " \
+                   "__Note__: the figures for soil pools are per hectare even if the stockable area is below one hectare (scaled to 1ha internally) " \
                    " ");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("area", "total stockable area of the resource unit (m2)", OutInteger)
@@ -30,12 +31,12 @@ CarbonOut::CarbonOut()
               << OutputColumn("snags_n", "standing dead wood nitrogen kg/ru", OutDouble)
               << OutputColumn("snagsOther_c", "branches and coarse roots of standing dead trees, carbon kg/ru", OutDouble)
               << OutputColumn("snagsOther_n", "branches and coarse roots of standing dead trees, nitrogen kg/ru", OutDouble)
-              << OutputColumn("downedWood_c", "downed woody debris (yR), carbon kg/ru", OutDouble)
-              << OutputColumn("downedWood_n", "downed woody debris (yR), nitrogen kg/ru", OutDouble)
-              << OutputColumn("litter_c", "soil litter (yl), carbon kg/ru", OutDouble)
-              << OutputColumn("litter_n", "soil litter (yl), nitrogen kg/ru", OutDouble)
-              << OutputColumn("soil_c", "soil organic matter (som), carbon kg/ru", OutDouble)
-              << OutputColumn("soil_n", "soil organic matter (som), nitrogen kg/ru", OutDouble);
+              << OutputColumn("downedWood_c", "downed woody debris (yR), carbon kg/ha", OutDouble)
+              << OutputColumn("downedWood_n", "downed woody debris (yR), nitrogen kg/ga", OutDouble)
+              << OutputColumn("litter_c", "soil litter (yl), carbon kg/ha", OutDouble)
+              << OutputColumn("litter_n", "soil litter (yl), nitrogen kg/ha", OutDouble)
+              << OutputColumn("soil_c", "soil organic matter (som), carbon kg/ha", OutDouble)
+              << OutputColumn("soil_n", "soil organic matter (som), nitrogen kg/ha", OutDouble);
 
 
 }
