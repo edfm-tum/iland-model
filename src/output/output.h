@@ -40,7 +40,7 @@ public:
     bool isOpen() const { return mOpen; } ///< returns true if output is open, i.e. has a open database connection
     void close(); ///< shut down the connection.
     bool isEnabled() const { return mEnabled; } ///< returns true if output is enabled, i.e. is "turned on"
-    void setEnabled(const bool enabled) { mEnabled=enabled; }
+    void setEnabled(const bool enabled) { mEnabled=enabled; if(enabled) open(); }
     bool isRowEmpty() const { return mIndex==0; } ///< returns true if the buffer of the current row is empty
 
     virtual void exec(); ///< main function that executes the output

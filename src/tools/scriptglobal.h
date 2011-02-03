@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QtScript>
 class Model;
-class ScriptGlobal : public QObject
+class ScriptGlobal : public QObject, protected QScriptable
 {
     Q_OBJECT
     // read only properties
@@ -26,7 +26,7 @@ public slots:
     QVariant setting(QString key); ///< get a value from the global xml-settings (returns undefined if not present)
     void set(QString key, QString value); ///< set the value of a setting
     // file stuff
-    QString defaultDirectory(QString dir);
+    QString defaultDirectory(QString dir); ///< get default directory of category 'dir'
     QString loadTextFile(QString fileName); ///< load content from a text file in a String (@sa CSVFile)
     void saveTextFile(QString fileName, QString content); ///< save string (@p content) to a text file.
     bool fileExists(QString fileName); ///< return true if the given file exists.
@@ -34,6 +34,11 @@ public slots:
     int addSingleTrees(const int resourceIndex, QString content); ///< add single trees
     int addTrees(const int resourceIndex, QString content); ///< add tree distribution
     int addTreesOnStand(const int standID, QString content); ///< add trees (distribution mode) for stand 'standID'
+    // enable/disable outputs
+    bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
+    bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful
+    // miscellaneous stuff
+    bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
 private:
     QString mCurrentDir;
     Model *mModel;

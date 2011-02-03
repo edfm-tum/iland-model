@@ -5,6 +5,7 @@
 #include "helper.h"
 #include "standloader.h"
 #include "mapgrid.h"
+#include "outputmanager.h"
 
 class ResourceUnit;
 
@@ -182,5 +183,43 @@ double MapGridWrapper::area(int id) {
         return mMap->area(id);
     else
         return -1;
+}
+
+bool ScriptGlobal::startOutput(QString table_name)
+{
+    OutputManager *om = GlobalSettings::instance()->outputManager();
+    if (!om) return false;
+    Output *out = om->find(table_name);
+    if (!out) {
+        QString err=QString("Output '%1' is not a valid output.").arg(table_name);
+        if (context())
+           context()->throwError(err);
+        return false;
+    }
+    out->setEnabled(true);
+    qDebug() << "started output" << table_name;
+    return true;
+}
+
+bool ScriptGlobal::stopOutput(QString table_name)
+{
+    OutputManager *om = GlobalSettings::instance()->outputManager();
+    if (!om) return false;
+    Output *out = om->find(table_name);
+    if (!out) {
+        QString err=QString("Output '%1' is not a valid output.").arg(table_name);
+        if (context())
+           context()->throwError(err);
+        return false;
+    }
+    out->setEnabled(false);
+    qDebug() << "stopped output" << table_name;
+    return true;
+}
+
+bool ScriptGlobal::screenshot(QString file_name)
+{
+    qDebug() << "not implemented." << file_name;
+    return false;
 }
 
