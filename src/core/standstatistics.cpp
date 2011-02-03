@@ -123,6 +123,6 @@ void StandStatistics::add(const Sapling *sapling)
     mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
     mAverageSaplingAge = sapling->averageAge();
 
-    mCRegeneration += 1.; // todo: fix
-    mNRegeneration += 1; // todo: fix
+    mCRegeneration += sapling->carbonLiving().C;
+    mNRegeneration += sapling->carbonLiving().N;
 }

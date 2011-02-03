@@ -3,6 +3,7 @@
 #include <QList>
 #include <QVariant>
 class Tree; // forward
+class Species; // forward
 class ResourceUnit; // forward
 
 /** CNPair stores a duple of carbon and nitrogen (kg/ha)
@@ -43,7 +44,7 @@ public:
 
     /// add biomass with a specific 'CNRatio' and 'parameter_value'
     void addBiomass(const double biomass, const double CNratio, const double parameter_value);
-    void add(const CNPair &s, const double parameter_value); ///< convenience function
+    void add(const CNPair &s, const double parameter_value) { operator+=(CNPool(s.C, s.N, parameter_value));} ///< convenience function
     void setParameter(const double value) { mParameter = value; }
 
     void operator+=(const CNPool &s);
@@ -71,13 +72,15 @@ public:
     const CNPair &totalOtherWood() const { return mTotalOther; } ///< sum of C and N in other woody pools (branches + coarse roots) kg/ha
     // actions
     /// add for a tree with diameter
-    void addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot);
+    void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);
     /// adds the 'tree' to the appropriate Snag pools.
     void addMortality(const Tree* tree);
     /// add residual biomass of 'tree' after harvesting.
     /// remove_(stem, branch, foliage)_pct: percentage of biomass compartment that is removed by the harvest operation.
     /// the harvested biomass is collected.
     void addHarvest(const Tree* tree, const double remove_stem_pct, const double remove_branch_pct, const double remove_foliage_pct );
+    /// add (died) biomass from the regeneration layer
+    void addRegeneration(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool);
 
     /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
     void removeCarbon(const double factor) {  mSWD[0] *= (1. - factor); mSWD[1] *= (1. - factor); mSWD[2] *= (1. - factor);

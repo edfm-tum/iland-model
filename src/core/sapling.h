@@ -4,6 +4,7 @@
 #include <QtCore/QPoint>
 #include <bitset>
 #include "grid.h"
+#include "snag.h"
 
 /// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
 class SaplingTree {
@@ -30,7 +31,7 @@ public:
     Sapling();
     void setup(ResourceUnitSpecies *masterRUS) { mRUS = masterRUS; }
     void cleanupStorage(); // maintenance operation - remove dead/recruited trees from vector
-    void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
+    void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mSumDbhDied=0.; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
     void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     // access
@@ -50,6 +51,8 @@ public:
     double averageAge() const { return mAvgAge; }
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
+    // carbon and nitrogen
+    const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
     // output maps
     void fillMaxHeightGrid(Grid<float> &grid) const;
 private:
@@ -60,12 +63,14 @@ private:
     int mAdded; ///< number of trees added
     int mRecruited; ///< number recruited (i.e. grown out of regeneration layer)
     int mDied; ///< number of trees died
+    double mSumDbhDied; ///< running sum of dbh of died trees (used to calculate detritus)
     int mLiving; ///< number of trees currently in the regeneration layer
     double mAvgHeight; ///< average height of saplings (m)
     double mAvgAge; ///< average age of saplings (years)
     double mAvgDeltaHPot; ///< average height increment potential (m)
     double mAvgHRealized; ///< average realized height increment
     static double mRecruitmentVariation; ///< defines range of random variation for recruited trees
+    CNPair mCarbonLiving;
 };
 
 #endif // SAPLING_H

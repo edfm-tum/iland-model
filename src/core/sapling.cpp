@@ -166,6 +166,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
             // sapling dies...
             tree.pixel=0;
             mDied++;
+            mSumDbhDied+=tree.height / mRUS->species()->saplingGrowthParameters().hdSapling * 100.;
             return false;
         }
     } else {
@@ -236,7 +237,7 @@ void Sapling::calculateGrowth()
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         const SaplingTree &tree = *it;
         if (tree.height<0)
-            qDebug() << "h<0";
+            qDebug() << "Sapling::calculateGrowth(): h<0";
         if (tree.isValid()) {
             // growing
             if (growSapling(const_cast<SaplingTree&>(tree), f_env_yr, species)) {
@@ -251,6 +252,36 @@ void Sapling::calculateGrowth()
         mAvgAge /= double(mLiving);
         mAvgDeltaHPot /= double(mLiving);
         mAvgHRealized /= double(mLiving);
+    }
+    // calculate carbon balance
+    mCarbonLiving.clear();
+
+    if (mLiving) {
+        // calculate the average dbh and the number of stems
+        double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
+        double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh );
+        // woody parts: stem, branchse and coarse roots
+        mCarbonLiving.addBiomass( ( species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh)) *n, species->cnWood()  );
+        double foliage = species->biomassFoliage(avg_dbh)*n;
+        double fineroot = foliage*species->finerootFoliageRatio();
+        mCarbonLiving.addBiomass( foliage, species->cnFoliage()  );
+        mCarbonLiving.addBiomass( fineroot, species->cnFineroot()  );
+        // turnover
+        mRUS->ru()->snag()->addTurnoverLitter(species, foliage*species->turnoverLeaf(), fineroot*species->turnoverRoot());
+    }
+    if (mDied) {
+        double avg_dbh = mSumDbhDied / double(mDied);
+        double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh );
+        // woody parts: stem, branchse and coarse roots
+        CNPair dead_wood, dead_fine;
+        dead_wood.addBiomass( ( species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh)) * n, species->cnWood()  );
+        double foliage = species->biomassFoliage(avg_dbh)*n;
+
+        dead_fine.addBiomass( foliage, species->cnFoliage()  );
+        dead_fine.addBiomass( foliage*species->finerootFoliageRatio(), species->cnFineroot()  );
+
+        mRUS->ru()->snag()->addRegeneration(species, dead_wood, dead_fine);
+
     }
 
     if (mSaplingTrees.count() > mLiving*1.3)

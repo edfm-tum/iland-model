@@ -293,10 +293,10 @@ void Snag::calculateYear()
 }
 
 /// foliage and fineroot litter is transferred during tree growth.
-void Snag::addTurnoverLitter(const Tree *tree, const double litter_foliage, const double litter_fineroot)
+void Snag::addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot)
 {
-    mLabileFlux.addBiomass(litter_foliage, tree->species()->cnFoliage(), tree->species()->snagKyl());
-    mLabileFlux.addBiomass(litter_fineroot, tree->species()->cnFineroot(), tree->species()->snagKyl());
+    mLabileFlux.addBiomass(litter_foliage, species->cnFoliage(), species->snagKyl());
+    mLabileFlux.addBiomass(litter_fineroot, species->cnFineroot(), species->snagKyl());
 }
 
 /// after the death of the tree the five biomass compartments are processed.
@@ -370,6 +370,11 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
                               tree->biomassStem()*remove_stem_fraction, species->cnWood());
 }
 
-
+// add flow from regeneration layer (dead trees) to soil
+void Snag::addRegeneration(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool)
+{
+    mLabileFlux.add(litter_pool, species->snagKyl());
+    mRefractoryFlux.add(woody_pool, species->snagKyr());
+}
 
 

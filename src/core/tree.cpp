@@ -662,7 +662,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     double sen_root = mFineRootMass * to_root;
     double sen_foliage = mFoliageMass * to_fol;
     if (ru()->snag())
-        ru()->snag()->addTurnoverLitter(this, sen_foliage, sen_root);
+        ru()->snag()->addTurnoverLitter(this->species(), sen_foliage, sen_root);
 
     // Roots
     // http://iland.boku.ac.at/allocation#belowground_NPP
