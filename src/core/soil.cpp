@@ -2,6 +2,7 @@
 #include "globalsettings.h"
 #include "xmlhelper.h" // for load settings
 #include "exception.h"
+#include "resourceunit.h"
 /** @class Soil provides an implementation of the ICBM/2N soil carbon and nitrogen dynamics model.
   The ICBM/2N model was developed by Kätterer and Andren (2001) and used by others (e.g. Xenakis et al, 2008).
   See http://iland.boku.ac.at/soil+C+and+N+cycling for a model overview and the rationale of the model choice.
@@ -46,8 +47,9 @@ void Soil::fetchParameters()
 }
 
 
-Soil::Soil()
+Soil::Soil(ResourceUnit *ru)
 {
+    mRU = ru;
     mRE = 0.;
     mAvailableNitrogen = 0.;
     mKyl = 0.;
@@ -80,11 +82,21 @@ void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young
 /// set soil inputs of current year (litter and deadwood)
 void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha)
 {
-    mInputLab = labile_input_kg_ha * 0.001; // transfer from kg/ha -> tons/ha
-    mInputRef = refractory_input_kg_ha * 0.001;
+    // stockable area:
+    // if the stockable area is < 1ha, then
+    // scale the soil inputs to a full hectare
+    double area_ha = mRU?mRU->stockableArea() / 10000.:1.;
+    if (area_ha==0.)
+        //return;
+        throw IException("Soil::setSoilInput: stockable area is 0!");
+
+    mInputLab = labile_input_kg_ha * (0.001 / area_ha); // transfer from kg/ha -> tons/ha and scale to 1 ha
+    mInputRef = refractory_input_kg_ha * (0.001 / area_ha);
     // calculate the decomposition rates
     mKyl = mYL.parameter(mInputLab);
     mKyr = mYR.parameter(mInputRef);
+    if (_isnan(mKyr) || _isnan(mYR.C))
+        qDebug() << "mKyr is NAN";
 
 }
 
@@ -101,6 +113,9 @@ void Soil::calculateYear()
     const double t = 1.; // timestep (annual)
     // auxiliary calculations
     CNPair total_in = mInputLab + mInputRef;
+    if (_isnan(total_in.C) || _isnan(mKyr))
+        qDebug() << "soil input is NAN.";
+
     double ylss = mInputLab.C / (mKyl * mRE); // Yl stedy state C
     double cl = sp.el * (1. - mH)/sp.qb - mH*(1.-sp.el)/sp.qh; // eta l in the paper
     double ynlss = 0.;
@@ -148,7 +163,8 @@ void Soil::calculateYear()
 
     if (mAvailableNitrogen<0.)
         mAvailableNitrogen = 0.;
-
+    if (_isnan(mAvailableNitrogen) || _isnan(mYR.C))
+        qDebug() << "Available Nitrogen is NAN.";
     // stedy state for n-available
     //    double navss = mKyl*mRE*(1.-mH)/(1.-sp.el)*(ynlss-sp.el*ylss/sp.qb); // available nitrogen (steady state)
     //    navss += mKyr*mRE*(1.-mH)/(1.-sp.er)*(ynrss - sp.er*yrss/sp.qb);
@@ -176,6 +192,8 @@ void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
     mYL *= (1. - litterFrac);
     // old soil organic matter
     mSOM *= (1. - soilFrac);
+    if (_isnan(mAvailableNitrogen) || _isnan(mYR.C))
+        qDebug() << "Available Nitrogen is NAN.";
 
 }
 

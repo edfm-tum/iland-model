@@ -60,7 +60,7 @@ void ResourceUnit::setup()
         delete mSoil;
     mSoil=0;
     if (Model::settings().carbonCycleEnabled) {
-        mSoil = new Soil;
+        mSoil = new Soil(this);
         mSnag = new Snag;
         mSnag->setup(this);
         const XmlHelper &xml=GlobalSettings::instance()->settings();

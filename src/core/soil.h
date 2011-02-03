@@ -3,11 +3,13 @@
 
 #include "snag.h"
 struct SoilParams; // forward
+class ResourceUnit; // forward
+
 class Soil
 {
 public:
     // lifecycle
-    Soil();
+    Soil(ResourceUnit *ru=0);
     /// set initial pool contents
     void setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPair &SOM_kg_ha);
 
@@ -28,6 +30,7 @@ public:
     double availableNitrogen() const { return mAvailableNitrogen; } ///< return available Nitrogen (kg/ha*yr)
     QList<QVariant> debugList(); ///< return a debug output
 private:
+    ResourceUnit *mRU; ///< link to containing resource unit
     void fetchParameters(); ///< set iland parameters for soil
     static SoilParams *mParams; // static container for parameters
     // variables
