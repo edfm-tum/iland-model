@@ -28,13 +28,13 @@ public:
     // logging
     static QPlainTextEdit* logSpace() { return mLogSpace; }
     static QTextStream* logStream() { return mLogStream;}
-    static void bufferedLog(bool bufferLog);
     ~MainWindow();
 public slots:
     void repaint(); ///< force a repaint of the main drawing area
     void yearSimulated(int year);
     void modelFinished(QString errorMessage);
-
+    void bufferedLog(bool bufferLog);
+    QImage screenshot();
 private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;

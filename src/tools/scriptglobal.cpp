@@ -6,7 +6,7 @@
 #include "standloader.h"
 #include "mapgrid.h"
 #include "outputmanager.h"
-
+#include "modelcontroller.h"
 class ResourceUnit;
 
 /** @class ScriptGlobal
@@ -219,7 +219,8 @@ bool ScriptGlobal::stopOutput(QString table_name)
 
 bool ScriptGlobal::screenshot(QString file_name)
 {
-    qDebug() << "not implemented." << file_name;
-    return false;
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->saveScreenshot(file_name);
+    return true;
 }
 

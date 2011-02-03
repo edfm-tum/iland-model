@@ -24,11 +24,19 @@ ModelController::ModelController()
     mPaused = false;
     mRunning = false;
     mYearsToRun = 0;
+    mViewerWindow = 0;
 }
 
 ModelController::~ModelController()
 {
     destroy();
+}
+
+void ModelController::connectSignals()
+{
+    if (!mViewerWindow)
+        return;
+    connect(this,SIGNAL(bufferLogs(bool)), mViewerWindow, SLOT(bufferedLog(bool)));
 }
 
 /// prepare a list of all (active) species
@@ -98,7 +106,8 @@ void ModelController::create()
 {
     if (!canCreate())
         return;
-    MainWindow::bufferedLog(true);
+    emit bufferLogs(true);
+
     try {
         DebugTimer::clearAllTimers();
         mModel = new Model();
@@ -115,7 +124,8 @@ void ModelController::create()
         Helper::msg(error_msg);
         qDebug() << error_msg;
     }
-    MainWindow::bufferedLog(false);
+    emit bufferLogs(false);
+
     qDebug() << "Model created.";
 }
 
@@ -142,7 +152,7 @@ void ModelController::runloop()
     }
 
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
-        MainWindow::bufferedLog(true); // start buffering
+        emit bufferLogs(true);
         hasError = runYear(); // do the work
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
@@ -173,7 +183,7 @@ void ModelController::runloop()
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
         mFinished = true;
-        MainWindow::bufferedLog(false); // stop buffering
+        emit bufferLogs(false); // stop buffering
         emit finished(QString());
     }
 
@@ -184,7 +194,8 @@ void ModelController::run(int years)
 {
     if (!canRun())
         return;
-    MainWindow::bufferedLog(true);
+    emit bufferLogs(true); // start buffering
+
     DebugTimer many_runs(QString("Timer for %1 runs").arg(years));
     mPaused = false;
     mFinished = false;
@@ -195,8 +206,6 @@ void ModelController::run(int years)
     DebugTimer::clearAllTimers();
 
     runloop(); // start the running loop
-
-
 
 }
 
@@ -210,7 +219,7 @@ bool ModelController::runYear()
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
     bool err=false;
     try {
-        MainWindow::bufferedLog(true);
+        emit bufferLogs(true);
         mModel->runYear();
         fetchDynamicOutput();
     } catch(const IException &e) {
@@ -219,7 +228,7 @@ bool ModelController::runYear()
         qDebug() << error_msg;
         err=true;
     }
-    MainWindow::bufferedLog(false);
+    emit bufferLogs(false);
     return err;
 }
 
@@ -236,7 +245,7 @@ bool ModelController::pause()
         // currently running -> set to pause mode
         GlobalSettings::instance()->outputManager()->save();
         mPaused = true;
-        MainWindow::bufferedLog(false);
+        emit bufferLogs(false);
     }
     return mPaused;
 }
@@ -351,4 +360,12 @@ void ModelController::fetchDynamicOutput()
     line.prepend( QString::number(data.size()) );
     line.prepend( QString::number(GlobalSettings::instance()->currentYear()) );
     mDynData.append(line.join(";"));
+}
+
+void ModelController::saveScreenshot(QString file_name)
+{
+    if (!mViewerWindow)
+        return;
+    QImage img = mViewerWindow->screenshot();
+    img.save(file_name);
 }

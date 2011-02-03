@@ -247,6 +247,11 @@ MainWindow::MainWindow(QWidget *parent)
     // species filter
     connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
 
+    // model controller
+    mRemoteControl.setMainWindow( this );
+    mRemoteControl.connectSignals();
+    GlobalSettings::instance()->setModelController( &mRemoteControl );
+
 }
 
 
@@ -919,10 +924,15 @@ void MainWindow::on_actionSnag_Dynamics_triggered()
 }
 
 
+QImage MainWindow::screenshot()
+{
+    return ui->PaintWidget->drawImage();
+}
+
 void MainWindow::on_actionImageToClipboard_triggered()
 {
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setImage( ui->PaintWidget->drawImage() );
+    clipboard->setImage( screenshot() );
     qDebug() << "copied image to clipboard.";
 }
 
@@ -1227,6 +1237,7 @@ void MainWindow::on_actionDebug_triggered()
 
     setLogLevel(level);
 }
+
 
 
 

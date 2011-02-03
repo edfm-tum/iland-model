@@ -240,8 +240,14 @@ void Model::setupSpace()
             qDebug() << "loaded project area mask from" << fileName;
         }
 
+        // list of "valid" resource units
+        QList<ResourceUnit*> valid_rus;
+        foreach(ResourceUnit* ru, mRU)
+            if (ru->id()!=-1)
+                valid_rus.append(ru);
+
         // setup the helper that does the multithreading
-        threadRunner.setup(mRU);
+        threadRunner.setup(valid_rus);
         threadRunner.setMultithreading(GlobalSettings::instance()->settings().valueBool("system.settings.multithreading"));
         threadRunner.print();
 

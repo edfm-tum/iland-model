@@ -3,12 +3,15 @@
 #include <QObject>
 #include <QHash>
 class Model;
+class MainWindow;
 class ModelController: public QObject
 {
     Q_OBJECT
 public:
     ModelController();
     ~ModelController();
+    void setMainWindow(MainWindow *mw) { mViewerWindow = mw; }
+    void connectSignals(); // connect signal/slots to the main window if available
     Model *model() const { return mModel; }
     // bool checkers...
     bool canCreate(); ///< return true if the model can be created (settings loaded and model does not exist)
@@ -24,9 +27,11 @@ public:
     // some informational services
     QHash<QString, QString> availableSpecies();
 
+    void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
 signals:
     void finished(QString errorMessage);
     void year(int year);
+    void bufferLogs(bool do_buffer);
 public slots:
     void setFileName(QString initFileName); ///< set project file name
     void create(); ///< create the model
@@ -39,6 +44,7 @@ private slots:
     void runloop();
 private:
     void fetchDynamicOutput();
+    MainWindow *mViewerWindow;
     Model *mModel;
     bool mPaused;
     bool mRunning;

@@ -17,6 +17,7 @@ typedef QList<QVariant> DebugList;
 
 class Model;
 class OutputManager;
+class ModelController; // forward
 
 /// General settings and globally available data
 class GlobalSettings
@@ -27,8 +28,12 @@ public:
     ~GlobalSettings();
     // Access
     // model and clock
-    void setModel(Model *model) {mModel = model; }
     Model *model() const { return mModel; }
+    ModelController *controller() const { return mModelController; }
+
+    void setModel(Model *model) {mModel = model; }
+    void setModelController(ModelController *mc) {mModelController = mc; }
+
     int currentYear() const { return mRunYear; }
     void setCurrentYear(const int year) { mRunYear = year; }
 
@@ -89,6 +94,7 @@ private:
     GlobalSettings(); // private ctor
     static GlobalSettings *mInstance;
     Model *mModel;
+    ModelController *mModelController;
     OutputManager *mOutputManager;
     int mRunYear;
 

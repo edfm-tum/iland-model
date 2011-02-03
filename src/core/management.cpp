@@ -119,7 +119,7 @@ void Management::loadScript(const QString &fileName)
     mEngine->evaluate(program);
     qDebug() << "management script loaded";
     if (mEngine->hasUncaughtException())
-        qDebug() << "Script Error occured: " << mEngine->uncaughtExceptionBacktrace();
+        qDebug() << "Script Error occured: " << mEngine->uncaughtException().toString() << "\n" << mEngine->uncaughtExceptionBacktrace();
 
 }
 
@@ -326,7 +326,7 @@ void Management::run()
     int year = GlobalSettings::instance()->currentYear();
     mgmt.call(QScriptValue(), QScriptValueList()<<year);
     if (mEngine->hasUncaughtException())
-        qDebug() << "Script Error occured: " << mEngine->uncaughtExceptionBacktrace();
+        qDebug() << "Script Error occured: " << mEngine->uncaughtException().toString() << "\n" << mEngine->uncaughtExceptionBacktrace();
 
     if (mRemoved>0) {
         foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
@@ -454,7 +454,11 @@ void Management::removeSoilCarbon(QScriptValue map_grid_object, int key, double 
 {
     MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
     if (!wrap) {
-        context()->throwError("loadFromMap called with invalid map object!");
+        context()->throwError("removeSoilCarbon called with invalid map object!");
+        return;
+    }
+    if (!(SWDfrac>=0. && SWDfrac<=1. && DWDfrac>=0. && DWDfrac<=1. && soilFrac>=0. && soilFrac<=1. && litterFrac>=0. && litterFrac<=1.)) {
+        context()->throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: %1").arg(context()->argumentsObject().toString()));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);

@@ -116,6 +116,7 @@ GlobalSettings::GlobalSettings()
 {
     mDebugOutputs = 0;
     mModel = 0;
+    mModelController = 0;
     // create output manager
     mOutputManager = new OutputManager();
 }
