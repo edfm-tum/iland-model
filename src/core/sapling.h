@@ -64,7 +64,7 @@ private:
     int mRecruited; ///< number recruited (i.e. grown out of regeneration layer)
     int mDied; ///< number of trees died
     double mSumDbhDied; ///< running sum of dbh of died trees (used to calculate detritus)
-    int mLiving; ///< number of trees currently in the regeneration layer
+    int mLiving; ///< number of trees (cohorts!!!) currently in the regeneration layer
     double mAvgHeight; ///< average height of saplings (m)
     double mAvgAge; ///< average age of saplings (years)
     double mAvgDeltaHPot; ///< average height increment potential (m)
