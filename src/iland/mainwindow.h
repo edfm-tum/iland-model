@@ -13,6 +13,7 @@
 class Model;
 class Tree;
 class ResourceUnit;
+class MapGrid;
 
 namespace Ui
 {
@@ -35,6 +36,9 @@ public slots:
     void modelFinished(QString errorMessage);
     void bufferedLog(bool bufferLog);
     QImage screenshot();
+    void paintGrid(MapGrid *map_grid,double min_val=0., double max_val=1.) { mPaintNext.what=PaintObject::PaintMapGrid;
+                                                                             mPaintNext.min_value=min_val; mPaintNext.max_value=max_val;
+                                                                             mPaintNext.map_grid = map_grid; repaint(); }
 private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
@@ -43,13 +47,22 @@ private:
     void labelMessage(const QString message) { if (mStatusLabel) mStatusLabel->setText(message);}
     void setupModel();
     void readwriteCycle();
-
+    // paint
+    /// PaintObject stores what kind of object to paint during next repaint
+    struct PaintObject {
+        PaintObject(): what(PaintNothing), min_value(0.), max_value(1.) {}
+        enum { PaintNothing, PaintMapGrid, PaintFloatGrid } what;
+        MapGrid *map_grid;
+        double min_value;
+        double max_value;
+    } mPaintNext;
 
     static QPlainTextEdit *mLogSpace;
     static QTextStream *mLogStream;
     void loadPicusIniFile(const QString &fileName);
     // painter functions
-    void paintFON(QPainter &painter, QRect rect);
+    void paintFON(QPainter &painter, QRect rect); ///< general paint function (GUI driven)
+    void paintMapGrid(QPainter &painter, MapGrid *map_grid,double min_val=0., double max_val=1.); ///< paint a map grid (controller driver)
     Viewport vp;
     QString dumpTreelist();
     void applyCycles(int cycle_count=1);

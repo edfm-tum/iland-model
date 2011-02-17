@@ -15,6 +15,7 @@
 
 #include "species.h"
 #include "speciesset.h"
+#include "mapgrid.h"
 
 #include "mainwindow.h" // for the debug message buffering
 
@@ -368,4 +369,12 @@ void ModelController::saveScreenshot(QString file_name)
         return;
     QImage img = mViewerWindow->screenshot();
     img.save(file_name);
+}
+
+void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
+{
+    if (mViewerWindow) {
+        mViewerWindow->paintGrid(map, min_value, max_value);
+        qDebug() << "painted map grid" << map->name() << "min-value (blue):" << min_value << "max-value(red):" << max_value;
+    }
 }

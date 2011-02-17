@@ -59,7 +59,6 @@ public:
     bool isValid() const; ///< returns true if map is successfully loaded
     QString name() const;
     //
-    void paint(QString file_name, double min_value, double max_value);
 
 public slots:
     // query
@@ -67,6 +66,7 @@ public slots:
     // actions
     void load(QString file_name);
     void saveAsImage(QString file);
+    void paint(double min_value=0., double max_value=1.);
 
 private:
     MapGrid *mMap;

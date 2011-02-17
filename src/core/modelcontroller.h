@@ -4,6 +4,8 @@
 #include <QHash>
 class Model;
 class MainWindow;
+class MapGrid;
+
 class ModelController: public QObject
 {
     Q_OBJECT
@@ -28,6 +30,7 @@ public:
     QHash<QString, QString> availableSpecies();
 
     void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
+    void paintMap(MapGrid *map, double min_value, double max_value);
 signals:
     void finished(QString errorMessage);
     void year(int year);

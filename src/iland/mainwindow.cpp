@@ -27,6 +27,7 @@
 #include "outputmanager.h"
 
 #include "tests.h"
+#include "mapgrid.h"
 
 // global settings
 QDomDocument xmldoc;
@@ -352,14 +353,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
 
-    float maxval=1.f; // default maximum
-    if (!auto_scale_color)
-        maxval =grid->max();
-    if (maxval==0.)
-        return;
-    QString species;
-    if (ui->speciesFilterBox->currentIndex()>-1)
-        species = ui->speciesFilterBox->itemData(ui->speciesFilterBox->currentIndex()).toString();
 
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
@@ -368,6 +361,24 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QRect rs = vp.toScreen(r);
     painter.setPen(Qt::black);
     painter.drawRect(rs);
+
+    // what to paint??
+    if (mPaintNext.what != PaintObject::PaintNothing) {
+        if (mPaintNext.what == PaintObject::PaintMapGrid)
+            paintMapGrid(painter, mPaintNext.map_grid, mPaintNext.min_value, mPaintNext.max_value);
+
+        mPaintNext.what = PaintObject::PaintNothing; // reset???
+        return;
+    }
+
+    float maxval=1.f; // default maximum
+    if (!auto_scale_color)
+        maxval =grid->max();
+    if (maxval==0.)
+        return;
+    QString species;
+    if (ui->speciesFilterBox->currentIndex()>-1)
+        species = ui->speciesFilterBox->itemData(ui->speciesFilterBox->currentIndex()).toString();
 
     int ix,iy;
     QColor fill_color;
@@ -539,6 +550,33 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     }
 }
 
+// paint the values of the MapGrid
+void MainWindow::paintMapGrid(QPainter &painter, MapGrid *map_grid, double min_val, double max_val)
+{
+    // clear background
+    painter.fillRect(ui->PaintWidget->rect(), Qt::white);
+
+    const Grid<int> &grid = map_grid->grid();
+
+    // draw rectangle around the grid
+    QRectF r = grid.metricRect();
+    QRect rs = vp.toScreen(r);
+    painter.setPen(Qt::black);
+    painter.drawRect(rs);
+    // paint the lower-res-grid;
+    int ix,iy;
+    QColor fill_color;
+    for (iy=0;iy<grid.sizeY();iy++) {
+        for (ix=0;ix<grid.sizeX();ix++) {
+            QPoint p(ix,iy);
+            double value = grid.constValueAtIndex(p);
+            QRect r = vp.toScreen(grid.cellRect(p));
+            fill_color = Helper::colorFromValue(value, min_val, max_val);
+            painter.fillRect(r, fill_color);
+        }
+    }
+
+}
 
 void MainWindow::repaintArea(QPainter &painter)
 {
@@ -1237,6 +1275,8 @@ void MainWindow::on_actionDebug_triggered()
 
     setLogLevel(level);
 }
+
+
 
 
 
