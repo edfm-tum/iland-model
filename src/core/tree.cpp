@@ -676,7 +676,16 @@ inline void Tree::partitioning(TreeGrowthData &d)
         delta_root -= delta_fineroot;
     }
     // 2nd, the rest of NPP allocated to roots go to coarse roots
+    double max_coarse_root = species()->biomassRoot(mDbh);
     mCoarseRootMass += delta_root;
+    if (mCoarseRootMass > max_coarse_root) {
+        // if the coarse root pool exceeds the value given by the allometry, then the
+        // surplus is accounted as turnover
+        if (ru()->snag())
+            ru()->snag()->addTurnoverWood(species(), mCoarseRootMass-max_coarse_root);
+
+        mCoarseRootMass = max_coarse_root;
+    }
 
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;

@@ -69,11 +69,11 @@ public:
 
 
     // calculations: allometries
-    double biomassFoliage(const double dbh) const;
-    double biomassWoody(const double dbh) const;
-    double biomassRoot(const double dbh) const;
-    double biomassBranch(const double dbh) const;
-    double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
+    inline double biomassFoliage(const double dbh) const { return mFoliage_a * pow(dbh, mFoliage_b); }
+    inline double biomassWoody(const double dbh) const { return mWoody_a * pow(dbh, mWoody_b); }
+    inline double biomassRoot(const double dbh) const { return mRoot_a * pow(dbh, mRoot_b); }
+    inline double biomassBranch(const double dbh) const { return mBranch_a * pow(dbh, mBranch_b); }
+    inline double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
     double allometricFractionStem(const double dbh) const;
     double finerootFoliageRatio() const { return mFinerootFoliageRatio; } ///< ratio of fineroot mass (kg) to foliage mass (kg)
     // cn ratios

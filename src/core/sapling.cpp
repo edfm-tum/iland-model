@@ -298,7 +298,7 @@ void Sapling::calculateGrowth()
         dead_fine.addBiomass( foliage*species->finerootFoliageRatio(), species->cnFineroot()  );
     }
     if (!dead_wood.isEmpty() || !dead_fine.isEmpty())
-        mRUS->ru()->snag()->addRegeneration(species, dead_wood, dead_fine);
+        mRUS->ru()->snag()->addToSoil(species, dead_wood, dead_fine);
 
     if (mSaplingTrees.count() > mLiving*1.3)
         cleanupStorage();

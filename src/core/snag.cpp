@@ -299,6 +299,11 @@ void Snag::addTurnoverLitter(const Species *species, const double litter_foliage
     mLabileFlux.addBiomass(litter_fineroot, species->cnFineroot(), species->snagKyl());
 }
 
+void Snag::addTurnoverWood(const Species *species, const double woody_biomass)
+{
+    mRefractoryFlux.addBiomass(woody_biomass, species->cnWood(), species->snagKyr());
+}
+
 /// after the death of the tree the five biomass compartments are processed.
 void Snag::addMortality(const Tree *tree)
 {
@@ -371,7 +376,7 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
 }
 
 // add flow from regeneration layer (dead trees) to soil
-void Snag::addRegeneration(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool)
+void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool)
 {
     mLabileFlux.add(litter_pool, species->snagKyl());
     mRefractoryFlux.add(woody_pool, species->snagKyr());

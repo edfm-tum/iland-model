@@ -73,6 +73,7 @@ public:
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);
+    void addTurnoverWood(const Species *species, const double woody_biomass);
     /// adds the 'tree' to the appropriate Snag pools.
     void addMortality(const Tree* tree);
     /// add residual biomass of 'tree' after harvesting.
@@ -80,7 +81,7 @@ public:
     /// the harvested biomass is collected.
     void addHarvest(const Tree* tree, const double remove_stem_pct, const double remove_branch_pct, const double remove_foliage_pct );
     /// add (died) biomass from the regeneration layer
-    void addRegeneration(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool);
+    void addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool);
 
     /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
     void removeCarbon(const double factor) {  mSWD[0] *= (1. - factor); mSWD[1] *= (1. - factor); mSWD[2] *= (1. - factor);
