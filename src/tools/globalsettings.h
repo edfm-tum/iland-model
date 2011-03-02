@@ -44,6 +44,8 @@ public:
     void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
     bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
     int currentDebugOutput() const { return mDebugOutputs; }
+    QString debugOutputName(const DebugOutputs d); ///< returns the name attached to 'd' or an empty string if not found
+    DebugOutputs debugOutputId(const QString debug_name); ///< returns the DebugOutputs bit or 0 if not found
     DebugList &debugList(const int ID, const DebugOutputs dbg); ///< returns a ref to a list ready to be filled with debug output of a type/id combination.
     const QList<DebugList> debugLists(const int ID, const DebugOutputs dbg); ///< return a list of debug outputs
     QStringList debugListCaptions(const DebugOutputs dbg); ///< returns stringlist of captions for a specific output type

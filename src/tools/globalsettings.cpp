@@ -141,6 +141,31 @@ void GlobalSettings::setDebugOutput(const GlobalSettings::DebugOutputs dbg, cons
         mDebugOutputs &= int(dbg) ^ 0xffffffff;
 }
 
+// storing the names of debug outputs
+//    enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
+// dStandNPP=8, dWaterCycle=16, dDailyResponses=32, dEstablishment=64, dCarbonCycle=128 }; ///< defines available debug output types.
+const QStringList debug_output_names=QStringList() << "treeNPP" << "treePartition" << "treeGrowth" << "waterCycle" << "dailyResponse" << "establishment" << "carbonCycle";
+
+///< returns the name attached to 'd' or an empty string if not found
+QString GlobalSettings::debugOutputName(const DebugOutputs d)
+{
+    // this is a little hacky...(and never really tried!)
+    for (int i=0;i<debug_output_names.count();++i) {
+        if (d & (2<<i))
+            return debug_output_names[i];
+    }
+    return QString();
+}
+
+///< returns the DebugOutputs bit or 0 if not found
+GlobalSettings::DebugOutputs GlobalSettings::debugOutputId(const QString debug_name)
+{
+    int index = debug_output_names.indexOf(debug_name);
+    if (index==-1) return GlobalSettings::DebugOutputs(0);
+    return GlobalSettings::DebugOutputs(2 << index); // 1,2,4,8, ...
+}
+
+
 
 void GlobalSettings::clearDebugLists()
 {

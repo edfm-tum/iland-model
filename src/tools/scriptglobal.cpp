@@ -7,6 +7,7 @@
 #include "mapgrid.h"
 #include "outputmanager.h"
 #include "modelcontroller.h"
+#include "grid.h"
 class ResourceUnit;
 
 /** @class ScriptGlobal
@@ -192,6 +193,13 @@ double MapGridWrapper::area(int id) {
 
 bool ScriptGlobal::startOutput(QString table_name)
 {
+    if (table_name.startsWith("debug_")) {
+        GlobalSettings::DebugOutputs dbg = GlobalSettings::instance()->debugOutputId(table_name.mid(6));
+        if (dbg==0)
+            qDebug() << "cannot start debug output" << table_name << "because this is not a valid name.";
+        GlobalSettings::instance()->setDebugOutput(dbg, true);
+        return true;
+    }
     OutputManager *om = GlobalSettings::instance()->outputManager();
     if (!om) return false;
     Output *out = om->find(table_name);
@@ -208,6 +216,13 @@ bool ScriptGlobal::startOutput(QString table_name)
 
 bool ScriptGlobal::stopOutput(QString table_name)
 {
+    if (table_name.startsWith("debug_")) {
+        GlobalSettings::DebugOutputs dbg = GlobalSettings::instance()->debugOutputId(table_name.mid(6));
+        if (dbg==0)
+            qDebug() << "cannot stop debug output" << table_name << "because this is not a valid name.";
+        GlobalSettings::instance()->setDebugOutput(dbg, false);
+        return true;
+    }
     OutputManager *om = GlobalSettings::instance()->outputManager();
     if (!om) return false;
     Output *out = om->find(table_name);
@@ -227,5 +242,30 @@ bool ScriptGlobal::screenshot(QString file_name)
     if (GlobalSettings::instance()->controller())
         GlobalSettings::instance()->controller()->saveScreenshot(file_name);
     return true;
+}
+
+// helper function...
+QString heightGrid_height(const HeightGridValue &hgv) {
+    return QString::number(hgv.height);
+}
+
+/// write grid to a file...
+bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
+{
+    if (!GlobalSettings::instance()->model())
+        return false;
+    QString result;
+    if (grid_type == "height")
+        result = gridToESRIRaster(*GlobalSettings::instance()->model()->heightGrid(), *heightGrid_height);
+    if (grid_type == "lif")
+        result = gridToESRIRaster(*GlobalSettings::instance()->model()->grid());
+    if (!result.isEmpty()) {
+        Helper::saveToTextFile(file_name, result);
+        qDebug() << "saved grid to " << file_name;
+        return true;
+    }
+    qDebug() << "could not save gridToFile because" << grid_type << "is not a valid grid.";
+    return false;
+
 }
 

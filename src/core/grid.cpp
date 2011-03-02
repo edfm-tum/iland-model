@@ -3,12 +3,17 @@
 #include "exception.h"
 #include "global.h"
 
-QString gridToString(const FloatGrid &grid)
+QString gridToString(const FloatGrid &grid, const QChar sep, const int newline_after)
 {
     QString res;
+    int newl_counter = newline_after;
     for (int y=0;y<grid.sizeY();y++) {
          for (int x=0;x<grid.sizeX();x++) {
-            res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + ";";
+            res+=QString::number(grid.constValueAtIndex(QPoint(x,y))) + sep;
+            if (--newl_counter==0) {
+                res += "\r\n";
+                newl_counter = newline_after;
+            }
         }
         res+="\r\n";
     }

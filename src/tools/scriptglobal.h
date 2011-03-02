@@ -39,6 +39,7 @@ public slots:
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful
     // miscellaneous stuff
     bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
+    bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
 private:
     QString mCurrentDir;
     Model *mModel;

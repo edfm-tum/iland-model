@@ -411,7 +411,7 @@ T* GridRunner<T>::next()
 
 /// dumps a FloatGrid to a String.
 /// rows will be y-lines, columns x-values. (see grid.cpp)
-QString gridToString(const FloatGrid &grid);
+QString gridToString(const FloatGrid &grid, const QChar sep=QChar(';'), const int newline_after=-1);
 
 /// creates and return a QImage from Grid-Data.
 /// @param black_white true: max_value = white, min_value = black, false: color-mode: uses a HSV-color model from blue (min_value) to red (max_value), default: color mode (false)
@@ -430,20 +430,85 @@ QImage gridToImage(const FloatGrid &grid,
 bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid);
 
 /// template version for non-float grids (see also version for FloatGrid)
+/// @param sep string separator
+/// @param newline_after if <>-1 a newline is added after every 'newline_after' data values
 template <class T>
-        QString gridToString(const Grid<T> &grid)
+        QString gridToString(const Grid<T> &grid, const QChar sep=QChar(';'), const int newline_after=-1)
 {
     QString res;
     QTextStream ts(&res);
 
+    int newl_counter = newline_after;
     for (int y=0;y<grid.sizeY();y++){
         for (int x=0;x<grid.sizeX();x++){
-            ts << grid.constValueAtIndex(x,y) << ";";
+            ts << grid.constValueAtIndex(x,y) << sep;
+            if (--newl_counter==0) {
+                ts << "\r\n";
+                newl_counter = newline_after;
+            }
         }
         ts << "\r\n";
     }
 
     return res;
+}
+
+/// template version for non-float grids (see also version for FloatGrid)
+/// @param valueFunction pointer to a function with the signature: QString func(const T&) : this should return a QString
+/// @param sep string separator
+/// @param newline_after if <>-1 a newline is added after every 'newline_after' data values
+template <class T>
+        QString gridToString(const Grid<T> &grid, QString (*valueFunction)(const T& value), const QChar sep=QChar(';'), const int newline_after=-1 )
+{
+    QString res;
+    QTextStream ts(&res);
+
+    int newl_counter = newline_after;
+    for (int y=0;y<grid.sizeY();y++){
+        for (int x=0;x<grid.sizeX();x++){
+            ts << (*valueFunction)(grid.constValueAtIndex(x,y)) << sep;
+
+            if (--newl_counter==0) {
+                ts << "\r\n";
+                newl_counter = newline_after;
+            }
+        }
+        ts << "\r\n";
+    }
+
+    return res;
+}
+void modelToWorld(const QVector3D &From, QVector3D &To);
+
+template <class T>
+    QString gridToESRIRaster(const Grid<T> &grid, QString (*valueFunction)(const T& value) )
+{
+        QVector3D model(0, 0 ,0.);
+        QVector3D world;
+        modelToWorld(model, world);
+        QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\n yllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
+                                .arg(grid.sizeX())
+                                .arg(grid.sizeY())
+                                .arg(world.x()).arg(world.y())
+                                .arg(grid.cellsize()).arg(-9999);
+        result += gridToString(grid, valueFunction, QChar(' '), 6); // for special grids
+        return result;
+
+}
+    template <class T>
+        QString gridToESRIRaster(const Grid<T> &grid )
+{
+            QVector3D model(0, 0 ,0.);
+            QVector3D world;
+            modelToWorld(model, world);
+            QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\n yllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
+                    .arg(grid.sizeX())
+                    .arg(grid.sizeY())
+                    .arg(world.x()).arg(world.y())
+                    .arg(grid.cellsize()).arg(-9999);
+            result += gridToString(grid, QChar(' '), 6); // for normal grids (e.g. float)
+            return result;
+
 }
 
 #endif // GRID_H
