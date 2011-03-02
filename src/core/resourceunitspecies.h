@@ -23,6 +23,7 @@ public:
     const ResourceUnit *ru() const { return mRU; } ///< return pointer to resource unit
     const Production3PG &prod3PG() const { return m3PG; } ///< the 3pg production model of this speies x resourceunit
     const Sapling &sapling() const { return mSapling; } ///< sapling growth submodel
+    Sapling &changeSapling() { return mSapling; } ///< sapling growth submodel (non-const access)
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
     StandStatistics &statisticsDead() { return mStatisticsDead; } ///< statistics of died trees
     StandStatistics &statisticsMgmt() { return mStatisticsMgmt; } ///< statistics of removed trees

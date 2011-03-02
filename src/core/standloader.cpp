@@ -621,11 +621,72 @@ void StandLoader::executeiLandInitStand(int stand_id)
             // get position from fixed lists (one for even, one for uneven resource units)
             pos = p.resource_unit->index()%2?evenlist[index]:unevenlist[index];
             tree_pos = p.pixelOffset * cPxPerHeight; // convert to LIF index
-            tree_pos += QPoint(pos/5, pos%5);
+            tree_pos += QPoint(pos/cPxPerHeight, pos%cPxPerHeight);
 
             p.resource_unit->trees()[tree_idx].setPosition(tree_pos);
         }
     }
     if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "with area" << "area (m2)" << grid->area(stand_id) << "count of 10m pixels:"  << indices.count() << "initialized trees:" << total_count;
 
+}
+
+/// a (hacky) way of adding saplings of a certain age to a stand defined by 'stand_id'.
+int StandLoader::loadSaplings(const QString &content, int stand_id, const QString &fileName)
+{
+    const MapGrid *stand_grid = GlobalSettings::instance()->model()->standGrid();
+    QList<int> indices = stand_grid->gridIndices(stand_id); // list of 10x10m pixels
+    if (indices.isEmpty()) {
+        qDebug() << "stand" << stand_id << "not in project area. No init performed.";
+        return -1;
+    }
+    double area_factor = stand_grid->area(stand_id) / 10000.; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
+
+    // parse the content of the init-file
+    // species
+    CSVFile init;
+    init.loadFromString(content);
+    int ispecies = init.columnIndex("species");
+    int icount = init.columnIndex("count");
+    int iheight = init.columnIndex("height");
+    int iage = init.columnIndex("age");
+    if (ispecies==-1 || icount==-1)
+        throw IException("Error while loading saplings: columns 'species' or 'count' are missing!!");
+
+    const SpeciesSet *set = GlobalSettings::instance()->model()->ru()->speciesSet();
+    double height, age;
+    int total = 0;
+    for (int row=0;row<init.rowCount();++row) {
+        int pxcount = init.value(row, icount).toDouble() * area_factor + 0.5; // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
+        const Species *species = set->species(init.value(row, ispecies).toString());
+        if (!species)
+            throw IException(QString("Error while loading saplings: invalid species '%1'.").arg(init.value(row, ispecies).toString()));
+        height = iheight==-1?0.05: init.value(row, iheight).toDouble();
+        age = iage==-1?1:init.value(row,iage).toDouble();
+
+        int misses = 0;
+        int hits = 0;
+        while (hits < pxcount) {
+           int rnd_index = irandom(0, indices.count()-1);
+           QPoint offset=stand_grid->grid().indexOf(indices[rnd_index]);
+           ResourceUnit *ru = GlobalSettings::instance()->model()->ru(stand_grid->grid().cellCenterPoint(offset));
+           //
+           offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
+           int in_p = irandom(0, cPxPerHeight*cPxPerHeight-1); // index of lif-pixel
+           offset += QPoint(in_p / cPxPerHeight, in_p % cPxPerHeight);
+           if (ru->saplingHeightForInit(offset) > height) {
+               misses++;
+           } else {
+               // ok
+               hits++;
+               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset);
+           }
+           if (misses > 3*pxcount) {
+               qDebug() << "tried to add" << pxcount << "saplings at stand" << stand_id << "but failed in finding enough free positions. Added" << hits << "and stopped.";
+               break;
+           }
+        }
+        total += hits;
+
+    }
+    return total;
 }

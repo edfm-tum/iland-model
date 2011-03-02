@@ -18,6 +18,8 @@ public:
     int loadiLandFile(const QString &fileName, ResourceUnit *ru=NULL, int stand_id=0);
     int loadSingleTreeList(const QString &content, ResourceUnit*ru = NULL, const QString &fileName="");
     int loadDistributionList(const QString &content, ResourceUnit *ru = NULL, int stand_id=0, const QString &fileName="");
+    // load regeneration in stands
+    int loadSaplings(const QString &content, int stand_id, const QString &fileName=QString());
 private:
     struct InitFileItem
     {
@@ -36,7 +38,7 @@ private:
     void evaluateDebugTrees(); ///< set debug-flag for trees by evaluating the param-value expression "debug_tree"
     Model *mModel;
     RandomCustomPDF *mRandom;
-     QVector<InitFileItem> mInitItems;
+    QVector<InitFileItem> mInitItems;
 };
 
 #endif // STANDLOADER_H

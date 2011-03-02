@@ -101,6 +101,23 @@ bool Sapling::hasSapling(const QPoint &position) const
     */
 }
 
+/// retrieve the height of the sapling at the location 'position' (given in LIF-coordinates)
+/// this is quite expensive and only done for initialization
+double Sapling::heightAt(const QPoint &position) const
+{
+    if (!hasSapling(position))
+        return 0.;
+    // ok, we'll have to search through all saplings
+    QVector<SaplingTree>::const_iterator it;
+    float *lif_ptr = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
+    for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+        if (it->isValid() && it->pixel == lif_ptr)
+            return it->height;
+    }
+    return 0.;
+
+}
+
 
 void Sapling::addSapling(const QPoint &pos_lif)
 {
@@ -321,3 +338,4 @@ void Sapling::fillMaxHeightGrid(Grid<float> &grid) const
     }
 
 }
+

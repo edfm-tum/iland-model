@@ -359,6 +359,13 @@ void ResourceUnit::clearSaplings(const QPoint &position)
 
 }
 
+float ResourceUnit::saplingHeightForInit(const QPoint &position) const
+{
+    double maxh = 0.;
+    foreach(ResourceUnitSpecies* rus, mRUSpecies)
+        maxh = qMax(maxh, rus->sapling().heightAt(position));
+    return maxh;
+}
 
 void ResourceUnit::calculateCarbonCycle()
 {
@@ -385,3 +392,5 @@ void ResourceUnit::calculateCarbonCycle()
     }
 
 }
+
+

@@ -269,3 +269,16 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
 
 }
 
+int ScriptGlobal::addSaplingsOnStand(const int standID, QString species, int px_per_hectare)
+{
+    QString csv_file = QString("species;count\n%1;%2").arg(species).arg(px_per_hectare);
+    StandLoader loader(mModel);
+    try {
+    return loader.loadSaplings(csv_file, standID, "called from script");
+    } catch (const IException &e) {
+        if (context())
+           context()->throwError(e.message());
+    }
+    return 0;
+}
+

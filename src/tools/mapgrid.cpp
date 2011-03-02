@@ -112,7 +112,8 @@ QList<Tree *> MapGrid::trees(const int id) const
 
 }
 
-/// return a list of grid-indices of a given stand-id
+/// return a list of grid-indices of a given stand-id (a grid-index
+/// is the index of 10m x 10m pixels within the internal storage)
 /// The selection is limited to pixels within the world's extent
 QList<int> MapGrid::gridIndices(const int id) const
 {

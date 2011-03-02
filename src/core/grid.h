@@ -483,22 +483,25 @@ void modelToWorld(const QVector3D &From, QVector3D &To);
 template <class T>
     QString gridToESRIRaster(const Grid<T> &grid, QString (*valueFunction)(const T& value) )
 {
-        QVector3D model(0, 0 ,0.);
+        QVector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
         QVector3D world;
         modelToWorld(model, world);
         QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\n yllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
                                 .arg(grid.sizeX())
                                 .arg(grid.sizeY())
-                                .arg(world.x()).arg(world.y())
+                                .arg(world.x(),0,'f').arg(world.y(),0,'f')
                                 .arg(grid.cellsize()).arg(-9999);
-        result += gridToString(grid, valueFunction, QChar(' '), 6); // for special grids
+        QString line =  gridToString(grid, valueFunction, QChar(' '), grid.sizeX()); // for special grids
+        QStringList lines = line.split("\r\n");
+        for (int i=lines.count()-1; i>=0; --i)
+            result+=lines[i];
         return result;
 
 }
     template <class T>
         QString gridToESRIRaster(const Grid<T> &grid )
 {
-            QVector3D model(0, 0 ,0.);
+            QVector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
             QVector3D world;
             modelToWorld(model, world);
             QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\n yllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
@@ -506,7 +509,10 @@ template <class T>
                     .arg(grid.sizeY())
                     .arg(world.x()).arg(world.y())
                     .arg(grid.cellsize()).arg(-9999);
-            result += gridToString(grid, QChar(' '), 6); // for normal grids (e.g. float)
+            QString line = gridToString(grid, QChar(' '), grid.sizeX()); // for normal grids (e.g. float)
+            QStringList lines = line.split("\r\n");
+            for (int i=lines.count()-1; i>=0; --i)
+                result+=lines[i];
             return result;
 
 }

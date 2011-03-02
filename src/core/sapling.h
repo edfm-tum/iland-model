@@ -41,6 +41,7 @@ public:
     void addSapling(const QPoint &pos_lif);
     void clearSaplings(const QPoint &position); ///< clear  saplings on a given position (after recruitment)
     bool hasSapling(const QPoint &position) const; ///< return true if sapling is present at position
+    double heightAt(const QPoint &position) const; ///< return the height at given position or 0 if position is not occupied
     // access to statistics
     int newSaplings() const { return mAdded; }
     int diedSaplings() const { return mDied; }

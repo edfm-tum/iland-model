@@ -15,7 +15,7 @@ public:
     const QString &name() const { return mName; } ///< table name of the species set
     // access
     QList<Species*> activeSpecies() { return mActiveSpecies; }
-    Species *species(const QString &speciesId) { return mSpecies.value(speciesId); }
+    Species *species(const QString &speciesId) const { return mSpecies.value(speciesId); }
     const Species *species(const int &index); ///< get by arbirtray index (slower than using string-id!)
     const StampContainer &readerStamps() { return mReaderStamp; }
     QVariant var(const QString& varName);

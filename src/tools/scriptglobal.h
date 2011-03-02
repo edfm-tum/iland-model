@@ -34,6 +34,8 @@ public slots:
     int addSingleTrees(const int resourceIndex, QString content); ///< add single trees
     int addTrees(const int resourceIndex, QString content); ///< add tree distribution
     int addTreesOnStand(const int standID, QString content); ///< add trees (distribution mode) for stand 'standID'
+    // add saplings
+    int addSaplingsOnStand(const int standID, QString species, int px_per_hectare);
     // enable/disable outputs
     bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful
