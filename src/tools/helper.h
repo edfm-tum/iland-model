@@ -63,19 +63,22 @@ public:
     double percentile25() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mP25; } ///< 1st quartil
     double percentile75() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mP75; } ///< 3rd quartil
     double percentile(const int perc) const; ///< get value of a given percentile (0..100)
+    double standardDev() const { if (mSD==std::numeric_limits<double>::max()) calculateSD(); return mSD; }; ///< get the standard deviation (of the population)
     // additional functions
     static QVector<int> calculateRanks(const QVector<double> &data, bool descending=false); ///< rank data.
     static void normalize(QVector<double> &data, double targetSum); ///< normalize, i.e. the sum of all items after processing is targetSum
 private:
-   mutable QVector<double> mData; // mutable to allow late calculation of percentiles (e.g. a call to "median()".)
-   double mSum;
-   double mMean;
-   double mMin;
-   double mMax;
-   mutable double mP25;
-   mutable double mP75;
-   mutable double mMedian;
-   void calculatePercentiles() const;
+    double calculateSD() const;
+    mutable QVector<double> mData; // mutable to allow late calculation of percentiles (e.g. a call to "median()".)
+    double mSum;
+    double mMean;
+    double mMin;
+    double mMax;
+    mutable double mP25;
+    mutable double mP75;
+    mutable double mMedian;
+    mutable double mSD; // standard deviation
+    void calculatePercentiles() const;
 };
 
 /** Timer class that writes timings to the Debug-Output-Channel

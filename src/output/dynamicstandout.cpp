@@ -15,12 +15,13 @@ DynamicStandOut::DynamicStandOut()
                    "You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees. " \
                    "Both filters are valid expressions (for resource unit level and tree level, respectively). For example, a ''treefilter'' of 'speciesindex=0' reduces the output to just one species.\n" \
                    "Each field is defined as: ''field.aggregatio''n (separated by a dot). A ''field'' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
-                   "mean, sum, min, max, p25, p50, p75, p5, 10, p90, p95 (pXX=XXth percentile).");
+                   "mean, sum, min, max, p25, p50, p75, p5, 10, p90, p95 (pXX=XXth percentile), sd (std.dev.).\n" \
+                   "Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)");
     columns() << OutputColumn::year() << OutputColumn::ru()  << OutputColumn::id() << OutputColumn::species();
     // other colums are added during setup...
 }
 
-const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75" << "p5"<< "p10" << "p90" << "p95";
+const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75" << "p5"<< "p10" << "p90" << "p95" << "sd";
 
 void DynamicStandOut::setup()
 {
@@ -154,6 +155,7 @@ void DynamicStandOut::exec()
                 case 8: value = stat.percentile(10); break;
                 case 9: value = stat.percentile(90); break;
                 case 10: value = stat.percentile(95); break;
+                case 11: value = stat.standardDev(); break;
 
                 default: value = 0.; break;
                 }

@@ -163,6 +163,8 @@ void StatData::calculate()
    mMedian = std::numeric_limits<double>::max();
    mMin = std::numeric_limits<double>::max();
    mMax = - std::numeric_limits<double>::max();
+   mSD = std::numeric_limits<double>::max();
+
    QVector<double>::const_iterator end = mData.constEnd();
    QVector<double>::const_iterator i = mData.constBegin();
    mSum = 0.;
@@ -176,6 +178,23 @@ void StatData::calculate()
    //qDebug() << QString("p25: %1 Median: %2 p75: %3 min: %4 max: %5").arg(mP25).arg(mMedian).arg(mP75).arg(mMin).arg(mMax);
 }
 
+double StatData::calculateSD() const
+{
+    if (mData.count()==0) {
+        mSD = 0.;
+        return 0.;
+    }
+    // calculate the standard deviation...
+    QVector<double>::const_iterator end = mData.constEnd();
+    QVector<double>::const_iterator i = mData.constBegin();
+    double sum = 0.;
+    while (i!=end) {
+        sum += (*i - mMean)*(*i - mMean);
+        ++i;
+    }
+    mSD =sqrt(sum / double(mData.count()));
+    return mSD;
+}
 
 double StatData::percentile(const int perc) const
 {
@@ -497,4 +516,6 @@ bool Viewport::isVisible(const QRectF &world_rect) const
     return m_viewport.contains(world_rect)
             || m_viewport.intersects(world_rect);
 }
+
+
 
