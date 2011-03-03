@@ -263,7 +263,7 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
     QList<DebugList> ddl = g->debugLists(-1, type); // get all debug data
 
     QStringList result;
-    result << g->debugListCaptions(type).join(separator);
+
     foreach (const DebugList &l, ddl) {
         QString line;
         int c=0;
@@ -274,6 +274,9 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
         }
         result << line;
     }
+    if (!result.isEmpty())
+        result.push_front( g->debugListCaptions(type).join(separator) );
+
     return result;
 }
 

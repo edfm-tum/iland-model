@@ -981,22 +981,39 @@ void MainWindow::saveDebugOutputs()
         return;
 
     QString p = GlobalSettings::instance()->path("debug_", "temp");
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition))
-        Helper::saveToTextFile(p + "tree_partition.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";").join("\n"));
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth))
-        Helper::saveToTextFile(p + "tree_growth.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";").join("\n"));
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP))
-        Helper::saveToTextFile(p + "tree_npp.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";").join("\n"));
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandNPP))
-        Helper::saveToTextFile(p + "stand_npp.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandNPP, ";").join("\n"));
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle))
-        Helper::saveToTextFile(p + "water_cycle.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";").join("\n"));
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses))
-        Helper::saveToTextFile(p + "daily_responses.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";").join("\n"));
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment))
-        Helper::saveToTextFile(p + "establishment.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";").join("\n"));
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dCarbonCycle))
-        Helper::saveToTextFile(p + "carboncycle.csv",GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";").join("\n"));
+    QStringList debug_out;
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "tree_partition.csv",debug_out.join("\n"));
+
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "tree_growth.csv",debug_out.join("\n"));
+
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "tree_npp.csv",debug_out.join("\n"));
+
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandNPP, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "stand_npp.csv",debug_out.join("\n"));
+
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "water_cycle.csv",debug_out.join("\n"));
+
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "daily_responses.csv",debug_out.join("\n"));
+
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "establishment.csv",debug_out.join("\n"));
+
+    debug_out = GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";");
+    if (!debug_out.isEmpty())
+        Helper::saveToTextFile(p + "carboncycle.csv",debug_out.join("\n"));
+
     qDebug() << "saved debug outputs to" << p;
 }
 
