@@ -233,18 +233,18 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 
     case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
 
-    case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
+    case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
                 << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
                 << "content" << "psi_kpa" << "excess_mm" << "snow_height";
 
-    case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index"
+    case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
                 << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
 
-    case dEstablishment: return QStringList() << "id" << "type" << "year" << "species" << "RU_index"
+    case dEstablishment: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
                  << "avgProbDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "TACAAbioticEnv"
                  << "fEnvYr" << "avgLIFValue" <<"N_Established" << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
                  << "Added" << "Died" << "Recruited" << "refRatio";
-    case dCarbonCycle: return QStringList() << "id" << "type" << "year" << "RU_index"
+    case dCarbonCycle: return QStringList() << "id" << "type" << "year" << "RU_index" << "rid"
                 << "SnagState_c" << "TotalC_in" << "TotalC_toAtm" << "SWDtoDWD_c" << "SWDtoDWD_n" << "toLabile_c" << "toLabile_n" << "toRefr_c" << "toRefr_n"
                 << "swd1_c" << "swd1_n" << "swd1_count" << "swd1_tsd" << "toSwd1_c" << "toSwd1_n" << "dbh1" << "height1" << "volume1"  // pool of small dbhs
                 << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" << "dbh2" << "height2" << "volume2"   // standing woody debris medium dbhs

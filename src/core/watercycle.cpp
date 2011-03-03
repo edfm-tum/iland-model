@@ -221,7 +221,7 @@ void WaterCycle::run()
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dWaterCycle);
                 // climatic variables
-                out << day->id() << mRU->index() << day->temperature << day->vpd << day->preciptitation << day->radiation;
+                out << day->id() << mRU->index() << mRU->id() << day->temperature << day->vpd << day->preciptitation << day->radiation;
                 out << combined_response; // combined response of all species on RU (min(water, vpd))
                 // fluxes
                 out << prec_after_interception << prec_to_soil << et << mCanopy.evaporationCanopy()

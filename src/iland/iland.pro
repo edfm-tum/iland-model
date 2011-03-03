@@ -78,7 +78,8 @@ SOURCES += main.cpp \
     ../output/saplingout.cpp \
     ../tools/gisgrid.cpp \
     ../tools/mapgrid.cpp \
-    ../output/carbonout.cpp
+    ../output/carbonout.cpp \
+    ../output/carbonflowout.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -139,7 +140,8 @@ HEADERS += mainwindow.h \
     ../output/saplingout.h \
     ../tools/gisgrid.h \
     ../tools/mapgrid.h \
-    ../output/carbonout.h
+    ../output/carbonout.h \
+    ../output/carbonflowout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

@@ -17,9 +17,12 @@
 #include "productionout.h"
 #include "saplingout.h"
 #include "carbonout.h"
+#include "carbonflowout.h"
 
 
-
+// on creation of the output manager
+// an instance of every iLand output
+// must be added to the list of outputs.
 OutputManager::OutputManager()
 {
     mTransactionOpen = false;
@@ -32,6 +35,7 @@ OutputManager::OutputManager()
     mOutputs.append(new ManagementOut);
     mOutputs.append(new SaplingOut);
     mOutputs.append(new CarbonOut);
+    mOutputs.append(new CarbonFlowOut);
 
 }
 

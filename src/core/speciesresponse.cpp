@@ -105,7 +105,7 @@ void SpeciesResponse::calculate()
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses)) {
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dDailyResponses);
                 // climatic variables
-                out << mSpecies->id() << day->id() << mRu->index(); // date << day->temperature << day->vpd << day->preciptitation << day->radiation;
+                out << mSpecies->id() << day->id() << mRu->index() << mRu->id(); // date << day->temperature << day->vpd << day->preciptitation << day->radiation;
                 out << water_resp << temp_resp << vpd_resp << day->radiation << utilizeable_radiation;
             }
         //); // DBGMODE()

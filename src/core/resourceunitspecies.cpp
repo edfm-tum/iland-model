@@ -83,7 +83,7 @@ void ResourceUnitSpecies::calclulateEstablishment()
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment)) {
             DebugList &out = GlobalSettings::instance()->debugList(ru()->index(), GlobalSettings::dEstablishment);
             // establishment details
-            out << mSpecies->id() << ru()->index();
+            out << mSpecies->id() << ru()->index() << ru()->id();
             out << mEstablishment.avgSeedDensity();
             out << mEstablishment.TACAminTemp() << mEstablishment.TACAchill() << mEstablishment.TACAfrostFree() << mEstablishment.TACgdd();
             out << mEstablishment.TACAfrostDaysAfterBudBirst() << mEstablishment.abioticEnvironment();

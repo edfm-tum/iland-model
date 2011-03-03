@@ -361,7 +361,7 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
     // for branches, add all biomass that remains in the forest to the soil
     mRefractoryFlux.addBiomass(tree->biomassBranch()*(1.-remove_branch_fraction), species->cnWood(), tree->species()->snagKyr());
     // the same treatment for stem residuals
-    mRefractoryFlux.addBiomass(tree->biomassStem() * remove_stem_fraction, species->cnWood(), tree->species()->snagKyr());
+    mRefractoryFlux.addBiomass(tree->biomassStem() * (1. - remove_stem_fraction), species->cnWood(), tree->species()->snagKyr());
 
     // split the corase wood biomass into parts (slower decay)
     double biomass_rest = (tree->biomassCoarseRoot()) * 0.2;

@@ -386,7 +386,7 @@ void ResourceUnit::calculateCarbonCycle()
     // debug output
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dCarbonCycle) && !snag()->isEmpty()) {
         DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dCarbonCycle);
-        out << index();
+        out << index() << id(); // resource unit index and id
         out << snag()->debugList(); // snag debug outs
         out << soil()->debugList(); // ICBM/2N debug outs
     }
