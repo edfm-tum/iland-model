@@ -116,7 +116,7 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
     return loader.loadDistributionList(content, ru, 0, "called_from_script");
 }
 
-int ScriptGlobal::addTreesOnStand(const int standID, QString content)
+int ScriptGlobal::addTreesOnMap(const int standID, QString content)
 {
     StandLoader loader(mModel);
     return loader.loadDistributionList(content, NULL, standID, "called_from_script");
@@ -127,6 +127,7 @@ int ScriptGlobal::addTreesOnStand(const int standID, QString content)
 */
 
 Q_SCRIPT_DECLARE_QMETAOBJECT(MapGridWrapper, QObject*)
+
 void MapGridWrapper::addToScriptEngine(QScriptEngine &engine)
 {
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
@@ -269,12 +270,13 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
 
 }
 
-int ScriptGlobal::addSaplingsOnStand(const int standID, QString species, int px_per_hectare)
+int ScriptGlobal::addSaplingsOnMap(const MapGridWrapper *map, const int mapID, QString species, int px_per_hectare)
 {
     QString csv_file = QString("species;count\n%1;%2").arg(species).arg(px_per_hectare);
     StandLoader loader(mModel);
     try {
-    return loader.loadSaplings(csv_file, standID, "called from script");
+        loader.setMap(map->map());
+        return loader.loadSaplings(csv_file, mapID, "called from script");
     } catch (const IException &e) {
         if (context())
            context()->throwError(e.message());

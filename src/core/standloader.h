@@ -6,11 +6,14 @@ class Model;
 class ResourceUnit;
 class RandomCustomPDF;
 class Species;
+class MapGrid;
+
 class StandLoader
 {
 public:
-    StandLoader(Model *model): mModel(model), mRandom(0) {}
+    StandLoader(Model *model): mModel(model), mRandom(0), mCurrentMap(0) {}
     ~StandLoader();
+    void setMap(const MapGrid *map) { mCurrentMap = map; }
     void processInit();
     /// load a single tree file (picus or iland style). return number of trees loaded.
     int loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL);
@@ -39,6 +42,7 @@ private:
     Model *mModel;
     RandomCustomPDF *mRandom;
     QVector<InitFileItem> mInitItems;
+    const MapGrid *mCurrentMap;
 };
 
 #endif // STANDLOADER_H

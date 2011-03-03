@@ -633,7 +633,12 @@ void StandLoader::executeiLandInitStand(int stand_id)
 /// a (hacky) way of adding saplings of a certain age to a stand defined by 'stand_id'.
 int StandLoader::loadSaplings(const QString &content, int stand_id, const QString &fileName)
 {
-    const MapGrid *stand_grid = GlobalSettings::instance()->model()->standGrid();
+    const MapGrid *stand_grid;
+    if (mCurrentMap)
+        stand_grid = mCurrentMap; // if set
+    else
+        stand_grid = GlobalSettings::instance()->model()->standGrid(); // default
+
     QList<int> indices = stand_grid->gridIndices(stand_id); // list of 10x10m pixels
     if (indices.isEmpty()) {
         qDebug() << "stand" << stand_id << "not in project area. No init performed.";
