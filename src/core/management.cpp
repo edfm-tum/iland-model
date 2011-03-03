@@ -424,9 +424,8 @@ void Management::loadFromTreeList(QList<Tree*>tree_list)
 }
 
 // loadFromMap: script access
-void Management::loadFromMap(QScriptValue map_grid_object, int key)
+void Management::loadFromMap(MapGridWrapper *wrap, int key)
 {
-    MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
     if (!wrap) {
         context()->throwError("loadFromMap called with invalid map object!");
         return;
@@ -434,13 +433,13 @@ void Management::loadFromMap(QScriptValue map_grid_object, int key)
     loadFromMap(wrap->map(), key);
 }
 
-void Management::killSaplings(QScriptValue map_grid_object, int key)
+void Management::killSaplings(MapGridWrapper *wrap, int key)
 {
-    MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
-    if (!wrap) {
-        context()->throwError("loadFromMap called with invalid map object!");
-        return;
-    }
+    //MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
+    //if (!wrap) {
+    //    context()->throwError("loadFromMap called with invalid map object!");
+    //    return;
+    //}
     //loadFromMap(wrap->map(), key);
     // retrieve all sapling trees on the stand:
     QList<QPair<ResourceUnitSpecies *, SaplingTree *> > list = wrap->map()->saplingTrees(key);
@@ -450,13 +449,13 @@ void Management::killSaplings(QScriptValue map_grid_object, int key)
     // the storage for unused/invalid saplingtrees is released lazily (once a year, after growth)
 }
 
-void Management::removeSoilCarbon(QScriptValue map_grid_object, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
+/// specify removal fractions
+/// @param SWDFrac 0: no change, 1: remove all of standing woody debris
+/// @param DWDfrac 0: no change, 1: remove all of downled woody debris
+/// @param litterFrac 0: no change, 1: remove all of soil litter
+/// @param soilFrac 0: no change, 1: remove all of soil organic matter
+void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
 {
-    MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
-    if (!wrap) {
-        context()->throwError("removeSoilCarbon called with invalid map object!");
-        return;
-    }
     if (!(SWDfrac>=0. && SWDfrac<=1. && DWDfrac>=0. && DWDfrac<=1. && soilFrac>=0. && soilFrac<=1. && litterFrac>=0. && litterFrac<=1.)) {
         context()->throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: %1").arg(context()->argumentsObject().toString()));
         return;
@@ -468,7 +467,8 @@ void Management::removeSoilCarbon(QScriptValue map_grid_object, int key, double 
         double area_factor = ru_areas[i].second; // 0..1
         total_area += area_factor;
         // swd
-        ru->snag()->removeCarbon(1. - SWDfrac*area_factor);
+        if (SWDfrac>0.)
+            ru->snag()->removeCarbon(SWDfrac*area_factor);
         // soil pools
         ru->soil()->disturbance(DWDfrac*area_factor, litterFrac*area_factor, soilFrac*area_factor);
         // qDebug() << ru->index() << area_factor;

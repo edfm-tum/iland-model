@@ -184,6 +184,10 @@ QList<QVariant> Soil::debugList()
     return list;
 }
 
+/// remove part of the biomass (e.g.: due to fire).
+/// @param DWDfrac fraction of downed woody debris (yR) to remove (0: nothing, 1: remove 100% percent)
+/// @param litterFrac fraction of litter pools (yL) to remove (0: nothing, 1: remove 100% percent)
+/// @param soilFrac fraction of soil pool (SOM) to remove (0: nothing, 1: remove 100% percent)
 void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
 {
     // dwd
