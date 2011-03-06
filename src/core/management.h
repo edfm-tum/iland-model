@@ -75,6 +75,10 @@ public slots:
     /** hacky access function to resource units covered by a polygon.
      the parameters are "remove-fractions": i.e. value=0: no change, value=1: set to zero. */
     void removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac);
+    /** slash snags (SWD and otherWood-Pools) of polygon 'key' on the map 'wrap'.
+      @param slash_fraction 0: no change, 1: 100%
+       */
+    void slashSnags(MapGridWrapper *wrap, int key, double slash_fraction);
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees

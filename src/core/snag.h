@@ -84,8 +84,9 @@ public:
     void addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool);
 
     /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
-    void removeCarbon(const double factor) {  mSWD[0] *= (1. - factor); mSWD[1] *= (1. - factor); mSWD[2] *= (1. - factor);
-                                              for (int i=0;i<5;i++) mOtherWood[i] *= (1. - factor); }
+    void removeCarbon(const double factor);
+    /// cut down swd and move to soil pools
+    void management(const double factor);
     QList<QVariant> debugList(); ///< return a debug output
 private:
     double calculateClimateFactors(); ///< calculate climate factor 're' for the current year

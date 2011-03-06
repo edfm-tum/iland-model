@@ -382,4 +382,45 @@ void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNP
     mRefractoryFlux.add(woody_pool, species->snagKyr());
 }
 
+/// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
+/// biomass removed by this function goes to the atmosphere
+void Snag::removeCarbon(const double factor)
+{
+    // reduce pools of currently standing dead wood and also of pools that are added
+    // during (previous) management operations of the current year
+    for (int i=0;i<3;i++) {
+        mTotalToAtm += (mSWD[i] + mToSWD[i]) * factor;
+        mSWD[i] *= (1. - factor);
+        mToSWD[i] *= (1. - factor);
+    }
+
+    for (int i=0;i<5;i++) {
+        mTotalToAtm += mOtherWood[i]*factor;
+        mOtherWood[i] *= (1. - factor);
+    }
+}
+
+
+/// cut down swd (and branches) and move to soil pools
+/// @param factor 0: cut 0%, 1: cut and slash 100% of the wood
+void Snag::management(const double factor)
+{
+    if (factor<0. || factor>1.)
+        throw IException(QString("Invalid factor in Snag::management: '%1'").arg(factor));
+    // swd pools
+    for (int i=0;i<3;i++) {
+        mSWDtoSoil += mSWD[i] * factor;
+        mSWD[i] *= (1. - factor);
+        mSWDtoSoil += mToSWD[i] * factor;
+        mToSWD[i] *= (1. - factor);
+    }
+    // what to do with the branches: now move also all wood to soil (note: this is note
+    // very good w.r.t the coarse roots...
+    for (int i=0;i<5;i++) {
+        mRefractoryFlux+=mOtherWood[i]*factor;
+        mOtherWood[i]*=(1. - factor);
+    }
+
+}
+
 

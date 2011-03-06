@@ -476,6 +476,31 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
     qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
 }
 
+/** slash snags (SWD and otherWood-Pools) of polygon \p key on the map \p wrap.
+  The factor is scaled to the overlapping area of \p key on the resource unit.
+  @param wrap MapGrid to use together with \p key
+  @param key ID of the polygon.
+  @param slash_fraction 0: no change, 1: 100%
+   */
+void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction)
+{
+    if (slash_fraction<0 || slash_fraction>1) {
+        context()->throwError(QString("slashSnags called with invalid parameters!!\nArgs: %1").arg(context()->argumentsObject().toString()));
+        return;
+    }
+    QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
+    double total_area = 0.;
+    for (int i=0;i<ru_areas.size();++i) {
+        ResourceUnit *ru = ru_areas[i].first;
+        double area_factor = ru_areas[i].second; // 0..1
+        total_area += area_factor;
+        ru->snag()->management(slash_fraction * area_factor);
+        // qDebug() << ru->index() << area_factor;
+    }
+    qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
+
+}
+
 /** loadFromMap selects trees located on pixels with value 'key' within the grid 'map_grid'.
 */
 void Management::loadFromMap(const MapGrid *map_grid, int key)
@@ -533,6 +558,8 @@ void Management::randomize()
     qSort(mTrees.begin(), mTrees.end(), treePairValue);
 
 }
+
+
 
 
 
