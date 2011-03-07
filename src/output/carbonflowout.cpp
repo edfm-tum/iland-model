@@ -75,9 +75,9 @@ void CarbonFlowOut::exec()
         *this << gpp_pot // GPP_pot
         << npp / cAutotrophicRespiration // GPP_act
         << npp // NPP
-        << to_atm // rh
-        << to_dist // disturbance
-        << to_harvest // management loss
+        << -to_atm // rh
+        << -to_dist // disturbance
+        << -to_harvest // management loss
         << nep; // nep
 
         writeRow();
