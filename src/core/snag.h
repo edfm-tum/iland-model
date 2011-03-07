@@ -27,6 +27,7 @@ public:
     void operator+=(const CNPair &s) { C+=s.C; N+=s.N; } ///< add contents of a pool
     void operator*=(const double factor) { C*=factor; N*=factor; } ///< Multiply pool with 'factor'
     const CNPair operator+(const CNPair &p2) const { return CNPair(C+p2.C, N+p2.N); } ///< return the sum of two pools
+    const CNPair operator-(const CNPair &p2) const { return CNPair(C-p2.C, N-p2.N); } ///< return the difference of two pools
     const CNPair operator*(const double factor) const { return CNPair(C*factor, N*factor); } ///< return the pool multiplied with 'factor'
 protected:
     static double biomassCFraction;

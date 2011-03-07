@@ -54,6 +54,7 @@ public:
     double averageDeltaHRealized() const { return mAvgHRealized; }
     // carbon and nitrogen
     const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
+    const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
     // output maps
     void fillMaxHeightGrid(Grid<float> &grid) const;
 private:
@@ -72,6 +73,7 @@ private:
     double mAvgHRealized; ///< average realized height increment
     static double mRecruitmentVariation; ///< defines range of random variation for recruited trees
     CNPair mCarbonLiving;
+    CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
 };
 
 #endif // SAPLING_H

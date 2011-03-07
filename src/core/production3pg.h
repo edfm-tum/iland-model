@@ -19,7 +19,7 @@ private:
     inline double abovegroundFraction() const; ///< calculate fraction of biomass
     const SpeciesResponse *mResponse; ///< species specific responses
     double mUPAR[12]; ///< utilizable radiation MJ/m2 and month
-    double mGPP[12]; ///< monthly Gross Primary Production gC/MJ radiation
+    double mGPP[12]; ///< monthly Gross Primary Production [kg Biomass / m2]
     double mRootFraction; ///< fraction of production that flows into roots
     double mGPPperArea; ///< kg GPP Biomass / m2 interception area
     double mEnvYear; ///< f_env,yr: factor that aggregates the environment for the species over the year (weighted with the radiation pattern)

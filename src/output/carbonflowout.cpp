@@ -2,6 +2,8 @@
 #include "globalsettings.h"
 #include "model.h"
 #include "resourceunit.h"
+#include "resourceunitspecies.h"
+#include "production3pg.h"
 
 CarbonFlowOut::CarbonFlowOut()
 {
@@ -15,9 +17,14 @@ CarbonFlowOut::CarbonFlowOut()
                    " ");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("area", "total stockable area of the resource unit (m2)", OutInteger)
-              << OutputColumn("GPP", "Stem carbon kg/ru", OutDouble)
-              << OutputColumn("GPP", "Stem nitrogen kg/ru", OutDouble)
-              << OutputColumn("Ra", "branches carbon kg/ru", OutDouble)
+              << OutputColumn("GPP_pot", "potential gross primary production, kg C/ru; GPP as calculated ((primary production|here)), " \
+                              "sans the effect of the aging modifier f_age; note that a rough estimate of ((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) " \
+                              "is added to the GPP of adult trees here.", OutDouble)
+              << OutputColumn("GPP_act", "actually relaized gross primary production, kg C/ru; ((primary production|GPP)) including " \
+                              "the effect of decreasing productivity with age; note that a rough estimate of "\
+                              "((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) is added to the GPP of adult trees here.", OutDouble)
+              << OutputColumn("NPP", "net primary production, kg C/ru; calculated as NPP=GPP-Ra; Ra, the autotrophic respiration (kg C/ru) is calculated as"\
+                              " a fixed fraction of GPP in iLand (see ((primary production|here)) for details). ", OutDouble)
               << OutputColumn("Rh", "branches nitrogen kg/ru", OutDouble)
               << OutputColumn("Disturbances", "Foliage carbon kg/ru", OutDouble)
               << OutputColumn("NEP", "Foliage nitrogen kg/ru", OutDouble);
@@ -36,9 +43,21 @@ void CarbonFlowOut::exec()
             continue; // do not include if out of project area
         *this << currentYear() << ru->index() << ru->id() << ru->stockableArea(); // keys
 
-        *this << 0 // GPP
-        << 0 // NPP
-        << 0 // ra
+        double gpp_pot = 0.;
+        double npp = 0.;
+        // calculate the GPP based on the 3PG GPP for the resource units;
+        // the NPP is calculated as the sum of NPP of tree individuals
+        // an estimate for the saplings layer is added for both pools (based on average dbh and stem number)
+        foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+            gpp_pot += rus->prod3PG().GPPperArea() * ru->stockableArea() * biomassCFraction; // GPP kg Biomass/m2 -> kg/RU -> kg C/RU
+            gpp_pot += rus->sapling().carbonGain().C / cAutotrophicRespiration; // add GPP of the saplings (estimate GPP from NPP)
+            npp += rus->sapling().carbonGain().C;
+        }
+        npp += ru->statistics().npp();
+
+        *this << gpp_pot // GPP_pot
+        << npp / cAutotrophicRespiration // GPP_act
+        << npp // NPP
         << 0 // rh
         << 0 // disturbance
         << 0; // nep

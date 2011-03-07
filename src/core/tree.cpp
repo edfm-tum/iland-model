@@ -592,7 +592,7 @@ void Tree::grow()
     const double aging_factor = mSpecies->aging(mHeight, mAge);
     mRU->addTreeAging(mLeafArea, aging_factor);
     double gpp = raw_gpp * aging_factor; //
-    d.NPP = gpp * 0.47; // respiration loss, cf. Waring et al 1998.
+    d.NPP = gpp * cAutotrophicRespiration; // respiration loss (0.47), cf. Waring et al 1998.
 
     //DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeNPP) && isDebugging()) {

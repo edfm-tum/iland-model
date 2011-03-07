@@ -235,6 +235,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
 
 }
 
+
 void Sapling::calculateGrowth()
 {
     Q_ASSERT(mRUS);
@@ -271,7 +272,9 @@ void Sapling::calculateGrowth()
         mAvgHRealized /= double(mLiving);
     }
     // calculate carbon balance
+    CNPair old_state = mCarbonLiving;
     mCarbonLiving.clear();
+
     CNPair dead_wood, dead_fine; // pools for mortality
     // average dbh
     if (mLiving) {
@@ -286,6 +289,7 @@ void Sapling::calculateGrowth()
         mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );
         mCarbonLiving.addBiomass( foliage*n, species->cnFoliage()  );
         mCarbonLiving.addBiomass( fineroot*n, species->cnFineroot()  );
+
         // turnover
         mRUS->ru()->snag()->addTurnoverLitter(species, foliage*species->turnoverLeaf(), fineroot*species->turnoverRoot());
 
@@ -317,6 +321,10 @@ void Sapling::calculateGrowth()
     if (!dead_wood.isEmpty() || !dead_fine.isEmpty())
         mRUS->ru()->snag()->addToSoil(species, dead_wood, dead_fine);
 
+    // calculate net growth:
+    // delta of stocks
+    mCarbonGain = mCarbonLiving + dead_fine + dead_wood - old_state;
+
     if (mSaplingTrees.count() > mLiving*1.3)
         cleanupStorage();
 
@@ -338,4 +346,6 @@ void Sapling::fillMaxHeightGrid(Grid<float> &grid) const
     }
 
 }
+
+
 

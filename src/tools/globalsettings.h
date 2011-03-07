@@ -126,6 +126,7 @@ const double cHeightPixelArea = 100.; // 100m2 area of a height pixel
 
 // other constants
 const double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon
+const double cAutotrophicRespiration = 0.47;
 
 /// shortcut to the GlobalSettings Singleton object.
 #define Globals (GlobalSettings::instance())
