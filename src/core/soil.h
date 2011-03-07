@@ -16,6 +16,7 @@ public:
     // actions
     void setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha); ///< provide values for input pools
     void setClimateFactor(const double climate_factor_re) { mRE = climate_factor_re; } ///< set the climate decomposition factor for the current year
+    void newYear(); ///< reset of counters
     void calculateYear(); ///< main calculation function: calculates the update of state variables
     /// remove part of the biomass (e.g.: due to fire).
     /// @param DWDfrac fraction of downed woody debris (yR) to remove (0: nothing, 1: remove 100% percent)
@@ -28,6 +29,10 @@ public:
     const CNPool &youngRefractory() const { return mYR;} ///< young refractory matter (t/ha)
     const CNPair &oldOrganicMatter() const { return mSOM;} ///< old matter (SOM) (t/ha)
     double availableNitrogen() const { return mAvailableNitrogen; } ///< return available Nitrogen (kg/ha*yr)
+
+    const CNPair &fluxToAtmosphere() const { return mTotalToAtmosphere; } ///< total flux due to heterotrophic respiration kg/ha
+    const CNPair &fluxToDisturbance() const { return mTotalToDisturbance; } ///< total flux due to disturbance events (e.g. fire) kg/ha
+
     QList<QVariant> debugList(); ///< return a debug output
 private:
     ResourceUnit *mRU; ///< link to containing resource unit
@@ -47,6 +52,9 @@ private:
     CNPool mYL; ///< C/N Pool for young labile matter (i.e. litter) (t/ha)
     CNPool mYR; ///< C/N Pool for young refractory matter (i.e. downed woody debris) (t/ha)
     CNPair mSOM; ///< C/N Pool for old matter (t/ha) (i.e. soil organic matter, SOM)
+
+    CNPair mTotalToDisturbance; ///< book-kepping pool for heterotrophic respiration (kg/*ha*)
+    CNPair mTotalToAtmosphere; ///< book-keeping disturbance envents (fire) (kg/ha)
 };
 
 #endif // SOIL_H

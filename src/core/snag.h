@@ -71,6 +71,9 @@ public:
     double totalCarbon() const { return mTotalSnagCarbon; } ///< total carbon in snags (kg/ha)
     const CNPair &totalSWD() const { return mTotalSWD; } ///< sum of C and N in SWD pools (stems) kg/ha
     const CNPair &totalOtherWood() const { return mTotalOther; } ///< sum of C and N in other woody pools (branches + coarse roots) kg/ha
+    const CNPair &fluxToAtmosphere() const { return mTotalToAtm; } ///< total kg/ha heterotrophic respiration / flux to atm
+    const CNPair &fluxToExtern() const { return mTotalToExtern; } ///< total kg/ha harvests
+    const CNPair &fluxToDisturbance() const { return mTotalToDisturbance; } ///< total kg/ha due to disturbance (e.g. fire)
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);
@@ -116,6 +119,7 @@ private:
     CNPair mSWDtoSoil; ///< total flux from standing dead wood (book-keeping) -> soil (kg/ha)
     CNPair mTotalToAtm; ///< flux to atmosphere (kg/ha)
     CNPair mTotalToExtern; ///< total flux of masses removed from the site (i.e. harvesting) kg/ha
+    CNPair mTotalToDisturbance; ///< fluxes due to disturbance
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
     static double mCarbonThreshold[3]; ///< carbon content thresholds that are used to decide if the SWD-pool should be emptied
 };

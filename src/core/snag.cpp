@@ -160,6 +160,7 @@ void Snag::newYear()
     mRefractoryFlux.clear();
     mTotalToAtm.clear();
     mTotalToExtern.clear();
+    mTotalToDisturbance.clear();
     mTotalIn.clear();
     mSWDtoSoil.clear();
 }
@@ -389,13 +390,13 @@ void Snag::removeCarbon(const double factor)
     // reduce pools of currently standing dead wood and also of pools that are added
     // during (previous) management operations of the current year
     for (int i=0;i<3;i++) {
-        mTotalToAtm += (mSWD[i] + mToSWD[i]) * factor;
+        mTotalToDisturbance += (mSWD[i] + mToSWD[i]) * factor;
         mSWD[i] *= (1. - factor);
         mToSWD[i] *= (1. - factor);
     }
 
     for (int i=0;i<5;i++) {
-        mTotalToAtm += mOtherWood[i]*factor;
+        mTotalToDisturbance += mOtherWood[i]*factor;
         mOtherWood[i] *= (1. - factor);
     }
 }

@@ -59,6 +59,13 @@ Soil::Soil(ResourceUnit *ru)
     fetchParameters();
 }
 
+// reset of bookkeeping variables
+void Soil::newYear()
+{
+    mTotalToDisturbance.clear();
+    mTotalToAtmosphere.clear();
+}
+
 /// setup initial content of the soil pool (call before model start)
 void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPair &SOM_kg_ha)
 {
@@ -112,6 +119,8 @@ void Soil::calculateYear()
     }
     const double t = 1.; // timestep (annual)
     // auxiliary calculations
+    CNPair total_before = mYL + mYR + mSOM;
+
     CNPair total_in = mInputLab + mInputRef;
     if (_isnan(total_in.C) || _isnan(mKyr))
         qDebug() << "soil input is NAN.";
@@ -153,6 +162,14 @@ void Soil::calculateYear()
     mSOM.C = oss + (o.C -oss - al - ar)*exp(-mKo*mRE*t) + al*lfactor + ar*rfactor;
     mSOM.N = onss + (o.N - onss -(al+ar)/sp.qh)*exp(-mKo*mRE*t) + al/sp.qh * lfactor + ar/sp.qh * rfactor;
 
+    // calculate delta (i.e. flux to atmosphere)
+    CNPair total_after = mYL + mYR + mSOM;
+    CNPair flux = total_before + total_in - total_after;
+    if (flux.C < 0.) {
+        qDebug() << "negative flux to atmosphere?!?";
+        flux.clear();
+    }
+    mTotalToAtmosphere += flux;
 
 
     // calculate plant available nitrogen
@@ -191,15 +208,19 @@ QList<QVariant> Soil::debugList()
 void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
 {
     // dwd
+    mTotalToDisturbance += mYR*DWDfrac;
     mYR *= (1. - DWDfrac);
     // litter
+    mTotalToDisturbance += mYL*litterFrac;
     mYL *= (1. - litterFrac);
     // old soil organic matter
+    mTotalToDisturbance += mSOM*soilFrac;
     mSOM *= (1. - soilFrac);
     if (_isnan(mAvailableNitrogen) || _isnan(mYR.C))
         qDebug() << "Available Nitrogen is NAN.";
 
 }
+
 
 
 

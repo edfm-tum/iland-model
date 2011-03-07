@@ -183,6 +183,8 @@ void ResourceUnit::newYear()
     mEffectiveArea = 0.;
     mPixelCount = mStockedPixelCount = 0;
     snagNewYear();
+    if (mSoil)
+        mSoil->newYear();
     // clear statistics global and per species...
     QList<ResourceUnitSpecies*>::const_iterator i;
     QList<ResourceUnitSpecies*>::const_iterator iend = mRUSpecies.constEnd();
