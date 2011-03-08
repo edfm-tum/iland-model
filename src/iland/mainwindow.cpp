@@ -61,30 +61,9 @@ public:
     ~LogToWindow() { logToWindow(false);}
 };
 
-QMutex dump_message_mutex;
-void dumpMessages()
-{
-    QMutexLocker m(&dump_message_mutex); // serialize access
-    if (MainWindow::logStream() && !doLogToWindow) {
-        foreach(const QString &s, bufferedMessages)
-            *MainWindow::logStream() << s << endl;
-
-    } else {
-        foreach(const QString &s, bufferedMessages)
-            MainWindow::logSpace()->appendPlainText(s);
-
-        // it does *not* work to just MainWindow::logSpace()->textCursor().movePosition()!
-        // you have to "setTextCursor()".
-        QTextCursor cursor = MainWindow::logSpace()->textCursor();
-        cursor.movePosition(QTextCursor::End);
-        MainWindow::logSpace()->setTextCursor(cursor);
-        MainWindow::logSpace()->ensureCursorVisible();
-    }
-
-    bufferedMessages.clear();
-}
 
 QMutex qdebug_mutex;
+void dumpMessages();
 void myMessageOutput(QtMsgType type, const char *msg)
  {
 
@@ -117,6 +96,36 @@ void myMessageOutput(QtMsgType type, const char *msg)
      if (!doBufferMessages || bufferedMessages.count()>5000)
              dumpMessages();
  }
+
+QMutex dump_message_mutex;
+void dumpMessages()
+{
+    QMutexLocker m(&dump_message_mutex); // serialize access
+    // 2011-03-08: encountered "strange" crashes
+    // when a warning within Qt lead to a infinite loop/deadlock (also caused by mutex locking)
+    // now we prevent this by installing temporarily a 0-handler
+    qInstallMsgHandler(0);
+
+    if (MainWindow::logStream() && !doLogToWindow) {
+        foreach(const QString &s, bufferedMessages)
+            *MainWindow::logStream() << s << endl;
+
+    } else {
+        foreach(const QString &s, bufferedMessages)
+            MainWindow::logSpace()->appendPlainText(s);
+
+        // it does *not* work to just MainWindow::logSpace()->textCursor().movePosition()!
+        // you have to "setTextCursor()".
+        QTextCursor cursor = MainWindow::logSpace()->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        MainWindow::logSpace()->setTextCursor(cursor);
+        MainWindow::logSpace()->ensureCursorVisible();
+    }
+
+    bufferedMessages.clear();
+    qInstallMsgHandler(myMessageOutput);
+}
+
 
 // handle signal...
 // source: http://cplusplus.com/forum/unices/13455/

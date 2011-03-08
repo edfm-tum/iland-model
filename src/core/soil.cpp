@@ -93,9 +93,11 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     // if the stockable area is < 1ha, then
     // scale the soil inputs to a full hectare
     double area_ha = mRU?mRU->stockableArea() / 10000.:1.;
-    if (area_ha==0.)
-        //return;
-        throw IException("Soil::setSoilInput: stockable area is 0!");
+    if (area_ha==0.) {
+        qDebug() << "Soil::setSoilInput: stockable area is 0!";
+        return;
+        //throw IException("Soil::setSoilInput: stockable area is 0!");
+    }
 
     mInputLab = labile_input_kg_ha * (0.001 / area_ha); // transfer from kg/ha -> tons/ha and scale to 1 ha
     mInputRef = refractory_input_kg_ha * (0.001 / area_ha);

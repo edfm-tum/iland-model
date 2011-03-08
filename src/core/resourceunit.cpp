@@ -225,13 +225,14 @@ void ResourceUnit::production()
     if (mLRI_modification == 0.)
         qDebug() << "lri modifaction==0!";
 
-
+    if (logLevelDebug()) {
     DBGMODE(qDebug() << QString("production: LAI: %1 (intercepted fraction: %2, stocked area: %4). LRI-Multiplier: %3")
             .arg(LAI)
             .arg(interception_fraction)
             .arg(mLRI_modification)
             .arg(mStockedArea);
     );
+    }
 
     // calculate LAI fractions
     QList<ResourceUnitSpecies*>::const_iterator i;

@@ -464,8 +464,12 @@ void GlobalSettings::loadProjectFile(const QString &fileName)
 
 }
 
+QMutex random_generator_mutex;
 MTRand& GlobalSettings::randomGenerator()
 {
+    // serialize access to per-thread random generators
+    QMutexLocker locker(&random_generator_mutex);
+
     QThread *this_thread = QThread::currentThread();
     if (mRandomGenerators.contains(this_thread))
         return mRandomGenerators[this_thread];

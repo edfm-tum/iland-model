@@ -62,7 +62,8 @@ void Phenology::calculate()
     day_stop -= 10;
     if (day_start < -1 || day_stop<-1)
         throw IException(QString("Phenology::calculation(): was not able to determine the length of the vegetation period for group %1." ).arg(id()));
-    qDebug() << "Jolly-phenology. start" << mClimate->dayOfYear(day_start)->toString() << "stop" << mClimate->dayOfYear(day_stop)->toString();
+    if (logLevelDebug())
+        qDebug() << "Jolly-phenology. start" << mClimate->dayOfYear(day_start)->toString() << "stop" << mClimate->dayOfYear(day_stop)->toString();
     iday = 0;
     mDayStart = day_start;
     mDayEnd = day_stop;
