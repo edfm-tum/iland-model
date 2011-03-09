@@ -18,6 +18,9 @@ INCLUDEPATH += ../core \
 ##QMAKE_CXXFLAGS_RELEASE += -g
 ##QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
+### Flag to allow 3GB on Win 32
+### you also need to modify boot.ini ...
+QMAKE_LFLAGS += -Wl,--large-address-aware
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
