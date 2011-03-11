@@ -51,7 +51,7 @@ public:
     QStringList debugListCaptions(const DebugOutputs dbg); ///< returns stringlist of captions for a specific output type
     QList<QPair<QString, QVariant> > debugValues(const int ID); ///< all debug values for object with given ID
     void clearDebugLists(); ///< clear all debug data
-    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator); ///< output for all available items (trees, ...) in table form
+    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator, const QString fileName=QString()); ///< output for all available items (trees, ...) in table form
 
     // database access functions
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }

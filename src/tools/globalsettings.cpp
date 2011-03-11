@@ -256,13 +256,27 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
     return QStringList() << "invalid debug output!";
 }
 
-QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, const QString separator)
+QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, const QString separator, const QString fileName)
 {
 
     GlobalSettings *g = GlobalSettings::instance();
     QList<DebugList> ddl = g->debugLists(-1, type); // get all debug data
 
     QStringList result;
+    if (ddl.count()==0)
+        return result;
+
+    QFile out_file(fileName);
+    QTextStream ts;
+    if (!fileName.isEmpty()) {
+        if (out_file.open(QFile::WriteOnly)) {
+            ts.setDevice(&out_file);
+            ts << g->debugListCaptions(type).join(separator) << endl;
+        } else {
+            qDebug() << "Cannot open debug output file" << fileName;
+        }
+
+    }
 
     foreach (const DebugList &l, ddl) {
         QString line;
@@ -272,7 +286,10 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
                 line+=separator;
             line += value.toString();
         }
-        result << line;
+        if (out_file.isOpen())
+            ts << line << endl;
+        else
+            result << line;
     }
     if (!result.isEmpty())
         result.push_front( g->debugListCaptions(type).join(separator) );
