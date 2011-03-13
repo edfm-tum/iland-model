@@ -92,6 +92,7 @@
     <addaction name="actionDaily_responses_Output"/>
     <addaction name="action_debugEstablishment"/>
     <addaction name="actionSnag_Dynamics"/>
+    <addaction name="actionPerformance"/>
     <addaction name="actionDynamic_Output"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -973,6 +974,11 @@ QProgressBar::chunk {
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionPerformance">
+   <property name="text">
+    <string>Performance</string>
    </property>
   </action>
  </widget>

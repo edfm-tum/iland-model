@@ -61,6 +61,8 @@
 #include "stdint.h"
 
 #include "settingmetadata.h"
+#include "standstatistics.h"
+
 
 #include "outputmanager.h"
 #include "../3rdparty/MersenneTwister.h"
@@ -117,6 +119,7 @@ GlobalSettings::GlobalSettings()
     mDebugOutputs = 0;
     mModel = 0;
     mModelController = 0;
+    mSystemStatistics = new SystemStatistics;
     // create output manager
     mOutputManager = new OutputManager();
 }
@@ -126,6 +129,7 @@ GlobalSettings::~GlobalSettings()
 {
     // meta data... really clear ressources...
     qDeleteAll(mSettingMetaData.values());
+    delete mSystemStatistics;
     mInstance = NULL;
     delete mOutputManager;
     // clear all databases
@@ -144,7 +148,7 @@ void GlobalSettings::setDebugOutput(const GlobalSettings::DebugOutputs dbg, cons
 // storing the names of debug outputs
 //    enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
 // dStandNPP=8, dWaterCycle=16, dDailyResponses=32, dEstablishment=64, dCarbonCycle=128 }; ///< defines available debug output types.
-const QStringList debug_output_names=QStringList() << "treeNPP" << "treePartition" << "treeGrowth" << "waterCycle" << "dailyResponse" << "establishment" << "carbonCycle";
+const QStringList debug_output_names=QStringList() << "treeNPP" << "treePartition" << "treeGrowth" << "waterCycle" << "dailyResponse" << "establishment" << "carbonCycle" << "performance";
 
 ///< returns the name attached to 'd' or an empty string if not found
 QString GlobalSettings::debugOutputName(const DebugOutputs d)
@@ -251,6 +255,9 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                 << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n" << "dbh3" << "height3" << "volume3"   // large trees
                 << "otherWood1_c" << "otherWood1_n" << "otherWood2_c" << "otherWood2_n" << "otherWood3_c" << "otherWood3_n" << "otherWood4_c" << "otherWood4_n" << "otherWood5_c" << "otherWood5_n"
                    << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN" << "NAvailable";
+    case dPerformance: return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
+                << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" << "establishment" << "saplingGrowth" << "carbonCycle"
+                << "writeOutput" << "totalYear";
 
     }
     return QStringList() << "invalid debug output!";

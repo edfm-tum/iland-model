@@ -530,7 +530,7 @@ void Tree::readLIF_torus()
         mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
 
 
-    if (_isnan(mLRI)) {
+    if (isnan(mLRI)) {
         qDebug() << "LRI invalid (nan)!" << id();
         mLRI=0.;
         //qDebug() << reader->dump();
@@ -690,7 +690,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;
     mFoliageMass += delta_foliage;
-    if (_isnan(mFoliageMass))
+    if (isnan(mFoliageMass))
         qDebug() << "foliage mass invalid!";
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
 

@@ -131,6 +131,7 @@ private slots:
     void on_visDomGrid_toggled();
     void on_visImpact_toggled();
     void on_visImpact_clicked() { on_visFon_toggled(); } // force repeaint
+    void on_actionPerformance_triggered();
 };
 
 #endif // MAINWINDOW_H

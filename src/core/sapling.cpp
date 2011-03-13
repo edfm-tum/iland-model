@@ -329,6 +329,8 @@ void Sapling::calculateGrowth()
         cleanupStorage();
 
     mRUS->statistics().add(this);
+    GlobalSettings::instance()->systemStatistics()->saplingCount+=mLiving;
+    GlobalSettings::instance()->systemStatistics()->newSaplings+=mAdded;
     //qDebug() << ru->index() << species->id()<< ": (living/avg.height):" <<  mLiving << mAvgHeight;
 }
 

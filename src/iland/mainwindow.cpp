@@ -970,6 +970,13 @@ void MainWindow::on_actionSnag_Dynamics_triggered()
 
 }
 
+void MainWindow::on_actionPerformance_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+
+}
 
 QImage MainWindow::screenshot()
 {
@@ -999,6 +1006,7 @@ void MainWindow::saveDebugOutputs()
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
 
     qDebug() << "saved debug outputs to" << p;
 }
@@ -1016,6 +1024,7 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "32...Daily responses\n" \
                                         "64...Establishment\n" \
                                         "128...Carbon cycle\n" \
+                                        "256...Performance\n"
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
@@ -1278,10 +1287,5 @@ void MainWindow::on_actionDebug_triggered()
 
     setLogLevel(level);
 }
-
-
-
-
-
 
 

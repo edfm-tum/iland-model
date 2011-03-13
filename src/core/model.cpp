@@ -16,6 +16,7 @@
 #include "tree.h"
 #include "management.h"
 #include "modelsettings.h"
+#include "standstatistics.h"
 #include "mapgrid.h"
 
 #include "outputmanager.h"
@@ -400,9 +401,7 @@ void Model::initOutputDatabase()
 
 }
 
-
-/// multithreaded running function for the resource level production
-ResourceUnit *nc_establishment(ResourceUnit *unit)
+ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
 {
     unit->setRandomGenerator();
 
@@ -412,17 +411,32 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
     unit->setSaplingHeightMap(sapling_map);
 
     try {
-        { DebugTimer t("SaplingGrowth");
+        {
         // (1) calculate the growth of (already established) saplings (populate sapling map)
         foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies*>(rus)->calclulateSaplingGrowth();
         }
         }
-        DebugTimer t("OnlyEstablishment");
+
+    } catch (const IException& e) {
+        Helper::msg(e.message());
+    }
+    return unit;
+
+}
+
+/// multithreaded running function for the resource unit level establishment
+ResourceUnit *nc_establishment(ResourceUnit *unit)
+{
+    unit->setRandomGenerator();
+
+    try {
+
         // (2) calculate the establishment probabilities of new saplings
         foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies*>(rus)->calclulateEstablishment();
         }
+
     } catch (const IException& e) {
         Helper::msg(e.message());
     }
@@ -504,6 +518,7 @@ void Model::beforeRun()
 void Model::runYear()
 {
     DebugTimer t("Model::runYear()");
+    GlobalSettings::instance()->systemStatistics()->reset();
     // execute scheduled events for the current year
     if (mTimeEvents)
         mTimeEvents->run();
@@ -519,8 +534,11 @@ void Model::runYear()
     foreach(SpeciesSet *set, mSpeciesSets)
         set->newYear();
     // management
-    if (mManagement)
+    if (mManagement) {
+        DebugTimer t("management");
         mManagement->run();
+        GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
+    }
 
     // process a cycle of individual growth
     applyPattern(); // create Light Influence Patterns
@@ -534,18 +552,28 @@ void Model::runYear()
         foreach(SpeciesSet *set, mSpeciesSets)
             set->regeneration(); // parallel execution for each species set
 
+        GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
         tseed.showElapsed();
         // establishment
+        { DebugTimer t("saplingGrowth");
+        executePerResourceUnit( nc_sapling_growth, false /* true: force single thraeded operation */);
+        GlobalSettings::instance()->systemStatistics()->tSaplingGrowth+=t.elapsed();
+        }
+        {
         DebugTimer t("establishment");
         executePerResourceUnit( nc_establishment, false /* true: force single thraeded operation */);
-
+        GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
+        }
     }
+
     // calculate soil / snag dynamics
     if (settings().carbonCycleEnabled) {
         DebugTimer ccycle("carbon cylce");
         executePerResourceUnit( nc_carbonCycle, false /* true: force single thraeded operation */);
-    }
+        GlobalSettings::instance()->systemStatistics()->tCarbonCycle+=ccycle.elapsed();
 
+    }
+    DebugTimer toutput("outputs");
     // calculate statistics
     foreach(ResourceUnit *ru, mRU)
         ru->yearEnd();
@@ -561,6 +589,10 @@ void Model::runYear()
     om->execute("management"); // resource unit level x species
     om->execute("carbon"); // resource unit level, carbon pools above and belowground
     om->execute("carbonflow"); // resource unit level, GPP, NPP and total carbon flows (atmosphere, harvest, ...)
+
+    GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
+    GlobalSettings::instance()->systemStatistics()->tTotalYear+=t.elapsed();
+    GlobalSettings::instance()->systemStatistics()->writeOutput();
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 }
@@ -635,6 +667,8 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     for (tit=unit->trees().begin(); tit!=tend; ++tit) {
         (*tit).grow(); // actual growth of individual trees
     }
+
+    GlobalSettings::instance()->systemStatistics()->treeCount+=unit->trees().count();
     return unit;
 }
 
@@ -674,12 +708,15 @@ void Model::applyPattern()
     }
 
     threadRunner.run(nc_applyPattern);
+    GlobalSettings::instance()->systemStatistics()->tApplyPattern+=t.elapsed();
 }
 
 void Model::readPattern()
 {
     DebugTimer t("readPattern()");
     threadRunner.run(nc_readPattern);
+    GlobalSettings::instance()->systemStatistics()->tReadPattern+=t.elapsed();
+
 }
 
 /** Main function for the growth of stands and trees.
@@ -709,6 +746,7 @@ void Model::grow()
        ru->afterGrow();
        //qDebug() << (b-n) << "trees died (of" << b << ").";
    }
+   GlobalSettings::instance()->systemStatistics()->tTreeGrowth+=t.elapsed();
 }
 
 /** calculate for each resource unit the fraction of area which is stocked.

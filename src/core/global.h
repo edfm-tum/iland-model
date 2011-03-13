@@ -117,4 +117,8 @@ inline bool isBitSet(const int value, const int bit)
 {
     return value & (1 << bit);
 }
+
+// define a global isnan() function
+#define isnan(x) ((x) != (x))
+
 #endif // GLOBAL_H

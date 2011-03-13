@@ -126,3 +126,16 @@ void StandStatistics::add(const Sapling *sapling)
     mCRegeneration += sapling->carbonLiving().C;
     mNRegeneration += sapling->carbonLiving().N;
 }
+
+void SystemStatistics::writeOutput()
+{
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dPerformance)) {
+        DebugList &out = GlobalSettings::instance()->debugList(0, GlobalSettings::dPerformance);
+        out << treeCount << saplingCount << newSaplings << tManagement
+            << tApplyPattern << tReadPattern << tTreeGrowth
+            << tSeedDistribution << tEstablishment << tSaplingGrowth
+            << tCarbonCycle << tWriteOutput << tTotalYear;
+    }
+}
+
+

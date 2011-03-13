@@ -68,4 +68,33 @@ private:
     double mCRegeneration, mNRegeneration;
 };
 
+
+/** holds a couple of system statistics primarily aimed for performance and memory analyis.
+  */
+class SystemStatistics
+{
+public:
+    SystemStatistics() { reset(); }
+    void reset() { treeCount=0; saplingCount=0; newSaplings=0;
+                   tManagement = 0.; tApplyPattern=tReadPattern=tTreeGrowth=0.;
+                   tSeedDistribution=tEstablishment=tSaplingGrowth=tCarbonCycle=tWriteOutput=tTotalYear=0.; }
+    void writeOutput();
+    // the system counters
+    int treeCount;
+    int saplingCount;
+    int newSaplings;
+    // timings
+    double tManagement;
+    double tApplyPattern;
+    double tReadPattern;
+    double tTreeGrowth;
+    double tSeedDistribution;
+    double tEstablishment;
+    double tSaplingGrowth;
+    double tCarbonCycle;
+    double tWriteOutput;
+    double tTotalYear;
+
+};
+
 #endif // STANDSTATISTICS_H

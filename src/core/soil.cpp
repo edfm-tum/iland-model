@@ -104,7 +104,7 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     // calculate the decomposition rates
     mKyl = mYL.parameter(mInputLab);
     mKyr = mYR.parameter(mInputRef);
-    if (_isnan(mKyr) || _isnan(mYR.C))
+    if (isnan(mKyr) || isnan(mYR.C))
         qDebug() << "mKyr is NAN";
 
 }
@@ -124,7 +124,7 @@ void Soil::calculateYear()
     CNPair total_before = mYL + mYR + mSOM;
 
     CNPair total_in = mInputLab + mInputRef;
-    if (_isnan(total_in.C) || _isnan(mKyr))
+    if (isnan(total_in.C) || isnan(mKyr))
         qDebug() << "soil input is NAN.";
 
     double ylss = mInputLab.C / (mKyl * mRE); // Yl stedy state C
@@ -182,7 +182,7 @@ void Soil::calculateYear()
 
     if (mAvailableNitrogen<0.)
         mAvailableNitrogen = 0.;
-    if (_isnan(mAvailableNitrogen) || _isnan(mYR.C))
+    if (isnan(mAvailableNitrogen) || isnan(mYR.C))
         qDebug() << "Available Nitrogen is NAN.";
     // stedy state for n-available
     //    double navss = mKyl*mRE*(1.-mH)/(1.-sp.el)*(ynlss-sp.el*ylss/sp.qb); // available nitrogen (steady state)
@@ -218,7 +218,7 @@ void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
     // old soil organic matter
     mTotalToDisturbance += mSOM*soilFrac;
     mSOM *= (1. - soilFrac);
-    if (_isnan(mAvailableNitrogen) || _isnan(mYR.C))
+    if (isnan(mAvailableNitrogen) || isnan(mYR.C))
         qDebug() << "Available Nitrogen is NAN.";
 
 }
