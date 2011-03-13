@@ -123,30 +123,34 @@ void Establishment::calculate()
     if (with_seeds/double(total) > 0.4 ) {
         // a large part has available seeds. simply scan the pixels...
         QPoint lif_index;
-        Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
+        Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
         GridRunner<float> lif_runner(lif_map, ru_rect);
         while (float *lif_px = lif_runner.next()) {
-            lif_index = lif_map.indexOf(lif_px);
-            if (!ru_rect.contains(lif_map.cellCenterPoint(lif_index)))
-                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map.cellCenterPoint(lif_index) << "not in" << ru_rect;
+            lif_index = lif_map->indexOf(lif_px);
+            DBGMODE(
+            if (!ru_rect.contains(lif_map->cellCenterPoint(lif_index)))
+                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map->cellCenterPoint(lif_index) << "not in" << ru_rect;
+            );
             // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
-            if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map.cellCenterPoint(lif_index) )))
+            if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map->cellCenterPoint(lif_index) )))
                 n_established++;
         }
 
     } else {
         // relatively few seed-pixels are filled. So examine seed pixels first, and check light only on "filled" pixels
         GridRunner<float> seed_runner(seed_map, ru_rect);
-        Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
+        Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
         // check every pixel inside the bounding box of the pixel with
         while (float *p = seed_runner.next()) {
             if (*p>0.f) {
                 // pixel with seeds: now really iterate over lif pixels
                 GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_map.indexOf(p)));
                 while (float *lif_px = lif_runner.next()) {
-                    if (!ru_rect.contains(lif_map.cellCenterPoint(lif_map.indexOf(lif_px))))
-                        qDebug() << "(b) establish problem:" << lif_map.indexOf(lif_px) << "point: " << lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) << "not in" << ru_rect;
-                    if (establishTree(lif_map.indexOf(lif_px), *lif_px ,*p))
+                    DBGMODE(
+                    if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
+                        qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map.indexOf(lif_px)) << "not in" << ru_rect;
+                    );
+                    if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
                         n_established++;
                 }
             }

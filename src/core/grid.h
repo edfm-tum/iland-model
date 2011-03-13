@@ -125,12 +125,13 @@ typedef Grid<float> FloatGrid;
 template <class T>
 class GridRunner {
 public:
-    GridRunner(Grid<T> &target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
-    GridRunner(const Grid<T> &target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
+    GridRunner(Grid<T> &target_grid, const QRectF &rectangle) {setup(&target_grid, rectangle);}
+    GridRunner(const Grid<T> &target_grid, const QRectF &rectangle) {setup(&target_grid, rectangle);}
+    GridRunner(Grid<T> *target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
     T* next(); ///< to to next element, return NULL if finished
     T* current() { return mCurrent; }
 private:
-    void setup(const Grid<T> &target_grid, const QRectF &rectangle);
+    void setup(const Grid<T> *target_grid, const QRectF &rectangle);
     T* mLast;
     T* mCurrent;
     size_t mLineLength;
@@ -372,15 +373,15 @@ const QPoint Grid<T>::randomPosition() const
 // grid runner
 ////////////////////////////////////////////////////////////
 template <class T>
-void GridRunner<T>::setup(const Grid<T> &target_grid, const QRectF &rectangle)
+void GridRunner<T>::setup(const Grid<T> *target_grid, const QRectF &rectangle)
 {
-    QPoint upper_left = target_grid.indexAt(rectangle.topLeft());
-    QPoint lower_right = target_grid.indexAt(rectangle.bottomRight());
-    mCurrent = const_cast<Grid<T> &>(target_grid).ptr(upper_left.x(), upper_left.y());
+    QPoint upper_left = target_grid->indexAt(rectangle.topLeft());
+    QPoint lower_right = target_grid->indexAt(rectangle.bottomRight());
+    mCurrent = const_cast<Grid<T> *>(target_grid)->ptr(upper_left.x(), upper_left.y());
     mCurrent--; // point to first element -1
-    mLast = const_cast<Grid<T> &>(target_grid).ptr(lower_right.x()-1, lower_right.y()-1);
+    mLast = const_cast<Grid<T> *>(target_grid)->ptr(lower_right.x()-1, lower_right.y()-1);
     mCols = lower_right.x() - upper_left.x(); //
-    mLineLength =  target_grid.sizeX() - mCols;
+    mLineLength =  target_grid->sizeX() - mCols;
     mCurrentCol = -1;
 //    qDebug() << "GridRunner: rectangle:" << rectangle
 //             << "upper_left:" << target_grid.cellCenterPoint(target_grid.indexOf(mCurrent))
