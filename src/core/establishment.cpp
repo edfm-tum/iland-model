@@ -148,7 +148,7 @@ void Establishment::calculate()
                 while (float *lif_px = lif_runner.next()) {
                     DBGMODE(
                     if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
-                        qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map.indexOf(lif_px)) << "not in" << ru_rect;
+                        qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
                     );
                     if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
                         n_established++;

@@ -236,6 +236,7 @@ void SeedDispersal::execute()
     if (mDumpSeedMaps) {
         path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_before_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
+        qDebug() << "saved seed map image to" << path;
     }
     {
     DebugTimer t("seed dispersal");
