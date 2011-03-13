@@ -15,12 +15,12 @@ INCLUDEPATH += ../core \
 
 # to enable debug symbols in release code
 # debug information in release-mode executable
-##QMAKE_CXXFLAGS_RELEASE += -g
-##QMAKE_LFLAGS_RELEASE -= -Wl,-s
+QMAKE_CXXFLAGS_RELEASE += -g
+QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
 ### Flag to allow 3GB on Win 32
 ### you also need to modify boot.ini ...
-QMAKE_LFLAGS += -Wl,--large-address-aware
+QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
@@ -147,7 +147,7 @@ HEADERS += mainwindow.h \
     ../output/carbonflowout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
-RESOURCES += ./res/iland.qrc
+RESOURCES += ../iland/res/iland.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget
 # PRE_TARGETDEPS += version.h
