@@ -270,9 +270,9 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
 
 }
 
-int ScriptGlobal::addSaplingsOnMap(const MapGridWrapper *map, const int mapID, QString species, int px_per_hectare)
+int ScriptGlobal::addSaplingsOnMap(const MapGridWrapper *map, const int mapID, QString species, int px_per_hectare, double height)
 {
-    QString csv_file = QString("species;count\n%1;%2").arg(species).arg(px_per_hectare);
+    QString csv_file = QString("species;count;height\n%1;%2;%3").arg(species).arg(px_per_hectare).arg(height);
     StandLoader loader(mModel);
     try {
         loader.setMap(map->map());
