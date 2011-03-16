@@ -397,10 +397,19 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     if (mInterception>0.) {
         // we assume that for evaporation from leaf surface gBL/gC -> 0
         double div_evap = 1. + svp_slope;
-        double evap_canopy = (svp_slope*net_rad + defTerm) / div_evap / latent_heat * daylength;
-        evap_canopy = qMin(evap_canopy, mInterception);
+        double evap_canopy_potential = (svp_slope*net_rad + defTerm) / div_evap / latent_heat * daylength;
+        // reduce the amount of transpiration on a wet day based on the approach of
+        // Wigmosta et al (1994). see http://iland.boku.ac.at/water+cycle#transpiration_and_canopy_conductance
+
+        double ratio_T_E = canopy_transpiration / evap_canopy_potential;
+        double evap_canopy = qMin(evap_canopy_potential, mInterception);
+
+        // for interception -> 0, the canopy transpiration is unchanged
+        canopy_transpiration = (evap_canopy_potential - evap_canopy) * ratio_T_E;
+
         mInterception -= evap_canopy; // reduce interception
         mEvaporation = evap_canopy; // evaporation from intercepted water
+
     }
     return canopy_transpiration;
 }
