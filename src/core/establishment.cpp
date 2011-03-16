@@ -63,7 +63,9 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
     double rel_height = 4. / h_height_grid;
 
      double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
-     float p_est = mPAbiotic * lif_corrected * seed_value;
+     float p_est = lif_corrected * seed_value;
+     // orig: with *mPAbiotic ::: now moved to one level above
+     //float p_est = mPAbiotic * lif_corrected * seed_value;
      // statistics
      mLIFcount++;
      mSumLIFvalue+=lif_value;
@@ -119,6 +121,14 @@ void Establishment::calculate()
         return;
 
     int n_established = 0;
+
+    // performance hack:
+    // pre-multiply with probability
+    double p_ru = drandom(mRUS->ru()->randomGenerator());
+    if (p_ru > mPAbiotic) {
+        return;
+    }
+
     // 3rd step: check actual pixels in the LIF grid
     if (with_seeds/double(total) > 0.4 ) {
         // a large part has available seeds. simply scan the pixels...

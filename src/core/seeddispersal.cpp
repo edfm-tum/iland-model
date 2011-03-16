@@ -241,9 +241,10 @@ void SeedDispersal::execute()
     {
     DebugTimer t("seed dispersal");
     // (1) detect edges
-    edgeDetection();
+    if (edgeDetection()) {
     // (2) distribute seed probabilites from edges
-    distribute();
+        distribute();
+    }
     }
     if (mDumpSeedMaps)
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_after_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
@@ -252,18 +253,20 @@ void SeedDispersal::execute()
 /** scans the seed image and detects "edges".
     edges are then subsequently marked (set to -1). This is pass 1 of the seed distribution process.
 */
-void SeedDispersal::edgeDetection()
+bool SeedDispersal::edgeDetection()
 {
     float *p_above, *p, *p_below;
     int dy = mSeedMap.sizeY();
     int dx = mSeedMap.sizeX();
     int x,y;
+    bool found = false;
     for (y=1;y<dy-1;++y){
         p = mSeedMap.ptr(1,y);
         p_above = p - dx; // one line above
         p_below = p + dx; // one line below
         for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
             if (*p == 1.) {
+                found = true;
                 if (*(p_above-1)==0.f || *p_above==0.f || *(p_above+1)==0.f ||
                     *(p-1)==0.f || *(p+1)==0.f ||
                     *(p_below-1)==0.f || *p_below==0.f || *(p_below+1)==0.f )
@@ -272,6 +275,7 @@ void SeedDispersal::edgeDetection()
 
         }
     }
+    return found;
 }
 
 /** do the seed probability distribution.

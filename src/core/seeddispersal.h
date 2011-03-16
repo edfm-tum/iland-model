@@ -19,7 +19,7 @@ public:
     // operations
     void clear(); ///< clears the grid
     void execute(); ///< execute the seed dispersal
-    void edgeDetection(); ///< phase 1: detect edges in the image
+    bool edgeDetection(); ///< phase 1: detect edges in the image; returns false if *no* pixel is 'lit'
     void distribute(); ///< phase 2: distribute seeds
     // debug and helpers
     void loadFromImage(const QString &fileName); ///< debug function...
