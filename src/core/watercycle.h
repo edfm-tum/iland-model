@@ -2,14 +2,16 @@
 #define WATERCYCLE_H
 class ResourceUnit;
 class ClimateDay;
-
+class WaterCycle; // forward
 /// Water contains helper classes for the water cycle calculations
 namespace Water
 {
 
+
 /// Class SnowPack handles the snow layer
 class SnowPack
 {
+    friend class ::WaterCycle;
 public:
     SnowPack(): mSnowPack(0.) {}
     void setup() { mSnowPack=0.; }
@@ -20,11 +22,14 @@ public:
     double snowPack() const { return mSnowPack; } ///< current snowpack height (mm)
 private:
     double mSnowPack; ///< height of snowpack (mm water column)
+    double mSnowTemperature; ///< Threshold temperature for snowing / snow melt
+
 };
 
 /// Canopy handles the the throughfall and evaporation from the forest canopy.
 class Canopy
 {
+
 public:
     // setup
     void setup(); ///< setup and load parameter values
@@ -38,7 +43,7 @@ public:
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
     double evaporationCanopy() const { return mEvaporation; } ///< evaporation from canopy (mm)
     double avgMaxCanopyConductance() const { return mAvgMaxCanopyConductance; } ///< averaged maximum canopy conductance of current species distribution (m/s)
-    const double *referencelEvapotranspiration() const { return mET0; }
+    const double *referenceEvapotranspiration() const { return mET0; }
 
 private:
     double mLAINeedle; // leaf area index of coniferous species
@@ -50,8 +55,11 @@ private:
     // Penman-Monteith parameters
     double mAirDensity; // density of air [kg / m3]
     double mET0[12]; ///< reference evapotranspiration per month (sum of the month, mm)
-
-
+    // parameters for interception
+    double mNeedleFactor; ///< factor for calculating water storage capacity for intercepted water for conifers
+    double mDecidousFactor; ///< the same for broadleaved
+    friend class ::WaterCycle;
+    // GCC problems with friend class and namespaces: http://www.ogre3d.org/forums/viewtopic.php?f=10&t=47540
 };
 
 
@@ -72,7 +80,7 @@ public:
     double currentContent() const { return mContent; } ///< current water content in mm
     double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
     /// monthly values for PET (mm sum)
-    const double *referenceEvapotranspiration() const { return mCanopy.referencelEvapotranspiration(); }
+    const double *referenceEvapotranspiration() const { return mCanopy.referenceEvapotranspiration(); }
 
 private:
     int mLastYear; ///< last year of execution

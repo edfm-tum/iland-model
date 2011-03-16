@@ -45,6 +45,11 @@ void WaterCycle::setup(const ResourceUnit *ru)
     if (logLevelDebug()) qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
     mCanopyConductance = 0.;
     mLastYear = -1;
+
+    // canopy settings
+    mCanopy.mNeedleFactor = xml.valueDouble("model.settings.interceptionStorageNeedle", 4.);
+    mCanopy.mDecidousFactor = xml.valueDouble("model.settings.interceptionStorageBroadleaf", 2.);
+    mSnowPack.mSnowTemperature = xml.valueDouble("model.settings.snowMeltTemperature", 0.);
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
@@ -249,13 +254,13 @@ namespace Water {
   Returns the amount of water that exits the snowpack (precipitation, snow melt) */
 double SnowPack::flow(const double &preciptitation_mm, const double &temperature)
 {
-    if (temperature>0.) {
+    if (temperature>mSnowTemperature) {
         if (mSnowPack==0.)
             return preciptitation_mm; // no change
         else {
             // snow melts
             const double melting_coefficient = 0.7; // mm/°C
-            double melt = qMin(temperature * melting_coefficient, mSnowPack);
+            double melt = qMin( (temperature-mSnowTemperature) * melting_coefficient, mSnowPack);
             mSnowPack -=melt;
             return preciptitation_mm + melt;
         }
@@ -271,7 +276,7 @@ double SnowPack::flow(const double &preciptitation_mm, const double &temperature
 inline double SnowPack::add(const double &preciptitation_mm, const double &temperature)
 {
     // do nothing for temps > 0°
-    if (temperature>0.)
+    if (temperature>mSnowTemperature)
         return preciptitation_mm;
 
     // temps < 0°: add to snow
@@ -301,7 +306,7 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
         double max_flow_needle = 0.9 * sqrt(1.03 - exp(-0.055*preciptitation_mm));
         max_interception_mm += preciptitation_mm *  (1. - max_flow_needle * mLAINeedle/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
-        double max_storage_needle = 4. * (1. - exp(-0.55*mLAINeedle) );
+        double max_storage_needle = mNeedleFactor * (1. - exp(-0.55*mLAINeedle) );
         max_storage_mm += max_storage_needle;
     }
 
@@ -310,7 +315,7 @@ double Canopy::flow(const double &preciptitation_mm, const double &temperature)
         double max_flow_broad = 0.9 * pow(1.22 - exp(-0.055*preciptitation_mm), 0.35);
         max_interception_mm += preciptitation_mm *  (1. - max_flow_broad * mLAIBroadleaved/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
-        double max_storage_broad = 2. * (1. - exp(-0.5*mLAIBroadleaved) );
+        double max_storage_broad = mDecidousFactor * (1. - exp(-0.5*mLAIBroadleaved) );
         max_storage_mm += max_storage_broad;
     }
 
@@ -378,7 +383,11 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     //  with temperature-dependent  slope of  vapor pressure saturation curve
     // (following  Allen et al. (1998),  http://www.fao.org/docrep/x0490e/x0490e07.htm#atmospheric%20parameters)
     // svp_slope in mbar.
-    double svp_slope = 4098. * (6.1078 * exp(17.269 * temperature / (temperature + 237.3))) / ((237.3+temperature)*(237.3+temperature));
+    //double svp_slope = 4098. * (6.1078 * exp(17.269 * temperature / (temperature + 237.3))) / ((237.3+temperature)*(237.3+temperature));
+
+    // alternatively: very simple variant (following here the original 3PG code). This
+    // keeps yields +- same results for summer, but slightly lower values in winter (2011/03/16)
+    double svp_slope = 2.2;
 
     double div = (1. + svp_slope + gBL / gC);
     double Etransp = (svp_slope * net_rad + defTerm) / div;
