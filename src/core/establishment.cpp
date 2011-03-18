@@ -40,7 +40,7 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
         throw IException("Establishment::setup: important variable is null.");
 }
 
-inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
+inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value, const double &rnd_number)
 {
 
     // check window of opportunity...if regeneration (of any species) on the current pixel is above breast height (1.3m), then
@@ -65,13 +65,13 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
      float p_est = lif_corrected * seed_value;
      // orig: with *mPAbiotic ::: now moved to one level above
-     //float p_est = mPAbiotic * lif_corrected * seed_value;
+     // float p_est = mPAbiotic * lif_corrected * seed_value;
      // statistics
      mLIFcount++;
      mSumLIFvalue+=lif_value;
      // draw a random number and check against the combined establishment probability
-     double p_rand = drandom(mRUS->ru()->randomGenerator());
-     if (p_rand < p_est) {
+     // double p_rand = drandom(mRUS->ru()->randomGenerator());
+     if (rnd_number < p_est) {
          const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(pos_lif);
          return true; // establishment
      }
@@ -124,35 +124,38 @@ void Establishment::calculate()
 
     // performance hack:
     // pre-multiply with probability
-    double p_ru = drandom(mRUS->ru()->randomGenerator());
-    if (p_ru > mPAbiotic) {
-        return;
-    }
+//    double p_ru = drandom(mRUS->ru()->randomGenerator());
+//    if (p_ru > mPAbiotic) {
+//        return;
+//    }
 
     // 3rd step: check actual pixels in the LIF grid
-    if (with_seeds/double(total) > 0.4 ) {
-        // a large part has available seeds. simply scan the pixels...
-        QPoint lif_index;
-        Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
-        GridRunner<float> lif_runner(lif_map, ru_rect);
-        while (float *lif_px = lif_runner.next()) {
-            lif_index = lif_map->indexOf(lif_px);
-            DBGMODE(
-            if (!ru_rect.contains(lif_map->cellCenterPoint(lif_index)))
-                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map->cellCenterPoint(lif_index) << "not in" << ru_rect;
-            );
-            // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
-            if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map->cellCenterPoint(lif_index) )))
-                n_established++;
-        }
+//    if (with_seeds/double(total) > 0.4 ) {
+//        // a large part has available seeds. simply scan the pixels...
+//        QPoint lif_index;
+//        Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
+//        GridRunner<float> lif_runner(lif_map, ru_rect);
+//        while (float *lif_px = lif_runner.next()) {
+//            lif_index = lif_map->indexOf(lif_px);
+//            DBGMODE(
+//            if (!ru_rect.contains(lif_map->cellCenterPoint(lif_index)))
+//                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map->cellCenterPoint(lif_index) << "not in" << ru_rect;
+//            );
+//            // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
+//            if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map->cellCenterPoint(lif_index) )))
+//                n_established++;
+//        }
 
-    } else {
+//    } else {
         // relatively few seed-pixels are filled. So examine seed pixels first, and check light only on "filled" pixels
         GridRunner<float> seed_runner(seed_map, ru_rect);
         Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
         // check every pixel inside the bounding box of the pixel with
         while (float *p = seed_runner.next()) {
             if (*p>0.f) {
+                //double p_establish = drandom(mRUS->ru()->randomGenerator());
+                //if (p_establish > mPAbiotic)
+                //    continue;
                 // pixel with seeds: now really iterate over lif pixels
                 GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_map.indexOf(p)));
                 while (float *lif_px = lif_runner.next()) {
@@ -160,12 +163,15 @@ void Establishment::calculate()
                     if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
                         qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
                     );
-                    if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
-                        n_established++;
+                    double p_establish = drandom(mRUS->ru()->randomGenerator());
+                    if (p_establish > mPAbiotic) {
+                        if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p, p_establish))
+                            n_established++;
+                    }
                 }
             }
         }
-    }
+//    }
     // finished!!!
     mNumberEstablished = n_established;
 }
