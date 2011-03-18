@@ -323,7 +323,9 @@ void Sapling::calculateGrowth()
 
     // calculate net growth:
     // delta of stocks
-    mCarbonGain = qMax(0., mCarbonLiving + dead_fine + dead_wood - old_state);
+    mCarbonGain = mCarbonLiving + dead_fine + dead_wood - old_state;
+    if (mCarbonGain.C < 0)
+        mCarbonGain.clear();
 
     if (mSaplingTrees.count() > mLiving*1.3)
         cleanupStorage();
