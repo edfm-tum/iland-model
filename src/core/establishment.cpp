@@ -6,7 +6,7 @@
 #include "resourceunitspecies.h"
 #include "seeddispersal.h"
 #include "model.h"
-
+#include "helper.h"
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
@@ -108,6 +108,7 @@ void Establishment::calculate()
     if (with_seeds==0)
         return;
 
+    { DebugTimer casdg("esablishment:abiotic+prod");
     // 2nd step: environmental drivers
     calculateAbioticEnvironment();
     if (mPAbiotic == 0.)
@@ -120,6 +121,7 @@ void Establishment::calculate()
     if (mPAbiotic == 0.)
         return;
 
+    } // for debug timer
     int n_established = 0;
 
     // performance hack:
@@ -129,6 +131,7 @@ void Establishment::calculate()
 //        return;
 //    }
 
+    DebugTimer estasd("establish:from_search");
     // 3rd step: check actual pixels in the LIF grid
 //    if (with_seeds/double(total) > 0.4 ) {
 //        // a large part has available seeds. simply scan the pixels...

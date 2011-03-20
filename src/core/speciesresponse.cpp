@@ -20,6 +20,7 @@
 #include "climate.h"
 #include "model.h"
 #include "watercycle.h"
+#include "helper.h"
 
 SpeciesResponse::SpeciesResponse()
 {
@@ -58,6 +59,7 @@ void SpeciesResponse::soilAtmosphereResponses(const double psi_kPa, const double
 /// Main function that calculates monthly / annual species responses
 void SpeciesResponse::calculate()
 {
+    DebugTimer tpg("SpeciesResponse::calculate");
 
     clear(); // reset values
 

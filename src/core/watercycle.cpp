@@ -4,6 +4,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "model.h"
+#include "helper.h"
 
 WaterCycle::WaterCycle()
 {
@@ -172,6 +173,8 @@ void WaterCycle::run()
     // necessary?
     if (GlobalSettings::instance()->currentYear() == mLastYear)
         return;
+    DebugTimer tw("water:run");
+
     // preparations (once a year)
     getStandValues(); // fetch canopy characteristics from iLand (including weighted average for mCanopyConductance)
     mCanopy.setStandParameters(mLAINeedle,

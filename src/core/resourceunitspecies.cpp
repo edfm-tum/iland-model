@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "model.h"
 #include "watercycle.h"
+#include "helper.h"
 
 /** @class ResourceUnitSpecies
     The class contains data available at ResourceUnit x Species scale.
@@ -58,6 +59,7 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
         // execute the water calculation...
         if (fromEstablishment)
             const_cast<WaterCycle*>(mRU->waterCycle())->run(); // run the water sub model (only if this has not be done already)
+        DebugTimer rst("response+3pg");
         mResponse.calculate();// calculate environmental responses per species (vpd, temperature, ...)
         m3PG.calculate();// production of NPP
         mLastYear = GlobalSettings::instance()->currentYear(); // mark this year as processed

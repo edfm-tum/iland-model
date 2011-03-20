@@ -247,7 +247,6 @@ void ResourceUnit::production()
 
     // soil water model - this determines soil water contents needed for response calculations
     {
-    DebugTimer tw("water:run");
     mWater->run();
     }
 
