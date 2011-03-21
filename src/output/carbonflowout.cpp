@@ -61,7 +61,7 @@ void CarbonFlowOut::exec()
             gpp_pot += rus->sapling().carbonGain().C / cAutotrophicRespiration; // add GPP of the saplings (estimate GPP from NPP)
             npp += rus->sapling().carbonGain().C;
         }
-        npp += ru->statistics().npp();
+        npp += ru->statistics().npp() * biomassCFraction;
         double to_atm = ru->snag()->fluxToAtmosphere().C; // from snags, kg/ha
         to_atm += ru->soil()->fluxToAtmosphere().C * ru->stockableArea()/10.; // soil: t/ha -> t/m2 -> kg/ha
 
