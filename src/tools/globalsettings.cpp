@@ -190,26 +190,26 @@ DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
     QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(id, dbglist);
     return *newitem;
 }
-bool debuglist_sorter (const DebugList &i,const DebugList &j)
+bool debuglist_sorter (const DebugList *i,const DebugList *j)
 {
-    return (i[0].toInt() < j[0].toInt());
+    return ((*i)[0].toInt() < (*j)[0].toInt());
 }
-const QList<DebugList> GlobalSettings::debugLists(const int ID, const DebugOutputs dbg)
+const QList<const DebugList*> GlobalSettings::debugLists(const int ID, const DebugOutputs dbg)
 {
-    QList<DebugList> result_list;
+    QList<const DebugList*> result_list;
     if (ID==-1) {
-        foreach(DebugList list, mDebugLists)
+        foreach(const DebugList &list, mDebugLists)
             if (list.count()>2)  // contains data
                 if (int(dbg)==-1 || (list[1]).toInt() & int(dbg) ) // type fits or is -1 for all
-                    result_list << list;
+                    result_list << &list;
     } else {
         // search a specific id
-        QMultiHash<int, DebugList>::iterator res = mDebugLists.find(ID);
+        QMultiHash<int, DebugList>::const_iterator res = mDebugLists.find(ID);
         while (res != mDebugLists.end() && res.key() == ID)  {
-            DebugList &list = res.value();
+            const DebugList &list = res.value();
             if (list.count()>2)  // contains data
                 if (int(dbg)==-1 || (list[1]).toInt() & int(dbg) ) // type fits or is -1 for all
-                    result_list << list;
+                    result_list << &list;
             ++res;
         }
     }
@@ -267,7 +267,7 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
 {
 
     GlobalSettings *g = GlobalSettings::instance();
-    QList<DebugList> ddl = g->debugLists(-1, type); // get all debug data
+    QList<const DebugList*> ddl = g->debugLists(-1, type); // get all debug data
 
     QStringList result;
     if (ddl.count()==0)
@@ -285,10 +285,10 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
 
     }
 
-    foreach (const DebugList &l, ddl) {
+    foreach (const DebugList *l, ddl) {
         QString line;
         int c=0;
-        foreach(const QVariant &value, l) {
+        foreach(const QVariant &value, *l) {
             if (c++)
                 line+=separator;
             line += value.toString();
