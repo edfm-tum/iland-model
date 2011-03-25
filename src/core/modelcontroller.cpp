@@ -256,6 +256,18 @@ void ModelController::cancel()
     mCanceled = true;
 }
 
+QMutex error_mutex;
+void ModelController::throwError(const QString msg)
+{
+    QMutexLocker lock(&error_mutex); // serialize access
+    qDebug() << "ModelController: throwError reached:";
+    qDebug() << msg;
+    emit bufferLogs(false);
+    emit bufferLogs(true); // start buffering again
+
+    throw IException(msg); // raise error again
+
+}
 //////////////////////////////////////
 // dynamic outut
 //////////////////////////////////////
@@ -378,3 +390,5 @@ void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
         qDebug() << "painted map grid" << map->name() << "min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
 }
+
+

@@ -4,7 +4,7 @@
 
 //constants
 const int StampContainer::cBHDclassWidth=4;
-const int StampContainer::cBHDclassLow = 4; ///< bhd classes start with 4: class 0 = 4-8, class1 = 8..112
+const int StampContainer::cBHDclassLow = 4; ///< bhd classes start with 4cm
 const int StampContainer::cBHDclassCount = 70; ///< class count, see getKey(): for lower dbhs classes are smaller
 const int StampContainer::cHDclassWidth=10;
 const int StampContainer::cHDclassLow = 35; ///< hd classes offset is 35: class 0 = 35-45, class 1 = 45-55
@@ -34,10 +34,10 @@ StampContainer::~StampContainer()
 }
 /// getKey: decodes a floating point piar of dbh and hd-ratio to indices for the
 /// lookup table containing pointers to the actual stamps.
-void StampContainer::getKey(const float dbh, const float hd_value, int &dbh_class, int &hd_class) const
+inline void StampContainer::getKey(const float dbh, const float hd_value, int &dbh_class, int &hd_class) const
 {
     hd_class = int(hd_value - cHDclassLow) / cHDclassWidth;
-    dbh_class = int(dbh - cBHDclassLow) / cBHDclassWidth;
+    // dbh_class = int(dbh - cBHDclassLow) / cBHDclassWidth;
     // fixed scheme: smallest classification scheme for tree-diameters:
     // 1cm width from 4 up to 9cm,
     // 2cm bins from 10 to 18cm
@@ -211,6 +211,19 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
         if (cls_dbh>=cBHDclassCount)
             return m_lookup(cBHDclassCount-1, cls_hd); // highest
         return m_lookup(0, cls_hd); // smallest
+
+    }
+    // handle the case DBH and HD are out of range
+    if (cls_dbh>=cBHDclassCount && cls_hd<0) {
+        if (logLevelDebug())
+            qDebug() << "DBH AND HD for stamp out of range dbh " << bhd_cm << "and h="<< height_m << "-> using largest available DBH/smallest HD.";
+        return m_lookup(cBHDclassCount-1, 0);
+    }
+    // handle the case that DBH is too high and HD is too high (not very likely)
+    if (cls_dbh>=cBHDclassCount && cls_hd>=cHDclassCount) {
+        if (logLevelDebug())
+            qDebug() << "DBH AND HD for stamp out of range dbh " << bhd_cm << "and h="<< height_m << "-> using largest available DBH.";
+        return m_lookup(cBHDclassCount-1, cHDclassCount-1);
 
     }
     qDebug() << "ERROR: No stamp defined for dbh " << bhd_cm << "and h="<< height_m;

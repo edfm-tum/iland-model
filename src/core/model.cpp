@@ -18,6 +18,7 @@
 #include "modelsettings.h"
 #include "standstatistics.h"
 #include "mapgrid.h"
+#include "modelcontroller.h"
 
 #include "outputmanager.h"
 
@@ -404,22 +405,20 @@ void Model::initOutputDatabase()
 ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
 {
     unit->setRandomGenerator();
-
-    // define a height map for the current resource unit on the stack and clear it
-    float sapling_map[cPxPerRU*cPxPerRU];
-    for (int i=0;i<cPxPerRU*cPxPerRU;i++) sapling_map[i]=0.f;
-    unit->setSaplingHeightMap(sapling_map);
-
     try {
-        {
+        // define a height map for the current resource unit on the stack and clear it
+        float sapling_map[cPxPerRU*cPxPerRU];
+        for (int i=0;i<cPxPerRU*cPxPerRU;i++) sapling_map[i]=0.f;
+        unit->setSaplingHeightMap(sapling_map);
+
+
         // (1) calculate the growth of (already established) saplings (populate sapling map)
         foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies*>(rus)->calclulateSaplingGrowth();
         }
-        }
 
     } catch (const IException& e) {
-        Helper::msg(e.message());
+        GlobalSettings::instance()->controller()->throwError(e.message());
     }
     return unit;
 
@@ -438,8 +437,9 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
         }
 
     } catch (const IException& e) {
-        Helper::msg(e.message());
+        GlobalSettings::instance()->controller()->throwError(e.message());
     }
+
     return unit;
 }
 
@@ -447,11 +447,11 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
 ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
 {
     try {
-    // (1) do calculations on snag dynamics for the resource unit
-    unit->calculateCarbonCycle();
-    // (2) do the soil carbon and nitrogen dynamics calculations (ICBM/2N)
-    } catch(const IException &e) {
-        qDebug() << e.message();
+        // (1) do calculations on snag dynamics for the resource unit
+        unit->calculateCarbonCycle();
+        // (2) do the soil carbon and nitrogen dynamics calculations (ICBM/2N)
+    } catch (const IException& e) {
+        GlobalSettings::instance()->controller()->throwError(e.message());
     }
 
     return unit;
@@ -612,23 +612,28 @@ ResourceUnit* nc_applyPattern(ResourceUnit *unit)
     QVector<Tree>::iterator tend = unit->trees().end();
     unit->setRandomGenerator();
 
+    try {
 
-    // light concurrence influence
-    if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
-        // height dominance grid
-        for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).heightGrid(); // just do it ;)
+        // light concurrence influence
+        if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
+            // height dominance grid
+            for (tit=unit->trees().begin(); tit!=tend; ++tit)
+                (*tit).heightGrid(); // just do it ;)
 
-        for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).applyLIP(); // just do it ;)
+            for (tit=unit->trees().begin(); tit!=tend; ++tit)
+                (*tit).applyLIP(); // just do it ;)
 
-    } else {
-        // height dominance grid
-        for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).heightGrid_torus(); // just do it ;)
+        } else {
+            // height dominance grid
+            for (tit=unit->trees().begin(); tit!=tend; ++tit)
+                (*tit).heightGrid_torus(); // just do it ;)
 
-        for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).applyLIP_torus(); // do it the wraparound way
+            for (tit=unit->trees().begin(); tit!=tend; ++tit)
+                (*tit).applyLIP_torus(); // do it the wraparound way
+        }
+        return unit;
+    } catch (const IException &e) {
+        GlobalSettings::instance()->controller()->throwError(e.message());
     }
     return unit;
 }
@@ -638,13 +643,16 @@ ResourceUnit *nc_readPattern(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
-
-    if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
-        for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).readLIF(); // multipliactive approach
-    } else {
-        for (tit=unit->trees().begin(); tit!=tend; ++tit)
-            (*tit).readLIF_torus(); // do it the wraparound way
+    try {
+        if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
+            for (tit=unit->trees().begin(); tit!=tend; ++tit)
+                (*tit).readLIF(); // multipliactive approach
+        } else {
+            for (tit=unit->trees().begin(); tit!=tend; ++tit)
+                (*tit).readLIF_torus(); // do it the wraparound way
+        }
+    } catch (const IException &e) {
+        GlobalSettings::instance()->controller()->throwError(e.message());
     }
     return unit;
 }
@@ -655,17 +663,21 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
     unit->setRandomGenerator();
-    unit->beforeGrow(); // reset statistics
-    // calculate light responses
-    // responses are based on *modified* values for LightResourceIndex
-    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
-        (*tit).calcLightResponse();
-    }
+    try {
+        unit->beforeGrow(); // reset statistics
+        // calculate light responses
+        // responses are based on *modified* values for LightResourceIndex
+        for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+            (*tit).calcLightResponse();
+        }
 
-    unit->calculateInterceptedArea();
+        unit->calculateInterceptedArea();
 
-    for (tit=unit->trees().begin(); tit!=tend; ++tit) {
-        (*tit).grow(); // actual growth of individual trees
+        for (tit=unit->trees().begin(); tit!=tend; ++tit) {
+            (*tit).grow(); // actual growth of individual trees
+        }
+    } catch (const IException &e) {
+        GlobalSettings::instance()->controller()->throwError(e.message());
     }
 
     GlobalSettings::instance()->systemStatistics()->treeCount+=unit->trees().count();
@@ -675,8 +687,12 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 /// multithreaded running function for the resource level production
 ResourceUnit *nc_production(ResourceUnit *unit)
 {
-    unit->setRandomGenerator();
-    unit->production();
+    try {
+        unit->setRandomGenerator();
+        unit->production();
+    } catch (const IException &e) {
+        GlobalSettings::instance()->controller()->throwError(e.message());
+    }
     return unit;
 }
 
