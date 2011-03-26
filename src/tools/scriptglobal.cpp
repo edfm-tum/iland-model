@@ -245,6 +245,12 @@ bool ScriptGlobal::screenshot(QString file_name)
     return true;
 }
 
+void ScriptGlobal::setViewport(double x, double y, double scale_px_per_m)
+{
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->setViewport(QPointF(x,y), scale_px_per_m);
+}
+
 // helper function...
 QString heightGrid_height(const HeightGridValue &hgv) {
     return QString::number(hgv.height);
@@ -283,4 +289,6 @@ int ScriptGlobal::addSaplingsOnMap(const MapGridWrapper *map, const int mapID, Q
     }
     return 0;
 }
+
+
 

@@ -983,6 +983,22 @@ QImage MainWindow::screenshot()
     return ui->PaintWidget->drawImage();
 }
 
+/// set the viewport of the main viewing window
+/// @p center_point is the point to zoom to (world coordinates), and @p scael_px_per_m is the
+/// pixel/m scaling.
+void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
+{
+    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
+    if (current_px==0)
+        return;
+    QPoint screen = vp.toScreen(center_point); // screen coordinates of the target point
+    double target_scale = scale_px_per_m / current_px;
+
+    vp.zoomTo(screen, target_scale);
+    ui->PaintWidget->update();
+    QCoreApplication::processEvents();
+}
+
 void MainWindow::on_actionImageToClipboard_triggered()
 {
     QClipboard *clipboard = QApplication::clipboard();
@@ -1287,5 +1303,6 @@ void MainWindow::on_actionDebug_triggered()
 
     setLogLevel(level);
 }
+
 
 

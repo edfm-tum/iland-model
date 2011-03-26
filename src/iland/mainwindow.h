@@ -35,10 +35,11 @@ public slots:
     void yearSimulated(int year);
     void modelFinished(QString errorMessage);
     void bufferedLog(bool bufferLog);
-    QImage screenshot();
+    QImage screenshot(); ///< craete a screenshot of the main painting area
     void paintGrid(MapGrid *map_grid,double min_val=0., double max_val=1.) { mPaintNext.what=PaintObject::PaintMapGrid;
                                                                              mPaintNext.min_value=min_val; mPaintNext.max_value=max_val;
                                                                              mPaintNext.map_grid = map_grid; repaint(); }
+    void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
 private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;

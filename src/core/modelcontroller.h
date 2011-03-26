@@ -34,6 +34,7 @@ public:
 
     void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
     void paintMap(MapGrid *map, double min_value, double max_value);
+    void setViewport(QPointF center_point, double scale_px_per_m);
 signals:
     void finished(QString errorMessage);
     void year(int year);

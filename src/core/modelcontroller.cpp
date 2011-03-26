@@ -391,4 +391,10 @@ void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
     }
 }
 
+void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
+{
+    if (mViewerWindow)
+        mViewerWindow->setViewport(center_point, scale_px_per_m);
+}
+
 
