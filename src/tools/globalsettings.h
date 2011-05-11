@@ -1,0 +1,141 @@
+#ifndef GLOBALSETTINGS_H
+#define GLOBALSETTINGS_H
+
+#include <QtCore>
+#include <QtSql>
+#include <QtSql/QSqlDatabase>
+
+#include "settingmetadata.h"
+#include "xmlhelper.h"
+#include "../3rdparty/MersenneTwister.h"
+
+// use faster method to concatenate strings (see qt - documentation on QString)
+#define QT_USE_FAST_CONCATENATION
+#define QT_USE_FAST_OPERATOR_PLUS
+
+typedef QList<QVariant> DebugList;
+
+class Model;
+class OutputManager;
+class ModelController; // forward
+class SystemStatistics;
+
+/// General settings and globally available data
+class GlobalSettings
+{
+public:
+    // singleton-access
+    static GlobalSettings *instance() { if (mInstance) return mInstance; mInstance = new GlobalSettings(); return mInstance; }
+    ~GlobalSettings();
+    // Access
+    // model and clock
+    Model *model() const { return mModel; }
+    ModelController *controller() const { return mModelController; }
+
+    void setModel(Model *model) {mModel = model; }
+    void setModelController(ModelController *mc) {mModelController = mc; }
+
+    int currentYear() const { return mRunYear; }
+    void setCurrentYear(const int year) { mRunYear = year; }
+
+    // system statistics
+    SystemStatistics *systemStatistics() { return mSystemStatistics; }
+
+    // debugging fain grained debug outputs
+    enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
+                        dStandNPP=8, dWaterCycle=16, dDailyResponses=32,
+                        dEstablishment=64, dCarbonCycle=128,
+                        dPerformance=256}; ///< defines available debug output types.
+    void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
+    void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
+    bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
+    int currentDebugOutput() const { return mDebugOutputs; }
+    QString debugOutputName(const DebugOutputs d); ///< returns the name attached to 'd' or an empty string if not found
+    DebugOutputs debugOutputId(const QString debug_name); ///< returns the DebugOutputs bit or 0 if not found
+    DebugList &debugList(const int ID, const DebugOutputs dbg); ///< returns a ref to a list ready to be filled with debug output of a type/id combination.
+    const QList<const DebugList*> debugLists(const int ID, const DebugOutputs dbg); ///< return a list of debug outputs
+    QStringList debugListCaptions(const DebugOutputs dbg); ///< returns stringlist of captions for a specific output type
+    QList<QPair<QString, QVariant> > debugValues(const int ID); ///< all debug values for object with given ID
+    void clearDebugLists(); ///< clear all debug data
+    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator, const QString fileName=QString()); ///< output for all available items (trees, ...) in table form
+
+    // database access functions
+    QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
+    QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
+    QSqlDatabase dbclimate() { return QSqlDatabase::database("climate"); }
+
+    // setting-meta-data
+    /// access an individual SettingMetaData named @p name.
+    const SettingMetaData *settingMetaData(const QString &name); // unused??
+    /// retrieve the default value of the setting @p name.
+    QVariant settingDefaultValue(const QString &name); // unused?
+    QList<QString> settingNames() { return mSettingMetaData.keys(); } ///< retrieve list of all names of settings.
+
+    // path and directory
+    QString path(const QString &fileName, const QString &type="home");
+    bool fileExists(const QString &fileName, const QString &type="home");
+
+    // xml project file
+    const XmlHelper &settings() const { return mXml; }
+
+    // setup and maintenance
+
+    // xml project settings
+    void loadProjectFile(const QString &fileName);
+
+    // meta data of settings
+    void loadSettingsMetaDataFromFile(const QString &fileName);
+    void loadSettingsMetaDataFromXml(const QDomElement &topNode);
+
+    // Database connections
+    bool setupDatabaseConnection(const QString& dbname, const QString &fileName, bool fileMustExist);
+    void clearDatabaseConnections(); ///< shutdown and clear connections
+    // output manager
+    OutputManager *outputManager() { return mOutputManager; }
+
+    // path
+    void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
+
+    MTRand& randomGenerator(); // get a random generator instance per thread
+
+private:
+    GlobalSettings(); // private ctor
+    static GlobalSettings *mInstance;
+    Model *mModel;
+    ModelController *mModelController;
+    OutputManager *mOutputManager;
+    int mRunYear;
+    SystemStatistics *mSystemStatistics;
+
+    // special debug outputs
+    QMultiHash<int, DebugList> mDebugLists;
+    int mDebugOutputs; // "bitmap" of enabled debugoutputs.
+
+    SettingMetaDataList mSettingMetaData; ///< storage container (QHash) for settings.
+    QHash<QString, QString> mFilePath; ///< storage for file paths
+    QHash<QThread*, MTRand> mRandomGenerators; /// store a random generator for each thread
+
+    XmlHelper mXml; ///< xml-based hierarchical settings
+};
+
+// constants
+// We assume:
+// Light-Grid: 2x2m
+// Height-Grid: 10x10m
+// Resource-Unit: 100x100m
+const int cPxSize = 2; // size of light grid (m)
+const int cRUSize = 100; // size of resource unit (m)
+const int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
+const int cPxPerRU = 50; // 100/2
+const int cHeightPerRU = 10; // 100/10 height pixels per resource unit
+const int cPxPerHectare = 2500; // pixel/ha ( 10000 / (2*2) )
+const double cHeightPixelArea = 100.; // 100m2 area of a height pixel
+
+// other constants
+const double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon
+const double cAutotrophicRespiration = 0.47;
+
+/// shortcut to the GlobalSettings Singleton object.
+#define Globals (GlobalSettings::instance())
+
+#endif // GLOBALSETTINGS_H
