@@ -27,6 +27,7 @@ public:
     void testGridRunner();
     void testSoil();
     void testMap();
+    void testDEM();
     private:
     QString dumpTreeList();
     QObject *mParent;
