@@ -12,6 +12,9 @@ CONFIG += precompile_header
 INCLUDEPATH += ../core \
     ../tools \
     ../output
+DEPENDPATH += plugins
+PRE_TARGETDEPS += plugins/libiland_fired.a
+LIBS += -Lplugins -liland_fired
 
 # to enable debug symbols in release code
 # debug information in release-mode executable
@@ -82,7 +85,9 @@ SOURCES += main.cpp \
     ../tools/gisgrid.cpp \
     ../tools/mapgrid.cpp \
     ../output/carbonout.cpp \
-    ../output/carbonflowout.cpp
+    ../output/carbonflowout.cpp \
+    ../tools/modules.cpp \
+    ../tools/dem.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -144,7 +149,10 @@ HEADERS += mainwindow.h \
     ../tools/gisgrid.h \
     ../tools/mapgrid.h \
     ../output/carbonout.h \
-    ../output/carbonflowout.h
+    ../output/carbonflowout.h \
+    ../core/plugin_interface.h \
+    ../tools/modules.h \
+    ../tools/dem.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ../iland/res/iland.qrc
