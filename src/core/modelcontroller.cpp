@@ -391,6 +391,14 @@ void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
     }
 }
 
+void ModelController::paintGrid(const FloatGrid *grid, double min_value, double max_value)
+{
+    if (mViewerWindow) {
+        mViewerWindow->paintGrid(grid, min_value, max_value);
+        qDebug() << "painted grid min-value (blue):" << min_value << "max-value(red):" << max_value;
+    }
+}
+
 void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
 {
     if (mViewerWindow)
