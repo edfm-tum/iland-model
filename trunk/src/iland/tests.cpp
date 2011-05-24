@@ -24,6 +24,10 @@
 
 #include "mapgrid.h"
 #include "management.h"
+#include "dem.h"
+#include "modelcontroller.h"
+
+#include <QInputDialog>
 
 Tests::Tests(QObject *wnd)
 {
@@ -659,4 +663,43 @@ void Tests::testMap()
 
     mgmt.loadFromTreeList(tree_list);
     mgmt.kill();
+}
+
+DEM *_dem = 0;
+void Tests::testDEM()
+{
+    QString fileName = GlobalSettings::instance()->path("gis/dtm1m_clip.txt");
+
+    if (_dem) {
+        int choice = QInputDialog::getInt(0, "enter type", "Type to show: 0: dem, 1: slope, 2: aspect, 3: view, 4: exit");
+        switch (choice) {
+        case 0: GlobalSettings::instance()->controller()->paintGrid(_dem, 0, 1000); break;
+        case 1: GlobalSettings::instance()->controller()->paintGrid(_dem->slopeGrid(), 0, 3); break;
+        case 2: GlobalSettings::instance()->controller()->paintGrid(_dem->aspectGrid(), 0, 360); break;
+        case 3: GlobalSettings::instance()->controller()->paintGrid(_dem->viewGrid(), 0, 1); break;
+        default: return;
+        }
+        return;
+    }
+
+    try {
+        if (!_dem)
+            _dem = new DEM(fileName);
+
+        qDebug() << "slope grid: avg max" << _dem->slopeGrid()->avg()  << _dem->slopeGrid()->max();
+        qDebug() << "aspect grid: avg max" << _dem->aspectGrid()->avg()  << _dem->aspectGrid()->max();
+        qDebug() << "view grid: avg max" << _dem->viewGrid()->avg()  << _dem->viewGrid()->max();
+
+        // note: dem gets not released! (to be still there when painting happens)
+        float slope, aspect;
+        for (float y=0.;y<1000.;y+=100.)
+            for (float x=0.;x<1000.;x+=100.) {
+                float h = _dem->orientation(x, y, slope, aspect );
+                qDebug() << "at point "<< x << y << "height"<< h  <<"slope" << slope << "aspect" << aspect;
+            }
+
+    } catch (IException &e) {
+        Helper::msg(e.message());
+    }
+
 }

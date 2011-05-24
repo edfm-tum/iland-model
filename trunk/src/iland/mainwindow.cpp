@@ -374,9 +374,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     // what to paint??
     if (mPaintNext.what != PaintObject::PaintNothing) {
         if (mPaintNext.what == PaintObject::PaintMapGrid)
-            paintMapGrid(painter, mPaintNext.map_grid, mPaintNext.min_value, mPaintNext.max_value);
+            paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.min_value, mPaintNext.max_value);
 
-        mPaintNext.what = PaintObject::PaintNothing; // reset???
+        if (mPaintNext.what == PaintObject::PaintFloatGrid)
+            paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.min_value, mPaintNext.max_value);
+
+        //mPaintNext.what = PaintObject::PaintNothing; // reset???
         return;
     }
 
@@ -560,26 +563,46 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 }
 
 // paint the values of the MapGrid
-void MainWindow::paintMapGrid(QPainter &painter, MapGrid *map_grid, double min_val, double max_val)
+void MainWindow::paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatGrid *float_grid, double min_val, double max_val)
 {
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
+    const Grid<int> *int_grid = 0;
 
-    const Grid<int> &grid = map_grid->grid();
+    int sx, sy;
+    QRect total_rect;
+
+    if (map_grid) {
+        int_grid = &map_grid->grid();
+        sx = int_grid->sizeX();
+        sy = int_grid->sizeY();
+        total_rect = vp.toScreen(int_grid->metricRect());
+    } else {
+        if (!float_grid)
+            return;
+        sx = float_grid->sizeX();
+        sy = float_grid->sizeY();
+        total_rect = vp.toScreen(float_grid->metricRect());
+    }
 
     // draw rectangle around the grid
-    QRectF r = grid.metricRect();
-    QRect rs = vp.toScreen(r);
     painter.setPen(Qt::black);
-    painter.drawRect(rs);
+    painter.drawRect(total_rect);
     // paint the lower-res-grid;
     int ix,iy;
+    double value;
+    QRect r;
     QColor fill_color;
-    for (iy=0;iy<grid.sizeY();iy++) {
-        for (ix=0;ix<grid.sizeX();ix++) {
+    for (iy=0;iy<sy;iy++) {
+        for (ix=0;ix<sx;ix++) {
             QPoint p(ix,iy);
-            double value = grid.constValueAtIndex(p);
-            QRect r = vp.toScreen(grid.cellRect(p));
+            if (int_grid){
+                value = int_grid->constValueAtIndex(p);
+                r = vp.toScreen(int_grid->cellRect(p));
+            } else {
+                value = float_grid->constValueAtIndex(p);
+                r = vp.toScreen(float_grid->cellRect(p));
+            }
             fill_color = Helper::colorFromValue(value, min_val, max_val);
             painter.fillRect(r, fill_color);
         }
@@ -706,8 +729,12 @@ void MainWindow::mouseMove(const QPoint& pos)
     if (grid->coordValid(p)) {
         QString location=QString("%1 / %2").arg(p.x()).arg(p.y());
 
-        if (ui->visFon->isChecked() || ui->visImpact->isChecked())
-           location += QString("\n %1").arg((*grid).valueAt(p));
+        if (ui->visFon->isChecked() || ui->visImpact->isChecked()) {
+            if (mPaintNext.what == PaintObject::PaintFloatGrid && mPaintNext.float_grid)
+                location += QString("\n %1").arg(mPaintNext.float_grid->constValueAt(p));
+            else
+                location += QString("\n %1").arg((*grid).valueAt(p));
+        }
         if( ui->visDomGrid->isChecked())
             location += QString("\n %1").arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height);
         if( ui->visRegeneration->isChecked())
@@ -1068,8 +1095,9 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "12: linearized expressions\n" \
                                         "13: establishment\n" \
                                         "14: GridRunner\n" \
-                                         "15: Soil (ICBM/2N)\n"
-                                         "16: load Map", 0);
+                                         "15: Soil (ICBM/2N)\n" \
+                                         "16: load Map \n" \
+                                         "17: test DEM", 0);
         switch (which) {
         case 0: t.speedOfExpression();break;
         case 1: t.clearTrees(); break;
@@ -1088,6 +1116,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
         case 14: t.testGridRunner(); break;
         case 15: t.testSoil(); break;
         case 16: t.testMap(); break;
+        case 17: t.testDEM(); break;
         }
         return;
     }
