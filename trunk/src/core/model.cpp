@@ -19,6 +19,7 @@
 #include "standstatistics.h"
 #include "mapgrid.h"
 #include "modelcontroller.h"
+#include "modules.h"
 
 #include "outputmanager.h"
 
@@ -110,6 +111,7 @@ void Model::initialize()
    mEnvironment = 0;
    mTimeEvents = 0;
    mStandGrid = 0;
+   mModules = 0;
 }
 
 /** sets up the simulation space.
@@ -290,6 +292,8 @@ void Model::clear()
         delete mTimeEvents;
     if (mStandGrid)
         delete mStandGrid;
+    if (mModules)
+        delete mModules;
 
     mGrid = 0;
     mHeightGrid = 0;
@@ -297,6 +301,7 @@ void Model::clear()
     mEnvironment = 0;
     mTimeEvents = 0;
     mStandGrid  = 0;
+    mModules = 0;
 
     GlobalSettings::instance()->outputManager()->close();
 
@@ -373,6 +378,10 @@ void Model::loadProject()
         qDebug() << "setup management using script" << path;
     }
 
+    // (3.3) setup of modules
+    if (mModules)
+        delete mModules;
+    mModules = new Modules();
 
 }
 

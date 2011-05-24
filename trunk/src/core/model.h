@@ -16,6 +16,7 @@ class Climate;
 class Environment;
 class TimeEvents;
 class MapGrid;
+class Modules;
 
 struct HeightGridValue
 {
@@ -100,6 +101,8 @@ private:
     QList<SpeciesSet*> mSpeciesSets;
     /// container holding all the climate objects
     QList<Climate*> mClimates;
+    //
+    Modules *mModules; ///< the list of modules/plugins
     //
     QRectF mModelRect; ///< extent of the model (without buffer)
     // global grids...
