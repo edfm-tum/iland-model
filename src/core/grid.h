@@ -120,6 +120,8 @@ private:
 
 typedef Grid<float> FloatGrid;
 
+enum GridViewType { GridViewRainbow, GridViewRainbowReverse, GridViewGray, GridViewGrayReverse };
+
 /** @class GridRunner is a helper class to iterate over a rectangular fraction of a grid
 */
 template <class T>

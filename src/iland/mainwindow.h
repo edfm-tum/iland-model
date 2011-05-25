@@ -36,12 +36,14 @@ public slots:
     void modelFinished(QString errorMessage);
     void bufferedLog(bool bufferLog);
     QImage screenshot(); ///< craete a screenshot of the main painting area
-    void paintGrid(MapGrid *map_grid,double min_val=0., double max_val=1.) { mPaintNext.what=PaintObject::PaintMapGrid;
-                                                                             mPaintNext.min_value=min_val; mPaintNext.max_value=max_val;
-                                                                             mPaintNext.map_grid = map_grid; repaint(); }
-    void paintGrid(const FloatGrid *grid,double min_val=0., double max_val=1.) { mPaintNext.what=PaintObject::PaintFloatGrid;
-                                                                             mPaintNext.min_value=min_val; mPaintNext.max_value=max_val;
-                                                                             mPaintNext.float_grid = grid; repaint(); }
+    void paintGrid(MapGrid *map_grid,
+                   const QString &name=QString(),
+                   const GridViewType view_type=GridViewRainbow,
+                   double min_val=0., double max_val=1.);
+    void paintGrid(const FloatGrid *grid,
+                   const QString &name=QString(),
+                   const GridViewType view_type=GridViewRainbow,
+                   double min_val=0., double max_val=1.);
     void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
 private:
     Ui::MainWindowClass *ui;
@@ -52,22 +54,25 @@ private:
     void setupModel();
     void readwriteCycle();
     // paint
+    void updatePaintGridList();
     /// PaintObject stores what kind of object to paint during next repaint
     struct PaintObject {
         PaintObject(): what(PaintNothing), map_grid(0), float_grid(0), min_value(0.), max_value(1.) {}
         enum { PaintNothing, PaintMapGrid, PaintFloatGrid } what;
         MapGrid *map_grid;
         const FloatGrid *float_grid;
+        GridViewType view_type;
         double min_value;
         double max_value;
     } mPaintNext;
+    QHash<QString, PaintObject> mPaintList;
 
     static QPlainTextEdit *mLogSpace;
     static QTextStream *mLogStream;
     void loadPicusIniFile(const QString &fileName);
     // painter functions
     void paintFON(QPainter &painter, QRect rect); ///< general paint function (GUI driven)
-    void paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatGrid *float_grid, double min_val=0., double max_val=1.); ///< paint a map grid (controller driver)
+    void paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatGrid *float_grid, const GridViewType view_type, double min_val=0., double max_val=1.); ///< paint a map grid (controller driver)
     Viewport vp;
     QString dumpTreelist();
     void applyCycles(int cycle_count=1);
