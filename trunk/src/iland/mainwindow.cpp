@@ -256,6 +256,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // species filter
     connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
+    connect( ui->paintGridBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
+    updatePaintGridList();
 
     // model controller
     mRemoteControl.setMainWindow( this );
@@ -339,6 +341,59 @@ QString MainWindow::dumpTreelist()
     return resStr;
 }
 
+void MainWindow::updatePaintGridList()
+{
+    ui->paintGridBox->clear();
+    ui->paintGridBox->addItem("<none>", "");
+    QHash<QString, PaintObject>::const_iterator i = mPaintList.begin();
+    while (i!=mPaintList.constEnd()) {
+        ui->paintGridBox->addItem(i.key(),i.key());
+        ++i;
+    }
+}
+
+void MainWindow::paintGrid(MapGrid *map_grid, const QString &name,
+               const GridViewType view_type,
+               double min_val, double max_val)
+{
+    if (map_grid==0 && !name.isEmpty()) {
+        // remove the grid from the list
+        mPaintList.remove(name);
+        updatePaintGridList();
+        return;
+    }
+    mPaintNext.what=PaintObject::PaintMapGrid;
+    mPaintNext.min_value=min_val; mPaintNext.max_value=max_val;
+    mPaintNext.map_grid = map_grid; mPaintNext.view_type = view_type;
+    if (!name.isEmpty()) {
+        updatePaintGridList();
+        mPaintList[name] = mPaintNext;
+    }
+    repaint();
+}
+
+void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
+                           const GridViewType view_type,
+                           double min_val, double max_val)
+{
+    if (grid==0 && !name.isEmpty()) {
+        // remove the grid from the list
+        mPaintList.remove(name);
+        updatePaintGridList();
+        return;
+    }
+    mPaintNext.what=PaintObject::PaintFloatGrid;
+    mPaintNext.min_value=min_val;
+    mPaintNext.max_value=max_val;
+    mPaintNext.float_grid = grid;
+    mPaintNext.view_type = view_type;
+    if (!name.isEmpty()) {
+        mPaintList[name] = mPaintNext;
+        updatePaintGridList();
+
+    }
+    repaint();
+}
 
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
@@ -372,14 +427,20 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     painter.drawRect(rs);
 
     // what to paint??
+
+    if (ui->paintGridBox->currentIndex()>-1) {
+        QString name = ui->paintGridBox->itemData(ui->paintGridBox->currentIndex()).toString();
+        mPaintNext = mPaintList[name];
+    }
+
     if (mPaintNext.what != PaintObject::PaintNothing) {
         if (mPaintNext.what == PaintObject::PaintMapGrid)
-            paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.min_value, mPaintNext.max_value);
+            paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
 
         if (mPaintNext.what == PaintObject::PaintFloatGrid)
-            paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.min_value, mPaintNext.max_value);
+            paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
 
-        //mPaintNext.what = PaintObject::PaintNothing; // reset???
+        mPaintNext.what = PaintObject::PaintNothing; // reset???
         return;
     }
 
@@ -407,13 +468,13 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         QImage &img = ui->PaintWidget->drawImage();
         for (x=0;x<sizex;x++)
             for (y=0;y<sizey;y++) {
-            world = vp.toWorld(QPoint(x,y));
-            if (grid->coordValid(world)) {
-                value = grid->valueAt(world);
-                col = Helper::colorFromValue(value, 0., maxval, true).rgb();
-                img.setPixel(x,y,col);
+                world = vp.toWorld(QPoint(x,y));
+                if (grid->coordValid(world)) {
+                    value = grid->valueAt(world);
+                    col = Helper::colorFromValue(value, 0., maxval, true).rgb();
+                    img.setPixel(x,y,col);
+                }
             }
-        }
 
     }
 
@@ -445,13 +506,13 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         QImage &img = ui->PaintWidget->drawImage();
         for (x=0;x<sizex;x++)
             for (y=0;y<sizey;y++) {
-            world = vp.toWorld(QPoint(x,y));
-            if (mRegenerationGrid.coordValid(world)) {
-                value = mRegenerationGrid.valueAt(world);
-                col = Helper::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
-                img.setPixel(x,y,col);
+                world = vp.toWorld(QPoint(x,y));
+                if (mRegenerationGrid.coordValid(world)) {
+                    value = mRegenerationGrid.valueAt(world);
+                    col = Helper::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
+                    img.setPixel(x,y,col);
+                }
             }
-        }
     }
 
     if (show_dom) {
@@ -563,7 +624,10 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 }
 
 // paint the values of the MapGrid
-void MainWindow::paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatGrid *float_grid, double min_val, double max_val)
+void MainWindow::paintMapGrid(QPainter &painter,
+                              MapGrid *map_grid, const FloatGrid *float_grid,
+                              const GridViewType view_type,
+                              double min_val, double max_val)
 {
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
@@ -593,6 +657,8 @@ void MainWindow::paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatG
     double value;
     QRect r;
     QColor fill_color;
+    bool reverse = view_type == GridViewRainbowReverse || view_type == GridViewGrayReverse;
+    bool black_white = view_type == GridViewGray || view_type == GridViewGrayReverse;
     for (iy=0;iy<sy;iy++) {
         for (ix=0;ix<sx;ix++) {
             QPoint p(ix,iy);
@@ -603,7 +669,7 @@ void MainWindow::paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatG
                 value = float_grid->constValueAtIndex(p);
                 r = vp.toScreen(float_grid->cellRect(p));
             }
-            fill_color = Helper::colorFromValue(value, min_val, max_val);
+            fill_color = Helper::colorFromValue(value, min_val, max_val, reverse,black_white);
             painter.fillRect(r, fill_color);
         }
     }
@@ -1097,7 +1163,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "14: GridRunner\n" \
                                          "15: Soil (ICBM/2N)\n" \
                                          "16: load Map \n" \
-                                         "17: test DEM", 0);
+                                         "17: test DEM",-1);
         switch (which) {
         case 0: t.speedOfExpression();break;
         case 1: t.clearTrees(); break;

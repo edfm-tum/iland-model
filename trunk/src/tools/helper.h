@@ -34,7 +34,7 @@ public:
     static void openHelp(const QString& topic);
     static QString stripHtml(const QString &source);
 
-    static QColor colorFromValue(const float value, const float min_value=0.f, const float max_value=1.f, const bool reverse=false);
+    static QColor colorFromValue(const float value, const float min_value=0.f, const float max_value=1.f, const bool reverse=false, const bool black_white=false);
 
     static QString currentRevision(); ///< svn revision number
 

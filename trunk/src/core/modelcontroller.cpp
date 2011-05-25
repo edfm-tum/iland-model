@@ -386,15 +386,15 @@ void ModelController::saveScreenshot(QString file_name)
 void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
 {
     if (mViewerWindow) {
-        mViewerWindow->paintGrid(map, min_value, max_value);
+        mViewerWindow->paintGrid(map, "", GridViewRainbow, min_value, max_value);
         qDebug() << "painted map grid" << map->name() << "min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
 }
 
-void ModelController::paintGrid(const FloatGrid *grid, double min_value, double max_value)
+void ModelController::paintGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value)
 {
     if (mViewerWindow) {
-        mViewerWindow->paintGrid(grid, min_value, max_value);
+        mViewerWindow->paintGrid(grid, name, view_type, min_value, max_value);
         qDebug() << "painted grid min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
 }

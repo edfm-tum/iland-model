@@ -119,7 +119,9 @@ bool Helper::m_NoDebug = false;
 
 
 // colors
-QColor Helper::colorFromValue(const float value, const float min_value, const float max_value, const bool reverse)
+QColor Helper::colorFromValue(const float value,
+                              const float min_value, const float max_value,
+                              const bool reverse, const bool black_white)
 {
     float rval = value;
     rval = std::max(min_value, rval);
@@ -131,7 +133,11 @@ QColor Helper::colorFromValue(const float value, const float min_value, const fl
     if (min_value < max_value) {
         // default: high values -> red (h=0), low values to blue (h=high)
         rel_value = 1 - (rval - min_value) / (max_value - min_value);
-        col=  QColor::fromHsvF(0.66666666666*rel_value, 0.95, 0.95).rgb();
+        if (black_white) {
+            int c = (1.-rel_value)*255;
+            col = QColor(c,c,c);
+        } else
+            col=  QColor::fromHsvF(0.66666666666*rel_value, 0.95, 0.95).rgb();
     } else {
         col = Qt::white;
     }
