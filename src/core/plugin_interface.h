@@ -22,7 +22,21 @@ public:
 
 };
 
-Q_DECLARE_INTERFACE(DisturbanceInterface,
-                    "at.ac.boku.iland.DisturbanceInterface/1.0")
+/** WaterInterface allows accessing intermediate water variables (e.g. interception)
+
+ */
+class WaterCycleData; // forward
+class ResourceUnit; // forward
+class WaterInterface
+{
+public:
+    virtual ~WaterInterface() {}
+
+    virtual void calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data)=0;
+};
+
+Q_DECLARE_INTERFACE(DisturbanceInterface, "at.ac.boku.iland.DisturbanceInterface/1.0")
+
+Q_DECLARE_INTERFACE(WaterInterface, "at.ac.boku.iland.WaterInterface/1.0")
 
 #endif // PLUGIN_INTERFACE_H
