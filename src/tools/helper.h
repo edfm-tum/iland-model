@@ -167,6 +167,8 @@ public:
     void zoomToAll();
     void zoomTo(const QPoint &screen_point, const double factor);
     void moveTo(const QPoint &screen_from, const QPoint &screen_to);
+    // move
+    void setViewPoint(const QPointF &world_center, const double px_per_meter);
     // conversion of length
     double pixelToMeter(const int pixel) { return pixel/m_scale_worldtoscreen; }
     int meterToPixel(const double meter) { return qRound(meter * m_scale_worldtoscreen);}
