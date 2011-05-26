@@ -1081,13 +1081,17 @@ QImage MainWindow::screenshot()
 /// pixel/m scaling.
 void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
 {
-    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
-    if (current_px==0)
-        return;
-    QPoint screen = vp.toScreen(center_point); // screen coordinates of the target point
-    double target_scale = scale_px_per_m / current_px;
+    vp.setViewPoint(center_point, scale_px_per_m);
 
-    vp.zoomTo(screen, target_scale);
+//    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
+//    if (current_px==0)
+//        return;
+
+//    vp.setCenterPoint(center_point);
+//    QPoint screen = vp.toScreen(center_point); // screen coordinates of the target point
+//    double target_scale = scale_px_per_m / current_px;
+
+//    vp.zoomTo(screen, target_scale);
     ui->PaintWidget->update();
     QCoreApplication::processEvents();
 }
