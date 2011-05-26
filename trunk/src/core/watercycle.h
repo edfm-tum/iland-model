@@ -43,7 +43,7 @@ public:
     double interception() const  { return mInterception; } ///< mm water that is intercepted by the crown
     double evaporationCanopy() const { return mEvaporation; } ///< evaporation from canopy (mm)
     double avgMaxCanopyConductance() const { return mAvgMaxCanopyConductance; } ///< averaged maximum canopy conductance of current species distribution (m/s)
-    const double *referenceEvapotranspiration() const { return mET0; }
+    const double *referenceEvapotranspiration() const { return mET0; } ///< monthly reference ET (see Adair et al 2008)
 
 private:
     double mLAINeedle; // leaf area index of coniferous species
@@ -103,6 +103,16 @@ private:
     double mLAINeedle;
     double mLAIBroadleaved;
     double mCanopyConductance; ///< m/s
+};
+
+/// WaterCycleData is a data transfer container for water-related details.
+class WaterCycleData
+{
+public:
+    /// daily amount of water that actually reaches the ground (i.e., after interception)
+    double water_to_ground[366];
+    /// height of snow cover [mm water column]
+    double snow_cover[366];
 };
 
 #endif // WATERCYCLE_H
