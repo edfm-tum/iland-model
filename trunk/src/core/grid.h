@@ -141,6 +141,26 @@ private:
     size_t mCurrentCol;
 };
 
+/** @class Vector3D is a simple 3d vector.
+  QVector3D (from Qt) is in QtGui so we needed a replacement.
+*/
+class Vector3D
+{
+ public:
+    Vector3D(): mX(0.), mY(0.), mZ(0.) {}
+    Vector3D(const double x, const double y, const double z): mX(x), mY(y), mZ(z) {}
+    double x() const { return mX; } ///< get x-coordinate
+    double y() const { return mY; } ///< get y-coordinate
+    double z() const { return mZ; } ///< get z-coordinate
+    // set variables
+    void setX(const double x) { mX=x; } ///< set value of the x-coordinate
+    void setY(const double y) { mY=y; } ///< set value of the y-coordinate
+    void setZ(const double z) { mZ=z; } ///< set value of the z-coordinate
+private:
+    double mX;
+    double mY;
+    double mZ;
+};
 
 // copy constructor
 template <class T>
@@ -481,13 +501,13 @@ template <class T>
 
     return res;
 }
-void modelToWorld(const QVector3D &From, QVector3D &To);
+void modelToWorld(const Vector3D &From, Vector3D &To);
 
 template <class T>
     QString gridToESRIRaster(const Grid<T> &grid, QString (*valueFunction)(const T& value) )
 {
-        QVector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
-        QVector3D world;
+        Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
+        Vector3D world;
         modelToWorld(model, world);
         QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\nyllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
                                 .arg(grid.sizeX())
@@ -504,8 +524,8 @@ template <class T>
     template <class T>
         QString gridToESRIRaster(const Grid<T> &grid )
 {
-            QVector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
-            QVector3D world;
+            Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
+            Vector3D world;
             modelToWorld(model, world);
             QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\n yllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
                     .arg(grid.sizeX())

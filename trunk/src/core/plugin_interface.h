@@ -20,6 +20,18 @@ public:
     virtual QString version()=0; ///< a version identification
     virtual QString description()=0; ///< some additional description. This info is shown in the GUI and is printed to the log file.
 
+    // setup
+    virtual void setup()=0; ///< setup after general iLand model frame is created.
+};
+
+class SetupResourceUnitInterface
+{
+public:
+    virtual ~SetupResourceUnitInterface() {}
+    /// setup of parameters specific for resource unit.
+    /// this allows using spatially explicit parmater values.
+    virtual void setupResourceUnit(const ResourceUnit *ru)=0;
+
 };
 
 /** WaterInterface allows accessing intermediate water variables (e.g. interception)
@@ -38,5 +50,7 @@ public:
 Q_DECLARE_INTERFACE(DisturbanceInterface, "at.ac.boku.iland.DisturbanceInterface/1.0")
 
 Q_DECLARE_INTERFACE(WaterInterface, "at.ac.boku.iland.WaterInterface/1.0")
+
+Q_DECLARE_INTERFACE(SetupResourceUnitInterface, "at.ac.boku.iland.SetupResourceUnitInterface/1.0")
 
 #endif // PLUGIN_INTERFACE_H

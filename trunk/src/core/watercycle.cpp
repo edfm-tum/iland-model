@@ -5,6 +5,7 @@
 #include "species.h"
 #include "model.h"
 #include "helper.h"
+#include "modules.h"
 
 WaterCycle::WaterCycle()
 {
@@ -174,6 +175,7 @@ void WaterCycle::run()
     if (GlobalSettings::instance()->currentYear() == mLastYear)
         return;
     DebugTimer tw("water:run");
+    WaterCycleData add_data;
 
     // preparations (once a year)
     getStandValues(); // fetch canopy characteristics from iLand (including weighted average for mCanopyConductance)
@@ -195,6 +197,9 @@ void WaterCycle::run()
         prec_after_interception = mCanopy.flow(prec_mm, day->temperature);
         // (3) storage in the snow pack
         prec_to_soil = mSnowPack.flow(prec_after_interception, day->temperature);
+        // save extra data (used by e.g. fire module)
+        add_data.water_to_ground[doy] = prec_to_soil;
+        add_data.snow_cover[doy] = mSnowPack.snowPack();
         // (4) add rest to soil
         mContent += prec_to_soil;
 
@@ -245,6 +250,8 @@ void WaterCycle::run()
         //); // DBGMODE()
 
     }
+    // call external modules
+    GlobalSettings::instance()->model()->modules()->calculateWater(mRU, &add_data);
     mLastYear = GlobalSettings::instance()->currentYear();
 
 }
