@@ -8,8 +8,10 @@ INCLUDEPATH  += ../.. \
                 ../../tools \
                 ../../core
 HEADERS       = \
-    fireplugin.h
+    fireplugin.h \
+    firemodule.h
 SOURCES       = \
-    fireplugin.cpp
+    fireplugin.cpp \
+    firemodule.cpp
 TARGET        = $$qtLibraryTarget(iland_fire)
 DESTDIR       = ../../plugins

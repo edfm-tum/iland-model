@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QHash>
 #include "grid.h"
+#include "layeredgrid.h"
 class Model;
 class MainWindow;
 class MapGrid;
@@ -36,6 +37,8 @@ public:
     void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
     void paintGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value);
     void paintMap(MapGrid *map, double min_value, double max_value);
+
+    void addLayers(const LayeredGridBase *layers);
     void setViewport(QPointF center_point, double scale_px_per_m);
 signals:
     void finished(QString errorMessage);

@@ -3,7 +3,6 @@
 #ifndef GISGRID_H
 #define GISGRID_H
 
-#include <QVector3D>
 #include <QString>
 #include <QPointF>
 #include <QRectF>
@@ -41,8 +40,8 @@ void setupGISTransformation(const double offsetx,
                             const double offsetz,
                             const double angle_degree);
 // transformation routines.
-void worldToModel(const QVector3D &From, QVector3D &To);
-void modelToWorld(const QVector3D &From, QVector3D &To);
+void worldToModel(const Vector3D &From, Vector3D &To);
+void modelToWorld(const Vector3D &From, Vector3D &To);
 
 
 class GisGrid
@@ -66,8 +65,8 @@ public:
     double value(const double X, const double Y) const;
     double value(const int indexx, const int indexy) const; ///< get value of grid at index positions
     /// get coordinates of the center of the cell with 'Index'
-    QVector3D coord(const int Index) const;
-    QVector3D coord(const int indexx, const int indexy) const;
+    Vector3D coord(const int Index) const;
+    Vector3D coord(const int indexx, const int indexy) const;
     QRectF rectangle(const int indexx, const int indexy) const;
     void clip(const QRectF & box); ///< clip the grid to 'Box' (set values outside to -1)
 

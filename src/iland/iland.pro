@@ -152,7 +152,8 @@ HEADERS += mainwindow.h \
     ../output/carbonflowout.h \
     ../core/plugin_interface.h \
     ../tools/modules.h \
-    ../tools/dem.h
+    ../tools/dem.h \
+    ../core/layeredgrid.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ../iland/res/iland.qrc

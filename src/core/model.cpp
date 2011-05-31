@@ -188,12 +188,14 @@ void Model::setupSpace()
         mTimeEvents->loadFromFile(GlobalSettings::instance()->path(xml.value("timeEventsFile"), "script"));
     }
 
+
     // simple case: create ressource units in a regular grid.
     mRUmap.clear();
     if (xml.valueBool("resourceUnitsAsGrid")) {
         mRUmap.setup(QRectF(0., 0., width, height),100.); // Grid, that holds positions of resource units
-        ResourceUnit **p=mRUmap.begin(); // ptr to ptr!
-        ResourceUnit *new_ru; // ptr to ptr!
+        ResourceUnit **p; // ptr to ptr!
+        ResourceUnit *new_ru;
+
         int ru_index = 0;
         for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
@@ -249,6 +251,17 @@ void Model::setupSpace()
         foreach(ResourceUnit* ru, mRU)
             if (ru->id()!=-1)
                 valid_rus.append(ru);
+
+        // setup of external modules
+        mModules->setup();
+        if (mModules->hasSetupResourceUnits()) {
+            for (ResourceUnit **p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
+                QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
+                mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
+                mModules->setupResourceUnit( *p );
+            }
+
+        }
 
         // setup the helper that does the multithreading
         threadRunner.setup(valid_rus);
@@ -355,6 +368,11 @@ void Model::loadProject()
     Snag::setupThresholds(xml.valueDouble("model.settings.soil.swdDBHClass12"),
                           xml.valueDouble("model.settings.soil.swdDBHClass23"));
 
+    // setup of modules
+    if (mModules)
+        delete mModules;
+    mModules = new Modules();
+
     setupSpace();
     if (mRU.isEmpty())
         throw IException("Setup of Model: no resource units present!");
@@ -378,10 +396,6 @@ void Model::loadProject()
         qDebug() << "setup management using script" << path;
     }
 
-    // (3.3) setup of modules
-    if (mModules)
-        delete mModules;
-    mModules = new Modules();
 
 }
 
@@ -849,5 +863,8 @@ void Model::createStandStatistics()
 /// execute the javascript expression \p expression in the model context.
 bool Model::executeJavascript(const QString expression)
 {
-    return management()->executeScript(expression).isEmpty();
+    if (management())
+        return management()->executeScript(expression).isEmpty();
+    else
+        return false;
 }
