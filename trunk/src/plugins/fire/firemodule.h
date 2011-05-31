@@ -34,7 +34,7 @@ private:
 class FireLayers: public LayeredGrid<FireData> {
   public:
     void setGrid(const Grid<FireData> &grid) { mGrid = &grid; }
-    double value(const FireData& data, const int index);
+    double value(const FireData& data, const int index) const;
     const QStringList names() const;
 };
 /** FireModule is the main class of the fire sub module and

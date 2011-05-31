@@ -38,7 +38,7 @@ public:
     void paintGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value);
     void paintMap(MapGrid *map, double min_value, double max_value);
 
-    void addLayers(const LayeredGridBase *layers);
+    void addLayers(const LayeredGridBase *layers, const QString &name);
     void setViewport(QPointF center_point, double scale_px_per_m);
 signals:
     void finished(QString errorMessage);

@@ -405,9 +405,11 @@ void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
         mViewerWindow->setViewport(center_point, scale_px_per_m);
 }
 
-void ModelController::addLayers(const LayeredGridBase *layers)
+void ModelController::addLayers(const LayeredGridBase *layers, const QString &name)
 {
-    qDebug() << layers->names();
+    if (mViewerWindow)
+        mViewerWindow->addLayers(layers, name);
+    //qDebug() << layers->names();
 }
 
 
