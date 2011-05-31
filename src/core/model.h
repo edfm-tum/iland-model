@@ -51,7 +51,8 @@ public:
     ResourceUnit *ru(int index) { return (index>=0&&index<mRU.count())? mRU[index] : NULL; } ///< get resource unit by index
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }
-    Environment *environment() {return mEnvironment; }
+    Environment *environment() const {return mEnvironment; }
+    Modules *modules() const { return mModules; }
     SpeciesSet *speciesSet() const { if (mSpeciesSets.count()==1) return mSpeciesSets.first(); return NULL; }
 
     // global grids

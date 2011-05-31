@@ -15,7 +15,7 @@ void setupGISTransformation(double offsetx, double offsety, double offsetz, doub
     GISCoordTrans.setupTransformation(offsetx, offsety, offsetz, angle_degree);
 }
 
-void worldToModel(const QVector3D &From, QVector3D &To)
+void worldToModel(const Vector3D &From, Vector3D &To)
 {
     double x=From.x() - GISCoordTrans.offsetX;
     double y=From.y() - GISCoordTrans.offsetY;
@@ -24,7 +24,7 @@ void worldToModel(const QVector3D &From, QVector3D &To)
     To.setY( x * GISCoordTrans.sinRotate + y*GISCoordTrans.cosRotate);
     //To.setY(-To.y()); // spiegeln
 }
-void modelToWorld(const QVector3D &From, QVector3D &To)
+void modelToWorld(const Vector3D &From, Vector3D &To)
 {
     double x=From.x();
     double y=From.y(); // spiegeln
@@ -193,11 +193,11 @@ double GisGrid::value(const int indexx, const int indexy) const
 double GisGrid::value(const double X, const double Y) const
 {
 
-    QVector3D model;
+    Vector3D model;
     model.setX(X);
     model.setY(Y);
     model.setZ(0.);
-    QVector3D world;
+    Vector3D world;
     modelToWorld(model, world);
 
     world.setX(world.x() - mOrigin.x());
@@ -217,22 +217,22 @@ double GisGrid::value(const double X, const double Y) const
     return -1; // the ultimate NODATA- or ErrorValue
 }
 
-QVector3D GisGrid::coord(const int indexx, const int indexy) const
+Vector3D GisGrid::coord(const int indexx, const int indexy) const
 {
-    QVector3D world((indexx+0.5)*mCellSize + mOrigin.x(),
+    Vector3D world((indexx+0.5)*mCellSize + mOrigin.x(),
                     (indexy+0.5)*mCellSize + mOrigin.y(),
                     0.);
-    QVector3D model;
+    Vector3D model;
     worldToModel(world, model);
     return model;
 }
 
 QRectF GisGrid::rectangle(const int indexx, const int indexy) const
 {
-    QVector3D world(indexx*mCellSize + mOrigin.x(),
+    Vector3D world(indexx*mCellSize + mOrigin.x(),
                     indexy*mCellSize + mOrigin.y(),
                     0.);
-    QVector3D model;
+    Vector3D model;
     worldToModel(world, model);
     QRectF rect(model.x(), // left
                 model.y(), // top
@@ -241,7 +241,7 @@ QRectF GisGrid::rectangle(const int indexx, const int indexy) const
     return rect;
 }
 
-QVector3D GisGrid::coord(const int Index) const
+Vector3D GisGrid::coord(const int Index) const
 {
     if (Index<0 || Index>=mDataSize)
         throw std::logic_error("gisgrid:coord: invalid index.");
@@ -343,7 +343,7 @@ void GisGrid::clip(const QRectF & box)
     // auf das angegebene Rechteck zuschneiden, alle
     // werte drauﬂen auf -1 setzen.
     int ix,iy;
-    QVector3D akoord;
+    Vector3D akoord;
     for (ix=0;ix<mNCols;ix++)
         for (iy=0;iy<mNRows;iy++) {
         akoord = coord(iy*mNCols + ix);
