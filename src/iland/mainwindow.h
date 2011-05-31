@@ -14,6 +14,7 @@ class Model;
 class Tree;
 class ResourceUnit;
 class MapGrid;
+class LayeredGridBase;
 
 namespace Ui
 {
@@ -44,6 +45,7 @@ public slots:
                    const QString &name=QString(),
                    const GridViewType view_type=GridViewRainbow,
                    double min_val=0., double max_val=1.);
+    void addLayers(const LayeredGridBase *layer, const QString &name);
     void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
 private:
     Ui::MainWindowClass *ui;
@@ -57,15 +59,21 @@ private:
     void updatePaintGridList();
     /// PaintObject stores what kind of object to paint during next repaint
     struct PaintObject {
-        PaintObject(): what(PaintNothing), map_grid(0), float_grid(0), min_value(0.), max_value(1.) {}
-        enum { PaintNothing, PaintMapGrid, PaintFloatGrid } what;
+        PaintObject(): what(PaintNothing), map_grid(0), float_grid(0), layered(0), layer_id(0), min_value(0.), max_value(1.), cur_min_value(0.), cur_max_value(1.), auto_range(false) {}
+        enum { PaintNothing, PaintMapGrid, PaintFloatGrid, PaintLayers } what;
         MapGrid *map_grid;
         const FloatGrid *float_grid;
+        const LayeredGridBase *layered;
+        int layer_id;
         GridViewType view_type;
         double min_value;
         double max_value;
+        double cur_min_value, cur_max_value;
+        bool auto_range;
+        static QColor background_color;
     } mPaintNext;
     QHash<QString, PaintObject> mPaintList;
+    void paintGrid(QPainter &painter, PaintObject &object);
 
     static QPlainTextEdit *mLogSpace;
     static QTextStream *mLogStream;

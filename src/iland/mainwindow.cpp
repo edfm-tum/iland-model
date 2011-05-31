@@ -28,12 +28,13 @@
 
 #include "tests.h"
 #include "mapgrid.h"
+#include "layeredgrid.h"
 
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
 
-
+QColor MainWindow::PaintObject::background_color = Qt::white;
 
 double distance(const QPointF &a, const QPointF &b)
 {
@@ -352,6 +353,23 @@ void MainWindow::updatePaintGridList()
     }
 }
 
+void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
+{
+    const QStringList names = layer->names();
+    int layer_id = 0;
+    foreach (const QString &layername, names) {
+        QString comb_name = QString("%1 - %2").arg(name, layername);
+        PaintObject po;
+        po.what = PaintObject::PaintLayers;
+        po.layered = layer;
+        po.layer_id = layer_id++;
+        po.auto_range = true;
+        mPaintList[comb_name] = po;
+    }
+    updatePaintGridList();
+}
+
+
 void MainWindow::paintGrid(MapGrid *map_grid, const QString &name,
                const GridViewType view_type,
                double min_val, double max_val)
@@ -417,17 +435,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
 
-
-    // clear background
-    painter.fillRect(ui->PaintWidget->rect(), Qt::white);
-    // draw rectangle around the grid
-    QRectF r = grid->metricRect();
-    QRect rs = vp.toScreen(r);
-    painter.setPen(Qt::black);
-    painter.drawRect(rs);
-
-    // what to paint??
-
     if (ui->paintGridBox->currentIndex()>-1) {
         QString name = ui->paintGridBox->itemData(ui->paintGridBox->currentIndex()).toString();
         mPaintNext = mPaintList[name];
@@ -440,9 +447,22 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (mPaintNext.what == PaintObject::PaintFloatGrid)
             paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
 
-        mPaintNext.what = PaintObject::PaintNothing; // reset???
+        if (mPaintNext.what == PaintObject::PaintLayers)
+            paintGrid(painter, mPaintNext);
+
         return;
     }
+
+
+    // clear background
+    painter.fillRect(ui->PaintWidget->rect(), Qt::white);
+    // draw rectangle around the grid
+    QRectF r = grid->metricRect();
+    QRect rs = vp.toScreen(r);
+    painter.setPen(Qt::black);
+    painter.drawRect(rs);
+
+    // what to paint??
 
     float maxval=1.f; // default maximum
     if (!auto_scale_color)
@@ -621,6 +641,74 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         QPoint p = vp.toScreen(pos);
         painter.drawRect( p.x()-1, p.y()-1, 3,3);
     }
+}
+
+void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
+{
+    painter.fillRect(ui->PaintWidget->rect(), object.background_color);
+
+    int sx, sy;
+    QRect total_rect;
+    object.cur_min_value = object.min_value;
+    object.cur_max_value = object.max_value;
+    switch (object.what) {
+    case PaintObject::PaintMapGrid:
+        sx = object.map_grid->grid().sizeX();
+        sy = object.map_grid->grid().sizeY();
+        total_rect = vp.toScreen(object.map_grid->grid().metricRect());
+        break;
+    case PaintObject::PaintFloatGrid:
+        sx = object.float_grid->sizeX();
+        sy = object.float_grid->sizeY();
+        total_rect = vp.toScreen(object.float_grid->metricRect());
+        break;
+    case PaintObject::PaintLayers:
+        sx = object.layered->sizeX();
+        sy = object.layered->sizeY();
+        total_rect = vp.toScreen(object.layered->metricRect());
+        if (object.auto_range) {
+            object.layered->range( object.cur_min_value, object.cur_max_value, object.layer_id );
+        }
+        break;
+    case PaintObject::PaintNothing:
+        return;
+    }
+
+
+
+    painter.setPen(Qt::black);
+    painter.drawRect(total_rect);
+
+    bool reverse = object.view_type == GridViewRainbowReverse || object.view_type == GridViewGrayReverse;
+    bool black_white = object.view_type == GridViewGray || object.view_type == GridViewGrayReverse;
+
+    int ix,iy;
+    double value;
+    QRect r;
+    QColor fill_color;
+    for (iy=0;iy<sy;iy++) {
+        for (ix=0;ix<sx;ix++) {
+            QPoint p(ix,iy);
+            switch(object.what) {
+            case PaintObject::PaintMapGrid:
+                value = object.map_grid->grid().constValueAtIndex(p);
+                r = vp.toScreen(object.map_grid->grid().cellRect(p));
+                break;
+            case PaintObject::PaintFloatGrid:
+                value = object.float_grid->constValueAtIndex(p);
+                r = vp.toScreen(object.float_grid->cellRect(p));
+                break;
+            case PaintObject::PaintLayers:
+                value = object.layered->value(ix, iy, object.layer_id);
+                r = vp.toScreen(object.layered->cellRect(p));
+                break;
+            default: ;
+            }
+            fill_color = Helper::colorFromValue(value, object.cur_min_value, object.cur_max_value, reverse,black_white);
+            painter.fillRect(r, fill_color);
+        }
+    }
+
 }
 
 // paint the values of the MapGrid
@@ -1402,6 +1490,7 @@ void MainWindow::on_actionDebug_triggered()
 
     setLogLevel(level);
 }
+
 
 
 

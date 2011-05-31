@@ -27,7 +27,7 @@ void FireModule::setup()
     // get the top node of settings for the fire module
     XmlHelper xml(GlobalSettings::instance()->settings().node("modules.fire"));
     // setup of the visualization of the grid
-    GlobalSettings::instance()->controller()->addLayers(&mFireLayers);
+    GlobalSettings::instance()->controller()->addLayers(&mFireLayers, "fire");
 
 }
 
@@ -111,7 +111,7 @@ void FireData::setup()
 //*********************************************************************************
 
 
-double FireLayers::value(const FireData &data, const int param_index)
+double FireLayers::value(const FireData &data, const int param_index) const
 {
     switch(param_index){
     case 0: return data.mKBDI; // KBDI values
