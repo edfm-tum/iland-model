@@ -22,6 +22,8 @@ public:
 
     // setup
     virtual void setup()=0; ///< setup after general iLand model frame is created.
+    virtual void yearBegin()=0; ///< function executes at the beginning of a year (e.g., cleanup)
+    virtual void run()=0; ///< main function that once a year (after growth)
 };
 
 class SetupResourceUnitInterface

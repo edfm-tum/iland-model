@@ -8,16 +8,19 @@ class WaterCycleData;
 class ResourceUnit;
 class FireModule;
 
-/** FireData contains data items for resource units.
+/** FireRUData contains data items for resource units.
     Data items include:
     * parameters (KBDIref, ...)
     * fuel values
 */
-class FireData
+class FireRUData
 {
 public:
-    FireData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.) {}
+    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.) {}
     void setup();
+    bool enabled() const { return mRefMgmt>0.; }
+    void reset() { mKBDI = 0.; }
+    double kbdi() const { return mKBDI; }
     // access data
 private:
     // parameters
@@ -31,10 +34,10 @@ private:
     friend class FireLayers;
 };
 
-class FireLayers: public LayeredGrid<FireData> {
+class FireLayers: public LayeredGrid<FireRUData> {
   public:
-    void setGrid(const Grid<FireData> &grid) { mGrid = &grid; }
-    double value(const FireData& data, const int index) const;
+    void setGrid(const Grid<FireRUData> &grid) { mGrid = &grid; }
+    double value(const FireRUData& data, const int index) const;
     const QStringList names() const;
 };
 /** FireModule is the main class of the fire sub module and
@@ -55,15 +58,21 @@ public:
     void setup(const ResourceUnit *ru); ///< setup for a specific resource unit
 
     // actions
+    void run();
+    void yearBegin();
     void calculateDroughtIndex(const ResourceUnit *resource_unit, const WaterCycleData *water_data);
 private:
+    const double cellsize() const { return 20.; }
     // data
-    Grid<FireData> mGrid;
+    Grid<FireRUData> mRUGrid;
+    Grid<float> mGrid;
     FireLayers mFireLayers;
+    double mBaseIgnitionProb; ///< ignition probabilty for r_climate = r_mgmt = 1
     // functions
-    FireData &data(const ResourceUnit *ru); ///< get ref to data element (FireData)
+    FireRUData &data(const ResourceUnit *ru); ///< get ref to data element (FireData)
     void ignition();
-    void spread();
+    ///  spread a fire starting from 'start_point' (index of the 20m grid)
+    void spread(const QPoint &start_point);
     void severity();
 
 };
