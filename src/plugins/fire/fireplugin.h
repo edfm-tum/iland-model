@@ -26,6 +26,9 @@ public:
     /// setup resource unit specific parameters
     void setupResourceUnit(const ResourceUnit *ru) { mFire.setup(ru);}
 
+    // calculations
+    void yearBegin() { mFire.yearBegin(); }
+    void run() { mFire.run(); }
     // access to water data
     void calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data) {mFire.calculateDroughtIndex(resource_unit, water_data); }
 

@@ -55,3 +55,25 @@ void Modules::calculateWater(const ResourceUnit *resource_unit, const WaterCycle
     foreach(WaterInterface *wi, mWater)
         wi->calculateWater(resource_unit, water_data);
 }
+
+void Modules::run()
+{
+    DebugTimer t("modules");
+    QList<DisturbanceInterface*> run_list = mInterfaces;
+
+    for (int i=0;i < run_list.size(); ++i) {
+        int idx = irandom(0, run_list.size()-1);
+        if (logLevelDebug())
+            qDebug() << "executing disturbance module: " << run_list[idx]->name();
+        run_list[idx]->run();
+        // remove from list
+        run_list.removeAt(idx);
+    }
+}
+
+void Modules::yearBegin()
+{
+    foreach(DisturbanceInterface *di, mInterfaces)
+        di->yearBegin();
+
+}

@@ -391,18 +391,12 @@ void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
     }
 }
 
-void ModelController::paintGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value)
+void ModelController::addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value)
 {
     if (mViewerWindow) {
         mViewerWindow->paintGrid(grid, name, view_type, min_value, max_value);
         qDebug() << "painted grid min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
-}
-
-void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
-{
-    if (mViewerWindow)
-        mViewerWindow->setViewport(center_point, scale_px_per_m);
 }
 
 void ModelController::addLayers(const LayeredGridBase *layers, const QString &name)
@@ -411,5 +405,12 @@ void ModelController::addLayers(const LayeredGridBase *layers, const QString &na
         mViewerWindow->addLayers(layers, name);
     //qDebug() << layers->names();
 }
+
+void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
+{
+    if (mViewerWindow)
+        mViewerWindow->setViewport(center_point, scale_px_per_m);
+}
+
 
 
