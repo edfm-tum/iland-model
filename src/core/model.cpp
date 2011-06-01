@@ -542,6 +542,8 @@ void Model::runYear()
 {
     DebugTimer t("Model::runYear()");
     GlobalSettings::instance()->systemStatistics()->reset();
+    // initalization at start of year for external modules
+    mModules->yearBegin();
     // execute scheduled events for the current year
     if (mTimeEvents)
         mTimeEvents->run();
@@ -596,6 +598,10 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tCarbonCycle+=ccycle.elapsed();
 
     }
+
+    // external modules/disturbances
+    mModules->run();
+
     DebugTimer toutput("outputs");
     // calculate statistics
     foreach(ResourceUnit *ru, mRU)

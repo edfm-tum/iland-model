@@ -14,13 +14,17 @@ class Modules
 {
 public:
     Modules();
+
     // general setup
     void setup();
+
     bool hasSetupResourceUnits() { return !mSetupRUs.isEmpty(); }
     // setup of resource unit specific parameters
     void setupResourceUnit(const ResourceUnit* ru);
 
     // functions
+    void yearBegin(); ///< executes yearly initialization code for each module
+    void run(); ///< execute the modules
     // water
     void calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data);
 private:

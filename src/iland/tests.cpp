@@ -673,10 +673,10 @@ void Tests::testDEM()
     if (_dem) {
         int choice = QInputDialog::getInt(0, "enter type", "Type to show: 0: dem, 1: slope, 2: aspect, 3: view, 4: exit");
         switch (choice) {
-        case 0: GlobalSettings::instance()->controller()->paintGrid(_dem, "dem height", GridViewRainbow, 0, 1000); break;
-        case 1: GlobalSettings::instance()->controller()->paintGrid(_dem->slopeGrid(), "slope", GridViewRainbow, 0, 3); break;
-        case 2: GlobalSettings::instance()->controller()->paintGrid(_dem->aspectGrid(), "aspect", GridViewRainbow, 0, 360); break;
-        case 3: GlobalSettings::instance()->controller()->paintGrid(_dem->viewGrid(), "dem", GridViewGray, 0, 1); break;
+        case 0: GlobalSettings::instance()->controller()->addGrid(_dem, "dem height", GridViewRainbow, 0, 1000); break;
+        case 1: GlobalSettings::instance()->controller()->addGrid(_dem->slopeGrid(), "slope", GridViewRainbow, 0, 3); break;
+        case 2: GlobalSettings::instance()->controller()->addGrid(_dem->aspectGrid(), "aspect", GridViewRainbow, 0, 360); break;
+        case 3: GlobalSettings::instance()->controller()->addGrid(_dem->viewGrid(), "dem", GridViewGray, 0, 1); break;
         default: return;
         }
         return;
@@ -701,10 +701,10 @@ void Tests::testDEM()
     } catch (IException &e) {
         Helper::msg(e.message());
     }
-    GlobalSettings::instance()->controller()->paintGrid(_dem, "dem height", GridViewRainbow, 0, 1000);
-    GlobalSettings::instance()->controller()->paintGrid(_dem->slopeGrid(), "slope", GridViewRainbow, 0, 3);
-    GlobalSettings::instance()->controller()->paintGrid(_dem->aspectGrid(), "aspect", GridViewRainbow, 0, 360);
-    GlobalSettings::instance()->controller()->paintGrid(_dem->viewGrid(), "dem", GridViewGray, 0, 1);
+    GlobalSettings::instance()->controller()->addGrid(_dem, "dem height", GridViewRainbow, 0, 1000);
+    GlobalSettings::instance()->controller()->addGrid(_dem->slopeGrid(), "slope", GridViewRainbow, 0, 3);
+    GlobalSettings::instance()->controller()->addGrid(_dem->aspectGrid(), "aspect", GridViewRainbow, 0, 360);
+    GlobalSettings::instance()->controller()->addGrid(_dem->viewGrid(), "dem", GridViewGray, 0, 1);
 
 
 }
