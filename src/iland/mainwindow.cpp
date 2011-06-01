@@ -880,8 +880,27 @@ void MainWindow::mouseMove(const QPoint& pos)
         return;
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);
+    bool has_value = true;
+    double value;
     if (grid->coordValid(p)) {
         QString location=QString("%1 / %2").arg(p.x()).arg(p.y());
+        switch (mPaintNext.what) {
+        case PaintObject::PaintFloatGrid:
+            value = mPaintNext.float_grid->constValueAt(p);
+            break;
+        case PaintObject::PaintMapGrid:
+            value = mPaintNext.map_grid->grid().constValueAt(p);
+            break;
+        case PaintObject::PaintLayers:
+            value = mPaintNext.layered->value(p, mPaintNext.layer_id);
+            break;
+        default: has_value = false;
+        }
+        if (has_value) {
+            location += QString("\n %1").arg(value);
+             ui->fonValue->setText(location);
+             return;
+        }
 
         if (ui->visFon->isChecked() || ui->visImpact->isChecked()) {
             if (mPaintNext.what == PaintObject::PaintFloatGrid && mPaintNext.float_grid)

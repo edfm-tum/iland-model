@@ -23,6 +23,7 @@ public:
 
     // data access functions
     virtual double value(const float x, const float y, const int index) const = 0;
+    virtual double value(const QPointF &world_coord, const int index) const = 0;
     virtual double value(const int ix, const int iy, const int index) const = 0;
     virtual double value(const int grid_index, const int index) const = 0;
 };
@@ -42,6 +43,7 @@ public:
     double value(const T* ptr, const int index) const { return value(mGrid->constValueAtIndex(mGrid->indexOf(ptr)), index);  }
     double value(const int grid_index, const int index) const { return value(mGrid->constValueAtIndex(grid_index), index); }
     double value(const float x, const float y, const int index) const { return value(mGrid->constValueAt(x,y), index); }
+    double value(const QPointF &world_coord, const int index) const { return value(mGrid->constValueAt(world_coord), index); }
     double value(const int ix, const int iy, const int index) const { return value(mGrid->constValueAtIndex(ix, iy), index); }
     void range(double &rMin, double &rMax, const int index) const { rMin=9999999999.; rMax=-99999999999.;
                                                               for (int i=0;i<mGrid->count(); ++i) {
