@@ -386,6 +386,15 @@ void Tests::testGridRunner()
         QPoint point = lif.indexOf(p);
         qDebug() << i++ << point.x() << point.y() << *p << p;
     }
+    QRect index_rect = QRect(lif.indexAt(QPointF(10., 10.)), lif.indexAt(QPointF(20., 20)));
+    GridRunner<float> runner2(lif, index_rect);
+    qDebug() << "index variables for rect" << index_rect;
+    i = 0;
+    while (float *p=runner2.next()) {
+        QPoint point = lif.indexOf(p);
+        qDebug() << i++ << point.x() << point.y() << *p << p;
+    }
+
 }
 
 void Tests::testSeedDispersal()

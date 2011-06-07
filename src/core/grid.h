@@ -412,6 +412,7 @@ template <class T>
 void GridRunner<T>::setup(const Grid<T> *target_grid, const QRect &rectangle)
 {
     QPoint upper_left = rectangle.topLeft();
+    // due to the strange behavior of QRect::bottom() and right():
     QPoint lower_right = rectangle.bottomRight();
     mCurrent = const_cast<Grid<T> *>(target_grid)->ptr(upper_left.x(), upper_left.y());
     mFirst = mCurrent;
@@ -455,9 +456,9 @@ template <class T>
 void GridRunner<T>::neighbors4(T** rArray)
 {
     // north:
-    rArray[0] = mCurrent + mCols > mLast?0: mCurrent + mCols;
+    rArray[0] = mCurrent + mCols + mLineLength > mLast?0: mCurrent + mCols + mLineLength;
     // south:
-    rArray[3] = mCurrent - mCols < mFirst?0: mCurrent - mCols;
+    rArray[3] = mCurrent - (mCols + mLineLength) < mFirst?0: mCurrent -  (mCols + mLineLength);
     // east / west
     rArray[1] = mCurrentCol>0? mCurrent-1 : 0;
     rArray[2] = mCurrentCol<mCols? mCurrent + 1 : 0;

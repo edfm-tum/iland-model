@@ -58,14 +58,32 @@ public:
     void setup(const ResourceUnit *ru); ///< setup for a specific resource unit
 
     // actions
+    /// main function that is executed yearly (called by the plugin)
+    /// performs the major processes (ignition, spread, fire effect)
     void run();
+    /// called yearly from the plugin to perform some
+    /// cleanup.
     void yearBegin();
+    /// called from the plugin to perform calculations (drought indices)
+    /// during the water cycle routine.
     void calculateDroughtIndex(const ResourceUnit *resource_unit, const WaterCycleData *water_data);
+
+    // main fire functions
+    /// calculate the start and starting point of a possible fire
+    void ignition();
+    ///  spread a fire starting from 'start_point' (index of the 20m grid)
+    void spread(const QPoint &start_point);
+    void severity();
+
 private:
     /// estimate fire size from a distribution
     double calculateFireSize();
     const double cellsize() const { return 20.; }
+
+    // functions for the cellular automata
     void probabilisticSpread(const QPoint &start_point);
+    /// calculates the probabibilty of spreading the fire from \p pixel_from to \p pixel_to.
+    /// the \p direction provides encodes the cardinal direction.
     void calculateSpreadProbability(const float *pixel_from, float *pixel_to, const int direction);
 
     // data
@@ -75,10 +93,6 @@ private:
     double mBaseIgnitionProb; ///< ignition probabilty for r_climate = r_mgmt = 1
     // functions
     FireRUData &data(const ResourceUnit *ru); ///< get ref to data element (FireData)
-    void ignition();
-    ///  spread a fire starting from 'start_point' (index of the 20m grid)
-    void spread(const QPoint &start_point);
-    void severity();
 
 };
 

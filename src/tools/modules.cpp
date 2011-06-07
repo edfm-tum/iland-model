@@ -3,6 +3,7 @@
 #include "plugin_interface.h"
 
 #include "globalsettings.h"
+#include "helper.h"
 #include <QPluginLoader>
 
 // include the static modules here in the code:
