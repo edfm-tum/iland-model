@@ -62,7 +62,12 @@ public:
     void yearBegin();
     void calculateDroughtIndex(const ResourceUnit *resource_unit, const WaterCycleData *water_data);
 private:
+    /// estimate fire size from a distribution
+    double calculateFireSize();
     const double cellsize() const { return 20.; }
+    void probabilisticSpread(const QPoint &start_point);
+    void calculateSpreadProbability(const float *pixel_from, float *pixel_to, const int direction);
+
     // data
     Grid<FireRUData> mRUGrid;
     Grid<float> mGrid;
