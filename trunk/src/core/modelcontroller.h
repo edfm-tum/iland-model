@@ -52,6 +52,7 @@ public slots:
     bool runYear(); ///< runs a single time step
     bool pause(); ///< pause execution, and if paused, continue to run. returns state *after* change, i.e. true=now in paused mode
     void cancel(); ///< cancel execution of the model
+    void repaint(); ///< force a repaint of the main drawing window
 private slots:
     void runloop();
 private:

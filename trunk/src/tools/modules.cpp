@@ -39,6 +39,14 @@ void Modules::init()
 
 }
 
+DisturbanceInterface * Modules::module(const QString &module_name)
+{
+    foreach(DisturbanceInterface *di, mInterfaces)
+        if (di->name() == module_name)
+            return di;
+    return 0;
+}
+
 void Modules::setupResourceUnit(const ResourceUnit *ru)
 {
     foreach(SetupResourceUnitInterface *si, mSetupRUs)
@@ -78,3 +86,5 @@ void Modules::yearBegin()
         di->yearBegin();
 
 }
+
+

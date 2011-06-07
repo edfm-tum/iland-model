@@ -1274,7 +1274,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                         "14: GridRunner\n" \
                                          "15: Soil (ICBM/2N)\n" \
                                          "16: load Map \n" \
-                                         "17: test DEM",-1);
+                                         "17: test DEM \n" \
+                                         "18: test fire module",-1);
         switch (which) {
         case 0: t.speedOfExpression();break;
         case 1: t.clearTrees(); break;
@@ -1294,6 +1295,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
         case 15: t.testSoil(); break;
         case 16: t.testMap(); break;
         case 17: t.testDEM(); break;
+        case 18: t.testFire(); break;
         }
         return;
     }

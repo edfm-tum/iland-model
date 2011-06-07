@@ -225,10 +225,18 @@ double FireModule::calculateFireSize()
     return 100000.; // TODO implement
 }
 
+
 void FireModule::calculateSpreadProbability(const float *pixel_from, float *pixel_to, const int direction)
 {
     // TODO implement
-    *pixel_to = 0.8;
+    double p;
+    p = 0.4;
+    if (direction>2)
+        p = 0.85;
+
+    // add probabilites
+    *pixel_to = 1. - (1. - *pixel_to)*(1. - p);
+
 }
 
 /** a cellular automaton spread algorithm.
@@ -286,9 +294,9 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
             if (*p == 1.f) {
                 QPoint pt = mGrid.indexOf(p);
                 left = qMin(left, pt.x()-1);
-                right = qMax(right, pt.x()+1);
+                right = qMax(right, pt.x()+2);
                 top = qMin(top, pt.y()-1);
-                bottom = qMax(bottom, pt.y()+1);
+                bottom = qMax(bottom, pt.y()+2);
             }
         }
         max_spread.setCoords(left, top, right, bottom);
