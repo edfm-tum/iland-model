@@ -76,7 +76,7 @@ void FireModule::setup()
     mBaseIgnitionProb = p_base * cellsize()*cellsize() / avg_fire_size;
     // setup of the visualization of the grid
     GlobalSettings::instance()->controller()->addLayers(&mFireLayers, "fire");
-    GlobalSettings::instance()->controller()->addGrid(&mGrid, "fire spread", GridViewGray,0., 1.);
+    GlobalSettings::instance()->controller()->addGrid(&mGrid, "fire spread", GridViewRainbow,0., 50.);
 
 
 }
@@ -222,13 +222,13 @@ void FireModule::spread(const QPoint &start_point)
 /// Estimate fire size (m2) from a fire size distribution.
 double FireModule::calculateFireSize()
 {
-    return 10000.; // TODO implement
+    return 100000.; // TODO implement
 }
 
 void FireModule::calculateSpreadProbability(const float *pixel_from, float *pixel_to, const int direction)
 {
     // TODO implement
-    *pixel_to = 0.5;
+    *pixel_to = 0.8;
 }
 
 /** a cellular automaton spread algorithm.
@@ -237,12 +237,12 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
 {
     QRect max_spread = QRect(start_point, start_point);
     // grow the rectangle by one row/column but ensure validity
-    max_spread.setCoords(qMax(max_spread.x()-1,0),qMax(max_spread.y()-1,0),
-                         qMin(max_spread.x()+1,mGrid.sizeX()-1),qMin(max_spread.y()+1,mGrid.sizeY()-1));
+    max_spread.setCoords(qMax(start_point.x()-1,0),qMax(start_point.y()-1,0),
+                         qMin(start_point.x()+2,mGrid.sizeX()),qMin(start_point.y()+2,mGrid.sizeY()) );
     double fire_size_m2 = calculateFireSize();
     int cells_to_burn = fire_size_m2 / (cellsize() * cellsize());
-    int cells_burned = 0;
-    int iterations = 0;
+    int cells_burned = 1;
+    int iterations = 1;
     // main loop
     float *neighbor[4];
     float *p;
@@ -250,8 +250,8 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
         // scan the current spread area
         // and calcuate for each pixel the probability of spread from a burning
         // pixel to a non-burning pixel
-        GridRunner<FloatGrid> runner(mGrid, max_spread);
-        while (p = runner.next()) {
+        GridRunner<float> runner(mGrid, max_spread);
+        while ((p = runner.next())) {
             if (*p == 1.f) {
                 // current cell is burning.
                 // check the neighbors: get an array with neigbors
@@ -259,36 +259,48 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                 runner.neighbors4(neighbor);
                 if (neighbor[0] && *(neighbor[0])<1.f)
                     calculateSpreadProbability(p, neighbor[0], 1);
-                if (neighbor[1] && *(neighbor[0])<1.f)
+                if (neighbor[1] && *(neighbor[1])<1.f)
                     calculateSpreadProbability(p, neighbor[1], 2);
-                if (neighbor[2] && *(neighbor[0])<1.f)
+                if (neighbor[2] && *(neighbor[2])<1.f)
                     calculateSpreadProbability(p, neighbor[2], 3);
-                if (neighbor[3] && *(neighbor[0])<1.f)
+                if (neighbor[3] && *(neighbor[3])<1.f)
                     calculateSpreadProbability(p, neighbor[3], 4);
+                *p = iterations + 1;
             }
         }
         // now draw random numbers and calculate the real spread
         runner.reset();
-        while (p = runner.next()) {
+        while ((p = runner.next())) {
             if (*p<1.f && *p>0.f) {
-                if (drandom() < *runner.current()) {
+                if (drandom() < *p) {
                     // the fire spreads:
-                    *p == 1.f;
+                    *p = 1.f;
                     cells_burned++;
-                    // determine if we need to increase the affected rectangle
-                    QPoint pt = mGrid.indexOf(runner.current());
-                    if (max_spread.left() == pt.x() && pt.x()>0)
-                        max_spread.setLeft(pt.x()-1);
-                    if (max_spread.right() == pt.x() && pt.x()<mGrid.sizeX()-1)
-                        max_spread.setRight(pt.x()+1);
-                    if (max_spread.top() == pt.y() && pt.y()>0)
-                        max_spread.setTop(pt.y()-1);
-                    if (max_spread.bottom() == pt.y() && p.y()<mGrid.sizeY()-1)
-                        max_spread.setBottom(pt.y()+1);
                 }
             }
         }
+        // now determine the maximum extent with burning pixels...
+        runner.reset();
+        int left = mGrid.sizeX(), right = 0, top = mGrid.sizeY(), bottom = 0;
+        while ((p = runner.next())) {
+            if (*p == 1.f) {
+                QPoint pt = mGrid.indexOf(p);
+                left = qMin(left, pt.x()-1);
+                right = qMax(right, pt.x()+1);
+                top = qMin(top, pt.y()-1);
+                bottom = qMax(bottom, pt.y()+1);
+            }
+        }
+        max_spread.setCoords(left, top, right, bottom);
+        max_spread = max_spread.intersected(QRect(0,0,mGrid.sizeX(), mGrid.sizeY()));
+
+
+        qDebug() << "Iter: " << iterations << "totalburned:" << cells_burned << "spread-rect:" << max_spread;
         iterations++;
+        if (iterations > 1000) {
+            qDebug() << "Firespread: maximum number of iterations reached!";
+            break;
+        }
     }
     qDebug() << "probabilstic spread: used " << iterations << "iterations found" << cells_burned << "burning pixels";
 }
