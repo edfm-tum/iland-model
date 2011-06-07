@@ -13,8 +13,8 @@ INCLUDEPATH += ../core \
     ../tools \
     ../output
 DEPENDPATH += plugins
-PRE_TARGETDEPS += plugins/libiland_fired.a
-LIBS += -Lplugins -liland_fired
+PRE_TARGETDEPS += ../plugins/libiland_fired.a
+LIBS += -L../plugins -liland_fired
 
 # to enable debug symbols in release code
 # debug information in release-mode executable
