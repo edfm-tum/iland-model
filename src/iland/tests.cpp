@@ -27,6 +27,9 @@
 #include "dem.h"
 #include "modelcontroller.h"
 
+#include "modules.h"
+#include "../plugins/fire/fireplugin.h"
+#include "../plugins/fire/firemodule.h"
 #include <QInputDialog>
 
 Tests::Tests(QObject *wnd)
@@ -715,5 +718,17 @@ void Tests::testDEM()
     GlobalSettings::instance()->controller()->addGrid(_dem->aspectGrid(), "aspect", GridViewRainbow, 0, 360);
     GlobalSettings::instance()->controller()->addGrid(_dem->viewGrid(), "dem", GridViewGray, 0, 1);
 
+
+}
+
+void Tests::testFire()
+{
+    // get fire module
+    FirePlugin *plugin = dynamic_cast<FirePlugin *>(GlobalSettings::instance()->model()->modules()->module("fire"));
+    if (plugin) {
+        FireModule *fire = plugin->fireModule();
+        fire->spread( QPoint(40,40) );
+    }
+    GlobalSettings::instance()->controller()->repaint();
 
 }

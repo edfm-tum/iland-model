@@ -17,6 +17,8 @@ public:
 
     // general setup
     void setup();
+    /// get interface by name (or 0 if not present)
+    DisturbanceInterface *module(const QString &module_name);
 
     bool hasSetupResourceUnits() { return !mSetupRUs.isEmpty(); }
     // setup of resource unit specific parameters
