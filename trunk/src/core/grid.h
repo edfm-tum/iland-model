@@ -127,14 +127,28 @@ enum GridViewType { GridViewRainbow, GridViewRainbowReverse, GridViewGray, GridV
 template <class T>
 class GridRunner {
 public:
+    // constructors with a QRectF (metric coordinates)
     GridRunner(Grid<T> &target_grid, const QRectF &rectangle) {setup(&target_grid, rectangle);}
     GridRunner(const Grid<T> &target_grid, const QRectF &rectangle) {setup(&target_grid, rectangle);}
     GridRunner(Grid<T> *target_grid, const QRectF &rectangle) {setup(target_grid, rectangle);}
+    // constructors with a QRect (indices within the grid)
+    GridRunner(Grid<T> &target_grid, const QRect &rectangle) {setup(&target_grid, rectangle);}
+    GridRunner(const Grid<T> &target_grid, const QRect &rectangle) {setup(&target_grid, rectangle);}
+    GridRunner(Grid<T> *target_grid, const QRect &rectangle) {setup(target_grid, rectangle);}
     T* next(); ///< to to next element, return NULL if finished
     T* current() { return mCurrent; }
+    void reset() { mCurrent = mFirst-1; mCurrentCol = -1; }
+    // helpers
+    /// fill array with pointers to neighbors (north, east, west, south)
+    /// or Null-pointers if out of range.
+    /// the target array (rArray) is not checked and must be valid!
+    void neighbors4(T** rArray);
+    void neighbors8(T** rArray);
 private:
     void setup(const Grid<T> *target_grid, const QRectF &rectangle);
-    T* mLast;
+    void setup(const Grid<T> *target_grid, const QRect &rectangle);
+    T* mFirst; // points to the first element of the grid
+    T* mLast; // points to the last element of the grid
     T* mCurrent;
     size_t mLineLength;
     size_t mCols;
@@ -395,11 +409,12 @@ const QPoint Grid<T>::randomPosition() const
 // grid runner
 ////////////////////////////////////////////////////////////
 template <class T>
-void GridRunner<T>::setup(const Grid<T> *target_grid, const QRectF &rectangle)
+void GridRunner<T>::setup(const Grid<T> *target_grid, const QRect &rectangle)
 {
-    QPoint upper_left = target_grid->indexAt(rectangle.topLeft());
-    QPoint lower_right = target_grid->indexAt(rectangle.bottomRight());
+    QPoint upper_left = rectangle.topLeft();
+    QPoint lower_right = rectangle.bottomRight();
     mCurrent = const_cast<Grid<T> *>(target_grid)->ptr(upper_left.x(), upper_left.y());
+    mFirst = mCurrent;
     mCurrent--; // point to first element -1
     mLast = const_cast<Grid<T> *>(target_grid)->ptr(lower_right.x()-1, lower_right.y()-1);
     mCols = lower_right.x() - upper_left.x(); //
@@ -408,6 +423,14 @@ void GridRunner<T>::setup(const Grid<T> *target_grid, const QRectF &rectangle)
 //    qDebug() << "GridRunner: rectangle:" << rectangle
 //             << "upper_left:" << target_grid.cellCenterPoint(target_grid.indexOf(mCurrent))
 //             << "lower_right:" << target_grid.cellCenterPoint(target_grid.indexOf(mLast));
+}
+
+template <class T>
+void GridRunner<T>::setup(const Grid<T> *target_grid, const QRectF &rectangle_metric)
+{
+    QRect rect(target_grid->indexAt(rectangle_metric.topLeft()),
+               target_grid->indexAt(rectangle_metric.bottomRight()) );
+    setup (target_grid, rect);
 }
 
 template <class T>
@@ -426,6 +449,35 @@ T* GridRunner<T>::next()
         return NULL;
     else
         return mCurrent;
+}
+
+template <class T>
+void GridRunner<T>::neighbors4(T** rArray)
+{
+    // north:
+    rArray[0] = mCurrent + mCols > mLast?0: mCurrent + mCols;
+    // south:
+    rArray[3] = mCurrent - mCols < mFirst?0: mCurrent - mCols;
+    // east / west
+    rArray[1] = mCurrentCol>0? mCurrent-1 : 0;
+    rArray[2] = mCurrentCol<mCols? mCurrent + 1 : 0;
+}
+
+/// get pointers to the 8-neighbor-hood
+/// north/east/west/south/NE/NW/SE/SW
+template <class T>
+void GridRunner<T>::neighbors8(T** rArray)
+{
+    neighbors4(rArray);
+    // north-east
+    rArray[4] = rArray[0] && rArray[1]? rArray[0]-1: 0;
+    // north-west
+    rArray[5] = rArray[0] && rArray[2]? rArray[0]+1: 0;
+    // south-east
+    rArray[6] = rArray[3] && rArray[1]? rArray[3]-1: 0;
+    // south-west
+    rArray[7] = rArray[3] && rArray[2]? rArray[3]+1: 0;
+
 }
 
 ////////////////////////////////////////////////////////////

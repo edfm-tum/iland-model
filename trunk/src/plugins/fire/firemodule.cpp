@@ -1,11 +1,50 @@
 #include "firemodule.h"
 
+#include "grid.h"
 #include "model.h"
 #include "modelcontroller.h"
 #include "globalsettings.h"
 #include "resourceunit.h"
 #include "watercycle.h"
 #include "climate.h"
+
+//*********************************************************************************
+//******************************************** FireData ***************************
+//*********************************************************************************
+
+void FireRUData::setup()
+{
+    XmlHelper xml(GlobalSettings::instance()->settings().node("modules.fire"));
+    mKBDIref = xml.valueDouble(".KBDIref", 300.);
+    mRefMgmt = xml.valueDouble(".rFireSuppression", 1.);
+    mRefAnnualPrecipitation = xml.valueDouble(".meanAnnualPrecipitation", -1);
+}
+
+//*********************************************************************************
+//****************************************** FireLayers ***************************
+//*********************************************************************************
+
+
+double FireLayers::value(const FireRUData &data, const int param_index) const
+{
+    switch(param_index){
+    case 0: return data.mKBDI; // KBDI values
+    case 1: return data.mKBDIref; // reference KBDI value
+    default: throw IException(QString("invalid variable index for FireData: %1").arg(param_index));
+    }
+}
+
+const QStringList FireLayers::names() const
+{
+    return QStringList() <<  "KBDI" << "KBDIref";
+
+}
+
+//*********************************************************************************
+//****************************************** FireModule ***************************
+//*********************************************************************************
+
+
 
 FireModule::FireModule()
 {
@@ -89,7 +128,7 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
         if (kbdi<0.) kbdi=0.;
 
         tmax = day->temperature; // !!! TODO!!! use max temperature!!!!
-        // drying is only simulated, when:
+        // drying is only simulated, if:
         // * the temperature > 10°
         // * there is no snow cover
         if (tmax > 10. && water_data->snow_cover[iday]==0.) {
@@ -159,7 +198,7 @@ void FireModule::ignition()
                     // now start the fire!!!
                     spread(startpoint);
 
-                    // TODO: what after a fire happened? stop at all? or only for the resource unit?
+                    // TODO: what happens after a fire event? stop at all? or only for the resource unit?
                 }
             }
         }
@@ -171,40 +210,87 @@ void FireModule::ignition()
 void FireModule::spread(const QPoint &start_point)
 {
     qDebug() << "fire event starting at position" << start_point;
+
+    mGrid.initialize(0.f);
     mGrid.valueAtIndex(start_point) = 1.f;
+
+    // choose spread algorithm
+    probabilisticSpread(start_point);
+
 }
 
-
-//*********************************************************************************
-//******************************************** FireData ***************************
-//*********************************************************************************
-
-void FireRUData::setup()
+/// Estimate fire size (m2) from a fire size distribution.
+double FireModule::calculateFireSize()
 {
-    XmlHelper xml(GlobalSettings::instance()->settings().node("modules.fire"));
-    mKBDIref = xml.valueDouble(".KBDIref", 300.);
-    mRefMgmt = xml.valueDouble(".rFireSuppression", 1.);
-    mRefAnnualPrecipitation = xml.valueDouble(".meanAnnualPrecipitation", -1);
+    return 10000.; // TODO implement
 }
 
-//*********************************************************************************
-//****************************************** FireLayers ***************************
-//*********************************************************************************
-
-
-double FireLayers::value(const FireRUData &data, const int param_index) const
+void FireModule::calculateSpreadProbability(const float *pixel_from, float *pixel_to, const int direction)
 {
-    switch(param_index){
-    case 0: return data.mKBDI; // KBDI values
-    case 1: return data.mKBDIref; // reference KBDI value
-    default: throw IException(QString("invalid variable index for FireData: %1").arg(param_index));
+    // TODO implement
+    *pixel_to = 0.5;
+}
+
+/** a cellular automaton spread algorithm.
+*/
+void FireModule::probabilisticSpread(const QPoint &start_point)
+{
+    QRect max_spread = QRect(start_point, start_point);
+    // grow the rectangle by one row/column but ensure validity
+    max_spread.setCoords(qMax(max_spread.x()-1,0),qMax(max_spread.y()-1,0),
+                         qMin(max_spread.x()+1,mGrid.sizeX()-1),qMin(max_spread.y()+1,mGrid.sizeY()-1));
+    double fire_size_m2 = calculateFireSize();
+    int cells_to_burn = fire_size_m2 / (cellsize() * cellsize());
+    int cells_burned = 0;
+    int iterations = 0;
+    // main loop
+    float *neighbor[4];
+    float *p;
+    while (cells_burned < cells_to_burn) {
+        // scan the current spread area
+        // and calcuate for each pixel the probability of spread from a burning
+        // pixel to a non-burning pixel
+        GridRunner<FloatGrid> runner(mGrid, max_spread);
+        while (p = runner.next()) {
+            if (*p == 1.f) {
+                // current cell is burning.
+                // check the neighbors: get an array with neigbors
+                // north, east, west, south
+                runner.neighbors4(neighbor);
+                if (neighbor[0] && *(neighbor[0])<1.f)
+                    calculateSpreadProbability(p, neighbor[0], 1);
+                if (neighbor[1] && *(neighbor[0])<1.f)
+                    calculateSpreadProbability(p, neighbor[1], 2);
+                if (neighbor[2] && *(neighbor[0])<1.f)
+                    calculateSpreadProbability(p, neighbor[2], 3);
+                if (neighbor[3] && *(neighbor[0])<1.f)
+                    calculateSpreadProbability(p, neighbor[3], 4);
+            }
+        }
+        // now draw random numbers and calculate the real spread
+        runner.reset();
+        while (p = runner.next()) {
+            if (*p<1.f && *p>0.f) {
+                if (drandom() < *runner.current()) {
+                    // the fire spreads:
+                    *p == 1.f;
+                    cells_burned++;
+                    // determine if we need to increase the affected rectangle
+                    QPoint pt = mGrid.indexOf(runner.current());
+                    if (max_spread.left() == pt.x() && pt.x()>0)
+                        max_spread.setLeft(pt.x()-1);
+                    if (max_spread.right() == pt.x() && pt.x()<mGrid.sizeX()-1)
+                        max_spread.setRight(pt.x()+1);
+                    if (max_spread.top() == pt.y() && pt.y()>0)
+                        max_spread.setTop(pt.y()-1);
+                    if (max_spread.bottom() == pt.y() && p.y()<mGrid.sizeY()-1)
+                        max_spread.setBottom(pt.y()+1);
+                }
+            }
+        }
+        iterations++;
     }
-}
-
-const QStringList FireLayers::names() const
-{
-    return QStringList() <<  "KBDI" << "KBDIref";
-
+    qDebug() << "probabilstic spread: used " << iterations << "iterations found" << cells_burned << "burning pixels";
 }
 
 
