@@ -32,6 +32,8 @@ public:
     // access to water data
     void calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data) {mFire.calculateDroughtIndex(resource_unit, water_data); }
 
+    // special functions for direct access (testing)
+    FireModule *fireModule() { return &mFire; }
 private:
     FireModule mFire;
 };

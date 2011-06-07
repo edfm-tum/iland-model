@@ -412,5 +412,11 @@ void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
         mViewerWindow->setViewport(center_point, scale_px_per_m);
 }
 
+void ModelController::repaint()
+{
+    if (mViewerWindow)
+        mViewerWindow->repaint();
+}
+
 
 
