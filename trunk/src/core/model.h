@@ -17,6 +17,7 @@ class Environment;
 class TimeEvents;
 class MapGrid;
 class Modules;
+class DEM;
 
 struct HeightGridValue
 {
@@ -53,6 +54,7 @@ public:
     Management *management() const { return mManagement; }
     Environment *environment() const {return mEnvironment; }
     Modules *modules() const { return mModules; }
+    const DEM *dem() const { return mDEM; }
     SpeciesSet *speciesSet() const { if (mSpeciesSets.count()==1) return mSpeciesSets.first(); return NULL; }
 
     // global grids
@@ -113,6 +115,8 @@ private:
     Environment *mEnvironment; ///< definition of paramter values on resource unit level (modify the settings tree)
     TimeEvents *mTimeEvents; ///< sub module to handle predefined events in time (modifies the settings tree in time)
     MapGrid *mStandGrid; ///< map of the stand map (10m resolution)
+    // Digital elevation model
+    DEM *mDEM; ///< digital elevation model
 };
 
 class Tree;

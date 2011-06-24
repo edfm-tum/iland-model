@@ -50,6 +50,9 @@ bool DEM::loadFromFile(const QString &fileName)
 /// returns the height at point (x/y)
 /// calculation follows: Burrough, P. A. and McDonell, R.A., 1998.Principles of Geographical Information Systems.(Oxford University Press, New York), p. 190.
 /// http://uqu.edu.sa/files2/tiny_mce/plugins/filemanager/files/4280125/Principles%20of%20Geographical%20Information%20Systems.pdf
+/// @param point metric coordinates of point to derive orientation
+/// @param rslope_angle RESULTING (passed by reference) slope angle as percentage (i.e: 1:=45°)
+/// @param rslope_aspect RESULTING slope direction in degrees (0: North, 90: east, 180: south, 270: west)
 float DEM::orientation(const QPointF &point, float &rslope_angle, float &rslope_aspect)
 {
     QPoint pt = indexAt(point);

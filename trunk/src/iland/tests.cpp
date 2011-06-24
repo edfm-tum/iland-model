@@ -727,6 +727,7 @@ void Tests::testFire()
     FirePlugin *plugin = dynamic_cast<FirePlugin *>(GlobalSettings::instance()->model()->modules()->module("fire"));
     if (plugin) {
         FireModule *fire = plugin->fireModule();
+        fire->testSpread();
         fire->spread( QPoint(40,40) );
     }
     GlobalSettings::instance()->controller()->repaint();
