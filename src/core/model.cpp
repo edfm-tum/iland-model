@@ -20,6 +20,7 @@
 #include "mapgrid.h"
 #include "modelcontroller.h"
 #include "modules.h"
+#include "dem.h"
 
 #include "outputmanager.h"
 
@@ -112,6 +113,7 @@ void Model::initialize()
    mTimeEvents = 0;
    mStandGrid = 0;
    mModules = 0;
+   mDEM = 0;
 }
 
 /** sets up the simulation space.
@@ -252,6 +254,12 @@ void Model::setupSpace()
             if (ru->id()!=-1)
                 valid_rus.append(ru);
 
+        // setup of the digital elevation map (if present)
+        QString dem_file = xml.value("DEM");
+        if (!dem_file.isEmpty()) {
+            mDEM = new DEM(dem_file);
+        }
+
         // setup of external modules
         mModules->setup();
         if (mModules->hasSetupResourceUnits()) {
@@ -260,7 +268,6 @@ void Model::setupSpace()
                 mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
                 mModules->setupResourceUnit( *p );
             }
-
         }
 
         // setup the helper that does the multithreading
@@ -307,6 +314,8 @@ void Model::clear()
         delete mStandGrid;
     if (mModules)
         delete mModules;
+    if (mDEM)
+        delete mDEM;
 
     mGrid = 0;
     mHeightGrid = 0;
@@ -315,6 +324,7 @@ void Model::clear()
     mTimeEvents = 0;
     mStandGrid  = 0;
     mModules = 0;
+    mDEM = 0;
 
     GlobalSettings::instance()->outputManager()->close();
 
