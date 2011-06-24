@@ -12,6 +12,8 @@
           S
          180°
 
+   Values for height of -1 indicate "out of scope", "invalid" values
+
   */
 
 class DEM: public FloatGrid
@@ -26,7 +28,8 @@ public:
     const FloatGrid *viewGrid() { createSlopeGrid(); return &view_grid; }
     // special functions for DEM
     /// get the elevation (m) at point (x/y)
-    float elevation(const float x, const float y) { return valueAt(x,y); }
+    float elevation(const float x, const float y) const { return constValueAt(x,y); }
+    float elevation(const QPointF p) const { return constValueAt(p.x(),p.y()); }
     /// get the direction of the slope at point (x/y)
     /// if the slope at the point is 0, "north" (0) is returned.
     float direction(const float x, const float y);
