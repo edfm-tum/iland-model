@@ -4,6 +4,7 @@
 #include <QtSql>
 #include "phenology.h"
 /// current climate variables of a day. @sa Climate.
+/// http://iland.boku.ac.at/ClimateData
 struct ClimateDay
 {
     int year; // year
@@ -11,6 +12,8 @@ struct ClimateDay
     int dayOfMonth; // day of the month (1..31)
     double temperature; // average day °C (of the light hours)
     double min_temperature; // minimum temperature of the day
+    double max_temperature; // maximum temperature of the day
+    double mean_temp() const { return (min_temperature + max_temperature) / 2.; } // mean temperature
     double temp_delayed; // temperature delayed (after Maekela, 2008) for response calculations
     double preciptitation; // sum of day [mm]
     double radiation; // sum of day (MJ/m2)
@@ -68,6 +71,7 @@ public:
 private:
     bool mIsSetup;
     bool mDoRandomSampling; ///< if true, the sequence of years is randomized
+    bool mTMaxAvailable; ///< tmax is part of the climate data
     QString mName;
     Sun mSun; ///< class doing solar radiation calculations
     void load(); ///< load mLoadYears years from database

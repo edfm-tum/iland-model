@@ -123,14 +123,21 @@ void Climate::setup()
     mMinYear = 0;
     mMaxYear = 0;
 
-    // setup query
-    QString query=QString("select year,month,day,temp,min_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
+    QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
     // here add more options...
     mClimateQuery = QSqlQuery(g->dbclimate());
     mClimateQuery.exec(query);
+    mTMaxAvailable = true;
     if (mClimateQuery.lastError().isValid()){
-        throw IException(QString("Error setting up climate: %1 \n %2").arg(query, mClimateQuery.lastError().text()) );
+        // fallback: if there is no max_temp try the older format:
+        query=QString("select year,month,day,temp,min_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
+        mClimateQuery.exec(query);
+        mTMaxAvailable = false;
+        if (mClimateQuery.lastError().isValid()){
+            throw IException(QString("Error setting up climate: %1 \n %2").arg(query, mClimateQuery.lastError().text()) );
+        }
     }
+    // setup query
     // load first chunk...
     load();
     setupPhenology(); // load phenology
@@ -176,8 +183,21 @@ void Climate::load()
             cday->year = mClimateQuery.value(0).toInt();
             cday->month = mClimateQuery.value(1).toInt();
             cday->dayOfMonth = mClimateQuery.value(2).toInt();
-            cday->temperature = mClimateQuery.value(3).toDouble() + mTemperatureShift;
-            cday->min_temperature = mClimateQuery.value(4).toDouble() + mTemperatureShift;
+            if (mTMaxAvailable) {
+                //References for calculation the temperature of the day:
+                //Floyd, R. B., Braddock, R. D. 1984. A simple method for fitting average diurnal temperature curves.  Agricultural and Forest Meteorology 32: 107-119.
+                //Landsberg, J. J. 1986. Physiological ecology of forest production. Academic Press Inc., 197 S.
+
+                cday->min_temperature = mClimateQuery.value(3).toDouble() + mTemperatureShift;
+                cday->max_temperature = mClimateQuery.value(4).toDouble() + mTemperatureShift;
+                cday->temperature = 0.212*(cday->max_temperature - cday->mean_temp()) + cday->mean_temp();
+
+            } else {
+               // for compatibility: the old method
+                cday->temperature = mClimateQuery.value(3).toDouble() + mTemperatureShift;
+                cday->min_temperature = mClimateQuery.value(4).toDouble() + mTemperatureShift;
+                cday->max_temperature = cday->temperature;
+            }
             cday->preciptitation = mClimateQuery.value(5).toDouble() * mPrecipitationShift;
             cday->radiation = mClimateQuery.value(6).toDouble();
             cday->vpd = mClimateQuery.value(7).toDouble();
