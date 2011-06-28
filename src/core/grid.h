@@ -13,11 +13,11 @@
 /** Grid class (template).
 
 Orientation
-The grid is oriented as typically coordinates on the northern hemisphere: higher y-values -> north, higher x-values-> west.
+The grid is oriented as typically coordinates on the northern hemisphere: higher y-values -> north, higher x-values-> east.
 The projection is reversed for drawing on screen (Viewport).
           N
   (0/2) (1/2) (2/2)
-E (0/1) (1/1) (2/1)  W
+W (0/1) (1/1) (2/1)  E
   (0/0) (1/0) (2/0)
           S
 */
@@ -453,6 +453,8 @@ T* GridRunner<T>::next()
 }
 
 template <class T>
+/// get pointers the the 4-neighborhood
+/// north, east, south, west
 void GridRunner<T>::neighbors4(T** rArray)
 {
     // north:
@@ -460,8 +462,8 @@ void GridRunner<T>::neighbors4(T** rArray)
     // south:
     rArray[3] = mCurrent - (mCols + mLineLength) < mFirst?0: mCurrent -  (mCols + mLineLength);
     // east / west
-    rArray[1] = mCurrentCol>0? mCurrent-1 : 0;
-    rArray[2] = mCurrentCol<mCols? mCurrent + 1 : 0;
+    rArray[1] = mCurrentCol<mCols? mCurrent + 1 : 0;
+    rArray[2] = mCurrentCol>0? mCurrent-1 : 0;
 }
 
 /// get pointers to the 8-neighbor-hood
@@ -471,13 +473,13 @@ void GridRunner<T>::neighbors8(T** rArray)
 {
     neighbors4(rArray);
     // north-east
-    rArray[4] = rArray[0] && rArray[1]? rArray[0]-1: 0;
+    rArray[4] = rArray[0] && rArray[1]? rArray[0]+1: 0;
     // north-west
-    rArray[5] = rArray[0] && rArray[2]? rArray[0]+1: 0;
+    rArray[5] = rArray[0] && rArray[2]? rArray[0]-1: 0;
     // south-east
-    rArray[6] = rArray[3] && rArray[1]? rArray[3]-1: 0;
+    rArray[6] = rArray[3] && rArray[1]? rArray[3]+1: 0;
     // south-west
-    rArray[7] = rArray[3] && rArray[2]? rArray[3]+1: 0;
+    rArray[7] = rArray[3] && rArray[2]? rArray[3]-1: 0;
 
 }
 
