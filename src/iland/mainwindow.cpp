@@ -280,6 +280,7 @@ MainWindow::~MainWindow()
 void MainWindow::repaint()
 {
     ui->PaintWidget->update();
+    QCoreApplication::processEvents();
 }
 
 // control GUI actions

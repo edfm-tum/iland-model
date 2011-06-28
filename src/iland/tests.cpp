@@ -727,8 +727,11 @@ void Tests::testFire()
     FirePlugin *plugin = dynamic_cast<FirePlugin *>(GlobalSettings::instance()->model()->modules()->module("fire"));
     if (plugin) {
         FireModule *fire = plugin->fireModule();
-        fire->testSpread();
-        fire->spread( QPoint(40,40) );
+        try {
+            fire->testSpread();
+        } catch (const IException &e) {
+            Helper::msg(e.message());
+        }
     }
     GlobalSettings::instance()->controller()->repaint();
 
