@@ -87,7 +87,8 @@ SOURCES += main.cpp \
     ../output/carbonout.cpp \
     ../output/carbonflowout.cpp \
     ../tools/modules.cpp \
-    ../tools/dem.cpp
+    ../tools/dem.cpp \
+    ../3rdparty/SimpleRNG.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -153,7 +154,8 @@ HEADERS += mainwindow.h \
     ../core/plugin_interface.h \
     ../tools/modules.h \
     ../tools/dem.h \
-    ../core/layeredgrid.h
+    ../core/layeredgrid.h \
+    ../3rdparty/SimpleRNG.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ../iland/res/iland.qrc
