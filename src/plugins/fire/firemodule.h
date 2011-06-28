@@ -86,7 +86,7 @@ public:
 
 private:
     /// estimate fire size from a distribution
-    double calculateFireSize();
+    double calculateFireSize(const double average_fire_size);
 
     // functions for the cellular automata
     void probabilisticSpread(const QPoint &start_point);
@@ -100,6 +100,7 @@ private:
     /// calc the effect of wind on the fire spread
     double calcWindFactor(const double direction) const;
     // parameters
+    double mFireSizeSigma; ///< parameter of the log-normal distribution to derive fire size
     double mWindSpeedMin;
     double mWindSpeedMax;
     double mWindDirection;

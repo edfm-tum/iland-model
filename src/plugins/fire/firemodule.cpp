@@ -8,6 +8,7 @@
 #include "watercycle.h"
 #include "climate.h"
 #include "dem.h"
+#include "3rdparty/SimpleRNG.h"
 
 //*********************************************************************************
 //******************************************** FireData ***************************
@@ -21,10 +22,10 @@ void FireRUData::setup()
     mRefMgmt = xml.valueDouble(".rFireSuppression", 1.);
     mRefLand = xml.valueDouble(".rLand", 1.);
     mRefAnnualPrecipitation = xml.valueDouble(".meanAnnualPrecipitation", -1);
-    mAverageFireSize = xml.valueDouble(".avgFireSize", 100.);
+    mAverageFireSize = xml.valueDouble(".averageFireSize", 100.);
     mFireReturnInterval =  xml.valueDouble(".fireReturnInterval", 100); // every x year
     if (mAverageFireSize * mFireReturnInterval == 0.)
-        throw IException("Fire-setup: invalid values for 'avgFireSize' or 'fireReturnInterval' (values must not be 0).");
+        throw IException("Fire-setup: invalid values for 'averageFireSize' or 'fireReturnInterval' (values must not be 0).");
     double p_base = 1. / mFireReturnInterval;
     // calculate the base ignition probabiility for a cell (eg 20x20m)
     mBaseIgnitionProb = p_base * FireModule::cellsize()*FireModule::cellsize() / mAverageFireSize;
@@ -85,6 +86,7 @@ void FireModule::setup()
     mWindSpeedMin = xml.valueDouble(".wind.speedMin", 5.);
     mWindSpeedMax = xml.valueDouble(".wind.speedMax", 10.);
     mWindDirection = xml.valueDouble(".wind.direction", 270.); // defaults to "west"
+    mFireSizeSigma = xml.valueDouble(".fireSizeSigma", 0.25);
 
     // setup of the visualization of the grid
     GlobalSettings::instance()->controller()->addLayers(&mFireLayers, "fire");
@@ -220,9 +222,12 @@ void FireModule::spread(const QPoint &start_point)
 }
 
 /// Estimate fire size (m2) from a fire size distribution.
-double FireModule::calculateFireSize()
+double FireModule::calculateFireSize(const double average_fire_size)
 {
-    return 100000.; // TODO implement
+    SimpleRNG rng;
+    rng.SetState(irandom(0, std::numeric_limits<unsigned int>::max()-1), irandom(0, std::numeric_limits<unsigned int>::max()-1));
+    double size = rng.GetLogNormal(log(average_fire_size), mFireSizeSigma);
+    return size;
 }
 
 /// calculate effect of slope on fire spread
@@ -293,15 +298,17 @@ double FireModule::calcWindFactor(const double direction) const
 }
 
 
-
+/** calculates probability of spread from one pixel to one neighbor.
+    In this functions the effect of the terrain, the wind and others are used to estimate a probability.
+    @param fire_data reference to the variables valid for the current resource unit
+    @param height elevation (m) of the origin point
+    @param pixel_from pointer to the origin point in the fire grid
+    @param pixel_to pointer to the target pixel
+    @param direction codes the direction from the origin point (1..8, N, E, S, W, NE, SE, SW, NW)
+  */
 void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const double height, const float *pixel_from, float *pixel_to, const int direction)
 {
     const double directions[8]= {0., 90., 180., 270., 45., 135., 225., 315. };
-    // TODO implement
-    double p;
-    p = 0.4;
-    if (direction>2)
-        p = 0.85;
 
     double spread_metric; // distance that fire supposedly spreads
 
@@ -311,20 +318,22 @@ void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const d
         qDebug() << "invalid elevation for pixel during fire spread: " << mGrid.cellCenterPoint(mGrid.indexOf(pixel_to));
         return;
     }
-    double slope = (h_to - height) / (cellsize());
+    double pixel_size = cellsize();
     // if we spread diagonal, the distance is longer:
     if (direction>4)
-        slope /= 1.41421356;
+        pixel_size *= 1.41421356;
+
+    double slope = (h_to - height) / pixel_size;
 
     double r_wind, r_slope; // metric distance for spread
     r_slope = calcSlopeFactor( slope ); // slope factor (upslope / downslope)
 
-    r_wind = calcWindFactor(directions[direction]); // metric distance from wind
+    r_wind = calcWindFactor(directions[direction-1]); // metric distance from wind
 
     spread_metric = r_slope + r_wind;
 
-    double spread_pixels = spread_metric / cellsize();
-    if (spread_pixels==0.)
+    double spread_pixels = spread_metric / pixel_size;
+    if (spread_pixels<=0.)
         return;
 
     double p_spread = pow(0.5, 1. / spread_pixels);
@@ -336,6 +345,7 @@ void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const d
 }
 
 /** a cellular automaton spread algorithm.
+    @param start_point the starting point of the fire spread as index of the fire grid
 */
 void FireModule::probabilisticSpread(const QPoint &start_point)
 {
@@ -343,9 +353,17 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     // grow the rectangle by one row/column but ensure validity
     max_spread.setCoords(qMax(start_point.x()-1,0),qMax(start_point.y()-1,0),
                          qMin(start_point.x()+2,mGrid.sizeX()),qMin(start_point.y()+2,mGrid.sizeY()) );
-    double fire_size_m2 = calculateFireSize();
+
+    const FireRUData *rudata = &mRUGrid.constValueAt( mGrid.cellCenterPoint(start_point) );
+    double fire_size_m2 = calculateFireSize(rudata->mAverageFireSize);
+    double sum_fire_size = fire_size_m2; // cumulative fire size
+    // calculate a factor describing how much larger/smaller the selected fire is compared to the average
+    // fire size of the ignition cell
+    double fire_scale_factor = fire_size_m2 / rudata->mAverageFireSize;
+
     int cells_to_burn = fire_size_m2 / (cellsize() * cellsize());
     int cells_burned = 1;
+    int last_round_burned = cells_burned;
     int iterations = 1;
     // main loop
     float *neighbor[8];
@@ -364,9 +382,9 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                     throw IException(QString("Fire-Spread: invalid elevation at %1/%2.").arg(pt.x()).arg(pt.y()));
 
                 // current cell is burning.
-                // check the neighbors: get an array with neigbors
-                // north, east, west, south
-                // NE/NW/SE/SW
+                // check the neighbors: get an array with neighbors
+                // 1-4: north, east, west, south
+                // 5-8: NE/NW/SE/SW
                 runner.neighbors8(neighbor);
                 if (neighbor[0] && *(neighbor[0])<1.f)
                     calculateSpreadProbability(fire_data, h, p, neighbor[0], 1);
@@ -380,9 +398,9 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                     calculateSpreadProbability(fire_data, h, p, neighbor[4], 5);
                 if (neighbor[5] && *(neighbor[5])<1.f)
                     calculateSpreadProbability(fire_data, h, p, neighbor[5], 6);
-                if (neighbor[3] && *(neighbor[6])<1.f)
+                if (neighbor[6] && *(neighbor[6])<1.f)
                     calculateSpreadProbability(fire_data, h, p, neighbor[6], 7);
-                if (neighbor[3] && *(neighbor[7])<1.f)
+                if (neighbor[7] && *(neighbor[7])<1.f)
                     calculateSpreadProbability(fire_data, h, p, neighbor[7], 8);
                 *p = iterations + 1;
             }
@@ -394,8 +412,10 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                 if (drandom() < *p) {
                     // the fire spreads:
                     *p = 1.f;
-                    cells_burned++;
                     const FireRUData &fire_data = mRUGrid.constValueAt(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+                    cells_burned++;
+                    // update the fire size
+                    sum_fire_size += fire_data.mAverageFireSize * fire_scale_factor;
                     if (fire_data.mFireExtinctionProb>0.) {
                         if (drandom() < fire_data.mFireExtinctionProb) {
                             *p = iterations + 1;
@@ -404,6 +424,11 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                 }
             }
         }
+
+        cells_to_burn = (sum_fire_size/(double)cells_burned) / (cellsize() * cellsize());
+        if (cells_to_burn <= cells_burned)
+            break;
+
         // now determine the maximum extent with burning pixels...
         runner.reset();
         int left = mGrid.sizeX(), right = 0, top = mGrid.sizeY(), bottom = 0;
@@ -420,19 +445,48 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
         max_spread = max_spread.intersected(QRect(0,0,mGrid.sizeX(), mGrid.sizeY()));
 
 
-        qDebug() << "Iter: " << iterations << "totalburned:" << cells_burned << "spread-rect:" << max_spread;
+        //qDebug() << "Iter: " << iterations << "totalburned:" << cells_burned << "spread-rect:" << max_spread << "cells to burn" << cells_to_burn;
         iterations++;
-        if (iterations > 1000) {
-            qDebug() << "Firespread: maximum number of iterations reached!";
+        if (last_round_burned == cells_burned) {
+            qDebug() << "Firespread: a round without new burning cells - exiting!";
+            break;
+        }
+        last_round_burned = cells_burned;
+        if (iterations > 10000) {
+            qDebug() << "Firespread: maximum number of iterations (10000) reached!";
             break;
         }
     }
-    qDebug() << "probabilstic spread: used " << iterations << "iterations found" << cells_burned << "burning pixels";
+    qDebug() << "Fire:probabilstic spread: used " << iterations
+             << "iterations. Planned (m2/cells):" << fire_size_m2 << "/" << cells_to_burn
+             << "burned (m2/cells):" << cells_burned*cellsize()*cellsize() << "/" << cells_burned;
 }
 
 void FireModule::testSpread()
 {
+//    QPoint pt = mGrid.indexAt(QPointF(1000., 600.));
+//    spread( pt );
+    SimpleRNG rng;
+    rng.SetState(irandom(0, std::numeric_limits<unsigned int>::max()-1), irandom(0, std::numeric_limits<unsigned int>::max()-1));
+    int bins[20];
+    for(int i=0;i<20;i++) bins[i]=0;
+    for (int i=0;i<10000;i++) {
+        double value = rng.GetLogNormal(log(2000.),0.25);
+        if (value>=0 && value<10000.)
+            bins[(int)(value/500.)]++;
+    }
+    for(int i=0;i<20;i++)
+        qDebug() << bins[i];
 
+    for (int r=0;r<360;r+=90) {
+        mWindDirection = r;
+        for (int i=0;i<5;i++) {
+            QPoint pt = mGrid.indexAt(QPointF(1100., 750.));
+            spread( pt );
+            GlobalSettings::instance()->controller()->repaint();
+            GlobalSettings::instance()->controller()->saveScreenshot(GlobalSettings::instance()->path(QString("%1_%2.png").arg(r).arg(i), "temp"));
+        }
+    }
 }
 
 

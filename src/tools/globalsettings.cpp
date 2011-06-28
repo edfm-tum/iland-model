@@ -285,10 +285,10 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
 
     }
 
-    foreach (const DebugList *l, ddl) {
+    for (int i=ddl.count()-1; i>=0; --i) {
         QString line;
         int c=0;
-        foreach(const QVariant &value, *l) {
+        foreach(const QVariant &value, *ddl.at(i)) {
             if (c++)
                 line+=separator;
             line += value.toString();
