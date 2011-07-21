@@ -265,6 +265,11 @@ MainWindow::MainWindow(QWidget *parent)
     mRemoteControl.connectSignals();
     GlobalSettings::instance()->setModelController( &mRemoteControl );
 
+    // automatic run
+    if (QApplication::arguments().contains("run")) {
+        QTimer::singleShot(3000, this, SLOT(automaticRun()));
+    }
+
 }
 
 
@@ -276,6 +281,49 @@ MainWindow::~MainWindow()
 
     delete ui;
 }
+
+void MainWindow::batchLog(const QString s)
+{
+    QFile outfile(QCoreApplication::applicationDirPath()+ "/batchlog.txt");
+    if (outfile.open(QIODevice::Append | QIODevice::Text)) {
+        QTextStream str(&outfile);
+        str << s << endl;
+    }
+}
+
+/// automatically start a simulation...
+void MainWindow::automaticRun()
+{
+    // start a simulation
+    setWindowTitle("iLand viewer --- batch mode");
+    batchLog("*** iland batch mode ***");
+    batchLog(QString("%1 Loading project %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate),
+           ui->initFileName->text()));
+    batchLog(QString("%1 Loading the model...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+    setupModel();
+
+    int count = QCoreApplication::arguments()[QCoreApplication::arguments().count()-2].toInt();
+    if (count==0) {
+        qDebug() << "invalid number of years....";
+        return;
+    }
+    ui->modelRunProgress->setMaximum(count-1);
+    batchLog(QString("%1 Running the model (%2 years)...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(count));
+    mRemoteControl.run(count);
+    // process debug outputs...
+    saveDebugOutputs();
+
+    batchLog(QString("%1 Finished!!! shutting down...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+
+    qDebug() << "****************************";
+    qDebug() << "Finished automated model run";
+    qDebug() << "****************************";
+
+    if (mRemoteControl.isFinished())
+        close(); // shut down the application....
+
+}
+
 // simply command an update of the painting area
 void MainWindow::repaint()
 {

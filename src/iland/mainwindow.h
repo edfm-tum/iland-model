@@ -90,10 +90,12 @@ private:
     // debug data and outputs
     void saveDebugOutputs();
     void setupFileLogging(const bool do_start);
+    void batchLog(const QString s); ///< logging function for batch mode
     // visualization helper grid
     Grid<float> mRegenerationGrid;
 
 private slots:
+    void automaticRun(); ///< automatically start a simulation...
 
     void on_actionWarning_triggered() { on_actionDebug_triggered(); }
     void on_actionError_triggered() { on_actionDebug_triggered(); }
