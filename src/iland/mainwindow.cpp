@@ -309,7 +309,10 @@ void MainWindow::automaticRun()
     }
     ui->modelRunProgress->setMaximum(count-1);
     batchLog(QString("%1 Running the model (%2 years)...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(count));
-    mRemoteControl.run(count);
+    // note the "+1": this is similar to the normal way of starting
+    // "1" means in Globals.year that we are in the 1st year.
+    // the simulation stops when reaching the count+1 year.
+    mRemoteControl.run(count + 1);
     // process debug outputs...
     saveDebugOutputs();
 
