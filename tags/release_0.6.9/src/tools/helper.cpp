@@ -507,6 +507,16 @@ void Viewport::moveTo(const QPoint &screen_from, const QPoint &screen_to)
     m_viewport.setTopRight(toWorld(m_screen.bottomRight()));
 }
 
+/// set 'world_center' as the new center point of the viewport
+void Viewport::setViewPoint(const QPointF &world_center, const double px_per_meter)
+{
+    QPoint p = toScreen(world_center); // point where world_center would be
+    QPoint target = m_screen.center();
+    moveTo(p,target);
+    double factor = px_per_meter * m_scale_worldtoscreen;
+    zoomTo(target, factor);
+}
+
 bool Viewport::isVisible(const QPointF &world_coord) const
 {
     return m_viewport.contains(world_coord);

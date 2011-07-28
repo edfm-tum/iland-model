@@ -262,6 +262,11 @@ MainWindow::MainWindow(QWidget *parent)
     mRemoteControl.connectSignals();
     GlobalSettings::instance()->setModelController( &mRemoteControl );
 
+    // automatic run
+    if (QApplication::arguments().contains("run")) {
+        QTimer::singleShot(3000, this, SLOT(automaticRun()));
+    }
+
 }
 
 
@@ -273,6 +278,52 @@ MainWindow::~MainWindow()
 
     delete ui;
 }
+
+void MainWindow::batchLog(const QString s)
+{
+    QFile outfile(QCoreApplication::applicationDirPath()+ "/batchlog.txt");
+    if (outfile.open(QIODevice::Append | QIODevice::Text)) {
+        QTextStream str(&outfile);
+        str << s << endl;
+    }
+}
+
+/// automatically start a simulation...
+void MainWindow::automaticRun()
+{
+    // start a simulation
+    setWindowTitle("iLand viewer --- batch mode");
+    batchLog("*** iland batch mode ***");
+    batchLog(QString("%1 Loading project %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate),
+           ui->initFileName->text()));
+    batchLog(QString("%1 Loading the model...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+    setupModel();
+
+    int count = QCoreApplication::arguments()[QCoreApplication::arguments().count()-2].toInt();
+    if (count==0) {
+        qDebug() << "invalid number of years....";
+        return;
+    }
+    ui->modelRunProgress->setMaximum(count);
+    batchLog(QString("%1 Running the model (%2 years)...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)).arg(count));
+    // note the "+1": this is similar to the normal way of starting
+    // "1" means in Globals.year that we are in the 1st year.
+    // the simulation stops when reaching the count+1 year.
+    mRemoteControl.run(count + 1);
+    // process debug outputs...
+    saveDebugOutputs();
+
+    batchLog(QString("%1 Finished!!! shutting down...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+
+    qDebug() << "****************************";
+    qDebug() << "Finished automated model run";
+    qDebug() << "****************************";
+
+    if (mRemoteControl.isFinished())
+        close(); // shut down the application....
+
+}
+
 // simply command an update of the painting area
 void MainWindow::repaint()
 {
@@ -988,13 +1039,17 @@ QImage MainWindow::screenshot()
 /// pixel/m scaling.
 void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
 {
-    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
-    if (current_px==0)
-        return;
-    QPoint screen = vp.toScreen(center_point); // screen coordinates of the target point
-    double target_scale = scale_px_per_m / current_px;
+    vp.setViewPoint(center_point, scale_px_per_m);
 
-    vp.zoomTo(screen, target_scale);
+//    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
+//    if (current_px==0)
+//        return;
+
+//    vp.setCenterPoint(center_point);
+//    QPoint screen = vp.toScreen(center_point); // screen coordinates of the target point
+//    double target_scale = scale_px_per_m / current_px;
+
+//    vp.zoomTo(screen, target_scale);
     ui->PaintWidget->update();
     QCoreApplication::processEvents();
 }
