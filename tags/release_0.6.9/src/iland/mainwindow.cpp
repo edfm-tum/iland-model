@@ -313,15 +313,7 @@ void MainWindow::automaticRun()
     // process debug outputs...
     saveDebugOutputs();
 
-    batchLog(QString("%1 Finished!!! shutting down...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
-
-    qDebug() << "****************************";
-    qDebug() << "Finished automated model run";
-    qDebug() << "****************************";
-
-    if (mRemoteControl.isFinished())
-        close(); // shut down the application....
-
+    // see the finsished() slot
 }
 
 // simply command an update of the painting area
@@ -820,6 +812,18 @@ void MainWindow::modelFinished(QString errorMessage)
     labelMessage("Finished!!");
 
     checkModelState();
+    if (windowTitle().contains("batch")) {
+        // we are in automatic batch mode.
+        // we should therefore close down the application.
+        batchLog(QString("%1 Finished!!! shutting down...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
+
+        qDebug() << "****************************";
+        qDebug() << "Finished automated model run";
+        qDebug() << "****************************";
+
+        close(); // shut down the application....
+
+    }
 }
 
 /// creates the iLand model
