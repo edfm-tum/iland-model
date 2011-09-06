@@ -7,6 +7,7 @@
 #include "resourceunit.h"
 #include "watercycle.h"
 #include "climate.h"
+#include "soil.h"
 #include "dem.h"
 #include "3rdparty/SimpleRNG.h"
 
@@ -43,13 +44,17 @@ double FireLayers::value(const FireRUData &data, const int param_index) const
     switch(param_index){
     case 0: return data.mKBDI; // KBDI values
     case 1: return data.mKBDIref; // reference KBDI value
+    case 2: return data.fireRUStats.fire_id; // the ID of the last recorded fire
+    case 3: return data.fireRUStats.crown_kill; // crown kill fraction (average on resource unit)
+    case 4: return data.fireRUStats.died_basal_area; // basal area died in the last fire
+    case 5: return data.fireRUStats.n_trees > 0 ? data.fireRUStats.n_trees_died / double(data.fireRUStats.n_trees) : 0.;
     default: throw IException(QString("invalid variable index for FireData: %1").arg(param_index));
     }
 }
 
 const QStringList FireLayers::names() const
 {
-    return QStringList() <<  "KBDI" << "KBDIref";
+    return QStringList() <<  "KBDI" << "KBDIref" << "fireID" << "crownKill" << "diedBasalArea" << "diedStemsFrac";
 
 }
 
@@ -64,6 +69,7 @@ FireModule::FireModule()
     mFireLayers.setGrid(mRUGrid);
     mWindSpeedMin=10.;mWindSpeedMax=10.;
     mWindDirection=45.;
+    mFireId = 0;
 }
 
 // access data element
@@ -194,9 +200,14 @@ void FireModule::ignition()
                     // check if we have enough fuel to start the fire: TODO
 
                     // now start the fire!!!
+                    mFireId++; // this fire gets a new id
                     spread(startpoint);
 
                     // TODO: what happens after a fire event? stop at all? or only for the resource unit?
+
+                    // finalize statistics after fire event
+                    for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
+                        fds->fireRUStats.calculate(mFireId);
                 }
             }
         }
@@ -218,6 +229,7 @@ void FireModule::spread(const QPoint &start_point)
 
     // choose spread algorithm
     probabilisticSpread(start_point);
+
 
 }
 
@@ -354,7 +366,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     max_spread.setCoords(qMax(start_point.x()-1,0),qMax(start_point.y()-1,0),
                          qMin(start_point.x()+2,mGrid.sizeX()),qMin(start_point.y()+2,mGrid.sizeY()) );
 
-    const FireRUData *rudata = &mRUGrid.constValueAt( mGrid.cellCenterPoint(start_point) );
+    FireRUData *rudata = &mRUGrid.valueAt( mGrid.cellCenterPoint(start_point) );
     double fire_size_m2 = calculateFireSize(rudata->mAverageFireSize);
     double sum_fire_size = fire_size_m2; // cumulative fire size
     // calculate a factor describing how much larger/smaller the selected fire is compared to the average
@@ -368,6 +380,12 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     // main loop
     float *neighbor[8];
     float *p;
+
+    rudata->fireRUStats.enter(mFireId);
+    if (!burnPixel(start_point, *rudata)) {
+        // no fuel / no trees on the starting pixel
+        return;
+    }
     while (cells_burned < cells_to_burn) {
         // scan the current spread area
         // and calcuate for each pixel the probability of spread from a burning
@@ -376,7 +394,8 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
         while ((p = runner.next())) {
             if (*p == 1.f) {
                 const QPointF pt = mGrid.cellCenterPoint(mGrid.indexOf(p));
-                const FireRUData &fire_data = mRUGrid.constValueAt(pt);
+                FireRUData &fire_data = mRUGrid.valueAt(pt);
+                fire_data.fireRUStats.enter(mFireId); // setup/clear statistics if this is the first pixel in the resource unit
                 double h = GlobalSettings::instance()->model()->dem()->elevation(pt);
                 if (h==-1)
                     throw IException(QString("Fire-Spread: invalid elevation at %1/%2.").arg(pt.x()).arg(pt.y()));
@@ -412,15 +431,20 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                 if (drandom() < *p) {
                     // the fire spreads:
                     *p = 1.f;
-                    const FireRUData &fire_data = mRUGrid.constValueAt(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+                    FireRUData &fire_data = mRUGrid.valueAt(mGrid.cellCenterPoint(mGrid.indexOf(p)));
                     cells_burned++;
+                    // do the severity calculations:
+                    // the function returns false if no trees are on the pixel
+                    bool really_burnt = burnPixel(mGrid.indexOf(p), fire_data);
                     // update the fire size
                     sum_fire_size += fire_data.mAverageFireSize * fire_scale_factor;
-                    if (fire_data.mFireExtinctionProb>0.) {
-                        if (drandom() < fire_data.mFireExtinctionProb) {
+                    if (!really_burnt || fire_data.mFireExtinctionProb>0.) {
+                        if (!really_burnt || drandom() < fire_data.mFireExtinctionProb) {
                             *p = iterations + 1;
                         }
                     }
+                } else {
+                    *p = 0.f; // if the fire does note spread to the cell, the value is cleared again.
                 }
             }
         }
@@ -482,11 +506,115 @@ void FireModule::testSpread()
         mWindDirection = r;
         for (int i=0;i<5;i++) {
             QPoint pt = mGrid.indexAt(QPointF(1100., 750.));
+            mFireId++; // this fire gets a new id
+
             spread( pt );
+            // stats
+            for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
+                fds->fireRUStats.calculate(mFireId);
+
             GlobalSettings::instance()->controller()->repaint();
             GlobalSettings::instance()->controller()->saveScreenshot(GlobalSettings::instance()->path(QString("%1_%2.png").arg(r).arg(i), "temp"));
         }
     }
+}
+
+
+/** burning of a single 20x20m pixel. see http://iland.boku.ac.at/wildfire.
+   The function is called from the fire spread function.
+   @return boolean true, if any trees were burned on the pixel
+
+  */
+bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
+{
+    // extract a list of trees that are within the pixel boundaries
+    QRectF pixel_rect = mGrid.cellRect(pos);
+    ResourceUnit *ru = GlobalSettings::instance()->model()->ru(pixel_rect.center());
+    if (!ru)
+        return false;
+
+    // retrieve a list of trees within the active pixel
+    QVector<Tree*> trees;
+    QVector<Tree>::iterator tend = ru->trees().end();
+    for (QVector<Tree>::iterator t = ru->trees().begin(); t!=tend; ++t) {
+        if ( pixel_rect.contains( (*t).position() ))
+            trees.push_back(&(*t));
+    }
+
+    if (trees.isEmpty())
+        return false;
+
+    // calculate mean values for dbh
+    double sum_dbh = 0.;
+    foreach (const Tree* t, trees)
+        sum_dbh += t->dbh();
+    double avg_dbh = sum_dbh / (double) trees.size();
+
+    // (1) calculate fuel
+    const double kfc1 = 0.2;
+    const double kfc2 = 0.2;
+    const double kfc3 = 0.2;
+    // retrieve values for fuel.
+    // forest_floor: sum of leaves and twigs (t/ha) = yR pool
+    // DWD: downed woody debris (t/ha) = yL pool
+    const double pixel_fraction = cellsize()*cellsize() / (cRUSize*cRUSize); // fraction of one pixel, default: 0.04 (20x20 / 100x100)
+
+    // fuel in cell (kg biomass): derive fraction of available fuel and use the KBDI as estimate for humidity.
+    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * ru->soil()->youngLabile().biomass() * pixel_fraction;
+    double fuel_dwd = kfc3*ru_data.kbdi() * ru->soil()->youngRefractory().biomass() * pixel_fraction;
+    // calculate fuel (scaled to kg biomass / ha)
+    double fuel = (fuel_ff + fuel_dwd) / pixel_fraction;
+
+    // if fuel level is below 0.05kg BM/m2, then no burning happens
+    if (fuel < 500.)
+        return false;
+
+    // (2) calculate the "crownkill" fraction
+    const double dbh_trehshold = 30.; // dbh
+    const double kck1 = 0.;
+    const double kck2 = 1.;
+    if (avg_dbh > dbh_trehshold)
+        avg_dbh = dbh_trehshold;
+
+    double crown_kill_fraction = (kck1+kck2*avg_dbh)*fuel/1000.; // fuel: to t/ha
+    if (crown_kill_fraction > 1.)
+        crown_kill_fraction = 1.;
+
+
+    // (3) derive mortality of single trees
+    double bt; // bark thickness (cm)
+    double p_mort;
+    int died = 0;
+    double died_basal_area=0.;
+    foreach (Tree* t, trees) {
+        // the mortality probability depends on the thickness of the bark:
+        bt = t->dbh()*0.01; // FIXME
+        // note: 5.41 = 0.000541*10000, (fraction*fraction) = 10000 * pct*pct
+        p_mort = 1. / (1. + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*crown_kill_fraction*crown_kill_fraction));
+        if (p_mort < drandom()) {
+            // the tree actually dies.
+            died_basal_area += t->basalArea();
+            t->die();
+            ++died;
+            // some statistics???
+        }
+    }
+
+    // update statistics
+    ru_data.fireRUStats.fuel += fuel_ff + fuel_dwd; // fuel in kg Biomass
+    ru_data.fireRUStats.n_trees += trees.size();
+    ru_data.fireRUStats.n_trees_died += died;
+    ru_data.fireRUStats.died_basal_area += died_basal_area;
+    ru_data.fireRUStats.crown_kill += crown_kill_fraction;
+
+
+    // (4) effect of forest fire on the dead wood pools. remove fuel of the current pixel
+    ru->soil()->disturbanceBiomass(fuel_dwd, fuel_ff, 0.);
+
+    // (5) effect of forest fire on saplings: all saplings are killed.
+    //     Because regeneration happens before the fire routine, any newly regenarated saplings are killed as well.
+    ru->clearSaplings(pixel_rect, true);
+    return true;
 }
 
 

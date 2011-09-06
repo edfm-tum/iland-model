@@ -140,12 +140,37 @@ void Sapling::clearSaplings(const QPoint &position)
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         if (it->pixel==target) {
             // trick: use a const iterator to avoid a deep copy of the vector; then do an ugly const_cast to actually write the data
-            const SaplingTree &t = *it;
-            const_cast<SaplingTree&>(t).pixel=0;
+            //const SaplingTree &t = *it;
+            //const_cast<SaplingTree&>(t).pixel=0;
+            clearSapling(const_cast<SaplingTree&>(*it), false); // kill sapling and move carbon to soil
         }
     }
     int index = (position.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(position.y() - mRUS->ru()->cornerPointOffset().y());
     mSapBitset.set(index,false); // clear bit: now there is no sapling on this position
+
+}
+
+/// clear  saplings within a given rectangle
+void Sapling::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
+{
+    QVector<SaplingTree>::const_iterator it;
+    FloatGrid *grid = GlobalSettings::instance()->model()->grid();
+    for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+        if (rectangle.contains(grid->cellCenterPoint(grid->indexOf(it->pixel)))) {
+            clearSapling(const_cast<SaplingTree&>(*it), remove_biomass);
+        }
+    }
+}
+
+void Sapling::clearSapling(SaplingTree &tree, const bool remove)
+{
+    tree.pixel=0;
+    if (!remove) {
+        // killing of saplings:
+        // if remove=false, then remember dbh/number of trees (used later in calculateGrowth() to estimate carbon flow)
+        mDied++;
+        mSumDbhDied+=tree.height / mRUS->species()->saplingGrowthParameters().hdSapling * 100.;
+    }
 
 }
 
@@ -181,9 +206,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         tree.age.stress_years++;
         if (tree.age.stress_years > species->saplingGrowthParameters().maxStressYears) {
             // sapling dies...
-            tree.pixel=0;
-            mDied++;
-            mSumDbhDied+=tree.height / mRUS->species()->saplingGrowthParameters().hdSapling * 100.;
+            clearSapling(tree, false); // false: put carbon to the soil
             return false;
         }
     } else {
@@ -222,7 +245,8 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
             bigtree.setup();
         }
         // clear all regeneration from this pixel (including this tree)
-        ru->clearSaplings(p);
+        clearSapling(tree, true); // remove this tree (but do not move biomass to soil)
+        ru->clearSaplings(p); // remove all other saplings on the same pixel
         return false;
     }
     // book keeping (only for survivors)
@@ -236,13 +260,15 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
 }
 
 
+/** main growth function for saplings.
+    Statistics are cleared at the beginning of the year.
+*/
 void Sapling::calculateGrowth()
 {
     Q_ASSERT(mRUS);
     if (mLiving==0 && mAdded==0)
         return;
 
-    clearStatistics();
     ResourceUnit *ru = const_cast<ResourceUnit*> (mRUS->ru() );
     Species *species = const_cast<Species*>(mRUS->species());
 

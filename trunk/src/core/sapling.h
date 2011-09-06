@@ -32,6 +32,7 @@ public:
     void setup(ResourceUnitSpecies *masterRUS) { mRUS = masterRUS; }
     void cleanupStorage(); // maintenance operation - remove dead/recruited trees from vector
     void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mSumDbhDied=0.; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
+    void newYear() { clearStatistics(); }
     void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     // access
@@ -39,7 +40,10 @@ public:
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     void addSapling(const QPoint &pos_lif);
+    /// clear (either remove or kill) a specific sapling
+    void clearSapling(SaplingTree &tree, const bool remove);
     void clearSaplings(const QPoint &position); ///< clear  saplings on a given position (after recruitment)
+    void clearSaplings(const QRectF &rectangle, const bool remove_biomass); ///< clear  saplings within a given rectangle
     bool hasSapling(const QPoint &position) const; ///< return true if sapling is present at position
     double heightAt(const QPoint &position) const; ///< return the height at given position or 0 if position is not occupied
     // access to statistics
