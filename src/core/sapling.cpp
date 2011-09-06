@@ -19,6 +19,18 @@ Sapling::Sapling()
 {
     mRUS = 0;
     clearStatistics();
+    mAdded = 0;
+}
+
+// reset statistics, called at newYear
+void Sapling::clearStatistics()
+{
+    // mAdded: removed
+    mRecruited=mDied=mLiving=0;
+    mSumDbhDied=0.;
+    mAvgHeight=0.;
+    mAvgAge=0.;
+    mAvgDeltaHPot=mAvgHRealized=0.;
 }
 
 /// get the *represented* (Reineke's Law) number of trees (N/ha)
@@ -359,6 +371,8 @@ void Sapling::calculateGrowth()
     mRUS->statistics().add(this);
     GlobalSettings::instance()->systemStatistics()->saplingCount+=mLiving;
     GlobalSettings::instance()->systemStatistics()->newSaplings+=mAdded;
+    mAdded = 0; // reset
+
     //qDebug() << ru->index() << species->id()<< ": (living/avg.height):" <<  mLiving << mAvgHeight;
 }
 

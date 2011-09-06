@@ -48,13 +48,14 @@ double FireLayers::value(const FireRUData &data, const int param_index) const
     case 3: return data.fireRUStats.crown_kill; // crown kill fraction (average on resource unit)
     case 4: return data.fireRUStats.died_basal_area; // basal area died in the last fire
     case 5: return data.fireRUStats.n_trees > 0 ? data.fireRUStats.n_trees_died / double(data.fireRUStats.n_trees) : 0.;
+    case 6: return data.fireRUStats.fuel; // fuel load (forest floor + dwd) kg/ha
     default: throw IException(QString("invalid variable index for FireData: %1").arg(param_index));
     }
 }
 
 const QStringList FireLayers::names() const
 {
-    return QStringList() <<  "KBDI" << "KBDIref" << "fireID" << "crownKill" << "diedBasalArea" << "diedStemsFrac";
+    return QStringList() <<  "KBDI" << "KBDIref" << "fireID" << "crownKill" << "diedBasalArea" << "diedStemsFrac" << "fuel";
 
 }
 
@@ -505,7 +506,7 @@ void FireModule::testSpread()
     for (int r=0;r<360;r+=90) {
         mWindDirection = r;
         for (int i=0;i<5;i++) {
-            QPoint pt = mGrid.indexAt(QPointF(1100., 750.));
+            QPoint pt = mGrid.indexAt(QPointF(730., 610.)); // was: 1100/750
             mFireId++; // this fire gets a new id
 
             spread( pt );
@@ -551,19 +552,22 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     double avg_dbh = sum_dbh / (double) trees.size();
 
     // (1) calculate fuel
-    const double kfc1 = 0.2;
+    const double kfc1 = 0.8;
     const double kfc2 = 0.2;
-    const double kfc3 = 0.2;
+    const double kfc3 = 0.4;
     // retrieve values for fuel.
     // forest_floor: sum of leaves and twigs (t/ha) = yR pool
     // DWD: downed woody debris (t/ha) = yL pool
     const double pixel_fraction = cellsize()*cellsize() / (cRUSize*cRUSize); // fraction of one pixel, default: 0.04 (20x20 / 100x100)
 
     // fuel in cell (kg biomass): derive fraction of available fuel and use the KBDI as estimate for humidity.
-    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * ru->soil()->youngLabile().biomass() * pixel_fraction;
-    double fuel_dwd = kfc3*ru_data.kbdi() * ru->soil()->youngRefractory().biomass() * pixel_fraction;
+    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * ru->soil()->youngLabile().biomass() * 1000. * pixel_fraction;
+    double fuel_dwd = kfc3*ru_data.kbdi() * ru->soil()->youngRefractory().biomass() * 1000. * pixel_fraction;
     // calculate fuel (scaled to kg biomass / ha)
     double fuel = (fuel_ff + fuel_dwd) / pixel_fraction;
+
+    ru_data.fireRUStats.fuel += fuel; // fuel in kg/ha Biomass
+    ru_data.fireRUStats.n_trees += trees.size();
 
     // if fuel level is below 0.05kg BM/m2, then no burning happens
     if (fuel < 500.)
@@ -571,8 +575,8 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
     // (2) calculate the "crownkill" fraction
     const double dbh_trehshold = 30.; // dbh
-    const double kck1 = 0.;
-    const double kck2 = 1.;
+    const double kck1 = 0.21111;
+    const double kck2 = 0.00445;
     if (avg_dbh > dbh_trehshold)
         avg_dbh = dbh_trehshold;
 
@@ -591,7 +595,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         bt = t->dbh()*0.01; // FIXME
         // note: 5.41 = 0.000541*10000, (fraction*fraction) = 10000 * pct*pct
         p_mort = 1. / (1. + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*crown_kill_fraction*crown_kill_fraction));
-        if (p_mort < drandom()) {
+        if (drandom() < p_mort) {
             // the tree actually dies.
             died_basal_area += t->basalArea();
             t->die();
@@ -601,8 +605,6 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     }
 
     // update statistics
-    ru_data.fireRUStats.fuel += fuel_ff + fuel_dwd; // fuel in kg Biomass
-    ru_data.fireRUStats.n_trees += trees.size();
     ru_data.fireRUStats.n_trees_died += died;
     ru_data.fireRUStats.died_basal_area += died_basal_area;
     ru_data.fireRUStats.crown_kill += crown_kill_fraction;

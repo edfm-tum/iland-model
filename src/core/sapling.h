@@ -31,7 +31,7 @@ public:
     Sapling();
     void setup(ResourceUnitSpecies *masterRUS) { mRUS = masterRUS; }
     void cleanupStorage(); // maintenance operation - remove dead/recruited trees from vector
-    void clearStatistics() { mAdded=mRecruited=mDied=mLiving=0; mSumDbhDied=0.; mAvgHeight=0.;mAvgAge=0.; mAvgDeltaHPot=mAvgHRealized=0.; }
+    void clearStatistics();
     void newYear() { clearStatistics(); }
     void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
