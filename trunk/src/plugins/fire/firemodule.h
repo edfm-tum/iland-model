@@ -16,7 +16,7 @@ class FireModule;
 class FireRUData
 {
 public:
-    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.) {}
+    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.) { fireRUStats.clear(); }
     void setup();
     bool enabled() const { return mRefMgmt>0.; }
     void reset() { mKBDI = 0.; }
@@ -46,9 +46,11 @@ public:
                 // calculate averages
                 if (n_cells>0) {
                     crown_kill /= double(n_cells);
+                    fuel /= double(n_cells);
                 }
             }
         }
+        void clear() { fire_id=-1; enter(0);}
     } fireRUStats;
 private:
     // parameters
