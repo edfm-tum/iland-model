@@ -192,6 +192,7 @@ void ResourceUnit::newYear()
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         (*i)->statisticsDead().clear();
         (*i)->statisticsMgmt().clear();
+        (*i)->changeSapling().newYear();
     }
 
 }
@@ -358,6 +359,15 @@ void ResourceUnit::clearSaplings(const QPoint &position)
 {
     foreach(ResourceUnitSpecies* rus, mRUSpecies)
         rus->clearSaplings(position);
+
+}
+
+/// kill all saplings within a given rect
+void ResourceUnit::clearSaplings(const QRectF pixel_rect, const bool remove_from_soil)
+{
+    foreach(ResourceUnitSpecies* rus, mRUSpecies) {
+        rus->changeSapling().clearSaplings(pixel_rect, remove_from_soil);
+    }
 
 }
 

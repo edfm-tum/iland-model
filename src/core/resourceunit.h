@@ -91,6 +91,8 @@ public:
     void setMaxSaplingHeightAt(const QPoint &position, const float height);
     /// clear all saplings of all species on a given position (after recruitment)
     void clearSaplings(const QPoint &position);
+    /// kill all saplings within a given rect
+    void clearSaplings(const QRectF pixel_rect, const bool remove_from_soil);
     // snag / snag dynamics
     // snag dynamics, soil carbon and nitrogen cycle
     void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools

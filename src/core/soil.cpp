@@ -223,6 +223,25 @@ void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
 
 }
 
+/// remove biomass from the soil layer (e.g.: due to fire).
+/// @param DWD_kg_ha downed woody debris (yR) to remove kg/ha
+/// @param litter_kg_ha biomass in litter pools (yL) to remove kg/ha
+/// @param soil_kg_ha biomass in soil pool (SOM) to remove kg/ha
+void Soil::disturbanceBiomass(double DWD_kg_ha, double litter_kg_ha, double soil_kg_ha)
+{
+    double frac_dwd = 0.;
+    double frac_litter = 0.;
+    double frac_som = 0.;
+    if (!mYR.isEmpty())
+        frac_dwd = DWD_kg_ha / mYR.biomass();
+    if (!mYL.isEmpty())
+        frac_litter = litter_kg_ha / mYL.biomass();
+    if (!mSOM.isEmpty())
+        frac_som = soil_kg_ha / mSOM.biomass();
+
+    disturbance(frac_dwd, frac_litter, frac_som);
+}
+
 
 
 
