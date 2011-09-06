@@ -136,7 +136,7 @@ public:
     GridRunner(const Grid<T> &target_grid, const QRect &rectangle) {setup(&target_grid, rectangle);}
     GridRunner(Grid<T> *target_grid, const QRect &rectangle) {setup(target_grid, rectangle);}
     T* next(); ///< to to next element, return NULL if finished
-    T* current() { return mCurrent; }
+    T* current() const { return mCurrent; }
     void reset() { mCurrent = mFirst-1; mCurrentCol = -1; }
     // helpers
     /// fill array with pointers to neighbors (north, east, west, south)

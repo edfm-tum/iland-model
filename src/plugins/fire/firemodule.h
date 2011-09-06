@@ -22,6 +22,34 @@ public:
     void reset() { mKBDI = 0.; }
     double kbdi() const { return mKBDI; }
     // access data
+    struct {
+        int fire_id;
+        // statistics for:
+        int n_trees_died; ///< number of trees that are killed
+        int n_trees; ///< number of trees that are on burning cells
+        int n_cells; ///< number of burning cells
+        double died_basal_area; ///< basal area (m2) of died trees
+        double fuel; ///< average fuel (kg/ha)
+        double crown_kill; ///< average crown kill percent
+        // enter() can be called multiple times
+        void enter(const int this_fire_id) {
+            if (fire_id!=this_fire_id) {
+                fire_id = this_fire_id;
+                // clear all stats
+                n_trees_died = n_trees = n_cells = 0;
+                died_basal_area = fuel = crown_kill = 0.;
+            }
+        }
+        // call once after fire is finished
+        void calculate(const int this_fire_id) {
+            if (fire_id==this_fire_id) {
+                // calculate averages
+                if (n_cells>0) {
+                    crown_kill /= double(n_cells);
+                }
+            }
+        }
+    } fireRUStats;
 private:
     // parameters
     double mKBDIref; ///< reference value for KBDI drought index
@@ -99,6 +127,10 @@ private:
 
     /// calc the effect of wind on the fire spread
     double calcWindFactor(const double direction) const;
+
+    ///
+    bool burnPixel(const QPoint &pos, FireRUData &ru_data);
+    int mFireId; ///< running id of a fire event
     // parameters
     double mFireSizeSigma; ///< parameter of the log-normal distribution to derive fire size
     double mWindSpeedMin;
@@ -108,8 +140,8 @@ private:
     double mCurrentWindDirection;
 
     // data
-    Grid<FireRUData> mRUGrid;
-    Grid<float> mGrid;
+    Grid<FireRUData> mRUGrid; ///< grid with data values per resource unit
+    Grid<float> mGrid; ///< fire grid (20x20m)
     FireLayers mFireLayers;
     // functions
     FireRUData &data(const ResourceUnit *ru); ///< get ref to data element (FireData)

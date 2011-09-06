@@ -20,6 +20,8 @@ public:
     double N; // nitrogen pool (kg N/ha)
     double CN() { return N>0?C/N:0.; } ///< current CN ratio
     void clear() {C=0.; N=0.; }
+    /// retrieve the amount of biomass (kg/ha). Uses the global C-fraciton.
+    double biomass() const {return C / biomassCFraction; }
     /// add biomass to the pool (kg dry mass/ha); CNratio is used to calculate the N-Content, the global C-Fraction of biomass is used to
     /// calculate the amount of carbon of 'biomass'.
     void addBiomass(const double biomass, const double CNratio) { C+=biomass*biomassCFraction; N+=biomass*biomassCFraction/CNratio; }
