@@ -19,7 +19,7 @@ void FireRUData::setup()
 {
     // data items loaded here are provided per resource unit
     XmlHelper xml(GlobalSettings::instance()->settings().node("modules.fire"));
-    mKBDIref = xml.valueDouble(".KBDIref", 300.);
+    mKBDIref = xml.valueDouble(".KBDIref", 0.3);
     mRefMgmt = xml.valueDouble(".rFireSuppression", 1.);
     mRefLand = xml.valueDouble(".rLand", 1.);
     mRefAnnualPrecipitation = xml.valueDouble(".meanAnnualPrecipitation", -1);
@@ -538,7 +538,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     QVector<Tree*> trees;
     QVector<Tree>::iterator tend = ru->trees().end();
     for (QVector<Tree>::iterator t = ru->trees().begin(); t!=tend; ++t) {
-        if ( pixel_rect.contains( (*t).position() ))
+        if ( pixel_rect.contains( (*t).position() ) && !(*t).isDead())
             trees.push_back(&(*t));
     }
 

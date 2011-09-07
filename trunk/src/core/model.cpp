@@ -618,6 +618,11 @@ void Model::runYear()
     // external modules/disturbances
     mModules->run();
 
+    foreach(ResourceUnit *ru, mRU) {
+        // remove trees that died during disturbances. Note that cleanTreeList() is cheap if we have no dead trees
+        ru->cleanTreeList();
+    }
+
     DebugTimer toutput("outputs");
     // calculate statistics
     foreach(ResourceUnit *ru, mRU)
@@ -831,7 +836,7 @@ void Model::calculateStockedArea()
     }
 }
 
-/** calculate for each resource unit the stockable ara.
+/** calculate for each resource unit the stockable area.
   "stockability" is determined by the isValid flag of resource units which in turn
   is derived from stand grid values.
   */
@@ -856,10 +861,11 @@ void Model::calculateStockableArea()
             if (valid>0 && ru->id()==-1) {
                 qDebug() << "Warning: a resource unit has id=-1 but stockable area (id was set to 0)!!! ru: " << ru->boundingBox() << "with index" << ru->index();
                 ru->setID(0);
-                GridRunner<HeightGridValue> runner(*mHeightGrid, ru->boundingBox());
-                while (runner.next()) {
-                    qDebug() << mHeightGrid->cellCenterPoint(mHeightGrid->indexOf( runner.current() )) << ": " << runner.current()->isValid();
-                }
+                // test-code
+                //GridRunner<HeightGridValue> runner(*mHeightGrid, ru->boundingBox());
+                //while (runner.next()) {
+                //    qDebug() << mHeightGrid->cellCenterPoint(mHeightGrid->indexOf( runner.current() )) << ": " << runner.current()->isValid();
+                //}
 
             }
         } else

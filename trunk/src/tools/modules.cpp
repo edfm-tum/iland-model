@@ -70,6 +70,7 @@ void Modules::run()
     DebugTimer t("modules");
     QList<DisturbanceInterface*> run_list = mInterfaces;
 
+    // execute modules in random order
     for (int i=0;i < run_list.size(); ++i) {
         int idx = irandom(0, run_list.size()-1);
         if (logLevelDebug())

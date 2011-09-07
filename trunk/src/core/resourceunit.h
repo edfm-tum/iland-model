@@ -67,6 +67,7 @@ public:
     Tree &newTree();  ///< returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
     int newTreeIndex(); ///< returns the index of a newly inserted tree
     void cleanTreeList(); ///< remove dead trees from the tree storage.
+    void treeDied() { mHasDeadTrees = true; } ///< sets the flag that indicates that the resource unit contains dead trees
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
     void addLR(const float LA, const float LightResponse) { mAggregatedLR += LA*LightResponse; }
@@ -109,6 +110,7 @@ public:
 private:
     int mIndex; ///< internal index
     int mID; ///< ID provided by external stand grid
+    bool mHasDeadTrees; ///< flag that indicates if currently dead trees are in the tree list
     Climate *mClimate; ///< pointer to the climate object of this RU
     SpeciesSet *mSpeciesSet; ///< pointer to the species set for this RU
     WaterCycle *mWater; ///< link to the Soil water calculation engine
