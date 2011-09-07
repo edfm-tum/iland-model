@@ -209,14 +209,20 @@ QList<QVariant> Soil::debugList()
 /// @param soilFrac fraction of soil pool (SOM) to remove (0: nothing, 1: remove 100% percent)
 void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
 {
+    if (DWDfrac<0. || DWDfrac>1.)
+        qDebug() << "warning: Soil:disturbance: DWD-fraction invalid" << DWDfrac;
+    if (litterFrac<0. || litterFrac>1.)
+        qDebug() << "warning: Soil:disturbance: litter-fraction invalid" << litterFrac;
+    if (soilFrac<0. || soilFrac>1.)
+        qDebug() << "warning: Soil:disturbance: soil-fraction invalid" << soilFrac;
     // dwd
-    mTotalToDisturbance += mYR*DWDfrac;
+    mTotalToDisturbance += mYR*limit(DWDfrac, 0., 1.);
     mYR *= (1. - DWDfrac);
     // litter
-    mTotalToDisturbance += mYL*litterFrac;
+    mTotalToDisturbance += mYL*limit(litterFrac, 0., 1.);
     mYL *= (1. - litterFrac);
     // old soil organic matter
-    mTotalToDisturbance += mSOM*soilFrac;
+    mTotalToDisturbance += mSOM*limit(soilFrac, 0., 1.);
     mSOM *= (1. - soilFrac);
     if (isnan(mAvailableNitrogen) || isnan(mYR.C))
         qDebug() << "Available Nitrogen is NAN.";
@@ -233,11 +239,11 @@ void Soil::disturbanceBiomass(double DWD_kg_ha, double litter_kg_ha, double soil
     double frac_litter = 0.;
     double frac_som = 0.;
     if (!mYR.isEmpty())
-        frac_dwd = DWD_kg_ha / mYR.biomass();
+        frac_dwd = DWD_kg_ha / 1000. / mYR.biomass();
     if (!mYL.isEmpty())
-        frac_litter = litter_kg_ha / mYL.biomass();
+        frac_litter = litter_kg_ha / 1000. / mYL.biomass();
     if (!mSOM.isEmpty())
-        frac_som = soil_kg_ha / mSOM.biomass();
+        frac_som = soil_kg_ha / 1000. / mSOM.biomass();
 
     disturbance(frac_dwd, frac_litter, frac_som);
 }
