@@ -84,6 +84,7 @@ void ResourceUnit::setup()
         mSoil->calculateYear();
         mUnitVariables.nitrogenAvailable = mSoil->availableNitrogen();
     }
+    mHasDeadTrees = false;
     mAverageAging = 0.;
 
 }
@@ -144,6 +145,9 @@ int ResourceUnit::newTreeIndex()
 /// when trees are moved.
 void ResourceUnit::cleanTreeList()
 {
+    if (!mHasDeadTrees)
+        return;
+
     QVector<Tree>::iterator last=mTrees.end()-1;
     QVector<Tree>::iterator current = mTrees.begin();
     while (last>=current && (*last).isDead())
@@ -168,11 +172,13 @@ void ResourceUnit::cleanTreeList()
                 //int target_size = mTrees.count()*2;
                 //qDebug() << "reduce size from "<<mTrees.capacity() << "to" << target_size;
                 //mTrees.reserve(qMax(target_size, 100));
-                qDebug() << "reduce tree storage of RU" << index() << " from " << mTrees.capacity() << "to" << mTrees.count();
+                if (logLevelDebug())
+                    qDebug() << "reduce tree storage of RU" << index() << " from " << mTrees.capacity() << "to" << mTrees.count();
                 mTrees.squeeze();
             }
         }
     }
+    mHasDeadTrees = false; // reset flag
 }
 
 void ResourceUnit::newYear()
