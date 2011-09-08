@@ -1,6 +1,7 @@
 #include "global.h"
 #include "fireplugin.h"
-
+#include "outputmanager.h"
+#include "fireout.h"
 
 Q_EXPORT_PLUGIN2(iland_fire, FirePlugin)
 
@@ -27,6 +28,16 @@ FirePlugin::FirePlugin()
     qDebug() << "Fire plugin created";
 //    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
     //        qDebug() << ru->boundingBox() << ru->constTrees().count();
+}
+
+void FirePlugin::setup()
+{
+    // setup of the fire related outputs: note: here the fire module is passed directly to the output
+    FireOut *fire_output = new FireOut();
+    fire_output->setFireModule(&mFire);
+    GlobalSettings::instance()->outputManager()->addOutput(fire_output);
+    // setup of the fire module: load parameters from project file, etc.
+    mFire.setup();
 }
 
 

@@ -9,6 +9,7 @@
 #include "climate.h"
 #include "soil.h"
 #include "dem.h"
+#include "outputmanager.h"
 #include "3rdparty/SimpleRNG.h"
 
 //*********************************************************************************
@@ -196,6 +197,7 @@ void FireModule::ignition()
                     int ix = i % (int((cRUSize / cellsize())));
                     int iy = i / (int((cRUSize / cellsize())));
                     QPointF startcoord = mRUGrid.cellRect(mRUGrid.indexOf(fd)).bottomLeft();
+                    fireStats.startpoint = startcoord;
                     QPoint startpoint = mGrid.indexAt(QPointF(startcoord.x() + ix*cellsize() + 1., startcoord.y() + iy*cellsize() + 1.));
 
                     // check if we have enough fuel to start the fire: TODO
@@ -209,6 +211,9 @@ void FireModule::ignition()
                     // finalize statistics after fire event
                     for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
                         fds->fireRUStats.calculate(mFireId);
+
+                    // provide outputs: This calls the FireOut::exec() function
+                    GlobalSettings::instance()->outputManager()->execute("fire");
                 }
             }
         }
@@ -369,6 +374,9 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
 
     FireRUData *rudata = &mRUGrid.valueAt( mGrid.cellCenterPoint(start_point) );
     double fire_size_m2 = calculateFireSize(rudata->mAverageFireSize);
+    fireStats.fire_size_plan_m2 = fire_size_m2;
+    fireStats.iterations = 0;
+    fireStats.fire_size_realized_m2 = 0;
     double sum_fire_size = fire_size_m2; // cumulative fire size
     // calculate a factor describing how much larger/smaller the selected fire is compared to the average
     // fire size of the ignition cell
@@ -485,6 +493,9 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     qDebug() << "Fire:probabilstic spread: used " << iterations
              << "iterations. Planned (m2/cells):" << fire_size_m2 << "/" << cells_to_burn
              << "burned (m2/cells):" << cells_burned*cellsize()*cellsize() << "/" << cells_burned;
+
+    fireStats.fire_size_realized_m2 = cells_burned*cellsize()*cellsize();
+
 }
 
 void FireModule::testSpread()
@@ -535,6 +546,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         return false;
 
     // retrieve a list of trees within the active pixel
+    // NOTE: the check with isDead() is necessary because dead trees could be already in the trees list
     QVector<Tree*> trees;
     QVector<Tree>::iterator tend = ru->trees().end();
     for (QVector<Tree>::iterator t = ru->trees().begin(); t!=tend; ++t) {
