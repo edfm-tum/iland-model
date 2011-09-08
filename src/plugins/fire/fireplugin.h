@@ -22,7 +22,7 @@ public:
 
     // setup
     /// setup after the main iLand model frame is created
-    void setup() { mFire.setup(); }
+    void setup();
     /// setup resource unit specific parameters
     void setupResourceUnit(const ResourceUnit *ru) { mFire.setup(ru);}
 

@@ -7,6 +7,7 @@ class OutputManager
 public:
     OutputManager(); ///< create all outputs
     ~OutputManager();
+    void addOutput(Output *output); ///< add a (newly created) output category. freeing of memory is done by outputmanager
     void setup(); ///< setup of the outputs + switch on/off (from project file)
     Output *find(const QString& tableName); ///< search for output and return pointer, NULL otherwise
     bool execute(const QString& tableName); ///< execute output with a given name. returns true if executed.

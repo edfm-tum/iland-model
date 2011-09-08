@@ -3,6 +3,9 @@
 #include <QtCore/QString>
 #include <QtCore/QVariant>
 #include <QtSql/QSqlQuery>
+#include <QtCore/QVector>
+
+#include "global.h"
 
 enum OutputDatatype { OutInteger, OutDouble, OutString };
 enum OutputMode { OutDatabase, OutFile, OutText };

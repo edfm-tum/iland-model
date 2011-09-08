@@ -7,6 +7,7 @@
 class WaterCycleData;
 class ResourceUnit;
 class FireModule;
+class FireOut;
 
 /** FireRUData contains data items for resource units.
     Data items include:
@@ -147,6 +148,15 @@ private:
     FireLayers mFireLayers;
     // functions
     FireRUData &data(const ResourceUnit *ru); ///< get ref to data element (FireData)
+
+    // statistics
+    struct {
+        int iterations;
+        int fire_size_plan_m2;
+        int fire_size_realized_m2;
+        QPointF startpoint;
+    } fireStats;
+    friend class FireOut;
 
 };
 
