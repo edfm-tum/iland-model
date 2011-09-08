@@ -36,8 +36,13 @@ OutputManager::OutputManager()
     mOutputs.append(new SaplingOut);
     mOutputs.append(new CarbonOut);
     mOutputs.append(new CarbonFlowOut);
-
 }
+
+void OutputManager::addOutput(Output *output)
+{
+    mOutputs.append(output);
+}
+
 
 OutputManager::~OutputManager()
 {
@@ -134,3 +139,4 @@ QString OutputManager::wikiFormat()
         result+=o->wikiFormat() + "\n\n";
     return result;
 }
+
