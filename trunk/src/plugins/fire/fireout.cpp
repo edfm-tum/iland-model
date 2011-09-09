@@ -12,9 +12,12 @@ FireOut::FireOut()
                    "The output contains a row for each (ignited) fire event. " \
                    " ");
     columns() << OutputColumn::year()
+              << OutputColumn("fireId", "unique ID of the fire event (1..N) on the whole project area.", OutInteger)
               << OutputColumn("area_plan_m2", "Area of the planned fire m2", OutInteger)
               << OutputColumn("area_m2", "Realized area of burnt cells m2", OutInteger)
               << OutputColumn("iterations", "Number of iterations of the cellular automaton", OutInteger)
+              << OutputColumn("coord_x", "Coordinates (x) of the starting point (m)", OutDouble)
+              << OutputColumn("coord_y", "Coordinates (y) of the starting point (m)", OutDouble)
               << OutputColumn("n_trees", "total number of trees on all burning cells", OutInteger)
               << OutputColumn("n_trees_died", "total number of trees that were killed by the fire", OutDouble)
               << OutputColumn("basalArea_died", "sum of basal area of died trees (m2)", OutDouble)
@@ -35,6 +38,7 @@ void FireOut::setup()
 void FireOut::exec()
 {
     *this << currentYear();
+    *this << mFire->mFireId;
     *this << mFire->fireStats.fire_size_plan_m2 << mFire->fireStats.fire_size_realized_m2;
     *this << mFire->fireStats.iterations;
     *this << mFire->fireStats.startpoint.x() << mFire->fireStats.startpoint.y();
