@@ -886,6 +886,13 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
 }
 
+void Tree::removeBiomass(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
+{
+    mFoliageMass *= 1. - removeFoliageFraction;
+    mWoodyMass *= (1. - removeStemFraction);
+    // we have a problem with the branches: this currently cannot be done properly!
+}
+
 void Tree::mortality(TreeGrowthData &d)
 {
     // death if leaf area is 0
@@ -922,3 +929,4 @@ double Tree::basalArea() const
     const double b = (mDbh/200.)*(mDbh/200.)*M_PI;
     return b;
 }
+

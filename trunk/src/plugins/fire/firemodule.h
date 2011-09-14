@@ -154,6 +154,11 @@ private:
     Expression mMortalityFormula; ///< formula to calculate mortality caused by fire
     double *mFormula_bt;
     double *mFormula_ck;
+    double mBurnSoilBiomass; ///< fraction of soil biomass that is to be removed when burning
+    double mBurnStemFraction; ///< fraction of stem biomass burned by fire (if a tree dies)
+    double mBurnBranchFraction; ///< fraction of branch biomass burned by fire (if a tree dies)
+    double mBurnFoliageFraction; ///< fraction of foliage biomass burned by fire (if a tree dies)
+
     // data
     Grid<FireRUData> mRUGrid; ///< grid with data values per resource unit
     Grid<float> mGrid; ///< fire grid (20x20m)

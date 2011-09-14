@@ -98,9 +98,9 @@ void FireModule::setup()
     mFireSizeSigma = xml.valueDouble(".fireSizeSigma", 0.25);
 
     // fuel parameters
-    mFuelkFC1 = xml.valueDouble(".fuelkFC1", 0.8);
-    mFuelkFC2 = xml.valueDouble(".fuelkFC2", 0.2);
-    mFuelkFC3 = xml.valueDouble(".fuelkFC3", 0.4);
+    mFuelkFC1 = xml.valueDouble(".fuelKFC1", 0.8);
+    mFuelkFC2 = xml.valueDouble(".fuelKFC2", 0.2);
+    mFuelkFC3 = xml.valueDouble(".fuelKFC3", 0.4);
 
     // parameters for crown kill
     mCrownKillkCK1 = xml.valueDouble(".crownKill1", 0.21111);
@@ -112,6 +112,10 @@ void FireModule::setup()
     mFormula_ck = mMortalityFormula.addVar("ck");
     mMortalityFormula.setExpression(formula);
 
+    mBurnSoilBiomass = xml.valueDouble(".burnSOMFraction", 0.);
+    mBurnStemFraction = xml.valueDouble(".burnStemFraction", 0.1);
+    mBurnBranchFraction = xml.valueDouble(".burnBranchFraction", 0.5);
+    mBurnFoliageFraction = xml.valueDouble(".burnFoliageFraction", 1.);
     // setup of the visualization of the grid
     GlobalSettings::instance()->controller()->addLayers(&mFireLayers, "fire");
     GlobalSettings::instance()->controller()->addGrid(&mGrid, "fire spread", GridViewRainbow,0., 50.);
@@ -510,6 +514,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
              << "iterations. Planned (m2/cells):" << fire_size_m2 << "/" << cells_to_burn
              << "burned (m2/cells):" << cells_burned*cellsize()*cellsize() << "/" << cells_burned;
 
+    fireStats.iterations = iterations;
     fireStats.fire_size_realized_m2 = cells_burned*cellsize()*cellsize();
 
 }
@@ -627,6 +632,8 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         if (drandom() < p_mort) {
             // the tree actually dies.
             died_basal_area += t->basalArea();
+            // before tree biomass is transferred to the snag-state, a part of the biomass is combusted:
+            t->removeBiomass(mBurnFoliageFraction, mBurnBranchFraction, mBurnStemFraction);
             t->die();
             ++died;
             // some statistics???
@@ -641,9 +648,12 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
     // (4) effect of forest fire on the dead wood pools. remove fuel of the current pixel
     ru->soil()->disturbanceBiomass(fuel_dwd, fuel_ff, 0.);
+    // (4.1) remove also a fixed fraction of the biomass that is in the soil
+    if (mBurnSoilBiomass>0.)
+        ru->soil()->disturbance(0,0, mBurnSoilBiomass);
 
     // (5) effect of forest fire on saplings: all saplings are killed.
-    //     Because regeneration happens before the fire routine, any newly regenarated saplings are killed as well.
+    //     As regeneration happens before the fire routine, any newly regenarated saplings are killed as well.
     ru->clearSaplings(pixel_rect, true);
     return true;
 }

@@ -50,6 +50,9 @@ public:
     /// default values: all biomass remains in the forest (i.e.: kill()).
     void remove(double removeFoliage=0., double removeBranch=0., double removeStem=0. );
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
+    /// removes fractions (0..1) for foliage, branches, stem from a tree, e.g. due to a fire.
+    /// values of "0" remove nothing, "1" removes the full compartent.
+    void removeBiomass(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction);
 
     // setters for initialization
     void setNewId() { mId = m_nextId++; } ///< force a new id for this object (after copying trees)
@@ -102,7 +105,7 @@ private:
     float mLeafArea; ///< m2 leaf area
     float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)
     float mFoliageMass; // kg of foliage (dry)
-    float mWoodyMass; // kg biomass of aboveground woody biomass (stems and branches)
+    float mWoodyMass; // kg biomass of aboveground stem biomass
     float mFineRootMass; // kg biomass of fine roots (linked to foliage mass)
     float mCoarseRootMass; // kg biomass of coarse roots (allometric equation)
     // production relevant
