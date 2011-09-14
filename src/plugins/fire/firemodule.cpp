@@ -33,6 +33,7 @@ void FireRUData::setup()
     mBaseIgnitionProb = p_base * FireModule::cellsize()*FireModule::cellsize() / mAverageFireSize;
     mFireExtinctionProb = xml.valueDouble(".fireExtinctionProbability", 0.);
 
+
 }
 
 //*********************************************************************************
@@ -95,6 +96,21 @@ void FireModule::setup()
     mWindSpeedMax = xml.valueDouble(".wind.speedMax", 10.);
     mWindDirection = xml.valueDouble(".wind.direction", 270.); // defaults to "west"
     mFireSizeSigma = xml.valueDouble(".fireSizeSigma", 0.25);
+
+    // fuel parameters
+    mFuelkFC1 = xml.valueDouble(".fuelkFC1", 0.8);
+    mFuelkFC2 = xml.valueDouble(".fuelkFC2", 0.2);
+    mFuelkFC3 = xml.valueDouble(".fuelkFC3", 0.4);
+
+    // parameters for crown kill
+    mCrownKillkCK1 = xml.valueDouble(".crownKill1", 0.21111);
+    mCrownKillkCK2 = xml.valueDouble(".crownKill2", 0.00445);
+    mCrownKillDbh = xml.valueDouble(".crownKillDbh", 40.);
+
+    QString formula = xml.value(".mortalityFormula", "1/(1 + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*ck*ck))");
+    mFormula_bt = mMortalityFormula.addVar("bt");
+    mFormula_ck = mMortalityFormula.addVar("ck");
+    mMortalityFormula.setExpression(formula);
 
     // setup of the visualization of the grid
     GlobalSettings::instance()->controller()->addLayers(&mFireLayers, "fire");
@@ -564,9 +580,9 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     double avg_dbh = sum_dbh / (double) trees.size();
 
     // (1) calculate fuel
-    const double kfc1 = 0.8;
-    const double kfc2 = 0.2;
-    const double kfc3 = 0.4;
+    const double kfc1 = mFuelkFC1;
+    const double kfc2 = mFuelkFC2;
+    const double kfc3 = mFuelkFC3;
     // retrieve values for fuel.
     // forest_floor: sum of leaves and twigs (t/ha) = yR pool
     // DWD: downed woody debris (t/ha) = yL pool
@@ -586,9 +602,9 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         return false;
 
     // (2) calculate the "crownkill" fraction
-    const double dbh_trehshold = 30.; // dbh
-    const double kck1 = 0.21111;
-    const double kck2 = 0.00445;
+    const double dbh_trehshold = mCrownKillDbh; // dbh
+    const double kck1 = mCrownKillkCK1;
+    const double kck2 = mCrownKillkCK2;
     if (avg_dbh > dbh_trehshold)
         avg_dbh = dbh_trehshold;
 
@@ -598,15 +614,16 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
 
     // (3) derive mortality of single trees
-    double bt; // bark thickness (cm)
     double p_mort;
     int died = 0;
     double died_basal_area=0.;
     foreach (Tree* t, trees) {
         // the mortality probability depends on the thickness of the bark:
-        bt = t->dbh()*0.01; // FIXME
+        *mFormula_bt = t->barkThickness(); // cm
+        *mFormula_ck = crown_kill_fraction; // fraction of crown that is killed (0..1)
+        p_mort = mMortalityFormula.execute();
         // note: 5.41 = 0.000541*10000, (fraction*fraction) = 10000 * pct*pct
-        p_mort = 1. / (1. + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*crown_kill_fraction*crown_kill_fraction));
+        //p_mort = 1. / (1. + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*crown_kill_fraction*crown_kill_fraction));
         if (drandom() < p_mort) {
             // the tree actually dies.
             died_basal_area += t->basalArea();

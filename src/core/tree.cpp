@@ -62,6 +62,12 @@ void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
     mGrid = gridToStamp; mHeightGrid = dominanceGrid;
 }
 
+// calculate the thickness of the bark of the tree
+double Tree::barkThickness() const
+{
+    return mSpecies->barkThickness(mDbh);
+}
+
 /// dumps some core variables of a tree to a string.
 QString Tree::dump()
 {
