@@ -76,6 +76,7 @@ public:
     inline double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
     double allometricFractionStem(const double dbh) const;
     double finerootFoliageRatio() const { return mFinerootFoliageRatio; } ///< ratio of fineroot mass (kg) to foliage mass (kg)
+    double barkThickness(const double dbh) const { return dbh * mBarkThicknessFactor; }
     // cn ratios
     double cnFoliage() const { return mCNFoliage; }
     double cnFineroot() const { return mCNFineroot; }
@@ -144,6 +145,7 @@ private:
     double mBranch_a, mBranch_b; ///< allometry (biomass = a * dbh^b) for branches
     // cn-ratios
     double mCNFoliage, mCNFineroot, mCNWood; ///< CN-ratios for various tissue types; stem, branches and coarse roots are pooled as 'wood'
+    double mBarkThicknessFactor; ///< multiplier to estimate bark thickness (cm) from dbh
 
     double mSpecificLeafArea; ///< conversion factor from kg OTS to m2 LeafArea
     // turnover rates

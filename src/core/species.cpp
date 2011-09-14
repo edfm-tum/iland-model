@@ -60,6 +60,8 @@ void Species::setup()
     mSpecificLeafArea = doubleVar("specificLeafArea");
     mFinerootFoliageRatio = doubleVar("finerootFoliageRatio");
 
+    mBarkThicknessFactor = doubleVar("barkThickness");
+
     // cn-ratios
     mCNFoliage = doubleVar("cnFoliage");
     mCNFineroot = doubleVar("cnFineRoot");

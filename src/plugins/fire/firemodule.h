@@ -3,6 +3,7 @@
 
 #include "grid.h"
 #include "layeredgrid.h"
+#include "expression.h"
 
 class WaterCycleData;
 class ResourceUnit;
@@ -78,7 +79,8 @@ class FireLayers: public LayeredGrid<FireRUData> {
 };
 /** FireModule is the main class of the fire sub module and
     holds all the relevant data/actions for the iLand fire module.
-    See http://iland.boku.ac.at/wildfire
+    See http://iland.boku.ac.at/wildfire and http://iland.boku.ac.at/fire+module
+
     The fire module has conceptually three parts that stand more or less on its own:
      * Fire ignition
      * Fire spread
@@ -141,7 +143,17 @@ private:
     double mWindDirection;
     double mCurrentWindSpeed;
     double mCurrentWindDirection;
-
+    // fuel parameters
+    double mFuelkFC1; ///< params (Schumacher 2006) to calculate amount of fuel
+    double mFuelkFC2;
+    double mFuelkFC3;
+    // crown kill
+    double mCrownKillkCK1; ///< parameter to calculate fraction of crowns killed by the fire (Schumacher)
+    double mCrownKillkCK2;
+    double mCrownKillDbh; ///< dbh threshold (cm) for crown kill calculation
+    Expression mMortalityFormula; ///< formula to calculate mortality caused by fire
+    double *mFormula_bt;
+    double *mFormula_ck;
     // data
     Grid<FireRUData> mRUGrid; ///< grid with data values per resource unit
     Grid<float> mGrid; ///< fire grid (20x20m)
