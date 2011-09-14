@@ -42,6 +42,7 @@ public:
     float biomassFineRoot() const { return mFineRootMass; } ///< mass (kg) of fine roots
     float biomassCoarseRoot() const { return mCoarseRootMass; } ///< mass (kg) of coarse roots
     float biomassStem() const { return mWoodyMass; } ///< mass (kg) of stem
+    double barkThickness() const; ///< thickness of the bark (cm)
 
     // actions
     void die(TreeGrowthData *d=0); ///< kills the tree.
