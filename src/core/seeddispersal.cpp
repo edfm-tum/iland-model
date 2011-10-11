@@ -163,6 +163,9 @@ treemig=function(as1,as2,ks,d) # two-part exponential function, cf. Lischke & Lö
         p1+p2
         }
 */
+
+/// the used kernel function
+/// see also Appendix B of iland paper II (note the different variable names)
 double SeedDispersal::treemig(const double &distance)
 {
     double p1 = (1.-mTM_ks)*exp(-distance/mTM_as1)/mTM_as1;
