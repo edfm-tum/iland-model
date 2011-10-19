@@ -31,6 +31,7 @@
 #include "csvfile.h"
 #include "scriptglobal.h"
 #include "mapgrid.h"
+#include "modules.h"
 
 #include <QtScript>
 #include <QTextEdit>
@@ -113,6 +114,8 @@ Management::Management()
     ClimateConverter::addToScriptEngine(*mEngine);
     CSVFile::addToScriptEngine(*mEngine);
     MapGridWrapper::addToScriptEngine(*mEngine);
+    // setup scripting for modules
+    GlobalSettings::instance()->model()->modules()->setupScripting(mEngine);
 
     // default values for removal fractions
     // 100% of the stem, 0% of foliage and branches
