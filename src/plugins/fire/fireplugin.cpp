@@ -21,6 +21,12 @@
 #include "fireplugin.h"
 #include "outputmanager.h"
 #include "fireout.h"
+#include "firescript.h"
+
+#include <QObject>
+#include <QtScript>
+#include <QScriptValue>
+#include <QScriptEngine>
 
 Q_EXPORT_PLUGIN2(iland_fire, FirePlugin)
 
@@ -57,6 +63,19 @@ void FirePlugin::setup()
     GlobalSettings::instance()->outputManager()->addOutput(fire_output);
     // setup of the fire module: load parameters from project file, etc.
     mFire.setup();
+}
+
+Q_SCRIPT_DECLARE_QMETAOBJECT(FireScript, QObject*)
+
+// add the fire script interface
+void FirePlugin::setupScripting(QScriptEngine *engine)
+{
+    FireScript *fire_script = new FireScript();
+    fire_script->setFireModule(&mFire);
+    QScriptValue obj = engine->newQObject(fire_script, QScriptEngine::AutoOwnership);
+    engine->globalObject().setProperty("Fire", obj);
+
+    qDebug() << "setup scripting called...";
 }
 
 

@@ -1448,7 +1448,7 @@ void MainWindow::on_selectJavaScript_clicked()
         return;
     Management *mgmt = GlobalSettings::instance()->model()->management();
     if (!mgmt) {
-        Helper::msg("Error: no valid Management object available! (no model created).", this);
+        Helper::msg("Error: no valid Management object available! (no management module active).", this);
         return;
     }
     QString fileName = Helper::fileDialog("select a Javascript file:");
