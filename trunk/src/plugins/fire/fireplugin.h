@@ -44,6 +44,9 @@ public:
     void setup();
     /// setup resource unit specific parameters
     void setupResourceUnit(const ResourceUnit *ru) { mFire.setup(ru);}
+    /// setup additional javascript related features
+    void setupScripting(QScriptEngine *engine);
+
 
     // calculations
     void yearBegin() { mFire.yearBegin(); }

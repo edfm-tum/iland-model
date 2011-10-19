@@ -11,12 +11,16 @@ INCLUDEPATH  += ../.. \
 HEADERS       = \
     fireplugin.h \
     firemodule.h \
-    fireout.h
+    fireout.h \
+    firescript.h
 SOURCES       = \
     fireplugin.cpp \
     firemodule.cpp \
-    fireout.cpp
+    fireout.cpp \
+    firescript.cpp
 TARGET        = $$qtLibraryTarget(iland_fire)
 DESTDIR       = ../../plugins
+
+
 
 

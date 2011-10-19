@@ -130,11 +130,12 @@ public:
     /// calculate the start and starting point of a possible fire
     void ignition();
     ///  spread a fire starting from 'start_point' (index of the 20m grid)
-    void spread(const QPoint &start_point);
+    void spread(const QPoint &start_point, const bool prescribed = false);
     void severity();
 
     // helper functions
     void testSpread();
+    void prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection);
 
 private:
     /// estimate fire size from a distribution
@@ -162,6 +163,7 @@ private:
     double mWindDirection;
     double mCurrentWindSpeed;
     double mCurrentWindDirection;
+    double mPrescribedFiresize; // fire size from javascript
     // fuel parameters
     double mFuelkFC1; ///< params (Schumacher 2006) to calculate amount of fuel
     double mFuelkFC2;

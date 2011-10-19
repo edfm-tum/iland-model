@@ -261,16 +261,19 @@ void FireModule::ignition()
 
 /** calculate the actual fire spread.
 */
-void FireModule::spread(const QPoint &start_point)
+void FireModule::spread(const QPoint &start_point, const bool prescribed)
 {
     qDebug() << "fire event starting at position" << start_point;
 
     mGrid.initialize(0.f);
     mGrid.valueAtIndex(start_point) = 1.f;
 
-    // randomly choose windspeed and wind direction
-    mCurrentWindSpeed = nrandom(mWindSpeedMin, mWindSpeedMax);
-    mCurrentWindDirection = fmod(mWindDirection + nrandom(-45., 45.)+360., 360.);
+    if (!prescribed) {
+        // randomly choose windspeed and wind direction
+        mCurrentWindSpeed = nrandom(mWindSpeedMin, mWindSpeedMax);
+        mCurrentWindDirection = fmod(mWindDirection + nrandom(-45., 45.)+360., 360.);
+        mPrescribedFiresize = -1;
+    }
 
     // choose spread algorithm
     probabilisticSpread(start_point);
@@ -413,6 +416,11 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
 
     FireRUData *rudata = &mRUGrid.valueAt( mGrid.cellCenterPoint(start_point) );
     double fire_size_m2 = calculateFireSize(rudata->mAverageFireSize);
+
+    // for test cases, the size of the fire is predefined.
+    if (mPrescribedFiresize>=0)
+        fire_size_m2 = mPrescribedFiresize;
+
     fireStats.fire_size_plan_m2 = fire_size_m2;
     fireStats.iterations = 0;
     fireStats.fire_size_realized_m2 = 0;
@@ -572,6 +580,30 @@ void FireModule::testSpread()
 }
 
 
+void FireModule::prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection)
+{
+    QPoint pt = mGrid.indexAt(QPointF(x_m, y_m));
+    if (!mGrid.isIndexValid(pt)) {
+        qDebug() << "Fire starting point is not valid!";
+        return;
+    }
+    mFireId++; // this fire gets a new id
+
+    mPrescribedFiresize = firesize; // if -1, then
+
+    if (windspeed>=0) {
+        mCurrentWindSpeed = windspeed;
+        mCurrentWindDirection = winddirection;
+    }
+
+    spread( pt, true );
+
+    // update statistics for burnt areas
+    for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
+        fds->fireRUStats.calculate(mFireId);
+
+}
+
 /** burning of a single 20x20m pixel. see http://iland.boku.ac.at/wildfire.
    The function is called from the fire spread function.
    @return boolean true, if any trees were burned on the pixel
@@ -676,6 +708,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     ru->clearSaplings(pixel_rect, true);
     return true;
 }
+
 
 
 

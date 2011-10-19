@@ -28,7 +28,7 @@
     * General information: used to identify plugins
 
 */
-
+class QScriptEngine; // forward
 class DisturbanceInterface
 {
 public:
@@ -43,6 +43,7 @@ public:
     virtual void setup()=0; ///< setup after general iLand model frame is created.
     virtual void yearBegin()=0; ///< function executes at the beginning of a year (e.g., cleanup)
     virtual void run()=0; ///< main function that once a year (after growth)
+    virtual void setupScripting(QScriptEngine *engine)=0; ///< allow module specific javascript functions/classes
 };
 
 class SetupResourceUnitInterface

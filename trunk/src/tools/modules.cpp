@@ -78,6 +78,13 @@ void Modules::setup()
         di->setup();
 }
 
+void Modules::setupScripting(QScriptEngine *engine)
+{
+    foreach(DisturbanceInterface *di, mInterfaces)
+        di->setupScripting(engine);
+}
+
+
 void Modules::calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data)
 {
     foreach(WaterInterface *wi, mWater)
@@ -106,5 +113,6 @@ void Modules::yearBegin()
         di->yearBegin();
 
 }
+
 
 
