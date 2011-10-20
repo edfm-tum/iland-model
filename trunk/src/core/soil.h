@@ -80,6 +80,8 @@ private:
 
     CNPair mTotalToDisturbance; ///< book-keeping pool for heterotrophic respiration (kg/*ha)
     CNPair mTotalToAtmosphere; ///< book-keeping disturbance envents (fire) (kg/ha)
+
+    friend class Snapshot;
 };
 
 #endif // SOIL_H

@@ -27,6 +27,7 @@
 #include "outputmanager.h"
 #include "modelcontroller.h"
 #include "grid.h"
+#include "snapshot.h"
 class ResourceUnit;
 
 /** @class ScriptGlobal
@@ -309,5 +310,34 @@ int ScriptGlobal::addSaplingsOnMap(const MapGridWrapper *map, const int mapID, Q
     return 0;
 }
 
+/// saves a snapshot of the current model state (trees, soil, etc.)
+/// to a dedicated SQLite database.
+bool ScriptGlobal::saveModelSnapshot(QString file_name)
+{
+    try {
+        Snapshot shot;
+        QString output_db = GlobalSettings::instance()->path(file_name);
+        return shot.createSnapshot(output_db);
+    } catch (const IException &e) {
+        if (context())
+           context()->throwError(e.message());
+    }
+    return false;
+}
+
+/// loads a snapshot of the current model state (trees, soil, etc.)
+/// from a dedicated SQLite database.
+bool ScriptGlobal::loadModelSnapshot(QString file_name)
+{
+    try {
+        Snapshot shot;
+        QString input_db = GlobalSettings::instance()->path(file_name);
+        return shot.loadSnapshot(input_db);
+    } catch (const IException &e) {
+        if (context())
+           context()->throwError(e.message());
+    }
+    return false;
+}
 
 
