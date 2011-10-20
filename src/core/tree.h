@@ -163,6 +163,7 @@ private:
     friend class TreeWrapper;
     friend class StandStatistics;
     friend class TreeOut;
+    friend class Snapshot;
 };
 
 /// internal data structure which is passed between function and to statistics

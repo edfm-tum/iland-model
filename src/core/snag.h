@@ -143,6 +143,8 @@ private:
     CNPair mTotalToDisturbance; ///< fluxes due to disturbance
     static double mDBHLower, mDBHHigher; ///< thresholds used to classify to SWD-Pools
     static double mCarbonThreshold[3]; ///< carbon content thresholds that are used to decide if the SWD-pool should be emptied
+
+    friend class Snapshot;
 };
 
 #endif // SNAG_H

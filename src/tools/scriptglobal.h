@@ -97,6 +97,9 @@ public slots:
     void setViewport(double x, double y, double scale_px_per_m); ///< set the viewport of the main project area view
     bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
     bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
+    // vegetation snapshots
+    bool saveModelSnapshot(QString file_name);
+    bool loadModelSnapshot(QString file_name);
 private:
     QString mCurrentDir;
     Model *mModel;
