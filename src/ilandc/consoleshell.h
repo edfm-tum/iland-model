@@ -17,29 +17,26 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 
-#ifndef FLOATINGAVERAGE_H
-#define FLOATINGAVERAGE_H
-#include <QVector>
-/** Helper class for floating averages.
-  Use add(new_value) to add a value (and get the the current average). average() returns the current average
-  and sum() the total sum of stored values. Use setup() to setup place for "size" values. */
-class FloatingAverage
+#ifndef CONSOLESHELL_H
+#define CONSOLESHELL_H
+#include <QObject>
+/** ConsoleShell encapsulates the iLand model
+    when used in the console application ("ilandc.exe")
+*/
+
+class QTextStream;
+class ConsoleShell: public QObject
 {
+    Q_OBJECT
 public:
-    FloatingAverage();
-    FloatingAverage(int size) { setup(size); }
-    void setup(const int size, const double InitValue = 0.);
-    double add(double add_value); ///< add a value and return current average
-
-    double average() const {return mCurrentAverage; } ///< retrieve current average
-    double sum() const; ///< retrieve total sum of values.
+    ConsoleShell();
+    static QTextStream* logStream() {return mLogStream; }
+public slots:
+    void run(); // execute the iLand model
+    void runYear(int year); // slot called every year
 private:
-    double mCurrentAverage;
-    QVector<double> mData;
-    int    mSize;
-    int    mPos;
-    bool   mFilled;
-    double mInitValue;
-
+    void setupLogging();
+    static QTextStream *mLogStream;
 };
-#endif // FLOATINGAVERAGE_H
+
+#endif // CONSOLESHELL_H
