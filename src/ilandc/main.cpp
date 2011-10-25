@@ -26,6 +26,7 @@
 #include "exception.h"
 #include <stdexcept>
 #include <QTimer>
+#include <QString>
 
 #include "consoleshell.h"
 int main(int argc, char *argv[])
@@ -37,13 +38,14 @@ int main(int argc, char *argv[])
     printf("More at: http://iland.boku.ac.at \n");
     printf("(c) Werner Rammer, Rupert Seidl, 2009- \n");
     printf("****************************************\n\n");
-    if (a.arguments().count()<2) {
+    if (a.arguments().count()<3) {
         printf("Usage: \n");
-        printf("ilandc.exe <xml-project-file> \n");
+        printf("ilandc.exe <xml-project-file> <years> <...other options>\n");
         return 0;
     }
     ConsoleShell iland_shell;
 
     QTimer::singleShot(0, &iland_shell, SIGNAL(run()));
+    a.installEventFilter(&iland_shell);
     return a.exec();
 }

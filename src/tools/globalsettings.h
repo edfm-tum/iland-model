@@ -114,6 +114,7 @@ public:
 
     // path
     void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
+    void printDirecories() const;
 
     MTRand& randomGenerator(); // get a random generator instance per thread
 
