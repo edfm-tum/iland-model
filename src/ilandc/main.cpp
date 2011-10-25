@@ -17,29 +17,33 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 
-#ifndef FLOATINGAVERAGE_H
-#define FLOATINGAVERAGE_H
-#include <QVector>
-/** Helper class for floating averages.
-  Use add(new_value) to add a value (and get the the current average). average() returns the current average
-  and sum() the total sum of stored values. Use setup() to setup place for "size" values. */
-class FloatingAverage
+#include <QtCore/QCoreApplication>
+#include <stdio.h>
+#include <QDebug>
+#include <QDateTime>
+#include <QStringList>
+#include "../iland/version.h"
+#include "exception.h"
+#include <stdexcept>
+#include <QTimer>
+
+#include "consoleshell.h"
+int main(int argc, char *argv[])
 {
-public:
-    FloatingAverage();
-    FloatingAverage(int size) { setup(size); }
-    void setup(const int size, const double InitValue = 0.);
-    double add(double add_value); ///< add a value and return current average
+    QCoreApplication a(argc, argv);
 
-    double average() const {return mCurrentAverage; } ///< retrieve current average
-    double sum() const; ///< retrieve total sum of values.
-private:
-    double mCurrentAverage;
-    QVector<double> mData;
-    int    mSize;
-    int    mPos;
-    bool   mFilled;
-    double mInitValue;
+    printf("iLand console (%s - #%s)\n", currentVersion(), svnRevision());
+    printf("This is the console version of iLand, \n the individual based landscape and disturbance model.\n");
+    printf("More at: http://iland.boku.ac.at \n");
+    printf("(c) Werner Rammer, Rupert Seidl, 2009- \n");
+    printf("****************************************\n\n");
+    if (a.arguments().count()<2) {
+        printf("Usage: \n");
+        printf("ilandc.exe <xml-project-file> \n");
+        return 0;
+    }
+    ConsoleShell iland_shell;
 
-};
-#endif // FLOATINGAVERAGE_H
+    QTimer::singleShot(0, &iland_shell, SIGNAL(run()));
+    return a.exec();
+}

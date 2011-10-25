@@ -20,7 +20,9 @@
 #ifndef LOGICEXPRESSION_H
 #define LOGICEXPRESSION_H
 #include <QtCore/QString>
+#include <QtCore/QStringList>
 #include <QtCore/QMutexLocker>
+#include <QtCore/QVector>
 
 class ExpressionWrapper;
 class Expression
