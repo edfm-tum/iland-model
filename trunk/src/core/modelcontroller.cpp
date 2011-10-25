@@ -36,7 +36,9 @@
 #include "speciesset.h"
 #include "mapgrid.h"
 
+#ifdef ILAND_GUI
 #include "mainwindow.h" // for the debug message buffering
+#endif
 
 ModelController::ModelController()
 {
@@ -56,7 +58,9 @@ void ModelController::connectSignals()
 {
     if (!mViewerWindow)
         return;
+#ifdef ILAND_GUI
     connect(this,SIGNAL(bufferLogs(bool)), mViewerWindow, SLOT(bufferedLog(bool)));
+#endif
 }
 
 /// prepare a list of all (active) species
@@ -162,7 +166,11 @@ void ModelController::destroy()
 void ModelController::runloop()
 {
     static QTime sLastTime = QTime::currentTime();
+#ifdef ILAND_GUI
     QApplication::processEvents();
+#else
+    QCoreApplication::processEvents();
+#endif
     if (mPaused)
         return;
     bool doStop = false;
@@ -207,7 +215,11 @@ void ModelController::runloop()
         emit finished(QString());
     }
 
+#ifdef ILAND_GUI
     QApplication::processEvents();
+#else
+    QCoreApplication::processEvents();
+#endif
 }
 
 void ModelController::run(int years)
@@ -396,45 +408,58 @@ void ModelController::fetchDynamicOutput()
 
 void ModelController::saveScreenshot(QString file_name)
 {
+#ifdef ILAND_GUI
     if (!mViewerWindow)
         return;
     QImage img = mViewerWindow->screenshot();
     img.save(file_name);
+#endif
 }
 
 void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
 {
+#ifdef ILAND_GUI
     if (mViewerWindow) {
         mViewerWindow->paintGrid(map, "", GridViewRainbow, min_value, max_value);
         qDebug() << "painted map grid" << map->name() << "min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
+#endif
 }
 
 void ModelController::addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value)
 {
+#ifdef ILAND_GUI
+
     if (mViewerWindow) {
         mViewerWindow->paintGrid(grid, name, view_type, min_value, max_value);
         qDebug() << "painted grid min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
+#endif
 }
 
 void ModelController::addLayers(const LayeredGridBase *layers, const QString &name)
 {
+#ifdef ILAND_GUI
     if (mViewerWindow)
         mViewerWindow->addLayers(layers, name);
     //qDebug() << layers->names();
+#endif
 }
 
 void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
 {
+#ifdef ILAND_GUI
     if (mViewerWindow)
         mViewerWindow->setViewport(center_point, scale_px_per_m);
+#endif
 }
 
 void ModelController::repaint()
 {
+#ifdef ILAND_GUI
     if (mViewerWindow)
         mViewerWindow->repaint();
+#endif
 }
 
 

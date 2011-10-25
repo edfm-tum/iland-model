@@ -51,6 +51,8 @@ QString FirePlugin::description()
 FirePlugin::FirePlugin()
 {
     qDebug() << "Fire plugin created";
+    DBGMODE( qDebug("(Fire plugin in debug mode)"););
+
 //    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
     //        qDebug() << ru->boundingBox() << ru->constTrees().count();
 }

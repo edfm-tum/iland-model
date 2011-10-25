@@ -1,17 +1,20 @@
-# -------------------------------------------------
-# Project created by QtCreator 2009-02-10T13:47:01
-# -------------------------------------------------
-QT += xml
-QT += script
-QT += sql
-TARGET = iland
-TEMPLATE = app
-CONFIG += precompile_header
+#-------------------------------------------------
+#
+# Project created by QtCreator 2011-10-25T12:33:27
+#
+#-------------------------------------------------
 
-# includepath: adds directories to the standard include (no directory needed when #include a file).
+## iLand console application
+QT       += core
+## QT       -= gui ### we include the GUI library for QColor, QImage
+QT       += xml
+QT       += script
+QT       += sql
+
 INCLUDEPATH += ../core \
     ../tools \
-    ../output
+    ../output \
+    ../iland
 
 DEPENDPATH += plugins
 CONFIG(debug, debug|release) {
@@ -20,28 +23,31 @@ PRE_TARGETDEPS += ../plugins/libiland_fired.a
 LIBS += -L../plugins -liland_fired
 }
 
+
 CONFIG(release, debug|release) {
 # release stuff
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 LIBS += -L../plugins -liland_fire
 }
 
-DEFINES += ILAND_GUI
+CONFIG += precompile_header
 
-# to enable debug symbols in release code
-# debug information in release-mode executable
-#QMAKE_CXXFLAGS_RELEASE += -g
-#QMAKE_LFLAGS_RELEASE -= -Wl,-s
+TARGET = ilandc
+CONFIG   += console
+CONFIG   -= app_bundle
+
+TEMPLATE = app
+
 
 ### Flag to allow 3GB on Win 32
 ### you also need to modify boot.ini ...
 QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
 
-# Use Precompiled headers (PCH)
-PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
-    mainwindow.cpp \
-    paintarea.cpp \
+    consoleshell.cpp \
+    ../iland/version.cpp \
+    ../core/model.cpp \
+    ../core/modelcontroller.cpp \
     ../core/grid.cpp \
     ../core/tree.cpp \
     ../tools/expression.cpp \
@@ -53,16 +59,13 @@ SOURCES += main.cpp \
     ../tools/settingmetadata.cpp \
     ../tools/globalsettings.cpp \
     ../core/speciesset.cpp \
-    ../core/model.cpp \
     ../core/resourceunit.cpp \
     ../tools/xmlhelper.cpp \
-    ../core/modelcontroller.cpp \
     ../core/standloader.cpp \
     ../core/resourceunitspecies.cpp \
     ../core/production3pg.cpp \
     ../core/threadrunner.cpp \
     ../tools/expressionwrapper.cpp \
-    tests.cpp \
     ../output/output.cpp \
     ../output/treeout.cpp \
     ../output/outputmanager.cpp \
@@ -85,8 +88,6 @@ SOURCES += main.cpp \
     ../output/managementout.cpp \
     ../tools/sqlhelper.cpp \
     ../tools/random.cpp \
-    aboutdialog.cpp \
-    version.cpp \
     ../core/timeevents.cpp \
     ../core/seeddispersal.cpp \
     ../core/establishment.cpp \
@@ -102,10 +103,13 @@ SOURCES += main.cpp \
     ../tools/dem.cpp \
     ../3rdparty/SimpleRNG.cpp \
     ../output/snapshot.cpp
-HEADERS += mainwindow.h \
+HEADERS += \
+    consoleshell.h \
     stable.h \
-    paintarea.h \
-    version.h \
+    iland.h \
+    ../iland/version.h \
+    ../core/model.h \
+    ../core/modelcontroller.h \
     ../core/grid.h \
     ../core/tree.h \
     ../tools/expression.h \
@@ -128,7 +132,6 @@ HEADERS += mainwindow.h \
     ../core/production3pg.h \
     ../core/threadrunner.h \
     ../tools/expressionwrapper.h \
-    tests.h \
     ../output/output.h \
     ../output/treeout.h \
     ../output/outputmanager.h \
@@ -152,7 +155,6 @@ HEADERS += mainwindow.h \
     ../tools/sqlhelper.h \
     ../tools/random.h \
     ../3rdparty/MersenneTwister.h \
-    aboutdialog.h \
     ../core/timeevents.h \
     ../core/seeddispersal.h \
     ../core/establishment.h \
@@ -170,21 +172,3 @@ HEADERS += mainwindow.h \
     ../core/layeredgrid.h \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h
-FORMS += mainwindow.ui \
-    aboutdialog.ui
-RESOURCES += ../iland/res/iland.qrc
-
-# QMAKE_EXTRA_TARGETS += revtarget
-# PRE_TARGETDEPS += version.h
-# revtarget.target = version.h
-# SVNREV = $$system(svnversion .)
-# revtarget.commands = @echo \
-# "const char *version = \"Alpha 1.1.0\";" \
-# "const char *svn_revision = \"$$SVNREV\";" \
-# >  $$revtarget.target
-# revtarget.depends = $$SOURCES \
-# $$HEADERS \
-# $$FORMS
-OTHER_FILES += maindoc.cpp
-
-

@@ -275,9 +275,9 @@ void Snapshot::saveSnags()
         q.addBindValue(s->mSWD[0].C);
         q.addBindValue(s->mSWD[0].N);
         q.addBindValue(s->mSWD[1].C);
+        q.addBindValue(s->mSWD[1].N);
+        q.addBindValue(s->mSWD[2].C);
         q.addBindValue(s->mSWD[2].N);
-        q.addBindValue(s->mSWD[3].C);
-        q.addBindValue(s->mSWD[3].N);
         q.addBindValue(s->mTotalSWD.C);
         q.addBindValue(s->mTotalSWD.N);
         q.addBindValue(s->mNumberOfSnags[0]);
