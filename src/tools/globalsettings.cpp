@@ -444,6 +444,13 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
 
 
 ///////// Path functions
+void GlobalSettings::printDirecories() const
+{
+    qDebug() << "current File Paths:";
+    QHash<QString, QString>::const_iterator i;
+    for (i=mFilePath.constBegin(); i!=mFilePath.constEnd(); ++i)
+        qDebug() << i.key() << ": " << i.value();
+}
 
 void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &projectFilePath)
 {
@@ -460,7 +467,6 @@ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &proje
     mFilePath.insert("script", path(xml.value("script", "script"), "home"));
     mFilePath.insert("init", path(xml.value("init", "init"), "home"));
     mFilePath.insert("output", path(xml.value("output", "output"), "home"));
-    qDebug() << "current File Paths:" << mFilePath;
 }
 
 /** extend the file to a full absoulte path of the given type (temp, home, ...).
