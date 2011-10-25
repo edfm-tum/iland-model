@@ -20,6 +20,7 @@
 #include "consoleshell.h"
 
 #include <QtCore>
+#include <QKeyEvent>
 
 #include "global.h"
 #include "model.h"
@@ -27,15 +28,51 @@
 
 QTextStream *ConsoleShell::mLogStream = 0;
 
+// a try to really get keyboard strokes in console mode...
+// did not work.
+class KeyboardTaker : public QThread
+ {
+ public:
+     void run();
+     bool stop;
+ };
+
+ void KeyboardTaker::run()
+ {
+     stop = false;
+     QTextStream qin(stdin, QFile::ReadOnly);
+     while (!stop) {
+         QString input = qin.read(1);
+         if (!input.isNull()) {
+             // .. process input
+             qWarning() << "input:" << input;
+         }
+     }
+ }
+
 ConsoleShell::ConsoleShell()
 {
 }
 
+/*
+*/
+
 void ConsoleShell::run()
 {
-    QString xml_name = QCoreApplication::arguments().last();
-    if (!QFile::exists(xml_name))
-        throw IException(QString("invalid XML project file: %1").arg(xml_name));
+
+    QString xml_name = QCoreApplication::arguments().at(1);
+    if (!QFile::exists(xml_name)) {
+        qDebug() << "invalid XML project file: " << xml_name;
+        return;
+    }
+    // get the number of years to run...
+    bool ok;
+    int years = QCoreApplication::arguments().at(2).toInt(&ok);
+    if (years<0 || !ok) {
+        qDebug() << QCoreApplication::arguments().at(2) << "is an invalid number of years to run!";
+        return;
+    }
+
     try {
 
         ModelController iland_model;
@@ -50,17 +87,17 @@ void ConsoleShell::run()
         qDebug() << "started at: " << QDateTime::currentDateTime();
         qDebug() << "**************************************************";
 
-        qWarning() << "XML - File: " << xml_name;
         qWarning() << "**************************************************";
         qWarning() << "*** creating model...";
         qWarning() << "**************************************************";
 
         iland_model.create();
         qWarning() << "**************************************************";
-        qWarning() << "*** running model...";
+        qWarning() << "*** running model for" << years << "years";
         qWarning() << "**************************************************";
 
-        iland_model.run(10);
+        iland_model.run(years + 1);
+
         qWarning() << "**************************************************";
         qWarning() << "*** model run finished.";
         qWarning() << "*** " << QDateTime::currentDateTime();
@@ -81,7 +118,7 @@ void ConsoleShell::run()
 
 void ConsoleShell::runYear(int year)
 {
-    printf("simulating year %d ...\n", year);
+    printf("simulating year %d ...\n", year-1);
 }
 
 void myMessageOutput(QtMsgType type, const char *msg)

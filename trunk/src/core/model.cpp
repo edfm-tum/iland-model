@@ -363,6 +363,7 @@ void Model::loadProject()
 {
     DebugTimer dt("load project");
     GlobalSettings *g = GlobalSettings::instance();
+    g->printDirecories();
     const XmlHelper &xml = g->settings();
 
     g->clearDatabaseConnections();
