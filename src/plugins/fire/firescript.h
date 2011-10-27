@@ -38,6 +38,8 @@ public slots:
     winddirection: wind direction (0°=N..180°=S..270=W°), drawn randomly if omitted or set to -1.
     Returns the burnt area */
     double ignite(double x, double y, double firesize=-1, double windspeed=-1, double winddirection=-1);
+    bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
+
 private:
     FireModule *mFire;
 };

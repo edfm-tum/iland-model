@@ -604,7 +604,7 @@ template <class T>
             QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\n yllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
                     .arg(grid.sizeX())
                     .arg(grid.sizeY())
-                    .arg(world.x()).arg(world.y())
+                    .arg(world.x(),0,'f').arg(world.y(),0,'f')
                     .arg(grid.cellsize()).arg(-9999);
             QString line = gridToString(grid, QChar(' '), grid.sizeX()); // for normal grids (e.g. float)
             QStringList lines = line.split("\r\n");
