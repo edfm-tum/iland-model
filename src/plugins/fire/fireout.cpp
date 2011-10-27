@@ -71,7 +71,7 @@ void FireOut::exec()
         if (fds->fireRUStats.fire_id == fire_id) {
             // the current fire burnt on this area
             n_ru++;
-            avg_fuel += fds->fireRUStats.fuel;
+            avg_fuel += fds->fireRUStats.fuel_dwd+fds->fireRUStats.fuel_ff;
             n_trees += fds->fireRUStats.n_trees;
             n_trees_died += fds->fireRUStats.n_trees_died;
             basal_area += fds->fireRUStats.died_basal_area;

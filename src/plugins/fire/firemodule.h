@@ -50,7 +50,9 @@ public:
         int n_trees; ///< number of trees that are on burning cells
         int n_cells; ///< number of burning cells
         double died_basal_area; ///< basal area (m2) of died trees
-        double fuel; ///< average fuel (kg/ha)
+        double basal_area; ///< basal area (m2) of all trees on burning pixels
+        double fuel_ff; ///< average fuel fine material (kg/ha)
+        double fuel_dwd; ///< average fuel dead wood (kg/ha)
         double crown_kill; ///< average crown kill percent
         // enter() can be called multiple times
         void enter(const int this_fire_id) {
@@ -58,7 +60,7 @@ public:
                 fire_id = this_fire_id;
                 // clear all stats
                 n_trees_died = n_trees = n_cells = 0;
-                died_basal_area = fuel = crown_kill = 0.;
+                died_basal_area = basal_area = fuel_ff = fuel_dwd = crown_kill = 0.;
             }
         }
         // call once after fire is finished
@@ -67,7 +69,8 @@ public:
                 // calculate averages
                 if (n_cells>0) {
                     crown_kill /= double(n_cells);
-                    fuel /= double(n_cells);
+                    fuel_ff /= double(n_cells);
+                    fuel_dwd /= double(n_cells);
                 }
             }
         }
@@ -81,6 +84,8 @@ private:
     double mRefAnnualPrecipitation; ///< mean annual precipitation (mm)
     double mFireReturnInterval; ///< mean fire return interval (yrs)
     double mAverageFireSize; ///< mean average fire size (m2)
+    double mMinFireSize; ///< minimum fire size (m2)
+    double mMaxFireSize; ///< maximum fire size (m2)
     double mBaseIgnitionProb; ///< ignition probabilty for r_climate = r_mgmt = 1 (value is for the prob. for a cell, e.g. 20x20m)
     double mFireExtinctionProb; ///< gives the probabilty that a fire extincts on a pixel without having a chance to spread further
     // variables
@@ -139,7 +144,7 @@ public:
 
 private:
     /// estimate fire size from a distribution
-    double calculateFireSize(const double average_fire_size);
+    double calculateFireSize(const FireRUData *data);
 
     // functions for the cellular automata
     void probabilisticSpread(const QPoint &start_point);
@@ -153,8 +158,11 @@ private:
     /// calc the effect of wind on the fire spread
     double calcWindFactor(const double direction) const;
 
-    ///
+    /// calculate the "severity", i.e. burn individual trees within the pixels
     bool burnPixel(const QPoint &pos, FireRUData &ru_data);
+    /// calculate statistics, burn snags, soil of the resource units
+    void afterFire();
+
     int mFireId; ///< running id of a fire event
     // parameters
     double mFireSizeSigma; ///< parameter of the log-normal distribution to derive fire size
@@ -180,6 +188,8 @@ private:
     double mBurnBranchFraction; ///< fraction of branch biomass burned by fire (if a tree dies)
     double mBurnFoliageFraction; ///< fraction of foliage biomass burned by fire (if a tree dies)
 
+    bool mOnlyFireSimulation; ///< if true, trees/snags etc. are not really affected by fire
+
     // data
     Grid<FireRUData> mRUGrid; ///< grid with data values per resource unit
     Grid<float> mGrid; ///< fire grid (20x20m)
@@ -195,6 +205,7 @@ private:
         QPointF startpoint;
     } fireStats;
     friend class FireOut;
+    friend class FireScript;
 
 };
 

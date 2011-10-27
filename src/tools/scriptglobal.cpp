@@ -286,7 +286,9 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
         result = gridToESRIRaster(*GlobalSettings::instance()->model()->heightGrid(), *heightGrid_height);
     if (grid_type == "lif")
         result = gridToESRIRaster(*GlobalSettings::instance()->model()->grid());
+
     if (!result.isEmpty()) {
+        file_name = GlobalSettings::instance()->path(file_name);
         Helper::saveToTextFile(file_name, result);
         qDebug() << "saved grid to " << file_name;
         return true;
