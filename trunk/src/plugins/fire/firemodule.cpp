@@ -43,7 +43,9 @@ void FireRUData::setup()
     mRefMgmt = xml.valueDouble(".rFireSuppression", 1.);
     mRefLand = xml.valueDouble(".rLand", 1.);
     mRefAnnualPrecipitation = xml.valueDouble(".meanAnnualPrecipitation", -1);
-    mAverageFireSize = xml.valueDouble(".averageFireSize", 100.);
+    mAverageFireSize = xml.valueDouble(".averageFireSize", 10000.);
+    mMinFireSize = xml.valueDouble(".minFireSize", 0.);
+    mMaxFireSize = xml.valueDouble(".maxFireSize", 1000000.);
     mFireReturnInterval =  xml.valueDouble(".fireReturnInterval", 100); // every x year
     if (mAverageFireSize * mFireReturnInterval == 0.)
         throw IException("Fire-setup: invalid values for 'averageFireSize' or 'fireReturnInterval' (values must not be 0).");
@@ -69,7 +71,7 @@ double FireLayers::value(const FireRUData &data, const int param_index) const
     case 3: return data.fireRUStats.crown_kill; // crown kill fraction (average on resource unit)
     case 4: return data.fireRUStats.died_basal_area; // basal area died in the last fire
     case 5: return data.fireRUStats.n_trees > 0 ? data.fireRUStats.n_trees_died / double(data.fireRUStats.n_trees) : 0.;
-    case 6: return data.fireRUStats.fuel; // fuel load (forest floor + dwd) kg/ha
+    case 6: return data.fireRUStats.fuel_dwd + data.fireRUStats.fuel_ff; // fuel load (forest floor + dwd) kg/ha
     default: throw IException(QString("invalid variable index for FireData: %1").arg(param_index));
     }
 }
@@ -108,6 +110,7 @@ void FireModule::setup()
     // setup the fire spread grid
     mGrid.setup(mRUGrid.metricRect(), cellsize());
     mGrid.initialize(0.f);
+    mFireId = 0;
 
     // set some global settings
     XmlHelper xml(GlobalSettings::instance()->settings().node("modules.fire"));
@@ -115,6 +118,8 @@ void FireModule::setup()
     mWindSpeedMax = xml.valueDouble(".wind.speedMax", 10.);
     mWindDirection = xml.valueDouble(".wind.direction", 270.); // defaults to "west"
     mFireSizeSigma = xml.valueDouble(".fireSizeSigma", 0.25);
+
+    mOnlyFireSimulation = xml.valueBool(".onlySimulation", false);
 
     // fuel parameters
     mFuelkFC1 = xml.valueDouble(".fuelKFC1", 0.8);
@@ -239,17 +244,15 @@ void FireModule::ignition()
                     fireStats.startpoint = startcoord;
                     QPoint startpoint = mGrid.indexAt(QPointF(startcoord.x() + ix*cellsize() + 1., startcoord.y() + iy*cellsize() + 1.));
 
-                    // check if we have enough fuel to start the fire: TODO
+                    // check if we have enough fuel to start the fire: done in the spread routine
+                    // in this case "empty" fires (with area=0) are in the output
 
                     // now start the fire!!!
                     mFireId++; // this fire gets a new id
                     spread(startpoint);
 
-                    // TODO: what happens after a fire event? stop at all? or only for the resource unit?
-
                     // finalize statistics after fire event
-                    for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
-                        fds->fireRUStats.calculate(mFireId);
+                    afterFire();
 
                     // provide outputs: This calls the FireOut::exec() function
                     GlobalSettings::instance()->outputManager()->execute("fire");
@@ -282,12 +285,19 @@ void FireModule::spread(const QPoint &start_point, const bool prescribed)
 }
 
 /// Estimate fire size (m2) from a fire size distribution.
-double FireModule::calculateFireSize(const double average_fire_size)
+double FireModule::calculateFireSize(const FireRUData *data)
 {
-    SimpleRNG rng;
-    rng.SetState(irandom(0, std::numeric_limits<unsigned int>::max()-1), irandom(0, std::numeric_limits<unsigned int>::max()-1));
-    double size = rng.GetLogNormal(log(average_fire_size), mFireSizeSigma);
+    // calculate fire size based on a negative exponential firesize distribution
+    double size = -log(drandom()) * data->mAverageFireSize;
+    size = qMin(size, data->mMaxFireSize);
+    size = qMax(size, data->mMinFireSize);
     return size;
+
+    // old code: uses a log normal distribution -- currently not used:
+//    SimpleRNG rng;
+//    rng.SetState(irandom(0, std::numeric_limits<unsigned int>::max()-1), irandom(0, std::numeric_limits<unsigned int>::max()-1));
+//    double size = rng.GetLogNormal(log(average_fire_size), mFireSizeSigma);
+//    return size;
 }
 
 /// calculate effect of slope on fire spread
@@ -415,7 +425,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                          qMin(start_point.x()+2,mGrid.sizeX()),qMin(start_point.y()+2,mGrid.sizeY()) );
 
     FireRUData *rudata = &mRUGrid.valueAt( mGrid.cellCenterPoint(start_point) );
-    double fire_size_m2 = calculateFireSize(rudata->mAverageFireSize);
+    double fire_size_m2 = calculateFireSize(rudata);
 
     // for test cases, the size of the fire is predefined.
     if (mPrescribedFiresize>=0)
@@ -598,9 +608,7 @@ void FireModule::prescribedIgnition(const double x_m, const double y_m, const do
 
     spread( pt, true );
 
-    // update statistics for burnt areas
-    for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
-        fds->fireRUStats.calculate(mFireId);
+    afterFire();
 
 }
 
@@ -631,8 +639,11 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
     // calculate mean values for dbh
     double sum_dbh = 0.;
-    foreach (const Tree* t, trees)
+    double sum_ba = 0.;
+    foreach (const Tree* t, trees) {
         sum_dbh += t->dbh();
+        sum_ba += t->basalArea();
+    }
     double avg_dbh = sum_dbh / (double) trees.size();
 
     // (1) calculate fuel
@@ -642,18 +653,19 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     // retrieve values for fuel.
     // forest_floor: sum of leaves and twigs (t/ha) = yR pool
     // DWD: downed woody debris (t/ha) = yL pool
-    const double pixel_fraction = cellsize()*cellsize() / (cRUSize*cRUSize); // fraction of one pixel, default: 0.04 (20x20 / 100x100)
 
-    // fuel in cell (kg biomass): derive fraction of available fuel and use the KBDI as estimate for humidity.
-    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * ru->soil()->youngLabile().biomass() * 1000. * pixel_fraction;
-    double fuel_dwd = kfc3*ru_data.kbdi() * ru->soil()->youngRefractory().biomass() * 1000. * pixel_fraction;
-    // calculate fuel (scaled to kg biomass / ha)
-    double fuel = (fuel_ff + fuel_dwd) / pixel_fraction;
+    // fuel per ha (kg biomass): derive available fuel using the KBDI as estimate for humidity.
+    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * ru->soil()->youngLabile().biomass() * 1000. ;
+    double fuel_dwd = kfc3*ru_data.kbdi() * ru->soil()->youngRefractory().biomass() * 1000. ;
+    // calculate fuel (kg biomass / ha)
+    double fuel = (fuel_ff + fuel_dwd);
 
-    ru_data.fireRUStats.fuel += fuel; // fuel in kg/ha Biomass
+    ru_data.fireRUStats.n_cells++; // number of cells burned in the resource unit
+    ru_data.fireRUStats.fuel_ff += fuel_ff; // fuel in kg/ha Biomass
+    ru_data.fireRUStats.fuel_dwd += fuel_dwd; // fuel in kg/ha Biomass
     ru_data.fireRUStats.n_trees += trees.size();
-
-    // if fuel level is below 0.05kg BM/m2, then no burning happens
+    ru_data.fireRUStats.basal_area += sum_ba;
+    // if fuel level is below 0.05kg BM/m2 (=500kg/ha), then no burning happens
     if (fuel < 500.)
         return false;
 
@@ -683,9 +695,11 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         if (drandom() < p_mort) {
             // the tree actually dies.
             died_basal_area += t->basalArea();
-            // before tree biomass is transferred to the snag-state, a part of the biomass is combusted:
-            t->removeBiomass(mBurnFoliageFraction, mBurnBranchFraction, mBurnStemFraction);
-            t->die();
+            if (!mOnlyFireSimulation) {
+                // before tree biomass is transferred to the snag-state, a part of the biomass is combusted:
+                t->removeBiomass(mBurnFoliageFraction, mBurnBranchFraction, mBurnStemFraction);
+                t->die();
+            }
             ++died;
             // some statistics???
         }
@@ -696,17 +710,42 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     ru_data.fireRUStats.died_basal_area += died_basal_area;
     ru_data.fireRUStats.crown_kill += crown_kill_fraction;
 
-
-    // (4) effect of forest fire on the dead wood pools. remove fuel of the current pixel
-    ru->soil()->disturbanceBiomass(fuel_dwd, fuel_ff, 0.);
-    // (4.1) remove also a fixed fraction of the biomass that is in the soil
-    if (mBurnSoilBiomass>0.)
-        ru->soil()->disturbance(0,0, mBurnSoilBiomass);
-
-    // (5) effect of forest fire on saplings: all saplings are killed.
-    //     As regeneration happens before the fire routine, any newly regenarated saplings are killed as well.
-    ru->clearSaplings(pixel_rect, true);
+    if (!mOnlyFireSimulation) {
+        // (4) effect of forest fire on saplings: all saplings are killed.
+        //     As regeneration happens before the fire routine, any newly regenarated saplings are killed as well.
+        ru->clearSaplings(pixel_rect, true);
+    }
     return true;
+}
+
+/// do some cleanup / statistics after the fire.
+/// apply the effect of fire on dead wood pools and soil pools of the resource units
+/// biomass of living trees is consumed in the burnPixel() routine.
+void FireModule::afterFire()
+{
+    const double pixel_fraction = cellsize()*cellsize() / (cRUSize*cRUSize); // fraction of one pixel, default: 0.04 (20x20 / 100x100)
+
+    int ru_idx=0;
+    for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds, ++ru_idx) {
+        fds->fireRUStats.calculate(mFireId);
+        if (fds->fireRUStats.n_cells>0) {
+            // on this resource unit really a fire happened.
+            // so we need to update snags/soil pools
+            if (!mOnlyFireSimulation) {
+                ResourceUnit *ru = GlobalSettings::instance()->model()->ru(ru_idx);
+                double ru_fraction = fds->fireRUStats.n_cells * pixel_fraction; // fraction of RU burned (0..1)
+
+                // (1) effect of forest fire on the dead wood pools. remove fuel
+                ru->soil()->disturbanceBiomass(fds->fireRUStats.fuel_dwd*ru_fraction, fds->fireRUStats.fuel_ff*ru_fraction, 0.);
+
+                // (2) remove also a fixed fraction of the biomass that is in the soil
+                if (mBurnSoilBiomass>0.)
+                    ru->soil()->disturbance(0,0, mBurnSoilBiomass*ru_fraction);
+                // (3) effect on the snsgs
+                ru->snag()->removeCarbon(mBurnStemFraction*ru_fraction);
+            }
+        }
+    }
 }
 
 

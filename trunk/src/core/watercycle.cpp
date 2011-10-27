@@ -235,8 +235,12 @@ void WaterCycle::run()
 
         // (5) transpiration of the vegetation (and of water intercepted in canopy)
         // calculate the LAI-weighted response values for soil water and vpd:
+        double interception_before_transpiration = mCanopy.interception();
         double combined_response = calculateSoilAtmosphereResponse( current_psi, day->vpd);
         et = mCanopy.evapotranspiration3PG(day, climate->daylength_h(doy), combined_response);
+        // if there is some flow from intercepted water to the ground -> add to "water_to_the_ground"
+        if (mCanopy.interception() < interception_before_transpiration)
+            add_data.water_to_ground[doy]+= interception_before_transpiration - mCanopy.interception();
 
         mContent -= et; // reduce content (transpiration)
         // add intercepted water (that is *not* evaporated) again to the soil (or add to snow if temp too low -> call to snowpack)
