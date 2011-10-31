@@ -134,7 +134,7 @@ void Establishment::calculate()
         return;
 
     // the effect of water, nitrogen, co2, .... is a bulk factor: f_env,yr
-    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (only if that not done already)
+    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (only if that is not already done)
     double f_env_yr = mRUS->prod3PG().fEnvYear();
     mPAbiotic *= f_env_yr;
     if (mPAbiotic == 0.)
@@ -186,7 +186,7 @@ void Establishment::calculate()
                         qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
                     );
                     double p_establish = drandom(mRUS->ru()->randomGenerator());
-                    if (p_establish > mPAbiotic) {
+                    if (p_establish < mPAbiotic) {
                         if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p, p_establish))
                             n_established++;
                     }
@@ -277,7 +277,7 @@ void Establishment::calculateAbioticEnvironment()
         mTACA_frostfree = true;
 
     // if all requirements are met:
-    if (mTACA_chill && mTACA_min_temp & mTACA_gdd & mTACA_frostfree) {
+    if (mTACA_chill && mTACA_min_temp && mTACA_gdd && mTACA_frostfree) {
         // negative effect of frost events after bud birst
         double frost_effect = 1.;
         if (mTACA_frostAfterBuds>0)
