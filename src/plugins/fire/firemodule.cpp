@@ -188,6 +188,11 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
     const double mean_ap = fire_data.mRefAnnualPrecipitation; // reference mean annual precipitation
     double dp, dq, tmax;
 
+//  debug!!!
+//    QFile dump("e:/kbdidump.txt");
+//    dump.open(QFile::WriteOnly);
+//    QTextStream ts(&dump);
+
     double kbdi_sum = 0.;
     for (const ClimateDay *day = resource_unit->climate()->begin(); day!=end; ++day, ++iday) {
         dp = water_data->water_to_ground[iday]; // water reaching the ground for this day
@@ -206,6 +211,8 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
             kbdi += dq;
         }
         kbdi_sum += kbdi;
+//        // debug
+//        ts << iday << ";" << water_data->water_to_ground[iday] << ";" << water_data->snow_cover[iday] << ";" << tmax << ";" << kbdi << endl;
     }
     // the effective relative KBDI is calculated
     // as the year sum related to the maximum value (800*365)
@@ -610,6 +617,8 @@ void FireModule::prescribedIgnition(const double x_m, const double y_m, const do
 
     afterFire();
 
+    // provide outputs: This calls the FireOut::exec() function
+    GlobalSettings::instance()->outputManager()->execute("fire");
 }
 
 /** burning of a single 20x20m pixel. see http://iland.boku.ac.at/wildfire.
