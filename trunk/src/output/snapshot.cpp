@@ -36,10 +36,8 @@ Snapshot::Snapshot()
 
 bool Snapshot::openDatabase(const QString &file_name, const bool read)
 {
-    if (!QSqlDatabase::database("snapshot").isValid()) {
-        if (!GlobalSettings::instance()->setupDatabaseConnection("snapshot", file_name, read)) {
-            throw IException("Snapshot:createDatabase: database could not be created / opened");
-        }
+    if (!GlobalSettings::instance()->setupDatabaseConnection("snapshot", file_name, read)) {
+        throw IException("Snapshot:createDatabase: database could not be created / opened");
     }
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     if (!read) {

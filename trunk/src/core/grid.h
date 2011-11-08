@@ -601,7 +601,7 @@ template <class T>
             Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
             Vector3D world;
             modelToWorld(model, world);
-            QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\n yllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
+            QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\nyllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
                     .arg(grid.sizeX())
                     .arg(grid.sizeY())
                     .arg(world.x(),0,'f').arg(world.y(),0,'f')
