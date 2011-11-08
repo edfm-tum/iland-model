@@ -162,8 +162,9 @@ void FireModule::setup(const ResourceUnit *ru)
   */
 void FireModule::yearBegin()
 {
-for (FireRUData *fd = mRUGrid.begin(); fd!=mRUGrid.end(); ++fd)
-    fd->reset(); // reset drought index
+// setting KBDI=0 is not really necessary; in addition: kbdi-grids are emtpy if grid export is called during management (between yearBegin() and run())
+//for (FireRUData *fd = mRUGrid.begin(); fd!=mRUGrid.end(); ++fd)
+//    fd->reset(); // reset drought index
 }
 
 /** main function of the fire module.
