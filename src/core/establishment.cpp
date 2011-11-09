@@ -59,7 +59,7 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
         throw IException("Establishment::setup: important variable is null.");
 }
 
-inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value, const double &rnd_number)
+inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
 {
 
     // check window of opportunity...if regeneration (of any species) on the current pixel is above breast height (1.3m), then
@@ -85,12 +85,14 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      float p_est = lif_corrected * seed_value;
      // orig: with *mPAbiotic ::: now moved to one level above
      // float p_est = mPAbiotic * lif_corrected * seed_value;
+     // 2011-11-09: it is important to use a *new* random number: this is then mathematically the same as
+     // multiplying probabilties.
      // statistics
      mLIFcount++;
      mSumLIFvalue+=lif_value;
      // draw a random number and check against the combined establishment probability
-     // double p_rand = drandom(mRUS->ru()->randomGenerator());
-     if (rnd_number < p_est) {
+     double p_rand = drandom(mRUS->ru()->randomGenerator());
+     if (p_rand < p_est) {
          const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(pos_lif);
          return true; // establishment
      }
@@ -187,7 +189,7 @@ void Establishment::calculate()
                     );
                     double p_establish = drandom(mRUS->ru()->randomGenerator());
                     if (p_establish < mPAbiotic) {
-                        if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p, p_establish))
+                        if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
                             n_established++;
                     }
                 }
