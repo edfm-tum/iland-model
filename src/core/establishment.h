@@ -46,7 +46,7 @@ public:
 
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
-    inline bool establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value, const double &rnd_number); ///< do the final check whether a seedling can establish at given location
+    inline bool establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value); ///< do the final check whether a seedling can establish at given location
     void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
     const Climate *mClimate; ///< link to the current climate
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species (links to production data and species respones)
