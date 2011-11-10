@@ -710,7 +710,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
 {
     painter.fillRect(ui->PaintWidget->rect(), object.background_color);
 
-    int sx, sy;
+    int sx=0, sy=0;
     QRect total_rect;
     object.cur_min_value = object.min_value;
     object.cur_max_value = object.max_value;
@@ -746,7 +746,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     bool black_white = object.view_type == GridViewGray || object.view_type == GridViewGrayReverse;
 
     int ix,iy;
-    double value;
+    double value=0.;
     QRect r;
     QColor fill_color;
     for (iy=0;iy<sy;iy++) {
