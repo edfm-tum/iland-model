@@ -144,7 +144,8 @@ void Snapshot::loadTrees()
         }
         if (!ru)
             throw IException("Snapshot::loadTrees: Invalid resource unit");
-        Tree t;
+
+        Tree &t = ru->newTree();
         t.setRU(ru);
         t.mId = q.value(0).toInt();
         t.mPositionIndex.setX(q.value(2).toInt());
@@ -165,7 +166,7 @@ void Snapshot::loadTrees()
         t.mNPPReserve = q.value(14).toFloat();
         t.mStressIndex = q.value(15).toFloat();
         t.mStamp = s->stamp(t.mDbh, t.mHeight);
-        ru->trees().push_back(t);
+
         if (++n % 10000 == 0) {
             qDebug() << n << "trees loaded...";
             QCoreApplication::processEvents();
