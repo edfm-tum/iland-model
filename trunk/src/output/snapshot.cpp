@@ -25,6 +25,7 @@
 #include "tree.h"
 #include "soil.h"
 #include "snag.h"
+#include "helper.h"
 
 #include <QString>
 #include <QtSql>
@@ -74,6 +75,7 @@ bool Snapshot::createSnapshot(const QString &file_name)
 
 bool Snapshot::loadSnapshot(const QString &file_name)
 {
+    DebugTimer t("loadSnapshot");
     openDatabase(file_name, true);
     loadTrees();
     loadSoil();
@@ -129,22 +131,29 @@ void Snapshot::loadTrees()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
+    // setForwardOnly() -> helps avoiding that the query caches all the data
+    // during iterating
+    q.setForwardOnly(true);
     q.exec("select * from trees");
     int ru_index = -1;
     int new_ru;
     ResourceUnit *ru = 0;
     int n=0;
+    try {
     while (q.next()) {
         new_ru = q.value(1).toInt();
         if (new_ru != ru_index) {
             ru_index = new_ru;
             // remove all trees...
             ru = GlobalSettings::instance()->model()->ru(ru_index);
+            if (!ru)
+                throw IException("Snapshot::loadTrees: Invalid resource unit");
+
             ru->trees().clear();
         }
-        if (!ru)
-            throw IException("Snapshot::loadTrees: Invalid resource unit");
-
+        // add a new tree to the tree list
+        //ru->trees().append(Tree());
+        //Tree &t = ru->trees().back();
         Tree &t = ru->newTree();
         t.setRU(ru);
         t.mId = q.value(0).toInt();
@@ -171,7 +180,18 @@ void Snapshot::loadTrees()
             qDebug() << n << "trees loaded...";
             QCoreApplication::processEvents();
         }
+//        if (n % 1000000 == 0) {
+//            // to reduce memory foot print: re-query
+//            int current = q.at();
+//            q.exec("select * from trees");
+//            q.seek(current);
+//            qDebug() << n << "trees loaded: reopen query";
+//        }
     }
+    } catch (const std::bad_alloc &a) {
+        throw IException(QString("bad_alloc exception after %1 trees!!!!").arg(n));
+    }
+
     qDebug() << "Snapshot: finished trees. N=" << n;
 }
 
