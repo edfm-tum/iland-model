@@ -202,6 +202,8 @@ private:
         int iterations;
         int fire_size_plan_m2;
         int fire_size_realized_m2;
+        double fire_psme_total; ///< psme (doug fir) on burning pixels (m2 basal area)
+        double fire_psme_died; ///<  psme (doug fir) that died during the fire (based on m2)
         QPointF startpoint;
     } fireStats;
     friend class FireOut;

@@ -40,6 +40,7 @@ FireOut::FireOut()
               << OutputColumn("n_trees", "total number of trees on all burning cells", OutInteger)
               << OutputColumn("n_trees_died", "total number of trees that were killed by the fire", OutDouble)
               << OutputColumn("basalArea_died", "sum of basal area of died trees (m2)", OutDouble)
+              << OutputColumn("psme_died", "fraction of doug fir that died (based on basal area of psme trees on burning pixels)", OutDouble)
               << OutputColumn("avgFuel_kg_ha", "average total fuel (forest floor + dwd) of burning cells (kg/ha)", OutDouble)
               << OutputColumn("windSpeed", "current wind speed during the event (m/s)", OutDouble)
               << OutputColumn("windDirection", "current wind direction during the event (°)", OutDouble) ;
@@ -80,7 +81,9 @@ void FireOut::exec()
     if (n_ru>0) {
         avg_fuel /= double(n_ru);
     }
-    *this << n_trees << n_trees_died << basal_area << avg_fuel;
+    *this << n_trees << n_trees_died << basal_area;
+    *this << (mFire->fireStats.fire_psme_total>0.?mFire->fireStats.fire_psme_died / mFire->fireStats.fire_psme_total:0.);
+    *this << avg_fuel;
     *this << mFire->mCurrentWindSpeed << mFire->mCurrentWindDirection;
 
     writeRow();
