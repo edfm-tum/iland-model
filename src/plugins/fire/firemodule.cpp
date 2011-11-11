@@ -29,6 +29,7 @@
 #include "soil.h"
 #include "dem.h"
 #include "outputmanager.h"
+#include "species.h"
 #include "3rdparty/SimpleRNG.h"
 
 //*********************************************************************************
@@ -442,6 +443,8 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     fireStats.fire_size_plan_m2 = fire_size_m2;
     fireStats.iterations = 0;
     fireStats.fire_size_realized_m2 = 0;
+    fireStats.fire_psme_died = 0.;
+    fireStats.fire_psme_total = 0.;
     double sum_fire_size = fire_size_m2; // cumulative fire size
     // calculate a factor describing how much larger/smaller the selected fire is compared to the average
     // fire size of the ignition cell
@@ -620,6 +623,7 @@ void FireModule::prescribedIgnition(const double x_m, const double y_m, const do
 
     // provide outputs: This calls the FireOut::exec() function
     GlobalSettings::instance()->outputManager()->execute("fire");
+    GlobalSettings::instance()->outputManager()->save();
 }
 
 /** burning of a single 20x20m pixel. see http://iland.boku.ac.at/wildfire.
@@ -695,6 +699,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     double p_mort;
     int died = 0;
     double died_basal_area=0.;
+    bool tree_is_psme;
     foreach (Tree* t, trees) {
         // the mortality probability depends on the thickness of the bark:
         *mFormula_bt = t->barkThickness(); // cm
@@ -702,9 +707,14 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         p_mort = mMortalityFormula.execute();
         // note: 5.41 = 0.000541*10000, (fraction*fraction) = 10000 * pct*pct
         //p_mort = 1. / (1. + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*crown_kill_fraction*crown_kill_fraction));
+        tree_is_psme = t->species()->id()=="Psme";
+        if (tree_is_psme)
+            fireStats.fire_psme_total += t->basalArea();
         if (drandom() < p_mort) {
             // the tree actually dies.
             died_basal_area += t->basalArea();
+            if (tree_is_psme)
+                fireStats.fire_psme_died += t->basalArea();
             if (!mOnlyFireSimulation) {
                 // before tree biomass is transferred to the snag-state, a part of the biomass is combusted:
                 t->removeBiomass(mBurnFoliageFraction, mBurnBranchFraction, mBurnStemFraction);
