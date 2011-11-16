@@ -54,13 +54,14 @@ public:
         double fuel_ff; ///< average fuel fine material (kg/ha)
         double fuel_dwd; ///< average fuel dead wood (kg/ha)
         double crown_kill; ///< average crown kill percent
+        double avg_dbh; ///< average dbh (arithmetic mean) and limited to threshold
         // enter() can be called multiple times
         void enter(const int this_fire_id) {
             if (fire_id!=this_fire_id) {
                 fire_id = this_fire_id;
                 // clear all stats
                 n_trees_died = n_trees = n_cells = 0;
-                died_basal_area = basal_area = fuel_ff = fuel_dwd = crown_kill = 0.;
+                died_basal_area = basal_area = fuel_ff = fuel_dwd = crown_kill = avg_dbh = 0.;
             }
         }
         // call once after fire is finished
@@ -71,6 +72,7 @@ public:
                     crown_kill /= double(n_cells);
                     fuel_ff /= double(n_cells);
                     fuel_dwd /= double(n_cells);
+                    avg_dbh /= double(n_cells);
                 }
             }
         }
