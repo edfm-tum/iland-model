@@ -728,6 +728,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     ru_data.fireRUStats.n_trees_died += died;
     ru_data.fireRUStats.died_basal_area += died_basal_area;
     ru_data.fireRUStats.crown_kill += crown_kill_fraction;
+    ru_data.fireRUStats.avg_dbh += avg_dbh;
 
     if (!mOnlyFireSimulation) {
         // (4) effect of forest fire on saplings: all saplings are killed.

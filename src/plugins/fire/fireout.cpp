@@ -39,9 +39,10 @@ FireOut::FireOut()
               << OutputColumn("coord_y", "Coordinates (y) of the starting point (m)", OutDouble)
               << OutputColumn("n_trees", "total number of trees on all burning cells", OutInteger)
               << OutputColumn("n_trees_died", "total number of trees that were killed by the fire", OutDouble)
+              << OutputColumn("basalArea_total", "sum of basal area on burning pixels of the fire (m2)", OutDouble)
               << OutputColumn("basalArea_died", "sum of basal area of died trees (m2)", OutDouble)
               << OutputColumn("psme_died", "fraction of doug fir that died (based on basal area of psme trees on burning pixels)", OutDouble)
-              << OutputColumn("avgFuel_kg_ha", "average total fuel (forest floor + dwd) of burning cells (kg/ha)", OutDouble)
+              << OutputColumn("avgFuel_kg_ha", "average total fuel (dry) (forest floor + dwd) of burning cells (kg biomass/ha)", OutDouble)
               << OutputColumn("windSpeed", "current wind speed during the event (m/s)", OutDouble)
               << OutputColumn("windDirection", "current wind direction during the event (°)", OutDouble) ;
 
@@ -68,6 +69,7 @@ void FireOut::exec()
     double n_trees = 0.;
     double n_trees_died = 0.;
     double basal_area = 0.;
+    double basal_area_died = 0.;
     for (FireRUData *fds = mFire->mRUGrid.begin(); fds!=mFire->mRUGrid.end(); ++fds) {
         if (fds->fireRUStats.fire_id == fire_id) {
             // the current fire burnt on this area
@@ -75,13 +77,14 @@ void FireOut::exec()
             avg_fuel += fds->fireRUStats.fuel_dwd+fds->fireRUStats.fuel_ff;
             n_trees += fds->fireRUStats.n_trees;
             n_trees_died += fds->fireRUStats.n_trees_died;
-            basal_area += fds->fireRUStats.died_basal_area;
+            basal_area += fds->fireRUStats.basal_area;
+            basal_area_died += fds->fireRUStats.died_basal_area;
         }
     }
     if (n_ru>0) {
         avg_fuel /= double(n_ru);
     }
-    *this << n_trees << n_trees_died << basal_area;
+    *this << n_trees << n_trees_died << basal_area << basal_area_died;
     *this << (mFire->fireStats.fire_psme_total>0.?mFire->fireStats.fire_psme_died / mFire->fireStats.fire_psme_total:0.);
     *this << avg_fuel;
     *this << mFire->mCurrentWindSpeed << mFire->mCurrentWindDirection;
