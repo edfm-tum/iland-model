@@ -691,8 +691,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         avg_dbh = dbh_trehshold;
 
     double crown_kill_fraction = (kck1+kck2*avg_dbh)*fuel/1000.; // fuel: to t/ha
-    if (crown_kill_fraction > 1.)
-        crown_kill_fraction = 1.;
+    crown_kill_fraction = limit(crown_kill_fraction, 0., 1.); // limit to 0..1
 
 
     // (3) derive mortality of single trees
