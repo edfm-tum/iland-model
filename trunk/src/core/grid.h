@@ -588,13 +588,10 @@ template <class T>
                                 .arg(grid.sizeY())
                                 .arg(world.x(),0,'f').arg(world.y(),0,'f')
                                 .arg(grid.cellsize()).arg(-9999);
-        QString line =  gridToString(grid, valueFunction, QChar(' '), grid.sizeX()); // for special grids
-        QStringList lines = line.split("\r\n");
-        for (int i=lines.count()-1; i>=0; --i)
-            result+=lines[i];
-        return result;
-
+        QString line =  gridToString(grid, valueFunction, QChar(' ')); // for special grids
+        return result + line;
 }
+
     template <class T>
         QString gridToESRIRaster(const Grid<T> &grid )
 {
@@ -606,12 +603,8 @@ template <class T>
                     .arg(grid.sizeY())
                     .arg(world.x(),0,'f').arg(world.y(),0,'f')
                     .arg(grid.cellsize()).arg(-9999);
-            QString line = gridToString(grid, QChar(' '), grid.sizeX()); // for normal grids (e.g. float)
-            QStringList lines = line.split("\r\n");
-            for (int i=lines.count()-1; i>=0; --i)
-                result+=lines[i];
-            return result;
-
+            QString line = gridToString(grid, QChar(' ')); // for normal grids (e.g. float)
+            return result + line;
 }
 
 #endif // GRID_H
