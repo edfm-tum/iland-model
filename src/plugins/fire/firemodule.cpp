@@ -129,7 +129,7 @@ void FireModule::setup()
 
     // parameters for crown kill
     mCrownKillkCK1 = xml.valueDouble(".crownKill1", 0.21111);
-    mCrownKillkCK2 = xml.valueDouble(".crownKill2", 0.00445);
+    mCrownKillkCK2 = xml.valueDouble(".crownKill2", -0.00445);
     mCrownKillDbh = xml.valueDouble(".crownKillDbh", 40.);
 
     QString formula = xml.value(".mortalityFormula", "1/(1 + exp(-1.466 + 1.91*bt - 0.1775*bt*bt - 5.41*ck*ck))");
@@ -279,6 +279,8 @@ void FireModule::spread(const QPoint &start_point, const bool prescribed)
 
     mGrid.initialize(0.f);
     mGrid.valueAtIndex(start_point) = 1.f;
+    for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
+        fds->fireRUStats.clear();
 
     if (!prescribed) {
         // randomly choose windspeed and wind direction
@@ -509,6 +511,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                     // the fire spreads:
                     *p = 1.f;
                     FireRUData &fire_data = mRUGrid.valueAt(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+                    fire_data.fireRUStats.enter(mFireId);
                     cells_burned++;
                     // do the severity calculations:
                     // the function returns false if no trees are on the pixel
