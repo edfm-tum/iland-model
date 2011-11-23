@@ -32,9 +32,11 @@ private:
     void saveTrees();
     void saveSoil();
     void saveSnags();
+    void saveSaplings();
     void loadTrees();
     void loadSoil();
     void loadSnags();
+    void loadSaplings();
 };
 
 #endif // SNAPSHOT_H

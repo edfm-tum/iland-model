@@ -166,7 +166,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="editStackPage1">
         <attribute name="title">
@@ -245,6 +245,65 @@
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="scriptPage">
+        <attribute name="title">
+         <string>Scripting</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QToolButton" name="selectJavaScript">
+             <property name="toolTip">
+              <string>Select a javascript file and load it.</string>
+             </property>
+             <property name="text">
+              <string>...</string>
+             </property>
+             <property name="icon">
+              <iconset resource="res/iland.qrc">
+               <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="reloadJavaScript">
+             <property name="text">
+              <string>reload script</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
+              <string>Clear Output</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Enter command:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="scriptCommand"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Script Output</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="scriptResult"/>
+         </item>
+        </layout>
+       </widget>
        <widget class="QWidget" name="editStackPage2">
         <attribute name="title">
          <string>Other</string>
@@ -259,7 +318,7 @@
             </sizepolicy>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="tab_2">
             <attribute name="title">
@@ -414,65 +473,6 @@
                 <string>calculate</string>
                </property>
               </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="pageScript">
-            <attribute name="title">
-             <string>Scripting</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_7">
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_4">
-               <item>
-                <widget class="QToolButton" name="selectJavaScript">
-                 <property name="toolTip">
-                  <string>Select a javascript file and load it.</string>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="res/iland.qrc">
-                   <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="reloadJavaScript">
-                 <property name="text">
-                  <string>reload script</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton">
-                 <property name="text">
-                  <string>Clear Output</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Enter command:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="scriptCommand"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_6">
-               <property name="text">
-                <string>Script Output</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QTextEdit" name="scriptResult"/>
              </item>
             </layout>
            </widget>
@@ -1018,22 +1018,6 @@ QProgressBar::chunk {
     <hint type="destinationlabel">
      <x>60</x>
      <y>153</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton</sender>
-   <signal>clicked()</signal>
-   <receiver>scriptResult</receiver>
-   <slot>clear()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>105</x>
-     <y>165</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>104</x>
-     <y>158</y>
     </hint>
    </hints>
   </connection>
