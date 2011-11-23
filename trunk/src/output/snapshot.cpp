@@ -50,12 +50,16 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         // soil
         q.exec("drop table soil");
         q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inRefC real, inRefN real, YLC real, YLN real, YRC real, YRN real, SOMC real, SOMN real)");
-        qDebug() << "Snapshot - tables created. Database" << file_name;
+        // snag
         q.exec("drop table snag");
         q.exec("create table snag(RUIndex integer, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
                "totalSWDC real, totalSWDN real, NSnags1 real, NSnags2 real, NSnags3 real, dbh1 real, dbh2 real, dbh3 real, height1 real, height2 real, height3 real, " \
                "volume1 real, volume2 real, volume3 real, tsd1 real, tsd2 real, tsd3 real, ksw1 real, ksw2 real, ksw3 real, halflife1 real, halflife2 real, halflife3 real, " \
                "branch1C real, branch1N real, branch2C real, branch2N real, branch3C real, branch3N real, branch4C real, branch4N real, branch5C real, branch5N real, branchIndex integer)");
+        // saplings/regeneration
+        q.exec("drop table saplings");
+        q.exec("create table saplings (RUindex integer, species text, posx integer, posy integer, age integer, height float, stress_years integer)");
+        qDebug() << "Snapshot - tables created. Database" << file_name;
     }
     return true;
 }
@@ -69,6 +73,8 @@ bool Snapshot::createSnapshot(const QString &file_name)
     saveSoil();
     // save snags / deadwood pools
     saveSnags();
+    // save saplings
+    saveSaplings();
     QSqlDatabase::database("snapshot").close();
     return true;
 }
@@ -80,6 +86,7 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     loadTrees();
     loadSoil();
     loadSnags();
+    loadSaplings();
     // after changing the trees, do a complete apply/read pattern cycle over the landscape...
     GlobalSettings::instance()->model()->onlyApplyLightPattern();
     qDebug() << "applied light pattern...";
@@ -140,54 +147,50 @@ void Snapshot::loadTrees()
     ResourceUnit *ru = 0;
     int n=0;
     try {
-    while (q.next()) {
-        new_ru = q.value(1).toInt();
-        if (new_ru != ru_index) {
-            ru_index = new_ru;
-            // remove all trees...
-            ru = GlobalSettings::instance()->model()->ru(ru_index);
-            if (!ru)
-                throw IException("Snapshot::loadTrees: Invalid resource unit");
+        // clear all trees on the landscape
+        foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
+            ru->trees().clear();;
+        // load the trees from the database
+        while (q.next()) {
+            new_ru = q.value(1).toInt();
+            if (new_ru != ru_index) {
+                ru_index = new_ru;
+                // remove all trees...
+                ru = GlobalSettings::instance()->model()->ru(ru_index);
+                if (!ru)
+                    throw IException("Snapshot::loadTrees: Invalid resource unit");
+            }
+            // add a new tree to the tree list
+            //ru->trees().append(Tree());
+            //Tree &t = ru->trees().back();
+            Tree &t = ru->newTree();
+            t.setRU(ru);
+            t.mId = q.value(0).toInt();
+            t.mPositionIndex.setX(q.value(2).toInt());
+            t.mPositionIndex.setY(q.value(3).toInt());
+            Species *s = GlobalSettings::instance()->model()->speciesSet()->species(q.value(4).toString());
+            if (!s)
+                throw IException("Snapshot::loadTrees: Invalid species");
+            t.setSpecies(s);
+            t.mAge = q.value(5).toInt();
+            t.mHeight = q.value(6).toFloat();
+            t.mDbh = q.value(7).toFloat();
+            t.mLeafArea = q.value(8).toFloat();
+            t.mOpacity = q.value(9).toFloat();
+            t.mFoliageMass = q.value(10).toFloat();
+            t.mWoodyMass = q.value(11).toFloat();
+            t.mFineRootMass = q.value(12).toFloat();
+            t.mCoarseRootMass = q.value(13).toFloat();
+            t.mNPPReserve = q.value(14).toFloat();
+            t.mStressIndex = q.value(15).toFloat();
+            t.mStamp = s->stamp(t.mDbh, t.mHeight);
 
-            ru->trees().clear();
-        }
-        // add a new tree to the tree list
-        //ru->trees().append(Tree());
-        //Tree &t = ru->trees().back();
-        Tree &t = ru->newTree();
-        t.setRU(ru);
-        t.mId = q.value(0).toInt();
-        t.mPositionIndex.setX(q.value(2).toInt());
-        t.mPositionIndex.setY(q.value(3).toInt());
-        Species *s = GlobalSettings::instance()->model()->speciesSet()->species(q.value(4).toString());
-        if (!s)
-            throw IException("Snapshot::loadTrees: Invalid species");
-        t.setSpecies(s);
-        t.mAge = q.value(5).toInt();
-        t.mHeight = q.value(6).toFloat();
-        t.mDbh = q.value(7).toFloat();
-        t.mLeafArea = q.value(8).toFloat();
-        t.mOpacity = q.value(9).toFloat();
-        t.mFoliageMass = q.value(10).toFloat();
-        t.mWoodyMass = q.value(11).toFloat();
-        t.mFineRootMass = q.value(12).toFloat();
-        t.mCoarseRootMass = q.value(13).toFloat();
-        t.mNPPReserve = q.value(14).toFloat();
-        t.mStressIndex = q.value(15).toFloat();
-        t.mStamp = s->stamp(t.mDbh, t.mHeight);
+            if (++n % 10000 == 0) {
+                qDebug() << n << "trees loaded...";
+                QCoreApplication::processEvents();
+            }
 
-        if (++n % 10000 == 0) {
-            qDebug() << n << "trees loaded...";
-            QCoreApplication::processEvents();
         }
-//        if (n % 1000000 == 0) {
-//            // to reduce memory foot print: re-query
-//            int current = q.at();
-//            q.exec("select * from trees");
-//            q.seek(current);
-//            qDebug() << n << "trees loaded: reopen query";
-//        }
-    }
     } catch (const std::bad_alloc &a) {
         throw IException(QString("bad_alloc exception after %1 trees!!!!").arg(n));
     }
@@ -398,6 +401,96 @@ void Snapshot::loadSnags()
         }
     }
     qDebug() << "Snapshot: finished snags. N=" << n;
+
+}
+
+void Snapshot::saveSaplings()
+{
+    QSqlDatabase db=QSqlDatabase::database("snapshot");
+    QSqlQuery q(db);
+    if (!q.prepare(QString("insert into saplings (RUindex, species, posx, posy, age, height, stress_years) " \
+                           "values (?,?,?,?,?,?,?)")))
+        throw IException(QString("Snapshot::saveSaplings: prepare:") + q.lastError().text());
+
+    int n = 0;
+    db.transaction();
+    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        foreach (const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+            const Sapling &sap = rus->sapling();
+            if (sap.saplings().isEmpty())
+                continue;
+            foreach (const SaplingTree &t, sap.saplings()) {
+                if (!t.pixel)
+                    continue;
+                q.addBindValue(ru->index());
+                q.addBindValue(rus->species()->id());
+                QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(t.pixel);
+                q.addBindValue(p.x());
+                q.addBindValue(p.y());
+                q.addBindValue(t.age.age);
+                q.addBindValue(t.height);
+                q.addBindValue(t.age.stress_years);
+                if (!q.exec()) {
+                    throw IException(QString("Snapshot::saveSaplings: execute:") + q.lastError().text());
+                }
+                if (++n % 10000 == 0) {
+                    qDebug() << n << "saplings saved...";
+                    QCoreApplication::processEvents();
+                }
+            }
+        }
+    }
+    db.commit();
+    qDebug() << "Snapshot: finished saplings. N=" << n;
+}
+
+void Snapshot::loadSaplings()
+{
+    QSqlDatabase db=QSqlDatabase::database("snapshot");
+    QSqlQuery q(db);
+    q.exec("select * from saplings");
+    int ru_index = -1;
+
+    ResourceUnit *ru = 0;
+    int n=0;
+    int ci;
+    int posx, posy;
+    Sapling *last_sapling = 0;
+    while (q.next()) {
+        ci = 0;
+        ru_index = q.value(ci++).toInt();
+        ru = GlobalSettings::instance()->model()->ru(ru_index);
+        if (!ru)
+            throw IException("Snapshot::loadSaplings: Invalid resource unit");
+        Species *species = ru->speciesSet()->species(q.value(ci++).toString());
+        if (!species)
+            throw IException("Snapshot::loadSaplings: Invalid species");
+        Sapling &sap = ru->resourceUnitSpecies(species).changeSapling();
+        if (last_sapling != &sap) {
+            last_sapling = &sap;
+            sap.clear(); // clears the trees and the bitmap
+            sap.clearStatistics();
+        }
+        sap.mSaplingTrees.push_back(SaplingTree());
+        SaplingTree &t = sap.mSaplingTrees.back();
+        posx = q.value(ci++).toInt();
+        posy = q.value(ci++).toInt();
+        if (GlobalSettings::instance()->model()->grid()->isIndexValid(posx, posy))
+            t.pixel = GlobalSettings::instance()->model()->grid()->ptr(posx,posy );
+        else
+            throw IException(QString("Snapshot: loadSaplings: invalid position: %1/%2").arg(posx).arg(posy));
+        t.age.age = q.value(ci++).toInt();
+        t.height = q.value(ci++).toFloat();
+        t.age.stress_years = q.value(ci++).toInt();
+        sap.setBit(QPoint(posx, posy)); // set the flag in the bitmap
+        if (++n % 10000 == 0) {
+            qDebug() << n << "saplings loaded...";
+            QCoreApplication::processEvents();
+        }
+
+
+    }
+    qDebug() << "Snapshot: finished loading saplings. N=" << n;
 
 }
 

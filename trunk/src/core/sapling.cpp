@@ -150,6 +150,13 @@ double Sapling::heightAt(const QPoint &position) const
 }
 
 
+void Sapling::setBit(const QPoint &pos_index)
+{
+    int index = (pos_index.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(pos_index.y() - mRUS->ru()->cornerPointOffset().y());
+    mSapBitset.set(index,true); // set bit: now there is a sapling there
+}
+
+/// a a sapling at given position (index on the LIF grid, i.e. 2x2m)
 void Sapling::addSapling(const QPoint &pos_lif)
 {
     // adds a sapling...
@@ -158,8 +165,7 @@ void Sapling::addSapling(const QPoint &pos_lif)
     t.height = 0.05; // start with 5cm height
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
     t.pixel = lif_map.ptr(pos_lif.x(), pos_lif.y());
-    int index = (pos_lif.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(pos_lif.y() - mRUS->ru()->cornerPointOffset().y());
-    mSapBitset.set(index,true); // set bit: now there is a sapling there
+    setBit(pos_lif);
     mAdded++;
 }
 
@@ -409,6 +415,7 @@ void Sapling::fillMaxHeightGrid(Grid<float> &grid) const
     }
 
 }
+
 
 
 
