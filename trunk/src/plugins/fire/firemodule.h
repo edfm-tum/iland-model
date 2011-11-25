@@ -141,6 +141,7 @@ public:
     void severity();
 
     // helper functions
+    int fireId() const { return mFireId; } ///< return the ID of the last fire event
     void testSpread();
     void prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection);
 
@@ -191,6 +192,8 @@ private:
     double mBurnFoliageFraction; ///< fraction of foliage biomass burned by fire (if a tree dies)
 
     bool mOnlyFireSimulation; ///< if true, trees/snags etc. are not really affected by fire
+    // event handler
+    QString mAfterFireEvent; ///< javascript event after fire
 
     // data
     Grid<FireRUData> mRUGrid; ///< grid with data values per resource unit

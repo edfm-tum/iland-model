@@ -24,10 +24,12 @@ class FireModule; // forward
 class FireScript : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int id READ id);
+
 public:
     explicit FireScript(QObject *parent = 0);
     void setFireModule(FireModule *module) { mFire = module; }
-
+    int id() const; ///< the id of the last ignited fire during the simulation
 signals:
 
 public slots:
