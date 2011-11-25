@@ -92,7 +92,7 @@ public:
 
     // actions
     /// execute the javascript expression \p expression in the model context.
-    bool executeJavascript(const QString expression);
+    QString executeJavascript(const QString expression);
     void createStandStatistics();
     /// execute a function for each resource unit using multiple threads. "funcptr" is a ptr to a simple function
     void executePerResourceUnit(ResourceUnit * (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false) { threadRunner.run(funcptr, forceSingleThreaded);}

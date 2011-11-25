@@ -64,3 +64,8 @@ bool FireScript::gridToFile(QString grid_type, QString file_name)
     return false;
 
 }
+
+int FireScript::id() const
+{
+    return mFire->fireId();
+}
