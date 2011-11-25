@@ -141,6 +141,9 @@ void FireModule::setup()
     mBurnStemFraction = xml.valueDouble(".burnStemFraction", 0.1);
     mBurnBranchFraction = xml.valueDouble(".burnBranchFraction", 0.5);
     mBurnFoliageFraction = xml.valueDouble(".burnFoliageFraction", 1.);
+
+    mAfterFireEvent = xml.value(".onAfterFire");
+
     // setup of the visualization of the grid
     GlobalSettings::instance()->controller()->addLayers(&mFireLayers, "fire");
     GlobalSettings::instance()->controller()->addGrid(&mGrid, "fire spread", GridViewRainbow,0., 50.);
@@ -768,6 +771,12 @@ void FireModule::afterFire()
                 ru->snag()->removeCarbon(mBurnStemFraction*ru_fraction);
             }
         }
+    }
+
+    // execute the after fire event
+    if (!mAfterFireEvent.isEmpty()) {
+        // evaluate the javascript function...
+        GlobalSettings::instance()->model()->executeJavascript(mAfterFireEvent);
     }
 }
 

@@ -909,10 +909,12 @@ void Model::createStandStatistics()
 
 
 /// execute the javascript expression \p expression in the model context.
-bool Model::executeJavascript(const QString expression)
+QString Model::executeJavascript(const QString expression)
 {
-    if (management())
-        return management()->executeScript(expression).isEmpty();
-    else
+    if (management()) {
+        return management()->executeScript(expression);
+    } else {
+        qDebug() << "Model::executeJavascript: cannot execute expression because no scriping environment is active. Expression:" << expression;
         return false;
+    }
 }
