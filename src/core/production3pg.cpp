@@ -83,7 +83,7 @@ void Production3PG::clear()
 
 /** calculate the stand-level NPP
   @ingroup core
-  Standlevel (i.e. ResourceUnit-level) production (NPP) following the 3PG approach from Landsberg and Waring.
+  Standlevel (i.e ResourceUnit-level) production (NPP) following the 3PG approach from Landsberg and Waring.
   @sa http://iland.boku.ac.at/primary+production */
 double Production3PG::calculate()
 {

@@ -7,6 +7,7 @@ The iLand wiki is located <a href="http://iland.boku.ac.at">here</a>
 \section About the source code
 to come.
 
+\image html iland_landscape_logo.png
  */
 
 /** @defgroup core iLand core classes
@@ -41,3 +42,8 @@ The iLand classes and APIs for scripting (i.e.\ JavaScript) are described on thi
 Now you can proceed to the \ref advanced "advanced section".
 
 */
+
+/** @defgroup GUI elements necessary for the iLand user interface
+
+
+  */
