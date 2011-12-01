@@ -17,7 +17,12 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 
-
+/** @class PaintArea
+  @ingroup GUI
+  A small compoenent that acts as the "window" for special drawing.
+  The PaintArea is embedded in the MainWindow. The PaintArea receives UI events from Qt and,
+  after some processing emits signals.
+  */
 #include <QtGui>
 
 #include "paintarea.h"

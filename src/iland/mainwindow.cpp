@@ -53,6 +53,13 @@
 QDomDocument xmldoc;
 QDomNode xmlparams;
 
+/** @class MainWindow
+   @ingroup GUI
+   The main window of the iLand viewer.
+
+
+  */
+
 QColor MainWindow::PaintObject::background_color = Qt::white;
 
 double distance(const QPointF &a, const QPointF &b)
