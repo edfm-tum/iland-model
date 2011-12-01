@@ -20,6 +20,11 @@
 #include "sqlhelper.h"
 #include <QtSql>
 
+
+/** @class SqlHelper
+  @ingroup tools
+  A helper class for simple execution of database commands.
+*/
 SqlHelper::SqlHelper()
 {
 }

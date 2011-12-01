@@ -24,6 +24,7 @@
 #include "grid.h"
 
 /** Collection of Stamp for one tree species.
+  @ingroup core
   Per species several stamps are stored (different BHD, different HD relations). This class
   encapsulates storage and access to these stamps. The design goal is to deliver high
   access speeds for the "stamp()" method.

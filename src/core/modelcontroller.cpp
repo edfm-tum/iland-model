@@ -17,9 +17,10 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 
-/** ModelController is a helper class used to
-  control the flow of operations during a model run.
-  Really useful???? or a dispatcher???
+/** ModelController is a helper class used to control the flow of operations during a model run.
+  The ModelController encapsulates the Model class and is the main control unit. It is used by the
+  iLand GUI as well as the command line version (ilandc).
+
   */
 
 #include "global.h"

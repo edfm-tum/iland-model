@@ -34,6 +34,14 @@
 #include "csvfile.h"
 #include "mapgrid.h"
 
+/** @class StandLoader
+    @ingroup tools
+    loads (initializes) trees for a "stand" from various sources.
+    StandLoader initializes trees on the landscape. It reads (usually) from text files, creates the
+    trees and distributes the trees on the landscape (on the ResoureceUnit or on a stand defined by a grid).
+
+    See http://iland.boku.ac.at/initialize+trees
+  */
 // provide a mapping between "Picus"-style and "iLand"-style species Ids
 QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
 QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";

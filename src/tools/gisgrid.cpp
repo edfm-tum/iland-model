@@ -24,6 +24,14 @@
 #include "globalsettings.h"
 #include "model.h"
 
+/** @class GisGrid
+  @ingroup tools
+  GisGrid encapsulates a simple grid of values based on GIS data.
+  GisGrid can load input files in ESRI text file format (loadFromFile()) and transforms
+  coordinates to the current reference in iLand.
+
+  */
+
 // global transformation record:
 SCoordTrans GISCoordTrans;
 

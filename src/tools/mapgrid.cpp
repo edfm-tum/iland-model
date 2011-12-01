@@ -26,6 +26,7 @@
 #include "sapling.h"
 #include "resourceunit.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)
+  @ingropu tools
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
   details on how the grid is mapped to the local coordinate system of the project area. From the source grid a 10m grid
   using the extent and position of the "HeightGrid" and spatial indices for faster access are generated.

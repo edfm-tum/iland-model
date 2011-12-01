@@ -31,6 +31,7 @@
 class ResourceUnit;
 
 /** @class ScriptGlobal
+  @ingroup scripts
    This is a global interface providing useful functionality for javascripts.
   Within javascript-code an instance of this class can be accessed as "Globals" in the global scope
  (no instantiation necessary).*/

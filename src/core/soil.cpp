@@ -23,6 +23,7 @@
 #include "exception.h"
 #include "resourceunit.h"
 /** @class Soil provides an implementation of the ICBM/2N soil carbon and nitrogen dynamics model.
+  @ingroup core
   The ICBM/2N model was developed by Kätterer and Andren (2001) and used by others (e.g. Xenakis et al, 2008).
   See http://iland.boku.ac.at/soil+C+and+N+cycling for a model overview and the rationale of the model choice.
 
