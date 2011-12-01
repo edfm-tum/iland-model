@@ -28,6 +28,11 @@
 #include "seeddispersal.h"
 #include "modelsettings.h"
 
+/** @class SpeciesSet
+    A SpeciesSet acts as a container for individual Species objects. In iLand, theoretically,
+    multiple species sets can be used in parallel.
+  */
+
 SpeciesSet::SpeciesSet()
 {
     mSetupQuery = 0;

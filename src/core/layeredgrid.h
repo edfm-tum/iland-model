@@ -23,7 +23,7 @@
 #include "grid.h"
 
 /** LayeredGrid
-
+    @ingroup tools
   */
 
 class LayeredGridBase

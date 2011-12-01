@@ -19,6 +19,12 @@
 
 /** @class Model
   Main object of the iLand model composited of various sub models / sub components.
+  @ingroup core
+  The class Model is the top level container of iLand. The Model holds a collection of ResourceUnits, links to SpeciesSet and Climate.
+  ResourceUnit are grid cells with (currently) a size of 1 ha (100x100m). Many stand level processes (NPP produciton, WaterCycle) operate on this
+  level.
+  The Model also contain the landscape-wide 2m LIF-grid (http://iland.boku.ac.at/competition+for+light).
+
   */
 #include "global.h"
 #include "model.h"

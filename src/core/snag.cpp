@@ -29,6 +29,7 @@
 #include "model.h"
 
 /** @class Snag
+  @ingroup core
   Snag deals with carbon / nitrogen fluxes from the forest until the reach soil pools.
   Snag lives on the level of the ResourceUnit; carbon fluxes from trees enter Snag, and parts of the biomass of snags
   is subsequently forwarded to the soil sub model.

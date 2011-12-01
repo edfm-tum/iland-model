@@ -20,6 +20,11 @@
 /** @class ResourceUnit
   ResourceUnit is the spatial unit that encapsulates a forest stand and links to several environmental components
   (Climate, Soil, Water, ...).
+  @ingroup core
+  A resource unit has a size of (currently) 100x100m. Many processes in iLand operate on the level of a ResourceUnit.
+  Each resource unit has the same Climate and other properties (e.g. available nitrogen).
+  Proceses on this level are, inter alia, NPP Production (see Production3PG), water calculations (WaterCycle), the modeling
+  of dead trees (Snag) and soil processes (Soil).
 
   */
 #include <QtCore>

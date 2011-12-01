@@ -26,6 +26,17 @@
 #include "helper.h"
 #include "modules.h"
 
+/** @class WaterCycle
+  @ingroup core
+  simulates the water cycle on a ResourceUnit.
+  The WaterCycle is simulated with a daily time step on the spatial level of a ResourceUnit. Related are
+  the snow module (SnowPack), and Canopy module that simulates the interception (and evaporation) of precipitation and the
+  transpiration from the canopy.
+  The WaterCycle covers the "soil water bucket". Main entry function is run().
+
+  See http://iland.boku.ac.at/water+cycle
+  */
+
 WaterCycle::WaterCycle()
 {
     mSoilDepth = 0;

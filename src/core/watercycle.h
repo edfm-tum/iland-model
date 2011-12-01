@@ -27,7 +27,10 @@ namespace Water
 {
 
 
-/// Class SnowPack handles the snow layer
+/** SnowPack handles the snow layer.
+   @ingroup core
+   Snow is conceptually very simple (see http://iland.boku.ac.at/water+cycle).
+*/
 class SnowPack
 {
     friend class ::WaterCycle;
@@ -45,7 +48,12 @@ private:
 
 };
 
-/// Canopy handles the the throughfall and evaporation from the forest canopy.
+/** Canopy handles the the throughfall and evaporation from the forest canopy.
+  @ingroup core
+  The Canopy class encapsulates the leaves of trees with regard to water related processes. These
+  processes are the interception of precipitation, the evaporation from the canopy, and, most important,
+  the transpiration of the canopy. The functions are called by WaterCycle.
+  */
 class Canopy
 {
 
