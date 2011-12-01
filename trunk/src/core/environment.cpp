@@ -26,8 +26,10 @@
 #include "climate.h"
 #include "speciesset.h"
 
-/** Represents the physical simulation site with regard to climate, soil properties and such.
+/** Represents the input of various variables with regard to climate, soil properties and more.
+  @ingroup tools
     Data is read from various sources and presented to the core model with a standardized interface.
+    see http://iland.boku.ac.at/simulation+extent
 */
 Environment::Environment()
 {

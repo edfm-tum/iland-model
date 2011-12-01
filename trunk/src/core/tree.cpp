@@ -37,7 +37,15 @@ int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 
+/** @class Tree
+    @ingroup core
+    A tree is the basic simulation entity of iLand and represents a single tree.
+    Trees in iLand are designed to be lightweight, thus the list of stored properties is limited. Basic properties
+    are dimensions (dbh, height), biomass pools (stem, leaves, roots), the reserve NPP pool. Additionally, the location and species are stored.
+    A Tree has a height of at least 4m; trees below this threshold are covered by the regeneration layer (see Sapling).
+    Trees are stored in lists managed at the resource unit level.
 
+  */
 
 /** get distance and direction between two points.
   returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle. */

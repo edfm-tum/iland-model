@@ -18,6 +18,7 @@
 ********************************************************************************************/
 
 /** @class Species
+  @ingroup core
   The behavior and general properties of tree species.
   Because the individual trees are designed as leightweight as possible, lots of stuff is done by the Species.
   Inter alia, Species do:

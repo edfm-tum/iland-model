@@ -30,6 +30,7 @@ class FireModule;
 class FireOut;
 
 /** FireRUData contains data items for resource units.
+    @ingroup firemodule
     Data items include:
     * parameters (KBDIref, ...)
     * fuel values
@@ -97,14 +98,18 @@ private:
     friend class FireLayers;
 };
 
+/** Helper class manage and visualize data layers related to fire.
+  @ingroup firemodule
+*/
 class FireLayers: public LayeredGrid<FireRUData> {
   public:
     void setGrid(const Grid<FireRUData> &grid) { mGrid = &grid; }
     double value(const FireRUData& data, const int index) const;
     const QStringList names() const;
 };
-/** FireModule is the main class of the fire sub module and
-    holds all the relevant data/actions for the iLand fire module.
+/** FireModule is the main class of the fire sub module.
+    @ingroup firemodule
+    FireModule  holds all the relevant data/actions for the iLand fire module.
     See http://iland.boku.ac.at/wildfire and http://iland.boku.ac.at/fire+module
 
     The fire module has conceptually three parts that stand more or less on its own:

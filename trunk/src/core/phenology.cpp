@@ -32,6 +32,14 @@ double ramp(const double &value, const double minValue, const double maxValue)
     return (value-minValue) / (maxValue - minValue);
 }
 
+/** @class Phenology phenology submodule.
+  @ingroup core
+  The Phenology submodule calculates the length of the growing season according to the model of Jolly et al (2005). The calculation
+  is performed for species-groups (i.e.: species are lumped together to groups) and a given climate (i.e. worst case: for each ResourceUnit).
+
+  See http://iland.boku.ac.at/phenology for details.
+  */
+
 /** calculates the phenology according to Jolly et al. 2005.
   The calculation is performed for a given "group" and a present "climate".
 */

@@ -9,7 +9,16 @@ to come.
 
  */
 
-/** @defgroup core iLand core
+/** @defgroup core iLand core classes
+  This module contains more/less core model of iLand.
+  The class Model is the top level container of iLand. The Model holds a collection of ResourceUnits, links to SpeciesSet and Climate.
+  ResourceUnit are grid cells with (currently) a size of 1 ha (100x100m). Many stand level processes (NPP produciton, WaterCycle) operate on this
+  level.
+  The Model also contain the landscape-wide 2m LIF-grid (http://iland.boku.ac.at/competition+for+light).
+
+  The basic simulation entity of iLand is the individual Tree. Trees live on a ResourceUnit (i.e. trees are stored in lists owned by ResourceUnits).
+
+
 
  */
 

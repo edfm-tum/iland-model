@@ -37,6 +37,14 @@
 #include <QTextEdit>
 QObject *Management::scriptOutput = 0;
 
+/** @class Management Management executes management routines.
+  @ingroup core
+  The actual iLand management is based on Javascript functions. This class provides
+  the frame for executing the javascript as well as the functions that are called by scripts and
+  that really do the work.
+  See http://iland.boku.ac.at/iLand+scripting, http://iland.boku.ac.at/Object+Management for management Javascript API.
+  */
+
 QScriptValue script_debug(QScriptContext *ctx, QScriptEngine *eng)
 {
     QString value;

@@ -20,6 +20,10 @@
 #include "firemodule.h"
 #include "helper.h"
 
+/** @class FireScript
+    @ingroup firemodule
+    FireScript is the scripting shell for the fire module.
+  */
 FireScript::FireScript(QObject *parent) :
     QObject(parent)
 {

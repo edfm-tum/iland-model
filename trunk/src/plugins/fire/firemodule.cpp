@@ -32,6 +32,13 @@
 #include "species.h"
 #include "3rdparty/SimpleRNG.h"
 
+/** @defgroup firemodule iLand firemodule
+  The fire module is a disturbance module within the iLand framework.
+
+  See http://iland.boku.ac.at/wildfire for the science behind the module,
+  and http://iland.boku.ac.at/fire+module for the implementation/ using side.
+ */
+
 //*********************************************************************************
 //******************************************** FireData ***************************
 //*********************************************************************************

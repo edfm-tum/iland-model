@@ -25,6 +25,7 @@
 #include "tree.h"
 
 /** @class Sapling
+  @ingroup core
     Sapling stores saplings per species and resource unit and computes sapling growth (before recruitment).
     http://iland.boku.ac.at/sapling+growth+and+competition
     Saplings are established in a separate step (@sa Regeneration). If sapling reach a height of 4m, they are recruited and become "real" iLand-trees.
