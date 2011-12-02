@@ -27,6 +27,7 @@
 
 // include the static modules here in the code:
 Q_IMPORT_PLUGIN(iland_fire)
+Q_IMPORT_PLUGIN(iland_wind)
 
 
 Modules::Modules()
@@ -97,7 +98,7 @@ void Modules::run()
     QList<DisturbanceInterface*> run_list = mInterfaces;
 
     // execute modules in random order
-    for (int i=0;i < run_list.size(); ++i) {
+    while (!run_list.isEmpty()) {
         int idx = irandom(0, run_list.size()-1);
         if (logLevelDebug())
             qDebug() << "executing disturbance module: " << run_list[idx]->name();

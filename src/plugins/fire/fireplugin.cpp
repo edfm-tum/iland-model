@@ -37,7 +37,7 @@ QString FirePlugin::name()
 
 QString FirePlugin::version()
 {
-    return "0.1";
+    return "1.0";
 }
 
 QString FirePlugin::description()

@@ -17,13 +17,15 @@ DEPENDPATH += plugins
 CONFIG(debug, debug|release) {
 # debug stuff
 PRE_TARGETDEPS += ../plugins/libiland_fired.a
-LIBS += -L../plugins -liland_fired
+PRE_TARGETDEPS += ../plugins/libiland_windd.a
+LIBS += -L../plugins -liland_fired -liland_windd
 }
 
 CONFIG(release, debug|release) {
 # release stuff
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
-LIBS += -L../plugins -liland_fire
+PRE_TARGETDEPS += ../plugins/libiland_wind.a
+LIBS += -L../plugins -liland_fire -liland_wind
 }
 
 DEFINES += ILAND_GUI

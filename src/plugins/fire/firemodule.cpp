@@ -183,6 +183,9 @@ void FireModule::yearBegin()
 */
 void FireModule::run()
 {
+    if (GlobalSettings::instance()->settings().valueBool("modules.fire.enabled") == false)
+        return;
+
     // ignition() calculates ignition and calls 'spread()' if a new fire is created.
     ignition();
 }
