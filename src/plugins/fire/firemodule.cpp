@@ -528,11 +528,18 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                     bool really_burnt = burnPixel(mGrid.indexOf(p), fire_data);
                     // update the fire size
                     sum_fire_size += fire_data.mAverageFireSize * fire_scale_factor;
-                    if (!really_burnt || fire_data.mFireExtinctionProb>0.) {
-                        if (!really_burnt || drandom() < fire_data.mFireExtinctionProb) {
-                            *p = iterations + 1;
+                    // the fire stops, if (*) no trees were on the pixel, or (*) the fire extinguishes
+                    bool spread = really_burnt;
+                    if (spread && fire_data.mFireExtinctionProb>0.) {
+                        if (cells_burned*cellsize()*cellsize() > fire_data.mMinFireSize) {
+                            if (drandom() < fire_data.mFireExtinctionProb)
+                                spread = false;
                         }
+
                     }
+                    if (!spread)
+                        *p = iterations + 1;
+
                 } else {
                     *p = 0.f; // if the fire does note spread to the cell, the value is cleared again.
                 }
