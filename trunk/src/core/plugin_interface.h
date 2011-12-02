@@ -29,6 +29,8 @@
 
 */
 class QScriptEngine; // forward
+class ResourceUnit; // forward
+
 class DisturbanceInterface
 {
 public:
