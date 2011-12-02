@@ -448,7 +448,11 @@ void Snapshot::loadSaplings()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    q.exec("select * from saplings");
+    q.setForwardOnly(true); // avoid huge memory usage in query component
+    if (!q.exec("select * from saplings")) {
+        qDebug() << "Error when loading from saplings table...." << q.lastError().text();
+        return;
+    }
     int ru_index = -1;
 
     ResourceUnit *ru = 0;

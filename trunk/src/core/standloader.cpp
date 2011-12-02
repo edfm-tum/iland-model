@@ -33,6 +33,7 @@
 #include "environment.h"
 #include "csvfile.h"
 #include "mapgrid.h"
+#include "snapshot.h"
 
 /** @class StandLoader
     @ingroup tools
@@ -94,13 +95,6 @@ void StandLoader::processInit()
         return;
     }
 
-    // copy trees from first unit to all other units:
-    if (copy_mode=="copy") {
-        loadInitFile(fileName, type);
-        copyTrees();
-        evaluateDebugTrees();
-        return;
-    }
 
     // call a single tree init for each resource unit
     if (copy_mode=="unit") {
@@ -145,7 +139,14 @@ void StandLoader::processInit()
         evaluateDebugTrees();
         return;
     }
+    if (copy_mode=="snapshot") {
+        // load a snapshot from a file
+        Snapshot shot;
 
+        QString input_db = GlobalSettings::instance()->path(fileName);
+        shot.loadSnapshot(input_db);
+        return;
+    }
     throw IException("StandLoader::processInit: invalid initalization.mode!");
 }
 
