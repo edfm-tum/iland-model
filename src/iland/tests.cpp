@@ -49,6 +49,8 @@
 #include "modules.h"
 #include "../plugins/fire/fireplugin.h"
 #include "../plugins/fire/firemodule.h"
+#include "../plugins/wind/windmodule.h"
+#include "../plugins/wind/windplugin.h"
 #include <QInputDialog>
 
 Tests::Tests(QObject *wnd)
@@ -754,4 +756,36 @@ void Tests::testFire()
     }
     GlobalSettings::instance()->controller()->repaint();
 
+}
+
+void Tests::testWind()
+{
+    // get fire module
+    WindPlugin *plugin = dynamic_cast<WindPlugin *>(GlobalSettings::instance()->model()->modules()->module("wind"));
+    if (plugin) {
+        WindModule *wind = plugin->windModule();
+        double direction = Helper::userValue("direction (degrees), -1 for roundabout", "100").toDouble();
+        bool loop = false;
+        if (direction==-1)
+            loop = true;
+        try {
+            if (loop) {
+                for (direction = 0.; direction<360; direction+=10.) {
+                    wind->run();
+                    wind->testFetch(direction);
+                    GlobalSettings::instance()->controller()->repaint();
+                    qDebug() << "looping..." << direction;
+                }
+            } else {
+                wind->run();
+                DebugTimer t;
+                wind->testFetch(direction);
+                qDebug() << "fetch finished. ms:" << t.elapsed();
+            }
+        } catch (const IException &e) {
+            Helper::msg(e.message());
+        }
+
+    }
+    GlobalSettings::instance()->controller()->repaint();
 }

@@ -58,9 +58,14 @@ public:
 
     /// main function of the disturbance module
     void run();
+
+    // test functions
+    void testFetch(double degree_direction);
 private:
     void initWindGrid(); ///< load state from iland main module
-    void detectEdges();
+    void detectEdges(); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
+    /// find distance to the next pixels that give shelter
+    bool checkFetch(const int startx, const int starty, const double direction, const double max_distance, const double threshold) ;
     Grid<WindCell> mGrid; ///< wind grid (10x10m)
     WindLayers mWindLayers; ///< helping structure
 

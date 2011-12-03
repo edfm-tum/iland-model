@@ -55,6 +55,9 @@ public:
     // calculations
     void yearBegin();
     void run();
+    // special functions for direct access (testing)
+    WindModule *windModule() { return mWind; }
+
 private:
     WindModule *mWind;
 };
