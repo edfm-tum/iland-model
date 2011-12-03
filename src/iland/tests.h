@@ -48,6 +48,7 @@ public:
     void testMap();
     void testDEM();
     void testFire();
+    void testWind();
     private:
     QString dumpTreeList();
     QObject *mParent;
