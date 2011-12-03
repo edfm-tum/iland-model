@@ -88,7 +88,16 @@ void Helper::saveToFile(const QString &fileName, const QByteArray &data)
     s << data;
 }
 
-
+/// ask the user for a input value
+QString Helper::userValue(const QString &message, const QString defaultValue, QWidget *parent)
+{
+    bool ok;
+    QString result = QInputDialog::getText(parent, "input data", message, QLineEdit::Normal, defaultValue, &ok);
+    if (ok)
+        return result;
+    else
+        return defaultValue;
+}
 
 void Helper::msg(const QString &message, QWidget *parent)
 {

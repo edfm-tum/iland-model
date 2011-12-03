@@ -141,3 +141,92 @@ void WindModule::detectEdges()
         }
     }
 }
+
+// test function
+void WindModule::testFetch(double degree_direction)
+{
+//    for (int i=0;i<350;i+=10) {
+//        checkFetch(100,100, i*M_PI/180., 500+i);
+//    }
+    double direction = degree_direction*M_PI/180.;
+    int calculated = 0;
+
+    WindCell *end = mGrid.end();
+    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
+        if (p->edge == 1.f) {
+            QPoint pt=mGrid.indexOf(p);
+            checkFetch(pt.x(), pt.y(), direction, p->height * 10., p->height - 10.);
+            ++calculated;
+        }
+   }
+    qDebug() << "calculated fetch for" << calculated << "pixels";
+}
+
+/** find distance to the next shelter pixel
+  @param startx x-index of the starting pixel (index)
+  @param starty y-index of the starting pixel (index)
+  @param direction direction to look (rad, 0: north, pi/2: east, pi: south, 3/2pi: west)
+  @param max_distance maximum distance (meters) to look for
+  @param threshold algorithm terminates if a pixel with a height higher than threshold is found
+  */
+bool WindModule::checkFetch(const int startx, const int starty, const double direction, const double max_distance, const double threshold)
+{
+    int endx = startx + (max_distance/cellsize()+0.5)*sin(direction);
+    int endy = starty + (max_distance/cellsize()+0.5)*cos(direction);
+
+    // "draw" a line using bresenhems algorithm (http://en.wikipedia.org/wiki/Bresenham's_line_algorithm)
+    int dx = abs(endx-startx);
+    int dy = abs(endy-starty);
+    int sx = startx<endx?1:-1;
+    int sy = starty<endy?1:-1;
+    int err = dx - dy;
+
+    int x = startx,y = starty;
+    while (true) {
+        if (mGrid.isIndexValid(x,y)) {
+            if ((x!=startx || y!=starty) && (mGrid.valueAtIndex(x,y).height > threshold)) {
+                double dist = sqrt(cellsize()*((x-startx)*(x-startx) + (y-starty)*(y-starty)));
+                mGrid.valueAtIndex(startx, starty).edge = dist;
+                return true;
+            }
+            // mGrid.valueAtIndex(x,y).edge = 10; // plot...
+        } else
+            break;
+        if (x==endx && y==endy)
+            break;
+        int e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            x += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y += sy;
+        }
+    }
+
+    mGrid.valueAtIndex(startx, starty).edge = max_distance;
+    return false;
+/*
+function line(x0, y0, x1, y1)
+   dx := abs(x1-x0)
+   dy := abs(y1-y0)
+   if x0 < x1 then sx := 1 else sx := -1
+   if y0 < y1 then sy := 1 else sy := -1
+   err := dx-dy
+
+   loop
+     setPixel(x0,y0)
+     if x0 = x1 and y0 = y1 exit loop
+     e2 := 2*err
+     if e2 > -dy then
+       err := err - dy
+       x0 := x0 + sx
+     end if
+     if e2 <  dx then
+       err := err + dx
+       y0 := y0 + sy
+     end if
+   end loop
+*/
+}
