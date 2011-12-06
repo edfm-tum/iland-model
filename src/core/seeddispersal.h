@@ -31,7 +31,7 @@ public:
     bool isSetup() const { return mSetup; }
     void setup();
     // access
-    const Grid<float> seedMap() const { return mSeedMap; } ///< access to the seedMap
+    const Grid<float> &seedMap() const { return mSeedMap; } ///< access to the seedMap
     const Species *species() const {return mSpecies; }
     /// setMatureTree is called by individual (mature) trees. This actually fills the initial state of the seed map.
     void setMatureTree(const QPoint &lip_index) { mSeedMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor)=1.f; }
