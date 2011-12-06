@@ -121,10 +121,11 @@ void ConsoleShell::runYear(int year)
     printf("simulating year %d ...\n", year-1);
 }
 
+QMutex qdebug_mutex;
 void myMessageOutput(QtMsgType type, const char *msg)
  {
 
-    //QMutexLocker m(&qdebug_mutex);
+    QMutexLocker m(&qdebug_mutex);
     switch (type) {
      case QtDebugMsg:
         *ConsoleShell::logStream() << msg << endl;
