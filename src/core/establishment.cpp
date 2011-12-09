@@ -91,7 +91,7 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      mLIFcount++;
      mSumLIFvalue+=lif_value;
      // draw a random number and check against the combined establishment probability
-     double p_rand = drandom(mRUS->ru()->randomGenerator());
+     double p_rand = drandom();
      if (p_rand < p_est) {
          const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(pos_lif);
          return true; // establishment
@@ -129,7 +129,7 @@ void Establishment::calculate()
     if (with_seeds==0)
         return;
 
-    { DebugTimer casdg("esablishment:abiotic+prod");
+    //{  DebugTimer casdg("esablishment:abiotic+prod");
     // 2nd step: environmental drivers
     calculateAbioticEnvironment();
     if (mPAbiotic == 0.)
@@ -142,7 +142,7 @@ void Establishment::calculate()
     if (mPAbiotic == 0.)
         return;
 
-    } // for debug timer
+    //} // for debug timer
     int n_established = 0;
 
     // performance hack:
@@ -152,7 +152,7 @@ void Establishment::calculate()
 //        return;
 //    }
 
-    DebugTimer estasd("establish:from_search");
+    //DebugTimer estasd("establish:from_search");
     // 3rd step: check actual pixels in the LIF grid
 //    if (with_seeds/double(total) > 0.4 ) {
 //        // a large part has available seeds. simply scan the pixels...
@@ -187,7 +187,7 @@ void Establishment::calculate()
                     if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
                         qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
                     );
-                    double p_establish = drandom(mRUS->ru()->randomGenerator());
+                    double p_establish = drandom();
                     if (p_establish < mPAbiotic) {
                         if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
                             n_established++;

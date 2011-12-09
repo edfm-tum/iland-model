@@ -67,8 +67,8 @@ public:
     void setup();
     void newYear();
     // getter for a thread-local random number generator object. if setRandomGenerator() is used, this saves some overhead
-    MTRand &randomGenerator() const { if (mRandomGenerator) return *mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
-    void setRandomGenerator() { mRandomGenerator = &GlobalSettings::instance()->randomGenerator(); } // fetch random generator of the current thread
+    MTRand *randomGenerator() const { if (mRandomGenerator) return mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
+    void setRandomGenerator() { mRandomGenerator = GlobalSettings::instance()->randomGenerator(); } // fetch random generator of the current thread
 
 
     const SpeciesSet *speciesSet() const { return mSet; }
@@ -191,7 +191,7 @@ private:
     double mMaximumHeight; ///< maximum height of species (m) for aging
     Expression mAging;
     // environmental responses
-    double mRespVpdExponent; ///< exponent in vpd response calculation (Mäkela 2008)
+    double mRespVpdExponent; ///< exponent in vpd response calculation (Mkela 2008)
     double mRespTempMin; ///< temperature response calculation offset
     double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
     double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
@@ -231,9 +231,9 @@ inline double Species::vpdResponse(const double &vpd) const
 }
 
 /** temperatureResponse calculates response on delayed daily temperature.
-    Input: average temperature [°C]
-    Note: slightly different from Mäkela 2008: the maximum parameter (Sk) in iLand is interpreted as the absolute
-          temperature yielding a response of 1; in Mäkela 2008, Sk is the width of the range (relative to the lower threhold)
+    Input: average temperature [C]
+    Note: slightly different from Mkela 2008: the maximum parameter (Sk) in iLand is interpreted as the absolute
+          temperature yielding a response of 1; in Mkela 2008, Sk is the width of the range (relative to the lower threhold)
 */
 inline double Species::temperatureResponse(const double &delayed_temp) const
 {

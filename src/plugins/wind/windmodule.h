@@ -52,7 +52,7 @@ class WindModule
 {
 public:
     WindModule();
-    static const double cellsize() { return 10.; }
+    static double cellsize() { return 10.; }
     /// the general setup routine after starting iland
     void setup();
 

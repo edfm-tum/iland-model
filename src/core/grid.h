@@ -75,12 +75,15 @@ public:
     inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
     inline const T& operator[] (const QPointF &p) const { return constValueAt(p); }
 
-    inline T& valueAtIndex(const QPoint& pos); ///< value at position defined by indices (x,y)
-    T& valueAtIndex(const int ix, const int iy) { return valueAtIndex(QPoint(ix,iy)); } ///< const value at position defined by indices (x,y)
+    inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
+    T& valueAtIndex(const int ix, const int iy) { return mData[iy*mSizeX + ix];  } ///< const value at position defined by indices (x,y)
     T& valueAtIndex(const int index) {return mData[index]; } ///< get a ref ot value at (one-dimensional) index 'index'.
 
-    const T& constValueAtIndex(const QPoint& pos) const; ///< value at position defined by a (integer) QPoint
-    const T& constValueAtIndex(const int ix, const int iy) const { return constValueAtIndex(QPoint(ix,iy)); }
+    /// value at position defined by a (integer) QPoint
+    inline const T& constValueAtIndex(const QPoint& pos) const {return constValueAtIndex(pos.x(), pos.y()); }
+    /// value at position defined by a pair of integer coordinates
+    inline const T& constValueAtIndex(const int ix, const int iy) const { return mData[iy*mSizeX + ix];  }
+    /// value at position defined by the index within the grid
     const T& constValueAtIndex(const int index) const {return mData[index]; } ///< get a ref ot value at (one-dimensional) index 'index'.
 
     T& valueAt(const QPointF& posf); ///< value at position defined by metric coordinates (QPointF)
@@ -245,25 +248,6 @@ Grid<T> Grid<T>::averaged(const int factor, const int offsetx, const int offsety
     return target;
 }
 
-template <class T>
-T&  Grid<T>::valueAtIndex(const QPoint& pos)
-{
-    //if (isIndexValid(pos)) {
-        return mData[pos.y()*mSizeX + pos.x()];
-    //}
-    //qCritical("Grid::valueAtIndex. invalid: %d/%d", pos.x(), pos.y());
-    //return mData[0];
-}
-
-template <class T>
-const T&  Grid<T>::constValueAtIndex(const QPoint& pos) const
-{
-    //if (isIndexValid(pos)) {
-        return mData[pos.y()*mSizeX + pos.x()];
-    //}
-    //qCritical("Grid::constValueAtIndex. invalid: %d/%d", pos.x(), pos.y());
-    //return mData[0];
-}
 
 template <class T>
 T&  Grid<T>::valueAt(const float x, const float y)

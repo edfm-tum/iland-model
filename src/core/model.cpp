@@ -387,9 +387,9 @@ void Model::loadProject()
     // random seed: if stored value is <> 0, use this as the random seed (and produce hence always an equal sequence of random numbers)
     uint seed = xml.value("system.settings.randomSeed","0").toUInt();
     if (seed!=0)
-        mtRand().seed(seed);
+        randomGenerator()->seed(seed);
     else
-        mtRand().seed(); // seed with a random value
+        randomGenerator()->seed(); // seed with a random value
     // linearization of expressions: if true *and* linearize() is explicitely called, then
     // function results will be cached over a defined range of values.
     bool do_linearization = xml.valueBool("system.settings.expressionLinearizationEnabled", false);
