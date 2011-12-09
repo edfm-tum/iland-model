@@ -2,6 +2,7 @@
 #define RANDOMWELL_H
 #include <cstdlib>
 #include <math.h>
+#include <time.h>
 
 // see  http://www.lomont.org/Math/Papers/2008/Lomont_PRNG_2008.pdf
 // for the
@@ -16,14 +17,15 @@ public:
     inline double rand(const double max_value) { return max_value * rand(); }
     /// get a random integer in [0,2^32-1]
     inline unsigned long randInt(){ return random_function(); }
-    inline unsigned long randInt(const int max_value) { return randInt()%max_value; }
+    inline unsigned long randInt(const int max_value) { return max_value>0?randInt()%max_value:0; }
     /// Access to nonuniform random number distributions
     inline double randNorm( const double mean, const double stddev );
     void seed();
     void seed(unsigned int oneSeed);
 private:
-    inline unsigned int random_function() { return WELLRNG512();
-                                            /*return xorshf96();*/ }
+    inline unsigned int random_function() { /* return WELLRNG512(); */
+                                            /* return xorshf96(); */
+                                            return fastrand();  }
     /* initialize state to random bits  */
     unsigned long state[16];
     /* init should also reset this to 0 */
@@ -63,6 +65,12 @@ private:
       return z;
     }
 
+    int g_seed;
+    inline unsigned int fastrand()
+    {
+        g_seed = (214013*g_seed+2531011);
+        return g_seed;
+    }
 };
 
 
@@ -72,7 +80,10 @@ inline void MTRand::seed()
     for (int i=0;i<16;i++)
         state[i] = std::rand();
     index = 0;
+    // inits for the xorshift algorithm...
     x=123456789, y=362436069, z=521288629;
+    // inits for the fast rand....
+    g_seed = std::rand();
 }
 
 inline void MTRand::seed(unsigned int oneSeed)
@@ -82,6 +93,7 @@ inline void MTRand::seed(unsigned int oneSeed)
         state[i] = std::rand();
     index = 0;
     x=123456789, y=362436069, z=521288629;
+    g_seed = oneSeed;
 }
 
 inline double MTRand::randNorm( const double mean, const double stddev )

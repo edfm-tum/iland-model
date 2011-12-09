@@ -28,7 +28,8 @@
 #define GRAD(x) (x/M_PI*180.)
 #define PI2 2*M_PI
 
-
+#include <cstdlib>
+#include "math.h"
 #include "exception.h"
 // general datatypes
 //typedef int TreeSpecies;
@@ -75,9 +76,9 @@ void setLogLevel(int loglevel); // setter function
 // choose the random number generator:
 // either:
 // cool random number generator (using the mersenne-twister) by http://www-personal.umich.edu/~wagnerr/MersenneTwister.html
-// #include "../3rdparty/MersenneTwister.h"
+#include "../3rdparty/MersenneTwister.h"
 // or
-#include "randomwell.h"
+//#include "randomwell.h"
 
 MTRand *randomGenerator(); // static object lives in globalsettings
 /// nrandom returns a random number from [p1, p2] -> p2 is a possible result!
@@ -141,7 +142,9 @@ inline bool isBitSet(const int value, const int bit)
 }
 
 // define a global isnan() function
+#ifndef isnan
 #define isnan(x) ((x) != (x))
+#endif
 
 #include "globalsettings.h"
 
