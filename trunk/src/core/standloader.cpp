@@ -450,6 +450,7 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
     int key;
     double rand_val, rand_fraction;
     int total_count = 0;
+    ru->setRandomGenerator();
     foreach(const InitFileItem &item, mInitItems) {
         rand_fraction = fabs(double(item.density));
         for (int i=0;i<item.count;i++) {
@@ -471,7 +472,7 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             rand_val = mRandom->get();
             if (item.density<0)
                 rand_val = 1. - rand_val;
-            rand_val = rand_val * rand_fraction + drandom(ru->randomGenerator())*(1.-rand_fraction);
+            rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
 
             // key: rank of target pixel
             // first: index of target pixel

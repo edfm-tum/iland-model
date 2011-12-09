@@ -165,31 +165,29 @@ void Tree::applyLIP()
     int x,y;
     float value, z, z_zstar;
     int gr_stamp = mStamp->size();
-    int grid_x, grid_y;
-    float *grid_value_ptr;
+
     if (!mGrid->isIndexValid(pos) || !mGrid->isIndexValid(pos+QPoint(gr_stamp, gr_stamp))) {
         // this should not happen because of the buffer
         return;
     }
-    grid_y = pos.y();
+    int grid_y = pos.y();
     for (y=0;y<gr_stamp; ++y) {
 
-        grid_value_ptr = mGrid->ptr(pos.x(), grid_y);
-        grid_x = pos.x();
-        for (x=0;x<gr_stamp;++x) {
+        float *grid_value_ptr = mGrid->ptr(pos.x(), grid_y);
+        int grid_x = pos.x();
+        for (x=0;x<gr_stamp;++x, ++grid_x, ++grid_value_ptr) {
             // suppose there is no stamping outside
-
-            local_dom = mHeightGrid->valueAtIndex(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
-            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
-            z_zstar = (z>=local_dom)?1.f:z/local_dom;
             value = (*mStamp)(x,y); // stampvalue
-            value = 1. - value*mOpacity * z_zstar; // calculated value
-            // old: value = 1. - value*mOpacity / local_dom; // calculated value
-            value = qMax(value, 0.02f); // limit value
+            //if (value>0.f) {
+                local_dom = (*mHeightGrid)(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
+                z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+                z_zstar = (z>=local_dom)?1.f:z/local_dom;
+                value = 1. - value*mOpacity * z_zstar; // calculated value
+                value = std::max(value, 0.02f); // limit value
 
-            *grid_value_ptr++ *= value;
+                *grid_value_ptr *= value;
+            //}
 
-            grid_x++;
         }
         grid_y++;
     }
