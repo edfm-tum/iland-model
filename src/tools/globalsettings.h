@@ -24,10 +24,13 @@
 #include <QtSql>
 #include <QtSql/QSqlDatabase>
 
+#include "global.h"
 #include "settingmetadata.h"
 #include "xmlhelper.h"
-#include "../3rdparty/MersenneTwister.h"
-
+// The favorite random number generator:
+// use either the MersenneTwister or the WELLS algoritm:
+// #include "randomwell.h"
+// #include "../3rdparty/MersenneTwister.h"
 // use faster method to concatenate strings (see qt - documentation on QString)
 #define QT_USE_FAST_CONCATENATION
 #define QT_USE_FAST_OPERATOR_PLUS
@@ -116,7 +119,7 @@ public:
     void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
     void printDirecories() const;
 
-    MTRand& randomGenerator(); // get a random generator instance per thread
+    MTRand* randomGenerator(); // get a random generator instance per thread
 
 private:
     GlobalSettings(); // private ctor

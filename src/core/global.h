@@ -29,7 +29,6 @@
 #define PI2 2*M_PI
 
 
-#include "globalsettings.h"
 #include "exception.h"
 // general datatypes
 //typedef int TreeSpecies;
@@ -73,45 +72,49 @@ bool logLevelDebug(); // true, if detailed debug information is logged
 bool logLevelInfo(); // true, if only important aggreate info is logged
 bool logLevelWarning(); // true if only severe warnings/errors are logged.
 void setLogLevel(int loglevel); // setter function
+// choose the random number generator:
+// either:
 // cool random number generator (using the mersenne-twister) by http://www-personal.umich.edu/~wagnerr/MersenneTwister.html
-#include "../3rdparty/MersenneTwister.h"
-// access the Mersenne-Twister-Random-Numbers
-MTRand &mtRand(); // static object lives in globalsettings
+// #include "../3rdparty/MersenneTwister.h"
+// or
+#include "randomwell.h"
+
+MTRand *randomGenerator(); // static object lives in globalsettings
 /// nrandom returns a random number from [p1, p2] -> p2 is a possible result!
 inline double nrandom(const double& p1, const double& p2)
 {
-    return p1 + mtRand().rand(p2-p1);
+    return p1 + randomGenerator()->rand(p2-p1);
     //return p1 + (p2-p1)*(rand()/double(RAND_MAX));
 }
 /// returns a random number in [0,1] (i.e.="1" is a possible result!)
 inline double drandom()
 {
-    return mtRand().rand();
+    return randomGenerator()->rand();
     //return rand()/double(RAND_MAX);
 }
 /// return a random number from "from" to "to" (incl.), i.e. irandom(3,5) results in 3, 4 or 5.
 inline int irandom(int from, int to)
 {
-    return from + mtRand().randInt(to-from);
+    return from + randomGenerator()->randInt(to-from);
     //return from +  rand()%(to-from);
 }
 
 // random number function with additional ptr to random function
-inline double nrandom(MTRand &random, const double& p1, const double& p2)
+inline double nrandom(MTRand *random, const double& p1, const double& p2)
 {
-    return p1 + random.rand(p2-p1);
+    return p1 + random->rand(p2-p1);
     //return p1 + (p2-p1)*(rand()/double(RAND_MAX));
 }
 /// returns a random number in [0,1] (i.e.="1" is a possible result!)
-inline double drandom(MTRand &random)
+inline double drandom(MTRand *random)
 {
-    return random.rand();
+    return random->rand();
     //return rand()/double(RAND_MAX);
 }
 /// return a random number from "from" to "to" (incl.), i.e. irandom(3,5) results in 3, 4 or 5.
-inline int irandom(MTRand &random, int from, int to)
+inline int irandom(MTRand *random, int from, int to)
 {
-    return from + random.randInt(to-from);
+    return from + random->randInt(to-from);
     //return from +  rand()%(to-from);
 }
 
@@ -139,5 +142,7 @@ inline bool isBitSet(const int value, const int bit)
 
 // define a global isnan() function
 #define isnan(x) ((x) != (x))
+
+#include "globalsettings.h"
 
 #endif // GLOBAL_H

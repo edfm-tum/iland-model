@@ -103,7 +103,7 @@ Expression::ETokType  Expression::next_token()
 {
     m_tokCount++;
     m_lastState=m_state;
-    // nächsten m_token aus String lesen...
+    // nchsten m_token aus String lesen...
     // whitespaces eliminieren...
     while (strchr(" \t\n\r", *m_pos) && *m_pos)
         m_pos++;
@@ -139,7 +139,7 @@ Expression::ETokType  Expression::next_token()
         // Zahl
         m_token.setNum(atof(m_pos));
         while (strchr("0123456789.",*m_pos) && *m_pos!=0)
-            m_pos++;  // nächstes Zeichen suchen...
+            m_pos++;  // nchstes Zeichen suchen...
 
         m_state=etNumber;
         return etNumber;
@@ -592,7 +592,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
                      p--; // p zeigt auf ergebnis...
                      *p=fmod(*p, *(p+1));
                      break;
-                 case 12: // hilfsfunktion für sigmoidie sachen.....
+                 case 12: // hilfsfunktion fr sigmoidie sachen.....
                      *(p-3)=udfSigmoid(*(p-3), *(p-2), *(p-1), *p);
                      p-=3; // drei argumente (4-1) wegwerfen...
                      break;
@@ -729,14 +729,14 @@ double Expression::getExternVar(int Index) const
 {
     //if (Script)
     //   return Script->GetNumVar(Index-1000);
-    //else   // überhaupt noch notwendig???
+    //else   // berhaupt noch notwendig???
     return m_externVarSpace[Index-1000];
 }
 
 void Expression::enableIncSum()
 {
     // Funktion "inkrementelle summe" einschalten.
-    // dabei wird der zähler zurückgesetzt und ein flag gesetzt.
+    // dabei wird der zhler zurckgesetzt und ein flag gesetzt.
     m_incSumEnabled=true;
     m_incSumVar=0.;
 }
@@ -756,7 +756,7 @@ double  Expression::udfPolygon(double Value, double* Stack, int ArgCount) const
     double x,y, xold, yold;
     y=*Stack--;   // 1. Argument: ganz rechts.
     x=*Stack--;
-    if (Value>x)   // rechts draußen: annahme gerade.
+    if (Value>x)   // rechts drauen: annahme gerade.
         return y;
     for (int i=0; i<PointCnt-1; i++)
     {
@@ -796,7 +796,7 @@ double Expression::udfSigmoid(double Value, double sType, double p1, double p2) 
                      Result=pow(x, p1) / ( pow(p2,p1) + pow(x,p1));
              break;
          default:
-             throw IException("sigmoid-funktion: ungültiger kurventyp. erlaubt: 0..3");
+             throw IException("sigmoid-funktion: ungltiger kurventyp. erlaubt: 0..3");
          }
     if (typ==2 || typ==3)
         Result=1. - Result;
@@ -807,7 +807,7 @@ double Expression::udfSigmoid(double Value, double sType, double p1, double p2) 
 
 void Expression::checkBuffer(int Index)
 {
-    // um den Buffer für Befehle kümmern.
+    // um den Buffer fr Befehle kmmern.
     // wenn der Buffer zu klein wird, neuen Platz reservieren.
     if (Index<m_execListSize)
         return; // nix zu tun.
@@ -817,7 +817,7 @@ void Expression::checkBuffer(int Index)
     // (2) bisherige Werte umkopieren....
     for (int i=0;i<m_execListSize;i++)
         NewBuf[i]=m_execList[i];
-    // (3) alten buffer löschen und pointer umsetzen...
+    // (3) alten buffer lschen und pointer umsetzen...
     delete[] m_execList;
     m_execList = NewBuf;
     m_execListSize=NewSize;
@@ -831,7 +831,7 @@ double Expression::udfRandom(int type, double p1, double p2) const
     if (type == 0)
         return nrandom(p1, p2);
     else    // gaussverteilt
-        return mtRand().randNorm(p1, p2);
+        return randomGenerator()->randNorm(p1, p2);
 }
 
 /** Linarize an expression, i.e. approximate the function by linear interpolation.
