@@ -47,9 +47,6 @@ public:
     void setClimate(Climate* climate) { mClimate = climate; }
     void setBoundingBox(const QRectF &bb);
     void setID(const int id) { mID = id; }
-    // getter for a thread-local random number generator object. if setRandomGenerator() is used, this saves some overhead
-    MTRand *randomGenerator() const { if (mRandomGenerator) return mRandomGenerator; else return GlobalSettings::instance()->randomGenerator(); }
-    void setRandomGenerator() { mRandomGenerator = GlobalSettings::instance()->randomGenerator(); } // fetch random generator of the current thread
 
     // access to elements
     const Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
@@ -154,7 +151,6 @@ private:
     StandStatistics mStatistics; ///< aggregate values on stand value
     ResourceUnitVariables mUnitVariables;
 
-    MTRand *mRandomGenerator;
     friend class RUWrapper;
 };
 

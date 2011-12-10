@@ -152,7 +152,6 @@ void SpeciesSet::setupRegeneration()
 
 Species *nc_seed_distribution(Species *species)
 {
-    species->setRandomGenerator();
     species->seedDispersal()->execute();
     return species;
 }

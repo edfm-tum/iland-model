@@ -386,10 +386,7 @@ void Model::loadProject()
     mSettings.print();
     // random seed: if stored value is <> 0, use this as the random seed (and produce hence always an equal sequence of random numbers)
     uint seed = xml.value("system.settings.randomSeed","0").toUInt();
-    if (seed!=0)
-        randomGenerator()->seed(seed);
-    else
-        randomGenerator()->seed(); // seed with a random value
+    RandomGenerator::setup(RandomGenerator::ergXORShift96, seed);
     // linearization of expressions: if true *and* linearize() is explicitely called, then
     // function results will be cached over a defined range of values.
     bool do_linearization = xml.valueBool("system.settings.expressionLinearizationEnabled", false);
@@ -469,7 +466,6 @@ void Model::initOutputDatabase()
 
 ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
 {
-    unit->setRandomGenerator();
     try {
         // define a height map for the current resource unit on the stack and clear it
         float sapling_map[cPxPerRU*cPxPerRU];
@@ -492,8 +488,6 @@ ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
 /// multithreaded running function for the resource unit level establishment
 ResourceUnit *nc_establishment(ResourceUnit *unit)
 {
-    unit->setRandomGenerator();
-
     try {
 
         // (2) calculate the establishment probabilities of new saplings
@@ -584,6 +578,7 @@ void Model::runYear()
 {
     DebugTimer t("Model::runYear()");
     GlobalSettings::instance()->systemStatistics()->reset();
+    RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
     mModules->yearBegin();
     // execute scheduled events for the current year
@@ -686,7 +681,6 @@ ResourceUnit* nc_applyPattern(ResourceUnit *unit)
 
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator tend = unit->trees().end();
-    unit->setRandomGenerator();
 
     try {
 
@@ -738,7 +732,6 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
-    unit->setRandomGenerator();
     try {
         unit->beforeGrow(); // reset statistics
         // calculate light responses
@@ -764,7 +757,6 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
 ResourceUnit *nc_production(ResourceUnit *unit)
 {
     try {
-        unit->setRandomGenerator();
         unit->production();
     } catch (const IException &e) {
         GlobalSettings::instance()->controller()->throwError(e.message());

@@ -381,7 +381,7 @@ void Tests::testCSVFile()
             qDebug() << "row col" << row << file.columnName(col) << "value" << file.value(row, col);
 }
 
-
+#include "../3rdparty/MersenneTwister.h"
 void Tests::testRandom()
 {
     RandomCustomPDF pdf("x^2");
@@ -397,6 +397,49 @@ void Tests::testRandom()
         list << QString::number(irandom(0,5));
     qDebug() << "irandom test (0,5): " << list;
 
+    // random generator timings
+    { DebugTimer t("mersenne");
+        RandomGenerator::setup(RandomGenerator::ergMersenneTwister, 1);
+        double sum = 0;
+        for (int i=0;i<100000000;i++) {
+            sum += drandom();
+        }
+        qDebug() << "Mersenne" << sum;
+    }
+    { DebugTimer t("XORShift");
+        RandomGenerator::setup(RandomGenerator::ergXORShift96, 1);
+        double sum = 0;
+        for (int i=0;i<100000000;i++) {
+            if (drandom()<0.01) ++sum;
+        }
+        qDebug() << "XORShift" << sum;
+    }
+    { DebugTimer t("WellRNG");
+        RandomGenerator::setup(RandomGenerator::ergWellRNG512, 1);
+        double sum = 0;
+        for (int i=0;i<100000000;i++) {
+            if (drandom()<0.01) ++sum;
+        }
+        qDebug() << "WellRNG" << sum;
+    }
+    { DebugTimer t("FastRandom");
+        RandomGenerator::setup(RandomGenerator::ergFastRandom, 1);
+        double sum = 0;
+        for (int i=0;i<100000000;i++) {
+            if (drandom()<0.01) ++sum;
+        }
+        qDebug() << "WellRNG" << sum;
+    }
+    { DebugTimer t("MersenneTwister - Reference");
+        MTRand rand;
+        rand.seed(1);
+
+        double sum = 0;
+        for (int i=0;i<100000000;i++) {
+            if (drandom()<0.01) ++sum;
+        }
+        qDebug() << "Mersenne Reference" << sum;
+    }
 }
 
 void Tests::testGridRunner()
@@ -418,7 +461,6 @@ void Tests::testGridRunner()
         QPoint point = lif.indexOf(p);
         qDebug() << i++ << point.x() << point.y() << *p << p;
     }
-
 }
 
 void Tests::testSeedDispersal()

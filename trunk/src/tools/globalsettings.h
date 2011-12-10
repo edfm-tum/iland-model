@@ -119,7 +119,6 @@ public:
     void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
     void printDirecories() const;
 
-    MTRand* randomGenerator(); // get a random generator instance per thread
 
 private:
     GlobalSettings(); // private ctor
@@ -136,7 +135,6 @@ private:
 
     SettingMetaDataList mSettingMetaData; ///< storage container (QHash) for settings.
     QHash<QString, QString> mFilePath; ///< storage for file paths
-    QHash<QThread*, MTRand> mRandomGenerators; /// store a random generator for each thread
 
     XmlHelper mXml; ///< xml-based hierarchical settings
 };
