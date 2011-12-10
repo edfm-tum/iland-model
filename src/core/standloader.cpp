@@ -100,7 +100,6 @@ void StandLoader::processInit()
     if (copy_mode=="unit") {
         foreach( const ResourceUnit *const_ru, g->model()->ruList()) {
             ResourceUnit *ru = const_cast<ResourceUnit*>(const_ru);
-            ru->setRandomGenerator(); //
             // set environment
             g->model()->environment()->setPosition(ru->boundingBox().center());
             type = xml.value("type", "");
@@ -450,14 +449,13 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
     int key;
     double rand_val, rand_fraction;
     int total_count = 0;
-    ru->setRandomGenerator();
     foreach(const InitFileItem &item, mInitItems) {
         rand_fraction = fabs(double(item.density));
         for (int i=0;i<item.count;i++) {
             // create trees
             int tree_idx = ru->newTreeIndex();
             Tree &tree = ru->trees()[tree_idx]; // get reference to modify tree
-            tree.setDbh(nrandom(ru->randomGenerator(), item.dbh_from, item.dbh_to));
+            tree.setDbh(nrandom(item.dbh_from, item.dbh_to));
             tree.setHeight(tree.dbh()/100. * item.hd); // dbh from cm->m, *hd-ratio -> meter height
             tree.setSpecies(item.species);
             if (item.age<=0)
