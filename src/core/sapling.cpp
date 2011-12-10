@@ -267,7 +267,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         int to_establish = (int) n_trees;
         // if n_trees is not an integer, choose randomly if we should add a tree.
         // e.g.: n_trees = 2.3 -> add 2 trees with 70% probability, and add 3 trees with p=30%.
-        if (drandom(ru->randomGenerator()) < (n_trees-to_establish) || to_establish==0)
+        if (drandom() < (n_trees-to_establish) || to_establish==0)
             to_establish++;
 
         // add a new tree
@@ -275,8 +275,8 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
             Tree &bigtree = ru->newTree();
             bigtree.setPosition(p);
             // add variation: add +/-10% to dbh and *independently* to height.
-            bigtree.setDbh(dbh * nrandom(ru->randomGenerator(), 1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
-            bigtree.setHeight(tree.height * nrandom(ru->randomGenerator(), 1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
+            bigtree.setDbh(dbh * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
+            bigtree.setHeight(tree.height * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
             bigtree.setSpecies( species );
             bigtree.setAge(tree.age.age,tree.height);
             bigtree.setRU(ru);

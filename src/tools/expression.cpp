@@ -831,7 +831,7 @@ double Expression::udfRandom(int type, double p1, double p2) const
     if (type == 0)
         return nrandom(p1, p2);
     else    // gaussverteilt
-        return randomGenerator()->randNorm(p1, p2);
+        return RandomGenerator::randNorm(p1, p2);
 }
 
 /** Linarize an expression, i.e. approximate the function by linear interpolation.

@@ -84,11 +84,6 @@
 
 
 #include "outputmanager.h"
-MTRand _mtrand;
-MTRand *randomGenerator()
-{
-    return &_mtrand;
-}
 
 // debug macro helpers
 void dbg_helper(const char *where, const char *what,const char* file,int line)
@@ -513,18 +508,3 @@ void GlobalSettings::loadProjectFile(const QString &fileName)
 
 }
 
-QMutex random_generator_mutex;
-MTRand* GlobalSettings::randomGenerator()
-{
-    // serialize access to per-thread random generators
-    QMutexLocker locker(&random_generator_mutex);
-
-    QThread *this_thread = QThread::currentThread();
-    if (mRandomGenerators.contains(this_thread))
-        return &mRandomGenerators[this_thread];
-    if (logLevelInfo()) qDebug() << "add random generator for " << this_thread;
-    MTRand &rand=mRandomGenerators[this_thread]; // this inserts a "empty" instance
-    uint32_t s = irandom(0,100000000);
-    rand.seed(s); // to initialize, draw a random number from the "default" source -->
-    return &rand;
-}
