@@ -520,7 +520,7 @@ template <class T>
     QTextStream ts(&res);
 
     int newl_counter = newline_after;
-    for (int y=0;y<grid.sizeY();y++){
+    for (int y=grid.sizeY()-1;y>=0;--y){
         for (int x=0;x<grid.sizeX();x++){
             ts << grid.constValueAtIndex(x,y) << sep;
             if (--newl_counter==0) {
@@ -540,25 +540,25 @@ template <class T>
 /// @param newline_after if <>-1 a newline is added after every 'newline_after' data values
 template <class T>
         QString gridToString(const Grid<T> &grid, QString (*valueFunction)(const T& value), const QChar sep=QChar(';'), const int newline_after=-1 )
-{
-    QString res;
-    QTextStream ts(&res);
+        {
+            QString res;
+            QTextStream ts(&res);
 
-    int newl_counter = newline_after;
-    for (int y=0;y<grid.sizeY();y++){
-        for (int x=0;x<grid.sizeX();x++){
-            ts << (*valueFunction)(grid.constValueAtIndex(x,y)) << sep;
+            int newl_counter = newline_after;
+            for (int y=grid.sizeY()-1;y>=0;--y){
+                for (int x=0;x<grid.sizeX();x++){
+                    ts << (*valueFunction)(grid.constValueAtIndex(x,y)) << sep;
 
-            if (--newl_counter==0) {
+                    if (--newl_counter==0) {
+                        ts << "\r\n";
+                        newl_counter = newline_after;
+                    }
+                }
                 ts << "\r\n";
-                newl_counter = newline_after;
             }
-        }
-        ts << "\r\n";
-    }
 
-    return res;
-}
+            return res;
+        }
 void modelToWorld(const Vector3D &From, Vector3D &To);
 
 template <class T>
