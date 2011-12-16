@@ -386,7 +386,7 @@ void Model::loadProject()
     mSettings.print();
     // random seed: if stored value is <> 0, use this as the random seed (and produce hence always an equal sequence of random numbers)
     uint seed = xml.value("system.settings.randomSeed","0").toUInt();
-    RandomGenerator::setup(RandomGenerator::ergXORShift96, seed);
+    RandomGenerator::setup(RandomGenerator::ergMersenneTwister, seed); // use the MersenneTwister as default
     // linearization of expressions: if true *and* linearize() is explicitely called, then
     // function results will be cached over a defined range of values.
     bool do_linearization = xml.valueBool("system.settings.expressionLinearizationEnabled", false);
