@@ -278,6 +278,9 @@ void FireModule::ignition()
 
                     // provide outputs: This calls the FireOut::exec() function
                     GlobalSettings::instance()->outputManager()->execute("fire");
+
+                    // we allow only one fire event per year for the whole landscape
+                    return;
                 }
             }
         }
