@@ -21,6 +21,10 @@
 #include "model.h"
 #include "modelcontroller.h"
 #include "helper.h"
+#include "tree.h"
+#include "species.h"
+#include "speciesset.h"
+#include "resourceunit.h"
 
 /** @defgroup windmodule iLand windmodule
   The wind module is a disturbance module within the iLand framework.
@@ -77,7 +81,50 @@ void WindModule::setup()
     mWindLayers.setGrid(mGrid);
     GlobalSettings::instance()->controller()->addLayers(&mWindLayers, "wind");
 
+    // setup the species parameters that are specific to the wind module
+    QString parameter_table_name = xml.value(".speciesParameter", "wind");
+    loadSpeciesParameter(parameter_table_name);
+}
 
+void WindModule::loadSpeciesParameter(const QString &table_name)
+{
+    QSqlQuery query(GlobalSettings::instance()->dbin());
+    QString sql = QString("select * from %1").arg(table_name);
+    query.exec(sql);
+    if (query.lastError().isValid()){
+        throw IException(QString("Error loading species parameters for wind module: %1 \n %2").arg(sql, query.lastError().text()) );
+    }
+    mSpeciesParameters.clear();
+    int iID=query.record().indexOf("shortName");
+    int iCreg = query.record().indexOf("CReg");
+    int iCrownArea = query.record().indexOf("crownAreaFactor");
+    int iCrownLength = query.record().indexOf("crownLength");
+    int iMOR = query.record().indexOf("MOR");
+    int iWet = query.record().indexOf("wetBiomassFactor");
+    if (iID==-1 || iCreg==-1 || iCrownArea==-1 || iCrownLength==-1 || iMOR==-1 || iWet==-1) {
+        throw IException(QString("Error in wind parameter table '%1'. A required column was not found.").arg(table_name));
+    }
+    QString species_id;
+    while (query.next()) {
+        species_id = query.value(iID).toString();
+        Species *s = GlobalSettings::instance()->model()->speciesSet()->species(species_id);
+        if (s) {
+            WindSpeciesParameters &p = mSpeciesParameters[s];
+            p.Creg = query.value(iCreg).toDouble();
+            p.crown_area_factor = query.value(iCrownArea).toDouble();
+            p.crown_length = query.value(iCrownLength).toDouble();
+            p.MOR = query.value(iMOR).toDouble();
+            p.wet_biomass_factor = query.value(iWet).toDouble();
+        }
+    }
+    qDebug() << "wind:"  << mSpeciesParameters.count() << "species parameter vectors loaded.";
+}
+
+const WindSpeciesParameters &WindModule::speciesParameter(const Species *s)
+{
+    if (!mSpeciesParameters.contains(s))
+        throw IException(QString("WindModule: no wind species parameter for species '%1'").arg(s->id()));
+    return mSpeciesParameters[s];
 }
 
 /// the run() function executes the fire events
@@ -162,6 +209,20 @@ void WindModule::testFetch(double degree_direction)
     qDebug() << "calculated fetch for" << calculated << "pixels";
 }
 
+void WindModule::testEffect()
+{
+    int calculated = 0;
+    WindCell *end = mGrid.end();
+    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
+        if (p->edge >= 1.f) {
+            QPoint pt=mGrid.indexOf(p);
+            calculateEffect(pt, p);
+            ++calculated;
+        }
+    }
+    qDebug() << "calculated fetch for" << calculated << "pixels";
+}
+
 /** find distance to the next shelter pixel
   @param startx x-index of the starting pixel (index)
   @param starty y-index of the starting pixel (index)
@@ -230,3 +291,79 @@ function line(x0, y0, x1, y1)
    end loop
 */
 }
+
+
+
+
+/** Main function of the wind module
+
+  */
+bool WindModule::calculateEffect(const QPoint position, WindCell *cell)
+{
+    // extract a list of trees that are within the pixel boundaries
+    QRectF pixel_rect = mGrid.cellRect(position);
+    ResourceUnit *ru = GlobalSettings::instance()->model()->ru(pixel_rect.center());
+    if (!ru)
+        return false;
+
+    // retrieve a list of trees within the active pixel
+    // NOTE: the check with isDead() is necessary because dead trees could be already in the trees list
+    double h_max = 0.;
+    QVector<Tree*> trees;
+    Tree *tallest_tree = 0;
+    QVector<Tree>::iterator tend = ru->trees().end();
+    for (QVector<Tree>::iterator t = ru->trees().begin(); t!=tend; ++t) {
+        if ( pixel_rect.contains( (*t).position() ) && !(*t).isDead()) {
+            trees.push_back(&(*t));
+            if (trees.last()->height()> h_max) {
+                tallest_tree = trees.last();
+                h_max = tallest_tree->height();
+            }
+        }
+    }
+
+    // no trees on the cell -> do nothing
+    if (trees.isEmpty())
+        return false;
+
+    int n_trees = trees.size();
+
+    // Calculate the wind speed at the crown top
+    double u_crown = calculateWindSpeed(tallest_tree, n_trees, 1. /*wind_speed_10*/);
+
+    return true;
+}
+
+/** calculate the windspeed at the top of the crown
+  @param tree the tallest tree on the cell
+  @param n_trees number of trees that are on the 10x10m cell
+  @param wind_speed_10 wind speed in 10m above canopy (m/s)
+  */
+double WindModule::calculateWindSpeed(const Tree *tree, const int n_trees, const double wind_speed_10)
+{
+    const WindSpeciesParameters &params = speciesParameter(tree->species());
+    // frontal area index
+    double lambda = 2. * tree->crownRadius() * (tree->height() * params.crown_length )* params.crown_area_factor / (cellsize()*cellsize()/n_trees);
+    // calculate zero-plane-displacement height (Raupachs drag partitioning model (Raupach 1992, 1994))
+    const double cdl = 7.5;
+    double d0_help = sqrt(2. * cdl * lambda);
+    double d0 = tree->height() * (1. - (1.-exp(-d0_help))/d0_help);
+
+    const double surface_drag_coefficient = 0.003;
+    const double element_drag_coefficient = 0.3;
+    const double kaman_constant = 0.4;
+
+    // drag coefficient gamma
+    double gamma = sqrt(surface_drag_coefficient + lambda*element_drag_coefficient);
+    if (gamma > element_drag_coefficient) gamma = element_drag_coefficient;
+
+    // surface roughness
+    double z0 = (tree->height() - d0)*exp(-kaman_constant/gamma + 0.193);
+
+    // wind multiplier
+    double u_factor = log((tree->height()-d0)/z0) / log((tree->height()+10.)/z0);
+    double u_crown = wind_speed_10 * u_factor;
+
+    return u_crown;
+}
+

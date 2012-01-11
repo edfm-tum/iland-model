@@ -822,6 +822,7 @@ void Tests::testWind()
                 wind->run();
                 DebugTimer t;
                 wind->testFetch(direction);
+                wind->testEffect();
                 qDebug() << "fetch finished. ms:" << t.elapsed();
             }
         } catch (const IException &e) {
