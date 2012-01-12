@@ -819,10 +819,12 @@ void Tests::testWind()
                     qDebug() << "looping..." << direction;
                 }
             } else {
-                wind->run();
                 DebugTimer t;
-                wind->testFetch(direction);
-                wind->testEffect();
+                wind->setSimulationMode(true);
+                double speed = Helper::userValue("wind speed (m/2)", "300").toDouble();
+                wind->setWindProperties(direction * M_PI / 180., speed);
+                wind->run();
+
                 qDebug() << "fetch finished. ms:" << t.elapsed();
             }
         } catch (const IException &e) {

@@ -33,10 +33,17 @@ class Species; // forward
 class WindCell {
 public:
     WindCell() { clear(); }
-    void clear() { height = edge = 0.f; }
+    void clear() { height = edge = 0.f; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
     bool isValid() const { return height<9999.f; } ///< returns true if the pixel is on the valid project area
     float height; ///< top height (m).
     float edge; ///< maximum difference to neighboring cells (m)
+    // statistics
+    int n_iteration; ///< number of iteration this pixel is processed (and trees are killed)
+    int n_killed; ///< number of trees killed on the pixel
+    double basal_area_killed; ///< basal area of trees that died (m2)
+    double cws_uproot; ///< critital wind speed for uprooting (m/s)
+    double cws_break; ///< critical wind speed for tree breakage (m/s)
+    double crown_windspeed; ///< wind speed (m/s) on the cecll
 };
 
 /** Helper class manage and visualize data layers related to fire.
@@ -76,20 +83,37 @@ public:
     void run();
 
     // test functions
+    void setWindProperties(const double direction_rad, const double speed_ms) { mWindDirection = direction_rad; mWindSpeed = speed_ms; }
+    void setSimulationMode(const bool mode) { mSimulationMode = mode; }
+
     void testFetch(double degree_direction);
     void testEffect();
 private:
+    // main functions
     void initWindGrid(); ///< load state from iland main module
     void detectEdges(); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
+    void calculateFetch(); ///< calculate maximum gap sizes in upwind direction
+    int calculateWindImpact(); ///< do one round of wind effect calculations
+
+    // details
     /// find distance to the next pixels that give shelter
     bool checkFetch(const int startx, const int starty, const double direction, const double max_distance, const double threshold) ;
     /// perform the wind effect calculations for a given grid cell
-    bool calculateEffect(const QPoint position, WindCell *cell);
+    bool windImpactOnPixel(const QPoint position, WindCell *cell);
     ///
-    double calculateWindSpeed(const Tree *tree, const int n_trees, const double wind_speed_10);
+    double calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10);
+    double calculateCrititalWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double gap_length, double &rCWS_uproot, double &rCWS_break);
+
     // helping functions
     void loadSpeciesParameter(const QString &table_name);
     const WindSpeciesParameters &speciesParameter(const Species *s);
+
+    // variables
+    double mWindDirection; ///< direction of the current wind event (rad)
+    double mWindSpeed; ///< wind speed (TODO: per resource unit!)
+    bool mSimulationMode; ///< if true, no trees are removed (test mode)
+    int mCurrentIteration; ///<
+
     Grid<WindCell> mGrid; ///< wind grid (10x10m)
     WindLayers mWindLayers; ///< helping structure
     // species parameters for the wind module
