@@ -64,10 +64,22 @@ public:
     double barkThickness() const; ///< thickness of the bark (cm)
 
     // actions
-    void die(TreeGrowthData *d=0); ///< kills the tree.
+    /// the tree dies (is killed)
+    void die(TreeGrowthData *d=0);
     /// remove the tree (management). removalFractions for tree compartments: if 0: all biomass stays in the system, 1: all is "removed"
     /// default values: all biomass remains in the forest (i.e.: kill()).
     void remove(double removeFoliage=0., double removeBranch=0., double removeStem=0. );
+    /// remove the tree due to an special event (disturbance)
+    /// the part of the biomass that goes not to soil/snags is removed (e.g. fire)
+    /// @param stem_to_soil_fraction (0..1) of stem biomass that is routed to the soil
+    /// @param stem_to_snag_fraction (0..1) of the stem biomass continues as standing dead
+    /// @param branch_to_soil_fraction (0..1) of branch biomass that is routed to the soil
+    /// @param branch_to_snag_fraction (0..1) of the branch biomass continues as standing dead
+    /// @param foliage_to_soil_fraciton (0..1) fraction of biomass that goes directly to the soil. The rest (1.-fraction) is removed.
+    void removeDisturbance(const double stem_to_soil_fraction, const double stem_to_snag_fraction,
+                           const double branch_to_soil_fraction, const double branch_to_snag_fraction,
+                           const double foliage_to_soil_fraction);
+
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
     /// removes fractions (0..1) for foliage, branches, stem from a tree, e.g. due to a fire.
     /// values of "0" remove nothing, "1" removes the full compartent.

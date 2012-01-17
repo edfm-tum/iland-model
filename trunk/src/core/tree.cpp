@@ -909,6 +909,17 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
 }
 
+/// remove the tree due to an special event (disturbance)
+void Tree::removeDisturbance(const double stem_to_soil_fraction, const double stem_to_snag_fraction, const double branch_to_soil_fraction, const double branch_to_snag_fraction, const double foliage_to_soil_fraction)
+{
+    setFlag(Tree::TreeDead, true); // set flag that tree is dead
+    mRU->treeDied();
+    ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
+    rus.statisticsMgmt().add(this, 0);
+    if (ru()->snag())
+        ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
+}
+
 void Tree::removeBiomass(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
 {
     mFoliageMass *= 1. - removeFoliageFraction;
