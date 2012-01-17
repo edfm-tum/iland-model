@@ -404,9 +404,12 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     // *****************************************************************************
     // Calculate the wind speed at the crown top and the critical wind speeds
     // *****************************************************************************
+    // first, calculate the windspeed in the crown
     const WindSpeciesParameters &params = speciesParameter(tallest_tree->species());
     double wind_speed_10 = mWindSpeed; // wind speed on current resource unit 10m above the canopy TODO!!
     double u_crown = calculateCrownWindSpeed(tallest_tree, params, n_trees, wind_speed_10);
+
+    // now calculate the critical wind speed for the tallest tree on the pixel (i.e. the speed at which stem breakage/uprooting occurs)
     double cws_uproot, cws_break;
     calculateCrititalWindSpeed(tallest_tree, params, cell->edge, cws_uproot, cws_break);
     cell->cws_break = cws_break;
@@ -426,21 +429,25 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
         if (!mSimulationMode) {
             // all trees > 4m are killed on the cell
             if (do_break) {
-                // breaking
+                // the tree is breaking
                 // half of the stem as well as foliage/branches are moved to the soil. The other half
                 // of the stem remains as snag.
-                // TODO!!!!
+                tree->removeDisturbance(0.5, 0.5, // 50% of the stem to soil, 50% to snag
+                                        1., 0.,   // 100% of branches to soil
+                                        1.);      // 100% of foliage to soil
 
 
             } else {
                 // uprooting
-                // all biomass is moved to the soil
-                // TODO!
-                // regeneration is killed in case of uprooting
+                // regeneration is killed in case of uprooting ??
                 ru->clearSaplings(pixel_rect, true);
+                // all biomass of the tree is moved to the soil
+                tree->removeDisturbance(1., 0., // 100% of stem -> soil
+                                        1., 0., // 100% of branch -> soil
+                                        1.);    // 100% of foliage -> soil
+
 
             }
-            tree->die();
         }
         // statistics
         cell->basal_area_killed += tree->basalArea();
