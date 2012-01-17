@@ -43,7 +43,7 @@
 double WindLayers::value(const WindCell &data, const int param_index) const
 {
     switch(param_index){
-    case 0: return data.height==9999.f?0:data.height; // height
+    case 0: return data.height==9999.f?-1:data.height; // height
     case 1: return data.edge; // maximum difference to neighboring cells
     case 2: return data.cws_uproot; // critical wind speed for uprooting
     case 3: return data.cws_break; // critical wind speed for stem breakage
@@ -73,8 +73,8 @@ WindModule::WindModule()
 void WindModule::setup()
 {
     // setup the grid (using the size/resolution)
-    //mRUGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
-    //              GlobalSettings::instance()->model()->RUgrid().cellsize());
+    mRUGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
+                  GlobalSettings::instance()->model()->RUgrid().cellsize());
     // setup the fire spread grid
     mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellsize());
     //mFireId = 0;
@@ -169,12 +169,27 @@ void WindModule::run()
 
 void WindModule::initWindGrid()
 {
+    DebugTimer t("wind:init");
     // as long as we have 10m -> easy!
     if (cellsize()==cHeightPerRU) {
         WindCell *p = mGrid.begin();
         for (const HeightGridValue *hgv=GlobalSettings::instance()->model()->heightGrid()->begin(); hgv!=GlobalSettings::instance()->model()->heightGrid()->end(); ++hgv, ++p) {
             p->clear();
-            p->height = hgv->isValid()?hgv->height:9999.f;
+            if (hgv->isValid()) {
+                p->height = hgv->height;
+                p->n_trees = hgv->count();
+            } else {
+                // the "height" of pixels not in the project area depends on a flag provided with the "stand map"
+                if (hgv->isOutside())
+                    p->height = 9999.f;
+                else
+                    p->height = 0.f;
+            }
+        }
+        // reset resource unit grid...
+        for (WindRUCell *cell=mRUGrid.begin(); cell!=mRUGrid.end(); ++cell) {
+            cell->flag = 0;
+            scanResourceUnitTrees(mGrid.indexAt(mRUGrid.cellCenterPoint(mRUGrid.indexOf(cell))));
         }
         return;
     }
@@ -184,6 +199,7 @@ void WindModule::initWindGrid()
 
 void WindModule::detectEdges()
 {
+    DebugTimer t("wind:edges");
     WindCell *p_above, *p, *p_below;
     int dy = mGrid.sizeY();
     int dx = mGrid.sizeX();
@@ -219,6 +235,7 @@ void WindModule::detectEdges()
 
 void WindModule::calculateFetch()
 {
+    DebugTimer t("wind:fetch");
     int calculated = 0;
 
     WindCell *end = mGrid.end();
@@ -237,18 +254,21 @@ void WindModule::calculateFetch()
   */
 int WindModule::calculateWindImpact()
 {
+    DebugTimer t("wind:impact");
     int calculated = 0;
     int effective = 0;
+    QVector<Tree*> trees;
+    trees.reserve(200);
     WindCell *end = mGrid.end();
     for (WindCell *p=mGrid.begin(); p!=end; ++p) {
         if (p->edge >= 1.f) {
             QPoint pt=mGrid.indexOf(p);
-            if (windImpactOnPixel(pt, p))
+            if (windImpactOnPixel(pt, p, trees))
                 ++effective;
             ++calculated;
         }
     }
-    qDebug() << "calculated fetch for" << calculated << "pixels";
+    qDebug() << "calculated impact for" << calculated << "pixels";
     return effective;
 }
 
@@ -278,10 +298,11 @@ void WindModule::testEffect()
 {
     int calculated = 0;
     WindCell *end = mGrid.end();
+    QVector<Tree*> trees;
     for (WindCell *p=mGrid.begin(); p!=end; ++p) {
         if (p->edge >= 1.f) {
             QPoint pt=mGrid.indexOf(p);
-            windImpactOnPixel(pt, p);
+            windImpactOnPixel(pt, p, trees);
             ++calculated;
         }
     }
@@ -365,53 +386,50 @@ function line(x0, y0, x1, y1)
   @param cell the content of the current wind cell (for convenience)
     @return true, if trees were killed (thrown, broken)
   */
-bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
+bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell, QVector<Tree*> &trees)
 {
-    // extract a list of trees that are within the pixel boundaries
     QRectF pixel_rect = mGrid.cellRect(position);
     ResourceUnit *ru = GlobalSettings::instance()->model()->ru(pixel_rect.center());
     if (!ru)
         return false;
 
     // ************************************************
-    // retrieve a list of trees within the active pixel
+    // scan the trees of the current resource unit
     // ************************************************
-    // NOTE: the check with isDead() is necessary because dead trees could be already in the trees list
-    double h_max = 0.;
-    QVector<Tree*> trees;
-    Tree *tallest_tree = 0;
-    QVector<Tree>::iterator tend = ru->trees().end();
-    for (QVector<Tree>::iterator t = ru->trees().begin(); t!=tend; ++t) {
-        if ( pixel_rect.contains( (*t).position() ) && !(*t).isDead()) {
-            trees.push_back(&(*t));
-            if (trees.last()->height()> h_max) {
-                tallest_tree = trees.last();
-                h_max = tallest_tree->height();
-            }
-        }
-    }
-
-    // no trees on the cell -> do nothing
-    if (trees.isEmpty()) {
+    scanResourceUnitTrees(position);
+    if (!cell->tree) {
         // this can happen, if very large trees have crowns that cover more than one height pixel
         cell->height = 0.f;
         cell->edge = 0.f;
         return false;
     }
 
-    int n_trees = trees.size();
+
+    //        for (QVector<Tree>::const_iterator t = ru->trees().constBegin(); t!=tend; ++t) {
+//            if (!t->isDead()
+//                    && t->positionIndex().x()/cPxPerHeight == position.x()
+//                    && t->positionIndex().y()/cPxPerHeight==position.y() ) {
+//                trees.push_back(const_cast<Tree*>(&(*t)));
+//                if (trees.last()->height()> h_max) {
+//                    tallest_tree = trees.last();
+//                    h_max = tallest_tree->height();
+//                }
+//            }
+//        }
+
 
     // *****************************************************************************
     // Calculate the wind speed at the crown top and the critical wind speeds
     // *****************************************************************************
     // first, calculate the windspeed in the crown
-    const WindSpeciesParameters &params = speciesParameter(tallest_tree->species());
+    DebugTimer t2("wind:impact:speed");
+    const WindSpeciesParameters &params = speciesParameter(cell->tree->species());
     double wind_speed_10 = mWindSpeed; // wind speed on current resource unit 10m above the canopy TODO!!
-    double u_crown = calculateCrownWindSpeed(tallest_tree, params, n_trees, wind_speed_10);
+    double u_crown = calculateCrownWindSpeed(cell->tree, params, cell->n_trees, wind_speed_10);
 
     // now calculate the critical wind speed for the tallest tree on the pixel (i.e. the speed at which stem breakage/uprooting occurs)
     double cws_uproot, cws_break;
-    calculateCrititalWindSpeed(tallest_tree, params, cell->edge, cws_uproot, cws_break);
+    calculateCrititalWindSpeed(cell->tree, params, cell->edge, cws_uproot, cws_break);
     cell->cws_break = cws_break;
     cell->cws_uproot = cws_uproot;
     cell->crown_windspeed = u_crown;
@@ -422,43 +440,47 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     // whether uprooting or breaking occurs depend on the wind speed: stems break if speed is high enough, otherwise uprooting will occur
     bool do_break = u_crown > cws_break;
 
+
+
     // *****************************************************************************
     // Kill the trees that are thrown/uprooted by the wind
     // *****************************************************************************
-    foreach(Tree *tree, trees) {
-        if (!mSimulationMode) {
-            // all trees > 4m are killed on the cell
-            if (do_break) {
-                // the tree is breaking
-                // half of the stem as well as foliage/branches are moved to the soil. The other half
-                // of the stem remains as snag.
-                tree->removeDisturbance(0.5, 0.5, // 50% of the stem to soil, 50% to snag
-                                        1., 0.,   // 100% of branches to soil
-                                        1.);      // 100% of foliage to soil
+    QVector<Tree>::const_iterator tend = ru->trees().constEnd();
+    for (QVector<Tree>::const_iterator  t=ru->trees().constBegin(); t!=tend; ++t) {
+        if (!t->isDead()) {
+            if (!mSimulationMode) {
+                // all trees > 4m are killed on the cell
+                Tree *tree = const_cast<Tree*>(&(*t));
+                if (do_break) {
+                    // the tree is breaking
+                    // half of the stem as well as foliage/branches are moved to the soil. The other half
+                    // of the stem remains as snag.
+                    tree->removeDisturbance(0.5, 0.5, // 50% of the stem to soil, 50% to snag
+                                            1., 0.,   // 100% of branches to soil
+                                            1.);      // 100% of foliage to soil
 
-
-            } else {
-                // uprooting
-                // regeneration is killed in case of uprooting ??
-                ru->clearSaplings(pixel_rect, true);
-                // all biomass of the tree is moved to the soil
-                tree->removeDisturbance(1., 0., // 100% of stem -> soil
-                                        1., 0., // 100% of branch -> soil
-                                        1.);    // 100% of foliage -> soil
-
-
+                } else {
+                    // uprooting
+                    // regeneration is killed in case of uprooting ??
+                    ru->clearSaplings(pixel_rect, true);
+                    // all biomass of the tree is moved to the soil
+                    tree->removeDisturbance(1., 0., // 100% of stem -> soil
+                                            1., 0., // 100% of branch -> soil
+                                            1.);    // 100% of foliage -> soil
+                }
             }
-        }
-        // statistics
-        cell->basal_area_killed += tree->basalArea();
-        cell->n_killed ++;
+            // statistics
+            cell->basal_area_killed += t->basalArea();
+            cell->n_killed ++;
 
+        }
     }
 
     // reset the current cell
     cell->height = 0.f;
     cell->edge = 0.f;
     cell->n_iteration = mCurrentIteration;
+    cell->tree = 0;
     return true;
 }
 
@@ -530,5 +552,33 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     // debug info
     // qDebug() << "f_gap, bal, tc, cws_uproot, cws_break:" << f_gap << bal << tc << rCWS_uproot << rCWS_break;
     return qMin(rCWS_uproot, rCWS_break);
+}
+
+// scan the content of the trees container of the resource unit
+// and extract the tallest tree & species per wind pixel
+void WindModule::scanResourceUnitTrees(const QPoint &position)
+{
+    QPointF p_m = mGrid.cellCenterPoint(position);
+    // if this resource unit was already scanned in this wind event, then do nothing
+    // the flags are reset during initWindGrid()
+    if (mRUGrid.valueAt(p_m).flag)
+        return;
+
+    ResourceUnit *ru = GlobalSettings::instance()->model()->ru(p_m);
+
+    QVector<Tree>::const_iterator tend = ru->trees().constEnd();
+    for (QVector<Tree>::const_iterator t = ru->trees().constBegin(); t!=tend; ++t) {
+        if (!t->isDead()) {
+            const QPoint &tp = t->positionIndex();
+            QPoint pwind(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
+            WindCell &wind=mGrid.valueAtIndex(pwind);
+            if (!wind.tree || t->height()>wind.tree->height()) {
+                wind.height = t->height();
+                wind.tree = &(*t);
+            }
+        }
+    }
+    // set the "processed" flag
+    mRUGrid.valueAt(p_m).flag = 1;
 }
 

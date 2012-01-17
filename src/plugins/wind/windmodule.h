@@ -33,9 +33,11 @@ class Species; // forward
 class WindCell {
 public:
     WindCell() { clear(); }
-    void clear() { height = edge = 0.f; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
+    void clear() { height = edge = 0.f; n_trees=0; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
     bool isValid() const { return height<9999.f; } ///< returns true if the pixel is on the valid project area
     float height; ///< top height (m).
+    int n_trees; ///< number of trees on pixel
+    const Tree *tree; ///< pointer to the tallest tree on the pixel (if already populated)
     float edge; ///< maximum difference to neighboring cells (m)
     // statistics
     int n_iteration; ///< number of iteration this pixel is processed (and trees are killed)
@@ -44,6 +46,12 @@ public:
     double cws_uproot; ///< critital wind speed for uprooting (m/s)
     double cws_break; ///< critical wind speed for tree breakage (m/s)
     double crown_windspeed; ///< wind speed (m/s) on the cecll
+};
+// data structure for a resource unit
+class WindRUCell {
+public:
+    WindRUCell(): flag(0) {}
+    int flag ;
 };
 
 /** Helper class manage and visualize data layers related to fire.
@@ -99,12 +107,13 @@ private:
     /// find distance to the next pixels that give shelter
     bool checkFetch(const int startx, const int starty, const double direction, const double max_distance, const double threshold) ;
     /// perform the wind effect calculations for a given grid cell
-    bool windImpactOnPixel(const QPoint position, WindCell *cell);
+    bool windImpactOnPixel(const QPoint position, WindCell *cell, QVector<Tree*> &trees);
     ///
     double calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10);
     double calculateCrititalWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double gap_length, double &rCWS_uproot, double &rCWS_break);
 
     // helping functions
+    void scanResourceUnitTrees(const QPoint &position);
     void loadSpeciesParameter(const QString &table_name);
     const WindSpeciesParameters &speciesParameter(const Species *s);
 
@@ -115,6 +124,7 @@ private:
     int mCurrentIteration; ///<
 
     Grid<WindCell> mGrid; ///< wind grid (10x10m)
+    Grid<WindRUCell> mRUGrid; ///< grid for resource unit data
     WindLayers mWindLayers; ///< helping structure
     // species parameters for the wind module
     QHash<const Species*, WindSpeciesParameters> mSpeciesParameters;
