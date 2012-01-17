@@ -99,12 +99,26 @@ public:
     /// add for a tree with diameter
     void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);
     void addTurnoverWood(const Species *species, const double woody_biomass);
+
     /// adds the 'tree' to the appropriate Snag pools.
     void addMortality(const Tree* tree);
+
     /// add residual biomass of 'tree' after harvesting.
     /// remove_(stem, branch, foliage)_pct: percentage of biomass compartment that is removed by the harvest operation.
     /// the harvested biomass is collected.
     void addHarvest(const Tree* tree, const double remove_stem_pct, const double remove_branch_pct, const double remove_foliage_pct );
+
+    /// a tree dies and the biomass of the tree is split between snags/soils/removals
+    /// @param tree the tree to process
+    /// @param stem_to_snag fraction (0..1) of the stem biomass that should be moved to a standing snag
+    /// @param stem_to_soil fraction (0..1) of the stem biomass that should go directly to the soil
+    /// @param branch_to_snag fraction (0..1) of the branch biomass that should be moved to a standing snag
+    /// @param branch_to_soil fraction (0..1) of the branch biomass that should go directly to the soil
+    /// @param foliage_to_soil fraction (0..1) of the foliage biomass that should go directly to the soil
+    void addDisturbance(const Tree *tree, const double stem_to_snag, const double stem_to_soil,
+                        const double branch_to_snag, const double branch_to_soil,
+                        const double foliage_to_soil) { addBiomassPools(tree, stem_to_snag, stem_to_soil, branch_to_snag, branch_to_soil, foliage_to_soil);}
+
     /// add (died) biomass from the regeneration layer
     void addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool);
 
@@ -114,6 +128,8 @@ public:
     void management(const double factor);
     QList<QVariant> debugList(); ///< return a debug output
 private:
+    /// split the biomass of a tree into snag pools or move part of the tree directly to the soil
+    void addBiomassPools(const Tree *tree, const double stem_to_snag, const double stem_to_soil, const double branch_to_snag, const double branch_to_soil, const double foliage_to_soil);
     double calculateClimateFactors(); ///< calculate climate factor 're' for the current year
     double mClimateFactor; ///< current mean climate factor (influenced by temperature and soil water content)
     const ResourceUnit *mRU; ///< link to resource unit

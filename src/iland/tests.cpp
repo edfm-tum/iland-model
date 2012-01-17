@@ -820,7 +820,8 @@ void Tests::testWind()
                 }
             } else {
                 DebugTimer t;
-                wind->setSimulationMode(true);
+                if (direction!=0)
+                    wind->setSimulationMode(true);
                 double speed = Helper::userValue("wind speed (m/2)", "300").toDouble();
                 wind->setWindProperties(direction * M_PI / 180., speed);
                 wind->run();
