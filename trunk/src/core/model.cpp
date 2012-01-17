@@ -253,8 +253,12 @@ void Model::setupSpace()
             mStandGrid = new MapGrid(fileName);
 
             if (mStandGrid->isValid()) {
-                for (int i=0;i<mStandGrid->grid().count();i++)
-                    mHeightGrid->valueAtIndex(i).setValid( mStandGrid->grid().constValueAtIndex(i)!=-1 );
+                for (int i=0;i<mStandGrid->grid().count();i++) {
+                    const int &grid_value = mStandGrid->grid().constValueAtIndex(i);
+                    mHeightGrid->valueAtIndex(i).setValid( grid_value > -1 );
+                    if (grid_value < -1)
+                        mHeightGrid->valueAtIndex(i).setOutside(true);
+                }
             }
             mask_is_setup = true;
         }
@@ -567,12 +571,13 @@ void Model::beforeRun()
   The sequence of actions is as follows:
   (1) Load the climate of the new year
   (2) Reset statistics for resource unit as well as for dead/managed trees
-  (3) Invoke Management. Also the dedicated spot for the actions of other disturbances.
+  (3) Invoke Management.
   (4) *after* that, calculate Light patterns
   (5) 3PG on stand level, tree growth. Clear stand-statistcs before they are filled by single-tree-growth. calculate water cycle (with LAIs before management)
   (6) execute Regeneration
-  (7) calculate statistics for the year
-  (8) write database outputs
+  (7) invoke disturbance modules
+  (8) calculate statistics for the year
+  (9) write database outputs
   */
 void Model::runYear()
 {

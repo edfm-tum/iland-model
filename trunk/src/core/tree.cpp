@@ -915,7 +915,7 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction, const double st
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
-    rus.statisticsMgmt().add(this, 0);
+    rus.statisticsDead().add(this, 0);
     if (ru()->snag())
         ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
 }
