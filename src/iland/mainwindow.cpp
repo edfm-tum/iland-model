@@ -617,11 +617,17 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
                 QPoint p(ix,iy);
-                if (domGrid->valueAtIndex(p).isValid()) {
+                const HeightGridValue &hgv = domGrid->valueAtIndex(p);
+                if (hgv.isValid()) {
                     value = domGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(domGrid->cellRect(p));
                     fill_color = Helper::colorFromValue(value, 0., max_val); // 0..50m
                     painter.fillRect(r, fill_color);
+                }
+                // areas "outside" are drawn as gray.
+                if (hgv.isOutside()) {
+                    QRect r = vp.toScreen(domGrid->cellRect(p));
+                    painter.fillRect(r, Qt::gray);
                 }
             }
         }
