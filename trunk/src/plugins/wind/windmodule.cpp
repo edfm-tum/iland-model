@@ -136,13 +136,14 @@ const WindSpeciesParameters &WindModule::speciesParameter(const Species *s)
 }
 
 /// the run() function executes the fire events
-void WindModule::run()
+void WindModule::run(const int iteration)
 {
     // (1) do we have a wind event this year?
 
     // (2) do the actual wind calculations
     // (2.1) setup the wind data
-    initWindGrid();
+    if (iteration<=0)
+        initWindGrid();
 
     int total_pixels = 0;
     bool finished = false;
@@ -162,6 +163,8 @@ void WindModule::run()
         total_pixels += pixels;
         if (++mCurrentIteration>10)
             finished = true;
+        if (iteration>=0) // step by step execution
+            finished = true;
         qDebug() << "wind module: iteration" << mCurrentIteration-1 << "this round:" << pixels << "total:" << total_pixels;
     }
     qDebug() << "iterations: " << mCurrentIteration << "total pixels affected:" << total_pixels;
@@ -176,7 +179,7 @@ void WindModule::initWindGrid()
         for (const HeightGridValue *hgv=GlobalSettings::instance()->model()->heightGrid()->begin(); hgv!=GlobalSettings::instance()->model()->heightGrid()->end(); ++hgv, ++p) {
             p->clear();
             if (hgv->isValid()) {
-                p->height = hgv->height;
+                // p->height = hgv->height;
                 p->n_trees = hgv->count();
             } else {
                 // the "height" of pixels not in the project area depends on a flag provided with the "stand map"

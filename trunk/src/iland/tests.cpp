@@ -805,7 +805,13 @@ void Tests::testWind()
     // get fire module
     WindPlugin *plugin = dynamic_cast<WindPlugin *>(GlobalSettings::instance()->model()->modules()->module("wind"));
     if (plugin) {
+        static int iteration = 0;
         WindModule *wind = plugin->windModule();
+        if (iteration>0) {
+            qDebug() << ".... iteration ..." << iteration+1;
+            wind->run(iteration++);
+            return;
+        }
         double direction = Helper::userValue("direction (degrees), -1 for roundabout", "100").toDouble();
         bool loop = false;
         if (direction==-1)
@@ -820,11 +826,12 @@ void Tests::testWind()
                 }
             } else {
                 DebugTimer t;
+
                 if (direction!=0)
                     wind->setSimulationMode(true);
                 double speed = Helper::userValue("wind speed (m/2)", "300").toDouble();
                 wind->setWindProperties(direction * M_PI / 180., speed);
-                wind->run();
+                wind->run(iteration++);
 
                 qDebug() << "fetch finished. ms:" << t.elapsed();
             }
