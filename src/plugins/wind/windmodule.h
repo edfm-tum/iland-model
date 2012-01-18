@@ -88,7 +88,7 @@ public:
     void setup();
 
     /// main function of the disturbance module
-    void run();
+    void run(const int iteration=-1);
 
     // test functions
     void setWindProperties(const double direction_rad, const double speed_ms) { mWindDirection = direction_rad; mWindSpeed = speed_ms; }
