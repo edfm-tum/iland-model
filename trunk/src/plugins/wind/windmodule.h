@@ -93,6 +93,7 @@ public:
     // test functions
     void setWindProperties(const double direction_rad, const double speed_ms) { mWindDirection = direction_rad; mWindSpeed = speed_ms; }
     void setSimulationMode(const bool mode) { mSimulationMode = mode; }
+    void setMaximumIterations(const double maxit) { mMaxIteration = maxit; }
 
     void testFetch(double degree_direction);
     void testEffect();
@@ -107,7 +108,7 @@ private:
     /// find distance to the next pixels that give shelter
     bool checkFetch(const int startx, const int starty, const double direction, const double max_distance, const double threshold) ;
     /// perform the wind effect calculations for a given grid cell
-    bool windImpactOnPixel(const QPoint position, WindCell *cell, QVector<Tree*> &trees);
+    bool windImpactOnPixel(const QPoint position, WindCell *cell);
     ///
     double calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10);
     double calculateCrititalWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double gap_length, double &rCWS_uproot, double &rCWS_break);
@@ -119,9 +120,15 @@ private:
 
     // variables
     double mWindDirection; ///< direction of the current wind event (rad)
+    double mWindDirectionVariation; ///< random variation in wind direction
     double mWindSpeed; ///< wind speed (TODO: per resource unit!)
     bool mSimulationMode; ///< if true, no trees are removed (test mode)
-    int mCurrentIteration; ///<
+    int mCurrentIteration; ///< current iteration (1..n)
+    int mMaxIteration; ///< maximum number of iterations
+    // some statistics
+    int mPixelAffected; ///< total number of pixels that are impacted
+    int mTreesKilled; ///< total number of killed trees
+    double mTotalKilledBasalArea; ///< total basal area of killed trees
 
     Grid<WindCell> mGrid; ///< wind grid (10x10m)
     Grid<WindRUCell> mRUGrid; ///< grid for resource unit data

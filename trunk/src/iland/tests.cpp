@@ -808,9 +808,13 @@ void Tests::testWind()
         static int iteration = 0;
         WindModule *wind = plugin->windModule();
         if (iteration>0) {
-            qDebug() << ".... iteration ..." << iteration+1;
-            wind->run(iteration++);
-            return;
+            if (Helper::question("next iteration (yes) or stop (no)?")) {
+                qDebug() << ".... iteration ..." << iteration+1;
+                wind->run(iteration++);
+                return;
+            } else {
+                iteration = 0;
+            }
         }
         double direction = Helper::userValue("direction (degrees), -1 for roundabout", "100").toDouble();
         bool loop = false;

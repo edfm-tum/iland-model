@@ -266,6 +266,12 @@ bool ScriptGlobal::screenshot(QString file_name)
     return true;
 }
 
+void ScriptGlobal::repaint()
+{
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->repaint();
+}
+
 void ScriptGlobal::setViewport(double x, double y, double scale_px_per_m)
 {
     if (GlobalSettings::instance()->controller())
@@ -297,6 +303,15 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
     qDebug() << "could not save gridToFile because" << grid_type << "is not a valid grid.";
     return false;
 
+}
+
+void ScriptGlobal::wait(int milliseconds)
+{
+    // http://stackoverflow.com/questions/1950160/what-can-i-use-to-replace-sleep-and-usleep-in-my-qt-app
+    QMutex dummy;
+    dummy.lock();
+    QWaitCondition waitCondition;
+    waitCondition.wait(&dummy, milliseconds);
 }
 
 int ScriptGlobal::addSaplingsOnMap(const MapGridWrapper *map, const int mapID, QString species, int px_per_hectare, double height)
