@@ -233,12 +233,15 @@ MainWindow::MainWindow(QWidget *parent)
     // install signal handler
     signal( SIGSEGV, handle_signal );
 
+    readSettings();
+
     // load xml file: use either a command-line argument (if present), or load the content of a small text file....
     QString argText = QApplication::arguments().last();
     if (QApplication::arguments().count()>1 && !argText.isEmpty()) {
         ui->initFileName->setText(argText);
     } else {
-        QString lastXml = Helper::loadTextFile( QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt" );
+        QString lastXml = QSettings().value("project/lastxmlfile").toString();
+        //QString lastXml = Helper::loadTextFile( QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt" );
         if (!lastXml.isEmpty() && QFile::exists(lastXml))
             ui->initFileName->setText(lastXml);
     }
@@ -302,10 +305,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    QString fileName = QDir::current().filePath("gui.txt");
-    QByteArray state = saveState();
-    Helper::saveToFile(fileName, state);
-
     delete ui;
 }
 
@@ -690,6 +689,10 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 if (tree->species()->id() != species)
                     continue;
 
+            // filter out dead trees
+            if (tree->isDead())
+                continue;
+
             QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
             if (species_color) {
@@ -927,6 +930,7 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
     ui->dataTree->addTopLevelItems(items);
 }
 
+
 void MainWindow::showTreeDetails(Tree *tree)
 {
     ui->dataTree->clear();
@@ -1090,7 +1094,7 @@ void MainWindow::setupModel()
      else
          mRemoteControl.setupDynamicOutput("");
      ui->modelRunProgress->setValue(0);
-     Helper::saveToTextFile(QCoreApplication::applicationDirPath()+ "/lastxmlfile.txt", ui->initFileName->text());
+     QSettings().setValue("project/lastxmlfile", ui->initFileName->text());
      // magic debug output number
      GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
 
@@ -1104,6 +1108,9 @@ void MainWindow::setupModel()
          ++i;
      }
 
+     // retrieve the active management script file
+     if (mRemoteControl.model()->management())
+         ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(mRemoteControl.model()->management()->scriptFile()));
      labelMessage("Model created. Ready to run.");
 
 }
@@ -1292,6 +1299,12 @@ void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
     QCoreApplication::processEvents();
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    writeSettings();
+    event->accept();
+}
+
 void MainWindow::on_actionImageToClipboard_triggered()
 {
     QClipboard *clipboard = QApplication::clipboard();
@@ -1471,6 +1484,7 @@ void MainWindow::on_selectJavaScript_clicked()
     if (fileName.isEmpty())
         return;
     mgmt->loadScript(fileName);
+    ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(fileName));
     qDebug() << "loaded Javascript file" << mgmt->scriptFile();
     Management::scriptOutput = ui->scriptResult;
 
@@ -1482,8 +1496,14 @@ void MainWindow::on_scriptCommand_returnPressed()
     if (!GlobalSettings::instance()->model())
         return;
     Management *mgmt = GlobalSettings::instance()->model()->management();
-    if (!mgmt)
+    if (!mgmt) {
+        qDebug() << "sorry, management must be active in order to use scripting...";
         return;
+    }
+
+    if (ui->scriptCommandHistory->currentText() != ui->scriptCommand->text())
+        ui->scriptCommandHistory->insertItem(0, ui->scriptCommand->text());
+
     qDebug() << "executing" << ui->scriptCommand->text();
     try {
         QString result = mgmt->executeScript(ui->scriptCommand->text());
@@ -1605,4 +1625,50 @@ void MainWindow::on_actionDebug_triggered()
 
 
 
+void MainWindow::on_scriptCommandHistory_currentIndexChanged(const QString &arg1)
+{
+    ui->scriptCommand->setText(arg1);
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());
+    settings.endGroup();
+    // javascript commands
+    settings.beginWriteArray("javascriptCommands");
+    int size = qMin(ui->scriptCommandHistory->count(), 15); // max 15 entries in the history
+    for (int i=0;i<size; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue("item", ui->scriptCommandHistory->itemText(i));
+    }
+    settings.endArray();
+    settings.beginGroup("project");
+    settings.setValue("lastxmlfile", ui->initFileName->text());
+    settings.endGroup();
+}
+void MainWindow::readSettings()
+{
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    QCoreApplication::setOrganizationName("iLand");
+    QCoreApplication::setOrganizationDomain("iland.boku.ac.at");
+    QCoreApplication::setApplicationName("iLand");
+    QSettings settings;
+    qDebug() << "reading settings from" << settings.fileName();
+
+    // window state and
+    restoreGeometry(settings.value("MainWindow/geometry").toByteArray());
+    restoreState(settings.value("MainWindow/windowState").toByteArray());
+
+    // read javascript commands
+    int size = settings.beginReadArray("javascriptCommands");
+    for (int i=0;i<size; ++i) {
+        settings.setArrayIndex(i);
+        ui->scriptCommandHistory->addItem(settings.value("item").toString());
+    }
+    settings.endArray();
+
+}
 

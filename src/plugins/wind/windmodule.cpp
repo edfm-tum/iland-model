@@ -67,6 +67,8 @@ WindModule::WindModule()
     mWindDirection = 0.;
     mWindSpeed = 0.;
     mSimulationMode = false;
+    mMaxIteration = 10;
+    mWindDirectionVariation = 0.;
 }
 
 
@@ -81,6 +83,7 @@ void WindModule::setup()
 
     // set some global settings
     XmlHelper xml(GlobalSettings::instance()->settings().node("modules.wind"));
+    mWindDirectionVariation = xml.valueDouble(".windDirectionVariation", 0.) * M_PI/180.;
 //    mWindSpeedMin = xml.valueDouble(".wind.speedMin", 5.);
 //    mWindSpeedMax = xml.valueDouble(".wind.speedMax", 10.);
 //    mWindDirection = xml.valueDouble(".wind.direction", 270.); // defaults to "west"
@@ -88,6 +91,7 @@ void WindModule::setup()
 
     mWindLayers.setGrid(mGrid);
     GlobalSettings::instance()->controller()->addLayers(&mWindLayers, "wind");
+
 
     // setup the species parameters that are specific to the wind module
     QString parameter_table_name = xml.value(".speciesParameter", "wind");
@@ -145,9 +149,10 @@ void WindModule::run(const int iteration)
     if (iteration<=0)
         initWindGrid();
 
-    int total_pixels = 0;
+
     bool finished = false;
     mCurrentIteration = 1;
+    if (iteration>=0) mCurrentIteration = iteration;
     DebugTimer ttotal("wind:total");
     while (!finished) {
         // check for edges in the stand
@@ -160,19 +165,23 @@ void WindModule::run(const int iteration)
         int pixels = calculateWindImpact();
         if (pixels == 0)
             finished = true; // nothing found
-        total_pixels += pixels;
-        if (++mCurrentIteration>10)
+        mPixelAffected += pixels;
+        if (++mCurrentIteration > mMaxIteration)
             finished = true;
         if (iteration>=0) // step by step execution
             finished = true;
-        qDebug() << "wind module: iteration" << mCurrentIteration-1 << "this round:" << pixels << "total:" << total_pixels;
+        qDebug() << "wind module: iteration" << mCurrentIteration-1 << "this round:" << pixels << "total:" << mPixelAffected << "totals: killed trees:" << mTreesKilled << "basal-area:" << mTotalKilledBasalArea;
     }
-    qDebug() << "iterations: " << mCurrentIteration << "total pixels affected:" << total_pixels;
+    qDebug() << "iterations: " << mCurrentIteration << "total pixels affected:" << mPixelAffected << "totals: killed trees:" << mTreesKilled << "basal-area:" << mTotalKilledBasalArea;
 }
 
 void WindModule::initWindGrid()
 {
     DebugTimer t("wind:init");
+    // reset some statistics
+    mTotalKilledBasalArea = 0.;
+    mTreesKilled = 0;
+    mPixelAffected = 0;
     // as long as we have 10m -> easy!
     if (cellsize()==cHeightPerRU) {
         WindCell *p = mGrid.begin();
@@ -240,12 +249,13 @@ void WindModule::calculateFetch()
 {
     DebugTimer t("wind:fetch");
     int calculated = 0;
-
+    double current_direction;
     WindCell *end = mGrid.end();
     for (WindCell *p=mGrid.begin(); p!=end; ++p) {
         if (p->edge == 1.f) {
             QPoint pt=mGrid.indexOf(p);
-            checkFetch(pt.x(), pt.y(), mWindDirection, p->height * 10., p->height - 10.);
+            current_direction = mWindDirection + mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0;
+            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - 10.);
             ++calculated;
         }
    }
@@ -260,13 +270,11 @@ int WindModule::calculateWindImpact()
     DebugTimer t("wind:impact");
     int calculated = 0;
     int effective = 0;
-    QVector<Tree*> trees;
-    trees.reserve(200);
     WindCell *end = mGrid.end();
     for (WindCell *p=mGrid.begin(); p!=end; ++p) {
         if (p->edge >= 1.f) {
             QPoint pt=mGrid.indexOf(p);
-            if (windImpactOnPixel(pt, p, trees))
+            if (windImpactOnPixel(pt, p))
                 ++effective;
             ++calculated;
         }
@@ -301,11 +309,10 @@ void WindModule::testEffect()
 {
     int calculated = 0;
     WindCell *end = mGrid.end();
-    QVector<Tree*> trees;
     for (WindCell *p=mGrid.begin(); p!=end; ++p) {
         if (p->edge >= 1.f) {
             QPoint pt=mGrid.indexOf(p);
-            windImpactOnPixel(pt, p, trees);
+            windImpactOnPixel(pt, p);
             ++calculated;
         }
     }
@@ -389,7 +396,7 @@ function line(x0, y0, x1, y1)
   @param cell the content of the current wind cell (for convenience)
     @return true, if trees were killed (thrown, broken)
   */
-bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell, QVector<Tree*> &trees)
+bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
 {
     QRectF pixel_rect = mGrid.cellRect(position);
     ResourceUnit *ru = GlobalSettings::instance()->model()->ru(pixel_rect.center());
@@ -401,7 +408,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell, QVecto
     // ************************************************
     scanResourceUnitTrees(position);
     if (!cell->tree) {
-        // this can happen, if very large trees have crowns that cover more than one height pixel
+        // this should actually not happen any more
         cell->height = 0.f;
         cell->edge = 0.f;
         return false;
@@ -450,7 +457,9 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell, QVecto
     // *****************************************************************************
     QVector<Tree>::const_iterator tend = ru->trees().constEnd();
     for (QVector<Tree>::const_iterator  t=ru->trees().constBegin(); t!=tend; ++t) {
-        if (!t->isDead()) {
+        if (!t->isDead() &&
+                t->positionIndex().x()/cPxPerHeight == position.x() &&
+                t->positionIndex().y()/cPxPerHeight == position.y() ) {
             if (!mSimulationMode) {
                 // all trees > 4m are killed on the cell
                 Tree *tree = const_cast<Tree*>(&(*t));
@@ -475,6 +484,8 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell, QVecto
             // statistics
             cell->basal_area_killed += t->basalArea();
             cell->n_killed ++;
+            mTotalKilledBasalArea += t->basalArea();
+            mTreesKilled ++;
 
         }
     }

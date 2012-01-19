@@ -66,6 +66,10 @@ public slots:
                    double min_val=0., double max_val=1.);
     void addLayers(const LayeredGridBase *layer, const QString &name);
     void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
+
+protected:
+     void closeEvent(QCloseEvent *event);
+
 private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
@@ -106,6 +110,8 @@ private:
     void checkModelState();
     void showTreeDetails(Tree* tree);
     void showResourceUnitDetails(const ResourceUnit *ru);
+    void readSettings();
+    void writeSettings();
     // debug data and outputs
     void saveDebugOutputs();
     void setupFileLogging(const bool do_start);
@@ -171,6 +177,7 @@ private slots:
     void on_visImpact_toggled();
     void on_visImpact_clicked() { on_visFon_toggled(); } // force repeaint
     void on_actionPerformance_triggered();
+    void on_scriptCommandHistory_currentIndexChanged(const QString &arg1);
 };
 
 #endif // MAINWINDOW_H
