@@ -166,7 +166,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="editStackPage1">
         <attribute name="title">
@@ -251,6 +251,13 @@
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_8">
          <item>
+          <widget class="QLabel" name="scriptActiveScriptFile">
+           <property name="text">
+            <string>loaded: -</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
            <item>
             <widget class="QToolButton" name="selectJavaScript">
@@ -291,6 +298,16 @@
          </item>
          <item>
           <widget class="QLineEdit" name="scriptCommand"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>or select from the command history:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="scriptCommandHistory"/>
          </item>
          <item>
           <widget class="QLabel" name="label_6">

@@ -22,6 +22,7 @@
 
 #include "windplugin.h"
 #include "windmodule.h"
+#include "windscript.h"
 
 Q_EXPORT_PLUGIN2(iland_wind, WindPlugin)
 
@@ -68,6 +69,12 @@ void WindPlugin::setupResourceUnit(const ResourceUnit *ru)
 
 void WindPlugin::setupScripting(QScriptEngine *engine)
 {
+    WindScript *wind_script = new WindScript();
+    wind_script->setModule(mWind);
+    QScriptValue obj = engine->newQObject(wind_script, QScriptEngine::AutoOwnership);
+    engine->globalObject().setProperty("Wind", obj);
+
+    qDebug() << "setup scripting for windmodule called...";
 }
 
 void WindPlugin::yearBegin()
