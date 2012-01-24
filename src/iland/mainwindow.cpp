@@ -1501,12 +1501,15 @@ void MainWindow::on_scriptCommand_returnPressed()
         return;
     }
 
-    if (ui->scriptCommandHistory->currentText() != ui->scriptCommand->text())
-        ui->scriptCommandHistory->insertItem(0, ui->scriptCommand->text());
+    QString command = ui->scriptCommand->text();
+    if (ui->scriptCommandHistory->currentText() != command) {
+        ui->scriptCommandHistory->insertItem(0, command);
+        ui->scriptCommandHistory->setCurrentIndex(0);
+    }
 
-    qDebug() << "executing" << ui->scriptCommand->text();
+    qDebug() << "executing" << command;
     try {
-        QString result = mgmt->executeScript(ui->scriptCommand->text());
+        QString result = mgmt->executeScript(command);
         if (!result.isEmpty()) {
             ui->scriptResult->append(result);
             qDebug() << result;
@@ -1625,9 +1628,10 @@ void MainWindow::on_actionDebug_triggered()
 
 
 
-void MainWindow::on_scriptCommandHistory_currentIndexChanged(const QString &arg1)
+void MainWindow::on_scriptCommandHistory_currentIndexChanged(int index)
 {
-    ui->scriptCommand->setText(arg1);
+    if (index>=0)
+        ui->scriptCommand->setText(ui->scriptCommandHistory->itemText(index));
 }
 
 void MainWindow::writeSettings()

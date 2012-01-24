@@ -51,6 +51,7 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 5: return data.basal_area_killed; // basal area killed on pixel
     case 6: return data.n_iteration; // iteration in processing that the current pixel is processed (and trees are killed)
     case 7: return data.crown_windspeed; // effective wind speed in the crown (m/s)
+    case 8: return topoAt(&data); // topo modifier of the current pixel
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -58,8 +59,15 @@ double WindLayers::value(const WindCell &data, const int param_index) const
 
 const QStringList WindLayers::names() const
 {
-    return QStringList() <<  "height" << "edge" << "cwsUproot" << "cwsBreak" << "nKilled" << "basalAreaKilled" << "iteration" << "windSpeedCrown";
+    return QStringList() <<  "height" << "edge" << "cwsUproot" << "cwsBreak" << "nKilled" << "basalAreaKilled" << "iteration" << "windSpeedCrown" << "topo";
 
+}
+
+// helper function (avoid a special ru-level grid and use the 10m cell resolution instead)
+double WindLayers::topoAt(const WindCell *cell) const
+{
+    QPoint pos = mGrid->indexOf(cell);
+    return mRUGrid->constValueAt(mGrid->cellCenterPoint(pos)).topoModifier;
 }
 
 WindModule::WindModule()
@@ -69,9 +77,12 @@ WindModule::WindModule()
     mSimulationMode = false;
     mMaxIteration = 10;
     mWindDirectionVariation = 0.;
+    mGustModifier = 1.;
+    mIterationsPerMinute = 1.;
 }
 
-
+/// setup of general settings from the project file.
+/// the function is invoked from the Plugin.
 void WindModule::setup()
 {
     // setup the grid (using the size/resolution)
@@ -83,13 +94,14 @@ void WindModule::setup()
 
     // set some global settings
     XmlHelper xml(GlobalSettings::instance()->settings().node("modules.wind"));
-    mWindDirectionVariation = xml.valueDouble(".windDirectionVariation", 0.) * M_PI/180.;
-//    mWindSpeedMin = xml.valueDouble(".wind.speedMin", 5.);
-//    mWindSpeedMax = xml.valueDouble(".wind.speedMax", 10.);
-//    mWindDirection = xml.valueDouble(".wind.direction", 270.); // defaults to "west"
-    //    mFireSizeSigma = xml.valueDouble(".fireSizeSigma", 0.25);
+    mWindDirectionVariation = xml.valueDouble(".directionVariation", 0.) * M_PI/180.;
+    mWindDirection = xml.valueDouble(".direction", 0.)*M_PI/180.;
+    mWindSpeed = 0.; // set the wind speed explicitely to 0
+    mGustModifier = xml.valueDouble(".gustModifier", 1.);
+    mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 1.);
 
     mWindLayers.setGrid(mGrid);
+    mWindLayers.setRUGrid(&mRUGrid);
     GlobalSettings::instance()->controller()->addLayers(&mWindLayers, "wind");
 
 
@@ -98,6 +110,16 @@ void WindModule::setup()
     loadSpeciesParameter(parameter_table_name);
 }
 
+/// setup of spatial explicit variables (e.g. the wind speed modifier)
+/// the function is called from the plugin-object.
+void WindModule::setupResourceUnit(const ResourceUnit *ru)
+{
+    WindRUCell &cell =  mRUGrid.valueAt(ru->boundingBox().center());
+    cell.topoModifier = GlobalSettings::instance()->settings().valueDouble("modules.wind.topoModifier", 1.);
+}
+
+/// load specific species parameter for the wind module.
+/// wind related species parameter are located in a separate sqlite-table.
 void WindModule::loadSpeciesParameter(const QString &table_name)
 {
     QSqlQuery query(GlobalSettings::instance()->dbin());
@@ -142,13 +164,14 @@ const WindSpeciesParameters &WindModule::speciesParameter(const Species *s)
 /// the run() function executes the fire events
 void WindModule::run(const int iteration)
 {
-    // (1) do we have a wind event this year?
-
-    // (2) do the actual wind calculations
-    // (2.1) setup the wind data
-    if (iteration<=0)
+    // initialize things in the first iteration
+    if (iteration<=0) {
+        // check if we have a wind event this year
+        if (!initEvent())
+            return;
+        // setup the wind data
         initWindGrid();
-
+    }
 
     bool finished = false;
     mCurrentIteration = 1;
@@ -161,16 +184,21 @@ void WindModule::run(const int iteration)
         detectEdges();
         // calculate the gap sizes/fetch for the current structure
         calculateFetch();
+        // wind speed of the current iteration
+        mCurrentGustFactor = 1. + nrandom(-mGustModifier, mGustModifier);
         // derive the impact of wind (i.e. calculate critical wind speeds and the effect of wind on the forest)
         int pixels = calculateWindImpact();
-        if (pixels == 0)
-            finished = true; // nothing found
         mPixelAffected += pixels;
         if (++mCurrentIteration > mMaxIteration)
             finished = true;
         if (iteration>=0) // step by step execution
             finished = true;
-        qDebug() << "wind module: iteration" << mCurrentIteration-1 << "this round:" << pixels << "total:" << mPixelAffected << "totals: killed trees:" << mTreesKilled << "basal-area:" << mTotalKilledBasalArea;
+        qDebug() << "wind module: iteration" << mCurrentIteration-1
+                 << "this round affected:" << pixels
+                 << "total:" << mPixelAffected
+                 << "totals: killed trees:" << mTreesKilled
+                 << "basal-area:" << mTotalKilledBasalArea
+                 << "gustfactor:" << mCurrentGustFactor;
     }
     qDebug() << "iterations: " << mCurrentIteration << "total pixels affected:" << mPixelAffected << "totals: killed trees:" << mTreesKilled << "basal-area:" << mTotalKilledBasalArea;
 }
@@ -254,7 +282,7 @@ void WindModule::calculateFetch()
     for (WindCell *p=mGrid.begin(); p!=end; ++p) {
         if (p->edge == 1.f) {
             QPoint pt=mGrid.indexOf(p);
-            current_direction = mWindDirection + mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0;
+            current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
             checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - 10.);
             ++calculated;
         }
@@ -317,6 +345,34 @@ void WindModule::testEffect()
         }
     }
     qDebug() << "calculated fetch for" << calculated << "pixels";
+}
+
+
+/** determines whether a wind event should be triggered in the current year.
+    returns true if so and sets all relevant properties of the event (speed, direction).
+  */
+bool WindModule::initEvent()
+{
+    // when using time events, a wind event is triggered by the time event mechanism
+    // by setting the wind speed of the event > 0
+
+    XmlHelper xml(GlobalSettings::instance()->settings().node("modules.wind"));
+    mWindSpeed = xml.valueDouble(".speed");
+    if (mWindSpeed == 0.)
+        return false;
+    // reset the wind speed in the xml structure (avoid execution next year)
+    xml.setNodeValue(".speed", "0");
+    // get duration of the event
+    double duration = xml.valueDouble(".duration", 0.); // duration of the event (minutes)
+    mMaxIteration = duration * mIterationsPerMinute + 0.5;
+    if (mMaxIteration<=0)
+        return false;
+
+    // get wind direction of the event
+    mWindDirection = xml.valueDouble(".direction", 0.)*M_PI/180.;
+
+    qDebug() << "Wind: start event. Speed:" << mWindSpeed << "m/s, Duration (iterations):" << mMaxIteration << ", direction (°):" << mWindDirection/M_PI*180.;
+    return true;
 }
 
 /** find distance to the next shelter pixel
@@ -414,27 +470,17 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
         return false;
     }
 
-
-    //        for (QVector<Tree>::const_iterator t = ru->trees().constBegin(); t!=tend; ++t) {
-//            if (!t->isDead()
-//                    && t->positionIndex().x()/cPxPerHeight == position.x()
-//                    && t->positionIndex().y()/cPxPerHeight==position.y() ) {
-//                trees.push_back(const_cast<Tree*>(&(*t)));
-//                if (trees.last()->height()> h_max) {
-//                    tallest_tree = trees.last();
-//                    h_max = tallest_tree->height();
-//                }
-//            }
-//        }
-
-
     // *****************************************************************************
     // Calculate the wind speed at the crown top and the critical wind speeds
     // *****************************************************************************
     // first, calculate the windspeed in the crown
     DebugTimer t2("wind:impact:speed");
     const WindSpeciesParameters &params = speciesParameter(cell->tree->species());
-    double wind_speed_10 = mWindSpeed; // wind speed on current resource unit 10m above the canopy TODO!!
+    double topo_mod = mRUGrid.valueAt(pixel_rect.center()).topoModifier;
+    // the wind speed (10m above the canopy) is the global wind speed modified with the topography modifier
+    // and with some added variation.
+    double wind_speed_10 = mWindSpeed * topo_mod * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy
+
     double u_crown = calculateCrownWindSpeed(cell->tree, params, cell->n_trees, wind_speed_10);
 
     // now calculate the critical wind speed for the tallest tree on the pixel (i.e. the speed at which stem breakage/uprooting occurs)
@@ -449,7 +495,6 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
 
     // whether uprooting or breaking occurs depend on the wind speed: stems break if speed is high enough, otherwise uprooting will occur
     bool do_break = u_crown > cws_break;
-
 
 
     // *****************************************************************************
