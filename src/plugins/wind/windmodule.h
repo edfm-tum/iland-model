@@ -25,6 +25,7 @@
 
 class Tree; // forward
 class Species; // forward
+class ResourceUnit; // forward
 
 /** data structure for a single wind cell (usually 10x10m).
   @ingroup windmodule
@@ -50,8 +51,9 @@ public:
 // data structure for a resource unit
 class WindRUCell {
 public:
-    WindRUCell(): flag(0) {}
+    WindRUCell(): flag(0), topoModifier(1.) {}
     int flag ;
+    double topoModifier;
 };
 
 /** Helper class manage and visualize data layers related to fire.
@@ -62,6 +64,11 @@ class WindLayers: public LayeredGrid<WindCell> {
     void setGrid(const Grid<WindCell> &grid) { mGrid = &grid; }
     double value(const WindCell& data, const int index) const;
     const QStringList names() const;
+    // specifics for wind layers
+    void setRUGrid(const Grid<WindRUCell> *grid) { mRUGrid = grid; }
+private:
+    double topoAt(const WindCell *cell) const; // get topo factor at cell "cell"
+    const Grid<WindRUCell> *mRUGrid;
 };
 
 /** Species parameters that are specific to the wind module
@@ -86,6 +93,7 @@ public:
     static double cellsize() { return 10.; }
     /// the general setup routine after starting iland
     void setup();
+    void setupResourceUnit(const ResourceUnit* ru);
 
     /// main function of the disturbance module
     void run(const int iteration=-1);
@@ -99,6 +107,7 @@ public:
     void testEffect();
 private:
     // main functions
+    bool initEvent(); ///< determine details of this years' wind event (and return false if no event happens)
     void initWindGrid(); ///< load state from iland main module
     void detectEdges(); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
     void calculateFetch(); ///< calculate maximum gap sizes in upwind direction
@@ -125,6 +134,9 @@ private:
     bool mSimulationMode; ///< if true, no trees are removed (test mode)
     int mCurrentIteration; ///< current iteration (1..n)
     int mMaxIteration; ///< maximum number of iterations
+    double mGustModifier; ///< Modification range accounting for differences in wind speed between iterations (0..1)
+    double mCurrentGustFactor; ///< gustfactor of the current year (multiplier)
+    double mIterationsPerMinute; ///< number of iterations per minute of the events' duration
     // some statistics
     int mPixelAffected; ///< total number of pixels that are impacted
     int mTreesKilled; ///< total number of killed trees
@@ -135,6 +147,9 @@ private:
     WindLayers mWindLayers; ///< helping structure
     // species parameters for the wind module
     QHash<const Species*, WindSpeciesParameters> mSpeciesParameters;
+
+    friend class WindScript;
+
 };
 
 
