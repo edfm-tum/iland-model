@@ -65,6 +65,7 @@ void WindPlugin::setup()
 
 void WindPlugin::setupResourceUnit(const ResourceUnit *ru)
 {
+    mWind->setupResourceUnit(ru);
 }
 
 void WindPlugin::setupScripting(QScriptEngine *engine)

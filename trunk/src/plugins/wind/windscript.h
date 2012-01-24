@@ -21,6 +21,9 @@ public slots:
       @param iteration if given a value >=0, then only one iteration is calculated ("interactive mode")
     */
     int windEvent(double windspeed, double winddirection, int max_iteration, bool simulate=false, int iteration=-1);
+    /// create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
+    bool gridToFile(QString grid_type, QString file_name);
+
 private:
     WindModule *mModule;
 };

@@ -52,9 +52,10 @@ class LayeredGrid: public LayeredGridBase
 {
 public:
     LayeredGrid(const Grid<T>& grid) { mGrid = &grid; }
-    LayeredGrid() { mGrid = 0; }
+    LayeredGrid() { mGrid = 0;  }
     QRectF cellRect(const QPoint &p) const { return mGrid->cellRect(p); }
     QRectF metricRect() const { return mGrid->metricRect(); }
+    float cellsize() const { return mGrid->cellsize(); }
     int sizeX() const { return mGrid->sizeX(); }
     int sizeY() const { return mGrid->sizeY();}
 
@@ -72,5 +73,39 @@ public:
 protected:
     const Grid<T> *mGrid;
 };
+
+void modelToWorld(const Vector3D &From, Vector3D &To);
+
+/** translate
+
+  */
+template <class T>
+    QString gridToESRIRaster(const LayeredGrid<T> &grid, const QString name)
+{
+        int index = grid.names().indexOf(name);
+        if (index<0)
+            return QString();
+        Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
+        Vector3D world;
+        modelToWorld(model, world);
+        QString result = QString("ncols %1\r\nnrows %2\r\nxllcorner %3\r\nyllcorner %4\r\ncellsize %5\r\nNODATA_value %6\r\n")
+                                .arg(grid.sizeX())
+                                .arg(grid.sizeY())
+                                .arg(world.x(),0,'f').arg(world.y(),0,'f')
+                                .arg(grid.cellsize()).arg(-9999);
+
+        QString res;
+        QTextStream ts(&res);
+        QChar sep = QChar(' ');
+        for (int y=grid.sizeY()-1;y>=0;--y){
+            for (int x=0;x<grid.sizeX();x++){
+                ts << grid.value(x,y,index) << sep;
+            }
+            ts << "\r\n";
+        }
+
+        return result + res;
+}
+
 
 #endif // LAYEREDGRID_H
