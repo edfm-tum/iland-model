@@ -257,7 +257,7 @@ void Model::setupSpace()
                     const int &grid_value = mStandGrid->grid().constValueAtIndex(i);
                     mHeightGrid->valueAtIndex(i).setValid( grid_value > -1 );
                     if (grid_value < -1)
-                        mHeightGrid->valueAtIndex(i).setOutside(true);
+                        mHeightGrid->valueAtIndex(i).setForestOutside(true);
                 }
             }
             mask_is_setup = true;
