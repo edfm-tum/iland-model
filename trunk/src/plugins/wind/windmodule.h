@@ -96,7 +96,7 @@ public:
     void setupResourceUnit(const ResourceUnit* ru);
 
     /// main function of the disturbance module
-    void run(const int iteration=-1);
+    void run(const int iteration=-1, const bool execute_from_script=false);
 
     // test functions
     void setWindProperties(const double direction_rad, const double speed_ms) { mWindDirection = direction_rad; mWindSpeed = speed_ms; }
@@ -107,7 +107,7 @@ public:
     void testEffect();
 private:
     // main functions
-    bool initEvent(); ///< determine details of this years' wind event (and return false if no event happens)
+    bool eventTriggered(); ///< determine details of this years' wind event (and return false if no event happens)
     void initWindGrid(); ///< load state from iland main module
     void detectEdges(); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
     void calculateFetch(); ///< calculate maximum gap sizes in upwind direction
