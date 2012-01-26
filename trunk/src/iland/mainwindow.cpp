@@ -624,7 +624,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     painter.fillRect(r, fill_color);
                 }
                 // areas "outside" are drawn as gray.
-                if (hgv.isOutside()) {
+                if (hgv.isForestOutside()) {
                     QRect r = vp.toScreen(domGrid->cellRect(p));
                     painter.fillRect(r, Qt::gray);
                 }

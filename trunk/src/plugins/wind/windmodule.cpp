@@ -220,7 +220,7 @@ void WindModule::initWindGrid()
                 p->n_trees = hgv->count();
             } else {
                 // the "height" of pixels not in the project area depends on a flag provided with the "stand map"
-                if (hgv->isOutside())
+                if (hgv->isForestOutside())
                     p->height = 9999.f;
                 else
                     p->height = 0.f;

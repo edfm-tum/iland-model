@@ -421,7 +421,12 @@ void Tree::heightGrid_torus()
 }
 
 
-
+/** reads the light influence field value for a tree.
+    The LIF field is scanned within the crown area of the focal tree, and the influence of
+    the focal tree is "subtracted" from the LIF values.
+    Finally, the "LRI correction" is applied.
+    see http://iland.boku.ac.at/competition+for+light for details.
+  */
 void Tree::readLIF()
 {
     if (!mStamp)
@@ -430,6 +435,7 @@ void Tree::readLIF()
     if (!reader)
         return;
     QPoint pos_reader = mPositionIndex;
+    const float outside_area_factor = 0.1; //
 
     int offset_reader = reader->offset();
     int offset_writer = mStamp->offset();
@@ -451,14 +457,17 @@ void Tree::readLIF()
         grid_value = mGrid->ptr(rx, ry);
         for (x=0;x<reader_size;++x) {
 
-            local_dom = mHeightGrid->valueAtIndex((rx+x)/cPxPerHeight, ry/cPxPerHeight).height; // ry: gets ++ed in outer loop, rx not
+            const HeightGridValue &hgv = mHeightGrid->constValueAtIndex((rx+x)/cPxPerHeight, ry/cPxPerHeight); // the height grid value, ry: gets ++ed in outer loop, rx not
+            local_dom = hgv.height;
             z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
 
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;
-            // old: own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity / local_dom; // old: dom_height;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value++ / own_value; // remove impact of focal tree
+            if (hgv.isForestOutside())
+                value *= outside_area_factor;
+
             
             //qDebug() << x << y << local_dom << z << z_zstar << own_value << value << *(grid_value-1) << (*reader)(x,y) << mStamp->offsetValue(x,y,d_offset);
             //if (value>0.)
@@ -472,14 +481,6 @@ void Tree::readLIF()
     if (hrel<1.)
         mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
 
-    // read dominance field...
-    // this applies only if some trees are potentially *higher* than the dominant height grid
-    //if (dom_height < m_Height) {
-        // if tree is higher than Z*, the dominance height
-        // a part of the crown is in "full light".
-    //    m_statAboveZ++;
-    //    mImpact = 1. - (1. - mImpact)*dom_height/m_Height;
-    //}
 
     if (mLRI > 1.)
         mLRI = 1.;
@@ -487,9 +488,7 @@ void Tree::readLIF()
     // Finally, add LRI of this Tree to the ResourceUnit!
     mRU->addWLA(mLeafArea, mLRI);
 
-
     //qDebug() << "Tree #"<< id() << "value" << sum << "Impact" << mImpact;
-    //mRU->addWLA(mLRI*mLeafArea, mLeafArea);
 }
 
 /// Torus version of read stamp (glued edges)
