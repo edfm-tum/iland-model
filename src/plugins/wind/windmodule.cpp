@@ -162,13 +162,15 @@ const WindSpeciesParameters &WindModule::speciesParameter(const Species *s)
 }
 
 /// the run() function executes the fire events
-void WindModule::run(const int iteration)
+void WindModule::run(const int iteration, const bool execute_from_script)
 {
     // initialize things in the first iteration
     if (iteration<=0) {
-        // check if we have a wind event this year
-        if (!initEvent())
-            return;
+        if (!execute_from_script) {
+            // check if we have a wind event this year
+            if (!eventTriggered())
+                return;
+        }
         // setup the wind data
         initWindGrid();
     }
@@ -351,7 +353,7 @@ void WindModule::testEffect()
 /** determines whether a wind event should be triggered in the current year.
     returns true if so and sets all relevant properties of the event (speed, direction).
   */
-bool WindModule::initEvent()
+bool WindModule::eventTriggered()
 {
     // when using time events, a wind event is triggered by the time event mechanism
     // by setting the wind speed of the event > 0
@@ -604,9 +606,12 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     double tc = 36.8+112.2*(tree->dbh()*tree->dbh()/10000.)*tree->height()-0.460*bal-0.783*(tree->dbh()*tree->dbh()/10000.)*tree->height()*bal;
     // now derive the critital wind speeds for uprooting and breakage
     const double f_knot = 1.; // a reduction factor accounting for the presence of knots, currenty no reduction.
+    // a factor to scale average wind speeds to gust, which transport much more energy. Orignially, the factor depends on the distance from the edge;
+    // since we calculate only on the edge, the factor is fixed (see Byrne (2011) and Gardiner)
+    const double f_gust = 2.14;
 
-    rCWS_uproot = sqrt((params.Creg*stem_mass) / (tc*f_gap)); // critical windspeed for uprooting
-    rCWS_break = sqrt(params.MOR*pow(tree->dbh(),3)*f_knot*M_PI / (32.*tc*f_gap)); // critical windspeed for breakage
+    rCWS_uproot = sqrt((params.Creg*stem_mass) / (tc*f_gap*f_gust)); // critical windspeed for uprooting
+    rCWS_break = sqrt(params.MOR*pow(tree->dbh(),3)*f_knot*M_PI / (32.*tc*f_gap*f_gust)); // critical windspeed for breakage
 
     // debug info
     // qDebug() << "f_gap, bal, tc, cws_uproot, cws_break:" << f_gap << bal << tc << rCWS_uproot << rCWS_break;

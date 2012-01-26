@@ -13,7 +13,7 @@ int WindScript::windEvent(double windspeed, double winddirection, int max_iterat
     mModule->setWindProperties(winddirection*M_PI/180., windspeed);
     mModule->setSimulationMode(simulate);
     mModule->setMaximumIterations(max_iteration);
-    mModule->run(iteration);
+    mModule->run(iteration, true);
     qDebug() << "run wind module from script...";
     return 0;
 }
