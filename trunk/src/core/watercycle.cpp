@@ -114,7 +114,7 @@ void WaterCycle::getStandValues()
     mCanopyConductance=0.;
     const double ground_vegetationCC = 0.02;
     double lai;
-    foreach(ResourceUnitSpecies *rus, mRU->ruSpecies()) {
+    foreach(const ResourceUnitSpecies *rus, mRU->ruSpecies()) {
         lai = rus->constStatistics().leafAreaIndex();
         if (rus->species()->isConiferous())
             mLAINeedle+=lai;
@@ -166,8 +166,8 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
     double min_response;
     double total_response = 0; // LAI weighted minimum response for all speices on the RU
     double total_lai_factor = 0.;
-    foreach(ResourceUnitSpecies *rus, mRU->ruSpecies()) {
-        if (rus->LAIfactor()>0) {
+    foreach(const ResourceUnitSpecies *rus, mRU->ruSpecies()) {
+        if (rus->LAIfactor()>0.) {
             // retrieve the minimum of VPD / soil water response for that species
             rus->speciesResponse()->soilAtmosphereResponses(psi_kpa, vpd_kpa, min_response);
             total_response += min_response * rus->LAIfactor();
@@ -187,8 +187,9 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
     else if (total_lai_factor>0. && mRU->averageAging()>0.)
         total_response *= (1.-total_lai_factor)*1. + (total_lai_factor * mRU->averageAging()); // between 0..1: a part of the LAI is "ground cover" (aging=1)
 
-    DBGMODE( if (mRU->averageAging()>1. || mRU->averageAging()<0. || total_response<0 || total_response>1.)
-        qDebug() << "water cycle: average aging invalid. aging:" << mRU->averageAging() << "total response" << total_response;
+    DBGMODE(
+          if (mRU->averageAging()>1. || mRU->averageAging()<0. || total_response<0 || total_response>1.)
+             qDebug() << "water cycle: average aging invalid. aging:" << mRU->averageAging() << "total response" << total_response << "total lai factor:" << total_lai_factor;
     );
 
     //DBG_IF(mRU->averageAging()>1. || mRU->averageAging()<0.,"water cycle", "average aging invalid!" );

@@ -309,7 +309,7 @@ void Climate::nextYear()
         mPhenology[i].calculate();
 }
 
-void Climate::climateCalculations(ClimateDay &lastDay)
+void Climate::climateCalculations(const ClimateDay &lastDay)
 {
     ClimateDay *c = mStore.begin();
     const double tau = Model::settings().temperatureTau;
