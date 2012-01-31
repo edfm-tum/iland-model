@@ -465,9 +465,9 @@ void Tree::readLIF()
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;
             own_value = qMax(own_value, 0.02);
             value =  *grid_value++ / own_value; // remove impact of focal tree
+            // additional punishment if pixel is outside:
             if (hgv.isForestOutside())
-                value *= outside_area_factor;
-
+               value *= outside_area_factor;
             
             //qDebug() << x << y << local_dom << z << z_zstar << own_value << value << *(grid_value-1) << (*reader)(x,y) << mStamp->offsetValue(x,y,d_offset);
             //if (value>0.)

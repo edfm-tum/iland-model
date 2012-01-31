@@ -48,6 +48,8 @@ struct HeightGridValue
     void setValid(const bool valid) { setBit(mCount, 16, !valid); } ///< set bit to 1: pixel is not valid
     void setForestOutside(const bool is_outside) { setBit(mCount, 17, is_outside); }
     bool isForestOutside() const {return isBitSet(mCount, 17); }
+    void setIsRadiating() { setBit(mCount, 18, true); } ///< bit 18: if set, the pixel is actively radiating influence on the LIF (such pixels are on the edge of "forestOutside")
+    bool isRadiating() const { return isBitSet(mCount, 18); }
     void init(const float aheight, const int acount) { height=aheight;mCount=acount; }
 private:
 
@@ -111,6 +113,7 @@ private:
 
     void calculateStockedArea(); ///< calculate area stocked with trees for each RU
     void calculateStockableArea(); ///< calculate the stockable area for each RU (i.e.: with stand grid values <> -1)
+    void initializeGrid(); ///< initialize the LIF grid
 
     void test();
     bool multithreading() const { return threadRunner.multithreading(); }

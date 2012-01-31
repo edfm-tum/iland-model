@@ -95,7 +95,7 @@ private:
     Sun mSun; ///< class doing solar radiation calculations
     void load(); ///< load mLoadYears years from database
     void setupPhenology(); ///< setup of phenology groups
-    void climateCalculations(ClimateDay &lastDay); ///< more calculations done after loading of climate data
+    void climateCalculations(const ClimateDay &lastDay); ///< more calculations done after loading of climate data
     ClimateDay mInvalidDay;
     int mLoadYears; // count of years to load ahead
     int mCurrentYear; // current year (relative)

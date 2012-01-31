@@ -56,7 +56,7 @@ public:
     Soil *soil() const { return mSoil; } ///< access the soil model
 
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
-    const QList<ResourceUnitSpecies*> ruSpecies() const { return mRUSpecies; }
+    const QList<ResourceUnitSpecies*> &ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the (const) tree list.
     Tree *tree(const int index) { return &(mTrees[index]);} ///< get pointer to a tree
@@ -83,6 +83,7 @@ public:
     int newTreeIndex(); ///< returns the index of a newly inserted tree
     void cleanTreeList(); ///< remove dead trees from the tree storage.
     void treeDied() { mHasDeadTrees = true; } ///< sets the flag that indicates that the resource unit contains dead trees
+    bool hasDiedTrees() const { return mHasDeadTrees; } ///< if true, the resource unit has dead trees and needs maybe some cleanup
     /// addWLA() is called by each tree to aggregate the total weighted leaf area on a unit
     void addWLA(const float LA, const float LRI) { mAggregatedWLA += LA*LRI; mAggregatedLA += LA; }
     void addLR(const float LA, const float LightResponse) { mAggregatedLR += LA*LightResponse; }
@@ -92,7 +93,8 @@ public:
     void addTreeAgingForAllTrees(); ///< calculate average tree aging for all trees of a RU. Used directly after stand initialization.
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
-    void createStandStatistics();
+    void createStandStatistics(); ///< helping function to create an initial state for stand statistics
+    void recreateStandStatistics(); ///< re-build stand statistics after some change happened to the resource unit
     void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
     // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
     // the map itself is a local variable and only filled temporarily.

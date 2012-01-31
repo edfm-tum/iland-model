@@ -645,8 +645,11 @@ void Model::runYear()
     mModules->run();
 
     foreach(ResourceUnit *ru, mRU) {
-        // remove trees that died during disturbances. Note that cleanTreeList() is cheap if we have no dead trees
-        ru->cleanTreeList();
+        // remove trees that died during disturbances.
+        if (ru->hasDiedTrees()) {
+            ru->cleanTreeList(); // clean up the died trees
+            ru->recreateStandStatistics(); // re-evaluate the stand statistics for this resource unit
+        }
     }
 
     DebugTimer toutput("outputs");
@@ -788,7 +791,7 @@ void Model::applyPattern()
 
     DebugTimer t("applyPattern()");
     // intialize grids...
-    mGrid->initialize(1.f);
+    initializeGrid();
 
     // initialize height grid with a value of 4m. This is the height of the regeneration layer
     for (HeightGridValue *h=mHeightGrid->begin();h!=mHeightGrid->end();++h) {
@@ -867,11 +870,11 @@ void Model::calculateStockableArea()
 {
 
     foreach(ResourceUnit *ru, mRU) {
-// //
-//        if (ru->id()==-1) {
-//            ru->setStockableArea(0.);
-//            continue;
-//        }
+        // //
+        //        if (ru->id()==-1) {
+        //            ru->setStockableArea(0.);
+        //            continue;
+        //        }
         GridRunner<HeightGridValue> runner(*mHeightGrid, ru->boundingBox());
         int valid=0, total=0;
         while (runner.next()) {
@@ -895,6 +898,60 @@ void Model::calculateStockableArea()
             throw IException("calculateStockableArea: resource unit without pixels!");
 
     }
+    // mark those pixels that are at the edge of a "forest-out-of-area"
+    GridRunner<HeightGridValue> runner(*mHeightGrid, mHeightGrid->metricRect());
+    HeightGridValue* neighbors[8];
+    while (runner.next()) {
+        if (runner.current()->isForestOutside()) {
+            // if the current pixel is a "radiating" border pixel,
+            // then check the neighbors and set a flag if the pixel is a neighbor of a in-project-area pixel.
+            runner.neighbors8(neighbors);
+            for (int i=0;i<8;++i)
+                if (neighbors[i] &&  neighbors[i]->isValid())
+                    runner.current()->setIsRadiating();
+
+        }
+    }
+
+}
+
+void Model::initializeGrid()
+{
+    // fill the whole grid with a value of "1."
+    mGrid->initialize(1.f);
+
+    // apply special values for grid cells border regions where out-of-area cells
+    // radiate into the main LIF grid.
+    QPoint p;
+    int ix_min, ix_max, iy_min, iy_max, ix_center, iy_center;
+    const int px_offset = cPxPerHeight / 2; // for 5 px per height grid cell, the offset is 2
+    const int max_radiate_distance = 7;
+    const float step_width = 1.f / (float)max_radiate_distance;
+    int c_rad = 0;
+    for (HeightGridValue *hgv=mHeightGrid->begin(); hgv!=mHeightGrid->end(); ++hgv) {
+        if (hgv->isRadiating()) {
+            p=mHeightGrid->indexOf(hgv);
+            ix_min = p.x() * cPxPerHeight - max_radiate_distance + px_offset;
+            ix_max = ix_min + 2*max_radiate_distance + 1;
+            ix_center = ix_min + max_radiate_distance;
+            iy_min = p.y() * cPxPerHeight - max_radiate_distance + px_offset;
+            iy_max = iy_min + 2*max_radiate_distance + 1;
+            iy_center = iy_min + max_radiate_distance;
+            for (int y=iy_min; y<=iy_max; ++y) {
+                for (int x=ix_min; x<=ix_max; ++x) {
+                    if ( !(*mHeightGrid)(x/cPxPerHeight, y/cPxPerHeight).isValid())
+                        continue;
+                    float value = qMax(qAbs(x-ix_center), qAbs(y-iy_center)) * step_width;
+                    float &v = mGrid->valueAtIndex(x, y);
+                    if (value>=0.f && v>value)
+                        v = value;
+                }
+            }
+            c_rad++;
+        }
+    }
+    qDebug() << "initialize grid:" << c_rad << "radiating pixels...";
+
 }
 
 

@@ -34,7 +34,8 @@ public:
    // actions
     void updateGWL();
     double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3)
-    double LAIfactor() const { return mLAIfactor; } ///< relative fraction of LAI of this species (0..1)
+    /// relative fraction of LAI of this species (0..1) (if total LAI on resource unit is >= 1, then the sum of all LAIfactors of all species = 1)
+    double LAIfactor() const { return mLAIfactor; }
     void setLAIfactor(const double newLAIfraction) { mLAIfactor=newLAIfraction; if (mLAIfactor<0 || mLAIfactor>1.00001) qDebug() << "invalid LAIfactor"<<mLAIfactor; }
     // properties
     double leafArea() const; ///< total leaf area of the species on the RU (m2).

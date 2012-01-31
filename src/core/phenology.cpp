@@ -125,7 +125,7 @@ void Phenology::calculateChillDays(const int end_of_season)
     int days_after = 0;
     int last_day = end_of_season>0?end_of_season:mDayEnd;
     for (const ClimateDay *day = mClimate->begin(); day!=mClimate->end(); ++day, ++iday) {
-        if (day->temperature>=-5 && day->temperature<5) {
+        if (day->temperature>=-5. && day->temperature<5.) {
             if (iday<mDayStart)
                 mChillDaysBefore++;
             if (iday>last_day)
