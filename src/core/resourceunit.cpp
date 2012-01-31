@@ -273,7 +273,12 @@ void ResourceUnit::production()
         ru_lai = 1.;
     // note: LAIFactors are only 1 if sum of LAI is > 1. (see WaterCycle)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
-         (*i)->setLAIfactor((*i)->statistics().leafAreaIndex() / ru_lai);
+        double lai_factor = (*i)->statistics().leafAreaIndex() / ru_lai;
+        DBGMODE(
+        if (lai_factor > 1.)
+            qDebug() << "LAI factor > 1";
+        );
+        (*i)->setLAIfactor( lai_factor );
     }
 
     // soil water model - this determines soil water contents needed for response calculations
@@ -370,6 +375,20 @@ void ResourceUnit::createStandStatistics()
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*stockableArea()):0.;
     if (mAverageAging<0. || mAverageAging>1.)
         qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
+}
+
+/** recreate statistics. This is necessary after events that changed the structure
+    of the stand *after* the growth of trees (where stand statistics are updated).
+    An example is after disturbances.  */
+void ResourceUnit::recreateStandStatistics()
+{
+    for (int i=0;i<mRUSpecies.count();i++) {
+        mRUSpecies[i]->statistics().clear();
+    }
+    foreach(const Tree &t, mTrees) {
+        resourceUnitSpecies(t.species()).statistics().add(&t, 0);
+    }
+
 }
 
 void ResourceUnit::setMaxSaplingHeightAt(const QPoint &position, const float height)
