@@ -107,6 +107,7 @@ void WindModule::setup()
     mGustModifier = xml.valueDouble(".gustModifier", 1.);
     mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 10.); // default: 10mins/iteration is 60m/h
     mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
+    mLRITransferFunction.setAndParse(xml.value(".LRITransferFunction", "max(min(3.733-6.467*LRI,3.41),0.5)"));
 
     mWindLayers.setGrid(mGrid);
     mWindLayers.setRUGrid(&mRUGrid);
@@ -511,9 +512,9 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
             return false; // wind speed is too low
         do_break = true;
     } else {
-        if (u_crown < cws_uproot)
+        if (u_crown < qMin(cws_uproot, cws_break))
             return false; // wind speed is to low
-        do_break = false;
+        do_break = cws_break < cws_uproot; // either break or uproot depending on the critical wind speeds
     }
 
 
@@ -618,7 +619,8 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
 
     // the competitveness index of Hegyi (1974) is derived from the iLand LRI.
     // it has a value of 3.41 for very dense stands (i.e. LRI<0.05), and a minimum index of 0.5 (when LRI>0.5)
-    double c_hegyi = limit(3.733-6.467*tree->lightResourceIndex(), 0.5, 3.41);
+    double c_hegyi;
+    c_hegyi = mLRITransferFunction.calculate(tree->lightResourceIndex());
     // the turning moment coefficient incorporating the competition state
     double tc = 4.42+122.1*(tree->dbh()*tree->dbh()/10000.)*tree->height()-0.141*c_hegyi-14.6*(tree->dbh()*tree->dbh()/10000.)*tree->height()*c_hegyi;
     // now derive the critital wind speeds for uprooting and breakage
