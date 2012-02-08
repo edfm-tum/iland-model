@@ -51,9 +51,10 @@ public:
 // data structure for a resource unit
 class WindRUCell {
 public:
-    WindRUCell(): flag(0), topoModifier(1.) {}
+    WindRUCell(): flag(0), topoModifier(1.), soilIsFrozen(false) {}
     int flag ;
     double topoModifier;
+    bool soilIsFrozen;
 };
 
 /** Helper class manage and visualize data layers related to fire.
@@ -67,7 +68,7 @@ class WindLayers: public LayeredGrid<WindCell> {
     // specifics for wind layers
     void setRUGrid(const Grid<WindRUCell> *grid) { mRUGrid = grid; }
 private:
-    double topoAt(const WindCell *cell) const; // get topo factor at cell "cell"
+    double ruValueAt(const WindCell *cell, const int what) const; // get resource-unit level factor at cell "cell"
     const Grid<WindRUCell> *mRUGrid;
 };
 
@@ -121,7 +122,8 @@ private:
     ///
     double calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10);
     double calculateCrititalWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double gap_length, double &rCWS_uproot, double &rCWS_break);
-
+    /// check if the soil on current resource unit is frozen or not
+    bool isSoilFrozen(const ResourceUnit *ru, const int day_of_year) const;
     // helping functions
     void scanResourceUnitTrees(const QPoint &position);
     void loadSpeciesParameter(const QString &table_name);
@@ -131,6 +133,7 @@ private:
     double mWindDirection; ///< direction of the current wind event (rad)
     double mWindDirectionVariation; ///< random variation in wind direction
     double mWindSpeed; ///< wind speed (TODO: per resource unit!)
+    int mWindDayOfYear; ///< day of year of the wind event (0..365)
     bool mSimulationMode; ///< if true, no trees are removed (test mode)
     int mCurrentIteration; ///< current iteration (1..n)
     int mMaxIteration; ///< maximum number of iterations

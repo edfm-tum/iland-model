@@ -37,6 +37,7 @@
 #include "watercycle.h"
 #include "standstatistics.h"
 #include "soil.h"
+#include "climate.h"
 
 #include <QtCore>
 
@@ -129,7 +130,7 @@ QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveAre
                       << "leafAreaIndex" << "aging" << "cohortCount" << "saplingCount" << "saplingAge"
                       << "canopyConductance"
                       << "soilC" << "soilN"
-                      << "snagC" << "index" << "area";
+                      << "snagC" << "index" << "area" << "meanTemp";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -165,6 +166,7 @@ double RUWrapper::value(const int variableIndex)
     case 18: if (mRU->snag()) return mRU->snag()->totalCarbon(); else return 0.;
     case 19: return mRU->index(); // numeric index
     case 20: return mRU->stockableArea(); // stockable area on resource unit
+    case 21: return mRU->climate()->meanAnnualTemperature(); // mean temperature
 
     }
     return ExpressionWrapper::value(variableIndex);

@@ -950,7 +950,8 @@ void Model::initializeGrid()
             c_rad++;
         }
     }
-    qDebug() << "initialize grid:" << c_rad << "radiating pixels...";
+    if (logLevelDebug())
+        qDebug() << "initialize grid:" << c_rad << "radiating pixels...";
 
 }
 

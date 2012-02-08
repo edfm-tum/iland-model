@@ -82,6 +82,10 @@ public:
     //
     double totalRadiation() const { return mAnnualRadiation; } ///< return radiation sum (MJ) of the whole year
     const double* precipitationMonth() const { return mPrecipitationMonth; }
+    /// the mean annual temperature of the current year
+    double meanAnnualTemperature() const { return mMeanAnnualTemperature; }
+    /// get a array with mean temperatures per month
+    const double *temperatureMonth() const { return mTemperatureMonth; }
     // access to other subsystems
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
     const Sun &sun() const { return mSun; } ///< solar radiation class
@@ -113,6 +117,8 @@ private:
     int mRandomListIndex; ///< current index of the randomYearList for random sampling
     double mAnnualRadiation;  ///< this year's value for total radiation (MJ/m2)
     double mPrecipitationMonth[12]; ///< this years preciptitation sum (mm) per month
+    double mTemperatureMonth[12]; ///< this years average temperature per month
+    double mMeanAnnualTemperature; ///< mean temperature of the current year
 };
 
 #endif // CLIMATE_H
