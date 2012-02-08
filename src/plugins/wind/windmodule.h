@@ -20,7 +20,7 @@
 #define WINDMODULE_H
 #include "grid.h"
 #include "layeredgrid.h"
-
+#include "expression.h"
 #include <QHash>
 
 class Tree; // forward
@@ -150,6 +150,8 @@ private:
     WindLayers mWindLayers; ///< helping structure
     // species parameters for the wind module
     QHash<const Species*, WindSpeciesParameters> mSpeciesParameters;
+    /// formula for the transfer function LRI
+    Expression mLRITransferFunction;
 
     friend class WindScript;
 
