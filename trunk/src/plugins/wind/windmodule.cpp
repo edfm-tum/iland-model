@@ -25,6 +25,7 @@
 #include "species.h"
 #include "speciesset.h"
 #include "resourceunit.h"
+#include "climate.h"
 
 /** @defgroup windmodule iLand windmodule
   The wind module is a disturbance module within the iLand framework.
@@ -51,7 +52,8 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 5: return data.basal_area_killed; // basal area killed on pixel
     case 6: return data.n_iteration; // iteration in processing that the current pixel is processed (and trees are killed)
     case 7: return data.crown_windspeed; // effective wind speed in the crown (m/s)
-    case 8: return topoAt(&data); // topo modifier of the current pixel
+    case 8: return ruValueAt(&data, 0); // topo modifier of the current pixel
+    case 9: return ruValueAt(&data, 1); // 1 if soil is frozen on the current pixel
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -59,15 +61,20 @@ double WindLayers::value(const WindCell &data, const int param_index) const
 
 const QStringList WindLayers::names() const
 {
-    return QStringList() <<  "height" << "edge" << "cwsUproot" << "cwsBreak" << "nKilled" << "basalAreaKilled" << "iteration" << "windSpeedCrown" << "topo";
+    return QStringList() <<  "height" << "edge" << "cwsUproot" << "cwsBreak" << "nKilled" << "basalAreaKilled" << "iteration" << "windSpeedCrown" << "topo" << "isFrozen";
 
 }
 
 // helper function (avoid a special ru-level grid and use the 10m cell resolution instead)
-double WindLayers::topoAt(const WindCell *cell) const
+double WindLayers::ruValueAt(const WindCell *cell, const int what) const
 {
     QPoint pos = mGrid->indexOf(cell);
-    return mRUGrid->constValueAt(mGrid->cellCenterPoint(pos)).topoModifier;
+    const WindRUCell &ru_cell = mRUGrid->constValueAt(mGrid->cellCenterPoint(pos));
+    switch (what) {
+    case 0: return ru_cell.topoModifier;
+    case 1: return ru_cell.soilIsFrozen?1.:0.;
+    default: return -1.;
+    }
 }
 
 WindModule::WindModule()
@@ -98,7 +105,8 @@ void WindModule::setup()
     mWindDirection = xml.valueDouble(".direction", 0.)*M_PI/180.;
     mWindSpeed = 0.; // set the wind speed explicitely to 0
     mGustModifier = xml.valueDouble(".gustModifier", 1.);
-    mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 1.);
+    mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 10.); // default: 10mins/iteration is 60m/h
+    mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
 
     mWindLayers.setGrid(mGrid);
     mWindLayers.setRUGrid(&mRUGrid);
@@ -370,8 +378,10 @@ bool WindModule::eventTriggered()
     if (mMaxIteration<=0)
         return false;
 
-    // get wind direction of the event
+    // get wind direction and date of the event
     mWindDirection = xml.valueDouble(".direction", 0.)*M_PI/180.;
+    mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
+
 
     qDebug() << "Wind: start event. Speed:" << mWindSpeed << "m/s, Duration (iterations):" << mMaxIteration << ", direction (°):" << mWindDirection/M_PI*180.;
     return true;
@@ -478,7 +488,8 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     // first, calculate the windspeed in the crown
     DebugTimer t2("wind:impact:speed");
     const WindSpeciesParameters &params = speciesParameter(cell->tree->species());
-    double topo_mod = mRUGrid.valueAt(pixel_rect.center()).topoModifier;
+    const WindRUCell &ru_cell = mRUGrid.valueAt(pixel_rect.center());
+    double topo_mod = ru_cell.topoModifier;
     // the wind speed (10m above the canopy) is the global wind speed modified with the topography modifier
     // and with some added variation.
     double wind_speed_10 = mWindSpeed * topo_mod * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy
@@ -492,11 +503,18 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     cell->cws_uproot = cws_uproot;
     cell->crown_windspeed = u_crown;
 
-    if (u_crown < cws_uproot && u_crown < cws_break)
-        return false; // wind speed is too low
-
-    // whether uprooting or breaking occurs depend on the wind speed: stems break if speed is high enough, otherwise uprooting will occur
-    bool do_break = u_crown > cws_break;
+    // whether uprooting or breaking occurs depend on the wind speed and the state of the soil:
+    // if the soil is frozen, than trees break, if not trees uproot
+    bool do_break;
+    if (ru_cell.soilIsFrozen) {
+        if (u_crown < cws_break)
+            return false; // wind speed is too low
+        do_break = true;
+    } else {
+        if (u_crown < cws_uproot)
+            return false; // wind speed is to low
+        do_break = false;
+    }
 
 
     // *****************************************************************************
@@ -598,12 +616,11 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     // calculate the wet stem weight (iLand internally uses always dry weights)
     double stem_mass = tree->biomassStem() * params.wet_biomass_factor;
 
-    // calculate the "BAL", the basal area of surrounding trees, i.e. a competition index
-    // this will be changed to be related to LRI. But for the time being:
-    double bal = 70. * (1. - tree->lightResourceIndex());
-
+    // the competitveness index of Hegyi (1974) is derived from the iLand LRI.
+    // it has a value of 3.41 for very dense stands (i.e. LRI<0.05), and a minimum index of 0.5 (when LRI>0.5)
+    double c_hegyi = limit(3.733-6.467*tree->lightResourceIndex(), 0.5, 3.41);
     // the turning moment coefficient incorporating the competition state
-    double tc = 36.8+112.2*(tree->dbh()*tree->dbh()/10000.)*tree->height()-0.460*bal-0.783*(tree->dbh()*tree->dbh()/10000.)*tree->height()*bal;
+    double tc = 4.42+122.1*(tree->dbh()*tree->dbh()/10000.)*tree->height()-0.141*c_hegyi-14.6*(tree->dbh()*tree->dbh()/10000.)*tree->height()*c_hegyi;
     // now derive the critital wind speeds for uprooting and breakage
     const double f_knot = 1.; // a reduction factor accounting for the presence of knots, currenty no reduction.
     // a factor to scale average wind speeds to gust, which transport much more energy. Orignially, the factor depends on the distance from the edge;
@@ -616,6 +633,39 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     // debug info
     // qDebug() << "f_gap, bal, tc, cws_uproot, cws_break:" << f_gap << bal << tc << rCWS_uproot << rCWS_break;
     return qMin(rCWS_uproot, rCWS_break);
+}
+
+
+/** calculate the temperature of the soil and return true if the soil is frozen.
+  The algorithm uses the model of Paul et al (2004).
+  This model calculates soil temperature based on mean annual temperature, summer temperature and the temperature
+  of the current day, i.e. does not depend on floating averages. However, it takes into account the LAI and the mass of litter on the soil.
+  @param ru ResourceUnit for which the calculations are done
+  @param day_of_year index of the day of the year (0..365)  */
+bool WindModule::isSoilFrozen(const ResourceUnit *ru, const int day_of_year) const
+{
+    const double soil_depth = 10.; // we use a default soil depth of 10cm
+    const double litter_mass = 30.;  // 30 Mg BM/ha, is approx. the average value for Austrias forest soils (cf. Seidl et al. 2009)
+    const double weed_cover = 0.2; // we also assume a constant weed cover of 20%
+
+    double mean_annual_temp = ru->climate()->meanAnnualTemperature();
+    // mean temperature of june/july/august
+    double summer_temp = (ru->climate()->temperatureMonth()[5] + ru->climate()->temperatureMonth()[6] + ru->climate()->temperatureMonth()[7]) / 3.;
+    double lai = ru->statistics().leafAreaIndex();
+    double temp_day = ru->climate()->dayOfYear(day_of_year)->temperature;
+
+    double t_x = 297. - day_of_year;
+    double as = mean_annual_temp*1.23*exp(-0.06*(lai+weed_cover));
+    double pa = summer_temp - mean_annual_temp;
+    double ps = pa*1.12*exp(-0.15*(lai+weed_cover))*exp(-0.01*litter_mass)+2.22;
+    double ds = ((mean_annual_temp + pa*sin(2*M_PI/365.*t_x))-temp_day)*exp(-0.08*soil_depth);
+    double ts = as + ps*sin(2*M_PI/365.*t_x) - ds;
+
+    if (ts>0.)
+        return false; // soil is not frozen
+    else
+        return true; // soil is frozen
+
 }
 
 // scan the content of the trees container of the resource unit
@@ -642,6 +692,8 @@ void WindModule::scanResourceUnitTrees(const QPoint &position)
             }
         }
     }
+    // check if the soil on the resource unit is frozen
+    mRUGrid.valueAt(p_m).soilIsFrozen = isSoilFrozen(ru, mWindDayOfYear);
     // set the "processed" flag
     mRUGrid.valueAt(p_m).flag = 1;
 }
