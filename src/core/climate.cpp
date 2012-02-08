@@ -286,7 +286,8 @@ void Climate::nextYear()
             if (mCurrentYear >= mLoadYears)
                 throw IException(QString("Climate: load year with random sampling: the actual year %1 is invalid. Only %2 years are loaded from the climate database.").arg(mCurrentYear).arg(mLoadYears) );
         }
-        qDebug() << "Climate: current year (randomized):" << mCurrentYear;
+        if (logLevelDebug())
+            qDebug() << "Climate: current year (randomized):" << mCurrentYear;
     }
 
     ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
@@ -297,12 +298,22 @@ void Climate::nextYear()
     // some aggregates:
     // calculate radiation sum of the year and monthly precipitation
     mAnnualRadiation = 0.;
-    for (int i=0;i<12;i++) mPrecipitationMonth[i]=0.;
+    mMeanAnnualTemperature = 0.;
+    for (int i=0;i<12;i++)  {
+        mPrecipitationMonth[i]=0.;
+        mTemperatureMonth[i]=0.;
+    }
 
     for (const ClimateDay *d=begin();d!=end();++d) {
         mAnnualRadiation+=d->radiation;
+        mMeanAnnualTemperature += d->temperature;
         mPrecipitationMonth[d->month-1]+= d->preciptitation;
+        mTemperatureMonth[d->month-1] += d->temperature;
     }
+    for (int i=0;i<12;++i) {
+        mTemperatureMonth[i] /= days(i);
+    }
+    mMeanAnnualTemperature /= daysOfYear();
 
     // calculate phenology
     for(int i=0;i<mPhenology.count(); ++i)
