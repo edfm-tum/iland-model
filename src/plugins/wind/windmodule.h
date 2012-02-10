@@ -144,7 +144,7 @@ private:
     int mPixelAffected; ///< total number of pixels that are impacted
     int mTreesKilled; ///< total number of killed trees
     double mTotalKilledBasalArea; ///< total basal area of killed trees
-
+    enum ESoilFreezeMode {esfFrozen, esfNotFrozen, esfAuto, esfInvalid} mSoilFreezeMode; ///< if "esfAuto", soil-freeze-state is derived from climate
     Grid<WindCell> mGrid; ///< wind grid (10x10m)
     Grid<WindRUCell> mRUGrid; ///< grid for resource unit data
     WindLayers mWindLayers; ///< helping structure
