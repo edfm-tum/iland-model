@@ -125,6 +125,11 @@ void WaterCycle::getStandValues()
     double total_lai = mLAIBroadleaved+mLAINeedle;
 
     // handle cases with LAI < 1 (use generic "ground cover characteristics" instead)
+    /* The LAI used here is derived from the "stockable" area (and not the stocked area).
+       If the stand has gaps, the available trees are "thinned" across the whole area. Otherwise (when stocked area is used)
+       the LAI would overestimate the transpiring canopy. However, the current solution overestimates e.g. the interception.
+       If the "thinned out" LAI is below one, the rest (i.e. the gaps) are thought to be covered by ground vegetation.
+    */
     if (total_lai<1.) {
         mCanopyConductance+=(ground_vegetationCC)*(1. - total_lai);
         total_lai = 1.;
