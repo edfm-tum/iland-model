@@ -108,6 +108,13 @@ void WindModule::setup()
     mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 10.); // default: 10mins/iteration is 60m/h
     mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
     mLRITransferFunction.setAndParse(xml.value(".LRITransferFunction", "max(min(3.733-6.467*LRI,3.41),0.5)"));
+    mSoilFreezeMode=esfInvalid;
+    QString soil_freeze = xml.value(".soilFreezeMode", "auto");
+    if (soil_freeze=="yes") mSoilFreezeMode=esfFrozen;
+    if (soil_freeze=="no") mSoilFreezeMode=esfNotFrozen;
+    if (soil_freeze=="auto") mSoilFreezeMode=esfAuto;
+    if (mSoilFreezeMode==esfInvalid)
+        throw IException("WindModule::setup: parameter 'soilFreezeMode' has invalid value. Allowed: yes, no, auto.");
 
     mWindLayers.setGrid(mGrid);
     mWindLayers.setRUGrid(&mRUGrid);
@@ -695,7 +702,12 @@ void WindModule::scanResourceUnitTrees(const QPoint &position)
         }
     }
     // check if the soil on the resource unit is frozen
-    mRUGrid.valueAt(p_m).soilIsFrozen = isSoilFrozen(ru, mWindDayOfYear);
+    switch(mSoilFreezeMode){
+    case esfAuto: mRUGrid.valueAt(p_m).soilIsFrozen = isSoilFrozen(ru, mWindDayOfYear); break;
+    case esfFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = true; break;
+    case esfNotFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = false; break;
+    default: break;
+    }
     // set the "processed" flag
     mRUGrid.valueAt(p_m).flag = 1;
 }
