@@ -1,0 +1,958 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindowClass</class>
+ <widget class="QMainWindow" name="MainWindowClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>956</width>
+    <height>748</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>iLand Viewer</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>:/icon4.png</normaloff>:/icon4.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="PaintArea" name="PaintWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>2</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="cursor">
+       <cursorShape>CrossCursor</cursorShape>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>956</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuOutput_menu">
+    <property name="title">
+     <string>Output-menu</string>
+    </property>
+    <addaction name="actionTreelist"/>
+    <addaction name="actionFON_grid"/>
+    <addaction name="actionOutput_table_description"/>
+    <addaction name="actionTimers"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionShow_Debug_Messages"/>
+   </widget>
+   <widget class="QMenu" name="menuDebug_Data">
+    <property name="title">
+     <string>Debug Data</string>
+    </property>
+    <addaction name="actionSelect_Data_Types"/>
+    <addaction name="actionClearDebugOutput"/>
+    <addaction name="actionTree_NPP"/>
+    <addaction name="actionTree_Partition"/>
+    <addaction name="actionTree_Growth"/>
+    <addaction name="actionWater_Output"/>
+    <addaction name="actionDynamic_Output"/>
+    <addaction name="actionDaily_responses_Output"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionOnline_ressources"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuOutput_menu"/>
+   <addaction name="menuView"/>
+   <addaction name="menuDebug_Data"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionEdit_XML_settings"/>
+   <addaction name="separator"/>
+   <addaction name="actionModelCreate"/>
+   <addaction name="actionModelDestroy"/>
+   <addaction name="separator"/>
+   <addaction name="actionReload"/>
+   <addaction name="actionRun_one_year"/>
+   <addaction name="actionModelRun"/>
+   <addaction name="actionPause"/>
+   <addaction name="actionStop"/>
+   <addaction name="separator"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QDockWidget" name="dockEditor">
+   <property name="windowTitle">
+    <string>DockDock</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QVBoxLayout" name="verticalLayout_5">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="margin">
+      <number>3</number>
+     </property>
+     <item>
+      <widget class="QTabWidget" name="editStack">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <widget class="QWidget" name="editStackPage1">
+        <attribute name="title">
+         <string>XML</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLineEdit" name="initFileName">
+             <property name="text">
+              <string>fon.xml</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="openFile">
+             <property name="toolTip">
+              <string>Select a project file </string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>16</width>
+               <height>16</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="saveFile">
+             <property name="toolTip">
+              <string>Save the current project file</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>:/document-save.png</normaloff>:/document-save.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>16</width>
+               <height>16</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="iniEdit">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1000</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="editStackPage2">
+        <attribute name="title">
+         <string>Other</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QTabWidget" name="tabWidget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>2</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="currentIndex">
+            <number>2</number>
+           </property>
+           <widget class="QWidget" name="tab_2">
+            <attribute name="title">
+             <string>Stamping</string>
+            </attribute>
+            <widget class="QPushButton" name="stampTrees">
+             <property name="geometry">
+              <rect>
+               <x>90</x>
+               <y>10</y>
+               <width>91</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>stamp trees</string>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="fonRun">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>75</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Setup FON</string>
+             </property>
+            </widget>
+            <widget class="QGroupBox" name="gEditTree_2">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>40</y>
+               <width>268</width>
+               <height>121</height>
+              </rect>
+             </property>
+             <property name="title">
+              <string>Edit tree</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="0" rowspan="2">
+               <widget class="QDoubleSpinBox" name="treeDbh">
+                <property name="toolTip">
+                 <string>diameter (cm)</string>
+                </property>
+                <property name="maximum">
+                 <double>299.990000000000009</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1" rowspan="2">
+               <widget class="QDoubleSpinBox" name="treeHeight">
+                <property name="toolTip">
+                 <string>Height [m]</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <widget class="QPushButton" name="treeChange">
+                <property name="text">
+                 <string>Change</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2" rowspan="2">
+               <widget class="QPushButton" name="pbSetAsDebug">
+                <property name="text">
+                 <string>debug tree</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QDoubleSpinBox" name="treePosX"/>
+              </item>
+              <item row="2" column="1">
+               <widget class="QDoubleSpinBox" name="treePosY"/>
+              </item>
+              <item row="3" column="0" colspan="2">
+               <widget class="QLabel" name="treeImpact">
+                <property name="text">
+                 <string>(value)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QPushButton" name="pbResults">
+             <property name="geometry">
+              <rect>
+               <x>180</x>
+               <y>10</y>
+               <width>71</width>
+               <height>23</height>
+              </rect>
+             </property>
+             <property name="toolTip">
+              <string>copies tree results in clipboard.</string>
+             </property>
+             <property name="text">
+              <string>Results</string>
+             </property>
+            </widget>
+           </widget>
+           <widget class="QWidget" name="Seite">
+            <attribute name="title">
+             <string>Experssions</string>
+            </attribute>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Filter expression</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLineEdit" name="expressionFilter"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Aggregate Expression</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLineEdit" name="expressionText"/>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Expression history</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QListWidget" name="expressionHistory"/>
+             </item>
+             <item row="3" column="1">
+              <widget class="QPushButton" name="pbCalculateExpression">
+               <property name="text">
+                <string>calculate</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="pageScript">
+            <attribute name="title">
+             <string>Scripting</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="QToolButton" name="selectJavaScript">
+                 <property name="toolTip">
+                  <string>Select a javascript file and load it.</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="reloadJavaScript">
+                 <property name="text">
+                  <string>reload script</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton">
+                 <property name="text">
+                  <string>Clear Output</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Enter command:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="scriptCommand"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>Script Output</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTextEdit" name="scriptResult"/>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QProgressBar" name="modelRunProgress">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QProgressBar {    border: 1px solid grey;
+    border-radius: 2px;
+    max-height: 12px; 
+   text-align: right;
+}
+QProgressBar::chunk {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,  stop: 0 #a6a7aa, stop: 0.3 #666666 stop: 1 #203030);
+    width: 1px;
+ }</string>
+       </property>
+       <property name="value">
+        <number>24</number>
+       </property>
+       <property name="textVisible">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockLogviewer">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>Log output</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>3</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>3</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Filter:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="logFilterExpression"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbFilterExecute">
+         <property name="text">
+          <string>Filter</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbLogFilterClear">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Clear Filter</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbLogClearText">
+         <property name="text">
+          <string>clear Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pbLogToClipboard">
+         <property name="text">
+          <string>Copy to clipboard</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPlainTextEdit" name="logOutput">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="windowTitle">
+    <string>Console</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Visualization Options</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0" colspan="3">
+         <widget class="QRadioButton" name="visFon">
+          <property name="text">
+           <string>Light influence field</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QRadioButton" name="visImpact">
+          <property name="text">
+           <string>individual Trees</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="3">
+         <widget class="QCheckBox" name="visAutoScale">
+          <property name="text">
+           <string>Autoscale colors</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>12</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Expression</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="2">
+         <widget class="QLineEdit" name="lTreeExpr"/>
+        </item>
+        <item row="6" column="2">
+         <widget class="QPushButton" name="pbExecExpression">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Execute expression for each tree and draw trees accordingly.</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0" colspan="3">
+         <widget class="QLabel" name="fonValue">
+          <property name="text">
+           <string>(value)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="visDomGrid">
+          <property name="text">
+           <string>dominace grid</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QRadioButton" name="visResourceUnits">
+          <property name="text">
+           <string>resource units</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockModelDrill">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Data</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <property name="margin">
+      <number>3</number>
+     </property>
+     <item>
+      <widget class="QTreeWidget" name="dataTree">
+       <attribute name="headerDefaultSectionSize">
+        <number>64</number>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Value</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionEdit_XML_settings">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
+   </property>
+   <property name="text">
+    <string>XML settings</string>
+   </property>
+  </action>
+  <action name="actionTreelist">
+   <property name="text">
+    <string>treelist</string>
+   </property>
+  </action>
+  <action name="actionFON_grid">
+   <property name="text">
+    <string>FON grid</string>
+   </property>
+  </action>
+  <action name="actionModelCreate">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/www.png</normaloff>:/www.png</iconset>
+   </property>
+   <property name="text">
+    <string>Create Model</string>
+   </property>
+  </action>
+  <action name="actionModelDestroy">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/user-trash.png</normaloff>:/user-trash.png</iconset>
+   </property>
+   <property name="text">
+    <string>Destroy</string>
+   </property>
+  </action>
+  <action name="actionModelRun">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Play All.png</normaloff>:/Play All.png</iconset>
+   </property>
+   <property name="text">
+    <string>Run Model</string>
+   </property>
+  </action>
+  <action name="actionTree_Partition">
+   <property name="text">
+    <string>Tree Partition</string>
+   </property>
+  </action>
+  <action name="actionTree_Growth">
+   <property name="text">
+    <string>Tree Growth</string>
+   </property>
+  </action>
+  <action name="actionSelect_Data_Types">
+   <property name="text">
+    <string>Select Data Types</string>
+   </property>
+  </action>
+  <action name="actionTree_NPP">
+   <property name="text">
+    <string>Tree NPP</string>
+   </property>
+  </action>
+  <action name="actionRun_one_year">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
+   </property>
+   <property name="text">
+    <string>Run one year</string>
+   </property>
+  </action>
+  <action name="actionReload">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDynamic_Output">
+   <property name="text">
+    <string>Dynamic Output</string>
+   </property>
+  </action>
+  <action name="actionShow_Debug_Messages">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Debug Messages</string>
+   </property>
+  </action>
+  <action name="actionPause">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Pause.png</normaloff>:/Pause.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pause</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/process-stop.png</normaloff>:/process-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionWater_Output">
+   <property name="text">
+    <string>Water Output</string>
+   </property>
+  </action>
+  <action name="actionOutput_table_description">
+   <property name="text">
+    <string>Output table description</string>
+   </property>
+  </action>
+  <action name="actionTimers">
+   <property name="text">
+    <string>Timers</string>
+   </property>
+  </action>
+  <action name="actionOnline_ressources">
+   <property name="text">
+    <string>Online ressources</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About iLand...</string>
+   </property>
+  </action>
+  <action name="actionDaily_responses_Output">
+   <property name="text">
+    <string>Daily responses Output</string>
+   </property>
+  </action>
+  <action name="actionClearDebugOutput">
+   <property name="text">
+    <string>Clear Debug Output</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>PaintArea</class>
+   <extends>QWidget</extends>
+   <header>paintarea.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>expressionHistory</sender>
+   <signal>currentTextChanged(QString)</signal>
+   <receiver>expressionText</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>104</x>
+     <y>160</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>60</x>
+     <y>153</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>scriptResult</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>104</x>
+     <y>142</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>104</x>
+     <y>158</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>logFilterExpression</sender>
+   <signal>returnPressed()</signal>
+   <receiver>pbFilterExecute</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>278</x>
+     <y>565</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>402</x>
+     <y>567</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
