@@ -457,6 +457,7 @@ void MainWindow::paintGrid(MapGrid *map_grid, const QString &name,
         updatePaintGridList();
         mPaintList[name] = mPaintNext;
     }
+    ui->visOtherGrid->setChecked(true);
     repaint();
 }
 
@@ -478,8 +479,8 @@ void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
     if (!name.isEmpty()) {
         mPaintList[name] = mPaintNext;
         updatePaintGridList();
-
     }
+    ui->visOtherGrid->setChecked(true);
     repaint();
 }
 
@@ -504,23 +505,27 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool species_color = ui->visSpeciesColor->isChecked();
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
+    bool other_grid = ui->visOtherGrid->isChecked();
 
-    if (ui->paintGridBox->currentIndex()>-1) {
-        QString name = ui->paintGridBox->itemData(ui->paintGridBox->currentIndex()).toString();
-        mPaintNext = mPaintList[name];
-    }
+    if (other_grid) {
+        if (ui->paintGridBox->currentIndex()>-1) {
+            QString name = ui->paintGridBox->itemData(ui->paintGridBox->currentIndex()).toString();
+            if (!name.isEmpty())
+                mPaintNext = mPaintList[name];
+        }
 
-    if (mPaintNext.what != PaintObject::PaintNothing) {
-        if (mPaintNext.what == PaintObject::PaintMapGrid)
-            paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+        if (mPaintNext.what != PaintObject::PaintNothing) {
+            if (mPaintNext.what == PaintObject::PaintMapGrid)
+                paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
 
-        if (mPaintNext.what == PaintObject::PaintFloatGrid)
-            paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+            if (mPaintNext.what == PaintObject::PaintFloatGrid)
+                paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
 
-        if (mPaintNext.what == PaintObject::PaintLayers)
-            paintGrid(painter, mPaintNext);
+            if (mPaintNext.what == PaintObject::PaintLayers)
+                paintGrid(painter, mPaintNext);
 
-        return;
+            return;
+        }
     }
 
 
@@ -969,22 +974,24 @@ void MainWindow::mouseMove(const QPoint& pos)
     double value;
     if (grid->coordValid(p)) {
         QString location=QString("%1 / %2").arg(p.x()).arg(p.y());
-        switch (mPaintNext.what) {
-        case PaintObject::PaintFloatGrid:
-            value = mPaintNext.float_grid->constValueAt(p);
-            break;
-        case PaintObject::PaintMapGrid:
-            value = mPaintNext.map_grid->grid().constValueAt(p);
-            break;
-        case PaintObject::PaintLayers:
-            value = mPaintNext.layered->value(p, mPaintNext.layer_id);
-            break;
-        default: has_value = false;
-        }
-        if (has_value) {
-            location += QString("\n %1").arg(value);
-             ui->fonValue->setText(location);
-             return;
+        if (ui->visOtherGrid->isChecked()) {
+            switch (mPaintNext.what) {
+            case PaintObject::PaintFloatGrid:
+                value = mPaintNext.float_grid->constValueAt(p);
+                break;
+            case PaintObject::PaintMapGrid:
+                value = mPaintNext.map_grid->grid().constValueAt(p);
+                break;
+            case PaintObject::PaintLayers:
+                value = mPaintNext.layered->value(p, mPaintNext.layer_id);
+                break;
+            default: has_value = false;
+            }
+            if (has_value) {
+                location += QString("\n %1").arg(value);
+                ui->fonValue->setText(location);
+                return;
+            }
         }
 
         if (ui->visFon->isChecked() || ui->visImpact->isChecked()) {
@@ -1680,3 +1687,8 @@ void MainWindow::readSettings()
 
 }
 
+
+void MainWindow::on_paintGridBox_currentIndexChanged(int index)
+{
+    ui->visOtherGrid->setChecked(true);
+}

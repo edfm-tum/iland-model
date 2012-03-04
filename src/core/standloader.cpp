@@ -46,10 +46,13 @@
 // provide a mapping between "Picus"-style and "iLand"-style species Ids
 QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
 QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
+
 StandLoader::~StandLoader()
 {
     if (mRandom)
         delete mRandom;
+    if (mHeightGridResponse)
+        delete mHeightGridResponse;
 }
 
 
@@ -86,6 +89,22 @@ void StandLoader::processInit()
     QString type = xml.value("type", "");
     QString  fileName = xml.value("file", "");
 
+    bool height_grid_enabled = xml.valueBool("heightGrid.enabled", false);
+    QScopedPointer<const MapGrid> height_grid; // use a QScopedPointer to guarantee that the resource is freed at the end of the processInit() function
+    if (height_grid_enabled) {
+        QString init_height_grid_file = GlobalSettings::instance()->path(xml.value("heightGrid.fileName"), "init");
+        mHeightGridTries = xml.valueDouble("heightGrid.maxTries", 10.);
+        qDebug() << "initialization: using predefined tree heights map" << init_height_grid_file;
+
+        QScopedPointer<const MapGrid> p(new MapGrid(init_height_grid_file, false));
+        height_grid.swap(p);
+        mInitHeightGrid = height_grid.data();
+
+        QString expr=xml.value("heightGrid.fitFormula", "polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0)");
+        mHeightGridResponse = new Expression(expr);
+        mHeightGridResponse->setLinearizationEnabled(true);
+    }
+
     Tree::resetStatistics();
 
     // one global init-file for the whole area:
@@ -113,7 +132,7 @@ void StandLoader::processInit()
         return;
     }
 
-    // map-modus
+    // map-modus: load a init file for each "polygon" in the standgrid
     if (copy_mode=="map") {
         if (!g->model()->standGrid() || !g->model()->standGrid()->isValid())
             throw IException(QString("Stand-Initialization: model.initialization.mode is 'map' but there is no valid stand grid defined (model.world.standGrid)"));
@@ -135,6 +154,7 @@ void StandLoader::processInit()
                 loadInitFile(file_name, type, key, NULL);
             }
         }
+        mInitHeightGrid = 0;
         evaluateDebugTrees();
         return;
     }
@@ -167,10 +187,13 @@ void StandLoader::evaluateDebugTrees()
                 counter++;
             }
         }
+        qDebug() << "evaluateDebugTrees: enabled debugging for" << counter << "trees.";
     }
-    qDebug() << "evaluateDebugTrees: enabled debugging for" << counter << "trees.";
 }
 
+/// load a single init file. Calls loadPicusFile() or loadiLandFile()
+/// @param fileName file to load
+/// @param type init mode. allowed: "picus"/"single" or "iland"/"distribution"
 int StandLoader::loadInitFile(const QString &fileName, const QString &type, int stand_id, ResourceUnit *ru)
 {
     QString pathFileName = GlobalSettings::instance()->path(fileName, "init");
@@ -416,10 +439,11 @@ bool sortPairLessThan(const QPair<int, double> &s1, const QPair<int, double> &s2
 }
 
 struct SInitPixel {
-    double basal_area;
-    QPoint pixelOffset;
-    ResourceUnit *resource_unit;
-    SInitPixel(): basal_area(0.), resource_unit(0) {}
+    double basal_area; // accumulated basal area
+    QPoint pixelOffset; // location of the pixel
+    ResourceUnit *resource_unit; // pointer to the resource unit the pixel belongs to
+    double h_max; // predefined maximum height at given pixel (if available from LIDAR or so)
+    SInitPixel(): basal_area(0.), resource_unit(0), h_max(-1.) {}
 };
 
 bool sortInitPixelLessThan(const SInitPixel &s1, const SInitPixel &s2)
@@ -554,6 +578,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
 
     const MapGrid *grid = GlobalSettings::instance()->model()->standGrid();
 
+    // get a list of positions of all pixels that belong to our stand
     QList<int> indices = grid->gridIndices(stand_id);
     if (indices.isEmpty()) {
         qDebug() << "stand" << stand_id << "not in project area. No init performed.";
@@ -563,32 +588,54 @@ void StandLoader::executeiLandInitStand(int stand_id)
     // key is the location of the 10x10m pixel
     QMultiHash<QPoint, int> tree_map;
     QList<SInitPixel> pixel_list; // working list of all 10m pixels
+    pixel_list.reserve(indices.size());
 
     foreach (int i, indices) {
        SInitPixel p;
        p.pixelOffset = grid->grid().indexOf(i); // index in the 10m grid
-       p.resource_unit = GlobalSettings::instance()->model()->ru( grid->grid().cellCenterPoint(grid->grid().indexOf(i)));
+       p.resource_unit = GlobalSettings::instance()->model()->ru( grid->grid().cellCenterPoint(p.pixelOffset));
+       if (mInitHeightGrid)
+           p.h_max = mInitHeightGrid->grid().constValueAtIndex(p.pixelOffset);
        pixel_list.append(p);
     }
     double area_factor = grid->area(stand_id) / 10000.;
 
-    int key;
+    int key=0;
     double rand_val, rand_fraction;
     int total_count = 0;
+    int total_tries = 0;
+    int total_misses = 0;
+    if (mInitHeightGrid && !mHeightGridResponse)
+        throw IException("executeiLandInitStand: trying to initialize with height grid but without response function.");
     foreach(const InitFileItem &item, mInitItems) {
         rand_fraction = fabs(double(item.density));
         int count = item.count * area_factor + 0.5; // round
+        double init_max_height = item.dbh_to/100. * item.hd;
         for (int i=0;i<count;i++) {
 
+            bool found = false;
+            int tries = mHeightGridTries;
+            while (!found &&--tries) {
+                // calculate random value. "density" is from 1..-1.
+                rand_val = mRandom->get();
+                if (item.density<0)
+                    rand_val = 1. - rand_val;
+                rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
+                ++total_tries;
 
-            // calculate random value. "density" is from 1..-1.
-            rand_val = mRandom->get();
-            if (item.density<0)
-                rand_val = 1. - rand_val;
-            rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
+                // key: rank of target pixel
+                key = limit(int(pixel_list.count()*rand_val), 0, pixel_list.count()-1); // get from random number generator
 
-            // key: rank of target pixel
-            key = limit(int(pixel_list.count()*rand_val), 0, pixel_list.count()-1); // get from random number generator
+                if (mInitHeightGrid) {
+                    // calculate how good the selected pixel fits w.r.t. the predefined height
+                    double p_value = pixel_list[key].h_max>0.?mHeightGridResponse->calculate(init_max_height/pixel_list[key].h_max):0.;
+                    if (drandom() < p_value)
+                        found = true;
+                } else {
+                    found = true;
+                }
+            }
+            if (tries<0) ++total_misses;
 
             // create a tree
             ResourceUnit *ru = pixel_list[key].resource_unit;
@@ -617,6 +664,9 @@ void StandLoader::executeiLandInitStand(int stand_id)
             }
         }
         qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+    }
+    if (total_misses>0 || total_tries > total_count) {
+        qDebug() << "init for stand" << stand_id << "treecount:" << total_count << ", tries:" << total_tries << ", misses:" << total_misses << ", %miss:" << qRound(total_misses*100 / (double)total_count);
     }
 
     int bits, index, pos;
