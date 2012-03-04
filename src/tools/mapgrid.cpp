@@ -26,7 +26,7 @@
 #include "sapling.h"
 #include "resourceunit.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)
-  @ingropu tools
+  @ingroup tools
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
   details on how the grid is mapped to the local coordinate system of the project area. From the source grid a 10m grid
   using the extent and position of the "HeightGrid" and spatial indices for faster access are generated.
@@ -39,7 +39,7 @@ MapGrid::MapGrid()
 {
 }
 
-bool MapGrid::loadFromGrid(const GisGrid &source_grid)
+bool MapGrid::loadFromGrid(const GisGrid &source_grid, const bool create_index)
 {
     if (!GlobalSettings::instance()->model())
         throw IException("GisGrid::create10mGrid: no valid model to retrieve height grid.");
@@ -66,42 +66,45 @@ bool MapGrid::loadFromGrid(const GisGrid &source_grid)
     mRectIndex.clear();
     mRUIndex.clear();
 
-    for (int *p = mGrid.begin(); p!=mGrid.end(); ++p) {
-        if (*p==-1)
-            continue;
-        QPair<QRectF,double> &data = mRectIndex[*p];
-        data.first = data.first.united(mGrid.cellRect(mGrid.indexOf(p)));
-        data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
+    if (create_index) {
 
-        ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
-        // find all entries for the current grid id
-        QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
+        for (int *p = mGrid.begin(); p!=mGrid.end(); ++p) {
+            if (*p==-1)
+                continue;
+            QPair<QRectF,double> &data = mRectIndex[*p];
+            data.first = data.first.united(mGrid.cellRect(mGrid.indexOf(p)));
+            data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
 
-        // look for the resource unit 'ru'
-        bool found = false;
-        while (pos!=mRUIndex.end() && pos.key() == *p) {
-            if (pos.value().first == ru) {
-                pos.value().second+= 0.01; // 1 pixel = 1% of the area
-                found=true;
-                break;
+            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+            // find all entries for the current grid id
+            QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
+
+            // look for the resource unit 'ru'
+            bool found = false;
+            while (pos!=mRUIndex.end() && pos.key() == *p) {
+                if (pos.value().first == ru) {
+                    pos.value().second+= 0.01; // 1 pixel = 1% of the area
+                    found=true;
+                    break;
+                }
+                ++pos;
             }
-            ++pos;
-        }
-        if (!found)
-            mRUIndex.insertMulti(*p, QPair<ResourceUnit*, double>(ru, 0.01));
+            if (!found)
+                mRUIndex.insertMulti(*p, QPair<ResourceUnit*, double>(ru, 0.01));
 
+        }
     }
     return true;
 
 }
 
-bool MapGrid::loadFromFile(const QString &fileName)
+bool MapGrid::loadFromFile(const QString &fileName, const bool create_index)
 {
     GisGrid gis_grid;
     mName = "invalid";
     if (gis_grid.loadFromFile(fileName)) {
         mName = fileName;
-        return loadFromGrid(gis_grid);
+        return loadFromGrid(gis_grid, create_index);
     }
     return false;
 }

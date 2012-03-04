@@ -32,10 +32,11 @@ class MapGrid
 {
 public:
     MapGrid();
+    /// create a MapGrid. the optional parameter "create_index" indicates if a spatial index (e.g. to query all pixels with a given value) should be built.
     MapGrid(const GisGrid &source_grid) { loadFromGrid(source_grid); }
-    MapGrid(const QString &fileName) { loadFromFile(fileName); }
-    bool loadFromFile(const QString &fileName); ///< load ESRI style text file
-    bool loadFromGrid(const GisGrid &source_grid); ///< load from an already present GisGrid
+    MapGrid(const QString &fileName, const bool create_index=true) { loadFromFile(fileName, create_index); }
+    bool loadFromFile(const QString &fileName, const bool create_index=true); ///< load ESRI style text file
+    bool loadFromGrid(const GisGrid &source_grid, const bool create_index=true); ///< load from an already present GisGrid
     // access
     const QString &name() const { return mName; }
     bool isValid() const { return !mGrid.isEmpty(); }

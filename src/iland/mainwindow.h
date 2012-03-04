@@ -178,6 +178,7 @@ private slots:
     void on_visImpact_clicked() { on_visFon_toggled(); } // force repeaint
     void on_actionPerformance_triggered();
     void on_scriptCommandHistory_currentIndexChanged(int index);
+    void on_paintGridBox_currentIndexChanged(int index);
 };
 
 #endif // MAINWINDOW_H

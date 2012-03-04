@@ -665,14 +665,14 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="5" column="0" colspan="3">
+        <item row="8" column="0" colspan="3">
          <widget class="QCheckBox" name="visAutoScale">
           <property name="text">
            <string>Autoscale colors</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
+        <item row="12" column="0">
          <widget class="QLabel" name="label_4">
           <property name="maximumSize">
            <size>
@@ -685,10 +685,10 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="10" column="0" colspan="2">
+        <item row="13" column="0" colspan="2">
          <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
-        <item row="11" column="0" colspan="3">
+        <item row="14" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
            <string>(value)</string>
@@ -699,13 +699,6 @@ QProgressBar::chunk {
          <widget class="QRadioButton" name="visDomGrid">
           <property name="text">
            <string>dominace grid</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0" colspan="2">
-         <widget class="QRadioButton" name="visResourceUnits">
-          <property name="text">
-           <string>resource units</string>
           </property>
          </widget>
         </item>
@@ -723,7 +716,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="10" column="2">
+        <item row="13" column="2">
          <widget class="QPushButton" name="pbExecExpression">
           <property name="maximumSize">
            <size>
@@ -746,16 +739,30 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="12" column="0" colspan="3">
+        <item row="15" column="0" colspan="3">
          <widget class="QComboBox" name="speciesFilterBox"/>
         </item>
-        <item row="8" column="0" colspan="3">
+        <item row="11" column="0" colspan="3">
          <widget class="QComboBox" name="paintGridBox"/>
         </item>
-        <item row="6" column="0" colspan="3">
+        <item row="9" column="0" colspan="3">
          <widget class="QLabel" name="label_8">
           <property name="text">
            <string>other grids</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="3">
+         <widget class="QRadioButton" name="visOtherGrid">
+          <property name="text">
+           <string>other grid</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QRadioButton" name="visResourceUnits">
+          <property name="text">
+           <string>resource units</string>
           </property>
          </widget>
         </item>
