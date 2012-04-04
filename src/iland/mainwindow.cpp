@@ -508,6 +508,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool other_grid = ui->visOtherGrid->isChecked();
 
     if (other_grid) {
+        // return; // TODO TEST
         if (ui->paintGridBox->currentIndex()>-1) {
             QString name = ui->paintGridBox->itemData(ui->paintGridBox->currentIndex()).toString();
             if (!name.isEmpty())

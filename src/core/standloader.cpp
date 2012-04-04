@@ -175,8 +175,17 @@ void StandLoader::evaluateDebugTrees()
     QString dbg_str = GlobalSettings::instance()->settings().paramValueString("debug_tree");
     int counter=0;
     if (!dbg_str.isEmpty()) {
-       TreeWrapper tw;
-       Expression dexp(dbg_str, &tw); // load expression dbg_str and enable external model variables
+        if (dbg_str == "debugstamp") {
+            // try to force an error if a stamp is invalid
+            AllTreeIterator at(GlobalSettings::instance()->model());
+            double total_offset;
+            while (Tree *t=at.next()) {
+                total_offset += t->stamp()->offset();
+            }
+            return;
+        }
+        TreeWrapper tw;
+        Expression dexp(dbg_str, &tw); // load expression dbg_str and enable external model variables
         AllTreeIterator at(GlobalSettings::instance()->model());
         double result;
         while (Tree *t = at.next()) {

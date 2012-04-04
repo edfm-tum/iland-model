@@ -118,6 +118,7 @@ public:
 
     QString dump();
     void dumpList(QList<QVariant> &rTargetList);
+    const Stamp *stamp() const { return mStamp; } ///< TODO: only for debugging purposes
 
 private:
     // helping functions
