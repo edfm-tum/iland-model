@@ -134,7 +134,7 @@ Stamp *stampFromGrid(const FloatGrid& grid, const int width)
     else if (width<=48) type = Stamp::est48x48;
     else type = Stamp::est64x64;
 
-    Stamp *stamp = StampContainer::newStamp(type);
+    Stamp *stamp = new Stamp(int(type));
     int swidth = width;
     if (width>63) {
         qDebug() << "Warning: grid too big, truncated stamp to 63x63px!";
