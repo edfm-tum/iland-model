@@ -249,21 +249,6 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
     throw IException("StampContainer:: did not find a valid stamp.");
 }
 
-/// static factory function to create stamps with a given size
-/// @param type indicates type of stamp
-Stamp* StampContainer::newStamp(const Stamp::StampType type)
-{
-    Stamp *stamp;
-    switch (type) {
-       case Stamp::est4x4:  //qDebug() << "4x4stamp";
-           stamp=new Stamp(4); break;
-
-    default:
-          stamp = new Stamp(int(type));
-    }
-    return stamp;
-}
-
 
 void StampContainer::attachReaderStamps(const StampContainer &source)
 {
@@ -332,7 +317,7 @@ void StampContainer::load(QDataStream &in)
         in >> crownradius;
         //qDebug() << "stamp bhd hdvalue type readsum dominance type" << bhd << hdvalue << type << readsum << domvalue << type;
 
-        Stamp *stamp = newStamp( Stamp::StampType(type) );
+        Stamp *stamp = new Stamp(type);
         stamp->load(in);
 
         if (bhd > 0.f)
