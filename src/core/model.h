@@ -116,6 +116,7 @@ private:
     void initializeGrid(); ///< initialize the LIF grid
 
     void test();
+    void debugCheckAllTrees();
     bool multithreading() const { return threadRunner.multithreading(); }
     ThreadRunner threadRunner;
     static ModelSettings mSettings;

@@ -151,7 +151,8 @@ void StandLoader::processInit()
             if (key>0) {
                 file_name = map_file.value(i, ivalue).toString();
                 if (logLevelInfo()) qDebug() << "loading" << file_name << "for grid id" << key;
-                loadInitFile(file_name, type, key, NULL);
+                if (!file_name.isEmpty())
+                    loadInitFile(file_name, type, key, NULL);
             }
         }
         mInitHeightGrid = 0;
@@ -176,12 +177,16 @@ void StandLoader::evaluateDebugTrees()
     int counter=0;
     if (!dbg_str.isEmpty()) {
         if (dbg_str == "debugstamp") {
+            qDebug() << "debug_tree = debugstamp: try touching all trees...";
             // try to force an error if a stamp is invalid
             AllTreeIterator at(GlobalSettings::instance()->model());
             double total_offset;
             while (Tree *t=at.next()) {
                 total_offset += t->stamp()->offset();
+                if (!GlobalSettings::instance()->model()->grid()->isIndexValid(t->positionIndex()))
+                    qDebug() << "evaluateDebugTrees: debugstamp: invalid position found!";
             }
+            qDebug() << "debug_tree = debugstamp: try touching all trees finished...";
             return;
         }
         TreeWrapper tw;
@@ -710,6 +715,9 @@ void StandLoader::executeiLandInitStand(int stand_id)
             tree_pos += QPoint(pos/cPxPerHeight, pos%cPxPerHeight);
 
             p.resource_unit->trees()[tree_idx].setPosition(tree_pos);
+            // test if tree position is valid..
+            if (!GlobalSettings::instance()->model()->grid()->isIndexValid(tree_pos))
+                qDebug() << "Standloader: invalid position!";
         }
     }
     if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "with area" << "area (m2)" << grid->area(stand_id) << "count of 10m pixels:"  << indices.count() << "initialized trees:" << total_count;

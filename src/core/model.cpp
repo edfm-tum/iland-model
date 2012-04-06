@@ -542,6 +542,7 @@ void Model::beforeRun()
 
     // load climate
     {
+    if (logLevelDebug()) qDebug() << "attempting to load climate..." ;
     DebugTimer loadclim("load climate");
     foreach(Climate *c, mClimates)
         if (!c->isSetup())
@@ -550,7 +551,9 @@ void Model::beforeRun()
     }
 
     { DebugTimer loadinit("load standstatistics");
+    if (logLevelDebug()) qDebug() << "attempting to calculate initial stand statistics (incl. apply and read pattern)..." ;
     Tree::setGrid(mGrid, mHeightGrid);
+    debugCheckAllTrees();
     applyPattern();
     readPattern();
 
@@ -786,6 +789,22 @@ void Model::test()
     qDebug() << count << "LIF>0.9 of " << averaged.count();
 }
 
+void Model::debugCheckAllTrees()
+{
+    AllTreeIterator at(this);
+    bool has_errors = false; double dummy=0.;
+    while (Tree *t = at.next()) {
+        // plausibility
+        if (t->dbh()<0 || t->dbh()>10000. || t->biomassFoliage()<0. || t->height()>1000. || t->height() < 0.
+                || t->biomassFoliage() <0.)
+            has_errors = true;
+        // check for objects....
+        dummy = t->stamp()->offset() + t->ru()->ruSpecies()[1]->statistics().count();
+    }
+    if (has_errors)
+        qDebug() << "model: debugCheckAllTrees found problems" << dummy;
+}
+
 void Model::applyPattern()
 {
 
@@ -884,6 +903,10 @@ void Model::calculateStockableArea()
         }
         if (total) {
             ru->setStockableArea( cHeightPixelArea * valid);
+            if (valid==0 && ru->id()>-1) {
+                // invalidate this resource unit
+                ru->setID(-1);
+            }
             if (valid>0 && ru->id()==-1) {
                 qDebug() << "Warning: a resource unit has id=-1 but stockable area (id was set to 0)!!! ru: " << ru->boundingBox() << "with index" << ru->index();
                 ru->setID(0);

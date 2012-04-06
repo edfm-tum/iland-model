@@ -69,7 +69,7 @@ void CarbonOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
     foreach(ResourceUnit *ru, m->ruList()) {
-        if (ru->id()==-1)
+        if (ru->id()==-1 || !ru->snag())
             continue; // do not include if out of project area
         *this << currentYear() << ru->index() << ru->id() << ru->stockableArea(); // keys
         // biomass from trees
