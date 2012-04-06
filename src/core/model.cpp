@@ -553,7 +553,7 @@ void Model::beforeRun()
     { DebugTimer loadinit("load standstatistics");
     if (logLevelDebug()) qDebug() << "attempting to calculate initial stand statistics (incl. apply and read pattern)..." ;
     Tree::setGrid(mGrid, mHeightGrid);
-    debugCheckAllTrees();
+    // debugCheckAllTrees(); // introduced for debugging session (2012-04-06)
     applyPattern();
     readPattern();
 

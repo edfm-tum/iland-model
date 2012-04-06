@@ -26,7 +26,7 @@
     aggregated to monthly response values (which subsequently are used during 3PG production).
  Sources are:
     - vapour pressure deficit (dryness of atmosphere): directly from climate data (daily)
-    - soil water status (dryness of soil): TODO (daily)
+    - soil water status (dryness of soil)(daily)
     - temperature: directly from climate data (daily)
     - phenology: @sa Phenology, combines several sources (quasi-monthly)
     - CO2: @sa SpeciesSet::co2Response() based on ambient CO2 level (climate data), nitrogen and soil water responses (yearly)
