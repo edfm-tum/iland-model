@@ -157,9 +157,8 @@ Tree &ResourceUnit::newTree()
 }
 int ResourceUnit::newTreeIndex()
 {
-    // start simple: just append to the vector...
-    mTrees.append(Tree());
-    return mTrees.count()-1;
+    newTree();
+    return mTrees.count()-1; // return index of the last tree
 }
 
 /// remove dead trees from tree list

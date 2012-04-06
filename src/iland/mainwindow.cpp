@@ -136,6 +136,7 @@ void dumpMessages()
     if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
             *MainWindow::logStream() << s << endl;
+        MainWindow::logStream()->flush();
 
     } else {
         foreach(const QString &s, bufferedMessages)
