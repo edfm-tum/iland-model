@@ -138,7 +138,7 @@ void Climate::setup()
     if (mTemperatureShift!=0. || mPrecipitationShift!=1.)
         qDebug() << "Climate modifaction: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
 
-    mStore.resize(mLoadYears * 366);
+    mStore.resize(mLoadYears * 366 + 1); // reserve enough space (1 more than used at max)
     mCurrentYear=0;
     mMinYear = 0;
     mMaxYear = 0;

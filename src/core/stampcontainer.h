@@ -48,9 +48,6 @@ public:
     void load(QDataStream &in);
     void load(const QString &fileName);
 
-    /** factory creation function for stamps of different size.
-        newStamp() creates new Stamp-Objects on the heap with a given type (see @enum Stamp::StampType).*/
-    static Stamp* newStamp(const Stamp::StampType type);
     /** this functions attaches the appropriate reader (dep. on crown radius) to each stamp of the container.
         The reader-stamp is returned by a call to the reader()-function of the Stamp itself.
         @param Container holding the reader stamps.*/
