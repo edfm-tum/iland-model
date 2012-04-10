@@ -70,7 +70,7 @@ void StandLoader::copyTrees()
         foreach(const Tree& tree, tocopy) {
             Tree &newtree = (*p)->newTree();
             newtree = tree; // copy tree data...
-            newtree.setPosition(tree.position()+(*p)->boundingBox().topLeft());
+            newtree.setPosition(tree.position()+rect.topLeft());
             newtree.setRU(*p);
             newtree.setNewId();
         }

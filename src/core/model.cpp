@@ -999,6 +999,6 @@ QString Model::executeJavascript(const QString expression)
         return management()->executeScript(expression);
     } else {
         qDebug() << "Model::executeJavascript: cannot execute expression because no scriping environment is active. Expression:" << expression;
-        return false;
+        return QString();
     }
 }
