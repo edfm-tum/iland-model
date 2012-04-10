@@ -33,7 +33,7 @@ Stamp::Stamp()
 Stamp::~Stamp()
 {
    if( m_data)
-       delete m_data;
+       delete[] m_data;
 }
 
 void Stamp::setup(const int size)
