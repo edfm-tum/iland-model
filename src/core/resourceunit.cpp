@@ -52,6 +52,8 @@ ResourceUnit::~ResourceUnit()
     if (mSoil)
         delete mSoil;
 
+    qDeleteAll(mRUSpecies);
+
     mSnag = 0;
     mSoil = 0;
 }
