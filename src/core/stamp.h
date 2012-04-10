@@ -51,7 +51,7 @@ public:
     inline float *data(const int x, const int y) const { return m_data + index(x,y); }
     void setData(const int x, const int y, const float value) { *data(x,y) = value; }
     /// get index (e.g. for data()[index]) for indices x and y
-    inline int index(const int x, const int y) const { return y*m_size + x; }
+    inline int index(const int x, const int y) const {  Q_ASSERT(y*m_size + x < m_size*m_size); return y*m_size + x; }
     /// retrieve the value of the stamp at given indices x and y
     inline float operator()(const int x, const int y) const { return *data(x,y); }
     inline float offsetValue(const int x, const int y, const int offset) const { return *data(x+offset, y+offset); }
