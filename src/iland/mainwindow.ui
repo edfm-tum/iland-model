@@ -49,7 +49,7 @@
      <x>0</x>
      <y>0</y>
      <width>956</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -766,6 +766,13 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
+        <item row="6" column="0" colspan="3">
+         <widget class="QCheckBox" name="visClipStandGrid">
+          <property name="text">
+           <string>clip to stands</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -1036,12 +1043,12 @@ QProgressBar::chunk {
    <slot>setText(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>104</x>
-     <y>160</y>
+     <x>108</x>
+     <y>378</y>
     </hint>
     <hint type="destinationlabel">
-     <x>60</x>
-     <y>153</y>
+     <x>64</x>
+     <y>251</y>
     </hint>
    </hints>
   </connection>
@@ -1052,12 +1059,12 @@ QProgressBar::chunk {
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>278</x>
-     <y>565</y>
+     <x>313</x>
+     <y>620</y>
     </hint>
     <hint type="destinationlabel">
      <x>402</x>
-     <y>567</y>
+     <y>622</y>
     </hint>
    </hints>
   </connection>

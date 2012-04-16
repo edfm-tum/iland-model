@@ -737,6 +737,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
 {
     painter.fillRect(ui->PaintWidget->rect(), object.background_color);
+    bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
 
     int sx=0, sy=0;
     QRect total_rect;
@@ -777,25 +778,34 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     double value=0.;
     QRect r;
     QColor fill_color;
+    QPointF pmetric;
     for (iy=0;iy<sy;iy++) {
         for (ix=0;ix<sx;ix++) {
             QPoint p(ix,iy);
             switch(object.what) {
             case PaintObject::PaintMapGrid:
                 value = object.map_grid->grid().constValueAtIndex(p);
+                pmetric = object.map_grid->grid().cellRect(p).center();
                 r = vp.toScreen(object.map_grid->grid().cellRect(p));
+
                 break;
             case PaintObject::PaintFloatGrid:
                 value = object.float_grid->constValueAtIndex(p);
+                pmetric = object.float_grid->cellRect(p).center();
                 r = vp.toScreen(object.float_grid->cellRect(p));
                 break;
             case PaintObject::PaintLayers:
                 value = object.layered->value(ix, iy, object.layer_id);
+                pmetric = object.layered->cellRect(p).center();
                 r = vp.toScreen(object.layered->cellRect(p));
                 break;
             default: ;
             }
-            fill_color = Helper::colorFromValue(value, object.cur_min_value, object.cur_max_value, reverse,black_white);
+            if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(pmetric).isValid()) {
+                fill_color = Qt::white;
+            } else {
+                fill_color = Helper::colorFromValue(value, object.cur_min_value, object.cur_max_value, reverse,black_white);
+            }
             painter.fillRect(r, fill_color);
         }
     }
