@@ -33,9 +33,10 @@ class ResourceUnit; // forward
 */
 class WindCell {
 public:
-    WindCell() { clear(); }
-    void clear() { height = edge = 0.f; n_trees=0; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
+    WindCell() { topex = 0; clear(); }
+    void clear() {height = edge = 0.f; n_trees=0; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
     bool isValid() const { return height<9999.f; } ///< returns true if the pixel is on the valid project area
+    float topex; ///< topographic modifier for wind speed (-)
     float height; ///< top height (m).
     int n_trees; ///< number of trees on pixel
     const Tree *tree; ///< pointer to the tallest tree on the pixel (if already populated)
@@ -51,9 +52,8 @@ public:
 // data structure for a resource unit
 class WindRUCell {
 public:
-    WindRUCell(): flag(0), topoModifier(1.), soilIsFrozen(false) {}
-    int flag ;
-    double topoModifier;
+    WindRUCell(): flag(0), soilIsFrozen(false) {}
+    int flag; // flag to indicate that the trees of the current resource are already processed
     bool soilIsFrozen;
 };
 
@@ -130,6 +130,7 @@ private:
     const WindSpeciesParameters &speciesParameter(const Species *s);
 
     // variables
+    bool mTopexFromGrid; ///< indicates if topex grid is a real grid or by ressource unit
     double mWindDirection; ///< direction of the current wind event (rad)
     double mWindDirectionVariation; ///< random variation in wind direction
     double mWindSpeed; ///< wind speed (TODO: per resource unit!)
