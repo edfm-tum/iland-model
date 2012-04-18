@@ -97,6 +97,9 @@ void StandLoader::processInit()
         qDebug() << "initialization: using predefined tree heights map" << init_height_grid_file;
 
         QScopedPointer<const MapGrid> p(new MapGrid(init_height_grid_file, false));
+        if (!p->isValid()) {
+            throw IException(QString("Error when loading grid with tree heights for stand initalization: file %1 not found or not valid.").arg(init_height_grid_file));
+        }
         height_grid.swap(p);
         mInitHeightGrid = height_grid.data();
 
