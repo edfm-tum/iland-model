@@ -83,7 +83,7 @@ private:
     /// PaintObject stores what kind of object to paint during next repaint
     struct PaintObject {
         PaintObject(): what(PaintNothing), map_grid(0), float_grid(0), layered(0), layer_id(0), min_value(0.), max_value(1.), cur_min_value(0.), cur_max_value(1.), auto_range(false) {}
-        enum { PaintNothing, PaintMapGrid, PaintFloatGrid, PaintLayers } what;
+        enum { PaintNothing, PaintMapGrid, PaintFloatGrid, PaintLayers, PaintLIF, PaintTrees, PaintHeightGrid, PaintResourceUnits, PaintRegeneration } what;
         MapGrid *map_grid;
         const FloatGrid *float_grid;
         const LayeredGridBase *layered;
@@ -94,6 +94,9 @@ private:
         double cur_min_value, cur_max_value;
         bool auto_range;
         static QColor background_color;
+        // other options
+        bool clip_to_stands;
+        bool species_colors;
     } mPaintNext;
     QHash<QString, PaintObject> mPaintList;
     void paintGrid(QPainter &painter, PaintObject &object);
