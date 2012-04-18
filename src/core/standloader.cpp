@@ -683,7 +683,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
         qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
     }
     if (total_misses>0 || total_tries > total_count) {
-        qDebug() << "init for stand" << stand_id << "treecount:" << total_count << ", tries:" << total_tries << ", misses:" << total_misses << ", %miss:" << qRound(total_misses*100 / (double)total_count);
+        if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "treecount:" << total_count << ", tries:" << total_tries << ", misses:" << total_misses << ", %miss:" << qRound(total_misses*100 / (double)total_count);
     }
 
     int bits, index, pos;

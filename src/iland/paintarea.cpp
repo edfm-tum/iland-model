@@ -30,7 +30,7 @@
 PaintArea::PaintArea(QWidget *parent)
      : QWidget(parent)
  {
-     m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
+     m_bitmap = QImage(this->size(), QImage::Format_ARGB32_Premultiplied);
      // enable mouse tracking
      this->setMouseTracking(true);
      // enable keyboard focus
@@ -40,7 +40,7 @@ PaintArea::PaintArea(QWidget *parent)
 
 void PaintArea::resizeEvent(QResizeEvent *event)
 {
-    m_bitmap = QImage(this->size(), QImage::Format_ARGB32);
+    m_bitmap = QImage(this->size(), QImage::Format_ARGB32_Premultiplied);
     //qDebug() << "paintarea resize" << this->size();
 }
 void PaintArea::paintEvent(QPaintEvent *)
