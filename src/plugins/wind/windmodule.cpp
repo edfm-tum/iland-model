@@ -26,6 +26,7 @@
 #include "speciesset.h"
 #include "resourceunit.h"
 #include "climate.h"
+#include "gisgrid.h"
 
 /** @defgroup windmodule iLand windmodule
   The wind module is a disturbance module within the iLand framework.
@@ -52,8 +53,8 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 5: return data.basal_area_killed; // basal area killed on pixel
     case 6: return data.n_iteration; // iteration in processing that the current pixel is processed (and trees are killed)
     case 7: return data.crown_windspeed; // effective wind speed in the crown (m/s)
-    case 8: return ruValueAt(&data, 0); // topo modifier of the current pixel
-    case 9: return ruValueAt(&data, 1); // 1 if soil is frozen on the current pixel
+    case 8: return data.topex; // topo modifier of the current pixel
+    case 9: return ruValueAt(&data, 0); // 1 if soil is frozen on the current pixel
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -71,8 +72,7 @@ double WindLayers::ruValueAt(const WindCell *cell, const int what) const
     QPoint pos = mGrid->indexOf(cell);
     const WindRUCell &ru_cell = mRUGrid->constValueAt(mGrid->cellCenterPoint(pos));
     switch (what) {
-    case 0: return ru_cell.topoModifier;
-    case 1: return ru_cell.soilIsFrozen?1.:0.;
+    case 0: return ru_cell.soilIsFrozen?1.:0.;
     default: return -1.;
     }
 }
@@ -108,6 +108,22 @@ void WindModule::setup()
     mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 10.); // default: 10mins/iteration is 60m/h
     mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
     mLRITransferFunction.setAndParse(xml.value(".LRITransferFunction", "max(min(3.733-6.467*LRI,3.41),0.5)"));
+    // topographic topex modifier
+    mTopexFromGrid = false;
+    QString topex_grid_file = xml.value(".topoGridFile");
+    if (!topex_grid_file.isEmpty()) {
+        // load the topex-grid from file and assign the values
+        GisGrid topex_grid;
+        topex_grid_file = GlobalSettings::instance()->path(topex_grid_file);
+        if (topex_grid.loadFromFile(topex_grid_file)) {
+            for (int i=0;i<mGrid.count();i++) {
+                mGrid.valueAtIndex(i).topex = topex_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i)));
+            }
+            mTopexFromGrid = true;
+        }
+    }
+
+    // soil freeze state
     mSoilFreezeMode=esfInvalid;
     QString soil_freeze = xml.value(".soilFreezeMode", "auto");
     if (soil_freeze=="yes") mSoilFreezeMode=esfFrozen;
@@ -130,8 +146,13 @@ void WindModule::setup()
 /// the function is called from the plugin-object.
 void WindModule::setupResourceUnit(const ResourceUnit *ru)
 {
-    WindRUCell &cell =  mRUGrid.valueAt(ru->boundingBox().center());
-    cell.topoModifier = GlobalSettings::instance()->settings().valueDouble("modules.wind.topoModifier", 1.);
+    if (!mTopexFromGrid) {
+        float topo_value =  GlobalSettings::instance()->settings().valueDouble("modules.wind.topoModifier", 1.);
+        GridRunner<WindCell> runner(mGrid, ru->boundingBox());
+        while (WindCell *p=runner.next()) {
+            p->topex = topo_value;
+        }
+    }
 }
 
 /// load specific species parameter for the wind module.
@@ -497,7 +518,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     DebugTimer t2("wind:impact:speed");
     const WindSpeciesParameters &params = speciesParameter(cell->tree->species());
     const WindRUCell &ru_cell = mRUGrid.valueAt(pixel_rect.center());
-    double topo_mod = ru_cell.topoModifier;
+    double topo_mod = cell->topex;
     // the wind speed (10m above the canopy) is the global wind speed modified with the topography modifier
     // and with some added variation.
     double wind_speed_10 = mWindSpeed * topo_mod * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy
