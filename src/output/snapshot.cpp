@@ -211,25 +211,27 @@ void Snapshot::saveSoil()
     db.transaction();
     foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         Soil *s = ru->soil();
-        q.addBindValue(s->mRU->index());
-        q.addBindValue(s->mKyl);
-        q.addBindValue(s->mKyr);
-        q.addBindValue(s->mInputLab.C);
-        q.addBindValue(s->mInputLab.N);
-        q.addBindValue(s->mInputRef.C);
-        q.addBindValue(s->mInputRef.N);
-        q.addBindValue(s->mYL.C);
-        q.addBindValue(s->mYL.N);
-        q.addBindValue(s->mYR.C);
-        q.addBindValue(s->mYR.N);
-        q.addBindValue(s->mSOM.C);
-        q.addBindValue(s->mSOM.N);
-        if (!q.exec()) {
-            throw IException(QString("Snapshot::saveSoil: execute:") + q.lastError().text());
-        }
-        if (++n % 1000 == 0) {
-            qDebug() << n << "soil resource units saved...";
-            QCoreApplication::processEvents();
+        if (s) {
+            q.addBindValue(s->mRU->index());
+            q.addBindValue(s->mKyl);
+            q.addBindValue(s->mKyr);
+            q.addBindValue(s->mInputLab.C);
+            q.addBindValue(s->mInputLab.N);
+            q.addBindValue(s->mInputRef.C);
+            q.addBindValue(s->mInputRef.N);
+            q.addBindValue(s->mYL.C);
+            q.addBindValue(s->mYL.N);
+            q.addBindValue(s->mYR.C);
+            q.addBindValue(s->mYR.N);
+            q.addBindValue(s->mSOM.C);
+            q.addBindValue(s->mSOM.N);
+            if (!q.exec()) {
+                throw IException(QString("Snapshot::saveSoil: execute:") + q.lastError().text());
+            }
+            if (++n % 1000 == 0) {
+                qDebug() << n << "soil resource units saved...";
+                QCoreApplication::processEvents();
+            }
         }
     }
 
@@ -251,6 +253,9 @@ void Snapshot::loadSoil()
         if (!ru)
             throw IException("Snapshot::loadSoil: Invalid resource unit");
         Soil *s = ru->soil();
+        if (!s) {
+            throw IException("Snapshot::loadSoil: trying to load soil data but soil module is disabled.");
+        }
         s->mKyl = q.value(1).toDouble();
         s->mKyr = q.value(2).toDouble();
         s->mInputLab.C = q.value(3).toDouble();
