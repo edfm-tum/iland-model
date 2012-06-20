@@ -134,12 +134,14 @@ private:
     double mWindDirection; ///< direction of the current wind event (rad)
     double mWindDirectionVariation; ///< random variation in wind direction
     double mWindSpeed; ///< wind speed (TODO: per resource unit!)
+    double mEdgeDetectionThreshold; ///< minimum height difference of height-grid pixels to be detected as edges (default is 10m)
     int mWindDayOfYear; ///< day of year of the wind event (0..365)
     bool mSimulationMode; ///< if true, no trees are removed (test mode)
     int mCurrentIteration; ///< current iteration (1..n)
     int mMaxIteration; ///< maximum number of iterations
     double mGustModifier; ///< Modification range accounting for differences in wind speed between iterations (0..1)
     double mCurrentGustFactor; ///< gustfactor of the current year (multiplier)
+    enum ETopexFactorModificationType {gfMultiply, gfAdd} mTopexFactorModificationType; ///< determines if topo-modifier is added multiplicatively or additively.
     double mIterationsPerMinute; ///< number of iterations per minute of the events' duration
     // some statistics
     int mPixelAffected; ///< total number of pixels that are impacted
