@@ -330,7 +330,7 @@ void WindModule::calculateFetch()
         if (p->edge == 1.f) {
             QPoint pt=mGrid.indexOf(p);
             current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
-            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - 10.);
+            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
             ++calculated;
         }
    }
