@@ -86,6 +86,8 @@ WindModule::WindModule()
     mWindDirectionVariation = 0.;
     mGustModifier = 1.;
     mIterationsPerMinute = 1.;
+    mEdgeDetectionThreshold = 10.;
+    mTopexFactorModificationType = gfMultiply;
 }
 
 /// setup of general settings from the project file.
@@ -105,6 +107,12 @@ void WindModule::setup()
     mWindDirection = xml.valueDouble(".direction", 0.)*M_PI/180.;
     mWindSpeed = 0.; // set the wind speed explicitely to 0
     mGustModifier = xml.valueDouble(".gustModifier", 1.);
+    mEdgeDetectionThreshold = xml.valueDouble(".edgeDetectionThreshold", 10.);
+    QString topex_mod_typ = xml.value(".topexModifierType", "multiplicative");
+    mTopexFactorModificationType = gfMultiply;
+    if (topex_mod_typ ==  "additive")
+        mTopexFactorModificationType = gfAdd;
+
     mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 10.); // default: 10mins/iteration is 60m/h
     mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
     mLRITransferFunction.setAndParse(xml.value(".LRITransferFunction", "max(min(3.733-6.467*LRI,3.41),0.5)"));
@@ -283,7 +291,7 @@ void WindModule::detectEdges()
     int dy = mGrid.sizeY();
     int dx = mGrid.sizeX();
     int x,y;
-    const float threshold = 10.f;
+    const float threshold = mEdgeDetectionThreshold;
     for (y=1;y<dy-1;++y){
         p = mGrid.ptr(1,y);
         p_above = p - dx; // one line above
@@ -521,7 +529,11 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     double topo_mod = cell->topex;
     // the wind speed (10m above the canopy) is the global wind speed modified with the topography modifier
     // and with some added variation.
-    double wind_speed_10 = mWindSpeed * topo_mod * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy
+    double wind_speed_10;
+    if (mTopexFactorModificationType == gfMultiply)
+        wind_speed_10 = mWindSpeed * topo_mod * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy, factor applied multiplicatively
+    else
+        wind_speed_10 =( mWindSpeed + topo_mod) * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy, topo modifier calculated additively
 
     double u_crown = calculateCrownWindSpeed(cell->tree, params, cell->n_trees, wind_speed_10);
 
