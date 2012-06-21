@@ -41,3 +41,9 @@ bool WindScript::gridToFile(QString grid_type, QString file_name)
     return false;
 
 }
+
+void WindScript::initialize()
+{
+    mModule->setup();
+    qDebug() << "initialized the wind module.";
+}
