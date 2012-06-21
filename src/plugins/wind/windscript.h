@@ -23,6 +23,8 @@ public slots:
     int windEvent(double windspeed, double winddirection, int max_iteration, bool simulate=false, int iteration=-1);
     /// create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
     bool gridToFile(QString grid_type, QString file_name);
+    /// initialize/ reset the wind module
+    void initialize();
 
 private:
     WindModule *mModule;
