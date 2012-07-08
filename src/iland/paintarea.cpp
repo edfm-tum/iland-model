@@ -16,6 +16,12 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
+#include <QtGui>
+
+#include "paintarea.h"
+
+// static
+QColor PaintObject::background_color = Qt::white;
 
 /** @class PaintArea
   @ingroup GUI
@@ -23,9 +29,6 @@
   The PaintArea is embedded in the MainWindow. The PaintArea receives UI events from Qt and,
   after some processing emits signals.
   */
-#include <QtGui>
-
-#include "paintarea.h"
 
 PaintArea::PaintArea(QWidget *parent)
      : QWidget(parent)

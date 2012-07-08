@@ -60,7 +60,6 @@ QDomNode xmlparams;
 
   */
 
-QColor MainWindow::PaintObject::background_color = Qt::white;
 
 double distance(const QPointF &a, const QPointF &b)
 {

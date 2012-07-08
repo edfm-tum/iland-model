@@ -21,7 +21,30 @@
 #define PAINTAREA_H
 
 #include <QWidget>
+#include "mapgrid.h"
+#include "layeredgrid.h"
+/**
+  */
+struct PaintObject {
+    PaintObject(): what(PaintNothing), map_grid(0), float_grid(0), layered(0), layer_id(0), min_value(0.), max_value(1.), cur_min_value(0.), cur_max_value(1.), auto_range(false) {}
+    enum { PaintNothing, PaintMapGrid, PaintFloatGrid, PaintLayers, PaintLIF, PaintTrees, PaintHeightGrid, PaintResourceUnits, PaintRegeneration } what;
+    MapGrid *map_grid;
+    const FloatGrid *float_grid;
+    const LayeredGridBase *layered;
+    int layer_id;
+    GridViewType view_type;
+    double min_value;
+    double max_value;
+    double cur_min_value, cur_max_value;
+    bool auto_range;
+    static QColor background_color;
+    // other options
+    bool clip_to_stands;
+    bool species_colors;
+};
 
+/**PaintArea
+  */
 class PaintArea : public QWidget
  {
      Q_OBJECT

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>956</width>
-    <height>748</height>
+    <width>1030</width>
+    <height>741</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,8 +48,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>956</width>
-     <height>21</height>
+     <width>1030</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -814,6 +814,27 @@ QProgressBar::chunk {
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockAuxView">
+   <property name="minimumSize">
+    <size>
+     <width>79</width>
+     <height>80</height>
+    </size>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_5">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <property name="margin">
+      <number>3</number>
+     </property>
+     <item>
+      <widget class="PaintArea" name="auxPaint" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionEdit_XML_settings">
    <property name="icon">
     <iconset resource="res/iland.qrc">
@@ -1028,7 +1049,7 @@ QProgressBar::chunk {
   <customwidget>
    <class>PaintArea</class>
    <extends>QWidget</extends>
-   <header>paintarea.h</header>
+   <header location="global">paintarea.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
