@@ -269,7 +269,7 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
                 tp = mTrees.erase(tp);
                 n++;
             } else {
-                tp++;
+                ++tp;
             }
         }
     } catch(const IException &e) {
@@ -379,7 +379,7 @@ int Management::filter(QVariantList idList)
         if (!ids.contains(tp->first->id()) )
             tp = mTrees.erase(tp);
         else
-            tp++;
+            ++tp;
     }
     qDebug() << "Management::filter by id-list:" << mTrees.count();
     return mTrees.count();
@@ -398,7 +398,7 @@ int Management::filter(QString filter)
             if (expr.calculate(tw))
                 tp = mTrees.erase(tp);
             else
-                tp++;
+                ++tp;
         }
     } catch(const IException &e) {
         context()->throwError(e.message());
