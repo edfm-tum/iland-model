@@ -70,7 +70,7 @@ Tree *AllTreeIterator::next()
         while (mRUIterator!=mModel->ruList().constEnd()) {
             if ((*mRUIterator)->trees().count()>0)
                 break;
-            mRUIterator++;
+            ++mRUIterator;
         }
             // finished if all RU processed
         if (mRUIterator == mModel->ruList().constEnd())
@@ -79,12 +79,12 @@ Tree *AllTreeIterator::next()
         mCurrent = &((*mRUIterator)->trees().front());
     }
     if (mCurrent==mTreeEnd) {
-        mRUIterator++; // switch to next RU (loop until RU with trees is found)
+        ++mRUIterator; // switch to next RU (loop until RU with trees is found)
         while (mRUIterator!=mModel->ruList().constEnd()) {
             if ((*mRUIterator)->trees().count()>0) {
                 break;
             }
-            mRUIterator++;
+            ++mRUIterator;
         }
         if (mRUIterator == mModel->ruList().constEnd()) {
             mCurrent = NULL;

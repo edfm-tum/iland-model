@@ -183,7 +183,7 @@ void StandLoader::evaluateDebugTrees()
             qDebug() << "debug_tree = debugstamp: try touching all trees...";
             // try to force an error if a stamp is invalid
             AllTreeIterator at(GlobalSettings::instance()->model());
-            double total_offset;
+            double total_offset=0.;
             while (Tree *t=at.next()) {
                 total_offset += t->stamp()->offset();
                 if (!GlobalSettings::instance()->model()->grid()->isIndexValid(t->positionIndex()))

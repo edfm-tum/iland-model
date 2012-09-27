@@ -224,8 +224,8 @@ void HemiGrid::paintGrid(QImage &image) const
     int ix,iy;
     double x,y;
     int maxsize = std::min(dx,dy);
-    double mmin, mmax; // min and max values of matrix
-    if (mmax==0) mmax=1;
+    double mmin=0, mmax=0; // min and max values of matrix
+    //if (mmax==0) mmax=1;
     matrixMinMax(mmin, mmax);
     QColor col;
     double phi, r, elevation, value;
