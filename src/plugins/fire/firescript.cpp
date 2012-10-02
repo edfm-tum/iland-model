@@ -33,7 +33,10 @@ FireScript::FireScript(QObject *parent) :
 double FireScript::ignite(double x, double y, double firesize, double windspeed, double winddirection)
 {
     qDebug() << "Fireevent triggered by javascript: " << x << y << firesize << windspeed << winddirection;
-    mFire->prescribedIgnition(x, y, firesize, windspeed, winddirection);
+    if (x>=0 && y>=0)
+        mFire->prescribedIgnition(x, y, firesize, windspeed, winddirection);
+    else
+        mFire->ignition();
     return 0.;
 }
 
