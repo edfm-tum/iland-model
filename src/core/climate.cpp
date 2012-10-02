@@ -150,7 +150,7 @@ void Climate::setup()
     mTMaxAvailable = true;
     if (mClimateQuery.lastError().isValid()){
         // fallback: if there is no max_temp try the older format:
-        query=QString("select year,month,day,temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
+        query=QString("select year,month,day,temp,min_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
         mClimateQuery.exec(query);
         mTMaxAvailable = false;
         if (mClimateQuery.lastError().isValid()){
@@ -291,7 +291,8 @@ void Climate::nextYear()
     }
 
     ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
-    qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
+    if (logLevelDebug())
+        qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
     mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
     mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
 
