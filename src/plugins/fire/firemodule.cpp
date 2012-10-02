@@ -73,20 +73,21 @@ void FireRUData::setup()
 double FireLayers::value(const FireRUData &data, const int param_index) const
 {
     switch(param_index){
-    case 0: return data.mKBDI; // KBDI values
-    case 1: return data.mKBDIref; // reference KBDI value
-    case 2: return data.fireRUStats.fire_id; // the ID of the last recorded fire
-    case 3: return data.fireRUStats.crown_kill; // crown kill fraction (average on resource unit)
-    case 4: return data.fireRUStats.died_basal_area; // basal area died in the last fire
-    case 5: return data.fireRUStats.n_trees > 0 ? data.fireRUStats.n_trees_died / double(data.fireRUStats.n_trees) : 0.;
-    case 6: return data.fireRUStats.fuel_dwd + data.fireRUStats.fuel_ff; // fuel load (forest floor + dwd) kg/ha
+    case 0: return data.mBaseIgnitionProb; // KBDI values
+    case 1: return data.mKBDI; // KBDI values
+    case 2: return data.mKBDIref; // reference KBDI value
+    case 3: return data.fireRUStats.fire_id; // the ID of the last recorded fire
+    case 4: return data.fireRUStats.crown_kill; // crown kill fraction (average on resource unit)
+    case 5: return data.fireRUStats.died_basal_area; // basal area died in the last fire
+    case 6: return data.fireRUStats.n_trees > 0 ? data.fireRUStats.n_trees_died / double(data.fireRUStats.n_trees) : 0.;
+    case 7: return data.fireRUStats.fuel_dwd + data.fireRUStats.fuel_ff; // fuel load (forest floor + dwd) kg/ha
     default: throw IException(QString("invalid variable index for FireData: %1").arg(param_index));
     }
 }
 
 const QStringList FireLayers::names() const
 {
-    return QStringList() <<  "KBDI" << "KBDIref" << "fireID" << "crownKill" << "diedBasalArea" << "diedStemsFrac" << "fuel";
+    return QStringList() <<  "baseIgnition" << "KBDI" << "KBDIref" << "fireID" << "crownKill" << "diedBasalArea" << "diedStemsFrac" << "fuel";
 
 }
 
@@ -537,6 +538,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                     // the fire stops, if (*) no trees were on the pixel, or (*) the fire extinguishes
                     bool spread = really_burnt;
                     if (spread && fire_data.mFireExtinctionProb>0.) {
+                        // exinguishing of fire is only effective, when at least the minimum fire size is already reached
                         if (cells_burned*cellsize()*cellsize() > fire_data.mMinFireSize) {
                             if (drandom() < fire_data.mFireExtinctionProb)
                                 spread = false;
@@ -636,7 +638,7 @@ void FireModule::prescribedIgnition(const double x_m, const double y_m, const do
     }
     mFireId++; // this fire gets a new id
 
-    mPrescribedFiresize = firesize; // if -1, then
+    mPrescribedFiresize = firesize; // if -1, then a fire size is estimated
 
     if (windspeed>=0) {
         mCurrentWindSpeed = windspeed;
