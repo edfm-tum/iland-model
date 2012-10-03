@@ -149,7 +149,7 @@ void Snapshot::loadTrees()
     try {
         // clear all trees on the landscape
         foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
-            ru->trees().clear();;
+            ru->trees().clear();
         // load the trees from the database
         while (q.next()) {
             new_ru = q.value(1).toInt();

@@ -32,11 +32,16 @@ FireScript::FireScript(QObject *parent) :
 
 double FireScript::ignite(double x, double y, double firesize, double windspeed, double winddirection)
 {
-    qDebug() << "Fireevent triggered by javascript: " << x << y << firesize << windspeed << winddirection;
-    if (x>=0 && y>=0)
+    if (x>=0 && y>=0) {
         mFire->prescribedIgnition(x, y, firesize, windspeed, winddirection);
-    else
+        qDebug() << "FireeBvent triggered by javascript: " << x << y << firesize << windspeed << winddirection;
+    } else {
+        int old_id = mFire->fireId();
+        RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
         mFire->ignition();
+        if (mFire->fireId() != old_id)
+            qDebug() << "Burning fire triggered from javascript!";
+       }
     return 0.;
 }
 
