@@ -32,17 +32,18 @@ FireScript::FireScript(QObject *parent) :
 
 double FireScript::ignite(double x, double y, double firesize, double windspeed, double winddirection)
 {
+    double result=-1.;
     if (x>=0 && y>=0) {
-        mFire->prescribedIgnition(x, y, firesize, windspeed, winddirection);
+        result = mFire->prescribedIgnition(x, y, firesize, windspeed, winddirection);
         qDebug() << "FireeBvent triggered by javascript: " << x << y << firesize << windspeed << winddirection;
     } else {
         int old_id = mFire->fireId();
-        RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
-        mFire->ignition();
+        bool only_ignite = firesize == -1;
+        result = mFire->ignition(only_ignite);
         if (mFire->fireId() != old_id)
-            qDebug() << "Burning fire triggered from javascript!";
+            qDebug() << "Burning fire triggered from javascript!" << result;
        }
-    return 0.;
+    return result;
 }
 
 QString fireRUValueType="";
@@ -51,6 +52,7 @@ QString fireRUValue(const FireRUData &data) {
     if (fireRUValueType=="dbh") return QString::number(data.fireRUStats.avg_dbh);
     if (fireRUValueType=="crownkill") return QString::number(data.fireRUStats.crown_kill);
     if (fireRUValueType=="basalarea") return QString::number(data.fireRUStats.basal_area>0?data.fireRUStats.died_basal_area / data.fireRUStats.basal_area:0.);
+    if (fireRUValueType=="baseIgnition") return QString::number(data.baseIgnitionProbability());
     return "Error";
 }
 
@@ -77,7 +79,18 @@ bool FireScript::gridToFile(QString grid_type, QString file_name)
 
 }
 
+double FireScript::x() const
+{
+    if (mFire) return mFire->fireX(); else return -1;
+}
+
+double FireScript::y() const
+{
+    if (mFire) return mFire->fireY(); else return -1;
+}
+
 int FireScript::id() const
 {
+    if (!mFire) return -1;
     return mFire->fireId();
 }

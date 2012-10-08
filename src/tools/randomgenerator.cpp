@@ -117,15 +117,22 @@ RandomGenerator::ERandomGenerators RandomGenerator::mGeneratorType = RandomGener
 
 
 /// fill the internal buffer with random numbers choosen from the defined random generator
-/// This function is NOT reentrant.
+QMutex random_generator_refill_mutex;
+
 void RandomGenerator::refill() {
+
+    QMutexLocker lock(&random_generator_refill_mutex); // serialize access
+    if (mRotationCount<RANDOMGENERATORROTATIONS) // another thread might already succeeded in refilling....
+        return;
 
     RGenerators gen;
     gen.seed(mBuffer[RANDOMGENERATORSIZE+4]); // use the last value as seed for the next round....
     switch (mGeneratorType) {
     case ergMersenneTwister: {
         MTRand mersenne;
+        // qDebug() << "refill random numbers. seed" <<mBuffer[RANDOMGENERATORSIZE+4];
         mersenne.seed(mBuffer[RANDOMGENERATORSIZE+4]);
+        //mersenne.seed(); // use random number seed from mersenne twister (hash of time and clock)
         for (int i=0;i<RANDOMGENERATORSIZE+5;++i)
             mBuffer[i] = mersenne.randInt();
         break;
@@ -150,6 +157,7 @@ void RandomGenerator::refill() {
 
 
     mIndex = 0; // reset the index
+    mRotationCount=0;
 }
 
 void RandomGenerator::seed(const unsigned oneSeed)

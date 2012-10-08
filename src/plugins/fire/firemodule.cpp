@@ -73,7 +73,7 @@ void FireRUData::setup()
 double FireLayers::value(const FireRUData &data, const int param_index) const
 {
     switch(param_index){
-    case 0: return data.mBaseIgnitionProb; // KBDI values
+    case 0: return data.mBaseIgnitionProb; // base ignition value
     case 1: return data.mKBDI; // KBDI values
     case 2: return data.mKBDIref; // reference KBDI value
     case 3: return data.fireRUStats.fire_id; // the ID of the last recorded fire
@@ -240,10 +240,12 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
     see http://iland.boku.ac.at/wildfire#fire_ignition
 
 */
-void FireModule::ignition()
+double FireModule::ignition(bool only_ignite)
 {
 
     int cells_per_ru = (cRUSize / cellsize()) * (cRUSize / cellsize()); // number of fire cells per resource unit
+    double test_rand_sum = 0.;
+    int test_rand_n = 0;
 
     for (FireRUData *fd = mRUGrid.begin(); fd!=mRUGrid.end(); ++fd)
         if (fd->enabled() && fd->kbdi()>0.) {
@@ -258,20 +260,26 @@ void FireModule::ignition()
                 continue;
             for (int i=0;i<cells_per_ru;++i) {
                 double p = drandom();
+                test_rand_sum+=p; test_rand_n++;
                 if (p < p_cell) {
                     // We have a fire event on the particular pixel
                     // get the actual pixel...
                     int ix = i % (int((cRUSize / cellsize())));
                     int iy = i / (int((cRUSize / cellsize())));
                     QPointF startcoord = mRUGrid.cellRect(mRUGrid.indexOf(fd)).bottomLeft();
-                    fireStats.startpoint = startcoord;
-                    QPoint startpoint = mGrid.indexAt(QPointF(startcoord.x() + ix*cellsize() + 1., startcoord.y() + iy*cellsize() + 1.));
+                    fireStats.startpoint = QPointF(startcoord.x() + (ix+0.5)*cellsize(), startcoord.y() + (iy+0.5)*cellsize() );
+                    QPoint startpoint = mGrid.indexAt(fireStats.startpoint);
 
                     // check if we have enough fuel to start the fire: done in the spread routine
                     // in this case "empty" fires (with area=0) are in the output
 
                     // now start the fire!!!
                     mFireId++; // this fire gets a new id
+                    if (only_ignite) {
+                        qDebug() << "test: rand-sum" << test_rand_sum << "n" << test_rand_n;
+                        return p; // no real fire spread
+                    }
+
                     spread(startpoint);
 
                     // finalize statistics after fire event
@@ -281,10 +289,11 @@ void FireModule::ignition()
                     GlobalSettings::instance()->outputManager()->execute("fire");
 
                     // we allow only one fire event per year for the whole landscape
-                    return;
+                    return fireStats.fire_size_realized_m2;
                 }
             }
         }
+    return -1.; // nothing burnt
 
 }
 
@@ -629,12 +638,12 @@ void FireModule::testSpread()
 }
 
 
-void FireModule::prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection)
+double FireModule::prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection)
 {
     QPoint pt = mGrid.indexAt(QPointF(x_m, y_m));
     if (!mGrid.isIndexValid(pt)) {
         qDebug() << "Fire starting point is not valid!";
-        return;
+        return -1.;
     }
     mFireId++; // this fire gets a new id
 
@@ -652,6 +661,8 @@ void FireModule::prescribedIgnition(const double x_m, const double y_m, const do
     // provide outputs: This calls the FireOut::exec() function
     GlobalSettings::instance()->outputManager()->execute("fire");
     GlobalSettings::instance()->outputManager()->save();
+
+    return fireStats.fire_size_realized_m2;
 }
 
 /** burning of a single 20x20m pixel. see http://iland.boku.ac.at/wildfire.

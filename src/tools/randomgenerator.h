@@ -23,19 +23,19 @@
 #include <math.h>
 #include <time.h>
 
-#define RANDOMGENERATORSIZE 200000
-#define RANDOMGENERATORROTATIONS 50
-// a new set of numbers is generated for every 50*200000 = 10.000.000 numbers
+#define RANDOMGENERATORSIZE 500000
+#define RANDOMGENERATORROTATIONS 5
+// a new set of numbers is generated for every 5*500000 = 2.500.000 numbers
 class RandomGenerator
 {
 public:
     enum ERandomGenerators { ergMersenneTwister, ergWellRNG512, ergXORShift96, ergFastRandom };
-    RandomGenerator() {}
+    RandomGenerator() { seed(0); setGeneratorType(ergMersenneTwister); }
     /// set the type of the random generator that should be used.
     static void setGeneratorType(const ERandomGenerators gen) { mGeneratorType = gen; mRotationCount=RANDOMGENERATORROTATIONS+1;mIndex=0; }
     /// call this function to check if we need to create new random numbers.
     /// this function is not reentrant! (e.g. call every year in the model)
-    static void checkGenerator() { if (mRotationCount>RANDOMGENERATORROTATIONS) { refill(); mRotationCount=0; } }
+    static void checkGenerator() { if (mRotationCount>RANDOMGENERATORROTATIONS) { refill();  } }
     static void setup(const ERandomGenerators gen, const unsigned oneSeed) { setGeneratorType(gen); seed(oneSeed); checkGenerator(); }
     /// set a random generator seed. If oneSeed is 0, then a random number (provided by system time) is used as initial seed.
     static void seed(const unsigned oneSeed);
@@ -49,7 +49,7 @@ public:
     static inline double randNorm( const double mean, const double stddev );
 
 private:
-    static inline unsigned long next() { ++mIndex; if (mIndex>RANDOMGENERATORSIZE) { mRotationCount++; mIndex=0; }  return mBuffer[mIndex]; }
+    static inline unsigned long next() { ++mIndex; if (mIndex>RANDOMGENERATORSIZE) { mRotationCount++; mIndex=0; checkGenerator(); }  return mBuffer[mIndex]; }
     static unsigned int mBuffer[RANDOMGENERATORSIZE+5];
     static int mIndex;
     static int mRotationCount;
