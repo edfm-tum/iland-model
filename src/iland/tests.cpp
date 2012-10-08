@@ -384,51 +384,94 @@ void Tests::testCSVFile()
 #include "../3rdparty/MersenneTwister.h"
 void Tests::testRandom()
 {
-    RandomCustomPDF pdf("x^2");
-    RandomCustomPDF *pdf2 = new RandomCustomPDF("x^3");
-    QStringList list;
-    for (int i=0;i<1000;i++)
-        list << QString::number(pdf.get());
-    qDebug() << list.join("\n");
-    delete pdf2;
-    // simple random test
-    list.clear();
-    for (int i=0;i<1000;i++)
-        list << QString::number(irandom(0,5));
-    qDebug() << "irandom test (0,5): " << list;
+    RandomGenerator::setup(RandomGenerator::ergMersenneTwister, 1);
+//    RandomCustomPDF pdf("x^2");
+//    RandomCustomPDF *pdf2 = new RandomCustomPDF("x^3");
+//    QStringList list;
+//    for (int i=0;i<1000;i++)
+//        list << QString::number(pdf.get());
+//    qDebug() << list.join("\n");
+//    delete pdf2;
+//    // simple random test
+//    list.clear();
+//    for (int i=0;i<1000;i++)
+//        list << QString::number(irandom(0,5));
+//    qDebug() << "irandom test (0,5): " << list;
 
     // random generator timings
     { DebugTimer t("mersenne");
-        RandomGenerator::setup(RandomGenerator::ergMersenneTwister, 1);
-        double sum = 0;
-        for (int i=0;i<100000000;i++) {
-            sum += drandom();
+        RandomGenerator::setup(RandomGenerator::ergMersenneTwister, 0);
+        int n8=0, n7=0, n6=0, n5=0, n4=0, n3=0;
+        for (unsigned int i=0;i<4000000000U;i++) {
+            double r = drandom();
+            if (r< 0.00000001) ++n8;
+            if (r< 0.0000001) ++n7;
+            if (r< 0.000001) ++n6;
+            if (r< 0.00001) ++n5;
+            if (r< 0.0001) ++n4;
+            if (r< 0.001) ++n3;
         }
-        qDebug() << "Mersenne" << sum;
+        qDebug() << "Mersenne" << n3 << n4 << n5 << n6 << n7 << n8;
+    }
+
+    { DebugTimer t("mersenne");
+        RandomGenerator::setup(RandomGenerator::ergMersenneTwister, 0);
+        int n8=0, n7=0, n6=0, n5=0, n4=0, n3=0;
+        for (int j=0;j<1000;j++) {
+            RandomGenerator::seed(0); // new seed
+            for (int i=0;i<4000000;i++) {
+                double r = drandom();
+                if (r< 0.00000001) ++n8;
+                if (r< 0.0000001) ++n7;
+                if (r< 0.000001) ++n6;
+                if (r< 0.00001) ++n5;
+                if (r< 0.0001) ++n4;
+                if (r< 0.001) ++n3;
+            }
+        }
+        qDebug() << "Mersenne2" << n3 << n4 << n5 << n6 << n7 << n8;
     }
     { DebugTimer t("XORShift");
-        RandomGenerator::setup(RandomGenerator::ergXORShift96, 1);
-        double sum = 0;
-        for (int i=0;i<100000000;i++) {
-            if (drandom()<0.01) ++sum;
+        RandomGenerator::setup(RandomGenerator::ergXORShift96, 0);
+        int n8=0, n7=0, n6=0, n5=0, n4=0, n3=0;
+        for (unsigned int i=0;i<4000000000U;i++) {
+            double r = drandom();
+            if (r< 0.00000001) ++n8;
+            if (r< 0.0000001) ++n7;
+            if (r< 0.000001) ++n6;
+            if (r< 0.00001) ++n5;
+            if (r< 0.0001) ++n4;
+            if (r< 0.001) ++n3;
         }
-        qDebug() << "XORShift" << sum;
+        qDebug() << "XORShift" << n3 << n4 << n5 << n6 << n7 << n8;
     }
     { DebugTimer t("WellRNG");
-        RandomGenerator::setup(RandomGenerator::ergWellRNG512, 1);
-        double sum = 0;
-        for (int i=0;i<100000000;i++) {
-            if (drandom()<0.01) ++sum;
+        RandomGenerator::setup(RandomGenerator::ergWellRNG512, 0);
+        int n8=0, n7=0, n6=0, n5=0, n4=0, n3=0;
+        for (unsigned int i=0;i<4000000000U;i++) {
+            double r = drandom();
+            if (r< 0.00000001) ++n8;
+            if (r< 0.0000001) ++n7;
+            if (r< 0.000001) ++n6;
+            if (r< 0.00001) ++n5;
+            if (r< 0.0001) ++n4;
+            if (r< 0.001) ++n3;
         }
-        qDebug() << "WellRNG" << sum;
+        qDebug() << "WellRNG" << n3 << n4 << n5 << n6 << n7 << n8;
     }
     { DebugTimer t("FastRandom");
-        RandomGenerator::setup(RandomGenerator::ergFastRandom, 1);
-        double sum = 0;
-        for (int i=0;i<100000000;i++) {
-            if (drandom()<0.01) ++sum;
+        RandomGenerator::setup(RandomGenerator::ergFastRandom, 0);
+        int n8=0, n7=0, n6=0, n5=0, n4=0, n3=0;
+        for (unsigned int i=0;i<4000000000U;i++) {
+            double r = drandom();
+            if (r< 0.00000001) ++n8;
+            if (r< 0.0000001) ++n7;
+            if (r< 0.000001) ++n6;
+            if (r< 0.00001) ++n5;
+            if (r< 0.0001) ++n4;
+            if (r< 0.001) ++n3;
         }
-        qDebug() << "WellRNG" << sum;
+        qDebug() << "FastRandom" << n3 << n4 << n5 << n6 << n7 << n8;
     }
     { DebugTimer t("MersenneTwister - Reference");
         MTRand rand;
@@ -436,7 +479,7 @@ void Tests::testRandom()
 
         double sum = 0;
         for (int i=0;i<100000000;i++) {
-            if (drandom()<0.01) ++sum;
+            if (drandom()<0.0000001) ++sum;
         }
         qDebug() << "Mersenne Reference" << sum;
     }

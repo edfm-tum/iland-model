@@ -43,6 +43,7 @@ public:
     bool enabled() const { return mRefMgmt>0.; }
     void reset() { mKBDI = 0.; }
     double kbdi() const { return mKBDI; }
+    double baseIgnitionProbability() const { return mBaseIgnitionProb; }
     // access data
     struct {
         int fire_id;
@@ -139,16 +140,18 @@ public:
     void calculateDroughtIndex(const ResourceUnit *resource_unit, const WaterCycleData *water_data);
 
     // main fire functions
-    /// calculate the start and starting point of a possible fire
-    void ignition();
+    /// calculate the start and starting point of a possible fire. return: burnt area (-1 if nothing burnt)
+    double ignition(bool only_ignite = false);
     ///  spread a fire starting from 'start_point' (index of the 20m grid)
     void spread(const QPoint &start_point, const bool prescribed = false);
     void severity();
 
     // helper functions
     int fireId() const { return mFireId; } ///< return the ID of the last fire event
+    double fireX() const { return fireStats.startpoint.x(); } ///< coordinates of the ignition point
+    double fireY() const { return fireStats.startpoint.y(); } ///< coordinates of the ignition point
     void testSpread();
-    void prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection);
+    double prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection);
 
 private:
     /// estimate fire size from a distribution
