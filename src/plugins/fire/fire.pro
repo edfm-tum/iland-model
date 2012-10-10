@@ -10,10 +10,10 @@ INCLUDEPATH  += ../.. \
                 ../../output \
                 ../../core
 
-# to enable debug symbols in release code
-# debug information in release-mode executable
-##QMAKE_CXXFLAGS_RELEASE += -g
-##QMAKE_LFLAGS_RELEASE -= -Wl,-s
+# to enable debug symbols in release code:
+# uncomment then next two lines to enable debug information in release-mode executable
+#QMAKE_CXXFLAGS_RELEASE += -g
+#QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
 
 HEADERS       = \

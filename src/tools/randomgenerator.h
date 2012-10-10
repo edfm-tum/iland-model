@@ -24,7 +24,7 @@
 #include <time.h>
 
 #define RANDOMGENERATORSIZE 500000
-#define RANDOMGENERATORROTATIONS 5
+#define RANDOMGENERATORROTATIONS 0
 // a new set of numbers is generated for every 5*500000 = 2.500.000 numbers
 class RandomGenerator
 {
@@ -32,7 +32,8 @@ public:
     enum ERandomGenerators { ergMersenneTwister, ergWellRNG512, ergXORShift96, ergFastRandom };
     RandomGenerator() { seed(0); setGeneratorType(ergMersenneTwister); }
     /// set the type of the random generator that should be used.
-    static void setGeneratorType(const ERandomGenerators gen) { mGeneratorType = gen; mRotationCount=RANDOMGENERATORROTATIONS+1;mIndex=0; }
+    static void setGeneratorType(const ERandomGenerators gen) { mGeneratorType = gen; mRotationCount=RANDOMGENERATORROTATIONS+1;mIndex=0;mRefillCounter=0; }
+    static void debugState(int &rIndex, int &rGeneration, int &rRefillCount) { rIndex = mIndex; rGeneration = mRotationCount; rRefillCount = mRefillCounter; }
     /// call this function to check if we need to create new random numbers.
     /// this function is not reentrant! (e.g. call every year in the model)
     static void checkGenerator() { if (mRotationCount>RANDOMGENERATORROTATIONS) { refill();  } }
@@ -53,6 +54,7 @@ private:
     static unsigned int mBuffer[RANDOMGENERATORSIZE+5];
     static int mIndex;
     static int mRotationCount;
+    static int mRefillCounter;
     static ERandomGenerators mGeneratorType;
     static void refill();
 };

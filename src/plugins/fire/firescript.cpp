@@ -37,6 +37,10 @@ double FireScript::ignite(double x, double y, double firesize, double windspeed,
         result = mFire->prescribedIgnition(x, y, firesize, windspeed, winddirection);
         qDebug() << "FireeBvent triggered by javascript: " << x << y << firesize << windspeed << winddirection;
     } else {
+        //int idx, gen, refill;
+        //RandomGenerator::debugState(idx, gen, refill);
+        //qDebug() << "before-ignite:" << idx << gen << refill;
+
         int old_id = mFire->fireId();
         bool only_ignite = firesize == -1;
         result = mFire->ignition(only_ignite);

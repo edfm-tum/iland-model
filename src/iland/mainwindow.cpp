@@ -988,7 +988,7 @@ void MainWindow::mouseMove(const QPoint& pos)
         if (ui->visOtherGrid->isChecked()) {
             switch (mPaintNext.what) {
             case PaintObject::PaintFloatGrid:
-                value = mPaintNext.float_grid->constValueAt(p);
+                value = mPaintNext.float_grid->isEmpty()?0: mPaintNext.float_grid->constValueAt(p);
                 break;
             case PaintObject::PaintMapGrid:
                 value = mPaintNext.map_grid->grid().constValueAt(p);
