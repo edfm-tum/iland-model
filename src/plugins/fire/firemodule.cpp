@@ -256,42 +256,50 @@ double FireModule::ignition(bool only_ignite)
             double odds = odds_base * r_climate / fd->mRefMgmt;
             // p_cell is the ignition probability for one 20x20m cell
             double p_cell = odds / (1. + odds);
+            // p_cell is the probability of ignition for a "fire"-pixel. We scale that to RU-level by multiplying with the number of pixels per RU.
+            // for small probabilities this yields almost the same results as the more correct 1-(1-p)^cells_per_ru [for p=0.0000001 and cells=25 the difference is 0.000000000003]
+            p_cell *= cells_per_ru;
             if (!p_cell)
                 continue;
-            for (int i=0;i<cells_per_ru;++i) {
-                double p = drandom();
-                test_rand_sum+=p; test_rand_n++;
-                if (p < p_cell) {
-                    // We have a fire event on the particular pixel
-                    // get the actual pixel...
-                    int ix = i % (int((cRUSize / cellsize())));
-                    int iy = i / (int((cRUSize / cellsize())));
-                    QPointF startcoord = mRUGrid.cellRect(mRUGrid.indexOf(fd)).bottomLeft();
-                    fireStats.startpoint = QPointF(startcoord.x() + (ix+0.5)*cellsize(), startcoord.y() + (iy+0.5)*cellsize() );
-                    QPoint startpoint = mGrid.indexAt(fireStats.startpoint);
 
-                    // check if we have enough fuel to start the fire: done in the spread routine
-                    // in this case "empty" fires (with area=0) are in the output
+            double p = drandom();
 
-                    // now start the fire!!!
-                    mFireId++; // this fire gets a new id
-                    if (only_ignite) {
-                        qDebug() << "test: rand-sum" << test_rand_sum << "n" << test_rand_n;
-                        return p; // no real fire spread
-                    }
+            test_rand_sum+=p; test_rand_n++;
+            if (p < p_cell) {
+                // We have a fire event on the particular resource unit
+                // now randomly select a pixel within the resource unit as the starting point
+                int pixel_index = irandom(0, cells_per_ru-1);
+                int ix = pixel_index % (int((cRUSize / cellsize())));
+                int iy = pixel_index / (int((cRUSize / cellsize())));
+                QPointF startcoord = mRUGrid.cellRect(mRUGrid.indexOf(fd)).bottomLeft();
+                fireStats.startpoint = QPointF(startcoord.x() + (ix+0.5)*cellsize(), startcoord.y() + (iy+0.5)*cellsize() );
+                QPoint startpoint = mGrid.indexAt(fireStats.startpoint);
 
-                    spread(startpoint);
+                // check if we have enough fuel to start the fire: done in the spread routine
+                // in this case "empty" fires (with area=0) are in the output
 
-                    // finalize statistics after fire event
-                    afterFire();
+                // now start the fire!!!
+                mFireId++; // this fire gets a new id
+                if (only_ignite) {
+                    int idx, gen, refill;
+                    RandomGenerator::debugState(idx, gen, refill);
 
-                    // provide outputs: This calls the FireOut::exec() function
-                    GlobalSettings::instance()->outputManager()->execute("fire");
-
-                    // we allow only one fire event per year for the whole landscape
-                    return fireStats.fire_size_realized_m2;
+                    qDebug() << "test: rand-sum" << test_rand_sum << "n" << test_rand_n << pixel_index << startpoint << p_cell<< "rng:" << idx << gen << refill;
+                    return p; // no real fire spread
                 }
+
+                spread(startpoint);
+
+                // finalize statistics after fire event
+                afterFire();
+
+                // provide outputs: This calls the FireOut::exec() function
+                GlobalSettings::instance()->outputManager()->execute("fire");
+
+                // we allow only one fire event per year for the whole landscape
+                return fireStats.fire_size_realized_m2;
             }
+
         }
     return -1.; // nothing burnt
 

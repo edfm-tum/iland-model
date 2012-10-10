@@ -112,6 +112,7 @@ inline void RGenerators::seed(unsigned int oneSeed)
 unsigned int RandomGenerator::mBuffer[RANDOMGENERATORSIZE+5];
 int RandomGenerator::mIndex = 0;
 int RandomGenerator::mRotationCount = RANDOMGENERATORROTATIONS + 1;
+int RandomGenerator::mRefillCounter = 0;
 RandomGenerator::ERandomGenerators RandomGenerator::mGeneratorType = RandomGenerator::ergFastRandom;
 
 
@@ -158,6 +159,7 @@ void RandomGenerator::refill() {
 
     mIndex = 0; // reset the index
     mRotationCount=0;
+    mRefillCounter++;
 }
 
 void RandomGenerator::seed(const unsigned oneSeed)
