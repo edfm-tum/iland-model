@@ -19,6 +19,7 @@
 #include "randomgenerator.h"
 #include "../3rdparty/MersenneTwister.h"
 
+#include <QMutex>
 
 class RGenerators
 {

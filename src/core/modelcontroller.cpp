@@ -238,7 +238,11 @@ void ModelController::run(int years)
 
     DebugTimer::clearAllTimers();
 
-    runloop(); // start the running loop
+    mRunning = true;
+    while (mRunning && !mPaused && !mCanceled && !mFinished) {
+        runloop(); // start the running loop
+        qDebug() << "ModelControler: runloop started.";
+    }
 
 }
 

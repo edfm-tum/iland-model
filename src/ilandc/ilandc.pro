@@ -41,13 +41,13 @@ TEMPLATE = app
 
 # to enable debug symbols in release code
 # debug information in release-mode executable
-# QMAKE_CXXFLAGS_RELEASE += -g
-# QMAKE_LFLAGS_RELEASE -= -Wl,-s
+#QMAKE_CXXFLAGS_RELEASE += -g
+#QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
 
 ### Flag to allow 3GB on Win 32
 ### you also need to modify boot.ini ...
-QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
+QMAKE_LFLAGS_CONSOLE += -Wl,--large-address-aware
 
 SOURCES += main.cpp \
     consoleshell.cpp \
@@ -103,6 +103,7 @@ SOURCES += main.cpp \
     ../output/saplingout.cpp \
     ../tools/gisgrid.cpp \
     ../tools/mapgrid.cpp \
+    ../tools/randomgenerator.cpp \
     ../output/carbonout.cpp \
     ../output/carbonflowout.cpp \
     ../tools/modules.cpp \
@@ -160,6 +161,7 @@ HEADERS += \
     ../output/managementout.h \
     ../tools/sqlhelper.h \
     ../tools/random.h \
+    ../tools/randomgenerator.h \
     ../3rdparty/MersenneTwister.h \
     ../core/timeevents.h \
     ../core/seeddispersal.h \
