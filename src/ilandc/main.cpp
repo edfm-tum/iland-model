@@ -46,6 +46,6 @@ int main(int argc, char *argv[])
     ConsoleShell iland_shell;
 
     QTimer::singleShot(0, &iland_shell, SIGNAL(run()));
-    a.installEventFilter(&iland_shell);
+    //a.installEventFilter(&iland_shell);
     return a.exec();
 }
