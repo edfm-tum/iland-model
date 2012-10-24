@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     printf("iLand console (%s - #%s)\n", currentVersion(), svnRevision());
-    printf("This is the console version of iLand, \n the individual based landscape and disturbance model.\n");
+    printf("This is the console version of iLand, the individual based\nlandscape and disturbance forest model.\n");
     printf("More at: http://iland.boku.ac.at \n");
     printf("(c) Werner Rammer, Rupert Seidl, 2009- \n");
     printf("****************************************\n\n");
