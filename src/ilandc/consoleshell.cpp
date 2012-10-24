@@ -25,6 +25,7 @@
 #include "global.h"
 #include "model.h"
 #include "modelcontroller.h"
+#include "version.h"
 
 QTextStream *ConsoleShell::mLogStream = 0;
 
@@ -84,10 +85,10 @@ void ConsoleShell::run()
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
         qDebug() << "**************************************************";
-        qDebug() << "started at: " << QDateTime::currentDateTime();
+        qDebug() << "started at: " << QDateTime::currentDateTime().toString(Qt::ISODate);
+        qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
         qDebug() << "**************************************************";
 
-        qWarning() << "**************************************************";
         qWarning() << "*** creating model...";
         qWarning() << "**************************************************";
 

@@ -430,7 +430,7 @@ void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const d
     // calculate the slope from the curent point (pixel_from) to the spreading cell (pixel_to)
     double h_to = GlobalSettings::instance()->model()->dem()->elevation(mGrid.cellCenterPoint(mGrid.indexOf(pixel_to)));
     if (h_to==-1) {
-        qDebug() << "invalid elevation for pixel during fire spread: " << mGrid.cellCenterPoint(mGrid.indexOf(pixel_to));
+        *pixel_to = 0;
         return;
     }
     double pixel_size = cellsize();
@@ -510,8 +510,11 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                 FireRUData &fire_data = mRUGrid.valueAt(pt);
                 fire_data.fireRUStats.enter(mFireId); // setup/clear statistics if this is the first pixel in the resource unit
                 double h = GlobalSettings::instance()->model()->dem()->elevation(pt);
-                if (h==-1)
-                    throw IException(QString("Fire-Spread: invalid elevation at %1/%2.").arg(pt.x()).arg(pt.y()));
+                if (h==-1) {
+                    qDebug() << "Fire-Spread: invalid elevation at " << pt.x() << "/" << pt.y();
+                    qDebug() << "value is: " << GlobalSettings::instance()->model()->dem()->elevation(pt);
+                    return;
+                }
 
                 // current cell is burning.
                 // check the neighbors: get an array with neighbors
@@ -695,17 +698,17 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
             trees.push_back(&(*t));
     }
 
-    if (trees.isEmpty())
-        return false;
-
     // calculate mean values for dbh
     double sum_dbh = 0.;
     double sum_ba = 0.;
+    double avg_dbh = 0.;
     foreach (const Tree* t, trees) {
         sum_dbh += t->dbh();
         sum_ba += t->basalArea();
     }
-    double avg_dbh = sum_dbh / (double) trees.size();
+
+    if(trees.size()>0)
+        avg_dbh = sum_dbh / (double) trees.size();
 
     // (1) calculate fuel
     const double kfc1 = mFuelkFC1;
@@ -726,7 +729,9 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     ru_data.fireRUStats.fuel_dwd += fuel_dwd; // fuel in kg/ha Biomass
     ru_data.fireRUStats.n_trees += trees.size();
     ru_data.fireRUStats.basal_area += sum_ba;
-    // if fuel level is below 0.05kg BM/m2 (=500kg/ha), then no burning happens
+
+    // if fuel level is below 0.05kg BM/m2 (=500kg/ha), then no burning happens!
+    // note, that it is not necessary that trees are on the pixel, as long as there is enough fuel on the ground.
     if (fuel < 500.)
         return false;
 
@@ -802,8 +807,9 @@ void FireModule::afterFire()
                 ResourceUnit *ru = GlobalSettings::instance()->model()->ru(ru_idx);
                 double ru_fraction = fds->fireRUStats.n_cells * pixel_fraction; // fraction of RU burned (0..1)
 
-                // (1) effect of forest fire on the dead wood pools. remove fuel
-                ru->soil()->disturbanceBiomass(fds->fireRUStats.fuel_dwd*ru_fraction, fds->fireRUStats.fuel_ff*ru_fraction, 0.);
+                // (1) effect of forest fire on the dead wood pools. fuel_dwd and fuel_ff is the amount of fuel
+                //     available on the pixels that are burnt. The assumption is: all of it was burnt.
+                ru->soil()->disturbanceBiomass(fds->fireRUStats.fuel_dwd, fds->fireRUStats.fuel_ff, 0.);
 
                 // (2) remove also a fixed fraction of the biomass that is in the soil
                 if (mBurnSoilBiomass>0.)
