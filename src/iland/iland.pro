@@ -14,6 +14,9 @@ INCLUDEPATH += ../core \
     ../output
 
 DEPENDPATH += plugins
+CONFIG += exceptions
+CONFIG += rtti
+
 CONFIG(debug, debug|release) {
 # debug stuff
 PRE_TARGETDEPS += ../plugins/libiland_fired.a
@@ -176,7 +179,7 @@ HEADERS += mainwindow.h \
     ../tools/randomgenerator.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
-RESOURCES += ../iland/res/iland.qrc
+RESOURCES += ./res/iland.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget
 # PRE_TARGETDEPS += version.h

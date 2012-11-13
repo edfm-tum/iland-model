@@ -830,7 +830,7 @@ void Tests::testDEM()
 void Tests::testFire()
 {
     // get fire module
-    FirePlugin *plugin = dynamic_cast<FirePlugin *>(GlobalSettings::instance()->model()->modules()->module("fire"));
+    FirePlugin *plugin =dynamic_cast<FirePlugin *>(GlobalSettings::instance()->model()->modules()->module("fire"));
     if (plugin) {
         FireModule *fire = plugin->fireModule();
         try {

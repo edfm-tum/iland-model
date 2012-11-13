@@ -15,7 +15,7 @@ INCLUDEPATH  += ../.. \
 QMAKE_CXXFLAGS_RELEASE += -g
 QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
-
+CONFIG += exceptions
 HEADERS       = \
     fireplugin.h \
     firemodule.h \
@@ -27,7 +27,7 @@ SOURCES       = \
     fireout.cpp \
     firescript.cpp
 TARGET        = $$qtLibraryTarget(iland_fire)
-DESTDIR       = ../../plugins
+DESTDIR       = ../../
 
 
 

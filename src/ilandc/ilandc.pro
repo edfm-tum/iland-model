@@ -17,6 +17,9 @@ INCLUDEPATH += ../core \
     ../iland
 
 DEPENDPATH += plugins
+CONFIG += exceptions
+CONFIG += rtti
+
 CONFIG(debug, debug|release) {
 # debug stuff
 PRE_TARGETDEPS += ../plugins/libiland_fired.a
