@@ -12,6 +12,8 @@ INCLUDEPATH += ../core \
     ../tools \
     ../output
 
+CONFIG += exceptions
+
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
@@ -30,7 +32,10 @@ SOURCES += main.cpp \
     ../tools/settingmetadata.cpp \
     ../tools/xmlhelper.cpp \
     ../core/threadrunner.cpp \
-    version.cpp
+    version.cpp \
+    ../tools/randomgenerator.cpp
+
+
 HEADERS += mainwindow.h \
     ../stable.h \
     ../core/grid.h \
@@ -51,7 +56,9 @@ HEADERS += mainwindow.h \
     ../tools/xmlhelper.h \
     ../core/threadrunner.h \
     ../3rdparty/MersenneTwister.h \
-    version.h
+    version.h \
+    ../tools/randomgenerator.h
+
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
 DEFINES += FONSTUDIO
