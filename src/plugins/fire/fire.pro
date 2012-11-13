@@ -27,7 +27,7 @@ SOURCES       = \
     fireout.cpp \
     firescript.cpp
 TARGET        = $$qtLibraryTarget(iland_fire)
-DESTDIR       = ../../
+DESTDIR       = ../
 
 
 
