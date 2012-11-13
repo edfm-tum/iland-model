@@ -126,7 +126,7 @@ public:
     /// this should be called when the main model is already created.
     void setup(); ///< general setup
     void setup(const ResourceUnit *ru); ///< setup for a specific resource unit
-    static const double cellsize() { return 20.; }
+    static double cellsize() { return 20.; }
 
     // actions
     /// main function that is executed yearly (called by the plugin)

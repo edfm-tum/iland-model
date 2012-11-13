@@ -4,6 +4,8 @@ QT += sql
 
 TEMPLATE      = lib
 CONFIG       += plugin static
+CONFIG += exceptions
+
 INCLUDEPATH  += ../.. \
                 ../../tools \
                 ../../output \
@@ -17,7 +19,7 @@ SOURCES       = \
     windmodule.cpp \
     windscript.cpp
 TARGET        = $$qtLibraryTarget(iland_wind)
-DESTDIR       = ../../plugins
+DESTDIR       = ../../
 
 
 
