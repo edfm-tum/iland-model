@@ -39,7 +39,15 @@
 
 /** @class WindModule
 
-    FIXME some more details
+    The WindModule is the main object of the iLand wind module. The setup() function creates the data structures,
+    and the run() function is the main entry point. The main functions are detectEdges(), calculateFetch() and
+    calculateImpact().
+  */
+
+
+/** @class WindCell
+    The WindCell is the basic pixel of the wind spread algorithm. The default size is 10x10m
+
   */
 
 double WindLayers::value(const WindCell &data, const int param_index) const
@@ -283,7 +291,8 @@ void WindModule::initWindGrid()
     throw IException("WindModule::initWindGrid: not 10m of windpixels...");
 }
 
-
+/** mark all pixels that are at stand edges, i.e. pixels that are much larger (treeheight) than their neighbors.
+  */
 void WindModule::detectEdges()
 {
     DebugTimer t("wind:edges");
@@ -509,7 +518,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
         return false;
 
     // ************************************************
-    // scan the trees of the current resource unit
+    // scan the trees of the current resource unit: select the largest tree per 10m pixel
     // ************************************************
     scanResourceUnitTrees(position);
     if (!cell->tree) {
@@ -561,6 +570,10 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     // *****************************************************************************
     // Kill the trees that are thrown/uprooted by the wind
     // *****************************************************************************
+    if (!do_break) {
+        // regeneration is killed in case of uprooting
+        ru->clearSaplings(pixel_rect, true);
+    }
     QVector<Tree>::const_iterator tend = ru->trees().constEnd();
     for (QVector<Tree>::const_iterator  t=ru->trees().constBegin(); t!=tend; ++t) {
         if (!t->isDead() &&
@@ -579,8 +592,6 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
 
                 } else {
                     // uprooting
-                    // regeneration is killed in case of uprooting ??
-                    ru->clearSaplings(pixel_rect, true);
                     // all biomass of the tree is moved to the soil
                     tree->removeDisturbance(1., 0., // 100% of stem -> soil
                                             1., 0., // 100% of branch -> soil

@@ -34,6 +34,12 @@
     See http://iland.boku.ac.at/dispersal
 
   */
+
+Grid<float> *SeedDispersal::mExternalSeedBaseMap = 0;
+QHash<QString, QVector<double> > SeedDispersal::mExtSeedData;
+int SeedDispersal::mExtSeedSizeX = 0;
+int SeedDispersal::mExtSeedSizeY = 0;
+
 SeedDispersal::~SeedDispersal()
 {
     if (isSetup()) {
@@ -58,6 +64,7 @@ void SeedDispersal::setup()
     mSeedMap.clear();
     mSeedMap.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
     mSeedMap.initialize(0.);
+    mExternalSeedMap.clear();
     mIndexFactor = int(seedmap_size) / cPxSize; // ratio seed grid / lip-grid:
     if (logLevelInfo()) qDebug() << "Seed map setup. Species:"<< mSpecies->id() << "kernel-size: " << mSeedMap.sizeX() << "x" << mSeedMap.sizeY() << "pixels.";
 
@@ -89,22 +96,28 @@ void SeedDispersal::setup()
     mExternalSeedBuffer = 0;
     mExternalSeedDirection = 0;
     if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.externalSeedEnabled",false)) {
-        // current species in list??
-        mHasExternalSeedInput = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSpecies").contains(mSpecies->id());
-        QString dir = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSource").toLower();
-        // encode cardinal positions as bits: e.g: "e,w" -> 6
-        mExternalSeedDirection += dir.contains("n")?1:0;
-        mExternalSeedDirection += dir.contains("e")?2:0;
-        mExternalSeedDirection += dir.contains("s")?4:0;
-        mExternalSeedDirection += dir.contains("w")?8:0;
-        QStringList buffer_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBuffer").simplified().split(',');
-        int index = buffer_list.indexOf(mSpecies->id());
-        if (index>=0) {
-            mExternalSeedBuffer = buffer_list[index+1].toInt();
-            qDebug() << "enabled special buffer for species" <<mSpecies->id() << ": distance of" << mExternalSeedBuffer << "pixels = " << mExternalSeedBuffer*20. << "m";
+        if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.seedBelt.enabled",false)) {
+            // external seed input specified by sectors and around the project area (seedbelt)
+            setupExternalSeedsForSpecies(mSpecies);
+        } else {
+            // external seeds specified fixedly per cardinal direction
+            // current species in list??
+            mHasExternalSeedInput = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSpecies").contains(mSpecies->id());
+            QString dir = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedSource").toLower();
+            // encode cardinal positions as bits: e.g: "e,w" -> 6
+            mExternalSeedDirection += dir.contains("n")?1:0;
+            mExternalSeedDirection += dir.contains("e")?2:0;
+            mExternalSeedDirection += dir.contains("s")?4:0;
+            mExternalSeedDirection += dir.contains("w")?8:0;
+            QStringList buffer_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBuffer").simplified().split(',');
+            int index = buffer_list.indexOf(mSpecies->id());
+            if (index>=0) {
+                mExternalSeedBuffer = buffer_list[index+1].toInt();
+                qDebug() << "enabled special buffer for species" <<mSpecies->id() << ": distance of" << mExternalSeedBuffer << "pixels = " << mExternalSeedBuffer*20. << "m";
+            }
+            if (mHasExternalSeedInput)
+                qDebug() << "External seed input enabled for" << mSpecies->id();
         }
-        if (mHasExternalSeedInput)
-            qDebug() << "External seed input enabled for" << mSpecies->id();
     }
 
     // setup of seed kernel
@@ -131,7 +144,145 @@ void SeedDispersal::setup()
 //    img.save("seedmap.png");
 
 //    img = gridToImage(mSeedMap, true, -1., 1.);
-//    img.save("seedmap_e.png");
+    //    img.save("seedmap_e.png");
+}
+
+void SeedDispersal::setupExternalSeeds()
+{
+    mExternalSeedBaseMap = 0;
+    if (!GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.seedBelt.enabled",false))
+        return;
+
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.seedDispersal.seedBelt"));
+    int seedbelt_width = xml.valueDouble(".width",10);
+    // setup of sectors
+    // setup of base map
+    const float seedmap_size = 20.f;
+    mExternalSeedBaseMap = new Grid<float>;
+    mExternalSeedBaseMap->setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
+    mExternalSeedBaseMap->initialize(0.);
+    if (mExternalSeedBaseMap->count()*4 != GlobalSettings::instance()->model()->heightGrid()->count())
+        throw IException("error in setting up external seeds");
+    // make a copy of the 10m height grid in lower resolution and mark pixels that are forested and outside of
+    // the project area.
+    for (int y=0;y<mExternalSeedBaseMap->sizeY();y++)
+        for (int x=0;x<mExternalSeedBaseMap->sizeX();x++) {
+            //bool val = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(x*2,y*2).isForestOutside();
+            bool val = true; // FIXME for the time being, no good forest outside data for HJA
+            mExternalSeedBaseMap->valueAtIndex(x,y) = val?1.f:0.f;
+            if(GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(x*2,y*2).isValid())
+                mExternalSeedBaseMap->valueAtIndex(x,y) = -1.f;
+        }
+    QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
+    img.save("projectmap.png");
+    //    img.save("seedmap.png");
+    // now scan the pixels of the belt: paint all pixels that are close to the project area
+    // we do this 4 times (for all cardinal direcitons)
+    for (int y=0;y<mExternalSeedBaseMap->sizeY();y++) {
+        for (int x=0;x<mExternalSeedBaseMap->sizeX();x++) {
+            if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
+                continue;
+            int look_forward = std::min(x + seedbelt_width, mExternalSeedBaseMap->sizeX());
+            if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.) {
+                // fill pixels
+                for(; x<look_forward;++x) {
+                    float &v = mExternalSeedBaseMap->valueAtIndex(x, y);
+                    if (v==1.f) v=2.f;
+                }
+            }
+        }
+    }
+    // right to left
+    for (int y=0;y<mExternalSeedBaseMap->sizeY();y++) {
+        for (int x=mExternalSeedBaseMap->sizeX();x>=0;--x) {
+            if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
+                continue;
+            int look_forward = std::max(x - seedbelt_width, 0);
+            if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.) {
+                // fill pixels
+                for(; x>look_forward;--x) {
+                    float &v = mExternalSeedBaseMap->valueAtIndex(x, y);
+                    if (v==1.f) v=2.f;
+                }
+            }
+        }
+    }
+    // up and down ***
+    // from top to bottom
+    for (int x=0;x<mExternalSeedBaseMap->sizeX();x++) {
+        for (int y=0;y<mExternalSeedBaseMap->sizeY();y++) {
+
+            if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
+                continue;
+            int look_forward = std::min(y + seedbelt_width, mExternalSeedBaseMap->sizeY());
+            if (mExternalSeedBaseMap->valueAtIndex(x, look_forward)==-1.) {
+                // fill pixels
+                for(; y<look_forward;++y) {
+                    float &v = mExternalSeedBaseMap->valueAtIndex(x, y);
+                    if (v==1.f) v=2.f;
+                }
+            }
+        }
+    }
+    // bottom to top ***
+    for (int y=0;y<mExternalSeedBaseMap->sizeY();y++) {
+        for (int x=mExternalSeedBaseMap->sizeX();x>=0;--x) {
+            if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
+                continue;
+            int look_forward = std::max(y - seedbelt_width, 0);
+            if (mExternalSeedBaseMap->valueAtIndex(x, look_forward)==-1.) {
+                // fill pixels
+                for(; y>look_forward;--y) {
+                    float &v = mExternalSeedBaseMap->valueAtIndex(x, y);
+                    if (v==1.f) v=2.f;
+                }
+            }
+        }
+    }
+
+    img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
+    img.save("projectmap_after.png");
+
+    mExtSeedData.clear();
+    int sectors_x = xml.valueDouble("sizeX",0);
+    int sectors_y = xml.valueDouble("sizeY",0);
+    if(sectors_x<1 || sectors_y<1)
+        throw IException(QString("setup of external seed dispersal: invalid number of sectors x=%1 y=%3").arg(sectors_x).arg(sectors_y));
+    QDomElement elem = xml.node(".");
+    for(QDomNode n = elem.firstChild(); !n.isNull(); n = n.nextSibling()) {
+        if (n.nodeName().startsWith("species")) {
+            QStringList coords = n.nodeName().split("_");
+            if (coords.count()!=3)
+                throw IException("external seed species definition is not valid: " + n.nodeName());
+            int x = coords[1].toInt();
+            int y = coords[2].toInt();
+            if (x<0 || x>=sectors_x || y<0 || y>=sectors_y)
+                throw IException(QString("invalid sector for specifiing external seed input (x y): %1 %2 ").arg(x).arg(y) );
+            int index = y*sectors_x + x;
+
+            QString text = xml.value("." + n.nodeName());
+            qDebug() << "processing element " << n.nodeName() << "x,y:" << x << y << text;
+            // we assume pairs of name and fraction
+            QStringList species_list = text.split(" ");
+            for (int i=0;i<species_list.count();++i) {
+                QVector<double> &space = mExtSeedData[species_list[i]];
+                if (space.isEmpty())
+                    space.resize(sectors_x*sectors_y); // are initialized to 0s
+                double fraction = species_list[++i].toDouble();
+                space[index] = fraction;
+            }
+        }
+    }
+    mExtSeedSizeX = sectors_x;
+    mExtSeedSizeY = sectors_y;
+    qDebug() << "setting up of external seed maps finished";
+}
+
+void SeedDispersal::finalizeExternalSeeds()
+{
+    if (mExternalSeedBaseMap)
+        delete mExternalSeedBaseMap;
+    mExternalSeedBaseMap = 0;
 }
 
 // ************ Kernel **************
@@ -207,6 +358,37 @@ double SeedDispersal::treemig_distanceTo(const double value)
     return dist;
 }
 
+void SeedDispersal::setupExternalSeedsForSpecies(Species *species)
+{
+    if (!mExtSeedData.contains(species->id()))
+        return; // nothing to do
+    qDebug() << "setting up external seed map for" << species->id();
+    QVector<double> &pcts = mExtSeedData[species->id()];
+    mExternalSeedMap.setup(mSeedMap);
+    mExternalSeedMap.initialize(0.f);
+    for (int sector_x=0; sector_x<mExtSeedSizeX; ++sector_x)
+        for (int sector_y=0; sector_y<mExtSeedSizeY; ++sector_y) {
+            int xmin,xmax,ymin,ymax;
+            int fx = mExternalSeedMap.sizeX() / mExtSeedSizeX; // number of cells per sector
+            xmin = sector_x*fx;
+            xmax = (sector_x+1)*fx;
+            fx = mExternalSeedMap.sizeY() / mExtSeedSizeY; // number of cells per sector
+            ymin = sector_y*fx;
+            ymax = (sector_y+1)*fx;
+            // now loop over the whole sector
+            int index = sector_y*mExtSeedSizeX  + sector_x;
+            double p = pcts[index];
+            for (int y=ymin;y<ymax;++y)
+                for (int x=xmin;x<xmax;++x) {
+                    // check
+                    if (mExternalSeedBaseMap->valueAtIndex(x,y)==2.f)
+                        if (drandom()<p)
+                            mExternalSeedMap.valueAtIndex(x,y) = 1.f; // flag
+                }
+
+        }
+}
+
 
 // ************ Dispersal **************
 
@@ -223,6 +405,12 @@ void SeedDispersal::loadFromImage(const QString &fileName)
 
 void SeedDispersal::clear()
 {
+    if (!mExternalSeedMap.isEmpty()) {
+        // we have a preprocessed initial value for the external seed map (see setupExternalSeeds() et al)
+        mSeedMap.copy(mExternalSeedMap);
+        return;
+    }
+    // clear the map
     mSeedMap.initialize(0.f);
     if (mHasExternalSeedInput) {
         // if external seed input is enabled, the buffer area of the seed maps is

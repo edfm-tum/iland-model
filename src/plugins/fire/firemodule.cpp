@@ -430,7 +430,8 @@ void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const d
     // calculate the slope from the curent point (pixel_from) to the spreading cell (pixel_to)
     double h_to = GlobalSettings::instance()->model()->dem()->elevation(mGrid.cellCenterPoint(mGrid.indexOf(pixel_to)));
     if (h_to==-1) {
-        *pixel_to = 0;
+        // qDebug() << "invalid elevation for pixel during fire spread: " << mGrid.cellCenterPoint(mGrid.indexOf(pixel_to));
+        // the pixel is "outside" the project area. No spread is possible.
         return;
     }
     double pixel_size = cellsize();
@@ -555,7 +556,9 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                     bool really_burnt = burnPixel(mGrid.indexOf(p), fire_data);
                     // update the fire size
                     sum_fire_size += fire_data.mAverageFireSize * fire_scale_factor;
-                    // the fire stops, if (*) no trees were on the pixel, or (*) the fire extinguishes
+                    // the fire stops
+                    //    (*) if no trees were on the pixel, or
+                    //    (*) if the fire extinguishes
                     bool spread = really_burnt;
                     if (spread && fire_data.mFireExtinctionProb>0.) {
                         // exinguishing of fire is only effective, when at least the minimum fire size is already reached

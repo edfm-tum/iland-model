@@ -142,11 +142,13 @@ int SpeciesSet::setup()
 
 void SpeciesSet::setupRegeneration()
 {
+    SeedDispersal::setupExternalSeeds();
     foreach(Species *s, mActiveSpecies) {
         SeedDispersal *sd = new SeedDispersal(s);
         sd->setup(); // setup memory for the seed map (grid)
         s->setSeedDispersal(sd); // establish the link between species and the map
     }
+    SeedDispersal::finalizeExternalSeeds();
     qDebug() << "Setup of seed dispersal maps finished.";
 }
 
