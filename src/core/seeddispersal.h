@@ -19,7 +19,7 @@
 
 #ifndef SEEDDISPERSAL_H
 #define SEEDDISPERSAL_H
-
+#include <QHash>
 #include "grid.h"
 class Species;
 
@@ -30,6 +30,9 @@ public:
     ~SeedDispersal();
     bool isSetup() const { return mSetup; }
     void setup();
+    //
+    static void setupExternalSeeds();
+    static void finalizeExternalSeeds();
     // access
     const Grid<float> &seedMap() const { return mSeedMap; } ///< access to the seedMap
     const Species *species() const {return mSpecies; }
@@ -60,6 +63,12 @@ private:
     bool mHasExternalSeedInput; ///< if true, external seeds are modelled for the species
     int mExternalSeedDirection; ///< direction of external seeds
     int mExternalSeedBuffer; ///< how many 20m pixels away from the simulation area should the seeding start?
+    // external seeds
+    Grid<float> mExternalSeedMap; ///< for more complex external seed input, this map holds that information
+    void setupExternalSeedsForSpecies(Species *species); ///< setup of special external seed input
+    static Grid<float> *mExternalSeedBaseMap; ///< static intermediate data while setting up external seeds
+    static QHash<QString, QVector<double> > mExtSeedData; ///< holds definition of species and percentages for external seed input
+    static int mExtSeedSizeX, mExtSeedSizeY; ///< size of the sectors used to specify external seed input
 };
 
 #endif // SEEDDISPERSAL_H
