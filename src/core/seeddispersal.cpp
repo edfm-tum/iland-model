@@ -153,6 +153,7 @@ void SeedDispersal::setupExternalSeeds()
     if (!GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.seedBelt.enabled",false))
         return;
 
+    DebugTimer t("setup of texternal seed maps.");
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.seedDispersal.seedBelt"));
     int seedbelt_width = xml.valueDouble(".width",10);
     // setup of sectors
@@ -167,14 +168,17 @@ void SeedDispersal::setupExternalSeeds()
     // the project area.
     for (int y=0;y<mExternalSeedBaseMap->sizeY();y++)
         for (int x=0;x<mExternalSeedBaseMap->sizeX();x++) {
-            //bool val = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(x*2,y*2).isForestOutside();
-            bool val = true; // FIXME for the time being, no good forest outside data for HJA
+            bool val = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(x*2,y*2).isForestOutside();
             mExternalSeedBaseMap->valueAtIndex(x,y) = val?1.f:0.f;
             if(GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(x*2,y*2).isValid())
                 mExternalSeedBaseMap->valueAtIndex(x,y) = -1.f;
         }
-    QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
-    img.save("projectmap.png");
+    QString path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
+
+    if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false)) {
+        QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
+        img.save(path + "/seedbeltmap_before.png");
+    }
     //    img.save("seedmap.png");
     // now scan the pixels of the belt: paint all pixels that are close to the project area
     // we do this 4 times (for all cardinal direcitons)
@@ -182,7 +186,7 @@ void SeedDispersal::setupExternalSeeds()
         for (int x=0;x<mExternalSeedBaseMap->sizeX();x++) {
             if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
                 continue;
-            int look_forward = std::min(x + seedbelt_width, mExternalSeedBaseMap->sizeX());
+            int look_forward = std::min(x + seedbelt_width, mExternalSeedBaseMap->sizeX()-1);
             if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.) {
                 // fill pixels
                 for(; x<look_forward;++x) {
@@ -214,7 +218,7 @@ void SeedDispersal::setupExternalSeeds()
 
             if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
                 continue;
-            int look_forward = std::min(y + seedbelt_width, mExternalSeedBaseMap->sizeY());
+            int look_forward = std::min(y + seedbelt_width, mExternalSeedBaseMap->sizeY()-1);
             if (mExternalSeedBaseMap->valueAtIndex(x, look_forward)==-1.) {
                 // fill pixels
                 for(; y<look_forward;++y) {
@@ -239,10 +243,10 @@ void SeedDispersal::setupExternalSeeds()
             }
         }
     }
-
-    img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
-    img.save("projectmap_after.png");
-
+    if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false)) {
+        QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
+        img.save(path + "seedbeltmap_after.png");
+    }
     mExtSeedData.clear();
     int sectors_x = xml.valueDouble("sizeX",0);
     int sectors_y = xml.valueDouble("sizeY",0);
