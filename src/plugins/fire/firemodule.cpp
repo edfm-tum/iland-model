@@ -424,7 +424,7 @@ double FireModule::calcWindFactor(const double direction) const
 void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const double height, const float *pixel_from, float *pixel_to, const int direction)
 {
     const double directions[8]= {0., 90., 180., 270., 45., 135., 225., 315. };
-
+    (void) pixel_from; // remove 'unused parameter' warning
     double spread_metric; // distance that fire supposedly spreads
 
     // calculate the slope from the curent point (pixel_from) to the spreading cell (pixel_to)
