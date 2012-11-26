@@ -40,8 +40,7 @@ public:
     void run();
     void loadScript(const QString &fileName);
     QString scriptFile() const { return mScriptFile; }
-    QString executeScript(QString cmd="");
-    static QObject *scriptOutput;
+
     // property getter & setter for removal fractions
     /// removal fraction foliage: 0: 0% will be removed, 1: 100% will be removed from the forest by management operations (i.e. calls to manage() instead of kill())
     double removeFoliage() const { return mRemoveFoliage; }
@@ -103,6 +102,7 @@ public slots:
     int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
     void randomize(); ///< random shuffle of all trees in the list
 private:
+    QString executeScript(QString cmd="");
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);

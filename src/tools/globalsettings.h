@@ -41,6 +41,7 @@ class Model;
 class OutputManager;
 class ModelController; // forward
 class SystemStatistics;
+class QScriptEngine; // forward
 
 /// General settings and globally available data
 class GlobalSettings
@@ -59,6 +60,12 @@ public:
 
     int currentYear() const { return mRunYear; }
     void setCurrentYear(const int year) { mRunYear = year; }
+
+    /// access the global QScriptEngine used throughout the model
+    /// for all Javascript related functionality.
+    QString executeJavascript(const QString &command);
+    QScriptEngine *scriptEngine() const { return mScriptEngine; }
+    void resetScriptEngine(); ///< re-creates the script engine (when the Model is re-created)
 
     // system statistics
     SystemStatistics *systemStatistics() { return mSystemStatistics; }
@@ -126,6 +133,7 @@ private:
     Model *mModel;
     ModelController *mModelController;
     OutputManager *mOutputManager;
+    QScriptEngine *mScriptEngine;
     int mRunYear;
     SystemStatistics *mSystemStatistics;
 

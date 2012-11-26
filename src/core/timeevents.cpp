@@ -77,7 +77,7 @@ void TimeEvents::run()
         if (key=="script" || key=="javascript") {
             // execute as javascript expression within the management script context...
             if (!entries[i].second.toString().isEmpty())
-                GlobalSettings::instance()->model()->executeJavascript(entries[i].second.toString());
+                GlobalSettings::instance()->executeJavascript(entries[i].second.toString());
 
         } else {
             // no special value: a xml node...

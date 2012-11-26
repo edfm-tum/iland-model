@@ -235,6 +235,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     readSettings();
 
+    // create global scripting context
+    GlobalSettings::instance()->resetScriptEngine();
+
     // load xml file: use either a command-line argument (if present), or load the content of a small text file....
     QString argText = QApplication::arguments().last();
     if (QApplication::arguments().count()>1 && !argText.isEmpty()) {
@@ -1078,7 +1081,7 @@ void MainWindow::modelFinished(QString errorMessage)
         batchLog(QString("%1 Finished!!! shutting down...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
 
         qDebug() << "****************************";
-        qDebug() << "Finished automated model run";
+        qDebug() << "Finished automated model run: " << errorMessage;
         qDebug() << "****************************";
 
         close(); // shut down the application....
@@ -1492,39 +1495,26 @@ void MainWindow::on_reloadJavaScript_clicked()
         Helper::msg("no mangement script file specified");
     mgmt->loadScript(mgmt->scriptFile());
     qDebug() << "reloaded" << mgmt->scriptFile();
-    Management::scriptOutput = ui->scriptResult;
+    ScriptGlobal::scriptOutput = ui->scriptResult;
 }
 
 void MainWindow::on_selectJavaScript_clicked()
 {
     if (!GlobalSettings::instance()->model())
         return;
-    Management *mgmt = GlobalSettings::instance()->model()->management();
-    if (!mgmt) {
-        Helper::msg("Error: no valid Management object available! (no management module active).", this);
-        return;
-    }
     QString fileName = Helper::fileDialog("select a Javascript file:");
     if (fileName.isEmpty())
         return;
-    mgmt->loadScript(fileName);
+    ScriptGlobal::loadScript(fileName);
+
     ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(fileName));
-    qDebug() << "loaded Javascript file" << mgmt->scriptFile();
-    Management::scriptOutput = ui->scriptResult;
+    qDebug() << "loaded Javascript file" << fileName;
+    ScriptGlobal::scriptOutput = ui->scriptResult;
 
 }
 
 void MainWindow::on_scriptCommand_returnPressed()
 {
-    // do something....
-    if (!GlobalSettings::instance()->model())
-        return;
-    Management *mgmt = GlobalSettings::instance()->model()->management();
-    if (!mgmt) {
-        qDebug() << "sorry, management must be active in order to use scripting...";
-        return;
-    }
-
     QString command = ui->scriptCommand->text();
     if (ui->scriptCommandHistory->currentText() != command) {
         ui->scriptCommandHistory->insertItem(0, command);
@@ -1533,7 +1523,8 @@ void MainWindow::on_scriptCommand_returnPressed()
 
     qDebug() << "executing" << command;
     try {
-        QString result = mgmt->executeScript(command);
+
+        QString result = ScriptGlobal::executeScript(command);
         if (!result.isEmpty()) {
             ui->scriptResult->append(result);
             qDebug() << result;

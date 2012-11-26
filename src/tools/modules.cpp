@@ -75,12 +75,12 @@ void Modules::setupResourceUnit(const ResourceUnit *ru)
 
 void Modules::setup()
 {
+
     foreach(DisturbanceInterface *di, mInterfaces)
         di->setup();
-}
 
-void Modules::setupScripting(QScriptEngine *engine)
-{
+    // set up the scripting
+    QScriptEngine *engine = GlobalSettings::instance()->scriptEngine();
     foreach(DisturbanceInterface *di, mInterfaces)
         di->setupScripting(engine);
 }

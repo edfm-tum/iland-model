@@ -114,6 +114,7 @@ Model::Model()
 {
     initialize();
     GlobalSettings::instance()->setModel(this);
+    GlobalSettings::instance()->resetScriptEngine(); // clear the script
     QString dbg="running in release mode.";
     DBGMODE( dbg="running in debug mode."; );
     qDebug() << dbg;
@@ -304,6 +305,9 @@ void Model::setupSpace()
                 mModules->setupResourceUnit( *p );
             }
         }
+
+        // setup of scripting environment
+        ScriptGlobal::setupGlobalScripting();
 
         // setup the helper that does the multithreading
         threadRunner.setup(valid_rus);
@@ -992,13 +996,3 @@ void Model::createStandStatistics()
 }
 
 
-/// execute the javascript expression \p expression in the model context.
-QString Model::executeJavascript(const QString expression)
-{
-    if (management()) {
-        return management()->executeScript(expression);
-    } else {
-        qDebug() << "Model::executeJavascript: cannot execute expression because no scriping environment is active. Expression:" << expression;
-        return QString();
-    }
-}
