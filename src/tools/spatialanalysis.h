@@ -20,24 +20,35 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 #include "grid.h"
+#include "layeredgrid.h"
 
 #include <QObject>
 class RumpleIndex; // forward
+class SpatialLayeredGrid; // forward
 /**
  * @brief The SpatialAnalysis class is the scripting class related to extra spatial analysis functions.
- *
+ * rumpleIndex: ratio crown surface area / ground area for the whole project area.
+ * saveRumpleGrid(): save RU-based grid of rumple indices to an ASCII grid file.
  */
 class SpatialAnalysis: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(double rumpleIndex READ rumpleIndexFullArea)
 
 public:
     SpatialAnalysis(QObject *parent=0): QObject(parent), mRumple(0) {}
+    ~SpatialAnalysis();
+    static void addToScriptEngine();
+
+    double rumpleIndexFullArea(); ///< retrieve the rumple index for the full landscape (one value)
 public slots:
     // API for Javascript
-    double rumpleIndex();
+    void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
+
 private:
     RumpleIndex *mRumple;
+    SpatialLayeredGrid *mLayers;
+    friend class SpatialLayeredGrid;
 
 };
 
@@ -53,7 +64,7 @@ public:
     void setup(); ///< sets up the grid
     void calculate(); ///< calculates (or re-calculates) index values
     double value(const bool force_recalculate=false); ///< calculates rumple index for the full project area
-    const FloatGrid &rumpleGrid() const { return mRumpleGrid; } ///< return the rumple index for the full project area
+    const FloatGrid &rumpleGrid()  { value(); /* calculate if necessary */ return mRumpleGrid; } ///< return the rumple index for the full project area
     //
     double test_triangle_area();
 private:
@@ -63,4 +74,31 @@ private:
     int mLastYear;
 };
 
+
+
+class SpatialLayeredGrid: public LayeredGridBase
+{
+public:
+    SpatialLayeredGrid() { setup(); }
+    void setup(); ///< initial setup of the grid
+    int addGrid(const QString name, FloatGrid *grid);
+    const QStringList names() { return mGridNames; }
+
+    double value(const float x, const float y, const int index) const { checkGrid(index); return mGrids[index]->constValueAt(x,y); }
+    double value(const QPointF &world_coord, const int index) const { checkGrid(index); return mGrids[index]->constValueAt(world_coord); }
+    double value(const int ix, const int iy, const int index) const { checkGrid(index); return mGrids[index]->constValueAtIndex(ix,iy);}
+    double value(const int grid_index, const int index) const {  checkGrid(index); return mGrids[index]->constValueAtIndex(grid_index);}
+    void range(double &rMin, double &rMax, const int index) const { rMin=9999999999.; rMax=-99999999999.;
+                                                              for (int i=0;i<mGrids[index]->count(); ++i) {
+                                                                  rMin=qMin(rMin, value(i, index));
+                                                                  rMax=qMax(rMax, value(i,index));}}
+
+private:
+    inline void checkGrid(const int grid_index) const { if (mGrids[grid_index]==0) const_cast<SpatialLayeredGrid*>(this)->createGrid(grid_index); } ///< helper function that checks if grids are to be created
+    void createGrid(const int grid_index); ///< create (if necessary) the actual grid
+    QStringList mGridNames; ///< the list of grid names
+    QVector<FloatGrid*> mGrids; ///< the grid
+
+
+};
 #endif // SPATIALANALYSIS_H

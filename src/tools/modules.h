@@ -36,7 +36,6 @@ public:
 
     /// general setup
     void setup();
-    void setupScripting(QScriptEngine *engine);
     /// get interface by name (or 0 if not present)
     DisturbanceInterface *module(const QString &module_name);
 

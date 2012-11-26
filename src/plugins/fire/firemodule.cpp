@@ -826,7 +826,7 @@ void FireModule::afterFire()
     // execute the after fire event
     if (!mAfterFireEvent.isEmpty()) {
         // evaluate the javascript function...
-        GlobalSettings::instance()->model()->executeJavascript(mAfterFireEvent);
+        GlobalSettings::instance()->executeJavascript(mAfterFireEvent);
     }
 }
 

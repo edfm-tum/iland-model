@@ -73,6 +73,7 @@
 #include <QtCore>
 #include <QtXml>
 #include <QtSql>
+#include <QtScript/QScriptEngine>
 #include <algorithm>
 #include "global.h"
 #include "helper.h"
@@ -81,6 +82,7 @@
 
 #include "settingmetadata.h"
 #include "standstatistics.h"
+#include "scriptglobal.h"
 
 
 #include "outputmanager.h"
@@ -135,6 +137,8 @@ GlobalSettings::GlobalSettings()
     mSystemStatistics = new SystemStatistics;
     // create output manager
     mOutputManager = new OutputManager();
+    mScriptEngine = 0;
+
 }
 
 
@@ -147,6 +151,25 @@ GlobalSettings::~GlobalSettings()
     delete mOutputManager;
     // clear all databases
     clearDatabaseConnections();
+    if (mScriptEngine)
+        delete mScriptEngine;
+}
+
+QString GlobalSettings::executeJavascript(const QString &command)
+{
+    return ScriptGlobal::executeScript(command);
+}
+
+void GlobalSettings::resetScriptEngine()
+{
+    if (mScriptEngine)
+        delete mScriptEngine;
+
+    mScriptEngine = new QScriptEngine();
+    // globals object: instatiate here, but ownership goes to script engine
+    ScriptGlobal *global = new ScriptGlobal();
+    QScriptValue glb = mScriptEngine->newQObject(global,QScriptEngine::ScriptOwnership);
+    mScriptEngine->globalObject().setProperty("Globals", glb);
 }
 
 // debugging

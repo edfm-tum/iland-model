@@ -29,8 +29,8 @@ class MapGrid; // forward
 class MapGridWrapper: public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int valid READ isValid);
-    Q_PROPERTY(QString name READ name);
+    Q_PROPERTY(int valid READ isValid)
+    Q_PROPERTY(QString name READ name)
 public:
     MapGridWrapper(QObject *parent=0);
     ~MapGridWrapper();
@@ -69,12 +69,19 @@ class ScriptGlobal : public QObject, protected QScriptable
 
 public:
     ScriptGlobal(QObject *parent=0);
+    static void setupGlobalScripting();
     static void addToScriptEngine(QScriptEngine &engine); ///< add this class to scripting engine
     // properties accesible by scripts
     int year() const; ///< current year in the model
     int resourceUnitCount() const; ///< get number of resource uinit
     QString currentDir() const { return mCurrentDir; } ///< current execution directory (default is the Script execution directory)
     void setCurrentDir(QString newDir) { mCurrentDir = newDir; } ///< set current working dir
+
+    // general functions
+    static void loadScript(const QString &fileName);
+    static QString executeScript(QString cmd);
+    static QObject *scriptOutput; ///< public "pipe" for script output (is redirected to GUI if available)
+
 public slots:
     // system stuff
     QVariant setting(QString key); ///< get a value from the global xml-settings (returns undefined if not present)

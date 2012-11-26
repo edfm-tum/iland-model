@@ -20,10 +20,38 @@
 
 #include "globalsettings.h"
 #include "model.h"
+#include "helper.h"
 
-
-double SpatialAnalysis::rumpleIndex()
+#include <QtScript/QScriptEngine>
+#include <QtScript/QScriptValue>
+void SpatialAnalysis::addToScriptEngine()
 {
+    SpatialAnalysis *spati = new SpatialAnalysis;
+    QScriptValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati, QScriptEngine::ScriptOwnership);
+    GlobalSettings::instance()->scriptEngine()->globalObject().setProperty("SpatialAnalysis", v);
+}
+
+SpatialAnalysis::~SpatialAnalysis()
+{
+    if (mRumple)
+        delete mRumple;
+}
+
+double SpatialAnalysis::rumpleIndexFullArea()
+{
+    if (!mRumple)
+        mRumple = new RumpleIndex;
+    double rum = mRumple->value();
+    return rum;
+}
+
+void SpatialAnalysis::saveRumpleGrid(QString fileName)
+{
+    if (!mRumple)
+        mRumple = new RumpleIndex;
+
+    Helper::saveToTextFile(fileName, gridToESRIRaster(mRumple->rumpleGrid()) );
+
 }
 
 
@@ -50,12 +78,7 @@ void RumpleIndex::calculate()
 
     mRumpleGrid.initialize(0.f);
     HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
-    // iterate over the grid and calculate for each pixel that lies within the project area the surface area.
-    for (HeightGridValue *hgv=hg->begin(); hgv!=hg->end(); ++hgv) {
-        if (hgv->isValid()) {
 
-        }
-    }
     // iterate over the resource units and calculate the rumple index / surface area for each resource unit
     HeightGridValue* hgv_8[8]; // array holding pointers to height grid values (neighborhood)
     float heights[9];  // array holding heights (8er neighborhood + center pixel)
@@ -170,3 +193,25 @@ double RumpleIndex::calculateSurfaceArea(const float *heights, const float cells
 
     return surface_area;
 }
+
+/* *************************************************************************************** */
+/* ******************************* Spatial Layers **************************************** */
+/* *************************************************************************************** */
+void SpatialLayeredGrid::setup()
+{
+    addGrid("rumple", 0);
+}
+
+void SpatialLayeredGrid::createGrid(const int grid_index)
+{
+}
+
+
+int SpatialLayeredGrid::addGrid(const QString name, FloatGrid *grid)
+{
+    mGridNames.append(name);
+    mGrids.append(grid);
+}
+
+
+

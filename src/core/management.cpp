@@ -27,15 +27,13 @@
 #include "sapling.h"
 #include "soil.h"
 
-#include "climateconverter.h"
-#include "csvfile.h"
+//#include "climateconverter.h"
+//#include "csvfile.h"
 #include "scriptglobal.h"
 #include "mapgrid.h"
-#include "modules.h"
+//#include "modules.h"
 
 #include <QtScript>
-#include <QTextEdit>
-QObject *Management::scriptOutput = 0;
 
 /** @class Management Management executes management routines.
   @ingroup core
@@ -45,85 +43,19 @@ QObject *Management::scriptOutput = 0;
   See http://iland.boku.ac.at/iLand+scripting, http://iland.boku.ac.at/Object+Management for management Javascript API.
   */
 
-QScriptValue script_debug(QScriptContext *ctx, QScriptEngine *eng)
-{
-    QString value;
-    for (int i = 0; i < ctx->argumentCount(); ++i) {
-        if (i > 0)
-            value.append(" ");
-        value.append(ctx->argument(i).toString());
-    }
-    if (Management::scriptOutput) {
-        QTextEdit *e = qobject_cast<QTextEdit*>(Management::scriptOutput);
-        if (e)
-            e->append(value);
-    } else {
-        qDebug() << "Script:" << value;
-    }
-    return eng->undefinedValue();
-}
 
-QScriptValue script_include(QScriptContext *ctx, QScriptEngine *eng)
-{
-
-    QString fileName = ctx->argument(0).toString();
-    QString path =GlobalSettings::instance()->path(fileName, "script") ;
-    QString includeFile=Helper::loadTextFile(path);
-
-    ctx->setActivationObject(ctx->parentContext()->activationObject());
-    ctx->setThisObject(ctx->parentContext()->thisObject());
-
-    QScriptValue ret = eng->evaluate(includeFile, fileName);
-    if (eng->hasUncaughtException())
-        qDebug() << "Error in include:" << eng->uncaughtException().toString();
-    return ret;
-}
-
-QScriptValue script_alert(QScriptContext *ctx, QScriptEngine *eng)
-{
-    QString value = ctx->argument(0).toString();
-    Helper::msg(value);
-    return eng->undefinedValue();
-}
 // global output function
 QString Management::executeScript(QString cmd)
 {
-    DebugTimer t("execute javascript");
-    if (mEngine)
-        mEngine->evaluate(cmd);
-    if (mEngine->hasUncaughtException()) {
-        //int line = mEngine->uncaughtExceptionLineNumber();
-        QString msg = QString( "Script Error occured: %1\n").arg( mEngine->uncaughtException().toString());
-        msg+=mEngine->uncaughtExceptionBacktrace().join("\n");
-        return msg;
-    } else {
-        return QString();
-    }
+    return ScriptGlobal::executeScript(cmd);
 }
 
 Management::Management()
 {
     // setup the scripting engine
-    mEngine = new QScriptEngine();
+    mEngine = GlobalSettings::instance()->scriptEngine();
     QScriptValue objectValue = mEngine->newQObject(this);
-    QScriptValue dbgprint = mEngine->newFunction(script_debug);
-    QScriptValue sinclude = mEngine->newFunction(script_include);
-    QScriptValue alert = mEngine->newFunction(script_alert);
     mEngine->globalObject().setProperty("management", objectValue);
-    mEngine->globalObject().setProperty("print",dbgprint);
-    mEngine->globalObject().setProperty("include",sinclude);
-    mEngine->globalObject().setProperty("alert", alert);
-
-    // globals object: instatiate here, but ownership goes to script engine
-    ScriptGlobal *global = new ScriptGlobal();
-    QScriptValue glb = mEngine->newQObject(global,QScriptEngine::ScriptOwnership);
-    mEngine->globalObject().setProperty("Globals", glb);
-    // other object types
-    ClimateConverter::addToScriptEngine(*mEngine);
-    CSVFile::addToScriptEngine(*mEngine);
-    MapGridWrapper::addToScriptEngine(*mEngine);
-    // setup scripting for modules
-    GlobalSettings::instance()->model()->modules()->setupScripting(mEngine);
 
     // default values for removal fractions
     // 100% of the stem, 0% of foliage and branches
@@ -131,27 +63,12 @@ Management::Management()
     mRemoveBranch = 0.;
     mRemoveStem = 1.;
 
-
 }
 
 Management::~Management()
 {
-    delete mEngine;
 }
 
-void Management::loadScript(const QString &fileName)
-{
-    mScriptFile = fileName;
-    QString program = Helper::loadTextFile(fileName);
-    if (program.isEmpty())
-        return;
-
-    mEngine->evaluate(program);
-    qDebug() << "management script loaded";
-    if (mEngine->hasUncaughtException())
-        qDebug() << "Script Error occured: " << mEngine->uncaughtException().toString() << "\n" << mEngine->uncaughtExceptionBacktrace();
-
-}
 
 int Management::remain(int number)
 {
@@ -361,7 +278,13 @@ void Management::run()
     if (mRemoved>0) {
         foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
            ru->cleanTreeList();
-   }
+    }
+}
+
+void Management::loadScript(const QString &fileName)
+{
+    mScriptFile = fileName;
+    ScriptGlobal::loadScript(fileName);
 }
 
 int Management::filter(QVariantList idList)
