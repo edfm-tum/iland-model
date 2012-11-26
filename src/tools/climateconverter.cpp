@@ -45,7 +45,7 @@ void ClimateConverter::addToScriptEngine(QScriptEngine &engine)
     engine.globalObject().setProperty("ClimateConverter", cc_class);
 }
 
-ClimateConverter::ClimateConverter(QObject *parent)
+ClimateConverter::ClimateConverter(QObject *)
 {
     mCaptions = true;
     bindExpression(mExpYear, 0);

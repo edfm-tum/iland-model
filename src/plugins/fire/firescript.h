@@ -24,9 +24,9 @@ class FireModule; // forward
 class FireScript : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int id READ id);
-    Q_PROPERTY(int x READ x);
-    Q_PROPERTY(int y READ y);
+    Q_PROPERTY(int id READ id)
+    Q_PROPERTY(int x READ x)
+    Q_PROPERTY(int y READ y)
 
 public:
     explicit FireScript(QObject *parent = 0);

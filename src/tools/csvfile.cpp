@@ -48,7 +48,7 @@ void CSVFile::addToScriptEngine(QScriptEngine &engine)
     engine.globalObject().setProperty("CSVFile", cc_class);
 }
 
-CSVFile::CSVFile(QObject *parent)
+CSVFile::CSVFile(QObject *)
 {
     mHasCaptions = true;
     mFlat = false;
@@ -254,6 +254,7 @@ QVariant CSVFile::row(const int row)
 
 bool CSVFile::openFile(const QString &fileName)
 {
+    (void)fileName; // silence compiler warning; the function makes no sense, nonetheless.
     mStreamingMode = true;
     return false;
 }

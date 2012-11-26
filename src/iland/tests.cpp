@@ -53,6 +53,8 @@
 #include "../plugins/wind/windplugin.h"
 #include <QInputDialog>
 
+#include "spatialanalysis.h"
+
 Tests::Tests(QObject *wnd)
 {
     //QObject::connect(this, SIGNAL(needRepaint),wnd, SLOT(repaint));
@@ -888,4 +890,15 @@ void Tests::testWind()
 
     }
     GlobalSettings::instance()->controller()->repaint();
+}
+
+void Tests::testRumple()
+{
+    RumpleIndex rumple_index;
+    double result = rumple_index.value();
+    qDebug() << "rumple index test: " << result;
+
+    Helper::saveToTextFile("rumple_test.txt", gridToESRIRaster(rumple_index.rumpleGrid()) );
+    qDebug() << "surface area test triangle" << rumple_index.test_triangle_area();
+
 }

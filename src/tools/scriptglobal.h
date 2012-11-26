@@ -62,9 +62,9 @@ class ScriptGlobal : public QObject, protected QScriptable
 {
     Q_OBJECT
     // read only properties
-    Q_PROPERTY(int year READ year);
-    Q_PROPERTY(int resourceUnitCount READ resourceUnitCount);
-    Q_PROPERTY(QString currentDir WRITE setCurrentDir READ currentDir);
+    Q_PROPERTY(int year READ year)
+    Q_PROPERTY(int resourceUnitCount READ resourceUnitCount)
+    Q_PROPERTY(QString currentDir WRITE setCurrentDir READ currentDir)
 
 
 public:

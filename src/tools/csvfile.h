@@ -26,10 +26,10 @@
 class CSVFile : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool captions WRITE setHasCaptions READ hasCaptions); ///< if true, the first line are considered to be headers
-    Q_PROPERTY(bool flat WRITE setFlat READ flat); ///< if true, there is only one column (a flat file)
-    Q_PROPERTY(int colCount READ colCount);
-    Q_PROPERTY(int rowCount READ rowCount);
+    Q_PROPERTY(bool captions WRITE setHasCaptions READ hasCaptions) ///< if true, the first line are considered to be headers
+    Q_PROPERTY(bool flat WRITE setFlat READ flat) ///< if true, there is only one column (a flat file)
+    Q_PROPERTY(int colCount READ colCount)
+    Q_PROPERTY(int rowCount READ rowCount)
 public:
     CSVFile(QObject *parent=0);
     CSVFile(const QString &fileName) {     mHasCaptions = true; mFlat = false; mFixedWidth=false; loadFile(fileName);} ///< ctor, load @p fileName.
