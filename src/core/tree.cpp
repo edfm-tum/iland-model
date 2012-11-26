@@ -924,6 +924,7 @@ void Tree::removeBiomass(const double removeFoliageFraction, const double remove
     mFoliageMass *= 1. - removeFoliageFraction;
     mWoodyMass *= (1. - removeStemFraction);
     // we have a problem with the branches: this currently cannot be done properly!
+    (void) removeBranchFraction; // silence warning
 }
 
 void Tree::mortality(TreeGrowthData &d)

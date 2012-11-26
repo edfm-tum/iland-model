@@ -107,7 +107,8 @@ SOURCES += main.cpp \
     ../tools/dem.cpp \
     ../3rdparty/SimpleRNG.cpp \
     ../output/snapshot.cpp \
-    ../tools/randomgenerator.cpp
+    ../tools/randomgenerator.cpp \
+    ../tools/spatialanalysis.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -176,7 +177,8 @@ HEADERS += mainwindow.h \
     ../core/layeredgrid.h \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
-    ../tools/randomgenerator.h
+    ../tools/randomgenerator.h \
+    ../tools/spatialanalysis.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

@@ -1400,7 +1400,8 @@ void MainWindow::on_pbCalculateExpression_clicked()
                                          "16: load Map \n" \
                                          "17: test DEM \n" \
                                          "18: test fire module \n" \
-                                         "19: test wind module",-1);
+                                         "19: test wind module\n" \
+                                         "20: test rumple index",-1);
         switch (which) {
         case 0: t.speedOfExpression();break;
         case 1: t.clearTrees(); break;
@@ -1422,6 +1423,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
         case 17: t.testDEM(); break;
         case 18: t.testFire(); break;
         case 19: t.testWind(); break;
+        case 20: t.testRumple(); break;
         }
         return;
     }
