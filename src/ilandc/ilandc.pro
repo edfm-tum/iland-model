@@ -112,7 +112,8 @@ SOURCES += main.cpp \
     ../tools/modules.cpp \
     ../tools/dem.cpp \
     ../3rdparty/SimpleRNG.cpp \
-    ../output/snapshot.cpp
+    ../output/snapshot.cpp \
+    ../tools/spatialanalysis.cpp
 HEADERS += \
     consoleshell.h \
     stable.h \
@@ -182,4 +183,6 @@ HEADERS += \
     ../tools/dem.h \
     ../core/layeredgrid.h \
     ../3rdparty/SimpleRNG.h \
-    ../output/snapshot.h
+    ../output/snapshot.h \
+    ../tools/spatialanalysis.h
+
