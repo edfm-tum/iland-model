@@ -190,6 +190,9 @@ void Snag::newYear()
 /// calculation is done on the level of ResourceUnit because the water content per day is needed.
 double Snag::calculateClimateFactors()
 {
+    // the calculation of climate factors requires calculated evapotranspiration. In cases without vegetation (trees or saplings)
+    // we have to trigger the water cycle calculation for ourselves [ the waterCycle checks if it has already been run in a year and doesn't run twice in that case ]
+    const_cast<WaterCycle*>(mRU->waterCycle())->run();
     double ft, fw;
     double f_sum = 0.;
     int iday=0;
