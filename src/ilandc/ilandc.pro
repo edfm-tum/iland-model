@@ -44,8 +44,8 @@ TEMPLATE = app
 
 # to enable debug symbols in release code
 # debug information in release-mode executable
-#QMAKE_CXXFLAGS_RELEASE += -g
-#QMAKE_LFLAGS_RELEASE -= -Wl,-s
+QMAKE_CXXFLAGS_RELEASE += -g
+QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
 
 ### Flag to allow 3GB on Win 32

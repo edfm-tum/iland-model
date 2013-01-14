@@ -55,7 +55,7 @@ private:
 /** The RumpleIndex is a spatial index relating surface area to ground area.
  *  In forestry, it is a indicator of vertical heterogeneity. In iLand, the Rumple Index is
  *  the variability of the maximum tree height on 10m level (i.e. the "Height"-Grid).
- *  The RumpleIndex is calculated for each resource unit and also for the full project area.
+ *  The Rumple§Index is calculated for each resource unit and also for the full project area.
  **/
 class RumpleIndex
 {

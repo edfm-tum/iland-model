@@ -391,13 +391,17 @@ DebugTimer::~DebugTimer()
         showElapsed();
 }
 
+QMutex timer_mutex;
 DebugTimer::DebugTimer(const QString &caption, bool silent)
 {
     m_caption = caption;
     m_silent=silent;
     m_hideShort=true;
-    if (!mTimingList.contains(caption))
-        mTimingList[caption]=0.;
+    if (!mTimingList.contains(caption)) {
+        QMutexLocker locker(&timer_mutex);
+        if (!mTimingList.contains(caption))
+            mTimingList[caption]=0.;
+    }
     start();
 }
 

@@ -23,6 +23,7 @@
 
 #include "globalsettings.h"
 #include "helper.h"
+#include "exception.h"
 #include <QPluginLoader>
 
 // include the static modules here in the code:
@@ -102,7 +103,15 @@ void Modules::run()
         int idx = irandom(0, run_list.size()-1);
         if (logLevelDebug())
             qDebug() << "executing disturbance module: " << run_list[idx]->name();
-        run_list[idx]->run();
+
+        try {
+            run_list[idx]->run();
+        } catch (const IException &e) {
+            qWarning() << "ERROR: uncaught exception in module '" << run_list[idx]->name() << "':";
+            qWarning() << "ERROR:" << e.message();
+            qWarning() << " **************************************** ";
+        }
+
         // remove from list
         run_list.removeAt(idx);
     }
