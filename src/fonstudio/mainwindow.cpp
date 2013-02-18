@@ -10,7 +10,7 @@
 #include "exception.h"
 #include "paintarea.h"
 #include  "globalsettings.h"
-GlobalSettings *GlobalSettings::mInstance = 0;
+//GlobalSettings *GlobalSettings::mInstance = 0;
 
 // global settings
 QDomDocument xmldoc;
@@ -138,7 +138,7 @@ void MainWindow::on_saveFile_clicked()
 }
 
 
-void MainWindow::repaintArea(QPainter &painter)
+void MainWindow::repaintArea(QPainter &)
 {
     // select drawing type...
     switch (m_gfxtype) {

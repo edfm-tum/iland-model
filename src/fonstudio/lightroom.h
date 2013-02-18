@@ -24,8 +24,8 @@ public:
     void setuptree(const double height, const double crownheight, const QString &formula);
     /// returns true if there is no way that a ray hits the object starting from p.
     bool noHitGuaranteed(const double p_x, const double p_y, const double p_z);
-    const double maxHeight() const { return m_height; }
-    const double maxRadius() const { return m_baseradius; }
+    double maxHeight() const { return m_height; }
+    double maxRadius() const { return m_baseradius; }
 private:
     Expression *m_radiusFormula; ///< formula for calculation of crown widht as f(relative_height)
     double m_baseradius; ///< maximum radius of the crown (at the bottom of the crown) [m]
@@ -58,7 +58,7 @@ public:
     const HemiGrid &shadowGrid() const { return m_shadowGrid; }
     const HemiGrid &solarGrid() const { return m_solarGrid; }
     const FloatGrid &result() const { return m_2dvalues; }
-    const double centerValue() const { return m_centervalue; }
+    double centerValue() const { return m_centervalue; }
 
 private:
     //Grid< QVector<float> > m_3dvalues; ///< storage for resulting 3d light values

@@ -53,7 +53,7 @@ void HemiGrid::matrixMinMax(double &rMatrixMin, double &rMatrixMax) const
       }
     }
 }
-const double HemiGrid::sum(const double elevation) const
+double HemiGrid::sum(const double elevation) const
 {
     int ie=indexElevation(elevation);
     int emax=matrixCountElevation();

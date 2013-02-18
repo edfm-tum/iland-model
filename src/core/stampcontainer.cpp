@@ -121,8 +121,6 @@ void StampContainer::finalizeSetup()
     if (m_distance.sizeX()<max_size) {
         setupDistanceGrid(max_size);
     }
-    if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
-        qDebug() << dump();
 }
 
 void StampContainer::setupDistanceGrid(const int size)
