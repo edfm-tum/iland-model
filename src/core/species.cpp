@@ -60,6 +60,9 @@ void Species::setup()
     mLIPs.load( GlobalSettings::instance()->path(stampFile, "lip") );
     // attach writer stamps to reader stamps
     mLIPs.attachReaderStamps(mSet->readerStamps());
+    if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
+        qDebug() << mLIPs.dump();
+
     // general properties
     mConiferous = boolVar("isConiferous");
     mEvergreen = boolVar("isEvergreen");

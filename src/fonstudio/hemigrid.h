@@ -41,7 +41,7 @@ class HemiGrid
     /// get mininum and maximum value in the grid.
     void matrixMinMax(double &rMatrixMin, double &rMatrixMax) const;
     /// get sum of all cell values with elevation >= "elevation".
-    const double sum(const double elevation=0) const;
+    double sum(const double elevation=0) const;
 
     static void projectLine(const double &x, const double &y, const double &deltah, const double &r,
         double &elevation, double &azimuth1, double &azimuth2);
