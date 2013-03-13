@@ -636,13 +636,13 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
 
             *lp++=LogicResult;
             break; }
-        case etStop: case etUnknown: case etDelimeter: throw IException("invalid token during execution.");
+        case etStop: case etUnknown: case etDelimeter: throw IException(QString("invalid token during execution: %1").arg(m_expression));
         } // switch()
 
         exec++;
     }
     if (p-Stack!=1)
-        throw IException("Expression::execute: stack unbalanced!");
+        throw IException(QString("Expression::execute: stack unbalanced: %1").arg(m_expression));
     result=*(p-1);
     //m_logicResult=*(lp-1);
     return result;
