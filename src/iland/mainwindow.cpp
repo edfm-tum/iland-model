@@ -281,6 +281,7 @@ MainWindow::MainWindow(QWidget *parent)
     // remote control of model
     connect(&mRemoteControl, SIGNAL(year(int)),this,SLOT(yearSimulated(int)));
     connect(&mRemoteControl, SIGNAL(finished(QString)), this, SLOT(modelFinished(QString)));
+    connect(&mRemoteControl, SIGNAL(stateChanged()), this, SLOT(checkModelState()));
 
     // log levels
     ui->actionDebug->setProperty("logLevel", QVariant(0));
@@ -358,13 +359,14 @@ void MainWindow::repaint()
 // control GUI actions
 void MainWindow::checkModelState()
 {
-    ui->actionModelCreate->setEnabled(mRemoteControl.canCreate());
-    ui->actionModelDestroy->setEnabled(mRemoteControl.canDestroy());
-    ui->actionModelRun->setEnabled(mRemoteControl.canRun());
-    ui->actionRun_one_year->setEnabled(mRemoteControl.canRun());
-    ui->actionReload->setEnabled(mRemoteControl.canDestroy());
+    ui->actionModelCreate->setEnabled(mRemoteControl.canCreate()&& !mRemoteControl.isRunning());
+    ui->actionModelDestroy->setEnabled(mRemoteControl.canDestroy() && !mRemoteControl.isRunning());
+    ui->actionModelRun->setEnabled(mRemoteControl.canRun( )&& !mRemoteControl.isPaused() && !mRemoteControl.isRunning());
+    ui->actionRun_one_year->setEnabled(mRemoteControl.canRun() && !mRemoteControl.isPaused()&& !mRemoteControl.isRunning());
+    ui->actionReload->setEnabled(mRemoteControl.canDestroy()&& !mRemoteControl.isRunning());
     ui->actionStop->setEnabled(mRemoteControl.isRunning());
     ui->actionPause->setEnabled(mRemoteControl.isRunning());
+    ui->actionPause->setText(mRemoteControl.isPaused()?"Continue":"Pause");
     dumpMessages();
 }
 
@@ -1060,13 +1062,15 @@ void MainWindow::on_actionEdit_XML_settings_triggered()
     ui->PaintWidget->update();
 }
 
+QMutex mutex_yearSimulated;
 void MainWindow::yearSimulated(int year)
 {
-       checkModelState();
-       ui->modelRunProgress->setValue(year);
-       labelMessage(QString("Running.... year %1 of %2.").arg(year).arg(mRemoteControl.totalYears()));
-       ui->PaintWidget->update();
-       QApplication::processEvents();
+    QMutexLocker mutex_locker(&mutex_yearSimulated);
+    checkModelState();
+    ui->modelRunProgress->setValue(year);
+    labelMessage(QString("Running.... year %1 of %2.").arg(year).arg(mRemoteControl.totalYears()));
+    ui->PaintWidget->update();
+    QApplication::processEvents();
 }
 
 void MainWindow::modelFinished(QString errorMessage)
@@ -1111,33 +1115,33 @@ void MainWindow::setupModel()
         vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
         ui->PaintWidget->update();
     }
-     ui->treeChange->setProperty("tree",0);
-     // setup dynamic output
-     QString dout = GlobalSettings::instance()->settings().value("output.dynamic.columns");
-     if (GlobalSettings::instance()->settings().value("output.dynamic.enabled","true")=="true" && !dout.isEmpty())
-         mRemoteControl.setupDynamicOutput(dout);
-     else
-         mRemoteControl.setupDynamicOutput("");
-     ui->modelRunProgress->setValue(0);
-     QSettings().setValue("project/lastxmlfile", ui->initFileName->text());
-     // magic debug output number
-     GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
+    ui->treeChange->setProperty("tree",0);
+    // setup dynamic output
+    QString dout = GlobalSettings::instance()->settings().value("output.dynamic.columns");
+    if (GlobalSettings::instance()->settings().value("output.dynamic.enabled","true")=="true" && !dout.isEmpty())
+        mRemoteControl.setupDynamicOutput(dout);
+    else
+        mRemoteControl.setupDynamicOutput("");
+    ui->modelRunProgress->setValue(0);
+    QSettings().setValue("project/lastxmlfile", ui->initFileName->text());
+    // magic debug output number
+    GlobalSettings::instance()->setDebugOutput((int) GlobalSettings::instance()->settings().valueDouble("system.settings.debugOutput"));
 
-     // populate the tree species filter list
-     ui->speciesFilterBox->clear();
-     ui->speciesFilterBox->addItem("<all species>", "");
-     QHash<QString, QString> list = mRemoteControl.availableSpecies();
-     QHash<QString, QString>::const_iterator i = list.begin();
-     while (i!=list.constEnd()) {
-         ui->speciesFilterBox->addItem(i.value(), i.key());
-         ++i;
-     }
+    // populate the tree species filter list
+    ui->speciesFilterBox->clear();
+    ui->speciesFilterBox->addItem("<all species>", "");
+    QHash<QString, QString> list = mRemoteControl.availableSpecies();
+    QHash<QString, QString>::const_iterator i = list.begin();
+    while (i!=list.constEnd()) {
+        ui->speciesFilterBox->addItem(i.value(), i.key());
+        ++i;
+    }
 
-     // retrieve the active management script file
-     if (mRemoteControl.model()->management())
-         ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(mRemoteControl.model()->management()->scriptFile()));
-     labelMessage("Model created. Ready to run.");
-
+    // retrieve the active management script file
+    if (mRemoteControl.model()->management())
+        ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(mRemoteControl.model()->management()->scriptFile()));
+    labelMessage("Model created. Ready to run.");
+    checkModelState();
 }
 
 
@@ -1160,6 +1164,7 @@ void MainWindow::on_openFile_clicked()
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
     ui->iniEdit->setPlainText(xmlFile);
+    checkModelState();
 }
 
 void MainWindow::on_actionTreelist_triggered()
@@ -1216,8 +1221,8 @@ void MainWindow::on_actionRun_one_year_triggered()
    GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
    labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
 
-   checkModelState();
    ui->PaintWidget->update();
+   checkModelState();
 }
 
 void MainWindow::on_actionReload_triggered()
@@ -1226,7 +1231,6 @@ void MainWindow::on_actionReload_triggered()
         return;
     mRemoteControl.destroy();
     setupModel();
-
 }
 
 void MainWindow::on_actionPause_triggered()
@@ -1234,6 +1238,11 @@ void MainWindow::on_actionPause_triggered()
     mRemoteControl.pause();
     if (!mRemoteControl.isRunning())
         labelMessage("Model execution paused...");
+
+    checkModelState();
+
+    if (!mRemoteControl.isPaused())
+        mRemoteControl.continueRun();
 }
 
 void MainWindow::on_actionStop_triggered()
