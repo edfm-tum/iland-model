@@ -42,6 +42,7 @@ public:
     bool canRun(); ///< model may be run
     bool isRunning(); ///< model is running
     bool isFinished(); ///< returns true if there is a valid model state, but the run is finished
+    bool isPaused(); ///< returns true if the model is currently paused
     // simulation length
     int currentYear() const; ///< return current year of the model
     int totalYears() const { return mYearsToRun; } ///< returns total number of years to simulate
@@ -60,9 +61,10 @@ public:
     void addLayers(const LayeredGridBase *layers, const QString &name);
     void setViewport(QPointF center_point, double scale_px_per_m);
 signals:
-    void finished(QString errorMessage);
-    void year(int year);
-    void bufferLogs(bool do_buffer);
+    void finished(QString errorMessage); ///< model has finished run (errorMessage is empty in case of success)
+    void year(int year); ///< signal indicating a year of the simulation has been processed
+    void bufferLogs(bool do_buffer); ///< signal indicating that logs should be buffered (true, model run mode) or that buffering should stop (false) for "interactive" mode
+    void stateChanged(); ///< is emitted when model started/stopped/paused
 public slots:
     void setFileName(QString initFileName); ///< set project file name
     void create(); ///< create the model
@@ -70,11 +72,14 @@ public slots:
     void run(int years); ///< run the model
     bool runYear(); ///< runs a single time step
     bool pause(); ///< pause execution, and if paused, continue to run. returns state *after* change, i.e. true=now in paused mode
+    bool continueRun(); ///< continues execution if simulation was paused
     void cancel(); ///< cancel execution of the model
     void repaint(); ///< force a repaint of the main drawing window
 private slots:
     void runloop();
 private:
+    bool internalRun(); ///< runs the main loop
+    void internalStop(); ///< save outputs, stop the model execution
     void fetchDynamicOutput();
     MainWindow *mViewerWindow;
     Model *mModel;

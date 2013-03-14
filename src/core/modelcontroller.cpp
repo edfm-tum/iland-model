@@ -110,6 +110,11 @@ bool ModelController::isFinished()
     return canRun() && !isRunning()  && mFinished;
 }
 
+bool ModelController::isPaused()
+{
+    return mPaused;
+}
+
 int ModelController::currentYear() const
 {
     return GlobalSettings::instance()->currentYear();
@@ -168,9 +173,9 @@ void ModelController::runloop()
 {
     static QTime sLastTime = QTime::currentTime();
 #ifdef ILAND_GUI
-    QApplication::processEvents();
+ //   QApplication::processEvents();
 #else
-    QCoreApplication::processEvents();
+ //   QCoreApplication::processEvents();
 #endif
     if (mPaused)
         return;
@@ -182,7 +187,9 @@ void ModelController::runloop()
 
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
         emit bufferLogs(true);
-        hasError = runYear(); // do the work
+
+        hasError = runYear(); // do the work!
+
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
         if (!hasError) {
@@ -196,8 +203,9 @@ void ModelController::runloop()
             if (time>0) {
                 sLastTime = QTime::currentTime(); // reset clock
                 qDebug() << "--- little break ---- (after " << elapsed << "ms).";
+                //QTimer::singleShot(time,this, SLOT(runloop()));
             }
-            QTimer::singleShot(time,this, SLOT(runloop()));
+
         }
         else
            doStop = true; // an error occured
@@ -208,12 +216,7 @@ void ModelController::runloop()
 
     if (doStop || mCanceled) {
                 // finished
-        mRunning = false;
-        GlobalSettings::instance()->outputManager()->save();
-        DebugTimer::printAllTimers();
-        mFinished = true;
-        emit bufferLogs(false); // stop buffering
-        emit finished(QString());
+        internalStop();
     }
 
 #ifdef ILAND_GUI
@@ -221,6 +224,30 @@ void ModelController::runloop()
 #else
     QCoreApplication::processEvents();
 #endif
+}
+
+bool ModelController::internalRun()
+{
+    // main loop
+
+    while (mRunning && !mPaused &&  !mFinished) {
+        runloop(); // start the running loop
+    }
+    return isFinished();
+}
+
+void ModelController::internalStop()
+{
+    if (mRunning) {
+        GlobalSettings::instance()->outputManager()->save();
+        DebugTimer::printAllTimers();
+        mFinished = true;
+    }
+    mRunning = false;
+    emit bufferLogs(false); // stop buffering
+    emit finished(QString());
+    emit stateChanged();
+
 }
 
 void ModelController::run(int years)
@@ -239,11 +266,11 @@ void ModelController::run(int years)
     DebugTimer::clearAllTimers();
 
     mRunning = true;
-    while (mRunning && !mPaused && !mCanceled && !mFinished) {
-        runloop(); // start the running loop
-        qDebug() << "ModelControler: runloop started.";
-    }
+    emit stateChanged();
 
+    qDebug() << "ModelControler: runloop started.";
+    internalRun();
+    emit stateChanged();
 }
 
 bool ModelController::runYear()
@@ -279,19 +306,29 @@ bool ModelController::pause()
     if (mPaused) {
         // currently in pause - mode -> continue
         mPaused = false;
-        QTimer::singleShot(0,this, SLOT(runloop())); // continue loop
+
     } else {
         // currently running -> set to pause mode
         GlobalSettings::instance()->outputManager()->save();
         mPaused = true;
         emit bufferLogs(false);
     }
+    emit stateChanged();
     return mPaused;
+}
+
+bool ModelController::continueRun()
+{
+    mRunning = true;
+    emit stateChanged();
+    return internalRun();
 }
 
 void ModelController::cancel()
 {
     mCanceled = true;
+    internalStop();
+    emit stateChanged();
 }
 
 QMutex error_mutex;

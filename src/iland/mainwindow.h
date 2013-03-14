@@ -54,6 +54,7 @@ public slots:
     void repaint(); ///< force a repaint of the main drawing area
     void yearSimulated(int year);
     void modelFinished(QString errorMessage);
+    void checkModelState();
     void bufferedLog(bool bufferLog);
     QImage screenshot(); ///< craete a screenshot of the main painting area
     void paintGrid(MapGrid *map_grid,
@@ -94,7 +95,7 @@ private:
     Viewport vp;
     QString dumpTreelist();
     void applyCycles(int cycle_count=1);
-    void checkModelState();
+
     void showTreeDetails(Tree* tree);
     void showResourceUnitDetails(const ResourceUnit *ru);
     void readSettings();
