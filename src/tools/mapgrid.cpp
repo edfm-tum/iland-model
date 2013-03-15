@@ -109,7 +109,7 @@ bool MapGrid::loadFromFile(const QString &fileName, const bool create_index)
     return false;
 }
 
-/// returns the list of resource units with at least one pixel within the area designated by 'id'
+/// returns the list of resource units with at least one pixel within the area designated by 'id'???? ID UNUSED???
 QList<ResourceUnit *> MapGrid::resourceUnits(const int id) const
 {
     QList<ResourceUnit *> result;

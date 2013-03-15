@@ -732,6 +732,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
 /// a (hacky) way of adding saplings of a certain age to a stand defined by 'stand_id'.
 int StandLoader::loadSaplings(const QString &content, int stand_id, const QString &fileName)
 {
+    Q_UNUSED(fileName);
     const MapGrid *stand_grid;
     if (mCurrentMap)
         stand_grid = mCurrentMap; // if set

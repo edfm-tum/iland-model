@@ -52,7 +52,7 @@ public:
     // helpers
    QString dump(const QString &path, int levels=-1);
 private:
-   void dump_rec(QDomElement c, QStringList &stack, QStringList &out, int idx=-1);
+   void dump_rec(QDomElement c, QStringList &stack, QStringList &out);
    QDomDocument mDoc;
    QDomElement mCurrentTop;
    QDomElement mTopNode;
