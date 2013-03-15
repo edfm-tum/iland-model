@@ -218,7 +218,7 @@ bool XmlHelper::setNodeValue(const QString &path, const QString &value)
 }
 
 // private recursive loop
-void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out, int idx)
+void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out)
 {
     if (c.isNull())
         return;
@@ -232,7 +232,7 @@ void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out, in
             stack.push_back(QString("%1[%2]").arg(ch.nodeName()).arg(child_index));
         } else
           stack.push_back(ch.nodeName());
-        dump_rec(ch, stack, out, child_index);
+        dump_rec(ch, stack, out);
         stack.pop_back();
         ch = ch.nextSiblingElement();
     }
@@ -245,6 +245,7 @@ void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out, in
 
 QString XmlHelper::dump(const QString &path, int levels)
 {
+    Q_UNUSED(levels);
     QDomElement c = node(path);
 
     QStringList stack;

@@ -211,6 +211,7 @@ int SpatialLayeredGrid::addGrid(const QString name, FloatGrid *grid)
 {
     mGridNames.append(name);
     mGrids.append(grid);
+    return mGrids.size();
 }
 
 

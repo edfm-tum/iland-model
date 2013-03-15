@@ -63,7 +63,7 @@ public:
     void setStandParameters(const double LAIneedle, const double LAIbroadleave, const double maxCanopyConductance);
     // actions
     /// process the canopy layer. returns the amount of precipitation that leaves the canopy-layer.
-    double flow(const double &preciptitation_mm, const double &temperature);
+    double flow(const double &preciptitation_mm);
     double evapotranspirationBGC(const ClimateDay *climate, const double daylength_h); ///< evapotranspiration from soil
     double evapotranspiration3PG(const ClimateDay *climate, const double daylength_h, const double combined_response); ///< evapotranspiration from soil (mm). returns
     // properties

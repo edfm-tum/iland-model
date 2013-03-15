@@ -230,7 +230,7 @@ void WaterCycle::run()
         // (1) precipitation of the day
         prec_mm = day->preciptitation;
         // (2) interception by the crown
-        prec_after_interception = mCanopy.flow(prec_mm, day->temperature);
+        prec_after_interception = mCanopy.flow(prec_mm);
         // (3) storage in the snow pack
         prec_to_soil = mSnowPack.flow(prec_after_interception, day->temperature);
         // save extra data (used by e.g. fire module)
@@ -339,7 +339,7 @@ inline double SnowPack::add(const double &preciptitation_mm, const double &tempe
     is stored in the canopy. The approach is adopted from Picus 1.3.
     Returns the amount of precipitation (mm) that surpasses the canopy layer.
     @sa http://iland.boku.ac.at/water+cycle#precipitation_and_interception */
-double Canopy::flow(const double &preciptitation_mm, const double &temperature)
+double Canopy::flow(const double &preciptitation_mm)
 {
     // sanity checks
     mInterception = 0.;
