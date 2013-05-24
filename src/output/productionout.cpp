@@ -37,7 +37,7 @@ ProductionOut::ProductionOut()
               << OutputColumn("nitrogenResponse", "yearly respose value nitrogen", OutDouble)
               << OutputColumn("radiation_m2", "utilizable  PAR in MJ per m2 and month (sum of daily rad*min(respVpd,respWater,respTemp))", OutDouble)
               << OutputColumn("utilizableRadiation_m2", "radiation (within vegetation period) PAR in MJ per m2 and month", OutDouble)
-              << OutputColumn("GPP_kg_MJ", "GPP (without Aging) in kg Biomass/m2", OutDouble);
+              << OutputColumn("GPP_kg_m2", "GPP (without Aging) in kg Biomass/m2", OutDouble);
 
  }
 
