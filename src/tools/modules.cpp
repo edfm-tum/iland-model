@@ -27,9 +27,13 @@
 #include <QtPlugin>
 
 // include the static modules here in the code:
+#if QT_VERSION >= 0x050000
 Q_IMPORT_PLUGIN(FirePlugin)
 Q_IMPORT_PLUGIN(WindPlugin)
-
+#else
+Q_IMPORT_PLUGIN(iland_fire)
+Q_IMPORT_PLUGIN(iland_wind)
+#endif
 
 Modules::Modules()
 {

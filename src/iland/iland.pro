@@ -23,7 +23,7 @@ CONFIG += exceptions
 CONFIG += rtti
 
 CONFIG(debug, debug|release) {
-win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
+win32-msvc*:{
 #debug msvc
 PRE_TARGETDEPS += ../plugins/iland_fired.lib
 PRE_TARGETDEPS += ../plugins/iland_windd.lib
@@ -31,13 +31,14 @@ LIBS += -L../plugins -liland_fired -liland_windd
 }
 }
 
+## win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{ ... } nur 64bit
 
 CONFIG(release, debug|release) {
 # release stuff
 #PRE_TARGETDEPS += ../plugins/libiland_fire.a
 #PRE_TARGETDEPS += ../plugins/libiland_wind.a
 #LIBS += -L../plugins -liland_fire -liland_wind
-win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
+win32-msvc*:{
 #debug msvc
 PRE_TARGETDEPS += ../plugins/iland_fire.lib
 PRE_TARGETDEPS += ../plugins/iland_wind.lib

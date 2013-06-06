@@ -164,7 +164,7 @@ void  StampContainer::addStamp(Stamp* stamp, const float dbh, const float hd_val
 
 void StampContainer::addReaderStamp(Stamp *stamp, const float crown_radius_m)
 {
-    double rest = fmod(crown_radius_m, 1.)+0.0001;
+    double rest = fmod(crown_radius_m, 1.f)+0.0001;
     int cls_hd = int( rest * 10 ); // 0 .. 9.99999999
     if (cls_hd>=cHDclassCount)
         cls_hd=cHDclassCount-1;
@@ -182,7 +182,7 @@ Internally, readers are stored in the same lookup-table, but using a encoding/de
 const Stamp* StampContainer::readerStamp(const float crown_radius_m) const
 {
     // Readers: from 0..10m in 50 steps???
-    int cls_hd = int( (fmod(crown_radius_m, 1.)+0.0001) * 10 ); // 0 .. 9.99999999
+    int cls_hd = int( (fmod(crown_radius_m, 1.f)+0.0001) * 10 ); // 0 .. 9.99999999
     if (cls_hd>=cHDclassCount)
         cls_hd=cHDclassCount-1;
     int cls_bhd = int(crown_radius_m);
@@ -372,7 +372,7 @@ QString StampContainer::dump()
     res = QString("****** Dump of StampContainer %1 **********\r\n").arg(m_fileName);
     foreach (StampItem si, m_stamps) {
         line = QString("%5 -> size: %1 offset: %2 dbh: %3 hd-ratio: %4\r\n")
-               .arg(sqrt(si.stamp->count())).arg(si.stamp->offset())
+               .arg(sqrt((double)si.stamp->count())).arg(si.stamp->offset())
                .arg(si.dbh).arg(si.hd).arg((int)si.stamp, 0, 16);
         // add data....
         maxidx = 2*si.stamp->offset() + 1;

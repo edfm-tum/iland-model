@@ -58,7 +58,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
 
     // calculate soil characteristics based on empirical functions (Schwalm & Ek, 2004)
     // note: the variables are percentages [0..100]
-    mPsi_ref = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
+    mPsi_ref = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10.)) * 0.000098; // Eq. 83
     mPsi_koeff_b = -( 3.1 + 0.157*pct_clay - 0.003*pct_sand );  // Eq. 84
     mRho_ref = 0.01 * (50.5 - 0.142*pct_sand - 0.037*pct_clay); // Eq. 78
     mCanopy.setup();

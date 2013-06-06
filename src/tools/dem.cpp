@@ -96,7 +96,7 @@ float DEM::orientation(const QPointF &point, float &rslope_angle, float &rslope_
         // transform to degree:
         // north: 0, east: 90, south: 180, west: 270
         aspect = aspect * 180. / M_PI + 360. + 90.;
-        aspect = fmod(aspect, 360.);
+        aspect = fmod(aspect, 360.f);
 
         rslope_aspect = aspect;
         return *p;
