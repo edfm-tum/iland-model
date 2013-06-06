@@ -178,7 +178,7 @@ public:
     // coordinate transformations
     const QPointF toWorld(const QPoint pixel);
     const QPoint toScreen(const QPointF p);
-    const QRect toScreen(const QRectF world) { QPoint p1=toScreen(world.topLeft()); QPoint p2=toScreen(world.bottomRight()); QRect r(p1, QSize(p2.x()-p1.x(), p2.y()-p1.y())); return r; }
+    const QRect toScreen(const QRectF world) { QPoint p1=toScreen(world.bottomLeft()); QPoint p2=toScreen(world.topRight()); QRect r(p1, QSize(p2.x()-p1.x(), p2.y()-p1.y())); return r; }
     // getters
     const QRectF viewRect() const { return m_viewport; }
     bool isVisible(const QPointF &world_coord) const;

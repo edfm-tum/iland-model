@@ -546,6 +546,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QRect rs = vp.toScreen(r);
     painter.setPen(Qt::black);
     painter.drawRect(rs);
+    qDebug() << rs;
 
     // what to paint??
 

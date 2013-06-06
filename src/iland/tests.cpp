@@ -123,7 +123,7 @@ void Tests::speedOfExpression()
             sum = 0.;
             count = 0;
             while (Tree *tree=at.next()) {
-                sum += pow(tree->dbh(),2.1); count++;
+                sum += pow(tree->dbh(),2.1f); count++;
             }
         }
         qDebug() << "Sum of volume" << sum << "count" << count;
