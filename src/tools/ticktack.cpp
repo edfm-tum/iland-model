@@ -23,7 +23,7 @@
 /* TODO: this is purely WINDOWS - provide a version for other BS, change the build-system
    to only use this on Win.
 */
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include <windows.h>
 
 class TTickTack

@@ -24,11 +24,11 @@
 #include "globalsettings.h"
 #include "helper.h"
 #include "exception.h"
-#include <QPluginLoader>
+#include <QtPlugin>
 
 // include the static modules here in the code:
-Q_IMPORT_PLUGIN(iland_fire)
-Q_IMPORT_PLUGIN(iland_wind)
+Q_IMPORT_PLUGIN(FirePlugin)
+Q_IMPORT_PLUGIN(WindPlugin)
 
 
 Modules::Modules()

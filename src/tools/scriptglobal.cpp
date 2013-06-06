@@ -17,7 +17,9 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 // for redirecting the script output
+#ifdef ILAND_GUI
 #include <QTextEdit>
+#endif
 
 #include "global.h"
 #include "scriptglobal.h"
@@ -423,6 +425,7 @@ QScriptValue script_alert(QScriptContext *ctx, QScriptEngine *eng)
 
 QScriptValue script_debug(QScriptContext *ctx, QScriptEngine *eng)
 {
+#ifdef ILAND_GUI
     QString value;
     for (int i = 0; i < ctx->argumentCount(); ++i) {
         if (i > 0)
@@ -437,6 +440,10 @@ QScriptValue script_debug(QScriptContext *ctx, QScriptEngine *eng)
         qDebug() << "Script:" << value;
     }
     return eng->undefinedValue();
+#else
+    Q_UNUSED(ctx); Q_UNUSED(eng);
+#endif
+    return QScriptValue("not available without GUI");
 }
 
 void ScriptGlobal::setupGlobalScripting()

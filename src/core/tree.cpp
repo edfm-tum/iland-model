@@ -129,7 +129,7 @@ void Tree::setup()
     mLeafArea = mFoliageMass * species()->specificLeafArea();
     mOpacity = 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea());
     mNPPReserve = (1+species()->finerootFoliageRatio())*mFoliageMass; // initial value
-    mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
+    mDbhDelta = 0.1f; // initial value: used in growth() to estimate diameter increment
 
 }
 
@@ -435,7 +435,7 @@ void Tree::readLIF()
     if (!reader)
         return;
     QPoint pos_reader = mPositionIndex;
-    const float outside_area_factor = 0.1; //
+    const float outside_area_factor = 0.1f; //
 
     int offset_reader = reader->offset();
     int offset_writer = mStamp->offset();

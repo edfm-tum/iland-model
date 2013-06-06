@@ -4,31 +4,45 @@
 QT += xml
 QT += script
 QT += sql
+QT += widgets
+
 TARGET = iland
 TEMPLATE = app
 CONFIG += precompile_header
 
+LIBS += -lQt5Concurrent
+
 # includepath: adds directories to the standard include (no directory needed when #include a file).
 INCLUDEPATH += ../core \
     ../tools \
-    ../output
+    ../output \
+    ../iland
 
 DEPENDPATH += plugins
 CONFIG += exceptions
 CONFIG += rtti
 
 CONFIG(debug, debug|release) {
-# debug stuff
-PRE_TARGETDEPS += ../plugins/libiland_fired.a
-PRE_TARGETDEPS += ../plugins/libiland_windd.a
+win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
+#debug msvc
+PRE_TARGETDEPS += ../plugins/iland_fired.lib
+PRE_TARGETDEPS += ../plugins/iland_windd.lib
 LIBS += -L../plugins -liland_fired -liland_windd
 }
+}
+
 
 CONFIG(release, debug|release) {
 # release stuff
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
+#PRE_TARGETDEPS += ../plugins/libiland_fire.a
+#PRE_TARGETDEPS += ../plugins/libiland_wind.a
+#LIBS += -L../plugins -liland_fire -liland_wind
+win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
+#debug msvc
+PRE_TARGETDEPS += ../plugins/iland_fire.lib
+PRE_TARGETDEPS += ../plugins/iland_wind.lib
 LIBS += -L../plugins -liland_fire -liland_wind
+}
 }
 
 DEFINES += ILAND_GUI
@@ -39,8 +53,8 @@ DEFINES += ILAND_GUI
 #QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
 ### Flag to allow 3GB on Win 32
-### you also need to modify boot.ini ...
-QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
+### you also need to modify boot.ini ... not necessary for 64bit
+#QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h

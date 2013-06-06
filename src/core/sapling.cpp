@@ -163,7 +163,7 @@ void Sapling::addSapling(const QPoint &pos_lif)
     // adds a sapling...
     mSaplingTrees.push_back(SaplingTree());
     SaplingTree &t = mSaplingTrees.back();
-    t.height = 0.05; // start with 5cm height
+    t.height = 0.05f; // start with 5cm height
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
     t.pixel = lif_map.ptr(pos_lif.x(), pos_lif.y());
     setBit(pos_lif);

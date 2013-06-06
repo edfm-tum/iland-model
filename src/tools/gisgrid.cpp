@@ -80,7 +80,7 @@ bool GisGrid::loadFromFile(const QString &fileName)
     max_value = -1000000000;
 
     // loads from a ESRI-Grid [RasterToFile] File.
-    QByteArray file_content = Helper::loadTextFile(fileName).toAscii();
+    QByteArray file_content = Helper::loadTextFile(fileName).toLatin1();
     if (file_content.isEmpty()) {
         qDebug() << "GISGrid: file" << fileName << "not present or empty.";
         return false;

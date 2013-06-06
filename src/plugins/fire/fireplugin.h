@@ -30,7 +30,11 @@ class FirePlugin: public QObject,
         public SetupResourceUnitInterface
 {
     Q_OBJECT
+    #if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "at.ac.boku.iland.fireplugin" FILE  "fireplugin.json")
+    #endif
     Q_INTERFACES(DisturbanceInterface WaterInterface SetupResourceUnitInterface)
+
 
 public:
     FirePlugin();

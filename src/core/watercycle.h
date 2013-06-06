@@ -20,7 +20,7 @@
 #ifndef WATERCYCLE_H
 #define WATERCYCLE_H
 class ResourceUnit;
-class ClimateDay;
+struct ClimateDay;
 class WaterCycle; // forward
 /// Water contains helper classes for the water cycle calculations
 namespace Water

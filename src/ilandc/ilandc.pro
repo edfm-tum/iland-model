@@ -20,19 +20,31 @@ DEPENDPATH += plugins
 CONFIG += exceptions
 CONFIG += rtti
 
+LIBS += -lQt5Concurrent
+
 CONFIG(debug, debug|release) {
-# debug stuff
-PRE_TARGETDEPS += ../plugins/libiland_fired.a
-PRE_TARGETDEPS += ../plugins/libiland_windd.a
+win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
+#debug msvc
+PRE_TARGETDEPS += ../plugins/iland_fired.lib
+PRE_TARGETDEPS += ../plugins/iland_windd.lib
 LIBS += -L../plugins -liland_fired -liland_windd
 }
+}
+
 
 CONFIG(release, debug|release) {
 # release stuff
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
+#PRE_TARGETDEPS += ../plugins/libiland_fire.a
+#PRE_TARGETDEPS += ../plugins/libiland_wind.a
+#LIBS += -L../plugins -liland_fire -liland_wind
+win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
+#debug msvc
+PRE_TARGETDEPS += ../plugins/iland_fire.lib
+PRE_TARGETDEPS += ../plugins/iland_wind.lib
 LIBS += -L../plugins -liland_fire -liland_wind
 }
+}
+
 
 CONFIG += precompile_header
 

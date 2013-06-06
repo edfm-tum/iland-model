@@ -34,6 +34,9 @@ class WindPlugin: public QObject,
 {
     Q_OBJECT
     Q_INTERFACES(DisturbanceInterface SetupResourceUnitInterface)
+    #if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "at.ac.boku.iland.windplugin" FILE  "windplugin.json")
+    #endif
 
 public:
     WindPlugin();

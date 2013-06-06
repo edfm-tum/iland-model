@@ -191,7 +191,7 @@ void Snapshot::loadTrees()
             }
 
         }
-    } catch (const std::bad_alloc &a) {
+    } catch (const std::bad_alloc &) {
         throw IException(QString("bad_alloc exception after %1 trees!!!!").arg(n));
     }
 

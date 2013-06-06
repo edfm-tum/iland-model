@@ -52,6 +52,7 @@
 #include "../plugins/wind/windmodule.h"
 #include "../plugins/wind/windplugin.h"
 #include <QInputDialog>
+#include <QtConcurrent/QtConcurrent>
 
 #include "spatialanalysis.h"
 

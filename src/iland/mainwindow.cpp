@@ -18,7 +18,7 @@
 ********************************************************************************************/
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 #include <QtXml>
 
 #include <signal.h>
@@ -90,10 +90,12 @@ public:
 
 QMutex qdebug_mutex;
 void dumpMessages();
-void myMessageOutput(QtMsgType type, const char *msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
 
+    Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
+     //QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
      case QtDebugMsg:
         if (showDebugMessages) {
@@ -104,20 +106,22 @@ void myMessageOutput(QtMsgType type, const char *msg)
      case QtWarningMsg:
          //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
          //MainWindow::logSpace()->ensureCursorVisible();
-          bufferedMessages.append(QString(msg));
+          bufferedMessages.append(msg);
          break;
-     case QtCriticalMsg:
-         fprintf(stderr, "Critical: %s\n", msg);
-         break;
-     case QtFatalMsg:
-         fprintf(stderr, "Fatal: %s\n", msg);
-         bufferedMessages.append(QString(msg));
+     case QtCriticalMsg: {
+        QByteArray localMsg = msg.toLocal8Bit();
+         fprintf(stderr, "Critical: %s\n", localMsg.constData());
+         break; }
+     case QtFatalMsg: {
+        QByteArray localMsg = msg.toLocal8Bit();
+         fprintf(stderr, "Fatal: %s\n", localMsg.constData());
+         bufferedMessages.append(msg);
 
          QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
          Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
          dumpMessages();
          Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
-
+        }
      }
      if (!doBufferMessages || bufferedMessages.count()>5000)
              dumpMessages();
@@ -130,7 +134,7 @@ void dumpMessages()
     // 2011-03-08: encountered "strange" crashes
     // when a warning within Qt lead to a infinite loop/deadlock (also caused by mutex locking)
     // now we prevent this by installing temporarily a 0-handler
-    qInstallMsgHandler(0);
+    qInstallMessageHandler(0);
 
     if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
@@ -150,7 +154,7 @@ void dumpMessages()
     }
 
     bufferedMessages.clear();
-    qInstallMsgHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
 }
 
 
@@ -229,7 +233,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mLogSpace = ui->logOutput;
     mLogSpace->setMaximumBlockCount(10000); // set a maximum for the in-GUI size of messages.
-    qInstallMsgHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
     // install signal handler
     signal( SIGSEGV, handle_signal );
 
@@ -1703,5 +1707,6 @@ void MainWindow::readSettings()
 
 void MainWindow::on_paintGridBox_currentIndexChanged(int index)
 {
+    Q_UNUSED(index);
     ui->visOtherGrid->setChecked(true);
 }
