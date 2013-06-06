@@ -246,7 +246,10 @@ inline void MTRand::seed()
 	// Otherwise use a hash of time() and clock() values
 	
 	// First try getting an array from /dev/urandom
-	FILE* urandom = fopen( "/dev/urandom", "rb" );
+    //FILE* urandom = fopen( "/dev/urandom", "rb" );
+    FILE* urandom;
+    fopen_s(&urandom, "/dev/urandom", "rb" );
+
 	if( urandom )
 	{
 		uint32 bigSeed[N];

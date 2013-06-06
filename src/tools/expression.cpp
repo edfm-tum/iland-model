@@ -200,7 +200,8 @@ void Expression::setExpression(const QString& aExpression)
     if (m_expr)
         delete[] m_expr;
     m_expr=new char[ba.length()+1]; // reserve memory...
-    strcpy(m_expr, ba.constData());
+    //strcpy(m_expr, ba.constData());
+    strcpy_s(m_expr, ba.length(), ba.constData());
 
     m_pos=m_expr;  // set starting point...
 
@@ -324,7 +325,7 @@ void  Expression::parse_level0()
     parse_level1();
 
     while (m_token=="+" || m_token=="-")  {
-        op=m_token.toAscii();
+        op=m_token.toLatin1();
         next_token();
         parse_level1();
         m_execList[m_execIndex].Type=etOperator;
@@ -342,7 +343,7 @@ void  Expression::parse_level1()
     //double temp=FResult;
     // alt:        if (m_token=="*" || m_token=="/") {
     while (m_token=="*" || m_token=="/") {
-        op=m_token.toAscii();
+        op=m_token.toLatin1();
         next_token();
         parse_level2();
         m_execList[m_execIndex].Type=etOperator;

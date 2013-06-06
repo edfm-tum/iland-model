@@ -58,7 +58,7 @@ protected:
 class CNPool: public CNPair
 {
 public:
-    CNPool(): CNPair::CNPair(), mParameter(0.) {}
+    CNPool(): CNPair(), mParameter(0.) {}
     CNPool(const double c, const double n, const double param_value) {C=c; N=n; mParameter=param_value; }
     double parameter() const { return mParameter; } ///< get weighting parameter
     double parameter(const CNPool &s) const; ///< 'simulate' weighting (get weighted param value of 's' with the current content)

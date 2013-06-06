@@ -28,7 +28,9 @@
 #include <QScriptValue>
 #include <QScriptEngine>
 
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(iland_fire, FirePlugin)
+#endif
 
 QString FirePlugin::name()
 {

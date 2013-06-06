@@ -20,6 +20,7 @@
 #ifndef SPECIES_H
 #define SPECIES_H
 
+#include <QColor>
 
 #include "expression.h"
 #include "globalsettings.h"

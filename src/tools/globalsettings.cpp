@@ -250,7 +250,8 @@ const QList<const DebugList*> GlobalSettings::debugLists(const int ID, const Deb
         }
     }
     // sort result list
-    std::sort(result_list.begin(), result_list.end(), debuglist_sorter);
+    //std::sort(result_list.begin(), result_list.end(), debuglist_sorter); // changed because of compiler warnings
+    qSort(result_list.begin(), result_list.end(), debuglist_sorter);
     return result_list;
 }
 

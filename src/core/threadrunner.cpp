@@ -27,6 +27,7 @@
 #include "global.h"
 #include "threadrunner.h"
 #include <QtCore>
+#include <QtConcurrent/QtConcurrent>
 bool ThreadRunner::mMultithreaded = true; // static
 
 ThreadRunner::ThreadRunner()

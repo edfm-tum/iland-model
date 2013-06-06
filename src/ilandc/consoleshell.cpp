@@ -123,10 +123,11 @@ void ConsoleShell::runYear(int year)
 }
 
 QMutex qdebug_mutex;
-void myMessageOutput(QtMsgType type, const char *msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
-
+    Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
+
     switch (type) {
      case QtDebugMsg:
         *ConsoleShell::logStream() << msg << endl;
@@ -168,7 +169,7 @@ void ConsoleShell::setupLogging()
         qDebug() << "Log output is redirected to logfile" << fname;
         mLogStream = new QTextStream(file);
     }
-    qInstallMsgHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
 
 
 }

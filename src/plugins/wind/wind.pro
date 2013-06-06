@@ -19,7 +19,9 @@ SOURCES       = \
     windmodule.cpp \
     windscript.cpp
 TARGET        = $$qtLibraryTarget(iland_wind)
-DESTDIR       = ../
+DESTDIR       = ../../plugins
+
+
 
 
 

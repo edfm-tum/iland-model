@@ -19,7 +19,14 @@
 
 #include "helper.h"
 #include <QtCore>
+#ifdef ILAND_GUI
+#if QT_VERSION < 0x050000
 #include <QtGui>
+#else
+#include <QtWidgets>
+#endif
+#endif
+#include <QColor>
 //#include "cycle.h"
 #include "ticktack.h"
 #include <limits>
@@ -91,26 +98,41 @@ void Helper::saveToFile(const QString &fileName, const QByteArray &data)
 /// ask the user for a input value
 QString Helper::userValue(const QString &message, const QString defaultValue, QWidget *parent)
 {
+#ifdef ILAND_GUI
     bool ok;
     QString result = QInputDialog::getText(parent, "input data", message, QLineEdit::Normal, defaultValue, &ok);
     if (ok)
         return result;
     else
         return defaultValue;
+#else
+    Q_UNUSED(defaultValue); Q_UNUSED(message); Q_UNUSED(parent);
+    return QString("not availabile in non-gui-mode");
+#endif
 }
 
 void Helper::msg(const QString &message, QWidget *parent)
 {
+#ifdef ILAND_GUI
     QMessageBox::information(parent, "iLand", message);
+#else
+    Q_UNUSED(message); Q_UNUSED(parent);
+#endif
 }
 
 bool Helper::question(const QString &message, QWidget *parent)
 {
+#ifdef ILAND_GUI
    return QMessageBox::question(parent, "iLand", message, QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
+#else
+    Q_UNUSED(message); Q_UNUSED(parent);
+    return false;
+#endif
 }
 
 QString Helper::fileDialog(const QString &title, const QString &start_directory, const QString &filter)
 {
+#ifdef ILAND_GUI
     QString the_filter = filter;
     if (the_filter.isEmpty())
         the_filter = "All files (*.*)";
@@ -119,11 +141,16 @@ QString Helper::fileDialog(const QString &title, const QString &start_directory,
 
     QString fileName = QFileDialog::getOpenFileName(0,
      title, start_directory, the_filter);
+#else
+    Q_UNUSED(title); Q_UNUSED(start_directory); Q_UNUSED(filter);
+    QString fileName="undefined";
+#endif
     return fileName;
 }
 
 void Helper::openHelp(const QString& topic)
 {
+#ifdef ILAND_GUI
     QUrl url;
     qDebug() << "current path" << QDir::currentPath();
     url.setUrl(QString("file:///%1/help/%2.html").arg(QDir::currentPath(),topic) , QUrl::TolerantMode);
@@ -131,6 +158,9 @@ void Helper::openHelp(const QString& topic)
     if (url.isValid())
         qDebug() << "url is valid";
     QDesktopServices::openUrl(url);
+#else
+    Q_UNUSED(topic);
+#endif
 }
 
 QString Helper::stripHtml(const QString &source)
