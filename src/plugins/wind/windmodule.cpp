@@ -95,6 +95,7 @@ WindModule::WindModule()
     mGustModifier = 1.;
     mIterationsPerMinute = 1.;
     mEdgeDetectionThreshold = 10.;
+    mFactorEdge = 5.;
     mTopexFactorModificationType = gfMultiply;
 }
 
@@ -116,6 +117,7 @@ void WindModule::setup()
     mWindSpeed = 0.; // set the wind speed explicitely to 0
     mGustModifier = xml.valueDouble(".gustModifier", 1.);
     mEdgeDetectionThreshold = xml.valueDouble(".edgeDetectionThreshold", 10.);
+    mFactorEdge = xml.valueDouble(".factorEdge", 5.);
     QString topex_mod_typ = xml.value(".topexModifierType", "multiplicative");
     mTopexFactorModificationType = gfMultiply;
     if (topex_mod_typ ==  "additive")
@@ -624,25 +626,29 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
 double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10)
 {
      // frontal area index
-    double lambda = 2. * tree->crownRadius() * (tree->height() * params.crown_length )* params.crown_area_factor / (cellsize()*cellsize()/n_trees);
+    const double porosity = 0.5;
+    double lambda = 2. * tree->crownRadius() * (tree->height() * params.crown_length )* params.crown_area_factor * porosity / (cellsize()*cellsize()/n_trees);
     // calculate zero-plane-displacement height (Raupachs drag partitioning model (Raupach 1992, 1994))
+    // the zero plane displacement is the virtual "ground" height in the canopy; it is usually at about 80% of the tree height
     const double cdl = 7.5;
-    double d0_help = sqrt(2. * cdl * lambda);
-    double d0 = tree->height() * (1. - (1.-exp(-d0_help))/d0_help);
+    double d0 = tree->height() * ( 1. - (1-exp(-cdl*sqrt(lambda)))/(cdl*sqrt(lambda)));
 
     const double surface_drag_coefficient = 0.003;
     const double element_drag_coefficient = 0.3;
     const double kaman_constant = 0.4;
 
     // drag coefficient gamma
-    double gamma = sqrt(surface_drag_coefficient + lambda*element_drag_coefficient);
-    if (gamma > element_drag_coefficient) gamma = element_drag_coefficient;
+    double lambda_drag = std::min(lambda, 0.6); // the lambda for the drag calculation is max 0.6
+    double gamma = 1./sqrt(surface_drag_coefficient + element_drag_coefficient*lambda_drag/2.);
 
     // surface roughness
-    double z0 = (tree->height() - d0)*exp(-kaman_constant/gamma + 0.193);
+    double z0 = (tree->height() - d0)*exp(-kaman_constant*gamma + 0.193);
 
-    // wind multiplier
-    double u_factor = log((tree->height()-d0)/z0) / log((tree->height()+10.)/z0);
+    // now we calculate the windspeed at the crown top. Our input is a windspeed 10m above the zero-plane-displacement (U10)
+    // if U10 is from a weather station above open ground, a transformation to the wind speed 10m above the forest would be necessary:
+    // U10 = U10_ref * log(1000/z0_ref) * log(10/z0) / ( log(10/z0_ref)*log(1000/z0) ), with z0_ref = z0 above open ground (e.g. 0.05), and z0 a typical roughness for forests (e.g. 0.3)
+    // we assume a logarithmic wind profie
+    double u_factor = log((tree->height()-d0)/z0) / log(10./z0);
     double u_crown = wind_speed_10 * u_factor;
 
     return u_crown;
@@ -678,10 +684,14 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     const double f_knot = 1.; // a reduction factor accounting for the presence of knots, currenty no reduction.
     // a factor to scale average wind speeds to gust, which transport much more energy. Orignially, the factor depends on the distance from the edge;
     // since we calculate only on the edge, the factor is fixed (see Byrne (2011) and Gardiner)
-    const double f_gust = 2.14;
 
-    rCWS_uproot = sqrt((params.Creg*stem_mass) / (tc*f_gap*f_gust)); // critical windspeed for uprooting
-    rCWS_break = sqrt(params.MOR*pow(tree->dbh(),3)*f_knot*M_PI / (32.*tc*f_gap*f_gust)); // critical windspeed for breakage
+    // Turning moments at stand edges are significantly higher at stand edges compared to conditions
+    // well inside the forest. Data from Gardiner(1997) and recalculations from Byrne (2011) indicate,
+    // that the maximum turning moment at the edge is about 5 times as high as "well inside" the forest.
+    const double f_edge = mFactorEdge;
+
+    rCWS_uproot = sqrt((params.Creg*stem_mass) / (tc*f_gap*f_edge)); // critical windspeed for uprooting
+    rCWS_break = sqrt(params.MOR*pow(tree->dbh(),3)*f_knot*M_PI / (32.*tc*f_gap*f_edge)); // critical windspeed for breakage
 
     // debug info
     // qDebug() << "f_gap, bal, tc, cws_uproot, cws_break:" << f_gap << bal << tc << rCWS_uproot << rCWS_break;
