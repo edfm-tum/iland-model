@@ -1703,5 +1703,6 @@ void MainWindow::readSettings()
 
 void MainWindow::on_paintGridBox_currentIndexChanged(int index)
 {
+    Q_UNUSED(index);
     ui->visOtherGrid->setChecked(true);
 }
