@@ -135,6 +135,7 @@ private:
     double mWindDirectionVariation; ///< random variation in wind direction
     double mWindSpeed; ///< wind speed (TODO: per resource unit!)
     double mEdgeDetectionThreshold; ///< minimum height difference of height-grid pixels to be detected as edges (default is 10m)
+    double mFactorEdge; ///< constant ratio between the maximujm turning moments at the stand edge and conditions well inside the forest (default: 5)
     int mWindDayOfYear; ///< day of year of the wind event (0..365)
     bool mSimulationMode; ///< if true, no trees are removed (test mode)
     int mCurrentIteration; ///< current iteration (1..n)
