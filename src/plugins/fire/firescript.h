@@ -34,6 +34,7 @@ public:
     int id() const; ///< the id of the last ignited fire during the simulation
     double x() const; ///< the x-coordinate of the last ignition
     double y() const; ///< the x-coordinate of the last ignition
+    static QString fireRUValueType; // for the exporter
 signals:
 
 public slots:
@@ -48,6 +49,7 @@ public slots:
 
 private:
     FireModule *mFire;
+
 };
 
 #endif // FIRESCRIPT_H

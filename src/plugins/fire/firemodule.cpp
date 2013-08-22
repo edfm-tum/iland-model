@@ -281,7 +281,7 @@ double FireModule::ignition(bool only_ignite)
                     int idx, gen, refill;
                     RandomGenerator::debugState(idx, gen, refill);
 
-                    qDebug() << "test: rand-sum" << test_rand_sum << "n" << test_rand_n << pixel_index << startpoint << p_cell<< "rng:" << idx << gen << refill;
+                    //qDebug() << "test: rand-sum" << test_rand_sum << "n" << test_rand_n << pixel_index << startpoint << p_cell<< "rng:" << idx << gen << refill;
                     return p; // no real fire spread
                 }
 
