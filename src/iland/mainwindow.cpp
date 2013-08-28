@@ -1446,12 +1446,10 @@ void MainWindow::on_pbCalculateExpression_clicked()
     Expression filter(expr_filter, &wrapper);
     AllTreeIterator at(GlobalSettings::instance()->model());
     int totalcount=0;
-    const ResourceUnit *ru;
     QVector<double> datavector;
     try {
 
         while (Tree *tree=at.next()) {
-            ru = tree->ru();
             wrapper.setTree(tree);
             if (filter.execute()) {
                 datavector << expr.execute();

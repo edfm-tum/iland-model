@@ -355,7 +355,8 @@ void Sapling::calculateGrowth()
         mCarbonLiving.addBiomass( fineroot*n, species->cnFineroot()  );
 
         // turnover
-        mRUS->ru()->snag()->addTurnoverLitter(species, foliage*species->turnoverLeaf(), fineroot*species->turnoverRoot());
+        if (mRUS->ru()->snag())
+            mRUS->ru()->snag()->addTurnoverLitter(species, foliage*species->turnoverLeaf(), fineroot*species->turnoverRoot());
 
         // calculate the "mortality from competition", i.e. carbon that stems from reduction of stem numbers
         // from Reinekes formula.
@@ -383,7 +384,8 @@ void Sapling::calculateGrowth()
         dead_fine.addBiomass( foliage*species->finerootFoliageRatio(), species->cnFineroot()  );
     }
     if (!dead_wood.isEmpty() || !dead_fine.isEmpty())
-        mRUS->ru()->snag()->addToSoil(species, dead_wood, dead_fine);
+        if (mRUS->ru()->snag())
+            mRUS->ru()->snag()->addToSoil(species, dead_wood, dead_fine);
 
     // calculate net growth:
     // delta of stocks
