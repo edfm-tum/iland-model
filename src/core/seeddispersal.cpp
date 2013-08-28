@@ -71,6 +71,9 @@ void SeedDispersal::setup()
     if (mSpecies==0)
         throw IException("Setup of SeedDispersal: Species not defined.");
 
+    if (fmod(GlobalSettings::instance()->settings().valueDouble("model.world.buffer",0),seedmap_size) != 0.)
+        throw IException("SeedDispersal:setup(): The buffer (model.world.buffer) must be a integer multiple of the seed pixel size (currently 20m, e.g. 20,40,60,...)).");
+
     // settings
     mTM_occupancy = 1.; // is currently constant
     mSpecies->treeMigKernel(mTM_as1, mTM_as2, mTM_ks); // set values
