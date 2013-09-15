@@ -492,7 +492,7 @@ void MainWindow::on_lrLoadStamps_clicked()
 void MainWindow::on_lrReadStamps_clicked()
 {
     FloatGrid grid; // use copy ctor
-    grid.setup(QRectF(-21., -21, 42, 42),2.);
+    grid.setup(QRectF(-21., -21, 42, 42),2.); // 0/0 is the center of the center cell
     StampContainer container;
     int totcount=0;
     DebugTimer t;
@@ -501,6 +501,8 @@ void MainWindow::on_lrReadStamps_clicked()
         grid.initialize(0.);
         float x,y;
         int tested=0, yes=0;
+        // the center point of the cell where the center of the tree is,
+        // is at 1m/1m (at a cell width of 2m)
         for (x=-radius;x<=radius;x+=0.01)
             for (y=-radius;y<=radius;y+=0.01) {
                 tested++;
@@ -508,16 +510,15 @@ void MainWindow::on_lrReadStamps_clicked()
                     grid.valueAt(x,y)++; yes++;
                 }
             }
-        qDebug() << "tested" << tested << "hit" << yes << "ratio" << yes/double(tested); // that should be pi, right?
+        qDebug() << "tested" << tested << "hit" << yes << "ratio" << 4.*yes/double(tested); // that should be pi, right?
         totcount+=tested;
         FloatGrid ngrid = grid.normalized(1.); // normalize with 1
         // create a stamp with a fitting size
         Stamp *stamp;
         int width=11;
-        if (radius>=7.) { width=9; }
-        else if (radius>=5.) { width=7; }
-        else if (radius>=3.) { width=5; }
-        else if (radius>=1.) { width=3; }
+        // radius: 0..<1: 1, >=1 <3: 3, >=3 < 5: 5, ...
+        width = (((int)radius+1)/2)*2 + 1;
+
         stamp = stampFromGrid(ngrid,width);
         // save stamp
         container.addReaderStamp(stamp, radius);
@@ -525,8 +526,10 @@ void MainWindow::on_lrReadStamps_clicked()
     } // for (radius)
     qDebug() << "tested a total of" << totcount;
     QString targetFile = xmldoc.documentElement().firstChildElement("readerStamp").text();
-    if (!Helper::question(QString("Save readerfile to %1?").arg(targetFile)))
+    if (!Helper::question(QString("Save readerfile to %1?").arg(targetFile))) {
+        qDebug() << container.dump();
         return;
+    }
     QFile file(targetFile);
     if (!file.open(QIODevice::WriteOnly)) {
         qDebug() << "Error opening reader file" << targetFile << "with error:" << file.errorString();

@@ -251,7 +251,7 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
 void StampContainer::attachReaderStamps(const StampContainer &source)
 {
     int found=0, total=0;
-    foreach (StampItem si, m_stamps) {
+    foreach (const StampItem &si, m_stamps) {
         const Stamp *s = source.readerStamp(si.crown_radius);
         si.stamp->setReader(const_cast<Stamp*>(s));
         if (s) found++;
@@ -291,7 +291,7 @@ void StampContainer::load(QDataStream &in)
 {
     qint32 type;
     qint32 count;
-    float bhd, hdvalue, crownradius;
+    float dbh, hdvalue, crownradius;
     quint32 magic;
     in >> magic;
     if (magic!=0xFEED0001)
@@ -310,7 +310,7 @@ void StampContainer::load(QDataStream &in)
     m_desc = desc;
     for (int i=0;i<count;i++) {
         in >> type; // read type
-        in >> bhd;
+        in >> dbh;
         in >> hdvalue;
         in >> crownradius;
         //qDebug() << "stamp bhd hdvalue type readsum dominance type" << bhd << hdvalue << type << readsum << domvalue << type;
@@ -318,8 +318,8 @@ void StampContainer::load(QDataStream &in)
         Stamp *stamp = new Stamp(type);
         stamp->load(in);
 
-        if (bhd > 0.f)
-            addStamp(stamp, bhd, hdvalue, crownradius);
+        if (dbh > 0.f)
+            addStamp(stamp, dbh, hdvalue, crownradius);
         else
             addReaderStamp(stamp, crownradius);
     }

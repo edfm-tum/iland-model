@@ -631,7 +631,7 @@ double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesPa
     // calculate zero-plane-displacement height (Raupachs drag partitioning model (Raupach 1992, 1994))
     // the zero plane displacement is the virtual "ground" height in the canopy; it is usually at about 80% of the tree height
     const double cdl = 7.5;
-    double d0 = tree->height() * ( 1. - (1-exp(-cdl*sqrt(lambda)))/(cdl*sqrt(lambda)));
+    double d0 = tree->height() * ( 1. - (1-exp(-sqrt(cdl*lambda)))/(sqrt(cdl*lambda)));
 
     const double surface_drag_coefficient = 0.003;
     const double element_drag_coefficient = 0.3;
