@@ -268,8 +268,10 @@ void Model::setupSpace()
                 // we assume a forest outside
                 for (int i=0;i<mHeightGrid->count();++i) {
                     const QPointF &p = mHeightGrid->cellCenterPoint(mHeightGrid->indexOf(i));
-                    if (p.x() < 0. || p.x()>width || p.y()<0. || p.y()>height)
+                    if (p.x() < 0. || p.x()>width || p.y()<0. || p.y()>height) {
                         mHeightGrid->valueAtIndex(i).setForestOutside(true);
+                        mHeightGrid->valueAtIndex(i).setValid(false);
+                    }
                 }
 
             }
@@ -977,7 +979,7 @@ void Model::initializeGrid()
             iy_center = iy_min + max_radiate_distance;
             for (int y=iy_min; y<=iy_max; ++y) {
                 for (int x=ix_min; x<=ix_max; ++x) {
-                    if ( !(*mHeightGrid)(x/cPxPerHeight, y/cPxPerHeight).isValid())
+                    if (!mGrid->isIndexValid(x,y) ||  !(*mHeightGrid)(x/cPxPerHeight, y/cPxPerHeight).isValid())
                         continue;
                     float value = qMax(qAbs(x-ix_center), qAbs(y-iy_center)) * step_width;
                     float &v = mGrid->valueAtIndex(x, y);
