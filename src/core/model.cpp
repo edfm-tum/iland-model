@@ -262,6 +262,17 @@ void Model::setupSpace()
                 }
             }
             mask_is_setup = true;
+        } else {
+            if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
+                // in the case we have no stand grid but only a large rectangle (without the torus option)
+                // we assume a forest outside
+                for (int i=0;i<mHeightGrid->count();++i) {
+                    const QPointF &p = mHeightGrid->cellCenterPoint(mHeightGrid->indexOf(i));
+                    if (p.x() < 0. || p.x()>width || p.y()<0. || p.y()>height)
+                        mHeightGrid->valueAtIndex(i).setForestOutside(true);
+                }
+
+            }
         }
 
         calculateStockableArea();

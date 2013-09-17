@@ -166,9 +166,6 @@ void Snapshot::loadTrees()
             Tree &t = ru->newTree();
             t.setRU(ru);
             t.mId = q.value(0).toInt();
-            // debug code
-            if (t.mId==13193)
-                qDebug() << "debug code";
             t.mPositionIndex.setX(q.value(2).toInt());
             t.mPositionIndex.setY(q.value(3).toInt());
             Species *s = GlobalSettings::instance()->model()->speciesSet()->species(q.value(4).toString());
@@ -187,10 +184,6 @@ void Snapshot::loadTrees()
             t.mNPPReserve = q.value(14).toFloat();
             t.mStressIndex = q.value(15).toFloat();
             t.mStamp = s->stamp(t.mDbh, t.mHeight);
-
-            //debug
-            if (t.mId==13193)
-                t.readLIF();
 
 
             if (++n % 10000 == 0) {

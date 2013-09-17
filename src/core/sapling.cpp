@@ -121,6 +121,8 @@ bool Sapling::hasSapling(const QPoint &position) const
 {
     const QPoint &offset = mRUS->ru()->cornerPointOffset();
     int index = (position.x()- offset.x())*cPxPerRU + (position.y() - offset.y());
+    if (index<0)
+        qDebug() << "Sapling error";
     return mSapBitset[index];
     /*
     float *target = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
@@ -220,7 +222,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
     QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
-    double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
+    double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height); // TODO check if this can be source of crashes (race condition)
     double delta_h_pot = h_pot - tree.height;
 
     // (2) reduce height growth potential with species growth response f_env_yr and with light state (i.e. LIF-value) of home-pixel.

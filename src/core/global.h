@@ -40,9 +40,10 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
 
 // change to enabled detailed debug messages.
 // if NO_DEBUG_MSGS is defined, NO debug outputs are generated.
-#if defined(QT_NO_DEBUG)
-#define NO_DEBUG_MSGS
-#endif
+// NO_DEBUG_MSG
+//#if !defined(QT_DEBUG)
+//#define NO_DEBUG_MSGS
+//#endif
 
 #if !defined(DBG_IF)
 #  ifndef NO_DEBUG_MSGS
