@@ -26,6 +26,7 @@ LIBS += -L../plugins -liland_fired -liland_windd
 
 CONFIG(release, debug|release) {
 # release stuff
+DEFINES += NO_DEBUG_MSGS
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 LIBS += -L../plugins -liland_fire -liland_wind
