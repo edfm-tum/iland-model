@@ -669,7 +669,8 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     double rel_gap = gap_length / tree->height();
     if (rel_gap>10) rel_gap=10;
 
-    double f_gap = (0.001+0.001*pow(rel_gap,0.562))/(0.00465*0.2150538) ; // formulation from Peltola et al. (1999), based on Gardiner et al. (1997) 0.2158... = scale to situation with gapsize = 0
+    // formulation from Peltola et al. (1999), based on Gardiner et al. (1997) 0.2158... = scale to situation with gapsize = 0
+    double f_gap = (0.001+0.001*pow(rel_gap,0.562))/(0.00465) ;
 
     // calculate the wet stem weight (iLand internally uses always dry weights)
     double stem_mass = tree->biomassStem() * params.wet_biomass_factor;
