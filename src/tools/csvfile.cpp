@@ -38,14 +38,18 @@
   Planned is also a "streaming" mode for large files (loadFile(), while(file.next()) file.value(x) ), but not finsihed yet.
 
 */
-#include <QtScript>
-Q_SCRIPT_DECLARE_QMETAOBJECT(CSVFile, QObject*)
-void CSVFile::addToScriptEngine(QScriptEngine &engine)
+#include <QJSEngine>
+#include <QJSValue>
+//Q_SCRIPT_DECLARE_QMETAOBJECT(CSVFile, QObject*)
+void CSVFile::addToScriptEngine(QJSEngine &engine)
 {
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
-    QScriptValue cc_class = engine.scriptValueFromQMetaObject<CSVFile>();
+    //QJSValue cc_class = engine.scriptValueFromQMetaObject<CSVFile>();
+
+    // TODO: solution for creating objects (on the C++ side...)
+
     // the script name for the object is "CSVFile".
-    engine.globalObject().setProperty("CSVFile", cc_class);
+    //engine.globalObject().setProperty("CSVFile", cc_class);
 }
 
 CSVFile::CSVFile(QObject *)

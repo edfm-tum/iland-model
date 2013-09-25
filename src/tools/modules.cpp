@@ -85,7 +85,7 @@ void Modules::setup()
         di->setup();
 
     // set up the scripting
-    QScriptEngine *engine = GlobalSettings::instance()->scriptEngine();
+    QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     foreach(DisturbanceInterface *di, mInterfaces)
         di->setupScripting(engine);
 }

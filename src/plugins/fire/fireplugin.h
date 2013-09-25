@@ -49,7 +49,7 @@ public:
     /// setup resource unit specific parameters
     void setupResourceUnit(const ResourceUnit *ru) { mFire.setup(ru);}
     /// setup additional javascript related features
-    void setupScripting(QScriptEngine *engine);
+    void setupScripting(QJSEngine *engine);
 
 
     // calculations

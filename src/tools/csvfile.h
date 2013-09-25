@@ -21,8 +21,7 @@
 #define CSVFILE_H
 
 #include <QObject>
-#include <QtScript>
-
+#include <QJSEngine>
 class CSVFile : public QObject
 {
     Q_OBJECT
@@ -50,7 +49,7 @@ public:
     void setHasCaptions(const bool hasCaps) { mHasCaptions = hasCaps; }
     void setFixedWidth(const bool hasFixedWidth) { mFixedWidth = hasFixedWidth; }
     void setFlat(const bool isflat) { mFlat = isflat; }
-    static void addToScriptEngine(QScriptEngine &engine); // called during setup of ScriptEngine
+    static void addToScriptEngine(QJSEngine &engine); // called during setup of ScriptEngine
 public slots:
     bool loadFile(const QString &fileName); ///< load @p fileName. load the complete file at once.
     bool loadFromString(const QString &content); ///< load content from a given string.

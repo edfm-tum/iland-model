@@ -73,7 +73,7 @@
 #include <QtCore>
 #include <QtXml>
 #include <QtSql>
-#include <QtScript/QScriptEngine>
+#include <QJSEngine>
 #include <algorithm>
 #include "global.h"
 #include "helper.h"
@@ -165,10 +165,10 @@ void GlobalSettings::resetScriptEngine()
     if (mScriptEngine)
         delete mScriptEngine;
 
-    mScriptEngine = new QScriptEngine();
+    mScriptEngine = new QJSEngine();
     // globals object: instatiate here, but ownership goes to script engine
     ScriptGlobal *global = new ScriptGlobal();
-    QScriptValue glb = mScriptEngine->newQObject(global,QScriptEngine::ScriptOwnership);
+    QJSValue glb = mScriptEngine->newQObject(global);
     mScriptEngine->globalObject().setProperty("Globals", glb);
 }
 

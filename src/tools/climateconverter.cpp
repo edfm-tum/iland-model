@@ -21,8 +21,8 @@
 #include "climateconverter.h"
 #include "csvfile.h"
 
-
-#include <QtScript>
+#include <QJSEngine>
+#include <QJSValue>
 #include <QtSql>
 
 /** @class ClimateConverter
@@ -36,12 +36,14 @@
   @class ClimateConverter
   This is the Scripting related documentation for the ClimateConverter tool.
 */
-Q_SCRIPT_DECLARE_QMETAOBJECT(ClimateConverter, QObject*)
-void ClimateConverter::addToScriptEngine(QScriptEngine &engine)
+//Q_SCRIPT_DECLARE_QMETAOBJECT(ClimateConverter, QObject*)
+void ClimateConverter::addToScriptEngine(QJSEngine &engine)
 {
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
-    QScriptValue cc_class = engine.scriptValueFromQMetaObject<ClimateConverter>();
+    //QJSValue cc_class = engine.scriptValueFromQMetaObject<ClimateConverter>();
     // the script name for the object is "ClimateConverter".
+    QObject *cc = new ClimateConverter();
+    QJSValue cc_class = engine.newQObject(cc);
     engine.globalObject().setProperty("ClimateConverter", cc_class);
 }
 

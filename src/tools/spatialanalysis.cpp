@@ -22,12 +22,12 @@
 #include "model.h"
 #include "helper.h"
 
-#include <QtScript/QScriptEngine>
-#include <QtScript/QScriptValue>
+#include <QJSEngine>
+#include <QJSValue>
 void SpatialAnalysis::addToScriptEngine()
 {
     SpatialAnalysis *spati = new SpatialAnalysis;
-    QScriptValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati, QScriptEngine::ScriptOwnership);
+    QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
     GlobalSettings::instance()->scriptEngine()->globalObject().setProperty("SpatialAnalysis", v);
 }
 

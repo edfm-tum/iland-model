@@ -1,5 +1,5 @@
 QT += xml
-QT += script
+QT += qml
 QT += sql
 
 TEMPLATE      = lib

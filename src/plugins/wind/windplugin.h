@@ -23,7 +23,7 @@
 
 #include "plugin_interface.h"
 class ResourceUnit; // forward
-class QScriptEngine;
+class QJSEngine;
 class WindModule;// forward
 
 /** a iLand plugin for wind disturbances.
@@ -52,7 +52,7 @@ public:
     /// setup resource unit specific parameters
     void setupResourceUnit(const ResourceUnit *ru);
     /// setup additional javascript related features
-    void setupScripting(QScriptEngine *engine);
+    void setupScripting(QJSEngine *engine);
 
 
     // calculations

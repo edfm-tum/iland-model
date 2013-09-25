@@ -26,8 +26,8 @@
 #include "scriptglobal.h"
 
 class Tree;
-class QScriptEngine;
-class Management : public QObject, protected QScriptable
+class QJSEngine;
+class Management : public QObject //, protected QScriptable
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count)
@@ -106,12 +106,13 @@ private:
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
+    void throwError(const QString &errormessage);
 
     // removal fractions
     double mRemoveFoliage, mRemoveBranch, mRemoveStem;
     QString mScriptFile;
     QList<QPair<Tree*, double> > mTrees;
-    QScriptEngine *mEngine;
+    QJSEngine *mEngine;
     int mRemoved;
 };
 
