@@ -33,7 +33,8 @@
 #include "mapgrid.h"
 //#include "modules.h"
 
-#include <QtScript>
+#include <QJSEngine>
+#include <QJSValue>
 
 /** @class Management Management executes management routines.
   @ingroup core
@@ -54,7 +55,7 @@ Management::Management()
 {
     // setup the scripting engine
     mEngine = GlobalSettings::instance()->scriptEngine();
-    QScriptValue objectValue = mEngine->newQObject(this);
+    QJSValue objectValue = mEngine->newQObject(this);
     mEngine->globalObject().setProperty("management", objectValue);
 
     // default values for removal fractions
@@ -190,7 +191,7 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
             }
         }
     } catch(const IException &e) {
-        context()->throwError(e.message());
+        throwError(e.message());
     }
     return n;
 }
@@ -229,13 +230,20 @@ double Management::aggregate_function(QString expression, QString filter, QStrin
         }
 
     } catch(const IException &e) {
-        context()->throwError(e.message());
+        throwError(e.message());
     }
     if (type=="sum")
         return sum;
     if (type=="mean")
         return n>0?sum/double(n):0.;
     return 0.;
+}
+
+// introduced with switch to QJSEngine (context->throwMessage not available any more)
+void Management::throwError(const QString &errormessage)
+{
+    GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
+    // no idea if this works!!!
 }
 
 
@@ -269,11 +277,12 @@ void Management::run()
     mTrees.clear();
     mRemoved=0;
     qDebug() << "Management::run() called";
-    QScriptValue mgmt = mEngine->globalObject().property("manage");
+    QJSValue mgmt = mEngine->globalObject().property("manage");
     int year = GlobalSettings::instance()->currentYear();
-    mgmt.call(QScriptValue(), QScriptValueList()<<year);
-    if (mEngine->hasUncaughtException())
-        qDebug() << "Script Error occured: " << mEngine->uncaughtException().toString() << "\n" << mEngine->uncaughtExceptionBacktrace();
+    //mgmt.call(QJSValue(), QScriptValueList()<<year);
+    QJSValue result = mgmt.call(QJSValueList() << year);
+    if (result.isError())
+        qDebug() << "Script Error occured: " << result.toString();//  << "\n" << mEngine->uncaughtExceptionBacktrace();
 
     if (mRemoved>0) {
         foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
@@ -324,7 +333,7 @@ int Management::filter(QString filter)
                 ++tp;
         }
     } catch(const IException &e) {
-        context()->throwError(e.message());
+        throwError(e.message());
     }
 
     qDebug() << "filtering with" << filter << "N=" << n_before << "/" << mTrees.count()  << "trees (before/after filtering).";
@@ -380,7 +389,7 @@ void Management::loadFromTreeList(QList<Tree*>tree_list)
 void Management::loadFromMap(MapGridWrapper *wrap, int key)
 {
     if (!wrap) {
-        context()->throwError("loadFromMap called with invalid map object!");
+        throwError("loadFromMap called with invalid map object!");
         return;
     }
     loadFromMap(wrap->map(), key);
@@ -413,7 +422,7 @@ void Management::killSaplings(MapGridWrapper *wrap, int key)
 void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
 {
     if (!(SWDfrac>=0. && SWDfrac<=1. && DWDfrac>=0. && DWDfrac<=1. && soilFrac>=0. && soilFrac<=1. && litterFrac>=0. && litterFrac<=1.)) {
-        context()->throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: %1").arg(context()->argumentsObject().toString()));
+        throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: ---"));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
@@ -441,7 +450,7 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
 void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction)
 {
     if (slash_fraction<0 || slash_fraction>1) {
-        context()->throwError(QString("slashSnags called with invalid parameters!!\nArgs: %1").arg(context()->argumentsObject().toString()));
+        throwError(QString("slashSnags called with invalid parameters!!\nArgs: ...."));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);

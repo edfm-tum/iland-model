@@ -24,9 +24,8 @@
 #include "firescript.h"
 
 #include <QObject>
-#include <QtScript>
-#include <QScriptValue>
-#include <QScriptEngine>
+#include <QJSValue>
+#include <QJSEngine>
 
 #if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(iland_fire, FirePlugin)
@@ -69,14 +68,14 @@ void FirePlugin::setup()
     mFire.setup();
 }
 
-Q_SCRIPT_DECLARE_QMETAOBJECT(FireScript, QObject*)
+//Q_SCRIPT_DECLARE_QMETAOBJECT(FireScript, QObject*)
 
 // add the fire script interface
-void FirePlugin::setupScripting(QScriptEngine *engine)
+void FirePlugin::setupScripting(QJSEngine *engine)
 {
     FireScript *fire_script = new FireScript();
     fire_script->setFireModule(&mFire);
-    QScriptValue obj = engine->newQObject(fire_script, QScriptEngine::AutoOwnership);
+    QJSValue obj = engine->newQObject(fire_script);
     engine->globalObject().setProperty("Fire", obj);
 
     qDebug() << "setup scripting called...";

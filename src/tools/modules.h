@@ -25,7 +25,7 @@ class SetupResourceUnitInterface; // forward
 class WaterInterface; // forward
 class ResourceUnit; // forward
 class WaterCycleData; // forward
-class QScriptEngine; // forward
+class QJSEngine; // forward
 /** The Modules class is the container for iLand modules (e.g. Fire, Wind, ...).
     It handles loading and invoking the functionality defined in the modules.
 */

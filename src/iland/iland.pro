@@ -2,7 +2,7 @@
 # Project created by QtCreator 2009-02-10T13:47:01
 # -------------------------------------------------
 QT += xml
-QT += script
+QT += qml
 QT += sql
 QT += widgets
 

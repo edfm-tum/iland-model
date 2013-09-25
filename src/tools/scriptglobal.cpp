@@ -20,7 +20,7 @@
 #ifdef ILAND_GUI
 #include <QTextEdit>
 #endif
-
+#include <QJSValue>
 #include "global.h"
 #include "scriptglobal.h"
 #include "model.h"
@@ -60,13 +60,15 @@ class ResourceUnit;
 
 QObject *ScriptGlobal::scriptOutput = 0;
 
-Q_SCRIPT_DECLARE_QMETAOBJECT(ScriptGlobal, QObject*)
-void ScriptGlobal::addToScriptEngine(QScriptEngine &engine)
+//Q_SCRIPT_DECLARE_QMETAOBJECT(ScriptGlobal, QObject*)
+void ScriptGlobal::addToScriptEngine(QJSEngine &engine)
 {
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
-    QScriptValue my_class = engine.scriptValueFromQMetaObject<ScriptGlobal>();
+    //QJSValue my_class = engine.scriptValueFromQMetaObject<ScriptGlobal>();
     // the script name for the object is "ClimateConverter".
-    engine.globalObject().setProperty("Globals", my_class);
+    QObject *globals = new ScriptGlobal();
+    QJSValue globals_cls = engine.newQObject(globals);
+    engine.globalObject().setProperty("Globals", globals_cls);
 }
 
 ScriptGlobal::ScriptGlobal(QObject *)
@@ -94,6 +96,11 @@ void ScriptGlobal::set(QString key, QString value)
         return;
     }
     xml.setNodeValue(key, value);
+}
+
+void ScriptGlobal::print(QString message)
+{
+    qDebug() << message;
 }
 
 QString ScriptGlobal::defaultDirectory(QString dir)
@@ -158,14 +165,17 @@ int ScriptGlobal::addTreesOnMap(const int standID, QString content)
 ********** MapGrid wrapper
 */
 
-Q_SCRIPT_DECLARE_QMETAOBJECT(MapGridWrapper, QObject*)
+//Q_SCRIPT_DECLARE_QMETAOBJECT(MapGridWrapper, QObject*)
 
-void MapGridWrapper::addToScriptEngine(QScriptEngine &engine)
+void MapGridWrapper::addToScriptEngine(QJSEngine &engine)
 {
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
-    QScriptValue cc_class = engine.scriptValueFromQMetaObject<MapGridWrapper>();
+    //QJSValue cc_class = engine.scriptValueFromQMetaObject<MapGridWrapper>();
     // the script name for the object is "Map".
-    engine.globalObject().setProperty("Map", cc_class);
+    // TODO: solution for creating objects!!!
+    QObject *mgw = new MapGridWrapper();
+    QJSValue mgw_cls = engine.newQObject(mgw);
+    engine.globalObject().setProperty("Map", mgw_cls);
 }
 
 MapGridWrapper::MapGridWrapper(QObject *)
@@ -238,8 +248,9 @@ bool ScriptGlobal::startOutput(QString table_name)
     Output *out = om->find(table_name);
     if (!out) {
         QString err=QString("Output '%1' is not a valid output.").arg(table_name);
-        if (context())
-           context()->throwError(err);
+        // TODO: ERROR function in script
+//        if (context())
+//           context()->throwError(err);
         return false;
     }
     out->setEnabled(true);
@@ -261,8 +272,9 @@ bool ScriptGlobal::stopOutput(QString table_name)
     Output *out = om->find(table_name);
     if (!out) {
         QString err=QString("Output '%1' is not a valid output.").arg(table_name);
-        if (context())
-           context()->throwError(err);
+        // TODO: ERROR function in script
+//        if (context())
+//           context()->throwError(err);
         return false;
     }
     out->setEnabled(false);
@@ -333,8 +345,7 @@ int ScriptGlobal::addSaplingsOnMap(const MapGridWrapper *map, const int mapID, Q
         loader.setMap(map->map());
         return loader.loadSaplings(csv_file, mapID, "called from script");
     } catch (const IException &e) {
-        if (context())
-           context()->throwError(e.message());
+        throwError(e.message());
     }
     return 0;
 }
@@ -348,8 +359,7 @@ bool ScriptGlobal::saveModelSnapshot(QString file_name)
         QString output_db = GlobalSettings::instance()->path(file_name);
         return shot.createSnapshot(output_db);
     } catch (const IException &e) {
-        if (context())
-           context()->throwError(e.message());
+        throwError(e.message());
     }
     return false;
 }
@@ -363,98 +373,104 @@ bool ScriptGlobal::loadModelSnapshot(QString file_name)
         QString input_db = GlobalSettings::instance()->path(file_name);
         return shot.loadSnapshot(input_db);
     } catch (const IException &e) {
-        if (context())
-           context()->throwError(e.message());
+        throwError(e.message());
     }
     return false;
 }
 
+void ScriptGlobal::throwError(const QString &errormessage)
+{
+    GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
+    // TODO: check if this works....
+}
+
 void ScriptGlobal::loadScript(const QString &fileName)
 {
-    QScriptEngine *engine = GlobalSettings::instance()->scriptEngine();
+    QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
 
     QString program = Helper::loadTextFile(fileName);
     if (program.isEmpty())
         return;
 
-    engine->evaluate(program);
+    QJSValue result = engine->evaluate(program);
     qDebug() << "management script loaded";
-    if (engine->hasUncaughtException())
-        qDebug() << "Script Error occured: " << engine->uncaughtException().toString() << "\n" << engine->uncaughtExceptionBacktrace();
+    if (result.isError())
+        qDebug() << "Script Error occured: " << result.toString(); // << "\n" << engine->uncaughtExceptionBacktrace();
 
 }
 
 QString ScriptGlobal::executeScript(QString cmd)
 {
     DebugTimer t("execute javascript");
-    QScriptEngine *engine = GlobalSettings::instance()->scriptEngine();
+    QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
+    QJSValue result;
     if (engine)
-        engine->evaluate(cmd);
-    if (engine->hasUncaughtException()) {
+        result = engine->evaluate(cmd);
+    if (result.isError()) {
         //int line = mEngine->uncaughtExceptionLineNumber();
-        QString msg = QString( "Script Error occured: %1\n").arg( engine->uncaughtException().toString());
-        msg+=engine->uncaughtExceptionBacktrace().join("\n");
+        QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
+        //msg+=engine->uncaughtExceptionBacktrace().join("\n");
         return msg;
     } else {
         return QString();
     }
 }
 
-QScriptValue script_include(QScriptContext *ctx, QScriptEngine *eng)
-{
+//QJSValue script_include(QScriptContext *ctx, QJSEngine *eng)
+//{
 
-    QString fileName = ctx->argument(0).toString();
-    QString path =GlobalSettings::instance()->path(fileName, "script") ;
-    QString includeFile=Helper::loadTextFile(path);
+//    QString fileName = ctx->argument(0).toString();
+//    QString path =GlobalSettings::instance()->path(fileName, "script") ;
+//    QString includeFile=Helper::loadTextFile(path);
 
-    ctx->setActivationObject(ctx->parentContext()->activationObject());
-    ctx->setThisObject(ctx->parentContext()->thisObject());
+//    ctx->setActivationObject(ctx->parentContext()->activationObject());
+//    ctx->setThisObject(ctx->parentContext()->thisObject());
 
-    QScriptValue ret = eng->evaluate(includeFile, fileName);
-    if (eng->hasUncaughtException())
-        qDebug() << "Error in include:" << eng->uncaughtException().toString();
-    return ret;
-}
+//    QJSValue ret = eng->evaluate(includeFile, fileName);
+//    if (eng->hasUncaughtException())
+//        qDebug() << "Error in include:" << eng->uncaughtException().toString();
+//    return ret;
+//}
 
-QScriptValue script_alert(QScriptContext *ctx, QScriptEngine *eng)
-{
-    QString value = ctx->argument(0).toString();
-    Helper::msg(value);
-    return eng->undefinedValue();
-}
+//QJSValue script_alert(QScriptContext *ctx, QJSEngine *eng)
+//{
+//    QString value = ctx->argument(0).toString();
+//    Helper::msg(value);
+//    return eng->undefinedValue();
+//}
 
-QScriptValue script_debug(QScriptContext *ctx, QScriptEngine *eng)
-{
-#ifdef ILAND_GUI
-    QString value;
-    for (int i = 0; i < ctx->argumentCount(); ++i) {
-        if (i > 0)
-            value.append(" ");
-        value.append(ctx->argument(i).toString());
-    }
-    if (ScriptGlobal::scriptOutput) {
-        QTextEdit *e = qobject_cast<QTextEdit*>(ScriptGlobal::scriptOutput);
-        if (e)
-            e->append(value);
-    } else {
-        qDebug() << "Script:" << value;
-    }
-    return eng->undefinedValue();
-#else
-    Q_UNUSED(ctx); Q_UNUSED(eng);
-#endif
-    return QScriptValue("not available without GUI");
-}
+//QJSValue script_debug(QScriptContext *ctx, QJSEngine *eng)
+//{
+//#ifdef ILAND_GUI
+//    QString value;
+//    for (int i = 0; i < ctx->argumentCount(); ++i) {
+//        if (i > 0)
+//            value.append(" ");
+//        value.append(ctx->argument(i).toString());
+//    }
+//    if (ScriptGlobal::scriptOutput) {
+//        QTextEdit *e = qobject_cast<QTextEdit*>(ScriptGlobal::scriptOutput);
+//        if (e)
+//            e->append(value);
+//    } else {
+//        qDebug() << "Script:" << value;
+//    }
+//    return eng->undefinedValue();
+//#else
+//    Q_UNUSED(ctx); Q_UNUSED(eng);
+//#endif
+//    return QJSValue("not available without GUI");
+//}
 
 void ScriptGlobal::setupGlobalScripting()
 {
-    QScriptEngine *engine = GlobalSettings::instance()->scriptEngine();
-    QScriptValue dbgprint = engine->newFunction(script_debug);
-    QScriptValue sinclude = engine->newFunction(script_include);
-    QScriptValue alert = engine->newFunction(script_alert);
-    engine->globalObject().setProperty("print",dbgprint);
-    engine->globalObject().setProperty("include",sinclude);
-    engine->globalObject().setProperty("alert", alert);
+    QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
+//    QJSValue dbgprint = engine->newFunction(script_debug);
+//    QJSValue sinclude = engine->newFunction(script_include);
+//    QJSValue alert = engine->newFunction(script_alert);
+//    engine->globalObject().setProperty("print",dbgprint);
+//    engine->globalObject().setProperty("include",sinclude);
+//    engine->globalObject().setProperty("alert", alert);
 
     // other object types
     ClimateConverter::addToScriptEngine(*engine);

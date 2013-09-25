@@ -21,7 +21,6 @@
 #define SCRIPTGLOBAL_H
 
 #include <QObject>
-#include <QtScript>
 
 
 // Scripting Interface for MapGrid
@@ -34,7 +33,7 @@ class MapGridWrapper: public QObject
 public:
     MapGridWrapper(QObject *parent=0);
     ~MapGridWrapper();
-    static void addToScriptEngine(QScriptEngine &engine);
+    static void addToScriptEngine(QJSEngine &engine);
     MapGrid *map() const { return mMap; } ///< acccess for C++ classes
     bool isValid() const; ///< returns true if map is successfully loaded
     QString name() const;
@@ -58,7 +57,7 @@ private:
   functions and properties that are accessible by JavaScript.
   */
 class Model;
-class ScriptGlobal : public QObject, protected QScriptable
+class ScriptGlobal : public QObject//, protected QScriptable
 {
     Q_OBJECT
     // read only properties
@@ -70,7 +69,7 @@ class ScriptGlobal : public QObject, protected QScriptable
 public:
     ScriptGlobal(QObject *parent=0);
     static void setupGlobalScripting();
-    static void addToScriptEngine(QScriptEngine &engine); ///< add this class to scripting engine
+    static void addToScriptEngine(QJSEngine &engine); ///< add this class to scripting engine
     // properties accesible by scripts
     int year() const; ///< current year in the model
     int resourceUnitCount() const; ///< get number of resource uinit
@@ -86,6 +85,7 @@ public slots:
     // system stuff
     QVariant setting(QString key); ///< get a value from the global xml-settings (returns undefined if not present)
     void set(QString key, QString value); ///< set the value of a setting
+    void print(QString message); ///< print the contents of the message to the log
     // file stuff
     QString defaultDirectory(QString dir); ///< get default directory of category 'dir'
     QString loadTextFile(QString fileName); ///< load content from a text file in a String (@sa CSVFile)
@@ -110,6 +110,7 @@ public slots:
     bool saveModelSnapshot(QString file_name);
     bool loadModelSnapshot(QString file_name);
 private:
+    void throwError(const QString &errormessage);
     QString mCurrentDir;
     Model *mModel;
 };

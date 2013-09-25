@@ -41,7 +41,7 @@ class Model;
 class OutputManager;
 class ModelController; // forward
 class SystemStatistics;
-class QScriptEngine; // forward
+class QJSEngine; // forward
 
 /// General settings and globally available data
 class GlobalSettings
@@ -64,7 +64,7 @@ public:
     /// access the global QScriptEngine used throughout the model
     /// for all Javascript related functionality.
     QString executeJavascript(const QString &command);
-    QScriptEngine *scriptEngine() const { return mScriptEngine; }
+    QJSEngine *scriptEngine() const { return mScriptEngine; }
     void resetScriptEngine(); ///< re-creates the script engine (when the Model is re-created)
 
     // system statistics
@@ -133,7 +133,7 @@ private:
     Model *mModel;
     ModelController *mModelController;
     OutputManager *mOutputManager;
-    QScriptEngine *mScriptEngine;
+    QJSEngine *mScriptEngine;
     int mRunYear;
     SystemStatistics *mSystemStatistics;
 

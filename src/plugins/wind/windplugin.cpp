@@ -16,7 +16,9 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
-#include <QtScript>
+#include <QJSValue>
+#include <QJSEngine>
+
 #include "global.h"
 #include "resourceunit.h"
 
@@ -69,11 +71,11 @@ void WindPlugin::setupResourceUnit(const ResourceUnit *ru)
     mWind->setupResourceUnit(ru);
 }
 
-void WindPlugin::setupScripting(QScriptEngine *engine)
+void WindPlugin::setupScripting(QJSEngine *engine)
 {
     WindScript *wind_script = new WindScript();
     wind_script->setModule(mWind);
-    QScriptValue obj = engine->newQObject(wind_script, QScriptEngine::AutoOwnership);
+    QJSValue obj = engine->newQObject(wind_script);
     engine->globalObject().setProperty("Wind", obj);
 
     qDebug() << "setup scripting for windmodule called...";
