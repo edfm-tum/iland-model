@@ -33,6 +33,7 @@
 #include "grid.h"
 #include "snapshot.h"
 
+
 // for accessing script publishing functions
 #include "climateconverter.h"
 #include "csvfile.h"
@@ -60,16 +61,6 @@ class ResourceUnit;
 
 QObject *ScriptGlobal::scriptOutput = 0;
 
-//Q_SCRIPT_DECLARE_QMETAOBJECT(ScriptGlobal, QObject*)
-void ScriptGlobal::addToScriptEngine(QJSEngine &engine)
-{
-    // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
-    //QJSValue my_class = engine.scriptValueFromQMetaObject<ScriptGlobal>();
-    // the script name for the object is "ClimateConverter".
-    QObject *globals = new ScriptGlobal();
-    QJSValue globals_cls = engine.newQObject(globals);
-    engine.globalObject().setProperty("Globals", globals_cls);
-}
 
 ScriptGlobal::ScriptGlobal(QObject *)
 {
@@ -98,9 +89,37 @@ void ScriptGlobal::set(QString key, QString value)
     xml.setNodeValue(key, value);
 }
 
+
+
 void ScriptGlobal::print(QString message)
 {
     qDebug() << message;
+#ifdef ILAND_GUI
+    if (ScriptGlobal::scriptOutput) {
+        QTextEdit *e = qobject_cast<QTextEdit*>(ScriptGlobal::scriptOutput);
+        if (e)
+            e->append(message);
+    }
+
+#endif
+
+}
+
+void ScriptGlobal::alert(QString message)
+{
+    Helper::msg(message); // nothing happens when not in GUI mode
+
+}
+
+void ScriptGlobal::include(QString filename)
+{
+    QString path = GlobalSettings::instance()->path(filename, "script") ;
+    QString includeFile=Helper::loadTextFile(path);
+
+    QJSValue ret = GlobalSettings::instance()->scriptEngine()->evaluate(includeFile, includeFile);
+    if (ret.isError())
+        qDebug() << "Error in include:" << ret.toString();
+
 }
 
 QString ScriptGlobal::defaultDirectory(QString dir)
@@ -381,6 +400,7 @@ bool ScriptGlobal::loadModelSnapshot(QString file_name)
 void ScriptGlobal::throwError(const QString &errormessage)
 {
     GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
+    qWarning() << "Scripterror:" << errormessage;
     // TODO: check if this works....
 }
 
@@ -416,51 +436,6 @@ QString ScriptGlobal::executeScript(QString cmd)
     }
 }
 
-//QJSValue script_include(QScriptContext *ctx, QJSEngine *eng)
-//{
-
-//    QString fileName = ctx->argument(0).toString();
-//    QString path =GlobalSettings::instance()->path(fileName, "script") ;
-//    QString includeFile=Helper::loadTextFile(path);
-
-//    ctx->setActivationObject(ctx->parentContext()->activationObject());
-//    ctx->setThisObject(ctx->parentContext()->thisObject());
-
-//    QJSValue ret = eng->evaluate(includeFile, fileName);
-//    if (eng->hasUncaughtException())
-//        qDebug() << "Error in include:" << eng->uncaughtException().toString();
-//    return ret;
-//}
-
-//QJSValue script_alert(QScriptContext *ctx, QJSEngine *eng)
-//{
-//    QString value = ctx->argument(0).toString();
-//    Helper::msg(value);
-//    return eng->undefinedValue();
-//}
-
-//QJSValue script_debug(QScriptContext *ctx, QJSEngine *eng)
-//{
-//#ifdef ILAND_GUI
-//    QString value;
-//    for (int i = 0; i < ctx->argumentCount(); ++i) {
-//        if (i > 0)
-//            value.append(" ");
-//        value.append(ctx->argument(i).toString());
-//    }
-//    if (ScriptGlobal::scriptOutput) {
-//        QTextEdit *e = qobject_cast<QTextEdit*>(ScriptGlobal::scriptOutput);
-//        if (e)
-//            e->append(value);
-//    } else {
-//        qDebug() << "Script:" << value;
-//    }
-//    return eng->undefinedValue();
-//#else
-//    Q_UNUSED(ctx); Q_UNUSED(eng);
-//#endif
-//    return QJSValue("not available without GUI");
-//}
 
 void ScriptGlobal::setupGlobalScripting()
 {
@@ -472,6 +447,17 @@ void ScriptGlobal::setupGlobalScripting()
 //    engine->globalObject().setProperty("include",sinclude);
 //    engine->globalObject().setProperty("alert", alert);
 
+
+    // wrapper functions for (former) stand-alone javascript functions
+    // Qt5 - modification
+    engine->evaluate("function print(x) { Globals.print(x); } " \
+                     "function include(x) { Globals.include(x); }" \
+                     "function alert(x) { Globals.alert(x); }");
+
+    ScriptObjectFactory *factory = new ScriptObjectFactory;
+    QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(factory);
+    engine->globalObject().setProperty("Factory", obj);
+
     // other object types
     ClimateConverter::addToScriptEngine(*engine);
     CSVFile::addToScriptEngine(*engine);
@@ -479,4 +465,36 @@ void ScriptGlobal::setupGlobalScripting()
     SpatialAnalysis::addToScriptEngine();
 
 }
+
+// Factory functions
+
+
+ScriptObjectFactory::ScriptObjectFactory(QObject *parent):
+    QObject(parent)
+{
+    mObjCreated = 0;
+}
+
+QJSValue ScriptObjectFactory::newCSVFile(QString filename)
+{
+    CSVFile *csv_file = new CSVFile;
+    if (!filename.isEmpty()) {
+        qDebug() << "CSVFile: loading file" << filename;
+        csv_file->loadFile(filename);
+    }
+
+    QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(csv_file);
+    mObjCreated++;
+    return obj;
+}
+
+QJSValue ScriptObjectFactory::newClimateConverter()
+{
+    ClimateConverter *cc = new ClimateConverter(0);
+    QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(cc);
+    mObjCreated++;
+    return obj;
+
+}
+
 

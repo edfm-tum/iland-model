@@ -1503,8 +1503,11 @@ void MainWindow::on_reloadJavaScript_clicked()
     if (!GlobalSettings::instance()->model())
         MSGRETURN("no model available.");
     Management *mgmt = GlobalSettings::instance()->model()->management();
-    if (!mgmt)
-        MSGRETURN("Error: no valid Management object available! (no model created).");
+    if (!mgmt) {
+        qDebug() << "no valid Management object available! (no model created). Loading the script into the global engine.";
+        ScriptGlobal::loadScript(ui->scriptActiveScriptFile->text());
+        return;
+    }
     if (mgmt->scriptFile().isEmpty())
         Helper::msg("no mangement script file specified");
     mgmt->loadScript(mgmt->scriptFile());
@@ -1521,7 +1524,7 @@ void MainWindow::on_selectJavaScript_clicked()
         return;
     ScriptGlobal::loadScript(fileName);
 
-    ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(fileName));
+    ui->scriptActiveScriptFile->setText(QString("%1").arg(fileName));
     qDebug() << "loaded Javascript file" << fileName;
     ScriptGlobal::scriptOutput = ui->scriptResult;
 
