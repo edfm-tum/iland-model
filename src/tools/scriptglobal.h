@@ -21,7 +21,7 @@
 #define SCRIPTGLOBAL_H
 
 #include <QObject>
-
+#include <QJSValue>
 
 // Scripting Interface for MapGrid
 class MapGrid; // forward
@@ -57,7 +57,7 @@ private:
   functions and properties that are accessible by JavaScript.
   */
 class Model;
-class ScriptGlobal : public QObject//, protected QScriptable
+class ScriptGlobal : public QObject
 {
     Q_OBJECT
     // read only properties
@@ -69,7 +69,6 @@ class ScriptGlobal : public QObject//, protected QScriptable
 public:
     ScriptGlobal(QObject *parent=0);
     static void setupGlobalScripting();
-    static void addToScriptEngine(QJSEngine &engine); ///< add this class to scripting engine
     // properties accesible by scripts
     int year() const; ///< current year in the model
     int resourceUnitCount() const; ///< get number of resource uinit
@@ -86,6 +85,8 @@ public slots:
     QVariant setting(QString key); ///< get a value from the global xml-settings (returns undefined if not present)
     void set(QString key, QString value); ///< set the value of a setting
     void print(QString message); ///< print the contents of the message to the log
+    void alert(QString message); ///< shows a message box to the user (if in GUI mode)
+    void include(QString filename); ///< "include" the given script file and evaluate. The path is relative to the "script" path
     // file stuff
     QString defaultDirectory(QString dir); ///< get default directory of category 'dir'
     QString loadTextFile(QString fileName); ///< load content from a text file in a String (@sa CSVFile)
@@ -115,5 +116,22 @@ private:
     Model *mModel;
 };
 
+/** The ScriptObjectFactory can instantiate objects of other C++ (QObject-based) types.
+ *  This factory approach is used because the V8 (QJSEngine) does not work with
+ *  the "new" way of creating objects.
+*/
+class ScriptObjectFactory: public QObject
+{
+    Q_OBJECT
+public:
+    ScriptObjectFactory(QObject *parent=0);
+public slots:
+    QJSValue newCSVFile(QString filename); ///< create a new instance of CSVFile and return it
+    QJSValue newClimateConverter(); ///< create new instance of ClimateConverter and return it
+    int stats() {return mObjCreated;} ///< return the number of created objects
+private:
+    int mObjCreated;
+
+};
 
 #endif // SCRIPTGLOBAL_H
