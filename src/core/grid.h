@@ -62,11 +62,17 @@ public:
     /// no operation, if the grids are not of the same size.
     void copy(const Grid<T> source) { if (source.count()==count()) memcpy(mData, source.mData, count()*sizeof(T)); }
 
+    // get the number of cells in x and y direction
     int sizeX() const { return mSizeX; }
     int sizeY() const { return mSizeY; }
+    // get the size of the grid in metric coordinates (x and y direction)
     float metricSizeX() const { return mSizeX*mCellsize; }
     float metricSizeY() const { return mSizeY*mCellsize; }
+    /// get the metric rectangle of the grid
     QRectF metricRect() const { return mRect; }
+    /// get the rectangle of the grid in terms of indices
+    QRect rectangle() const { return QRect(QPoint(0,0), QPoint(sizeX(), sizeY())); }
+    /// get the length of one pixel of the grid
     float cellsize() const { return mCellsize; }
     int count() const { return mCount; } ///< returns the number of elements of the grid
     bool isEmpty() const { return mData==NULL; } ///< returns false if the grid was not setup

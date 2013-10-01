@@ -55,14 +55,19 @@ public:
     QList<int> gridIndices(const int id) const;
     /// get a list of sapling trees on a given stand.
     QList<QPair<ResourceUnitSpecies *, SaplingTree *> > saplingTrees(const int id) const;
+    /// extract a list of neighborhood relationships between all the polygons of the grid
+    const QMultiHash<int, int> neighborList() const { return mNeighborList; }
+    QList<int> neighborsOf(const int index) const;
     /// return true, if the point 'lif_grid_coords' (x/y integer key within the LIF-Grid)
     inline bool hasValue(const int id, const QPoint &lif_grid_coords) const { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight) == id; }
     inline int gridValue(const QPoint &lif_grid_coords) const  { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight); }
 private:
+    void fillNeighborList(); ///< scan the map and fill the mNeighborList
     QString mName; ///< file name of the grid
     Grid<int> mGrid;
     QHash<int, QPair<QRectF,double> > mRectIndex; ///< holds the extent and area for each map-id
     QMultiHash<int, QPair<ResourceUnit*, double> > mRUIndex; ///< holds a list of resource units + areas per map-id
+    QMultiHash<int, int> mNeighborList; ///< a list of neighboring polygons; for each ID all neighboring IDs are stored.
 };
 
 #endif // MAPGRID_H
