@@ -167,4 +167,36 @@ QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const 
 
 }
 
+/// retrieve a list of all stands that are neighbors of the stand with ID "index".
+QList<int> MapGrid::neighborsOf(const int index) const
+{
+    if (mNeighborList.isEmpty())
+        const_cast<MapGrid*>(this)->fillNeighborList(); // fill the list
+    return mNeighborList.values(index);
+}
+
+/// scan the map and add neighborhood-relations to the mNeighborList
+/// the 4-neighborhood is used to identify neighbors.
+void MapGrid::fillNeighborList()
+{
+    mNeighborList.clear();
+    GridRunner<int> gr(mGrid, QRect(QPoint(1,1), QPoint(mGrid.sizeY()-1, mGrid.sizeY()-1))); // (almost) the full grid
+    int *n4[4];
+    QHash<int,int>::iterator it_hash;
+    while (gr.next()) {
+        gr.neighbors4(n4); // get the four-neighborhood
+        for (int i=0;i<4;++i)
+            if (*gr.current() != *n4[i]) {
+                // look if we already have the pair
+                it_hash = mNeighborList.find(*gr.current(), *n4[i]);
+                if (it_hash == mNeighborList.end()) {
+                    // add the "edge" two times in the hash
+                    mNeighborList.insertMulti(*gr.current(), *n4[i]);
+                    mNeighborList.insertMulti(*n4[i], *gr.current());
+                }
+            }
+    }
+
+}
+
 
