@@ -58,9 +58,9 @@ void WaterCycle::setup(const ResourceUnit *ru)
 
     // calculate soil characteristics based on empirical functions (Schwalm & Ek, 2004)
     // note: the variables are percentages [0..100]
-    mPsi_ref = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
+    mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
     mPsi_koeff_b = -( 3.1 + 0.157*pct_clay - 0.003*pct_sand );  // Eq. 84
-    mRho_ref = 0.01 * (50.5 - 0.142*pct_sand - 0.037*pct_clay); // Eq. 78
+    mTheta_sat = 0.01 * (50.5 - 0.142*pct_sand - 0.037*pct_clay); // Eq. 78
     mCanopy.setup();
 
     mPermanentWiltingPoint = heightFromPsi(-4000); // maximum psi is set to a constant of -4MPa
@@ -74,7 +74,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
     }
 
     mContent = mFieldCapacity; // start with full water content (in the middle of winter)
-    if (logLevelDebug()) qDebug() << "setup of water: Psi_ref (kPa)" << mPsi_ref << "Rho_ref" << mRho_ref << "coeff. b" << mPsi_koeff_b;
+    if (logLevelDebug()) qDebug() << "setup of water: Psi_sat (kPa)" << mPsi_sat << "Theta_sat" << mTheta_sat << "coeff. b" << mPsi_koeff_b;
     mCanopyConductance = 0.;
     mLastYear = -1;
 
@@ -92,7 +92,7 @@ inline double WaterCycle::psiFromHeight(const double mm) const
     // psi_x = psi_ref * ( rho_x / rho_ref) ^ b
     if (mm<0.001)
         return -100000000;
-    double psi_x = mPsi_ref * pow((mm / mSoilDepth / mRho_ref),mPsi_koeff_b);
+    double psi_x = mPsi_sat * pow((mm / mSoilDepth / mTheta_sat),mPsi_koeff_b);
     return psi_x; // pis
 }
 
@@ -102,7 +102,7 @@ inline double WaterCycle::psiFromHeight(const double mm) const
 inline double WaterCycle::heightFromPsi(const double psi_kpa) const
 {
     // rho_x = rho_ref * (psi_x / psi_ref)^(1/b)
-    double h = mSoilDepth * mRho_ref * pow(psi_kpa / mPsi_ref, 1./mPsi_koeff_b);
+    double h = mSoilDepth * mTheta_sat * pow(psi_kpa / mPsi_sat, 1./mPsi_koeff_b);
     return h;
 }
 
