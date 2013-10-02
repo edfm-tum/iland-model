@@ -32,7 +32,7 @@ StandOut::StandOut()
                    "i.e. output with year=2000 means effectively the state of at the end of the " \
                    "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
-              << OutputColumn("count_ha", "tree count (living)", OutInteger)
+              << OutputColumn("count_ha", "tree count (living, >4m height) per ha", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
               << OutputColumn("height_avg_m", "average tree height (m)", OutDouble)
               << OutputColumn("volume_m3", "volume (geomery, taper factor) in m3", OutDouble)
