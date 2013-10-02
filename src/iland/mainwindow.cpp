@@ -1207,7 +1207,7 @@ void MainWindow::on_actionModelRun_triggered()
    QString msg = QString("How many years to run?\nCurrent year: %1.").arg(mRemoteControl.currentYear());
    bool ok;
    int count = QInputDialog::getInt(this, "input value",
-                                        msg, 10, 0, 1000, 1, &ok);
+                                        msg, 10, 0, 10000, 1, &ok);
    if (!ok)
        return;
    count = count + mRemoteControl.currentYear();

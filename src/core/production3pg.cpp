@@ -37,7 +37,7 @@ Production3PG::Production3PG()
   The resulting radiation is MJ/m2       */
 inline double Production3PG::calculateUtilizablePAR(const int month) const
 {
-    // calculate the available radiation. This is done at SpeciesResponse-Level
+    // calculate the available radiation. This is done at SpeciesResponse-Level (SpeciesResponse::calculate())
     // see Equation (3)
     // multiplicative approach: responses are averaged one by one and multiplied on a monthly basis
 //    double response = mResponse->absorbedRadiation()[month] *
@@ -67,6 +67,8 @@ inline double Production3PG::abovegroundFraction() const
 {
     double utilized_frac = 1.;
     if (Model::settings().usePARFractionBelowGroundAllocation) {
+        // the Landsberg & Waring formulation takes into account the fraction of utilizeable to total radiation (but more complicated)
+        // we originally used only nitrogen and added the U_utilized/U_radiation
         utilized_frac = mResponse->totalUtilizedRadiation() / mResponse->yearlyRadiation();
     }
     double harsh =  1 - 0.8/(1 + 2.5 * mResponse->nitrogenResponse() * utilized_frac);
