@@ -28,6 +28,7 @@
   functions:
     - sin cos tan
     - exp ln sqrt
+    - round
     - min max: variable number of arguments, e.g: min(x,y,z)
     - if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway!
     - incsum: ?? incremental sum - currently not supported.
@@ -77,8 +78,8 @@
 #define opAnd 7
 #define opOr  8
 
-QString mathFuncList=" sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg in "; // a space at the end is important!
-const int  MaxArgCount[16]={1,1,1,1,  1, 1,   -1, -1, 3, 1,     -1,     2,  4,      2,  2,   -1};
+QString mathFuncList=" sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg in round "; // a space at the end is important!
+const int  MaxArgCount[17]={1,1,1,1,  1, 1,   -1, -1, 3, 1,     -1,     2,  4,      2,  2,   -1, 1};
 #define    AGGFUNCCOUNT 6
 QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
 
@@ -559,54 +560,56 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
         case etFunction:
             p--;
             switch (exec->Index) {
-                 case 0: *p=sin(*p); break;
-                 case 1: *p=cos(*p); break;
-                 case 2: *p=tan(*p); break;
-                 case 3: *p=exp(*p); break;
-                 case 4: *p=log(*p); break;
-                 case 5: *p=sqrt(*p); break;
-                     // min, max, if:  variable zahl von argumenten
-                 case 6:      // min
-                     for (i=0;i<exec->Value-1;i++,p--)
-                         *(p-1)=(*p<*(p-1))?*p:*(p-1);
-                     break;
-                 case 7:  //max
-                     for (i=0;i<exec->Value-1;i++,p--)
-                         *(p-1)=(*p>*(p-1))?*p:*(p-1);
-                     break;
-                 case 8: // if
-                     if (*(p-2)==1) // true
-                         *(p-2)=*(p-1);
-                     else
-                         *(p-2)=*p; // false
-                     p-= 2; // throw away both arguments
-                     break;
-                 case 9: // incrementelle summe
-                     m_incSumVar+=*p;
-                     *p=m_incSumVar;
-                     break;
-                 case 10: // Polygon-Funktion
-                     *(p-(int)(exec->Value-1))=udfPolygon(*(p-(int)(exec->Value-1)), p, (int)exec->Value);
-                     p-=(int) (exec->Value-1);
-                     break;
-                 case 11: // Modulo-Division: erg=rest von arg1/arg2
-                     p--; // p zeigt auf ergebnis...
-                     *p=fmod(*p, *(p+1));
-                     break;
-                 case 12: // hilfsfunktion fr sigmoidie sachen.....
-                     *(p-3)=udfSigmoid(*(p-3), *(p-2), *(p-1), *p);
-                     p-=3; // drei argumente (4-1) wegwerfen...
-                     break;
-                 case 13: case 14: // rnd(from, to) bzw. rndg(mean, stddev)
-                             p--;
-                     // index-13: 1 bei rnd, 0 bei rndg
-                     *p=udfRandom(exec->Index-13, *p, *(p+1));
-                     break;
+            case 0: *p=sin(*p); break;
+            case 1: *p=cos(*p); break;
+            case 2: *p=tan(*p); break;
+            case 3: *p=exp(*p); break;
+            case 4: *p=log(*p); break;
+            case 5: *p=sqrt(*p); break;
+                // min, max, if:  variable zahl von argumenten
+            case 6:      // min
+                for (i=0;i<exec->Value-1;i++,p--)
+                    *(p-1)=(*p<*(p-1))?*p:*(p-1);
+                break;
+            case 7:  //max
+                for (i=0;i<exec->Value-1;i++,p--)
+                    *(p-1)=(*p>*(p-1))?*p:*(p-1);
+                break;
+            case 8: // if
+                if (*(p-2)==1) // true
+                    *(p-2)=*(p-1);
+                else
+                    *(p-2)=*p; // false
+                p-= 2; // throw away both arguments
+                break;
+            case 9: // incrementelle summe
+                m_incSumVar+=*p;
+                *p=m_incSumVar;
+                break;
+            case 10: // Polygon-Funktion
+                *(p-(int)(exec->Value-1))=udfPolygon(*(p-(int)(exec->Value-1)), p, (int)exec->Value);
+                p-=(int) (exec->Value-1);
+                break;
+            case 11: // Modulo-Division: erg=rest von arg1/arg2
+                p--; // p zeigt auf ergebnis...
+                *p=fmod(*p, *(p+1));
+                break;
+            case 12: // hilfsfunktion fr sigmoidie sachen.....
+                *(p-3)=udfSigmoid(*(p-3), *(p-2), *(p-1), *p);
+                p-=3; // drei argumente (4-1) wegwerfen...
+                break;
+            case 13: case 14: // rnd(from, to) bzw. rndg(mean, stddev)
+                p--;
+                // index-13: 1 bei rnd, 0 bei rndg
+                *p=udfRandom(exec->Index-13, *p, *(p+1));
+                break;
             case 15: // in-list in() operator
                 *(p-(int)(exec->Value-1))=udfInList(*(p-(int)(exec->Value-1)), p, (int)exec->Value);
                 p-=(int) (exec->Value-1);
-
-                 }
+                break;
+            case 16: // round()
+                *p=round(*p); break;
+            }
             p++;
             break;
         case etLogical:
