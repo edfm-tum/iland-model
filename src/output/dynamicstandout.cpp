@@ -28,11 +28,18 @@
 DynamicStandOut::DynamicStandOut()
 {
     setName("dynamic stand output by species/RU", "dynamicstand");
-    setDescription("Userdefined outputs for tree aggregates for each stand.\n"\
+    setDescription("Userdefined outputs for tree aggregates for each stand or species.\n"\
                    "Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) "\
                    "are calculated.\n" \
+                   "!!!Specifying the aggregation\n" \
+                   "The ''by_species'' and ''by_ru'' option allow to define the aggregation level. When ''by_species'' is set to ''true'', " \
+                   "a row for each species will be created, otherwise all trees of all species are aggregated to one row. " \
+                   "Similarly, ''by_ru''=''true'' means outputs for each resource unit, while a value of ''false'' aggregates over the full project area." \
+                   "!!!Specifying filters\n" \
                    "You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees. " \
                    "Both filters are valid expressions (for resource unit level and tree level, respectively). For example, a ''treefilter'' of 'speciesindex=0' reduces the output to just one species.\n" \
+                   "The ''condition'' filter is (when present) evaluated and the output is only executed when ''condition'' is true (variable='year') This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year.\n" \
+                   "!!!Specifying data columns\n"
                    "Each field is defined as: ''field.aggregatio''n (separated by a dot). A ''field'' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
                    "mean, sum, min, max, p25, p50, p75, p5, 10, p90, p95 (pXX=XXth percentile), sd (std.dev.).\n" \
                    "Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)");
@@ -47,10 +54,12 @@ void DynamicStandOut::setup()
     QString filter = settings().value(".rufilter","");
     QString tree_filter = settings().value(".treefilter","");
     QString fieldList = settings().value(".columns", "");
+    QString condition = settings().value(".condition", "");
     if (fieldList.isEmpty())
         return;
     mRUFilter.setExpression(filter);
     mTreeFilter.setExpression(tree_filter);
+    mCondition.setExpression(condition);
     // clear columns
     columns().erase(columns().begin()+4, columns().end());
     mFieldList.clear();
@@ -87,17 +96,112 @@ void DynamicStandOut::setup()
              stripped_field.replace("__", "_");
              columns() << OutputColumn(stripped_field, field, OutDouble);
         }
+   }
+}
+
+void DynamicStandOut::exec()
+{
+    if (mFieldList.count()==0)
+        return;
+    if (!mCondition.isEmpty())
+        if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
+            return;
+
+    DebugTimer t("dynamic stand output");
+
+    bool per_species = GlobalSettings::instance()->settings().valueBool("output.dynamicstand.by_species", true);
+    bool per_ru = GlobalSettings::instance()->settings().valueBool("output.dynamicstand.by_ru", true);
+
+    if (per_ru) {
+        // when looping over resource units, do it differently (old way)
+        extractByResourceUnit();
+        return;
     }
+
+    Model *m = GlobalSettings::instance()->model();
+    QVector<double> data; //statistics data
+    TreeWrapper tw;
+    Expression custom_expr;
+
+    StatData stat; // statistcs helper class
+    // grouping
+    QVector<const Tree*> trees;
+    for (QList<Species*>::const_iterator species = m->speciesSet()->activeSpecies().constBegin();species!=m->speciesSet()->activeSpecies().constEnd();++species) {
+        trees.clear();
+        AllTreeIterator all_trees(m);
+        while (const Tree *t = all_trees.next()) {
+            if (per_species && t->species() != *species)
+                continue;
+            trees.push_back(t);
+        }
+        if (trees.size()==0)
+            continue;
+        // dynamic calculations
+        foreach (const SDynamicField &field, mFieldList) {
+
+            if (!field.expression.isEmpty()) {
+                // setup dynamic dynamic expression if present
+                custom_expr.setExpression(field.expression);
+                custom_expr.setModelObject(&tw);
+            }
+
+            // fetch data values from the trees
+            data.clear();
+            foreach(const Tree *t, trees) {
+                tw.setTree(t);
+                if (field.var_index>=0)
+                    data.push_back(tw.value(field.var_index));
+                else
+                    data.push_back(custom_expr.execute());
+            }
+            // constant values (if not already present)
+            if (isRowEmpty()) {
+                *this << currentYear() << -1 << -1;
+                if (per_species)
+                    *this << (*species)->id();
+                else
+                    *this << "";
+            }
+
+            // calculate statistics
+            stat.setData(data);
+            // aggregate
+            double value;
+            switch (field.agg_index) {
+            case 0: value = stat.mean(); break;
+            case 1: value = stat.sum(); break;
+            case 2: value = stat.min(); break;
+            case 3: value = stat.max(); break;
+            case 4: value = stat.percentile25(); break;
+            case 5: value = stat.median(); break;
+            case 6: value = stat.percentile75(); break;
+            case 7: value = stat.percentile(5); break;
+            case 8: value = stat.percentile(10); break;
+            case 9: value = stat.percentile(90); break;
+            case 10: value = stat.percentile(95); break;
+            case 11: value = stat.standardDev(); break;
+
+            default: value = 0.; break;
+            }
+            // add current value to output
+            *this << value;
+        }
+        if (!isRowEmpty())
+            writeRow();
+
+        if (!per_species)
+            break;
+    }
+
 }
 
 
-void DynamicStandOut::exec()
+void DynamicStandOut::extractByResourceUnit()
 {
 
     if (mFieldList.count()==0)
         return;
 
-    DebugTimer t("dynamic stand output");
     Model *m = GlobalSettings::instance()->model();
     QVector<double> data; //statistics data
     StatData stat; // statistcs helper class
@@ -106,6 +210,7 @@ void DynamicStandOut::exec()
     mRUFilter.setModelObject(&ruwrapper);
 
     Expression custom_expr;
+
 
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)

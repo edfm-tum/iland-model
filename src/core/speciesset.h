@@ -33,7 +33,7 @@ public:
     ~SpeciesSet();
     const QString &name() const { return mName; } ///< table name of the species set
     // access
-    QList<Species*> activeSpecies() { return mActiveSpecies; }
+    QList<Species*> activeSpecies() { return mActiveSpecies; } ///< list of species that are "active" (flag active in database)
     Species *species(const QString &speciesId) const { return mSpecies.value(speciesId); }
     const Species *species(const int &index); ///< get by arbirtray index (slower than using string-id!)
     const StampContainer &readerStamps() { return mReaderStamp; }
