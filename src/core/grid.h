@@ -467,6 +467,7 @@ T* GridRunner<T>::next()
 template <class T>
 /// get pointers the the 4-neighborhood
 /// north, east, south, west
+/// 0-pointers are returned for edge pixels.
 void GridRunner<T>::neighbors4(T** rArray)
 {
     // north:
@@ -480,6 +481,7 @@ void GridRunner<T>::neighbors4(T** rArray)
 
 /// get pointers to the 8-neighbor-hood
 /// north/east/west/south/NE/NW/SE/SW
+/// 0-pointers are returned for edge pixels.
 template <class T>
 void GridRunner<T>::neighbors8(T** rArray)
 {
