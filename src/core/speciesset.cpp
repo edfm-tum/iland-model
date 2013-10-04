@@ -70,6 +70,9 @@ int SpeciesSet::setup()
     QString readerFile = xml.value("model.species.reader", "reader.bin");
     readerFile = GlobalSettings::instance()->path(readerFile, "lip");
     mReaderStamp.load(readerFile);
+    if (GlobalSettings::instance()->settings().paramValueBool("debugDumpStamps", false) )
+        qDebug() << mReaderStamp.dump();
+
 
     QSqlQuery query(GlobalSettings::instance()->dbin());
     mSetupQuery = &query;

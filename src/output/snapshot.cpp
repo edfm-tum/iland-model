@@ -185,6 +185,7 @@ void Snapshot::loadTrees()
             t.mStressIndex = q.value(15).toFloat();
             t.mStamp = s->stamp(t.mDbh, t.mHeight);
 
+
             if (++n % 10000 == 0) {
                 qDebug() << n << "trees loaded...";
                 QCoreApplication::processEvents();

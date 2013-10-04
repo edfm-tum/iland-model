@@ -30,8 +30,10 @@ public:
     virtual void exec();
     virtual void setup();
 private:
+    void extractByResourceUnit();
     Expression mRUFilter;
     Expression mTreeFilter;
+    Expression mCondition;
     struct SDynamicField {
         int agg_index;
         int var_index;

@@ -115,8 +115,8 @@ private:
     inline double heightFromPsi(const double psi_kpa) const; // water height (mm) at water potential psi (kilopascal)
     inline double calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa); ///< calculate response for ground vegetation
     double mPsi_koeff_b; ///< see psiFromHeight()
-    double mPsi_ref; ///< see psiFromHeight(), kPa
-    double mRho_ref; ///< see psiFromHeight(), [-], m3/m3
+    double mPsi_sat; ///< see psiFromHeight(), kPa
+    double mTheta_sat; ///< see psiFromHeight(), [-], m3/m3
     const ResourceUnit *mRU; ///< resource unit to which this watercycle is connected
     Water::Canopy mCanopy; ///< object representing the forest canopy (interception, evaporation)
     Water::SnowPack mSnowPack; ///< object representing the snow cover (aggregation, melting)

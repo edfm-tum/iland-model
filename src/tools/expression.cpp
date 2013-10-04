@@ -28,12 +28,14 @@
   functions:
     - sin cos tan
     - exp ln sqrt
+    - round
     - min max: variable number of arguments, e.g: min(x,y,z)
     - if: if(condition, true, false): if condition=true, return true-case, else false-case. note: both (true, false) are evaluated anyway!
     - incsum: ?? incremental sum - currently not supported.
     - polygon: special function for polygons. polygon(value, x1,y1, x2,y2, x3,y3, ..., xn,yn): return is: y1 if value<x1, yn if value>xn, or the lineraly interpolated numeric y-value.
     - sigmoid: returns a sigmoid function. sigmoid(value, type, param1, param2). see udfSigmoid() for details.
     - rnd rndg: random functions; rnd(from, to): uniform random number, rndg(mean, stddev): gaussian randomnumber (mean and stddev in percent!)
+    - in: returns true if the value is in the list of arguments in in(x, a1, a2, a3)
     The Expression class also supports some logical operations:
     (logical) True equals to "1", "False" to zero. The precedence rules for parentheses...
     - and
@@ -76,8 +78,8 @@
 #define opAnd 7
 #define opOr  8
 
-QString mathFuncList="sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg";
-const int  MaxArgCount[15]={1,1,1,1,  1, 1,   -1, -1, 3, 1, -1, 2, 4, 2, 2};
+QString mathFuncList=" sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg in round "; // a space at the end is important!
+const int  MaxArgCount[17]={1,1,1,1,  1, 1,   -1, -1, 3, 1,     -1,     2,  4,      2,  2,   -1, 1};
 #define    AGGFUNCCOUNT 6
 QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
 
@@ -502,11 +504,11 @@ double Expression::calculate(ExpressionWrapper &object, const double variable_va
 
 int Expression::getFuncIndex(const QString& functionName)
 {
-    int pos=mathFuncList.indexOf(functionName);
+    int pos=mathFuncList.indexOf(" " + functionName + " "); // check full names
     if (pos<0)
         throw IException("Function " + functionName + " not defined!");
     int idx=0;
-    for (int i=1;i<pos;i++)
+    for (int i=1;i<=pos;i++) // start at the first character (skip first space)
         if (mathFuncList[i]==' ') ++idx;
     return idx;
 }
@@ -559,51 +561,56 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
         case etFunction:
             p--;
             switch (exec->Index) {
-                 case 0: *p=sin(*p); break;
-                 case 1: *p=cos(*p); break;
-                 case 2: *p=tan(*p); break;
-                 case 3: *p=exp(*p); break;
-                 case 4: *p=log(*p); break;
-                 case 5: *p=sqrt(*p); break;
-                     // min, max, if:  variable zahl von argumenten
-                 case 6:      // min
-                     for (i=0;i<exec->Value-1;i++,p--)
-                         *(p-1)=(*p<*(p-1))?*p:*(p-1);
-                     break;
-                 case 7:  //max
-                     for (i=0;i<exec->Value-1;i++,p--)
-                         *(p-1)=(*p>*(p-1))?*p:*(p-1);
-                     break;
-                 case 8: // if
-                     if (*(p-2)==1) // true
-                         *(p-2)=*(p-1);
-                     else
-                         *(p-2)=*p; // false
-                     p-= 2; // die beiden argumente wegwerfen...
-                     break;
-                 case 9: // incrementelle summe
-                     m_incSumVar+=*p;
-                     *p=m_incSumVar;
-                     break;
-                 case 10: // Polygon-Funktion
-                     *(p-(int)(exec->Value-1))=udfPolygon(*(p-(int)(exec->Value-1)), p, (int)exec->Value);
-                     p-=(int) (exec->Value-1);
-                     break;
-                 case 11: // Modulo-Division: erg=rest von arg1/arg2
-                     p--; // p zeigt auf ergebnis...
-                     *p=fmod(*p, *(p+1));
-                     break;
-                 case 12: // hilfsfunktion fr sigmoidie sachen.....
-                     *(p-3)=udfSigmoid(*(p-3), *(p-2), *(p-1), *p);
-                     p-=3; // drei argumente (4-1) wegwerfen...
-                     break;
-                 case 13: case 14: // rnd(from, to) bzw. rndg(mean, stddev)
-                             p--;
-                     // index-13: 1 bei rnd, 0 bei rndg
-                     *p=udfRandom(exec->Index-13, *p, *(p+1));
-                     break;
-
-                 }
+            case 0: *p=sin(*p); break;
+            case 1: *p=cos(*p); break;
+            case 2: *p=tan(*p); break;
+            case 3: *p=exp(*p); break;
+            case 4: *p=log(*p); break;
+            case 5: *p=sqrt(*p); break;
+                // min, max, if:  variable zahl von argumenten
+            case 6:      // min
+                for (i=0;i<exec->Value-1;i++,p--)
+                    *(p-1)=(*p<*(p-1))?*p:*(p-1);
+                break;
+            case 7:  //max
+                for (i=0;i<exec->Value-1;i++,p--)
+                    *(p-1)=(*p>*(p-1))?*p:*(p-1);
+                break;
+            case 8: // if
+                if (*(p-2)==1) // true
+                    *(p-2)=*(p-1);
+                else
+                    *(p-2)=*p; // false
+                p-= 2; // throw away both arguments
+                break;
+            case 9: // incrementelle summe
+                m_incSumVar+=*p;
+                *p=m_incSumVar;
+                break;
+            case 10: // Polygon-Funktion
+                *(p-(int)(exec->Value-1))=udfPolygon(*(p-(int)(exec->Value-1)), p, (int)exec->Value);
+                p-=(int) (exec->Value-1);
+                break;
+            case 11: // Modulo-Division: erg=rest von arg1/arg2
+                p--; // p zeigt auf ergebnis...
+                *p=fmod(*p, *(p+1));
+                break;
+            case 12: // hilfsfunktion fr sigmoidie sachen.....
+                *(p-3)=udfSigmoid(*(p-3), *(p-2), *(p-1), *p);
+                p-=3; // drei argumente (4-1) wegwerfen...
+                break;
+            case 13: case 14: // rnd(from, to) bzw. rndg(mean, stddev)
+                p--;
+                // index-13: 1 bei rnd, 0 bei rndg
+                *p=udfRandom(exec->Index-13, *p, *(p+1));
+                break;
+            case 15: // in-list in() operator
+                *(p-(int)(exec->Value-1))=udfInList(*(p-(int)(exec->Value-1)), p, (int)exec->Value);
+                p-=(int) (exec->Value-1);
+                break;
+            case 16: // round()
+                *p= *p < 0.0 ? ceil(*p - 0.5) : floor(*p + 0.5); break; // std::round only available in C++11 [http://stackoverflow.com/questions/554204/where-is-round-in-c]
+            }
             p++;
             break;
         case etLogical:
@@ -775,6 +782,14 @@ double  Expression::udfPolygon(double Value, double* Stack, int ArgCount) const
     }
     // falls nichts gefunden: value < als linkester x-wert
     return y;
+}
+
+double Expression::udfInList(double value, double *stack, int argCount) const
+{
+    for (int i=0;i<argCount-1;++i)
+        if (value == *stack--)
+            return (double) true; // true
+    return (double) false; // false
 }
 
 // userdefined func sigmoid....

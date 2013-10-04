@@ -49,6 +49,7 @@ public:
     // error handling
     void throwError(const QString msg);
     // dynamic outputs (variable fields)
+    void setDynamicOutputEnabled(bool enabled) { mDynamicOutputEnabled = enabled; }
     void setupDynamicOutput(QString fieldList);
     QString dynamicOutput();
     // some informational services
@@ -80,7 +81,7 @@ private slots:
 private:
     bool internalRun(); ///< runs the main loop
     void internalStop(); ///< save outputs, stop the model execution
-    void fetchDynamicOutput();
+    void fetchDynamicOutput(); ///< execute the dynamic output and fetch data
     MainWindow *mViewerWindow;
     Model *mModel;
     bool mPaused;
@@ -89,6 +90,7 @@ private:
     bool mCanceled;
     int mYearsToRun;
     QString mInitFile;
+    bool mDynamicOutputEnabled;
     QStringList mDynFieldList;
     QStringList mDynData;
 

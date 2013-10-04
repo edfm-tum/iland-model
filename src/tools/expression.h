@@ -74,7 +74,6 @@ public:
         void setCatchExceptions(bool docatch=true) { m_catchExceptions = docatch; }
         void   setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace);
         void enableIncSum();
-        double udfRandom(int type, double p1, double p2) const; ///< user defined function rnd() (normal distribution does not work now!)
         // other maintenance
         static void addConstant(const QString const_name, const double const_value);
 private:
@@ -130,7 +129,10 @@ private:
         mutable double m_incSumVar;
         bool   m_incSumEnabled;
         double  udfPolygon(double Value, double* Stack, int ArgCount) const; ///< special function polygon()
+        double  udfInList(double value, double* stack, int argCount) const; ///< special function in()
         double udfSigmoid(double Value, double sType, double p1, double p2) const; ///< special function sigmoid()
+        double udfRandom(int type, double p1, double p2) const; ///< user defined function rnd() (normal distribution does not work now!)
+
         void checkBuffer(int Index);
         QMutex m_execMutex;
         // linearization

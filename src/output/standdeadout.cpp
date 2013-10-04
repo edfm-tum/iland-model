@@ -31,7 +31,7 @@ StandDeadOut::StandDeadOut()
                    "i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that " \
                    "are removed during management. ");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
-              << OutputColumn("count_ha", "tree count (living)", OutInteger)
+              << OutputColumn("count_ha", "tree count (that died this year)", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
               << OutputColumn("height_avg_m", "average tree height (m)", OutDouble)
               << OutputColumn("volume_m3", "volume (geomery, taper factor) in m3", OutDouble)

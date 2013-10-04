@@ -54,7 +54,7 @@ void SpeciesResponse::clear()
 
     mNitrogenResponse = 0.;
     mTotalRadiation = 0.;
-    mTotalUtilizedRadiation = 0.;
+    mTotalUtilizeableRadiation = 0.;
 
 }
 void SpeciesResponse::setup(ResourceUnitSpecies *rus)
@@ -109,6 +109,7 @@ void SpeciesResponse::calculate()
         mSoilWaterResponse[month] += water_resp;
         mTempResponse[month] += temp_resp;
         mVpdResponse[month] += vpd_resp;
+        mRadiation[month] += day->radiation;
 
         if (doy>=veg_begin && doy<=veg_end) {
             // environmental responses for the day
@@ -116,7 +117,7 @@ void SpeciesResponse::calculate()
             min_resp = qMin(qMin(vpd_resp, temp_resp), water_resp);
             // calculate utilizable radiation, Eq. 4, http://iland.boku.ac.at/primary+production
             utilizeable_radiation = day->radiation * min_resp;
-            mRadiation[month] += day->radiation;
+
         } else {
             utilizeable_radiation = 0.; // no utilizable radiation outside of vegetation period
             min_resp = 0.;
@@ -137,7 +138,7 @@ void SpeciesResponse::calculate()
     // monthly values
     for (int i=0;i<12;i++) {
         double days = mRu->climate()->days(i);
-        mTotalUtilizedRadiation += mUtilizableRadiation[i];
+        mTotalUtilizeableRadiation += mUtilizableRadiation[i];
         mSoilWaterResponse[i]/=days;
         mTempResponse[i]/=days;
         mVpdResponse[i]/=days;

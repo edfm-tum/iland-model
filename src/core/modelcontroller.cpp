@@ -48,6 +48,7 @@ ModelController::ModelController()
     mRunning = false;
     mYearsToRun = 0;
     mViewerWindow = 0;
+    mDynamicOutputEnabled = false;
 }
 
 ModelController::~ModelController()
@@ -364,6 +365,7 @@ void ModelController::setupDynamicOutput(QString fieldList)
     }
     mDynData.clear();
     mDynData.append(mDynFieldList.join(";"));
+    mDynamicOutputEnabled = true;
 }
 
 QString ModelController::dynamicOutput()
@@ -374,7 +376,7 @@ QString ModelController::dynamicOutput()
 const QStringList aggList = QStringList() << "mean" << "sum" << "min" << "max" << "p25" << "p50" << "p75" << "p5"<< "p10" << "p90" << "p95";
 void ModelController::fetchDynamicOutput()
 {
-    if (mDynFieldList.isEmpty())
+    if (!mDynamicOutputEnabled || mDynFieldList.isEmpty())
         return;
     DebugTimer t("dynamic output");
     QStringList var;

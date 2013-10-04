@@ -1121,12 +1121,12 @@ void MainWindow::setupModel()
         ui->PaintWidget->update();
     }
     ui->treeChange->setProperty("tree",0);
+
     // setup dynamic output
     QString dout = GlobalSettings::instance()->settings().value("output.dynamic.columns");
-    if (GlobalSettings::instance()->settings().value("output.dynamic.enabled","true")=="true" && !dout.isEmpty())
-        mRemoteControl.setupDynamicOutput(dout);
-    else
-        mRemoteControl.setupDynamicOutput("");
+    mRemoteControl.setupDynamicOutput(dout);
+    mRemoteControl.setDynamicOutputEnabled(GlobalSettings::instance()->settings().valueBool("output.dynamic.enabled",false));
+
     ui->modelRunProgress->setValue(0);
     QSettings().setValue("project/lastxmlfile", ui->initFileName->text());
     // magic debug output number
@@ -1368,6 +1368,7 @@ void MainWindow::saveDebugOutputs()
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
+    Helper::saveToTextFile(p+"dynamic.csv", mRemoteControl.dynamicOutput());
 
     qDebug() << "saved debug outputs to" << p;
 }
@@ -1451,12 +1452,10 @@ void MainWindow::on_pbCalculateExpression_clicked()
     Expression filter(expr_filter, &wrapper);
     AllTreeIterator at(GlobalSettings::instance()->model());
     int totalcount=0;
-    const ResourceUnit *ru;
     QVector<double> datavector;
     try {
 
         while (Tree *tree=at.next()) {
-            ru = tree->ru();
             wrapper.setTree(tree);
             if (filter.execute()) {
                 datavector << expr.execute();

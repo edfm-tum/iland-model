@@ -69,7 +69,7 @@ inline double Production3PG::abovegroundFraction() const
     if (Model::settings().usePARFractionBelowGroundAllocation) {
         // the Landsberg & Waring formulation takes into account the fraction of utilizeable to total radiation (but more complicated)
         // we originally used only nitrogen and added the U_utilized/U_radiation
-        utilized_frac = mResponse->totalUtilizedRadiation() / mResponse->yearlyRadiation();
+        utilized_frac = mResponse->totalUtilizeableRadiation() / mResponse->yearlyRadiation();
     }
     double harsh =  1 - 0.8/(1 + 2.5 * mResponse->nitrogenResponse() * utilized_frac);
     return harsh;
@@ -97,7 +97,7 @@ double Production3PG::calculate()
     // conversion from gC to kg Biomass: C/Biomass=0.5
     const double gC_to_kg_biomass = 1. / (biomassCFraction * 1000.);
     for (int i=0;i<12;i++) {
-        utilizable_rad = calculateUtilizablePAR(i); // utilizable radiation of the month times ... (MJ/m2)
+        utilizable_rad = calculateUtilizablePAR(i); // utilizable radiation of the month ... (MJ/m2)
         epsilon = calculateEpsilon(i); // ... photosynthetic efficiency ... (gC/MJ)
         mUPAR[i] = utilizable_rad ;
         mGPP[i] =utilizable_rad * epsilon * gC_to_kg_biomass; // ... results in GPP of the month kg Biomass/m2 (converted from gC/m2)

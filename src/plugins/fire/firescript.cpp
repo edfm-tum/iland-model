@@ -50,13 +50,14 @@ double FireScript::ignite(double x, double y, double firesize, double windspeed,
     return result;
 }
 
-QString fireRUValueType="";
+QString FireScript::fireRUValueType=QLatin1String("");
+
 QString fireRUValue(const FireRUData &data) {
-    if (fireRUValueType=="kbdi") return QString::number(data.kbdi());
-    if (fireRUValueType=="dbh") return QString::number(data.fireRUStats.avg_dbh);
-    if (fireRUValueType=="crownkill") return QString::number(data.fireRUStats.crown_kill);
-    if (fireRUValueType=="basalarea") return QString::number(data.fireRUStats.basal_area>0?data.fireRUStats.died_basal_area / data.fireRUStats.basal_area:0.);
-    if (fireRUValueType=="baseIgnition") return QString::number(data.baseIgnitionProbability());
+    if (FireScript::fireRUValueType=="kbdi") return QString::number(data.kbdi());
+    if (FireScript::fireRUValueType=="dbh") return QString::number(data.fireRUStats.avg_dbh);
+    if (FireScript::fireRUValueType=="crownkill") return QString::number(data.fireRUStats.crown_kill);
+    if (FireScript::fireRUValueType=="basalarea") return QString::number(data.fireRUStats.basal_area>0?data.fireRUStats.died_basal_area / data.fireRUStats.basal_area:0.);
+    if (FireScript::fireRUValueType=="baseIgnition") return QString::number(data.baseIgnitionProbability());
     return "Error";
 }
 
