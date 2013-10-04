@@ -773,7 +773,8 @@ void Tests::testMap()
     foreach (const ResourceUnit *ru, ru_list)
         qDebug() << ru->index() << ru->boundingBox();
 
-
+    qDebug() << "neighbors of" << test_id << "are" << map.neighborsOf(test_id);
+    return;
     HeightGrid *hgrid = GlobalSettings::instance()->model()->heightGrid();
     for (int i=0;i<map.grid().count();i++)
         hgrid->valueAtIndex(i).height = map.grid().constValueAtIndex(map.grid().indexOf(i));

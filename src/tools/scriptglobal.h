@@ -45,7 +45,7 @@ public slots:
     // actions
     void load(QString file_name);
     void saveAsImage(QString file);
-    void paint(double min_value=0., double max_value=1.);
+    void paint(double min_value, double max_value);
 
 private:
     MapGrid *mMap;
@@ -128,6 +128,7 @@ public:
 public slots:
     QJSValue newCSVFile(QString filename); ///< create a new instance of CSVFile and return it
     QJSValue newClimateConverter(); ///< create new instance of ClimateConverter and return it
+    QJSValue newMap(); ///< create new instance of Map and return it
     int stats() {return mObjCreated;} ///< return the number of created objects
 private:
     int mObjCreated;
