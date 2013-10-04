@@ -244,8 +244,6 @@ double FireModule::ignition(bool only_ignite)
 {
 
     int cells_per_ru = (cRUSize / cellsize()) * (cRUSize / cellsize()); // number of fire cells per resource unit
-    double test_rand_sum = 0.;
-    int test_rand_n = 0;
 
     for (FireRUData *fd = mRUGrid.begin(); fd!=mRUGrid.end(); ++fd)
         if (fd->enabled() && fd->kbdi()>0.) {
@@ -264,7 +262,6 @@ double FireModule::ignition(bool only_ignite)
 
             double p = drandom();
 
-            test_rand_sum+=p; test_rand_n++;
             if (p < p_cell) {
                 // We have a fire event on the particular resource unit
                 // now randomly select a pixel within the resource unit as the starting point
@@ -284,7 +281,7 @@ double FireModule::ignition(bool only_ignite)
                     int idx, gen, refill;
                     RandomGenerator::debugState(idx, gen, refill);
 
-                    qDebug() << "test: rand-sum" << test_rand_sum << "n" << test_rand_n << pixel_index << startpoint << p_cell<< "rng:" << idx << gen << refill;
+                    //qDebug() << "test: rand-sum" << test_rand_sum << "n" << test_rand_n << pixel_index << startpoint << p_cell<< "rng:" << idx << gen << refill;
                     return p; // no real fire spread
                 }
 
@@ -507,6 +504,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
         GridRunner<float> runner(mGrid, max_spread);
         while ((p = runner.next())) {
             if (*p == 1.f) {
+                // p==1: pixel is burning in this iteration and might spread fire to neighbors
                 const QPointF pt = mGrid.cellCenterPoint(mGrid.indexOf(p));
                 FireRUData &fire_data = mRUGrid.valueAt(pt);
                 fire_data.fireRUStats.enter(mFireId); // setup/clear statistics if this is the first pixel in the resource unit

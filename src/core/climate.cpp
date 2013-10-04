@@ -225,7 +225,7 @@ void Climate::load()
             if (cday->month<1 || cday->dayOfMonth<1 || cday->month>12 || cday->dayOfMonth>31)
                 qDebug() << QString("Invalid dates in climate table %1: year %2 month %3 day %4!").arg(name()).arg(cday->year).arg(cday->month).arg(cday->dayOfMonth);
             DBG_IF(cday->month<1 || cday->dayOfMonth<1 || cday->month>12 || cday->dayOfMonth>31,"Climate:load", "invalid dates");
-            DBG_IF(cday->temperature<-70 || cday->temperature>50,"Climate:load", "temperature out of range (-70..+50°C)");
+            DBG_IF(cday->temperature<-70 || cday->temperature>50,"Climate:load", "temperature out of range (-70..+50 degree C)");
             DBG_IF(cday->preciptitation<0 || cday->preciptitation>200,"Climate:load", "precipitation out of range (0..200mm)");
             DBG_IF(cday->radiation<0 || cday->radiation>50,"Climate:load", "radiation out of range (0..50 MJ/m2/day)");
             DBG_IF(cday->vpd<0 || cday->vpd>10,"Climate:load", "vpd out of range (0..10 kPa)");

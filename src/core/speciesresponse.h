@@ -45,7 +45,7 @@ public:
     const double *co2Response() const { return mCO2Response; }
     double nitrogenResponse() const { return mNitrogenResponse; }
     double yearlyRadiation() const { return mTotalRadiation; }
-    double totalUtilizedRadiation() const { return mTotalUtilizedRadiation; }
+    double totalUtilizeableRadiation() const { return mTotalUtilizeableRadiation; }
     /// response calculation called during water cycle
     /// calculates minimum-response of vpd-response and soilwater response
     void soilAtmosphereResponses(const double psi_kPa, const double vpd, double &rMinResponse) const;
@@ -54,7 +54,7 @@ private:
     const ResourceUnit *mRu;
     const Species *mSpecies;
 
-    double mRadiation[12]; ///<  radiation sums per month (within vegetation period, MJ/m2)
+    double mRadiation[12]; ///<  radiation sums per month (MJ/m2)
     double mUtilizableRadiation[12]; ///< sum of daily radiation*minResponse (MJ/m2)
     double mTempResponse[12]; ///< average of temperature response
     double mSoilWaterResponse[12]; ///< average of soilwater response
@@ -62,7 +62,7 @@ private:
     double mNitrogenResponse;
     double mCO2Response[12];
     double mTotalRadiation;  ///< total radiation of the year (MJ/m2)
-    double mTotalUtilizedRadiation; ///< yearly sum of utilized radiation (MJ/m2)
+    double mTotalUtilizeableRadiation; ///< yearly sum of utilized radiation (MJ/m2)
 };
 
 #endif // SPECIESRESPONSE_H

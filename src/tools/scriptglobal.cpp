@@ -66,7 +66,8 @@ ScriptGlobal::ScriptGlobal(QObject *)
 {
     mModel = GlobalSettings::instance()->model();
     // current directory
-    mCurrentDir = GlobalSettings::instance()->path(QString(), "script") + QDir::separator();
+    if (mModel)
+        mCurrentDir = GlobalSettings::instance()->path(QString(), "script") + QDir::separator();
 }
 
 
@@ -255,6 +256,11 @@ double MapGridWrapper::area(int id) {
 
 bool ScriptGlobal::startOutput(QString table_name)
 {
+    if (table_name == "debug_dynamic") {
+        GlobalSettings::instance()->controller()->setDynamicOutputEnabled(true);
+        qDebug() << "started dynamic debug output";
+        return true;
+    }
     if (table_name.startsWith("debug_")) {
         GlobalSettings::DebugOutputs dbg = GlobalSettings::instance()->debugOutputId(table_name.mid(6));
         if (dbg==0)
@@ -279,6 +285,11 @@ bool ScriptGlobal::startOutput(QString table_name)
 
 bool ScriptGlobal::stopOutput(QString table_name)
 {
+    if (table_name == "debug_dynamic") {
+        GlobalSettings::instance()->controller()->setDynamicOutputEnabled(false);
+        qDebug() << "stopped dynamic debug output.";
+        return true;
+    }
     if (table_name.startsWith("debug_")) {
         GlobalSettings::DebugOutputs dbg = GlobalSettings::instance()->debugOutputId(table_name.mid(6));
         if (dbg==0)

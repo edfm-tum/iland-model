@@ -29,7 +29,7 @@ struct ClimateDay
     int year; // year
     int month; // month (1..12)
     int dayOfMonth; // day of the month (1..31)
-    double temperature; // average day °C (of the light hours)
+    double temperature; // average day  degree C (of the light hours)
     double min_temperature; // minimum temperature of the day
     double max_temperature; // maximum temperature of the day
     double mean_temp() const { return (min_temperature + max_temperature) / 2.; } // mean temperature

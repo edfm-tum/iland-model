@@ -631,7 +631,7 @@ double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesPa
     // calculate zero-plane-displacement height (Raupachs drag partitioning model (Raupach 1992, 1994))
     // the zero plane displacement is the virtual "ground" height in the canopy; it is usually at about 80% of the tree height
     const double cdl = 7.5;
-    double d0 = tree->height() * ( 1. - (1-exp(-cdl*sqrt(lambda)))/(cdl*sqrt(lambda)));
+    double d0 = tree->height() * ( 1. - (1-exp(-sqrt(cdl*lambda)))/(sqrt(cdl*lambda)));
 
     const double surface_drag_coefficient = 0.003;
     const double element_drag_coefficient = 0.3;
@@ -669,7 +669,8 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     double rel_gap = gap_length / tree->height();
     if (rel_gap>10) rel_gap=10;
 
-    double f_gap = (0.001+0.001*pow(rel_gap,0.562))/(0.00465*0.2150538) ; // formulation from Peltola et al. (1999), based on Gardiner et al. (1997) 0.2158... = scale to situation with gapsize = 0
+    // formulation from Peltola et al. (1999), based on Gardiner et al. (1997) 0.2158... = scale to situation with gapsize = 0
+    double f_gap = (0.001+0.001*pow(rel_gap,0.562))/(0.00465) ;
 
     // calculate the wet stem weight (iLand internally uses always dry weights)
     double stem_mass = tree->biomassStem() * params.wet_biomass_factor;
