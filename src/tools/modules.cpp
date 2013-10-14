@@ -43,6 +43,10 @@ void Modules::init()
         DisturbanceInterface *di = qobject_cast<DisturbanceInterface *>(plugin);
         if (di) {
             qDebug() << di->name();
+            // Hack for disabling fire module (for the wind release) -- werner, 2013-10-14
+            if (di->name()=="fire")
+                continue;
+            // end hack
             // check xml file
             if (GlobalSettings::instance()->settings().valueBool(QString("modules.%1.enabled").arg(di->name()))) {
                 // plugin is enabled: store in list of active modules
