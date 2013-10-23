@@ -27,7 +27,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     ui->setupUi(this);
     // fetch version information
     const char *bd = __DATE__;
-    ui->version->setText( QString("Version: %1").arg(currentVersion()) );
+    ui->version->setText( QString("Version: %1 %2").arg(currentVersion()).arg(compiler()) );
     ui->svnversion->setText( QString("SVN-Revision: %1 - build date: %2").arg(svnRevision()).arg(bd));
 
 }
