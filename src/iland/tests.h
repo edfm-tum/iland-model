@@ -56,6 +56,7 @@ public:
     void testFire();
     void testWind();
     void testRumple();
+    void testFOMEsetup();
     private:
     QString dumpTreeList();
     QObject *mParent;

@@ -19,7 +19,8 @@
 
 #include "dynamicstandout.h"
 
-#include "helper.h"
+#include "debugtimer.h"
+#include "statdata.h"
 #include "model.h"
 #include "resourceunit.h"
 #include "species.h"

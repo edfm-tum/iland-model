@@ -29,10 +29,11 @@
 
 #include "grid.h"
 #include "tree.h"
-#include "helper.h"
 
 #include "modelcontroller.h"
 #include "paintarea.h"
+#include "viewport.h"
+
 class Model;
 class Tree;
 class ResourceUnit;
@@ -171,6 +172,7 @@ private slots:
     void on_actionPerformance_triggered();
     void on_scriptCommandHistory_currentIndexChanged(int index);
     void on_paintGridBox_currentIndexChanged(int index);
+    void on_actionTest_triggered();
 };
 
 #endif // MAINWINDOW_H

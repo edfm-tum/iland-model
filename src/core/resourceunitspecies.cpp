@@ -5,7 +5,7 @@
 #include "resourceunit.h"
 #include "model.h"
 #include "watercycle.h"
-#include "helper.h"
+#include "debugtimer.h"
 
 /** @class ResourceUnitSpecies
   @ingroup core

@@ -16,6 +16,7 @@ LIBS += -lQt5Concurrent
 INCLUDEPATH += ../core \
     ../tools \
     ../output \
+    ../fome \
     ../iland
 
 DEPENDPATH += plugins
@@ -126,7 +127,10 @@ SOURCES += main.cpp \
     ../tools/spatialanalysis.cpp \
     ../fome/activity.cpp \
     ../fome/forestmanagementengine.cpp \
-    ../fome/knowledgebase.cpp
+    ../fome/knowledgebase.cpp \
+    ../tools/statdata.cpp \
+    ../tools/debugtimer.cpp \
+    ../tools/viewport.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -200,7 +204,10 @@ HEADERS += mainwindow.h \
     ../fome/activity.h \
     ../fome/forestmanagementengine.h \
     ../fome/knowledgebase.h \
-    ../fome/fome_global.h
+    ../fome/fome_global.h \
+    ../tools/statdata.h \
+    ../tools/debugtimer.h \
+    ../tools/viewport.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

@@ -25,7 +25,7 @@
 #include "tree.h"
 #include "soil.h"
 #include "snag.h"
-#include "helper.h"
+#include "debugtimer.h"
 
 #include <QString>
 #include <QtSql>

@@ -18,6 +18,7 @@
 ********************************************************************************************/
 #include "windmodule.h"
 #include "globalsettings.h"
+#include "debugtimer.h"
 #include "model.h"
 #include "modelcontroller.h"
 #include "helper.h"

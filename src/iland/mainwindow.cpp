@@ -37,6 +37,9 @@
 #include "species.h"
 
 #include "exception.h"
+#include "helper.h"
+#include "debugtimer.h"
+#include "statdata.h"
 
 #include "paintarea.h"
 
@@ -1400,49 +1403,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
     QString expr_text=ui->expressionText->text();
     QString expr_filter=ui->expressionFilter->text();
     if (expr_text == "test") {
-        Tests t(this);
-        int which = QInputDialog::getInt(this, "Which test",
-                                        "which test?\n0: expression speed\n1: tree clear\n" \
-                                        "2:kill trees\n3: climate\n4: multiple light automation\n" \
-                                        "5: species response\n" \
-                                        "6: watercycle\n" \
-                                        "7: CSV File\n" \
-                                        "8: Xml setters\n" \
-                                        "9: random functions\n" \
-                                        "10: seed dispersal.\n" \
-                                        "11: multiple thread expression\n" \
-                                        "12: linearized expressions\n" \
-                                        "13: establishment\n" \
-                                        "14: GridRunner\n" \
-                                         "15: Soil (ICBM/2N)\n" \
-                                         "16: load Map \n" \
-                                         "17: test DEM \n" \
-                                         "18: test fire module \n" \
-                                         "19: test wind module\n" \
-                                         "20: test rumple index",-1);
-        switch (which) {
-        case 0: t.speedOfExpression();break;
-        case 1: t.clearTrees(); break;
-        case 2: t.killTrees(); break;
-        case 3: t.climate(); break;
-        case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
-        case 5: t.climateResponse(); break;
-        case 6: t.testWater(); break;
-        case 7: t.testCSVFile(); break;
-        case 8: t.testXml(); break;
-        case 9: t.testRandom(); break;
-        case 10: t.testSeedDispersal(); break;
-        case 11: t.testMultithreadExecute(); break;
-        case 12: t.testLinearExpressions(); break;
-        case 13: t.testEstablishment(); break;
-        case 14: t.testGridRunner(); break;
-        case 15: t.testSoil(); break;
-        case 16: t.testMap(); break;
-        case 17: t.testDEM(); break;
-        case 18: t.testFire(); break;
-        case 19: t.testWind(); break;
-        case 20: t.testRumple(); break;
-        }
+        on_actionTest_triggered();
         return;
     }
     if (expr_filter.isEmpty())
@@ -1712,4 +1673,54 @@ void MainWindow::on_paintGridBox_currentIndexChanged(int index)
 {
     Q_UNUSED(index);
     ui->visOtherGrid->setChecked(true);
+}
+
+void MainWindow::on_actionTest_triggered()
+{
+    Tests t(this);
+    int which = QInputDialog::getInt(this, "Which test",
+                                    "which test?\n0: expression speed\n1: tree clear\n" \
+                                    "2:kill trees\n3: climate\n4: multiple light automation\n" \
+                                    "5: species response\n" \
+                                    "6: watercycle\n" \
+                                    "7: CSV File\n" \
+                                    "8: Xml setters\n" \
+                                    "9: random functions\n" \
+                                    "10: seed dispersal.\n" \
+                                    "11: multiple thread expression\n" \
+                                    "12: linearized expressions\n" \
+                                    "13: establishment\n" \
+                                    "14: GridRunner\n" \
+                                     "15: Soil (ICBM/2N)\n" \
+                                     "16: load Map \n" \
+                                     "17: test DEM \n" \
+                                     "18: test fire module \n" \
+                                     "19: test wind module\n" \
+                                     "20: test rumple index\n" \
+                                     "21: test FOME setup",-1);
+    switch (which) {
+    case 0: t.speedOfExpression();break;
+    case 1: t.clearTrees(); break;
+    case 2: t.killTrees(); break;
+    case 3: t.climate(); break;
+    case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
+    case 5: t.climateResponse(); break;
+    case 6: t.testWater(); break;
+    case 7: t.testCSVFile(); break;
+    case 8: t.testXml(); break;
+    case 9: t.testRandom(); break;
+    case 10: t.testSeedDispersal(); break;
+    case 11: t.testMultithreadExecute(); break;
+    case 12: t.testLinearExpressions(); break;
+    case 13: t.testEstablishment(); break;
+    case 14: t.testGridRunner(); break;
+    case 15: t.testSoil(); break;
+    case 16: t.testMap(); break;
+    case 17: t.testDEM(); break;
+    case 18: t.testFire(); break;
+    case 19: t.testWind(); break;
+    case 20: t.testRumple(); break;
+    case 21: t.testFOMEsetup(); break;
+    }
+
 }

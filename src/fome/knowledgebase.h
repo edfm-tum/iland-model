@@ -10,7 +10,7 @@ public:
     // life cycle
     KnowledgeBase();
     // actions
-    void setup(const QString &directory);
+    bool setup(const QString &directory);
 
 private:
     void clear(); ///< delete all activities
