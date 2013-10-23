@@ -21,6 +21,7 @@
 #include "tests.h"
 
 #include "helper.h"
+#include "debugtimer.h"
 #include "random.h"
 #include "model.h"
 #include "resourceunit.h"
@@ -55,6 +56,8 @@
 #include <QtConcurrent/QtConcurrent>
 
 #include "spatialanalysis.h"
+
+#include "forestmanagementengine.h"
 
 Tests::Tests(QObject *wnd)
 {
@@ -903,4 +906,10 @@ void Tests::testRumple()
     Helper::saveToTextFile("rumple_test.txt", gridToESRIRaster(rumple_index.rumpleGrid()) );
     qDebug() << "surface area test triangle" << rumple_index.test_triangle_area();
 
+}
+
+void Tests::testFOMEsetup()
+{
+    ForestManagementEngine fome;
+    fome.test();
 }

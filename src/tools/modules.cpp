@@ -22,7 +22,7 @@
 #include "plugin_interface.h"
 
 #include "globalsettings.h"
-#include "helper.h"
+#include "debugtimer.h"
 #include "exception.h"
 #include <QtPlugin>
 

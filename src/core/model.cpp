@@ -31,6 +31,7 @@
 #include "sqlhelper.h"
 
 #include "xmlhelper.h"
+#include "debugtimer.h"
 #include "environment.h"
 #include "timeevents.h"
 #include "helper.h"

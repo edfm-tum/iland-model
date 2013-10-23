@@ -23,7 +23,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "model.h"
-#include "helper.h"
+#include "debugtimer.h"
 #include "modules.h"
 
 /** @class WaterCycle

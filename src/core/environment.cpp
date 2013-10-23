@@ -19,6 +19,7 @@
 
 #include "global.h"
 #include "environment.h"
+#include "debugtimer.h"
 #include "helper.h"
 #include "csvfile.h"
 #include "gisgrid.h"

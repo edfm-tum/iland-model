@@ -28,6 +28,7 @@
 #include <QObject>
 
 #include "model.h"
+#include "debugtimer.h"
 #include "helper.h"
 #include "expression.h"
 #include "expressionwrapper.h"
@@ -36,6 +37,7 @@
 #include "species.h"
 #include "speciesset.h"
 #include "mapgrid.h"
+#include "statdata.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h" // for the debug message buffering

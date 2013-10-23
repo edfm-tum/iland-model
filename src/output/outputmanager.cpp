@@ -24,7 +24,7 @@
 
 #include "global.h"
 #include "outputmanager.h"
-#include "helper.h"
+#include "debugtimer.h"
 #include <QtCore>
 
 // tree outputs

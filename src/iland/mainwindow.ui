@@ -22,7 +22,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -49,7 +58,7 @@
      <x>0</x>
      <y>0</y>
      <width>1030</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -72,6 +81,7 @@
     <addaction name="menuLog_Level"/>
     <addaction name="separator"/>
     <addaction name="actionImageToClipboard"/>
+    <addaction name="actionTest"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -148,7 +158,16 @@
      <property name="spacing">
       <number>0</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>3</number>
+     </property>
+     <property name="topMargin">
+      <number>3</number>
+     </property>
+     <property name="rightMargin">
+      <number>3</number>
+     </property>
+     <property name="bottomMargin">
       <number>3</number>
      </property>
      <item>
@@ -791,7 +810,16 @@ QProgressBar::chunk {
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_4">
     <layout class="QVBoxLayout" name="verticalLayout_6">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>3</number>
+     </property>
+     <property name="topMargin">
+      <number>3</number>
+     </property>
+     <property name="rightMargin">
+      <number>3</number>
+     </property>
+     <property name="bottomMargin">
       <number>3</number>
      </property>
      <item>
@@ -817,7 +845,7 @@ QProgressBar::chunk {
   <widget class="QDockWidget" name="dockAuxView">
    <property name="minimumSize">
     <size>
-     <width>79</width>
+     <width>80</width>
      <height>80</height>
     </size>
    </property>
@@ -826,7 +854,16 @@ QProgressBar::chunk {
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_5">
     <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>3</number>
+     </property>
+     <property name="topMargin">
+      <number>3</number>
+     </property>
+     <property name="rightMargin">
+      <number>3</number>
+     </property>
+     <property name="bottomMargin">
       <number>3</number>
      </property>
      <item>
@@ -1041,6 +1078,14 @@ QProgressBar::chunk {
   <action name="actionPerformance">
    <property name="text">
     <string>Performance</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>Execute test</string>
+   </property>
+   <property name="toolTip">
+    <string>select and execute a test routine</string>
    </property>
   </action>
  </widget>

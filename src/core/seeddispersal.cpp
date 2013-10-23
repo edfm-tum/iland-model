@@ -21,6 +21,7 @@
 
 #include "globalsettings.h"
 #include "model.h"
+#include "debugtimer.h"
 #include "helper.h"
 #include "species.h"
 

@@ -26,6 +26,7 @@
 #include "model.h"
 #include "globalsettings.h"
 #include "helper.h"
+#include "debugtimer.h"
 #include "standloader.h"
 #include "mapgrid.h"
 #include "outputmanager.h"
