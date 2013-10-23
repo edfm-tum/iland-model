@@ -25,9 +25,9 @@ CONFIG += rtti
 CONFIG(debug, debug|release) {
 win32-msvc*:{
 #debug msvc
-PRE_TARGETDEPS += ../plugins/iland_fired.lib
-PRE_TARGETDEPS += ../plugins/iland_windd.lib
-LIBS += -L../plugins -liland_fired -liland_windd
+PRE_TARGETDEPS += plugins/iland_fired.lib
+PRE_TARGETDEPS += plugins/iland_windd.lib
+LIBS += -Lplugins -liland_fired -liland_windd
 }
 }
 
@@ -123,7 +123,10 @@ SOURCES += main.cpp \
     ../3rdparty/SimpleRNG.cpp \
     ../output/snapshot.cpp \
     ../tools/randomgenerator.cpp \
-    ../tools/spatialanalysis.cpp
+    ../tools/spatialanalysis.cpp \
+    ../fome/activity.cpp \
+    ../fome/forestmanagementengine.cpp \
+    ../fome/knowledgebase.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -193,7 +196,11 @@ HEADERS += mainwindow.h \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
     ../tools/randomgenerator.h \
-    ../tools/spatialanalysis.h
+    ../tools/spatialanalysis.h \
+    ../fome/activity.h \
+    ../fome/forestmanagementengine.h \
+    ../fome/knowledgebase.h \
+    ../fome/fome_global.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc
