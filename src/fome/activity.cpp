@@ -12,6 +12,9 @@ bool Activity::mVerbose = false;
 
 Activity::Activity()
 {
+    mPhase = Invalid;
+    mEconomy = -1;
+    mKnowledge = -1;
 }
 
 
@@ -34,6 +37,14 @@ bool Activity::setupFromJavascript(QJSValue &value, const QString &variable_name
         // load properties
         mKnowledge = it.value().property("knowledge").toNumber();
         mEconomy = it.value().property("economy").toNumber();
+        QString phase = it.value().property("phase").toString();
+        mPhase = Invalid;
+        if (phase=="T") mPhase = Tending;
+        if (phase=="H") mPhase = Thinning;
+        if (phase=="R") mPhase = Regeneration;
+        if (mPhase==Invalid)
+            throw IException(QString("Invalid activity group %1 (allowed: T, H, R)").arg(phase));
+
     }
 
     // extract filter rules
@@ -90,7 +101,13 @@ void Activity::filter_item::set(QJSValue &js_value)
     if (js_value.isString()) {
         // we assume this is an expression
         if (expression) delete expression;
-        expression = new Expression(js_value.toString());
+        QString expr = js_value.toString();
+        // replace "." with "__" in variables (our Expression engine is
+        // not able to cope with the "."-notation
+        expr = expr.replace("activity.", "activity__");
+        expr = expr.replace("stand.", "stand__");
+        // add ....
+        expression = new Expression(expr);
         filter_type = ftExpression;
         return;
     }
@@ -103,6 +120,7 @@ void Activity::filter_item::set(QJSValue &js_value)
     filter_type = ftInvalid;
 }
 
+// return current value of a filter
 QString Activity::filter_item::toString()
 {
     switch (filter_type) {

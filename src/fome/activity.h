@@ -9,12 +9,14 @@ class Activity
 {
 public:
     Activity();
+    enum Phase { Invalid, Tending, Thinning, Regeneration };
     // general properties
     QString name() const { return mJS.property("name").toString(); }
     QString description() const { return mJS.property("description").toString(); }
     // properties
     double knowledge() const {return mKnowledge; }
     double economy() const {return mEconomy; }
+    Phase phase() const { return mPhase; }
 
     // functions
     /// load definition of the Activity from an Javascript Object (value).
@@ -30,6 +32,7 @@ private:
     // properties of activities
     double mKnowledge;
     double mEconomy;
+    Phase mPhase;
 
     // filter items
     struct filter_item {

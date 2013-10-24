@@ -66,20 +66,5 @@ private:
     const ResourceUnit *mRU;
 };
 
-/** FOMEWrapper provides the context for the Forest Management Engine
- *  This wrapper blends activties, stand variables, and agent variables together.
-*/
-
-class FOMEWrapper: public ExpressionWrapper
-{
-public:
-    FOMEWrapper()  {}
-    //void setResourceUnit(const ResourceUnit* resourceUnit) { mRU = resourceUnit; }
-    virtual const QStringList getVariablesList();
-    virtual double value(const int variableIndex);
-
-private:
-};
-
 
 #endif // EXPRESSIONWRAPPER_H
