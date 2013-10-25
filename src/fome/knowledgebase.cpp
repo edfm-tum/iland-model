@@ -4,6 +4,8 @@
 
 #include "forestmanagementengine.h"
 #include "activity.h"
+#include "fmstand.h"
+#include "fmunit.h"
 
 #include "helper.h"
 
@@ -63,6 +65,27 @@ bool KnowledgeBase::setup(const QString &directory)
 
     return success;
 
+}
+
+/// evaluate()
+bool KnowledgeBase::evaluate(const FMStand *stand)
+{
+    double best=-1;
+    const Activity *best_activity = NULL;
+    foreach(const Activity *act, mActivities) {
+        double this_activity = act->evaluate(stand);
+        if (this_activity > best) {
+            best_activity = act;
+            best = this_activity;
+        }
+    }
+    // check total threshold
+    if (best > 0.5) {
+        // create ticket ...
+        qDebug() << "create ticket....";
+        return true;
+    }
+    return false;
 }
 
 void KnowledgeBase::clear()

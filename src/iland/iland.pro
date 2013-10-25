@@ -131,7 +131,11 @@ SOURCES += main.cpp \
     ../tools/statdata.cpp \
     ../tools/debugtimer.cpp \
     ../tools/viewport.cpp \
-    ../fome/fomewrapper.cpp
+    ../fome/fomewrapper.cpp \
+    ../fome/fmstand.cpp \
+    ../fome/agent.cpp \
+    ../fome/fmunit.cpp \
+    ../fome/agenttype.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -209,7 +213,11 @@ HEADERS += mainwindow.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
     ../tools/viewport.h \
-    ../fome/fomewrapper.h
+    ../fome/fomewrapper.h \
+    ../fome/fmstand.h \
+    ../fome/agent.h \
+    ../fome/fmunit.h \
+    ../fome/agenttype.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc
