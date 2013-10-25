@@ -5,11 +5,16 @@
 
 // definition of variables
 // (1) variables of activites
-QStringList activityVarList=QStringList() << "economy";
+QStringList activityVarList=QStringList() << "economy" << "experimentation" << "knowledge";
 
 // (2) stand variables
-QStringList standVarList=QStringList() << "standvar1" << "standvar2";
+QStringList standVarList=QStringList() << "basalArea" << "age" << "speciesCount" << "volume";
 int standVarListOffset = activityVarList.count(); // stand vars start here...
+
+// (3) site variables
+QStringList siteVarList=QStringList() << "annualIncrement" << "harvestMode" << "U";
+int siteVarListOffset = activityVarList.count() + standVarList.count(); // stand vars start here...
+
 
 // finally: combine all varibles:
 QStringList allVarList;
@@ -24,6 +29,9 @@ void FOMEWrapper::buildVarList()
 
     foreach(QString var, standVarList)
         allVarList.append(QString("stand__%1").arg(var));
+
+    foreach(QString var, siteVarList)
+        allVarList.append(QString("site__%1").arg(var));
 }
 
 
@@ -37,6 +45,9 @@ const QStringList FOMEWrapper::getVariablesList()
 double FOMEWrapper::value(const int variableIndex)
 {
     // dispatch
+    if (variableIndex > siteVarListOffset)
+        return valueSite(variableIndex - siteVarListOffset);
+
     if (variableIndex > standVarListOffset)
         return valueStand(variableIndex - standVarListOffset);
 
@@ -49,11 +60,20 @@ double FOMEWrapper::valueActivity(const int variableIndex)
     if (!mActivity) return 0;
     switch (variableIndex) {
     case 0: return mActivity->economy();
+    case 1: return mActivity->experimentation();
+    case 2: return mActivity->knowledge();
     default: return 0;
     }
 }
 
 double FOMEWrapper::valueStand(const int variableIndex)
+{
+    switch (variableIndex) {
+    default: return 0;
+    }
+}
+
+double FOMEWrapper::valueSite(const int variableIndex)
 {
     switch (variableIndex) {
     default: return 0;
