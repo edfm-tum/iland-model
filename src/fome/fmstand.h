@@ -31,7 +31,7 @@ public:
     double volume() const {return mVolume; }
 
     // specialized functions (invokable also from javascript)
-    double basalArea(const QString &species_id);
+    double basalArea(const QString &species_id) const;
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
 

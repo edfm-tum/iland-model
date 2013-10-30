@@ -10,13 +10,25 @@
 #include "agenttype.h"
 #include "fomescript.h"
 #include "scriptglobal.h"
+#include "fomescript.h"
 
 #include "debugtimer.h"
 
 /** @class ForestManagementEngine
 */
+
+ForestManagementEngine *ForestManagementEngine::singleton_fome_engine = 0;
 ForestManagementEngine::ForestManagementEngine()
 {
+    mScriptBridge = 0;
+    singleton_fome_engine = this;
+}
+
+ForestManagementEngine::~ForestManagementEngine()
+{
+    if (mScriptBridge)
+        delete mScriptBridge;
+    singleton_fome_engine = 0;
 }
 
 void ForestManagementEngine::setup()
@@ -25,26 +37,10 @@ void ForestManagementEngine::setup()
     ScriptGlobal::setupGlobalScripting(); // general iLand scripting helper functions and such
     mKnowledgeBase.setup("E:/Daten/iLand/modeling/abm/knowledge_base/test");
 
-    // create javascript objects in the script engine
-    // these objects can be accessed from Javascript code representing forest management activities
-    // or agents.
-
-    // stand variables
-    StandObj *stand_obj = new StandObj;
-    QJSValue stand_value = scriptEngine()->newQObject(stand_obj);
-    scriptEngine()->globalObject().setProperty("stand", stand_value);
-
-    // site variables
-    SiteObj *site_obj = new SiteObj;
-    QJSValue site_value = scriptEngine()->newQObject(site_obj);
-    scriptEngine()->globalObject().setProperty("site", site_value);
-
-    // general simulation variables (mainly scenariolevel)
-    SimulationObj *simulation_obj = new SimulationObj;
-    QJSValue simulation_value = scriptEngine()->newQObject(simulation_obj);
-    scriptEngine()->globalObject().setProperty("simulation", simulation_value);
-
-
+    if (mScriptBridge)
+        delete mScriptBridge;
+    mScriptBridge = new FomeScript;
+    mScriptBridge->setupScriptEnvironment();
 }
 
 void ForestManagementEngine::clear()
@@ -102,9 +98,17 @@ void ForestManagementEngine::test()
     }
     // just a demo: evaluate all stands
     qDebug() << "evaluating stands....";
-    foreach(const FMStand *stand, mUnitStandMap) {
-        mKnowledgeBase.evaluate(stand);
+    try {
+
+        foreach(const FMStand *stand, mUnitStandMap) {
+            mKnowledgeBase.evaluate(stand);
+        }
+
+    }  catch (const IException &e) {
+        qDebug() << "An error occured in evaluating stands:" << e.message();
     }
+
+
     qDebug() << "evaluating finished";
 
     clear();

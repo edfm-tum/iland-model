@@ -71,6 +71,7 @@ double FOMEWrapper::valueActivity(const int variableIndex)
 double FOMEWrapper::valueStand(const int variableIndex)
 {
     switch (variableIndex) {
+    case 1: return 60.;
     case 4: return mStand->standType();
     default: return 0;
     }
@@ -79,6 +80,7 @@ double FOMEWrapper::valueStand(const int variableIndex)
 double FOMEWrapper::valueSite(const int variableIndex)
 {
     switch (variableIndex) {
+    case 2: return 120; // just testing
     default: return 0;
     }
 }

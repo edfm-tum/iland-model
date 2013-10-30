@@ -7,6 +7,7 @@
 #include "exception.h"
 #include "expression.h"
 #include "fomewrapper.h"
+#include "fomescript.h"
 
 bool Activity::mVerbose = false;
 
@@ -121,13 +122,15 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
         double result;
         try {
         result = expression->calculate(wrapper);
-        } catch (const IException &e) {
+        } catch (IException &e) {
             // throw a nicely formatted error message
-            throw IException(QString("Erron in evaluating filter '%1' (expr: '%5') for activity '%2' for stand %3: %4").arg(name).
-                             arg(act->name()).
-                             arg(stand->id()).
-                             arg(e.message()).
-                             arg(expression->expression()));
+            e.add(QString("in filter '%1' (expr: '%5') for activity '%2' for stand %3: %4").arg(name).
+                          arg(act->name()).
+                          arg(stand->id()).
+                          arg(e.message()).
+                          arg(expression->expression()) );
+            throw;
+
         }
 
         if (Activity::verbose())
@@ -136,7 +139,8 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
     }
     if (filter_type==ftJavascript) {
         // call javascript function
-        // provide the execution context: ??? TODO
+        // provide the execution context
+        FomeScript::setExecutionContext(stand, act);
         QJSValue result = const_cast<QJSValue&>(func).call();
         if (result.isError()) {
             throw IException(QString("Erron in evaluating filter '%1' (JS) for activity '%2' for stand %3: %4").arg(name).
