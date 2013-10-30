@@ -2,13 +2,15 @@
 #include "fomewrapper.h"
 
 #include "activity.h"
+#include "fmstand.h"
+#include "fmunit.h"
 
 // definition of variables
 // (1) variables of activites
 QStringList activityVarList=QStringList() << "economy" << "experimentation" << "knowledge";
 
 // (2) stand variables
-QStringList standVarList=QStringList() << "basalArea" << "age" << "speciesCount" << "volume";
+QStringList standVarList=QStringList() << "basalArea" << "age" << "speciesCount" << "volume" << "type";
 int standVarListOffset = activityVarList.count(); // stand vars start here...
 
 // (3) site variables
@@ -69,6 +71,7 @@ double FOMEWrapper::valueActivity(const int variableIndex)
 double FOMEWrapper::valueStand(const int variableIndex)
 {
     switch (variableIndex) {
+    case 4: return mStand->standType();
     default: return 0;
     }
 }
