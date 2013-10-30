@@ -10,6 +10,7 @@ class Activity
 {
 public:
     Activity();
+    ~Activity();
     enum Phase { Invalid, Tending, Thinning, Regeneration };
     // general properties
     QString name() const { return mJS.property("name").toString(); }
@@ -37,6 +38,10 @@ private:
     double mEconomy;
     double mExperimentation;
     Phase mPhase;
+
+    // benchmarking
+    int mJSEvaluations;
+    int mExprEvaluations;
 
     // filter items
     struct filter_item {

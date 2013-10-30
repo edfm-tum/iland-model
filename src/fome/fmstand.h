@@ -16,7 +16,7 @@ class FMUnit; // forward
 class FMStand
 {
 public:
-    FMStand(FMUnit *unit);
+    FMStand(FMUnit *unit, const int id);
     // general properties
     int id() const {return mId; }
     const FMUnit *unit() const { return mUnit; }

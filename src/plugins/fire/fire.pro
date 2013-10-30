@@ -20,14 +20,12 @@ HEADERS       = \
     fireplugin.h \
     firemodule.h \
     fireout.h \
-    firescript.h \
-    ../../fome/fomeunits.h
+    firescript.h
 SOURCES       = \
     fireplugin.cpp \
     firemodule.cpp \
     fireout.cpp \
-    firescript.cpp \
-    ../../fome/fomeunits.cpp
+    firescript.cpp
 TARGET        = $$qtLibraryTarget(iland_fire)
 DESTDIR       = ../../plugins
 
