@@ -69,7 +69,7 @@ void ForestManagementEngine::test()
 {
     // test code
     try {
-        Activity::setVerbose(true);
+        //Activity::setVerbose(true);
         // setup the activities and the javascript environment...
         setup();
 
@@ -82,7 +82,7 @@ void ForestManagementEngine::test()
     AgentType *agent_type = new AgentType();
     mAgentTypes.append(agent_type);
 
-    for (int i=0;i<10;++i) {
+    for (int i=0;i<100;++i) {
         // one agent per unit, and one type for all agents
         Agent *agent = new Agent(agent_type);
         mAgents.append(agent);
@@ -92,7 +92,7 @@ void ForestManagementEngine::test()
 
         // stands
         for (int j=0;j<100;j++) {
-            FMStand *stand = new FMStand(unit);
+            FMStand *stand = new FMStand(unit, i*1000+j);
             mUnitStandMap.insert(unit, stand);
         }
     }

@@ -3,10 +3,10 @@
 
 #include "fmunit.h"
 
-FMStand::FMStand(FMUnit *unit)
+FMStand::FMStand(FMUnit *unit, const int id)
 {
     mUnit = unit;
-    mId = 0;
+    mId = id;
     mPhase = Activity::Invalid;
     // testing:
     mPhase = Activity::Tending;

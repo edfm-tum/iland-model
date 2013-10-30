@@ -72,6 +72,7 @@ bool KnowledgeBase::evaluate(const FMStand *stand)
 {
     double best=-1;
     const Activity *best_activity = NULL;
+
     foreach(const Activity *act, mActivities) {
         double this_activity = act->evaluate(stand);
         if (this_activity > best) {

@@ -235,7 +235,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pbResults->setMenu(ui->menuOutput_menu);
 
     mLogSpace = ui->logOutput;
-    mLogSpace->setMaximumBlockCount(10000); // set a maximum for the in-GUI size of messages.
+    mLogSpace->setMaximumBlockCount(1000000); // set a maximum for the in-GUI size of messages. // removed in Qt5 (because it works ;) )
     qInstallMessageHandler(myMessageOutput);
     // install signal handler
     signal( SIGSEGV, handle_signal );

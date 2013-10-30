@@ -230,7 +230,8 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
     double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(p.x()/cPxPerHeight, p.y()/cPxPerHeight).height;
     if (h_height_grid==0)
         throw IException(QString("growSapling: height grid at %1/%2 has value 0").arg(p.x()).arg(p.y()));
-    double rel_height = 4. / h_height_grid;
+
+    double rel_height = tree.height / h_height_grid;
 
     double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height); // correction based on height
 

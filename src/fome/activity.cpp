@@ -20,6 +20,14 @@ Activity::Activity()
     mEconomy = -1;
     mKnowledge = -1;
     mExperimentation = -1;
+    // benchmarking
+    mExprEvaluations = 0;
+    mJSEvaluations = 0;
+}
+
+Activity::~Activity()
+{
+    qDebug() << "delete activity: calls JS: " << mJSEvaluations << " calls Expr: " << mExprEvaluations;
 }
 
 /// calculate the probability that this activity should be executed for the given stand
@@ -135,6 +143,7 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
 
         if (Activity::verbose())
             qDebug() << "evaluate filter " << name << "(expr:" << expression->expression() << ") for stand" << stand->id() << ":" << result;
+        const_cast<Activity*>(act)->mExprEvaluations++;
         return result;
     }
     if (filter_type==ftJavascript) {
@@ -148,6 +157,9 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
                              arg(stand->id()).
                              arg(result.toString()));
         }
+        if (Activity::verbose())
+            qDebug() << "evaluate filter " << name << "(JS:" << act->name() << ") for stand" << stand->id() << ":" << result.toString();
+        const_cast<Activity*>(act)->mJSEvaluations++;
         return result.toNumber();
 
     }
