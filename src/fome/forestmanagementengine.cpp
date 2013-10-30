@@ -26,6 +26,7 @@ ForestManagementEngine::ForestManagementEngine()
 
 ForestManagementEngine::~ForestManagementEngine()
 {
+    clear();
     if (mScriptBridge)
         delete mScriptBridge;
     singleton_fome_engine = 0;
@@ -71,6 +72,7 @@ void ForestManagementEngine::test()
     try {
         //Activity::setVerbose(true);
         // setup the activities and the javascript environment...
+        GlobalSettings::instance()->resetScriptEngine(); // clear the script
         setup();
 
     } catch (const IException &e) {
@@ -91,7 +93,7 @@ void ForestManagementEngine::test()
         mUnits.append(unit);
 
         // stands
-        for (int j=0;j<100;j++) {
+        for (int j=0;j<1000;j++) {
             FMStand *stand = new FMStand(unit, i*1000+j);
             mUnitStandMap.insert(unit, stand);
         }
