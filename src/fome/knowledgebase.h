@@ -10,6 +10,7 @@ class KnowledgeBase
 public:
     // life cycle
     KnowledgeBase();
+    ~KnowledgeBase();
     bool setup(const QString &directory);
     // actions
     bool evaluate(const FMStand *stand);

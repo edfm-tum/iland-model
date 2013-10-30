@@ -17,6 +17,13 @@ KnowledgeBase::KnowledgeBase()
 {
 }
 
+KnowledgeBase::~KnowledgeBase()
+{
+    qDeleteAll(mActivities); // deletes the stands (not the keys)
+    mActivities.clear();
+
+}
+
 // setup() creates the knowledge base
 // it loads all javascript code from the given directory, parses the content (i.e. lets the Javascript engine evaluate)
 // returns true if the setup was successful without errors.

@@ -201,10 +201,11 @@ void MapGridWrapper::addToScriptEngine(QJSEngine &engine)
 
 MapGridWrapper::MapGridWrapper(QObject *)
 {
+    mCreated = false;
     if (!GlobalSettings::instance()->model())
         return;
     mMap = const_cast<MapGrid*>(GlobalSettings::instance()->model()->standGrid());
-    mCreated = false;
+
 }
 
 MapGridWrapper::~MapGridWrapper()
