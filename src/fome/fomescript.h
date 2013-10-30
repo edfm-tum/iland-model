@@ -6,16 +6,28 @@
 #include "fmstand.h"
 #include "fmunit.h"
 
+class StandObj;
+class SiteObj;
+class SimulationObj;
+
 /// FomeScript provides general helping functions for the Javascript world.
 class FomeScript : public QObject
 {
     Q_OBJECT
 public:
     explicit FomeScript(QObject *parent = 0);
+    // prepare scripting features
+    void setupScriptEnvironment();
+    // functions
+    static void setExecutionContext(const FMStand *stand, const Activity *activity);
 
 signals:
 
 public slots:
+private:
+    StandObj *mStandObj;
+    SiteObj *mSiteObj;
+    SimulationObj *mSimulationObj;
 
 };
 
@@ -33,19 +45,19 @@ class StandObj: public QObject
     flags: {}*/
 public slots:
     /// basal area of a given species (m2/ha)
-    double basalArea(QString species_id) {return mStand->basalArea(species_id); }
+    double basalArea(QString species_id) const {return mStand->basalArea(species_id); }
 
     // set and get standspecific data (persistent!)
-    void setFlag(const QString &name, QJSValue value){ mStand->setProperty(name, value);}
-    QJSValue flag(const QString &name) { return mStand->property(name); }
+    void setFlag(const QString &name, QJSValue value){ const_cast<FMStand*>(mStand)->setProperty(name, value);}
+    QJSValue flag(const QString &name) { return const_cast<FMStand*>(mStand)->property(name); }
 public:
     explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}
-    void setStand(FMStand* stand) { mStand = stand; }
+    void setStand(const FMStand* stand) { mStand = stand; }
     double basalArea() const { return mStand->basalArea(); }
     double age() const {return mStand->age(); }
     double volume() const {return mStand->volume(); }
 private:
-    FMStand *mStand;
+    const FMStand *mStand;
 };
 
 
@@ -55,8 +67,10 @@ class SiteObj: public QObject
     Q_PROPERTY (QString harvestMode READ harvestMode)
 public:
     explicit SiteObj(QObject *parent = 0): QObject(parent) {}
+    void setStand(const FMStand* stand) { mStand = stand; }
     QString harvestMode() const { return "schlepper"; } // dummy
 private:
+    const FMStand *mStand;
 
 };
 
