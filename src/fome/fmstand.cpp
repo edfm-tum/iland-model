@@ -10,6 +10,15 @@ FMStand::FMStand(FMUnit *unit)
     mPhase = Activity::Invalid;
     // testing:
     mPhase = Activity::Tending;
+    mVolume = 0.;
+    mAge = 0.;
+    mBasalArea = 0.;
+}
+
+double FMStand::basalArea(const QString &species_id)
+{
+    // get somehow the value from the stand directly or the stand meta data....
+    return 0;
 }
 
 // storage for properties (static)

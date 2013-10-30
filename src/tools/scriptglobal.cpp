@@ -201,6 +201,8 @@ void MapGridWrapper::addToScriptEngine(QJSEngine &engine)
 
 MapGridWrapper::MapGridWrapper(QObject *)
 {
+    if (!GlobalSettings::instance()->model())
+        return;
     mMap = const_cast<MapGrid*>(GlobalSettings::instance()->model()->standGrid());
     mCreated = false;
 }
@@ -459,12 +461,17 @@ void ScriptGlobal::setupGlobalScripting()
 //    engine->globalObject().setProperty("include",sinclude);
 //    engine->globalObject().setProperty("alert", alert);
 
+    // check if update necessary
+    if (engine->globalObject().property("print").isCallable())
+        return;
 
     // wrapper functions for (former) stand-alone javascript functions
     // Qt5 - modification
     engine->evaluate("function print(x) { Globals.print(x); } " \
                      "function include(x) { Globals.include(x); }" \
                      "function alert(x) { Globals.alert(x); }");
+    // add a (fake) console.log
+    engine->evaluate("var console = { log: function(x) {Globals.print(x); } }");
 
     ScriptObjectFactory *factory = new ScriptObjectFactory;
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(factory);

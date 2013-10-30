@@ -8,6 +8,8 @@
 #include "fmstand.h"
 #include "agent.h"
 #include "agenttype.h"
+#include "fomescript.h"
+#include "scriptglobal.h"
 
 #include "debugtimer.h"
 
@@ -15,6 +17,34 @@
 */
 ForestManagementEngine::ForestManagementEngine()
 {
+}
+
+void ForestManagementEngine::setup()
+{
+    // load test data...
+    ScriptGlobal::setupGlobalScripting(); // general iLand scripting helper functions and such
+    mKnowledgeBase.setup("E:/Daten/iLand/modeling/abm/knowledge_base/test");
+
+    // create javascript objects in the script engine
+    // these objects can be accessed from Javascript code representing forest management activities
+    // or agents.
+
+    // stand variables
+    StandObj *stand_obj = new StandObj;
+    QJSValue stand_value = scriptEngine()->newQObject(stand_obj);
+    scriptEngine()->globalObject().setProperty("stand", stand_value);
+
+    // site variables
+    SiteObj *site_obj = new SiteObj;
+    QJSValue site_value = scriptEngine()->newQObject(site_obj);
+    scriptEngine()->globalObject().setProperty("site", site_value);
+
+    // general simulation variables (mainly scenariolevel)
+    SimulationObj *simulation_obj = new SimulationObj;
+    QJSValue simulation_value = scriptEngine()->newQObject(simulation_obj);
+    scriptEngine()->globalObject().setProperty("simulation", simulation_value);
+
+
 }
 
 void ForestManagementEngine::clear()
@@ -44,7 +74,9 @@ void ForestManagementEngine::test()
     // test code
     try {
         Activity::setVerbose(true);
-        mKnowledgeBase.setup("E:/Daten/iLand/modeling/abm/knowledge_base/test");
+        // setup the activities and the javascript environment...
+        setup();
+
     } catch (const IException &e) {
         qDebug() << "An error occured:" << e.message();
     }
@@ -54,7 +86,7 @@ void ForestManagementEngine::test()
     AgentType *agent_type = new AgentType();
     mAgentTypes.append(agent_type);
 
-    for (int i=0;i<100;++i) {
+    for (int i=0;i<10;++i) {
         // one agent per unit, and one type for all agents
         Agent *agent = new Agent(agent_type);
         mAgents.append(agent);
