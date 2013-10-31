@@ -132,10 +132,9 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
         result = expression->calculate(wrapper);
         } catch (IException &e) {
             // throw a nicely formatted error message
-            e.add(QString("in filter '%1' (expr: '%5') for activity '%2' for stand %3: %4").arg(name).
+            e.add(QString("in filter '%1' (expr: '%4') for activity '%2' for stand %3.").arg(name).
                           arg(act->name()).
                           arg(stand->id()).
-                          arg(e.message()).
                           arg(expression->expression()) );
             throw;
 
