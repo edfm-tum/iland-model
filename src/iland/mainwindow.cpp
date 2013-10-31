@@ -692,6 +692,15 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         Expression tree_value(single_tree_expr, &tw);    // get maximum value
         tree_value.setCatchExceptions(); // silent catching...
 
+        QString filter_expr = ui->expressionFilter->text();
+        bool do_filter = ui->cbDrawFiltered->isChecked();
+        if (filter_expr.isEmpty())
+            filter_expr = "1"; // a constant, always true
+
+        Expression tree_filter(filter_expr, &tw);
+        tree_filter.setCatchExceptions();
+
+        bool draw_transparent = ui->drawTransparent->isChecked();
         AllTreeIterator treelist(model);
         Tree *tree;
         painter.setPen(Qt::gray);
@@ -708,6 +717,13 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             if (tree->isDead())
                 continue;
 
+            // filter (user defined)
+            if (do_filter) {
+                tw.setTree(tree);
+                if (tree_filter.execute()==0.)
+                    continue;
+            }
+
             QPointF pos = tree->position();
             QPoint p = vp.toScreen(pos);
             if (species_color) {
@@ -719,6 +735,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 value = tree_value.execute();
                 fill_color = Helper::colorFromValue(value, 0., 1., false);
             }
+            if (draw_transparent)
+                fill_color.setAlpha(50); // 50%
             painter.setBrush(fill_color);
             int diameter = qMax(1,vp.meterToPixel( tree->crownRadius()));
             painter.drawEllipse(p, diameter, diameter);
@@ -964,7 +982,10 @@ void MainWindow::showTreeDetails(Tree *tree)
     const QStringList &names = tw.getVariablesList();
     QList<QTreeWidgetItem *> items;
     foreach(QString name, names) {
-        items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(tw.valueByName(name)) ));
+        if (name=="species")
+            items.append(new QTreeWidgetItem(QStringList() << name << mRemoteControl.model()->speciesSet()->species(tw.valueByName(name))->id() ));
+        else
+            items.append(new QTreeWidgetItem(QStringList() << name << QString::number(tw.valueByName(name)) ));
     }
     QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(tree->id());
 
