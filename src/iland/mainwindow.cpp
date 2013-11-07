@@ -542,6 +542,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QRect rs = vp.toScreen(r);
     painter.setPen(Qt::black);
     painter.drawRect(rs);
+    // qDebug() << rs;
 
     // what to paint??
 
@@ -1039,7 +1040,7 @@ void MainWindow::mouseMove(const QPoint& pos)
         }
         if( ui->visDomGrid->isChecked())
             location += QString("\n %1").arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height);
-        if( ui->visRegeneration->isChecked())
+        if( ui->visRegeneration->isChecked() && !mRegenerationGrid.isEmpty())
             location += QString("\n %1").arg(mRegenerationGrid.valueAt(p));
 
         ui->fonValue->setText(location);

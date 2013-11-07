@@ -640,7 +640,6 @@ void Model::runYear()
             set->regeneration(); // parallel execution for each species set
 
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
-        tseed.showElapsed();
         // establishment
         { DebugTimer t("saplingGrowth");
         executePerResourceUnit( nc_sapling_growth, false /* true: force single thraeded operation */);

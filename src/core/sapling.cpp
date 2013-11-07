@@ -307,7 +307,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
 void Sapling::calculateGrowth()
 {
     Q_ASSERT(mRUS);
-    if (mLiving==0 && mAdded==0)
+    if (mSaplingTrees.count()==0)
         return;
 
     ResourceUnit *ru = const_cast<ResourceUnit*> (mRUS->ru() );
@@ -323,8 +323,9 @@ void Sapling::calculateGrowth()
         const SaplingTree &tree = *it;
         if (tree.height<0)
             qDebug() << "Sapling::calculateGrowth(): h<0";
+        // if sapling is still living check execute growth routine
         if (tree.isValid()) {
-            // growing
+            // growing (increases mLiving if tree did not die, mDied otherwise)
             if (growSapling(const_cast<SaplingTree&>(tree), f_env_yr, species)) {
                 // set the sapling height to the maximum value on the current pixel
                 QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);

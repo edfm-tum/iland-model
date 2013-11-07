@@ -9,6 +9,7 @@ db.conn <<- dbConnect("SQLite", dbname="e:/Daten/iLand/projects/Hainich/output/H
 ### load data from the iLand output table
 stand <- dbReadTable(db.conn, "stand")
 # alternatively (using sql_tools): stand <- query("select * from stand")
+dbDisconnect(db.conn)
 
 summary(stand)
 
@@ -88,7 +89,7 @@ cols.species <- c("abal"="#2F1BE0",
 # now we can plot them:
 ggplot(stand.avg, aes(x=year,y=basal_area_m2,group=species,fill=species)) + geom_area() + labs(xlab="year", ylab="basal area m2", title="average basal area") + scale_fill_manual(values=cols.species)
 ## stem numbers
-ggplot(stand.avg, aes(x=year,y=count_ha,group=species,fill=species)) + geom_area()
+ggplot(stand.avg, aes(x=year,y=count_ha,group=species,fill=species)) + geom_area()+ scale_fill_manual(values=cols.species)
 ggplot(stand.avg, aes(x=year,y=cohortCount_ha,group=species,fill=species)) + geom_area()
 
 ggplot(stand.avg, aes(x=year,y=LAI,group=species,fill=species)) + geom_area()
@@ -105,6 +106,7 @@ db.conn <<- dbConnect("SQLite", dbname="e:/Daten/iLand/projects/Hainich/database
 
 ### load data from the iLand output table
 species.params <- dbReadTable(db.conn, "species")
+
 s<-""
 for (i in 1:dim(species.params)[1])
   s <- paste(s, '"',species.params$shortName[i], '"="#', species.params$displayColor[i], '",\n', sep="")
