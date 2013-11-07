@@ -91,7 +91,7 @@ int Management::remain(int number)
 }
 
 
-int Management::kill()
+int Management::killAll()
 {
     int c = mTrees.count();
     for (int i=0;i<mTrees.count();i++)
@@ -248,18 +248,18 @@ void Management::throwError(const QString &errormessage)
 
 
 // from the range percentile range pctfrom to pctto (each 1..100)
-int Management::kill(int pctfrom, int pctto, int number)
+int Management::killPct(int pctfrom, int pctto, int number)
 {
     return remove_percentiles(pctfrom, pctto, number, false);
 }
 
 // from the range percentile range pctfrom to pctto (each 1..100)
-int Management::manage(int pctfrom, int pctto, int number)
+int Management::managePct(int pctfrom, int pctto, int number)
 {
     return remove_percentiles(pctfrom, pctto, number, true);
 }
 
-int Management::manage()
+int Management::manageAll()
 {
     int c = mTrees.count();
     for (int i=0;i<mTrees.count();i++)
@@ -340,7 +340,7 @@ int Management::filter(QString filter)
     return mTrees.count();
 }
 
-int Management::load(int ruindex)
+int Management::loadResourceUnit(int ruindex)
 {
     Model *m = GlobalSettings::instance()->model();
     ResourceUnit *ru = m->ru(ruindex);
