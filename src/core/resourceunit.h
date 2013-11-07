@@ -98,7 +98,7 @@ public:
     void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
     // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
     // the map itself is a local variable and only filled temporarily.
-    void setSaplingHeightMap(float *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
+    void setSaplingHeightMap(float *map_pointer); ///< set (temporal) storage for sapling-height-map
     /// returns maximum sapling height at point given by point-index (LIF-index).
     /// you must call setSaplingHeightMap() with a valid map before.
     float saplingHeightAt(const QPoint &position) const { Q_ASSERT(mSaplingHeightMap); int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y()); return mSaplingHeightMap[pixel_index];}

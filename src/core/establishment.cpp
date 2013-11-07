@@ -38,7 +38,6 @@
   */
 Establishment::Establishment()
 {
-    mRegenerationProbability = 0.;
     mPAbiotic = 0.;
 }
 
@@ -51,7 +50,6 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
 {
     mClimate = climate;
     mRUS = rus;
-    mRegenerationProbability = 0.;
     mPAbiotic = 0.;
     mPxDensity = 0.;
     mNumberEstablished = 0;
@@ -194,8 +192,8 @@ void Establishment::calculate()
                     }
                 }
             }
-        }
-//    }
+//        }
+    }
     // finished!!!
     mNumberEstablished = n_established;
 }
