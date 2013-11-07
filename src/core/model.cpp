@@ -486,43 +486,35 @@ void Model::initOutputDatabase()
 
 }
 
-ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
+/// multithreaded running function for the resource unit level establishment
+ResourceUnit *nc_sapling_growth_establishment(ResourceUnit *unit)
 {
     try {
-        // define a height map for the current resource unit on the stack and clear it
+        // define a height map for the current resource unit on the stack
         float sapling_map[cPxPerRU*cPxPerRU];
-        for (int i=0;i<cPxPerRU*cPxPerRU;i++) sapling_map[i]=0.f;
+        // set the map and initialize it:
         unit->setSaplingHeightMap(sapling_map);
 
 
         // (1) calculate the growth of (already established) saplings (populate sapling map)
-        foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
-            const_cast<ResourceUnitSpecies*>(rus)->calclulateSaplingGrowth();
-        }
-
-    } catch (const IException& e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
-    }
-    return unit;
-
-}
-
-/// multithreaded running function for the resource unit level establishment
-ResourceUnit *nc_establishment(ResourceUnit *unit)
-{
-    try {
+        QList<ResourceUnitSpecies*>::const_iterator rus;
+        for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
+            (*rus)->calclulateSaplingGrowth();
 
         // (2) calculate the establishment probabilities of new saplings
-        foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
-            const_cast<ResourceUnitSpecies*>(rus)->calclulateEstablishment();
-        }
+        for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
+            (*rus)->calclulateEstablishment();
+
 
     } catch (const IException& e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
 
+    unit->setSaplingHeightMap(0); // invalidate again
     return unit;
+
 }
+
 
 /// multithreaded execution of the carbon cycle routine
 ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
@@ -642,15 +634,11 @@ void Model::runYear()
 
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
         // establishment
-        { DebugTimer t("saplingGrowth");
-        executePerResourceUnit( nc_sapling_growth, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tSaplingGrowth+=t.elapsed();
+        { DebugTimer t("saplingGrowthEstablishment");
+        executePerResourceUnit( nc_sapling_growth_establishment, false /* true: force single thraeded operation */);
+        GlobalSettings::instance()->systemStatistics()->tSaplingGrowthEstablishment+=t.elapsed();
         }
-        {
-        DebugTimer t("establishment");
-        executePerResourceUnit( nc_establishment, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
-        }
+
     }
 
     // calculate soil / snag dynamics

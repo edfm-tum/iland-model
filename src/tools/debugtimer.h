@@ -41,6 +41,7 @@ public:
     void interval(const QString &text);
     static void clearAllTimers();
     static void printAllTimers();
+    static QString timeStr(double value_ms);
 private:
     static QHash<QString, double> mTimingList;
     TickTack t;

@@ -787,7 +787,7 @@ void Tests::testMap()
     Management mgmt;
 
     mgmt.loadFromTreeList(tree_list);
-    mgmt.kill();
+    mgmt.killAll();
 }
 
 DEM *_dem = 0;

@@ -392,6 +392,20 @@ void ResourceUnit::recreateStandStatistics()
 
 }
 
+void ResourceUnit::setSaplingHeightMap(float *map_pointer)
+{
+    // set to zero
+    mSaplingHeightMap=map_pointer;
+    if (!mSaplingHeightMap)
+        return;
+    for (int i=0;i<cPxPerRU*cPxPerRU;i++)
+        mSaplingHeightMap[i]=0.f;
+    // flag all trees in the resource unit
+    for (QVector<Tree>::const_iterator i=mTrees.cbegin(); i!= mTrees.cend(); ++i) {
+        setMaxSaplingHeightAt(i->positionIndex(), 10.f);
+    }
+}
+
 void ResourceUnit::setMaxSaplingHeightAt(const QPoint &position, const float height)
 {
     Q_ASSERT(mSaplingHeightMap);

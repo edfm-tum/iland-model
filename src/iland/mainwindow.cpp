@@ -744,7 +744,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 fill_color = Helper::colorFromValue(value, 0., 1., false);
             }
             if (draw_transparent)
-                fill_color.setAlpha(50); // 50%
+                fill_color.setAlpha(80); // 50%
             painter.setBrush(fill_color);
             int diameter = qMax(1,vp.meterToPixel( tree->crownRadius()));
             painter.drawEllipse(p, diameter, diameter);

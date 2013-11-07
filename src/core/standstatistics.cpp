@@ -153,7 +153,7 @@ void SystemStatistics::writeOutput()
         DebugList &out = GlobalSettings::instance()->debugList(0, GlobalSettings::dPerformance);
         out << treeCount << saplingCount << newSaplings << tManagement
             << tApplyPattern << tReadPattern << tTreeGrowth
-            << tSeedDistribution << tEstablishment << tSaplingGrowth
+            << tSeedDistribution <<  tSaplingGrowthEstablishment
             << tCarbonCycle << tWriteOutput << tTotalYear;
     }
 }
