@@ -373,7 +373,7 @@ QString StampContainer::dump()
     foreach (StampItem si, m_stamps) {
         line = QString("%5 -> size: %1 offset: %2 dbh: %3 hd-ratio: %4\r\n")
                .arg(sqrt(si.stamp->count())).arg(si.stamp->offset())
-               .arg(si.dbh).arg(si.hd).arg((int)si.stamp, 0, 16);
+               .arg(si.dbh).arg(si.hd).arg((ptrdiff_t)si.stamp, 0, 16);
         // add data....
         maxidx = 2*si.stamp->offset() + 1;
         for (y=0;y<maxidx;++y)  {
@@ -388,7 +388,7 @@ QString StampContainer::dump()
     res+= "Dump of lookup map\r\n=====================\r\n";
     for (Stamp **s = m_lookup.begin(); s!=m_lookup.end(); ++s) {
         if (*s)
-         res += QString("P: x/y: %1/%2 addr %3\r\n").arg( m_lookup.indexOf(s).x()).arg(m_lookup.indexOf(s).y()).arg((int)*s, 0, 16);
+         res += QString("P: x/y: %1/%2 addr %3\r\n").arg( m_lookup.indexOf(s).x()).arg(m_lookup.indexOf(s).y()).arg((ptrdiff_t)*s, 0, 16);
     }
     res+="\r\n" + gridToString(m_lookup);
     return res;
