@@ -117,7 +117,6 @@ SOURCES += main.cpp \
 HEADERS += \
     consoleshell.h \
     stable.h \
-    iland.h \
     ../iland/version.h \
     ../core/model.h \
     ../core/modelcontroller.h \
