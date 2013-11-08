@@ -608,7 +608,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
     // key is the location of the 10x10m pixel
     QMultiHash<QPoint, int> tree_map;
     QList<SInitPixel> pixel_list; // working list of all 10m pixels
-    pixel_list.reserve(indices.size());
+    //TODO enable again(vsc test): pixel_list.reserve(indices.size());
 
     foreach (int i, indices) {
        SInitPixel p;
