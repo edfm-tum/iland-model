@@ -66,7 +66,7 @@ QString SettingMetaData::dump() const
                       mUrl,
                       mDescription).
                   arg(mDefaultValue.toString()).
-                  arg(int(this), 0, 16);
+                  arg(ptrdiff_t(this), 0, 16);
     return res;
 }
 
