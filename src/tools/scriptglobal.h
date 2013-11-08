@@ -21,6 +21,7 @@
 #define SCRIPTGLOBAL_H
 
 #include <QObject>
+#include <QVariant>
 #include <QJSValue>
 
 // Scripting Interface for MapGrid

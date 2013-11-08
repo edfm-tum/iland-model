@@ -17,7 +17,7 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 
-#include <QtCore/QCoreApplication>
+#include <QCoreApplication>
 #include <stdio.h>
 #include <QDebug>
 #include <QDateTime>
@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
     printf("iLand console (%s - #%s)\n", currentVersion(), svnRevision());
     printf("This is the console version of iLand, the individual based\nlandscape and disturbance forest model.\n");
     printf("More at: http://iland.boku.ac.at \n");
-    printf("(c) Werner Rammer, Rupert Seidl, 2009- \n");
+    printf("(c) Werner Rammer, Rupert Seidl, 2009-2013 \n");
+    printf("compiled: %s\n", compiler().toLocal8Bit().data());
     printf("****************************************\n\n");
     if (a.arguments().count()<3) {
         printf("Usage: \n");

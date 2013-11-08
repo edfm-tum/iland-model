@@ -1,6 +1,7 @@
 #ifndef ACTIVITY_H
 #define ACTIVITY_H
 #include <QJSValue>
+#include <QVector>
 class Expression; // forward
 class FMStand;
 

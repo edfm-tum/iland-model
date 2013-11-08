@@ -21,6 +21,7 @@
 #define CSVFILE_H
 
 #include <QObject>
+#include <QStringList>
 #include <QJSEngine>
 class CSVFile : public QObject
 {
