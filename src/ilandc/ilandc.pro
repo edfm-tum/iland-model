@@ -6,10 +6,10 @@
 
 ## iLand console application
 QT       += core
-## QT       -= gui ### we include the GUI library for QColor, QImage
+#QT       -= gui ### we include the GUI library for QColor, QImage
 QT       += xml
-QT       += script
 QT       += sql
+QT       += qml
 
 INCLUDEPATH += ../core \
     ../tools \
@@ -125,11 +125,23 @@ SOURCES += main.cpp \
     ../tools/dem.cpp \
     ../3rdparty/SimpleRNG.cpp \
     ../output/snapshot.cpp \
-    ../tools/spatialanalysis.cpp
+    ../tools/spatialanalysis.cpp \
+    ../fome/activity.cpp \
+    ../fome/forestmanagementengine.cpp \
+    ../fome/knowledgebase.cpp \
+    ../tools/statdata.cpp \
+    ../tools/debugtimer.cpp \
+    ../tools/viewport.cpp \
+    ../fome/fomewrapper.cpp \
+    ../fome/fmstand.cpp \
+    ../fome/agent.cpp \
+    ../fome/fmunit.cpp \
+    ../fome/agenttype.cpp \
+    ../fome/fomescript.cpp
+
 HEADERS += \
     consoleshell.h \
     stable.h \
-    iland.h \
     ../iland/version.h \
     ../core/model.h \
     ../core/modelcontroller.h \
@@ -196,5 +208,19 @@ HEADERS += \
     ../core/layeredgrid.h \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
-    ../tools/spatialanalysis.h
+    ../tools/spatialanalysis.h \
+    ../fome/activity.h \
+    ../fome/forestmanagementengine.h \
+    ../fome/knowledgebase.h \
+    ../fome/fome_global.h \
+    ../tools/statdata.h \
+    ../tools/debugtimer.h \
+    ../tools/viewport.h \
+    ../fome/fomewrapper.h \
+    ../fome/fmstand.h \
+    ../fome/agent.h \
+    ../fome/fmunit.h \
+    ../fome/agenttype.h \
+    ../fome/fomescript.h
+
 
