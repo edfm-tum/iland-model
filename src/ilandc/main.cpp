@@ -1,4 +1,4 @@
-/********************************************************************************************
+﻿/********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
 **    http://iland.boku.ac.at
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
