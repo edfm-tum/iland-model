@@ -101,7 +101,11 @@ QString Helper::userValue(const QString &message, const QString defaultValue, QW
 
 void Helper::msg(const QString &message, QWidget *parent)
 {
+#ifdef ILAND_GUI
     QMessageBox::information(parent, "iLand", message);
+#else
+    qDebug() << message;
+#endif
 }
 
 bool Helper::question(const QString &message, QWidget *parent)

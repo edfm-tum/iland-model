@@ -136,7 +136,6 @@ HEADERS += \
     ../core/model.h \
     ../core/resourceunit.h \
     ../tools/xmlhelper.h \
-    ../core/modelcontroller.h \
     ../core/standloader.h \
     ../core/resourceunitspecies.h \
     ../core/production3pg.h \
