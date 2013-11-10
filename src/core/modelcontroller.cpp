@@ -291,9 +291,7 @@ bool ModelController::runYear()
         fetchDynamicOutput();
     } catch(const IException &e) {
         QString error_msg = e.message();
-#ifdef ILAND_GUI
         Helper::msg(error_msg);
-#endif
         qDebug() << error_msg;
         err=true;
     }
