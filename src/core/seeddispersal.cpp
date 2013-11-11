@@ -99,6 +99,7 @@ void SeedDispersal::setup()
     mHasExternalSeedInput = false;
     mExternalSeedBuffer = 0;
     mExternalSeedDirection = 0;
+    mExternalSeedBackgroundInput = 0.;
     if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.externalSeedEnabled",false)) {
         if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.seedBelt.enabled",false)) {
             // external seed input specified by sectors and around the project area (seedbelt)
@@ -119,6 +120,15 @@ void SeedDispersal::setup()
                 mExternalSeedBuffer = buffer_list[index+1].toInt();
                 qDebug() << "enabled special buffer for species" <<mSpecies->id() << ": distance of" << mExternalSeedBuffer << "pixels = " << mExternalSeedBuffer*20. << "m";
             }
+
+            // background seed rain (i.e. for the full landscape), use regexp
+            QStringList background_input_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBackgroundInput").simplified().split(QRegExp("[\\W\\.]+"), QString::SkipEmptyParts);
+            index = background_input_list.indexOf(mSpecies->id());
+            if (index>=0) {
+                mExternalSeedBackgroundInput = background_input_list[index+1].toDouble();
+                qDebug() << "enabled background seed input (for full area) for species" <<mSpecies->id() << ": p=" << mExternalSeedBackgroundInput;
+            }
+
             if (mHasExternalSeedInput)
                 qDebug() << "External seed input enabled for" << mSpecies->id();
         }
@@ -177,7 +187,7 @@ void SeedDispersal::setupExternalSeeds()
             if(GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(x*2,y*2).isValid())
                 mExternalSeedBaseMap->valueAtIndex(x,y) = -1.f;
         }
-    QString path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
+    QString path = GlobalSettings::instance()->path(GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath"));
 
     if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false)) {
         QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
@@ -419,7 +429,8 @@ void SeedDispersal::clear()
         return;
     }
     // clear the map
-    mSeedMap.initialize(0.f);
+    float background_value = mExternalSeedBackgroundInput; // there is potentitally a background probability <>0 for all pixels.
+    mSeedMap.initialize(background_value);
     if (mHasExternalSeedInput) {
         // if external seed input is enabled, the buffer area of the seed maps is
         // "turned on", i.e. set to 1.
