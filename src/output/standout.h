@@ -29,6 +29,8 @@ public:
     StandOut();
     virtual void exec();
     virtual void setup();
+private:
+    Expression mCondition;
 };
 
 

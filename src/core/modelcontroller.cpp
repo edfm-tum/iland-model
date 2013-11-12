@@ -46,6 +46,7 @@ ModelController::ModelController()
     mModel = NULL;
     mPaused = false;
     mRunning = false;
+    mHasError = false;
     mYearsToRun = 0;
     mViewerWindow = 0;
     mDynamicOutputEnabled = false;
@@ -129,6 +130,8 @@ void ModelController::setFileName(QString initFileName)
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
+        mHasError = true;
+        mLastError = error_msg;
         qDebug() << error_msg;
     }
 }
@@ -140,11 +143,15 @@ void ModelController::create()
     emit bufferLogs(true);
 
     try {
+        mHasError = false;
         DebugTimer::clearAllTimers();
         mModel = new Model();
         mModel->loadProject();
-        if (!mModel->isSetup())
+        if (!mModel->isSetup()) {
+            mHasError = true;
+            mLastError = "An error occured during the loading of the project. Please check the logs.";
             return;
+        }
 
         // reset clock...
         GlobalSettings::instance()->setCurrentYear(1); // reset clock
@@ -153,6 +160,8 @@ void ModelController::create()
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
+        mLastError = error_msg;
+        mHasError = true;
         qDebug() << error_msg;
     }
     emit bufferLogs(false);
@@ -181,7 +190,7 @@ void ModelController::runloop()
     if (mPaused)
         return;
     bool doStop = false;
-    bool hasError = false;
+    mHasError = false;
     if (GlobalSettings::instance()->currentYear()<=1) {
         sLastTime = QTime::currentTime(); // reset clock at the beginning of the simulation
     }
@@ -189,11 +198,11 @@ void ModelController::runloop()
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
         emit bufferLogs(true);
 
-        hasError = runYear(); // do the work!
+        mHasError = runYear(); // do the work!
 
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
-        if (!hasError) {
+        if (!mHasError) {
             int elapsed = sLastTime.msecsTo(QTime::currentTime());
             int time=0;
             if (currentYear()%50==0 && elapsed>10000)
@@ -207,9 +216,11 @@ void ModelController::runloop()
                 //QTimer::singleShot(time,this, SLOT(runloop()));
             }
 
-        }
-        else
+        } else {
            doStop = true; // an error occured
+           mLastError = "An error occured while running the model. Please check the logs.";
+           mHasError = true;
+        }
 
     } else {
         doStop = true; // all years simulated
@@ -336,6 +347,8 @@ void ModelController::throwError(const QString msg)
     QMutexLocker lock(&error_mutex); // serialize access
     qDebug() << "ModelController: throwError reached:";
     qDebug() << msg;
+    mLastError = msg;
+    mHasError = true;
     emit bufferLogs(false);
     emit bufferLogs(true); // start buffering again
 

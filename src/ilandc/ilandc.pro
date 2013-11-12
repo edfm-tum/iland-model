@@ -52,7 +52,7 @@ TEMPLATE = app
 ### you also need to modify boot.ini ...
 QMAKE_LFLAGS_CONSOLE += -Wl,--large-address-aware
 
-SOURCES += main.cpp \
+SOURCES += ../ilandc/main.cpp \
     consoleshell.cpp \
     ../iland/version.cpp \
     ../core/model.cpp \
@@ -79,6 +79,7 @@ SOURCES += main.cpp \
     ../output/treeout.cpp \
     ../output/outputmanager.cpp \
     ../output/standout.cpp \
+    ../output/landscapeout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
     ../core/management.cpp \
@@ -145,6 +146,7 @@ HEADERS += \
     ../output/treeout.h \
     ../output/outputmanager.h \
     ../output/standout.h \
+    ../output/landscapeout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
     ../core/management.h \
