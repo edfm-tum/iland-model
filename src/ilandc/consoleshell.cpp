@@ -72,6 +72,7 @@ void ConsoleShell::run()
 
     if (!QFile::exists(xml_name)) {
         qDebug() << "invalid XML project file: " << xml_name;
+        QCoreApplication::quit();
         return;
     }
     try {
@@ -83,6 +84,7 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
+            QCoreApplication::quit();
             return;
         }
 
@@ -114,6 +116,7 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
+            QCoreApplication::quit();
             return;
         }
         runJavascript("onCreate");
@@ -126,6 +129,7 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
+            QCoreApplication::quit();
             return;
         }
         runJavascript("onFinish");
