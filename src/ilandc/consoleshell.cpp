@@ -62,10 +62,6 @@ void ConsoleShell::run()
 {
 
     QString xml_name = QCoreApplication::arguments().at(1);
-    if (!QFile::exists(xml_name)) {
-        qDebug() << "invalid XML project file: " << xml_name;
-        return;
-    }
     // get the number of years to run...
     bool ok;
     int years = QCoreApplication::arguments().at(2).toInt(&ok);
@@ -74,14 +70,35 @@ void ConsoleShell::run()
         return;
     }
 
+    if (!QFile::exists(xml_name)) {
+        qDebug() << "invalid XML project file: " << xml_name;
+        return;
+    }
     try {
 
         ModelController iland_model;
         QObject::connect(&iland_model, SIGNAL(year(int)),SLOT(runYear(int)));
         iland_model.setFileName(xml_name);
+        if (iland_model.hasError()) {
+            qWarning() << "!!!! ERROR !!!!";
+            qWarning() << iland_model.lastError();
+            qWarning() << "!!!! ERROR !!!!";
+            return;
+        }
 
         setupLogging();
-
+        mParams.clear();
+        if (QCoreApplication::arguments().count()>3) {
+            qWarning() << "set command line values:";
+            for (int i=3;i<QCoreApplication::arguments().count();++i) {
+                QString line = QCoreApplication::arguments().at(i);
+                mParams.append(line);
+                QString key = line.left(line.indexOf('='));
+                QString value = line.mid(line.indexOf('=')+1);
+                qWarning() << "set" << key << "to value:" << value;
+                const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
+            }
+        }
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
         qDebug() << "**************************************************";
@@ -93,11 +110,25 @@ void ConsoleShell::run()
         qWarning() << "**************************************************";
 
         iland_model.create();
+        if (iland_model.hasError()) {
+            qWarning() << "!!!! ERROR !!!!";
+            qWarning() << iland_model.lastError();
+            qWarning() << "!!!! ERROR !!!!";
+            return;
+        }
+        runJavascript("onCreate");
         qWarning() << "**************************************************";
         qWarning() << "*** running model for" << years << "years";
         qWarning() << "**************************************************";
 
         iland_model.run(years + 1);
+        if (iland_model.hasError()) {
+            qWarning() << "!!!! ERROR !!!!";
+            qWarning() << iland_model.lastError();
+            qWarning() << "!!!! ERROR !!!!";
+            return;
+        }
+        runJavascript("onFinish");
 
         qWarning() << "**************************************************";
         qWarning() << "*** model run finished.";
@@ -109,7 +140,7 @@ void ConsoleShell::run()
         qWarning() << e.message();
     }
     catch (const std::exception &e) {
-        qWarning() << "*** An exception occured ***";
+        qWarning() << "*** An (std)exception occured ***";
         qWarning() << e.what();
     }
     QCoreApplication::quit();
@@ -170,6 +201,22 @@ void ConsoleShell::setupLogging()
         mLogStream = new QTextStream(file);
     }
     qInstallMessageHandler(myMessageOutput);
+
+
+}
+
+void ConsoleShell::runJavascript(const QString key)
+{
+    for (int i=0;i<mParams.count(); ++i) {
+        QString line=mParams[i];
+        QString pkey = line.left(line.indexOf('='));
+        if (pkey == key) {
+            QString command = line.mid(line.indexOf('=')+1);
+            // execute the function
+            qWarning() << "executing trigger" << key;
+            qWarning() << GlobalSettings::instance()->executeJavascript(command);
+        }
+    }
 
 
 }

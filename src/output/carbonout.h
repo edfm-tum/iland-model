@@ -20,6 +20,7 @@
 #ifndef CARBONOUT_H
 #define CARBONOUT_H
 #include "output.h"
+#include "expression.h"
 
 class CarbonOut: public Output
 {
@@ -27,6 +28,9 @@ public:
     CarbonOut();
     virtual void exec();
     virtual void setup();
+private:
+    Expression mCondition;
+
 };
 
 #endif // CARBONOUT_H

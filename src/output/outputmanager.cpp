@@ -30,6 +30,7 @@
 // tree outputs
 #include "treeout.h"
 #include "standout.h"
+#include "landscapeout.h"
 #include "standdeadout.h"
 #include "managementout.h"
 #include "dynamicstandout.h"
@@ -48,6 +49,7 @@ OutputManager::OutputManager()
     // add all the outputs
     mOutputs.append(new TreeOut);
     mOutputs.append(new StandOut);
+    mOutputs.append(new LandscapeOut);
     mOutputs.append(new DynamicStandOut);
     mOutputs.append(new ProductionOut);
     mOutputs.append(new StandDeadOut);

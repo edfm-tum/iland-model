@@ -138,7 +138,8 @@ SOURCES += main.cpp \
     ../fome/agent.cpp \
     ../fome/fmunit.cpp \
     ../fome/agenttype.cpp \
-    ../fome/fomescript.cpp
+    ../fome/fomescript.cpp \
+    ../output/landscapeout.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -221,7 +222,8 @@ HEADERS += mainwindow.h \
     ../fome/agent.h \
     ../fome/fmunit.h \
     ../fome/agenttype.h \
-    ../fome/fomescript.h
+    ../fome/fomescript.h \
+    ../output/landscapeout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

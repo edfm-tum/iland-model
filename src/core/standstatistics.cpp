@@ -134,6 +134,31 @@ void StandStatistics::add(const StandStatistics &stat)
 
 }
 
+void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double weight)
+{
+    mCount+=stat.mCount * weight;
+    mSumBasalArea+=stat.mSumBasalArea * weight;
+    mSumDbh+=stat.mSumDbh * weight;
+    mSumHeight+=stat.mSumHeight * weight;
+    mSumVolume+=stat.mSumVolume * weight;
+    mLeafAreaIndex += stat.mLeafAreaIndex * weight;
+    mNPP += stat.mNPP * weight;
+    mNPPabove += stat.mNPPabove * weight;
+    mGWL+=stat.mGWL * weight;
+    // regeneration
+    mCohortCount += stat.mCohortCount * weight;
+    mSaplingCount += stat.mSaplingCount * weight;
+    mSumSaplingAge += stat.mSumSaplingAge * weight;
+    // carbon/nitrogen pools
+    mCStem += stat.mCStem * weight; mNStem += stat.mNStem * weight;
+    mCBranch += stat.mCBranch * weight; mNBranch += stat.mNBranch * weight;
+    mCFoliage += stat.mCFoliage * weight; mNFoliage += stat.mNFoliage * weight;
+    mCFineRoot += stat.mCFineRoot * weight; mNFineRoot += stat.mNFineRoot * weight;
+    mCCoarseRoot += stat.mCCoarseRoot * weight; mNCoarseRoot += stat.mNCoarseRoot * weight;
+    mCRegeneration += stat.mCRegeneration * weight; mNRegeneration += stat.mNRegeneration * weight;
+
+}
+
 /// call for regeneration layer of a species in resource unit
 void StandStatistics::add(const Sapling *sapling)
 {

@@ -30,8 +30,8 @@ CarbonOut::CarbonOut()
                    "In the output are aggregated above ground pools (kg/ru) " \
                    "together with below ground pools (kg/ha). \n " \
                    "The area column contains the stockable area and can be used to scale to per unit area values. \n " \
-                   "__Note__: the figures for soil pools are per hectare even if the stockable area is below one hectare (scaled to 1ha internally) " \
-                   " ");
+                   "__Note__: the figures for soil pools are per hectare even if the stockable area is below one hectare (scaled to 1ha internally). " \
+                   "You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output)");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("area", "total stockable area of the resource unit (m2)", OutInteger)
               << OutputColumn("stem_c", "Stem carbon kg/ru", OutDouble)
@@ -62,12 +62,19 @@ CarbonOut::CarbonOut()
 
 void CarbonOut::setup()
 {
+    // use a condition for to control execuation for the current year
+    QString condition = settings().value(".condition", "");
+    mCondition.setExpression(condition);
 }
 
 
 void CarbonOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
+    if (!mCondition.isEmpty())
+        if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
+            return;
+
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1 || !ru->snag())
             continue; // do not include if out of project area
