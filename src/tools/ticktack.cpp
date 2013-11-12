@@ -60,7 +60,7 @@ class TTickTack
 public:
     TTickTack() { qt_timer.start();}
     void reset() { qt_timer.start(); }
-    double elapsed() { return qt_timer.elapsed()/1000.; // return seconds }
+    double elapsed() { return qt_timer.elapsed()/1000.; } // return seconds
 private:
     QTime qt_timer;
 };
