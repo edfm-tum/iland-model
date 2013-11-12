@@ -73,6 +73,7 @@ SOURCES += main.cpp \
     ../output/treeout.cpp \
     ../output/outputmanager.cpp \
     ../output/standout.cpp \
+    ../output/landscapeout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
     ../core/management.cpp \
@@ -108,8 +109,8 @@ SOURCES += main.cpp \
     ../tools/dem.cpp \
     ../3rdparty/SimpleRNG.cpp \
     ../output/snapshot.cpp \
-    ../tools/randomgenerator.cpp \
-    ../tools/spatialanalysis.cpp
+    ../tools/randomgenerator.cpp
+
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -141,6 +142,7 @@ HEADERS += mainwindow.h \
     ../output/treeout.h \
     ../output/outputmanager.h \
     ../output/standout.h \
+    ../output/landscapeout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
     ../core/management.h \
@@ -178,8 +180,8 @@ HEADERS += mainwindow.h \
     ../core/layeredgrid.h \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
-    ../tools/randomgenerator.h \
-    ../tools/spatialanalysis.h
+    ../tools/randomgenerator.h
+
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

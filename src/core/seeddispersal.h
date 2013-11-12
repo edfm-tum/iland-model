@@ -63,6 +63,7 @@ private:
     bool mHasExternalSeedInput; ///< if true, external seeds are modelled for the species
     int mExternalSeedDirection; ///< direction of external seeds
     int mExternalSeedBuffer; ///< how many 20m pixels away from the simulation area should the seeding start?
+    double mExternalSeedBackgroundInput; ///< background propability for this species; if set, then a certain seed availability is provided for the full area
     // external seeds
     Grid<float> mExternalSeedMap; ///< for more complex external seed input, this map holds that information
     void setupExternalSeedsForSpecies(Species *species); ///< setup of special external seed input
