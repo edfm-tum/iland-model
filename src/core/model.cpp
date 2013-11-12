@@ -115,8 +115,12 @@ Model::Model()
     initialize();
     GlobalSettings::instance()->setModel(this);
     GlobalSettings::instance()->resetScriptEngine(); // clear the script
+#ifdef QT_DEBUG
     QString dbg="running in release mode.";
-    DBGMODE( dbg="running in debug mode."; );
+#else
+    QString dbg="running in debug mode.";
+#endif
+    DBGMODE(qDebug() << "internal debug messages enabled (DBGMODE).";);
     qDebug() << dbg;
 }
 
