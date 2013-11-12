@@ -32,6 +32,7 @@ CONFIG(release, debug|release) {
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 LIBS += -L../plugins -liland_fire -liland_wind
+DEFINES += NO_DEBUG_MSGS
 }
 
 CONFIG += precompile_header
