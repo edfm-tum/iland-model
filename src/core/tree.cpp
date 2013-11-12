@@ -679,12 +679,12 @@ inline void Tree::partitioning(TreeGrowthData &d)
     apct_foliage = 1. - apct_root - apct_wood;
 
 
-    //DBGMODE(
+    DBGMODE(
             if (apct_foliage<0 || apct_wood<0)
                 qDebug() << "transfer to foliage or wood < 0";
              if (npp<0)
                  qDebug() << "NPP < 0";
-         //   );
+            );
 
     // Change of biomass compartments
     double sen_root = mFineRootMass * to_root;
