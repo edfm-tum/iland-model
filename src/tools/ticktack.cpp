@@ -53,13 +53,16 @@ _LARGE_INTEGER getCount()
     }
 };
 #else
-// fake implementation
+// LINUX implementation using standard Qt timer
+#include <QTime>
 class TTickTack
 {
 public:
-    TTickTack() {}
-    void reset() {}
-    double elapsed() { return 1.; }
+    TTickTack() { qt_timer.start();}
+    void reset() { qt_timer.start(); }
+    double elapsed() { return qt_timer.elapsed(); }
+private:
+    QTime qt_timer;
 };
 #endif
 
