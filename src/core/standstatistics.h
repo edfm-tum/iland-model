@@ -31,6 +31,7 @@ public:
     void setResourceUnitSpecies(const ResourceUnitSpecies *rus) { mRUS=rus; }
 
     void add(const StandStatistics &stat); ///< add aggregates of @p stat to own aggregates
+    void addAreaWeighted(const StandStatistics &stat, const double weight); ///< add aggregates of @p stat to own aggregates (include own stockable area)
     void add(const Tree *tree, const TreeGrowthData *tgd); ///< call for each tree within the domain
     void add(const Sapling *sapling); ///< call for regeneration layer of a species in resource unit
     void clear(); ///< call before trees are aggregated
@@ -61,6 +62,8 @@ public:
     double nFineRoot() const { return mNFineRoot; }
     double cRegeneration() const { return mCRegeneration; }
     double nRegeneration() const { return mNRegeneration; }
+    /// total carbon: sum of carbon of all living trees + regeneration layer
+    double totalCarbon() const { return mCStem + mCBranch + mCFoliage + mCFineRoot + mCCoarseRoot + mCRegeneration; }
 
 private:
     inline void addBiomass(const double biomass, const double CNRatio, double *C, double *N);

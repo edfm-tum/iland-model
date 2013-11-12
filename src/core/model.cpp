@@ -439,16 +439,18 @@ void Model::loadProject()
         throw IException("Setup of Model: no resource units present!");
 
     // (3) additional issues
-    // (3.1) setup of regeneration
+    // (3.1) load javascript code into the engine
+    ScriptGlobal::loadScript(g->path(xml.value("system.javascript.fileName"),"script"));
+
+    // (3.2) setup of regeneration
     changeSettings().regenerationEnabled = xml.valueBool("model.settings.regenerationEnabled", false);
     if (settings().regenerationEnabled) {
         foreach(SpeciesSet *ss, mSpeciesSets)
             ss->setupRegeneration();
     }
-
     Sapling::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.recruitmentDimensionVariation",0.1));
 
-    // (3.2) management
+    // (3.3) management
     QString mgmtFile = xml.value("model.management.file");
     if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
         mManagement = new Management();
@@ -573,6 +575,7 @@ void Model::beforeRun()
 
     // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("landscape"); // year=0
     GlobalSettings::instance()->outputManager()->execute("sapling"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
@@ -669,6 +672,7 @@ void Model::runYear()
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree"); // single tree output
     om->execute("stand"); //resource unit level x species
+    om->execute("landscape"); //landscape x species
     om->execute("sapling"); // sapling layer per RU x species
     om->execute("production_month"); // 3pg responses growth per species x RU x month
     om->execute("dynamicstand"); // output with user-defined columns (based on species x RU)

@@ -1,38 +1,17 @@
-/********************************************************************************************
-**    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
-**    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
-**
-**    This program is free software: you can redistribute it and/or modify
-**    it under the terms of the GNU General Public License as published by
-**    the Free Software Foundation, either version 3 of the License, or
-**    (at your option) any later version.
-**
-**    This program is distributed in the hope that it will be useful,
-**    but WITHOUT ANY WARRANTY; without even the implied warranty of
-**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-**    GNU General Public License for more details.
-**
-**    You should have received a copy of the GNU General Public License
-**    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-********************************************************************************************/
-
-#include "standout.h"
-#include "helper.h"
+#include "landscapeout.h"
 #include "model.h"
 #include "resourceunit.h"
 #include "species.h"
 
-
-StandOut::StandOut()
+LandscapeOut::LandscapeOut()
 {
-    setName("Stand by species/RU", "stand");
-    setDescription("Output of aggregates on the level of RU x species. Values are always aggregated per hectare. "\
+    setName("Landscape aggregates per species", "landscape");
+    setDescription("Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. "\
                    "The output is created after the growth of the year, " \
                    "i.e. output with year=2000 means effectively the state of at the end of the " \
-                   "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'. " \
-                   "You can use the 'condition' to control if the output should be created for the current year(see dynamic stand output)");
-    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
+                   "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'." \
+                   "You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output)");
+    columns() << OutputColumn::year() << OutputColumn::species()
               << OutputColumn("count_ha", "tree count (living, >4m height) per ha", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
               << OutputColumn("height_avg_m", "average tree height (m)", OutDouble)
@@ -47,20 +26,31 @@ StandOut::StandOut()
 
  }
 
-void StandOut::setup()
+void LandscapeOut::setup()
 {
     // use a condition for to control execuation for the current year
     QString condition = settings().value(".condition", "");
     mCondition.setExpression(condition);
 }
 
-void StandOut::exec()
+void LandscapeOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
     if (!mCondition.isEmpty())
         if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
             return;
 
+    // clear landscape stats
+    for (QMap<QString, StandStatistics>::iterator i=mLandscapeStats.begin(); i!= mLandscapeStats.end();++i)
+        i.value().clear();
+
+    // extract total stockable area
+    double total_area = 0.;
+    foreach(const ResourceUnit *ru, m->ruList())
+        total_area += ru->stockableArea();
+
+    if (total_area==0.)
+        return;
 
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)
@@ -69,11 +59,18 @@ void StandOut::exec()
             const StandStatistics &stat = rus->constStatistics();
             if (stat.count()==0 && stat.cohortCount()==0)
                 continue;
-            *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
-            *this << stat.count() << stat.dbh_avg() << stat.height_avg()
-                    << stat.volume() << stat.totalCarbon() << stat.gwl() << stat.basalArea()
-                    << stat.npp() << stat.nppAbove() << stat.leafAreaIndex() << stat.cohortCount();
-            writeRow();
+            mLandscapeStats[rus->species()->id()].addAreaWeighted(stat, ru->stockableArea() / total_area);
         }
+    }
+    // now add to output stream
+    QMap<QString, StandStatistics>::const_iterator i = mLandscapeStats.constBegin();
+    while (i != mLandscapeStats.constEnd()) {
+        const StandStatistics &stat = i.value();
+        *this << currentYear() << i.key(); // keys: year, species
+        *this << stat.count() << stat.dbh_avg() << stat.height_avg()
+                              << stat.volume() << stat.totalCarbon() << stat.gwl() << stat.basalArea()
+                              << stat.npp() << stat.nppAbove() << stat.leafAreaIndex() << stat.cohortCount();
+        writeRow();
+        ++i;
     }
 }

@@ -428,7 +428,7 @@ void ScriptGlobal::loadScript(const QString &fileName)
         return;
 
     QJSValue result = engine->evaluate(program);
-    qDebug() << "management script loaded";
+    qDebug() << "javascript file loaded" << fileName;
     if (result.isError())
         qDebug() << "Script Error occured: " << result.toString(); // << "\n" << engine->uncaughtExceptionBacktrace();
 

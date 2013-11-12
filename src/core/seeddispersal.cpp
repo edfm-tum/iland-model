@@ -114,7 +114,7 @@ void SeedDispersal::setup()
             mExternalSeedDirection += dir.contains("e")?2:0;
             mExternalSeedDirection += dir.contains("s")?4:0;
             mExternalSeedDirection += dir.contains("w")?8:0;
-            QStringList buffer_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBuffer").simplified().split(',');
+            QStringList buffer_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBuffer").split(QRegExp("([^\\.\\w]+)"));
             int index = buffer_list.indexOf(mSpecies->id());
             if (index>=0) {
                 mExternalSeedBuffer = buffer_list[index+1].toInt();
@@ -122,7 +122,7 @@ void SeedDispersal::setup()
             }
 
             // background seed rain (i.e. for the full landscape), use regexp
-            QStringList background_input_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBackgroundInput").simplified().split(QRegExp("[\\W\\.]+"), QString::SkipEmptyParts);
+            QStringList background_input_list = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.externalSeedBackgroundInput").split(QRegExp("([^\\.\\w]+)"));
             index = background_input_list.indexOf(mSpecies->id());
             if (index>=0) {
                 mExternalSeedBackgroundInput = background_input_list[index+1].toDouble();

@@ -43,6 +43,8 @@ public:
     bool isRunning(); ///< model is running
     bool isFinished(); ///< returns true if there is a valid model state, but the run is finished
     bool isPaused(); ///< returns true if the model is currently paused
+    bool hasError() { return mHasError; } ///< returns true if an error occured during the last operation
+    QString lastError() { return mLastError; } ///< error message of the last received error
     // simulation length
     int currentYear() const; ///< return current year of the model
     int totalYears() const { return mYearsToRun; } ///< returns total number of years to simulate
@@ -88,6 +90,8 @@ private:
     bool mRunning;
     bool mFinished;
     bool mCanceled;
+    bool mHasError;
+    QString mLastError;
     int mYearsToRun;
     QString mInitFile;
     bool mDynamicOutputEnabled;

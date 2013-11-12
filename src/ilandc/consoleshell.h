@@ -20,6 +20,7 @@
 #ifndef CONSOLESHELL_H
 #define CONSOLESHELL_H
 #include <QObject>
+#include <QStringList>
 /** ConsoleShell encapsulates the iLand model
     when used in the console application ("ilandc.exe")
 */
@@ -35,7 +36,9 @@ public slots:
     void run(); // execute the iLand model
     void runYear(int year); // slot called every year
 private:
+    QStringList mParams;
     void setupLogging();
+    void runJavascript(const QString key);
     static QTextStream *mLogStream;
 };
 

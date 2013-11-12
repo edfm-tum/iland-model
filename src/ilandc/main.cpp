@@ -42,6 +42,10 @@ int main(int argc, char *argv[])
     if (a.arguments().count()<3) {
         printf("Usage: \n");
         printf("ilandc.exe <xml-project-file> <years> <...other options>\n");
+        printf("Options:\n");
+        printf("you specify a number key=value pairs, and *after* loading of the project\n");
+        printf("the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand.enabled=false output.stand.landscape=false\n");
+        printf("See also http://iland.boku.ac.at/iLand+console\".");
         return 0;
     }
     ConsoleShell iland_shell;
