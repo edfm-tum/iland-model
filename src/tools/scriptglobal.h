@@ -47,6 +47,12 @@ public slots:
     void load(QString file_name);
     void saveAsImage(QString file);
     void paint(double min_value=0., double max_value=1.);
+    // active modifications of the map
+    void clear(); ///< clears the map (set all values to 0)
+    /// paint a shape on the stand grid with id stand_id
+    /// paint_function is a valid expression (paramters: x, y as *metric* coordinates)
+    /// if wrap_around=true, then the shape is wrapped around the edges of the simulated area (torus)
+    void createStand(int stand_id, QString paint_function, bool wrap_around);
 
 private:
     MapGrid *mMap;
