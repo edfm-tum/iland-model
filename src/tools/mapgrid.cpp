@@ -66,35 +66,65 @@ bool MapGrid::loadFromGrid(const GisGrid &source_grid, const bool create_index)
     mRectIndex.clear();
     mRUIndex.clear();
 
-    if (create_index) {
+    if (create_index)
+        createIndex();
 
-        for (int *p = mGrid.begin(); p!=mGrid.end(); ++p) {
-            if (*p==-1)
-                continue;
-            QPair<QRectF,double> &data = mRectIndex[*p];
-            data.first = data.first.united(mGrid.cellRect(mGrid.indexOf(p)));
-            data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
-
-            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
-            // find all entries for the current grid id
-            QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
-
-            // look for the resource unit 'ru'
-            bool found = false;
-            while (pos!=mRUIndex.end() && pos.key() == *p) {
-                if (pos.value().first == ru) {
-                    pos.value().second+= 0.01; // 1 pixel = 1% of the area
-                    found=true;
-                    break;
-                }
-                ++pos;
-            }
-            if (!found)
-                mRUIndex.insertMulti(*p, QPair<ResourceUnit*, double>(ru, 0.01));
-
-        }
-    }
     return true;
+
+}
+
+
+void MapGrid::createEmptyGrid()
+{
+    HeightGrid *h_grid = GlobalSettings::instance()->model()->heightGrid();
+    if (!h_grid || h_grid->isEmpty())
+        throw IException("GisGrid::createEmptyGrid: 10mGrid: no valid height grid to copy grid size.");
+    // create a grid with the same size as the height grid
+    // (height-grid: 10m size, covering the full extent)
+    mGrid.clear();
+    mGrid.setup(h_grid->metricRect(),h_grid->cellsize());
+
+    QPointF p;
+    for (int i=0;i<mGrid.count();i++) {
+        p = mGrid.cellCenterPoint(mGrid.indexOf(i));
+        mGrid.valueAtIndex(i) = 0;
+    }
+
+    // reset spatial index
+    mRectIndex.clear();
+    mRUIndex.clear();
+}
+
+void MapGrid::createIndex()
+{
+    // reset spatial index
+    mRectIndex.clear();
+    mRUIndex.clear();
+    // create new
+    for (int *p = mGrid.begin(); p!=mGrid.end(); ++p) {
+        if (*p==-1)
+            continue;
+        QPair<QRectF,double> &data = mRectIndex[*p];
+        data.first = data.first.united(mGrid.cellRect(mGrid.indexOf(p)));
+        data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
+
+        ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+        // find all entries for the current grid id
+        QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
+
+        // look for the resource unit 'ru'
+        bool found = false;
+        while (pos!=mRUIndex.end() && pos.key() == *p) {
+            if (pos.value().first == ru) {
+                pos.value().second+= 0.01; // 1 pixel = 1% of the area
+                found=true;
+                break;
+            }
+            ++pos;
+        }
+        if (!found)
+            mRUIndex.insertMulti(*p, QPair<ResourceUnit*, double>(ru, 0.01));
+    }
 
 }
 
@@ -109,11 +139,11 @@ bool MapGrid::loadFromFile(const QString &fileName, const bool create_index)
     return false;
 }
 
-/// returns the list of resource units with at least one pixel within the area designated by 'id'???? ID UNUSED???
+/// returns the list of resource units with at least one pixel within the area designated by 'id'
 QList<ResourceUnit *> MapGrid::resourceUnits(const int id) const
 {
     QList<ResourceUnit *> result;
-    QList<QPair<ResourceUnit*, double> > list = mRUIndex.values();
+    QList<QPair<ResourceUnit*, double> > list = mRUIndex.values(id);
     for (int i=0;i<list.count();++i)
         result.append( list[i].first);
     return result;
@@ -198,5 +228,7 @@ void MapGrid::fillNeighborList()
     }
 
 }
+
+
 
 
