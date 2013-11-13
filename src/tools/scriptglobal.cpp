@@ -244,6 +244,64 @@ void MapGridWrapper::paint(double min_value, double max_value)
 
 }
 
+void MapGridWrapper::clear()
+{
+    if (!mCreated) {
+        // create a empty map
+        mMap = new MapGrid();
+        mMap->createEmptyGrid();
+        mCreated = true;
+    }
+    const_cast<Grid<int>& >(mMap->grid()).initialize(0); // clear all data and set to 0
+}
+
+void MapGridWrapper::createStand(int stand_id, QString paint_function, bool wrap_around)
+{
+    if (!mMap)
+        throw IException("no valid map to paint on");
+    Expression expr(paint_function);
+    expr.setCatchExceptions(true);
+    double *x_var = expr.addVar("x");
+    double *y_var = expr.addVar("y");
+    if (!wrap_around) {
+        // now loop over all cells ...
+        for (int *p = mMap->grid().begin(); p!=mMap->grid().end(); ++p) {
+            QPoint pt = mMap->grid().indexOf(p);
+            QPointF ptf = mMap->grid().cellCenterPoint(pt);
+            // set the variable values and evaluate the expression
+            *x_var = ptf.x();
+            *y_var = ptf.y();
+            if (expr.execute()) {
+                *p = stand_id;
+            }
+        }
+    } else {
+        // WRAP AROUND MODE
+        // now loop over all cells ...
+        double delta_x = GlobalSettings::instance()->model()->extent().width();
+        double delta_y = GlobalSettings::instance()->model()->extent().height();
+
+        for (int *p = mMap->grid().begin(); p!=mMap->grid().end(); ++p) {
+            QPoint pt = mMap->grid().indexOf(p);
+            QPointF ptf = mMap->grid().cellCenterPoint(pt);
+            if (ptf.x()<0. || ptf.x()>delta_x || ptf.y()<0. || ptf.y()>delta_y)
+                continue;
+            // set the variable values and evaluate the expression
+            // we have to look at *9* positions to cover all wrap around cases....
+            for (int dx=-1;dx<2;++dx) {
+                for (int dy=-1;dy<2;++dy) {
+                    *x_var = ptf.x() + dx*delta_x;
+                    *y_var = ptf.y() + dy*delta_y;
+                    if (expr.execute())
+                        *p = stand_id;
+                }
+            }
+        }
+    }
+    // after changing the map, recreate the index
+    mMap->createIndex();
+}
+
 QString MapGridWrapper::name() const
 {
     if (mMap)

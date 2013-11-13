@@ -37,6 +37,9 @@ public:
     MapGrid(const QString &fileName, const bool create_index=true) { loadFromFile(fileName, create_index); }
     bool loadFromFile(const QString &fileName, const bool create_index=true); ///< load ESRI style text file
     bool loadFromGrid(const GisGrid &source_grid, const bool create_index=true); ///< load from an already present GisGrid
+    void createEmptyGrid(); ///< create an empty grid with the size of the height grid of iLand (all values are 0, no index is created)
+    void createIndex(); ///< (re-)creates the internal index (mRUIndex, mRectIndex, ...)
+
     // access
     const QString &name() const { return mName; }
     bool isValid() const { return !mGrid.isEmpty(); }

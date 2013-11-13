@@ -99,7 +99,7 @@ public slots:
     void slashSnags(MapGridWrapper *wrap, int key, double slash_fraction);
     void sort(QString statement); ///< sort trees in the list according to a criterion
     int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
-    int filter(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
+    int filterIdList(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
     void randomize(); ///< random shuffle of all trees in the list
 private:
     QString executeScript(QString cmd="");

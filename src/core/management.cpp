@@ -296,7 +296,7 @@ void Management::loadScript(const QString &fileName)
     ScriptGlobal::loadScript(fileName);
 }
 
-int Management::filter(QVariantList idList)
+int Management::filterIdList(QVariantList idList)
 {
     QVector<int> ids;
     foreach(const QVariant &v, idList)
@@ -327,7 +327,14 @@ int Management::filter(QString filter)
     try {
         while (tp!=mTrees.end()) {
             tw.setTree(tp->first);
-            if (expr.calculate(tw))
+            double value = expr.calculate(tw);
+            // keep if expression returns true (1)
+            bool keep = value==1.;
+            // if value is >0 (i.e. not "false"), then draw a random number
+            if (!keep && value>0.)
+                keep = drandom() < value;
+
+            if (!keep)
                 tp = mTrees.erase(tp);
             else
                 ++tp;
