@@ -141,6 +141,7 @@ public:
     static void clearAllTimers();
     static void printAllTimers();
 private:
+    static QString timeStr(double value_ms);
     static QHash<QString, double> mTimingList;
     TickTack t;
     bool m_hideShort; // if true, hide messages for short operations (except an explicit call to showElapsed())

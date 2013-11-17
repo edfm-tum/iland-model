@@ -71,6 +71,8 @@ class ScriptGlobal : public QObject, protected QScriptable
     Q_PROPERTY(int year READ year)
     Q_PROPERTY(int resourceUnitCount READ resourceUnitCount)
     Q_PROPERTY(QString currentDir WRITE setCurrentDir READ currentDir)
+    Q_PROPERTY(double worldX READ worldX)
+    Q_PROPERTY(double worldY READ worldY)
 
 
 public:
@@ -82,6 +84,8 @@ public:
     int resourceUnitCount() const; ///< get number of resource uinit
     QString currentDir() const { return mCurrentDir; } ///< current execution directory (default is the Script execution directory)
     void setCurrentDir(QString newDir) { mCurrentDir = newDir; } ///< set current working dir
+    double worldX(); ///< extent of the world (without buffer) in meters (x-direction)
+    double worldY(); ///< extent of the world (without buffer) in meters (y-direction)
 
     // general functions
     static void loadScript(const QString &fileName);
