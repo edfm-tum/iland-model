@@ -424,24 +424,38 @@ void DebugTimer::printAllTimers()
     double total=0.;
     while (i != mTimingList.end()) {
          if (i.value()>0)
-            qWarning() << i.key() << ":" << i.value() << "ms";
+            qWarning() << i.key() << ":" << timeStr(i.value());
          total+=i.value();
          ++i;
      }
     qWarning() << "Sum: " << total << "ms";
 }
 
+QString DebugTimer::timeStr(double value_ms)
+{
+    if (value_ms<10000)
+        return QString("%1ms").arg(value_ms);
+    if (value_ms<60000)
+        return QString("%1s").arg(value_ms/1000);
+    if (value_ms<60000*60)
+        return QString("%1m %2s").arg(floor(value_ms/60000)).arg(fmod(value_ms,60000)/1000);
+
+    return QString("%1h %2m %3s").arg(floor(value_ms/3600000)) //h
+            .arg(floor(fmod(value_ms,3600000)/60000)) //m
+            .arg(qRound(fmod(value_ms,60000)/1000));    //s
+}
+
 void DebugTimer::interval(const QString &text)
 {
     double elapsed_time = elapsed();
-    qDebug() << "Timer" << text << elapsed_time << "ms";
+    qDebug() << "Timer" << text << timeStr(elapsed_time);
     start();
 }
 
 void DebugTimer::showElapsed()
 {
     if (!m_shown) {
-            qDebug() << "Timer" << m_caption << ":" << elapsed() << "ms";
+            qDebug() << "Timer" << m_caption << ":" << timeStr(elapsed());
     }
     m_shown=true;
 }

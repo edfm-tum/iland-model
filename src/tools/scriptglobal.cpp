@@ -110,6 +110,16 @@ int ScriptGlobal::resourceUnitCount() const
     Q_ASSERT(mModel!=0);
     return mModel->ruList().count();
 }
+
+double ScriptGlobal::worldX()
+{
+    return GlobalSettings::instance()->model()->extent().width();
+}
+
+double ScriptGlobal::worldY()
+{
+    return GlobalSettings::instance()->model()->extent().height();
+}
 // wrapped helper functions
 QString ScriptGlobal::loadTextFile(QString fileName)
 {
