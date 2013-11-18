@@ -73,6 +73,7 @@ class ScriptGlobal : public QObject, protected QScriptable
     Q_PROPERTY(QString currentDir WRITE setCurrentDir READ currentDir)
     Q_PROPERTY(double worldX READ worldX)
     Q_PROPERTY(double worldY READ worldY)
+    Q_PROPERTY(bool qt5 READ qt5)
 
 
 public:
@@ -80,6 +81,7 @@ public:
     static void setupGlobalScripting();
     static void addToScriptEngine(QScriptEngine &engine); ///< add this class to scripting engine
     // properties accesible by scripts
+    bool qt5() const {return true; } ///< is this the qt5-model? (changes in script object creation)
     int year() const; ///< current year in the model
     int resourceUnitCount() const; ///< get number of resource uinit
     QString currentDir() const { return mCurrentDir; } ///< current execution directory (default is the Script execution directory)
