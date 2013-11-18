@@ -585,6 +585,7 @@ QJSValue ScriptObjectFactory::newClimateConverter()
 
 }
 
+
 QJSValue ScriptObjectFactory::newMap()
 {
     MapGridWrapper *map = new MapGridWrapper(0);
