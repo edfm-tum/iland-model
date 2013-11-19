@@ -284,10 +284,13 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
             bigtree.setAge(tree.age.age,tree.height);
             bigtree.setRU(ru);
             bigtree.setup();
+            const Tree *t = &bigtree;
+            mRUS->statistics().add(t, 0); // count the newly created trees already in the stats
         }
         // clear all regeneration from this pixel (including this tree)
         clearSapling(tree, true); // remove this tree (but do not move biomass to soil)
         ru->clearSaplings(p); // remove all other saplings on the same pixel
+
         return false;
     }
     // book keeping (only for survivors)

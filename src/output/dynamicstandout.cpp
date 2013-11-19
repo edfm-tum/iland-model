@@ -115,7 +115,7 @@ void DynamicStandOut::exec()
 
     if (per_ru) {
         // when looping over resource units, do it differently (old way)
-        extractByResourceUnit();
+        extractByResourceUnit(per_species);
         return;
     }
 
@@ -130,7 +130,7 @@ void DynamicStandOut::exec()
     for (QList<Species*>::const_iterator species = m->speciesSet()->activeSpecies().constBegin();species!=m->speciesSet()->activeSpecies().constEnd();++species) {
         trees.clear();
         AllTreeIterator all_trees(m);
-        while (const Tree *t = all_trees.next()) {
+        while (const Tree *t = all_trees.nextLiving()) {
             if (per_species && t->species() != *species)
                 continue;
             trees.push_back(t);
@@ -197,7 +197,7 @@ void DynamicStandOut::exec()
 }
 
 
-void DynamicStandOut::extractByResourceUnit()
+void DynamicStandOut::extractByResourceUnit(const bool by_species)
 {
 
     if (mFieldList.count()==0)
@@ -224,7 +224,7 @@ void DynamicStandOut::extractByResourceUnit()
                 continue;
         }
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
-            if (rus->constStatistics().count()==0)
+            if (by_species && rus->constStatistics().count()==0)
                 continue;
 
 
@@ -239,7 +239,9 @@ void DynamicStandOut::extractByResourceUnit()
                 data.clear();
                 bool has_trees = false;
                 foreach(const Tree &tree, ru->trees()) {
-                    if (tree.species()->index()!=rus->species()->index())
+                    if (by_species && tree.species()->index()!=rus->species()->index())
+                        continue;
+                    if (tree.isDead())
                         continue;
                     tw.setTree(&tree);
 
@@ -261,8 +263,14 @@ void DynamicStandOut::extractByResourceUnit()
                 if (!has_trees)
                     continue;
 
-                if (isRowEmpty())
-                    *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
+
+                if (isRowEmpty()) {
+                    *this << currentYear()  << ru->index() << ru->id();
+                    if (by_species)
+                        *this << rus->species()->id();
+                    else
+                        *this << "";
+                 }
 
                 // calculate statistics
                 stat.setData(data);
@@ -290,6 +298,8 @@ void DynamicStandOut::extractByResourceUnit()
             } // foreach (field)
             if (!isRowEmpty())
                 writeRow();
+            if (!by_species)
+                break;
         } //foreach species
     } // foreach ressource unit
 

@@ -97,7 +97,7 @@ void StandStatistics::calculate()
         mGWL = mSumVolume + mRUS->removedVolume();
         double area_factor =  10000. / mRUS->ru()->area();
         if (area_factor!=1.) {
-            mCount = int(mCount * area_factor);
+            mCount = mCount * area_factor;
             mSumBasalArea *= area_factor;
             mSumVolume *= area_factor;
             mNPP *= area_factor;
@@ -141,6 +141,9 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
     mSumDbh+=stat.mSumDbh * weight;
     mSumHeight+=stat.mSumHeight * weight;
     mSumVolume+=stat.mSumVolume * weight;
+    mAverageDbh+=stat.mAverageDbh * weight;
+    mAverageHeight+=stat.mAverageHeight * weight;
+    mAverageSaplingAge+=stat.mAverageSaplingAge * weight;
     mLeafAreaIndex += stat.mLeafAreaIndex * weight;
     mNPP += stat.mNPP * weight;
     mNPPabove += stat.mNPPabove * weight;
@@ -163,7 +166,7 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
 void StandStatistics::add(const Sapling *sapling)
 {
     mCohortCount = sapling->livingSaplings();
-    mSaplingCount = sapling->livingSaplings(); // to change!!! Reineke!
+    mSaplingCount = sapling->livingSaplings(); // TODO to change!!! Reineke!
 
     mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
     mAverageSaplingAge = sapling->averageAge();
