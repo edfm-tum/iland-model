@@ -1,5 +1,5 @@
-const char *version = "0.8.508";
-const char *svn_revision = "814";
+const char *version = "0.8.602";
+const char *svn_revision = "855";
 const char *currentVersion(){ return version;}
 const char *svnRevision(){ return svn_revision;}
 
@@ -9,6 +9,9 @@ const char *svnRevision(){ return svn_revision;}
 #endif
 #ifdef Q_CC_GNU
 #define MYCC "GCC"
+#endif
+#ifdef Q_CC_INTEL
+#define MYCC "Intel"
 #endif
 #ifndef MYCC
 #define MYCC "unknown"
