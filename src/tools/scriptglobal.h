@@ -81,7 +81,7 @@ public:
     static void setupGlobalScripting();
     static void addToScriptEngine(QScriptEngine &engine); ///< add this class to scripting engine
     // properties accesible by scripts
-    bool qt5() const {return true; } ///< is this the qt5-model? (changes in script object creation)
+    bool qt5() const {return false; } ///< is this the qt5-model? (changes in script object creation) NO, this is Qt4!!!
     int year() const; ///< current year in the model
     int resourceUnitCount() const; ///< get number of resource uinit
     QString currentDir() const { return mCurrentDir; } ///< current execution directory (default is the Script execution directory)
