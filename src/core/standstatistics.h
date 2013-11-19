@@ -37,7 +37,7 @@ public:
     void clear(); ///< call before trees are aggregated
     void calculate(); ///< call after all trees are processed (postprocessing)
     // getters
-    int count() const { return mCount; }
+    double count() const { return mCount; }
     double dbh_avg() const { return mAverageDbh; } ///< average dbh (cm)
     double height_avg() const { return mAverageHeight; } ///< average tree height (m)
     double volume() const { return mSumVolume; } ///< sum of tree volume (m3/ha)
@@ -68,7 +68,7 @@ public:
 private:
     inline void addBiomass(const double biomass, const double CNRatio, double *C, double *N);
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species
-    int mCount;
+    double mCount;
     double mSumDbh;
     double mSumHeight;
     double mSumBasalArea;
