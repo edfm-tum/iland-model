@@ -198,29 +198,7 @@ QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const 
 }
 
 
-/// scan the map and add neighborhood-relations to the mNeighborList
-/// the 4-neighborhood is used to identify neighbors.
-void MapGrid::fillNeighborList()
-{
-    mNeighborList.clear();
-    GridRunner<int> gr(mGrid, mGrid.rectangle()); //  the full grid
-    int *n4[4];
-    QHash<int,int>::iterator it_hash;
-    while (gr.next()) {
-        gr.neighbors4(n4); // get the four-neighborhood (0-pointers possible)
-        for (int i=0;i<4;++i)
-            if (n4[i] && *gr.current() != *n4[i]) {
-                // look if we already have the pair
-                it_hash = mNeighborList.find(*gr.current(), *n4[i]);
-                if (it_hash == mNeighborList.end()) {
-                    // add the "edge" two times in the hash
-                    mNeighborList.insertMulti(*gr.current(), *n4[i]);
-                    mNeighborList.insertMulti(*n4[i], *gr.current());
-                }
-            }
-    }
 
-}
 
 
 
