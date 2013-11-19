@@ -30,7 +30,7 @@ public:
     virtual void exec();
     virtual void setup();
 private:
-    void extractByResourceUnit();
+    void extractByResourceUnit(const bool by_species);
     Expression mRUFilter;
     Expression mTreeFilter;
     Expression mCondition;
