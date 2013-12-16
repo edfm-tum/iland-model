@@ -79,7 +79,7 @@ void ResourceUnitSpecies::updateGWL()
     mRemovedGrowth+=statisticsDead().volume() + statisticsMgmt().volume();
 }
 
-void ResourceUnitSpecies::calclulateEstablishment()
+void ResourceUnitSpecies::calculateEstablishment()
 {
     mEstablishment.calculate();
     //DBGMODE(

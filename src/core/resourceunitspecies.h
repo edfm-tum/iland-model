@@ -42,7 +42,7 @@ public:
     // action
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
     // establishment, sapling growth
-    void calclulateEstablishment(); ///< perform establishment calculations
+    void calculateEstablishment(); ///< perform establishment calculations
     void calclulateSaplingGrowth(); ///< growth of saplings
     void addSapling(const QPoint &position) { mSapling.addSapling(position); } ///< add a saplings on a given position
     void clearSaplings(const QPoint &position) { mSapling.clearSaplings(position);} ///< clear saplings on a given position (after recruitment)

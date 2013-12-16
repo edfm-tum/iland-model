@@ -496,8 +496,13 @@ ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
     try {
         // define a height map for the current resource unit on the stack and clear it
         float sapling_map[cPxPerRU*cPxPerRU];
-        for (int i=0;i<cPxPerRU*cPxPerRU;i++) sapling_map[i]=0.f;
+        for (int i=0;i<cPxPerRU*cPxPerRU;++i) sapling_map[i]=0.f;
+
         unit->setSaplingHeightMap(sapling_map);
+
+        // mask positions with living trees on it as not available
+        foreach (const Tree &tree, unit->trees())
+            unit->setMaxSaplingHeightAt(tree.positionIndex(), 4.f);
 
 
         // (1) calculate the growth of (already established) saplings (populate sapling map)
@@ -519,7 +524,7 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
 
         // (2) calculate the establishment probabilities of new saplings
         foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
-            const_cast<ResourceUnitSpecies*>(rus)->calclulateEstablishment();
+            const_cast<ResourceUnitSpecies*>(rus)->calculateEstablishment();
         }
 
     } catch (const IException& e) {

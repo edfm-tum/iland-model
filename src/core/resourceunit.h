@@ -101,7 +101,12 @@ public:
     void setSaplingHeightMap(float *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
     /// returns maximum sapling height at point given by point-index (LIF-index).
     /// you must call setSaplingHeightMap() with a valid map before.
-    float saplingHeightAt(const QPoint &position) const { Q_ASSERT(mSaplingHeightMap); int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y()); return mSaplingHeightMap[pixel_index];}
+    float saplingHeightAt(const QPoint &position) const {
+            Q_ASSERT(mSaplingHeightMap);
+            int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
+            float h =  mSaplingHeightMap[pixel_index];
+            return h;
+    }
     /// return maximum sapling height at point 'position' (LIF-index). This call is slower but works witout a prior call
     /// to setSaplingHeightMap().
     float saplingHeightForInit(const QPoint &position) const;
@@ -155,5 +160,6 @@ private:
 
     friend class RUWrapper;
 };
+
 
 #endif // RESOURCEUNIT_H
