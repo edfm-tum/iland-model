@@ -62,7 +62,7 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
 
     // check window of opportunity...if regeneration (of any species) on the current pixel is above breast height (1.3m), then
     // no establishment is possible
-    if (mRUS->ru()->saplingHeightAt(pos_lif) > 1.3)
+    if (mRUS->ru()->saplingHeightAt(pos_lif) > 1.3f)
         return false;
 
     // check if sapling of the current tree species is already established -> if so, no establishment.
