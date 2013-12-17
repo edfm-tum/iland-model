@@ -112,7 +112,7 @@ void Climate::setup()
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
     mName = tableName;
-    mLoadYears = (int) xml.valueDouble("batchYears", 1.);
+    mLoadYears = (int) qMax(xml.valueDouble("batchYears", 1.),1.);
     mDoRandomSampling = xml.valueBool("randomSamplingEnabled", false);
     mRandomYearList.clear();
     mRandomListIndex = -1;
