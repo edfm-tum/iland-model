@@ -7,12 +7,14 @@ class Agent; // forward
 class FMUnit
 {
 public:
-    FMUnit();
+    FMUnit():mAgent(0) {}
     FMUnit(const Agent *agent): mAgent(agent) {}
+    void setId(const QString &id) { mId = id; }
     // actions
     void evaluateActivities() const;
 
 private:
+    QString mId;
     const Agent *mAgent;
 };
 

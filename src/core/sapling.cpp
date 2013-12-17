@@ -268,6 +268,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         // the number of trees to create (result is in trees per pixel)
         double n_trees = species->saplingGrowthParameters().representedStemNumber(dbh);
         int to_establish = (int) n_trees;
+
         // if n_trees is not an integer, choose randomly if we should add a tree.
         // e.g.: n_trees = 2.3 -> add 2 trees with 70% probability, and add 3 trees with p=30%.
         if (drandom() < (n_trees-to_establish) || to_establish==0)

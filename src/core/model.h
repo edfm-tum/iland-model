@@ -31,6 +31,7 @@
 class ResourceUnit;
 class SpeciesSet;
 class Management;
+class ForestManagementEngine;
 class Climate;
 class Environment;
 class TimeEvents;
@@ -134,7 +135,8 @@ private:
     // global grids...
     FloatGrid *mGrid; ///< the main LIF grid of the model (2x2m resolution)
     HeightGrid *mHeightGrid; ///< grid with 10m resolution that stores maximum-heights, tree counts and some flags
-    Management *mManagement; ///< management sub-module
+    Management *mManagement; ///< management sub-module (simple mode)
+    ForestManagementEngine *mAMIEManagement; ///< management sub-module (agent based management engine)
     Environment *mEnvironment; ///< definition of paramter values on resource unit level (modify the settings tree)
     TimeEvents *mTimeEvents; ///< sub module to handle predefined events in time (modifies the settings tree in time)
     MapGrid *mStandGrid; ///< map of the stand map (10m resolution)
