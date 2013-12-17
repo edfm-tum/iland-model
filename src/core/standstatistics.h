@@ -99,7 +99,7 @@ public:
     SystemStatistics() { reset(); }
     void reset() { treeCount=0; saplingCount=0; newSaplings=0;
                    tManagement = 0.; tApplyPattern=tReadPattern=tTreeGrowth=0.;
-                   tSeedDistribution=tEstablishment=tSaplingGrowth=tCarbonCycle=tWriteOutput=tTotalYear=0.; }
+                   tSeedDistribution=tSaplingAndEstablishment=tCarbonCycle=tWriteOutput=tTotalYear=0.; }
     void writeOutput();
     // the system counters
     int treeCount;
@@ -111,8 +111,7 @@ public:
     double tReadPattern;
     double tTreeGrowth;
     double tSeedDistribution;
-    double tEstablishment;
-    double tSaplingGrowth;
+    double tSaplingAndEstablishment;
     double tCarbonCycle;
     double tWriteOutput;
     double tTotalYear;

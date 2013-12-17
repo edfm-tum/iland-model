@@ -491,7 +491,7 @@ void Model::initOutputDatabase()
 
 }
 
-ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
+ResourceUnit *nc_sapling_growth_and_establishment(ResourceUnit *unit)
 {
     try {
         // define a height map for the current resource unit on the stack and clear it
@@ -510,18 +510,6 @@ ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
             const_cast<ResourceUnitSpecies*>(rus)->calclulateSaplingGrowth();
         }
 
-    } catch (const IException& e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
-    }
-    return unit;
-
-}
-
-/// multithreaded running function for the resource unit level establishment
-ResourceUnit *nc_establishment(ResourceUnit *unit)
-{
-    try {
-
         // (2) calculate the establishment probabilities of new saplings
         foreach (const ResourceUnitSpecies *rus, unit->ruSpecies()) {
             const_cast<ResourceUnitSpecies*>(rus)->calculateEstablishment();
@@ -530,9 +518,10 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
     } catch (const IException& e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-
     return unit;
+
 }
+
 
 /// multithreaded execution of the carbon cycle routine
 ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
@@ -654,20 +643,15 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
         // establishment
         { DebugTimer t("saplingGrowth");
-        executePerResourceUnit( nc_sapling_growth, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tSaplingGrowth+=t.elapsed();
-        }
-        {
-        DebugTimer t("establishment");
-        executePerResourceUnit( nc_establishment, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
+        executePerResourceUnit( nc_sapling_growth_and_establishment, false /* true: force single threaded operation */);
+        GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
         }
     }
 
     // calculate soil / snag dynamics
     if (settings().carbonCycleEnabled) {
         DebugTimer ccycle("carbon cylce");
-        executePerResourceUnit( nc_carbonCycle, false /* true: force single thraeded operation */);
+        executePerResourceUnit( nc_carbonCycle, false /* true: force single threaded operation */);
         GlobalSettings::instance()->systemStatistics()->tCarbonCycle+=ccycle.elapsed();
 
     }
