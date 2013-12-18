@@ -505,7 +505,7 @@ ResourceUnit *nc_sapling_growth_establishment(ResourceUnit *unit)
 
         // (2) calculate the establishment probabilities of new saplings
         for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
-            (*rus)->calclulateEstablishment();
+            (*rus)->calculateEstablishment();
 
 
     } catch (const IException& e) {
@@ -639,7 +639,7 @@ void Model::runYear()
         // establishment
         { DebugTimer t("saplingGrowthEstablishment");
         executePerResourceUnit( nc_sapling_growth_establishment, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tSaplingGrowthEstablishment+=t.elapsed();
+        GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
         }
 
     }
