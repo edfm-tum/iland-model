@@ -13,8 +13,7 @@ QT       += qml
 
 INCLUDEPATH += ../core \
     ../tools \
-    ../output \
-    ../iland
+    ../output
 
 DEPENDPATH += plugins
 CONFIG += exceptions
@@ -62,9 +61,9 @@ TEMPLATE = app
 
 ### Flag to allow 3GB on Win 32
 ### you also need to modify boot.ini ...
-QMAKE_LFLAGS_CONSOLE += -Wl,--large-address-aware
+#QMAKE_LFLAGS_CONSOLE += -Wl,--large-address-aware
 
-SOURCES += ../ilandc/main.cpp \
+SOURCES += main.cpp \
     consoleshell.cpp \
     ../iland/version.cpp \
     ../core/model.cpp \
@@ -127,18 +126,18 @@ SOURCES += ../ilandc/main.cpp \
     ../3rdparty/SimpleRNG.cpp \
     ../output/snapshot.cpp \
     ../tools/spatialanalysis.cpp \
-    ../fome/activity.cpp \
-    ../fome/forestmanagementengine.cpp \
-    ../fome/knowledgebase.cpp \
+    ../amie/activity.cpp \
+    ../amie/forestmanagementengine.cpp \
+    ../amie/knowledgebase.cpp \
     ../tools/statdata.cpp \
     ../tools/debugtimer.cpp \
     ../tools/viewport.cpp \
-    ../fome/fomewrapper.cpp \
-    ../fome/fmstand.cpp \
-    ../fome/agent.cpp \
-    ../fome/fmunit.cpp \
-    ../fome/agenttype.cpp \
-    ../fome/fomescript.cpp
+    ../amie/fomewrapper.cpp \
+    ../amie/fmstand.cpp \
+    ../amie/agent.cpp \
+    ../amie/fmunit.cpp \
+    ../amie/agenttype.cpp \
+    ../amie/fomescript.cpp
 
 HEADERS += \
     consoleshell.h \
@@ -210,18 +209,18 @@ HEADERS += \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
     ../tools/spatialanalysis.h \
-    ../fome/activity.h \
-    ../fome/forestmanagementengine.h \
-    ../fome/knowledgebase.h \
-    ../fome/fome_global.h \
+    ../amie/activity.h \
+    ../amie/forestmanagementengine.h \
+    ../amie/knowledgebase.h \
+    ../amie/fome_global.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
     ../tools/viewport.h \
-    ../fome/fomewrapper.h \
-    ../fome/fmstand.h \
-    ../fome/agent.h \
-    ../fome/fmunit.h \
-    ../fome/agenttype.h \
-    ../fome/fomescript.h
+    ../amie/fomewrapper.h \
+    ../amie/fmstand.h \
+    ../amie/agent.h \
+    ../amie/fmunit.h \
+    ../amie/agenttype.h \
+    ../amie/fomescript.h
 
 
