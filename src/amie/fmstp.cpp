@@ -1,8 +1,20 @@
+#include "fome_global.h"
 #include "fmstp.h"
-
+#include "fmstand.h"
 FMSTP::FMSTP()
 {
-    mTendingActivity = 0;
-    mThinningActivity = 0;
-    mRegenerationActivity = 0;
+}
+
+// read the setting from the setup-javascript object
+void FMSTP::setup()
+{
+
+}
+
+// run the management for the forest stand 'stand'
+bool FMSTP::execute(FMStand &stand)
+{
+    switch (stand.phase()) {
+        case Regeneration:
+    }
 }
