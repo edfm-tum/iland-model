@@ -6,6 +6,7 @@
 #include "activity.h"
 #include "fmunit.h"
 #include "fmstand.h"
+#include "fmstp.h"
 #include "agent.h"
 #include "agenttype.h"
 #include "fomescript.h"
@@ -19,6 +20,7 @@
 #include "csvfile.h"
 #include "model.h"
 #include "mapgrid.h"
+#include "helper.h"
 
 /** @class ForestManagementEngine
 */
@@ -140,7 +142,7 @@ void ForestManagementEngine::evaluateActivities()
      }
 }
 
-void ForestManagementEngine::test()
+void ForestManagementEngine::test_old()
 {
     // test code
     try {
@@ -187,6 +189,40 @@ void ForestManagementEngine::test()
 
     qDebug() << "evaluating finished";
 
+    clear();
+}
+
+void ForestManagementEngine::test()
+{
+    // test code
+    try {
+        //Activity::setVerbose(true);
+        // setup the activities and the javascript environment...
+        GlobalSettings::instance()->resetScriptEngine(); // clear the script
+        ScriptGlobal::setupGlobalScripting(); // general iLand scripting helper functions and such
+
+        //setup();
+
+    } catch (const IException &e) {
+        qDebug() << "An error occured:" << e.message();
+    }
+    QString code = Helper::loadTextFile("E:/Daten/iLand/modeling/abm/knowledge_base/test/test_stp.js");
+    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code);
+    if (result.isError()) {
+        qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.toString();
+    }
+
+
+    try {
+        FMSTP stp;
+
+        stp.setup(GlobalSettings::instance()->scriptEngine()->globalObject().property("stp"));
+    } catch (const IException &e) {
+        qDebug() << "An error occured:" << e.message();
+    }
+
+
+    qDebug() << "finished";
     clear();
 }
 
