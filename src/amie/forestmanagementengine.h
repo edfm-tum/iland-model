@@ -32,6 +32,8 @@ public:
     /// evalaute forest management activities and select fitting activities for each forest stand
     void evaluateActivities();
     void test();
+    void test_old();
+
 
 private:
     static ForestManagementEngine *singleton_fome_engine;
