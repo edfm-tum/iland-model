@@ -20,8 +20,9 @@ public:
 private:
     class Schedule {
     public:
-        Schedule(): tmin(-1),tmax(-1),topt(-1),tminrel(-1), tmaxrel(-1), toptrel(-1), force_execution(false) {}
-        Schedule(QJSValue &js_value) {setup(js_value); }
+        Schedule()  {}
+        Schedule(QJSValue &js_value) { clear(); setup(js_value); }
+        void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; }
         void setup(QJSValue &js_value);
         QString dump() const;
         int tmin; int tmax; int topt;
