@@ -19,7 +19,7 @@ public:
     // prepare scripting features
     void setupScriptEnvironment();
     // functions
-    static void setExecutionContext(const FMStand *stand, const Activity *activity);
+    static void setExecutionContext(const FMStand *stand, const ActivityOld *activity=0);
 
 signals:
 
@@ -38,6 +38,7 @@ class StandObj: public QObject
     Q_PROPERTY (double basalArea READ basalArea)
     Q_PROPERTY (double age READ age)
     Q_PROPERTY (double volume READ volume)
+    Q_PROPERTY (int id READ id)
 /*    basalArea: 0, // total basal area/ha of the stand
     volume: 100, // total volume/ha of the stand
     speciesCount: 3, // number of species present in the stand with trees > 4m
@@ -56,6 +57,7 @@ public:
     double basalArea() const { return mStand->basalArea(); }
     double age() const {return mStand->age(); }
     double volume() const {return mStand->volume(); }
+    int id() const { return mStand->id(); }
 private:
     const FMStand *mStand;
 };

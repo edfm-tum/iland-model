@@ -7,13 +7,22 @@ FMStand::FMStand(FMUnit *unit, const int id)
 {
     mUnit = unit;
     mId = id;
-    mPhase = Activity::Invalid;
+    mPhase = ActivityOld::Invalid;
     // testing:
-    mPhase = Activity::Tending;
+    mPhase = ActivityOld::Tending;
     mStandType = 1; // just testing...
     mVolume = 0.;
     mAge = 0.;
     mBasalArea = 0.;
+}
+
+void FMStand::reload()
+{
+    // FAKE!!!!
+    mAge ++;
+    mVolume ++;
+    mBasalArea += 0.4;
+
 }
 
 double FMStand::basalArea(const QString &species_id) const

@@ -2,7 +2,7 @@
 #define FOMEWRAPPER_H
 
 #include "expressionwrapper.h"
-class Activity;
+class ActivityOld;
 class FMStand;
 
 
@@ -13,8 +13,8 @@ class FMStand;
 class FOMEWrapper: public ExpressionWrapper
 {
 public:
-    FOMEWrapper(): mActivity(0)  {}
-    FOMEWrapper(const Activity *act, const FMStand *stand): mActivity(act), mStand(stand) {}
+    FOMEWrapper(): mStand(0)  {}
+    FOMEWrapper(const FMStand *stand):  mStand(stand) {}
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
 
@@ -23,7 +23,6 @@ private:
     double valueActivity(const int variableIndex);
     double valueStand(const int variableIndex);
     double valueSite(const int variableIndex);
-    const Activity *mActivity;
     const FMStand *mStand;
 };
 

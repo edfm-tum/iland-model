@@ -9,12 +9,12 @@
 #include "fomewrapper.h"
 #include "fomescript.h"
 
-bool Activity::mVerbose = false;
+bool ActivityOld::mVerbose = false;
 
 /** @class Activity
  **/
 
-Activity::Activity()
+ActivityOld::ActivityOld()
 {
     mPhase = Invalid;
     mEconomy = -1;
@@ -25,13 +25,13 @@ Activity::Activity()
     mJSEvaluations = 0;
 }
 
-Activity::~Activity()
+ActivityOld::~ActivityOld()
 {
     qDebug() << "delete activity: calls JS: " << mJSEvaluations << " calls Expr: " << mExprEvaluations;
 }
 
 /// calculate the probability that this activity should be executed for the given stand
-double Activity::evaluate(const FMStand *stand) const
+double ActivityOld::evaluate(const FMStand *stand) const
 {
     // (1) check the silvicultural phase
     if (stand->phase() != mPhase)
@@ -54,7 +54,7 @@ double Activity::evaluate(const FMStand *stand) const
 
 /// setup the properties of the activity by scanning
 /// the Javascript object
-bool Activity::setupFromJavascript(QJSValue &value, const QString &variable_name)
+bool ActivityOld::setupFromJavascript(QJSValue &value, const QString &variable_name)
 {
     mJS = value;
     if (verbose()) qDebug() << value.property("name").toString();
@@ -85,7 +85,7 @@ bool Activity::setupFromJavascript(QJSValue &value, const QString &variable_name
     return true;
 }
 
-bool Activity::addFilter(QJSValue &js_value, const QString js_name)
+bool ActivityOld::addFilter(QJSValue &js_value, const QString js_name)
 {
     filter_item item;
     item.set(js_value);
@@ -102,7 +102,7 @@ bool Activity::addFilter(QJSValue &js_value, const QString js_name)
 
 // **** Filter ****
 
-Activity::filter_item::filter_item(const Activity::filter_item &item):
+ActivityOld::filter_item::filter_item(const ActivityOld::filter_item &item):
     filter_type(ftInvalid), expression(0), value(0)
 {
     filter_type = item.filter_type;
@@ -114,19 +114,19 @@ Activity::filter_item::filter_item(const Activity::filter_item &item):
     }
 }
 
-Activity::filter_item::~filter_item()
+ActivityOld::filter_item::~filter_item()
 {
     if (expression) delete expression;
 }
 
 // main function for evaluating filters
-double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand) const
+double ActivityOld::filter_item::evaluate(const ActivityOld *act, const FMStand *stand) const
 {
     if (filter_type == ftConstant)
         return value;
 
     if (filter_type == ftExpression) {
-        FOMEWrapper wrapper(act, stand);
+        FOMEWrapper wrapper(stand);
         double result;
         try {
         result = expression->calculate(wrapper);
@@ -140,9 +140,9 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
 
         }
 
-        if (Activity::verbose())
+        if (ActivityOld::verbose())
             qDebug() << "evaluate filter " << name << "(expr:" << expression->expression() << ") for stand" << stand->id() << ":" << result;
-        const_cast<Activity*>(act)->mExprEvaluations++;
+        const_cast<ActivityOld*>(act)->mExprEvaluations++;
         return result;
     }
     if (filter_type==ftJavascript) {
@@ -156,9 +156,9 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
                              arg(stand->id()).
                              arg(result.toString()));
         }
-        if (Activity::verbose())
+        if (ActivityOld::verbose())
             qDebug() << "evaluate filter " << name << "(JS:" << act->name() << ") for stand" << stand->id() << ":" << result.toString();
-        const_cast<Activity*>(act)->mJSEvaluations++;
+        const_cast<ActivityOld*>(act)->mJSEvaluations++;
         return result.toNumber();
 
     }
@@ -167,7 +167,7 @@ double Activity::filter_item::evaluate(const Activity *act, const FMStand *stand
 
 /// extracts the value from a javascript object and
 /// stores it in a C++ structure.
-void Activity::filter_item::set(QJSValue &js_value)
+void ActivityOld::filter_item::set(QJSValue &js_value)
 {
     if (js_value.isNumber()) {
         value = js_value.toNumber();
@@ -198,7 +198,7 @@ void Activity::filter_item::set(QJSValue &js_value)
 }
 
 // return current value of a filter
-QString Activity::filter_item::toString()
+QString ActivityOld::filter_item::toString()
 {
     switch (filter_type) {
     case ftInvalid: return "invalid item";
@@ -207,4 +207,10 @@ QString Activity::filter_item::toString()
     case ftJavascript: return QString("(js) %1").arg(func.toString());
     }
     return "Activity::filter_item::toString() unknown filter_type";
+}
+
+
+Activity::Activity(const FMSTP *parent)
+{
+    mProgram = parent;
 }
