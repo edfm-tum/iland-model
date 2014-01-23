@@ -1,7 +1,7 @@
 #ifndef KNOWLEDGEBASE_H
 #define KNOWLEDGEBASE_H
 #include <QList>
-class Activity; // forward
+class ActivityOld; // forward
 class FMStand; // forward
 
 /// KnowledgeBase is the "container" for the silvicultural knowledge base.
@@ -17,7 +17,7 @@ public:
 
 private:
     void clear(); ///< delete all activities
-    QList<Activity*> mActivities;
+    QList<ActivityOld*> mActivities;
 
 };
 

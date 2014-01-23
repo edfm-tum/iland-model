@@ -17,10 +17,11 @@ class FMStand
 {
 public:
     FMStand(FMUnit *unit, const int id);
+    void reload(); // get new data from iLand???
     // general properties
     int id() const {return mId; }
     const FMUnit *unit() const { return mUnit; }
-    Activity::Phase phase() const { return mPhase; }
+    ActivityOld::Phase phase() const { return mPhase; }
     int standType() const { return mStandType; }
     //
     /// total basal area (m2/ha)
@@ -32,6 +33,7 @@ public:
 
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
+
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
 
@@ -44,7 +46,7 @@ public:
 private:
     int mId; ///< the unique numeric ID of the stand
     FMUnit *mUnit; ///< management unit that
-    Activity::Phase mPhase; ///< silvicultural phase
+    ActivityOld::Phase mPhase; ///< silvicultural phase
     int mStandType; ///< enumeration of stand (compositional)
     double mBasalArea; ///< basal area of the stand
     double mAge; ///< average age (yrs) of the stand

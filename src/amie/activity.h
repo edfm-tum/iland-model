@@ -4,14 +4,41 @@
 #include <QVector>
 class Expression; // forward
 class FMStand;
+class FMSTP; class Schedule; class Constraints; class Events;
 
-/// Activity encapsulates an individual forest management activity.
-/// Activities are stored and organized in the silvicultural KnowledgeBase.
+/// Activity is the base class for management activities
 class Activity
 {
 public:
-    Activity();
+    Activity(const FMSTP *parent);
     ~Activity();
+    enum Phase { Invalid, Tending, Thinning, Regeneration };
+    const FMSTP *program() const { return mProgram; }
+    // main actions
+    virtual void setup(QJSValue value);
+protected:
+    Schedule &schedule() const { return mSchedule; }
+    Constraints &constraints() const { return mConstraints; }
+    Events &events() const { return mEvents; }
+private:
+    FMSTP *mProgram; // link to the management programme the activity is part of
+    Schedule mSchedule; // timing of activity
+    Constraints mConstraints; // constraining factors
+    Events mEvents; // action handlers such as "onExecute"
+};
+
+class Thinning: public Activity
+{
+    void setup(QJSValue value);
+};
+
+/// Activity encapsulates an individual forest management activity.
+/// Activities are stored and organized in the silvicultural KnowledgeBase.
+class ActivityOld
+{
+public:
+    ActivityOld();
+    ~ActivityOld();
     enum Phase { Invalid, Tending, Thinning, Regeneration };
     // general properties
     QString name() const { return mJS.property("name").toString(); }
@@ -50,7 +77,7 @@ private:
         filter_item(const filter_item &item); // copy constructor
         ~filter_item();
         // action
-        double evaluate(const Activity *act, const FMStand* stand) const;
+        double evaluate(const ActivityOld *act, const FMStand* stand) const;
 
         /// set the filter from javascript
         void set(QJSValue &js_value);

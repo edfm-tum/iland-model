@@ -200,6 +200,10 @@ void ForestManagementEngine::test()
         // setup the activities and the javascript environment...
         GlobalSettings::instance()->resetScriptEngine(); // clear the script
         ScriptGlobal::setupGlobalScripting(); // general iLand scripting helper functions and such
+        if (mScriptBridge)
+            delete mScriptBridge;
+        mScriptBridge = new FomeScript;
+        mScriptBridge->setupScriptEnvironment();
 
         //setup();
 

@@ -37,7 +37,7 @@ void FomeScript::setupScriptEnvironment()
 
 }
 
-void FomeScript::setExecutionContext(const FMStand *stand, const Activity *activity)
+void FomeScript::setExecutionContext(const FMStand *stand, const ActivityOld *activity)
 {
     FomeScript *bridge =ForestManagementEngine::instance()->scriptBridge();
     bridge->mStandObj->setStand(stand);

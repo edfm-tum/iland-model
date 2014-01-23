@@ -54,12 +54,12 @@ bool KnowledgeBase::setup(const QString &directory)
     int n_activities = 0;
     while (it.hasNext()) {
         it.next();
-        if (Activity::verbose()) qDebug() << "checking element" << it.name() << "...";
+        if (ActivityOld::verbose()) qDebug() << "checking element" << it.name() << "...";
         if (it.value().hasOwnProperty("version")) {
             qDebug() << "found activity: "<< it.name() << ": " << it.value().property("name").toString();
             n_activities++;
             // create a new activity
-            Activity *act = new Activity();
+            ActivityOld *act = new ActivityOld();
             if (act->setupFromJavascript(it.value(), it.name())) {
                 // setup ok
                 mActivities.push_back(act);
@@ -78,9 +78,9 @@ bool KnowledgeBase::setup(const QString &directory)
 bool KnowledgeBase::evaluate(const FMStand *stand)
 {
     double best=-1;
-    const Activity *best_activity = NULL;
+    const ActivityOld *best_activity = NULL;
 
-    foreach(const Activity *act, mActivities) {
+    foreach(const ActivityOld *act, mActivities) {
         double this_activity = act->evaluate(stand);
         if (this_activity > best) {
             best_activity = act;
@@ -98,7 +98,7 @@ bool KnowledgeBase::evaluate(const FMStand *stand)
 
 void KnowledgeBase::clear()
 {
-    foreach(Activity *act, mActivities) {
+    foreach(ActivityOld *act, mActivities) {
         delete act;
     }
     mActivities.clear();
