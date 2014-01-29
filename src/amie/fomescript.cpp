@@ -1,6 +1,12 @@
-#include "fome_global.h"
+#include "global.h"
+#include "amie_global.h"
 #include "fomescript.h"
 #include "forestmanagementengine.h"
+#include "fmstp.h"
+
+namespace AMIE {
+
+
 
 FomeScript::FomeScript(QObject *parent) :
     QObject(parent)
@@ -37,7 +43,7 @@ void FomeScript::setupScriptEnvironment()
 
 }
 
-void FomeScript::setExecutionContext(const FMStand *stand, const ActivityOld *activity)
+void FomeScript::setExecutionContext(const FMStand *stand)
 {
     FomeScript *bridge =ForestManagementEngine::instance()->scriptBridge();
     bridge->mStandObj->setStand(stand);
@@ -47,3 +53,19 @@ void FomeScript::setExecutionContext(const FMStand *stand, const ActivityOld *ac
     // simulation stuff....
 
 }
+
+bool FomeScript::addManagement(QJSValue program, QString name)
+{
+    try {
+        FMSTP *stp = new FMSTP();
+        stp->setup(program, name);
+        ForestManagementEngine::instance()->addSTP(stp);
+        return true;
+    } catch (const IException &e) {
+        qDebug() << e.message();
+        return false;
+    }
+}
+
+
+} // namespace

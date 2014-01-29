@@ -6,6 +6,8 @@
 
 #include "activity.h"
 
+namespace AMIE {
+
 class FOMEWrapper; // forward
 class FMUnit; // forward
 
@@ -21,7 +23,7 @@ public:
     // general properties
     int id() const {return mId; }
     const FMUnit *unit() const { return mUnit; }
-    ActivityOld::Phase phase() const { return mPhase; }
+    Activity::Phase phase() const { return mPhase; }
     int standType() const { return mStandType; }
     //
     /// total basal area (m2/ha)
@@ -46,7 +48,7 @@ public:
 private:
     int mId; ///< the unique numeric ID of the stand
     FMUnit *mUnit; ///< management unit that
-    ActivityOld::Phase mPhase; ///< silvicultural phase
+    Activity::Phase mPhase; ///< silvicultural phase
     int mStandType; ///< enumeration of stand (compositional)
     double mBasalArea; ///< basal area of the stand
     double mAge; ///< average age (yrs) of the stand
@@ -55,4 +57,6 @@ private:
     static QHash<FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
 };
 
+
+} // namespace
 #endif // FMSTAND_H

@@ -212,7 +212,7 @@ HEADERS += \
     ../amie/activity.h \
     ../amie/forestmanagementengine.h \
     ../amie/knowledgebase.h \
-    ../amie/fome_global.h \
+    ../amie/amie_global.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
     ../tools/viewport.h \

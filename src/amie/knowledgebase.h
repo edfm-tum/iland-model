@@ -1,7 +1,8 @@
 #ifndef KNOWLEDGEBASE_H
 #define KNOWLEDGEBASE_H
 #include <QList>
-class ActivityOld; // forward
+namespace AMIE {
+
 class FMStand; // forward
 
 /// KnowledgeBase is the "container" for the silvicultural knowledge base.
@@ -16,9 +17,8 @@ public:
     bool evaluate(const FMStand *stand);
 
 private:
-    void clear(); ///< delete all activities
-    QList<ActivityOld*> mActivities;
 
 };
 
+} // namespace
 #endif // KNOWLEDGEBASE_H

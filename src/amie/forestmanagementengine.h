@@ -1,15 +1,19 @@
 #ifndef FORESTMANAGEMENTENGINE_H
 #define FORESTMANAGEMENTENGINE_H
 #include <QMultiMap>
+#include <QVector>
 
 #include "knowledgebase.h"
-class FMUnit; // forward
-class FMStand; // forward
-class Agent; // forward
-class AgentType; // forward
 
 class QJSEngine; // forward
 
+namespace AMIE {
+
+class FMUnit; // forward
+class FMStand; // forward
+class FMSTP; // forward
+class Agent; // forward
+class AgentType; // forward
 class FomeScript; // forward
 
 /// the FOrestManagementEngine is the container for the agent based forest management engine.
@@ -28,6 +32,7 @@ public:
     static QJSEngine *scriptEngine();
     FomeScript *scriptBridge() const {return mScriptBridge; }
 
+    void addSTP(FMSTP* stp) { mSTP.push_back(stp);}
     // functions
     /// evalaute forest management activities and select fitting activities for each forest stand
     void evaluateActivities();
@@ -37,8 +42,10 @@ public:
 
 private:
     static ForestManagementEngine *singleton_fome_engine;
-    // the knowledge base is the collection of silvicultural treatments
+    // the knowledge base is the collection of silvicultural treatments ???
     KnowledgeBase mKnowledgeBase;
+
+    QVector<FMSTP*> mSTP;
 
     // scripting bridge (accessing model properties from javascript)
     FomeScript *mScriptBridge;
@@ -53,4 +60,6 @@ private:
     QVector<Agent*> mAgents; ///< collection of all agents (individuals)
 };
 
+
+} // namespace
 #endif // FORESTMANAGEMENTENGINE_H

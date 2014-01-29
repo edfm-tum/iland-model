@@ -4,6 +4,7 @@
 #include "activity.h"
 #include "fmstand.h"
 #include "fmunit.h"
+namespace AMIE {
 
 // definition of variables
 // (1) variables of activites
@@ -68,3 +69,5 @@ double FOMEWrapper::valueSite(const int variableIndex)
     default: return 0;
     }
 }
+
+} // namespace

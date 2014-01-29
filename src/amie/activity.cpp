@@ -1,9 +1,392 @@
-#include "fome_global.h"
+#include "amie_global.h"
 #include <QJSValueIterator>
 
 #include "activity.h"
 #include "fmstand.h"
+#include "fmstp.h"
+#include "fomescript.h"
+#include "fomewrapper.h"
 
+#include "expression.h"
+
+namespace AMIE {
+
+/***************************************************************************/
+/***************************   Schedule  ***********************************/
+/***************************************************************************/
+
+
+void Schedule::setup(QJSValue &js_value)
+{
+    clear();
+    if (js_value.isObject()) {
+        tmin = FMSTP::valueFromJs(js_value, "min", "-1").toInt();
+        tmax = FMSTP::valueFromJs(js_value, "max", "-1").toInt();
+        topt = FMSTP::valueFromJs(js_value, "opt", "-1").toInt();
+        tminrel = FMSTP::valueFromJs(js_value, "minRel", "-1").toNumber();
+        tmaxrel = FMSTP::valueFromJs(js_value, "maxRel", "-1").toNumber();
+        toptrel = FMSTP::valueFromJs(js_value, "optRel", "-1").toNumber();
+        force_execution = FMSTP::valueFromJs(js_value, "force", "false").toBool();
+        if (tmin>-1. && tmax>-1. && topt>-1. && (topt<tmin || topt>tmax))
+            throw IException(QString("Error in setting up timing: topt out of scope: %1").arg(js_value.toString()));
+        if (tminrel>-1. && tmaxrel>-1. && toptrel>-1. && (toptrel<tminrel || toptrel>tmaxrel))
+            throw IException(QString("Error in setting up timing: topt out of scope: %1").arg(js_value.toString()));
+        if (tminrel*tmaxrel < 0. || tmin*tmax<0.)
+            throw IException(QString("Error in setting up timing: min and max required: %1").arg(js_value.toString()));
+
+    } else if (js_value.isNumber()) {
+        topt = js_value.toNumber();
+    } else {
+        throw IException(QString("Error in setting up schedule/timing. Invalid javascript object: %1").arg(js_value.toString()));
+    }
+}
+
+QString Schedule::dump() const
+{
+    return QString("schedule. tmin/topt/tmax: %1/%2/%3 relative: min/opt/max: %4/%5/%6 force: %7").arg(tmin).arg(topt).arg(tmax)
+            .arg(tminrel).arg(toptrel).arg(tmaxrel).arg(force_execution);
+}
+
+double Schedule::value(const FMStand *stand)
+{
+    double U = 100.; // todo: fix!
+    double age = stand->age();
+    // force execution: if age already higher than max, then always evaluate to 1.
+    if (tmax>-1. && age > tmax && force_execution)
+        return 1;
+    if (tmaxrel>-1. && age/U > tmaxrel && force_execution)
+        return 1;
+
+    if (tmin>-1. && age < tmin) return 0.;
+    if (tmax>-1. && age > tmax) return 0.;
+    if (tminrel>-1. && age/U < tminrel) return 0.;
+    if (tmaxrel>-1. && age/U > tmaxrel) return 0.;
+
+    if (tmin>-1. && tmax > -1.) {
+        if (topt > -1.) {
+        // linear interpolation
+            if (age<=topt)
+                return topt==tmin?1.:(age-tmin)/(topt-tmin);
+            else
+                return topt==tmax?1.:(tmax-age)/(tmax-topt);
+        } else {
+            return 1.; // no optimal time: everything between min and max is fine!
+        }
+    }
+    if (tminrel>-1. && tmaxrel>-1.) {
+        if (toptrel > -1.) {
+        // linear interpolation
+            if (age<=toptrel)
+                return toptrel==tminrel?1.:(age-tminrel)/(toptrel-tminrel);
+            else
+                return toptrel==tmaxrel?1.:(tmaxrel-age)/(tmaxrel-toptrel);
+        } else {
+            return 1.; // no optimal time: everything between min and max is fine!
+        }
+    }
+    qDebug() << "Schedule::value: unexpected combination. U" << U << "age" << age << ", schedule:" << this->dump();
+    return 0.;
+}
+
+/***************************************************************************/
+/**************************     Events  ************************************/
+/***************************************************************************/
+
+void Events::clear()
+{
+    mEvents.clear();
+}
+
+void Events::setup(QJSValue &js_value, QStringList event_names)
+{
+    foreach (QString event, event_names) {
+        QJSValue val = FMSTP::valueFromJs(js_value, event, "");
+        if (val.isCallable())
+            mEvents[event] = val;
+    }
+}
+
+QString Events::run(const QString event, const FMStand *stand)
+{
+    if (mEvents.contains(event)) {
+        FomeScript::setExecutionContext(stand);
+        if (FMSTP::verbose())
+            qDebug() << "running javascript event" << event;
+        QJSValue result = mEvents[event].call();
+        if (result.isError()) {
+            throw IException(QString("Javascript error in event %1: %2").arg(event).arg(result.toString()));
+        }
+        return result.toString();
+    }
+    return QString();
+}
+
+QString Events::dump()
+{
+    QString event_list = "Registered events: ";
+    foreach (QString event, mEvents.keys())
+        event_list.append(event).append(" ");
+    return event_list;
+}
+
+/***************************************************************************/
+/*************************  Constraints  ***********************************/
+/***************************************************************************/
+
+void Constraints::setup(QJSValue &js_value)
+{
+    mConstraints.clear();
+    if ((js_value.isArray() || js_value.isObject()) && !js_value.isCallable()) {
+        QJSValueIterator it(js_value);
+        while (it.hasNext()) {
+            it.next();
+            mConstraints.append(constraint_item());
+            constraint_item &item = mConstraints.last();
+            item.setup(it.value());
+        }
+    } else {
+        mConstraints.append(constraint_item());
+        constraint_item &item = mConstraints.last();
+        item.setup(js_value);
+
+    }
+}
+
+bool Constraints::evaluate(const FMStand *stand)
+{
+    if (mConstraints.isEmpty())
+        return true; // no constraints to evaluate
+    for (int i=0;i<mConstraints.count();++i)
+        if (!mConstraints.at(i).evaluate(stand))
+            return false; // one constraint failed
+    return true; // all constraints passed
+}
+
+QStringList Constraints::dump()
+{
+    QStringList info;
+    for (int i=0;i<mConstraints.count();++i){
+        info << mConstraints[i].dump();
+    }
+    return info;
+}
+
+
+Constraints::constraint_item::~constraint_item()
+{
+    if (expr)
+        delete expr;
+}
+
+void Constraints::constraint_item::setup(QJSValue &js_value)
+{
+    filter_type = ftInvalid;
+    if (expr) delete expr;
+    expr=0;
+
+    if (js_value.isCallable()) {
+        func = js_value;
+        filter_type = ftJavascript;
+        return;
+    }
+    if (js_value.isString()) {
+        // we assume this is an expression
+
+        QString exprstr = js_value.toString();
+        // replace "." with "__" in variables (our Expression engine is
+        // not able to cope with the "."-notation
+        exprstr = exprstr.replace("activity.", "activity__");
+        exprstr = exprstr.replace("stand.", "stand__");
+        exprstr = exprstr.replace("site.", "site__");
+        // add ....
+        expr = new Expression(exprstr);
+        filter_type = ftExpression;
+        return;
+
+    }
+}
+
+bool Constraints::constraint_item::evaluate(const FMStand *stand) const
+{
+    switch (filter_type) {
+    case ftInvalid: return true; // message?
+    case ftExpression: {
+            FOMEWrapper wrapper(stand);
+            double result;
+            try {
+            result = expr->calculate(wrapper);
+            } catch (IException &e) {
+                // throw a nicely formatted error message
+                e.add(QString("in filter (expr: '%2') for stand %1.").
+                              arg(stand->id()).
+                              arg(expr->expression()) );
+                throw;
+            }
+
+            if (FMSTP::verbose())
+                qDebug() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
+            return result > 0.;
+
+        }
+    case ftJavascript: {
+        // call javascript function
+        // provide the execution context
+        FomeScript::setExecutionContext(stand);
+        QJSValue result = const_cast<QJSValue&>(func).call();
+        if (result.isError()) {
+            throw IException(QString("Erron in evaluating constraint  (JS) for stand %1: %2").
+                             arg(stand->id()).
+                             arg(result.toString()));
+        }
+        if (FMSTP::verbose())
+            qDebug() << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
+        return result.toBool();
+
+    }
+
+    }
+    return true;
+}
+
+QString Constraints::constraint_item::dump() const
+{
+    switch (filter_type){
+    case ftInvalid: return "Invalid";
+    case ftExpression: return expr->expression();
+    case ftJavascript: return func.toString();
+    default: return "invalid filter type!";
+    }
+}
+
+
+
+/***************************************************************************/
+/***************************  Activity  ************************************/
+/***************************************************************************/
+
+Activity::Activity(const FMSTP *parent)
+{
+    mProgram = parent;
+}
+
+Activity::~Activity()
+{
+
+}
+
+QString Activity::name() const
+{
+    return "base";
+}
+
+void Activity::setup(QJSValue value)
+{
+    mSchedule.setup(FMSTP::valueFromJs(value, "schedule", "", "setup activity"));
+    qDebug() << mSchedule.dump();
+
+    // setup of events
+    mEvents.clear();
+    mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecute");
+    qDebug() << "Events of thinning: " << mEvents.dump();
+
+    // setup of constraints
+    QJSValue constraints = FMSTP::valueFromJs(value, "constraint", "");
+    if (!constraints.isUndefined())
+        mConstraints.setup(constraints);
+
+}
+
+bool Activity::execute(FMStand *stand)
+{
+    // execute the "onExecute" event
+    events().run("onExecute", stand);
+    return true;
+}
+
+QStringList Activity::info()
+{
+    QStringList lines;
+    lines << QString("Activity '%1'").arg(name());
+    lines << "Events" << events().dump();
+    lines << "Schedule" << schedule().dump();
+    lines << "Constraints" << constraints().dump();
+    return lines;
+}
+
+
+} // namespace
+
+/*
+ *
+ *
+ * header file:
+ *
+ *
+
+/// Activity encapsulates an individual forest management activity.
+/// Activities are stored and organized in the silvicultural KnowledgeBase.
+class ActivityOld
+{
+public:
+    ActivityOld();
+    ~ActivityOld();
+    enum Phase { Invalid, Tending, Thinning, Regeneration };
+    // general properties
+    QString name() const { return mJS.property("name").toString(); }
+    QString description() const { return mJS.property("description").toString(); }
+    // properties
+    double knowledge() const {return mKnowledge; }
+    double economy() const {return mEconomy; }
+    double experimentation() const {return mExperimentation; }
+    Phase phase() const { return mPhase; }
+    // actions
+    double evaluate(const FMStand *stand) const;
+    // functions
+    /// load definition of the Activity from an Javascript Object (value).
+    bool setupFromJavascript(QJSValue &value, const QString &variable_name);
+    /// if verbose is true, detailed debug information is provided.
+    static void setVerbose(bool verbose) {mVerbose = verbose; }
+    static bool verbose()  {return mVerbose; } ///< returns true in debug mode
+private:
+    bool addFilter(QJSValue &js_value, const QString js_name); ///< add a filter from the JS
+    static bool mVerbose; ///< debug mode
+    QJSValue mJS; ///< holds the javascript representation of the activity
+
+    // properties of activities
+    double mKnowledge;
+    double mEconomy;
+    double mExperimentation;
+    Phase mPhase;
+
+    // benchmarking
+    int mJSEvaluations;
+    int mExprEvaluations;
+
+    // filter items
+    struct filter_item {
+        filter_item(): filter_type(ftInvalid), expression(0), value(0) {}
+        filter_item(const filter_item &item); // copy constructor
+        ~filter_item();
+        // action
+        double evaluate(const ActivityOld *act, const FMStand* stand) const;
+
+        /// set the filter from javascript
+        void set(QJSValue &js_value);
+        QString toString(); ///< for debugging
+
+        // properties
+        enum { ftInvalid, ftConstant, ftExpression, ftJavascript} filter_type;
+        Expression *expression;
+        double value;
+        QJSValue func;
+        QString name;
+    };
+    QVector<filter_item> mFilters;
+
+
+};
+
+// ****** cpp file ****
 #include "exception.h"
 #include "expression.h"
 #include "fomewrapper.h"
@@ -12,7 +395,7 @@
 bool ActivityOld::mVerbose = false;
 
 /** @class Activity
- **/
+ ** /
 
 ActivityOld::ActivityOld()
 {
@@ -214,3 +597,5 @@ Activity::Activity(const FMSTP *parent)
 {
     mProgram = parent;
 }
+*/
+

@@ -1,11 +1,12 @@
 #include "amie_global.h"
-#include "agenttype.h"
+#include "thinning.h"
 
 namespace AMIE {
 
 
-AgentType::AgentType()
+void Thinning::setup(QJSValue value)
 {
+
 }
 
 

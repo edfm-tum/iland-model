@@ -49,7 +49,7 @@
   AllTreeIterator at(GlobalSettings::instance()->model()); // iterator to iterate over all tree in the model
   double sum;
   while (Tree *tree = at.next()) {
-      at.setTree(tree); // set actual tree
+      wrapper.setTree(tree); // set actual tree
       sum += basalArea.execute(); // execute calculation
   }
   @endcode
