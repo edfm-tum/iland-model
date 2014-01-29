@@ -2,7 +2,8 @@
 #define FOMEWRAPPER_H
 
 #include "expressionwrapper.h"
-class ActivityOld;
+
+namespace AMIE {
 class FMStand;
 
 
@@ -26,5 +27,6 @@ private:
     const FMStand *mStand;
 };
 
+} // namespace
 
 #endif // FOMEWRAPPER_H

@@ -910,6 +910,6 @@ void Tests::testRumple()
 
 void Tests::testFOMEsetup()
 {
-    ForestManagementEngine fome;
+    AMIE::ForestManagementEngine fome;
     fome.test();
 }

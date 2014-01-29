@@ -1,4 +1,4 @@
-#include "fome_global.h"
+#include "amie_global.h"
 
 #include "knowledgebase.h"
 
@@ -9,6 +9,7 @@
 
 #include "helper.h"
 
+namespace AMIE {
 
 /** @class KnowledgeBase
 */
@@ -19,8 +20,6 @@ KnowledgeBase::KnowledgeBase()
 
 KnowledgeBase::~KnowledgeBase()
 {
-    qDeleteAll(mActivities); // deletes the stands (not the keys)
-    mActivities.clear();
 
 }
 
@@ -29,7 +28,6 @@ KnowledgeBase::~KnowledgeBase()
 // returns true if the setup was successful without errors.
 bool KnowledgeBase::setup(const QString &directory)
 {
-    clear();
     QJSEngine &engine = *ForestManagementEngine::scriptEngine();
 
     // (1) load all javascript files from the target directory
@@ -46,7 +44,7 @@ bool KnowledgeBase::setup(const QString &directory)
             success = false;
         }
     }
-
+/*
     // (2) scan the global Javascript scope for activities
     QJSValueIterator it(engine.globalObject());
     QJSValue  prop = engine.globalObject();
@@ -54,7 +52,7 @@ bool KnowledgeBase::setup(const QString &directory)
     int n_activities = 0;
     while (it.hasNext()) {
         it.next();
-        if (ActivityOld::verbose()) qDebug() << "checking element" << it.name() << "...";
+        if (FMSTP::verbose()) qDebug() << "checking element" << it.name() << "...";
         if (it.value().hasOwnProperty("version")) {
             qDebug() << "found activity: "<< it.name() << ": " << it.value().property("name").toString();
             n_activities++;
@@ -69,7 +67,7 @@ bool KnowledgeBase::setup(const QString &directory)
         }
     }
     qDebug() << "KnowledgeBase summary: loaded " << files.count() << "files. Found" << n_activities << "activities and" << mActivities.count() << "were sucessfully setup.";
-
+ */
     return success;
 
 }
@@ -77,29 +75,7 @@ bool KnowledgeBase::setup(const QString &directory)
 /// evaluate()
 bool KnowledgeBase::evaluate(const FMStand *stand)
 {
-    double best=-1;
-    const ActivityOld *best_activity = NULL;
-
-    foreach(const ActivityOld *act, mActivities) {
-        double this_activity = act->evaluate(stand);
-        if (this_activity > best) {
-            best_activity = act;
-            best = this_activity;
-        }
-    }
-    // check total threshold
-    if (best > 0.5) {
-        // create ticket ...
-        qDebug() << "create ticket....";
-        return true;
-    }
-    return false;
+    return false; // TODO: remove
 }
 
-void KnowledgeBase::clear()
-{
-    foreach(ActivityOld *act, mActivities) {
-        delete act;
-    }
-    mActivities.clear();
-}
+} // namespace

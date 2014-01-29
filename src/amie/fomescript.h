@@ -5,6 +5,7 @@
 
 #include "fmstand.h"
 #include "fmunit.h"
+namespace AMIE {
 
 class StandObj;
 class SiteObj;
@@ -19,11 +20,13 @@ public:
     // prepare scripting features
     void setupScriptEnvironment();
     // functions
-    static void setExecutionContext(const FMStand *stand, const ActivityOld *activity=0);
+    static void setExecutionContext(const FMStand *stand);
 
 signals:
 
 public slots:
+    /// adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
+    bool addManagement(QJSValue program, QString name);
 private:
     StandObj *mStandObj;
     SiteObj *mSiteObj;
@@ -86,4 +89,8 @@ public:
 private:
 
 };
+
+
+} // namespace
+
 #endif // FOMESCRIPT_H

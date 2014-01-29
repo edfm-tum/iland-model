@@ -1,5 +1,7 @@
 #ifndef FMUNIT_H
 #define FMUNIT_H
+namespace AMIE {
+
 
 class Agent; // forward
 /** The FMUnit represents a management unit, i.e. a collection of stands.
@@ -18,4 +20,5 @@ private:
     const Agent *mAgent;
 };
 
+} // namespace
 #endif // FOMEUNITS_H

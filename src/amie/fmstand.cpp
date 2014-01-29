@@ -1,15 +1,17 @@
-#include "fome_global.h"
+#include "amie_global.h"
 #include "fmstand.h"
 
 #include "fmunit.h"
+
+namespace AMIE {
 
 FMStand::FMStand(FMUnit *unit, const int id)
 {
     mUnit = unit;
     mId = id;
-    mPhase = ActivityOld::Invalid;
+    mPhase = Activity::Invalid;
     // testing:
-    mPhase = ActivityOld::Tending;
+    mPhase = Activity::Tending;
     mStandType = 1; // just testing...
     mVolume = 0.;
     mAge = 0.;
@@ -51,3 +53,6 @@ QJSValue FMStand::property(const QString &name)
         return QJSValue();
     return mStandPropertyStorage[this][name];
 }
+
+
+} // namespace

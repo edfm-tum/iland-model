@@ -140,7 +140,9 @@ SOURCES += main.cpp \
     ../amie/agenttype.cpp \
     ../amie/fomescript.cpp \
     ../output/landscapeout.cpp \
-    ../amie/fmstp.cpp
+    ../amie/fmstp.cpp \
+    ../amie/thinning.cpp \
+    ../amie/actgeneral.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -214,7 +216,7 @@ HEADERS += mainwindow.h \
     ../amie/activity.h \
     ../amie/forestmanagementengine.h \
     ../amie/knowledgebase.h \
-    ../amie/fome_global.h \
+    ../amie/amie_global.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
     ../tools/viewport.h \
@@ -225,7 +227,9 @@ HEADERS += mainwindow.h \
     ../amie/agenttype.h \
     ../amie/fomescript.h \
     ../output/landscapeout.h \
-    ../amie/fmstp.h
+    ../amie/fmstp.h \
+    ../amie/thinning.h \
+    ../amie/actgeneral.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

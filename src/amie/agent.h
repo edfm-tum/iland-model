@@ -1,6 +1,9 @@
 #ifndef AGENT_H
 #define AGENT_H
 
+namespace AMIE {
+
+
 class AgentType; // forward
 
 /** The Agent is the core element of the agent based forest management model and simulates
@@ -22,4 +25,5 @@ private:
 
 };
 
+} // namespace
 #endif // AGENT_H

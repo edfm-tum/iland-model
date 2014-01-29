@@ -1,4 +1,4 @@
-#include "fome_global.h"
+#include "amie_global.h"
 #include "globalsettings.h"
 
 
@@ -21,6 +21,9 @@
 #include "model.h"
 #include "mapgrid.h"
 #include "helper.h"
+
+
+namespace AMIE {
 
 /** @class ForestManagementEngine
 */
@@ -130,6 +133,8 @@ void ForestManagementEngine::clear()
     mAgents.clear();
     qDeleteAll(mAgentTypes);
     mAgentTypes.clear();
+    qDeleteAll(mSTP);
+    mSTP.clear();
 }
 
 void ForestManagementEngine::evaluateActivities()
@@ -217,17 +222,32 @@ void ForestManagementEngine::test()
     }
 
 
-    try {
-        FMSTP stp;
+//    try {
+//        qDebug() << "*** test 1 ***";
+//        FMSTP stp;
+//        stp.setVerbose(true);
+//        stp.setup(GlobalSettings::instance()->scriptEngine()->globalObject().property("stp"), "stp");
+//        stp.dumpInfo();
 
-        stp.setup(GlobalSettings::instance()->scriptEngine()->globalObject().property("stp"));
-    } catch (const IException &e) {
-        qDebug() << "An error occured:" << e.message();
-    }
+//    } catch (const IException &e) {
+//        qDebug() << "An error occured:" << e.message();
+//    }
+//    try {
+//        qDebug() << "*** test 2 ***";
+//        FMSTP stp2;
+//        stp2.setVerbose(true);
+//        stp2.setup(GlobalSettings::instance()->scriptEngine()->globalObject().property("degenerated"), "degenerated");
+//        stp2.dumpInfo();
+//    } catch (const IException &e) {
+//        qDebug() << "An error occured:" << e.message();
+//    }
 
+    // dump all objects:
+    foreach(FMSTP *stp, mSTP)
+        stp->dumpInfo();
 
     qDebug() << "finished";
-    clear();
+
 }
 
 QJSEngine *ForestManagementEngine::scriptEngine()
@@ -235,3 +255,6 @@ QJSEngine *ForestManagementEngine::scriptEngine()
     // use global engine from iLand
     return GlobalSettings::instance()->scriptEngine();
 }
+
+
+} // namespace
