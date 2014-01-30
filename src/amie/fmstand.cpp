@@ -16,6 +16,8 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mVolume = 0.;
     mAge = 0.;
     mBasalArea = 0.;
+
+    mCurrentIndex=0;
 }
 
 void FMStand::reload()

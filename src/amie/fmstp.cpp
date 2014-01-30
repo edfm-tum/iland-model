@@ -23,15 +23,39 @@ FMSTP::~FMSTP()
     clear();
 }
 
-// read the setting from the setup-javascript object
-void FMSTP::setup(QJSValue &js_value, const QString name, int level)
+bool activityScheduledEarlier(const Activity *a, const Activity *b)
+{
+    return a->earlistSchedule() < b->earlistSchedule();
+}
+
+void FMSTP::setup(QJSValue &js_value, const QString name)
 {
     if(!name.isEmpty())
         mName = name;
 
+    // (1) scan recursively the data structure and create
+    //     all activites
+    internalSetup(js_value, 0);
+
+    // (2) create all other required meta information (such as ActivityStand)
+    // sort activites based on the minimum execution time
+    std::sort(mActivities.begin(), mActivities.end(), activityScheduledEarlier);
+
+    mActivityNames.clear();
+    for (int i=0;i<mActivities.count();++i) {
+        mActivityNames.push_back(mActivities.at(i)->name());
+        mActivityStand.push_back(mActivities.at(i)->standFlags(0)); // stand = 0: create a copy of the activities' base flags
+        mActivities.at(i)->setIndex(i);
+    }
+}
+
+// read the setting from the setup-javascript object
+void FMSTP::internalSetup(QJSValue &js_value, int level)
+{
+
     // top-level
     if (js_value.hasOwnProperty("schedule")) {
-        setupActivity(js_value);
+        setupActivity(js_value, "unnamed");
         return;
     }
 
@@ -42,13 +66,13 @@ void FMSTP::setup(QJSValue &js_value, const QString name, int level)
             it.next();
             if (it.value().hasOwnProperty("schedule")) {
                 // set up as activity
-                setupActivity(it.value());
+                setupActivity(it.value(), it.name());
             } else if (it.value().isObject() && !it.value().isCallable()) {
                 // try to go one level deeper
                 if (FMSTP::verbose())
                     qDebug() << "entering" << it.name();
                 if (level<10)
-                    setup(it.value(), QString(), ++level);
+                    internalSetup(it.value(), ++level);
             }
         }
     } else {
@@ -80,15 +104,18 @@ bool FMSTP::execute(FMStand &stand)
 
 void FMSTP::dumpInfo()
 {
+    qDebug() << " ***************************************";
+    qDebug() << " **************** Program dump for:" << name();
+    qDebug() << " ***************************************";
     foreach(Activity *act, mActivities) {
         qDebug() << "******* Activity *********";
-        QStringList info =  act->info();
-        foreach(const QString &s, info)
-            qDebug() << s;
+        QString info =  act->info().join('\n');
+        qDebug() << info;
+
     }
 }
 
-void FMSTP::setupActivity(QJSValue &js_value)
+void FMSTP::setupActivity(QJSValue &js_value, const QString &name)
 {
     QString type = js_value.property("type").toString();
     if (verbose())
@@ -103,6 +130,8 @@ void FMSTP::setupActivity(QJSValue &js_value)
 
     // call the setup routine (overloaded version)
     act->setup(js_value);
+    // use id-property if available, or the object-name otherwise
+    act->setName(valueFromJs(js_value, "id", name).toString());
     mActivities.push_back(act);
 }
 
@@ -121,6 +150,18 @@ QJSValue FMSTP::valueFromJs(const QJSValue &js_value, const QString &key, const 
            return default_value;
    }
    return js_value.property(key);
+}
+
+bool FMSTP::boolValueFromJs(const QJSValue &js_value, const QString &key, const bool default_bool_value, const QString &errorMessage)
+{
+    if (!js_value.hasOwnProperty(key)) {
+        if (!errorMessage.isEmpty())
+            throw IException(QString("Error: required key '%1' not found. In: %2").arg(key).arg(errorMessage));
+        else
+            return default_bool_value;
+    }
+    return js_value.property(key).toBool();
+
 }
 
 } // namespace

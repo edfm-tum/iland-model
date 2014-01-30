@@ -2,6 +2,8 @@
 #define FOMESTP_H
 
 #include "fmstand.h"
+#include "activity.h"
+
 #include <QJSValue>
 #include <QList>
 
@@ -20,12 +22,14 @@ public:
     FMSTP();
     ~FMSTP();
     enum Phase { Invalid, Tending, Thinning, Regeneration };
+    const QString &name() const {return mName; }
     /// read the options from a javascript structure / object
-    void setup(QJSValue &js_value, const QString name=QString(), int level=0);
+    void setup(QJSValue &js_value, const QString name=QString());
     /// if verbose is true, detailed debug information is provided.
     static void setVerbose(bool verbose) {mVerbose = verbose; }
     static bool verbose()  {return mVerbose; } ///< returns true in debug mode
     static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value, const QString &errorMessage=QString());
+    static bool boolValueFromJs(const QJSValue &js_value, const QString &key, const bool default_bool_value, const QString &errorMessage=QString());
 
 
     /// main function that runs the current program for stand 'stand'
@@ -35,11 +39,14 @@ public:
     void dumpInfo();
 
 private:
+    void internalSetup(QJSValue &js_value, int level=0);
     QString mName; ///< the name of the stand treatment program
-    void setupActivity(QJSValue &js_value);
+    void setupActivity(QJSValue &js_value, const QString &name);
     void clear(); ///< remove all activites
     static bool mVerbose; ///< debug mode
-    QList<Activity*> mActivities; ///< container for the activities of the STP
+    QVector<Activity*> mActivities; ///< container for the activities of the STP
+    QVector<ActivityFlags> mActivityStand; ///< base data for stand-specific STP info.
+    QStringList mActivityNames;  ///< names of all available activities
 
 };
 

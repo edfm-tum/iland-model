@@ -11,7 +11,7 @@ class ActGeneral : public Activity
 {
 public:
     ActGeneral(FMSTP* parent): Activity(parent) {}
-    QString name() const { return "general"; }
+    QString type() const { return "general"; }
     QStringList info();
     void setup(QJSValue value);
     bool execute(FMStand *stand);

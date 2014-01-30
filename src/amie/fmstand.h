@@ -36,9 +36,10 @@ public:
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
 
+    // return stand-specific flags
+    ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
-
     /// set a property value for the current stand with the name 'name'
     void setProperty(const QString &name, QJSValue value);
     /// retrieve the value of the property 'name'. Returns an empty QJSValue if the property is not defined.
@@ -53,7 +54,11 @@ private:
     double mBasalArea; ///< basal area of the stand
     double mAge; ///< average age (yrs) of the stand
     double mVolume; ///< standing volume (m3/ha) of the stand
-    // property values for each stand
+
+    int mCurrentIndex; ///< the index of the current activity
+    // storage for stand-specific management properties
+    QVector<ActivityFlags> mStandFlags;
+    // additional property values for each stand
     static QHash<FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
 };
 
