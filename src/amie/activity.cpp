@@ -26,13 +26,23 @@ void Schedule::setup(QJSValue &js_value)
         tminrel = FMSTP::valueFromJs(js_value, "minRel", "-1").toNumber();
         tmaxrel = FMSTP::valueFromJs(js_value, "maxRel", "-1").toNumber();
         toptrel = FMSTP::valueFromJs(js_value, "optRel", "-1").toNumber();
-        force_execution = FMSTP::valueFromJs(js_value, "force", "false").toBool();
-        if (tmin>-1. && tmax>-1. && topt>-1. && (topt<tmin || topt>tmax))
-            throw IException(QString("Error in setting up timing: topt out of scope: %1").arg(js_value.toString()));
-        if (tminrel>-1. && tmaxrel>-1. && toptrel>-1. && (toptrel<tminrel || toptrel>tmaxrel))
-            throw IException(QString("Error in setting up timing: topt out of scope: %1").arg(js_value.toString()));
-        if (tminrel*tmaxrel < 0. || tmin*tmax<0.)
-            throw IException(QString("Error in setting up timing: min and max required: %1").arg(js_value.toString()));
+        repeat_interval = FMSTP::valueFromJs(js_value, "repeatInterval", "1").toInt();
+        // switches
+        force_execution = FMSTP::boolValueFromJs(js_value, "force", false);
+        repeat = FMSTP::boolValueFromJs(js_value, "repeat", false);
+        if (!repeat) {
+            if (tmin>-1 && tmax>-1 && topt==-1)
+                topt = (tmax+tmin) / 2;
+            if (tmin>-1 && tmax>-1 && topt>-1 && (topt<tmin || topt>tmax))
+                throw IException(QString("Error in setting up schedule: 'opt' out of range: %1").arg(js_value.toString()));
+            if (tminrel>-1 && tmaxrel>-1 && toptrel>-1 && (toptrel<tminrel || toptrel>tmaxrel))
+                throw IException(QString("Error in setting up schedule: 'opt' out of range: %1").arg(js_value.toString()));
+            if (tminrel*tmaxrel < 0. || tmin*tmax<0.)
+                throw IException(QString("Error in setting up schedule: min and max required: %1").arg(js_value.toString()));
+
+            if (topt==-1 && toptrel==-1.)
+                throw IException(QString("Error in setting up schedule: neither 'opt' nor 'optRel' point can be derived in: %1").arg(js_value.toString()));
+        }
 
     } else if (js_value.isNumber()) {
         topt = js_value.toNumber();
@@ -43,8 +53,11 @@ void Schedule::setup(QJSValue &js_value)
 
 QString Schedule::dump() const
 {
-    return QString("schedule. tmin/topt/tmax: %1/%2/%3 relative: min/opt/max: %4/%5/%6 force: %7").arg(tmin).arg(topt).arg(tmax)
-            .arg(tminrel).arg(toptrel).arg(tmaxrel).arg(force_execution);
+    if (repeat)
+        return QString("schedule. Repeating every %1 years.").arg(repeat_interval);
+    else
+        return QString("schedule. tmin/topt/tmax: %1/%2/%3 relative: min/opt/max: %4/%5/%6 force: %7").arg(tmin).arg(topt).arg(tmax)
+                .arg(tminrel).arg(toptrel).arg(tmaxrel).arg(force_execution);
 }
 
 double Schedule::value(const FMStand *stand)
@@ -86,6 +99,15 @@ double Schedule::value(const FMStand *stand)
     }
     qDebug() << "Schedule::value: unexpected combination. U" << U << "age" << age << ", schedule:" << this->dump();
     return 0.;
+}
+
+double Schedule::minValue() const
+{
+    if (tmin>-1) return tmin;
+    if (tminrel>-1.) return tminrel * 100; // assume a fixed U of 100yrs
+    if (repeat) return -1.; // repeating executions are treated specially
+    if (topt>-1) return topt;
+    return toptrel * 100;
 }
 
 /***************************************************************************/
@@ -267,6 +289,7 @@ QString Constraints::constraint_item::dump() const
 Activity::Activity(const FMSTP *parent)
 {
     mProgram = parent;
+    mIndex = 0;
 }
 
 Activity::~Activity()
@@ -274,7 +297,7 @@ Activity::~Activity()
 
 }
 
-QString Activity::name() const
+QString Activity::type() const
 {
     return "base";
 }
@@ -306,11 +329,22 @@ bool Activity::execute(FMStand *stand)
 QStringList Activity::info()
 {
     QStringList lines;
-    lines << QString("Activity '%1'").arg(name());
+    lines << QString("Activity '%1' of type '%2'").arg(name()).arg(type());
     lines << "Events" << events().dump();
     lines << "Schedule" << schedule().dump();
     lines << "Constraints" << constraints().dump();
     return lines;
+}
+
+
+ActivityFlags &Activity::standFlags(FMStand *stand)
+{
+    // use the base data item if no specific stand is provided
+    if (!stand)
+        return mBaseActivity;
+
+    // return the flags associated with the specific stand
+    return stand->flags(mIndex);
 }
 
 
