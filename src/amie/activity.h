@@ -17,13 +17,13 @@ public:
     // setup and life cycle
     Schedule()  {}
     Schedule(QJSValue &js_value) { clear(); setup(js_value); }
-    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat=false; }
+    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat=false; absolute=false; }
     void setup(QJSValue &js_value);
     QString dump() const;
     // functions
     /// value() evaluates the schedule for the given 'stand'
     double value(const FMStand *stand);
-    /// gives a (fixed) lower execution time
+    /// gives (fixed) earliest possible execution time
     double minValue() const;
     // some stuffs
     int tmin; int tmax; int topt;
@@ -32,6 +32,7 @@ public:
     // repeating
     int repeat_interval;
     bool repeat;
+    bool absolute;
 };
 
 class Events {

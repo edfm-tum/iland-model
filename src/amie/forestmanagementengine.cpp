@@ -215,10 +215,16 @@ void ForestManagementEngine::test()
     } catch (const IException &e) {
         qDebug() << "An error occured:" << e.message();
     }
-    QString code = Helper::loadTextFile("E:/Daten/iLand/modeling/abm/knowledge_base/test/test_stp.js");
-    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code);
+    QString file_name = "E:/Daten/iLand/modeling/abm/knowledge_base/test/test_stp.js";
+    QString code = Helper::loadTextFile(file_name);
+    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
     if (result.isError()) {
-        qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.toString();
+        int lineno = result.property("lineNumber").toInt();
+        QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
+        QString code_part;
+        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+            code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
     }
 
 
