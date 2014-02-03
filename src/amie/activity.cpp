@@ -30,6 +30,7 @@ void Schedule::setup(QJSValue &js_value)
         // switches
         force_execution = FMSTP::boolValueFromJs(js_value, "force", false);
         repeat = FMSTP::boolValueFromJs(js_value, "repeat", false);
+        absolute = FMSTP::boolValueFromJs(js_value, "absolute", false);
         if (!repeat) {
             if (tmin>-1 && tmax>-1 && topt==-1)
                 topt = (tmax+tmin) / 2;
@@ -63,25 +64,27 @@ QString Schedule::dump() const
 double Schedule::value(const FMStand *stand)
 {
     double U = 100.; // todo: fix!
-    double age = stand->age();
+    double current = stand->age();
+    if (absolute)
+        current = 2000; // todo: fix: this needs to be the year of the simulation
     // force execution: if age already higher than max, then always evaluate to 1.
-    if (tmax>-1. && age > tmax && force_execution)
+    if (tmax>-1. && current > tmax && force_execution)
         return 1;
-    if (tmaxrel>-1. && age/U > tmaxrel && force_execution)
+    if (tmaxrel>-1. && current/U > tmaxrel && force_execution)
         return 1;
 
-    if (tmin>-1. && age < tmin) return 0.;
-    if (tmax>-1. && age > tmax) return 0.;
-    if (tminrel>-1. && age/U < tminrel) return 0.;
-    if (tmaxrel>-1. && age/U > tmaxrel) return 0.;
+    if (tmin>-1. && current < tmin) return 0.;
+    if (tmax>-1. && current > tmax) return 0.;
+    if (tminrel>-1. && current/U < tminrel) return 0.;
+    if (tmaxrel>-1. && current/U > tmaxrel) return 0.;
 
     if (tmin>-1. && tmax > -1.) {
         if (topt > -1.) {
         // linear interpolation
-            if (age<=topt)
-                return topt==tmin?1.:(age-tmin)/(topt-tmin);
+            if (current<=topt)
+                return topt==tmin?1.:(current-tmin)/(topt-tmin);
             else
-                return topt==tmax?1.:(tmax-age)/(tmax-topt);
+                return topt==tmax?1.:(tmax-current)/(tmax-topt);
         } else {
             return 1.; // no optimal time: everything between min and max is fine!
         }
@@ -89,15 +92,15 @@ double Schedule::value(const FMStand *stand)
     if (tminrel>-1. && tmaxrel>-1.) {
         if (toptrel > -1.) {
         // linear interpolation
-            if (age<=toptrel)
-                return toptrel==tminrel?1.:(age-tminrel)/(toptrel-tminrel);
+            if (current<=toptrel)
+                return toptrel==tminrel?1.:(current-tminrel)/(toptrel-tminrel);
             else
-                return toptrel==tmaxrel?1.:(tmaxrel-age)/(tmaxrel-toptrel);
+                return toptrel==tmaxrel?1.:(tmaxrel-current)/(tmaxrel-toptrel);
         } else {
             return 1.; // no optimal time: everything between min and max is fine!
         }
     }
-    qDebug() << "Schedule::value: unexpected combination. U" << U << "age" << age << ", schedule:" << this->dump();
+    qDebug() << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
     return 0.;
 }
 
