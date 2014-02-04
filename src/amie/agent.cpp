@@ -2,7 +2,7 @@
 namespace AMIE {
 
 
-Agent::Agent(const AgentType *type)
+Agent::Agent(AgentType *type)
 {
     mType = type;
 }

@@ -910,6 +910,13 @@ void Tests::testRumple()
 
 void Tests::testFOMEsetup()
 {
-    AMIE::ForestManagementEngine fome;
-    fome.test();
+    AMIE::ForestManagementEngine *fome = new AMIE::ForestManagementEngine();
+    //fome.test();
+    try {
+    fome->setup();
+    } catch(const IException &e) {
+       Helper::msg(e.message());
+    }
+    // todo: re-enable delete!!!
+    // delete fome;
 }

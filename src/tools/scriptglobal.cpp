@@ -115,12 +115,18 @@ void ScriptGlobal::alert(QString message)
 
 void ScriptGlobal::include(QString filename)
 {
-    QString path = GlobalSettings::instance()->path(filename, "script") ;
+    QString path = GlobalSettings::instance()->path(filename);
+    if (!QFile::exists(path))
+        throw IException(QString("include(): The javascript source file '%1' could not be found.").arg(path));
+
     QString includeFile=Helper::loadTextFile(path);
 
-    QJSValue ret = GlobalSettings::instance()->scriptEngine()->evaluate(includeFile, includeFile);
-    if (ret.isError())
-        qDebug() << "Error in include:" << ret.toString();
+    QJSValue ret = GlobalSettings::instance()->scriptEngine()->evaluate(includeFile, path);
+    if (ret.isError()) {
+        QString error_message = formattedErrorMessage(ret, includeFile);
+        qDebug() << error_message;
+        throw IException("Error in javascript-include():" + error_message);
+    }
 
 }
 
@@ -517,6 +523,25 @@ QString ScriptGlobal::executeScript(QString cmd)
     } else {
         return QString();
     }
+}
+
+QString ScriptGlobal::formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode)
+{
+    if (error_value.isError()) {
+        int lineno = error_value.property("lineNumber").toInt();
+        QString code = sourcecode;
+        QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
+        QString code_part;
+        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+            code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        QString error_string = QString("Javascript Error in file '%1:%2':%3\n%4")
+                .arg(error_value.property("fileName").toString())
+                .arg(error_value.property("lineNumber").toInt())
+                .arg(error_value.toString())
+                .arg(code_part);
+        return error_string;
+    }
+    return QString();
 }
 
 

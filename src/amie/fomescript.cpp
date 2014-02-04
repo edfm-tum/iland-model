@@ -54,10 +54,6 @@ void FomeScript::setExecutionContext(const FMStand *stand)
 
 }
 
-QString FomeScript::formatttedError(QJSValue &error)
-{
-
-}
 
 bool FomeScript::addManagement(QJSValue program, QString name)
 {

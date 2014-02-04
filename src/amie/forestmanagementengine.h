@@ -4,8 +4,10 @@
 #include <QVector>
 
 #include "knowledgebase.h"
+#include "amiegrid.h"
 
 class QJSEngine; // forward
+class MapGrid; // forward
 
 namespace AMIE {
 
@@ -25,6 +27,7 @@ public:
     ~ForestManagementEngine();
     // engine instance
     static ForestManagementEngine *instance() { if (singleton_fome_engine) return singleton_fome_engine; singleton_fome_engine = new ForestManagementEngine; return singleton_fome_engine; }
+    static const MapGrid *standGrid();
     void setup();
     void clear(); ///< delete all objects and free memory
     // properties
@@ -33,6 +36,9 @@ public:
     FomeScript *scriptBridge() const {return mScriptBridge; }
 
     void addSTP(FMSTP* stp) { mSTP.push_back(stp);}
+    /// retrieve pointer to stand treatment programme. return 0-pointer if not available.
+    FMSTP *stp(QString stp_name) const;
+    QVector<FMStand*> stands() const {return mStands; }
     // functions
     /// evalaute forest management activities and select fitting activities for each forest stand
     void evaluateActivities();
@@ -41,6 +47,7 @@ public:
 
 
 private:
+    void setupScripting();
     static ForestManagementEngine *singleton_fome_engine;
     // the knowledge base is the collection of silvicultural treatments ???
     KnowledgeBase mKnowledgeBase;
@@ -54,10 +61,15 @@ private:
     QVector<FMUnit*> mUnits; ///< container for forest management units
     // mapping of stands to units
     QMultiMap<FMUnit*, FMStand*> mUnitStandMap;
+    QVector<FMStand*> mStands;
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types
     QVector<Agent*> mAgents; ///< collection of all agents (individuals)
+
+    // grids, visuals, etc.
+    Grid<FMStand*> mStandGrid;
+    AMIELayers mStandLayers;
 };
 
 

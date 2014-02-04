@@ -11,11 +11,12 @@ class AgentType; // forward
 class Agent
 {
 public:
-    Agent(const AgentType *type);
+    Agent(AgentType *type);
+    AgentType *type() const {return mType; }
 
 private:
     // link to the base agent type
-    const AgentType *mType;
+    AgentType *mType;
     // agent properties
     double mKnowledge;
     double mEconomy;

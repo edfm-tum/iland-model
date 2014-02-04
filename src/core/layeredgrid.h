@@ -22,8 +22,10 @@
 
 #include "grid.h"
 
-/** LayeredGrid
+/** \class LayeredGrid
     @ingroup tools
+    This is the base class for multi-layer grids in iLand. Use the LayeredGrid-template class
+    for creating actual multi layer grids. The LayeredGridBase can be used for specializations.
   */
 
 class LayeredGridBase
@@ -47,6 +49,11 @@ public:
     virtual double value(const int grid_index, const int index) const = 0;
 };
 
+/** \class LayeredGrid is a template for multi-layered grids in iLand.
+ * Use your cell-class for T and provide at minium a value() and a names() function.
+ * The names() provide the names of the individual layers (used e.g. in the GUI), the value() function
+ * returns a cell-specific value for a specific layer (given by 'index' parameter).
+ * */
 template <class T>
 class LayeredGrid: public LayeredGridBase
 {

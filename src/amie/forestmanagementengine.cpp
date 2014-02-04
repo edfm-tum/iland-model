@@ -43,16 +43,20 @@ ForestManagementEngine::~ForestManagementEngine()
     singleton_fome_engine = 0;
 }
 
-void ForestManagementEngine::setup()
+const MapGrid *ForestManagementEngine::standGrid()
 {
-    clear();
+    return GlobalSettings::instance()->model()->standGrid();
+}
 
+
+void ForestManagementEngine::setupScripting()
+{
     // setup the AMIE system
     const XmlHelper &xml = GlobalSettings::instance()->settings();
 
     // (1) the knowledge base: the (javascript) definition of forest management activities
     ScriptGlobal::setupGlobalScripting(); // general iLand scripting helper functions and such
-    mKnowledgeBase.setup(GlobalSettings::instance()->path(xml.value("model.management.setup.knowledgeBaseDir")));
+    //mKnowledgeBase.setup(GlobalSettings::instance()->path(xml.value("model.management.setup.knowledgeBaseDir")));
 
     // (2) the link between the scripting and the C++ side of AMIE
     if (mScriptBridge)
@@ -60,12 +64,38 @@ void ForestManagementEngine::setup()
     mScriptBridge = new FomeScript;
     mScriptBridge->setupScriptEnvironment();
 
-    // (3) spatial data (stands, units, ...)
+    QString file_name = GlobalSettings::instance()->path(xml.value("model.management.amie.file"));
+    QString code = Helper::loadTextFile(file_name);
+    QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
+    if (result.isError()) {
+        int lineno = result.property("lineNumber").toInt();
+        QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
+        QString code_part;
+        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+            code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
+    }
+
+
+}
+
+void ForestManagementEngine::setup()
+{
+    clear();
+    const XmlHelper &xml = GlobalSettings::instance()->settings();
+
+    // (1) setup the scripting environment and load all the javascript code
+    setupScripting();
+
+
+    if (!GlobalSettings::instance()->model())
+        throw IException("No model created.... invalid operation.");
+    // (2) spatial data (stands, units, ...)
     const MapGrid *stand_grid = GlobalSettings::instance()->model()->standGrid();
     if (stand_grid==NULL || stand_grid->isValid()==false)
         throw IException("The AMIE management model requires a valid stand grid.");
 
-    QString data_file_name = GlobalSettings::instance()->path(xml.value("model.management.setup.standDataFile"));
+    QString data_file_name = GlobalSettings::instance()->path(xml.value("model.management.amie.agentDataFile"));
     CSVFile data_file(data_file_name);
     if (data_file.rowCount()==0)
         throw IException(QString("Stand-Initialization: the standDataFile file %1 is empty or missing!").arg(data_file_name));
@@ -73,7 +103,7 @@ void ForestManagementEngine::setup()
     int iunit = data_file.columnIndex("unit");
     int iagent = data_file.columnIndex("agent");
     if (ikey<0 || iunit<0 || iagent<0)
-        throw IException("setup AMIE standDataFile: one (or more) of the required columns 'id','unit', 'agent' not available.");
+        throw IException("setup AMIE agentDataFile: one (or more) of the required columns 'id','unit', 'agent' not available.");
 
     QList<QString> unit_codes;
     QList<QString> agent_codes;
@@ -86,16 +116,21 @@ void ForestManagementEngine::setup()
         // check agents
         QString agent_code = data_file.value(i, iagent).toString();
         Agent *agent=0;
+        AgentType *at=0;
         if (!agent_codes.contains(agent_code)) {
             // create the agent / agent type
-            AgentType *at = new AgentType;
+            at = new AgentType;
             agent = new Agent(at);
             mAgentTypes.append(at);
             mAgents.append(agent);
+            // now set up the javascript definition of the agent type
+            at->setupSTP(agent_code);
             agent_codes.append(agent_code);
         } else {
             // simplified: one agent for all stands with the same agent....
             agent = mAgents[ agent_codes.indexOf(agent_code) ];
+            at = agent->type();
+
         }
 
         // check units
@@ -107,6 +142,7 @@ void ForestManagementEngine::setup()
             unit->setId(unit_id);
             mUnits.append(unit);
             unit_codes.append(unit_id);
+            at->addUnit(unit); // add the unit to the list of managed units of the agent
         } else {
             // get unit by id ... in this case we have the same order of appending values
             unit = mUnits[unit_codes.indexOf(unit_id)];
@@ -116,19 +152,38 @@ void ForestManagementEngine::setup()
         FMStand *stand = new FMStand(unit,stand_id);
 
         mUnitStandMap.insertMulti(unit,stand);
+        mStands.append(stand);
 
     }
-    qDebug() << "AMIE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
+    // set up the stand grid (visualizations)...
+    // set up a hash for helping to establish stand-id <-> fmstand-link
+    QHash<int, FMStand*> stand_hash;
+    for (int i=0;i<mStands.size(); ++i)
+        stand_hash[mStands[i]->id()] = mStands[i];
 
+    mStandGrid.setup(standGrid()->grid().cellsize(), standGrid()->grid().sizeX(), standGrid()->grid().sizeY() );
+    FMStand **fm = mStandGrid.begin();
+    for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
+        *fm = stand_hash[*p];
+
+    mStandLayers.setGrid(mStandGrid);
+    mStandLayers.registerLayers();
+
+    // now initialize the agents....
+    foreach(AgentType *at, mAgentTypes)
+        at->setup();
+    qDebug() << "AMIE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
 
 }
 
 void ForestManagementEngine::clear()
 {
-    qDeleteAll(mUnitStandMap); // deletes the stands (not the keys)
-    mUnitStandMap.clear();
+    qDeleteAll(mStands); // delete the stands
+    mStands.clear();
     qDeleteAll(mUnits); // deletes the units
     mUnits.clear();
+    mUnitStandMap.clear();
+
     qDeleteAll(mAgents);
     mAgents.clear();
     qDeleteAll(mAgentTypes);
@@ -197,6 +252,7 @@ void ForestManagementEngine::test_old()
     clear();
 }
 
+
 void ForestManagementEngine::test()
 {
     // test code
@@ -252,6 +308,7 @@ void ForestManagementEngine::test()
     foreach(FMSTP *stp, mSTP)
         stp->dumpInfo();
 
+    setup();
     qDebug() << "finished";
 
 }
@@ -260,6 +317,14 @@ QJSEngine *ForestManagementEngine::scriptEngine()
 {
     // use global engine from iLand
     return GlobalSettings::instance()->scriptEngine();
+}
+
+FMSTP *ForestManagementEngine::stp(QString stp_name) const
+{
+    for (QVector<FMSTP*>::const_iterator it = mSTP.constBegin(); it!=mSTP.constEnd(); ++it)
+        if ( (*it)->name() == stp_name )
+            return *it;
+    return 0;
 }
 
 
