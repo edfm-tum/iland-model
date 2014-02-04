@@ -142,7 +142,9 @@ SOURCES += main.cpp \
     ../output/landscapeout.cpp \
     ../amie/fmstp.cpp \
     ../amie/thinning.cpp \
-    ../amie/actgeneral.cpp
+    ../amie/actgeneral.cpp \
+    ../amie/treelist.cpp \
+    ../amie/amiegrid.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -229,7 +231,9 @@ HEADERS += mainwindow.h \
     ../output/landscapeout.h \
     ../amie/fmstp.h \
     ../amie/thinning.h \
-    ../amie/actgeneral.h
+    ../amie/actgeneral.h \
+    ../amie/treelist.h \
+    ../amie/amiegrid.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

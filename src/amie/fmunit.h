@@ -10,13 +10,17 @@ class FMUnit
 {
 public:
     FMUnit():mAgent(0) {}
+
     FMUnit(const Agent *agent): mAgent(agent) {}
-    void setId(const QString &id) { mId = id; }
+    void setId(const QString &id);
+    const QString &id() const {return mId; }
+    int index() const {return mIndex; }
     // actions
     void evaluateActivities() const;
 
 private:
     QString mId;
+    int mIndex;
     const Agent *mAgent;
 };
 

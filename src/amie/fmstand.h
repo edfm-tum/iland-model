@@ -6,10 +6,20 @@
 
 #include "activity.h"
 
+class Species; // forward (iLand species)
+
 namespace AMIE {
 
 class FOMEWrapper; // forward
 class FMUnit; // forward
+
+struct SSpeciesStand
+{
+    SSpeciesStand(): species(0), basalArea(0.), relBasalArea(0.) {}
+    const Species *species; ///< the ID of the species (ie a pointer)
+    double basalArea; ///< basal area m2
+    double relBasalArea; ///< fraction [0..1] fraction of species based on basal area.
+};
 
 /** FMStand encapsulates a forest stand for the forest management engine.
  *  The spatial coverage is defined by a "stand grid".
@@ -19,15 +29,17 @@ class FMStand
 {
 public:
     FMStand(FMUnit *unit, const int id);
+    void setSTP(FMSTP *stp, int activityIndex) { mSTP = stp; mCurrentIndex = activityIndex; }
     void reload(); // get new data from iLand???
     // general properties
     int id() const {return mId; }
     const FMUnit *unit() const { return mUnit; }
     Activity::Phase phase() const { return mPhase; }
     int standType() const { return mStandType; }
+    FMSTP *stp() const {return mSTP; }
     //
     /// total basal area (m2/ha)
-    double basalArea() const {return mBasalArea; }
+    double basalArea() const {return mTotalBasalArea; }
     /// (average) age of the stand
     double age() const {return mAge; }
     /// total standing volume (m3/ha) in the stand
@@ -49,13 +61,20 @@ public:
 private:
     int mId; ///< the unique numeric ID of the stand
     FMUnit *mUnit; ///< management unit that
+    FMSTP *mSTP; ///< the stand treatment program assigned to this stand
     Activity::Phase mPhase; ///< silvicultural phase
     int mStandType; ///< enumeration of stand (compositional)
-    double mBasalArea; ///< basal area of the stand
+    double mTotalBasalArea; ///< basal area of the stand
     double mAge; ///< average age (yrs) of the stand
     double mVolume; ///< standing volume (m3/ha) of the stand
 
     int mCurrentIndex; ///< the index of the current activity
+    int nspecies() const  { mSpeciesData.count(); }
+    /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)
+    SSpeciesStand &speciesData(const int index) {return mSpeciesData[index]; }
+    SSpeciesStand &speciesData(const Species *species); ///< species-specific meta data by Species pointer
+    // storage for stand meta data (species level)
+    QVector<SSpeciesStand> mSpeciesData;
     // storage for stand-specific management properties
     QVector<ActivityFlags> mStandFlags;
     // additional property values for each stand
