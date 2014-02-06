@@ -5,6 +5,7 @@
 #include "forestmanagementengine.h"
 #include "fmunit.h"
 #include "fmstand.h"
+#include "fomescript.h"
 
 #include <QJSEngine>
 namespace AMIE {
@@ -33,6 +34,7 @@ void AgentType::setupSTP(const QString agent_name)
            throw IException(QString("AMIE:AgentType:setup: definition of agent '%1': the STP for mixture type '%2': '%3' is not available.").arg(agent_name).arg(it.name()).arg(it.value().toString()));
         mSTP[it.name()] = stp;
     }
+
     if (FMSTP::verbose())
         qDebug() << "setup of agent" << agent_name << mSTP.size() << "links to STPs established.";
 
@@ -44,10 +46,19 @@ void AgentType::setup()
     if (!stp)
         throw IException("AgentType::setup(): default-STP not defined");
 
+    QJSValue onSelect_handler = GlobalSettings::instance()->scriptEngine()->globalObject().property(QString("%1.onSelect").arg(mName));
     foreach (FMStand *stand, ForestManagementEngine::instance()->stands()) {
         // todo: fancy selectio of right STP.... (javascript onSelect() ...)
         stand->setSTP(stp, 0);
         stand->reload(); // fetch data from iLand ...
+        if (onSelect_handler.isCallable()) {
+            FomeScript::setExecutionContext(stand);
+            QJSValue mix = onSelect_handler.call();
+            QString mixture_type = mix.toString();
+            if (!mSTP.contains(mixture_type))
+                throw IException(QString("AgentType::setup(): the selected mixture type '%1' for stand '%2' is not valid for agent '%3'.").arg(mixture_type).arg(stand->id()).arg(mName));
+            stand->setSTP(mSTP[mixture_type], 0);
+        }
     }
 
 }

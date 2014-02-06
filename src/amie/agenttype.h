@@ -2,6 +2,7 @@
 #define AGENTTYPE_H
 #include <QHash>
 #include <QVector>
+#include <QJSValue>
 namespace AMIE {
 
 
