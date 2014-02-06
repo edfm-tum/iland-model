@@ -8,6 +8,7 @@
 #include "mapgrid.h"
 
 #include "tree.h"
+#include "species.h"
 
 namespace AMIE {
 
@@ -64,8 +65,10 @@ void FMStand::reload()
 
 double FMStand::basalArea(const QString &species_id) const
 {
-    // get somehow the value from the stand directly or the stand meta data....
-    return 0;
+    foreach (const SSpeciesStand &sd, mSpeciesData)
+        if (sd.species->id()==species_id)
+            return sd.basalArea;
+    return 0.;
 }
 
 // storage for properties (static)

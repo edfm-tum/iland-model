@@ -54,11 +54,9 @@ void ForestManagementEngine::setupScripting()
     // setup the AMIE system
     const XmlHelper &xml = GlobalSettings::instance()->settings();
 
-    // (1) the knowledge base: the (javascript) definition of forest management activities
     ScriptGlobal::setupGlobalScripting(); // general iLand scripting helper functions and such
-    //mKnowledgeBase.setup(GlobalSettings::instance()->path(xml.value("model.management.setup.knowledgeBaseDir")));
 
-    // (2) the link between the scripting and the C++ side of AMIE
+    // the link between the scripting and the C++ side of AMIE
     if (mScriptBridge)
         delete mScriptBridge;
     mScriptBridge = new FomeScript;
@@ -76,7 +74,7 @@ void ForestManagementEngine::setupScripting()
         qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
     }
 
-
+    GlobalSettings::instance()->scriptEngine()->evaluate("console.log('TEST: setup scripting...')");
 }
 
 void ForestManagementEngine::setup()
@@ -173,6 +171,7 @@ void ForestManagementEngine::setup()
     foreach(AgentType *at, mAgentTypes)
         at->setup();
     qDebug() << "AMIE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
+    GlobalSettings::instance()->scriptEngine()->evaluate("console.log('TEST: setup scripting complete...')");
 
 }
 
