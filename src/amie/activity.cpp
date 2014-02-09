@@ -6,6 +6,7 @@
 #include "fmstp.h"
 #include "fomescript.h"
 #include "fomewrapper.h"
+#include "forestmanagementengine.h"
 
 #include "expression.h"
 
@@ -66,7 +67,7 @@ double Schedule::value(const FMStand *stand)
     double U = 100.; // todo: fix!
     double current = stand->age();
     if (absolute)
-        current = 2000; // todo: fix: this needs to be the year of the simulation
+        current = ForestManagementEngine::instance()->currentYear();
     // force execution: if age already higher than max, then always evaluate to 1.
     if (tmax>-1. && current > tmax && force_execution)
         return 1;
@@ -104,13 +105,23 @@ double Schedule::value(const FMStand *stand)
     return 0.;
 }
 
-double Schedule::minValue() const
+double Schedule::minValue(const double U) const
 {
     if (tmin>-1) return tmin;
-    if (tminrel>-1.) return tminrel * 100; // assume a fixed U of 100yrs
+    if (tminrel>-1.) return tminrel * U; // assume a fixed U of 100yrs
     if (repeat) return -1.; // repeating executions are treated specially
     if (topt>-1) return topt;
-    return toptrel * 100;
+    return toptrel * U;
+}
+
+double Schedule::maxValue(const double U) const
+{
+    if (tmax>-1) return tmax;
+    if (tmaxrel>-1.) return tmaxrel * U; // assume a fixed U of 100yrs
+    if (repeat) return -1.; // repeating executions are treated specially
+    if (topt>-1) return topt;
+    return toptrel * U;
+
 }
 
 /***************************************************************************/
@@ -293,6 +304,7 @@ Activity::Activity(const FMSTP *parent)
 {
     mProgram = parent;
     mIndex = 0;
+    mBaseActivity = ActivityFlags(this);
 }
 
 Activity::~Activity()
@@ -320,6 +332,18 @@ void Activity::setup(QJSValue value)
     if (!constraints.isUndefined())
         mConstraints.setup(constraints);
 
+}
+
+double Activity::scheduleProbability(FMStand *stand)
+{
+    // return a value between 0 and 1
+    return schedule().value(stand);
+}
+
+bool Activity::canExeceute(FMStand *stand)
+{
+    // check the standard constraints and return true when all constraints are fulfilled (or no constraints set)
+    return constraints().evaluate(stand);
 }
 
 bool Activity::execute(FMStand *stand)

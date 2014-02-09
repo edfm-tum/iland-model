@@ -42,6 +42,7 @@ class StandObj: public QObject
     Q_PROPERTY (double age READ age)
     Q_PROPERTY (double volume READ volume)
     Q_PROPERTY (int id READ id)
+    Q_PROPERTY (int nspecies READ nspecies)
 /*    basalArea: 0, // total basal area/ha of the stand
     volume: 100, // total volume/ha of the stand
     speciesCount: 3, // number of species present in the stand with trees > 4m
@@ -61,6 +62,7 @@ public:
     double age() const {return mStand->age(); }
     double volume() const {return mStand->volume(); }
     int id() const { return mStand->id(); }
+    int nspecies() const { return mStand->nspecies(); }
 private:
     const FMStand *mStand;
 };

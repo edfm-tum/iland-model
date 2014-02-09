@@ -24,7 +24,9 @@ public:
     /// value() evaluates the schedule for the given 'stand'
     double value(const FMStand *stand);
     /// gives (fixed) earliest possible execution time
-    double minValue() const;
+    double minValue(const double U=100.) const;
+    /// returns the latest possible execution time
+    double maxValue(const double U=100.) const;
     // some stuffs
     int tmin; int tmax; int topt;
     double tminrel; double tmaxrel; double toptrel;
@@ -79,14 +81,26 @@ class ActivityFlags
 public:
     ActivityFlags(): mActivity(0), mFlags(0) {}
     ActivityFlags(Activity *act): mActivity(act), mFlags(0) {}
+    Activity *activity() const {return mActivity;
+                               }
     bool active() const {return flag(Active); }
     bool enabled() const {return flag(Enabled);}
     bool isRepeating() const {return flag(Repeater);}
+    bool isPending() const {return flag(Pending); }
+    bool isForcedNext() const {return flag(ExecuteNext); }
     void setActive(const bool active) { setFlag(Active, active); }
     void setEnabled(const bool enabled) { setFlag(Enabled, enabled); }
     void setIsRepeating(const bool repeat) { setFlag(Repeater, repeat); }
+    void setIsPending(const bool pending) { setFlag(Pending, pending); }
+    void setForceNext(const bool isnext) { setFlag(ExecuteNext, isnext); }
+
 private:
-    enum Flags { Active=1, Enabled=2, Repeater=4 }; ///< (binary coded)  flags
+    /// (binary coded)  flags
+    enum Flags { Active=1,  //
+                 Enabled=2,  // if false, the activity can not be executed
+                 Repeater=4, // if true, the activity is executed
+                 ExecuteNext=8, // this activity should be executed next (kind of "goto"
+                 Pending=16};  // the activity is currently in the scheduling algorithm
     bool flag(const ActivityFlags::Flags flag) const { return mFlags & flag; }
     void setFlag(const ActivityFlags::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
     Activity *mActivity; ///< link to activity
@@ -106,10 +120,15 @@ public:
     virtual QString type() const;
     QString name() const {return mName; }
     int index() const { return mIndex; }
-    int earlistSchedule() const {return mSchedule.minValue(); }
+    int earlistSchedule(const double U=100.) const {return mSchedule.minValue(U); }
+    int latestSchedule(const double U=100.) const { return mSchedule.maxValue(U); }
     // main actions
     /// setup of the activity (events, schedule, constraints). additional setup in derived classes.
     virtual void setup(QJSValue value);
+    /// returns a value > 0 if the activity coult be scheduled now
+    virtual double scheduleProbability(FMStand *stand);
+    /// returns true when activity can be executed (ie all constraints are fulfilled)
+    virtual bool canExeceute(FMStand *stand);
     /// executes the action (usually defined in derived classes) using the context of 'stand'.
     virtual bool execute(FMStand *stand);
     /// dumps some information for debugging

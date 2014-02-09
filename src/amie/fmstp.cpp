@@ -47,6 +47,9 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
         mActivityStand.push_back(mActivities.at(i)->standFlags(0)); // stand = 0: create a copy of the activities' base flags
         mActivities.at(i)->setIndex(i);
     }
+
+    // (3) set up top-level events
+    mEvents.setup(js_value, QStringList() << "onInit" << "onExit");
 }
 
 // read the setting from the setup-javascript object

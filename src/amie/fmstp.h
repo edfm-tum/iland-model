@@ -25,11 +25,13 @@ public:
     const QString &name() const {return mName; }
     /// read the options from a javascript structure / object
     void setup(QJSValue &js_value, const QString name=QString());
-    /// if verbose is true, detailed debug information is provided.
-    static void setVerbose(bool verbose) {mVerbose = verbose; }
-    static bool verbose()  {return mVerbose; } ///< returns true in debug mode
-    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value, const QString &errorMessage=QString());
-    static bool boolValueFromJs(const QJSValue &js_value, const QString &key, const bool default_bool_value, const QString &errorMessage=QString());
+    /// defaultFlags() is used to initalized the flags for indiv. forest stands
+    QVector<ActivityFlags> defaultFlags() {return mActivityStand; }
+    Events &events() { return mEvents; }
+
+    /// rotation length (years)
+    int rotationLength() const {return 100; } // TODO: fix
+
 
 
     /// main function that runs the current program for stand 'stand'
@@ -37,12 +39,18 @@ public:
 
     // helper functions
     void dumpInfo();
+    /// if verbose is true, detailed debug information is provided.
+    static void setVerbose(bool verbose) {mVerbose = verbose; }
+    static bool verbose()  {return mVerbose; } ///< returns true in debug mode
+    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value, const QString &errorMessage=QString());
+    static bool boolValueFromJs(const QJSValue &js_value, const QString &key, const bool default_bool_value, const QString &errorMessage=QString());
 
 private:
     void internalSetup(QJSValue &js_value, int level=0);
     QString mName; ///< the name of the stand treatment program
     void setupActivity(QJSValue &js_value, const QString &name);
     void clear(); ///< remove all activites
+    Events mEvents;
     static bool mVerbose; ///< debug mode
     QVector<Activity*> mActivities; ///< container for the activities of the STP
     QVector<ActivityFlags> mActivityStand; ///< base data for stand-specific STP info.

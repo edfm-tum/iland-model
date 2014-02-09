@@ -6,6 +6,7 @@
 #include "treelist.h"
 #include "forestmanagementengine.h"
 #include "mapgrid.h"
+#include "fmstp.h"
 
 #include "tree.h"
 #include "species.h"
@@ -27,6 +28,27 @@ FMStand::FMStand(FMUnit *unit, const int id)
 
     mCurrentIndex=0;
 }
+
+void FMStand::initialize(FMSTP *stp)
+{
+    mSTP = stp;
+    // copy activity flags
+    mStandFlags = stp->defaultFlags();
+    mCurrentIndex=-1;
+    mYearsToWait=0;
+
+    // find out the first activity...
+    for (int i=0;i<mStandFlags.count(); ++i) {
+        // set active to false which have already passed
+        if (mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age())
+            mStandFlags[i].setActive(false);
+    }
+
+    // call onInit handler on the level of the STP
+    stp->events().run("onInit", this);
+
+}
+
 bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)
 {
     return a.relBasalArea > b.relBasalArea;
@@ -61,6 +83,70 @@ void FMStand::reload()
     }
     // sort species data by relative share....
     std::sort(mSpeciesData.begin(), mSpeciesData.end(), relBasalAreaIsHigher);
+}
+
+
+bool FMStand::execute()
+{
+    // do nothing if we are still waiting (sleep)
+    if (mYearsToWait>0) {
+        if (--mYearsToWait > 0)
+            return false;
+    }
+    // what to do if there is no active activity??
+    if (mCurrentIndex==-1)
+        return false;
+
+    // do nothing if for the stand an activity is currently active in the scheduler
+    if (currentFlags().isPending())
+        return false;
+
+    // do nothing if the the current year is not within the activities window of opportunity
+    double p_schedule = currentActivity()->scheduleProbability(this);
+    if (p_schedule == 0.)
+        return false;
+
+    // check if there are some constraints that prevent execution....
+    reload(); // we need to renew the stand data
+    if (!currentActivity()->canExeceute(this))
+        return false;
+
+    // ok, we schedule the current activity
+    currentFlags().setIsPending(true);
+    ForestManagementEngine::instance()->scheduler().addTicket(this, &currentFlags());
+    return true;
+}
+
+
+bool FMStand::afterExecution()
+{
+    // is called after an activity has run
+    int tmin = 10000000;
+    int indexmin = -1;
+    for (int i=0;i<mStandFlags.count(); ++i) {
+        if (mStandFlags[i].isForcedNext()) {
+            mStandFlags[i].setForceNext(false); // reset flag
+            indexmin = i;
+            break; // we "jump" to this activity
+        }
+        if ( mStandFlags[i].enabled() && mStandFlags[i].active())
+            if (mStandFlags[i].activity()->earlistSchedule() < tmin) {
+               tmin =  mStandFlags[i].activity()->earlistSchedule();
+               indexmin = i;
+            }
+    }
+    mCurrentIndex = indexmin;
+    if (mCurrentIndex>-1) {
+        int to_sleep = tmin - age();
+        if (to_sleep>0)
+            sleep(to_sleep);
+    }
+    return mCurrentIndex > -1;
+}
+
+void FMStand::sleep(int years_to_sleep)
+{
+    mYearsToWait = qMax(mYearsToWait, years_to_sleep);
 }
 
 double FMStand::basalArea(const QString &species_id) const
