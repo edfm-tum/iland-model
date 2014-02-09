@@ -17,13 +17,14 @@ double AMIELayers::value(const FMStandPtr &data, const int index) const
     case 3: return data->volume(); // "volume"
     case 4: return data->basalArea(); // "basalArea"
     case 5: return data->age(); // "age"
+    case 6: return data->sleepYears(); // "next evaluation"
     default: throw IException("AMIELayers:value(): Invalid index");
     }
 }
 
 const QStringList AMIELayers::names() const
 {
-    return QStringList() << "id" << "unit" << "agent" << "volume" << "basalArea" << "age";
+    return QStringList() << "id" << "unit" << "agent" << "volume" << "basalArea" << "age" << "next evaluation";
 }
 
 void AMIELayers::registerLayers()

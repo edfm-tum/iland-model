@@ -74,7 +74,6 @@ void ForestManagementEngine::setupScripting()
         qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
     }
 
-    GlobalSettings::instance()->scriptEngine()->evaluate("console.log('TEST: setup scripting...')");
 }
 
 void ForestManagementEngine::setup()
@@ -171,7 +170,6 @@ void ForestManagementEngine::setup()
     foreach(AgentType *at, mAgentTypes)
         at->setup();
     qDebug() << "AMIE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
-    GlobalSettings::instance()->scriptEngine()->evaluate("console.log('TEST: setup scripting complete...')");
 
 }
 
@@ -189,6 +187,14 @@ void ForestManagementEngine::clear()
     mAgentTypes.clear();
     qDeleteAll(mSTP);
     mSTP.clear();
+}
+
+/// this is the main function of the forest management engine.
+/// the function is called every year.
+void ForestManagementEngine::run()
+{
+    mCurrentYear = GlobalSettings::instance()->currentYear();
+
 }
 
 void ForestManagementEngine::evaluateActivities()

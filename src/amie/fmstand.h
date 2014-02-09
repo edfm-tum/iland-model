@@ -28,9 +28,12 @@ struct SSpeciesStand
 class FMStand
 {
 public:
+    /// c'tor: link stand to a forest management unit
     FMStand(FMUnit *unit, const int id);
-    void setSTP(FMSTP *stp, int activityIndex) { mSTP = stp; mCurrentIndex = activityIndex; }
-    void reload(); // get new data from iLand???
+    /// set the stand to be managed by a given 'stp'
+    void initialize(FMSTP *stp);
+
+    void reload(); // fetch new data from the forest stand
     // general properties
     int id() const {return mId; }
     const FMUnit *unit() const { return mUnit; }
@@ -47,6 +50,17 @@ public:
 
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
+
+
+    // actions
+    /// main function
+    bool execute();
+    bool afterExecution();
+
+    /// sleep() pauses the evaluation/execution of management activities
+    /// for 'years_to_sleep'.
+    void sleep(int years_to_sleep);
+    int sleepYears() const {return mYearsToWait; }
 
     // return stand-specific flags
     ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
@@ -68,8 +82,13 @@ private:
     double mAge; ///< average age (yrs) of the stand
     double mVolume; ///< standing volume (m3/ha) of the stand
 
+    int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity
-    int nspecies() const  { mSpeciesData.count(); }
+
+    /// flags of currently active Activity
+    ActivityFlags &currentFlags()  { return flags(mCurrentIndex); }
+    Activity *currentActivity() const { return mStandFlags[mCurrentIndex].activity(); }
+    int nspecies() const  { return mSpeciesData.count(); }
     /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)
     SSpeciesStand &speciesData(const int index) {return mSpeciesData[index]; }
     SSpeciesStand &speciesData(const Species *species); ///< species-specific meta data by Species pointer
@@ -79,6 +98,8 @@ private:
     QVector<ActivityFlags> mStandFlags;
     // additional property values for each stand
     static QHash<FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
+
+    friend class StandObj;
 };
 
 
