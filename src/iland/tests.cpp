@@ -58,6 +58,7 @@
 #include "spatialanalysis.h"
 
 #include "forestmanagementengine.h"
+#include "fmstp.h"
 
 Tests::Tests(QObject *wnd)
 {
@@ -908,15 +909,29 @@ void Tests::testRumple()
 
 }
 
+AMIE::ForestManagementEngine *fome=0;
 void Tests::testFOMEsetup()
 {
-    AMIE::ForestManagementEngine *fome = new AMIE::ForestManagementEngine();
+    fome = new AMIE::ForestManagementEngine();
     //fome.test();
     try {
-    fome->setup();
+
+        AMIE::FMSTP::setVerbose(true);
+        fome->setup();
     } catch(const IException &e) {
        Helper::msg(e.message());
     }
     // todo: re-enable delete!!!
     // delete fome;
+}
+
+void Tests::testFOMEstep()
+{
+    if (!fome)
+        return;
+    int n = Helper::userValue("how many years?", "1").toInt();
+    for (int i=0;i<n;++i) {
+        qDebug()<< "running AMIE year" << i;
+        fome->run(1);
+    }
 }

@@ -561,9 +561,9 @@ void ScriptGlobal::setupGlobalScripting()
 
     // wrapper functions for (former) stand-alone javascript functions
     // Qt5 - modification
-    engine->evaluate("function print(x) { Globals.print(x); } " \
-                     "function include(x) { Globals.include(x); }" \
-                     "function alert(x) { Globals.alert(x); }");
+    engine->evaluate("function print(x) { Globals.print(x); } \n" \
+                     "function include(x) { Globals.include(x); } \n" \
+                     "function alert(x) { Globals.alert(x); } \n");
     // add a (fake) console.log
     engine->evaluate("var console = { log: function(x) {Globals.print(x); } }");
 

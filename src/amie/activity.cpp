@@ -137,8 +137,9 @@ void Events::setup(QJSValue &js_value, QStringList event_names)
 {
     foreach (QString event, event_names) {
         QJSValue val = FMSTP::valueFromJs(js_value, event, "");
-        if (val.isCallable())
-            mEvents[event] = val;
+        if (val.isCallable()) {
+            mEvents[event] = js_value;
+        }
     }
 }
 
@@ -148,7 +149,12 @@ QString Events::run(const QString event, const FMStand *stand)
         FomeScript::setExecutionContext(stand);
         if (FMSTP::verbose())
             qDebug() << "running javascript event" << event;
-        QJSValue result = mEvents[event].call();
+        QJSValue func = mEvents[event].property(event);
+        QJSValue result;
+        if (func.isCallable())
+            result = mEvents[event].callWithInstance(mEvents[event]);
+
+        //qDebug() << "event called:" << event << "result:" << result.toString();
         if (result.isError()) {
             throw IException(QString("Javascript error in event %1: %2").arg(event).arg(result.toString()));
         }

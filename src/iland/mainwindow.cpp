@@ -1718,7 +1718,8 @@ void MainWindow::on_actionTest_triggered()
                                      "18: test fire module \n" \
                                      "19: test wind module\n" \
                                      "20: test rumple index\n" \
-                                     "21: test FOME setup",-1);
+                                     "21: test FOME setup\n" \
+                                     "22: test FOME step",-1);
     switch (which) {
     case 0: t.speedOfExpression();break;
     case 1: t.clearTrees(); break;
@@ -1742,6 +1743,7 @@ void MainWindow::on_actionTest_triggered()
     case 19: t.testWind(); break;
     case 20: t.testRumple(); break;
     case 21: t.testFOMEsetup(); break;
+    case 22: t.testFOMEstep(); break;
     }
 
 }

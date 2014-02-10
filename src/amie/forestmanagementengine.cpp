@@ -76,6 +76,14 @@ void ForestManagementEngine::setupScripting()
 
 }
 
+AgentType *ForestManagementEngine::agentType(const QString &name)
+{
+    for (int i=0;i<mAgentTypes.count();++i)
+        if (mAgentTypes[i]->name()==name)
+            return mAgentTypes[i];
+    return 0;
+}
+
 void ForestManagementEngine::setup()
 {
     clear();
@@ -116,12 +124,11 @@ void ForestManagementEngine::setup()
         AgentType *at=0;
         if (!agent_codes.contains(agent_code)) {
             // create the agent / agent type
-            at = new AgentType;
+            at = agentType(agent_code);
+            if (!at)
+                throw IException(QString("Agent %1 is not set up!").arg(agent_code));
             agent = new Agent(at);
-            mAgentTypes.append(at);
             mAgents.append(agent);
-            // now set up the javascript definition of the agent type
-            at->setupSTP(agent_code);
             agent_codes.append(agent_code);
         } else {
             // simplified: one agent for all stands with the same agent....
@@ -159,6 +166,7 @@ void ForestManagementEngine::setup()
         stand_hash[mStands[i]->id()] = mStands[i];
 
     mStandGrid.setup(standGrid()->grid().cellsize(), standGrid()->grid().sizeX(), standGrid()->grid().sizeY() );
+    mStandGrid.initialize(0);
     FMStand **fm = mStandGrid.begin();
     for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
         *fm = stand_hash[*p];
@@ -191,9 +199,15 @@ void ForestManagementEngine::clear()
 
 /// this is the main function of the forest management engine.
 /// the function is called every year.
-void ForestManagementEngine::run()
+void ForestManagementEngine::run(int debug_year)
 {
-    mCurrentYear = GlobalSettings::instance()->currentYear();
+    if (debug_year>-1) {
+        mCurrentYear++;
+    } else {
+        mCurrentYear = GlobalSettings::instance()->currentYear();
+    }
+    // now re-evaluate stands
+    if (FMSTP::verbose()) qDebug() << "ForestManagementEngine: run year" << mCurrentYear;
 
 }
 
