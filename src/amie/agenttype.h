@@ -19,8 +19,9 @@ class AgentType
 public:
 
     AgentType();
+    const QString &name() const {return mName; }
     /// setup the definition of STPs for the agent
-    void setupSTP(const QString agent_name);
+    void setupSTP(QJSValue agent_code, const QString agent_name);
     /// add a unit to the list of managed units
     void addUnit(FMUnit *unit) {mUnits.push_back(unit);}
     ///
@@ -28,6 +29,7 @@ public:
     // factory functions to create agents.... (
 private:
     QString mName; // agent name
+    QJSValue mJSObj; ///< javascript object
     QHash<QString,FMSTP*> mSTP; ///< list of all STP linked to this agent type
     QVector<FMUnit*> mUnits; ///< list of units managed by the agent
 };

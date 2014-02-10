@@ -3,6 +3,7 @@
 #include "fomescript.h"
 #include "forestmanagementengine.h"
 #include "fmstp.h"
+#include "agenttype.h"
 
 namespace AMIE {
 
@@ -66,6 +67,20 @@ bool FomeScript::addManagement(QJSValue program, QString name)
         qDebug() << e.message();
         return false;
     }
+}
+
+bool FomeScript::addAgent(QJSValue program, QString name)
+{
+    try {
+        AgentType *at = new AgentType();
+        at->setupSTP(program, name);
+        ForestManagementEngine::instance()->addAgent(at);
+        return true;
+    } catch (const IException &e) {
+        qDebug() << e.message();
+        return false;
+    }
+
 }
 
 

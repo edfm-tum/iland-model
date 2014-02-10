@@ -27,6 +27,7 @@ signals:
 public slots:
     /// adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
     bool addManagement(QJSValue program, QString name);
+    bool addAgent(QJSValue program, QString name);
 private:
     StandObj *mStandObj;
     SiteObj *mSiteObj;

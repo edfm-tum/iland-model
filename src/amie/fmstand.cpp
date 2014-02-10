@@ -38,11 +38,19 @@ void FMStand::initialize(FMSTP *stp)
     mYearsToWait=0;
 
     // find out the first activity...
+    int min_years_to_wait = 100000;
     for (int i=0;i<mStandFlags.count(); ++i) {
         // set active to false which have already passed
-        if (mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age())
+        if (mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age()) {
             mStandFlags[i].setActive(false);
+        } else {
+            int delta = mStandFlags[i].activity()->earlistSchedule(stp->rotationLength()) - age();
+            if (delta>0 && delta<min_years_to_wait)
+                min_years_to_wait = delta;
+        }
     }
+    if (min_years_to_wait<100000)
+        sleep(min_years_to_wait);
 
     // call onInit handler on the level of the STP
     stp->events().run("onInit", this);

@@ -34,7 +34,7 @@ public:
     void clear(); ///< delete all objects and free memory
 
     // main function
-    void run();
+    void run(int debug_year=-1);
 
     // properties
     int currentYear() { return mCurrentYear; }
@@ -44,6 +44,7 @@ public:
     Scheduler &scheduler() {return mScheduler; }
 
     void addSTP(FMSTP* stp) { mSTP.push_back(stp);}
+    void addAgent(AgentType* at) { mAgentTypes.push_back(at);}
     /// retrieve pointer to stand treatment programme. return 0-pointer if not available.
     FMSTP *stp(QString stp_name) const;
     //QVector<FMStand*> stands() const {return mStands; }
@@ -57,6 +58,7 @@ public:
 
 private:
     void setupScripting();
+    AgentType *agentType(const QString &name);
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
     Scheduler mScheduler;
