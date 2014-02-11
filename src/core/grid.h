@@ -151,7 +151,8 @@ private:
 
 typedef Grid<float> FloatGrid;
 
-enum GridViewType { GridViewRainbow, GridViewRainbowReverse, GridViewGray, GridViewGrayReverse };
+enum GridViewType { GridViewRainbow=0, GridViewRainbowReverse=1, GridViewGray=2, GridViewGrayReverse=3, GridViewHeat=14,
+                    GridViewBrewerDiv=10, GridViewBrewerQual=11, GridViewTerrain=12  };
 
 /** @class GridRunner is a helper class to iterate over a rectangular fraction of a grid
 */

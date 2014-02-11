@@ -64,7 +64,7 @@ class WindLayers: public LayeredGrid<WindCell> {
   public:
     void setGrid(const Grid<WindCell> &grid) { mGrid = &grid; }
     double value(const WindCell& data, const int index) const;
-    const QStringList names() const;
+    const QVector<LayerElement> names() const;
     // specifics for wind layers
     void setRUGrid(const Grid<WindRUCell> *grid) { mRUGrid = grid; }
 private:

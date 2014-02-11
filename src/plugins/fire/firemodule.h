@@ -106,7 +106,7 @@ class FireLayers: public LayeredGrid<FireRUData> {
   public:
     void setGrid(const Grid<FireRUData> &grid) { mGrid = &grid; }
     double value(const FireRUData& data, const int index) const;
-    const QStringList names() const;
+    const QVector<LayeredGridBase::LayerElement> names() const;
 };
 /** FireModule is the main class of the fire sub module.
     @ingroup firemodule

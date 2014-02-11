@@ -9,10 +9,16 @@
 
 double AMIELayers::value(const FMStandPtr &data, const int index) const
 {
-    if (!data) return 0;
+    if (data == 0) return 0;
     switch (index) {
-    case 0: return data->id(); // "id"
-    case 1: return data->unit()->index(); // "unit"
+    case 0:
+        if(!mStandIndex.contains(data->id()))
+            mStandIndex[data->id()] = mStandIndex.count();
+        return mStandIndex[data->id()]; // "id"
+    case 1:
+        if(!mUnitIndex.contains(data->unit()->id()))
+            mUnitIndex[data->unit()->id()] = mUnitIndex.count();
+        return mUnitIndex[data->unit()->id()]; // unit
     case 2: return 0; // "agent"
     case 3: return data->volume(); // "volume"
     case 4: return data->basalArea(); // "basalArea"
@@ -22,12 +28,37 @@ double AMIELayers::value(const FMStandPtr &data, const int index) const
     }
 }
 
-const QStringList AMIELayers::names() const
+const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
 {
-    return QStringList() << "id" << "unit" << "agent" << "volume" << "basalArea" << "age" << "next evaluation";
+    return QVector<LayeredGridBase::LayerElement>()
+            << LayeredGridBase::LayerElement(QLatin1Literal("id"), QLatin1Literal("stand ID"), GridViewBrewerDiv)
+            << LayeredGridBase::LayerElement(QLatin1Literal("unit"), QLatin1Literal("ID of the management unit"), GridViewBrewerDiv)
+            << LayeredGridBase::LayerElement(QLatin1Literal("agent"), QLatin1Literal("managing agent"), GridViewBrewerDiv)
+            << LayeredGridBase::LayerElement(QLatin1Literal("volume"), QLatin1Literal("stocking volume (m3/ha)"), GridViewRainbow)
+            << LayeredGridBase::LayerElement(QLatin1Literal("basalArea"), QLatin1Literal("stocking basal area (m2/ha)"), GridViewRainbow)
+            << LayeredGridBase::LayerElement(QLatin1Literal("age"), QLatin1Literal("stand age"), GridViewTerrain)
+            << LayeredGridBase::LayerElement(QLatin1Literal("next evaluation"), QLatin1Literal("years until the next evaluation"), GridViewHeat);
+}
+
+const QString AMIELayers::labelvalue(const int value, const int index) const
+{
+    switch(index) {
+    case 0: // stand id
+        return QString::number(mStandIndex.key(value));
+    case 1: // unit
+        return mUnitIndex.key(value);
+    default: return QString::number(value);
+    }
 }
 
 void AMIELayers::registerLayers()
 {
     GlobalSettings::instance()->controller()->addLayers(this, "AMIE");
+}
+
+void AMIELayers::clearClasses()
+{
+    mAgentIndex.clear();
+    mStandIndex.clear();
+    mUnitIndex.clear();
 }
