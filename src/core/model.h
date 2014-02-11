@@ -70,6 +70,7 @@ public:
     void afterStop(); ///< finish and cleanup
 
     // access to elements
+    const ThreadRunner &threadExec() const {return threadRunner; }
     const QRectF &extent() const { return mModelRect; } ///< extent of the model (without buffer)
     ResourceUnit *ru() { return mRU.front(); }
     ResourceUnit *ru(QPointF coord); ///< ressource unit at given coordinates

@@ -311,6 +311,8 @@ Activity::Activity(const FMSTP *parent)
     mProgram = parent;
     mIndex = 0;
     mBaseActivity = ActivityFlags(this);
+    mBaseActivity.setActive(true);
+    mBaseActivity.setEnabled(true);
 }
 
 Activity::~Activity()
