@@ -20,6 +20,7 @@
 #ifndef THREADRUNNER_H
 #define THREADRUNNER_H
 #include <QList>
+#include <QtConcurrent/QtConcurrent>
 class ResourceUnit;
 class Species;
 class ThreadRunner
@@ -37,10 +38,27 @@ public:
     // actions
     void run( ResourceUnit* (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for all resource units in parallel
     void run( Species* (*funcptr)(Species*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for set of species in parallel
+    template<class T> void run(T* (*funcptr)(T*), const QVector<T*> &container, const bool forceSingleThreaded=false) const;
 private:
     QList<ResourceUnit*> mMap1, mMap2;
     QList<Species*> mSpeciesMap;
     static bool mMultithreaded;
 };
+
+// multirunning function
+template<class T>
+void ThreadRunner::run(T *(*funcptr)(T *), const QVector<T *> &container, const bool forceSingleThreaded) const
+{
+    if (mMultithreaded && container.count() > 3 && forceSingleThreaded==false) {
+        // execute using QtConcurrent for larger amounts of elements
+        QtConcurrent::blockingMap(container,funcptr);
+    } else {
+        // execute serialized in main thread
+        T *element;
+        foreach(element, container)
+            (*funcptr)(element);
+    }
+
+}
 
 #endif // THREADRUNNER_H

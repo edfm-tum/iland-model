@@ -21,6 +21,7 @@
 #include "model.h"
 #include "mapgrid.h"
 #include "helper.h"
+#include "threadrunner.h"
 
 
 namespace AMIE {
@@ -172,6 +173,7 @@ void ForestManagementEngine::setup()
         *fm = stand_hash[*p];
 
     mStandLayers.setGrid(mStandGrid);
+    mStandLayers.clearClasses();
     mStandLayers.registerLayers();
 
     // now initialize the agents....
@@ -195,6 +197,20 @@ void ForestManagementEngine::clear()
     mAgentTypes.clear();
     qDeleteAll(mSTP);
     mSTP.clear();
+    mCurrentYear = 0;
+}
+
+
+FMUnit *nc_execute_unit(FMUnit *unit)
+{
+    //qDebug() << "called for unit" << unit;
+    const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
+    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
+    while (it!=stand_map.constEnd() && it.key()==unit) {
+        it.value()->execute();
+        ++it;
+    }
+    return unit;
 }
 
 /// this is the main function of the forest management engine.
@@ -208,6 +224,8 @@ void ForestManagementEngine::run(int debug_year)
     }
     // now re-evaluate stands
     if (FMSTP::verbose()) qDebug() << "ForestManagementEngine: run year" << mCurrentYear;
+
+    GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits);
 
 }
 
@@ -345,6 +363,7 @@ FMSTP *ForestManagementEngine::stp(QString stp_name) const
             return *it;
     return 0;
 }
+
 
 
 } // namespace

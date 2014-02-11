@@ -68,7 +68,6 @@ void AgentType::setup()
 
             }
             stand->initialize(stp);
-            stand->afterExecution(); // find out the next activity
 
             ++it;
         }

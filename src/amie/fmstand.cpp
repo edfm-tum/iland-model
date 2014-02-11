@@ -26,7 +26,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mAge = 0.;
     mTotalBasalArea = 0.;
 
-    mCurrentIndex=0;
+    mCurrentIndex=-1;
 }
 
 void FMStand::initialize(FMSTP *stp)
@@ -40,13 +40,17 @@ void FMStand::initialize(FMSTP *stp)
     // find out the first activity...
     int min_years_to_wait = 100000;
     for (int i=0;i<mStandFlags.count(); ++i) {
+        if (!mStandFlags[i].enabled() || !mStandFlags[i].active())
+            continue;
         // set active to false which have already passed
         if (mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age()) {
             mStandFlags[i].setActive(false);
         } else {
             int delta = mStandFlags[i].activity()->earlistSchedule(stp->rotationLength()) - age();
-            if (delta>0 && delta<min_years_to_wait)
-                min_years_to_wait = delta;
+            if (delta<min_years_to_wait) {
+                min_years_to_wait = qMax(delta,0); // limit to 0 years
+                mCurrentIndex = i; // first activity to execute
+            }
         }
     }
     if (min_years_to_wait<100000)
@@ -154,7 +158,7 @@ bool FMStand::afterExecution()
 
 void FMStand::sleep(int years_to_sleep)
 {
-    mYearsToWait = qMax(mYearsToWait, years_to_sleep);
+    mYearsToWait = qMax(mYearsToWait, qMax(years_to_sleep,0));
 }
 
 double FMStand::basalArea(const QString &species_id) const
