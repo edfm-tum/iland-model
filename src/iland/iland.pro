@@ -145,7 +145,8 @@ SOURCES += main.cpp \
     ../amie/actgeneral.cpp \
     ../amie/treelist.cpp \
     ../amie/amiegrid.cpp \
-    ../amie/scheduler.cpp
+    ../amie/scheduler.cpp \
+    ../tools/colors.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -235,7 +236,8 @@ HEADERS += mainwindow.h \
     ../amie/actgeneral.h \
     ../amie/treelist.h \
     ../amie/amiegrid.h \
-    ../amie/scheduler.h
+    ../amie/scheduler.h \
+    ../tools/colors.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc

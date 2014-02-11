@@ -13,9 +13,14 @@ class AMIELayers: public LayeredGrid<FMStandPtr> {
   public:
     void setGrid(Grid<FMStandPtr> &grid) { mGrid = &grid; }
     double value(const FMStandPtr &data, const int index) const;
-    const QStringList names() const;
+    const QVector<LayeredGridBase::LayerElement> names() const;
+    const QString labelvalue(const int value, const int index) const;
     void registerLayers();
+    void clearClasses(); // clear ID and agent classes...
 private:
+    QHash<QString, int> mAgentIndex;
+    mutable QHash<QString, int> mUnitIndex;
+    mutable QHash<int, int> mStandIndex;
 };
 
 #endif // AMIEGRID_H

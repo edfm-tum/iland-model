@@ -31,13 +31,32 @@
 class LayeredGridBase
 {
 public:
+    // layer description element
+    class LayerElement {
+    public:
+        LayerElement() {}
+        LayerElement(QLatin1Literal aname, QLatin1Literal adesc, GridViewType type): name(aname), description(adesc), view_type(type) {}
+        QString name;
+        QString description;
+        GridViewType view_type;
+    };
+
     // access to properties
     virtual int sizeX() const=0;
     virtual int sizeY() const=0;
     virtual QRectF metricRect() const=0;
     virtual QRectF cellRect(const QPoint &p) const=0;
     // available variables
-    virtual const QStringList names() const=0;
+    /// list of stored layers
+    virtual const QVector<LayeredGridBase::LayerElement> names() const=0;
+    /// get layer index by name of the layer. returns -1 if layer is not available.
+    virtual int indexOf(const QString &layer_name) const
+    {
+        for(int i=0;i<names().count();++i)
+            if (names().at(i).name == layer_name)
+                return i;
+        return -1;
+    }
     // statistics
     /// retrieve min and max of variable 'index'
     virtual void range(double &rMin, double &rMax, const int index) const=0;
@@ -47,6 +66,14 @@ public:
     virtual double value(const QPointF &world_coord, const int index) const = 0;
     virtual double value(const int ix, const int iy, const int index) const = 0;
     virtual double value(const int grid_index, const int index) const = 0;
+    // for classified values
+    virtual const QString labelvalue(const int value, const int index) const
+    {
+        Q_UNUSED(value)
+        Q_UNUSED(index)
+        return QLatin1Literal("-");
+    }
+
 };
 
 /** \class LayeredGrid is a template for multi-layered grids in iLand.
@@ -70,7 +97,7 @@ public:
     double value(const T* ptr, const int index) const { return value(mGrid->constValueAtIndex(mGrid->indexOf(ptr)), index);  }
     double value(const int grid_index, const int index) const { return value(mGrid->constValueAtIndex(grid_index), index); }
     double value(const float x, const float y, const int index) const { return value(mGrid->constValueAt(x,y), index); }
-    double value(const QPointF &world_coord, const int index) const { return value(mGrid->constValueAt(world_coord), index); }
+    double value(const QPointF &world_coord, const int index) const { return mGrid->coordValid(world_coord)?value(mGrid->constValueAt(world_coord), index) : 0.; }
     double value(const int ix, const int iy, const int index) const { return value(mGrid->constValueAtIndex(ix, iy), index); }
     void range(double &rMin, double &rMax, const int index) const { rMin=9999999999.; rMax=-99999999999.;
                                                               for (int i=0;i<mGrid->count(); ++i) {
@@ -89,7 +116,7 @@ void modelToWorld(const Vector3D &From, Vector3D &To);
 template <class T>
     QString gridToESRIRaster(const LayeredGrid<T> &grid, const QString name)
 {
-        int index = grid.names().indexOf(name);
+        int index = grid.indexOf(name);
         if (index<0)
             return QString();
         Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
@@ -115,4 +142,7 @@ template <class T>
 }
 
 
+
 #endif // LAYEREDGRID_H
+
+

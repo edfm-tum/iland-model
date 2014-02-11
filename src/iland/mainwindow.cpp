@@ -38,6 +38,7 @@
 
 #include "exception.h"
 #include "helper.h"
+#include "colors.h"
 #include "debugtimer.h"
 #include "statdata.h"
 
@@ -437,12 +438,13 @@ void MainWindow::updatePaintGridList()
 
 void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
 {
-    const QStringList names = layer->names();
+    const QVector<LayeredGridBase::LayerElement> names = layer->names();
     int layer_id = 0;
-    foreach (const QString &layername, names) {
-        QString comb_name = QString("%1 - %2").arg(name, layername);
+    foreach (const LayeredGridBase::LayerElement &layername, names) {
+        QString comb_name = QString("%1 - %2").arg(name, layername.name);
         PaintObject po;
         po.what = PaintObject::PaintLayers;
+        po.view_type = layername.view_type;
         po.layered = layer;
         po.layer_id = layer_id++;
         po.auto_range = true;
@@ -580,7 +582,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 world = vp.toWorld(QPoint(x,y));
                 if (grid->coordValid(world)) {
                     value = grid->valueAt(world);
-                    col = Helper::colorFromValue(value, 0., maxval, true).rgb();
+                    col = Colors::colorFromValue(value, 0., maxval, true).rgb();
                     img.setPixel(x,y,col);
                 }
             }
@@ -618,7 +620,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 world = vp.toWorld(QPoint(x,y));
                 if (mRegenerationGrid.coordValid(world)) {
                     value = mRegenerationGrid.valueAt(world);
-                    col = Helper::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
+                    col = Colors::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
                     img.setPixel(x,y,col);
                 }
             }
@@ -639,7 +641,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 if (hgv.isValid()) {
                     value = domGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(domGrid->cellRect(p));
-                    fill_color = Helper::colorFromValue(value, 0., max_val); // 0..50m
+                    fill_color = Colors::colorFromValue(value, 0., max_val); // 0..50m
                     painter.fillRect(r, fill_color);
                 }
                 // areas "outside" are drawn as gray.
@@ -684,7 +686,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             ru_wrapper.setResourceUnit(ru);
             QRect r = vp.toScreen(ru->boundingBox());
             value = ru_value.execute();
-            fill_color = Helper::colorFromValue(value, min_value, max_value);
+            fill_color = Colors::colorFromValue(value, min_value, max_value);
             painter.fillRect(r, fill_color);
         }
         if (!ru_value.lastError().isEmpty())
@@ -741,7 +743,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 // calculate expression
                 tw.setTree(tree);
                 value = tree_value.execute();
-                fill_color = Helper::colorFromValue(value, 0., 1., false);
+                fill_color = Colors::colorFromValue(value, 0., 1., false);
             }
             if (draw_transparent)
                 fill_color.setAlpha(80); // 50%
@@ -801,8 +803,6 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     painter.setPen(Qt::black);
     painter.drawRect(total_rect);
 
-    bool reverse = object.view_type == GridViewRainbowReverse || object.view_type == GridViewGrayReverse;
-    bool black_white = object.view_type == GridViewGray || object.view_type == GridViewGrayReverse;
 
     int ix,iy;
     double value=0.;
@@ -834,7 +834,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
             if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(pmetric).isValid()) {
                 fill_color = Qt::white;
             } else {
-                fill_color = Helper::colorFromValue(value, object.cur_min_value, object.cur_max_value, reverse,black_white);
+                fill_color = Colors::colorFromValue(value, object.view_type, object.cur_min_value, object.cur_max_value);
             }
             painter.fillRect(r, fill_color);
         }
@@ -888,7 +888,7 @@ void MainWindow::paintMapGrid(QPainter &painter,
                 value = float_grid->constValueAtIndex(p);
                 r = vp.toScreen(float_grid->cellRect(p));
             }
-            fill_color = Helper::colorFromValue(value, min_val, max_val, reverse,black_white);
+            fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
             painter.fillRect(r, fill_color);
         }
     }
@@ -1029,6 +1029,12 @@ void MainWindow::mouseMove(const QPoint& pos)
                 break;
             case PaintObject::PaintLayers:
                 value = mPaintNext.layered->value(p, mPaintNext.layer_id);
+                if (mPaintNext.view_type>=10) {// classes
+                   location += QString("\n %1").arg(mPaintNext.layered->labelvalue(value, mPaintNext.layer_id));
+                   ui->fonValue->setText(location);
+                   return;
+                }
+
                 break;
             default: has_value = false;
             }
