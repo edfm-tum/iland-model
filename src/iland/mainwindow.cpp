@@ -20,6 +20,9 @@
 #include <QtCore>
 #include <QtWidgets>
 #include <QtXml>
+#include <QQuickView>
+#include <QQmlEngine>
+#include <QQmlContext>
 
 #include <signal.h>
 
@@ -311,6 +314,16 @@ MainWindow::MainWindow(QWidget *parent)
     if (QApplication::arguments().contains("run")) {
         QTimer::singleShot(3000, this, SLOT(automaticRun()));
     }
+
+    // qml setup
+    QQuickView *view = new QQuickView();
+    mRuler = view;
+    QWidget *container = QWidget::createWindowContainer(view, this);
+    Colors *colors = new Colors();
+    view->engine()->rootContext()->setContextProperty("rulercolors", colors);
+    view->setSource(QUrl::fromLocalFile("qml/ruler.qml"));
+    //view->show();
+    ui->qmlRulerLayout->addWidget(container);
 
 }
 
@@ -1752,4 +1765,14 @@ void MainWindow::on_actionTest_triggered()
     case 22: t.testFOMEstep(); break;
     }
 
+}
+
+void MainWindow::on_pbReloadQml_clicked()
+{
+//engine()->clearComponentCache();
+    //setSource(source());
+    if (!mRuler)
+        return;
+    mRuler->engine()->clearComponentCache();
+    mRuler->setSource(mRuler->source());
 }
