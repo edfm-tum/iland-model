@@ -5,6 +5,8 @@ QT += xml
 QT += qml
 QT += sql
 QT += widgets
+# quick: for QML based user interface
+QT += quick
 
 TARGET = iland
 TEMPLATE = app
@@ -253,7 +255,8 @@ RESOURCES += ./res/iland.qrc
 # revtarget.depends = $$SOURCES \
 # $$HEADERS \
 # $$FORMS
-OTHER_FILES += maindoc.cpp
+OTHER_FILES += maindoc.cpp \
+    qml/ruler.qml
 
 
 

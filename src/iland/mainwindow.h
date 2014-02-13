@@ -34,11 +34,13 @@
 #include "paintarea.h"
 #include "viewport.h"
 
+class QQuickView;
 class Model;
 class Tree;
 class ResourceUnit;
 class MapGrid;
 class LayeredGridBase;
+
 
 namespace Ui
 {
@@ -80,6 +82,7 @@ private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
     QLabel *mStatusLabel;
+    QQuickView *mRuler;
     // setup
     void labelMessage(const QString message) { if (mStatusLabel) mStatusLabel->setText(message);}
     void setupModel();
@@ -173,6 +176,7 @@ private slots:
     void on_scriptCommandHistory_currentIndexChanged(int index);
     void on_paintGridBox_currentIndexChanged(int index);
     void on_actionTest_triggered();
+    void on_pbReloadQml_clicked();
 };
 
 #endif // MAINWINDOW_H

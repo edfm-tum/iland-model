@@ -14,8 +14,29 @@ QVector<QColor> Colors::mTerrainCol = QVector<QColor>() << QColor("#00A600") << 
                                                        << QColor("#ADD900") << QColor("#E6E600") << QColor("#E8C727") << QColor("#EAB64E")
                                                        << QColor("#ECB176") << QColor("#EEB99F") << QColor("#F0CFC8") <<  QColor("#F2F2F2");
 
-Colors::Colors()
+void Colors::setPalette(const GridViewType type, const float min_val, const float max_val)
 {
+    int n = 50;
+    if (type >= GridViewBrewerDiv)
+        n=12;
+    mColors.clear();
+    for (int i=0;i<n;++i)
+        mColors.append(colorFromValue(i/double(n), type, 0., 1.).name());
+
+    mLabels = QStringList() << QString::number(min_val)
+                                 << QString::number((3*min_val + max_val)/4)
+                                 << QString::number((min_val+max_val/2))
+                                 << QString::number((min_val + 3*max_val)/4)
+                                 << QString::number(max_val);
+    emit colorsChanged();
+}
+
+Colors::Colors(QWidget *parent): QObject(parent)
+{
+    setPalette(GridViewRainbow, 0, 1);
+    mMinValue = 0.;
+    mMaxValue = 1.;
+    mCurrentType = GridViewRainbow;
 }
 
 QColor Colors::colorFromPalette(const int value, const GridViewType view_type)
