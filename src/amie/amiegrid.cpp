@@ -36,7 +36,7 @@ const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
             << LayeredGridBase::LayerElement(QLatin1Literal("agent"), QLatin1Literal("managing agent"), GridViewBrewerDiv)
             << LayeredGridBase::LayerElement(QLatin1Literal("volume"), QLatin1Literal("stocking volume (m3/ha)"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QLatin1Literal("basalArea"), QLatin1Literal("stocking basal area (m2/ha)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("age"), QLatin1Literal("stand age"), GridViewTerrain)
+            << LayeredGridBase::LayerElement(QLatin1Literal("age"), QLatin1Literal("stand age"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QLatin1Literal("next evaluation"), QLatin1Literal("years until the next evaluation"), GridViewHeat);
 }
 

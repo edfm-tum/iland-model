@@ -1,113 +1,219 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.1
+import QtQuick.Layouts 1.1
 
 Rectangle {
     width: 250
-    height: 600
-    Text {
-        id: name
-        text: qsTr("Hello from QML!!!")
-    }
-    SpinBox {
-        id: minValueSpin
-        decimals: 2
-        minimumValue: -10000
-        maximumValue: 1000000
-        width: 80
-        value: rulercolors.minValue
-        onValueChanged: rulercolors.minValue = value
-    }
-    SpinBox {
-        id: maxValueSpin
-        decimals: 2
-        width: 80
-        minimumValue: -10000
-        maximumValue: 1000000
-        value: rulercolors.maxValue
-        anchors.left: minValueSpin.right
-        anchors.leftMargin: 10
-        onValueChanged: rulercolors.maxValue = value
-    }
+    height: 400
+    //anchors.fill: parent
+    //color:  "gray"
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 10
+        spacing: 10
 
-   /* Rectangle
-        id: rectangle
-        color: "#978c8c"
-        width: 200
-        height: 200
-        anchors.top: name.top
+        ColumnLayout{
 
-        Text {
-            id: text
-            text: "This is QML code.\n(Click to pause)"
-            font.pointSize: 14
-            anchors.centerIn: parent
-            PropertyAnimation {
-                id: animation
-                target: text
-                property: "rotation"
-                from: 0; to: 360; duration: 5000
-                loops: Animation.Infinite
+            Text {
+                id: rulerCaption
+                text: rulercolors.caption
+                font.pixelSize: 16
             }
+            Text {
+                id: rulerDesc
+                text: rulercolors.description
+                width: 100
+                anchors.top: rulerCaption.bottom
+                anchors.topMargin: 10
+
+            }
+            Rectangle { height: 10}
+
         }
-        MouseArea {
-            anchors.fill: parent
-            onClicked: if (animation.paused) { animation.resume();text.text = text.text.concat("!") } else animation.pause()
-        }
-        Component.onCompleted: animation.start()
-    }*/
-    Column {
-        id: colorRamp
-        anchors.topMargin: 10
-        y: 60
-        Repeater {
-            //model: ["yellow", "red", "green", "darkgrey", "blue","yellow", "red", "green", "darkgrey", "blue", "darkgrey", "blue"]
-            model: rulercolors.colors
+        Rectangle {
+            //color: "#ea6b6b"
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+
+
             Rectangle {
-                width: 60; height: 150 / rulercolors.count
-                color: modelData
+                visible: !rulercolors.hasFactors
+                anchors.margins: 5
+                anchors.leftMargin: 20
+                anchors.topMargin: 10
+                anchors.fill: parent
+
+
+                Item {
+                    id: details
+                    anchors.topMargin: 10
+                    SpinBox {
+                        id: minValueSpin
+                        decimals: 2
+                        minimumValue: -10000
+                        maximumValue: 1000000
+                        width: 80
+                        value: rulercolors.minValue
+                        onValueChanged: rulercolors.minValue = value
+                    }
+                    SpinBox {
+                        id: maxValueSpin
+                        decimals: 2
+                        width: 80
+                        minimumValue: -10000
+                        maximumValue: 1000000
+                        value: rulercolors.maxValue
+                        anchors.left: minValueSpin.right
+                        anchors.leftMargin: 10
+                        onValueChanged: rulercolors.maxValue = value
+                    }
+                }
+
+                Column {
+                    id: colorRamp
+                    anchors.topMargin: 40
+                    anchors.top: details.bottom
+
+                    Repeater {
+                        //model: ["yellow", "red", "green", "darkgrey", "blue","yellow", "red", "green", "darkgrey", "blue", "darkgrey", "blue"]
+                        model: rulercolors.colors
+                        Rectangle {
+                            width: 60; height: 150 / rulercolors.count
+                            color: modelData
+                        }
+                    }
+                }
+                Text {
+                    id: maxValue
+                    text: rulercolors.labels[4]
+                    anchors.left: colorRamp.right
+                    anchors.top: colorRamp.top
+                    anchors.topMargin: -height/2
+                    anchors.leftMargin: 5
+                }
+                Text {
+                    id: upperQuartileValue
+                    text: rulercolors.labels[3]
+                    anchors.left: colorRamp.right
+                    anchors.top:  colorRamp.top
+                    anchors.topMargin: colorRamp.height/4 - height/2
+                    anchors.leftMargin: 5
+                    visible: colorRamp.height>100
+                }
+                Text {
+                    id: centerValue
+                    text: rulercolors.labels[2]
+                    anchors.left: colorRamp.right
+                    anchors.verticalCenter:  colorRamp.verticalCenter
+                    anchors.topMargin: height/2
+                    anchors.leftMargin: 5
+                }
+                Text {
+                    id: lowerQuartileValue
+                    text: rulercolors.labels[1]
+                    anchors.left: colorRamp.right
+                    anchors.top:  colorRamp.top
+                    anchors.topMargin: colorRamp.height*3/4 - height/2
+                    anchors.leftMargin: 5
+                    visible: colorRamp.height>100
+                }
+                Text {
+                    id: minValue
+                    text: rulercolors.labels[0]
+                    anchors.left: colorRamp.right
+                    anchors.bottom: colorRamp.bottom
+                    anchors.topMargin: height/2
+                    anchors.leftMargin: 5
+                }
+            }
+            ScrollView {
+                visible: rulercolors.hasFactors
+                id: palFactorsList
+
+                anchors.fill: parent
+                anchors.leftMargin: 20
+
+                ListView {
+                    anchors.fill: parent
+                    model: rulercolors.factorLabels
+                    delegate: Rectangle {
+                        height: 25
+                        width: 200
+                        Rectangle {
+                            id: delColorRect
+                            height: 20; width: 50
+                            color: rulercolors.colors[index]
+                        }
+
+                        Text { text: modelData
+                            anchors.top: delColorRect.top;
+                            anchors.left: delColorRect.right;
+                            anchors.verticalCenter: delColorRect.verticalCenter;
+                            anchors.leftMargin: 5
+                        }
+                    }
+                }
             }
         }
+
+        Rectangle {
+
+            id: scale
+            height: 40
+
+            //color: "grey"
+            width: parent.width
+            Text {
+                //text: "Meter/px:" + rulercolors.meterPerPixel
+                text: "0m"
+                height: 20
+                anchors.top: scale.top
+                anchors.topMargin: 30
+            }
+
+
+            Row{
+
+                anchors.top: scale.top
+                anchors.topMargin: 10
+
+
+                Repeater {
+                    id: scaleRep
+                    width: parent.width
+                    model: 4
+                    property real cellWidth
+                    cellWidth: { var n = rulercolors.meterPerPixel*60;
+                                 var sig=1;
+                                 var mult = Math.pow(10, sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+                                 var s= Math.round(n * mult) / mult;
+                                 //console.log("n: " + n + " s: " + s);
+                                 return s / rulercolors.meterPerPixel;
+                               }
+                    Item {
+                        width: scaleRep.cellWidth
+                        height: 30
+                        Rectangle {
+                            width: scaleRep.cellWidth
+                            height: 20
+                            border.width: 1
+                            border.color: "#808080"
+                            color: index % 2==1?"#808080":"#a0a0a0"
+                        }
+                        Text {
+                            text: Math.round(parent.width * (modelData+1) * rulercolors.meterPerPixel)
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.topMargin: 20
+                            anchors.leftMargin: scaleRep.cellWidth-contentWidth/2
+
+                        }
+                    }
+                }
+            }
+
+        }
     }
-    Text {
-        id: maxValue
-        text: rulercolors.labels[4]
-        anchors.left: colorRamp.right
-        anchors.top: colorRamp.top
-        anchors.topMargin: -height/2
-        anchors.leftMargin: 5
-    }
-    Text {
-        id: upperQuartileValue
-        text: rulercolors.labels[3]
-        anchors.left: colorRamp.right
-        anchors.top:  colorRamp.top
-        anchors.topMargin: colorRamp.height/4 - height/2
-        anchors.leftMargin: 5
-        visible: colorRamp.height>100
-    }
-    Text {
-        id: centerValue
-        text: rulercolors.labels[2]
-        anchors.left: colorRamp.right
-        anchors.verticalCenter:  colorRamp.verticalCenter
-        anchors.topMargin: height/2
-        anchors.leftMargin: 5
-    }
-    Text {
-        id: lowerQuartileValue
-        text: rulercolors.labels[1]
-        anchors.left: colorRamp.right
-        anchors.top:  colorRamp.top
-        anchors.topMargin: colorRamp.height*3/4 - height/2
-        anchors.leftMargin: 5
-        visible: colorRamp.height>100
-    }
-    Text {
-        id: minValue
-        text: rulercolors.labels[0]
-        anchors.left: colorRamp.right
-        anchors.bottom: colorRamp.bottom
-        anchors.topMargin: height/2
-        anchors.leftMargin: 5
-    }
+
 }

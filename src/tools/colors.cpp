@@ -16,27 +16,63 @@ QVector<QColor> Colors::mTerrainCol = QVector<QColor>() << QColor("#00A600") << 
 
 void Colors::setPalette(const GridViewType type, const float min_val, const float max_val)
 {
-    int n = 50;
-    if (type >= GridViewBrewerDiv)
-        n=12;
-    mColors.clear();
-    for (int i=0;i<n;++i)
-        mColors.append(colorFromValue(i/double(n), type, 0., 1.).name());
+    if (type==mCurrentType && minValue()==min_val && maxValue()==max_val && mNeedsPaletteUpdate==false)
+        return;
 
+    mHasFactors = false;
+    int n = 50;
+    if (type >= GridViewBrewerDiv) {
+        // categorical values...
+        mHasFactors = true;
+        n=mFactorLabels.size();
+        if (mFactorLabels.isEmpty()) {
+            n=max_val;
+            mFactorLabels.clear();
+            for (int i=0;i<n;++i)
+                mFactorLabels.append(QString("Label %1").arg(i));
+        }
+    }
+    if (type != GridViewCustom) {
+        mColors.clear();
+        for (int i=0;i<n;++i)
+            if (mHasFactors)
+                mColors.append(colorFromValue(i, type, 0., 1.).name());
+            else
+                mColors.append(colorFromValue(1. - i/double(n), type, 0., 1.).name());
+
+    }
     mLabels = QStringList() << QString::number(min_val)
-                                 << QString::number((3*min_val + max_val)/4)
-                                 << QString::number((min_val+max_val/2))
-                                 << QString::number((min_val + 3*max_val)/4)
-                                 << QString::number(max_val);
+                            << QString::number((3*min_val + max_val)/4)
+                            << QString::number((min_val+max_val/2))
+                            << QString::number((min_val + 3*max_val)/4)
+                            << QString::number(max_val);
+
+    if (mAutoScale) {
+        mMinValue = min_val;
+        mMaxValue = max_val;
+    }
+    mCurrentType = type;
+    mNeedsPaletteUpdate = false;
     emit colorsChanged();
+}
+
+void Colors::setFactorLabels(QStringList labels)
+{
+    mFactorLabels = labels;
+    mNeedsPaletteUpdate = true;
 }
 
 Colors::Colors(QWidget *parent): QObject(parent)
 {
-    setPalette(GridViewRainbow, 0, 1);
-    mMinValue = 0.;
-    mMaxValue = 1.;
-    mCurrentType = GridViewRainbow;
+    mNeedsPaletteUpdate =true;
+    mAutoScale = true;
+    mHasFactors = false;
+    mMeterPerPixel = 1.;
+    //default start palette
+    //setPalette(GridViewRainbow, 0, 1);
+    // factors test
+    setCaption("-");
+    setPalette(GridViewTerrain, 0, 4);
 }
 
 QColor Colors::colorFromPalette(const int value, const GridViewType view_type)
