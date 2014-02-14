@@ -242,7 +242,8 @@ HEADERS += mainwindow.h \
     ../tools/colors.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
-RESOURCES += ./res/iland.qrc
+RESOURCES += ./res/iland.qrc \
+    qml_res.qrc
 
 # QMAKE_EXTRA_TARGETS += revtarget
 # PRE_TARGETDEPS += version.h

@@ -319,11 +319,15 @@ MainWindow::MainWindow(QWidget *parent)
     QQuickView *view = new QQuickView();
     mRuler = view;
     QWidget *container = QWidget::createWindowContainer(view, this);
-    Colors *colors = new Colors();
-    view->engine()->rootContext()->setContextProperty("rulercolors", colors);
-    view->setSource(QUrl::fromLocalFile("qml/ruler.qml"));
+    mRulerColors = new Colors();
+    view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
+    view->setResizeMode(QQuickView::SizeRootObjectToView);
+    //view->setSource(QUrl::fromLocalFile("qml/ruler.qml"));
+    view->setSource(QUrl("qrc:/qml/ruler.qml"));
     //view->show();
     ui->qmlRulerLayout->addWidget(container);
+//    QDir d(":/qml");
+//    qDebug() << d.entryList();
 
 }
 
@@ -584,6 +588,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     if (show_fon ) {
 
         // start from each pixel and query value in grid for the pixel
+        mRulerColors->setCaption("Light Influence Field", "value of the LIF at 2m resolution.");
+        mRulerColors->setPalette(GridViewRainbow,0., maxval); // ruler
         int x,y;
         int sizex = rect.width();
         int sizey = rect.height();
@@ -623,6 +629,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
         // start from each pixel and query value in grid for the pixel
         int x,y;
+        mRulerColors->setCaption("Regeneration Layer", "max. tree height of regeneration layer (blue=0m, red=4m)");
+        mRulerColors->setPalette(GridViewRainbow,0., 4.); // ruler
         int sizex = rect.width();
         int sizey = rect.height();
         QPointF world;
@@ -647,6 +655,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             for (HeightGridValue *v = domGrid->begin(); v!=domGrid->end(); ++v)
                 max_val = qMax(max_val, v->height);
         }
+        mRulerColors->setCaption("Dominant height (m)", "dominant tree height on 10m pixel.");
+        mRulerColors->setPalette(GridViewRainbow,0., max_val); // ruler
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
                 QPoint p(ix,iy);
@@ -693,6 +703,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             }
             qDebug() << "scale colors: min" << min_value << "max:" << max_value;
         }
+        mRulerColors->setCaption("Resource Units", QString("Result of expression: '%1'").arg(ru_expr));
+        mRulerColors->setPalette(GridViewRainbow, min_value, max_value); // ruler
 
         // paint resource units
         foreach (const ResourceUnit *ru, model->ruList()) {
@@ -766,6 +778,23 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
         if (!tree_value.lastError().isEmpty())
             qDebug() << "Expression error while painting: " << tree_value.lastError();
+        // ruler
+        if (species_color) {
+            mRulerColors->setCaption("Single trees", "species specific colors.");
+            QHash<QString, QString> specieslist=mRemoteControl.availableSpecies();
+            QStringList colors; QStringList speciesnames;
+            for (QHash<QString, QString>::const_iterator it=specieslist.constBegin(); it!=specieslist.constEnd(); ++it) {
+                colors.append( GlobalSettings::instance()->model()->speciesSet()->species(it.key())->displayColor().name());
+                speciesnames.append(it.value());
+            }
+            mRulerColors->setFactorColors(colors);
+            mRulerColors->setFactorLabels(speciesnames);
+            mRulerColors->setPalette(GridViewCustom, 0., 1.);
+        } else {
+            mRulerColors->setCaption("Single trees", QString("result of expression: '%1'").arg(single_tree_expr));
+            mRulerColors->setPalette(GridViewRainbow, 0., 1.);
+
+        }
 
     } // if (show_trees)
 
@@ -793,11 +822,13 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
         sx = object.map_grid->grid().sizeX();
         sy = object.map_grid->grid().sizeY();
         total_rect = vp.toScreen(object.map_grid->grid().metricRect());
+        mRulerColors->setCaption("Map grid");
         break;
     case PaintObject::PaintFloatGrid:
         sx = object.float_grid->sizeX();
         sy = object.float_grid->sizeY();
         total_rect = vp.toScreen(object.float_grid->metricRect());
+        mRulerColors->setCaption("Floating point grid");
         break;
     case PaintObject::PaintLayers:
         sx = object.layered->sizeX();
@@ -806,8 +837,10 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
         if (object.auto_range) {
             object.layered->range( object.cur_min_value, object.cur_max_value, object.layer_id );
         }
+        mRulerColors->setCaption(object.layered->names()[object.layer_id].name, object.layered->names()[object.layer_id].description);
         break;
     case PaintObject::PaintNothing:
+        mRulerColors->setCaption("-");
         return;
     }
 
@@ -821,6 +854,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     double value=0.;
     QRect r;
     QColor fill_color;
+    double max_value = -1.;
     QPointF pmetric;
     for (iy=0;iy<sy;iy++) {
         for (ix=0;ix<sx;ix++) {
@@ -840,6 +874,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
             case PaintObject::PaintLayers:
                 value = object.layered->value(ix, iy, object.layer_id);
                 pmetric = object.layered->cellRect(p).center();
+                max_value = qMax(max_value, value);
                 r = vp.toScreen(object.layered->cellRect(p));
                 break;
             default: ;
@@ -852,6 +887,14 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
             painter.fillRect(r, fill_color);
         }
     }
+    // update ruler
+    if (object.view_type>=10) {
+        QStringList labels;
+        for (int i=0;i<max_value;++i)
+            labels.append(object.layered->labelvalue(i,object.layer_id));
+        mRulerColors->setFactorLabels(labels);
+    }
+    mRulerColors->setPalette(object.view_type, object.cur_min_value, object.cur_max_value); // ruler
 
 }
 
@@ -889,6 +932,11 @@ void MainWindow::paintMapGrid(QPainter &painter,
     double value;
     QRect r;
     QColor fill_color;
+    if (view_type<10)
+        mRulerColors->setPalette(view_type,min_val, max_val); // ruler
+    else
+        mRulerColors->setPalette(view_type, 0, max_val); // ruler
+
     bool reverse = view_type == GridViewRainbowReverse || view_type == GridViewGrayReverse;
     bool black_white = view_type == GridViewGray || view_type == GridViewGrayReverse;
     for (iy=0;iy<sy;iy++) {
@@ -913,6 +961,7 @@ void MainWindow::repaintArea(QPainter &painter)
      paintFON(painter, ui->PaintWidget->rect());
     // fix viewpoint
     vp.setScreenRect(ui->PaintWidget->rect());
+    mRulerColors->setScale(vp.pixelToMeter(1));
 }
 
 

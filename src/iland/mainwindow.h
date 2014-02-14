@@ -40,6 +40,7 @@ class Tree;
 class ResourceUnit;
 class MapGrid;
 class LayeredGridBase;
+class Colors;
 
 
 namespace Ui
@@ -83,6 +84,7 @@ private:
     ModelController mRemoteControl;
     QLabel *mStatusLabel;
     QQuickView *mRuler;
+    Colors *mRulerColors;
     // setup
     void labelMessage(const QString message) { if (mStatusLabel) mStatusLabel->setText(message);}
     void setupModel();
