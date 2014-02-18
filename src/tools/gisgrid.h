@@ -82,6 +82,7 @@ public:
     double value(const QPointF &p) const {return value(p.x(), p.y());}
     double value(const double X, const double Y) const;
     double value(const int indexx, const int indexy) const; ///< get value of grid at index positions
+    double value(const int Index) const; ///< get value of grid at index positions
     /// get coordinates of the center of the cell with 'Index'
     Vector3D coord(const int Index) const;
     Vector3D coord(const int indexx, const int indexy) const;

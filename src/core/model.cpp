@@ -219,37 +219,12 @@ void Model::setupSpace()
 
 
     // simple case: create ressource units in a regular grid.
-    mRUmap.clear();
     if (xml.valueBool("resourceUnitsAsGrid")) {
+
         mRUmap.setup(QRectF(0., 0., width, height),100.); // Grid, that holds positions of resource units
-        ResourceUnit **p; // ptr to ptr!
-        ResourceUnit *new_ru;
-
-        int ru_index = 0;
-        for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
-            QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-            mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
-            new_ru = new ResourceUnit(ru_index++); // create resource unit
-            new_ru->setClimate( mEnvironment->climate() );
-            new_ru->setSpeciesSet( mEnvironment->speciesSet() );
-            new_ru->setup();
-            new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
-            new_ru->setBoundingBox(r);
-            mRU.append(new_ru);
-            *p = new_ru; // save also in the RUmap grid
-        }
-
-        // now store the pointers in the grid.
-        // Important: This has to be done after the mRU-QList is complete - otherwise pointers would
-        // point to invalid memory when QList's memory is reorganized (expanding)
-        ru_index = 0;
-        for (p=mRUmap.begin();p!=mRUmap.end(); ++p) {
-            *p = mRU.value(ru_index++);
-        }
-        qDebug() << "created a grid of ResourceUnits: count=" << mRU.count();
+        mRUmap.wipe();
 
         bool mask_is_setup = false;
-
         if (xml.valueBool("standGrid.enabled")) {
             QString fileName = GlobalSettings::instance()->path(xml.value("standGrid.fileName"));
             mStandGrid = new MapGrid(fileName);
@@ -258,6 +233,8 @@ void Model::setupSpace()
                 for (int i=0;i<mStandGrid->grid().count();i++) {
                     const int &grid_value = mStandGrid->grid().constValueAtIndex(i);
                     mHeightGrid->valueAtIndex(i).setValid( grid_value > -1 );
+                    if (grid_value>-1)
+                        mRUmap.valueAt(mStandGrid->grid().cellCenterPoint(i)) = (ResourceUnit*)1;
                     if (grid_value < -1)
                         mHeightGrid->valueAtIndex(i).setForestOutside(true);
                 }
@@ -277,6 +254,36 @@ void Model::setupSpace()
 
             }
         }
+
+        ResourceUnit **p; // ptr to ptr!
+        ResourceUnit *new_ru;
+
+        int ru_index = 0;
+        for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
+            QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
+            mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
+            if (!mStandGrid->isValid() || *p>0) {
+                // create resource units for valid positions only
+                new_ru = new ResourceUnit(ru_index++); // create resource unit
+                new_ru->setClimate( mEnvironment->climate() );
+                new_ru->setSpeciesSet( mEnvironment->speciesSet() );
+                new_ru->setup();
+                new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
+                new_ru->setBoundingBox(r);
+                mRU.append(new_ru);
+                *p = new_ru; // save also in the RUmap grid
+            }
+        }
+
+        // now store the pointers in the grid.
+        // Important: This has to be done after the mRU-QList is complete - otherwise pointers would
+        // point to invalid memory when QList's memory is reorganized (expanding)
+//        ru_index = 0;
+//        for (p=mRUmap.begin();p!=mRUmap.end(); ++p) {
+//            *p = mRU.value(ru_index++);
+//        }
+        qDebug() << "created a grid of ResourceUnits: count=" << mRU.count() << "number of RU-map-cells:" << mRUmap.count();
+
 
         calculateStockableArea();
 

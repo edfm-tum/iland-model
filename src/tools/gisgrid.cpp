@@ -217,6 +217,14 @@ double GisGrid::value(const int indexx, const int indexy) const
     return -1.;  // out of scope
 }
 
+/// get value of grid at index positions
+double GisGrid::value(const int Index) const
+{
+    if (Index>=0 && Index<mDataSize)
+        return mData[Index];
+    return -1.;  // out of scope
+}
+
 double GisGrid::value(const double X, const double Y) const
 {
 
