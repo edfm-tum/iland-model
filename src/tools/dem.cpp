@@ -25,6 +25,27 @@
 
 #include "gisgrid.h"
 
+// from here: http://www.scratchapixel.com/lessons/3d-advanced-lessons/interpolation/bilinear-interpolation/
+template<typename T>
+T bilinear(
+   const T &tx,
+   const T &ty,
+   const T &c00,
+   const T &c10,
+   const T &c01,
+   const T &c11)
+{
+#if 1
+    T a = c00 * (T(1) - tx) + c10 * tx;
+    T b = c01 * (T(1) - tx) + c11 * tx;
+    return a * (T(1) - ty) + b * ty;
+#else
+    return (T(1) - tx) * (T(1) - ty) * c00 +
+        tx * (T(1) - ty) * c10 +
+        (T(1) - tx) * ty * c01 +
+        tx * ty * c11;
+#endif
+}
 
 /// loads a DEM from a ESRI style text file.
 /// internally, the DEM has always a resolution of 10m
@@ -51,14 +72,42 @@ bool DEM::loadFromFile(const QString &fileName)
 
     const QRectF &world = GlobalSettings::instance()->model()->extent();
 
-    QPointF p;
-    // copy the data
-    for (int i=0;i<count();i++) {
-        p = cellCenterPoint(indexOf(i));
-        if (gis_grid.value(p) != gis_grid.noDataValue() && world.contains(p) )
-            valueAtIndex(i) = gis_grid.value(p);
-        else
-            valueAtIndex(i) = -1;
+    if (fmod(gis_grid.cellSize(), cellsize()) != 0) {
+        QPointF p;
+        // simple copy of the data
+        for (int i=0;i<count();i++) {
+            p = cellCenterPoint(indexOf(i));
+            if (gis_grid.value(p) != gis_grid.noDataValue() && world.contains(p) )
+                valueAtIndex(i) = gis_grid.value(p);
+            else
+                valueAtIndex(i) = -1;
+        }
+    } else {
+        // bilinear approximation approach
+        qDebug() << "DEM: built-in bilinear interpolation from cell size" << gis_grid.cellSize();
+        int f = gis_grid.cellSize() / cellsize(); // size-factor
+        initialize(-1.f);
+        int ixmin = 10000000, iymin = 1000000, ixmax = -1, iymax = -1;
+        for (int y=0;y<gis_grid.rows();++y)
+            for (int x=0;x<gis_grid.cols(); ++x){
+                Vector3D p3d = gis_grid.coord(x,y);
+                if (world.contains(p3d.x(), p3d.y())) {
+                    QPoint pt=indexAt(QPointF(p3d.x(), p3d.y()));
+                    valueAt(p3d.x(), p3d.y()) = gis_grid.value(x,y);
+                    ixmin = std::min(ixmin, pt.x()); ixmax=std::max(ixmax, pt.x());
+                    iymin = std::min(iymin, pt.y()); iymax=std::max(iymax, pt.y());
+                }
+            }
+        for (int y=iymin;y<=iymax-f;y+=f)
+            for (int x=ixmin;x<=ixmax-f;x+=f){
+                float c00 = valueAtIndex(x, y);
+                float c10 = valueAtIndex(x+f, y);
+                float c01 = valueAtIndex(x, y+f);
+                float c11 = valueAtIndex(x+f, y+f);
+                for (int my=0;my<f;++my)
+                    for (int mx=0;mx<f;++mx)
+                        valueAtIndex(x+mx, y+my) = bilinear<float>(mx/float(f), my/float(f), c00, c10, c01, c11);
+            }
     }
 
     return true;

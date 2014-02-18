@@ -322,6 +322,7 @@ MainWindow::MainWindow(QWidget *parent)
     mRulerColors = new Colors();
     view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
     view->setResizeMode(QQuickView::SizeRootObjectToView);
+    ui->pbReloadQml->setVisible(false); // enable for debug...
     //view->setSource(QUrl::fromLocalFile("qml/ruler.qml"));
     view->setSource(QUrl("qrc:/qml/ruler.qml"));
     //view->show();
@@ -507,6 +508,7 @@ void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
     mPaintNext.max_value=max_val;
     mPaintNext.float_grid = grid;
     mPaintNext.view_type = view_type;
+    mPaintNext.name = name;
     if (!name.isEmpty()) {
         mPaintList[name] = mPaintNext;
         updatePaintGridList();
@@ -547,11 +549,15 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
 
         if (mPaintNext.what != PaintObject::PaintNothing) {
-            if (mPaintNext.what == PaintObject::PaintMapGrid)
+            if (mPaintNext.what == PaintObject::PaintMapGrid) {
+                mRulerColors->setCaption(mPaintNext.name);
                 paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+            }
 
-            if (mPaintNext.what == PaintObject::PaintFloatGrid)
+            if (mPaintNext.what == PaintObject::PaintFloatGrid) {
+                mRulerColors->setCaption(mPaintNext.name);
                 paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+            }
 
             if (mPaintNext.what == PaintObject::PaintLayers)
                 paintGrid(painter, mPaintNext);
@@ -932,6 +938,7 @@ void MainWindow::paintMapGrid(QPainter &painter,
     double value;
     QRect r;
     QColor fill_color;
+
     if (view_type<10)
         mRulerColors->setPalette(view_type,min_val, max_val); // ruler
     else

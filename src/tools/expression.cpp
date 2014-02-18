@@ -165,6 +165,8 @@ Expression::ETokType  Expression::next_token()
                 return etLogical;
             } else {
                 m_state=etVariable;
+                if (m_token=="true") { m_state=etNumber; m_token="1"; return etNumber; }
+                if (m_token=="false") { m_state=etNumber; m_token="0"; return etNumber; }
                 return etVariable;
             }
         }
