@@ -109,6 +109,8 @@ void MapGrid::createIndex()
         data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
 
         ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+        if (!ru)
+            continue;
         // find all entries for the current grid id
         QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
 

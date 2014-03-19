@@ -166,13 +166,13 @@ void ForestManagementEngine::setup()
     for (int i=0;i<mStands.size(); ++i)
         stand_hash[mStands[i]->id()] = mStands[i];
 
-    mStandGrid.setup(standGrid()->grid().cellsize(), standGrid()->grid().sizeX(), standGrid()->grid().sizeY() );
-    mStandGrid.initialize(0);
-    FMStand **fm = mStandGrid.begin();
+    mFMStandGrid.setup(standGrid()->grid().cellsize(), standGrid()->grid().sizeX(), standGrid()->grid().sizeY() );
+    mFMStandGrid.initialize(0);
+    FMStand **fm = mFMStandGrid.begin();
     for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
-        *fm = stand_hash[*p];
+        *fm = *p<0?0:stand_hash[*p];
 
-    mStandLayers.setGrid(mStandGrid);
+    mStandLayers.setGrid(mFMStandGrid);
     mStandLayers.clearClasses();
     mStandLayers.registerLayers();
 

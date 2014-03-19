@@ -9,6 +9,7 @@
 
 double AMIELayers::value(const FMStandPtr &data, const int index) const
 {
+    if (data == 0 && index<2) return -1; // for classes
     if (data == 0) return 0;
     switch (index) {
     case 0:

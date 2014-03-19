@@ -77,6 +77,8 @@ Colors::Colors(QWidget *parent): QObject(parent)
 
 QColor Colors::colorFromPalette(const int value, const GridViewType view_type)
 {
+    if (value<0)
+        return Qt::white;
     int n = qMax(value,0) % 12;
     QColor col;
     switch(view_type) {

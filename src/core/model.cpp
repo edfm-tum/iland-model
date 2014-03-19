@@ -227,7 +227,7 @@ void Model::setupSpace()
         bool mask_is_setup = false;
         if (xml.valueBool("standGrid.enabled")) {
             QString fileName = GlobalSettings::instance()->path(xml.value("standGrid.fileName"));
-            mStandGrid = new MapGrid(fileName);
+            mStandGrid = new MapGrid(fileName,false); // create stand grid index later
 
             if (mStandGrid->isValid()) {
                 for (int i=0;i<mStandGrid->grid().count();i++) {
@@ -275,6 +275,8 @@ void Model::setupSpace()
             }
         }
 
+        if (mStandGrid->isValid())
+            mStandGrid->createIndex();
         // now store the pointers in the grid.
         // Important: This has to be done after the mRU-QList is complete - otherwise pointers would
         // point to invalid memory when QList's memory is reorganized (expanding)
