@@ -81,7 +81,7 @@ private:
     QVector<Agent*> mAgents; ///< collection of all agents (individuals)
 
     // grids, visuals, etc.
-    Grid<FMStand*> mStandGrid;
+    Grid<FMStand*> mFMStandGrid;
     AMIELayers mStandLayers;
 };
 

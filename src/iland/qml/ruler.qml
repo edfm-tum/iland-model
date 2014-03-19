@@ -5,6 +5,7 @@ import QtQuick.Layouts 1.1
 Rectangle {
     width: 250
     height: 400
+    id: main
     //anchors.fill: parent
     //color:  "gray"
     ColumnLayout {
@@ -184,7 +185,7 @@ Rectangle {
                     width: parent.width
                     model: 4
                     property real cellWidth
-                    cellWidth: { var n = rulercolors.meterPerPixel*60;
+                    cellWidth: { var n = rulercolors.meterPerPixel*main.width/5;
                                  var sig=1;
                                  var mult = Math.pow(10, sig - Math.floor(Math.log(n) / Math.LN10) - 1);
                                  var s= Math.round(n * mult) / mult;
