@@ -27,8 +27,9 @@ public:
     // life cycle
     ForestManagementEngine();
     ~ForestManagementEngine();
-    // engine instance
+    // engine instance (singleton)
     static ForestManagementEngine *instance() { if (singleton_fome_engine) return singleton_fome_engine; singleton_fome_engine = new ForestManagementEngine; return singleton_fome_engine; }
+    /// link to stand grid
     static const MapGrid *standGrid();
     void setup();
     void clear(); ///< delete all objects and free memory
@@ -47,6 +48,8 @@ public:
     void addAgent(AgentType* at) { mAgentTypes.push_back(at);}
     /// retrieve pointer to stand treatment programme. return 0-pointer if not available.
     FMSTP *stp(QString stp_name) const;
+    /// get stand with id 'stand_id'. Return 0 if not found.
+    FMStand *stand(int stand_id) const;
     //QVector<FMStand*> stands() const {return mStands; }
     const QMultiMap<FMUnit*, FMStand*> stands() const {return mUnitStandMap; }
     // functions

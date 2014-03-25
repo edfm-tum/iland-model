@@ -10,6 +10,7 @@
 
 #include "expression.h"
 
+
 namespace AMIE {
 
 /***************************************************************************/
@@ -101,7 +102,7 @@ double Schedule::value(const FMStand *stand)
             return 1.; // no optimal time: everything between min and max is fine!
         }
     }
-    qDebug() << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
+    qCDebug(abe) << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
     return 0.;
 }
 
@@ -148,7 +149,7 @@ QString Events::run(const QString event, const FMStand *stand)
     if (mEvents.contains(event)) {
         FomeScript::setExecutionContext(stand);
         if (FMSTP::verbose())
-            qDebug() << "running javascript event" << event;
+            qCDebug(abe) << "running javascript event" << event;
         QJSValue func = mEvents[event].property(event);
         QJSValue result;
         if (func.isCallable())
@@ -266,7 +267,7 @@ bool Constraints::constraint_item::evaluate(const FMStand *stand) const
             }
 
             if (FMSTP::verbose())
-                qDebug() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
+                qCDebug(abe) << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
             return result > 0.;
 
         }
@@ -281,7 +282,7 @@ bool Constraints::constraint_item::evaluate(const FMStand *stand) const
                              arg(result.toString()));
         }
         if (FMSTP::verbose())
-            qDebug() << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
+            qCDebug(abe) << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
         return result.toBool();
 
     }
@@ -328,12 +329,12 @@ QString Activity::type() const
 void Activity::setup(QJSValue value)
 {
     mSchedule.setup(FMSTP::valueFromJs(value, "schedule", "", "setup activity"));
-    qDebug() << mSchedule.dump();
+    qCDebug(abe) << mSchedule.dump();
 
     // setup of events
     mEvents.clear();
     mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecute");
-    qDebug() << "Events of thinning: " << mEvents.dump();
+    qCDebug(abeSetup) << "Events of thinning: " << mEvents.dump();
 
     // setup of constraints
     QJSValue constraints = FMSTP::valueFromJs(value, "constraint", "");

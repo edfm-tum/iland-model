@@ -148,7 +148,8 @@ SOURCES += main.cpp \
     ../amie/treelist.cpp \
     ../amie/amiegrid.cpp \
     ../amie/scheduler.cpp \
-    ../tools/colors.cpp
+    ../tools/colors.cpp \
+    ../amie/fmtreelist.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -239,7 +240,8 @@ HEADERS += mainwindow.h \
     ../amie/treelist.h \
     ../amie/amiegrid.h \
     ../amie/scheduler.h \
-    ../tools/colors.h
+    ../tools/colors.h \
+    ../amie/fmtreelist.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \
@@ -257,7 +259,9 @@ RESOURCES += ./res/iland.qrc \
 # $$HEADERS \
 # $$FORMS
 OTHER_FILES += maindoc.cpp \
-    qml/ruler.qml
+    qml/ruler.qml \
+    ../apidoc/abe_doc.js \
+    ../apidoc/treelist_doc.js
 
 
 

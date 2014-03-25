@@ -25,6 +25,7 @@
 #include "grid.h"
 #include "sapling.h"
 #include "resourceunit.h"
+#include "expressionwrapper.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)
   @ingroup tools
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
@@ -164,6 +165,41 @@ QList<Tree *> MapGrid::trees(const int id) const
     }
 //    qDebug() << "MapGrid::trees: found" << c << "/" << tree_list.size();
     return tree_list;
+
+}
+
+int MapGrid::loadTrees(const int id, QList<QPair<Tree *, double> > &rList, const QString filter)
+{
+    rList.clear();
+    Expression *expression = 0;
+    TreeWrapper tw;
+    if (!filter.isEmpty()) {
+        expression = new Expression(filter, &tw);
+        expr.enableIncSum();
+    }
+    QList<ResourceUnit*> resource_units = resourceUnits(id);
+    foreach(ResourceUnit *ru, resource_units) {
+        foreach(const Tree &tree, ru->constTrees())
+            if (gridValue(tree.positionIndex()) == id && !tree.isDead()) {
+                Tree *t =  & const_cast<Tree&>(tree);
+                tw.setTree(t);
+                if (expression) {
+                    double value = expression->calculate(tw);
+                    // keep if expression returns true (1)
+                    bool keep = value==1.;
+                    // if value is >0 (i.e. not "false"), then draw a random number
+                    if (!keep && value>0.)
+                        keep = drandom() < value;
+
+                    if (!keep)
+                        continue;
+                }
+                rList.append(QPair<Tree*, double>(t,0.));
+            }
+    }
+    if (expression)
+        delete expression;
+    return rList.size();
 
 }
 

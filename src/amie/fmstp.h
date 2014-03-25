@@ -23,6 +23,8 @@ public:
     ~FMSTP();
     enum Phase { Invalid, Tending, Thinning, Regeneration };
     const QString &name() const {return mName; }
+    /// returns the (first) Activity with the name 'name', or 0 if the activity could not be found.
+    Activity *activity(const QString &name) const;
     /// read the options from a javascript structure / object
     void setup(QJSValue &js_value, const QString name=QString());
     /// defaultFlags() is used to initalized the flags for indiv. forest stands
