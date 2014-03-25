@@ -178,7 +178,7 @@ void Tree::applyLIP()
             value = (*mStamp)(x,y); // stampvalue
             //if (value>0.f) {
                 local_dom = (*mHeightGrid)(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
-                z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+                z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
                 z_zstar = (z>=local_dom)?1.f:z/local_dom;
                 value = 1. - value*mOpacity * z_zstar; // calculated value
                 value = std::max(value, 0.02f); // limit value
@@ -240,7 +240,7 @@ void Tree::applyLIP_torus()
 
             local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight,yt/cPxPerHeight).height;
 
-            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
             value = (*mStamp)(x,y); // stampvalue
             value = 1. - value*mOpacity * z_zstar; // calculated value
@@ -459,7 +459,7 @@ void Tree::readLIF()
 
             const HeightGridValue &hgv = mHeightGrid->constValueAtIndex((rx+x)/cPxPerHeight, ry/cPxPerHeight); // the height grid value, ry: gets ++ed in outer loop, rx not
             local_dom = hgv.height;
-            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
 
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;
@@ -530,7 +530,7 @@ void Tree::readLIF_torus()
             grid_value = mGrid->ptr(xt,yt);
 
             local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight, yt/cPxPerHeight).height; // ry: gets ++ed in outer loop, rx not
-            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
 
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;

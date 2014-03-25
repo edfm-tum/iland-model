@@ -61,10 +61,7 @@ This is nice *markdown* formatting.
 *
 * @class Schedule
 */
-/**
- * @example
- *     model.set('foo', 'bar');
- */
+
 /**
 * My property description.  Like other pieces of your comment blocks,
 * this can span multiple lines.
@@ -87,17 +84,26 @@ This is nice *markdown* formatting.
 * The main part of the agent defintion is a list of assignments of stand treatment programmes (STP) to mixture types.
 * In addition, logic can be added for selecting mixture types from forest attributes.
 *
-@example
-    var x = { stp: { "fasy": ["beech_default_1", "beech_default_2", "beech_default3"],
-                     "piab": "spruce_default" }
-              onSelect: function(){ return "fasy"; }
-             }
-* @class Agent
+*
+
+        var x = { stp: { "fasy": ["beech_default_1", "beech_default_2", "beech_default3"],
+                         "piab": "spruce_default" }
+                  onSelect: function(){ return "fasy"; }
+                 }
+*
+@class Agent
 */
-var agent =  {
-/** @property stp
-    @type {Object}
+/** Description of stp
+@property stp
+@type object
+*/
+/**
+  onSelect allows to provide custom code to select the mixture type for a given stand.
+  @example
+       onEvent: function() { if (stand.share('piab') > 50)
+                                return 'piab';
+                            return 'default'; }
+  @event onSelect
+  @type String
   */
-  stp: [],
-}
 

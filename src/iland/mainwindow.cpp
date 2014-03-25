@@ -106,7 +106,10 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     switch (type) {
      case QtDebugMsg:
         if (showDebugMessages) {
-            bufferedMessages.append(QString(msg));
+            if (qstrcmp(context.category, "default")!=0)
+                bufferedMessages.append(QString("%1: %2").arg(context.category).arg(msg));
+            else
+                bufferedMessages.append(QString(msg));
         }
 
          break;

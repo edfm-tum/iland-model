@@ -10,6 +10,7 @@ namespace AMIE {
 class StandObj;
 class SiteObj;
 class SimulationObj;
+class FMTreeList; // forward
 
 /// FomeScript provides general helping functions for the Javascript world.
 class FomeScript : public QObject
@@ -17,6 +18,7 @@ class FomeScript : public QObject
     Q_OBJECT
 public:
     explicit FomeScript(QObject *parent = 0);
+    ~FomeScript();
     // prepare scripting features
     void setupScriptEnvironment();
     // functions
@@ -27,11 +29,16 @@ signals:
 public slots:
     /// adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
     bool addManagement(QJSValue program, QString name);
+    /// add an agent definition (Javascript). 'name' is used internally. Returns true on success.
     bool addAgent(QJSValue program, QString name);
+    /// executes an activity for stand 'stand_id'. This bypasses the normal scheduling (useful for debugging/testing).
+    /// returns false if activity could not be found for the stand.
+    bool runActivity(int stand_id, QString activity);
 private:
     StandObj *mStandObj;
     SiteObj *mSiteObj;
     SimulationObj *mSimulationObj;
+    FMTreeList *mTrees;
 
 };
 

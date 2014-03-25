@@ -23,6 +23,9 @@
 #include "helper.h"
 #include "threadrunner.h"
 
+Q_LOGGING_CATEGORY(abe, "abe")
+
+Q_LOGGING_CATEGORY(abeSetup, "abe.setup")
 
 namespace AMIE {
 
@@ -65,6 +68,7 @@ void ForestManagementEngine::setupScripting()
 
     QString file_name = GlobalSettings::instance()->path(xml.value("model.management.amie.file"));
     QString code = Helper::loadTextFile(file_name);
+    qCDebug(abeSetup) << "Loading script file" << file_name;
     QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
     if (result.isError()) {
         int lineno = result.property("lineNumber").toInt();
@@ -72,7 +76,7 @@ void ForestManagementEngine::setupScripting()
         QString code_part;
         for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
-        qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
+        qCDebug(abeSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
     }
 
 }
@@ -87,6 +91,9 @@ AgentType *ForestManagementEngine::agentType(const QString &name)
 
 void ForestManagementEngine::setup()
 {
+    QLoggingCategory::setFilterRules("abe.debug=true\n" \
+                                     "abe.setup.debug=true"); // enable *all*
+
     clear();
     const XmlHelper &xml = GlobalSettings::instance()->settings();
 
@@ -117,7 +124,7 @@ void ForestManagementEngine::setup()
         int stand_id = data_file.value(i,ikey).toInt();
         if (!stand_grid->isValid(stand_id))
             continue; // skip stands that are not in the map (e.g. when a smaller extent is simulated)
-        qDebug() << "setting up stand" << stand_id;
+        qCDebug(abeSetup) << "setting up stand" << stand_id;
 
         // check agents
         QString agent_code = data_file.value(i, iagent).toString();
@@ -179,7 +186,7 @@ void ForestManagementEngine::setup()
     // now initialize the agents....
     foreach(AgentType *at, mAgentTypes)
         at->setup();
-    qDebug() << "AMIE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
+    qCDebug(abeSetup) << "ABE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
 
 }
 
@@ -223,7 +230,7 @@ void ForestManagementEngine::run(int debug_year)
         mCurrentYear = GlobalSettings::instance()->currentYear();
     }
     // now re-evaluate stands
-    if (FMSTP::verbose()) qDebug() << "ForestManagementEngine: run year" << mCurrentYear;
+    if (FMSTP::verbose()) qCDebug(abe) << "ForestManagementEngine: run year" << mCurrentYear;
 
     GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits);
 
@@ -360,6 +367,14 @@ FMSTP *ForestManagementEngine::stp(QString stp_name) const
 {
     for (QVector<FMSTP*>::const_iterator it = mSTP.constBegin(); it!=mSTP.constEnd(); ++it)
         if ( (*it)->name() == stp_name )
+            return *it;
+    return 0;
+}
+
+FMStand *ForestManagementEngine::stand(int stand_id) const
+{
+    for (QVector<FMStand*>::const_iterator it=mStands.constBegin(); it!=mStands.constEnd(); ++it)
+        if ( (*it)->id() == stand_id)
             return *it;
     return 0;
 }

@@ -23,6 +23,14 @@ FMSTP::~FMSTP()
     clear();
 }
 
+Activity *FMSTP::activity(const QString &name) const
+{
+    int idx = mActivityNames.indexOf(name);
+    if (idx==-1)
+        return 0;
+    return mActivities[idx];
+}
+
 bool activityScheduledEarlier(const Activity *a, const Activity *b)
 {
     return a->earlistSchedule() < b->earlistSchedule();
@@ -73,13 +81,13 @@ void FMSTP::internalSetup(QJSValue &js_value, int level)
             } else if (it.value().isObject() && !it.value().isCallable()) {
                 // try to go one level deeper
                 if (FMSTP::verbose())
-                    qDebug() << "entering" << it.name();
+                    qCDebug(abeSetup) << "entering" << it.name();
                 if (level<10)
                     internalSetup(it.value(), ++level);
             }
         }
     } else {
-        qDebug() << "FMSTP::setup: not a valid javascript object.";
+        qCDebug(abeSetup) << "FMSTP::setup: not a valid javascript object.";
     }
 
     // tests
@@ -107,13 +115,15 @@ bool FMSTP::execute(FMStand &stand)
 
 void FMSTP::dumpInfo()
 {
-    qDebug() << " ***************************************";
-    qDebug() << " **************** Program dump for:" << name();
-    qDebug() << " ***************************************";
+    if (!abe().isDebugEnabled())
+        return;
+    qCDebug(abe) << " ***************************************";
+    qCDebug(abe) << " **************** Program dump for:" << name();
+    qCDebug(abe) << " ***************************************";
     foreach(Activity *act, mActivities) {
-        qDebug() << "******* Activity *********";
+        qCDebug(abe) << "******* Activity *********";
         QString info =  act->info().join('\n');
-        qDebug() << info;
+        qCDebug(abe) << info;
 
     }
 }
@@ -122,7 +132,7 @@ void FMSTP::setupActivity(QJSValue &js_value, const QString &name)
 {
     QString type = js_value.property("type").toString();
     if (verbose())
-        qDebug() << "setting up activity of type" << type << "from JS";
+        qCDebug(abeSetup) << "setting up activity of type" << type << "from JS";
     Activity *act = 0;
     if (type=="general")
         act = new ActGeneral(this);
