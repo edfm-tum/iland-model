@@ -23,6 +23,8 @@ public:
     void setupScriptEnvironment();
     // functions
     static void setExecutionContext(const FMStand *stand);
+    // static accessor function for the responsible script bridge
+    static FomeScript *bridge();
 
 
     StandObj *standObj() const { return mStandObj; }
