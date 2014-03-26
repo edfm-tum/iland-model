@@ -168,14 +168,16 @@ QList<Tree *> MapGrid::trees(const int id) const
 
 }
 
-int MapGrid::loadTrees(const int id, QList<QPair<Tree *, double> > &rList, const QString filter)
+int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, const QString filter, int n_estimate) const
 {
     rList.clear();
+    if (n_estimate>0)
+        rList.reserve(n_estimate);
     Expression *expression = 0;
     TreeWrapper tw;
     if (!filter.isEmpty()) {
         expression = new Expression(filter, &tw);
-        expr.enableIncSum();
+        expression ->enableIncSum();
     }
     QList<ResourceUnit*> resource_units = resourceUnits(id);
     foreach(ResourceUnit *ru, resource_units) {
@@ -194,7 +196,7 @@ int MapGrid::loadTrees(const int id, QList<QPair<Tree *, double> > &rList, const
                     if (!keep)
                         continue;
                 }
-                rList.append(QPair<Tree*, double>(t,0.));
+                rList.push_back(QPair<Tree*, double>(t,0.));
             }
     }
     if (expression)

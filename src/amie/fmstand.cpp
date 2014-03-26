@@ -25,6 +25,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mVolume = 0.;
     mAge = 0.;
     mTotalBasalArea = 0.;
+    mStems = 0.;
 
     mCurrentIndex=-1;
 }
@@ -71,8 +72,9 @@ void FMStand::reload()
 
     // load all trees that are located on this stand
     mTotalBasalArea = 0.;
-    mVolume = 0;
-    mAge = 0;
+    mVolume = 0.;
+    mAge = 0.;
+    mStems = 0.;
     TreeList trees;
     mSpeciesData.clear();
     trees.loadFromMap(ForestManagementEngine::standGrid(), mId);
@@ -84,6 +86,7 @@ void FMStand::reload()
         mTotalBasalArea+=ba;
         mVolume += it->first->volume() * area_factor;
         mAge += it->first->age()*ba;
+        mStems++;
         SSpeciesStand &sd = speciesData(it->first->species());
         sd.basalArea += ba;
     }
@@ -93,8 +96,14 @@ void FMStand::reload()
             mSpeciesData[i].relBasalArea =  mSpeciesData[i].basalArea / mTotalBasalArea;
         }
     }
+    mStems *= area_factor; // convert to stems/ha
     // sort species data by relative share....
     std::sort(mSpeciesData.begin(), mSpeciesData.end(), relBasalAreaIsHigher);
+}
+
+double FMStand::area() const
+{
+    return ForestManagementEngine::standGrid()->area(mId)/10000.;
 }
 
 

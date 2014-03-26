@@ -69,20 +69,26 @@ double Schedule::value(const FMStand *stand)
     double current = stand->age();
     if (absolute)
         current = ForestManagementEngine::instance()->currentYear();
+
+    double current_rel = current / U;
     // force execution: if age already higher than max, then always evaluate to 1.
     if (tmax>-1. && current > tmax && force_execution)
         return 1;
-    if (tmaxrel>-1. && current/U > tmaxrel && force_execution)
+    if (tmaxrel>-1. && current_rel > tmaxrel && force_execution)
         return 1;
 
     if (tmin>-1. && current < tmin) return 0.;
     if (tmax>-1. && current > tmax) return 0.;
-    if (tminrel>-1. && current/U < tminrel) return 0.;
-    if (tmaxrel>-1. && current/U > tmaxrel) return 0.;
+    if (tminrel>-1. && current_rel < tminrel) return 0.;
+    if (tmaxrel>-1. && current_rel > tmaxrel) return 0.;
+
+    // optimal time
+    if (topt > -1. && fabs(current-topt) <= 0.5)
+        return 1;
 
     if (tmin>-1. && tmax > -1.) {
         if (topt > -1.) {
-        // linear interpolation
+            // linear interpolation
             if (current<=topt)
                 return topt==tmin?1.:(current-tmin)/(topt-tmin);
             else
@@ -91,13 +97,18 @@ double Schedule::value(const FMStand *stand)
             return 1.; // no optimal time: everything between min and max is fine!
         }
     }
+    // optimal time
+    if (toptrel>-1. && fabs(current_rel-toptrel)*U <= 0.5)
+        return 1.;
+
+    // min/max relative time
     if (tminrel>-1. && tmaxrel>-1.) {
         if (toptrel > -1.) {
-        // linear interpolation
-            if (current<=toptrel)
-                return toptrel==tminrel?1.:(current-tminrel)/(toptrel-tminrel);
+            // linear interpolation
+            if (current_rel<=toptrel)
+                return toptrel==tminrel?1.:(current_rel-tminrel)/(toptrel-tminrel);
             else
-                return toptrel==tmaxrel?1.:(tmaxrel-current)/(tmaxrel-toptrel);
+                return toptrel==tmaxrel?1.:(tmaxrel-current_rel)/(tmaxrel-toptrel);
         } else {
             return 1.; // no optimal time: everything between min and max is fine!
         }

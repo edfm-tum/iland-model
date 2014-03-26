@@ -24,6 +24,11 @@ public:
     // functions
     static void setExecutionContext(const FMStand *stand);
 
+
+    StandObj *standObj() const { return mStandObj; }
+    SiteObj *standObj() const { return mSiteObj; }
+    FMTreeList *treesObj() const { return mTrees; }
+
 signals:
 
 public slots:
@@ -46,6 +51,7 @@ private:
 class StandObj: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY (bool trace READ trace WRITE setTrace)
     Q_PROPERTY (double basalArea READ basalArea)
     Q_PROPERTY (double age READ age)
     Q_PROPERTY (double volume READ volume)
@@ -65,12 +71,19 @@ public slots:
     QJSValue flag(const QString &name) { return const_cast<FMStand*>(mStand)->property(name); }
 public:
     explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}
+    // system stuff
     void setStand(const FMStand* stand) { mStand = stand; }
+    bool trace() const;
+    void setTrace(bool do_trace);
+
+    // properties of the forest
     double basalArea() const { return mStand->basalArea(); }
     double age() const {return mStand->age(); }
     double volume() const {return mStand->volume(); }
     int id() const { return mStand->id(); }
     int nspecies() const { return mStand->nspecies(); }
+
+
 private:
     const FMStand *mStand;
 };
