@@ -35,11 +35,11 @@ class Tree
 public:
     // lifecycle
     Tree();
-    void setup();
+    void setup(); ///< calculates initial values for biomass pools etc. after dimensions are set.
 
     // access to properties
-    int id() const { return mId; }
-    int age() const { return mAge; }
+    int id() const { return mId; } ///< numerical unique ID of the tree
+    int age() const { return mAge; } ///< the tree age (years)
     /// @property position The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
     const QPointF position() const { Q_ASSERT(mGrid!=0); return mGrid->cellCenterPoint(mPositionIndex); }
     const QPoint positionIndex() const { return mPositionIndex; }
@@ -96,6 +96,14 @@ public:
     void setRU(ResourceUnit *ru) { mRU = ru; }
     void setAge(const int age, const float treeheight);
 
+    // management flags (used by ABE management system)
+    void markForHarvest(bool do_mark) { setFlag(Tree::MarkForHarvest, do_mark);}
+    bool isMarkedForHarvest() const { return flag(Tree::MarkForHarvest);}
+    void markForCut(bool do_mark) { setFlag(Tree::MarkForCut, do_mark);}
+    bool isMarkedForCut() const { return flag(Tree::MarkForCut);}
+    void markCropTree(bool do_mark) { setFlag(Tree::MarkCropTree, do_mark);}
+    bool isMarkedAsCropTree() const { return flag(Tree::MarkCropTree);}
+
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
     void readLIF(); ///< calculate the lightResourceIndex with multiplicative approach
@@ -136,12 +144,12 @@ private:
     // biomass compartements
     float mLeafArea; ///< m2 leaf area
     float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)
-    float mFoliageMass; // kg of foliage (dry)
-    float mWoodyMass; // kg biomass of aboveground stem biomass
-    float mFineRootMass; // kg biomass of fine roots (linked to foliage mass)
-    float mCoarseRootMass; // kg biomass of coarse roots (allometric equation)
+    float mFoliageMass; ///< kg of foliage (dry)
+    float mWoodyMass; ///< kg biomass of aboveground stem biomass
+    float mFineRootMass; ///< kg biomass of fine roots (linked to foliage mass)
+    float mCoarseRootMass; ///< kg biomass of coarse roots (allometric equation)
     // production relevant
-    float mNPPReserve; // kg
+    float mNPPReserve; ///< NPP reserve pool [kg] - stores a part of assimilates for use in less favorable years
     float mLRI; ///< resulting lightResourceIndex
     float mLightResponse; ///< light response used for distribution of biomass on RU level
     // auxiliary
@@ -155,8 +163,17 @@ private:
 
     // various flags
     int mFlags;
-    enum Flags { TreeDead=1, TreeDebugging=2 }; ///< (binary coded) tree flags
+    /// (binary coded) tree flags
+    enum Flags { TreeDead=1, TreeDebugging=2,
+                 MarkForCut=256, // mark tree for being cut down
+                 MarkForHarvest=512, // mark tree for being harvested
+                 MarkCropTree=1024 // mark as crop tree
+               };
+    /// set a Flag 'flag' to the value 'value'.
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
+    /// set a number of flags (need to be constructed by or'ing flags together) at the same time to the Boolean value 'value'.
+    void setFlag(const int flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
+    /// retrieve the value of the flag 'flag'.
     bool flag(const Tree::Flags flag) const { return mFlags & flag; }
 
     // special functions

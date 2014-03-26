@@ -261,7 +261,8 @@ RESOURCES += ./res/iland.qrc \
 OTHER_FILES += maindoc.cpp \
     qml/ruler.qml \
     ../apidoc/abe_doc.js \
-    ../apidoc/treelist_doc.js
+    ../apidoc/treelist_doc.js \
+    ../apidoc/globals_doc.js
 
 
 

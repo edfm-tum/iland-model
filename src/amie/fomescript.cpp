@@ -63,14 +63,17 @@ void FomeScript::setupScriptEnvironment()
 
 void FomeScript::setExecutionContext(const FMStand *stand)
 {
-    FomeScript *bridge =ForestManagementEngine::instance()->scriptBridge();
-    bridge->mStandObj->setStand(stand);
-    bridge->mTrees->setStandId(stand->id());
+    FomeScript *br = bridge();
 
-    bridge->mSiteObj->setStand(stand);
+    br->mStandObj->setStand(stand);
+    br->mTrees->setStand(stand);
+    br->mSiteObj->setStand(stand);
+}
 
-    // simulation stuff....
-
+FomeScript *FomeScript::bridge()
+{
+    // get the right bridge object (for the right thread??)
+    return ForestManagementEngine::instance()->scriptBridge();
 }
 
 
@@ -115,6 +118,16 @@ bool FomeScript::runActivity(int stand_id, QString activity)
     // run the activity....
     qCDebug(abe) << "running activity" << activity << "for stand" << stand_id;
     return act->execute(stand);
+}
+
+bool StandObj::trace() const
+{
+    mStand->property("trace").toBool();
+}
+
+void StandObj::setTrace(bool do_trace)
+{
+    mStand->setProperty("trace", QJSValue(do_trace));
 }
 
 

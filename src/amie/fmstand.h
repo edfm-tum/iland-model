@@ -40,13 +40,16 @@ public:
     Activity::Phase phase() const { return mPhase; }
     int standType() const { return mStandType; }
     FMSTP *stp() const {return mSTP; }
-    //
+    /// total area of the stand (ha)
+    double area() const;
     /// total basal area (m2/ha)
     double basalArea() const {return mTotalBasalArea; }
     /// (average) age of the stand
     double age() const {return mAge; }
     /// total standing volume (m3/ha) in the stand
     double volume() const {return mVolume; }
+    /// number of trees of the stand (stems/ha) (>4m)
+    double stems() const {return mStems; }
 
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
@@ -81,6 +84,7 @@ private:
     double mTotalBasalArea; ///< basal area of the stand
     double mAge; ///< average age (yrs) of the stand
     double mVolume; ///< standing volume (m3/ha) of the stand
+    double mStems; ///< stems per ha (above 4m)
 
     int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity
