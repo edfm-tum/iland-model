@@ -25,6 +25,8 @@ public:
     const QString &name() const {return mName; }
     /// returns the (first) Activity with the name 'name', or 0 if the activity could not be found.
     Activity *activity(const QString &name) const;
+    int activityIndex(Activity* act) { return mActivities.indexOf(act); }
+
     /// read the options from a javascript structure / object
     void setup(QJSValue &js_value, const QString name=QString());
     /// defaultFlags() is used to initalized the flags for indiv. forest stands
@@ -44,7 +46,9 @@ public:
     /// if verbose is true, detailed debug information is provided.
     static void setVerbose(bool verbose) {mVerbose = verbose; }
     static bool verbose()  {return mVerbose; } ///< returns true in debug mode
-    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value, const QString &errorMessage=QString());
+    /// get a property of 'js_value' with the name 'key'. If 'errorMessage' is given, an error is thrown when the key does not exist.
+    /// If key is not present and a 'default_value' is given, it is returned. Otherwise, an "undefined" JS value is returned.
+    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QString(), const QString &errorMessage=QString());
     static bool boolValueFromJs(const QJSValue &js_value, const QString &key, const bool default_bool_value, const QString &errorMessage=QString());
 
 private:

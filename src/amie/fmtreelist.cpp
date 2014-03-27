@@ -91,6 +91,8 @@ int FMTreeList::removeMarkedTrees()
         }
     }
     return n_removed;
+    if (mStand->trace())
+        qCDebug(abe) << mStand->context() << "removeMarkedTrees: n=" << n_removed;
 }
 
 int FMTreeList::harvest(QString filter, double fraction)

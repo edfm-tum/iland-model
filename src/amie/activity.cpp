@@ -65,7 +65,7 @@ QString Schedule::dump() const
 
 double Schedule::value(const FMStand *stand)
 {
-    double U = 100.; // todo: fix!
+    double U = stand->stp()->rotationLength();
     double current = stand->age();
     if (absolute)
         current = ForestManagementEngine::instance()->currentYear();
@@ -157,7 +157,7 @@ void Events::setup(QJSValue &js_value, QStringList event_names)
 {
     mInstance = js_value; // save the object that contains the events
     foreach (QString event, event_names) {
-        QJSValue val = FMSTP::valueFromJs(js_value, event, "");
+        QJSValue val = FMSTP::valueFromJs(js_value, event);
         if (val.isCallable()) {
             mEvents[event] = js_value; // save the event functions (and the name of the property that the function is assigned to)
         }
@@ -361,7 +361,7 @@ void Activity::setup(QJSValue value)
     qCDebug(abeSetup) << "Events: " << mEvents.dump();
 
     // setup of constraints
-    QJSValue constraints = FMSTP::valueFromJs(value, "constraint", "");
+    QJSValue constraints = FMSTP::valueFromJs(value, "constraint");
     if (!constraints.isUndefined())
         mConstraints.setup(constraints);
 

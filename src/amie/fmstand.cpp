@@ -45,10 +45,13 @@ void FMStand::initialize(FMSTP *stp)
         if (!mStandFlags[i].enabled() || !mStandFlags[i].active())
             continue;
         // set active to false which have already passed
-        if (mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age()) {
+        if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age()) {
             mStandFlags[i].setActive(false);
         } else {
             int delta = mStandFlags[i].activity()->earlistSchedule(stp->rotationLength()) - age();
+            if (mStandFlags[i].activity()->schedule().absolute)
+                delta += age(); // absolute timing: starting from 0
+
             if (delta<min_years_to_wait) {
                 min_years_to_wait = qMax(delta,0); // limit to 0 years
                 mCurrentIndex = i; // first activity to execute
@@ -118,12 +121,12 @@ bool FMStand::execute()
     }
     if (trace()) mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
 
-    if (trace()) qCDebug(abe) << context() << context() << "*** begin execution ***";
     // what to do if there is no active activity??
     if (mCurrentIndex==-1) {
-        if (trace()) qCDebug(abe) << "*** No action - no currently active activity ***";
+        if (trace()) qCDebug(abe) << context() << "*** No action - no currently active activity ***";
         return false;
     }
+    if (trace()) qCDebug(abe) << context() << "*** begin execution, name:" << currentActivity()->name();
 
     // do nothing if for the stand an activity is currently active in the scheduler
     if (currentFlags().isPending()) {
@@ -169,6 +172,14 @@ bool FMStand::afterExecution()
                tmin =  mStandFlags[i].activity()->earlistSchedule();
                indexmin = i;
             }
+    }
+    currentActivity()->events().run(QStringLiteral("onExecute"),this);
+    if (indexmin != mCurrentIndex) {
+        // call events:
+        currentActivity()->events().run(QStringLiteral("onExit"), this);
+        if (indexmin>-1 && indexmin<-mStandFlags.count())
+            mStandFlags[indexmin].activity()->events().run(QStringLiteral("onEnter"), this);
+
     }
     mCurrentIndex = indexmin;
     if (mCurrentIndex>-1) {

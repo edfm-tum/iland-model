@@ -56,6 +56,7 @@ private:
     SimulationObj *mSimulationObj;
     FMTreeList *mTrees;
 };
+class ActivityObj;
 
 /// StandObj is the bridge to stand variables from the Javascript world
 class StandObj: public QObject
@@ -79,6 +80,8 @@ public slots:
     // set and get standspecific data (persistent!)
     void setFlag(const QString &name, QJSValue value){ const_cast<FMStand*>(mStand)->setProperty(name, value);}
     QJSValue flag(const QString &name) { return const_cast<FMStand*>(mStand)->property(name); }
+    QJSValue activity(QString name);
+
 public:
     explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}
     // system stuff
@@ -120,6 +123,26 @@ public:
     explicit SimulationObj(QObject *parent = 0): QObject(parent) {}
     double timberPriceIndex() const { return 1.010101; } // dummy
 private:
+
+};
+
+
+class ActivityObj : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY (bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(QString name READ name)
+public:
+    bool enabled() const;
+    QString name() const;
+    void setEnabled(bool do_enable);
+    explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; }
+    ActivityObj(FMStand *stand, Activity *act, int index ): QObject(0) { mActivityIndex=index; mStand=stand; mActivity=act; }
+public slots:
+private:
+    int mActivityIndex; // link to base activity
+    Activity *mActivity; // pointer
+    FMStand *mStand; // and to the forest stand....
 
 };
 
