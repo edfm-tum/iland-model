@@ -10,6 +10,7 @@
 #include "expressionwrapper.h"
 #include "model.h"
 #include "fmstand.h"
+#include "fomescript.h"
 
 namespace AMIE {
 
@@ -72,9 +73,7 @@ int FMTreeList::load(const QString &filter)
             }
         }
         return mTrees.count();
-
     }
-
 }
 
 int FMTreeList::removeMarkedTrees()
@@ -98,6 +97,11 @@ int FMTreeList::harvest(QString filter, double fraction)
 {
     return remove_trees(filter, fraction, true);
 
+}
+
+bool FMTreeList::trace() const
+{
+    return FomeScript::bridge()->standObj()->trace();
 }
 
 

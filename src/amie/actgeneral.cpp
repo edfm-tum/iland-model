@@ -29,11 +29,12 @@ void ActGeneral::setup(QJSValue value)
 bool ActGeneral::execute(FMStand *stand)
 {
     FomeScript::setExecutionContext(stand);
-    if (FMSTP::verbose())
-        qDebug() << "activity 'general': execute";
+    if (FMSTP::verbose() || stand->trace())
+        qCDebug(abe) << stand->context() << "activity 'general': execute";
+
     QJSValue result = mAction.call();
     if (result.isError()) {
-        throw IException(QString("Javascript error in 'general' activity: %2").arg(result.toString()));
+        throw IException(QString("%1 Javascript error in 'general' activity: %2").arg(stand->context()).arg(result.toString()));
     }
     return result.toBool();
 }

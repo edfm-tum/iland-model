@@ -22,18 +22,25 @@ public:
     // prepare scripting features
     void setupScriptEnvironment();
     // functions
-    static void setExecutionContext(const FMStand *stand);
-    // static accessor function for the responsible script bridge
+    /// prepares the context for executing javascript functions
+    /// by setting up all internal structures for the forest stand 'stand'.
+    static void setExecutionContext(FMStand *stand);
+
+    /// static accessor function for the responsible script bridge
     static FomeScript *bridge();
+    /// returns a string for debug/trace messages
+    const QString &context() const { return mStand?mStand->context():mInvalidContext; }
 
 
     StandObj *standObj() const { return mStandObj; }
-    SiteObj *standObj() const { return mSiteObj; }
+    SiteObj *siteObj() const { return mSiteObj; }
     FMTreeList *treesObj() const { return mTrees; }
 
 signals:
 
 public slots:
+    /// logging function (which includes exeuction context)
+    void log(QJSValue value);
     /// adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
     bool addManagement(QJSValue program, QString name);
     /// add an agent definition (Javascript). 'name' is used internally. Returns true on success.
@@ -42,11 +49,12 @@ public slots:
     /// returns false if activity could not be found for the stand.
     bool runActivity(int stand_id, QString activity);
 private:
+    static QString mInvalidContext;
+    const FMStand *mStand;
     StandObj *mStandObj;
     SiteObj *mSiteObj;
     SimulationObj *mSimulationObj;
     FMTreeList *mTrees;
-
 };
 
 /// StandObj is the bridge to stand variables from the Javascript world
@@ -74,7 +82,7 @@ public slots:
 public:
     explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}
     // system stuff
-    void setStand(const FMStand* stand) { mStand = stand; }
+    void setStand(FMStand* stand) { mStand = stand; }
     bool trace() const;
     void setTrace(bool do_trace);
 
@@ -87,7 +95,7 @@ public:
 
 
 private:
-    const FMStand *mStand;
+    FMStand *mStand;
 };
 
 

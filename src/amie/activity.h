@@ -45,24 +45,25 @@ public:
     /// setup events from the javascript object
     void setup(QJSValue &js_value, QStringList event_names);
     ///< execute javascript event /if registered) in the context of the forest stand 'stand'.
-    QString run(const QString event, const FMStand *stand);
+    QString run(const QString event, FMStand *stand);
     QString dump(); ///< prints some debug info
 private:
-    QMap<QString, QJSValue> mEvents;
+    QJSValue mInstance; ///< object holding the events
+    QMap<QString, QJSValue> mEvents; ///< list of event names and javascript functions
 };
 
 class Constraints {
 public:
     Constraints() {}
     void setup(QJSValue &js_value); ///< setup from javascript
-    bool evaluate(const FMStand *stand); ///< run the constraints
+    bool evaluate(FMStand *stand); ///< run the constraints
     QStringList dump(); ///< prints some debug info
 private:
     struct constraint_item {
         constraint_item(): filter_type(ftInvalid), expr(0) {}
         ~constraint_item();
         void setup(QJSValue &js_value);
-        bool evaluate(const FMStand *stand) const;
+        bool evaluate(FMStand *stand) const;
         QString dump() const;
 
         enum { ftInvalid, ftExpression, ftJavascript} filter_type;

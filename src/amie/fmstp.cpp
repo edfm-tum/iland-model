@@ -57,7 +57,7 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
     }
 
     // (3) set up top-level events
-    mEvents.setup(js_value, QStringList() << "onInit" << "onExit");
+    mEvents.setup(js_value, QStringList() << QStringLiteral("onInit") << QStringLiteral("onExit"));
 }
 
 // read the setting from the setup-javascript object

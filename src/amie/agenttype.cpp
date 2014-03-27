@@ -65,10 +65,9 @@ void AgentType::setup()
                 stand->initialize(mSTP[mixture_type]);
             } else {
                 // todo.... some automatic stp selection
+                stand->initialize(stp);
 
             }
-            stand->initialize(stp);
-
             ++it;
         }
     }

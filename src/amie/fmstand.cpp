@@ -37,6 +37,7 @@ void FMStand::initialize(FMSTP *stp)
     mStandFlags = stp->defaultFlags();
     mCurrentIndex=-1;
     mYearsToWait=0;
+    mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id()); // initialize...
 
     // find out the first activity...
     int min_years_to_wait = 100000;
@@ -58,7 +59,7 @@ void FMStand::initialize(FMSTP *stp)
         sleep(min_years_to_wait);
 
     // call onInit handler on the level of the STP
-    stp->events().run("onInit", this);
+    stp->events().run(QStringLiteral("onInit"), this);
 
 }
 
@@ -111,28 +112,41 @@ bool FMStand::execute()
 {
     // do nothing if we are still waiting (sleep)
     if (mYearsToWait>0) {
-        if (--mYearsToWait > 0)
+        if (--mYearsToWait > 0) {
             return false;
+        }
     }
+    if (trace()) mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
+
+    if (trace()) qCDebug(abe) << context() << context() << "*** begin execution ***";
     // what to do if there is no active activity??
-    if (mCurrentIndex==-1)
+    if (mCurrentIndex==-1) {
+        if (trace()) qCDebug(abe) << "*** No action - no currently active activity ***";
         return false;
+    }
 
     // do nothing if for the stand an activity is currently active in the scheduler
-    if (currentFlags().isPending())
+    if (currentFlags().isPending()) {
+        if (trace()) qCDebug(abe) << context() << "*** No action - stand in the scheduler. ***";
         return false;
+    }
 
     // do nothing if the the current year is not within the activities window of opportunity
     double p_schedule = currentActivity()->scheduleProbability(this);
-    if (p_schedule == 0.)
+    if (p_schedule == 0.) {
+        if (trace()) qCDebug(abe)<< context()  << "*** No action - Schedule probability 0. ***";
         return false;
+    }
 
     // check if there are some constraints that prevent execution....
     reload(); // we need to renew the stand data
-    if (!currentActivity()->canExeceute(this))
+    if (!currentActivity()->canExeceute(this)) {
+        if (trace()) qCDebug(abe)<< context() << "*** No action - Constraints preventing execution. ***";
         return false;
+    }
 
     // ok, we schedule the current activity
+    if (trace()) qCDebug(abe)<< context() << "adding ticket for execution.";
     currentFlags().setIsPending(true);
     ForestManagementEngine::instance()->scheduler().addTicket(this, &currentFlags());
     return true;
@@ -179,7 +193,7 @@ double FMStand::basalArea(const QString &species_id) const
 }
 
 // storage for properties (static)
-QHash<FMStand*, QHash<QString, QJSValue> > FMStand::mStandPropertyStorage;
+QHash<const FMStand*, QHash<QString, QJSValue> > FMStand::mStandPropertyStorage;
 
 
 void FMStand::setProperty(const QString &name, QJSValue value)
@@ -188,7 +202,7 @@ void FMStand::setProperty(const QString &name, QJSValue value)
     mStandPropertyStorage[this][name] = value;
 }
 
-QJSValue FMStand::property(const QString &name)
+QJSValue FMStand::property(const QString &name) const
 {
     // check if values are already stored for the current stand
     if (!mStandPropertyStorage.contains(this))

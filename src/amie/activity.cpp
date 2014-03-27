@@ -97,6 +97,10 @@ double Schedule::value(const FMStand *stand)
             return 1.; // no optimal time: everything between min and max is fine!
         }
     }
+    // there is an optimal absoulte point in time defined, but not reached
+    if (topt > -1)
+        return 0.;
+
     // optimal time
     if (toptrel>-1. && fabs(current_rel-toptrel)*U <= 0.5)
         return 1.;
@@ -113,6 +117,10 @@ double Schedule::value(const FMStand *stand)
             return 1.; // no optimal time: everything between min and max is fine!
         }
     }
+    // there is an optimal relative point in time defined, but not reached yet.
+    if (toptrel>-1.)
+        return 0.;
+
     qCDebug(abe) << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
     return 0.;
 }
@@ -147,28 +155,30 @@ void Events::clear()
 
 void Events::setup(QJSValue &js_value, QStringList event_names)
 {
+    mInstance = js_value; // save the object that contains the events
     foreach (QString event, event_names) {
         QJSValue val = FMSTP::valueFromJs(js_value, event, "");
         if (val.isCallable()) {
-            mEvents[event] = js_value;
+            mEvents[event] = js_value; // save the event functions (and the name of the property that the function is assigned to)
         }
     }
 }
 
-QString Events::run(const QString event, const FMStand *stand)
+QString Events::run(const QString event, FMStand *stand)
 {
     if (mEvents.contains(event)) {
         FomeScript::setExecutionContext(stand);
-        if (FMSTP::verbose())
-            qCDebug(abe) << "running javascript event" << event;
         QJSValue func = mEvents[event].property(event);
         QJSValue result;
-        if (func.isCallable())
-            result = mEvents[event].callWithInstance(mEvents[event]);
+        if (func.isCallable()) {
+            result = func.callWithInstance(mInstance);
+            if (FMSTP::verbose() || stand->trace())
+                qCDebug(abe) << stand->context() << "running javascript event" << event << ":" << result.toString();
+        }
 
         //qDebug() << "event called:" << event << "result:" << result.toString();
         if (result.isError()) {
-            throw IException(QString("Javascript error in event %1: %2").arg(event).arg(result.toString()));
+            throw IException(QString("%3 Javascript error in event %1: %2").arg(event).arg(result.toString()).arg(stand->context()));
         }
         return result.toString();
     }
@@ -206,13 +216,16 @@ void Constraints::setup(QJSValue &js_value)
     }
 }
 
-bool Constraints::evaluate(const FMStand *stand)
+bool Constraints::evaluate(FMStand *stand)
 {
     if (mConstraints.isEmpty())
         return true; // no constraints to evaluate
     for (int i=0;i<mConstraints.count();++i)
-        if (!mConstraints.at(i).evaluate(stand))
+        if (!mConstraints.at(i).evaluate(stand)) {
+            if (stand->trace())
+                qCDebug(abe) << stand->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
             return false; // one constraint failed
+        }
     return true; // all constraints passed
 }
 
@@ -260,7 +273,7 @@ void Constraints::constraint_item::setup(QJSValue &js_value)
     }
 }
 
-bool Constraints::constraint_item::evaluate(const FMStand *stand) const
+bool Constraints::constraint_item::evaluate(FMStand *stand) const
 {
     switch (filter_type) {
     case ftInvalid: return true; // message?
@@ -278,7 +291,7 @@ bool Constraints::constraint_item::evaluate(const FMStand *stand) const
             }
 
             if (FMSTP::verbose())
-                qCDebug(abe) << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
+                qCDebug(abe) << stand->context() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
             return result > 0.;
 
         }
@@ -345,7 +358,7 @@ void Activity::setup(QJSValue value)
     // setup of events
     mEvents.clear();
     mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecute");
-    qCDebug(abeSetup) << "Events of thinning: " << mEvents.dump();
+    qCDebug(abeSetup) << "Events: " << mEvents.dump();
 
     // setup of constraints
     QJSValue constraints = FMSTP::valueFromJs(value, "constraint", "");
@@ -369,7 +382,7 @@ bool Activity::canExeceute(FMStand *stand)
 bool Activity::execute(FMStand *stand)
 {
     // execute the "onExecute" event
-    events().run("onExecute", stand);
+    events().run(QStringLiteral("onExecute"), stand);
     return true;
 }
 
