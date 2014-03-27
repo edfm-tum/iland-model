@@ -32,6 +32,9 @@ public:
     FMStand(FMUnit *unit, const int id);
     /// set the stand to be managed by a given 'stp'
     void initialize(FMSTP *stp);
+    /// returns true if tracing is enabled for the stand
+    bool trace() const { return property(QStringLiteral("trace")).toBool(); }
+    const QString &context() const { return mContextStr; }
 
     void reload(); // fetch new data from the forest stand
     // general properties
@@ -72,7 +75,7 @@ public:
     /// set a property value for the current stand with the name 'name'
     void setProperty(const QString &name, QJSValue value);
     /// retrieve the value of the property 'name'. Returns an empty QJSValue if the property is not defined.
-    QJSValue property(const QString &name);
+    QJSValue property(const QString &name) const;
 
     friend class FOMEWrapper;
 private:
@@ -101,7 +104,8 @@ private:
     // storage for stand-specific management properties
     QVector<ActivityFlags> mStandFlags;
     // additional property values for each stand
-    static QHash<FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
+    QString mContextStr;
+    static QHash<const FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
 
     friend class StandObj;
 };

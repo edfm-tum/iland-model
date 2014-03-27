@@ -71,6 +71,7 @@ public slots:
     double sum(QString expression, QString filter=QString()) { return aggregate_function( expression, filter, "sum"); }
 
 private:
+    bool trace() const;
     ///
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
     int remove_trees(QString expression, double fraction, bool management);

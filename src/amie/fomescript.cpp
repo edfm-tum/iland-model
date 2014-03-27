@@ -8,7 +8,7 @@
 
 namespace AMIE {
 
-
+QString FomeScript::mInvalidContext = "S---";
 
 FomeScript::FomeScript(QObject *parent) :
     QObject(parent)
@@ -17,6 +17,7 @@ FomeScript::FomeScript(QObject *parent) :
     mSiteObj = 0;
     mSimulationObj = 0;
     mTrees = 0;
+    mStand = 0;
 }
 
 FomeScript::~FomeScript()
@@ -61,19 +62,27 @@ void FomeScript::setupScriptEnvironment()
 
 }
 
-void FomeScript::setExecutionContext(const FMStand *stand)
+void FomeScript::setExecutionContext(FMStand *stand)
 {
     FomeScript *br = bridge();
-
+    br->mStand = stand;
     br->mStandObj->setStand(stand);
     br->mTrees->setStand(stand);
     br->mSiteObj->setStand(stand);
+    if (stand->trace())
+        qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
 }
 
 FomeScript *FomeScript::bridge()
 {
     // get the right bridge object (for the right thread??)
     return ForestManagementEngine::instance()->scriptBridge();
+}
+
+void FomeScript::log(QJSValue value)
+{
+    QString msg = value.toString();
+    qCDebug(abe) << bridge()->context() << msg;
 }
 
 
@@ -104,6 +113,7 @@ bool FomeScript::addAgent(QJSValue program, QString name)
 
 }
 
+/// force execution of an activity (outside of the usual execution context, e.g. for debugging)
 bool FomeScript::runActivity(int stand_id, QString activity)
 {
     // find stand
@@ -122,7 +132,7 @@ bool FomeScript::runActivity(int stand_id, QString activity)
 
 bool StandObj::trace() const
 {
-    mStand->property("trace").toBool();
+    return mStand->trace();
 }
 
 void StandObj::setTrace(bool do_trace)
