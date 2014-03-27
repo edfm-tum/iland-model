@@ -77,8 +77,6 @@ private:
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
 
-    // removal fractions
-    double mRemoveFoliage, mRemoveBranch, mRemoveStem;
     QVector<QPair<Tree*, double> > mTrees;
     int mRemoved;
     const FMStand *mStand; /// the stand the list is currently connected

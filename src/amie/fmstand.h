@@ -94,7 +94,7 @@ private:
 
     /// flags of currently active Activity
     ActivityFlags &currentFlags()  { return flags(mCurrentIndex); }
-    Activity *currentActivity() const { return mStandFlags[mCurrentIndex].activity(); }
+    Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():0; }
     int nspecies() const  { return mSpeciesData.count(); }
     /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)
     SSpeciesStand &speciesData(const int index) {return mSpeciesData[index]; }

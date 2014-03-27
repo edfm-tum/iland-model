@@ -130,6 +130,19 @@ bool FomeScript::runActivity(int stand_id, QString activity)
     return act->execute(stand);
 }
 
+QJSValue StandObj::activity(QString name)
+{
+    Activity *act = mStand->stp()->activity(name);
+    if (!act)
+        return QJSValue();
+
+    int idx = mStand->stp()->activityIndex(act);
+    ActivityObj *ao = new ActivityObj(mStand, act, idx);
+    QJSValue value = ForestManagementEngine::scriptEngine()->newQObject(ao);
+    return value;
+
+}
+
 bool StandObj::trace() const
 {
     return mStand->trace();
@@ -138,6 +151,25 @@ bool StandObj::trace() const
 void StandObj::setTrace(bool do_trace)
 {
     mStand->setProperty("trace", QJSValue(do_trace));
+}
+
+/* ******************** */
+
+bool ActivityObj::enabled() const
+{
+    if (!mStand || mActivityIndex<0) return false;
+    return mStand->flags(mActivityIndex).enabled();
+}
+
+QString ActivityObj::name() const
+{
+    return mActivity->name();
+}
+
+void ActivityObj::setEnabled(bool do_enable)
+{
+    if (!mStand || mActivityIndex<0) return;
+    mStand->flags(mActivityIndex).setEnabled(do_enable);
 }
 
 

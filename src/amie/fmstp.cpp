@@ -159,6 +159,8 @@ QJSValue FMSTP::valueFromJs(const QJSValue &js_value, const QString &key, const 
    if (!js_value.hasOwnProperty(key)) {
        if (!errorMessage.isEmpty())
            throw IException(QString("Error: required key '%1' not found. In: %2").arg(key).arg(errorMessage));
+       else if (default_value.isEmpty())
+           return QJSValue();
        else
            return default_value;
    }
