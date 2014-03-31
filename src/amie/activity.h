@@ -56,7 +56,7 @@ class Constraints {
 public:
     Constraints() {}
     void setup(QJSValue &js_value); ///< setup from javascript
-    bool evaluate(FMStand *stand); ///< run the constraints
+    double evaluate(FMStand *stand); ///< run the constraints
     QStringList dump(); ///< prints some debug info
 private:
     struct constraint_item {
@@ -89,11 +89,15 @@ public:
     bool isRepeating() const {return flag(Repeater);}
     bool isPending() const {return flag(Pending); }
     bool isForcedNext() const {return flag(ExecuteNext); }
+    bool isFinalHarvest() const {return flag(FinalHarvest); }
+    bool isExecuteImmediate() const {return flag(ExecuteImmediate); }
     void setActive(const bool active) { setFlag(Active, active); }
     void setEnabled(const bool enabled) { setFlag(Enabled, enabled); }
     void setIsRepeating(const bool repeat) { setFlag(Repeater, repeat); }
     void setIsPending(const bool pending) { setFlag(Pending, pending); }
     void setForceNext(const bool isnext) { setFlag(ExecuteNext, isnext); }
+    void setFinalHarvest(const bool isfinal) { setFlag(FinalHarvest, isfinal); }
+    void setExecuteImmediate(const bool doexec) { setFlag(ExecuteImmediate, doexec);}
 
 private:
     /// (binary coded)  flags
@@ -101,7 +105,10 @@ private:
                  Enabled=2,  // if false, the activity can not be executed
                  Repeater=4, // if true, the activity is executed
                  ExecuteNext=8, // this activity should be executed next (kind of "goto"
-                 Pending=16};  // the activity is currently in the scheduling algorithm
+                 ExecuteImmediate=16, // should be executed immediately by the scheduler (e.g. required sanitary cuttings)
+                 Pending=32,  // the activity is currently in the scheduling algorithm
+                 FinalHarvest=64  // the management of the activity is a "endnutzung" (compared to "vornutzung")
+                 };
     bool flag(const ActivityFlags::Flags flag) const { return mFlags & flag; }
     void setFlag(const ActivityFlags::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
     Activity *mActivity; ///< link to activity
@@ -128,8 +135,9 @@ public:
     virtual void setup(QJSValue value);
     /// returns a value > 0 if the activity coult be scheduled now
     virtual double scheduleProbability(FMStand *stand);
-    /// returns true when activity can be executed (ie all constraints are fulfilled)
-    virtual bool canExeceute(FMStand *stand);
+    /// returns a probability for the activity to be executed (ie all constraints are fulfilled)
+    /// return value is 0 if the activity can not be executed (maximum result is 1)
+    virtual double execeuteProbability(FMStand *stand);
     /// executes the action (usually defined in derived classes) using the context of 'stand'.
     virtual bool execute(FMStand *stand);
     /// dumps some information for debugging

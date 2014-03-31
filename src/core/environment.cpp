@@ -27,6 +27,7 @@
 #include "climate.h"
 #include "speciesset.h"
 
+
 /** Represents the input of various variables with regard to climate, soil properties and more.
   @ingroup tools
     Data is read from various sources and presented to the core model with a standardized interface.
@@ -77,6 +78,7 @@ bool Environment::loadFromString(const QString &source)
         mClimate.clear();
         mRowCoordinates.clear();
         mCreatedObjects.clear();
+        mCurrentID = 0;
 
         int index;
         if (mGridMode) {
@@ -191,6 +193,8 @@ void Environment::setPosition(const QPointF position)
         // access data in the matrix by resource unit indices
         ix = int(position.x() / 100.); // suppose size of 1 ha for each coordinate
         iy = int(position.y() / 100.);
+        mCurrentID++; // to have Ids for each resource unit
+
         key=QString("%1_%2").arg(ix).arg(iy);
     }
 

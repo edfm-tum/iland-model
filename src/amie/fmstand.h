@@ -53,6 +53,8 @@ public:
     double volume() const {return mVolume; }
     /// number of trees of the stand (stems/ha) (>4m)
     double stems() const {return mStems; }
+    /// scheduled harvest (planned harvest by activities, m3)
+    double scheduledHarvest() const {return mScheduledHarvest; }
 
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
@@ -61,7 +63,10 @@ public:
     // actions
     /// main function
     bool execute();
-    bool afterExecution();
+    bool afterExecution(bool cancel = false);
+
+    /// add a (simulated) harvest to the amount of planned harvest (used by the scheduling)
+    void addScheduledHarvest(const double add_volume) {mScheduledHarvest += add_volume; }
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.
@@ -88,6 +93,7 @@ private:
     double mAge; ///< average age (yrs) of the stand
     double mVolume; ///< standing volume (m3/ha) of the stand
     double mStems; ///< stems per ha (above 4m)
+    double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
 
     int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity

@@ -27,7 +27,7 @@ FMTreeList::FMTreeList(QObject *parent) :
 
 }
 
-void FMTreeList::setStand(const FMStand *stand)
+void FMTreeList::setStand(FMStand *stand)
 {
     mStand = stand;
     if (stand) {
@@ -123,16 +123,19 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
         if (management) {
             // management
             for (i=index_from; i<index_to; i++)
-                if (simulate())
+                if (simulate()) {
                     mTrees.at(i).first->markForHarvest(true);
-                else
+                    mStand->addScheduledHarvest(mTrees.at(i).first->volume());
+                } else {
                     mTrees.at(i).first->remove(removeFoliage(), removeBranch(), removeStem());
+                }
         } else {
             // just kill...
             for (i=index_from; i<index_to; i++)
-                if (simulate())
+                if (simulate()) {
                     mTrees.at(i).first->markForCut(true);
-                else
+                    mStand->addScheduledHarvest(mTrees.at(i).first->volume());
+                } else
                     mTrees.at(i).first->remove();
         }
         count = index_to - index_from;
@@ -152,14 +155,16 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
             cancel = 1000;
             number--;
             if (management) {
-                if (simulate())
+                if (simulate()) {
                     mTrees[rnd_index].first->markForHarvest(true);
-                else
+                    mStand->addScheduledHarvest( mTrees[rnd_index].first->volume());
+                } else
                     mTrees[rnd_index].first->remove( removeFoliage(), removeBranch(), removeStem() );
             } else {
-                if (simulate())
+                if (simulate()) {
                     mTrees[rnd_index].first->markForCut(true);
-                else
+                    mStand->addScheduledHarvest( mTrees[rnd_index].first->volume());
+                } else
                     mTrees[rnd_index].first->remove();
             }
         }
@@ -193,14 +198,16 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
             if (expr.calculate(tw) && drandom() <=fraction) {
                 // remove from system
                 if (management) {
-                    if (simulate())
+                    if (simulate()) {
                         tp->first->markForHarvest(true);
-                    else
+                        mStand->addScheduledHarvest(tp->first->volume());
+                    } else
                         tp->first->remove(removeFoliage(), removeBranch(), removeStem()); // management with removal fractions
                 } else {
-                    if (simulate())
+                    if (simulate()) {
                         tp->first->markForCut(true);
-                    else
+                        mStand->addScheduledHarvest(tp->first->volume());
+                    } else
                         tp->first->remove(); // kill
                 }
                 // remove from tree list

@@ -35,7 +35,7 @@ public:
     class LayerElement {
     public:
         LayerElement() {}
-        LayerElement(QLatin1Literal aname, QLatin1Literal adesc, GridViewType type): name(aname), description(adesc), view_type(type) {}
+        LayerElement(QString aname, QString adesc, GridViewType type): name(aname), description(adesc), view_type(type) {}
         QString name;
         QString description;
         GridViewType view_type;

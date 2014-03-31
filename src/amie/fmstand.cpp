@@ -7,6 +7,7 @@
 #include "forestmanagementengine.h"
 #include "mapgrid.h"
 #include "fmstp.h"
+#include "scheduler.h"
 
 #include "tree.h"
 #include "species.h"
@@ -26,6 +27,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mAge = 0.;
     mTotalBasalArea = 0.;
     mStems = 0.;
+    mScheduledHarvest = 0.;
 
     mCurrentIndex=-1;
 }
@@ -143,7 +145,8 @@ bool FMStand::execute()
 
     // check if there are some constraints that prevent execution....
     reload(); // we need to renew the stand data
-    if (!currentActivity()->canExeceute(this)) {
+    double p_execute = currentActivity()->execeuteProbability(this);
+    if (p_execute == 0.) {
         if (trace()) qCDebug(abe)<< context() << "*** No action - Constraints preventing execution. ***";
         return false;
     }
@@ -151,12 +154,14 @@ bool FMStand::execute()
     // ok, we schedule the current activity
     if (trace()) qCDebug(abe)<< context() << "adding ticket for execution.";
     currentFlags().setIsPending(true);
-    ForestManagementEngine::instance()->scheduler().addTicket(this, &currentFlags());
+    mScheduledHarvest = 0.;
+
+    mUnit->scheduler()->addTicket(this, &currentFlags(), p_schedule, p_execute );
     return true;
 }
 
 
-bool FMStand::afterExecution()
+bool FMStand::afterExecution(bool cancel)
 {
     // is called after an activity has run
     int tmin = 10000000;
@@ -169,11 +174,15 @@ bool FMStand::afterExecution()
         }
         if ( mStandFlags[i].enabled() && mStandFlags[i].active())
             if (mStandFlags[i].activity()->earlistSchedule() < tmin) {
-               tmin =  mStandFlags[i].activity()->earlistSchedule();
-               indexmin = i;
+                tmin =  mStandFlags[i].activity()->earlistSchedule();
+                indexmin = i;
             }
     }
-    currentActivity()->events().run(QStringLiteral("onExecute"),this);
+    if (!cancel)
+        currentActivity()->events().run(QStringLiteral("onExecute"),this);
+    else
+        currentActivity()->events().run(QStringLiteral("onCancel"),this);
+
     if (indexmin != mCurrentIndex) {
         // call events:
         currentActivity()->events().run(QStringLiteral("onExit"), this);
@@ -187,8 +196,11 @@ bool FMStand::afterExecution()
         if (to_sleep>0)
             sleep(to_sleep);
     }
+    mScheduledHarvest = 0.; // reset
+
     return mCurrentIndex > -1;
 }
+
 
 void FMStand::sleep(int years_to_sleep)
 {

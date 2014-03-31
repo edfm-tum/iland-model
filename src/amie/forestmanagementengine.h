@@ -5,7 +5,6 @@
 
 #include "knowledgebase.h"
 #include "amiegrid.h"
-#include "scheduler.h"
 
 class QJSEngine; // forward
 class MapGrid; // forward
@@ -18,7 +17,6 @@ class FMSTP; // forward
 class Agent; // forward
 class AgentType; // forward
 class FomeScript; // forward
-class Scheduler; // forward
 
 /// the FOrestManagementEngine is the container for the agent based forest management engine.
 class ForestManagementEngine
@@ -42,7 +40,6 @@ public:
     /// access to the "global" Javascript engine
     static QJSEngine *scriptEngine();
     FomeScript *scriptBridge() const {return mScriptBridge; }
-    Scheduler &scheduler() {return mScheduler; }
 
     void addSTP(FMSTP* stp) { mSTP.push_back(stp);}
     void addAgent(AgentType* at) { mAgentTypes.push_back(at);}
@@ -64,7 +61,6 @@ private:
     AgentType *agentType(const QString &name);
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
-    Scheduler mScheduler;
     // the knowledge base is the collection of silvicultural treatments ???
     KnowledgeBase mKnowledgeBase;
 
