@@ -216,17 +216,24 @@ void Constraints::setup(QJSValue &js_value)
     }
 }
 
-bool Constraints::evaluate(FMStand *stand)
+double Constraints::evaluate(FMStand *stand)
 {
     if (mConstraints.isEmpty())
-        return true; // no constraints to evaluate
-    for (int i=0;i<mConstraints.count();++i)
-        if (!mConstraints.at(i).evaluate(stand)) {
+        return 1.; // no constraints to evaluate
+    double p;
+    double p_min = 1;
+    for (int i=0;i<mConstraints.count();++i) {
+        p = mConstraints.at(i).evaluate(stand);
+        if (p == 0.) {
             if (stand->trace())
                 qCDebug(abe) << stand->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
-            return false; // one constraint failed
+            return 0.; // one constraint failed
+        } else {
+            // save the lowest value...
+            p_min = std::min(p, p_min);
         }
-    return true; // all constraints passed
+    }
+    return p_min; // all constraints passed, return the lowest returned value...
 }
 
 QStringList Constraints::dump()
@@ -357,7 +364,7 @@ void Activity::setup(QJSValue value)
 
     // setup of events
     mEvents.clear();
-    mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecute");
+    mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecute" << "onCancel");
     qCDebug(abeSetup) << "Events: " << mEvents.dump();
 
     // setup of constraints
@@ -373,7 +380,7 @@ double Activity::scheduleProbability(FMStand *stand)
     return schedule().value(stand);
 }
 
-bool Activity::canExeceute(FMStand *stand)
+double Activity::execeuteProbability(FMStand *stand)
 {
     // check the standard constraints and return true when all constraints are fulfilled (or no constraints set)
     return constraints().evaluate(stand);

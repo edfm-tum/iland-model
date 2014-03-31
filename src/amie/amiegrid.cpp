@@ -4,6 +4,7 @@
 #include "fmstand.h"
 #include "fmunit.h"
 #include "modelcontroller.h"
+#include "scheduler.h"
 
 
 
@@ -25,20 +26,22 @@ double AMIELayers::value(const FMStandPtr &data, const int index) const
     case 4: return data->basalArea(); // "basalArea"
     case 5: return data->age(); // "age"
     case 6: return data->sleepYears(); // "next evaluation"
-    default: throw IException("AMIELayers:value(): Invalid index");
+    case 7: return data->unit()->constScheduler()?data->unit()->constScheduler()->scoreOf(data->id()) : -1.; // scheduler score
+    default: throw IException("ABELayers:value(): Invalid index");
     }
 }
 
 const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
 {
     return QVector<LayeredGridBase::LayerElement>()
-            << LayeredGridBase::LayerElement(QLatin1Literal("id"), QLatin1Literal("stand ID"), GridViewBrewerDiv)
-            << LayeredGridBase::LayerElement(QLatin1Literal("unit"), QLatin1Literal("ID of the management unit"), GridViewBrewerDiv)
-            << LayeredGridBase::LayerElement(QLatin1Literal("agent"), QLatin1Literal("managing agent"), GridViewBrewerDiv)
-            << LayeredGridBase::LayerElement(QLatin1Literal("volume"), QLatin1Literal("stocking volume (m3/ha)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("basalArea"), QLatin1Literal("stocking basal area (m2/ha)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("age"), QLatin1Literal("stand age"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("next evaluation"), QLatin1Literal("years until the next evaluation"), GridViewHeat);
+            << LayeredGridBase::LayerElement(QStringLiteral("id"), QStringLiteral("stand ID"), GridViewBrewerDiv)
+            << LayeredGridBase::LayerElement(QStringLiteral("unit"), QStringLiteral("ID of the management unit"), GridViewBrewerDiv)
+            << LayeredGridBase::LayerElement(QStringLiteral("agent"), QStringLiteral("managing agent"), GridViewBrewerDiv)
+            << LayeredGridBase::LayerElement(QStringLiteral("volume"), QStringLiteral("stocking volume (m3/ha)"), GridViewRainbow)
+            << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("stocking basal area (m2/ha)"), GridViewRainbow)
+            << LayeredGridBase::LayerElement(QStringLiteral("age"), QStringLiteral("stand age"), GridViewRainbow)
+            << LayeredGridBase::LayerElement(QStringLiteral("next evaluation"), QStringLiteral("years until the next evaluation"), GridViewHeat)
+            << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewTerrain);
 }
 
 const QString AMIELayers::labelvalue(const int value, const int index) const

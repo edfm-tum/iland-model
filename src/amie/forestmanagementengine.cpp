@@ -105,6 +105,7 @@ void ForestManagementEngine::setup()
         throw IException("No model created.... invalid operation.");
     // (2) spatial data (stands, units, ...)
     const MapGrid *stand_grid = GlobalSettings::instance()->model()->standGrid();
+
     if (stand_grid==NULL || stand_grid->isValid()==false)
         throw IException("The AMIE management model requires a valid stand grid.");
 

@@ -4,24 +4,27 @@ namespace AMIE {
 
 
 class Agent; // forward
+class Scheduler;
 /** The FMUnit represents a management unit, i.e. a collection of stands.
  *  */
 class FMUnit
 {
 public:
-    FMUnit():mAgent(0) {}
-
-    FMUnit(const Agent *agent): mAgent(agent) {}
+    FMUnit(const Agent *agent);
+    ~FMUnit();
     void setId(const QString &id);
     const QString &id() const {return mId; }
     int index() const {return mIndex; }
+    Scheduler *scheduler() {return mScheduler; }
+    const Scheduler *constScheduler() const { return mScheduler; }
     // actions
-    void evaluateActivities() const;
+    void aggregate();
 
 private:
     QString mId;
     int mIndex;
     const Agent *mAgent;
+    Scheduler *mScheduler;
 };
 
 } // namespace

@@ -16,7 +16,7 @@ class FMTreeList : public QObject
 public:
     explicit FMTreeList(QObject *parent = 0);
     int standId() const { return mStandId; }
-    void setStand(const FMStand *stand);
+    void setStand(FMStand *stand);
     bool simulate() const {return mOnlySimulate; }
     void setSimulate(bool do_simulate) {mOnlySimulate = do_simulate; }
 
@@ -79,7 +79,7 @@ private:
 
     QVector<QPair<Tree*, double> > mTrees;
     int mRemoved;
-    const FMStand *mStand; /// the stand the list is currently connected
+    FMStand *mStand; /// the stand the list is currently connected
     int mStandId; ///< link to active stand
     int mNumberOfStems; ///< estimate for the number of trees in the stand
     bool mOnlySimulate; ///< mode
