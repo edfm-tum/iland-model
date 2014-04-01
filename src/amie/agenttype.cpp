@@ -38,7 +38,6 @@ void AgentType::setupSTP(QJSValue agent_code, const QString agent_name)
     if (FMSTP::verbose())
         qDebug() << "setup of agent" << agent_name << mSTP.size() << "links to STPs established.";
 
-    qDebug() << "test:" << mJSObj.property("onSelect").call().toString();
 }
 
 void AgentType::setup()
@@ -54,24 +53,34 @@ void AgentType::setup()
         QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
         while (it!=stand_map.constEnd() && it.key()==unit) {
             FMStand *stand = it.value();
-            stand->reload(); // fetch data from iLand ...
-            if (onSelect_handler.isCallable()) {
-                FomeScript::setExecutionContext(stand);
-                //QJSValue mix = onSelect_handler.call();
-                QJSValue mix = onSelect_handler.callWithInstance(mJSObj);
-                QString mixture_type = mix.toString();
-                if (!mSTP.contains(mixture_type))
-                    throw IException(QString("AgentType::setup(): the selected mixture type '%1' for stand '%2' is not valid for agent '%3'.").arg(mixture_type).arg(stand->id()).arg(mName));
-                stand->initialize(mSTP[mixture_type]);
-            } else {
-                // todo.... some automatic stp selection
-                stand->initialize(stp);
-
+            // check if STP is already assigned. If not, do it now.
+            if (!stand->stp()) {
+                stand->reload(); // fetch data from iLand ...
+                if (onSelect_handler.isCallable()) {
+                    FomeScript::setExecutionContext(stand);
+                    //QJSValue mix = onSelect_handler.call();
+                    QJSValue mix = onSelect_handler.callWithInstance(mJSObj);
+                    QString mixture_type = mix.toString();
+                    if (!mSTP.contains(mixture_type))
+                        throw IException(QString("AgentType::setup(): the selected mixture type '%1' for stand '%2' is not valid for agent '%3'.").arg(mixture_type).arg(stand->id()).arg(mName));
+                    stand->initialize(mSTP[mixture_type]);
+                } else {
+                    // todo.... some automatic stp selection
+                    stand->initialize(stp);
+                }
             }
             ++it;
         }
     }
 
+}
+
+FMSTP *AgentType::stpByName(const QString &name)
+{
+    if (mSTP.contains(name))
+        return mSTP[name];
+    else
+        return 0;
 }
 
 

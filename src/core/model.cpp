@@ -50,6 +50,8 @@
 
 #include "outputmanager.h"
 
+#include "forestmanagementengine.h"
+
 #include <QtCore>
 #include <QtXml>
 
@@ -136,6 +138,7 @@ void Model::initialize()
    mGrid = 0;
    mHeightGrid = 0;
    mManagement = 0;
+   mABEManagement = 0;
    mEnvironment = 0;
    mTimeEvents = 0;
    mStandGrid = 0;
@@ -378,6 +381,8 @@ void Model::clear()
         delete mModules;
     if (mDEM)
         delete mDEM;
+    if (mABEManagement)
+        delete mABEManagement;
 
     mGrid = 0;
     mHeightGrid = 0;
@@ -387,6 +392,7 @@ void Model::clear()
     mStandGrid  = 0;
     mModules = 0;
     mDEM = 0;
+    mABEManagement = 0;
 
     GlobalSettings::instance()->outputManager()->close();
 
@@ -460,12 +466,21 @@ void Model::loadProject()
     Sapling::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.recruitmentDimensionVariation",0.1));
 
     // (3.3) management
-    QString mgmtFile = xml.value("model.management.file");
-    if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
-        mManagement = new Management();
-        QString path = GlobalSettings::instance()->path(mgmtFile, "script");
-        mManagement->loadScript(path);
-        qDebug() << "setup management using script" << path;
+    bool use_abe = xml.valueBool("model.management.abeEnabled");
+    if (use_abe) {
+        // use the agent based forest management engine
+        mABEManagement = new AMIE::ForestManagementEngine();
+        // setup of ABE after loading of trees.
+
+    } else {
+        // use the standard management
+        QString mgmtFile = xml.value("model.management.file");
+        if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
+            mManagement = new Management();
+            QString path = GlobalSettings::instance()->path(mgmtFile, "script");
+            mManagement->loadScript(path);
+            qDebug() << "setup management using script" << path;
+        }
     }
 
 
@@ -582,6 +597,13 @@ void Model::beforeRun()
     createStandStatistics();
     }
 
+    // initalization of ABE
+    if (mABEManagement) {
+        DebugTimer t("ABESetup");
+        mABEManagement->setup();
+    }
+
+
     // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
     GlobalSettings::instance()->outputManager()->execute("landscape"); // year=0
@@ -625,10 +647,16 @@ void Model::runYear()
 
     foreach(SpeciesSet *set, mSpeciesSets)
         set->newYear();
-    // management
+    // management classic
     if (mManagement) {
         DebugTimer t("management");
         mManagement->run();
+        GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
+    }
+    // ... or ABE (the agent based variant)
+    if (mABEManagement) {
+        DebugTimer t("ABERun");
+        mABEManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }
 

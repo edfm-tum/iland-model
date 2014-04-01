@@ -22,12 +22,13 @@ FomeScript::FomeScript(QObject *parent) :
 
 FomeScript::~FomeScript()
 {
-    if (mStandObj) {
-        delete mStandObj;
-        delete mSiteObj;
-        delete mSimulationObj;
-        delete mTrees;
-    }
+    // all objects have script ownership - do not delete here.
+//    if (mStandObj) {
+//        delete mStandObj;
+//        delete mSiteObj;
+//        delete mSimulationObj;
+//        delete mTrees;
+//    }
 }
 
 void FomeScript::setupScriptEnvironment()
@@ -77,6 +78,17 @@ FomeScript *FomeScript::bridge()
 {
     // get the right bridge object (for the right thread??)
     return ForestManagementEngine::instance()->scriptBridge();
+}
+
+bool FomeScript::verbose() const
+{
+    return FMSTP::verbose();
+}
+
+void FomeScript::setVerbose(bool arg)
+{
+    FMSTP::setVerbose(arg);
+    qCDebug(abe) << "setting verbose property of ABE to" << arg;
 }
 
 void FomeScript::log(QJSValue value)

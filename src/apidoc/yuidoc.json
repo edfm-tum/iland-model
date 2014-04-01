@@ -1,0 +1,9 @@
+{
+    "name": "The ABE API",
+    "description": "The Agent Based forest Management API for iLand",
+    "version": "1.0",
+    "url": "http://iland.boku.ac.at",
+    "options": {
+        "outdir": "../../build/apidocs"
+    }
+}

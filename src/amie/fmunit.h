@@ -17,6 +17,7 @@ public:
     int index() const {return mIndex; }
     Scheduler *scheduler() {return mScheduler; }
     const Scheduler *constScheduler() const { return mScheduler; }
+    const Agent* agent() const { return mAgent; }
     // actions
     void aggregate();
 
