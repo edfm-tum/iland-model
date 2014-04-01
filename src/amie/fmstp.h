@@ -21,7 +21,6 @@ class FMSTP
 public:
     FMSTP();
     ~FMSTP();
-    enum Phase { Invalid, Tending, Thinning, Regeneration };
     const QString &name() const {return mName; }
     /// returns the (first) Activity with the name 'name', or 0 if the activity could not be found.
     Activity *activity(const QString &name) const;
@@ -36,10 +35,6 @@ public:
     /// rotation length (years)
     int rotationLength() const {return 100; } // TODO: fix
 
-
-
-    /// main function that runs the current program for stand 'stand'
-    bool execute(FMStand &stand);
 
     // helper functions
     void dumpInfo();

@@ -15,6 +15,7 @@ class FMTreeList : public QObject
     Q_PROPERTY(bool simulate READ simulate WRITE setSimulate) ///< if 'simulate' is true, trees are only marked for removal
 public:
     explicit FMTreeList(QObject *parent = 0);
+    explicit FMTreeList(FMStand *stand, QObject *parent = 0);
     int standId() const { return mStandId; }
     void setStand(FMStand *stand);
     bool simulate() const {return mOnlySimulate; }

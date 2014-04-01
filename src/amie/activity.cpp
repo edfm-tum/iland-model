@@ -10,6 +10,9 @@
 
 #include "expression.h"
 
+// include derived activity types
+#include "actgeneral.h"
+#include "actscheduled.h"
 
 namespace AMIE {
 
@@ -173,7 +176,7 @@ QString Events::run(const QString event, FMStand *stand)
         if (func.isCallable()) {
             result = func.callWithInstance(mInstance);
             if (FMSTP::verbose() || stand->trace())
-                qCDebug(abe) << stand->context() << "running javascript event" << event << ":" << result.toString();
+                qCDebug(abe) << stand->context() << "invoking javascript event" << event << " result: " << result.toString();
         }
 
         //qDebug() << "event called:" << event << "result:" << result.toString();
@@ -183,6 +186,11 @@ QString Events::run(const QString event, FMStand *stand)
         return result.toString();
     }
     return QString();
+}
+
+bool Events::hasEvent(const QString &event) const
+{
+    return mEvents.contains(event);
 }
 
 QString Events::dump()
@@ -352,6 +360,23 @@ Activity::~Activity()
 
 }
 
+Activity *Activity::createActivity(const QString &type, FMSTP *stp)
+{
+    Activity *act = 0;
+
+    if (type=="general")
+        act = new ActGeneral(stp);
+
+    if (type=="scheduled")
+        act = new ActScheduled(stp);
+
+    if (!act) {
+        throw IException(QString("Error: the activity type '%1' is not a valid type.").arg(type));
+    }
+
+    return act;
+}
+
 QString Activity::type() const
 {
     return "base";
@@ -392,6 +417,13 @@ bool Activity::execute(FMStand *stand)
 {
     // execute the "onExecute" event
     events().run(QStringLiteral("onExecute"), stand);
+    return true;
+}
+
+bool Activity::evaluate(FMStand *stand)
+{
+    // execute the "onExecute" event
+    events().run(QStringLiteral("onEvaluate"), stand);
     return true;
 }
 

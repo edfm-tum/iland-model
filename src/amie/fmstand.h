@@ -75,6 +75,11 @@ public:
 
     // return stand-specific flags
     ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
+    /// flags of currently active Activity
+    ActivityFlags &currentFlags()  { return flags(mCurrentIndex); }
+    /// get a pointer to the current activity; returns 0 if no activity is set.
+    Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():0; }
+
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
     /// set a property value for the current stand with the name 'name'
@@ -98,9 +103,6 @@ private:
     int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity
 
-    /// flags of currently active Activity
-    ActivityFlags &currentFlags()  { return flags(mCurrentIndex); }
-    Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():0; }
     int nspecies() const  { return mSpeciesData.count(); }
     /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)
     SSpeciesStand &speciesData(const int index) {return mSpeciesData[index]; }

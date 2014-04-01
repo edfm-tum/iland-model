@@ -7,8 +7,6 @@
 
 #include "expression.h"
 
-// activity types
-#include "actgeneral.h"
 
 namespace AMIE {
 // static values
@@ -104,14 +102,6 @@ void FMSTP::internalSetup(QJSValue &js_value, int level)
 //    delete test;
 }
 
-// run the management for the forest stand 'stand'
-bool FMSTP::execute(FMStand &stand)
-{
-    switch (stand.phase()) {
-        case Regeneration: break;
-    }
-    return true;
-}
 
 void FMSTP::dumpInfo()
 {
@@ -133,13 +123,8 @@ void FMSTP::setupActivity(QJSValue &js_value, const QString &name)
     QString type = js_value.property("type").toString();
     if (verbose())
         qCDebug(abeSetup) << "setting up activity of type" << type << "from JS";
-    Activity *act = 0;
-    if (type=="general")
-        act = new ActGeneral(this);
-
-    if (!act) {
-        throw IException(QString("Error: the activity type '%1' is not a valid type.").arg(type));
-    }
+    Activity *act = Activity::createActivity(type, this);
+    if (!act) return; // actually, an error is thrown in the previous call.
 
     // call the setup routine (overloaded version)
     act->setup(js_value);

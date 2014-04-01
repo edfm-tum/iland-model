@@ -131,7 +131,6 @@ SOURCES += main.cpp \
     ../tools/spatialanalysis.cpp \
     ../amie/activity.cpp \
     ../amie/forestmanagementengine.cpp \
-    ../amie/knowledgebase.cpp \
     ../tools/statdata.cpp \
     ../tools/debugtimer.cpp \
     ../tools/viewport.cpp \
@@ -148,7 +147,8 @@ SOURCES += main.cpp \
     ../amie/amiegrid.cpp \
     ../amie/scheduler.cpp \
     ../tools/colors.cpp \
-    ../amie/fmtreelist.cpp
+    ../amie/fmtreelist.cpp \
+    ../amie/actscheduled.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -221,7 +221,6 @@ HEADERS += mainwindow.h \
     ../tools/spatialanalysis.h \
     ../amie/activity.h \
     ../amie/forestmanagementengine.h \
-    ../amie/knowledgebase.h \
     ../amie/amie_global.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
@@ -239,7 +238,8 @@ HEADERS += mainwindow.h \
     ../amie/amiegrid.h \
     ../amie/scheduler.h \
     ../tools/colors.h \
-    ../amie/fmtreelist.h
+    ../amie/fmtreelist.h \
+    ../amie/actscheduled.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

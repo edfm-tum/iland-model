@@ -124,6 +124,9 @@ double FMStand::area() const
 
 bool FMStand::execute()
 {
+    //  the age of the stand increases by one
+    mAge++;
+
     // do nothing if we are still waiting (sleep)
     if (mYearsToWait>0) {
         if (--mYearsToWait > 0) {
@@ -160,13 +163,30 @@ bool FMStand::execute()
         return false;
     }
 
-    // ok, we schedule the current activity
-    if (trace()) qCDebug(abe)<< context() << "adding ticket for execution.";
-    currentFlags().setIsPending(true);
-    mScheduledHarvest = 0.;
-
-    mUnit->scheduler()->addTicket(this, &currentFlags(), p_schedule, p_execute );
-    return true;
+    // ok, we should execute the current activity.
+    // if it is not scheduled, it is executed immediately, otherwise a ticket is created.
+    if (currentFlags().isScheduled()) {
+        // ok, we schedule the current activity
+        if (trace()) qCDebug(abe)<< context() << "adding ticket for execution.";
+        currentFlags().setIsPending(true);
+        mScheduledHarvest = 0.;
+        bool should_schedule = currentActivity()->evaluate(this);
+        if (trace())
+            qCDebug(abe) << context() << "evaluated stand. add a ticket:" << should_schedule;
+        if (should_schedule) {
+            mUnit->scheduler()->addTicket(this, &currentFlags(), p_schedule, p_execute );
+        }
+        return should_schedule;
+    } else {
+        // execute immediately
+        if (trace()) qCDebug(abe) << context() << "executing activty" << currentActivity()->name();
+        mScheduledHarvest = 0.;
+        bool executed = currentActivity()->execute(this);
+        currentFlags().setIsPending(false);
+        currentFlags().setActive(false); // done; TODO: check for repeating activities
+        afterExecution(!executed); // check what comes next for the stand
+        return executed;
+    }
 }
 
 
