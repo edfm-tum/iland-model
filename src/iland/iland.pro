@@ -145,7 +145,6 @@ SOURCES += main.cpp \
     ../amie/fmstp.cpp \
     ../amie/thinning.cpp \
     ../amie/actgeneral.cpp \
-    ../amie/treelist.cpp \
     ../amie/amiegrid.cpp \
     ../amie/scheduler.cpp \
     ../tools/colors.cpp \
@@ -237,7 +236,6 @@ HEADERS += mainwindow.h \
     ../amie/fmstp.h \
     ../amie/thinning.h \
     ../amie/actgeneral.h \
-    ../amie/treelist.h \
     ../amie/amiegrid.h \
     ../amie/scheduler.h \
     ../tools/colors.h \
@@ -260,9 +258,9 @@ RESOURCES += ./res/iland.qrc \
 # $$FORMS
 OTHER_FILES += maindoc.cpp \
     qml/ruler.qml \
-    ../apidoc/abe_doc.js \
-    ../apidoc/treelist_doc.js \
-    ../apidoc/globals_doc.js
+    ../apidoc/abe/abe_doc.js \
+    ../apidoc/abe/treelist_doc.js \
+    ../apidoc/iLand/globals_doc.js
 
 
 

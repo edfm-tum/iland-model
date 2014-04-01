@@ -16,6 +16,7 @@ class FMTreeList; // forward
 class FomeScript : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
 public:
     explicit FomeScript(QObject *parent = 0);
     ~FomeScript();
@@ -36,6 +37,11 @@ public:
     SiteObj *siteObj() const { return mSiteObj; }
     FMTreeList *treesObj() const { return mTrees; }
 
+    // Properties
+    /// verbose: when true, the logging intensity is increased significantly.
+    bool verbose() const;
+    void setVerbose(bool arg);
+
 signals:
 
 public slots:
@@ -48,6 +54,8 @@ public slots:
     /// executes an activity for stand 'stand_id'. This bypasses the normal scheduling (useful for debugging/testing).
     /// returns false if activity could not be found for the stand.
     bool runActivity(int stand_id, QString activity);
+
+
 private:
     static QString mInvalidContext;
     const FMStand *mStand;
@@ -55,6 +63,7 @@ private:
     SiteObj *mSiteObj;
     SimulationObj *mSimulationObj;
     FMTreeList *mTrees;
+    bool m_verbose;
 };
 class ActivityObj;
 

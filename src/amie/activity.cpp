@@ -360,12 +360,14 @@ QString Activity::type() const
 void Activity::setup(QJSValue value)
 {
     mSchedule.setup(FMSTP::valueFromJs(value, "schedule", "", "setup activity"));
-    qCDebug(abe) << mSchedule.dump();
+    if (FMSTP::verbose())
+        qCDebug(abeSetup) << mSchedule.dump();
 
     // setup of events
     mEvents.clear();
     mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecute" << "onCancel");
-    qCDebug(abeSetup) << "Events: " << mEvents.dump();
+    if (FMSTP::verbose())
+        qCDebug(abeSetup) << "Events: " << mEvents.dump();
 
     // setup of constraints
     QJSValue constraints = FMSTP::valueFromJs(value, "constraint");

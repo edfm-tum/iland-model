@@ -42,8 +42,9 @@ ForestManagementEngine::ForestManagementEngine()
 ForestManagementEngine::~ForestManagementEngine()
 {
     clear();
-    if (mScriptBridge)
-        delete mScriptBridge;
+    // script bridge: script ownership?
+    //if (mScriptBridge)
+    //    delete mScriptBridge;
     singleton_fome_engine = 0;
 }
 
@@ -66,7 +67,7 @@ void ForestManagementEngine::setupScripting()
     mScriptBridge = new FomeScript;
     mScriptBridge->setupScriptEnvironment();
 
-    QString file_name = GlobalSettings::instance()->path(xml.value("model.management.amie.file"));
+    QString file_name = GlobalSettings::instance()->path(xml.value("model.management.abe.file"));
     QString code = Helper::loadTextFile(file_name);
     qCDebug(abeSetup) << "Loading script file" << file_name;
     QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
@@ -109,23 +110,26 @@ void ForestManagementEngine::setup()
     if (stand_grid==NULL || stand_grid->isValid()==false)
         throw IException("The AMIE management model requires a valid stand grid.");
 
-    QString data_file_name = GlobalSettings::instance()->path(xml.value("model.management.amie.agentDataFile"));
+    QString data_file_name = GlobalSettings::instance()->path(xml.value("model.management.abe.agentDataFile"));
     CSVFile data_file(data_file_name);
     if (data_file.rowCount()==0)
         throw IException(QString("Stand-Initialization: the standDataFile file %1 is empty or missing!").arg(data_file_name));
     int ikey = data_file.columnIndex("id");
     int iunit = data_file.columnIndex("unit");
     int iagent = data_file.columnIndex("agent");
+    int istp = data_file.columnIndex("stp");
     if (ikey<0 || iunit<0 || iagent<0)
         throw IException("setup AMIE agentDataFile: one (or more) of the required columns 'id','unit', 'agent' not available.");
 
     QList<QString> unit_codes;
     QList<QString> agent_codes;
+    QHash<FMStand*, QString> initial_stps;
     for (int i=0;i<data_file.rowCount();++i) {
         int stand_id = data_file.value(i,ikey).toInt();
         if (!stand_grid->isValid(stand_id))
             continue; // skip stands that are not in the map (e.g. when a smaller extent is simulated)
-        qCDebug(abeSetup) << "setting up stand" << stand_id;
+        if (FMSTP::verbose())
+            qCDebug(abeSetup) << "setting up stand" << stand_id;
 
         // check agents
         QString agent_code = data_file.value(i, iagent).toString();
@@ -163,6 +167,10 @@ void ForestManagementEngine::setup()
 
         // create stand
         FMStand *stand = new FMStand(unit,stand_id);
+        if (istp>-1) {
+            QString stp = data_file.value(i, istp).toString();
+            initial_stps[stand] = stp;
+        }
 
         mUnitStandMap.insertMulti(unit,stand);
         mStands.append(stand);
@@ -183,6 +191,16 @@ void ForestManagementEngine::setup()
     mStandLayers.setGrid(mFMStandGrid);
     mStandLayers.clearClasses();
     mStandLayers.registerLayers();
+
+    // now initialize STPs (if they are defined in the init file)
+    for (QHash<FMStand*,QString>::iterator it=initial_stps.begin(); it!=initial_stps.end(); ++it) {
+        FMStand *s = it.key();
+        FMSTP* stp = s->unit()->agent()->type()->stpByName(it.value());
+        if (stp) {
+            s->reload(); // not strictly necessary... but nice to have initial data.
+            s->initialize(stp);
+        }
+    }
 
     // now initialize the agents....
     foreach(AgentType *at, mAgentTypes)

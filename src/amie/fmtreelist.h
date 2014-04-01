@@ -20,6 +20,10 @@ public:
     bool simulate() const {return mOnlySimulate; }
     void setSimulate(bool do_simulate) {mOnlySimulate = do_simulate; }
 
+    /// access the list of trees
+    const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
+
+
 signals:
 
 public slots:

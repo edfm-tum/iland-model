@@ -42,9 +42,9 @@ void Colors::setPalette(const GridViewType type, const float min_val, const floa
 
     }
     mLabels = QStringList() << QString::number(min_val)
-                            << QString::number((3*min_val + max_val)/4)
-                            << QString::number((min_val+max_val/2))
-                            << QString::number((min_val + 3*max_val)/4)
+                            << QString::number((3.*min_val + max_val)/4.)
+                            << QString::number((min_val+max_val)/2.)
+                            << QString::number((min_val + 3.*max_val)/4.)
                             << QString::number(max_val);
 
     if (mAutoScale) {

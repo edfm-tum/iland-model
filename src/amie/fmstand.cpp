@@ -3,7 +3,7 @@
 
 #include "fmunit.h"
 #include "management.h"
-#include "treelist.h"
+#include "fmtreelist.h"
 #include "forestmanagementengine.h"
 #include "mapgrid.h"
 #include "fmstp.h"
@@ -11,6 +11,8 @@
 
 #include "tree.h"
 #include "species.h"
+
+#include "debugtimer.h"
 
 namespace AMIE {
 
@@ -65,6 +67,8 @@ void FMStand::initialize(FMSTP *stp)
 
     // call onInit handler on the level of the STP
     stp->events().run(QStringLiteral("onInit"), this);
+    if (mCurrentIndex>-1)
+        mStandFlags[mCurrentIndex].activity()->events().run(QStringLiteral("onEnter"), this);
 
 }
 
@@ -75,19 +79,24 @@ bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)
 
 void FMStand::reload()
 {
-
+    DebugTimer t("FMStand::reload");
     // load all trees that are located on this stand
     mTotalBasalArea = 0.;
     mVolume = 0.;
     mAge = 0.;
     mStems = 0.;
-    TreeList trees;
+    FMTreeList trees;
+    trees.setStand(this);
     mSpeciesData.clear();
-    trees.loadFromMap(ForestManagementEngine::standGrid(), mId);
+
+    // load all trees of the forest stand
+    trees.loadAll();
+
+    //qDebug() << "fmstand-reload: load trees from map:" << t.elapsed();
     // use: value_per_ha = value_stand * area_factor
     double area_factor = 10000. / ForestManagementEngine::standGrid()->area(mId);
-    const QList<QPair<Tree*, double> > &treelist = trees.trees();
-    for ( QList<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it) {
+    const QVector<QPair<Tree*, double> > &treelist = trees.trees();
+    for ( QVector<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it) {
         double ba = it->first->basalArea() * area_factor;
         mTotalBasalArea+=ba;
         mVolume += it->first->volume() * area_factor;

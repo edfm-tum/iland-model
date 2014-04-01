@@ -26,6 +26,8 @@ public:
     void addUnit(FMUnit *unit) {mUnits.push_back(unit);}
     ///
     void setup();
+    /// get stand treatment program by name; return 0 if the stp is not available.
+    FMSTP *stpByName(const QString &name);
     // factory functions to create agents.... (
 private:
     QString mName; // agent name
