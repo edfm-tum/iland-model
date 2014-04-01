@@ -3,7 +3,6 @@
 #include <QMultiMap>
 #include <QVector>
 
-#include "knowledgebase.h"
 #include "amiegrid.h"
 
 class QJSEngine; // forward
@@ -51,9 +50,7 @@ public:
     const QMultiMap<FMUnit*, FMStand*> stands() const {return mUnitStandMap; }
     // functions
     /// evalaute forest management activities and select fitting activities for each forest stand
-    void evaluateActivities();
     void test();
-    void test_old();
 
 
 private:
@@ -61,8 +58,6 @@ private:
     AgentType *agentType(const QString &name);
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
-    // the knowledge base is the collection of silvicultural treatments ???
-    KnowledgeBase mKnowledgeBase;
 
     QVector<FMSTP*> mSTP;
 

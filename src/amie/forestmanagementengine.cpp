@@ -232,11 +232,17 @@ FMUnit *nc_execute_unit(FMUnit *unit)
     //qDebug() << "called for unit" << unit;
     const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
     QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
+    int executed = 0;
+    int total = 0;
     while (it!=stand_map.constEnd() && it.key()==unit) {
-        it.value()->execute();
+        if (it.value()->execute())
+            ++executed;
         ++it;
+        ++total;
     }
     return unit;
+    if (FMSTP::verbose())
+        qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
 }
 
 /// this is the main function of the forest management engine.
@@ -255,65 +261,7 @@ void ForestManagementEngine::run(int debug_year)
 
 }
 
-void ForestManagementEngine::evaluateActivities()
-{
-    // loop over all stands and evaluate activities
-     QMultiMap<FMUnit*, FMStand*>::const_iterator it = mUnitStandMap.begin();
-     while (it != mUnitStandMap.end()) {
-         mKnowledgeBase.evaluate(it.value());
-         it++;
-     }
-}
 
-void ForestManagementEngine::test_old()
-{
-    // test code
-    try {
-        //Activity::setVerbose(true);
-        // setup the activities and the javascript environment...
-        GlobalSettings::instance()->resetScriptEngine(); // clear the script
-        setup();
-
-    } catch (const IException &e) {
-        qDebug() << "An error occured:" << e.message();
-    }
-
-    // setup some units and stands....
-    DebugTimer t;
-    AgentType *agent_type = new AgentType();
-    mAgentTypes.append(agent_type);
-
-    for (int i=0;i<100;++i) {
-        // one agent per unit, and one type for all agents
-        Agent *agent = new Agent(agent_type);
-        mAgents.append(agent);
-
-        FMUnit *unit = new FMUnit(agent);
-        mUnits.append(unit);
-
-        // stands
-        for (int j=0;j<1000;j++) {
-            FMStand *stand = new FMStand(unit, i*1000+j);
-            mUnitStandMap.insert(unit, stand);
-        }
-    }
-    // just a demo: evaluate all stands
-    qDebug() << "evaluating stands....";
-    try {
-
-        foreach(const FMStand *stand, mUnitStandMap) {
-            mKnowledgeBase.evaluate(stand);
-        }
-
-    }  catch (const IException &e) {
-        qDebug() << "An error occured in evaluating stands:" << e.message();
-    }
-
-
-    qDebug() << "evaluating finished";
-
-    clear();
-}
 
 
 void ForestManagementEngine::test()

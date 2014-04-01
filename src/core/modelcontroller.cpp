@@ -174,8 +174,9 @@ void ModelController::create()
 void ModelController::destroy()
 {
     if (canDestroy()) {
-        delete mModel;
+        Model *m = mModel;
         mModel = 0;
+        delete m;
         GlobalSettings::instance()->setCurrentYear(0);
         qDebug() << "ModelController: Model destroyed.";
     }

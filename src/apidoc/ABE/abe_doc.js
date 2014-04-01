@@ -4,13 +4,82 @@
 // http://127.0.0.1:3000/
 
 /**
- * iLand Javascript API
-Overview
-========
+ * The agent based forest management engine.
+#Overview
+One example, the cross
+
+
+
 this is the ....
  *
  * @module ABE
 */
+
+/**
+  The `fmengine` variable lets you access the ABE core engine.
+
+  Use `fmengine` to register agents and stand treatment programmes. `fmengine` also provides some additional functionalities, such as logging (`log`)
+  or executing functions/activities in the ABE context.
+
+  @class fmengine
+  */
+
+/**
+  `log` writes a log message. Each message is prefixed with a code for identifying the current stand and the current year of the simulation.
+  The format of the prefix is: 'S_standid_Y_year_:'.
+
+           fmengine.log('log message for stand ' + stand.id);
+           // produces (in year 0 and for stand 7)
+           abe: "S7Y0:" log message for stand 7
+
+  @method log
+  @param {string} message The message to be printed.
+  */
+
+/**
+    `runActivity` executes an {{#crossLink "Activity"}}{{/crossLink}} for stand given by `standId`. This bypasses the normal scheduling (useful for debugging/testing).
+
+  @method runActivity
+  @param {int} standId the (integer) id of the stand in which context the activity should be executed.
+  @param {string} activity the name of the activity that should be executed.
+  @return {boolean} returns false if the stand or activity were not found.
+
+  */
+
+/**
+  adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
+
+  @method addManagement
+  @param {object} program The javascript object that defines the @STP.
+  @param {string} name The name that ABE should be use for this STP.
+  @return {boolean} true on success.
+  */
+
+/**
+  add an agent definition (Javascript) and gives the agent the name `name`.
+
+  @method addAgent
+  @param {object} program The javascript object that defines the {{#crossLink "Agent"}}{{/crossLink}}.
+  @param {string} name The name that ABE should be use for this {{#crossLink "Agent"}}{{/crossLink}}.
+  @return {boolean} true on success.
+  */
+
+/**
+  ABE generates much more detailed log messages, if `verbose` is true. This is generally useful for debugging and
+  should be turned off for productive use. Note, that `verbose` mode can switched on for specfic code sections:
+
+        ....
+        fmengine.verbose = true;
+        ... // do some complicated stuff
+        fmengine.verbose = false; // switch off verbose mode
+
+  See also: {{#crossLink "stand:trace"}}{{/crossLink}}
+
+  @property verbose
+  @type boolean
+  @default false
+  */
+
 
 /**
 * This is the description for my class.

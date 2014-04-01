@@ -23,8 +23,13 @@ FMTreeList::FMTreeList(QObject *parent) :
     QObject(parent)
 {
     setStand(0); // clear stand link
-    mOnlySimulate = true;
 
+}
+
+FMTreeList::FMTreeList(FMStand *stand, QObject *parent):
+    QObject(parent)
+{
+    setStand(stand);
 }
 
 void FMTreeList::setStand(FMStand *stand)
@@ -33,9 +38,11 @@ void FMTreeList::setStand(FMStand *stand)
     if (stand) {
         mStandId = stand->id();
         mNumberOfStems = stand->stems() * stand->area();
+        mOnlySimulate = stand->currentActivity()?stand->currentFlags().isScheduled() : false;
     } else {
         mStandId = -1;
         mNumberOfStems = 1000;
+        mOnlySimulate = false;
     }
 }
 
