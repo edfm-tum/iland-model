@@ -12,6 +12,7 @@
 #include "fomescript.h"
 #include "scriptglobal.h"
 #include "fomescript.h"
+#include "scheduler.h"
 
 #include "debugtimer.h"
 
@@ -197,7 +198,6 @@ void ForestManagementEngine::setup()
         FMStand *s = it.key();
         FMSTP* stp = s->unit()->agent()->type()->stpByName(it.value());
         if (stp) {
-            s->reload(); // not strictly necessary... but nice to have initial data.
             s->initialize(stp);
         }
     }
@@ -240,9 +240,13 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         ++it;
         ++total;
     }
-    return unit;
     if (FMSTP::verbose())
         qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
+
+    // now run the scheduler
+    unit->scheduler()->run();
+
+    return unit;
 }
 
 /// this is the main function of the forest management engine.

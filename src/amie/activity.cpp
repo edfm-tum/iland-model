@@ -94,8 +94,10 @@ double Schedule::value(const FMStand *stand)
             // linear interpolation
             if (current<=topt)
                 return topt==tmin?1.:(current-tmin)/(topt-tmin);
+            if (force_execution)
+                return 1.; // keep the high probability.
             else
-                return topt==tmax?1.:(tmax-current)/(tmax-topt);
+                return topt==tmax?1.:(tmax-current)/(tmax-topt); // decreasing probabilitiy again
         } else {
             return 1.; // no optimal time: everything between min and max is fine!
         }
@@ -390,7 +392,7 @@ void Activity::setup(QJSValue value)
 
     // setup of events
     mEvents.clear();
-    mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecute" << "onCancel");
+    mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
         qCDebug(abeSetup) << "Events: " << mEvents.dump();
 

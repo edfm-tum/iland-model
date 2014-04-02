@@ -45,9 +45,11 @@ public:
     FMSTP *stp() const {return mSTP; }
     /// total area of the stand (ha)
     double area() const;
+    /// absolute age: years since the rotation has started
+    double absoluteAge() const;
     /// total basal area (m2/ha)
     double basalArea() const {return mTotalBasalArea; }
-    /// (average) age of the stand
+    /// (average) age of the stand (weighted with basal area)
     double age() const {return mAge; }
     /// total standing volume (m3/ha) in the stand
     double volume() const {return mVolume; }
@@ -100,6 +102,7 @@ private:
     double mStems; ///< stems per ha (above 4m)
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
 
+    int mRotationStartYear; ///< absolute year the current rotation has started
     int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity
 

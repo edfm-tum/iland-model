@@ -51,7 +51,7 @@ bool ActScheduled::evaluate(FMStand *stand)
     stand->currentFlags().setDoSimulate(true);
     QString result = events().run(QStringLiteral("onEvaluate"), stand);
     if (stand->trace())
-        qCDebug(abe) << stand->context() << "executed onSchedule event of" << name() << "with result:" << result;
+        qCDebug(abe) << stand->context() << "executed onEvaluate event of" << name() << "with result:" << result;
     bool ok;
     double harvest = result.toDouble(&ok);
     if (ok) {
