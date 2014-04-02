@@ -8,6 +8,7 @@
 #include "mapgrid.h"
 #include "fmstp.h"
 #include "scheduler.h"
+#include "fomescript.h"
 
 #include "tree.h"
 #include "species.h"
@@ -30,6 +31,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mTotalBasalArea = 0.;
     mStems = 0.;
     mScheduledHarvest = 0.;
+    mRotationStartYear = 0;
 
     mCurrentIndex=-1;
 }
@@ -42,6 +44,10 @@ void FMStand::initialize(FMSTP *stp)
     mCurrentIndex=-1;
     mYearsToWait=0;
     mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id()); // initialize...
+
+    // load data and aggregate averages
+    reload();
+    mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age();
 
     // find out the first activity...
     int min_years_to_wait = 100000;
@@ -85,17 +91,17 @@ void FMStand::reload()
     mVolume = 0.;
     mAge = 0.;
     mStems = 0.;
-    FMTreeList trees;
-    trees.setStand(this);
     mSpeciesData.clear();
 
-    // load all trees of the forest stand
-    trees.loadAll();
+    // load all trees of the forest stand (use the treelist of the current execution context)
+    FMTreeList *trees = ForestManagementEngine::instance()->scriptBridge()->treesObj();
+    trees->setStand(this);
+    trees->loadAll();
 
     //qDebug() << "fmstand-reload: load trees from map:" << t.elapsed();
     // use: value_per_ha = value_stand * area_factor
     double area_factor = 10000. / ForestManagementEngine::standGrid()->area(mId);
-    const QVector<QPair<Tree*, double> > &treelist = trees.trees();
+    const QVector<QPair<Tree*, double> > &treelist = trees->trees();
     for ( QVector<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it) {
         double ba = it->first->basalArea() * area_factor;
         mTotalBasalArea+=ba;
@@ -119,6 +125,11 @@ void FMStand::reload()
 double FMStand::area() const
 {
     return ForestManagementEngine::standGrid()->area(mId)/10000.;
+}
+
+double FMStand::absoluteAge() const
+{
+    return ForestManagementEngine::instance()->currentYear() - mRotationStartYear;
 }
 
 
@@ -150,13 +161,22 @@ bool FMStand::execute()
 
     // do nothing if the the current year is not within the activities window of opportunity
     double p_schedule = currentActivity()->scheduleProbability(this);
-    if (p_schedule == 0.) {
+    if (p_schedule < 0.00001) {
         if (trace()) qCDebug(abe)<< context()  << "*** No action - Schedule probability 0. ***";
         return false;
     }
 
+    // we need to renew the stand data
+    reload();
+
+    // check again schedule - with updated (correct) age
+    p_schedule = currentActivity()->scheduleProbability(this);
+    if (p_schedule < 0.00001) {
+        if (trace()) qCDebug(abe)<< context()  << "*** No action (after reload) - Schedule probability 0. ***";
+        return false;
+    }
+
     // check if there are some constraints that prevent execution....
-    reload(); // we need to renew the stand data
     double p_execute = currentActivity()->execeuteProbability(this);
     if (p_execute == 0.) {
         if (trace()) qCDebug(abe)<< context() << "*** No action - Constraints preventing execution. ***";
@@ -201,14 +221,29 @@ bool FMStand::afterExecution(bool cancel)
             indexmin = i;
             break; // we "jump" to this activity
         }
-        if ( mStandFlags[i].enabled() && mStandFlags[i].active())
-            if (mStandFlags[i].activity()->earlistSchedule() < tmin) {
-                tmin =  mStandFlags[i].activity()->earlistSchedule();
-                indexmin = i;
-            }
     }
+
+    if (indexmin == -1) {
+        // check if a restart is needed
+        // TODO: find a better way!!
+        if (mCurrentIndex == mStandFlags.count()-1) {
+            // we have reached the last activity
+            for (int i=0;i<mStandFlags.count(); ++i)
+                mStandFlags[i].setActive(true);
+        }
+
+        // look for the next (enabled) activity.
+        for (int i=0;i<mStandFlags.count(); ++i) {
+            if ( mStandFlags[i].enabled() && mStandFlags[i].active())
+                if (mStandFlags[i].activity()->earlistSchedule() < tmin) {
+                    tmin =  mStandFlags[i].activity()->earlistSchedule();
+                    indexmin = i;
+                }
+        }
+    }
+
     if (!cancel)
-        currentActivity()->events().run(QStringLiteral("onExecute"),this);
+        currentActivity()->events().run(QStringLiteral("onExecuted"),this);
     else
         currentActivity()->events().run(QStringLiteral("onCancel"),this);
 

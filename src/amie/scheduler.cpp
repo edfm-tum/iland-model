@@ -36,44 +36,68 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
 void Scheduler::run()
 {
     // update the plan if necessary...
+    if (FMSTP::verbose() && mItems.size()>0)
+        qCDebug(abe) << "running scheduler for unit" << mUnit->id() << ". # of active items:" << mItems.size();
+
+    double harvest_in_queue = 0.;
 
     // update the schedule probabilities....
-    for (QList<SchedulerItem*>::iterator it = mItems.begin(); it!=mItems.end(); ++it) {
+    QList<SchedulerItem*>::iterator it = mItems.begin();
+    while (it!=mItems.end()) {
         SchedulerItem *item = *it;
+        harvest_in_queue += item->stand->scheduledHarvest();
         double p_sched = item->flags->activity()->scheduleProbability(item->stand);
         item->scheduleScore = p_sched;
         item->calculate();
+        if (item->stand->trace())
+            qCDebug(abe) << item->stand->context() << "scheduler scores (harvest schedule total): " << item->harvestScore << item->scheduleScore << item->score;
+
         // drop item if no schedule to happen any more
         if (item->score == 0.) {
             if (item->stand->trace())
                 qCDebug(abe) << item->stand->context() << "dropped activity" << item->flags->activity()->name() << "from scheduler.";
             item->stand->afterExecution(true); // execution canceled
-            mItems.erase(it);
+            it = mItems.erase(it);
             delete item;
+        } else {
+            ++it;
         }
     }
 
     // sort the probabilities, highest probs go first....
     qSort(mItems);
 
+    int no_executed = 0;
+    double harvest_scheduled = 0.;
     int current_year = ForestManagementEngine::instance()->currentYear();
     // now execute the activities with the highest ranking...
-    for (QList<SchedulerItem*>::iterator it = mItems.begin(); it!=mItems.end(); ++it) {
+
+    it = mItems.begin();
+    while (it!=mItems.end()) {
         // for the time being: execute everything >0.5 ... or if time > 10 yrs
         SchedulerItem *item = *it;
         // ignore stands that are currently banned
         if (item->forbiddenTo > current_year)
             continue;
 
-        if (item->score > 0.5 || item->enterYear < current_year-10) {
+        bool remove = false;
+        if (item->score > 0.5) {
+
             // execute activity:
+            if (item->stand->trace())
+                qCDebug(abe) << item->stand->context() << "execute activity" << item->flags->activity()->name() << "score" << item->score << "planned harvest:" << item->stand->scheduledHarvest();
+            harvest_scheduled += item->stand->scheduledHarvest();
+
             bool executed = item->flags->activity()->execute(item->stand);
             item->flags->setIsPending(false);
             item->flags->setActive(false); // done; TODO: check for repeating activities
             item->stand->afterExecution(!executed); // check what comes next for the stand
+            no_executed++;
+
             // flag neighbors of the stand, if a clearcut happened
             // this is to avoid large unforested areas
             if (executed && item->flags->isFinalHarvest()) {
+                if (FMSTP::verbose()) qCDebug(abe) << item->stand->context() << "ran final harvest -> flag neighbors";
                 // simple rule: do not allow harvests for neighboring stands for 5 years
                 item->forbiddenTo = current_year + 5;
                 QList<int> neighbors = ForestManagementEngine::instance()->standGrid()->neighborsOf(item->stand->id());
@@ -83,9 +107,23 @@ void Scheduler::run()
 
             }
 
+            remove = true;
 
         }
+        if (remove) {
+            // removing item from scheduler
+            if (item->stand->trace())
+                qCDebug(abe) << item->stand->context() << "removing activity" << item->flags->activity()->name() << "from scheduler.";
+            it = mItems.erase(it);
+            delete item;
+
+        } else {
+            ++it;
+        }
     }
+    if (FMSTP::verbose() && no_executed>0)
+        qCDebug(abe) << "scheduler finished for" << mUnit->id() << ". # of items executed (n/volume):" << no_executed << "(" << harvest_scheduled << "m3), total:" << mItems.size() << "(" << harvest_in_queue << "m3)";
+
 }
 
 double Scheduler::scoreOf(const int stand_id) const
@@ -105,7 +143,8 @@ double Scheduler::scoreOf(const int stand_id) const
 
 bool Scheduler::SchedulerItem::operator<(const Scheduler::SchedulerItem &item)
 {
-    return this->score < item.score;
+    // sort *descending*, i.e. after sorting the item with the highest score is in front.
+    return this->score > item.score;
 }
 
 void Scheduler::SchedulerItem::calculate()

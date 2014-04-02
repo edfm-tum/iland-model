@@ -41,7 +41,7 @@ const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
             << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("stocking basal area (m2/ha)"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QStringLiteral("age"), QStringLiteral("stand age"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QStringLiteral("next evaluation"), QStringLiteral("years until the next evaluation"), GridViewHeat)
-            << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewTerrain);
+            << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow);
 }
 
 const QString AMIELayers::labelvalue(const int value, const int index) const
