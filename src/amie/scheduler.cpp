@@ -77,8 +77,10 @@ void Scheduler::run()
         // for the time being: execute everything >0.5 ... or if time > 10 yrs
         SchedulerItem *item = *it;
         // ignore stands that are currently banned
-        if (item->forbiddenTo > current_year)
+        if (item->forbiddenTo > current_year) {
+            ++it;
             continue;
+        }
 
         bool remove = false;
         if (item->score > 0.5) {

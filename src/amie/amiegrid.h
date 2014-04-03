@@ -11,6 +11,7 @@ class FMStand; // forward
 typedef AMIE::FMStand* FMStandPtr;
 class AMIELayers: public LayeredGrid<FMStandPtr> {
   public:
+    ~AMIELayers();
     void setGrid(Grid<FMStandPtr> &grid) { mGrid = &grid; }
     double value(const FMStandPtr &data, const int index) const;
     const QVector<LayeredGridBase::LayerElement> names() const;

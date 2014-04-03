@@ -172,18 +172,19 @@ void Events::setup(QJSValue &js_value, QStringList event_names)
 QString Events::run(const QString event, FMStand *stand)
 {
     if (mEvents.contains(event)) {
-        FomeScript::setExecutionContext(stand);
+        if (stand)
+            FomeScript::setExecutionContext(stand);
         QJSValue func = mEvents[event].property(event);
         QJSValue result;
         if (func.isCallable()) {
             result = func.callWithInstance(mInstance);
-            if (FMSTP::verbose() || stand->trace())
-                qCDebug(abe) << stand->context() << "invoking javascript event" << event << " result: " << result.toString();
+            if (FMSTP::verbose() || stand && stand->trace())
+                qCDebug(abe) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
         }
 
         //qDebug() << "event called:" << event << "result:" << result.toString();
         if (result.isError()) {
-            throw IException(QString("%3 Javascript error in event %1: %2").arg(event).arg(result.toString()).arg(stand->context()));
+            throw IException(QString("%3 Javascript error in event %1: %2").arg(event).arg(result.toString()).arg(stand?stand->context():"----"));
         }
         return result.toString();
     }
@@ -392,7 +393,7 @@ void Activity::setup(QJSValue value)
 
     // setup of events
     mEvents.clear();
-    mEvents.setup(value, QStringList() << "onEnter" << "onExit" << "onExecuted" << "onCancel");
+    mEvents.setup(value, QStringList() << "onCreate" << "onEnter" << "onExit" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
         qCDebug(abeSetup) << "Events: " << mEvents.dump();
 

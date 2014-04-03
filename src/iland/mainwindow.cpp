@@ -474,6 +474,18 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
     updatePaintGridList();
 }
 
+void MainWindow::removeLayers(const LayeredGridBase *layer)
+{
+    QHash<QString, PaintObject>::iterator it=mPaintList.begin();
+    while(it!=mPaintList.end())
+        if (it->layered == layer)
+            it = mPaintList.erase(it);
+        else
+            ++it;
+    if (mPaintNext.layered == layer)
+        mPaintNext.what = PaintObject::PaintHeightGrid;
+}
+
 
 void MainWindow::paintGrid(MapGrid *map_grid, const QString &name,
                const GridViewType view_type,

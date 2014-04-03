@@ -511,6 +511,16 @@ void ModelController::addLayers(const LayeredGridBase *layers, const QString &na
     Q_UNUSED(layers); Q_UNUSED(name);
 #endif
 }
+void ModelController::removeLayers(const LayeredGridBase *layers)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow)
+        mViewerWindow->removeLayers(layers);
+    //qDebug() << layers->names();
+#else
+    Q_UNUSED(layers); Q_UNUSED(name);
+#endif
+}
 
 void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
 {

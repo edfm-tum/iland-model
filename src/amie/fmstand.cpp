@@ -226,7 +226,7 @@ bool FMStand::afterExecution(bool cancel)
     if (indexmin == -1) {
         // check if a restart is needed
         // TODO: find a better way!!
-        if (mCurrentIndex == mStandFlags.count()-1) {
+        if (currentFlags().isFinalHarvest()) {
             // we have reached the last activity
             for (int i=0;i<mStandFlags.count(); ++i)
                 mStandFlags[i].setActive(true);
@@ -250,7 +250,7 @@ bool FMStand::afterExecution(bool cancel)
     if (indexmin != mCurrentIndex) {
         // call events:
         currentActivity()->events().run(QStringLiteral("onExit"), this);
-        if (indexmin>-1 && indexmin<-mStandFlags.count())
+        if (indexmin>-1 && indexmin<mStandFlags.count())
             mStandFlags[indexmin].activity()->events().run(QStringLiteral("onEnter"), this);
 
     }

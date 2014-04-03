@@ -108,7 +108,7 @@ public:
 
 private:
     /// (binary coded)  flags
-    enum Flags { Active=1,  // if true, the activity is currently the active activity
+    enum Flags { Active=1,  // if false, the activity has already been executed
                  Enabled=2,  // if false, the activity can not be executed
                  Repeater=4, // if true, the activity is executed
                  ExecuteNext=8, // this activity should be executed next (kind of "goto"
@@ -176,6 +176,7 @@ private:
     Events mEvents; // action handlers such as "onExecute"
     friend class FMSTP; // allow access of STP class to internals
     friend class FMStand; // allow access of the activity class (e.g for events)
+    friend class ActivityObj; // allow access to scripting function
 };
 
 } // namespace

@@ -130,6 +130,10 @@ void FMSTP::setupActivity(QJSValue &js_value, const QString &name)
     act->setup(js_value);
     // use id-property if available, or the object-name otherwise
     act->setName(valueFromJs(js_value, "id", name).toString());
+
+    // call the onCreate handler:
+    FomeScript::bridge()->setActivity(act);
+    act->events().run(QStringLiteral("onCreate"),0);
     mActivities.push_back(act);
 }
 

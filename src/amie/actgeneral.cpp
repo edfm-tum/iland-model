@@ -23,7 +23,6 @@ void ActGeneral::setup(QJSValue value)
     mAction = FMSTP::valueFromJs(value, "action", "", "Activity of type 'general'.");
     if (!mAction.isCallable())
         throw IException("'general' activity has not a callable javascript 'action'.");
-
 }
 
 bool ActGeneral::execute(FMStand *stand)
