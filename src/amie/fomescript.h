@@ -27,6 +27,9 @@ public:
     /// by setting up all internal structures for the forest stand 'stand'.
     static void setExecutionContext(FMStand *stand);
 
+    /// special function for setting context without a valid stand
+    static void setActivity(Activity *act);
+
     /// static accessor function for the responsible script bridge
     static FomeScript *bridge();
     /// returns a string for debug/trace messages
@@ -62,7 +65,9 @@ private:
     StandObj *mStandObj;
     SiteObj *mSiteObj;
     SimulationObj *mSimulationObj;
+    ActivityObj *mActivityObj;
     FMTreeList *mTrees;
+
     bool m_verbose;
 };
 class ActivityObj;
@@ -140,15 +145,34 @@ class ActivityObj : public QObject
 {
     Q_OBJECT
     Q_PROPERTY (bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(bool active READ active WRITE setActive)
+    Q_PROPERTY(bool finalHarvest READ finalHarvest WRITE setFinalHarvest)
+    Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled)
     Q_PROPERTY(QString name READ name)
 public:
-    bool enabled() const;
-    QString name() const;
-    void setEnabled(bool do_enable);
-    explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; }
+    explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
+    // used to construct a link to a given activty (with an index that could be not the currently active index!)
     ActivityObj(FMStand *stand, Activity *act, int index ): QObject(0) { mActivityIndex=index; mStand=stand; mActivity=act; }
+    void setStand(FMStand *stand) { mStand = stand; mActivity=0; mActivityIndex=-1;}
+    void setActivity(Activity *act) { mStand = 0; mActivity=act; mActivityIndex=-1;}
+
+    // properties
+
+    QString name() const;
+    bool enabled() const;
+    void setEnabled(bool do_enable);
+
+    bool active() const { return flags().active(); }
+    void setActive(bool activate) { flags().setActive(activate);}
+
+    bool finalHarvest() const { return flags().isFinalHarvest(); }
+    void setFinalHarvest(bool isfinal) { flags().setFinalHarvest(isfinal);}
+
+    bool scheduled() const { return flags().isScheduled(); }
+    void setScheduled(bool issched) { flags().setIsScheduled(issched);}
 public slots:
 private:
+    ActivityFlags &flags() const; // get (depending on the linked objects) the right flags
     int mActivityIndex; // link to base activity
     Activity *mActivity; // pointer
     FMStand *mStand; // and to the forest stand....

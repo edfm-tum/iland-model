@@ -74,6 +74,7 @@ public slots:
                    const GridViewType view_type=GridViewRainbow,
                    double min_val=0., double max_val=1.);
     void addLayers(const LayeredGridBase *layer, const QString &name);
+    void removeLayers(const LayeredGridBase *layer);
     void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
 
 protected:

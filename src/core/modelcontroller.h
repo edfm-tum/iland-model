@@ -62,6 +62,7 @@ public:
     void paintMap(MapGrid *map, double min_value, double max_value);
 
     void addLayers(const LayeredGridBase *layers, const QString &name);
+    void removeLayers(const LayeredGridBase *layers);
     void setViewport(QPointF center_point, double scale_px_per_m);
 signals:
     void finished(QString errorMessage); ///< model has finished run (errorMessage is empty in case of success)

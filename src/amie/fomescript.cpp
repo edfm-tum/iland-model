@@ -1,6 +1,7 @@
 #include "global.h"
 #include "amie_global.h"
 #include "fomescript.h"
+
 #include "forestmanagementengine.h"
 #include "fmstp.h"
 #include "agenttype.h"
@@ -16,6 +17,7 @@ FomeScript::FomeScript(QObject *parent) :
     mStandObj = 0;
     mSiteObj = 0;
     mSimulationObj = 0;
+    mActivityObj = 0;
     mTrees = 0;
     mStand = 0;
 }
@@ -52,6 +54,11 @@ void FomeScript::setupScriptEnvironment()
     QJSValue simulation_value = ForestManagementEngine::scriptEngine()->newQObject(mSimulationObj);
     ForestManagementEngine::scriptEngine()->globalObject().setProperty("simulation", simulation_value);
 
+    //access to the current activity
+    mActivityObj = new ActivityObj;
+    QJSValue activity_value = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
+    ForestManagementEngine::scriptEngine()->globalObject().setProperty("activity", activity_value);
+
     // general simulation variables (mainly scenariolevel)
     mTrees = new FMTreeList;
     QJSValue treelist_value = ForestManagementEngine::scriptEngine()->newQObject(mTrees);
@@ -70,8 +77,16 @@ void FomeScript::setExecutionContext(FMStand *stand)
     br->mStandObj->setStand(stand);
     br->mTrees->setStand(stand);
     br->mSiteObj->setStand(stand);
+    br->mActivityObj->setStand(stand);
     if (stand->trace())
         qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
+}
+
+void FomeScript::setActivity(Activity *act)
+{
+    FomeScript *br = bridge();
+    setExecutionContext(0);
+    br->mActivityObj->setActivity(act);
 }
 
 FomeScript *FomeScript::bridge()
@@ -169,8 +184,7 @@ void StandObj::setTrace(bool do_trace)
 
 bool ActivityObj::enabled() const
 {
-    if (!mStand || mActivityIndex<0) return false;
-    return mStand->flags(mActivityIndex).enabled();
+    return flags().enabled();
 }
 
 QString ActivityObj::name() const
@@ -180,8 +194,23 @@ QString ActivityObj::name() const
 
 void ActivityObj::setEnabled(bool do_enable)
 {
-    if (!mStand || mActivityIndex<0) return;
-    mStand->flags(mActivityIndex).setEnabled(do_enable);
+    flags().setEnabled(do_enable);
+}
+
+ActivityFlags &ActivityObj::flags() const
+{
+    // refer to *any* activity of the stand (as returned by stand.activity("xxx")
+    if (mStand && mActivityIndex>-1)
+        return mStand->flags(mActivityIndex);
+    // refer to the current activity (the "activity" variable)
+    if (mStand && !mActivity)
+        return mStand->currentFlags();
+    // during setup of activites (onCreate-handler)
+    if (!mStand && mActivity)
+        return mActivity->mBaseActivity;
+
+
+    throw IException("ActivityObj:flags: invalid access of flags!");
 }
 
 

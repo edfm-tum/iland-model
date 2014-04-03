@@ -251,7 +251,7 @@ void Species::newYear()
     if (seedDispersal()) {
         // decide whether current year is a seed year
         mIsSeedYear = (drandom() < mSeedYearProbability);
-        if (mIsSeedYear)
+        if (mIsSeedYear && logLevelDebug())
             qDebug() << "species" << id() << "has a seed year.";
         // clear seed map
         seedDispersal()->clear();
