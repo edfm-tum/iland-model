@@ -81,6 +81,7 @@ private:
     CNPair mTotalToDisturbance; ///< book-keeping pool for heterotrophic respiration (kg/*ha)
     CNPair mTotalToAtmosphere; ///< book-keeping disturbance envents (fire) (kg/ha)
 
+    static double mNitrogenDeposition; ///< annual nitrogen deposition (kg N/ha*yr)
     friend class Snapshot;
 };
 
