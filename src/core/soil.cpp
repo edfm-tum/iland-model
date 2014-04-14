@@ -29,6 +29,7 @@
 
   */
 
+double Soil::mNitrogenDeposition = 0.;
 
 // site-specific parameters
 // i.e. parameters that need to be specified in the environment file
@@ -64,6 +65,8 @@ void Soil::fetchParameters()
     mParams->er = xml.valueDouble("er", 0.073);
 
     mParams->is_setup = true;
+
+    mNitrogenDeposition = xml.valueDouble("nitrogenDeposition",0.);
 }
 
 
@@ -204,6 +207,10 @@ void Soil::calculateYear()
         mAvailableNitrogen = 0.;
     if (isnan(mAvailableNitrogen) || isnan(mYR.C))
         qDebug() << "Available Nitrogen is NAN.";
+
+    // add nitrogen deposition
+    mAvailableNitrogen += mNitrogenDeposition;
+
     // stedy state for n-available
     //    double navss = mKyl*mRE*(1.-mH)/(1.-sp.el)*(ynlss-sp.el*ylss/sp.qb); // available nitrogen (steady state)
     //    navss += mKyr*mRE*(1.-mH)/(1.-sp.er)*(ynrss - sp.er*yrss/sp.qb);

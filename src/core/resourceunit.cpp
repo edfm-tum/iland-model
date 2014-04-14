@@ -104,11 +104,11 @@ void ResourceUnit::setup()
     // setup variables
     mUnitVariables.nitrogenAvailable = GlobalSettings::instance()->settings().valueDouble("model.site.availableNitrogen", 40);
 
-    // if dynamic coupling of soil nitrogen is enabled, the calculate a starting value for available n.
+    // if dynamic coupling of soil nitrogen is enabled, a starting value for available N is calculated
     if (mSoil && Model::settings().useDynamicAvailableNitrogen && Model::settings().carbonCycleEnabled) {
         mSoil->setClimateFactor(1.);
         mSoil->calculateYear();
-        mUnitVariables.nitrogenAvailable = mSoil->availableNitrogen();
+        mUnitVariables.nitrogenAvailable = soil()->availableNitrogen();
     }
     mHasDeadTrees = false;
     mAverageAging = 0.;
