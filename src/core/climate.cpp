@@ -28,6 +28,8 @@
 #include "model.h"
 
 double ClimateDay::co2 = 350.; // base value of ambient CO2-concentration (ppm)
+QVector<int> sampled_years; // list of sampled years to use
+
 
 
 void Sun::setup(double latitude_rad)
@@ -112,6 +114,8 @@ void Climate::setup()
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
     mName = tableName;
+    QString filter = xml.value("filter");
+
     mLoadYears = (int) qMax(xml.valueDouble("batchYears", 1.),1.);
     mDoRandomSampling = xml.valueBool("randomSamplingEnabled", false);
     mRandomYearList.clear();
@@ -143,7 +147,13 @@ void Climate::setup()
     mMinYear = 0;
     mMaxYear = 0;
 
-    QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
+    // add a where-clause
+    if (!filter.isEmpty()) {
+        filter = QString("where %1").arg(filter);
+        qDebug() << "adding climate table where-clause:" << filter;
+    }
+
+    QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from %1 %2 order by year, month, day").arg(tableName).arg(filter);
     // here add more options...
     mClimateQuery = QSqlQuery(g->dbclimate());
     mClimateQuery.exec(query);
@@ -164,6 +174,7 @@ void Climate::setup()
     // setup sun
     mSun.setup(Model::settings().latitude);
     mCurrentYear--; // go to "-1" -> the first call to next year will go to year 0.
+    sampled_years.clear();
     mIsSetup = true;
 }
 
@@ -268,7 +279,7 @@ void Climate::nextYear()
 
     if (!mDoRandomSampling) {
         // default behaviour: simply advance to next year, call load() if end reached
-        if (mCurrentYear >= mLoadYears-1) // overload
+        if (mCurrentYear >= mLoadYears-1) // need to load more data
             load();
         else
             mCurrentYear++;
@@ -276,9 +287,16 @@ void Climate::nextYear()
         // random sampling
         if (mRandomYearList.isEmpty()) {
             // random without list (note: irandom may return the upper bound)
-            mCurrentYear = irandom(0,mLoadYears-1);
+            // make sure that the sequence of years is the same for the full landscape
+            if (sampled_years.size()<GlobalSettings::instance()->currentYear()) {
+                while (sampled_years.size()-1 < GlobalSettings::instance()->currentYear())
+                    sampled_years.append(irandom(0,mLoadYears-1));
+            }
+
+            mCurrentYear = sampled_years[GlobalSettings::instance()->currentYear()];
+
         } else {
-            // random with list
+            // random with fixed list
             mRandomListIndex++;
             if (mRandomListIndex>=mRandomYearList.count())
                 mRandomListIndex=0;
