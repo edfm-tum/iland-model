@@ -54,7 +54,7 @@ public:
 
     bool setup(const float cellsize, const int sizex, const int sizey);
     bool setup(const QRectF& rect, const double cellsize);
-    bool setup(Grid<T>& source) {     mData = 0;  mRect = source.mRect; return setup(source.cellsize(), source.sizeX(), source.sizeY()); }
+    bool setup(const Grid<T>& source) { clear();  mRect = source.mRect; return setup(source.mRect, source.mCellsize); }
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
     void wipe(); ///< write 0-bytes with memcpy to the whole area
     void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int" ERRORNOUS!!!

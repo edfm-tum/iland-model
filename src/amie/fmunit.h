@@ -20,6 +20,7 @@ public:
     const Agent* agent() const { return mAgent; }
     // actions
     void aggregate();
+    QStringList info() const;
 
 private:
     QString mId;

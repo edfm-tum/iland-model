@@ -109,6 +109,8 @@ private:
 
     void showTreeDetails(Tree* tree);
     void showResourceUnitDetails(const ResourceUnit *ru);
+    bool showABEDetails(const QPointF &coord);
+
     void readSettings();
     void writeSettings();
     // debug data and outputs

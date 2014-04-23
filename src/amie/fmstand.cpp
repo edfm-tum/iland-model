@@ -9,6 +9,8 @@
 #include "fmstp.h"
 #include "scheduler.h"
 #include "fomescript.h"
+#include "agent.h"
+#include "agenttype.h"
 
 #include "tree.h"
 #include "species.h"
@@ -230,6 +232,7 @@ bool FMStand::afterExecution(bool cancel)
             // we have reached the last activity
             for (int i=0;i<mStandFlags.count(); ++i)
                 mStandFlags[i].setActive(true);
+            mRotationStartYear = ForestManagementEngine::instance()->currentYear(); // reset stand age to 0.
         }
 
         // look for the next (enabled) activity.
@@ -298,6 +301,50 @@ QJSValue FMStand::property(const QString &name) const
     if (!mStandPropertyStorage[this].contains(name))
         return QJSValue();
     return mStandPropertyStorage[this][name];
+}
+
+QStringList FMStand::info()
+{
+    QStringList lines;
+    lines << QString("id: %1").arg(id())
+          << QString("unit: %1").arg(unit()->id());
+    lines  << "-" << unit()->info() << "/-"; // sub sections
+    if (currentActivity()) {
+        lines << QString("activity: %1").arg(currentActivity()->name()) << "-" << currentActivity()->info();
+        // activity properties
+        lines << QString("active: %1").arg(currentFlags().active());
+        lines << QString("enabled: %1").arg(currentFlags().enabled());
+        lines << QString("simulate: %1").arg(currentFlags().isDoSimulate());
+        lines << QString("execute immediate: %1").arg(currentFlags().isExecuteImmediate());
+        lines << QString("final harvest: %1").arg(currentFlags().isFinalHarvest());
+        lines << QString("use scheduler: %1").arg(currentFlags().isScheduled());
+        lines <<  "/-";
+    }
+    lines << QString("agent: %1").arg(unit()->agent()->type()->name());
+    lines << QString("sleep (years): %1").arg(sleepYears());
+    lines << QString("scheduled harvest: %1").arg(scheduledHarvest());
+    lines << QString("basal area: %1").arg(basalArea());
+    lines << QString("age: %1").arg(age());
+    lines << QString("absolute age: %1").arg(absoluteAge());
+    lines << QString("N/ha: %1").arg(stems());
+    lines << "Basal area per species";
+    for (int i=0;i<nspecies();++i) {
+        lines << QString("%1: %2").arg(speciesData(i).species->id()).arg(speciesData(i).basalArea);
+    }
+
+
+    // stand properties
+    if (mStandPropertyStorage.contains(this)) {
+        QHash<QString, QJSValue> &props = mStandPropertyStorage[this];
+        lines << QString("properties: %1").arg(props.size()) << "-";
+        QHash<QString, QJSValue>::const_iterator i = props.constBegin();
+        while (i != props.constEnd()) {
+            lines << QString("%1: %2").arg(i.key()).arg(i.value().toString());
+            ++i;
+        }
+        lines << "/-";
+    }
+    return lines;
 }
 
 SSpeciesStand &FMStand::speciesData(const Species *species)

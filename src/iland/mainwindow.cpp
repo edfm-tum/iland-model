@@ -56,6 +56,8 @@
 #include "mapgrid.h"
 #include "layeredgrid.h"
 
+#include "forestmanagementengine.h" // ABE
+
 // global settings
 QDomDocument xmldoc;
 QDomNode xmlparams;
@@ -1003,13 +1005,18 @@ void MainWindow::mouseClick(const QPoint& pos)
     if (!mRemoteControl.canRun())
         return;
 
+    // test ressource units...
     if (ui->visResourceUnits->isChecked()) {
         if (!ru) return;
         showResourceUnitDetails(ru);
         return;
     }
-    // test ressource units...
 
+    // test for ABE grid
+    if (ui->visOtherGrid->isChecked()) {
+        if (showABEDetails(coord))
+            return;
+    }
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     ui->treeChange->setProperty("tree",0);
     QVector<Tree> &mTrees =  ru->trees();
@@ -1063,6 +1070,33 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
         ++i;
      }
     ui->dataTree->addTopLevelItems(items);
+}
+
+bool MainWindow::showABEDetails(const QPointF &coord)
+{
+    if (!mPaintNext.layered || !mRemoteControl.model()->abe()) return false;
+    QString grid_name = mPaintNext.layered->names()[mPaintNext.layer_id].name;
+    QStringList list = mRemoteControl.model()->abe()->evaluateClick(coord, grid_name);
+
+    ui->dataTree->clear();
+    QList<QTreeWidgetItem *> items;
+    QStack<QTreeWidgetItem*> stack;
+    stack.push(0);
+    foreach (QString s, list) {
+        QStringList elem = s.split(":");
+        if (s=="-")
+            stack.push(items.back());
+        else if (s=="/-")
+            stack.pop();
+        else  {
+            items.append( new QTreeWidgetItem(stack.last(), elem) );
+        }
+    }
+    ui->dataTree->addTopLevelItems(items);
+    return true; // handled
+
+
+
 }
 
 

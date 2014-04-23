@@ -199,10 +199,10 @@ void ActivityObj::setEnabled(bool do_enable)
 
 ActivityFlags &ActivityObj::flags() const
 {
-    // refer to *any* activity of the stand (as returned by stand.activity("xxx")
+    // refer to a specific  activity of the stand (as returned by stand.activity("xxx") )
     if (mStand && mActivityIndex>-1)
         return mStand->flags(mActivityIndex);
-    // refer to the current activity (the "activity" variable)
+    // refer to the *current* activity (the "activity" variable)
     if (mStand && !mActivity)
         return mStand->currentFlags();
     // during setup of activites (onCreate-handler)

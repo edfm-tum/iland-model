@@ -80,6 +80,7 @@ public:
     ResourceUnit *ru(int index) { return (index>=0&&index<mRU.count())? mRU[index] : NULL; } ///< get resource unit by index
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }
+    AMIE::ForestManagementEngine *abe() const { return mABEManagement; }
     Environment *environment() const {return mEnvironment; }
     Modules *modules() const { return mModules; }
     const DEM *dem() const { return mDEM; }
