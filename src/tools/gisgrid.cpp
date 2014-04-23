@@ -242,6 +242,8 @@ double GisGrid::value(const double X, const double Y) const
     // get value out of grid.
     // double rx = Origin.x + X * xAxis.x + Y * yAxis.x;
     // double ry = Origin.y + X * xAxis.y + Y * yAxis.y;
+    if (world.x()<0. || world.y()<0.)
+        return -1.;
     int ix = world.x() / mCellSize;
     int iy = world.y() / mCellSize;
     if (ix>=0 && ix<mNCols && iy>=0 && iy<mNRows) {
@@ -249,7 +251,7 @@ double GisGrid::value(const double X, const double Y) const
         if (value!=mNODATAValue)
             return value;
     }
-    return -1; // the ultimate NODATA- or ErrorValue
+    return -1.; // the ultimate NODATA- or ErrorValue
 }
 
 Vector3D GisGrid::coord(const int indexx, const int indexy) const

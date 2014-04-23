@@ -36,6 +36,11 @@ void FMUnit::aggregate()
 
 }
 
+QStringList FMUnit::info() const
+{
+    return QStringList() << "unit: todo";
+}
+
 FMUnit::FMUnit(const Agent *agent)
 {
     mAgent = agent;

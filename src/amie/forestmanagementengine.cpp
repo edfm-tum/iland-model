@@ -183,7 +183,7 @@ void ForestManagementEngine::setup()
     for (int i=0;i<mStands.size(); ++i)
         stand_hash[mStands[i]->id()] = mStands[i];
 
-    mFMStandGrid.setup(standGrid()->grid().cellsize(), standGrid()->grid().sizeX(), standGrid()->grid().sizeY() );
+    mFMStandGrid.setup(standGrid()->grid().metricRect(), standGrid()->grid().cellsize());
     mFMStandGrid.initialize(0);
     FMStand **fm = mFMStandGrid.begin();
     for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
@@ -326,6 +326,15 @@ void ForestManagementEngine::test()
     setup();
     qDebug() << "finished";
 
+}
+
+QStringList ForestManagementEngine::evaluateClick(const QPointF coord, const QString &grid_name)
+{
+    // find the stand at coord.
+    FMStand *stand = mFMStandGrid.constValueAt(coord);
+    if (stand)
+        return stand->info();
+    return QStringList();
 }
 
 QJSEngine *ForestManagementEngine::scriptEngine()

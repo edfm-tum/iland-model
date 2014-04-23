@@ -70,7 +70,7 @@ bool ActScheduled::evaluate(FMStand *stand)
 QStringList ActScheduled::info()
 {
     QStringList lines = Activity::info();
-    lines << "this is an activity of type 'scheduled'.";
+    //lines << "this is an activity of type 'scheduled'.";
     return lines;
 }
 

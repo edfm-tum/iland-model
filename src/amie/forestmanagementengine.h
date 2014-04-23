@@ -51,6 +51,7 @@ public:
     // functions
     /// evalaute forest management activities and select fitting activities for each forest stand
     void test();
+    QStringList evaluateClick(const QPointF coord, const QString &grid_name);
 
 
 private:

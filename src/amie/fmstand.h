@@ -89,6 +89,8 @@ public:
     /// retrieve the value of the property 'name'. Returns an empty QJSValue if the property is not defined.
     QJSValue property(const QString &name) const;
 
+    // retrieve current state of the object
+    QStringList info();
     friend class FOMEWrapper;
 private:
     int mId; ///< the unique numeric ID of the stand

@@ -60,9 +60,9 @@ void Schedule::setup(QJSValue &js_value)
 QString Schedule::dump() const
 {
     if (repeat)
-        return QString("schedule. Repeating every %1 years.").arg(repeat_interval);
+        return QString("schedule: Repeating every %1 years.").arg(repeat_interval);
     else
-        return QString("schedule. tmin/topt/tmax: %1/%2/%3 relative: min/opt/max: %4/%5/%6 force: %7").arg(tmin).arg(topt).arg(tmax)
+        return QString("schedule: tmin/topt/tmax %1/%2/%3 relative min/opt/max %4/%5/%6 force %7").arg(tmin).arg(topt).arg(tmax)
                 .arg(tminrel).arg(toptrel).arg(tmaxrel).arg(force_execution);
 }
 
@@ -251,7 +251,7 @@ QStringList Constraints::dump()
 {
     QStringList info;
     for (int i=0;i<mConstraints.count();++i){
-        info << mConstraints[i].dump();
+        info << QString("constraint: %1").arg(mConstraints[i].dump());
     }
     return info;
 }
@@ -433,10 +433,10 @@ bool Activity::evaluate(FMStand *stand)
 QStringList Activity::info()
 {
     QStringList lines;
-    lines << QString("Activity '%1' of type '%2'").arg(name()).arg(type());
-    lines << "Events" << events().dump();
-    lines << "Schedule" << schedule().dump();
-    lines << "Constraints" << constraints().dump();
+    lines << QString("Activity '%1': type '%2'").arg(name()).arg(type());
+    lines << "Events" << "-" << events().dump() << "/-";
+    lines << "Schedule" << "-" << schedule().dump() << "/-";
+    lines << "Constraints" << "-" << constraints().dump() << "/-";
     return lines;
 }
 

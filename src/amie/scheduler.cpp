@@ -14,7 +14,6 @@ namespace AMIE {
 
 void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_schedule, double prob_execute)
 {
-    // for the time being, force execution
     if (FMSTP::verbose())
         qDebug()<< "ticked added for stand" << stand->id();
 
