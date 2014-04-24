@@ -470,6 +470,7 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
         po.view_type = layername.view_type;
         po.layered = layer;
         po.layer_id = layer_id++;
+        po.name = layername.name;
         po.auto_range = true;
         mPaintList[comb_name] = po;
     }
@@ -1076,7 +1077,7 @@ bool MainWindow::showABEDetails(const QPointF &coord)
 {
     if (!mRemoteControl.canRun()) return false;
     if (!mPaintNext.layered || !mRemoteControl.model()->abe()) return false;
-    QString grid_name = mPaintNext.layered->names()[mPaintNext.layer_id].name;
+    QString grid_name = mPaintNext.name;
     QStringList list = mRemoteControl.model()->abe()->evaluateClick(coord, grid_name);
 
     ui->dataTree->clear();
@@ -1250,9 +1251,6 @@ void MainWindow::modelFinished(QString errorMessage)
 /// creates the iLand model
 void MainWindow::setupModel()
 {
-    // make sure no custom maps are drawn (that can lead to crashes during setup)
-    mPaintNext.what = PaintObject::PaintHeightGrid;
-
     // load project xml file to global xml settings structure
     mRemoteControl.setFileName(ui->initFileName->text());
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
