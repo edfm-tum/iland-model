@@ -21,7 +21,9 @@ public:
     void setup(QJSValue &js_value);
     QString dump() const;
     // functions
-    /// value() evaluates the schedule for the given 'stand'
+    /// value() evaluates the schedule for the given 'stand'.
+    /// return 0..1 (0: no fit, 1: perfect time).
+    /// Special value -1: expired (i.e. current time past the maximum schedule time).
     double value(const FMStand *stand);
     /// gives (fixed) earliest possible execution time
     double minValue(const double U=100.) const;

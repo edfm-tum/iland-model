@@ -31,7 +31,8 @@ double AMIELayers::value(const FMStandPtr &data, const int index) const
     case 4: return data->basalArea(); // "basalArea"
     case 5: return data->age(); // "age"
     case 6: return data->sleepYears(); // "next evaluation"
-    case 7: return data->unit()->constScheduler()?data->unit()->constScheduler()->scoreOf(data->id()) : -1.; // scheduler score
+    case 7: return data->lastUpdate(); // last update
+    case 8: return data->unit()->constScheduler()?data->unit()->constScheduler()->scoreOf(data->id()) : -1.; // scheduler score
     default: throw IException("ABELayers:value(): Invalid index");
     }
 }
@@ -46,6 +47,7 @@ const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
             << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("stocking basal area (m2/ha)"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QStringLiteral("age"), QStringLiteral("stand age"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QStringLiteral("next evaluation"), QStringLiteral("years until the next evaluation"), GridViewHeat)
+            << LayeredGridBase::LayerElement(QStringLiteral("last update"), QStringLiteral("year of the last update of the forest state."), GridViewRainbowReverse)
             << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow);
 }
 

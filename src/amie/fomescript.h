@@ -17,6 +17,7 @@ class FomeScript : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
+    Q_PROPERTY(int standId READ standId WRITE setStandId)
 public:
     explicit FomeScript(QObject *parent = 0);
     ~FomeScript();
@@ -45,6 +46,9 @@ public:
     bool verbose() const;
     void setVerbose(bool arg);
 
+    int standId() const;
+    void setStandId(int new_stand_id);
+
 signals:
 
 public slots:
@@ -68,7 +72,6 @@ private:
     ActivityObj *mActivityObj;
     FMTreeList *mTrees;
 
-    bool m_verbose;
 };
 class ActivityObj;
 
@@ -88,13 +91,20 @@ class StandObj: public QObject
     age: 100, // "age" of the stand (in relation to "U")
     flags: {}*/
 public slots:
-    /// basal area of a given species (m2/ha)
-    double basalArea(QString species_id) const {return mStand->basalArea(species_id); }
+    /// basal area of a given species (m2/ha) given by Id.
+    double basalAreaOf(QString species_id) const {return mStand->basalArea(species_id); }
+    double basalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).basalArea; else return 0.; }
+    double relBasalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).relBasalArea; else return 0.; }
+    QString speciesId(int index) const;
 
     // set and get standspecific data (persistent!)
     void setFlag(const QString &name, QJSValue value){ const_cast<FMStand*>(mStand)->setProperty(name, value);}
     QJSValue flag(const QString &name) { return const_cast<FMStand*>(mStand)->property(name); }
     QJSValue activity(QString name);
+
+    // actions
+    /// force a reload of the stand data.
+    void reload() { mStand->reload(); }
 
 public:
     explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}

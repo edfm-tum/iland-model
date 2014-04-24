@@ -7,6 +7,9 @@
 #include "agenttype.h"
 #include "fmtreelist.h"
 
+// iLand main includes
+#include "species.h"
+
 namespace AMIE {
 
 QString FomeScript::mInvalidContext = "S---";
@@ -106,6 +109,23 @@ void FomeScript::setVerbose(bool arg)
     qCDebug(abe) << "setting verbose property of ABE to" << arg;
 }
 
+int FomeScript::standId() const
+{
+    if (mStand)
+        return mStand->id();
+    return -1;
+}
+
+void FomeScript::setStandId(int new_stand_id)
+{
+    FMStand *stand = ForestManagementEngine::instance()->stand(new_stand_id);
+    if (!stand) {
+        qCDebug(abe) << bridge()->context() << "invalid stand id" << new_stand_id;
+        return;
+    }
+    setExecutionContext(stand);
+}
+
 void FomeScript::log(QJSValue value)
 {
     QString msg = value.toString();
@@ -155,6 +175,11 @@ bool FomeScript::runActivity(int stand_id, QString activity)
     // run the activity....
     qCDebug(abe) << "running activity" << activity << "for stand" << stand_id;
     return act->execute(stand);
+}
+
+QString StandObj::speciesId(int index) const
+{
+    if (index>=0 && index<nspecies()) return mStand->speciesData(index).species->id(); else return "error";
 }
 
 QJSValue StandObj::activity(QString name)

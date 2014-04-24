@@ -69,11 +69,29 @@ QString Schedule::dump() const
 double Schedule::value(const FMStand *stand)
 {
     double U = stand->stp()->rotationLength();
-    double current = stand->age();
+    double current;
+    double current_year = ForestManagementEngine::instance()->currentYear();
+    // if the stand data is not up to date (i.e. more than 3 yrs old), then
+    // the "absoluteAge" (number of yrs since the start of the rotation) is used.
+    if (stand->lastUpdate() + 3 < current_year)
+        current = stand->absoluteAge();
+    else
+        current = stand->age() + current_year - stand->lastUpdate();
+
     if (absolute)
-        current = ForestManagementEngine::instance()->currentYear();
+        current = current_year;
 
     double current_rel = current / U;
+    if (repeat) {
+        // handle special case of repeating activities.
+        // we execute the repeating activity if repeatInterval years elapsed
+        // since the last execution.
+        if (int(current_year) % repeat_interval == 0)
+            return 1.; // yes, execute this year
+        else
+            return 0.; // do not execute this year.
+
+    }
     // force execution: if age already higher than max, then always evaluate to 1.
     if (tmax>-1. && current > tmax && force_execution)
         return 1;
@@ -81,9 +99,9 @@ double Schedule::value(const FMStand *stand)
         return 1;
 
     if (tmin>-1. && current < tmin) return 0.;
-    if (tmax>-1. && current > tmax) return 0.;
+    if (tmax>-1. && current > tmax) return -1.; // expired
     if (tminrel>-1. && current_rel < tminrel) return 0.;
-    if (tmaxrel>-1. && current_rel > tmaxrel) return 0.;
+    if (tmaxrel>-1. && current_rel > tmaxrel) return -1.; // expired
 
     // optimal time
     if (topt > -1. && fabs(current-topt) <= 0.5)
@@ -406,7 +424,7 @@ void Activity::setup(QJSValue value)
 
 double Activity::scheduleProbability(FMStand *stand)
 {
-    // return a value between 0 and 1
+    // return a value between 0 and 1; return -1 if the activity is expired.
     return schedule().value(stand);
 }
 
@@ -425,7 +443,7 @@ bool Activity::execute(FMStand *stand)
 
 bool Activity::evaluate(FMStand *stand)
 {
-    // execute the "onExecute" event
+    // execute the "onEvaluate" event
     events().run(QStringLiteral("onEvaluate"), stand);
     return true;
 }
@@ -453,287 +471,4 @@ ActivityFlags &Activity::standFlags(FMStand *stand)
 
 
 } // namespace
-
-/*
- *
- *
- * header file:
- *
- *
-
-/// Activity encapsulates an individual forest management activity.
-/// Activities are stored and organized in the silvicultural KnowledgeBase.
-class ActivityOld
-{
-public:
-    ActivityOld();
-    ~ActivityOld();
-    enum Phase { Invalid, Tending, Thinning, Regeneration };
-    // general properties
-    QString name() const { return mJS.property("name").toString(); }
-    QString description() const { return mJS.property("description").toString(); }
-    // properties
-    double knowledge() const {return mKnowledge; }
-    double economy() const {return mEconomy; }
-    double experimentation() const {return mExperimentation; }
-    Phase phase() const { return mPhase; }
-    // actions
-    double evaluate(const FMStand *stand) const;
-    // functions
-    /// load definition of the Activity from an Javascript Object (value).
-    bool setupFromJavascript(QJSValue &value, const QString &variable_name);
-    /// if verbose is true, detailed debug information is provided.
-    static void setVerbose(bool verbose) {mVerbose = verbose; }
-    static bool verbose()  {return mVerbose; } ///< returns true in debug mode
-private:
-    bool addFilter(QJSValue &js_value, const QString js_name); ///< add a filter from the JS
-    static bool mVerbose; ///< debug mode
-    QJSValue mJS; ///< holds the javascript representation of the activity
-
-    // properties of activities
-    double mKnowledge;
-    double mEconomy;
-    double mExperimentation;
-    Phase mPhase;
-
-    // benchmarking
-    int mJSEvaluations;
-    int mExprEvaluations;
-
-    // filter items
-    struct filter_item {
-        filter_item(): filter_type(ftInvalid), expression(0), value(0) {}
-        filter_item(const filter_item &item); // copy constructor
-        ~filter_item();
-        // action
-        double evaluate(const ActivityOld *act, const FMStand* stand) const;
-
-        /// set the filter from javascript
-        void set(QJSValue &js_value);
-        QString toString(); ///< for debugging
-
-        // properties
-        enum { ftInvalid, ftConstant, ftExpression, ftJavascript} filter_type;
-        Expression *expression;
-        double value;
-        QJSValue func;
-        QString name;
-    };
-    QVector<filter_item> mFilters;
-
-
-};
-
-// ****** cpp file ****
-#include "exception.h"
-#include "expression.h"
-#include "fomewrapper.h"
-#include "fomescript.h"
-
-bool ActivityOld::mVerbose = false;
-
-/** @class Activity
- ** /
-
-ActivityOld::ActivityOld()
-{
-    mPhase = Invalid;
-    mEconomy = -1;
-    mKnowledge = -1;
-    mExperimentation = -1;
-    // benchmarking
-    mExprEvaluations = 0;
-    mJSEvaluations = 0;
-}
-
-ActivityOld::~ActivityOld()
-{
-    qDebug() << "delete activity: calls JS: " << mJSEvaluations << " calls Expr: " << mExprEvaluations;
-}
-
-/// calculate the probability that this activity should be executed for the given stand
-double ActivityOld::evaluate(const FMStand *stand) const
-{
-    // (1) check the silvicultural phase
-    if (stand->phase() != mPhase)
-        return 0.;
-
-    // check the other filters
-    double result = 1.;
-    foreach(const filter_item &filter, mFilters) {
-        double this_filter = filter.evaluate(this, stand);
-        result = result * this_filter;
-        if (result == 0.) {
-            return 0.; // if the filter is 0, nothing happens
-        }
-    }
-
-    return result;
-
-}
-
-
-/// setup the properties of the activity by scanning
-/// the Javascript object
-bool ActivityOld::setupFromJavascript(QJSValue &value, const QString &variable_name)
-{
-    mJS = value;
-    if (verbose()) qDebug() << value.property("name").toString();
-    // check for required properties
-    if (value.property("name").isUndefined()) throw IException("'name' missing in " + variable_name);
-    if (value.property("description").isUndefined()) throw IException("'description' missing in " + variable_name);
-
-    // load properties
-    QJSValue props = value.property("properties");
-    mKnowledge = props.property("knowledge").toNumber();
-    mEconomy = props.property("economy").toNumber();
-    mExperimentation = props.property("experimentation").toNumber();
-    QString phase = props.property("phase").toString();
-    mPhase = Invalid;
-    if (phase=="T") mPhase = Tending;
-    if (phase=="H") mPhase = Thinning;
-    if (phase=="R") mPhase = Regeneration;
-    if (mPhase==Invalid)
-        throw IException(QString("Invalid activity group '%1' (allowed: T, H, R)").arg(phase));
-
-    // extract filter rules
-    QJSValueIterator it(value.property("suitability"));
-    while (it.hasNext()) {
-        it.next();
-        // extract filter...
-        addFilter(it.value(), it.name());
-    }
-    return true;
-}
-
-bool ActivityOld::addFilter(QJSValue &js_value, const QString js_name)
-{
-    filter_item item;
-    item.set(js_value);
-    item.name = js_name;
-    if (item.filter_type != filter_item::ftInvalid) {
-        if (verbose())
-            qDebug() << "added filter value" << item.toString();
-        mFilters.append(item);
-        return true;
-    }
-    qDebug() << "unable to add filter value:" << js_value.toString();
-    return false;
-}
-
-// **** Filter ****
-
-ActivityOld::filter_item::filter_item(const ActivityOld::filter_item &item):
-    filter_type(ftInvalid), expression(0), value(0)
-{
-    filter_type = item.filter_type;
-    name = item.name;
-    switch (item.filter_type) {
-    case ftConstant: value = item.value; break;
-    case ftExpression: expression = new Expression(item.expression->expression()); break;
-    case ftJavascript: func = item.func; break;
-    }
-}
-
-ActivityOld::filter_item::~filter_item()
-{
-    if (expression) delete expression;
-}
-
-// main function for evaluating filters
-double ActivityOld::filter_item::evaluate(const ActivityOld *act, const FMStand *stand) const
-{
-    if (filter_type == ftConstant)
-        return value;
-
-    if (filter_type == ftExpression) {
-        FOMEWrapper wrapper(stand);
-        double result;
-        try {
-        result = expression->calculate(wrapper);
-        } catch (IException &e) {
-            // throw a nicely formatted error message
-            e.add(QString("in filter '%1' (expr: '%4') for activity '%2' for stand %3.").arg(name).
-                          arg(act->name()).
-                          arg(stand->id()).
-                          arg(expression->expression()) );
-            throw;
-
-        }
-
-        if (ActivityOld::verbose())
-            qDebug() << "evaluate filter " << name << "(expr:" << expression->expression() << ") for stand" << stand->id() << ":" << result;
-        const_cast<ActivityOld*>(act)->mExprEvaluations++;
-        return result;
-    }
-    if (filter_type==ftJavascript) {
-        // call javascript function
-        // provide the execution context
-        FomeScript::setExecutionContext(stand, act);
-        QJSValue result = const_cast<QJSValue&>(func).call();
-        if (result.isError()) {
-            throw IException(QString("Erron in evaluating filter '%1' (JS) for activity '%2' for stand %3: %4").arg(name).
-                             arg(act->name()).
-                             arg(stand->id()).
-                             arg(result.toString()));
-        }
-        if (ActivityOld::verbose())
-            qDebug() << "evaluate filter " << name << "(JS:" << act->name() << ") for stand" << stand->id() << ":" << result.toString();
-        const_cast<ActivityOld*>(act)->mJSEvaluations++;
-        return result.toNumber();
-
-    }
-    return 0;
-}
-
-/// extracts the value from a javascript object and
-/// stores it in a C++ structure.
-void ActivityOld::filter_item::set(QJSValue &js_value)
-{
-    if (js_value.isNumber()) {
-        value = js_value.toNumber();
-        filter_type = ftConstant;
-        return;
-    }
-    if (js_value.isString()) {
-        // we assume this is an expression
-        if (expression) delete expression;
-        QString expr = js_value.toString();
-        // replace "." with "__" in variables (our Expression engine is
-        // not able to cope with the "."-notation
-        expr = expr.replace("activity.", "activity__");
-        expr = expr.replace("stand.", "stand__");
-        expr = expr.replace("site.", "site__");
-        // add ....
-        expression = new Expression(expr);
-        filter_type = ftExpression;
-        return;
-    }
-    if (js_value.isCallable()) {
-        func = js_value;
-        filter_type = ftJavascript;
-        return;
-    }
-
-    filter_type = ftInvalid;
-}
-
-// return current value of a filter
-QString ActivityOld::filter_item::toString()
-{
-    switch (filter_type) {
-    case ftInvalid: return "invalid item";
-    case ftConstant: return QString("(const) %1").arg(value);
-    case ftExpression: return QString("(expr) %1").arg(expression->expression());
-    case ftJavascript: return QString("(js) %1").arg(func.toString());
-    }
-    return "Activity::filter_item::toString() unknown filter_type";
-}
-
-
-Activity::Activity(const FMSTP *parent)
-{
-    mProgram = parent;
-}
-*/
 

@@ -35,6 +35,7 @@ public:
     /// rotation length (years)
     int rotationLength() const {return 100; } // TODO: fix
 
+    bool executeRepeatingActivities(FMStand *stand);
 
     // helper functions
     void dumpInfo();
@@ -53,6 +54,7 @@ private:
     void clear(); ///< remove all activites
     Events mEvents;
     static bool mVerbose; ///< debug mode
+    bool mHasRepeatingActivities; ///< true, if the STP contains repeating activities
     QVector<Activity*> mActivities; ///< container for the activities of the STP
     QVector<ActivityFlags> mActivityStand; ///< base data for stand-specific STP info.
     QStringList mActivityNames;  ///< names of all available activities

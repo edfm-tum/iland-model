@@ -235,6 +235,7 @@ FMUnit *nc_execute_unit(FMUnit *unit)
     int executed = 0;
     int total = 0;
     while (it!=stand_map.constEnd() && it.key()==unit) {
+        it.value()->stp()->executeRepeatingActivities(it.value());
         if (it.value()->execute())
             ++executed;
         ++it;
