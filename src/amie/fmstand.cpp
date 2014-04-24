@@ -34,6 +34,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mStems = 0.;
     mScheduledHarvest = 0.;
     mRotationStartYear = 0;
+    mLastUpdate = 0;
 
     mCurrentIndex=-1;
 }
@@ -93,6 +94,7 @@ void FMStand::reload()
     mVolume = 0.;
     mAge = 0.;
     mStems = 0.;
+    mLastUpdate = ForestManagementEngine::instance()->currentYear();
     mSpeciesData.clear();
 
     // load all trees of the forest stand (use the treelist of the current execution context)
@@ -146,42 +148,61 @@ bool FMStand::execute()
             return false;
         }
     }
-    if (trace()) mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
+    if (trace())
+        mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
 
     // what to do if there is no active activity??
     if (mCurrentIndex==-1) {
-        if (trace()) qCDebug(abe) << context() << "*** No action - no currently active activity ***";
+        if (trace())
+            qCDebug(abe) << context() << "*** No action - no currently active activity ***";
         return false;
     }
-    if (trace()) qCDebug(abe) << context() << "*** begin execution, name:" << currentActivity()->name();
+    if (trace())
+        qCDebug(abe) << context() << "*** start evaulate activity:" << currentActivity()->name();
 
-    // do nothing if for the stand an activity is currently active in the scheduler
+    // do nothing if there is already an activity in the scheduler
     if (currentFlags().isPending()) {
-        if (trace()) qCDebug(abe) << context() << "*** No action - stand in the scheduler. ***";
+        if (trace())
+            qCDebug(abe) << context() << "*** No action - stand in the scheduler. ***";
         return false;
     }
 
-    // do nothing if the the current year is not within the activities window of opportunity
+    // do nothing if the the current year is not within the window of opportunity of the activity
     double p_schedule = currentActivity()->scheduleProbability(this);
-    if (p_schedule < 0.00001) {
-        if (trace()) qCDebug(abe)<< context()  << "*** No action - Schedule probability 0. ***";
+    if (p_schedule == -1.) {
+        if (trace())
+            qCDebug(abe)<< context()  << "*** Activity expired. ***";
+    }
+    if (p_schedule>=0. && p_schedule < 0.00001) {
+        if (trace())
+            qCDebug(abe)<< context()  << "*** No action - Schedule probability 0. ***";
         return false;
     }
+
 
     // we need to renew the stand data
     reload();
 
     // check again schedule - with updated (correct) age
     p_schedule = currentActivity()->scheduleProbability(this);
+    if (p_schedule==-1.) {
+        if (trace())
+            qCDebug(abe)<< context()  << "*** No action (after reload) - Activity expired: switch to new activity. ***";
+        currentFlags().setActive(false); // done; TODO: check for repeating activities
+        afterExecution(true); // check what comes next for the stand; true: cancel
+        return false;
+    }
     if (p_schedule < 0.00001) {
-        if (trace()) qCDebug(abe)<< context()  << "*** No action (after reload) - Schedule probability 0. ***";
+        if (trace())
+            qCDebug(abe)<< context()  << "*** No action (after reload) - Schedule probability 0. ***";
         return false;
     }
 
     // check if there are some constraints that prevent execution....
     double p_execute = currentActivity()->execeuteProbability(this);
     if (p_execute == 0.) {
-        if (trace()) qCDebug(abe)<< context() << "*** No action - Constraints preventing execution. ***";
+        if (trace())
+            qCDebug(abe)<< context() << "*** No action - Constraints preventing execution. ***";
         return false;
     }
 
@@ -189,7 +210,8 @@ bool FMStand::execute()
     // if it is not scheduled, it is executed immediately, otherwise a ticket is created.
     if (currentFlags().isScheduled()) {
         // ok, we schedule the current activity
-        if (trace()) qCDebug(abe)<< context() << "adding ticket for execution.";
+        if (trace())
+            qCDebug(abe)<< context() << "adding ticket for execution.";
         currentFlags().setIsPending(true);
         mScheduledHarvest = 0.;
         bool should_schedule = currentActivity()->evaluate(this);
@@ -201,7 +223,8 @@ bool FMStand::execute()
         return should_schedule;
     } else {
         // execute immediately
-        if (trace()) qCDebug(abe) << context() << "executing activty" << currentActivity()->name();
+        if (trace())
+            qCDebug(abe) << context() << "executing activty" << currentActivity()->name();
         mScheduledHarvest = 0.;
         bool executed = currentActivity()->execute(this);
         currentFlags().setIsPending(false);
@@ -209,6 +232,20 @@ bool FMStand::execute()
         afterExecution(!executed); // check what comes next for the stand
         return executed;
     }
+}
+
+bool FMStand::executeActivity(Activity *act)
+{
+    int old_activity_index = mCurrentIndex;
+
+    int new_index = stp()->activityIndex(act);
+    bool result;
+    if (new_index>-1) {
+        result = execute();
+        mAge--; // undo modification of age
+    }
+    mCurrentIndex = old_activity_index;
+    return result;
 }
 
 
@@ -318,12 +355,15 @@ QStringList FMStand::info()
         lines << QString("execute immediate: %1").arg(currentFlags().isExecuteImmediate());
         lines << QString("final harvest: %1").arg(currentFlags().isFinalHarvest());
         lines << QString("use scheduler: %1").arg(currentFlags().isScheduled());
+        lines << QString("in scheduler: %1").arg(currentFlags().isPending());
         lines <<  "/-";
     }
     lines << QString("agent: %1").arg(unit()->agent()->type()->name());
+    lines << QString("last update: %1").arg(lastUpdate());
     lines << QString("sleep (years): %1").arg(sleepYears());
     lines << QString("scheduled harvest: %1").arg(scheduledHarvest());
     lines << QString("basal area: %1").arg(basalArea());
+    lines << QString("volume: %1").arg(volume());
     lines << QString("age: %1").arg(age());
     lines << QString("absolute age: %1").arg(absoluteAge());
     lines << QString("N/ha: %1").arg(stems());
@@ -331,6 +371,14 @@ QStringList FMStand::info()
     for (int i=0;i<nspecies();++i) {
         lines << QString("%1: %2").arg(speciesData(i).species->id()).arg(speciesData(i).basalArea);
     }
+
+    lines  << "All activities" << "-";
+    for (QVector<ActivityFlags>::const_iterator it = mStandFlags.constBegin(); it!=mStandFlags.constEnd(); ++it) {
+        const ActivityFlags &a = *it;
+        lines << QString("%1 (active): %2").arg(a.activity()->name()).arg(a.active())
+                 << QString("%1 (enabled): %2").arg(a.activity()->name()).arg(a.enabled());
+    }
+    lines << "/-";
 
 
     // stand properties

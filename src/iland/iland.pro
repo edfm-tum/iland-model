@@ -260,7 +260,8 @@ OTHER_FILES += maindoc.cpp \
     qml/ruler.qml \
     ../apidoc/abe/abe_doc.js \
     ../apidoc/abe/treelist_doc.js \
-    ../apidoc/iLand/globals_doc.js
+    ../apidoc/iLand/globals_doc.js \
+    ../apidoc/abe/abe_context_doc.js
 
 
 

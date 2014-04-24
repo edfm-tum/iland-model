@@ -1074,6 +1074,7 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
 
 bool MainWindow::showABEDetails(const QPointF &coord)
 {
+    if (!mRemoteControl.canRun()) return false;
     if (!mPaintNext.layered || !mRemoteControl.model()->abe()) return false;
     QString grid_name = mPaintNext.layered->names()[mPaintNext.layer_id].name;
     QStringList list = mRemoteControl.model()->abe()->evaluateClick(coord, grid_name);
@@ -1249,6 +1250,9 @@ void MainWindow::modelFinished(QString errorMessage)
 /// creates the iLand model
 void MainWindow::setupModel()
 {
+    // make sure no custom maps are drawn (that can lead to crashes during setup)
+    mPaintNext.what = PaintObject::PaintHeightGrid;
+
     // load project xml file to global xml settings structure
     mRemoteControl.setFileName(ui->initFileName->text());
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());

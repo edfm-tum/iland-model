@@ -43,6 +43,7 @@ public:
     Activity::Phase phase() const { return mPhase; }
     int standType() const { return mStandType; }
     FMSTP *stp() const {return mSTP; }
+    int lastUpdate() const { return mLastUpdate; }
     /// total area of the stand (ha)
     double area() const;
     /// absolute age: years since the rotation has started
@@ -64,7 +65,8 @@ public:
 
     // actions
     /// main function
-    bool execute();
+    bool execute(); ///< execute the current activity
+    bool executeActivity(Activity *act); ///< execute activity given by "act".
     bool afterExecution(bool cancel = false);
 
     /// add a (simulated) harvest to the amount of planned harvest (used by the scheduling)
@@ -107,6 +109,7 @@ private:
     int mRotationStartYear; ///< absolute year the current rotation has started
     int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity
+    int mLastUpdate; ///< year of the last reload of data
 
     int nspecies() const  { return mSpeciesData.count(); }
     /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)

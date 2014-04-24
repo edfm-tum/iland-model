@@ -48,14 +48,34 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
     std::sort(mActivities.begin(), mActivities.end(), activityScheduledEarlier);
 
     mActivityNames.clear();
+    mHasRepeatingActivities = false;
     for (int i=0;i<mActivities.count();++i) {
         mActivityNames.push_back(mActivities.at(i)->name());
         mActivityStand.push_back(mActivities.at(i)->standFlags(0)); // stand = 0: create a copy of the activities' base flags
         mActivities.at(i)->setIndex(i);
+        if (mActivities.at(i)->schedule().repeat)
+            mHasRepeatingActivities = true;
     }
 
     // (3) set up top-level events
     mEvents.setup(js_value, QStringList() << QStringLiteral("onInit") << QStringLiteral("onExit"));
+}
+
+bool FMSTP::executeRepeatingActivities(FMStand *stand)
+{
+    if (!mHasRepeatingActivities)
+        return false;
+    bool result = false;
+    for (int i=0;i<mActivities.count();++i)
+        if (mActivities.at(i)->schedule().repeat) {
+            if (!stand->flags(i).active() || !stand->flags(i).enabled())
+                continue;
+            if (stand->trace())
+                qCDebug(abe) << "running repeating activity" << mActivities.at(i)->name();
+            result |= stand->executeActivity(mActivities[i]);
+        }
+    return result; // return true if at least one repeating activity was executed.
+
 }
 
 // read the setting from the setup-javascript object
