@@ -40,6 +40,7 @@ public:
     StandObj *standObj() const { return mStandObj; }
     SiteObj *siteObj() const { return mSiteObj; }
     FMTreeList *treesObj() const { return mTrees; }
+    ActivityObj *activityObj() const { return mActivityObj; }
 
     // Properties
     /// verbose: when true, the logging intensity is increased significantly.
@@ -54,6 +55,8 @@ signals:
 public slots:
     /// logging function (which includes exeuction context)
     void log(QJSValue value);
+    /// abort execution
+    void abort(QJSValue message);
     /// adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
     bool addManagement(QJSValue program, QString name);
     /// add an agent definition (Javascript). 'name' is used internally. Returns true on success.
@@ -71,6 +74,7 @@ private:
     SimulationObj *mSimulationObj;
     ActivityObj *mActivityObj;
     FMTreeList *mTrees;
+    QString mLastErrorMessage;
 
 };
 class ActivityObj;
@@ -114,14 +118,15 @@ public:
     void setTrace(bool do_trace);
 
     // properties of the forest
-    double basalArea() const { return mStand->basalArea(); }
-    double age() const {return mStand->age(); }
-    double volume() const {return mStand->volume(); }
-    int id() const { return mStand->id(); }
-    int nspecies() const { return mStand->nspecies(); }
+    double basalArea() const { if (mStand)return mStand->basalArea(); throwError("basalArea"); return -1.;}
+    double age() const {if (mStand)return mStand->age(); throwError("age"); return -1.;}
+    double volume() const {if (mStand) return mStand->volume(); throwError("volume"); return -1.; }
+    int id() const { if (mStand) return mStand->id(); throwError("id"); return -1; }
+    int nspecies() const {if (mStand) return mStand->nspecies();  throwError("id"); return -1;}
 
 
 private:
+    void throwError(QString msg) const;
     FMStand *mStand;
 };
 
@@ -163,8 +168,12 @@ public:
     explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
     // used to construct a link to a given activty (with an index that could be not the currently active index!)
     ActivityObj(FMStand *stand, Activity *act, int index ): QObject(0) { mActivityIndex=index; mStand=stand; mActivity=act; }
+    /// default-case: set a forest stand as the context.
     void setStand(FMStand *stand) { mStand = stand; mActivity=0; mActivityIndex=-1;}
+    /// set an activity context (without a stand) to access base properties of activities
     void setActivity(Activity *act) { mStand = 0; mActivity=act; mActivityIndex=-1;}
+    /// set an activity that is not the current activity of the stand
+    void setActivityIndex(const int index) { mActivityIndex = index; }
 
     // properties
 

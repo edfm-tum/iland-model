@@ -32,7 +32,7 @@ public:
         int index() const { return mIndex; } ///< retrieve (random) index
 private:
         int mCount;
-        int mIndex; // aktuell ausgewählter Index.
+        int mIndex; ///< currently selected
         char *mField;
         int  mRemaining;
 };

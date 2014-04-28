@@ -9,6 +9,8 @@
 #include "forestmanagementengine.h"
 
 #include "expression.h"
+#include "debugtimer.h"
+
 
 // include derived activity types
 #include "actgeneral.h"
@@ -150,6 +152,7 @@ double Schedule::value(const FMStand *stand)
 
 double Schedule::minValue(const double U) const
 {
+    if (repeat) return 100000000.;
     if (tmin>-1) return tmin;
     if (tminrel>-1.) return tminrel * U; // assume a fixed U of 100yrs
     if (repeat) return -1.; // repeating executions are treated specially
@@ -195,6 +198,8 @@ QString Events::run(const QString event, FMStand *stand)
         QJSValue func = mEvents[event].property(event);
         QJSValue result;
         if (func.isCallable()) {
+            DebugTimer t("ABE:JSEvents:run");
+
             result = func.callWithInstance(mInstance);
             if (FMSTP::verbose() || stand && stand->trace())
                 qCDebug(abe) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
@@ -411,7 +416,7 @@ void Activity::setup(QJSValue value)
 
     // setup of events
     mEvents.clear();
-    mEvents.setup(value, QStringList() << "onCreate" << "onEnter" << "onExit" << "onExecuted" << "onCancel");
+    mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
         qCDebug(abeSetup) << "Events: " << mEvents.dump();
 

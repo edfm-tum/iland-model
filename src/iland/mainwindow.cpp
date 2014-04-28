@@ -340,6 +340,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    mRemoteControl.destroy(); // delete model and free resources.
     delete ui;
 }
 

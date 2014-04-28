@@ -597,6 +597,8 @@ void StandLoader::executeiLandInitStand(int stand_id)
 {
 
     const MapGrid *grid = GlobalSettings::instance()->model()->standGrid();
+    if (mCurrentMap)
+        grid = mCurrentMap;
 
     // get a list of positions of all pixels that belong to our stand
     QList<int> indices = grid->gridIndices(stand_id);

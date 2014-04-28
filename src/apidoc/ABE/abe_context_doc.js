@@ -21,6 +21,22 @@
   */
 
 /**
+  Calling `abort` stops the execution of ABE and prints the error message `message` to the console (and shows the error). Note that `abort` does not
+  interrupt execution of JavaScript code immediately. However, the ABE core engine cancels all further activities, when the `abort` method has been called.
+
+
+            if (some_error_condition) {
+                fmengine.abort('This is really not expected!!');
+                return; // required; otherwise do_some_stuff() would be executed.
+            }
+            do_some_stuff();
+
+
+  @method abort
+  @param {string} message The error message.
+  */
+
+/**
     `runActivity` executes an {{#crossLink "Activity"}}{{/crossLink}} for stand given by `standId`. This bypasses the normal scheduling (useful for debugging/testing).
 
   @method runActivity

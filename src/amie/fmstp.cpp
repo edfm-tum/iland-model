@@ -53,7 +53,7 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
         mActivityNames.push_back(mActivities.at(i)->name());
         mActivityStand.push_back(mActivities.at(i)->standFlags(0)); // stand = 0: create a copy of the activities' base flags
         mActivities.at(i)->setIndex(i);
-        if (mActivities.at(i)->schedule().repeat)
+        if (mActivities.at(i)->isRepeatingActivity())
             mHasRepeatingActivities = true;
     }
 
@@ -102,24 +102,13 @@ void FMSTP::internalSetup(QJSValue &js_value, int level)
                     qCDebug(abeSetup) << "entering" << it.name();
                 if (level<10)
                     internalSetup(it.value(), ++level);
+                else
+                    throw IException("setup of STP: too many nested levels (>=10) - check your syntax!");
             }
         }
     } else {
         qCDebug(abeSetup) << "FMSTP::setup: not a valid javascript object.";
     }
-
-    // tests
-//    FMStand *test = new FMStand(0,1);
-//    thinning_constraints.evaluate(test);
-//    for (int i=0;i<100;++i) {
-//        test->reload();
-//        qDebug()<< "year" << test->age() << "result: " << thinning_timing.value(test);
-//    }
-//    // testing events
-//    qDebug() << "onEnter: " << thinning_events.run("onEnter", test);
-//    qDebug() << "onExit: " << thinning_events.run("onExit", test);
-
-//    delete test;
 }
 
 

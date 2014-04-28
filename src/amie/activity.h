@@ -146,6 +146,7 @@ public:
     int index() const { return mIndex; }
     int earlistSchedule(const double U=100.) const {return mSchedule.minValue(U); }
     int latestSchedule(const double U=100.) const { return mSchedule.maxValue(U); }
+    bool isRepeatingActivity() const { return mSchedule.repeat; }
     // main actions
     /// setup of the activity (events, schedule, constraints). additional setup in derived classes.
     virtual void setup(QJSValue value);

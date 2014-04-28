@@ -30,6 +30,8 @@ public:
     static const MapGrid *standGrid();
     void setup();
     void clear(); ///< delete all objects and free memory
+    void abortExecution(const QString &message);
+    bool isCancel() const { return mCancel; }
 
     // main function
     void run(int debug_year=-1);
@@ -78,6 +80,9 @@ private:
     // grids, visuals, etc.
     Grid<FMStand*> mFMStandGrid;
     AMIELayers mStandLayers;
+
+    bool mCancel;
+    QString mLastErrorMessage;
 };
 
 
