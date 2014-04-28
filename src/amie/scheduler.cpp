@@ -91,8 +91,10 @@ void Scheduler::run()
 
             bool executed = item->flags->activity()->execute(item->stand);
             item->flags->setIsPending(false);
-            item->flags->setActive(false); // done; TODO: check for repeating activities
-            item->stand->afterExecution(!executed); // check what comes next for the stand
+            if (!item->flags->activity()->isRepeatingActivity()) {
+                item->flags->setActive(false);
+                item->stand->afterExecution(!executed); // check what comes next for the stand
+            }
             no_executed++;
 
             // flag neighbors of the stand, if a clearcut happened

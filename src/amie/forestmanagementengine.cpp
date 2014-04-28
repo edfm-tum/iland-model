@@ -38,6 +38,7 @@ ForestManagementEngine::ForestManagementEngine()
 {
     mScriptBridge = 0;
     singleton_fome_engine = this;
+    mCancel = false;
 }
 
 ForestManagementEngine::~ForestManagementEngine()
@@ -96,11 +97,15 @@ void ForestManagementEngine::setup()
     QLoggingCategory::setFilterRules("abe.debug=true\n" \
                                      "abe.setup.debug=true"); // enable *all*
 
+    DebugTimer time_setup("ABE:setup");
     clear();
     const XmlHelper &xml = GlobalSettings::instance()->settings();
 
     // (1) setup the scripting environment and load all the javascript code
     setupScripting();
+    if (isCancel()) {
+        throw IException(QString("ABE-Error (setup): %1").arg(mLastErrorMessage));
+    }
 
 
     if (!GlobalSettings::instance()->model())
@@ -200,11 +205,18 @@ void ForestManagementEngine::setup()
         if (stp) {
             s->initialize(stp);
         }
+        if (isCancel()) {
+            throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(s->id()));
+        }
     }
 
     // now initialize the agents....
-    foreach(AgentType *at, mAgentTypes)
+    foreach(AgentType *at, mAgentTypes) {
         at->setup();
+        if (isCancel()) {
+            throw IException(QString("ABE-Error: setup of agent '%2': %1").arg(mLastErrorMessage).arg(at->name()));
+        }
+    }
     qCDebug(abeSetup) << "ABE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
 
 }
@@ -224,11 +236,22 @@ void ForestManagementEngine::clear()
     qDeleteAll(mSTP);
     mSTP.clear();
     mCurrentYear = 0;
+    mCancel = false;
+    mLastErrorMessage = QString();
+}
+
+void ForestManagementEngine::abortExecution(const QString &message)
+{
+    mLastErrorMessage = message;
+    mCancel = true;
 }
 
 
 FMUnit *nc_execute_unit(FMUnit *unit)
 {
+    if (ForestManagementEngine::instance()->isCancel())
+        return unit;
+
     //qDebug() << "called for unit" << unit;
     const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
     QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
@@ -240,7 +263,12 @@ FMUnit *nc_execute_unit(FMUnit *unit)
             ++executed;
         ++it;
         ++total;
+        if (ForestManagementEngine::instance()->isCancel())
+            break;
     }
+    if (ForestManagementEngine::instance()->isCancel())
+        return unit;
+
     if (FMSTP::verbose())
         qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
 
@@ -263,6 +291,9 @@ void ForestManagementEngine::run(int debug_year)
     if (FMSTP::verbose()) qCDebug(abe) << "ForestManagementEngine: run year" << mCurrentYear;
 
     GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits);
+    if (isCancel()) {
+        throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
+    }
 
 }
 
@@ -331,6 +362,7 @@ void ForestManagementEngine::test()
 
 QStringList ForestManagementEngine::evaluateClick(const QPointF coord, const QString &grid_name)
 {
+    Q_UNUSED(grid_name); // for the moment
     // find the stand at coord.
     FMStand *stand = mFMStandGrid.constValueAt(coord);
     if (stand)

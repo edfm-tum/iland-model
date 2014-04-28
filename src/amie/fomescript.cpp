@@ -132,6 +132,12 @@ void FomeScript::log(QJSValue value)
     qCDebug(abe) << bridge()->context() << msg;
 }
 
+void FomeScript::abort(QJSValue message)
+{
+    log(message);
+    ForestManagementEngine::instance()->abortExecution(QString("%1: %2").arg(context()).arg(message.toString()));
+}
+
 
 bool FomeScript::addManagement(QJSValue program, QString name)
 {
@@ -197,12 +203,19 @@ QJSValue StandObj::activity(QString name)
 
 bool StandObj::trace() const
 {
+    if (!mStand) { throwError("trace"); return false; }
     return mStand->trace();
 }
 
 void StandObj::setTrace(bool do_trace)
 {
+    if (!mStand) { throwError("trace"); }
     mStand->setProperty("trace", QJSValue(do_trace));
+}
+
+void StandObj::throwError(QString msg) const
+{
+    FomeScript::bridge()->abort(QString("Error while accessing 'stand': no valid execution context. Message: %1").arg(msg));
 }
 
 /* ******************** */

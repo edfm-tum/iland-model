@@ -603,7 +603,6 @@ void Model::beforeRun()
 
     // initalization of ABE
     if (mABEManagement) {
-        DebugTimer t("ABESetup");
         mABEManagement->setup();
     }
 
@@ -659,7 +658,7 @@ void Model::runYear()
     }
     // ... or ABE (the agent based variant)
     if (mABEManagement) {
-        DebugTimer t("ABERun");
+        DebugTimer t("ABE:run");
         mABEManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }

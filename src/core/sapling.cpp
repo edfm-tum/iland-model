@@ -159,7 +159,7 @@ void Sapling::setBit(const QPoint &pos_index)
     mSapBitset.set(index,true); // set bit: now there is a sapling there
 }
 
-/// a a sapling at given position (index on the LIF grid, i.e. 2x2m)
+/// add a sapling at the given position (index on the LIF grid, i.e. 2x2m)
 void Sapling::addSapling(const QPoint &pos_lif)
 {
     // adds a sapling...

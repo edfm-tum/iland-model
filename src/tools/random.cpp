@@ -236,11 +236,11 @@ double RandomCustomPDF::get()
     // zufallszahl ziehen.
     if (!mExpression)
         throw IException("TRandomCustomPDF: get() without setup()!"); // not set up properly
-    // (1) slot zufgetig auswählen:
+    // (1) select slot randomly:
     int slot = mRandomIndex.get();
-    // der aktuelle slot ist:
+    // the current slot is:
     double basevalue = mLowerBound + slot*mDeltaX;
-    // (2): innerhalb des aktuellen slots gleichverteilt eine zahl ziehen
+    // (2): draw a uniform random number within the slot
     double value = nrandom(basevalue, basevalue + mDeltaX);
     return value;
 }
@@ -258,7 +258,7 @@ double RandomCustomPDF::getProbOfRange(const double lowerBound, const double upp
         return 0.;
     if (lowerBound < mLowerBound || upperBound>mUpperBound)
         return 0.;
-    // "steps" ist die auflösung innerhalb lower und upper:
+    // "steps" is the resolution between lower and upper bound
     int iLow, iHigh;
     iLow = int( (mUpperBound- mLowerBound)/double(mSteps)*(lowerBound - mLowerBound) );
     iHigh = int( (mUpperBound -mLowerBound)/double(mSteps)*(upperBound - mUpperBound) );

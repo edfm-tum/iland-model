@@ -55,19 +55,27 @@ void FMStand::initialize(FMSTP *stp)
     // find out the first activity...
     int min_years_to_wait = 100000;
     for (int i=0;i<mStandFlags.count(); ++i) {
+        // run the onSetup event
+        // specifically set 'i' as the activity to be evaluated.
+        FomeScript::setExecutionContext(this);
+        FomeScript::bridge()->activityObj()->setActivityIndex(i);
+        mStandFlags[i].activity()->events().run(QStringLiteral("onSetup"), 0);
+
         if (!mStandFlags[i].enabled() || !mStandFlags[i].active())
             continue;
         // set active to false which have already passed
-        if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age()) {
-            mStandFlags[i].setActive(false);
-        } else {
-            int delta = mStandFlags[i].activity()->earlistSchedule(stp->rotationLength()) - age();
-            if (mStandFlags[i].activity()->schedule().absolute)
-                delta += age(); // absolute timing: starting from 0
+        if (!mStandFlags[i].activity()->isRepeatingActivity()) {
+            if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age()) {
+                mStandFlags[i].setActive(false);
+            } else {
+                int delta = mStandFlags[i].activity()->earlistSchedule(stp->rotationLength()) - age();
+                if (mStandFlags[i].activity()->schedule().absolute)
+                    delta += age(); // absolute timing: starting from 0
 
-            if (delta<min_years_to_wait) {
-                min_years_to_wait = qMax(delta,0); // limit to 0 years
-                mCurrentIndex = i; // first activity to execute
+                if (delta<min_years_to_wait) {
+                    min_years_to_wait = qMax(delta,0); // limit to 0 years
+                    mCurrentIndex = i; // first activity to execute
+                }
             }
         }
     }
@@ -88,7 +96,7 @@ bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)
 
 void FMStand::reload()
 {
-    DebugTimer t("FMStand::reload");
+    DebugTimer t("ABE:FMStand::reload");
     // load all trees that are located on this stand
     mTotalBasalArea = 0.;
     mVolume = 0.;
@@ -188,8 +196,10 @@ bool FMStand::execute()
     if (p_schedule==-1.) {
         if (trace())
             qCDebug(abe)<< context()  << "*** No action (after reload) - Activity expired: switch to new activity. ***";
-        currentFlags().setActive(false); // done; TODO: check for repeating activities
-        afterExecution(true); // check what comes next for the stand; true: cancel
+        if (!currentActivity()->isRepeatingActivity()) {
+            currentFlags().setActive(false);
+            afterExecution(true); // check what comes next for the stand; true: cancel
+        }
         return false;
     }
     if (p_schedule < 0.00001) {
@@ -228,8 +238,10 @@ bool FMStand::execute()
         mScheduledHarvest = 0.;
         bool executed = currentActivity()->execute(this);
         currentFlags().setIsPending(false);
-        currentFlags().setActive(false); // done; TODO: check for repeating activities
-        afterExecution(!executed); // check what comes next for the stand
+        if (!currentActivity()->isRepeatingActivity()) {
+            currentFlags().setActive(false);
+            afterExecution(!executed); // check what comes next for the stand
+        }
         return executed;
     }
 }
@@ -241,8 +253,12 @@ bool FMStand::executeActivity(Activity *act)
     int new_index = stp()->activityIndex(act);
     bool result;
     if (new_index>-1) {
+        mCurrentIndex = new_index;
+        int old_years = mYearsToWait;
+        mYearsToWait = 0;
         result = execute();
         mAge--; // undo modification of age
+        mYearsToWait = old_years; // undo...
     }
     mCurrentIndex = old_activity_index;
     return result;
