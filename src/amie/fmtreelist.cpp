@@ -55,12 +55,12 @@ int FMTreeList::load(const QString &filter)
         if (map->isValid()) {
             map->loadTrees(mStandId, mTrees, filter, mNumberOfStems);
         } else {
-            qCDebug(abe) << "FMTreeList::load: grid is not valid - no trees loaded";
+            qCDebug(amie) << "FMTreeList::load: grid is not valid - no trees loaded";
         }
         return mTrees.count();
 
     } else {
-        qCDebug(abe) << "FMTreeList::load: loading *all* trees, because stand id is -1";
+        qCDebug(amie) << "FMTreeList::load: loading *all* trees, because stand id is -1";
         TreeWrapper tw;
         Model *m = GlobalSettings::instance()->model();
         mTrees.clear();
@@ -99,7 +99,7 @@ int FMTreeList::removeMarkedTrees()
     }
     return n_removed;
     if (mStand->trace())
-        qCDebug(abe) << mStand->context() << "removeMarkedTrees: n=" << n_removed;
+        qCDebug(amie) << mStand->context() << "removeMarkedTrees: n=" << n_removed;
 }
 
 int FMTreeList::harvest(QString filter, double fraction)
@@ -225,7 +225,7 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
             }
         }
     } catch(const IException &e) {
-        qCWarning(abe) << "treelist: remove_trees: expression:" << expression << ", msg:" << e.message();
+        qCWarning(amie) << "treelist: remove_trees: expression:" << expression << ", msg:" << e.message();
     }
     return n;
 
@@ -264,7 +264,7 @@ double FMTreeList::aggregate_function(QString expression, QString filter, QStrin
         }
 
     } catch(const IException &e) {
-        qCWarning(abe) << "Treelist: aggregate function: expression:" << expression << ", filter:" << filter << ", msg:" <<e.message();
+        qCWarning(amie) << "Treelist: aggregate function: expression:" << expression << ", filter:" << filter << ", msg:" <<e.message();
         //throwError(e.message());
     }
     if (type=="sum")

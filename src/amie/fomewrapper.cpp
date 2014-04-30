@@ -10,7 +10,7 @@ namespace AMIE {
 // (1) variables of activites
 
 // (2) stand variables
-QStringList standVarList=QStringList() << "basalArea" << "age" << "speciesCount" << "volume" << "type";
+QStringList standVarList=QStringList() << "basalArea" << "age"  << "absoluteAge" << "nspecies" << "volume";
 
 // (3) site variables
 QStringList siteVarList=QStringList() << "annualIncrement" << "harvestMode" << "U";
@@ -55,9 +55,13 @@ double FOMEWrapper::value(const int variableIndex)
 
 double FOMEWrapper::valueStand(const int variableIndex)
 {
+    //<< "basalArea" << "age"  << "absoluteAge" << "speciesCount" << "volume"
     switch (variableIndex) {
-    case 1: return 60.;
-    case 4: return mStand->standType();
+    case 0: return mStand->basalArea(); // "basalArea"
+    case 1: return mStand->age(); // mean age, "age"
+    case 2: return mStand->absoluteAge(); // years since begin of rotation, "absoluteAge"
+    case 3: return mStand->nspecies(); // species richness, "nspecies"
+    case 4: return mStand->volume(); // total standing volume, m3/ha, "volume"
     default: return 0;
     }
 }

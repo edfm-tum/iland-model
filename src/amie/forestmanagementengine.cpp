@@ -24,9 +24,9 @@
 #include "helper.h"
 #include "threadrunner.h"
 
-Q_LOGGING_CATEGORY(abe, "abe")
+Q_LOGGING_CATEGORY(amie, "amie")
 
-Q_LOGGING_CATEGORY(abeSetup, "abe.setup")
+Q_LOGGING_CATEGORY(amieSetup, "amie.setup")
 
 namespace AMIE {
 
@@ -71,7 +71,7 @@ void ForestManagementEngine::setupScripting()
 
     QString file_name = GlobalSettings::instance()->path(xml.value("model.management.abe.file"));
     QString code = Helper::loadTextFile(file_name);
-    qCDebug(abeSetup) << "Loading script file" << file_name;
+    qCDebug(amieSetup) << "Loading script file" << file_name;
     QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
     if (result.isError()) {
         int lineno = result.property("lineNumber").toInt();
@@ -79,9 +79,8 @@ void ForestManagementEngine::setupScripting()
         QString code_part;
         for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
-        qCDebug(abeSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
+        qCDebug(amieSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
     }
-
 }
 
 AgentType *ForestManagementEngine::agentType(const QString &name)
@@ -94,17 +93,17 @@ AgentType *ForestManagementEngine::agentType(const QString &name)
 
 void ForestManagementEngine::setup()
 {
-    QLoggingCategory::setFilterRules("abe.debug=true\n" \
-                                     "abe.setup.debug=true"); // enable *all*
+    QLoggingCategory::setFilterRules("amie.debug=true\n" \
+                                     "amie.setup.debug=true"); // enable *all*
 
-    DebugTimer time_setup("ABE:setup");
+    DebugTimer time_setup("AMIE:setup");
     clear();
     const XmlHelper &xml = GlobalSettings::instance()->settings();
 
     // (1) setup the scripting environment and load all the javascript code
     setupScripting();
     if (isCancel()) {
-        throw IException(QString("ABE-Error (setup): %1").arg(mLastErrorMessage));
+        throw IException(QString("AMIE-Error (setup): %1").arg(mLastErrorMessage));
     }
 
 
@@ -135,7 +134,7 @@ void ForestManagementEngine::setup()
         if (!stand_grid->isValid(stand_id))
             continue; // skip stands that are not in the map (e.g. when a smaller extent is simulated)
         if (FMSTP::verbose())
-            qCDebug(abeSetup) << "setting up stand" << stand_id;
+            qCDebug(amieSetup) << "setting up stand" << stand_id;
 
         // check agents
         QString agent_code = data_file.value(i, iagent).toString();
@@ -145,7 +144,7 @@ void ForestManagementEngine::setup()
             // create the agent / agent type
             at = agentType(agent_code);
             if (!at)
-                throw IException(QString("Agent %1 is not set up!").arg(agent_code));
+                throw IException(QString("Agent '%1' is not set up!").arg(agent_code));
             agent = new Agent(at);
             mAgents.append(agent);
             agent_codes.append(agent_code);
@@ -206,7 +205,7 @@ void ForestManagementEngine::setup()
             s->initialize(stp);
         }
         if (isCancel()) {
-            throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(s->id()));
+            throw IException(QString("AMIE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(s->id()));
         }
     }
 
@@ -214,10 +213,10 @@ void ForestManagementEngine::setup()
     foreach(AgentType *at, mAgentTypes) {
         at->setup();
         if (isCancel()) {
-            throw IException(QString("ABE-Error: setup of agent '%2': %1").arg(mLastErrorMessage).arg(at->name()));
+            throw IException(QString("AMIE-Error: setup of agent '%2': %1").arg(mLastErrorMessage).arg(at->name()));
         }
     }
-    qCDebug(abeSetup) << "ABE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
+    qCDebug(amieSetup) << "AMIE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
 
 }
 
@@ -270,7 +269,7 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         return unit;
 
     if (FMSTP::verbose())
-        qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
+        qCDebug(amie) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
 
     // now run the scheduler
     unit->scheduler()->run();
@@ -288,7 +287,7 @@ void ForestManagementEngine::run(int debug_year)
         mCurrentYear = GlobalSettings::instance()->currentYear();
     }
     // now re-evaluate stands
-    if (FMSTP::verbose()) qCDebug(abe) << "ForestManagementEngine: run year" << mCurrentYear;
+    if (FMSTP::verbose()) qCDebug(amie) << "ForestManagementEngine: run year" << mCurrentYear;
 
     GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits);
     if (isCancel()) {

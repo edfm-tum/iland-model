@@ -674,17 +674,18 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     // Duursma 2007, Eq. (20)
     apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mWoodyMass + b_wf );
-    if (apct_wood<0)
-        apct_wood = 0.;
+
+    apct_wood = limit(apct_wood, 0., 1.-apct_root);
+
     apct_foliage = 1. - apct_root - apct_wood;
 
 
-    //DBGMODE(
+    DBGMODE(
             if (apct_foliage<0 || apct_wood<0)
                 qDebug() << "transfer to foliage or wood < 0";
              if (npp<0)
                  qDebug() << "NPP < 0";
-         //   );
+            );
 
     // Change of biomass compartments
     double sen_root = mFineRootMass * to_root;

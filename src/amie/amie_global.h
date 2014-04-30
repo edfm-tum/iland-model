@@ -8,8 +8,8 @@
 #include <QJSValueIterator>
 
 #include <QLoggingCategory>
-Q_DECLARE_LOGGING_CATEGORY(abe)
-Q_DECLARE_LOGGING_CATEGORY(abeSetup)
+Q_DECLARE_LOGGING_CATEGORY(amie)
+Q_DECLARE_LOGGING_CATEGORY(amieSetup)
 
 
 #endif // FOME_GLOBAL_H
