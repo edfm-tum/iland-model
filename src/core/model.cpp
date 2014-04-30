@@ -658,7 +658,7 @@ void Model::runYear()
     }
     // ... or ABE (the agent based variant)
     if (mABEManagement) {
-        DebugTimer t("ABE:run");
+        DebugTimer t("AMIE:run");
         mABEManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }

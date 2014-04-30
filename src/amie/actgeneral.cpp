@@ -29,7 +29,7 @@ bool ActGeneral::execute(FMStand *stand)
 {
     FomeScript::setExecutionContext(stand);
     if (FMSTP::verbose() || stand->trace())
-        qCDebug(abe) << stand->context() << "activity 'general': execute of" << name();
+        qCDebug(amie) << stand->context() << "activity 'general': execute of" << name();
 
     QJSValue result = mAction.call();
     if (result.isError()) {

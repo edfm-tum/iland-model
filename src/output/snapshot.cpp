@@ -430,7 +430,7 @@ void Snapshot::saveSaplings()
                     continue;
                 q.addBindValue(ru->index());
                 q.addBindValue(rus->species()->id());
-                QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(t.pixel);
+                QPoint p=t.coords();
                 q.addBindValue(p.x());
                 q.addBindValue(p.y());
                 q.addBindValue(t.age.age);

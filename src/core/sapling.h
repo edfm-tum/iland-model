@@ -24,13 +24,14 @@
 #include <bitset>
 #include "grid.h"
 #include "snag.h"
-
+#include "model.h"
 /// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
 class SaplingTree {
 public:
     SaplingTree() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }
     bool isValid() const {return pixel!=0; }
     float *pixel; // pointer to the lifpixel the sapling lives on
+    QPoint coords() const { return GlobalSettings::instance()->model()->grid()->indexOf(pixel); }
     struct  { // packed two 16bit to a 32 bit integer
         short unsigned int age;  // number of consectuive years the sapling suffers from dire conditions
         short unsigned int stress_years; // (upper 16bits) + age of sapling (lower 16 bits)

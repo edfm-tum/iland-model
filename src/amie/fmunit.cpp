@@ -32,7 +32,7 @@ void FMUnit::aggregate()
         volume /= totalarea;
         harvest /= totalarea;
     }
-    qCDebug(abe) << "unit" << id() << "volume (m3/ha)" << volume << "age" << age << "planned harvest: todo";
+    qCDebug(amie) << "unit" << id() << "volume (m3/ha)" << volume << "age" << age << "planned harvest: todo";
 
 }
 

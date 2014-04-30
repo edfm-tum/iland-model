@@ -15,6 +15,7 @@
 // include derived activity types
 #include "actgeneral.h"
 #include "actscheduled.h"
+#include "actplanting.h"
 
 namespace AMIE {
 
@@ -64,7 +65,7 @@ QString Schedule::dump() const
     if (repeat)
         return QString("schedule: Repeating every %1 years.").arg(repeat_interval);
     else
-        return QString("schedule: tmin/topt/tmax %1/%2/%3 relative min/opt/max %4/%5/%6 force %7").arg(tmin).arg(topt).arg(tmax)
+        return QString("schedule: tmin/topt/tmax %1/%2/%3\nrelative: min/opt/max %4/%5/%6\nforce: %7").arg(tmin).arg(topt).arg(tmax)
                 .arg(tminrel).arg(toptrel).arg(tmaxrel).arg(force_execution);
 }
 
@@ -73,12 +74,8 @@ double Schedule::value(const FMStand *stand)
     double U = stand->stp()->rotationLength();
     double current;
     double current_year = ForestManagementEngine::instance()->currentYear();
-    // if the stand data is not up to date (i.e. more than 3 yrs old), then
-    // the "absoluteAge" (number of yrs since the start of the rotation) is used.
-    if (stand->lastUpdate() + 3 < current_year)
-        current = stand->absoluteAge();
-    else
-        current = stand->age() + current_year - stand->lastUpdate();
+    // absolute age: years since the start of the rotation
+    current = stand->absoluteAge();
 
     if (absolute)
         current = current_year;
@@ -108,6 +105,12 @@ double Schedule::value(const FMStand *stand)
     // optimal time
     if (topt > -1. && fabs(current-topt) <= 0.5)
         return 1;
+    if (topt > -1. && current > topt) {
+        if (force_execution)
+            return 1.;
+        else
+            return -1.; // expired
+    }
 
     if (tmin>-1. && tmax > -1.) {
         if (topt > -1.) {
@@ -146,7 +149,7 @@ double Schedule::value(const FMStand *stand)
     if (toptrel>-1.)
         return 0.;
 
-    qCDebug(abe) << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
+    qCDebug(amie) << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
     return 0.;
 }
 
@@ -198,11 +201,11 @@ QString Events::run(const QString event, FMStand *stand)
         QJSValue func = mEvents[event].property(event);
         QJSValue result;
         if (func.isCallable()) {
-            DebugTimer t("ABE:JSEvents:run");
+            DebugTimer t("AMIE:JSEvents:run");
 
             result = func.callWithInstance(mInstance);
             if (FMSTP::verbose() || stand && stand->trace())
-                qCDebug(abe) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
+                qCDebug(amie) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
         }
 
         //qDebug() << "event called:" << event << "result:" << result.toString();
@@ -238,6 +241,8 @@ void Constraints::setup(QJSValue &js_value)
         QJSValueIterator it(js_value);
         while (it.hasNext()) {
             it.next();
+            if (it.name()==QStringLiteral("length"))
+                continue;
             mConstraints.append(constraint_item());
             constraint_item &item = mConstraints.last();
             item.setup(it.value());
@@ -260,7 +265,7 @@ double Constraints::evaluate(FMStand *stand)
         p = mConstraints.at(i).evaluate(stand);
         if (p == 0.) {
             if (stand->trace())
-                qCDebug(abe) << stand->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
+                qCDebug(amie) << stand->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
             return 0.; // one constraint failed
         } else {
             // save the lowest value...
@@ -332,7 +337,7 @@ bool Constraints::constraint_item::evaluate(FMStand *stand) const
             }
 
             if (FMSTP::verbose())
-                qCDebug(abe) << stand->context() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
+                qCDebug(amie) << stand->context() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
             return result > 0.;
 
         }
@@ -347,7 +352,7 @@ bool Constraints::constraint_item::evaluate(FMStand *stand) const
                              arg(result.toString()));
         }
         if (FMSTP::verbose())
-            qCDebug(abe) << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
+            qCDebug(amie) << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
         return result.toBool();
 
     }
@@ -396,6 +401,9 @@ Activity *Activity::createActivity(const QString &type, FMSTP *stp)
     if (type=="scheduled")
         act = new ActScheduled(stp);
 
+    if (type=="planting")
+        act = new ActPlanting(stp);
+
     if (!act) {
         throw IException(QString("Error: the activity type '%1' is not a valid type.").arg(type));
     }
@@ -412,13 +420,13 @@ void Activity::setup(QJSValue value)
 {
     mSchedule.setup(FMSTP::valueFromJs(value, "schedule", "", "setup activity"));
     if (FMSTP::verbose())
-        qCDebug(abeSetup) << mSchedule.dump();
+        qCDebug(amieSetup) << mSchedule.dump();
 
     // setup of events
     mEvents.clear();
     mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
-        qCDebug(abeSetup) << "Events: " << mEvents.dump();
+        qCDebug(amieSetup) << "Events: " << mEvents.dump();
 
     // setup of constraints
     QJSValue constraints = FMSTP::valueFromJs(value, "constraint");

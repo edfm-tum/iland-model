@@ -196,7 +196,7 @@ void Sapling::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
     QVector<SaplingTree>::const_iterator it;
     FloatGrid *grid = GlobalSettings::instance()->model()->grid();
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
-        if (rectangle.contains(grid->cellCenterPoint(grid->indexOf(it->pixel)))) {
+        if (rectangle.contains(grid->cellCenterPoint(it->coords()))) {
             clearSapling(const_cast<SaplingTree&>(*it), remove_biomass);
         }
     }
@@ -332,8 +332,7 @@ void Sapling::calculateGrowth()
             // growing (increases mLiving if tree did not die, mDied otherwise)
             if (growSapling(const_cast<SaplingTree&>(tree), f_env_yr, species)) {
                 // set the sapling height to the maximum value on the current pixel
-                QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
-                ru->setMaxSaplingHeightAt(p,tree.height);
+                ru->setMaxSaplingHeightAt(tree.coords(),tree.height);
             }
         }
     }
@@ -419,7 +418,7 @@ void Sapling::fillMaxHeightGrid(Grid<float> &grid) const
     QVector<SaplingTree>::const_iterator it;
     for (it = mSaplingTrees.begin(); it!=mSaplingTrees.end(); ++it) {
         if (it->isValid()) {
-             QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(it->pixel);
+             QPoint p=it->coords();
              if (grid.valueAtIndex(p)<it->height)
                  grid.valueAtIndex(p) = it->height;
         }

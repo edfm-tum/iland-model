@@ -171,6 +171,10 @@ public:
     GridRunner(Grid<T> *target_grid, const QRect &rectangle) {setup(target_grid, rectangle);}
     T* next(); ///< to to next element, return NULL if finished
     T* current() const { return mCurrent; }
+    /// return the (index) - coordinates of the current position in the grid
+    QPoint currentIndex() const { return mGrid->indexOf(mCurrent); }
+    /// return the coordinates of the cell center point of the current position in the grid.
+    QPointF currentCoord() const {return mGrid->cellCenterPoint(mGrid->indexOf(mCurrent));}
     void reset() { mCurrent = mFirst-1; mCurrentCol = -1; }
     // helpers
     /// fill array with pointers to neighbors (north, east, west, south)
@@ -181,6 +185,7 @@ public:
 private:
     void setup(const Grid<T> *target_grid, const QRectF &rectangle);
     void setup(const Grid<T> *target_grid, const QRect &rectangle);
+    const Grid<T> *mGrid;
     T* mFirst; // points to the first element of the grid
     T* mLast; // points to the last element of the grid
     T* mCurrent;
@@ -436,6 +441,7 @@ void GridRunner<T>::setup(const Grid<T> *target_grid, const QRect &rectangle)
     mCols = lower_right.x() - upper_left.x(); //
     mLineLength =  target_grid->sizeX() - mCols;
     mCurrentCol = -1;
+    mGrid = target_grid;
 //    qDebug() << "GridRunner: rectangle:" << rectangle
 //             << "upper_left:" << target_grid.cellCenterPoint(target_grid.indexOf(mCurrent))
 //             << "lower_right:" << target_grid.cellCenterPoint(target_grid.indexOf(mLast));

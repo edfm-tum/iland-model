@@ -44,6 +44,7 @@ public:
     int standType() const { return mStandType; }
     FMSTP *stp() const {return mSTP; }
     int lastUpdate() const { return mLastUpdate; }
+    int lastExecution() const { return mLastExecution; }
     /// total area of the stand (ha)
     double area() const;
     /// absolute age: years since the rotation has started
@@ -110,6 +111,7 @@ private:
     int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity
     int mLastUpdate; ///< year of the last reload of data
+    int mLastExecution; ///< year of the last execution of an activity
 
     int nspecies() const  { return mSpeciesData.count(); }
     /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)

@@ -227,7 +227,7 @@ QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const 
     foreach(ResourceUnit *ru, resource_units) {
         foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
             foreach(const SaplingTree &tree, rus->sapling().saplings()) {
-                if (gridValue( GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel) ) == id)
+                if (gridValue( tree.coords() ) == id)
                     result.push_back( QPair<ResourceUnitSpecies *, SaplingTree *>(rus, &const_cast<SaplingTree&>(tree)) );
             }
         }

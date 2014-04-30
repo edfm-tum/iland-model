@@ -38,7 +38,7 @@ bool ActScheduled::execute(FMStand *stand)
         return result;
     } else {
         // default behavior: process all marked trees (harvest / cut)
-        if (stand->trace()) qCDebug(abe) << stand->context() << "activity" << name() << "remove all marked trees.";
+        if (stand->trace()) qCDebug(amie) << stand->context() << "activity" << name() << "remove all marked trees.";
         FMTreeList trees(stand);
         trees.removeMarkedTrees();
         return true;
@@ -51,7 +51,7 @@ bool ActScheduled::evaluate(FMStand *stand)
     stand->currentFlags().setDoSimulate(true);
     QString result = events().run(QStringLiteral("onEvaluate"), stand);
     if (stand->trace())
-        qCDebug(abe) << stand->context() << "executed onEvaluate event of" << name() << "with result:" << result;
+        qCDebug(amie) << stand->context() << "executed onEvaluate event of" << name() << "with result:" << result;
     bool ok;
     double harvest = result.toDouble(&ok);
     if (ok) {
@@ -60,7 +60,7 @@ bool ActScheduled::evaluate(FMStand *stand)
             return false;
         stand->addScheduledHarvest(harvest);
         if (stand->trace())
-            qCDebug(abe) << stand->context() << "scheduled harvest is now" << stand->scheduledHarvest();
+            qCDebug(amie) << stand->context() << "scheduled harvest is now" << stand->scheduledHarvest();
         return true;
     }
     bool bool_result = result == "true";
