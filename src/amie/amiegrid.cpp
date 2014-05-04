@@ -28,12 +28,13 @@ double AMIELayers::value(const FMStandPtr &data, const int index) const
         return mUnitIndex[data->unit()->id()]; // unit
     case 2: return 0; // "agent"
     case 3: return data->volume(); // "volume"
-    case 4: return data->basalArea(); // "basalArea"
-    case 5: return data->age(); // "age"
-    case 6: return data->lastExecution(); // "last evaluation"
-    case 7: return data->sleepYears(); // "next evaluation"
-    case 8: return data->lastUpdate(); // last update
-    case 9: return data->unit()->constScheduler()?data->unit()->constScheduler()->scoreOf(data->id()) : -1.; // scheduler score
+    case 4: return data->meanAnnualIncrement(); // mean annual increment m3/ha
+    case 5: return data->basalArea(); // "basalArea"
+    case 6: return data->age(); // "age"
+    case 7: return data->lastExecution(); // "last evaluation"
+    case 8: return data->sleepYears(); // "next evaluation"
+    case 9: return data->lastUpdate(); // last update
+    case 10: return data->unit()->constScheduler()?data->unit()->constScheduler()->scoreOf(data->id()) : -1.; // scheduler score
     default: throw IException("ABELayers:value(): Invalid index");
     }
 }
@@ -45,6 +46,7 @@ const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
             << LayeredGridBase::LayerElement(QStringLiteral("unit"), QStringLiteral("ID of the management unit"), GridViewBrewerDiv)
             << LayeredGridBase::LayerElement(QStringLiteral("agent"), QStringLiteral("managing agent"), GridViewBrewerDiv)
             << LayeredGridBase::LayerElement(QStringLiteral("volume"), QStringLiteral("stocking volume (m3/ha)"), GridViewRainbow)
+            << LayeredGridBase::LayerElement(QStringLiteral("MAI"), QStringLiteral("mean annual increment (m3/ha)"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("stocking basal area (m2/ha)"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QStringLiteral("age"), QStringLiteral("stand age"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QStringLiteral("last execution"), QStringLiteral("years since the last execution of an activity on the stand."), GridViewHeat)

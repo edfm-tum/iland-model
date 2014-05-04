@@ -61,4 +61,17 @@ void FMUnit::setId(const QString &id)
     mIndex = mId.toInt();
 }
 
+void FMUnit::planUpdate()
+{
+    // preparations:
+    // MAI-calculation for all stands:
+    const QMultiMap<FMUnit*, FMStand*> &stands = ForestManagementEngine::instance()->stands();
+    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(this);
+    while (it != stands.constEnd() && it.key()==this) {
+        it.value()->calculateMAI();
+        ++it;
+    }
+
+}
+
 } // namesapce

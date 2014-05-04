@@ -24,9 +24,12 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mUnit = unit;
     mId = id;
     mPhase = Activity::Invalid;
+
     // testing:
     mPhase = Activity::Tending;
     mStandType = 1; // just testing...
+
+    newRotatation();
     mSTP = 0;
     mVolume = 0.;
     mAge = 0.;
@@ -52,6 +55,12 @@ void FMStand::initialize(FMSTP *stp)
     // load data and aggregate averages
     reload();
     mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age();
+    // when a stand is initialized, we assume that 20% of the standing volume
+    // have been removed already.
+    mRemovedVolumeTotal = volume() * 0.2;
+    mMAItotal = volume() * 1.2 / absoluteAge();
+    mMAIdecade = mMAItotal;
+    mLastMAIVolume = volume();
 
     // find out the first activity...
     int min_years_to_wait = 100000;
@@ -281,7 +290,7 @@ bool FMStand::afterExecution(bool cancel)
             // we have reached the last activity
             for (int i=0;i<mStandFlags.count(); ++i)
                 mStandFlags[i].setActive(true);
-            mRotationStartYear = ForestManagementEngine::instance()->currentYear(); // reset stand age to 0.
+            newRotatation();
             reload();
         }
 
@@ -324,6 +333,28 @@ bool FMStand::afterExecution(bool cancel)
 void FMStand::sleep(int years_to_sleep)
 {
     mYearsToWait = qMax(mYearsToWait, qMax(years_to_sleep,0));
+}
+
+void FMStand::addRemovedVolume(const double removed_volume)
+{
+    mRemovedVolumeDecade+=removed_volume;
+    mRemovedVolumeTotal+=removed_volume;
+    mRemovedVolumeTicks++;
+}
+
+double FMStand::calculateMAI()
+{
+    // MAI: delta standing volume + removed volume, per year
+    // removed volume: mortality, management, disturbances
+    if (mRemovedVolumeTicks==0)
+        return mMAIdecade;
+    mMAIdecade = ((mVolume - mLastMAIVolume) + mRemovedVolumeDecade) / double(mRemovedVolumeTicks);
+    mMAItotal = (mVolume + mRemovedVolumeTotal) / absoluteAge();
+    mLastMAIVolume = mVolume;
+    // reset counters
+    mRemovedVolumeDecade = 0.;
+    mRemovedVolumeTicks = 0;
+    return mMAIdecade;
 }
 
 double FMStand::basalArea(const QString &species_id) const
@@ -407,7 +438,22 @@ QStringList FMStand::info()
         }
         lines << "/-";
     }
+
+    // scheduler info
+    lines << unit()->constScheduler()->info(id());
+
     return lines;
+}
+
+void FMStand::newRotatation()
+{
+    mRotationStartYear = ForestManagementEngine::instance()->currentYear(); // reset stand age to 0.
+    mRemovedVolumeTotal = 0.;
+    mRemovedVolumeDecade = 0.;
+    mRemovedVolumeTicks = 0;
+    mLastMAIVolume = 0.;
+    mMAIdecade = 0.;
+    mMAItotal = 0.;
 }
 
 SSpeciesStand &FMStand::speciesData(const Species *species)

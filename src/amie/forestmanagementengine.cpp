@@ -83,6 +83,14 @@ void ForestManagementEngine::setupScripting()
     }
 }
 
+void ForestManagementEngine::prepareRun()
+{
+    // extract removed volume from the model (for MAI calculation)
+    const QHash<FMStand*, double> &data = aggregateValues();
+    foreach (FMStand *stand, mStands)
+        stand->addRemovedVolume(data[stand]);
+}
+
 AgentType *ForestManagementEngine::agentType(const QString &name)
 {
     for (int i=0;i<mAgentTypes.count();++i)
@@ -245,6 +253,9 @@ void ForestManagementEngine::abortExecution(const QString &message)
     mCancel = true;
 }
 
+/*---------------------------------------------------------------------
+ * multithreaded execution routines
+---------------------------------------------------------------------*/
 
 FMUnit *nc_execute_unit(FMUnit *unit)
 {
@@ -277,6 +288,20 @@ FMUnit *nc_execute_unit(FMUnit *unit)
     return unit;
 }
 
+FMUnit *nc_plan_update_unit(FMUnit *unit)
+{
+    if (ForestManagementEngine::instance()->isCancel())
+        return unit;
+
+    qCDebug(amie) << "*** execute decadal plan update ***";
+
+    unit->planUpdate();
+
+    return unit;
+}
+
+
+
 /// this is the main function of the forest management engine.
 /// the function is called every year.
 void ForestManagementEngine::run(int debug_year)
@@ -288,6 +313,14 @@ void ForestManagementEngine::run(int debug_year)
     }
     // now re-evaluate stands
     if (FMSTP::verbose()) qCDebug(amie) << "ForestManagementEngine: run year" << mCurrentYear;
+
+    prepareRun();
+
+    // launch the planning unit level analysis every ten years.
+    if (mCurrentYear % 10 == 0) {
+        DebugTimer plu("AMIE:planUpdate");
+        GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits);
+    }
 
     GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits);
     if (isCancel()) {
@@ -357,6 +390,24 @@ void ForestManagementEngine::test()
     setup();
     qDebug() << "finished";
 
+}
+const QHash<FMStand*, double> &ForestManagementEngine::aggregateValues()
+{
+    // clear
+    QHash<FMStand*, double>::iterator i = mAggregatedValues.begin();
+    for (; i!=mAggregatedValues.end();++i)
+        i.value() = 0.;
+
+    // extract from height map
+    // easy, since map grids have the same size as the height map.
+    const HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
+    HeightGridValue *p = hg->begin();
+    FMStand **s = mFMStandGrid.begin();
+    for (; p!=hg->end(); ++p, ++s) {
+        if (*s)
+            mAggregatedValues[*s] += p->removed_volume;
+    }
+    return mAggregatedValues;
 }
 
 QStringList ForestManagementEngine::evaluateClick(const QPointF coord, const QString &grid_name)

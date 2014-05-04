@@ -58,6 +58,9 @@ public:
 
 private:
     void setupScripting();
+    void prepareRun();
+    const QHash<FMStand *, double> &aggregateValues();
+
     AgentType *agentType(const QString &name);
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
@@ -72,6 +75,8 @@ private:
     // mapping of stands to units
     QMultiMap<FMUnit*, FMStand*> mUnitStandMap;
     QVector<FMStand*> mStands;
+    QHash<FMStand*, double> mAggregatedValues; ///< stores aggregated values per stand
+
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types

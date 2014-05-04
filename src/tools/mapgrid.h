@@ -68,6 +68,7 @@ public:
     /// return true, if the point 'lif_grid_coords' (x/y integer key within the LIF-Grid)
     inline bool hasValue(const int id, const QPoint &lif_grid_coords) const { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight) == id; }
     inline int gridValue(const QPoint &lif_grid_coords) const  { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight); }
+
 private:
     void fillNeighborList(); ///< scan the map and fill the mNeighborList
     QString mName; ///< file name of the grid

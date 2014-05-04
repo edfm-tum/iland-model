@@ -895,32 +895,40 @@ void Tree::die(TreeGrowthData *d)
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, d); // add tree to statistics
+    markRemovedVolume();
     if (ru()->snag())
         ru()->snag()->addMortality(this);
 }
 
+/// remove a tree (most likely due to harvest) from the system.
 void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
+    markRemovedVolume();
+
     if (ru()->snag())
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
 }
 
 /// remove the tree due to an special event (disturbance)
+/// this is +- the same as die().
 void Tree::removeDisturbance(const double stem_to_soil_fraction, const double stem_to_snag_fraction, const double branch_to_soil_fraction, const double branch_to_snag_fraction, const double foliage_to_soil_fraction)
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, 0);
+    markRemovedVolume();
+
     if (ru()->snag())
         ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
 }
 
-void Tree::removeBiomass(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
+/// remove a part of the biomass of the tree, e.g. due to fire.
+void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
 {
     mFoliageMass *= 1. - removeFoliageFraction;
     mWoodyMass *= (1. - removeStemFraction);
@@ -943,6 +951,12 @@ void Tree::mortality(TreeGrowthData &d)
         // die...
         die();
     }
+}
+
+void Tree::markRemovedVolume()
+{
+    // add the volume of the current tree to the height grid
+    mHeightGrid->valueAtIndex(positionIndex().x()/cPxPerHeight, positionIndex().y()/cPxPerHeight ).removed_volume += (float) volume();
 }
 
 //////////////////////////////////////////////////

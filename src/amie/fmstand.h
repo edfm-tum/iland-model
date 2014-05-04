@@ -60,6 +60,11 @@ public:
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
 
+    /// mean annual increment (MAI), m3 timber/ha for the last decade
+    double meanAnnualIncrement() const { return mMAIdecade / area(); }
+    /// mean annual increment (MAI), m3 timber/ha for the full rotation period
+    double meanAnnualIncrementTotal() const { return mMAItotal / area(); }
+
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
 
@@ -77,6 +82,11 @@ public:
     /// for 'years_to_sleep'.
     void sleep(int years_to_sleep);
     int sleepYears() const {return mYearsToWait; }
+
+    /// for bookkeeping and MAI calculation
+    void addRemovedVolume(const double removed_volume);
+    /// calculate mean annual increment (m3/ha) and return decadal MAI.
+    double calculateMAI();
 
     // return stand-specific flags
     ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
@@ -107,11 +117,21 @@ private:
     double mStems; ///< stems per ha (above 4m)
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
 
+    double mRemovedVolumeDecade; ///< removed volume of the decade (m3)
+    double mRemovedVolumeTotal; ///< removed volume of the rotation (m3)
+    int mRemovedVolumeTicks; ///< counter
+    double mLastMAIVolume; ///< safe the standing volume
+    double mMAIdecade; ///< decadal mean annual increment (m3/ha*yr)
+    double mMAItotal; ///< total (over the full rotation) mean annual increment (m3/ha*yr)
+
+
     int mRotationStartYear; ///< absolute year the current rotation has started
     int mYearsToWait; ///< variable indicates time to wait
     int mCurrentIndex; ///< the index of the current activity
     int mLastUpdate; ///< year of the last reload of data
     int mLastExecution; ///< year of the last execution of an activity
+
+    void newRotatation(); ///< reset
 
     int nspecies() const  { return mSpeciesData.count(); }
     /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)

@@ -144,6 +144,32 @@ double Scheduler::scoreOf(const int stand_id) const
     return item->score;
 }
 
+QStringList Scheduler::info(const int stand_id) const
+{
+    SchedulerItem *si = item(stand_id);
+    if (!si)
+        return QStringList();
+    QStringList lines = QStringList();
+    lines << "-";
+    lines << QString("type: %1").arg(si->harvestType==SchedulerItem::Thinning?QStringLiteral("Thinning"):QStringLiteral("End harvest"));
+    lines << QString("schedule score: %1").arg(si->scheduleScore);
+    lines << QString("total score: %1").arg(si->score);
+    lines << QString("scheduled vol/ha: %1").arg(si->harvestPerHa);
+    lines << QString("postponed to year: %1").arg(si->forbiddenTo);
+    lines << QString("in scheduler since: %1").arg(si->enterYear);
+    lines << "/-";
+    return lines;
+}
+
+Scheduler::SchedulerItem *Scheduler::item(const int stand_id) const
+{
+    for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit)
+        if ((*nit)->stand->id() == stand_id) {
+            return *nit;
+        }
+    return 0;
+}
+
 bool Scheduler::SchedulerItem::operator<(const Scheduler::SchedulerItem &item)
 {
     // sort *descending*, i.e. after sorting the item with the highest score is in front.
