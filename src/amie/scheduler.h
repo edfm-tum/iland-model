@@ -32,6 +32,7 @@ public:
     /// get current score for stand 'id'
     /// return -1 if stand is invalid, 0..1 for probabilities, 1.1 for forced execution
     double scoreOf(const int stand_id) const;
+    QStringList info(const int stand_id) const;
 
 private:
     class SchedulerItem {
@@ -51,6 +52,8 @@ private:
         ActivityFlags *flags; ///< the details of the activity/stand context
     };
     QList<SchedulerItem*> mItems; ///< the list of active tickets
+    /// find scheduler item for 'stand_id' or return NULL.
+    SchedulerItem* item(const int stand_id) const;
     FMUnit *mUnit;
 };
 

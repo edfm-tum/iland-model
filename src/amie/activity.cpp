@@ -92,9 +92,9 @@ double Schedule::value(const FMStand *stand)
 
     }
     // force execution: if age already higher than max, then always evaluate to 1.
-    if (tmax>-1. && current > tmax && force_execution)
+    if (tmax>-1. && current >= tmax && force_execution)
         return 1;
-    if (tmaxrel>-1. && current_rel > tmaxrel && force_execution)
+    if (tmaxrel>-1. && current_rel >= tmaxrel && force_execution)
         return 1;
 
     if (tmin>-1. && current < tmin) return 0.;

@@ -245,6 +245,7 @@ QList<int> MapGrid::neighborsOf(const int index) const
     return mNeighborList.values(index);
 }
 
+
 /// scan the map and add neighborhood-relations to the mNeighborList
 /// the 4-neighborhood is used to identify neighbors.
 void MapGrid::fillNeighborList()

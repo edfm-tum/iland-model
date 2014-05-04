@@ -83,7 +83,7 @@ public:
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
     /// removes fractions (0..1) for foliage, branches, stem from a tree, e.g. due to a fire.
     /// values of "0" remove nothing, "1" removes the full compartent.
-    void removeBiomass(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction);
+    void removeBiomassOfTree(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction);
 
     // setters for initialization
     void setNewId() { mId = m_nextId++; } ///< force a new id for this object (after copying trees)
@@ -134,6 +134,7 @@ private:
     double relative_height_growth(); ///< estimate height growth based on light status.
     void grow_diameter(TreeGrowthData &d); ///< actual growth of the tree's stem.
     void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
+    void markRemovedVolume(); ///< record the removed volume in the height grid
 
     // state variables
     int mId; ///< unique ID of tree

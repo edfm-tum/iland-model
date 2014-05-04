@@ -18,7 +18,10 @@ public:
     Scheduler *scheduler() {return mScheduler; }
     const Scheduler *constScheduler() const { return mScheduler; }
     const Agent* agent() const { return mAgent; }
+
     // actions
+    void planUpdate();
+
     void aggregate();
     QStringList info() const;
 
