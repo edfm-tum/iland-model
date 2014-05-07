@@ -36,9 +36,10 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mTotalBasalArea = 0.;
     mStems = 0.;
     mScheduledHarvest = 0.;
+    mHarvested = 0.;
     mRotationStartYear = 0;
-    mLastUpdate = 0;
-    mLastExecution = 0.;
+    mLastUpdate = -1.;
+    mLastExecution = -1.;
 
     mCurrentIndex=-1;
 }
@@ -115,8 +116,11 @@ bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)
     return a.relBasalArea > b.relBasalArea;
 }
 
-void FMStand::reload()
+void FMStand::reload(bool force)
 {
+    if (!force && mLastUpdate == ForestManagementEngine::instance()->currentYear())
+        return;
+
     DebugTimer t("AMIE:FMStand::reload");
     // load all trees that are located on this stand
     mTotalBasalArea = 0.;
@@ -133,7 +137,7 @@ void FMStand::reload()
 
     //qDebug() << "fmstand-reload: load trees from map:" << t.elapsed();
     // use: value_per_ha = value_stand * area_factor
-    double area_factor = 10000. / ForestManagementEngine::standGrid()->area(mId);
+    double area_factor = 1. / area();
     const QVector<QPair<Tree*, double> > &treelist = trees->trees();
     for ( QVector<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it) {
         double ba = it->first->basalArea() * area_factor;
@@ -227,13 +231,18 @@ bool FMStand::execute()
         // ok, we schedule the current activity
         if (trace())
             qCDebug(amie)<< context() << "adding ticket for execution.";
-        currentFlags().setIsPending(true);
+
         mScheduledHarvest = 0.;
         bool should_schedule = currentActivity()->evaluate(this);
         if (trace())
             qCDebug(amie) << context() << "evaluated stand. add a ticket:" << should_schedule;
         if (should_schedule) {
+            currentFlags().setIsPending(true);
             mUnit->scheduler()->addTicket(this, &currentFlags(), p_schedule, p_execute );
+        } else {
+            // cancel the activity
+            currentFlags().setActive(false);
+            afterExecution(true);
         }
         return should_schedule;
     } else {
@@ -318,7 +327,7 @@ bool FMStand::afterExecution(bool cancel)
     }
     mCurrentIndex = indexmin;
     if (mCurrentIndex>-1) {
-        int to_sleep = tmin - age();
+        int to_sleep = tmin - absoluteAge();
         if (to_sleep>0)
             sleep(to_sleep);
     }
@@ -329,6 +338,18 @@ bool FMStand::afterExecution(bool cancel)
     return mCurrentIndex > -1;
 }
 
+void FMStand::addHarvest(Tree *tree, int reason)
+{
+    Tree::TreeRemovalType r = Tree::TreeRemovalType (reason);
+    if (r == Tree::TreeDeath)
+        return; // do nothing atm
+    if (r==Tree::TreeHarvest) {
+        // regular harvest
+        mHarvested += tree->volume();
+    }
+    // if we have an active salvage activity, then store
+}
+
 
 void FMStand::sleep(int years_to_sleep)
 {
@@ -337,8 +358,8 @@ void FMStand::sleep(int years_to_sleep)
 
 void FMStand::addRemovedVolume(const double removed_volume)
 {
-    mRemovedVolumeDecade+=removed_volume;
-    mRemovedVolumeTotal+=removed_volume;
+    mRemovedVolumeDecade+=removed_volume / area();
+    mRemovedVolumeTotal+=removed_volume / area();
     mRemovedVolumeTicks++;
 }
 
@@ -413,6 +434,7 @@ QStringList FMStand::info()
     lines << QString("age: %1").arg(age());
     lines << QString("absolute age: %1").arg(absoluteAge());
     lines << QString("N/ha: %1").arg(stems());
+    lines << QString("MAI (decadal) m3/ha*yr: %1").arg(meanAnnualIncrement());
     lines << "Basal area per species";
     for (int i=0;i<nspecies();++i) {
         lines << QString("%1: %2").arg(speciesData(i).species->id()).arg(speciesData(i).basalArea);

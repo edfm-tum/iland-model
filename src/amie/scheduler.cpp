@@ -8,6 +8,7 @@
 #include "forestmanagementengine.h"
 
 #include "mapgrid.h"
+#include "expression.h"
 
 namespace AMIE {
 
@@ -182,6 +183,30 @@ void Scheduler::SchedulerItem::calculate()
         score = 1.1; // above 1
     else
         score = scheduleScore * harvestScore;
+}
+
+
+// **************************************************************************************
+SchedulerOptions::~SchedulerOptions()
+{
+    if (minRating)
+        delete minRating;
+}
+
+void SchedulerOptions::setup(QJSValue jsvalue)
+{
+    useScheduler = false;
+    if (!jsvalue.isObject())
+        return;
+    minScheduleHarvest = FMSTP::valueFromJs(jsvalue, "minScheduleHarvest","0").toNumber();
+    maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
+    maxHarvestOvershoot = FMSTP::valueFromJs(jsvalue, "maxHarvestOvershoot","2").toNumber();
+    scheduleRebounceDuration = FMSTP::valueFromJs(jsvalue, "scheduleRebounceDuration", "5").toNumber();
+    if (!minRating)
+        minRating = new Expression();
+    minRating->setExpression(FMSTP::valueFromJs(jsvalue, "minRatingFormula","1").toString());
+    useScheduler = true;
+
 }
 
 

@@ -3,6 +3,9 @@
 #include <QHash>
 #include <QVector>
 #include <QJSValue>
+
+#include "scheduler.h"
+
 namespace AMIE {
 
 
@@ -28,12 +31,14 @@ public:
     void setup();
     /// get stand treatment program by name; return 0 if the stp is not available.
     FMSTP *stpByName(const QString &name);
+    const SchedulerOptions schedulerOptions() const { return mSchedulerOptions; }
     // factory functions to create agents.... (
 private:
     QString mName; // agent name
     QJSValue mJSObj; ///< javascript object
     QHash<QString,FMSTP*> mSTP; ///< list of all STP linked to this agent type
     QVector<FMUnit*> mUnits; ///< list of units managed by the agent
+    SchedulerOptions mSchedulerOptions; ///< agent specific scheduler options
 };
 
 } // namespace

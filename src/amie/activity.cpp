@@ -456,9 +456,9 @@ bool Activity::execute(FMStand *stand)
 
 bool Activity::evaluate(FMStand *stand)
 {
-    // execute the "onEvaluate" event
-    events().run(QStringLiteral("onEvaluate"), stand);
-    return true;
+    // execute the "onEvaluate" event: the execution is canceled, if the function returns false.
+    bool cancel = events().run(QStringLiteral("onEvaluate"), stand)==QStringLiteral("false");
+    return !cancel;
 }
 
 QStringList Activity::info()

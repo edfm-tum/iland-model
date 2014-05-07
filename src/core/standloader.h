@@ -69,9 +69,11 @@ private:
     void executeiLandInitStand(int stand_id); ///< shuffle tree positions
     void copyTrees(); ///< helper function to quickly fill up the landscape by copying trees
     void evaluateDebugTrees(); ///< set debug-flag for trees by evaluating the param-value expression "debug_tree"
+    int parseInitFile(const QString &content, const QString &fileName, ResourceUnit *ru=0); ///< creates a list of InitFileItems from the init files' content
     Model *mModel;
     RandomCustomPDF *mRandom;
     QVector<InitFileItem> mInitItems;
+    QHash<int, QVector<InitFileItem> > mStandInitItems;
     const MapGrid *mCurrentMap;
     const MapGrid *mInitHeightGrid; ///< grid with tree heights
     Expression *mHeightGridResponse; ///< response function to calculate fitting of pixels with pre-determined height

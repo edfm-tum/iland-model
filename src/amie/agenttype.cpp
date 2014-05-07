@@ -38,6 +38,9 @@ void AgentType::setupSTP(QJSValue agent_code, const QString agent_name)
     if (FMSTP::verbose())
         qDebug() << "setup of agent" << agent_name << mSTP.size() << "links to STPs established.";
 
+    QJSValue scheduler = agent_code.property("scheduler");
+    mSchedulerOptions.setup( scheduler );
+
 }
 
 void AgentType::setup()

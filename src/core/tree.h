@@ -64,6 +64,7 @@ public:
     double barkThickness() const; ///< thickness of the bark (cm)
 
     // actions
+    enum TreeRemovalType { TreeDeath, TreeHarvest, TreeDisturbance};
     /// the tree dies (is killed)
     void die(TreeGrowthData *d=0);
     /// remove the tree (management). removalFractions for tree compartments: if 0: all biomass stays in the system, 1: all is "removed"
@@ -134,7 +135,7 @@ private:
     double relative_height_growth(); ///< estimate height growth based on light status.
     void grow_diameter(TreeGrowthData &d); ///< actual growth of the tree's stem.
     void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
-    void markRemovedVolume(); ///< record the removed volume in the height grid
+    void recordRemovedVolume(TreeRemovalType reason); ///< record the removed volume in the height grid
 
     // state variables
     int mId; ///< unique ID of tree

@@ -7,6 +7,8 @@
 
 class QJSEngine; // forward
 class MapGrid; // forward
+class Tree; // forward
+
 
 namespace AMIE {
 
@@ -51,6 +53,10 @@ public:
     //QVector<FMStand*> stands() const {return mStands; }
     const QMultiMap<FMUnit*, FMStand*> stands() const {return mUnitStandMap; }
     // functions
+
+    /// called by iLand for every tree that is removed/harvested/died due to disturbance.
+    void addHarvest(Tree* tree, int reason);
+
     /// evalaute forest management activities and select fitting activities for each forest stand
     void test();
     QStringList evaluateClick(const QPointF coord, const QString &grid_name);
@@ -59,6 +65,7 @@ public:
 private:
     void setupScripting();
     void prepareRun();
+    void finalizeRun();
     const QHash<FMStand *, double> &aggregateValues();
 
     AgentType *agentType(const QString &name);

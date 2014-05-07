@@ -27,6 +27,8 @@
 #include "model.h"
 #include "snag.h"
 
+#include "forestmanagementengine.h"
+
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
 HeightGrid *Tree::mHeightGrid = 0;
@@ -895,7 +897,7 @@ void Tree::die(TreeGrowthData *d)
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, d); // add tree to statistics
-    markRemovedVolume();
+    recordRemovedVolume(TreeDeath);
     if (ru()->snag())
         ru()->snag()->addMortality(this);
 }
@@ -907,7 +909,7 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
-    markRemovedVolume();
+    recordRemovedVolume(TreeHarvest);
 
     if (ru()->snag())
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
@@ -921,7 +923,7 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction, const double st
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, 0);
-    markRemovedVolume();
+    recordRemovedVolume(TreeDisturbance);
 
     if (ru()->snag())
         ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
@@ -953,10 +955,14 @@ void Tree::mortality(TreeGrowthData &d)
     }
 }
 
-void Tree::markRemovedVolume()
+void Tree::recordRemovedVolume(TreeRemovalType reason)
 {
     // add the volume of the current tree to the height grid
+    // this information is used to track the removed volume for stands based on grids.
     mHeightGrid->valueAtIndex(positionIndex().x()/cPxPerHeight, positionIndex().y()/cPxPerHeight ).removed_volume += (float) volume();
+    AMIE::ForestManagementEngine *amie = GlobalSettings::instance()->model()->amieEngine();
+    if (amie)
+        amie->addHarvest(this, (int)reason);
 }
 
 //////////////////////////////////////////////////
