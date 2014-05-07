@@ -162,6 +162,39 @@ void StandLoader::processInit()
         evaluateDebugTrees();
         return;
     }
+
+    // standgrid mode: load one large init file
+    if (copy_mode=="standgrid") {
+        fileName = GlobalSettings::instance()->path(fileName, "init");
+        if (!QFile::exists(fileName))
+            throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
+        QString content = Helper::loadTextFile(fileName);
+        // this processes the init file (also does the checking) and
+        // stores in a QHash datastrucutre
+        parseInitFile(content, fileName);
+
+        // setup the random distribution
+        QString density_func = xml.value("model.initialization.randomFunction", "1-x^2");
+        if (logLevelInfo())  qDebug() << "density function:" << density_func;
+        if (!mRandom || (mRandom->densityFunction()!= density_func)) {
+            if (mRandom)
+                delete mRandom;
+            mRandom=new RandomCustomPDF(density_func);
+            if (logLevelInfo()) qDebug() << "new probabilty density function:" << density_func;
+        }
+
+        if (mStandInitItems.isEmpty())
+            throw IException("StandLoader::processInit: 'mode' is 'standgrid' but the init file is either empty or contains no 'stand_id'-column.");
+        QHash<int, QVector<InitFileItem> >::const_iterator it = mStandInitItems.constBegin();
+        while (it!=mStandInitItems.constEnd()) {
+            mInitItems = it.value(); // copy the items...
+            executeiLandInitStand(it.key());
+            ++it;
+        }
+        qDebug() << "finished setup of trees.";
+        return;
+
+    }
     if (copy_mode=="snapshot") {
         // load a snapshot from a file
         Snapshot shot;
@@ -207,6 +240,7 @@ void StandLoader::evaluateDebugTrees()
         qDebug() << "evaluateDebugTrees: enabled debugging for" << counter << "trees.";
     }
 }
+
 
 /// load a single init file. Calls loadPicusFile() or loadiLandFile()
 /// @param fileName file to load
@@ -357,6 +391,34 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
   */
 int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, int stand_id, const QString &fileName)
 {
+    int total_count = parseInitFile(content, fileName, ru);
+    if (total_count==0)
+        return 0;
+
+
+    // setup the random distribution
+    QString density_func = GlobalSettings::instance()->settings().value("model.initialization.randomFunction", "1-x^2");
+    if (logLevelInfo())  qDebug() << "density function:" << density_func;
+    if (!mRandom || (mRandom->densityFunction()!= density_func)) {
+        if (mRandom)
+            delete mRandom;
+        mRandom=new RandomCustomPDF(density_func);
+        if (logLevelInfo()) qDebug() << "new probabilty density function:" << density_func;
+    }
+    if (stand_id>0) {
+        // execute stand based initialization
+        executeiLandInitStand(stand_id);
+    } else {
+        // exeucte the initialization based on single resource units
+        executeiLandInit(ru);
+        ru->cleanTreeList();
+    }
+    return total_count;
+
+}
+
+int StandLoader::parseInitFile(const QString &content, const QString &fileName, ResourceUnit* ru)
+{
     if (!ru)
         ru = mModel->ru();
     Q_ASSERT(ru!=0);
@@ -377,7 +439,10 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
     if (icount<0 || ispecies<0 || idbh_from<0 || idbh_to<0 || ihd<0 || iage<0)
         throw IException(QString("load-ini-file: file '%1' containts not all required fields (count, species, dbh_from, dbh_to, hd, age).").arg(fileName));
 
+    int istandid = infile.columnIndex("stand_id");
     mInitItems.clear();
+    mStandInitItems.clear();
+
     InitFileItem item;
     bool ok;
     int total_count = 0;
@@ -412,28 +477,17 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
                              .arg(fileName)
                              .arg(row));
         }
-        mInitItems.push_back(item);
-    }
-    // setup the random distribution
-    QString density_func = GlobalSettings::instance()->settings().value("model.initialization.randomFunction", "1-x^2");
-    if (logLevelInfo())  qDebug() << "density function:" << density_func;
-    if (!mRandom || (mRandom->densityFunction()!= density_func)) {
-        if (mRandom)
-            delete mRandom;
-        mRandom=new RandomCustomPDF(density_func);
-        if (logLevelInfo()) qDebug() << "new probabilty density function:" << density_func;
-    }
-    if (stand_id>0) {
-        // execute stand based initialization
-        executeiLandInitStand(stand_id);
-    } else {
-        // exeucte the initialization based on single resource units
-        executeiLandInit(ru);
-        ru->cleanTreeList();
+        if (istandid>=0) {
+            int standid = infile.value(row,istandid).toInt();
+            mStandInitItems[standid].push_back(item);
+        } else {
+            mInitItems.push_back(item);
+        }
     }
     return total_count;
 
 }
+
 
 int StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru, int stand_id)
 {

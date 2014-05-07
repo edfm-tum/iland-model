@@ -20,7 +20,12 @@ public:
     const Agent* agent() const { return mAgent; }
 
     // actions
-    void planUpdate();
+
+    /// update decadal management objectives for the planning unit.
+    void managementPlanUpdate();
+
+    /// update objectives of the current year.
+    void updateYear();
 
     void aggregate();
     QStringList info() const;

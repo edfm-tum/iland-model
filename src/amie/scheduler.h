@@ -3,10 +3,25 @@
 #include <QList>
 
 #include "activity.h"
+class Expression;
 
 namespace AMIE {
 class FMStand; // forward
 class FMUnit; // forward
+
+/** @brief SchedulerOptions store agent-specific options.
+ * */
+struct SchedulerOptions {
+    SchedulerOptions(): useScheduler(false), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0) {}
+    ~SchedulerOptions();
+    bool useScheduler; ///< true, if scheduler used by agent
+    double minScheduleHarvest; ///< minimum amount of m3/ha*yr that should be scheduled
+    double maxScheduleHarvest; ///< the maximum number of m3/ha*yr that should be scheduled
+    double maxHarvestOvershoot; ///< multiplier to define the maximum overshoot over the planned volume (e.g. 1.2 -> 20% max. overshoot)
+    double scheduleRebounceDuration; ///< number of years for which deviations from the planned volume are split into
+    Expression *minRating; ///< formula to determine the minimum required activity rating for a given amount of harvest objective achievment.
+    void setup(QJSValue jsvalue);
+};
 
 /**
  * @brief The Scheduler class schedules the forest management activities

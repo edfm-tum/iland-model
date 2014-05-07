@@ -7,6 +7,8 @@
 #include "activity.h"
 
 class Species; // forward (iLand species)
+class Tree; // forward (iLand tree)
+enum TreeRemovalType; // forward
 
 namespace AMIE {
 
@@ -36,7 +38,7 @@ public:
     bool trace() const { return property(QStringLiteral("trace")).toBool(); }
     const QString &context() const { return mContextStr; }
 
-    void reload(); // fetch new data from the forest stand
+    void reload(bool force=false); // fetch new data from the forest stand
     // general properties
     int id() const {return mId; }
     const FMUnit *unit() const { return mUnit; }
@@ -59,6 +61,8 @@ public:
     double stems() const {return mStems; }
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
+    /// realized harvest
+    double harvest() const { return mHarvested; }
 
     /// mean annual increment (MAI), m3 timber/ha for the last decade
     double meanAnnualIncrement() const { return mMAIdecade / area(); }
@@ -77,6 +81,9 @@ public:
 
     /// add a (simulated) harvest to the amount of planned harvest (used by the scheduling)
     void addScheduledHarvest(const double add_volume) {mScheduledHarvest += add_volume; }
+    /// is called whenever a tree is removed (death, management, disturbance)
+    void addHarvest(Tree *tree, int reason);
+    void resetHarvestCounter() { mHarvested = 0.; }
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.
@@ -116,9 +123,10 @@ private:
     double mVolume; ///< standing volume (m3/ha) of the stand
     double mStems; ///< stems per ha (above 4m)
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
+    double mHarvested; ///< m3 of timber volume that has been harvested
 
-    double mRemovedVolumeDecade; ///< removed volume of the decade (m3)
-    double mRemovedVolumeTotal; ///< removed volume of the rotation (m3)
+    double mRemovedVolumeDecade; ///< removed volume of the decade (m3/ha)
+    double mRemovedVolumeTotal; ///< removed volume of the rotation (m3/ha)
     int mRemovedVolumeTicks; ///< counter
     double mLastMAIVolume; ///< safe the standing volume
     double mMAIdecade; ///< decadal mean annual increment (m3/ha*yr)

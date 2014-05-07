@@ -24,6 +24,8 @@
 #include "helper.h"
 #include "threadrunner.h"
 
+#include "tree.h"
+
 Q_LOGGING_CATEGORY(amie, "amie")
 
 Q_LOGGING_CATEGORY(amieSetup, "amie.setup")
@@ -89,6 +91,14 @@ void ForestManagementEngine::prepareRun()
     const QHash<FMStand*, double> &data = aggregateValues();
     foreach (FMStand *stand, mStands)
         stand->addRemovedVolume(data[stand]);
+}
+
+void ForestManagementEngine::finalizeRun()
+{
+    // empty the harvest counter; it will be filled again
+    // during the (next) year.
+    foreach (FMStand *stand, mStands)
+        stand->resetHarvestCounter();
 }
 
 AgentType *ForestManagementEngine::agentType(const QString &name)
@@ -295,7 +305,7 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
 
     qCDebug(amie) << "*** execute decadal plan update ***";
 
-    unit->planUpdate();
+    unit->managementPlanUpdate();
 
     return unit;
 }
@@ -326,6 +336,8 @@ void ForestManagementEngine::run(int debug_year)
     if (isCancel()) {
         throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
     }
+
+    finalizeRun();
 
 }
 
@@ -440,6 +452,13 @@ FMStand *ForestManagementEngine::stand(int stand_id) const
         if ( (*it)->id() == stand_id)
             return *it;
     return 0;
+}
+
+void ForestManagementEngine::addHarvest(Tree *tree, int reason)
+{
+    // we use an 'int' instead of Tree:TreeRemovalType because it does not work
+    // with forward declaration (and I dont want to include the tree.h header in this class heder).
+    mFMStandGrid.valueAt(tree->position())->addHarvest(tree, reason);
 }
 
 

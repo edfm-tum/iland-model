@@ -81,7 +81,7 @@ public:
     ResourceUnit *ru(int index) { return (index>=0&&index<mRU.count())? mRU[index] : NULL; } ///< get resource unit by index
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }
-    AMIE::ForestManagementEngine *abe() const { return mABEManagement; }
+    AMIE::ForestManagementEngine *amieEngine() const { return mAMIEManagement; }
     Environment *environment() const {return mEnvironment; }
     Modules *modules() const { return mModules; }
     const DEM *dem() const { return mDEM; }
@@ -143,7 +143,7 @@ private:
     FloatGrid *mGrid; ///< the main LIF grid of the model (2x2m resolution)
     HeightGrid *mHeightGrid; ///< grid with 10m resolution that stores maximum-heights, tree counts and some flags
     Management *mManagement; ///< management sub-module (simple mode)
-    AMIE::ForestManagementEngine *mABEManagement; ///< management sub-module (agent based management engine)
+    AMIE::ForestManagementEngine *mAMIEManagement; ///< management sub-module (agent based management engine)
     Environment *mEnvironment; ///< definition of paramter values on resource unit level (modify the settings tree)
     TimeEvents *mTimeEvents; ///< sub module to handle predefined events in time (modifies the settings tree in time)
     MapGrid *mStandGrid; ///< map of the stand map (10m resolution)
