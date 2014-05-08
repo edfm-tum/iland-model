@@ -959,7 +959,7 @@ void Tree::recordRemovedVolume(TreeRemovalType reason)
 {
     // add the volume of the current tree to the height grid
     // this information is used to track the removed volume for stands based on grids.
-    AMIE::ForestManagementEngine *amie = GlobalSettings::instance()->model()->amieEngine();
+    ABE::ForestManagementEngine *amie = GlobalSettings::instance()->model()->amieEngine();
     if (amie)
         amie->addTreeRemoval(this, (int)reason);
 }

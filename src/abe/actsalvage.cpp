@@ -10,7 +10,7 @@
 #include "expression.h"
 #include "expressionwrapper.h"
 
-namespace AMIE {
+namespace ABE {
 
 ActSalvage::ActSalvage(FMSTP *parent)
 {
@@ -47,7 +47,14 @@ bool ActSalvage::execute(FMStand *stand)
     // the salvaged timber is already accounted for - so nothing needs to be done here.
     // however, we check if there is a planned activity for the stand which could be executed sooner
     // than planned.
-    stand->unit()->scheduler()->
+    bool preponed = stand->unit()->scheduler()->forceHarvest(stand, mMaxPreponeActivity);
+    if (stand->trace())
+        qCDebug(amie) << "Salvage activity executed. Changed scheduled activites (preponed): " << preponed;
+
+    stand->unit()->scheduler()->addExtraHarvest(stand, stand->totalHarvest(), Scheduler::Salvage);
+    stand->resetHarvestCounter(); // set back to zero...
+    // a harvest happens anyways.
+    return true;
 }
 
 QStringList ActSalvage::info()

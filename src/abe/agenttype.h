@@ -6,7 +6,7 @@
 
 #include "scheduler.h"
 
-namespace AMIE {
+namespace ABE {
 
 
 /** AgentType is the archtype agent including the

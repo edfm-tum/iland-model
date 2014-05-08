@@ -8,7 +8,7 @@
 #include "fomescript.h"
 
 #include <QJSEngine>
-namespace AMIE {
+namespace ABE {
 
 
 AgentType::AgentType()

@@ -5,7 +5,7 @@
 #include "activity.h"
 class Expression;
 
-namespace AMIE {
+namespace ABE {
 class FMStand; // forward
 class FMUnit; // forward
 
@@ -31,7 +31,8 @@ struct SchedulerOptions {
 class Scheduler
 {
 public:
-    Scheduler(FMUnit* unit) { mUnit = unit; }
+    Scheduler(FMUnit* unit) { mUnit = unit; mExtraHarvest=0.; }
+    enum HarvestType { Thinning, EndHarvest, Salvage};
 
     /// add an planned activity for a given stand.
     /// @param stand the stand to add
@@ -44,8 +45,13 @@ public:
     /// scheduled operations are executed.
     void run();
 
-    /// prepone a stand if in queue
+    /// prepone a stand if in queue for the given stand.
+    /// return true if a activity is preponed.
     bool forceHarvest(const FMStand *stand, const int max_years);
+
+    /// tell the scheduler about extra harvests (that should be considered in the scheduling)
+    /// volume: total volume (m3)
+    void addExtraHarvest(const FMStand *stand, const double volume, HarvestType type);
 
     /// get current score for stand 'id'
     /// return -1 if stand is invalid, 0..1 for probabilities, 1.1 for forced execution
@@ -53,6 +59,8 @@ public:
     QStringList info(const int stand_id) const;
 
 private:
+    double calculateMinProbability(double current_harvest);
+    void updateCurrentPlan();
     class SchedulerItem {
     public:
         SchedulerItem(): stand(0), score(0.) {}
@@ -64,7 +72,7 @@ private:
         double scheduleScore; ///< the probability based on schedule timing
         double harvestScore; ///< the probability of the activity
         double score; ///< the total score of this ticked to be executed this year
-        enum HarvestType { Thinning, EndHarvest} harvestType; ///< type of harvest
+        HarvestType harvestType; ///< type of harvest
         int  enterYear; ///< the year the ticket was created
         int  optimalYear; ///< the (first) year where execution is considered as optimal
         int forbiddenTo; ///< year until which the harvest operation is forbidden
@@ -74,6 +82,7 @@ private:
     /// find scheduler item for 'stand_id' or return NULL.
     SchedulerItem* item(const int stand_id) const;
     FMUnit *mUnit;
+    double mExtraHarvest;
 };
 
 

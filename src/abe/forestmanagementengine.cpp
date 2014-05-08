@@ -30,7 +30,7 @@ Q_LOGGING_CATEGORY(amie, "amie")
 
 Q_LOGGING_CATEGORY(amieSetup, "amie.setup")
 
-namespace AMIE {
+namespace ABE {
 
 /** @class ForestManagementEngine
 */
@@ -300,9 +300,12 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
     if (ForestManagementEngine::instance()->isCancel())
         return unit;
 
-    qCDebug(amie) << "*** execute decadal plan update ***";
-
-    unit->managementPlanUpdate();
+    if (GlobalSettings::instance()->currentYear() % 10 == 0) {
+        qCDebug(amie) << "*** execute decadal plan update ***";
+        unit->managementPlanUpdate();
+    } else {
+        unit->updatePlanOfCurrentYear();
+    }
 
     return unit;
 }
@@ -323,10 +326,10 @@ void ForestManagementEngine::run(int debug_year)
 
     prepareRun();
 
-    // launch the planning unit level analysis every ten years.
-    if (mCurrentYear % 10 == 0) {
-        DebugTimer plu("AMIE:planUpdate");
-        GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits);
+    {
+    // launch the planning unit level update (annual and thorough analysis every ten years)
+    DebugTimer plu("AMIE:planUpdate");
+    GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits);
     }
 
     GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits);

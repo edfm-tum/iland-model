@@ -4,7 +4,7 @@
 #include "activity.h"
 #include "species.h"
 
-namespace AMIE {
+namespace ABE {
 
 class FMSTP; // forward
 class FMStand; // forward

@@ -6,7 +6,7 @@
 #include "fomescript.h"
 #include "fmtreelist.h"
 
-namespace AMIE {
+namespace ABE {
 
 
 

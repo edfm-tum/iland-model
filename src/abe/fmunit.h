@@ -1,6 +1,6 @@
 #ifndef FMUNIT_H
 #define FMUNIT_H
-namespace AMIE {
+namespace ABE {
 
 
 class Agent; // forward
@@ -25,7 +25,7 @@ public:
     void managementPlanUpdate();
 
     /// update objectives of the current year.
-    void updateYear();
+    void updatePlanOfCurrentYear();
 
     void aggregate();
     QStringList info() const;

@@ -9,7 +9,7 @@
 #include "agent.h"
 #include "agenttype.h"
 
-namespace AMIE {
+namespace ABE {
 
 void FMUnit::aggregate()
 {
@@ -105,7 +105,7 @@ void FMUnit::managementPlanUpdate()
     qCDebug(amie) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
 }
 
-void FMUnit::updateYear()
+void FMUnit::updatePlanOfCurrentYear()
 {
     const QMultiMap<FMUnit*, FMStand*> &stands = ForestManagementEngine::instance()->stands();
     QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(this);

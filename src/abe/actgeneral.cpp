@@ -6,7 +6,7 @@
 #include "fmstand.h"
 #include "fomescript.h"
 
-namespace AMIE {
+namespace ABE {
 
 
 QStringList ActGeneral::info()

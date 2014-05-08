@@ -5,7 +5,7 @@
 
 class Expression; // forward
 class Tree; // forward
-namespace AMIE {
+namespace ABE {
 
 class FMSTP; // forward
 class FMStand; // forward

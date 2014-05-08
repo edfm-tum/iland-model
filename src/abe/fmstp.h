@@ -10,7 +10,7 @@
 
 class Expression; // forward
 
-namespace AMIE {
+namespace ABE {
 
 /**
  * @brief The FMSTP class encapsulates one "stand treatment program", that consists of several "activities".

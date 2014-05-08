@@ -13,7 +13,7 @@
 #include "resourceunitspecies.h"
 #include "sapling.h"
 
-namespace AMIE {
+namespace ABE {
 
 ActPlanting::ActPlanting(FMSTP *parent): Activity(parent)
 {

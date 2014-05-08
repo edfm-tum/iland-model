@@ -5,7 +5,7 @@
 
 class Expression; // forward
 
-namespace AMIE {
+namespace ABE {
 
 
 class FMStand;

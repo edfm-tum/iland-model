@@ -10,7 +10,7 @@ class MapGrid; // forward
 class Tree; // forward
 
 
-namespace AMIE {
+namespace ABE {
 
 class FMUnit; // forward
 class FMStand; // forward
