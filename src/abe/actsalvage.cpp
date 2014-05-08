@@ -12,7 +12,7 @@
 
 namespace ABE {
 
-ActSalvage::ActSalvage(FMSTP *parent)
+ActSalvage::ActSalvage(FMSTP *parent): Activity(parent)
 {
     mCondition = 0;
     mMaxPreponeActivity = 0;
@@ -47,11 +47,11 @@ bool ActSalvage::execute(FMStand *stand)
     // the salvaged timber is already accounted for - so nothing needs to be done here.
     // however, we check if there is a planned activity for the stand which could be executed sooner
     // than planned.
-    bool preponed = stand->unit()->scheduler()->forceHarvest(stand, mMaxPreponeActivity);
+    bool preponed = const_cast<FMUnit*>(stand->unit())->scheduler()->forceHarvest(stand, mMaxPreponeActivity);
     if (stand->trace())
-        qCDebug(amie) << "Salvage activity executed. Changed scheduled activites (preponed): " << preponed;
+        qCDebug(abe) << "Salvage activity executed. Changed scheduled activites (preponed): " << preponed;
 
-    stand->unit()->scheduler()->addExtraHarvest(stand, stand->totalHarvest(), Scheduler::Salvage);
+    const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->totalHarvest(), Scheduler::Salvage);
     stand->resetHarvestCounter(); // set back to zero...
     // a harvest happens anyways.
     return true;
@@ -60,7 +60,7 @@ bool ActSalvage::execute(FMStand *stand)
 QStringList ActSalvage::info()
 {
     QStringList lines = Activity::info();
-    lines << QString("condition: %1").arg(mCondition?mCondition->expression(), "-");
+    lines << QString("condition: %1").arg(mCondition?mCondition->expression():"-");
     lines << QString("maxPrepone: %1").arg(mMaxPreponeActivity);
     return lines;
 }

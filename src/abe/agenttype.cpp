@@ -22,16 +22,16 @@ void AgentType::setupSTP(QJSValue agent_code, const QString agent_name)
     mUnits.clear();
     mJSObj = agent_code;
     if (!agent_code.isObject())
-        throw IException(QString("AMIE:AgentType:setup: the javascript object for agent '%1' could not be found.").arg(agent_name));
+        throw IException(QString("ABE:AgentType:setup: the javascript object for agent '%1' could not be found.").arg(agent_name));
     QJSValue stps = agent_code.property("stp");
     if (!stps.isObject())
-        throw IException(QString("AMIE:AgentType:setup: the javascript definition of agent '%1' does not have a section for 'stp'.").arg(agent_name));
+        throw IException(QString("ABE:AgentType:setup: the javascript definition of agent '%1' does not have a section for 'stp'.").arg(agent_name));
     QJSValueIterator it(stps);
     while (it.hasNext()) {
         it.next();
         FMSTP *stp = ForestManagementEngine::instance()->stp(it.value().toString());
         if (!stp)
-           throw IException(QString("AMIE:AgentType:setup: definition of agent '%1': the STP for mixture type '%2': '%3' is not available.").arg(agent_name).arg(it.name()).arg(it.value().toString()));
+           throw IException(QString("ABE:AgentType:setup: definition of agent '%1': the STP for mixture type '%2': '%3' is not available.").arg(agent_name).arg(it.name()).arg(it.value().toString()));
         mSTP[it.name()] = stp;
     }
 

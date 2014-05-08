@@ -149,7 +149,7 @@ double Schedule::value(const FMStand *stand)
     if (toptrel>-1.)
         return 0.;
 
-    qCDebug(amie) << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
+    qCDebug(abe) << "Schedule::value: unexpected combination. U" << U << "age" << current << ", schedule:" << this->dump();
     return 0.;
 }
 
@@ -201,11 +201,11 @@ QString Events::run(const QString event, FMStand *stand)
         QJSValue func = mEvents[event].property(event);
         QJSValue result;
         if (func.isCallable()) {
-            DebugTimer t("AMIE:JSEvents:run");
+            DebugTimer t("ABE:JSEvents:run");
 
             result = func.callWithInstance(mInstance);
             if (FMSTP::verbose() || stand && stand->trace())
-                qCDebug(amie) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
+                qCDebug(abe) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
         }
 
         //qDebug() << "event called:" << event << "result:" << result.toString();
@@ -265,7 +265,7 @@ double Constraints::evaluate(FMStand *stand)
         p = mConstraints.at(i).evaluate(stand);
         if (p == 0.) {
             if (stand->trace())
-                qCDebug(amie) << stand->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
+                qCDebug(abe) << stand->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
             return 0.; // one constraint failed
         } else {
             // save the lowest value...
@@ -337,7 +337,7 @@ bool Constraints::constraint_item::evaluate(FMStand *stand) const
             }
 
             if (FMSTP::verbose())
-                qCDebug(amie) << stand->context() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
+                qCDebug(abe) << stand->context() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << stand->id() << ":" << result;
             return result > 0.;
 
         }
@@ -352,7 +352,7 @@ bool Constraints::constraint_item::evaluate(FMStand *stand) const
                              arg(result.toString()));
         }
         if (FMSTP::verbose())
-            qCDebug(amie) << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
+            qCDebug(abe) << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
         return result.toBool();
 
     }
@@ -423,13 +423,13 @@ void Activity::setup(QJSValue value)
 {
     mSchedule.setup(FMSTP::valueFromJs(value, "schedule", "", "setup activity"));
     if (FMSTP::verbose())
-        qCDebug(amieSetup) << mSchedule.dump();
+        qCDebug(abeSetup) << mSchedule.dump();
 
     // setup of events
     mEvents.clear();
     mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
-        qCDebug(amieSetup) << "Events: " << mEvents.dump();
+        qCDebug(abeSetup) << "Events: " << mEvents.dump();
 
     // setup of constraints
     QJSValue constraints = FMSTP::valueFromJs(value, "constraint");

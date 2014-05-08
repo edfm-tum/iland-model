@@ -50,7 +50,7 @@ void ActPlanting::setup(QJSValue value)
 
 bool ActPlanting::execute(FMStand *stand)
 {
-    qCDebug(amie()) << stand->context() << "execute of planting activity....";
+    qCDebug(abe) << stand->context() << "execute of planting activity....";
     QRectF box = ForestManagementEngine::instance()->standGrid()->boundingBox(stand->id());
     const MapGrid *sgrid = ForestManagementEngine::instance()->standGrid();
     Model *model = GlobalSettings::instance()->model();

@@ -931,7 +931,7 @@ void Tests::testFOMEstep()
         return;
     int n = Helper::userValue("how many years?", "1").toInt();
     for (int i=0;i<n;++i) {
-        qDebug()<< "running AMIE year" << i;
+        qDebug()<< "running ABE year" << i;
         fome->run(1);
     }
 }

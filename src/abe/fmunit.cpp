@@ -34,7 +34,7 @@ void FMUnit::aggregate()
         volume /= totalarea;
         harvest /= totalarea;
     }
-    qCDebug(amie) << "unit" << id() << "volume (m3/ha)" << volume << "age" << age << "planned harvest: todo";
+    qCDebug(abe) << "unit" << id() << "volume (m3/ha)" << volume << "age" << age << "planned harvest: todo";
 
 }
 
@@ -102,7 +102,7 @@ void FMUnit::managementPlanUpdate()
     double h_reg = hdz * 2.*age / rotation_length;
     double h_thi = h_tot - h_reg;
 
-    qCDebug(amie) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
+    qCDebug(abe) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
 }
 
 void FMUnit::updatePlanOfCurrentYear()

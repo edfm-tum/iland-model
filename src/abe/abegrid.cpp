@@ -1,6 +1,6 @@
 #include "abe_global.h"
 #include "global.h"
-#include "amiegrid.h"
+#include "abegrid.h"
 #include "fmstand.h"
 #include "fmunit.h"
 #include "modelcontroller.h"
@@ -8,12 +8,12 @@
 
 
 
-AMIELayers::~AMIELayers()
+ABELayers::~ABELayers()
 {
     GlobalSettings::instance()->controller()->removeLayers(this);
 }
 
-double AMIELayers::value(const FMStandPtr &data, const int index) const
+double ABELayers::value(const FMStandPtr &data, const int index) const
 {
     if (data == 0 && index<2) return -1; // for classes
     if (data == 0) return 0;
@@ -39,7 +39,7 @@ double AMIELayers::value(const FMStandPtr &data, const int index) const
     }
 }
 
-const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
+const QVector<LayeredGridBase::LayerElement> ABELayers::names() const
 {
     return QVector<LayeredGridBase::LayerElement>()
             << LayeredGridBase::LayerElement(QStringLiteral("id"), QStringLiteral("stand ID"), GridViewBrewerDiv)
@@ -55,7 +55,7 @@ const QVector<LayeredGridBase::LayerElement> AMIELayers::names() const
             << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow);
 }
 
-const QString AMIELayers::labelvalue(const int value, const int index) const
+const QString ABELayers::labelvalue(const int value, const int index) const
 {
     switch(index) {
     case 0: // stand id
@@ -66,12 +66,12 @@ const QString AMIELayers::labelvalue(const int value, const int index) const
     }
 }
 
-void AMIELayers::registerLayers()
+void ABELayers::registerLayers()
 {
-    GlobalSettings::instance()->controller()->addLayers(this, "AMIE");
+    GlobalSettings::instance()->controller()->addLayers(this, "ABE");
 }
 
-void AMIELayers::clearClasses()
+void ABELayers::clearClasses()
 {
     mAgentIndex.clear();
     mStandIndex.clear();

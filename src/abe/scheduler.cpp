@@ -24,7 +24,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     item->flags = flags;
     item->harvest = stand->scheduledHarvest();
     item->harvestPerHa = stand->scheduledHarvest() / stand->area();
-    item->harvestType = flags->isFinalHarvest()? SchedulerItem::EndHarvest : SchedulerItem::Thinning;
+    item->harvestType = flags->isFinalHarvest()? EndHarvest : Thinning;
     item->scheduleScore = prob_schedule;
     item->harvestScore = prob_execute;
     item->enterYear = ForestManagementEngine::instance()->currentYear();
@@ -38,7 +38,7 @@ void Scheduler::run()
 {
     // update the plan if necessary...
     if (FMSTP::verbose() && mItems.size()>0)
-        qCDebug(amie) << "running scheduler for unit" << mUnit->id() << ". # of active items:" << mItems.size();
+        qCDebug(abe) << "running scheduler for unit" << mUnit->id() << ". # of active items:" << mItems.size();
 
     double harvest_in_queue = 0.;
     double total_harvested = mExtraHarvest;
@@ -53,12 +53,12 @@ void Scheduler::run()
         item->scheduleScore = p_sched;
         item->calculate();
         if (item->stand->trace())
-            qCDebug(amie) << item->stand->context() << "scheduler scores (harvest schedule total): " << item->harvestScore << item->scheduleScore << item->score;
+            qCDebug(abe) << item->stand->context() << "scheduler scores (harvest schedule total): " << item->harvestScore << item->scheduleScore << item->score;
 
         // drop item if no schedule to happen any more
         if (item->score == 0.) {
             if (item->stand->trace())
-                qCDebug(amie) << item->stand->context() << "dropped activity" << item->flags->activity()->name() << "from scheduler.";
+                qCDebug(abe) << item->stand->context() << "dropped activity" << item->flags->activity()->name() << "from scheduler.";
             item->stand->afterExecution(true); // execution canceled
             it = mItems.erase(it);
             delete item;
@@ -93,7 +93,7 @@ void Scheduler::run()
 
             // execute activity:
             if (item->stand->trace())
-                qCDebug(amie) << item->stand->context() << "execute activity" << item->flags->activity()->name() << "score" << item->score << "planned harvest:" << item->stand->scheduledHarvest();
+                qCDebug(abe) << item->stand->context() << "execute activity" << item->flags->activity()->name() << "score" << item->score << "planned harvest:" << item->stand->scheduledHarvest();
             harvest_scheduled += item->stand->scheduledHarvest();
 
             bool executed = item->flags->activity()->execute(item->stand);
@@ -109,7 +109,7 @@ void Scheduler::run()
             // flag neighbors of the stand, if a clearcut happened
             // this is to avoid large unforested areas
             if (executed && item->flags->isFinalHarvest()) {
-                if (FMSTP::verbose()) qCDebug(amie) << item->stand->context() << "ran final harvest -> flag neighbors";
+                if (FMSTP::verbose()) qCDebug(abe) << item->stand->context() << "ran final harvest -> flag neighbors";
                 // simple rule: do not allow harvests for neighboring stands for 5 years
                 item->forbiddenTo = current_year + 5;
                 QList<int> neighbors = ForestManagementEngine::instance()->standGrid()->neighborsOf(item->stand->id());
@@ -125,7 +125,7 @@ void Scheduler::run()
         if (remove) {
             // removing item from scheduler
             if (item->stand->trace())
-                qCDebug(amie) << item->stand->context() << "removing activity" << item->flags->activity()->name() << "from scheduler.";
+                qCDebug(abe) << item->stand->context() << "removing activity" << item->flags->activity()->name() << "from scheduler.";
             it = mItems.erase(it);
             delete item;
 
@@ -134,7 +134,7 @@ void Scheduler::run()
         }
     }
     if (FMSTP::verbose() && no_executed>0)
-        qCDebug(amie) << "scheduler finished for" << mUnit->id() << ". # of items executed (n/volume):" << no_executed << "(" << harvest_scheduled << "m3), total:" << mItems.size() << "(" << harvest_in_queue << "m3)";
+        qCDebug(abe) << "scheduler finished for" << mUnit->id() << ". # of items executed (n/volume):" << no_executed << "(" << harvest_scheduled << "m3), total:" << mItems.size() << "(" << harvest_in_queue << "m3)";
 
 }
 
@@ -178,7 +178,7 @@ QStringList Scheduler::info(const int stand_id) const
         return QStringList();
     QStringList lines = QStringList();
     lines << "-";
-    lines << QString("type: %1").arg(si->harvestType==SchedulerItem::Thinning?QStringLiteral("Thinning"):QStringLiteral("End harvest"));
+    lines << QString("type: %1").arg(si->harvestType==Thinning?QStringLiteral("Thinning"):QStringLiteral("End harvest"));
     lines << QString("schedule score: %1").arg(si->scheduleScore);
     lines << QString("total score: %1").arg(si->score);
     lines << QString("scheduled vol/ha: %1").arg(si->harvestPerHa);

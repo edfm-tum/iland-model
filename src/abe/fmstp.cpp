@@ -80,7 +80,7 @@ bool FMSTP::executeRepeatingActivities(FMStand *stand)
             if (!stand->flags(i).active() || !stand->flags(i).enabled())
                 continue;
             if (stand->trace())
-                qCDebug(amie) << "running repeating activity" << mActivities.at(i)->name();
+                qCDebug(abe) << "running repeating activity" << mActivities.at(i)->name();
             result |= stand->executeActivity(mActivities[i]);
         }
     return result; // return true if at least one repeating activity was executed.
@@ -108,7 +108,7 @@ void FMSTP::internalSetup(QJSValue &js_value, int level)
             } else if (it.value().isObject() && !it.value().isCallable()) {
                 // try to go one level deeper
                 if (FMSTP::verbose())
-                    qCDebug(amieSetup) << "entering" << it.name();
+                    qCDebug(abeSetup) << "entering" << it.name();
                 if (level<10)
                     internalSetup(it.value(), ++level);
                 else
@@ -116,22 +116,22 @@ void FMSTP::internalSetup(QJSValue &js_value, int level)
             }
         }
     } else {
-        qCDebug(amieSetup) << "FMSTP::setup: not a valid javascript object.";
+        qCDebug(abeSetup) << "FMSTP::setup: not a valid javascript object.";
     }
 }
 
 
 void FMSTP::dumpInfo()
 {
-    if (!amie().isDebugEnabled())
+    if (!abe().isDebugEnabled())
         return;
-    qCDebug(amie) << " ***************************************";
-    qCDebug(amie) << " **************** Program dump for:" << name();
-    qCDebug(amie) << " ***************************************";
+    qCDebug(abe) << " ***************************************";
+    qCDebug(abe) << " **************** Program dump for:" << name();
+    qCDebug(abe) << " ***************************************";
     foreach(Activity *act, mActivities) {
-        qCDebug(amie) << "******* Activity *********";
+        qCDebug(abe) << "******* Activity *********";
         QString info =  act->info().join('\n');
-        qCDebug(amie) << info;
+        qCDebug(abe) << info;
 
     }
 }
@@ -140,7 +140,7 @@ void FMSTP::setupActivity(QJSValue &js_value, const QString &name)
 {
     QString type = js_value.property("type").toString();
     if (verbose())
-        qCDebug(amieSetup) << "setting up activity of type" << type << "from JS";
+        qCDebug(abeSetup) << "setting up activity of type" << type << "from JS";
     Activity *act = Activity::createActivity(type, this);
     if (!act) return; // actually, an error is thrown in the previous call.
 

@@ -1,17 +1,17 @@
-#ifndef AMIEGRID_H
-#define AMIEGRID_H
+#ifndef ABEGRID_H
+#define ABEGRID_H
 #include "layeredgrid.h"
 namespace ABE {
 class FMStand; // forward
 }
 
 
-/** Helper class for visualizing AMIE management data.
+/** Helper class for visualizing ABE management data.
 */
 typedef ABE::FMStand* FMStandPtr;
-class AMIELayers: public LayeredGrid<FMStandPtr> {
+class ABELayers: public LayeredGrid<FMStandPtr> {
   public:
-    ~AMIELayers();
+    ~ABELayers();
     void setGrid(Grid<FMStandPtr> &grid) { mGrid = &grid; }
     double value(const FMStandPtr &data, const int index) const;
     const QVector<LayeredGridBase::LayerElement> names() const;
@@ -24,4 +24,4 @@ private:
     mutable QHash<int, int> mStandIndex;
 };
 
-#endif // AMIEGRID_H
+#endif // ABEGRID_H
