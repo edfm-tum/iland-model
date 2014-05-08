@@ -173,6 +173,16 @@ double Schedule::maxValue(const double U) const
 
 }
 
+double Schedule::optimalValue(const double U) const
+{
+    if (topt>-1) return topt;
+    if (toptrel>-1) return toptrel*U;
+    if (tmin>-1 && tmax>-1) return (tmax+tmin)/2.;
+    if (tminrel>-1 && tmaxrel>-1) return (tmaxrel+tminrel)/2. * U;
+    if (force_execution) return tmax;
+    return toptrel*U;
+}
+
 /***************************************************************************/
 /**************************     Events  ************************************/
 /***************************************************************************/

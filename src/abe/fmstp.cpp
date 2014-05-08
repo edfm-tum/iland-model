@@ -102,8 +102,8 @@ void FMSTP::internalSetup(QJSValue &js_value, int level)
         QJSValueIterator it(js_value);
         while (it.hasNext()) {
             it.next();
-            if (it.value().hasOwnProperty("schedule")) {
-                // set up as activity
+            if (it.value().hasOwnProperty("type")) {
+                // try to set up as activity
                 setupActivity(it.value(), it.name());
             } else if (it.value().isObject() && !it.value().isCallable()) {
                 // try to go one level deeper

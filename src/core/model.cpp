@@ -476,16 +476,16 @@ void Model::loadProject()
         mABEManagement = new ABE::ForestManagementEngine();
         // setup of ABE after loading of trees.
 
-    } else {
-        // use the standard management
-        QString mgmtFile = xml.value("model.management.file");
-        if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
-            mManagement = new Management();
-            QString path = GlobalSettings::instance()->path(mgmtFile, "script");
-            mManagement->loadScript(path);
-            qDebug() << "setup management using script" << path;
-        }
     }
+    // use the standard management
+    QString mgmtFile = xml.value("model.management.file");
+    if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
+        mManagement = new Management();
+        QString path = GlobalSettings::instance()->path(mgmtFile, "script");
+        mManagement->loadScript(path);
+        qDebug() << "setup management using script" << path;
+    }
+
 
 
 }

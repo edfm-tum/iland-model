@@ -344,7 +344,6 @@ void FMStand::addTreeRemoval(Tree *tree, int reason)
     // for MAI calculations: store removal regardless of the reason
     mRemovedVolumeDecade+=removed_volume / area();
     mRemovedVolumeTotal+=removed_volume / area();
-    mRemovedVolumeTicks++;
 
     Tree::TreeRemovalType r = Tree::TreeRemovalType (reason);
     if (r == Tree::TreeDeath)
@@ -375,14 +374,11 @@ double FMStand::calculateMAI()
 {
     // MAI: delta standing volume + removed volume, per year
     // removed volume: mortality, management, disturbances
-    if (mRemovedVolumeTicks==0)
-        return mMAIdecade;
-    mMAIdecade = ((mVolume - mLastMAIVolume) + mRemovedVolumeDecade) / double(mRemovedVolumeTicks);
+    mMAIdecade = ((mVolume - mLastMAIVolume) + mRemovedVolumeDecade) / 10.;
     mMAItotal = (mVolume + mRemovedVolumeTotal) / absoluteAge();
     mLastMAIVolume = mVolume;
     // reset counters
     mRemovedVolumeDecade = 0.;
-    mRemovedVolumeTicks = 0;
     return mMAIdecade;
 }
 
@@ -480,7 +476,6 @@ void FMStand::newRotatation()
     mRotationStartYear = ForestManagementEngine::instance()->currentYear(); // reset stand age to 0.
     mRemovedVolumeTotal = 0.;
     mRemovedVolumeDecade = 0.;
-    mRemovedVolumeTicks = 0;
     mLastMAIVolume = 0.;
     mMAIdecade = 0.;
     mMAItotal = 0.;
