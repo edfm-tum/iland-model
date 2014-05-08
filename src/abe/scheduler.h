@@ -61,6 +61,7 @@ public:
 private:
     double calculateMinProbability(double current_harvest);
     void updateCurrentPlan();
+    void dump();
     class SchedulerItem {
     public:
         SchedulerItem(): stand(0), score(0.) {}

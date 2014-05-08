@@ -28,6 +28,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     item->scheduleScore = prob_schedule;
     item->harvestScore = prob_execute;
     item->enterYear = ForestManagementEngine::instance()->currentYear();
+    item->optimalYear = item->enterYear + flags->activity()->optimalSchedule(stand->stp()->rotationLength())- stand->absoluteAge();
     item->forbiddenTo = 0;
     item->calculate(); // set score
     mItems.push_back(item);
@@ -43,6 +44,8 @@ void Scheduler::run()
     double harvest_in_queue = 0.;
     double total_harvested = mExtraHarvest;
     mExtraHarvest = 0.;
+    if (FMSTP::verbose() && total_harvested>0.)
+        qCDebug(abe) << "Got extra harvest (e.g. salvages), m3=" << total_harvested;
 
     // update the schedule probabilities....
     QList<SchedulerItem*>::iterator it = mItems.begin();
@@ -69,6 +72,8 @@ void Scheduler::run()
 
     // sort the probabilities, highest probs go first....
     qSort(mItems);
+    if (FMSTP::verbose())
+        dump();
 
     int no_executed = 0;
     double harvest_scheduled = 0.;
@@ -142,9 +147,10 @@ bool Scheduler::forceHarvest(const FMStand *stand, const int max_years)
 {
     // check if we have the stand in the list:
      for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit) {
-         if ((*nit)->stand == stand)
-             if ((*nit)->optimalYear - max_years > GlobalSettings::instance()->currentYear()) {
-                 (*nit)->flags->setExecuteImmediate(true);
+         const SchedulerItem *item = *nit;
+         if (item->stand == stand)
+             if (abs(item->optimalYear -  GlobalSettings::instance()->currentYear()) < max_years ) {
+                 item->flags->setExecuteImmediate(true);
                  return true;
              }
      }
@@ -153,6 +159,7 @@ bool Scheduler::forceHarvest(const FMStand *stand, const int max_years)
 
 void Scheduler::addExtraHarvest(const FMStand *stand, const double volume, Scheduler::HarvestType type)
 {
+    Q_UNUSED(stand); Q_UNUSED(type); // at least for now
     mExtraHarvest += volume;
 }
 
@@ -193,6 +200,22 @@ double Scheduler::calculateMinProbability(double current_harvest)
     return 0.5;
 }
 
+void Scheduler::dump()
+{
+    if(mItems.isEmpty())
+        return;
+    qCDebug(abe)<< "***** Scheduler items **** Unit:" << mUnit->id();
+    qCDebug(abe)<< "stand.id, score, opt.year, act.name, planned.harvest";
+    QList<SchedulerItem*>::iterator it = mItems.begin();
+    while (it!=mItems.end()) {
+        SchedulerItem *item = *it;
+        qCDebug(abe) << QString("%1, %2, %3, %4, %5").arg(item->stand->id()).arg(item->score).arg(item->optimalYear)
+                                                    .arg(item->flags->activity()->name())
+                                                    .arg(item->harvest);
+        ++it;
+    }
+}
+
 Scheduler::SchedulerItem *Scheduler::item(const int stand_id) const
 {
     for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit)
@@ -204,9 +227,9 @@ Scheduler::SchedulerItem *Scheduler::item(const int stand_id) const
 
 bool Scheduler::SchedulerItem::operator<(const Scheduler::SchedulerItem &item)
 {
-    // sort *descending*, i.e. after sorting the item with the highest score is in front.
-    if (this->score == item.score)
-        return this->enterYear < item.enterYear; // higher prob. for items that entered earlier TODO: change to due/overdue
+    // sort *descending*, i.e. after sorting, the item with the highest score is in front.
+//    if (this->score == item.score)
+//        return this->enterYear < item.enterYear; // higher prob. for items that entered earlier TODO: change to due/overdue
     return this->score > item.score;
 }
 

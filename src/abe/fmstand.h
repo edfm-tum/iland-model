@@ -126,7 +126,7 @@ private:
 
     double mRemovedVolumeDecade; ///< removed volume of the decade (m3/ha)
     double mRemovedVolumeTotal; ///< removed volume of the rotation (m3/ha)
-    int mRemovedVolumeTicks; ///< counter
+
     double mLastMAIVolume; ///< safe the standing volume
     double mMAIdecade; ///< decadal mean annual increment (m3/ha*yr)
     double mMAItotal; ///< total (over the full rotation) mean annual increment (m3/ha*yr)

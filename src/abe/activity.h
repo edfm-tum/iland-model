@@ -29,6 +29,8 @@ public:
     double minValue(const double U=100.) const;
     /// returns the latest possible execution time
     double maxValue(const double U=100.) const;
+    /// returns the "optimal" year, i.e. the first year when prob. to execute is highest.
+    double optimalValue(const double U=100.) const;
     // some stuffs
     int tmin; int tmax; int topt;
     double tminrel; double tmaxrel; double toptrel;
@@ -148,8 +150,12 @@ public:
     virtual QString type() const;
     QString name() const {return mName; }
     int index() const { return mIndex; }
+    /// get earlist possible scheduled year (relative to rotation begin)
     int earlistSchedule(const double U=100.) const {return mSchedule.minValue(U); }
+    /// get latest possible scheduled year (relative to rotation begin)
     int latestSchedule(const double U=100.) const { return mSchedule.maxValue(U); }
+    /// get optimal scheduled year (relative to rotation begin)
+    int optimalSchedule(const double U=100.) const { return mSchedule.optimalValue(U); }
     bool isRepeatingActivity() const { return mSchedule.repeat; }
     // main actions
     /// setup of the activity (events, schedule, constraints). additional setup in derived classes.
