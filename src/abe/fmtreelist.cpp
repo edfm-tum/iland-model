@@ -1,5 +1,5 @@
 #include "global.h"
-#include "amie_global.h"
+#include "abe_global.h"
 #include "fmtreelist.h"
 
 #include "forestmanagementengine.h"
