@@ -223,7 +223,7 @@ HEADERS += mainwindow.h \
     ../tools/spatialanalysis.h \
     ../abe/activity.h \
     ../abe/forestmanagementengine.h \
-    ../abe/amie_global.h \
+    ../abe/abe_global.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
     ../tools/viewport.h \
