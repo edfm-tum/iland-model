@@ -55,7 +55,7 @@ public:
     // functions
 
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.
-    void addHarvest(Tree* tree, int reason);
+    void addTreeRemoval(Tree* tree, int reason);
 
     /// evalaute forest management activities and select fitting activities for each forest stand
     void test();
@@ -66,7 +66,6 @@ private:
     void setupScripting();
     void prepareRun();
     void finalizeRun();
-    const QHash<FMStand *, double> &aggregateValues();
 
     AgentType *agentType(const QString &name);
     static ForestManagementEngine *singleton_fome_engine;
@@ -82,8 +81,6 @@ private:
     // mapping of stands to units
     QMultiMap<FMUnit*, FMStand*> mUnitStandMap;
     QVector<FMStand*> mStands;
-    QHash<FMStand*, double> mAggregatedValues; ///< stores aggregated values per stand
-
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types

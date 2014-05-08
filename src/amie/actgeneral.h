@@ -3,7 +3,7 @@
 #include "activity.h"
 
 #include <QJSValue>
-namespace AMIE {
+namespace ABE {
 class FMStand; // forward
 class FMSTP; // forward
 

@@ -45,7 +45,6 @@ class DEM;
 struct HeightGridValue
 {
     float height; ///< dominant tree height (m)
-    float removed_volume; ///< tree volume that has been removed from the pixel (mortality, management, disturbances)
     int count() const { return mCount & 0x0000ffff; } ///< get count of trees on pixel
     void increaseCount() { mCount++; } ///< increase the number of trees on pixel
     void resetCount() { mCount &= 0xffff0000; } ///< set the count to 0
@@ -110,8 +109,6 @@ private:
     void initialize(); ///< basic startup without creating a simulation
     void setupSpace(); ///< setup the "world"(spatial grids, ...), create ressource units
     void initOutputDatabase(); ///< setup output database (run metadata, ...)
-    void yearBegin(); ///< diverse inits/resets at beginning of the year
-
 
     void applyPattern(); ///< apply LIP-patterns of all trees
     void readPattern(); ///< retrieve LRI for trees

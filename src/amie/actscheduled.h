@@ -2,7 +2,7 @@
 #define ACTSCHEDULED_H
 #include "activity.h"
 
-namespace AMIE {
+namespace ABE {
 
 class FMStand; // forward
 class FMSTP; // forward

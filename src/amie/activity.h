@@ -97,6 +97,8 @@ public:
     bool isExecuteImmediate() const {return flag(ExecuteImmediate); }
     bool isScheduled() const {return flag(IsScheduled);}
     bool isDoSimulate() const {return flag(DoSimulate);}
+    bool isSalvage() const {return flag(IsSalvage);}
+
 
     void setActive(const bool active) { setFlag(Active, active); }
     void setEnabled(const bool enabled) { setFlag(Enabled, enabled); }
@@ -107,6 +109,7 @@ public:
     void setExecuteImmediate(const bool doexec) { setFlag(ExecuteImmediate, doexec);}
     void setIsScheduled(const bool doschedule) {setFlag(IsScheduled, doschedule); }
     void setDoSimulate(const bool dosimulate) {setFlag(DoSimulate, dosimulate); }
+    void setIsSalvage(const bool issalvage) {setFlag(IsSalvage, issalvage); }
 
 private:
     /// (binary coded)  flags
@@ -118,7 +121,8 @@ private:
                  Pending=32,  // the activity is currently in the scheduling algorithm
                  FinalHarvest=64,  // the management of the activity is a "endnutzung" (compared to "vornutzung")
                  IsScheduled=128, // the execution time of the activity is scheduled by the Scheduler component
-                 DoSimulate=256  // the default operation mode of harvests (simulate or not)
+                 DoSimulate=256,  // the default operation mode of harvests (simulate or not)
+                 IsSalvage=512   // the activity is triggered by tree mortality events
                  };
     bool flag(const ActivityFlags::Flags flag) const { return mFlags & flag; }
     void setFlag(const ActivityFlags::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}

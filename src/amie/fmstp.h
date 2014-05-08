@@ -3,6 +3,7 @@
 
 #include "fmstand.h"
 #include "activity.h"
+#include "actsalvage.h"
 
 #include <QJSValue>
 #include <QList>
@@ -34,8 +35,11 @@ public:
 
     /// rotation length (years)
     int rotationLength() const {return 100; } // TODO: fix
+    ActSalvage *salvageActivity() const { return mSalvage; }
 
+    /// run repeating activities
     bool executeRepeatingActivities(FMStand *stand);
+
 
     // helper functions
     void dumpInfo();
@@ -58,6 +62,8 @@ private:
     QVector<Activity*> mActivities; ///< container for the activities of the STP
     QVector<ActivityFlags> mActivityStand; ///< base data for stand-specific STP info.
     QStringList mActivityNames;  ///< names of all available activities
+    // special activities
+    ActSalvage *mSalvage;
 
 };
 

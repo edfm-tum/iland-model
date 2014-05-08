@@ -909,14 +909,14 @@ void Tests::testRumple()
 
 }
 
-AMIE::ForestManagementEngine *fome=0;
+ABE::ForestManagementEngine *fome=0;
 void Tests::testFOMEsetup()
 {
-    fome = new AMIE::ForestManagementEngine();
+    fome = new ABE::ForestManagementEngine();
     //fome.test();
     try {
 
-        AMIE::FMSTP::setVerbose(true);
+        ABE::FMSTP::setVerbose(true);
         fome->setup();
     } catch(const IException &e) {
        Helper::msg(e.message());

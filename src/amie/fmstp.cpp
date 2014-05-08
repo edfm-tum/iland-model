@@ -14,6 +14,7 @@ bool FMSTP::mVerbose = false;
 
 FMSTP::FMSTP()
 {
+    mSalvage = 0;
 }
 
 FMSTP::~FMSTP()
@@ -55,6 +56,10 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
         mActivities.at(i)->setIndex(i);
         if (mActivities.at(i)->isRepeatingActivity())
             mHasRepeatingActivities = true;
+        if (mActivities.at(i)->standFlags(0).isSalvage()) {
+            mSalvage = dynamic_cast<ActSalvage*>(mActivities.at(i));
+            mHasRepeatingActivities = false;
+        }
     }
 
     // (3) set up top-level events
@@ -63,6 +68,10 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
 
 bool FMSTP::executeRepeatingActivities(FMStand *stand)
 {
+    if (mSalvage && stand->totalHarvest()) {
+        // at this point totalHarvest is only disturbance related harvests.
+        stand->executeActivity(mSalvage);
+    }
     if (!mHasRepeatingActivities)
         return false;
     bool result = false;

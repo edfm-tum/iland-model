@@ -516,14 +516,6 @@ void Model::initOutputDatabase()
 
 }
 
-void Model::yearBegin()
-{
-    // reset the removed volume counter in the height grid
-    HeightGridValue *end = heightGrid()->end();
-    for (HeightGridValue *p = heightGrid()->begin(); p!=end; ++p)
-        p->removed_volume = 0.f;
-
-}
 
 /// multithreaded running function for the resource unit level establishment
 ResourceUnit *nc_sapling_growth_establishment(ResourceUnit *unit)
@@ -645,9 +637,6 @@ void Model::runYear()
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
     mModules->yearBegin();
-
-    // other resets at the beginning of the year.
-    yearBegin();
 
     // execute scheduled events for the current year
     if (mTimeEvents)

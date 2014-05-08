@@ -12,7 +12,7 @@ class FMUnit; // forward
 /** @brief SchedulerOptions store agent-specific options.
  * */
 struct SchedulerOptions {
-    SchedulerOptions(): useScheduler(false), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0) {}
+    SchedulerOptions(): useScheduler(false), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0) { minRating = 0; }
     ~SchedulerOptions();
     bool useScheduler; ///< true, if scheduler used by agent
     double minScheduleHarvest; ///< minimum amount of m3/ha*yr that should be scheduled
@@ -44,6 +44,9 @@ public:
     /// scheduled operations are executed.
     void run();
 
+    /// prepone a stand if in queue
+    bool forceHarvest(const FMStand *stand, const int max_years);
+
     /// get current score for stand 'id'
     /// return -1 if stand is invalid, 0..1 for probabilities, 1.1 for forced execution
     double scoreOf(const int stand_id) const;
@@ -63,7 +66,8 @@ private:
         double score; ///< the total score of this ticked to be executed this year
         enum HarvestType { Thinning, EndHarvest} harvestType; ///< type of harvest
         int  enterYear; ///< the year the ticket was created
-        int forbiddenTo; ///< year until which any harvest operation is forbidden
+        int  optimalYear; ///< the (first) year where execution is considered as optimal
+        int forbiddenTo; ///< year until which the harvest operation is forbidden
         ActivityFlags *flags; ///< the details of the activity/stand context
     };
     QList<SchedulerItem*> mItems; ///< the list of active tickets

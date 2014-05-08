@@ -1,7 +1,7 @@
 #ifndef AGENT_H
 #define AGENT_H
 
-namespace AMIE {
+namespace ABE {
 
 
 class AgentType; // forward

@@ -1,7 +1,7 @@
 #include "amie_global.h"
 #include "thinning.h"
 
-namespace AMIE {
+namespace ABE {
 
 
 void Thinning::setup(QJSValue value)

@@ -1,14 +1,14 @@
 #ifndef AMIEGRID_H
 #define AMIEGRID_H
 #include "layeredgrid.h"
-namespace AMIE {
+namespace ABE {
 class FMStand; // forward
 }
 
 
 /** Helper class for visualizing AMIE management data.
 */
-typedef AMIE::FMStand* FMStandPtr;
+typedef ABE::FMStand* FMStandPtr;
 class AMIELayers: public LayeredGrid<FMStandPtr> {
   public:
     ~AMIELayers();

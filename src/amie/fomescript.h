@@ -5,7 +5,7 @@
 
 #include "fmstand.h"
 #include "fmunit.h"
-namespace AMIE {
+namespace ABE {
 
 class StandObj;
 class SiteObj;

@@ -87,10 +87,7 @@ void ForestManagementEngine::setupScripting()
 
 void ForestManagementEngine::prepareRun()
 {
-    // extract removed volume from the model (for MAI calculation)
-    const QHash<FMStand*, double> &data = aggregateValues();
-    foreach (FMStand *stand, mStands)
-        stand->addRemovedVolume(data[stand]);
+
 }
 
 void ForestManagementEngine::finalizeRun()
@@ -403,24 +400,6 @@ void ForestManagementEngine::test()
     qDebug() << "finished";
 
 }
-const QHash<FMStand*, double> &ForestManagementEngine::aggregateValues()
-{
-    // clear
-    QHash<FMStand*, double>::iterator i = mAggregatedValues.begin();
-    for (; i!=mAggregatedValues.end();++i)
-        i.value() = 0.;
-
-    // extract from height map
-    // easy, since map grids have the same size as the height map.
-    const HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
-    HeightGridValue *p = hg->begin();
-    FMStand **s = mFMStandGrid.begin();
-    for (; p!=hg->end(); ++p, ++s) {
-        if (*s)
-            mAggregatedValues[*s] += p->removed_volume;
-    }
-    return mAggregatedValues;
-}
 
 QStringList ForestManagementEngine::evaluateClick(const QPointF coord, const QString &grid_name)
 {
@@ -454,11 +433,11 @@ FMStand *ForestManagementEngine::stand(int stand_id) const
     return 0;
 }
 
-void ForestManagementEngine::addHarvest(Tree *tree, int reason)
+void ForestManagementEngine::addTreeRemoval(Tree *tree, int reason)
 {
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class heder).
-    mFMStandGrid.valueAt(tree->position())->addHarvest(tree, reason);
+    mFMStandGrid.valueAt(tree->position())->addTreeRemoval(tree, reason);
 }
 
 

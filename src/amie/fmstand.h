@@ -61,8 +61,8 @@ public:
     double stems() const {return mStems; }
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
-    /// realized harvest
-    double harvest() const { return mHarvested; }
+    /// total realized harvest
+    double totalHarvest() const { return mHarvested + mDisturbed; }
 
     /// mean annual increment (MAI), m3 timber/ha for the last decade
     double meanAnnualIncrement() const { return mMAIdecade / area(); }
@@ -82,16 +82,14 @@ public:
     /// add a (simulated) harvest to the amount of planned harvest (used by the scheduling)
     void addScheduledHarvest(const double add_volume) {mScheduledHarvest += add_volume; }
     /// is called whenever a tree is removed (death, management, disturbance)
-    void addHarvest(Tree *tree, int reason);
-    void resetHarvestCounter() { mHarvested = 0.; }
+    void addTreeRemoval(Tree *tree, int reason);
+    void resetHarvestCounter() { mHarvested = 0.; mDisturbed=0.; }
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.
     void sleep(int years_to_sleep);
     int sleepYears() const {return mYearsToWait; }
 
-    /// for bookkeeping and MAI calculation
-    void addRemovedVolume(const double removed_volume);
     /// calculate mean annual increment (m3/ha) and return decadal MAI.
     double calculateMAI();
 
@@ -124,6 +122,7 @@ private:
     double mStems; ///< stems per ha (above 4m)
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
     double mHarvested; ///< m3 of timber volume that has been harvested
+    double mDisturbed; ///< removed due to disturbance
 
     double mRemovedVolumeDecade; ///< removed volume of the decade (m3/ha)
     double mRemovedVolumeTotal; ///< removed volume of the rotation (m3/ha)

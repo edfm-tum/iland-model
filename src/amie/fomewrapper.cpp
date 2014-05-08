@@ -4,7 +4,7 @@
 #include "activity.h"
 #include "fmstand.h"
 #include "fmunit.h"
-namespace AMIE {
+namespace ABE {
 
 // definition of variables
 // (1) variables of activites

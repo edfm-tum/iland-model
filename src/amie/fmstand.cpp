@@ -37,6 +37,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mStems = 0.;
     mScheduledHarvest = 0.;
     mHarvested = 0.;
+    mDisturbed = 0.;
     mRotationStartYear = 0;
     mLastUpdate = -1.;
     mLastExecution = -1.;
@@ -237,7 +238,6 @@ bool FMStand::execute()
         if (trace())
             qCDebug(amie) << context() << "evaluated stand. add a ticket:" << should_schedule;
         if (should_schedule) {
-            currentFlags().setIsPending(true);
             mUnit->scheduler()->addTicket(this, &currentFlags(), p_schedule, p_execute );
         } else {
             // cancel the activity
@@ -251,7 +251,6 @@ bool FMStand::execute()
             qCDebug(amie) << context() << "executing activty" << currentActivity()->name();
         mScheduledHarvest = 0.;
         bool executed = currentActivity()->execute(this);
-        currentFlags().setIsPending(false);
         if (!currentActivity()->isRepeatingActivity()) {
             currentFlags().setActive(false);
             afterExecution(!executed); // check what comes next for the stand
@@ -338,16 +337,31 @@ bool FMStand::afterExecution(bool cancel)
     return mCurrentIndex > -1;
 }
 
-void FMStand::addHarvest(Tree *tree, int reason)
+void FMStand::addTreeRemoval(Tree *tree, int reason)
 {
+    double removed_volume = tree->volume();
+
+    // for MAI calculations: store removal regardless of the reason
+    mRemovedVolumeDecade+=removed_volume / area();
+    mRemovedVolumeTotal+=removed_volume / area();
+    mRemovedVolumeTicks++;
+
     Tree::TreeRemovalType r = Tree::TreeRemovalType (reason);
     if (r == Tree::TreeDeath)
         return; // do nothing atm
     if (r==Tree::TreeHarvest) {
         // regular harvest
-        mHarvested += tree->volume();
+        mHarvested +=removed_volume;
     }
-    // if we have an active salvage activity, then store
+    if (r==Tree::TreeDisturbance) {
+        // if we have an active salvage activity, then store
+        if (mSTP->salvageActivity()) {
+            if (mSTP->salvageActivity()->testRemove(tree)) {
+                mDisturbed += removed_volume;
+            }
+        }
+
+    }
 }
 
 
@@ -356,12 +370,6 @@ void FMStand::sleep(int years_to_sleep)
     mYearsToWait = qMax(mYearsToWait, qMax(years_to_sleep,0));
 }
 
-void FMStand::addRemovedVolume(const double removed_volume)
-{
-    mRemovedVolumeDecade+=removed_volume / area();
-    mRemovedVolumeTotal+=removed_volume / area();
-    mRemovedVolumeTicks++;
-}
 
 double FMStand::calculateMAI()
 {

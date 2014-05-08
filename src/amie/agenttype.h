@@ -31,7 +31,7 @@ public:
     void setup();
     /// get stand treatment program by name; return 0 if the stp is not available.
     FMSTP *stpByName(const QString &name);
-    const SchedulerOptions schedulerOptions() const { return mSchedulerOptions; }
+    const SchedulerOptions &schedulerOptions() const { return mSchedulerOptions; }
     // factory functions to create agents.... (
 private:
     QString mName; // agent name
