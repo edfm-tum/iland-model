@@ -2,7 +2,7 @@
 #define THINNING_H
 
 #include "activity.h"
-namespace AMIE {
+namespace ABE {
 
 class Thinning : public Activity
 {

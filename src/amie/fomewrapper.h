@@ -3,7 +3,7 @@
 
 #include "expressionwrapper.h"
 
-namespace AMIE {
+namespace ABE {
 class FMStand;
 
 

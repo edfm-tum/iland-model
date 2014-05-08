@@ -404,6 +404,9 @@ Activity *Activity::createActivity(const QString &type, FMSTP *stp)
     if (type=="planting")
         act = new ActPlanting(stp);
 
+    if (type=="salvage")
+        act = new ActSalvage(stp);
+
     if (!act) {
         throw IException(QString("Error: the activity type '%1' is not a valid type.").arg(type));
     }

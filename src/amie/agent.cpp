@@ -1,5 +1,5 @@
 #include "agent.h"
-namespace AMIE {
+namespace ABE {
 
 
 Agent::Agent(AgentType *type)

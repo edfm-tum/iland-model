@@ -149,7 +149,8 @@ SOURCES += main.cpp \
     ../tools/colors.cpp \
     ../amie/fmtreelist.cpp \
     ../amie/actscheduled.cpp \
-    ../amie/actplanting.cpp
+    ../amie/actplanting.cpp \
+    ../amie/actsalvage.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -241,7 +242,8 @@ HEADERS += mainwindow.h \
     ../tools/colors.h \
     ../amie/fmtreelist.h \
     ../amie/actscheduled.h \
-    ../amie/actplanting.h
+    ../amie/actplanting.h \
+    ../amie/actsalvage.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

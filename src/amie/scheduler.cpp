@@ -18,6 +18,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     if (FMSTP::verbose())
         qDebug()<< "ticked added for stand" << stand->id();
 
+    flags->setIsPending(true);
     SchedulerItem *item = new SchedulerItem();
     item->stand = stand;
     item->flags = flags;
@@ -74,7 +75,6 @@ void Scheduler::run()
 
     it = mItems.begin();
     while (it!=mItems.end()) {
-        // for the time being: execute everything >0.5 ... or if time > 10 yrs
         SchedulerItem *item = *it;
         // ignore stands that are currently banned
         if (item->forbiddenTo > current_year) {
@@ -91,6 +91,7 @@ void Scheduler::run()
             harvest_scheduled += item->stand->scheduledHarvest();
 
             bool executed = item->flags->activity()->execute(item->stand);
+
             item->flags->setIsPending(false);
             if (!item->flags->activity()->isRepeatingActivity()) {
                 item->flags->setActive(false);
@@ -128,6 +129,19 @@ void Scheduler::run()
     if (FMSTP::verbose() && no_executed>0)
         qCDebug(amie) << "scheduler finished for" << mUnit->id() << ". # of items executed (n/volume):" << no_executed << "(" << harvest_scheduled << "m3), total:" << mItems.size() << "(" << harvest_in_queue << "m3)";
 
+}
+
+bool Scheduler::forceHarvest(const FMStand *stand, const int max_years)
+{
+    // check if we have the stand in the list:
+     for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit) {
+         if ((*nit)->stand == stand)
+             if ((*nit)->optimalYear - max_years > GlobalSettings::instance()->currentYear()) {
+                 (*nit)->flags->setExecuteImmediate(true);
+                 return true;
+             }
+     }
+     return false;
 }
 
 double Scheduler::scoreOf(const int stand_id) const
@@ -174,6 +188,8 @@ Scheduler::SchedulerItem *Scheduler::item(const int stand_id) const
 bool Scheduler::SchedulerItem::operator<(const Scheduler::SchedulerItem &item)
 {
     // sort *descending*, i.e. after sorting the item with the highest score is in front.
+    if (this->score == item.score)
+        return this->enterYear < item.enterYear; // higher prob. for items that entered earlier TODO: change to due/overdue
     return this->score > item.score;
 }
 
