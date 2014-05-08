@@ -17,7 +17,7 @@
 
 #include "debugtimer.h"
 
-namespace AMIE {
+namespace ABE {
 
 FMStand::FMStand(FMUnit *unit, const int id)
 {

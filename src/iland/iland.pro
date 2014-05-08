@@ -18,7 +18,7 @@ LIBS += -lQt5Concurrent
 INCLUDEPATH += ../core \
     ../tools \
     ../output \
-    ../amie \
+    ../abe \
     ../iland
 
 DEPENDPATH += plugins
@@ -129,28 +129,28 @@ SOURCES += main.cpp \
     ../output/snapshot.cpp \
     ../tools/randomgenerator.cpp \
     ../tools/spatialanalysis.cpp \
-    ../amie/activity.cpp \
-    ../amie/forestmanagementengine.cpp \
+    ../abe/activity.cpp \
+    ../abe/forestmanagementengine.cpp \
     ../tools/statdata.cpp \
     ../tools/debugtimer.cpp \
     ../tools/viewport.cpp \
-    ../amie/fomewrapper.cpp \
-    ../amie/fmstand.cpp \
-    ../amie/agent.cpp \
-    ../amie/fmunit.cpp \
-    ../amie/agenttype.cpp \
-    ../amie/fomescript.cpp \
+    ../abe/fomewrapper.cpp \
+    ../abe/fmstand.cpp \
+    ../abe/agent.cpp \
+    ../abe/fmunit.cpp \
+    ../abe/agenttype.cpp \
+    ../abe/fomescript.cpp \
     ../output/landscapeout.cpp \
-    ../amie/fmstp.cpp \
-    ../amie/thinning.cpp \
-    ../amie/actgeneral.cpp \
-    ../amie/amiegrid.cpp \
-    ../amie/scheduler.cpp \
+    ../abe/fmstp.cpp \
+    ../abe/thinning.cpp \
+    ../abe/actgeneral.cpp \
+    ../abe/amiegrid.cpp \
+    ../abe/scheduler.cpp \
     ../tools/colors.cpp \
-    ../amie/fmtreelist.cpp \
-    ../amie/actscheduled.cpp \
-    ../amie/actplanting.cpp \
-    ../amie/actsalvage.cpp
+    ../abe/fmtreelist.cpp \
+    ../abe/actscheduled.cpp \
+    ../abe/actplanting.cpp \
+    ../abe/actsalvage.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -221,29 +221,29 @@ HEADERS += mainwindow.h \
     ../output/snapshot.h \
     ../tools/randomgenerator.h \
     ../tools/spatialanalysis.h \
-    ../amie/activity.h \
-    ../amie/forestmanagementengine.h \
-    ../amie/amie_global.h \
+    ../abe/activity.h \
+    ../abe/forestmanagementengine.h \
+    ../abe/amie_global.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
     ../tools/viewport.h \
-    ../amie/fomewrapper.h \
-    ../amie/fmstand.h \
-    ../amie/agent.h \
-    ../amie/fmunit.h \
-    ../amie/agenttype.h \
-    ../amie/fomescript.h \
+    ../abe/fomewrapper.h \
+    ../abe/fmstand.h \
+    ../abe/agent.h \
+    ../abe/fmunit.h \
+    ../abe/agenttype.h \
+    ../abe/fomescript.h \
     ../output/landscapeout.h \
-    ../amie/fmstp.h \
-    ../amie/thinning.h \
-    ../amie/actgeneral.h \
-    ../amie/amiegrid.h \
-    ../amie/scheduler.h \
+    ../abe/fmstp.h \
+    ../abe/thinning.h \
+    ../abe/actgeneral.h \
+    ../abe/amiegrid.h \
+    ../abe/scheduler.h \
     ../tools/colors.h \
-    ../amie/fmtreelist.h \
-    ../amie/actscheduled.h \
-    ../amie/actplanting.h \
-    ../amie/actsalvage.h
+    ../abe/fmtreelist.h \
+    ../abe/actscheduled.h \
+    ../abe/actplanting.h \
+    ../abe/actsalvage.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

@@ -10,7 +10,7 @@
 #include "mapgrid.h"
 #include "expression.h"
 
-namespace AMIE {
+namespace ABE {
 
 
 void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_schedule, double prob_execute)
@@ -41,6 +41,8 @@ void Scheduler::run()
         qCDebug(amie) << "running scheduler for unit" << mUnit->id() << ". # of active items:" << mItems.size();
 
     double harvest_in_queue = 0.;
+    double total_harvested = mExtraHarvest;
+    mExtraHarvest = 0.;
 
     // update the schedule probabilities....
     QList<SchedulerItem*>::iterator it = mItems.begin();
@@ -83,7 +85,11 @@ void Scheduler::run()
         }
 
         bool remove = false;
-        if (item->score > 0.5) {
+        //
+        double min_exec_probability = calculateMinProbability(total_harvested);
+
+
+        if (item->score >= min_exec_probability) {
 
             // execute activity:
             if (item->stand->trace())
@@ -91,6 +97,7 @@ void Scheduler::run()
             harvest_scheduled += item->stand->scheduledHarvest();
 
             bool executed = item->flags->activity()->execute(item->stand);
+            total_harvested += item->stand->totalHarvest();
 
             item->flags->setIsPending(false);
             if (!item->flags->activity()->isRepeatingActivity()) {
@@ -144,6 +151,11 @@ bool Scheduler::forceHarvest(const FMStand *stand, const int max_years)
      return false;
 }
 
+void Scheduler::addExtraHarvest(const FMStand *stand, const double volume, Scheduler::HarvestType type)
+{
+    mExtraHarvest += volume;
+}
+
 double Scheduler::scoreOf(const int stand_id) const
 {
     // lookup stand in scheduler list
@@ -174,6 +186,11 @@ QStringList Scheduler::info(const int stand_id) const
     lines << QString("in scheduler since: %1").arg(si->enterYear);
     lines << "/-";
     return lines;
+}
+
+double Scheduler::calculateMinProbability(double current_harvest)
+{
+    return 0.5;
 }
 
 Scheduler::SchedulerItem *Scheduler::item(const int stand_id) const

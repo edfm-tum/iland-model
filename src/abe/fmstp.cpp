@@ -8,7 +8,7 @@
 #include "expression.h"
 
 
-namespace AMIE {
+namespace ABE {
 // static values
 bool FMSTP::mVerbose = false;
 

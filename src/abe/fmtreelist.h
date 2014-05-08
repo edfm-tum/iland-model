@@ -5,7 +5,7 @@
 #include "scriptglobal.h"
 class Tree; // forward
 
-namespace AMIE {
+namespace ABE {
 class FMStand;
 
 class FMTreeList : public QObject

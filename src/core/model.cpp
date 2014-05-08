@@ -473,7 +473,7 @@ void Model::loadProject()
     bool use_abe = xml.valueBool("model.management.abeEnabled");
     if (use_abe) {
         // use the agent based forest management engine
-        mAMIEManagement = new AMIE::ForestManagementEngine();
+        mAMIEManagement = new ABE::ForestManagementEngine();
         // setup of ABE after loading of trees.
 
     } else {

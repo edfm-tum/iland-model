@@ -12,7 +12,7 @@
 #include "fmstand.h"
 #include "fomescript.h"
 
-namespace AMIE {
+namespace ABE {
 
 // TODO: fix: removal fractions need to be moved to agent/units/ whatever....
 double removeFoliage()  {return 0.;}

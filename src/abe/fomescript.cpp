@@ -10,7 +10,7 @@
 // iLand main includes
 #include "species.h"
 
-namespace AMIE {
+namespace ABE {
 
 QString FomeScript::mInvalidContext = "S---";
 
