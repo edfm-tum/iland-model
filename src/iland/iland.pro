@@ -144,7 +144,7 @@ SOURCES += main.cpp \
     ../abe/fmstp.cpp \
     ../abe/thinning.cpp \
     ../abe/actgeneral.cpp \
-    ../abe/amiegrid.cpp \
+    ../abe/abegrid.cpp \
     ../abe/scheduler.cpp \
     ../tools/colors.cpp \
     ../abe/fmtreelist.cpp \
@@ -237,7 +237,7 @@ HEADERS += mainwindow.h \
     ../abe/fmstp.h \
     ../abe/thinning.h \
     ../abe/actgeneral.h \
-    ../abe/amiegrid.h \
+    ../abe/abegrid.h \
     ../abe/scheduler.h \
     ../tools/colors.h \
     ../abe/fmtreelist.h \

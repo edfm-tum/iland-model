@@ -1077,9 +1077,9 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
 bool MainWindow::showABEDetails(const QPointF &coord)
 {
     if (!mRemoteControl.canRun()) return false;
-    if (!mPaintNext.layered || !mRemoteControl.model()->amieEngine()) return false;
+    if (!mPaintNext.layered || !mRemoteControl.model()->ABEngine()) return false;
     QString grid_name = mPaintNext.name;
-    QStringList list = mRemoteControl.model()->amieEngine()->evaluateClick(coord, grid_name);
+    QStringList list = mRemoteControl.model()->ABEngine()->evaluateClick(coord, grid_name);
 
     ui->dataTree->clear();
     QList<QTreeWidgetItem *> items;

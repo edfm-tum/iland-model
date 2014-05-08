@@ -82,7 +82,7 @@ void FomeScript::setExecutionContext(FMStand *stand)
     br->mSiteObj->setStand(stand);
     br->mActivityObj->setStand(stand);
     if (stand->trace())
-        qCDebug(amie) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
+        qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
 }
 
 void FomeScript::setActivity(Activity *act)
@@ -106,7 +106,7 @@ bool FomeScript::verbose() const
 void FomeScript::setVerbose(bool arg)
 {
     FMSTP::setVerbose(arg);
-    qCDebug(amie) << "setting verbose property of ABE to" << arg;
+    qCDebug(abe) << "setting verbose property of ABE to" << arg;
 }
 
 int FomeScript::standId() const
@@ -120,7 +120,7 @@ void FomeScript::setStandId(int new_stand_id)
 {
     FMStand *stand = ForestManagementEngine::instance()->stand(new_stand_id);
     if (!stand) {
-        qCDebug(amie) << bridge()->context() << "invalid stand id" << new_stand_id;
+        qCDebug(abe) << bridge()->context() << "invalid stand id" << new_stand_id;
         return;
     }
     setExecutionContext(stand);
@@ -129,7 +129,7 @@ void FomeScript::setStandId(int new_stand_id)
 void FomeScript::log(QJSValue value)
 {
     QString msg = value.toString();
-    qCDebug(amie) << bridge()->context() << msg;
+    qCDebug(abe) << bridge()->context() << msg;
 }
 
 void FomeScript::abort(QJSValue message)
@@ -147,7 +147,7 @@ bool FomeScript::addManagement(QJSValue program, QString name)
         ForestManagementEngine::instance()->addSTP(stp);
         return true;
     } catch (const IException &e) {
-        qCWarning(amie) << e.message();
+        qCWarning(abe) << e.message();
         ForestManagementEngine::instance()->abortExecution("Error in adding management.");
         return false;
     }
@@ -161,7 +161,7 @@ bool FomeScript::addAgent(QJSValue program, QString name)
         ForestManagementEngine::instance()->addAgent(at);
         return true;
     } catch (const IException &e) {
-        qCWarning(amie) << e.message();
+        qCWarning(abe) << e.message();
         ForestManagementEngine::instance()->abortExecution("Error in adding agent definition.");
         return false;
     }
@@ -181,7 +181,7 @@ bool FomeScript::runActivity(int stand_id, QString activity)
     if (!act)
         return false;
     // run the activity....
-    qCDebug(amie) << "running activity" << activity << "for stand" << stand_id;
+    qCDebug(abe) << "running activity" << activity << "for stand" << stand_id;
     return act->execute(stand);
 }
 

@@ -138,7 +138,7 @@ void Model::initialize()
    mGrid = 0;
    mHeightGrid = 0;
    mManagement = 0;
-   mAMIEManagement = 0;
+   mABEManagement = 0;
    mEnvironment = 0;
    mTimeEvents = 0;
    mStandGrid = 0;
@@ -385,8 +385,8 @@ void Model::clear()
         delete mModules;
     if (mDEM)
         delete mDEM;
-    if (mAMIEManagement)
-        delete mAMIEManagement;
+    if (mABEManagement)
+        delete mABEManagement;
 
     mGrid = 0;
     mHeightGrid = 0;
@@ -396,7 +396,7 @@ void Model::clear()
     mStandGrid  = 0;
     mModules = 0;
     mDEM = 0;
-    mAMIEManagement = 0;
+    mABEManagement = 0;
 
     GlobalSettings::instance()->outputManager()->close();
 
@@ -473,7 +473,7 @@ void Model::loadProject()
     bool use_abe = xml.valueBool("model.management.abeEnabled");
     if (use_abe) {
         // use the agent based forest management engine
-        mAMIEManagement = new ABE::ForestManagementEngine();
+        mABEManagement = new ABE::ForestManagementEngine();
         // setup of ABE after loading of trees.
 
     } else {
@@ -603,8 +603,8 @@ void Model::beforeRun()
     }
 
     // initalization of ABE
-    if (mAMIEManagement) {
-        mAMIEManagement->setup();
+    if (mABEManagement) {
+        mABEManagement->setup();
     }
 
 
@@ -658,10 +658,10 @@ void Model::runYear()
         mManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }
-    // ... or AMIE (the agent based variant)
-    if (mAMIEManagement) {
-        DebugTimer t("AMIE:run");
-        mAMIEManagement->run();
+    // ... or ABE (the agent based variant)
+    if (mABEManagement) {
+        DebugTimer t("ABE:run");
+        mABEManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }
 

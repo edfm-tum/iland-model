@@ -3,7 +3,7 @@
 #include <QMultiMap>
 #include <QVector>
 
-#include "amiegrid.h"
+#include "abegrid.h"
 
 class QJSEngine; // forward
 class MapGrid; // forward
@@ -88,7 +88,7 @@ private:
 
     // grids, visuals, etc.
     Grid<FMStand*> mFMStandGrid;
-    AMIELayers mStandLayers;
+    ABELayers mStandLayers;
 
     bool mCancel;
     QString mLastErrorMessage;

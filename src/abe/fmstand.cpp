@@ -122,7 +122,7 @@ void FMStand::reload(bool force)
     if (!force && mLastUpdate == ForestManagementEngine::instance()->currentYear())
         return;
 
-    DebugTimer t("AMIE:FMStand::reload");
+    DebugTimer t("ABE:FMStand::reload");
     // load all trees that are located on this stand
     mTotalBasalArea = 0.;
     mVolume = 0.;
@@ -188,16 +188,16 @@ bool FMStand::execute()
     // what to do if there is no active activity??
     if (mCurrentIndex==-1) {
         if (trace())
-            qCDebug(amie) << context() << "*** No action - no currently active activity ***";
+            qCDebug(abe) << context() << "*** No action - no currently active activity ***";
         return false;
     }
     if (trace())
-        qCDebug(amie) << context() << "*** start evaulate activity:" << currentActivity()->name();
+        qCDebug(abe) << context() << "*** start evaulate activity:" << currentActivity()->name();
 
     // do nothing if there is already an activity in the scheduler
     if (currentFlags().isPending()) {
         if (trace())
-            qCDebug(amie) << context() << "*** No action - stand in the scheduler. ***";
+            qCDebug(abe) << context() << "*** No action - stand in the scheduler. ***";
         return false;
     }
 
@@ -205,11 +205,11 @@ bool FMStand::execute()
     double p_schedule = currentActivity()->scheduleProbability(this);
     if (p_schedule == -1.) {
         if (trace())
-            qCDebug(amie)<< context()  << "*** Activity expired. ***";
+            qCDebug(abe)<< context()  << "*** Activity expired. ***";
     }
     if (p_schedule>=0. && p_schedule < 0.00001) {
         if (trace())
-            qCDebug(amie)<< context()  << "*** No action - Schedule probability 0. ***";
+            qCDebug(abe)<< context()  << "*** No action - Schedule probability 0. ***";
         return false;
     }
 
@@ -222,7 +222,7 @@ bool FMStand::execute()
     double p_execute = currentActivity()->execeuteProbability(this);
     if (p_execute == 0.) {
         if (trace())
-            qCDebug(amie)<< context() << "*** No action - Constraints preventing execution. ***";
+            qCDebug(abe)<< context() << "*** No action - Constraints preventing execution. ***";
         return false;
     }
 
@@ -231,12 +231,12 @@ bool FMStand::execute()
     if (currentFlags().isScheduled()) {
         // ok, we schedule the current activity
         if (trace())
-            qCDebug(amie)<< context() << "adding ticket for execution.";
+            qCDebug(abe)<< context() << "adding ticket for execution.";
 
         mScheduledHarvest = 0.;
         bool should_schedule = currentActivity()->evaluate(this);
         if (trace())
-            qCDebug(amie) << context() << "evaluated stand. add a ticket:" << should_schedule;
+            qCDebug(abe) << context() << "evaluated stand. add a ticket:" << should_schedule;
         if (should_schedule) {
             mUnit->scheduler()->addTicket(this, &currentFlags(), p_schedule, p_execute );
         } else {
@@ -248,7 +248,7 @@ bool FMStand::execute()
     } else {
         // execute immediately
         if (trace())
-            qCDebug(amie) << context() << "executing activty" << currentActivity()->name();
+            qCDebug(abe) << context() << "executing activty" << currentActivity()->name();
         mScheduledHarvest = 0.;
         bool executed = currentActivity()->execute(this);
         if (!currentActivity()->isRepeatingActivity()) {
