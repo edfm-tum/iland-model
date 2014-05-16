@@ -220,6 +220,7 @@ QList<int> MapGrid::gridIndices(const int id) const
     return result;
 }
 
+/// retrieve a list of saplings on a given stand polygon.
 QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const int id) const
 {
     QList<QPair<ResourceUnitSpecies *, SaplingTree *> > result;
@@ -237,6 +238,7 @@ QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const 
 
 }
 
+/// retrieve a *Hash* of sapling positions / saplings.
 QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > MapGrid::saplingTreeHash(const int id) const
 {
     QHash<QPoint, QPair<ResourceUnitSpecies *, int> > result;

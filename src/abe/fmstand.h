@@ -62,7 +62,9 @@ public:
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
     /// total realized harvest
-    double totalHarvest() const { return mHarvested + mDisturbed; }
+    double totalHarvest() const { return mHarvested; }
+    /// total disturbed timber volume, includes also disturbed trees *not* harvested
+    double disturbedTimber() const { return mDisturbed; }
 
     /// mean annual increment (MAI), m3 timber/ha for the last decade
     double meanAnnualIncrement() const { return mMAIdecade / area(); }

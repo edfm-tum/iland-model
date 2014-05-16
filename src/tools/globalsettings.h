@@ -154,6 +154,7 @@ private:
 // Resource-Unit: 100x100m
 const int cPxSize = 2; // size of light grid (m)
 const int cRUSize = 100; // size of resource unit (m)
+const int cHeightSize = 10; // size of a height grid pixel (m)
 const int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
 const int cPxPerRU = 50; // 100/2
 const int cHeightPerRU = 10; // 100/10 height pixels per resource unit

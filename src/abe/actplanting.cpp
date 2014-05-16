@@ -130,7 +130,7 @@ bool ActPlanting::execute(FMStand *stand)
             const QString &pp = planting_patterns[mItems[s].group_type].first;
             int n = planting_patterns[mItems[s].group_type].second;
 
-            if (mItems[s].spacing==0) {
+            if (mItems[s].spacing==0 && mItems[s].group_random_count == 0) {
                 // pattern based planting (filled)
                 gr.reset();
                 while (gr.next()) {
@@ -158,7 +158,7 @@ bool ActPlanting::execute(FMStand *stand)
                     }
                 }
             } else {
-                // pattern based (with spacing / offset)
+                // pattern based (with spacing / offset, random...)
                 int spacing = mItems[s].spacing / cPxSize;
                 QPoint p = model->grid()->indexAt(box.topLeft())-QPoint(offset, offset);
                 QPoint pstart = p;
@@ -166,7 +166,18 @@ bool ActPlanting::execute(FMStand *stand)
                 QPoint po;
                 p.setX(qMax(p.x(),0)); p.setY(qMax(p.y(),0));
 
+                int n_ha = mItems[s].group_random_count * box.width()*box.height()/10000.;
+                bool do_random = n_ha>0;
+
                 while( p.x() < p_end.x() && p.y() < p_end.y()) {
+                    if (do_random) {
+                        // random position!
+                        if (n_ha--<=0)
+                            break;
+                        // select a random position (2m grid index)
+                        p = model->grid()->indexAt(QPointF( nrandom(box.left(), box.right()), nrandom(box.top(), box.bottom()) ));
+                    }
+
                     // apply the pattern....
                     for (int y=0;y<n;++y) {
                         for (int x=0;x<n;++x) {
@@ -191,11 +202,13 @@ bool ActPlanting::execute(FMStand *stand)
                                 sapling_list.insert(po, QPair<ResourceUnitSpecies*, int>(&rus, t));
                         }
                     }
-                    // apply offset
-                    p.rx() += spacing;
-                    if (p.x()>= p_end.x()) {
-                        p.rx() = pstart.x();
-                        p.ry() += spacing;
+                    if (!do_random) {
+                        // apply offset
+                        p.rx() += spacing;
+                        if (p.x()>= p_end.x()) {
+                            p.rx() = pstart.x();
+                            p.ry() += spacing;
+                        }
                     }
                 }
             }
@@ -218,6 +231,7 @@ QStringList ActPlanting::info()
         lines << QString("pattern: %1").arg(item.group_type>-1?planting_pattern_names[item.group_type]:"");
         lines << QString("spacing: %1").arg(item.spacing);
         lines << QString("offset: %1").arg(item.offset);
+        lines << QString("random: %1").arg(item.group_random_count>0);
         lines << "/-";
     }
     return lines;
@@ -243,6 +257,13 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
         throw IException(QString("Planting-activity: the pattern '%1' is not valid!").arg(group));
     spacing = FMSTP::valueFromJs(value, "spacing", "0").toNumber();
     offset = FMSTP::valueFromJs(value, "offset", "0").toNumber();
+
+    bool random = FMSTP::boolValueFromJs(value, "random", false);
+    if (random)
+        group_random_count = FMSTP::valueFromJs(value, "n", "0").toNumber();
+    else
+        group_random_count = 0;
+
     grouped = group_type >= 0;
     return true;
 }

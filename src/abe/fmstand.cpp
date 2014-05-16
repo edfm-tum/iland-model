@@ -160,6 +160,7 @@ void FMStand::reload(bool force)
     std::sort(mSpeciesData.begin(), mSpeciesData.end(), relBasalAreaIsHigher);
 }
 
+// return stand area in ha
 double FMStand::area() const
 {
     return ForestManagementEngine::standGrid()->area(mId)/10000.;
@@ -354,9 +355,10 @@ void FMStand::addTreeRemoval(Tree *tree, int reason)
     }
     if (r==Tree::TreeDisturbance) {
         // if we have an active salvage activity, then store
+        mDisturbed += removed_volume;
         if (mSTP->salvageActivity()) {
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
-                mDisturbed += removed_volume;
+                mHarvested += removed_volume;
             }
         }
 
