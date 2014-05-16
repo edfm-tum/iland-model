@@ -20,13 +20,21 @@ public:
     QStringList info();
 private:
     struct SPlantingItem {
-        SPlantingItem(): species(0), fraction(0.), clear(false) {}
+        SPlantingItem(): species(0), fraction(0.), height(0.05), clear(false), grouped(false), group_type(-1), offset(0), spacing(0) {}
         Species *species;
         double fraction;
+        double height;
         bool clear;
+        bool grouped; ///< true for pattern creation
+        int group_type; ///< index of the pattern in the pattern list
+        int offset; ///< offset (in LIF-pixels) for the pattern algorithm
+        int spacing;  ///< distance between two applications of a pattern
         bool setup(QJSValue value);
     };
     QVector<SPlantingItem> mItems;
+    bool mRequireLoading;
+
+
 };
 
 } // end namespace

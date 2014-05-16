@@ -30,7 +30,7 @@ class SaplingTree {
 public:
     SaplingTree() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }
     bool isValid() const {return pixel!=0; }
-    float *pixel; // pointer to the lifpixel the sapling lives on
+    float *pixel; // pointer to the lifpixel the sapling lives on, set to 0 if sapling died/removed
     QPoint coords() const { return GlobalSettings::instance()->model()->grid()->indexOf(pixel); }
     struct  { // packed two 16bit to a 32 bit integer
         short unsigned int age;  // number of consectuive years the sapling suffers from dire conditions
@@ -59,9 +59,11 @@ public:
     const QVector<SaplingTree> &saplings() const {return mSaplingTrees; }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
-    void addSapling(const QPoint &pos_lif);
+    /// add a new sapling at 'pos_lif' (i.e. QPoint with LIF-coordiantes) and with 'height' (m). Returns the index of the newly added sapling.
+    int addSapling(const QPoint &pos_lif, const float height=0.05f);
     /// clear (either remove or kill) a specific sapling
     void clearSapling(SaplingTree &tree, const bool remove);
+    void clearSapling(int index, const bool remove);
     void clearSaplings(const QPoint &position); ///< clear  saplings on a given position (after recruitment)
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass); ///< clear  saplings within a given rectangle
     bool hasSapling(const QPoint &position) const; ///< return true if sapling is present at position

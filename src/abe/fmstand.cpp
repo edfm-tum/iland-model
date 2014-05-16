@@ -355,7 +355,7 @@ void FMStand::addTreeRemoval(Tree *tree, int reason)
     if (r==Tree::TreeDisturbance) {
         // if we have an active salvage activity, then store
         if (mSTP->salvageActivity()) {
-            if (mSTP->salvageActivity()->testRemove(tree)) {
+            if (mSTP->salvageActivity()->evaluateRemove(tree)) {
                 mDisturbed += removed_volume;
             }
         }

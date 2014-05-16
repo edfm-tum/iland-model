@@ -439,7 +439,7 @@ FMStand *ForestManagementEngine::stand(int stand_id) const
 void ForestManagementEngine::addTreeRemoval(Tree *tree, int reason)
 {
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
-    // with forward declaration (and I dont want to include the tree.h header in this class heder).
+    // with forward declaration (and I dont want to include the tree.h header in this class header).
     mFMStandGrid.valueAt(tree->position())->addTreeRemoval(tree, reason);
 }
 

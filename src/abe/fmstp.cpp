@@ -52,11 +52,11 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
     mHasRepeatingActivities = false;
     for (int i=0;i<mActivities.count();++i) {
         mActivityNames.push_back(mActivities.at(i)->name());
-        mActivityStand.push_back(mActivities.at(i)->standFlags(0)); // stand = 0: create a copy of the activities' base flags
+        mActivityStand.push_back(mActivities.at(i)->standFlags()); // stand = null: create a copy of the activities' base flags
         mActivities.at(i)->setIndex(i);
         if (mActivities.at(i)->isRepeatingActivity())
             mHasRepeatingActivities = true;
-        if (mActivities.at(i)->standFlags(0).isSalvage()) {
+        if (mActivities.at(i)->standFlags().isSalvage()) {
             mSalvage = dynamic_cast<ActSalvage*>(mActivities.at(i));
             mHasRepeatingActivities = false;
         }

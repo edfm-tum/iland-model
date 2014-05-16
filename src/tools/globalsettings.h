@@ -167,4 +167,9 @@ const double cAutotrophicRespiration = 0.47;
 /// shortcut to the GlobalSettings Singleton object.
 #define Globals (GlobalSettings::instance())
 
+// provide a hashing function for the QPoint type (needed from stand init functions, ABE, ...)
+inline uint qHash(const QPoint &key)
+{
+    return qHash(key.x()) ^ qHash(key.y());
+}
 #endif // GLOBALSETTINGS_H

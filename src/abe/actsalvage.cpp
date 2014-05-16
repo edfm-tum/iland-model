@@ -53,7 +53,7 @@ bool ActSalvage::execute(FMStand *stand)
 
     const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->totalHarvest(), Scheduler::Salvage);
     stand->resetHarvestCounter(); // set back to zero...
-    // a harvest happens anyways.
+    // a harvest happen(ed) anyways.
     return true;
 }
 
@@ -65,7 +65,7 @@ QStringList ActSalvage::info()
     return lines;
 }
 
-bool ActSalvage::testRemove(Tree *tree) const
+bool ActSalvage::evaluateRemove(Tree *tree) const
 {
     if (!mCondition)
         return true; // default: remove all trees

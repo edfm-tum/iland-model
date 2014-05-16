@@ -160,16 +160,17 @@ void Sapling::setBit(const QPoint &pos_index)
 }
 
 /// add a sapling at the given position (index on the LIF grid, i.e. 2x2m)
-void Sapling::addSapling(const QPoint &pos_lif)
+int Sapling::addSapling(const QPoint &pos_lif, const float height)
 {
     // adds a sapling...
     mSaplingTrees.push_back(SaplingTree());
     SaplingTree &t = mSaplingTrees.back();
-    t.height = 0.05f; // start with 5cm height
+    t.height = height; // default is 5cm height
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
     t.pixel = lif_map.ptr(pos_lif.x(), pos_lif.y());
     setBit(pos_lif);
     mAdded++;
+    return mSaplingTrees.count()-1; // index of the newly added tree.
 }
 
 /// clear  saplings on a given position (after recruitment)
@@ -212,6 +213,13 @@ void Sapling::clearSapling(SaplingTree &tree, const bool remove)
         mSumDbhDied+=tree.height / mRUS->species()->saplingGrowthParameters().hdSapling * 100.;
     }
 
+}
+
+//
+void Sapling::clearSapling(int index, const bool remove)
+{
+    Q_ASSERT(index < mSaplingTrees.count());
+    clearSapling(mSaplingTrees[index], remove);
 }
 
 /// growth function for an indivudal sapling.
