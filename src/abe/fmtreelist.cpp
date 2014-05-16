@@ -39,12 +39,14 @@ void FMTreeList::setStand(FMStand *stand)
         mStandId = stand->id();
         mNumberOfStems = stand->stems() * stand->area();
         mOnlySimulate = stand->currentActivity()?stand->currentFlags().isScheduled() : false;
+        mStandRect=QRectF();
     } else {
         mStandId = -1;
         mNumberOfStems = 1000;
         mOnlySimulate = false;
     }
 }
+
 
 
 int FMTreeList::load(const QString &filter)
@@ -275,7 +277,99 @@ double FMTreeList::aggregate_function(QString expression, QString filter, QStrin
 
 }
 
+void FMTreeList::prepareGrids()
+{
+    QRectF box = ForestManagementEngine::instance()->standGrid()->boundingBox(mStand->id());
+    if (mStandRect==box)
+        return;
+    mStandRect = box;
+    // the memory of the grids is only reallocated if the current box is larger then the previous...
+    mStandGrid.setup(box, cHeightSize);
+    mTreeCountGrid.setup(box, cHeightSize);
+}
 
+void FMTreeList::runGrid(void (*func)(float &, int &, const Tree *, const FMTreeList *))
+{
+    if (mStandRect.isNull())
+        prepareGrids();
 
+    mStandGrid.initialize(0.f);
+    mTreeCountGrid.initialize(0);
+    for (QVector<QPair<Tree*, double> >::const_iterator it=mTrees.constBegin(); it!=mTrees.constEnd(); ++it) {
+        const Tree* tree = it->first;
+        QPoint p = mStandGrid.indexAt(tree->position());
+        (*func)(mStandGrid.valueAtIndex(p), mTreeCountGrid.valueAtIndex(p), tree, this);
+    }
 
+    // finalization: call again for each *cell*
+    for (int i=0;i<mStandGrid.count();++i)
+        (*func)(mStandGrid.valueAtIndex(i), mTreeCountGrid.valueAtIndex(i), 0, this);
+
+}
+
+void rungrid_heightmax(float &cell, int &n, const Tree *tree, const FMTreeList *list)
+{
+    Q_UNUSED(n); Q_UNUSED(list);
+    if (tree)
+        cell = qMax(cell, tree->height());
+}
+void rungrid_basalarea(float &cell, int &n, const Tree *tree, const FMTreeList *list)
+{
+    Q_UNUSED(list);
+    if (tree) {
+        cell += tree->basalArea();
+        ++n;
+    } else {
+        if (n>0)
+            cell /= float(n);
+    }
+}
+void rungrid_volume(float &cell, int &n, const Tree *tree, const FMTreeList *list)
+{
+    Q_UNUSED(list);
+    if (tree) {
+        cell += tree->volume();
+        ++n;
+    } else {
+        if (n>0)
+            cell /= float(n);
+    }
+}
+
+void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *list)
+{
+    if (tree) {
+        *list->mRunGridCustomCell = cell;
+        TreeWrapper tw(tree);
+        cell = list->mRunGridCustom->calculate(tw);
+        ++n;
+    }
+}
+void FMTreeList::prepareStandGrid(QString type, QString custom_expression)
+{
+    if(!mStand){
+        qCDebug(abe) << "Error: FMTreeList: no current stand defined.";
+        return;
+    }
+
+    if (type==QStringLiteral("height")) {
+        return runGrid(&rungrid_heightmax);
+    }
+
+    if (type==QStringLiteral("basalArea"))
+        return runGrid(&rungrid_basalarea);
+
+    if (type==QStringLiteral("volume"))
+        return runGrid(&rungrid_volume);
+
+    if (type==QStringLiteral("custom")) {
+        mRunGridCustom = new Expression(custom_expression);
+        mRunGridCustomCell = mRunGridCustom->addVar("cell");
+        runGrid(&rungrid_custom);
+        delete mRunGridCustom;
+        mRunGridCustom = 0;
+        return;
+    }
+    qCDebug(abe) << "FMTreeList: invalid type for prepareStandGrid: " << type;
+}
 } // namespace

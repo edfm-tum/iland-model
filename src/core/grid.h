@@ -295,22 +295,29 @@ Grid<T>::Grid()
 {
     mData = 0; mCellsize=0.f;
     mEnd = 0;
+    mSizeX=0; mSizeY=0; mCount=0;
 }
 
 template <class T>
 bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 {
-    mSizeX=sizex; mSizeY=sizey; mCellsize=cellsize;
+    mSizeX=sizex; mSizeY=sizey;
     if (mRect.isNull()) // only set rect if not set before
         mRect.setCoords(0., 0., cellsize*sizex, cellsize*sizey);
-    mCount = mSizeX*mSizeY;
+
     if (mData) {
-         delete[] mData; mData=NULL;
-     }
-   if (mCount>0)
+        // test if we can re-use the allocated memory.
+        if (mSizeX*mSizeY < mCount || mCellsize != cellsize) {
+            // we cannot re-use the memory - create new data
+            delete[] mData; mData=NULL;
+        }
+    }
+    mCellsize=cellsize;
+    mCount = mSizeX*mSizeY;
+    if (mCount>0)
         mData = new T[mCount];
-   mEnd = &(mData[mCount]);
-   return true;
+    mEnd = &(mData[mCount]);
+    return true;
 }
 
 template <class T>

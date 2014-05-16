@@ -20,13 +20,14 @@ public:
     QStringList info();
 private:
     struct SPlantingItem {
-        SPlantingItem(): species(0), fraction(0.), height(0.05), clear(false), grouped(false), group_type(-1), offset(0), spacing(0) {}
+        SPlantingItem(): species(0), fraction(0.), height(0.05), clear(false), grouped(false), group_type(-1), group_random_count(-1), offset(0), spacing(0) {}
         Species *species;
         double fraction;
         double height;
         bool clear;
         bool grouped; ///< true for pattern creation
         int group_type; ///< index of the pattern in the pattern list
+        int group_random_count; ///< if >0: number of random patterns
         int offset; ///< offset (in LIF-pixels) for the pattern algorithm
         int spacing;  ///< distance between two applications of a pattern
         bool setup(QJSValue value);

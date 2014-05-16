@@ -3,7 +3,9 @@
 
 #include <QObject>
 #include "scriptglobal.h"
+#include "grid.h"
 class Tree; // forward
+class Expression;
 
 namespace ABE {
 class FMStand;
@@ -14,6 +16,7 @@ class FMTreeList : public QObject
     Q_PROPERTY(int stand READ standId) ///< return stand, -1 if not set
     Q_PROPERTY(bool simulate READ simulate WRITE setSimulate) ///< if 'simulate' is true, trees are only marked for removal
 public:
+
     explicit FMTreeList(QObject *parent = 0);
     explicit FMTreeList(FMStand *stand, QObject *parent = 0);
     int standId() const { return mStandId; }
@@ -23,7 +26,6 @@ public:
 
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
-
 
 signals:
 
@@ -75,6 +77,11 @@ public slots:
     /// calculate the sum for all trees in the internal list for the 'expression' (filtered by the filter criterion)
     double sum(QString expression, QString filter=QString()) { return aggregate_function( expression, filter, "sum"); }
 
+    /// set up internally a map (10m grid cells) of the stand
+    /// with a given grid type or using a custom expression.
+    void prepareStandGrid(QString type, QString custom_expression=QString());
+
+
 private:
     bool trace() const;
     ///
@@ -82,12 +89,25 @@ private:
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
 
-    QVector<QPair<Tree*, double> > mTrees;
+    // grid functions
+    void prepareGrids();
+    /// run function 'func' for all trees in the current tree list of the stand.
+    /// signature: function(&ref_to_float, &ref_to_int, *tree);
+    /// after all trees are processed, func is called again (aggregations, ...) with tree=0.
+    void runGrid(void (*func)(float &, int &, const Tree *, const FMTreeList *) );
+
+    QVector<QPair<Tree*, double> > mTrees; ///< store a Tree-pointer and a value (e.g. for sorting)
     int mRemoved;
     FMStand *mStand; /// the stand the list is currently connected
     int mStandId; ///< link to active stand
     int mNumberOfStems; ///< estimate for the number of trees in the stand
     bool mOnlySimulate; ///< mode
+    QRectF mStandRect;
+    FloatGrid mStandGrid;
+    Grid<int> mTreeCountGrid;
+    Expression *mRunGridCustom;
+    double *mRunGridCustomCell;
+    friend void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *list);
 };
 
 } // namespace
