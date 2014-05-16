@@ -636,11 +636,6 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
     }
 }
 
-// provide a hashing function for the QPoint type (needed from stand init function below)
-inline uint qHash(const QPoint &key)
- {
-     return qHash(key.x()) ^ qHash(key.y());
- }
 
 
 // Initialization routine based on a stand map.

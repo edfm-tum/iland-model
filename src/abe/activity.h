@@ -176,7 +176,7 @@ protected:
     Schedule &schedule()  { return mSchedule; }
     Constraints &constraints()  { return mConstraints; }
     Events &events()  { return mEvents; }
-    ActivityFlags &standFlags(FMStand *stand);
+    ActivityFlags &standFlags(FMStand *stand=0);
     ActivityFlags mBaseActivity; // base properties of the activity (that can be changed for each stand)
 private:
     void setIndex(const int index) { mIndex = index; } // used during setup

@@ -22,7 +22,7 @@ public:
     // special functions of salvage activity
 
     /// return true, if the (disturbed) tree should be harvested by the salvage activity
-    bool testRemove(Tree* tree) const;
+    bool evaluateRemove(Tree* tree) const;
 private:
     Expression *mCondition; ///< formula to determine which trees should be harvested
     int mMaxPreponeActivity; ///< no of years that a already scheduled (regular) activity is 'preponed'
