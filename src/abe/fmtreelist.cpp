@@ -9,6 +9,7 @@
 #include "mapgrid.h"
 #include "expressionwrapper.h"
 #include "model.h"
+#include "helper.h"
 #include "fmstand.h"
 #include "fomescript.h"
 
@@ -286,6 +287,14 @@ void FMTreeList::prepareGrids()
     // the memory of the grids is only reallocated if the current box is larger then the previous...
     mStandGrid.setup(box, cHeightSize);
     mTreeCountGrid.setup(box, cHeightSize);
+    // mark areas outside of the grid...
+    GridRunner<int> runner(ForestManagementEngine::instance()->standGrid()->grid(), box);
+    float *p=mStandGrid.begin();
+    while (runner.next()) {
+        if (*runner.current()!=mStand->id())
+            *p==-1.f;
+        ++p;
+    }
 }
 
 void FMTreeList::runGrid(void (*func)(float &, int &, const Tree *, const FMTreeList *))
@@ -371,5 +380,12 @@ void FMTreeList::prepareStandGrid(QString type, QString custom_expression)
         return;
     }
     qCDebug(abe) << "FMTreeList: invalid type for prepareStandGrid: " << type;
+}
+
+void FMTreeList::exportStandGrid(QString file_name)
+{
+    file_name = GlobalSettings::instance()->path(file_name);
+    Helper::saveToTextFile(file_name, gridToESRIRaster(mStandGrid) );
+    qCDebug(abe) << "saved grid to file" << file_name;
 }
 } // namespace

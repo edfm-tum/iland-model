@@ -302,7 +302,7 @@ void WindModule::initWindGrid()
     throw IException("WindModule::initWindGrid: not 10m of windpixels...");
 }
 
-/** mark all pixels that are at stand edges, i.e. pixels that are much larger (treeheight) than their neighbors.
+/** mark all pixels that are at stand edges, i.e. pixels with trees that are much taller (treeheight) than their neighbors.
   */
 void WindModule::detectEdges()
 {
@@ -440,7 +440,7 @@ bool WindModule::eventTriggered()
     mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
 
 
-    qDebug() << "Wind: start event. Speed:" << mWindSpeed << "m/s, Duration (iterations):" << mMaxIteration << ", direction (°):" << mWindDirection/M_PI*180.;
+    qDebug() << "Wind: start event. Speed:" << mWindSpeed << "m/s, Duration (iterations):" << mMaxIteration << ", direction (deg):" << mWindDirection/M_PI*180.;
     return true;
 }
 

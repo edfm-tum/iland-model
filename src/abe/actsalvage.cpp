@@ -87,6 +87,55 @@ void ActSalvage::checkStandAfterDisturbance()
     //
     FMTreeList *trees = ForestManagementEngine::instance()->scriptBridge()->treesObj();
     //trees->runGrid();
+    trees->prepareStandGrid(QStringLiteral("height"), QString());
+    FloatGrid &grid = trees->standGrid();
+    float h_max = grid.max();
+
+    double r_low;
+    if (h_max==0.f) {
+        // total disturbance...
+        r_low = 1.;
+    } else {
+        // check coverage of disturbed area.
+        int h_lower = 0, h_higher=0;
+        for (float *p=grid.begin(); p!=grid.end(); ++p)
+            if (*p>=0.f) {
+                if (*p < h_max*0.33)
+                    ++h_lower;
+                else
+                    ++h_higher;
+            }
+        if (h_lower==0 && h_higher==0)
+            return;
+        r_low = h_lower / double(h_lower+h_higher);
+    }
+
+    if (r_low < 0.1) {
+        // no big damage: return and do nothing
+        return;
+    }
+    if (r_low > 0.9) {
+        // total disturbance: restart rotation...
+        return;
+    }
+    // medium disturbance: check if need to split the stand area:
+    Grid<int> my_map(grid.rectangle(), grid.cellsize());
+    GridRunner<float> runner(grid, grid.metricRect());
+    GridRunner<int> id_runner(my_map, grid.metricRect());
+    float *neighbors[8];
+    while (runner.next() && id_runner.next()) {
+        runner.neighbors8(neighbors);
+        double empty = 0.;
+        int valid = 0;
+        for (int i=0;i<8;++i) {
+            if (neighbors[i] && *neighbors[i]<h_max*0.33)
+                empty++;
+            if (neighbors[i])
+                valid++;
+        }
+        if (valid)
+            empty /= double(valid);
+    }
 }
 
 
