@@ -80,6 +80,8 @@ public slots:
     /// set up internally a map (10m grid cells) of the stand
     /// with a given grid type or using a custom expression.
     void prepareStandGrid(QString type, QString custom_expression=QString());
+    void exportStandGrid(QString file_name);
+    FloatGrid &standGrid() {return mStandGrid; }
 
 
 private:
