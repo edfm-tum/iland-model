@@ -69,6 +69,7 @@ public slots:
      *  return the number of removed trees. */
     int killPct(int pctfrom, int pctto, int number);
     int killAll(); ///< kill all trees in the list
+    int disturbanceKill(); ///< kill all trees (disturbance related)
     /** kill 'fraction' of all trees with 'filter'=true */
     int kill(QString filter, double fraction);
     // management

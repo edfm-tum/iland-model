@@ -44,8 +44,10 @@ public:
     static QJSEngine *scriptEngine();
     FomeScript *scriptBridge() const {return mScriptBridge; }
 
+    // setting up agents and stps
     void addSTP(FMSTP* stp) { mSTP.push_back(stp);}
     void addAgent(AgentType* at) { mAgentTypes.push_back(at);}
+
     /// retrieve pointer to stand treatment programme. return 0-pointer if not available.
     FMSTP *stp(QString stp_name) const;
     /// get stand with id 'stand_id'. Return 0 if not found.
@@ -57,12 +59,16 @@ public:
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.
     void addTreeRemoval(Tree* tree, int reason);
 
+    ///
+    FMStand *splitExistingStand(FMStand *stand);
+
     /// evalaute forest management activities and select fitting activities for each forest stand
     void test();
     QStringList evaluateClick(const QPointF coord, const QString &grid_name);
 
 
 private:
+    static int mMaxStandId;
     void setupScripting();
     void prepareRun();
     void finalizeRun();
@@ -81,6 +87,7 @@ private:
     // mapping of stands to units
     QMultiMap<FMUnit*, FMStand*> mUnitStandMap;
     QVector<FMStand*> mStands;
+    QHash<int, FMStand*> mStandHash;
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types
@@ -91,6 +98,7 @@ private:
     ABELayers mStandLayers;
 
     bool mCancel;
+    bool mStandLayoutChanged;
     QString mLastErrorMessage;
 };
 

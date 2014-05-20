@@ -66,13 +66,13 @@ public:
     QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > saplingTreeHash(const int id) const;
     /// extract a list of neighborhood relationships between all the polygons of the grid
     const QMultiHash<int, int> neighborList() const { return mNeighborList; }
+    void updateNeighborList(); ///< scan the map and fill the mNeighborList
     QList<int> neighborsOf(const int index) const;
     /// return true, if the point 'lif_grid_coords' (x/y integer key within the LIF-Grid)
     inline bool hasValue(const int id, const QPoint &lif_grid_coords) const { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight) == id; }
     inline int LIFgridValue(const QPoint &lif_grid_coords) const  { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight); }
 
 private:
-    void fillNeighborList(); ///< scan the map and fill the mNeighborList
     QString mName; ///< file name of the grid
     Grid<int> mGrid;
     QHash<int, QPair<QRectF,double> > mRectIndex; ///< holds the extent and area for each map-id

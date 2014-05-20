@@ -2,7 +2,7 @@
 #define ACTSALVAGE_H
 
 #include "activity.h"
-
+#include "grid.h"
 class Expression; // forward
 class Tree; // forward
 namespace ABE {
@@ -24,7 +24,9 @@ public:
     /// return true, if the (disturbed) tree should be harvested by the salvage activity
     bool evaluateRemove(Tree* tree) const;
 private:
-    void checkStandAfterDisturbance();
+    void checkStandAfterDisturbance(FMStand *stand);
+    int floodFillHelper(Grid<int> &grid, QPoint start, int color);
+    bool mDebugSplit;
     Expression *mCondition; ///< formula to determine which trees should be harvested
     int mMaxPreponeActivity; ///< no of years that a already scheduled (regular) activity is 'preponed'
     double mThresholdTotal; ///< threshold (relative disturbend volume) for total disturbance

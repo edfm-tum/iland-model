@@ -259,14 +259,14 @@ QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > MapGrid::saplingTreeHash(
 QList<int> MapGrid::neighborsOf(const int index) const
 {
     if (mNeighborList.isEmpty())
-        const_cast<MapGrid*>(this)->fillNeighborList(); // fill the list
+        const_cast<MapGrid*>(this)->updateNeighborList(); // fill the list
     return mNeighborList.values(index);
 }
 
 
 /// scan the map and add neighborhood-relations to the mNeighborList
 /// the 4-neighborhood is used to identify neighbors.
-void MapGrid::fillNeighborList()
+void MapGrid::updateNeighborList()
 {
     mNeighborList.clear();
     GridRunner<int> gr(mGrid, mGrid.rectangle()); //  the full grid

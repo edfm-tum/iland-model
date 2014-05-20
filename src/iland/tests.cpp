@@ -912,7 +912,10 @@ void Tests::testRumple()
 ABE::ForestManagementEngine *fome=0;
 void Tests::testFOMEsetup()
 {
-    fome = new ABE::ForestManagementEngine();
+
+    fome = GlobalSettings::instance()->model()->ABEngine();
+    if (!fome)
+        fome = new ABE::ForestManagementEngine();
     //fome.test();
     try {
 

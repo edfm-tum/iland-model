@@ -292,7 +292,7 @@ void FMTreeList::prepareGrids()
     float *p=mStandGrid.begin();
     while (runner.next()) {
         if (*runner.current()!=mStand->id())
-            *p==-1.f;
+            *p=-1.f;
         ++p;
     }
 }

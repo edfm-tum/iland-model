@@ -36,6 +36,7 @@ namespace ABE {
 */
 
 ForestManagementEngine *ForestManagementEngine::singleton_fome_engine = 0;
+int ForestManagementEngine::mMaxStandId = -1;
 ForestManagementEngine::ForestManagementEngine()
 {
     mScriptBridge = 0;
@@ -87,7 +88,7 @@ void ForestManagementEngine::setupScripting()
 
 void ForestManagementEngine::prepareRun()
 {
-
+    mStandLayoutChanged = false; // can be changed by salvage operations / stand polygon changes
 }
 
 void ForestManagementEngine::finalizeRun()
@@ -96,6 +97,25 @@ void ForestManagementEngine::finalizeRun()
     // during the (next) year.
     foreach (FMStand *stand, mStands)
         stand->resetHarvestCounter();
+
+    //
+    if (mStandLayoutChanged) {
+        DebugTimer timer("ABE:stand_layout_update");
+        // renew the internal stand grid
+        FMStand **fm = mFMStandGrid.begin();
+        for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
+            *fm = *p<0?0:mStandHash[*p];
+        // renew neigborhood information in the stand grid
+        const_cast<MapGrid*>(standGrid())->updateNeighborList();
+        // renew the spatial indices
+        const_cast<MapGrid*>(standGrid())->createIndex();
+        mStandLayoutChanged = false;
+
+        // now check the stands
+        for (QVector<FMStand*>::iterator it=mStands.begin(); it!=mStands.end(); ++it)
+            if (!(*it)->currentActivity())
+                (*it)->initialize((*it)->stp());
+    }
 }
 
 AgentType *ForestManagementEngine::agentType(const QString &name)
@@ -191,6 +211,7 @@ void ForestManagementEngine::setup()
             QString stp = data_file.value(i, istp).toString();
             initial_stps[stand] = stp;
         }
+        mMaxStandId = qMax(mMaxStandId, stand_id);
 
         mUnitStandMap.insertMulti(unit,stand);
         mStands.append(stand);
@@ -198,15 +219,15 @@ void ForestManagementEngine::setup()
     }
     // set up the stand grid (visualizations)...
     // set up a hash for helping to establish stand-id <-> fmstand-link
-    QHash<int, FMStand*> stand_hash;
+    mStandHash.clear();
     for (int i=0;i<mStands.size(); ++i)
-        stand_hash[mStands[i]->id()] = mStands[i];
+        mStandHash[mStands[i]->id()] = mStands[i];
 
     mFMStandGrid.setup(standGrid()->grid().metricRect(), standGrid()->grid().cellsize());
     mFMStandGrid.initialize(0);
     FMStand **fm = mFMStandGrid.begin();
     for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
-        *fm = *p<0?0:stand_hash[*p];
+        *fm = *p<0?0:mStandHash[*p];
 
     mStandLayers.setGrid(mFMStandGrid);
     mStandLayers.clearClasses();
@@ -441,6 +462,27 @@ void ForestManagementEngine::addTreeRemoval(Tree *tree, int reason)
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
     mFMStandGrid.valueAt(tree->position())->addTreeRemoval(tree, reason);
+}
+
+QMutex protect_split;
+FMStand *ForestManagementEngine::splitExistingStand(FMStand *stand)
+{
+    // get a new stand-id
+    // make sure that the Id is only used once.
+    QMutexLocker protector(&protect_split);
+    int new_stand_id = ++mMaxStandId;
+
+    FMUnit *unit = const_cast<FMUnit*> (stand->unit());
+    FMStand *new_stand = new FMStand(unit,new_stand_id);
+
+
+    mUnitStandMap.insertMulti(unit,new_stand);
+    mStands.append(new_stand);
+    mStandHash[new_stand_id] = new_stand;
+
+    mStandLayoutChanged = true;
+
+    return new_stand;
 }
 
 

@@ -100,6 +100,15 @@ int Management::killAll()
     return c;
 }
 
+int Management::disturbanceKill()
+{
+    int c = mTrees.count();
+    for (int i=0;i<mTrees.count();i++)
+        mTrees[i].first->removeDisturbance(0.1, 0.1, 0.1, 0.1, 1.);
+    mTrees.clear();
+    return c;
+}
+
 int Management::kill(QString filter, double fraction)
 {
    return remove_trees(filter, fraction, false);

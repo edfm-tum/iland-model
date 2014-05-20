@@ -34,6 +34,8 @@ public:
     FMStand(FMUnit *unit, const int id);
     /// set the stand to be managed by a given 'stp'
     void initialize(FMSTP *stp);
+    /// sets the STP but nothing else (after disturbance related clearance)
+    void reset(FMSTP *stp);
     /// returns true if tracing is enabled for the stand
     bool trace() const { return property(QStringLiteral("trace")).toBool(); }
     const QString &context() const { return mContextStr; }
