@@ -437,7 +437,7 @@ void Activity::setup(QJSValue value)
 
     // setup of events
     mEvents.clear();
-    mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecuted" << "onCancel");
+    mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel");
     if (FMSTP::verbose())
         qCDebug(abeSetup) << "Events: " << mEvents.dump();
 

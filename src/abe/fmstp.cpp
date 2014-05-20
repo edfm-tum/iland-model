@@ -68,7 +68,8 @@ void FMSTP::setup(QJSValue &js_value, const QString name)
 
 bool FMSTP::executeRepeatingActivities(FMStand *stand)
 {
-    if (mSalvage && stand->totalHarvest()) {
+    if (mSalvage)
+        if (stand->totalHarvest() || stand->property("_run_salvage").toBool()) {
         // at this point totalHarvest is only disturbance related harvests.
         stand->executeActivity(mSalvage);
     }

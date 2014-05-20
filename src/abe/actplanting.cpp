@@ -50,7 +50,7 @@ QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
                        "0011111110"\
                        "0011111100"\
                        "0000110000", 10);
-QStringList planting_pattern_names = QStringList() << "rect4" << "rect10" << "rect20" << "circle5" << "circle10";
+QStringList planting_pattern_names = QStringList() << "rect2" << "rect10" << "rect20" << "circle5" << "circle10";
 
 
 

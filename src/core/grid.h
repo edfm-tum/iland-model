@@ -46,6 +46,7 @@ public:
 
     Grid();
     Grid(int cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
+    /// create from a metric rect
     Grid(const QRectF rect_metric, const float cellsize) { mData=0; setup(rect_metric,cellsize); }
     // copy ctor
     Grid(const Grid<T>& toCopy);
@@ -169,6 +170,7 @@ public:
     GridRunner(Grid<T> &target_grid, const QRect &rectangle) {setup(&target_grid, rectangle);}
     GridRunner(const Grid<T> &target_grid, const QRect &rectangle) {setup(&target_grid, rectangle);}
     GridRunner(Grid<T> *target_grid, const QRect &rectangle) {setup(target_grid, rectangle);}
+    GridRunner(Grid<T> *target_grid) {setup(target_grid, target_grid->rectangle()); }
     T* next(); ///< to to next element, return NULL if finished
     T* current() const { return mCurrent; }
     /// return the (index) - coordinates of the current position in the grid

@@ -112,6 +112,13 @@ void FMStand::initialize(FMSTP *stp)
 
 }
 
+void FMStand::reset(FMSTP *stp)
+{
+    mSTP = stp;
+    newRotatation();
+    mCurrentIndex = -1;
+}
+
 bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)
 {
     return a.relBasalArea > b.relBasalArea;
@@ -252,6 +259,9 @@ bool FMStand::execute()
             qCDebug(abe) << context() << "executing activty" << currentActivity()->name();
         mScheduledHarvest = 0.;
         bool executed = currentActivity()->execute(this);
+        if (!currentActivity()) // special case: the activity invalidated the active activtity
+            return executed;
+
         if (!currentActivity()->isRepeatingActivity()) {
             currentFlags().setActive(false);
             afterExecution(!executed); // check what comes next for the stand
