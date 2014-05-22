@@ -13,6 +13,8 @@ class Agent
 public:
     Agent(AgentType *type);
     AgentType *type() const {return mType; }
+    // agent properties
+    bool useSustainableHarvest() const { return true; }
 
 private:
     // link to the base agent type

@@ -163,6 +163,17 @@ void Scheduler::addExtraHarvest(const FMStand *stand, const double volume, Sched
     mExtraHarvest += volume;
 }
 
+double Scheduler::plannedHarvests(bool total)
+{
+    int current_year = ForestManagementEngine::instance()->currentYear();
+    double total_harvest = 0.;
+    for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit)
+        if (total || (*nit)->optimalYear < current_year + 10)
+            total_harvest+=(*nit)->harvest; // scheduled harvest in m3
+    return total_harvest;
+
+}
+
 double Scheduler::scoreOf(const int stand_id) const
 {
     // lookup stand in scheduler list
@@ -258,6 +269,11 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
     maxHarvestOvershoot = FMSTP::valueFromJs(jsvalue, "maxHarvestOvershoot","2").toNumber();
     scheduleRebounceDuration = FMSTP::valueFromJs(jsvalue, "scheduleRebounceDuration", "5").toNumber();
+    if (scheduleRebounceDuration==0.)
+        throw IException("Setup of scheduler-options: '0' is not a valid value for 'scheduleRebounceDuration'!");
+    deviationDecayRate = FMSTP::valueFromJs(jsvalue, "deviationDecayRate","1").toNumber();
+    if (deviationDecayRate==0.)
+        throw IException("Setup of scheduler-options: '0' is not a valid value for 'deviationDecayRate'!");
     if (!minRating)
         minRating = new Expression();
     minRating->setExpression(FMSTP::valueFromJs(jsvalue, "minRatingFormula","1").toString());

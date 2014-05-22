@@ -72,6 +72,7 @@ private:
     void setupScripting();
     void prepareRun();
     void finalizeRun();
+    void setupOutputs();
 
     AgentType *agentType(const QString &name);
     static ForestManagementEngine *singleton_fome_engine;
@@ -100,6 +101,9 @@ private:
     bool mCancel;
     bool mStandLayoutChanged;
     QString mLastErrorMessage;
+
+    //
+    friend class UnitOut;
 };
 
 
