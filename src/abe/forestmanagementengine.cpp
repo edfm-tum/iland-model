@@ -14,6 +14,8 @@
 #include "fomescript.h"
 #include "scheduler.h"
 
+#include "unitout.h"
+
 #include "debugtimer.h"
 
 // general iLand stuff
@@ -23,8 +25,11 @@
 #include "mapgrid.h"
 #include "helper.h"
 #include "threadrunner.h"
+#include "outputmanager.h"
 
 #include "tree.h"
+
+
 
 Q_LOGGING_CATEGORY(abe, "abe")
 
@@ -42,6 +47,7 @@ ForestManagementEngine::ForestManagementEngine()
     mScriptBridge = 0;
     singleton_fome_engine = this;
     mCancel = false;
+    setupOutputs(); // add ABE output definitions
 }
 
 ForestManagementEngine::~ForestManagementEngine()
@@ -118,6 +124,13 @@ void ForestManagementEngine::finalizeRun()
     }
 }
 
+void ForestManagementEngine::setupOutputs()
+{
+    if (GlobalSettings::instance()->outputManager()->find("abeUnit"))
+        return; // already set up
+    GlobalSettings::instance()->outputManager()->addOutput(new UnitOut);
+}
+
 AgentType *ForestManagementEngine::agentType(const QString &name)
 {
     for (int i=0;i<mAgentTypes.count();++i)
@@ -125,6 +138,71 @@ AgentType *ForestManagementEngine::agentType(const QString &name)
             return mAgentTypes[i];
     return 0;
 }
+
+
+/*---------------------------------------------------------------------
+ * multithreaded execution routines
+---------------------------------------------------------------------*/
+
+FMUnit *nc_execute_unit(FMUnit *unit)
+{
+    if (ForestManagementEngine::instance()->isCancel())
+        return unit;
+
+    //qDebug() << "called for unit" << unit;
+    const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
+    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
+    int executed = 0;
+    int total = 0;
+    while (it!=stand_map.constEnd() && it.key()==unit) {
+        it.value()->stp()->executeRepeatingActivities(it.value());
+        if (it.value()->execute())
+            ++executed;
+        if (ForestManagementEngine::instance()->isCancel())
+            break;
+
+        ++it;
+        ++total;
+    }
+    if (ForestManagementEngine::instance()->isCancel())
+        return unit;
+
+    if (FMSTP::verbose())
+        qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
+
+    // now run the scheduler
+    unit->scheduler()->run();
+
+    // collect the harvests
+    it = stand_map.constFind(unit);
+    while (it!=stand_map.constEnd() && it.key()==unit) {
+        unit->addRealizedHarvest(it.value()->totalHarvest());
+        ++it;
+    }
+
+
+    return unit;
+}
+
+FMUnit *nc_plan_update_unit(FMUnit *unit)
+{
+    if (ForestManagementEngine::instance()->isCancel())
+        return unit;
+
+    if (ForestManagementEngine::instance()->currentYear() % 10 == 0) {
+        qCDebug(abe) << "*** execute decadal plan update ***";
+        unit->managementPlanUpdate();
+    }
+
+
+    // first update happens *after* a full year of running ABE.
+    if (ForestManagementEngine::instance()->currentYear()>1)
+        unit->updatePlanOfCurrentYear();
+
+    return unit;
+}
+
+
 
 void ForestManagementEngine::setup()
 {
@@ -252,6 +330,11 @@ void ForestManagementEngine::setup()
             throw IException(QString("ABE-Error: setup of agent '%2': %1").arg(mLastErrorMessage).arg(at->name()));
         }
     }
+
+    // run the initial planning unit setup
+    GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits);
+
+
     qCDebug(abeSetup) << "ABE setup complete." << mUnitStandMap.size() << "stands on" << mUnits.count() << "units, managed by" << mAgents.size() << "agents.";
 
 }
@@ -281,55 +364,6 @@ void ForestManagementEngine::abortExecution(const QString &message)
     mCancel = true;
 }
 
-/*---------------------------------------------------------------------
- * multithreaded execution routines
----------------------------------------------------------------------*/
-
-FMUnit *nc_execute_unit(FMUnit *unit)
-{
-    if (ForestManagementEngine::instance()->isCancel())
-        return unit;
-
-    //qDebug() << "called for unit" << unit;
-    const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
-    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
-    int executed = 0;
-    int total = 0;
-    while (it!=stand_map.constEnd() && it.key()==unit) {
-        it.value()->stp()->executeRepeatingActivities(it.value());
-        if (it.value()->execute())
-            ++executed;
-        ++it;
-        ++total;
-        if (ForestManagementEngine::instance()->isCancel())
-            break;
-    }
-    if (ForestManagementEngine::instance()->isCancel())
-        return unit;
-
-    if (FMSTP::verbose())
-        qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
-
-    // now run the scheduler
-    unit->scheduler()->run();
-
-    return unit;
-}
-
-FMUnit *nc_plan_update_unit(FMUnit *unit)
-{
-    if (ForestManagementEngine::instance()->isCancel())
-        return unit;
-
-    if (GlobalSettings::instance()->currentYear() % 10 == 0) {
-        qCDebug(abe) << "*** execute decadal plan update ***";
-        unit->managementPlanUpdate();
-    } else {
-        unit->updatePlanOfCurrentYear();
-    }
-
-    return unit;
-}
 
 
 

@@ -14,7 +14,6 @@ public:
     ~FMUnit();
     void setId(const QString &id);
     const QString &id() const {return mId; }
-    int index() const {return mIndex; }
     Scheduler *scheduler() {return mScheduler; }
     const Scheduler *constScheduler() const { return mScheduler; }
     const Agent* agent() const { return mAgent; }
@@ -27,14 +26,26 @@ public:
     /// update objectives of the current year.
     void updatePlanOfCurrentYear();
 
+    /// record realized harvests on the unit
+    void addRealizedHarvest(const double harvest_m3) { mRealizedHarvest+=harvest_m3; }
+
     void aggregate();
     QStringList info() const;
 
 private:
     QString mId;
-    int mIndex;
     const Agent *mAgent;
     Scheduler *mScheduler;
+    double mAnnualHarvestTarget; ///< planned annual harvest (m3)
+    double mRealizedHarvest; ///< sum of realized harvest in the current planning period (m3)
+    double mRealizedHarvestLastYear; ///< the sum of harvests up to the last year (m3)
+    double mMAI; ///< mean annual increment (m3/ha)
+    double mHDZ; ///< mean "haubarer" annual increment (m3/ha)
+    double mMeanAge; ///< mean age of the planning unit
+    double mTotalArea; ///< total area of the unit (ha)
+    double mTotalPlanDeviation; ///< cumulative deviation from the planned harvest
+
+    friend class UnitOut;
 };
 
 } // namespace

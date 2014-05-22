@@ -12,13 +12,14 @@ class FMUnit; // forward
 /** @brief SchedulerOptions store agent-specific options.
  * */
 struct SchedulerOptions {
-    SchedulerOptions(): useScheduler(false), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0) { minRating = 0; }
+    SchedulerOptions(): useScheduler(false), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0), deviationDecayRate(0.) { minRating = 0; }
     ~SchedulerOptions();
     bool useScheduler; ///< true, if scheduler used by agent
     double minScheduleHarvest; ///< minimum amount of m3/ha*yr that should be scheduled
     double maxScheduleHarvest; ///< the maximum number of m3/ha*yr that should be scheduled
     double maxHarvestOvershoot; ///< multiplier to define the maximum overshoot over the planned volume (e.g. 1.2 -> 20% max. overshoot)
     double scheduleRebounceDuration; ///< number of years for which deviations from the planned volume are split into
+    double deviationDecayRate; ///< factor to reduce accumulated harvest deviation
     Expression *minRating; ///< formula to determine the minimum required activity rating for a given amount of harvest objective achievment.
     void setup(QJSValue jsvalue);
 };
@@ -53,6 +54,14 @@ public:
     /// volume: total volume (m3)
     void addExtraHarvest(const FMStand *stand, const double volume, HarvestType type);
 
+    /// return the total amount of planned harvests in the next planning period (10yrs) (total=false)
+    /// if 'total' is true all scheduled harvests are counted
+    double plannedHarvests(bool total);
+
+    /// set the harvest target for the unit (m3/ha) for the current year.
+    void setHarvestTarget(bool target_m3_ha) { mHarvestTarget = target_m3_ha; }
+    double harvestTarget() const { return mHarvestTarget; }
+
     /// get current score for stand 'id'
     /// return -1 if stand is invalid, 0..1 for probabilities, 1.1 for forced execution
     double scoreOf(const int stand_id) const;
@@ -84,6 +93,7 @@ private:
     SchedulerItem* item(const int stand_id) const;
     FMUnit *mUnit;
     double mExtraHarvest;
+    double mHarvestTarget; ///< current harvest target (m3/ha)
 };
 
 

@@ -63,7 +63,7 @@ public:
     double stems() const {return mStems; }
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
-    /// total realized harvest
+    /// total realized harvest (m3 on the full stand area)
     double totalHarvest() const { return mHarvested; }
     /// total disturbed timber volume, includes also disturbed trees *not* harvested
     double disturbedTimber() const { return mDisturbed; }
@@ -72,6 +72,8 @@ public:
     double meanAnnualIncrement() const { return mMAIdecade / area(); }
     /// mean annual increment (MAI), m3 timber/ha for the full rotation period
     double meanAnnualIncrementTotal() const { return mMAItotal / area(); }
+
+    bool readyForFinalHarvest() { return currentActivity()?(currentFlags().isFinalHarvest() && currentFlags().isScheduled()):false; }
 
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
@@ -94,7 +96,7 @@ public:
     void sleep(int years_to_sleep);
     int sleepYears() const {return mYearsToWait; }
 
-    /// calculate mean annual increment (m3/ha) and return decadal MAI.
+    /// calculate mean annual increment (m3/ha) and return total MAI.
     double calculateMAI();
 
     // return stand-specific flags

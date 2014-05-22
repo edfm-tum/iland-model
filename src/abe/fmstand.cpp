@@ -107,8 +107,13 @@ void FMStand::initialize(FMSTP *stp)
 
     // call onInit handler on the level of the STP
     stp->events().run(QStringLiteral("onInit"), this);
-    if (mCurrentIndex>-1)
+    if (mCurrentIndex>-1) {
         mStandFlags[mCurrentIndex].activity()->events().run(QStringLiteral("onEnter"), this);
+
+        // if it is a scheduled activity, then execute (to get initial estimates for harvests)
+        if (currentFlags().isScheduled())
+            executeActivity(currentActivity());
+    }
 
 }
 
@@ -391,7 +396,7 @@ double FMStand::calculateMAI()
     mLastMAIVolume = mVolume;
     // reset counters
     mRemovedVolumeDecade = 0.;
-    return mMAIdecade;
+    return mMAItotal;
 }
 
 double FMStand::basalArea(const QString &species_id) const

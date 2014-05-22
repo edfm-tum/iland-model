@@ -252,6 +252,7 @@ double Management::aggregate_function(QString expression, QString filter, QStrin
 void Management::throwError(const QString &errormessage)
 {
     GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
+    qDebug() << "Management-script error:" << errormessage;
     // no idea if this works!!!
 }
 

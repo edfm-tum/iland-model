@@ -19,6 +19,7 @@ INCLUDEPATH += ../core \
     ../tools \
     ../output \
     ../abe \
+    ../abe/output \
     ../iland
 
 DEPENDPATH += plugins
@@ -150,7 +151,8 @@ SOURCES += main.cpp \
     ../abe/fmtreelist.cpp \
     ../abe/actscheduled.cpp \
     ../abe/actplanting.cpp \
-    ../abe/actsalvage.cpp
+    ../abe/actsalvage.cpp \
+    ../abe/output/unitout.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -243,7 +245,8 @@ HEADERS += mainwindow.h \
     ../abe/fmtreelist.h \
     ../abe/actscheduled.h \
     ../abe/actplanting.h \
-    ../abe/actsalvage.h
+    ../abe/actsalvage.h \
+    ../abe/output/unitout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \
