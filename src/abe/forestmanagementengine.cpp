@@ -392,6 +392,9 @@ void ForestManagementEngine::run(int debug_year)
         throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
     }
 
+    // create outputs
+    GlobalSettings::instance()->outputManager()->execute("abeUnit");
+
     finalizeRun();
 
 }

@@ -997,6 +997,9 @@ void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
 bool wantDrag=false;
 void MainWindow::mouseClick(const QPoint& pos)
 {
+    if (!mRemoteControl.canRun())
+        return;
+
     QPointF coord=vp.toWorld(pos);
     //qDebug() << "to world:" << coord;
     wantDrag = false;
@@ -1004,8 +1007,6 @@ void MainWindow::mouseClick(const QPoint& pos)
     Model *model = mRemoteControl.model();
     ResourceUnit *ru = model->ru(coord);
     // find adjactent tree
-    if (!mRemoteControl.canRun())
-        return;
 
     // test ressource units...
     if (ui->visResourceUnits->isChecked()) {

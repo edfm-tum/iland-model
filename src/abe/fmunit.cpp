@@ -57,6 +57,8 @@ FMUnit::FMUnit(const Agent *agent)
     mRealizedHarvest = 0.;
     mMAI = 0.; mHDZ = 0.; mMeanAge = 0.;
     mTotalArea = 0.; mTotalPlanDeviation = 0.;
+    mTotalVolume = 0.;
+    mAnnualHarvest = 0.;
 
     if (agent->type()->schedulerOptions().useScheduler)
         // explicit scheduler only for stands/units that include more than one stand
@@ -124,6 +126,7 @@ void FMUnit::managementPlanUpdate()
     mMAI = mai;
     mHDZ = hdz;
     mMeanAge = age;
+    mTotalVolume = volume;
 
     double rotation_length = 100.; // TODO
     double h_tot = mai * 2.*age / rotation_length;  //
@@ -146,6 +149,8 @@ void FMUnit::managementPlanUpdate()
         }
         mAnnualHarvestTarget = qMax(mAnnualHarvestTarget, 0.);
     }
+    if (scheduler())
+        scheduler()->setHarvestTarget(mAnnualHarvestTarget);
 }
 
 void FMUnit::updatePlanOfCurrentYear()
@@ -153,15 +158,13 @@ void FMUnit::updatePlanOfCurrentYear()
     if (!scheduler())
         return;
 
-    if (mAnnualHarvestTarget==0.) {
-        return; // TODO: what else to do?
-    }
     if (mTotalArea==0.)
         throw IException("FMUnit:updatePlan: unit area = 0???");
 
     // compare the harvests of the last year to the plan:
     double harvests = mRealizedHarvest - mRealizedHarvestLastYear;
     mRealizedHarvestLastYear = mRealizedHarvest;
+    mAnnualHarvest = harvests;
 
     // difference in m3/ha
     double delta = harvests/mTotalArea - mAnnualHarvestTarget;
@@ -171,7 +174,7 @@ void FMUnit::updatePlanOfCurrentYear()
     mTotalPlanDeviation *= mAgent->type()->schedulerOptions().deviationDecayRate;
 
     // relative deviation: >0: too many harvests
-    double rel_deviation = mTotalPlanDeviation / mAnnualHarvestTarget;
+    double rel_deviation = mAnnualHarvestTarget? mTotalPlanDeviation / mAnnualHarvestTarget : 0;
 
     // the current deviation is reduced to 0 in rebounce_yrs years.
     double rebounce_yrs = mAgent->type()->schedulerOptions().scheduleRebounceDuration;
