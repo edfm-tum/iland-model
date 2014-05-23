@@ -32,12 +32,25 @@ UnitOut::UnitOut()
 }
 
 
-void ABE::UnitOut::exec()
+void UnitOut::exec()
 {
     FMUnit *unit;
+    double salvage_harvest, annual_target;
     foreach(unit, ForestManagementEngine::instance()->mUnits) {
         *this << currentYear() << unit->id(); // keys
-        *this << unit->mTotalArea;
+        *this << unit->area();
+        *this << unit->mMeanAge << unit->mTotalVolume/unit->area() << unit->mMAI;
+        *this << unit->mAnnualHarvestTarget;
+        if (unit->scheduler()) {
+            salvage_harvest = unit->scheduler()->mExtraHarvest;
+            annual_target = unit->scheduler()->mHarvestTarget;
+        } else {
+            salvage_harvest = 0.;
+            annual_target = 0.;
+        }
+        *this << annual_target << unit->annualHarvest()/unit->area() << 0. << 0. << salvage_harvest;
+
+        writeRow();
      }
 }
 

@@ -32,7 +32,7 @@ struct SchedulerOptions {
 class Scheduler
 {
 public:
-    Scheduler(FMUnit* unit) { mUnit = unit; mExtraHarvest=0.; }
+    Scheduler(FMUnit* unit) { mUnit = unit; mExtraHarvest=0.; mHarvestTarget=0.; }
     enum HarvestType { Thinning, EndHarvest, Salvage};
 
     /// add an planned activity for a given stand.
@@ -59,7 +59,7 @@ public:
     double plannedHarvests(bool total);
 
     /// set the harvest target for the unit (m3/ha) for the current year.
-    void setHarvestTarget(bool target_m3_ha) { mHarvestTarget = target_m3_ha; }
+    void setHarvestTarget(double target_m3_ha) { mHarvestTarget = target_m3_ha; }
     double harvestTarget() const { return mHarvestTarget; }
 
     /// get current score for stand 'id'
@@ -94,6 +94,8 @@ private:
     FMUnit *mUnit;
     double mExtraHarvest;
     double mHarvestTarget; ///< current harvest target (m3/ha)
+
+    friend class UnitOut;
 };
 
 
