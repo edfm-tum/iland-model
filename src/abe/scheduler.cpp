@@ -31,7 +31,10 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     item->optimalYear = item->enterYear + flags->activity()->optimalSchedule(stand->stp()->rotationLength())- stand->absoluteAge();
     item->forbiddenTo = 0;
     item->calculate(); // set score
-    mItems.push_back(item);
+    if (flags->isFinalHarvest())
+        mItems.push_back(item);
+    else
+        mThinnings.push_back(item);
 }
 
 

@@ -268,8 +268,8 @@ void Model::setupSpace()
         int ru_index = 0;
         for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-            mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
             if (!mStandGrid || !mStandGrid->isValid() || *p>0) {
+                mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
                 // create resource units for valid positions only
                 new_ru = new ResourceUnit(ru_index++); // create resource unit
                 new_ru->setClimate( mEnvironment->climate() );
