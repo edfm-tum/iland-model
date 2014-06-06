@@ -244,10 +244,17 @@ void ModelController::runloop()
 bool ModelController::internalRun()
 {
     // main loop
+    try {
+        while (mRunning && !mPaused &&  !mFinished) {
+            runloop(); // start the running loop
+        }
+    } catch (IException &e) {
+#ifdef ILAND_GUI
+        Helper::msg(e.message());
+#endif
 
-    while (mRunning && !mPaused &&  !mFinished) {
-        runloop(); // start the running loop
     }
+
     return isFinished();
 }
 
