@@ -88,8 +88,7 @@ private:
         int forbiddenTo; ///< year until which the harvest operation is forbidden
         ActivityFlags *flags; ///< the details of the activity/stand context
     };
-    QList<SchedulerItem*> mItems; ///< the list of active tickets (for final harvests)
-    QList<SchedulerItem*> mThinnings; ///< a list of active tickets (for all other activities)
+    QList<SchedulerItem*> mItems; ///< the list of active tickets
     /// find scheduler item for 'stand_id' or return NULL.
     SchedulerItem* item(const int stand_id) const;
     FMUnit *mUnit;

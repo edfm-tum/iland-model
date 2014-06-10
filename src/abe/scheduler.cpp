@@ -17,7 +17,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
 {
     if (FMSTP::verbose())
         qDebug()<< "ticked added for stand" << stand->id();
-
+    
     flags->setIsPending(true);
     SchedulerItem *item = new SchedulerItem();
     item->stand = stand;
@@ -31,10 +31,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     item->optimalYear = item->enterYear + flags->activity()->optimalSchedule(stand->stp()->rotationLength())- stand->absoluteAge();
     item->forbiddenTo = 0;
     item->calculate(); // set score
-    if (flags->isFinalHarvest())
-        mItems.push_back(item);
-    else
-        mThinnings.push_back(item);
+    mItems.push_back(item);
 }
 
 
