@@ -204,7 +204,11 @@ void Environment::setPosition(const QPointF position)
         QString value;
         if (logLevelInfo()) qDebug() << "settting up point" << position << "with row" << row;
         for (int col=0;col<mInfile->colCount(); col++) {
-            if (mKeys[col]=="x" || mKeys[col]=="y" || mKeys[col]=="id") // ignore "x" and "y" keys
+            if (mKeys[col]=="id") {
+                mCurrentID = mInfile->value(row, col).toInt();
+                continue;
+            }
+            if (mKeys[col]=="x" || mKeys[col]=="y") // ignore "x" and "y" keys
                 continue;
             value = mInfile->value(row,col).toString();
             if (logLevelInfo()) qDebug() << "set" << mKeys[col] << "to" << value;
