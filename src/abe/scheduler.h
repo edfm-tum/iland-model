@@ -12,9 +12,10 @@ class FMUnit; // forward
 /** @brief SchedulerOptions store agent-specific options.
  * */
 struct SchedulerOptions {
-    SchedulerOptions(): useScheduler(false), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0), deviationDecayRate(0.) { minRating = 0; }
+    SchedulerOptions(): useScheduler(false), useSustainableHarvest(1.), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0), deviationDecayRate(0.) { minRating = 0; }
     ~SchedulerOptions();
-    bool useScheduler; ///< true, if scheduler used by agent
+    bool useScheduler; ///< true, if the agent is using the scheduler at all
+    double useSustainableHarvest; ///< scaling factor (0..1), 1 if scheduler used by agent (exclusively), 0: bottom up, linearly scaled in between.
     double minScheduleHarvest; ///< minimum amount of m3/ha*yr that should be scheduled
     double maxScheduleHarvest; ///< the maximum number of m3/ha*yr that should be scheduled
     double maxHarvestOvershoot; ///< multiplier to define the maximum overshoot over the planned volume (e.g. 1.2 -> 20% max. overshoot)
@@ -32,7 +33,7 @@ struct SchedulerOptions {
 class Scheduler
 {
 public:
-    Scheduler(FMUnit* unit) { mUnit = unit; mExtraHarvest=0.; mHarvestTarget=0.; }
+    Scheduler(FMUnit* unit) { mUnit = unit; mExtraHarvest=0.; mFinalCutTarget=0.; }
     enum HarvestType { Thinning, EndHarvest, Salvage};
 
     /// add an planned activity for a given stand.
@@ -56,11 +57,13 @@ public:
 
     /// return the total amount of planned harvests in the next planning period (10yrs) (total=false)
     /// if 'total' is true all scheduled harvests are counted
-    double plannedHarvests(bool total);
+    double plannedHarvests(double &rFinal, double &rThinning);
 
     /// set the harvest target for the unit (m3/ha) for the current year.
-    void setHarvestTarget(double target_m3_ha) { mHarvestTarget = target_m3_ha; }
-    double harvestTarget() const { return mHarvestTarget; }
+    /// target_m3_ha: the
+    void setHarvestTarget(double target_m3_ha, double thinning_target_m3_ha) { mFinalCutTarget = std::max(target_m3_ha,0.01);
+                                                                               mThinningTarget = std::max(thinning_target_m3_ha,0.01); }
+    double harvestTarget() const { return mFinalCutTarget; }
 
     /// get current score for stand 'id'
     /// return -1 if stand is invalid, 0..1 for probabilities, 1.1 for forced execution
@@ -68,7 +71,7 @@ public:
     QStringList info(const int stand_id) const;
 
 private:
-    double calculateMinProbability(double current_harvest);
+    double calculateMinProbability(const double current_harvest);
     void updateCurrentPlan();
     void dump();
     class SchedulerItem {
@@ -92,8 +95,9 @@ private:
     /// find scheduler item for 'stand_id' or return NULL.
     SchedulerItem* item(const int stand_id) const;
     FMUnit *mUnit;
-    double mExtraHarvest;
-    double mHarvestTarget; ///< current harvest target (m3/ha)
+    double mExtraHarvest; ///< extra harvests due to disturbances m3
+    double mFinalCutTarget; ///< current harvest target for regeneration harvests (m3/ha)
+    double mThinningTarget; ///< current harvest target for thinning/tending operations (m3/ha)
 
     friend class UnitOut;
 };

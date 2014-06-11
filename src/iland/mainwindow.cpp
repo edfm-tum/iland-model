@@ -1232,13 +1232,21 @@ void MainWindow::yearSimulated(int year)
 
 void MainWindow::modelFinished(QString errorMessage)
 {
-    qDebug() << "Finished!";
-    labelMessage("Finished!!");
+    if (!errorMessage.isEmpty()) {
+        Helper::msg(errorMessage);
+        labelMessage("Error!");
+        qDebug() << "Error:" << errorMessage;
+    } else {
+        qDebug() << "Finished!";
+        labelMessage("Finished!!");
+    }
 
     checkModelState();
     if (windowTitle().contains("batch")) {
         // we are in automatic batch mode.
         // we should therefore close down the application.
+        if (!errorMessage.isEmpty())
+            batchLog(QString("error: %1").arg(errorMessage));
         batchLog(QString("%1 Finished!!! shutting down...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
 
         qDebug() << "****************************";

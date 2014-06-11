@@ -63,8 +63,10 @@ public:
     double stems() const {return mStems; }
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
-    /// total realized harvest (m3 on the full stand area)
-    double totalHarvest() const { return mHarvested; }
+    /// total realized harvest (m3 on the full stand area) (note: salvage harvest ist part of final harvest)
+    double totalHarvest() const { return mFinalHarvested + mThinningHarvest; }
+    /// total realized thinning/tending harvests (m3 on the full stand area)
+    double totalThinningHarvest() const { return mThinningHarvest; }
     /// total disturbed timber volume, includes also disturbed trees *not* harvested
     double disturbedTimber() const { return mDisturbed; }
 
@@ -89,7 +91,7 @@ public:
     void addScheduledHarvest(const double add_volume) {mScheduledHarvest += add_volume; }
     /// is called whenever a tree is removed (death, management, disturbance)
     void addTreeRemoval(Tree *tree, int reason);
-    void resetHarvestCounter() { mHarvested = 0.; mDisturbed=0.; }
+    void resetHarvestCounter() { mFinalHarvested = 0.; mDisturbed=0.; mThinningHarvest=0.; }
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.
@@ -127,7 +129,8 @@ private:
     double mVolume; ///< standing volume (m3/ha) of the stand
     double mStems; ///< stems per ha (above 4m)
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
-    double mHarvested; ///< m3 of timber volume that has been harvested
+    double mFinalHarvested; ///< m3 of timber volume that has been harvested (regeneration phase)
+    double mThinningHarvest; ///< m3 of timber that was harvested for thinning/tending
     double mDisturbed; ///< removed due to disturbance
 
     double mRemovedVolumeDecade; ///< removed volume of the decade (m3/ha)

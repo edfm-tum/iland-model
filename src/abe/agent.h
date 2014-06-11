@@ -14,7 +14,7 @@ public:
     Agent(AgentType *type);
     AgentType *type() const {return mType; }
     // agent properties
-    bool useSustainableHarvest() const { return true; }
+    double useSustainableHarvest() const;
 
 private:
     // link to the base agent type

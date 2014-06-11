@@ -351,6 +351,8 @@ void ModelController::cancel()
     emit stateChanged();
 }
 
+
+// this function is called when exceptions occur in multithreaded code.
 QMutex error_mutex;
 void ModelController::throwError(const QString msg)
 {
@@ -362,6 +364,7 @@ void ModelController::throwError(const QString msg)
     emit bufferLogs(false);
     emit bufferLogs(true); // start buffering again
 
+    emit finished(msg);
     throw IException(msg); // raise error again
 
 }
