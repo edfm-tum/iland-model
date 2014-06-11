@@ -36,7 +36,8 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mTotalBasalArea = 0.;
     mStems = 0.;
     mScheduledHarvest = 0.;
-    mHarvested = 0.;
+    mFinalHarvested = 0.;
+    mThinningHarvest = 0.;
     mDisturbed = 0.;
     mRotationStartYear = 0;
     mLastUpdate = -1.;
@@ -366,14 +367,17 @@ void FMStand::addTreeRemoval(Tree *tree, int reason)
         return; // do nothing atm
     if (r==Tree::TreeHarvest) {
         // regular harvest
-        mHarvested +=removed_volume;
+        if (currentFlags().isFinalHarvest())
+            mFinalHarvested += removed_volume;
+        else
+            mThinningHarvest += removed_volume;
     }
     if (r==Tree::TreeDisturbance) {
         // if we have an active salvage activity, then store
         mDisturbed += removed_volume;
         if (mSTP->salvageActivity()) {
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
-                mHarvested += removed_volume;
+                mFinalHarvested += removed_volume;
             }
         }
 

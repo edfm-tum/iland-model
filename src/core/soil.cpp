@@ -140,7 +140,7 @@ void Soil::calculateYear()
     SoilParams &sp = *mParams;
     // checks
     if (mRE==0) {
-        throw IException("Soil::calculateYear(): Invalid value for 're' (0.)");
+        throw IException("Soil::calculateYear(): Invalid value for 're' (=0) for RU(index): " + QString::number(mRU->index()));
     }
     const double t = 1.; // timestep (annual)
     // auxiliary calculations

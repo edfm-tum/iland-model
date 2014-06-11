@@ -49,6 +49,19 @@ QStringList FMUnit::info() const
 
 }
 
+double FMUnit::annualThinningHarvest() const
+{
+    const QMultiMap<FMUnit*, FMStand*> &stands = ForestManagementEngine::instance()->stands();
+    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(const_cast<FMUnit*>(this));
+    double harvested=0.;
+    while (it != stands.constEnd() && it.key()==this) {
+        FMStand *stand = it.value();
+        harvested += stand->totalThinningHarvest();
+        ++it;
+    }
+    return harvested;
+}
+
 FMUnit::FMUnit(const Agent *agent)
 {
     mAgent = agent;
@@ -78,10 +91,11 @@ void FMUnit::setId(const QString &id)
 
 void FMUnit::managementPlanUpdate()
 {
-    const double period_length  = 10.;
+    const double period_length = 10.;
     // calculate the planned harvest in the next planning period (i.e., 10yrs).
     // this is the sum of planned operations that are already in the scheduler.
-    double planned = mScheduler->plannedHarvests(false);
+    double plan_thinning, plan_final;
+    mScheduler->plannedHarvests(plan_final, plan_thinning);
     // the actual harvests of the last planning period
     double realized = mRealizedHarvest;
     // the plan of the last period
@@ -134,23 +148,26 @@ void FMUnit::managementPlanUpdate()
     double h_thi = h_tot - h_reg;
 
     qCDebug(abe) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
-    if (!mAgent->useSustainableHarvest()) {
-        // we do not calculate sustainable harvest levels.
-        // do a pure bottom up calculation
-        mAnnualHarvestTarget = planned / period_length;
-        qCDebug(abe) << "unit" << id() << "new plan:" << mAnnualHarvestTarget;
-    } else {
-        // use the sustainable harvest level.
-        mAnnualHarvestTarget = h_tot;
-        if (old_plan>0.) {
-            double delta = (realized-old_plan) / period_length;
-            // if delta > 0: timber removal was too high -> plan less for the current period, and vice versa.
-            mAnnualHarvestTarget -= delta;
-        }
-        mAnnualHarvestTarget = qMax(mAnnualHarvestTarget, 0.);
+    double sf = mAgent->useSustainableHarvest();
+    // we do not calculate sustainable harvest levels.
+    // do a pure bottom up calculation
+    double bottom_up_harvest = (plan_final / period_length) / total_area; // m3/ha*yr
+
+    // the sustainable harvest yield is the current yield and some carry over from the last period
+    double sustainable_harvest = h_reg;
+    if (old_plan>0.) {
+        double delta = (realized-old_plan) / period_length;
+        // if delta > 0: timber removal was too high -> plan less for the current period, and vice versa.
+        sustainable_harvest -= delta;
     }
+    mAnnualHarvestTarget = sustainable_harvest * sf + bottom_up_harvest * (1.-sf);
+    mAnnualHarvestTarget = qMax(mAnnualHarvestTarget, 0.);
+
+    mAnnualThinningTarget = (plan_thinning / period_length) / total_area; // m3/ha*yr
+
+
     if (scheduler())
-        scheduler()->setHarvestTarget(mAnnualHarvestTarget);
+        scheduler()->setHarvestTarget(mAnnualHarvestTarget, mAnnualThinningTarget);
 }
 
 void FMUnit::updatePlanOfCurrentYear()
@@ -184,7 +201,7 @@ void FMUnit::updatePlanOfCurrentYear()
     // limit to minimum/maximum parameter
     new_harvest = qMax(new_harvest, mAgent->type()->schedulerOptions().minScheduleHarvest);
     new_harvest = qMin(new_harvest, mAgent->type()->schedulerOptions().maxScheduleHarvest);
-    scheduler()->setHarvestTarget(new_harvest);
+    scheduler()->setHarvestTarget(new_harvest, mAnnualThinningTarget);
 
 //    const QMultiMap<FMUnit*, FMStand*> &stands = ForestManagementEngine::instance()->stands();
 //    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(this);

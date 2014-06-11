@@ -6,6 +6,8 @@
 #include "fmunit.h"
 #include "fmstp.h"
 #include "forestmanagementengine.h"
+#include "agent.h"
+#include "agenttype.h"
 
 #include "mapgrid.h"
 #include "expression.h"
@@ -42,10 +44,11 @@ void Scheduler::run()
         qCDebug(abe) << "running scheduler for unit" << mUnit->id() << ". # of active items:" << mItems.size();
 
     double harvest_in_queue = 0.;
-    double total_harvested = mExtraHarvest;
+    double total_final_harvested = mExtraHarvest;
+    double total_thinning_harvested = 0.;
     mExtraHarvest = 0.;
-    if (FMSTP::verbose() && total_harvested>0.)
-        qCDebug(abe) << "Got extra harvest (e.g. salvages), m3=" << total_harvested;
+    if (FMSTP::verbose() && total_final_harvested>0.)
+        qCDebug(abe) << "Got extra harvest (e.g. salvages), m3=" << total_final_harvested;
 
     // update the schedule probabilities....
     QList<SchedulerItem*>::iterator it = mItems.begin();
@@ -90,8 +93,14 @@ void Scheduler::run()
         }
 
         bool remove = false;
+        bool final_harvest = item->flags->isFinalHarvest();
         //
-        double min_exec_probability = calculateMinProbability(total_harvested);
+        double rel_harvest;
+        if (final_harvest)
+            rel_harvest = total_final_harvested / mUnit->area() / mFinalCutTarget;
+        else
+            rel_harvest = total_thinning_harvested/mUnit->area() / mThinningTarget;
+        double min_exec_probability = calculateMinProbability( rel_harvest );
 
 
         if (item->score >= min_exec_probability) {
@@ -102,7 +111,10 @@ void Scheduler::run()
             harvest_scheduled += item->stand->scheduledHarvest();
 
             bool executed = item->flags->activity()->execute(item->stand);
-            total_harvested += item->stand->totalHarvest();
+            if (final_harvest)
+                total_final_harvested += item->stand->totalHarvest();
+            else
+                total_thinning_harvested += item->stand->totalHarvest();
 
             item->flags->setIsPending(false);
             if (!item->flags->activity()->isRepeatingActivity()) {
@@ -113,7 +125,7 @@ void Scheduler::run()
 
             // flag neighbors of the stand, if a clearcut happened
             // this is to avoid large unforested areas
-            if (executed && item->flags->isFinalHarvest()) {
+            if (executed && final_harvest) {
                 if (FMSTP::verbose()) qCDebug(abe) << item->stand->context() << "ran final harvest -> flag neighbors";
                 // simple rule: do not allow harvests for neighboring stands for 5 years
                 item->forbiddenTo = current_year + 5;
@@ -163,14 +175,19 @@ void Scheduler::addExtraHarvest(const FMStand *stand, const double volume, Sched
     mExtraHarvest += volume;
 }
 
-double Scheduler::plannedHarvests(bool total)
+double Scheduler::plannedHarvests(double &rFinal, double &rThinning)
 {
+    rFinal = 0.; rThinning = 0.;
     int current_year = ForestManagementEngine::instance()->currentYear();
-    double total_harvest = 0.;
     for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit)
-        if (total || (*nit)->optimalYear < current_year + 10)
-            total_harvest+=(*nit)->harvest; // scheduled harvest in m3
-    return total_harvest;
+        if (rFinal || (*nit)->optimalYear < current_year + 10)
+            if ((*nit)->flags->isFinalHarvest()) {
+                rFinal += (*nit)->harvest; // scheduled harvest in m3
+            } else {
+                rThinning += (*nit)->harvest;
+            }
+
+    return rFinal + rThinning;
 
 }
 
@@ -206,9 +223,18 @@ QStringList Scheduler::info(const int stand_id) const
     return lines;
 }
 
-double Scheduler::calculateMinProbability(double current_harvest)
+/// calculate the result of the response function that indicates, given the accumulated harvest of the current year,
+/// the minimum priority ranking of stands that should be executed.
+/// The idea: if the harvest level is low, the scheduler tends to run also harvests with low priority; if the
+/// accumulated harvest approaches the target, the scheduler is increasingly picky.
+double Scheduler::calculateMinProbability(const double current_harvest)
 {
-    return 0.5;
+    if (current_harvest > mUnit->agent()->type()->schedulerOptions().maxHarvestOvershoot)
+        return 999.; // never reached
+
+    // use the provided equation
+    double value =  mUnit->agent()->type()->schedulerOptions().minRating->calculate(current_harvest);
+    return std::min( std::max( value, 0.), 1.);
 }
 
 void Scheduler::dump()
@@ -268,12 +294,17 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     minScheduleHarvest = FMSTP::valueFromJs(jsvalue, "minScheduleHarvest","0").toNumber();
     maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
     maxHarvestOvershoot = FMSTP::valueFromJs(jsvalue, "maxHarvestOvershoot","2").toNumber();
+    useSustainableHarvest = FMSTP::valueFromJs(jsvalue, "useSustainableHarvest", "1").toNumber();
+    if (useSustainableHarvest<0. || useSustainableHarvest>1.)
+        throw IException("Setup of scheduler-options: invalid value for 'useSustainableHarvest' (0..1 allowed).");
+
     scheduleRebounceDuration = FMSTP::valueFromJs(jsvalue, "scheduleRebounceDuration", "5").toNumber();
     if (scheduleRebounceDuration==0.)
         throw IException("Setup of scheduler-options: '0' is not a valid value for 'scheduleRebounceDuration'!");
-    deviationDecayRate = FMSTP::valueFromJs(jsvalue, "deviationDecayRate","1").toNumber();
-    if (deviationDecayRate==0.)
+    deviationDecayRate = FMSTP::valueFromJs(jsvalue, "deviationDecayRate","0").toNumber();
+    if (deviationDecayRate==1.)
         throw IException("Setup of scheduler-options: '0' is not a valid value for 'deviationDecayRate'!");
+    deviationDecayRate = 1. - deviationDecayRate; // if eg value is 0.05 -> multiplier 0.95
     if (!minRating)
         minRating = new Expression();
     minRating->setExpression(FMSTP::valueFromJs(jsvalue, "minRatingFormula","1").toString());
