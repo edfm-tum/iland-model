@@ -152,7 +152,8 @@ SOURCES += main.cpp \
     ../abe/actscheduled.cpp \
     ../abe/actplanting.cpp \
     ../abe/actsalvage.cpp \
-    ../abe/output/unitout.cpp
+    ../abe/output/unitout.cpp \
+    ../abe/output/abestandout.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -246,7 +247,8 @@ HEADERS += mainwindow.h \
     ../abe/actscheduled.h \
     ../abe/actplanting.h \
     ../abe/actsalvage.h \
-    ../abe/output/unitout.h
+    ../abe/output/unitout.h \
+    ../abe/output/abestandout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

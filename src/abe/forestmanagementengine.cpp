@@ -15,6 +15,7 @@
 #include "scheduler.h"
 
 #include "unitout.h"
+#include "abestandout.h"
 
 #include "debugtimer.h"
 
@@ -129,6 +130,7 @@ void ForestManagementEngine::setupOutputs()
     if (GlobalSettings::instance()->outputManager()->find("abeUnit"))
         return; // already set up
     GlobalSettings::instance()->outputManager()->addOutput(new UnitOut);
+    GlobalSettings::instance()->outputManager()->addOutput(new ABEStandOut);
 }
 
 AgentType *ForestManagementEngine::agentType(const QString &name)
@@ -394,6 +396,7 @@ void ForestManagementEngine::run(int debug_year)
 
     // create outputs
     GlobalSettings::instance()->outputManager()->execute("abeUnit");
+    GlobalSettings::instance()->outputManager()->execute("abeStand");
 
     finalizeRun();
 

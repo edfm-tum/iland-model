@@ -44,6 +44,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mLastExecution = -1.;
 
     mCurrentIndex=-1;
+    mLastExecutedIndex=-1;
 }
 
 void FMStand::initialize(FMSTP *stp)
@@ -52,6 +53,7 @@ void FMStand::initialize(FMSTP *stp)
     // copy activity flags
     mStandFlags = stp->defaultFlags();
     mCurrentIndex=-1;
+    mLastExecutedIndex=-1;
     mYearsToWait=0;
     mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id()); // initialize...
 
@@ -341,6 +343,8 @@ bool FMStand::afterExecution(bool cancel)
             mStandFlags[indexmin].activity()->events().run(QStringLiteral("onEnter"), this);
 
     }
+    mLastExecutedIndex = mCurrentIndex;
+
     mCurrentIndex = indexmin;
     if (mCurrentIndex>-1) {
         int to_sleep = tmin - absoluteAge();
@@ -357,6 +361,7 @@ bool FMStand::afterExecution(bool cancel)
 void FMStand::addTreeRemoval(Tree *tree, int reason)
 {
     double removed_volume = tree->volume();
+    mVolume -= removed_volume;
 
     // for MAI calculations: store removal regardless of the reason
     mRemovedVolumeDecade+=removed_volume / area();

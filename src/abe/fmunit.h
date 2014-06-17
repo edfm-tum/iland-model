@@ -27,14 +27,14 @@ public:
     /// update objectives of the current year.
     void updatePlanOfCurrentYear();
 
-    /// record realized harvests on the unit (final harvests)
+    /// record realized harvests on the unit (all harvests)
     void addRealizedHarvest(const double harvest_m3) { mRealizedHarvest+=harvest_m3; }
 
     void aggregate();
     QStringList info() const;
 
 private:
-    double annualFinalHarvest() const {return mRealizedHarvest-mRealizedHarvestLastYear; } ///< total m3 produced in final harvests in this year
+    double annualTotalHarvest() const {return mRealizedHarvest-mRealizedHarvestLastYear; } ///< total m3 produced in final harvests in this year
     double annualThinningHarvest() const; ///< return the total m3 of thinning harvests (m3)
     QString mId;
     const Agent *mAgent;
@@ -48,8 +48,8 @@ private:
     double mHDZ; ///< mean "haubarer" annual increment (m3/ha)
     double mMeanAge; ///< mean age of the planning unit
     double mTotalArea; ///< total area of the unit (ha)
-    double mTotalVolume; ///< total standing volume
-    double mTotalPlanDeviation; ///< cumulative deviation from the planned harvest
+    double mTotalVolume; ///< total standing volume (m3)
+    double mTotalPlanDeviation; ///< cumulative deviation from the planned harvest (m3/ha)
 
     friend class UnitOut;
 };

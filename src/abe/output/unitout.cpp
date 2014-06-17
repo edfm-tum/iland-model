@@ -10,11 +10,10 @@ namespace ABE {
 UnitOut::UnitOut()
 {
     setName("Annual harvests and harvest plan on unit level.", "abeUnit");
-    setDescription("Carbon fluxes per resource unit and year. Note that all fluxes are reported on a per ru basis, " \
-                   "i.e. on the actual simulated area. Thus summing over all ru should give the overall C fluxes for"\
-                   " the simulated landscape. Fluxes that are internally calculated on a per ha basis thus need to be "\
-                   "scaled to the stockable area. Furthermore, the following sign convention is used in iLand: fluxes "\
-                   "from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.");
+    setDescription("The output provides planned and realized harvests on the level of planning units. " \
+                   "Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. "\
+                   "Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' "\
+                   "The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column");
     columns() << OutputColumn::year()
               << OutputColumn("id", "unique identifier of the planning unit", OutString)
               << OutputColumn("area", "total area of the unit (ha)", OutDouble)
@@ -23,10 +22,11 @@ UnitOut::UnitOut()
               << OutputColumn("MAI", "mean annual increment (updated every 10yrs), m3/ha*yr", OutDouble)
               << OutputColumn("decadePlan", "planned mean harvest per year for the decade (m3/ha*yr)", OutDouble)
               << OutputColumn("annualPlan", "updated annual plan for the year, m3/ha*yr", OutDouble)
+              << OutputColumn("runningDelta", "current aggregated difference between planned and realied harvests; positive: more realized than planned harvests, m3/ha*yr", OutDouble)
               << OutputColumn("realizedHarvest", "total harvested timber volume, m3/ha*yr", OutDouble)
               << OutputColumn("finalHarvest", "total harvested timber of planned final harvests (including salvage harvests), m3/ha*yr", OutDouble)
               << OutputColumn("thinningHarvest", "total harvested timber due to tending and thinning operations, m3/ha*yr", OutDouble)
-              << OutputColumn("salvageHarvest", "total harvested timber due to salvage operations, m3/ha*yr", OutDouble);
+              << OutputColumn("salvageHarvest", "total harvested timber due to salvage operations (also included in final harvests), m3/ha*yr", OutDouble);
 
 
 }
@@ -50,7 +50,11 @@ void UnitOut::exec()
 
         }
         double thin_h = unit->annualThinningHarvest()/unit->area();
-        *this << annual_target << unit->annualFinalHarvest()/unit->area() + thin_h << unit->annualFinalHarvest()/unit->area() << thin_h << salvage_harvest;
+        *this << annual_target << unit->mTotalPlanDeviation
+                               << unit->annualTotalHarvest()/unit->area() // total realized
+                               << unit->annualTotalHarvest()/unit->area() - thin_h  // final
+                               << thin_h // thinning
+                               << salvage_harvest; // salvaging
 
         writeRow();
      }
