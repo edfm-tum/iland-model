@@ -193,7 +193,7 @@ void FMUnit::updatePlanOfCurrentYear()
     // relative deviation: >0: too many harvests
     double rel_deviation = mAnnualHarvestTarget? mTotalPlanDeviation / mAnnualHarvestTarget : 0;
 
-    // the current deviation is reduced to 0 in rebounce_yrs years.
+    // the current deviation is reduced to 50% in rebounce_yrs years.
     double rebounce_yrs = mAgent->type()->schedulerOptions().scheduleRebounceDuration;
 
     double new_harvest = mAnnualHarvestTarget * (1. - rel_deviation/rebounce_yrs);

@@ -233,7 +233,10 @@ double Scheduler::calculateMinProbability(const double current_harvest)
         return 999.; // never reached
 
     // use the provided equation
-    double value =  mUnit->agent()->type()->schedulerOptions().minRating->calculate(current_harvest);
+    double value =  mUnit->agent()->type()->schedulerOptions().minPriorityFormula->calculate(current_harvest);
+    // use the balanceWorkload property
+    double balance = mUnit->agent()->type()->schedulerOptions().balanceWorkload;
+    value = balance * value + (1. - balance)*value;
     return std::min( std::max( value, 0.), 1.);
 }
 
@@ -282,8 +285,8 @@ void Scheduler::SchedulerItem::calculate()
 // **************************************************************************************
 SchedulerOptions::~SchedulerOptions()
 {
-    if (minRating)
-        delete minRating;
+    if (minPriorityFormula)
+        delete minPriorityFormula;
 }
 
 void SchedulerOptions::setup(QJSValue jsvalue)
@@ -301,13 +304,16 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     scheduleRebounceDuration = FMSTP::valueFromJs(jsvalue, "scheduleRebounceDuration", "5").toNumber();
     if (scheduleRebounceDuration==0.)
         throw IException("Setup of scheduler-options: '0' is not a valid value for 'scheduleRebounceDuration'!");
+    // calculate the "tau" of a exponential decay function based on the provided half-time
+    scheduleRebounceDuration = scheduleRebounceDuration / log(2.);
     deviationDecayRate = FMSTP::valueFromJs(jsvalue, "deviationDecayRate","0").toNumber();
     if (deviationDecayRate==1.)
         throw IException("Setup of scheduler-options: '0' is not a valid value for 'deviationDecayRate'!");
     deviationDecayRate = 1. - deviationDecayRate; // if eg value is 0.05 -> multiplier 0.95
-    if (!minRating)
-        minRating = new Expression();
-    minRating->setExpression(FMSTP::valueFromJs(jsvalue, "minRatingFormula","1").toString());
+    if (!minPriorityFormula)
+        minPriorityFormula = new Expression();
+    minPriorityFormula->setExpression(FMSTP::valueFromJs(jsvalue, "minPriorityFormula","1").toString());
+    balanceWorkload = FMSTP::valueFromJs(jsvalue, "balanceWorkload", "0.5").toNumber();
     useScheduler = true;
 
 }

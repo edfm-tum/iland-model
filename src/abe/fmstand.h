@@ -67,7 +67,7 @@ public:
     double totalHarvest() const { return mFinalHarvested + mThinningHarvest; }
     /// total realized thinning/tending harvests (m3 on the full stand area)
     double totalThinningHarvest() const { return mThinningHarvest; }
-    /// total disturbed timber volume, includes also disturbed trees *not* harvested
+    /// total disturbed timber volume, includes also disturbed trees *not* harvested, m3
     double disturbedTimber() const { return mDisturbed; }
 
     /// mean annual increment (MAI), m3 timber/ha for the last decade
@@ -108,6 +108,9 @@ public:
     /// get a pointer to the current activity; returns 0 if no activity is set.
     Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():0; }
 
+    /// get a pointer to the current activity; returns 0 if no activity is set.
+    Activity *lastExecutedActivity() const { return mLastExecutedIndex>-1?mStandFlags[mLastExecutedIndex].activity():0; }
+
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
     /// set a property value for the current stand with the name 'name'
@@ -146,6 +149,7 @@ private:
     int mCurrentIndex; ///< the index of the current activity
     int mLastUpdate; ///< year of the last reload of data
     int mLastExecution; ///< year of the last execution of an activity
+    int mLastExecutedIndex; ///< index of the last executed activity
 
     void newRotatation(); ///< reset
 

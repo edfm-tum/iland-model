@@ -12,7 +12,7 @@ class FMUnit; // forward
 /** @brief SchedulerOptions store agent-specific options.
  * */
 struct SchedulerOptions {
-    SchedulerOptions(): useScheduler(false), useSustainableHarvest(1.), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0), deviationDecayRate(0.) { minRating = 0; }
+    SchedulerOptions(): useScheduler(false), useSustainableHarvest(1.), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), scheduleRebounceDuration(0), deviationDecayRate(0.), balanceWorkload(0.){ minPriorityFormula = 0; }
     ~SchedulerOptions();
     bool useScheduler; ///< true, if the agent is using the scheduler at all
     double useSustainableHarvest; ///< scaling factor (0..1), 1 if scheduler used by agent (exclusively), 0: bottom up, linearly scaled in between.
@@ -21,7 +21,8 @@ struct SchedulerOptions {
     double maxHarvestOvershoot; ///< multiplier to define the maximum overshoot over the planned volume (e.g. 1.2 -> 20% max. overshoot)
     double scheduleRebounceDuration; ///< number of years for which deviations from the planned volume are split into
     double deviationDecayRate; ///< factor to reduce accumulated harvest deviation
-    Expression *minRating; ///< formula to determine the minimum required activity rating for a given amount of harvest objective achievment.
+    double balanceWorkload; ///< factor between 0..1; 1: use only the minPriority formula, 0: no balancing
+    Expression *minPriorityFormula; ///< formula to determine the minimum required activity rating for a given amount of harvest objective achievment.
     void setup(QJSValue jsvalue);
 };
 
