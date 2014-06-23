@@ -16,6 +16,7 @@
 #include "actgeneral.h"
 #include "actscheduled.h"
 #include "actplanting.h"
+#include "actthinning.h"
 
 namespace ABE {
 
@@ -416,6 +417,9 @@ Activity *Activity::createActivity(const QString &type, FMSTP *stp)
 
     if (type=="salvage")
         act = new ActSalvage(stp);
+
+    if (type=="thinning")
+        act = new ActThinning(stp);
 
     if (!act) {
         throw IException(QString("Error: the activity type '%1' is not a valid type.").arg(type));
