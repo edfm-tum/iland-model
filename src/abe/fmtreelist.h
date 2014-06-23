@@ -57,7 +57,7 @@ public slots:
     /** manage 'fraction' of all trees [0..1] with 'filter'. Return number of removed trees. */
     int harvest(QString filter=QString(), double fraction=1.);
 
-//    double percentile(int pct); ///< get value for the pct th percentile (1..100)
+    double percentile(int pct); ///< get value for the pct th percentile (1..100)
 //    void killSaplings(MapGridWrapper *wrap, int key); ///< kill all saplings that are on the area denoted by 'key' of the given grid (script access)
 
     /** hacky access function to resource units covered by a polygon.
@@ -67,10 +67,10 @@ public slots:
       @param slash_fraction 0: no change, 1: 100%
        */
 //    void slashSnags(MapGridWrapper *wrap, int key, double slash_fraction);
-//    void sort(QString statement); ///< sort trees in the list according to a criterion
+    void sort(QString statement); ///< sort trees in the list according to a criterion
 //    int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
 //    int filterIdList(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
-//    void randomize(); ///< random shuffle of all trees in the list
+    void randomize(); ///< random shuffle of all trees in the list
 
     /// calculate the mean value for all trees in the internal list for 'expression' (filtered by the filter criterion)
     double mean(QString expression, QString filter=QString()) { return aggregate_function( expression, filter, "mean"); }
@@ -110,6 +110,8 @@ private:
     Expression *mRunGridCustom;
     double *mRunGridCustomCell;
     friend void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *list);
+
+    friend class ActThinning;
 };
 
 } // namespace

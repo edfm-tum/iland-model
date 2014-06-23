@@ -312,7 +312,7 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     deviationDecayRate = 1. - deviationDecayRate; // if eg value is 0.05 -> multiplier 0.95
     if (!minPriorityFormula)
         minPriorityFormula = new Expression();
-    minPriorityFormula->setExpression(FMSTP::valueFromJs(jsvalue, "minPriorityFormula","1").toString());
+    minPriorityFormula->setExpression(FMSTP::valueFromJs(jsvalue, "minPriorityFormula","x^4").toString());
     balanceWorkload = FMSTP::valueFromJs(jsvalue, "balanceWorkload", "0.5").toNumber();
     useScheduler = true;
 

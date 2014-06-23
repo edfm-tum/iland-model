@@ -125,7 +125,7 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
     int index_to = limit(int(pctto/100. * mTrees.count()), 0, mTrees.count()-1);
     if (index_from>=index_to)
         return 0;
-    qDebug() << "attempting to remove" << number << "trees between indices" << index_from << "and" << index_to;
+    //qDebug() << "attempting to remove" << number << "trees between indices" << index_from << "and" << index_to;
     int i;
     int count = number;
     if (index_to-index_from <= number)  {
@@ -154,7 +154,8 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
         int cancel = 1000;
         while(number>=0) {
             int rnd_index = irandom(index_from, index_to);
-            if (mTrees[rnd_index].first->isDead()) {
+            Tree *tree = mTrees[rnd_index].first;
+            if (tree->isDead() || tree->isMarkedForHarvest() || tree->isMarkedForCut()) {
                 if (--cancel<0) {
                     qDebug() << "Management::kill: canceling search." << number << "trees left.";
                     count-=number; // not all trees were killed
@@ -166,20 +167,21 @@ int FMTreeList::remove_percentiles(int pctfrom, int pctto, int number, bool mana
             number--;
             if (management) {
                 if (simulate()) {
-                    mTrees[rnd_index].first->markForHarvest(true);
-                    mStand->addScheduledHarvest( mTrees[rnd_index].first->volume());
+                    tree->markForHarvest(true);
+                    mStand->addScheduledHarvest( tree->volume());
                 } else
-                    mTrees[rnd_index].first->remove( removeFoliage(), removeBranch(), removeStem() );
+                    tree->remove( removeFoliage(), removeBranch(), removeStem() );
             } else {
                 if (simulate()) {
-                    mTrees[rnd_index].first->markForCut(true);
-                    mStand->addScheduledHarvest( mTrees[rnd_index].first->volume());
+                    tree->markForCut(true);
+                    mStand->addScheduledHarvest( tree->volume());
                 } else
-                    mTrees[rnd_index].first->remove();
+                    tree->remove();
             }
         }
     }
-    qDebug() << count << "removed.";
+    if (mStand && mStand->trace())
+        qCDebug(abe) << "FMTreeList::remove_percentiles:" << count << "removed.";
     // clean up the tree list...
     for (int i=mTrees.count()-1; i>=0; --i) {
         if (mTrees[i].first->isDead())
@@ -277,6 +279,49 @@ double FMTreeList::aggregate_function(QString expression, QString filter, QStrin
     return 0.;
 
 }
+
+
+bool treePairValue(const QPair<Tree*, double> &p1, const QPair<Tree*, double> &p2)
+{
+    return p1.second < p2.second;
+}
+
+void FMTreeList::sort(QString statement)
+{
+    TreeWrapper tw;
+    Expression sorter(statement, &tw);
+    // fill the "value" part of the tree storage with a value for each tree
+    for (int i=0;i<mTrees.count(); ++i) {
+        tw.setTree(mTrees.at(i).first);
+        mTrees[i].second = sorter.execute();
+   }
+   // now sort the list....
+   qSort(mTrees.begin(), mTrees.end(), treePairValue);
+}
+
+double FMTreeList::percentile(int pct)
+{
+    if (mTrees.count()==0)
+        return -1.;
+    int idx = int( (pct/100.) * mTrees.count());
+    if (idx>=0 && idx<mTrees.count())
+        return mTrees.at(idx).second;
+    else
+        return -1;
+}
+
+/// random shuffle of all trees in the list
+void FMTreeList::randomize()
+{
+    // fill the "value" part of the tree storage with a random value for each tree
+    for (int i=0;i<mTrees.count(); ++i) {
+        mTrees[i].second = drandom();
+    }
+    // now sort the list....
+    qSort(mTrees.begin(), mTrees.end(), treePairValue);
+
+}
+
 
 void FMTreeList::prepareGrids()
 {
