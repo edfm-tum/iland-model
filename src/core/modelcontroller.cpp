@@ -528,7 +528,7 @@ void ModelController::removeLayers(const LayeredGridBase *layers)
         mViewerWindow->removeLayers(layers);
     //qDebug() << layers->names();
 #else
-    Q_UNUSED(layers); Q_UNUSED(name);
+    Q_UNUSED(layers);
 #endif
 }
 

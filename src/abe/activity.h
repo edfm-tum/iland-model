@@ -2,6 +2,7 @@
 #define ACTIVITY_H
 #include <QJSValue>
 #include <QVector>
+#include <QMap>
 
 class Expression; // forward
 
