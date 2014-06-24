@@ -13,7 +13,11 @@ QT       += qml
 
 INCLUDEPATH += ../core \
     ../tools \
-    ../output
+    ../output \
+    ../abe \
+    ../abe/output \
+    ../iland
+
 
 DEPENDPATH += plugins
 CONFIG += exceptions
@@ -126,18 +130,29 @@ SOURCES += main.cpp \
     ../3rdparty/SimpleRNG.cpp \
     ../output/snapshot.cpp \
     ../tools/spatialanalysis.cpp \
-    ../amie/activity.cpp \
-    ../amie/forestmanagementengine.cpp \
-    ../amie/knowledgebase.cpp \
     ../tools/statdata.cpp \
     ../tools/debugtimer.cpp \
     ../tools/viewport.cpp \
-    ../amie/fomewrapper.cpp \
-    ../amie/fmstand.cpp \
-    ../amie/agent.cpp \
-    ../amie/fmunit.cpp \
-    ../amie/agenttype.cpp \
-    ../amie/fomescript.cpp
+    ../abe/fomewrapper.cpp \
+    ../abe/fmstand.cpp \
+    ../abe/agent.cpp \
+    ../abe/fmunit.cpp \
+    ../abe/agenttype.cpp \
+    ../abe/fomescript.cpp \
+    ../abe/activity.cpp \
+    ../abe/forestmanagementengine.cpp \
+    ../abe/fmstp.cpp \
+    ../abe/thinning.cpp \
+    ../abe/actgeneral.cpp \
+    ../abe/abegrid.cpp \
+    ../abe/scheduler.cpp \
+    ../abe/fmtreelist.cpp \
+    ../abe/actscheduled.cpp \
+    ../abe/actplanting.cpp \
+    ../abe/actsalvage.cpp \
+    ../abe/output/unitout.cpp \
+    ../abe/output/abestandout.cpp \
+    ../abe/actthinning.cpp
 
 HEADERS += \
     consoleshell.h \
@@ -209,18 +224,31 @@ HEADERS += \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
     ../tools/spatialanalysis.h \
-    ../amie/activity.h \
-    ../amie/forestmanagementengine.h \
-    ../amie/knowledgebase.h \
-    ../amie/amie_global.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
     ../tools/viewport.h \
-    ../amie/fomewrapper.h \
-    ../amie/fmstand.h \
-    ../amie/agent.h \
-    ../amie/fmunit.h \
-    ../amie/agenttype.h \
-    ../amie/fomescript.h
+    ../abe/activity.h \
+    ../abe/forestmanagementengine.h \
+    ../abe/abe_global.h \
+    ../abe/fomewrapper.h \
+    ../abe/fmstand.h \
+    ../abe/agent.h \
+    ../abe/fmunit.h \
+    ../abe/agenttype.h \
+    ../abe/fomescript.h \
+    ../output/landscapeout.h \
+    ../abe/fmstp.h \
+    ../abe/thinning.h \
+    ../abe/actgeneral.h \
+    ../abe/abegrid.h \
+    ../abe/scheduler.h \
+    ../abe/fmtreelist.h \
+    ../abe/actscheduled.h \
+    ../abe/actplanting.h \
+    ../abe/actsalvage.h \
+    ../abe/output/unitout.h \
+    ../abe/output/abestandout.h \
+    ../abe/actthinning.h
+
 
 
