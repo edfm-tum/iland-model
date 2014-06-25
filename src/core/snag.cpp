@@ -225,10 +225,13 @@ double Snag::calculateClimateFactors()
 void Snag::calculateYear()
 {
     mSWDtoSoil.clear();
+
+    // calculate anyway, because also the soil module needs it (and currently one can have Snag and Soil only as a couple)
+    calculateClimateFactors();
+    const double climate_factor_re = mClimateFactor;
+
     if (isEmpty()) // nothing to do
         return;
-
-    const double climate_factor_re = calculateClimateFactors(); // calculate anyway, because also the soil module needs it (and currently one can have Snag and Soil only as a couple)
 
     // process branches: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mOtherWood[mBranchCounter];
