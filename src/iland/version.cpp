@@ -1,5 +1,5 @@
 const char *version = "0.8.602";
-const char *svn_revision = "855";
+const char *svn_revision = "902";
 const char *currentVersion(){ return version;}
 const char *svnRevision(){ return svn_revision;}
 
