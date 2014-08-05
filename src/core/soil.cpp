@@ -198,10 +198,15 @@ void Soil::calculateYear()
 
 
     // calculate plant available nitrogen
-    double nav = mKyl*mRE*(1.-mH)/(1.-sp.el) * (mYL.N - sp.el*mYL.C/sp.qb); // N from labile...
-    nav += mKyr*mRE*(1-mH)/(1.-sp.er)* (mYR.N - sp.er*mYR.C/sp.qb); // + N from refractory...
-    nav += mKo*mRE*mSOM.N*(1.-sp.leaching); // + N from SOM pool (reduced by leaching (leaching modeled only from slow SOM Pool))
-    mAvailableNitrogen = nav * 1000.; // from t/ha -> kg/ha
+    mAvailableNitrogenFromLabile = mKyl*mRE*(1.-mH)/(1.-sp.el) * (mYL.N - sp.el*mYL.C/sp.qb);  // N from labile...
+    mAvailableNitrogenFromRefractory = mKyr*mRE*(1-mH)/(1.-sp.er)* (mYR.N - sp.er*mYR.C/sp.qb); // + N from refractory...
+    double nav_from_som = mKo*mRE*mSOM.N*(1.-sp.leaching); // + N from SOM pool (reduced by leaching (leaching modeled only from slow SOM Pool))
+
+    mAvailableNitrogenFromLabile *= 1000.; // t/ha -> kg/ha
+    mAvailableNitrogenFromRefractory *= 1000.; // t/ha -> kg/ha
+    nav_from_som *= 1000.; // t/ha -> kg/ha
+
+    mAvailableNitrogen = mAvailableNitrogenFromLabile + mAvailableNitrogenFromRefractory + nav_from_som;
 
     if (mAvailableNitrogen<0.)
         mAvailableNitrogen = 0.;
@@ -226,7 +231,7 @@ QList<QVariant> Soil::debugList()
     // (2) states
     list << mKyl << mKyr << mYL.C << mYL.N << mYR.C << mYR.N << mSOM.C << mSOM.N;
     // (3) nav
-    list << mAvailableNitrogen;
+    list << mAvailableNitrogen << mAvailableNitrogenFromLabile << mAvailableNitrogenFromRefractory << (mAvailableNitrogen-mAvailableNitrogenFromLabile-mAvailableNitrogenFromRefractory);
     return list;
 }
 
