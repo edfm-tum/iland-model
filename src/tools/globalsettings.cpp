@@ -291,7 +291,8 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                 << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" << "dbh2" << "height2" << "volume2"   // standing woody debris medium dbhs
                 << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n" << "dbh3" << "height3" << "volume3"   // large trees
                 << "otherWood1_c" << "otherWood1_n" << "otherWood2_c" << "otherWood2_n" << "otherWood3_c" << "otherWood3_n" << "otherWood4_c" << "otherWood4_n" << "otherWood5_c" << "otherWood5_n"
-                   << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN" << "NAvailable";
+                   << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN"
+                   << "NAvailable" << "NAVLab" << "NAVRef" << "NAVSom";
     case dPerformance: return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
                 << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "saplingGrowthEstablishment" << "carbonCycle"
                 << "writeOutput" << "totalYear";
