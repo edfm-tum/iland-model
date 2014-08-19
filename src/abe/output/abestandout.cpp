@@ -10,33 +10,37 @@ namespace ABE {
 
 ABEStandOut::ABEStandOut()
 {
-    setName("Annual harvests on stand level.", "abeStand");
+    setName("Annual stand output (state).", "abeStand");
     setDescription("This output provides details about realized timber harvests on stand level. " \
                    "The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning, final, and disturbed volume.");
     columns() << OutputColumn::year()
               << OutputColumn("unitid", "unique identifier of the planning unit", OutString)
               << OutputColumn("standid", "unique identifier of the forest stand", OutInteger)
               << OutputColumn("area", "total area of the forest stand (ha)", OutDouble)
-              << OutputColumn("activity", "name of the management activity that is executed", OutString)
-              << OutputColumn("volumeAfter", "standing timber volume after the harvest operation (m3/ha)", OutDouble)
-              << OutputColumn("volumeThinning", "removed timber volume due to thinning, m3/ha", OutDouble)
-              << OutputColumn("volumeFinal", "removed timber volume due to final harvests (regeneration cuts) and due to salvage operations, m3/ha", OutDouble)
-              << OutputColumn("volumeDisturbed", "disturbed trees on the stand, m3/ha. Note: all killed trees are recorded here, even if not 100% of those trees are salvaged (due to size constraints)", OutDouble);
+              << OutputColumn("volume", "standing timber volume (after harvests of the year) (m3/ha)", OutDouble)
+              << OutputColumn("basalarea", "basal area (trees >4m) (m2/ha)", OutDouble)
+              << OutputColumn("dbh", "mean diameter (basal area weighted, of trees >4m) (cm)", OutDouble)
+              << OutputColumn("height", "mean stand tree height (basal area weighted, of trees >4m)(cm)", OutDouble)
+              << OutputColumn("stems", "number of trees (trees >4m) per ha", OutDouble)
+                 ;
 }
 
 void ABEStandOut::exec()
 {
-    foreach(const FMStand *stand, ForestManagementEngine::instance()->stands()) {
-        if (stand->totalHarvest()>0.) {
-            *this << currentYear();
-            *this << stand->unit()->id() << stand->id() << stand->area();
-            *this << (stand->lastExecutedActivity()?stand->lastExecutedActivity()->name():QString());
-            *this << qRound(stand->volume()*100.)/100. << stand->totalThinningHarvest() / stand->area() //  thinning alone
-                                     << (stand->totalHarvest() - stand->totalThinningHarvest() ) / stand->area() // final harvests (including salvage operations)
-                                     << stand->disturbedTimber() / stand->area();  // disturbed trees on the stand
+    foreach(FMStand *stand, ForestManagementEngine::instance()->stands()) {
 
-            writeRow();
-        }
+        // Note: EXPENSIVE reload operation for every stand and every year....
+        stand->reload();
+
+        *this << currentYear();
+        *this << stand->unit()->id() << stand->id() << stand->area();
+        *this << qRound(stand->volume()*100.)/100.;
+        *this << qRound(stand->basalArea()*100.)/100.;
+        *this << qRound(stand->dbh()*100.)/100.;
+        *this << qRound(stand->height()*100.)/100.;
+        *this << qRound(stand->stems());
+        writeRow();
+
     }
 }
 

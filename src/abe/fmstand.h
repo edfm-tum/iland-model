@@ -61,6 +61,10 @@ public:
     double volume() const {return mVolume; }
     /// number of trees of the stand (stems/ha) (>4m)
     double stems() const {return mStems; }
+    /// mean dbh (basal area weighted, of trees>4m) in cm
+    double dbh() const {return mDbh; }
+    /// mean tree height (basal area weighted, of trees>4m), in m
+    double height() const {return mHeight; }
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
     /// total realized harvest (m3 on the full stand area) (note: salvage harvest ist part of final harvest)
@@ -128,9 +132,11 @@ private:
     Activity::Phase mPhase; ///< silvicultural phase
     int mStandType; ///< enumeration of stand (compositional)
     double mTotalBasalArea; ///< basal area of the stand
-    double mAge; ///< average age (yrs) of the stand
+    double mAge; ///< average age (yrs) of the stand (basal area weighted)
     double mVolume; ///< standing volume (m3/ha) of the stand
     double mStems; ///< stems per ha (above 4m)
+    double mDbh; ///< mean dbh (basal area weighted, of trees>4m) in cm
+    double mHeight; ///< mean tree height (basal area weighted, of trees>4m), in m
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
     double mFinalHarvested; ///< m3 of timber volume that has been harvested (regeneration phase)
     double mThinningHarvest; ///< m3 of timber that was harvested for thinning/tending

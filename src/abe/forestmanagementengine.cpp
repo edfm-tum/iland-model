@@ -16,6 +16,7 @@
 
 #include "unitout.h"
 #include "abestandout.h"
+#include "abestandremovalout.h"
 
 #include "debugtimer.h"
 
@@ -131,6 +132,7 @@ void ForestManagementEngine::setupOutputs()
         return; // already set up
     GlobalSettings::instance()->outputManager()->addOutput(new UnitOut);
     GlobalSettings::instance()->outputManager()->addOutput(new ABEStandOut);
+    GlobalSettings::instance()->outputManager()->addOutput(new ABEStandRemovalOut);
 }
 
 AgentType *ForestManagementEngine::agentType(const QString &name)
@@ -397,6 +399,7 @@ void ForestManagementEngine::run(int debug_year)
     // create outputs
     GlobalSettings::instance()->outputManager()->execute("abeUnit");
     GlobalSettings::instance()->outputManager()->execute("abeStand");
+    GlobalSettings::instance()->outputManager()->execute("abeStandRemoval");
 
     finalizeRun();
 
@@ -501,7 +504,9 @@ void ForestManagementEngine::addTreeRemoval(Tree *tree, int reason)
 {
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
-    mFMStandGrid.valueAt(tree->position())->addTreeRemoval(tree, reason);
+    FMStand *stand = mFMStandGrid.valueAt(tree->position());
+    if (stand)
+        stand->addTreeRemoval(tree, reason);
 }
 
 QMutex protect_split;

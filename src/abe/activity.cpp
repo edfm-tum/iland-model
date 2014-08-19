@@ -338,7 +338,8 @@ bool Constraints::constraint_item::evaluate(FMStand *stand) const
             FOMEWrapper wrapper(stand);
             double result;
             try {
-            result = expr->calculate(wrapper);
+                result = expr->execute(0, &wrapper); // using execute, we're in strict mode, i.e. wrong variables are reported.
+                //result = expr->calculate(wrapper);
             } catch (IException &e) {
                 // throw a nicely formatted error message
                 e.add(QString("in filter (expr: '%2') for stand %1.").
