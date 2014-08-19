@@ -167,7 +167,7 @@ bool ActPlanting::execute(FMStand *stand)
                 p.setX(qMax(p.x(),0)); p.setY(qMax(p.y(),0));
 
                 int n_ha = mItems[s].group_random_count * box.width()*box.height()/10000.;
-                bool do_random = n_ha>0;
+                bool do_random = mItems[s].group_random_count>0;
 
                 while( p.x() < p_end.x() && p.y() < p_end.y()) {
                     if (do_random) {

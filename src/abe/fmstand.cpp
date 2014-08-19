@@ -35,6 +35,8 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mAge = 0.;
     mTotalBasalArea = 0.;
     mStems = 0.;
+    mDbh = 0.;
+    mHeight = 0.;
     mScheduledHarvest = 0.;
     mFinalHarvested = 0.;
     mThinningHarvest = 0.;
@@ -143,6 +145,8 @@ void FMStand::reload(bool force)
     mVolume = 0.;
     mAge = 0.;
     mStems = 0.;
+    mDbh = 0.;
+    mHeight = 0.;
     mLastUpdate = ForestManagementEngine::instance()->currentYear();
     mSpeciesData.clear();
 
@@ -160,12 +164,16 @@ void FMStand::reload(bool force)
         mTotalBasalArea+=ba;
         mVolume += it->first->volume() * area_factor;
         mAge += it->first->age()*ba;
+        mDbh += it->first->dbh()*ba;
+        mHeight += it->first->dbh()*ba;
         mStems++;
         SSpeciesStand &sd = speciesData(it->first->species());
         sd.basalArea += ba;
     }
     if (mTotalBasalArea>0.) {
         mAge /= mTotalBasalArea;
+        mDbh /= mTotalBasalArea;
+        mHeight /= mTotalBasalArea;
         for (int i=0;i<mSpeciesData.count();++i) {
             mSpeciesData[i].relBasalArea =  mSpeciesData[i].basalArea / mTotalBasalArea;
         }
@@ -222,6 +230,10 @@ bool FMStand::execute()
     if (p_schedule == -1.) {
         if (trace())
             qCDebug(abe)<< context()  << "*** Activity expired. ***";
+        // cancel the activity
+        currentFlags().setActive(false);
+        afterExecution(true);
+        return false;
     }
     if (p_schedule>=0. && p_schedule < 0.00001) {
         if (trace())
@@ -361,7 +373,7 @@ bool FMStand::afterExecution(bool cancel)
 void FMStand::addTreeRemoval(Tree *tree, int reason)
 {
     double removed_volume = tree->volume();
-    mVolume -= removed_volume;
+    mVolume -= removed_volume/area();
 
     // for MAI calculations: store removal regardless of the reason
     mRemovedVolumeDecade+=removed_volume / area();

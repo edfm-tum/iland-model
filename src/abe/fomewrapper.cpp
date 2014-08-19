@@ -10,7 +10,7 @@ namespace ABE {
 // (1) variables of activites
 
 // (2) stand variables
-QStringList standVarList=QStringList() << "basalArea" << "age"  << "absoluteAge" << "nspecies" << "volume";
+QStringList standVarList=QStringList() << "basalArea" << "age"  << "absoluteAge" << "nspecies" << "volume" << "dbh" << "height";
 
 // (3) site variables
 QStringList siteVarList=QStringList() << "annualIncrement" << "harvestMode" << "U";
@@ -55,13 +55,15 @@ double FOMEWrapper::value(const int variableIndex)
 
 double FOMEWrapper::valueStand(const int variableIndex)
 {
-    //<< "basalArea" << "age"  << "absoluteAge" << "speciesCount" << "volume"
+    //<< "basalArea" << "age"  << "absoluteAge" << "speciesCount" << "volume" << dbh << height
     switch (variableIndex) {
     case 0: return mStand->basalArea(); // "basalArea"
     case 1: return mStand->age(); // mean age, "age"
     case 2: return mStand->absoluteAge(); // years since begin of rotation, "absoluteAge"
     case 3: return mStand->nspecies(); // species richness, "nspecies"
     case 4: return mStand->volume(); // total standing volume, m3/ha, "volume"
+    case 5: return mStand->dbh(); // mean dbh
+    case 6: return mStand->height(); // "height" (m)
     default: return 0;
     }
 }

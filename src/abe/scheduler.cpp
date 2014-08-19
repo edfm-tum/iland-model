@@ -65,6 +65,10 @@ void Scheduler::run()
         if (item->score == 0.) {
             if (item->stand->trace())
                 qCDebug(abe) << item->stand->context() << "dropped activity" << item->flags->activity()->name() << "from scheduler.";
+
+            item->flags->setIsPending(false);
+            item->flags->setActive(false);
+
             item->stand->afterExecution(true); // execution canceled
             it = mItems.erase(it);
             delete item;
@@ -279,6 +283,9 @@ void Scheduler::SchedulerItem::calculate()
         score = 1.1; // above 1
     else
         score = scheduleScore * harvestScore;
+
+    if (score<0.)
+        score = 0.;
 }
 
 
