@@ -148,7 +148,7 @@ bool FomeScript::addManagement(QJSValue program, QString name)
         return true;
     } catch (const IException &e) {
         qCWarning(abe) << e.message();
-        ForestManagementEngine::instance()->abortExecution("Error in adding management.");
+        ForestManagementEngine::instance()->abortExecution(QString("Error in adding management.\n%1").arg(e.message()));
         return false;
     }
 }
@@ -162,7 +162,7 @@ bool FomeScript::addAgent(QJSValue program, QString name)
         return true;
     } catch (const IException &e) {
         qCWarning(abe) << e.message();
-        ForestManagementEngine::instance()->abortExecution("Error in adding agent definition.");
+        ForestManagementEngine::instance()->abortExecution(QString("Error in adding agent definition.\n%1").arg(e.message()));
         return false;
     }
 

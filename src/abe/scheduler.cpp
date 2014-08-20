@@ -24,13 +24,18 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     SchedulerItem *item = new SchedulerItem();
     item->stand = stand;
     item->flags = flags;
-    item->harvest = stand->scheduledHarvest();
-    item->harvestPerHa = stand->scheduledHarvest() / stand->area();
+    item->enterYear = ForestManagementEngine::instance()->currentYear();
+    item->optimalYear = item->enterYear + flags->activity()->optimalSchedule(stand->stp()->rotationLength())- stand->absoluteAge();
+    // estimate growth from now to the optimal time - we assume that growth of the last decade continues
+    int t = item->optimalYear - item->enterYear; // in t years harvest is optimal
+    double time_factor = 0.;
+    if (stand->volume()>0.)
+        time_factor = t* stand->meanAnnualIncrement()/stand->volume();
+    item->harvest = stand->scheduledHarvest() * (1. + time_factor);
+    item->harvestPerHa = item->harvest / stand->area();
     item->harvestType = flags->isFinalHarvest()? EndHarvest : Thinning;
     item->scheduleScore = prob_schedule;
     item->harvestScore = prob_execute;
-    item->enterYear = ForestManagementEngine::instance()->currentYear();
-    item->optimalYear = item->enterYear + flags->activity()->optimalSchedule(stand->stp()->rotationLength())- stand->absoluteAge();
     item->forbiddenTo = 0;
     item->calculate(); // set score
     mItems.push_back(item);
@@ -54,7 +59,7 @@ void Scheduler::run()
     QList<SchedulerItem*>::iterator it = mItems.begin();
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
-        harvest_in_queue += item->stand->scheduledHarvest();
+        harvest_in_queue += item->harvest;
         double p_sched = item->flags->activity()->scheduleProbability(item->stand);
         item->scheduleScore = p_sched;
         item->calculate();
@@ -111,8 +116,8 @@ void Scheduler::run()
 
             // execute activity:
             if (item->stand->trace())
-                qCDebug(abe) << item->stand->context() << "execute activity" << item->flags->activity()->name() << "score" << item->score << "planned harvest:" << item->stand->scheduledHarvest();
-            harvest_scheduled += item->stand->scheduledHarvest();
+                qCDebug(abe) << item->stand->context() << "execute activity" << item->flags->activity()->name() << "score" << item->score << "planned harvest:" << item->harvest;
+            harvest_scheduled += item->harvest;
 
             bool executed = item->flags->activity()->execute(item->stand);
             if (final_harvest)
