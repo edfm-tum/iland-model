@@ -280,6 +280,27 @@ double FMTreeList::aggregate_function(QString expression, QString filter, QStrin
 
 }
 
+bool FMTreeList::remove_single_tree(int index, bool harvest)
+{
+    if (!mStand || index<0 || index>=mTrees.size())
+        return false;
+    Tree *tree = mTrees.at(index).first;
+    if (harvest) {
+        if (simulate()) {
+            tree->markForHarvest(true);
+            mStand->addScheduledHarvest( tree->volume());
+        } else
+            tree->remove( removeFoliage(), removeBranch(), removeStem() );
+    } else {
+        if (simulate()) {
+            tree->markForCut(true);
+            mStand->addScheduledHarvest(  tree->volume());
+        } else
+            tree->remove();
+    }
+    return true;
+}
+
 
 bool treePairValue(const QPair<Tree*, double> &p1, const QPair<Tree*, double> &p2)
 {

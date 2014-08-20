@@ -47,6 +47,9 @@ FMStand::FMStand(FMUnit *unit, const int id)
 
     mCurrentIndex=-1;
     mLastExecutedIndex=-1;
+
+    mArea = ForestManagementEngine::standGrid()->area(mId)/10000.;
+
 }
 
 void FMStand::initialize(FMSTP *stp)
@@ -184,10 +187,7 @@ void FMStand::reload(bool force)
 }
 
 // return stand area in ha
-double FMStand::area() const
-{
-    return ForestManagementEngine::standGrid()->area(mId)/10000.;
-}
+
 
 double FMStand::absoluteAge() const
 {
@@ -417,7 +417,7 @@ double FMStand::calculateMAI()
     mLastMAIVolume = mVolume;
     // reset counters
     mRemovedVolumeDecade = 0.;
-    return mMAItotal;
+    return meanAnnualIncrementTotal();
 }
 
 double FMStand::basalArea(const QString &species_id) const

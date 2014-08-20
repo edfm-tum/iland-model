@@ -50,7 +50,7 @@ public:
     int lastUpdate() const { return mLastUpdate; }
     int lastExecution() const { return mLastExecution; }
     /// total area of the stand (ha)
-    double area() const;
+    double area() const    {  return mArea; }
     /// absolute age: years since the rotation has started
     double absoluteAge() const;
     /// total basal area (m2/ha)
@@ -75,9 +75,9 @@ public:
     double disturbedTimber() const { return mDisturbed; }
 
     /// mean annual increment (MAI), m3 timber/ha for the last decade
-    double meanAnnualIncrement() const { return mMAIdecade / area(); }
+    double meanAnnualIncrement() const { return mMAIdecade; }
     /// mean annual increment (MAI), m3 timber/ha for the full rotation period
-    double meanAnnualIncrementTotal() const { return mMAItotal / area(); }
+    double meanAnnualIncrementTotal() const { return mMAItotal; }
 
     bool readyForFinalHarvest() { return currentActivity()?(currentFlags().isFinalHarvest() && currentFlags().isScheduled()):false; }
 
@@ -131,6 +131,7 @@ private:
     FMSTP *mSTP; ///< the stand treatment program assigned to this stand
     Activity::Phase mPhase; ///< silvicultural phase
     int mStandType; ///< enumeration of stand (compositional)
+    double mArea; ///< total stand area (m3)
     double mTotalBasalArea; ///< basal area of the stand
     double mAge; ///< average age (yrs) of the stand (basal area weighted)
     double mVolume; ///< standing volume (m3/ha) of the stand

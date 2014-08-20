@@ -31,9 +31,10 @@ signals:
 
 public slots:
     // loading of trees
-    /// load all trees of the stand, return number of trees
+    /// load all trees of the stand, return number of trees (living trees)
     int loadAll() { return load(QString()); }
-    int load(const QString &filter); ///< load all trees passing the filter in a list, return number of trees
+    /// load all trees passing the filter, return number of trees (load only living trees)
+    int load(const QString &filter);
 
     /// load all trees of the stand and either kill or harvest trees that are marked for that operation.
     int removeMarkedTrees();
@@ -90,6 +91,7 @@ private:
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
+    bool remove_single_tree(int index, bool harvest=true);
 
     // grid functions
     void prepareGrids();

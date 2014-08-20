@@ -348,7 +348,7 @@ void SeedDispersal::createKernel(Grid<float> &kernel, const float max_seed)
 }
 
 /* R-Code:
-treemig=function(as1,as2,ks,d) # two-part exponential function, cf. Lischke & Löffler (2006), Annex
+treemig=function(as1,as2,ks,d) # two-part exponential function, cf. Lischke & Loeffler (2006), Annex
         {
         p1=(1-ks)*exp(-d/as1)/as1
         if(as2>0){p2=ks*exp(-d/as2)/as2}else{p2=0}
