@@ -211,7 +211,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         tree_counts[class_index]++;
         total_value += target_dbh?1.:it->second; // e.g., sum of volume in the class, or simply count
     }
-    percentiles.last()=n+1;
+    while (class_index<percentiles.size())
+        percentiles[class_index++]=n+1;
 
     double target_value=0.;
     if (custom.targetRelative)
@@ -292,6 +293,8 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
     // pct_min, pct_max: the indices of the first and last tree in the list to be looked for, including pct_max
     // seek a tree in the class 'cls' (which has not already been removed);
     int idx;
+    if (pct_max<pct_min)
+        return -1;
     // search randomly for a couple of times
     for (int i=0;i<5;i++) {
         idx = irandom(pct_min, pct_max);

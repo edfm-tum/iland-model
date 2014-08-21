@@ -154,7 +154,7 @@ SOURCES += main.cpp \
     ../abe/actsalvage.cpp \
     ../abe/output/unitout.cpp \
     ../abe/output/abestandout.cpp \
-#    ../abe/output/abestandremovalout.cpp \
+    ../abe/output/abestandremovalout.cpp \
     ../abe/actthinning.cpp
 HEADERS += mainwindow.h \
     stable.h \
@@ -251,7 +251,7 @@ HEADERS += mainwindow.h \
     ../abe/actsalvage.h \
     ../abe/output/unitout.h \
     ../abe/output/abestandout.h \
-#    ../abe/output/abestandremovalout.h \
+    ../abe/output/abestandremovalout.h \
     ../abe/actthinning.h
 FORMS += mainwindow.ui \
     aboutdialog.ui

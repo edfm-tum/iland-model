@@ -19,6 +19,7 @@ public:
 
     explicit FMTreeList(QObject *parent = 0);
     explicit FMTreeList(FMStand *stand, QObject *parent = 0);
+    ~FMTreeList();
     int standId() const { return mStandId; }
     void setStand(FMStand *stand);
     bool simulate() const {return mOnlySimulate; }
@@ -92,6 +93,7 @@ private:
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
     bool remove_single_tree(int index, bool harvest=true);
+    void check_locks();
 
     // grid functions
     void prepareGrids();
@@ -101,6 +103,7 @@ private:
     void runGrid(void (*func)(float &, int &, const Tree *, const FMTreeList *) );
 
     QVector<QPair<Tree*, double> > mTrees; ///< store a Tree-pointer and a value (e.g. for sorting)
+    bool mResourceUnitsLocked;
     int mRemoved;
     FMStand *mStand; /// the stand the list is currently connected
     int mStandId; ///< link to active stand
