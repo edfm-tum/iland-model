@@ -469,13 +469,14 @@ void FMTreeList::exportStandGrid(QString file_name)
 
 void FMTreeList::check_locks()
 {
-    if (mStand && mResourceUnitsLocked) {
-        const MapGrid *map = ForestManagementEngine::instance()->standGrid();
-        if (map->isValid()) {
-            map->freeLocksForStand(mStandId);
-            mResourceUnitsLocked = false;
-        }
-    }
+    // removed the locking code again, WR20140821
+//    if (mStand && mResourceUnitsLocked) {
+//        const MapGrid *map = ForestManagementEngine::instance()->standGrid();
+//        if (map->isValid()) {
+//            map->freeLocksForStand(mStandId);
+//            mResourceUnitsLocked = false;
+//        }
+//    }
 }
 
 } // namespace

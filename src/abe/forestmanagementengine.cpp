@@ -162,7 +162,7 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         it.value()->stp()->executeRepeatingActivities(it.value());
         if (it.value()->execute())
             ++executed;
-        MapGrid::freeLocksForStand( it.value()->id() );
+        //MapGrid::freeLocksForStand( it.value()->id() );
         if (ForestManagementEngine::instance()->isCancel())
             break;
 

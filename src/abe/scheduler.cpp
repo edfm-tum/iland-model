@@ -131,7 +131,7 @@ void Scheduler::run()
                 item->stand->afterExecution(!executed); // check what comes next for the stand
             }
             no_executed++;
-            MapGrid::freeLocksForStand( item->stand->id() );
+            //MapGrid::freeLocksForStand( item->stand->id() );
 
             // flag neighbors of the stand, if a clearcut happened
             // this is to avoid large unforested areas
