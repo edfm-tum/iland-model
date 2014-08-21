@@ -250,8 +250,8 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
         expression ->enableIncSum();
     }
     QList<ResourceUnit*> resource_units = resourceUnits(id);
-    // lock the resource units
-    mapGridLock.lock(id, resource_units);
+    // lock the resource units: removed again, WR20140821
+    // mapGridLock.lock(id, resource_units);
 
     foreach(ResourceUnit *ru, resource_units) {
         foreach(const Tree &tree, ru->constTrees())
