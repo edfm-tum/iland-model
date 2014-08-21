@@ -36,6 +36,76 @@
   location (in LIF-coordinates).
 
   */
+
+/// MapGridRULock is a custom class to serialize (write) access to (the trees of a) resource units.
+///
+class MapGridRULock {
+public:
+    void lock(const int id, QList<ResourceUnit*> &elements);
+    void unlock(const int id);
+private:
+    QHash<ResourceUnit*, int> mLockedElements;
+    QMutex mLock;
+    QWaitCondition mWC;
+};
+static MapGridRULock mapGridLock;
+
+void MapGridRULock::lock(const int id, QList<ResourceUnit *> &elements)
+{
+    // check if one of the elements is already in the LockedElements-list
+    bool ok;
+    do {
+        ok = true;
+        mLock.lock();
+        for (int i=0;i<elements.size();++i)
+            if (mLockedElements.contains(elements[i]))
+                if (mLockedElements[elements[i]] != id){
+                    qDebug() << "MapGridRULock: must wait (" << QThread::currentThread() << id << "). stand with lock: " << mLockedElements[elements[i]] << ".Lock list length" << mLockedElements.size();
+
+                    // we have to wait until
+                    mWC.wait(&mLock);
+                    ok = false;
+                } else {
+                    // this resource unit is already locked for the same stand-id, therefore do nothing
+                    // qDebug() << "MapGridRULock: already locked for (" << QThread::currentThread() << ", stand "<< id <<"). Lock list length" << mLockedElements.size();
+                    mLock.unlock();
+                    return;
+                }
+        mLock.unlock();
+    } while (!ok);
+
+    // now add the elements
+    mLock.lock();
+    for (int i=0;i<elements.size();++i)
+        mLockedElements[elements[i]] = id;
+    //qDebug() << "MapGridRULock:  created lock " << QThread::currentThread() << " for stand" << id << ". lock list length" << mLockedElements.size();
+
+    mLock.unlock();
+}
+
+void MapGridRULock::unlock(const int id)
+{
+    QMutexLocker locker(&mLock); // protect changing the list
+    QMutableHashIterator<ResourceUnit*, int> i(mLockedElements);
+    bool found = false;
+    while (i.hasNext()) {
+        i.next();
+        if (i.value() == id) {
+            i.remove();
+            found = true;
+        }
+    }
+
+    // notify all waiting threads that now something changed....
+    if (found) {
+        //qDebug() << "MapGridRULock: free" << QThread::currentThread() << "for stand " << id << "lock list length" << mLockedElements.size();
+        mWC.wakeAll();
+    }
+
+}
+
+
+
 MapGrid::MapGrid()
 {
 }
@@ -180,6 +250,9 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
         expression ->enableIncSum();
     }
     QList<ResourceUnit*> resource_units = resourceUnits(id);
+    // lock the resource units
+    mapGridLock.lock(id, resource_units);
+
     foreach(ResourceUnit *ru, resource_units) {
         foreach(const Tree &tree, ru->constTrees())
             if (LIFgridValue(tree.positionIndex()) == id && !tree.isDead()) {
@@ -203,6 +276,12 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
         delete expression;
     return rList.size();
 
+}
+
+void MapGrid::freeLocksForStand(const int id)
+{
+    if (id>-1)
+        mapGridLock.unlock(id);
 }
 
 /// return a list of grid-indices of a given stand-id (a grid-index
@@ -287,6 +366,8 @@ void MapGrid::updateNeighborList()
     }
 
 }
+
+
 
 
 

@@ -16,7 +16,7 @@
 
 #include "unitout.h"
 #include "abestandout.h"
-//#include "abestandremovalout.h"
+#include "abestandremovalout.h"
 
 #include "debugtimer.h"
 
@@ -132,7 +132,7 @@ void ForestManagementEngine::setupOutputs()
         return; // already set up
     GlobalSettings::instance()->outputManager()->addOutput(new UnitOut);
     GlobalSettings::instance()->outputManager()->addOutput(new ABEStandOut);
-    //GlobalSettings::instance()->outputManager()->addOutput(new ABEStandRemovalOut);
+    GlobalSettings::instance()->outputManager()->addOutput(new ABEStandRemovalOut);
 }
 
 AgentType *ForestManagementEngine::agentType(const QString &name)
@@ -162,6 +162,7 @@ FMUnit *nc_execute_unit(FMUnit *unit)
         it.value()->stp()->executeRepeatingActivities(it.value());
         if (it.value()->execute())
             ++executed;
+        MapGrid::freeLocksForStand( it.value()->id() );
         if (ForestManagementEngine::instance()->isCancel())
             break;
 

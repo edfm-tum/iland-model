@@ -23,18 +23,28 @@ double removeBranch()  {return 0.;}
 FMTreeList::FMTreeList(QObject *parent) :
     QObject(parent)
 {
+    mStand = 0;
     setStand(0); // clear stand link
+    mResourceUnitsLocked = false;
 
 }
 
 FMTreeList::FMTreeList(FMStand *stand, QObject *parent):
     QObject(parent)
 {
+    mStand = 0;
     setStand(stand);
+    mResourceUnitsLocked = false;
+}
+
+FMTreeList::~FMTreeList()
+{
+    check_locks();
 }
 
 void FMTreeList::setStand(FMStand *stand)
 {
+    check_locks();
     mStand = stand;
     if (stand) {
         mStandId = stand->id();
@@ -46,6 +56,7 @@ void FMTreeList::setStand(FMStand *stand)
         mNumberOfStems = 1000;
         mOnlySimulate = false;
     }
+
 }
 
 
@@ -57,6 +68,7 @@ int FMTreeList::load(const QString &filter)
         const MapGrid *map = ForestManagementEngine::instance()->standGrid();
         if (map->isValid()) {
             map->loadTrees(mStandId, mTrees, filter, mNumberOfStems);
+            mResourceUnitsLocked = true;
         } else {
             qCDebug(abe) << "FMTreeList::load: grid is not valid - no trees loaded";
         }
@@ -454,4 +466,16 @@ void FMTreeList::exportStandGrid(QString file_name)
     Helper::saveToTextFile(file_name, gridToESRIRaster(mStandGrid) );
     qCDebug(abe) << "saved grid to file" << file_name;
 }
+
+void FMTreeList::check_locks()
+{
+    if (mStand && mResourceUnitsLocked) {
+        const MapGrid *map = ForestManagementEngine::instance()->standGrid();
+        if (map->isValid()) {
+            map->freeLocksForStand(mStandId);
+            mResourceUnitsLocked = false;
+        }
+    }
+}
+
 } // namespace

@@ -8,6 +8,8 @@
 #include "scheduler.h"
 #include "agent.h"
 #include "agenttype.h"
+#include "fomescript.h"
+#include "fmtreelist.h"
 
 namespace ABE {
 
@@ -129,6 +131,8 @@ void FMUnit::managementPlanUpdate()
         total_area += area;
         ++it;
     }
+    // reset
+    ForestManagementEngine::instance()->scriptBridge()->treesObj()->setStand(0);
     mTotalArea = total_area;
     if (total_area==0.)
         return;
