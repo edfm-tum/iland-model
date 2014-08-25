@@ -66,6 +66,22 @@
   @return {boolean} true on success.
   */
 
+
+/**
+  Runs a planting activity (without the context of stand treatment programmes). This is especially useful for
+  setting up initial stand conditions. The `planting` defines the activity according to the syntax of the planting activity.
+
+        // global 'onInit' function is called during startup
+        function onInit() {
+            // run a planting activity for the stand 235 (30cm spruce trees on 90% of the pixels)
+            fmengine.runPlanting( 235, { species: "piab", fraction: 0.9, height: 0.3 });
+        }
+
+  @method runPlanting
+  @param {int} standId (integer) of the stand for which a planting activity should be executed.
+  @param {object} planting A javascript object with the definition of the planting activity (see ABE documentation).
+  */
+
 /**
   ABE generates much more detailed log messages, if `verbose` is true. This is generally useful for debugging and
   should be turned off for productive use. Note, that `verbose` mode can switched on for specfic code sections:
@@ -95,6 +111,7 @@
   @type int
   @default -1
   */
+
 
 
 
@@ -163,7 +180,7 @@
 /**
     The age of the stand given in years since the rotation started. At startup, the `absoluteAge` is estimated from
     the `age` of the stand (i.e. the mean age of the initialized trees). Later, the stand age counter is reset
-    by management activities.
+    by management activities. Note that this property is writable.
 
     See also {{#crossLink "Stand/age:property"}}{{/crossLink}}.
 
@@ -233,9 +250,33 @@
 */
 
 
+/**
+  The number of years since the execution of the last activity for the current stand. Value is -1 if no activity was executed previously.
+
+  @property elapsed
+  @type int
+*/
 
 
+/**
+  The name of the last previously executed activity, or an empty string if no activity was executed before. The name can be used to access
+  properties of the activity.
 
+
+           if (stand.lastActivity == "thinning1")
+                stand.activity( stand.lastActivity ).enabled = true; // re-enable last activity if it was 'thinning1'
+
+  @property lastActivity
+  @type string
+*/
+
+/**
+  The rotation length of the current stand. The rotation length is defined by the stand treatment programme that is currently assigned to a given
+  stand. The 'U' is frequently used for timing activites relative to the length of the period.
+
+  @property U
+  @type double
+*/
 
 
 

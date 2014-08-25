@@ -52,11 +52,12 @@ FMStand::FMStand(FMUnit *unit, const int id)
 
 }
 
-void FMStand::initialize(FMSTP *stp)
+void FMStand::initialize()
 {
-    mSTP = stp;
+    if (!mSTP)
+        throw IException(QString("FMStand::initialize, no valid STP for stand %1").arg(id()));
     // copy activity flags
-    mStandFlags = stp->defaultFlags();
+    mStandFlags = mSTP->defaultFlags();
     mCurrentIndex=-1;
     mLastExecutedIndex=-1;
     mYearsToWait=0;
@@ -64,7 +65,8 @@ void FMStand::initialize(FMSTP *stp)
 
     // load data and aggregate averages
     reload();
-    mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age();
+    if (mRotationStartYear==0.) // only set if not explicitely set previously.
+        mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age();
     // when a stand is initialized, we assume that 20% of the standing volume
     // have been removed already.
     mRemovedVolumeTotal = volume() * 0.2;
@@ -85,10 +87,10 @@ void FMStand::initialize(FMSTP *stp)
             continue;
         // set active to false which have already passed
         if (!mStandFlags[i].activity()->isRepeatingActivity()) {
-            if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(stp->rotationLength()) < age()) {
+            if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(mSTP->rotationLength()) < age()) {
                 mStandFlags[i].setActive(false);
             } else {
-                int delta = mStandFlags[i].activity()->earlistSchedule(stp->rotationLength()) - age();
+                int delta = mStandFlags[i].activity()->earlistSchedule(mSTP->rotationLength()) - age();
                 if (mStandFlags[i].activity()->schedule().absolute)
                     delta += age(); // absolute timing: starting from 0
 
@@ -114,7 +116,7 @@ void FMStand::initialize(FMSTP *stp)
         sleep(min_years_to_wait);
 
     // call onInit handler on the level of the STP
-    stp->events().run(QStringLiteral("onInit"), this);
+    mSTP->events().run(QStringLiteral("onInit"), this);
     if (mCurrentIndex>-1) {
         mStandFlags[mCurrentIndex].activity()->events().run(QStringLiteral("onEnter"), this);
 
@@ -426,6 +428,11 @@ double FMStand::basalArea(const QString &species_id) const
         if (sd.species->id()==species_id)
             return sd.basalArea;
     return 0.;
+}
+
+void FMStand::setAbsoluteAge(const double age)
+{
+    mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age;
 }
 
 // storage for properties (static)

@@ -121,8 +121,9 @@ void ForestManagementEngine::finalizeRun()
 
         // now check the stands
         for (QVector<FMStand*>::iterator it=mStands.begin(); it!=mStands.end(); ++it)
-            if (!(*it)->currentActivity())
-                (*it)->initialize((*it)->stp());
+            if (!(*it)->currentActivity()) {
+                (*it)->initialize();
+            }
     }
 }
 
@@ -214,9 +215,8 @@ void ForestManagementEngine::setup()
     QLoggingCategory::setFilterRules("abe.debug=true\n" \
                                      "abe.setup.debug=true"); // enable *all*
 
-    DebugTimer time_setup("ABE:setup");
+    DebugTimer time_setup("ABE:setupScripting");
     clear();
-    const XmlHelper &xml = GlobalSettings::instance()->settings();
 
     // (1) setup the scripting environment and load all the javascript code
     setupScripting();
@@ -224,14 +224,16 @@ void ForestManagementEngine::setup()
         throw IException(QString("ABE-Error (setup): %1").arg(mLastErrorMessage));
     }
 
-
     if (!GlobalSettings::instance()->model())
         throw IException("No model created.... invalid operation.");
+
     // (2) spatial data (stands, units, ...)
     const MapGrid *stand_grid = GlobalSettings::instance()->model()->standGrid();
 
     if (stand_grid==NULL || stand_grid->isValid()==false)
         throw IException("The ABE management model requires a valid stand grid.");
+
+    const XmlHelper &xml = GlobalSettings::instance()->settings();
 
     QString data_file_name = GlobalSettings::instance()->path(xml.value("model.management.abe.agentDataFile"));
     CSVFile data_file(data_file_name);
@@ -321,10 +323,22 @@ void ForestManagementEngine::setup()
         FMStand *s = it.key();
         FMSTP* stp = s->unit()->agent()->type()->stpByName(it.value());
         if (stp) {
-            s->initialize(stp);
+            s->setSTP(stp);
         }
-        if (isCancel()) {
-            throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(s->id()));
+    }
+}
+
+void ForestManagementEngine::initialize()
+{
+
+    DebugTimer time_setup("ABE:setup");
+
+    foreach (FMStand* stand, mStands) {
+        if (stand->stp()) {
+            stand->initialize();
+            if (isCancel()) {
+                throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(stand->id()));
+            }
         }
     }
 
@@ -367,6 +381,16 @@ void ForestManagementEngine::abortExecution(const QString &message)
 {
     mLastErrorMessage = message;
     mCancel = true;
+}
+
+void ForestManagementEngine::runOnInit()
+{
+    if (GlobalSettings::instance()->scriptEngine()->globalObject().hasProperty("onInit")) {
+        QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate("onInit()");
+        if (result.isError())
+            qCDebug(abeSetup) << "Javascript Error in global 'onInit'-Handler:" << result.toString();
+
+    }
 }
 
 

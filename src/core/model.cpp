@@ -580,6 +580,11 @@ void Model::beforeRun()
     StandLoader loader(this);
     loader.processInit();
     }
+    // initalization of ABE
+    if (mABEManagement) {
+        mABEManagement->setup();
+        mABEManagement->runOnInit();
+    }
 
     // load climate
     {
@@ -590,6 +595,7 @@ void Model::beforeRun()
             c->setup();
 
     }
+
 
     { DebugTimer loadinit("load standstatistics");
     if (logLevelDebug()) qDebug() << "attempting to calculate initial stand statistics (incl. apply and read pattern)..." ;
@@ -602,9 +608,9 @@ void Model::beforeRun()
     createStandStatistics();
     }
 
-    // initalization of ABE
+    // initalization of ABE (now all stands are properly set up)
     if (mABEManagement) {
-        mABEManagement->setup();
+        mABEManagement->initialize();
     }
 
 

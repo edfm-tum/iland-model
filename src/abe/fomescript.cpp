@@ -7,6 +7,8 @@
 #include "agenttype.h"
 #include "fmtreelist.h"
 
+#include "actplanting.h"
+
 // iLand main includes
 #include "species.h"
 
@@ -185,6 +187,19 @@ bool FomeScript::runActivity(int stand_id, QString activity)
     return act->execute(stand);
 }
 
+void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
+{
+    FMStand *stand = ForestManagementEngine::instance()->stand(stand_id);
+    if (!stand) {
+        qCWarning(abe) << "runPlanting: stand not found" << stand_id;
+        return;
+    }
+
+    ActPlanting::runSinglePlantingItem(stand, planting_item);
+
+
+}
+
 QString StandObj::speciesId(int index) const
 {
     if (index>=0 && index<nspecies()) return mStand->speciesData(index).species->id(); else return "error";
@@ -203,6 +218,12 @@ QJSValue StandObj::activity(QString name)
 
 }
 
+void StandObj::setAbsoluteAge(double arg)
+{
+    if (!mStand) { throwError("set absolute age"); return; }
+    mStand->setAbsoluteAge(arg);
+}
+
 bool StandObj::trace() const
 {
     if (!mStand) { throwError("trace"); return false; }
@@ -213,6 +234,29 @@ void StandObj::setTrace(bool do_trace)
 {
     if (!mStand) { throwError("trace"); }
     mStand->setProperty("trace", QJSValue(do_trace));
+}
+
+int StandObj::timeSinceLastExecution() const
+{
+    if (mStand)
+        return ForestManagementEngine::instance()->currentYear() - mStand->lastExecution();
+    throwError("timeSinceLastExecution");
+    return -1;
+}
+
+QString StandObj::lastActivity() const
+{
+    if (mStand->lastExecutedActivity())
+        return mStand->lastExecutedActivity()->name();
+    return QString();
+}
+
+double StandObj::rotationLength() const
+{
+    if (mStand && mStand->stp())
+        return mStand->stp()->rotationLength();
+    throwError("rotationLength");
+    return -1.;
 }
 
 void StandObj::throwError(QString msg) const

@@ -13,6 +13,7 @@ class SimulationObj;
 class FMTreeList; // forward
 
 /// FomeScript provides general helping functions for the Javascript world.
+/// the object is known as 'fmengine'.
 class FomeScript : public QObject
 {
     Q_OBJECT
@@ -64,6 +65,9 @@ public slots:
     /// executes an activity for stand 'stand_id'. This bypasses the normal scheduling (useful for debugging/testing).
     /// returns false if activity could not be found for the stand.
     bool runActivity(int stand_id, QString activity);
+    // special functions
+
+    void runPlanting(int stand_id, QJSValue planting_item);
 
 
 private:
@@ -86,9 +90,13 @@ class StandObj: public QObject
     Q_PROPERTY (bool trace READ trace WRITE setTrace)
     Q_PROPERTY (double basalArea READ basalArea)
     Q_PROPERTY (double age READ age)
+    Q_PROPERTY (double absoluteAge READ absoluteAge WRITE setAbsoluteAge)
     Q_PROPERTY (double volume READ volume)
     Q_PROPERTY (int id READ id)
     Q_PROPERTY (int nspecies READ nspecies)
+    Q_PROPERTY (int elapsed READ timeSinceLastExecution)
+    Q_PROPERTY (QString lastActivity READ lastActivity)
+    Q_PROPERTY (double U READ rotationLength)
 /*    basalArea: 0, // total basal area/ha of the stand
     volume: 100, // total volume/ha of the stand
     speciesCount: 3, // number of species present in the stand with trees > 4m
@@ -110,6 +118,8 @@ public slots:
     /// force a reload of the stand data.
     void reload() { mStand->reload(); }
 
+    void setAbsoluteAge(double arg);
+
 public:
     explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}
     // system stuff
@@ -120,9 +130,14 @@ public:
     // properties of the forest
     double basalArea() const { if (mStand)return mStand->basalArea(); throwError("basalArea"); return -1.;}
     double age() const {if (mStand)return mStand->age(); throwError("age"); return -1.;}
+    double absoluteAge() const {if (mStand)return mStand->absoluteAge(); throwError("absoluteAge"); return -1.;  }
     double volume() const {if (mStand) return mStand->volume(); throwError("volume"); return -1.; }
     int id() const { if (mStand) return mStand->id(); throwError("id"); return -1; }
     int nspecies() const {if (mStand) return mStand->nspecies();  throwError("id"); return -1;}
+    int timeSinceLastExecution() const;
+    QString lastActivity() const;
+    double rotationLength() const;
+
 
 
 private:

@@ -12,6 +12,7 @@
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
 #include "sapling.h"
+#include "debugtimer.h"
 
 namespace ABE {
 
@@ -96,123 +97,14 @@ void ActPlanting::setup(QJSValue value)
 bool ActPlanting::execute(FMStand *stand)
 {
     qCDebug(abe) << stand->context() << "execute of planting activity....";
-    QRectF box = ForestManagementEngine::instance()->standGrid()->boundingBox(stand->id());
-    const MapGrid *sgrid = ForestManagementEngine::instance()->standGrid();
-    Model *model = GlobalSettings::instance()->model();
-    GridRunner<float> gr(model->grid(), box);
+    DebugTimer time("ABE:ActPlanting:execute");
 
-    // sapling_list:
-    // a hash with key=LIF-coordinates of the 2x2m Pixel
-    // value: pair: ptr to RUS, int: index of the sapling tree.
-    // this circumvents problems when sapling trees are added (and consequently pointers into the QVector are invalidated)
     QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > sapling_list;
     if (mRequireLoading)
-        sapling_list = sgrid->saplingTreeHash(stand->id());
+        sapling_list = ForestManagementEngine::instance()->standGrid()->saplingTreeHash(stand->id());
 
-    // loop over all cells on the LIF grid that are within the bounding box of the stand.
     for (int s=0;s<mItems.count();++s) {
-        gr.reset();
-        if (!mItems[s].grouped) {
-            while (float *p=gr.next()) {
-                if (sgrid->LIFgridValue(gr.currentIndex()) != stand->id())
-                    continue;
-                //
-                if (drandom() < mItems[s].fraction) {
-                    ResourceUnit *ru = model->ru(gr.currentCoord());
-                    ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(mItems[s].species);
-                    int t=rus.addSapling(gr.currentIndex(), mItems[s].height);
-                    if (mRequireLoading)
-                        sapling_list.insert(gr.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
-                }
-            }
-        } else {
-            int offset = mItems[s].offset;
-            const QString &pp = planting_patterns[mItems[s].group_type].first;
-            int n = planting_patterns[mItems[s].group_type].second;
-
-            if (mItems[s].spacing==0 && mItems[s].group_random_count == 0) {
-                // pattern based planting (filled)
-                gr.reset();
-                while (gr.next()) {
-                    QPoint qp = gr.currentIndex();
-                    if (sgrid->LIFgridValue(qp) != stand->id())
-                        continue;
-                    int idx = (qp.x()+offset)%n + n*((qp.y()+offset)%n);
-                    if (pp[idx]=='1') {
-                        ResourceUnit *ru = model->ru(gr.currentCoord());
-                        ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(mItems[s].species);
-
-                        if (mItems[s].clear) {
-                            // clear all sapling trees
-                            QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(qp);
-                            while (i != sapling_list.end() && i.key() == qp) {
-                                i.value().first->changeSapling().clearSapling(i.value().second, false);
-                                ++i;
-                            }
-                            sapling_list.remove(qp);
-                        }
-                        // add sapling
-                        int t = rus.addSapling(gr.currentIndex(), mItems[s].height);
-                        if (mRequireLoading)
-                            sapling_list.insert(gr.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
-                    }
-                }
-            } else {
-                // pattern based (with spacing / offset, random...)
-                int spacing = mItems[s].spacing / cPxSize;
-                QPoint p = model->grid()->indexAt(box.topLeft())-QPoint(offset, offset);
-                QPoint pstart = p;
-                QPoint p_end = model->grid()->indexAt(box.bottomRight());
-                QPoint po;
-                p.setX(qMax(p.x(),0)); p.setY(qMax(p.y(),0));
-
-                int n_ha = mItems[s].group_random_count * box.width()*box.height()/10000.;
-                bool do_random = mItems[s].group_random_count>0;
-
-                while( p.x() < p_end.x() && p.y() < p_end.y()) {
-                    if (do_random) {
-                        // random position!
-                        if (n_ha--<=0)
-                            break;
-                        // select a random position (2m grid index)
-                        p = model->grid()->indexAt(QPointF( nrandom(box.left(), box.right()), nrandom(box.top(), box.bottom()) ));
-                    }
-
-                    // apply the pattern....
-                    for (int y=0;y<n;++y) {
-                        for (int x=0;x<n;++x) {
-                            po=p + QPoint(x,y);
-                            if (sgrid->LIFgridValue(po) != stand->id())
-                                continue;
-                            ResourceUnit *ru = model->ru(model->grid()->cellCenterPoint(po));
-                            ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(mItems[s].species);
-
-                            if (mItems[s].clear) {
-                                // clear all sapling trees
-                                QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(po);
-                                while (i != sapling_list.end() && i.key() == po) {
-                                    i.value().first->changeSapling().clearSapling(i.value().second, false);
-                                    ++i;
-                                }
-                                sapling_list.remove(po);
-                            }
-                            // add sapling
-                            int t = rus.addSapling(po, mItems[s].height);
-                            if (mRequireLoading)
-                                sapling_list.insert(po, QPair<ResourceUnitSpecies*, int>(&rus, t));
-                        }
-                    }
-                    if (!do_random) {
-                        // apply offset
-                        p.rx() += spacing;
-                        if (p.x()>= p_end.x()) {
-                            p.rx() = pstart.x();
-                            p.ry() += spacing;
-                        }
-                    }
-                }
-            }
-        }
+        mItems[s].run(stand, mRequireLoading, sapling_list);
     }
 
 
@@ -235,6 +127,23 @@ QStringList ActPlanting::info()
         lines << "/-";
     }
     return lines;
+}
+
+void ActPlanting::runSinglePlantingItem(FMStand *stand, QJSValue value)
+{
+    if (!stand) return;
+    if (FMSTP::verbose())
+        qCDebug(abe()) << "run Single Planting Item for Stand" << stand->id();
+    DebugTimer time("ABE:runSinglePlantingItem");
+    SPlantingItem item;
+    item.setup(value);
+
+    QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > sapling_list;
+    if (item.clear)
+        sapling_list = ForestManagementEngine::instance()->standGrid()->saplingTreeHash(stand->id());
+
+    item.run(stand, item.clear, sapling_list);
+
 }
 
 
@@ -266,6 +175,117 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
 
     grouped = group_type >= 0;
     return true;
+}
+
+void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > &sapling_list)
+{
+    QRectF box = ForestManagementEngine::instance()->standGrid()->boundingBox(stand->id());
+    const MapGrid *sgrid = ForestManagementEngine::instance()->standGrid();
+    Model *model = GlobalSettings::instance()->model();
+    GridRunner<float> runner(model->grid(), box);
+    if (!grouped) {
+        while (float *p=runner.next()) {
+            if (sgrid->LIFgridValue(runner.currentIndex()) != stand->id())
+                continue;
+            //
+            if (drandom() < fraction) {
+                ResourceUnit *ru = model->ru(runner.currentCoord());
+                ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
+                int t=rus.addSapling(runner.currentIndex(), height);
+                if (require_loading)
+                    sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
+            }
+        }
+    } else {
+
+        const QString &pp = planting_patterns[group_type].first;
+        int n = planting_patterns[group_type].second;
+
+        if (spacing==0 && group_random_count == 0) {
+            // pattern based planting (filled)
+            runner.reset();
+            while (runner.next()) {
+                QPoint qp = runner.currentIndex();
+                if (sgrid->LIFgridValue(qp) != stand->id())
+                    continue;
+                int idx = (qp.x()+offset)%n + n*((qp.y()+offset)%n);
+                if (pp[idx]=='1') {
+                    ResourceUnit *ru = model->ru(runner.currentCoord());
+                    ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
+
+                    if (clear) {
+                        // clear all sapling trees
+                        QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(qp);
+                        while (i != sapling_list.end() && i.key() == qp) {
+                            i.value().first->changeSapling().clearSapling(i.value().second, false);
+                            ++i;
+                        }
+                        sapling_list.remove(qp);
+                    }
+                    // add sapling
+                    int t = rus.addSapling(runner.currentIndex(), height);
+                    if (require_loading)
+                        sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
+                }
+            }
+        } else {
+            // pattern based (with spacing / offset, random...)
+            int ispacing = spacing / cPxSize;
+            QPoint p = model->grid()->indexAt(box.topLeft())-QPoint(offset, offset);
+            QPoint pstart = p;
+            QPoint p_end = model->grid()->indexAt(box.bottomRight());
+            QPoint po;
+            p.setX(qMax(p.x(),0)); p.setY(qMax(p.y(),0));
+
+            int n_ha = group_random_count * box.width()*box.height()/10000.;
+            bool do_random = group_random_count>0;
+
+            while( p.x() < p_end.x() && p.y() < p_end.y()) {
+                if (do_random) {
+                    // random position!
+                    if (n_ha--<=0)
+                        break;
+                    // select a random position (2m grid index)
+                    p = model->grid()->indexAt(QPointF( nrandom(box.left(), box.right()), nrandom(box.top(), box.bottom()) ));
+                }
+
+                // apply the pattern....
+                for (int y=0;y<n;++y) {
+                    for (int x=0;x<n;++x) {
+                        po=p + QPoint(x,y);
+                        if (sgrid->LIFgridValue(po) != stand->id())
+                            continue;
+                        ResourceUnit *ru = model->ru(model->grid()->cellCenterPoint(po));
+                        ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
+
+                        if (clear) {
+                            // clear all sapling trees
+                            QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(po);
+                            while (i != sapling_list.end() && i.key() == po) {
+                                i.value().first->changeSapling().clearSapling(i.value().second, false);
+                                ++i;
+                            }
+                            sapling_list.remove(po);
+                        }
+                        // add sapling
+                        int t = rus.addSapling(po,height);
+                        if (require_loading)
+                            sapling_list.insert(po, QPair<ResourceUnitSpecies*, int>(&rus, t));
+                    }
+                }
+                if (!do_random) {
+                    // apply offset
+                    p.rx() += ispacing;
+                    if (p.x()>= p_end.x()) {
+                        p.rx() = pstart.x();
+                        p.ry() += ispacing;
+                    }
+                }
+            }
+        }
+    }
+
+
 }
 
 

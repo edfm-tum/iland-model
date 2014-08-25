@@ -33,7 +33,8 @@ public:
     /// c'tor: link stand to a forest management unit
     FMStand(FMUnit *unit, const int id);
     /// set the stand to be managed by a given 'stp'
-    void initialize(FMSTP *stp);
+    void setSTP(FMSTP *stp) {mSTP = stp; }
+    void initialize();
     /// sets the STP but nothing else (after disturbance related clearance)
     void reset(FMSTP *stp);
     /// returns true if tracing is enabled for the stand
@@ -51,7 +52,7 @@ public:
     int lastExecution() const { return mLastExecution; }
     /// total area of the stand (ha)
     double area() const    {  return mArea; }
-    /// absolute age: years since the rotation has started
+    /// absolute age: years since the rotation has started (years)
     double absoluteAge() const;
     /// total basal area (m2/ha)
     double basalArea() const {return mTotalBasalArea; }
@@ -84,7 +85,7 @@ public:
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
 
-
+    void setAbsoluteAge(const double age);
     // actions
     /// main function
     bool execute(); ///< execute the current activity
