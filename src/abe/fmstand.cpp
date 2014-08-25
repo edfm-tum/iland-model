@@ -433,6 +433,7 @@ double FMStand::basalArea(const QString &species_id) const
 void FMStand::setAbsoluteAge(const double age)
 {
     mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age;
+    mAge = age;
 }
 
 // storage for properties (static)
