@@ -365,8 +365,11 @@ bool Constraints::constraint_item::evaluate(FMStand *stand) const
         }
         if (FMSTP::verbose())
             qCDebug(abe) << "evaluate constraint (JS) for stand" << stand->id() << ":" << result.toString();
-        return result.toBool();
-
+        // convert boolean result to 1 - 0
+        if (result.isBool())
+            return result.toBool()==true?1.:0;
+        else
+            return result.toNumber();
     }
 
     }

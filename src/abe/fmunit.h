@@ -18,6 +18,8 @@ public:
     const Scheduler *constScheduler() const { return mScheduler; }
     const Agent* agent() const { return mAgent; }
     double area() const { return mTotalArea; } ///< total area of the unit (ha)
+    double volume() const { return mTotalVolume/area(); } ///< total volume of the unit (m3/ha)
+    double annualIncrement() const { return mMAI; } ///< mean annual increment (m3/ha)
 
     // actions
 

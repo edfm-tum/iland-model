@@ -4,13 +4,17 @@
 #include "activity.h"
 #include "fmstand.h"
 #include "fmunit.h"
+#include "forestmanagementengine.h"
+#include "fmstp.h"
 namespace ABE {
 
 // definition of variables
 // (1) variables of activites
 
 // (2) stand variables
-QStringList standVarList=QStringList() << "basalArea" << "age"  << "absoluteAge" << "nspecies" << "volume" << "dbh" << "height";
+QStringList standVarList=QStringList() << "basalArea" << "age"  << "absoluteAge" << "nspecies"
+                                       << "volume" << "dbh" << "height"
+                                       << "annualIncrement" << "elapsed";
 
 // (3) site variables
 QStringList siteVarList=QStringList() << "annualIncrement" << "harvestMode" << "U";
@@ -64,6 +68,8 @@ double FOMEWrapper::valueStand(const int variableIndex)
     case 4: return mStand->volume(); // total standing volume, m3/ha, "volume"
     case 5: return mStand->dbh(); // mean dbh
     case 6: return mStand->height(); // "height" (m)
+    case 7: return mStand->meanAnnualIncrementTotal(); // annual increment (since beginning of the rotation) m3/ha
+    case 8: return ForestManagementEngine::instance()->currentYear() - mStand->lastExecution(); // years since last execution of an activity for the stand (yrs)
     default: return 0;
     }
 }
@@ -71,7 +77,8 @@ double FOMEWrapper::valueStand(const int variableIndex)
 double FOMEWrapper::valueSite(const int variableIndex)
 {
     switch (variableIndex) {
-    case 2: return 120; // just testing
+    case 0: return mStand->unit()->annualIncrement(); // annualIncrement
+    case 2: return mStand->stp()->rotationLength(); // just testing
     default: return 0;
     }
 }

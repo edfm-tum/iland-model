@@ -4,6 +4,8 @@
 #include "activity.h"
 #include "species.h"
 
+class ResourceUnitSpecies; // forward
+
 namespace ABE {
 
 class FMSTP; // forward
@@ -18,6 +20,9 @@ public:
     bool execute(FMStand *stand);
     //bool evaluate(FMStand *stand);
     QStringList info();
+
+    // run an one-time planting item
+    static void runSinglePlantingItem(FMStand *stand, QJSValue value);
 private:
     struct SPlantingItem {
         SPlantingItem(): species(0), fraction(0.), height(0.05), clear(false), grouped(false), group_type(-1), group_random_count(-1), offset(0), spacing(0) {}
@@ -31,6 +36,7 @@ private:
         int offset; ///< offset (in LIF-pixels) for the pattern algorithm
         int spacing;  ///< distance between two applications of a pattern
         bool setup(QJSValue value);
+        void run(FMStand *stand, bool require_loading, QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > &sapling_list);
     };
     QVector<SPlantingItem> mItems;
     bool mRequireLoading;

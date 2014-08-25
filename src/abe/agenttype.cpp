@@ -66,11 +66,12 @@ void AgentType::setup()
                     QString mixture_type = mix.toString();
                     if (!mSTP.contains(mixture_type))
                         throw IException(QString("AgentType::setup(): the selected mixture type '%1' for stand '%2' is not valid for agent '%3'.").arg(mixture_type).arg(stand->id()).arg(mName));
-                    stand->initialize(mSTP[mixture_type]);
+                    stand->setSTP(mSTP[mixture_type]);
                 } else {
                     // todo.... some automatic stp selection
-                    stand->initialize(stp);
+                    stand->setSTP(stp);
                 }
+                stand->initialize(); // run initialization
             }
             ++it;
         }
