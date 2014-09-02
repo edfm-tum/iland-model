@@ -615,6 +615,8 @@ void Model::beforeRun()
 
 
     // outputs to create with inital state (without any growth) are called here:
+    GlobalSettings::instance()->setCurrentYear(0); // set clock to "0" (for outputs with initial state)
+
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
     GlobalSettings::instance()->outputManager()->execute("landscape"); // year=0
     GlobalSettings::instance()->outputManager()->execute("sapling"); // year=0
@@ -1046,6 +1048,12 @@ void Model::createStandStatistics()
         ru->addTreeAgingForAllTrees();
         ru->createStandStatistics();
     }
+}
+
+void Model::cleanTreeLists()
+{
+    foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
+        ru->cleanTreeList();
 }
 
 

@@ -94,7 +94,6 @@ void StandStatistics::calculate()
     // scale values to per hectare if resource unit <> 1ha
     // note: no scaling for carbon/nitrogen pools
     if (mRUS) {
-        mGWL = mSumVolume + mRUS->removedVolume();
         double area_factor =  10000. / mRUS->ru()->area();
         if (area_factor!=1.) {
             mCount = mCount * area_factor;
@@ -102,10 +101,11 @@ void StandStatistics::calculate()
             mSumVolume *= area_factor;
             mNPP *= area_factor;
             mNPPabove *= area_factor;
-            mGWL *= area_factor;
+            //mGWL *= area_factor;
             mCohortCount *= area_factor;
             mSaplingCount *= area_factor;
         }
+        mGWL = mSumVolume + mRUS->removedVolume(); // removedVolume: per ha, SumVolume now too
     }
 }
 

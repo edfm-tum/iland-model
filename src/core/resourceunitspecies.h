@@ -33,7 +33,7 @@ public:
 
    // actions
     void updateGWL();
-    double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3)
+    double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3/ha)
     /// relative fraction of LAI of this species (0..1) (if total LAI on resource unit is >= 1, then the sum of all LAIfactors of all species = 1)
     double LAIfactor() const { return mLAIfactor; }
     void setLAIfactor(const double newLAIfraction) { mLAIfactor=newLAIfraction; if (mLAIfactor<0 || mLAIfactor>1.00001) qDebug() << "invalid LAIfactor"<<mLAIfactor; }
@@ -54,7 +54,7 @@ private:
     ResourceUnitSpecies(const ResourceUnitSpecies &); // no copy
     ResourceUnitSpecies &operator=(const ResourceUnitSpecies &); // no copy
     double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.
-    double mRemovedGrowth; ///< m3 volume of trees removed/managed (to calculate GWL)
+    double mRemovedGrowth; ///< m3 volume of trees removed/managed (to calculate GWL) (m3/ha)
     StandStatistics mStatistics; ///< statistics of a species on this resource unit
     StandStatistics mStatisticsDead; ///< statistics of died trees (this year) of a species on this resource unit
     StandStatistics mStatisticsMgmt; ///< statistics of removed trees (this year) of a species on this resource unit

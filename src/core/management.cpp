@@ -295,8 +295,7 @@ void Management::run()
         qDebug() << "Script Error occured: " << result.toString();//  << "\n" << mEngine->uncaughtExceptionBacktrace();
 
     if (mRemoved>0) {
-        foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
-           ru->cleanTreeList();
+        GlobalSettings::instance()->model()->cleanTreeLists();
     }
 }
 
