@@ -95,8 +95,8 @@ void Scheduler::run()
     it = mItems.begin();
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
-        // ignore stands that are currently banned
-        if (item->forbiddenTo > current_year) {
+        // ignore stands that are currently banned (only for final harvests)
+        if (item->forbiddenTo > current_year && item->flags->isFinalHarvest()) {
             ++it;
             continue;
         }

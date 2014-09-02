@@ -101,7 +101,10 @@ public:
     void onlyApplyLightPattern() { applyPattern(); readPattern(); }
 
     // actions
+    /// build stand statistics (i.e. stats based on resource units)
     void createStandStatistics();
+    /// clean the tree data structures (remove harvested trees) - call after management operations.
+    void cleanTreeLists();
     /// execute a function for each resource unit using multiple threads. "funcptr" is a ptr to a simple function
     void executePerResourceUnit(ResourceUnit * (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false) { threadRunner.run(funcptr, forceSingleThreaded);}
 

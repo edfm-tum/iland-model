@@ -49,14 +49,15 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
 
 void ResourceUnitSpecies::calculate(const bool fromEstablishment)
 {
+
     if (mLastYear == GlobalSettings::instance()->currentYear())
         return;
 
-    // the call *not* from establishment
+    // if *not* called from establishment, clear the species-level-stats
     if (!fromEstablishment)
         statistics().clear();
 
-    if (mLAIfactor>0 || fromEstablishment==true) {
+    if (mLAIfactor>0. || fromEstablishment==true) {
         // execute the water calculation...
         if (fromEstablishment)
             const_cast<WaterCycle*>(mRU->waterCycle())->run(); // run the water sub model (only if this has not be done already)
@@ -76,6 +77,7 @@ void ResourceUnitSpecies::updateGWL()
 {
     // removed growth is the running sum of all removed
     // tree volume. the current "GWL" therefore is current volume (standing) + mRemovedGrowth.
+    // important: statisticsDead() and statisticsMgmt() need to calculate() before -> volume() is already scaled to ha
     mRemovedGrowth+=statisticsDead().volume() + statisticsMgmt().volume();
 }
 

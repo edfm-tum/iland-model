@@ -220,7 +220,8 @@ QJSValue StandObj::activity(QString name)
 
 void StandObj::setAbsoluteAge(double arg)
 {
-    if (!mStand) { throwError("set absolute age"); return; }
+    if (!mStand) {
+        throwError("set absolute age"); return; }
     mStand->setAbsoluteAge(arg);
 }
 
