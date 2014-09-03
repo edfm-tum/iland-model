@@ -294,9 +294,6 @@ void Management::run()
     if (result.isError())
         qDebug() << "Script Error occured: " << result.toString();//  << "\n" << mEngine->uncaughtExceptionBacktrace();
 
-    if (mRemoved>0) {
-        GlobalSettings::instance()->model()->cleanTreeLists();
-    }
 }
 
 void Management::loadScript(const QString &fileName)

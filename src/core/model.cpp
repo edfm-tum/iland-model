@@ -673,6 +673,10 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }
 
+    // if trees are dead/removed because of management, the tree lists
+    // need to be cleaned (and the statistics need to be recreated)
+    cleanTreeLists();
+
     // process a cycle of individual growth
     applyPattern(); // create Light Influence Patterns
     readPattern(); // readout light state of individual trees
@@ -705,13 +709,9 @@ void Model::runYear()
     // external modules/disturbances
     mModules->run();
 
-    foreach(ResourceUnit *ru, mRU) {
-        // remove trees that died during disturbances.
-        if (ru->hasDiedTrees()) {
-            ru->cleanTreeList(); // clean up the died trees
-            ru->recreateStandStatistics(); // re-evaluate the stand statistics for this resource unit
-        }
-    }
+    // cleanup of tree lists if external modules removed trees.
+    cleanTreeLists();
+
 
     DebugTimer toutput("outputs");
     // calculate statistics
@@ -1052,8 +1052,12 @@ void Model::createStandStatistics()
 
 void Model::cleanTreeLists()
 {
-    foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
-        ru->cleanTreeList();
+    foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        if (ru->hasDiedTrees()) {
+            ru->cleanTreeList();
+            ru->recreateStandStatistics();
+        }
+    }
 }
 
 
