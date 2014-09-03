@@ -393,7 +393,9 @@ void ResourceUnit::recreateStandStatistics()
     foreach(const Tree &t, mTrees) {
         resourceUnitSpecies(t.species()).statistics().add(&t, 0);
     }
-
+    for (int i=0;i<mRUSpecies.count();i++) {
+        mRUSpecies[i]->statistics().calculate();
+    }
 }
 
 void ResourceUnit::setSaplingHeightMap(float *map_pointer)

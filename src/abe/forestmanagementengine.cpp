@@ -103,18 +103,10 @@ void ForestManagementEngine::finalizeRun()
 {
     // empty the harvest counter; it will be filled again
     // during the (next) year.
-    bool realized_harvests = false;
+
     foreach (FMStand *stand, mStands) {
-        if (stand->totalHarvest()+stand->disturbedTimber() > 0.)
-            realized_harvests = true;
         stand->resetHarvestCounter();
     }
-
-    // notify iLand that trees were removed during this years execution of ABE.
-    if (realized_harvests) {
-        GlobalSettings::instance()->model()->cleanTreeLists();
-    }
-
 
     //
     if (mStandLayoutChanged) {
