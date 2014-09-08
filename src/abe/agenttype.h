@@ -16,6 +16,7 @@ namespace ABE {
 class FMSTP; // forward
 class FMUnit; // forward
 class FMStand; // forward
+class Agent; // forward
 
 class AgentType
 {
@@ -29,6 +30,8 @@ public:
     void addUnit(FMUnit *unit) {mUnits.push_back(unit);}
     ///
     void setup();
+    /// create an agent of the agent type
+    Agent *createAgent(QString agent_name=QString());
     /// get stand treatment program by name; return 0 if the stp is not available.
     FMSTP *stpByName(const QString &name);
     const SchedulerOptions &schedulerOptions() const { return mSchedulerOptions; }

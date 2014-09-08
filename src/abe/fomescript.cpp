@@ -5,6 +5,7 @@
 #include "forestmanagementengine.h"
 #include "fmstp.h"
 #include "agenttype.h"
+#include "agent.h"
 #include "fmtreelist.h"
 
 #include "actplanting.h"
@@ -75,7 +76,7 @@ void FomeScript::setupScriptEnvironment()
 
 }
 
-void FomeScript::setExecutionContext(FMStand *stand)
+void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
 {
     FomeScript *br = bridge();
     br->mStand = stand;
@@ -85,6 +86,11 @@ void FomeScript::setExecutionContext(FMStand *stand)
     br->mActivityObj->setStand(stand);
     if (stand->trace())
         qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
+    if (add_agent) {
+        const Agent *ag = stand->unit()->agent();
+        ForestManagementEngine::instance()->scriptEngine()->globalObject().setProperty("agent", ag->jsAgent());
+    }
+
 }
 
 void FomeScript::setActivity(Activity *act)
@@ -155,19 +161,38 @@ bool FomeScript::addManagement(QJSValue program, QString name)
     }
 }
 
-bool FomeScript::addAgent(QJSValue program, QString name)
+bool FomeScript::addAgentType(QJSValue program, QString name)
 {
     try {
         AgentType *at = new AgentType();
         at->setupSTP(program, name);
-        ForestManagementEngine::instance()->addAgent(at);
+        ForestManagementEngine::instance()->addAgentType(at);
         return true;
+    } catch (const IException &e) {
+        qCWarning(abe) << e.message();
+        ForestManagementEngine::instance()->abortExecution(QString("Error in adding agent type definition.\n%1").arg(e.message()));
+        return false;
+    }
+
+}
+
+QJSValue FomeScript::addAgent(QString agent_type, QString agent_name)
+{
+    try {
+    // find the agent type
+    AgentType *at = ForestManagementEngine::instance()->agentType(agent_type);
+    if (!at) {
+        abort(QString("fmengine.addAgent: invalid 'agent_type': '%1'").arg(agent_type));
+        return QJSValue();
+    }
+    Agent *ag = at->createAgent(agent_name);
+    return ag->jsAgent();
     } catch (const IException &e) {
         qCWarning(abe) << e.message();
         ForestManagementEngine::instance()->abortExecution(QString("Error in adding agent definition.\n%1").arg(e.message()));
         return false;
-    }
 
+    }
 }
 
 /// force execution of an activity (outside of the usual execution context, e.g. for debugging)
@@ -185,6 +210,21 @@ bool FomeScript::runActivity(int stand_id, QString activity)
     // run the activity....
     qCDebug(abe) << "running activity" << activity << "for stand" << stand_id;
     return act->execute(stand);
+}
+
+bool FomeScript::runAgent(int stand_id, QString function)
+{
+    // find stand
+    FMStand *stand = ForestManagementEngine::instance()->stand(stand_id);
+    if (!stand)
+        return false;
+
+    setExecutionContext(stand, true); // true: add also agent as 'agent'
+    QJSValue val = ForestManagementEngine::scriptEngine()->evaluate(QString("%1()").arg(function));
+    qCDebug(abe) << "running agent-function" << function << "for stand" << stand_id << ":" << val.toString();
+    return true;
+
+
 }
 
 void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
@@ -216,6 +256,15 @@ QJSValue StandObj::activity(QString name)
     QJSValue value = ForestManagementEngine::scriptEngine()->newQObject(ao);
     return value;
 
+}
+
+QJSValue StandObj::agent()
+{
+    if (mStand && mStand->unit()->agent())
+        return mStand->unit()->agent()->jsAgent();
+    else
+        throwError("get agent of the stand failed.");
+    return QJSValue();
 }
 
 void StandObj::setAbsoluteAge(double arg)

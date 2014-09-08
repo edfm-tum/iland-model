@@ -205,6 +205,8 @@ QVariant CSVFile::value(const int row, const int col) const
             // last element:
             if (s.count(sep)==mColCount-1) {
                 result =  s.mid(s.lastIndexOf(sep)+1);
+                if (result.toString().startsWith('\"') && result.toString().endsWith('\"'))
+                    result = result.toString().mid(1, result.toString().length()-2);
             }
             // if there are less than colcount-1 separators, then
             // the last columns is empty

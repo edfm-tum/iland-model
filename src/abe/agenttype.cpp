@@ -1,6 +1,7 @@
 #include "global.h"
 #include "abe_global.h"
 #include "agenttype.h"
+#include "agent.h"
 #include "fmstp.h"
 #include "forestmanagementengine.h"
 #include "fmunit.h"
@@ -76,6 +77,30 @@ void AgentType::setup()
             ++it;
         }
     }
+
+}
+
+Agent *AgentType::createAgent(QString agent_name)
+{
+    // call the newAgent function in the javascript object assigned to this agent type
+    QJSValue func = mJSObj.property("newAgent");
+    if (!func.isCallable())
+        throw IException(QString("The agent type '%1' does not have a valid 'newAgent' function.").arg(name()));
+    QJSValue result = func.callWithInstance(mJSObj);
+    if (result.isError())
+        throw IException(QString("calling the 'newAgent' function of agent type '%1' returned with the following error: %2").arg(name()).arg(result.toString()));
+    Agent *agent = new Agent(this, result);
+    if (!agent_name.isEmpty()) {
+        agent->setName(agent_name);
+    } else {
+        if (result.property("name").isUndefined())
+            result.setProperty("name", agent->name()); //  set the auto-generated name also for the JS world
+        else
+            agent->setName(result.property("name").toString()); // set the JS-name also internally
+    }
+    ForestManagementEngine::instance()->addAgent(agent);
+
+    return agent;
 
 }
 
