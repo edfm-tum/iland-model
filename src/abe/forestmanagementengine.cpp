@@ -147,6 +147,14 @@ AgentType *ForestManagementEngine::agentType(const QString &name)
     return 0;
 }
 
+Agent *ForestManagementEngine::agent(const QString &name)
+{
+    for (int i=0;i<mAgents.count();++i)
+        if (mAgents[i]->name()==name)
+            return mAgents[i];
+    return 0;
+}
+
 
 /*---------------------------------------------------------------------
  * multithreaded execution routines
@@ -239,18 +247,22 @@ void ForestManagementEngine::setup()
     const XmlHelper &xml = GlobalSettings::instance()->settings();
 
     QString data_file_name = GlobalSettings::instance()->path(xml.value("model.management.abe.agentDataFile"));
+    qCDebug(abeSetup) << "loading ABE agentDataFile" << data_file_name << "...";
     CSVFile data_file(data_file_name);
     if (data_file.rowCount()==0)
         throw IException(QString("Stand-Initialization: the standDataFile file %1 is empty or missing!").arg(data_file_name));
     int ikey = data_file.columnIndex("id");
     int iunit = data_file.columnIndex("unit");
     int iagent = data_file.columnIndex("agent");
+    int iagent_type = data_file.columnIndex("agentType");
     int istp = data_file.columnIndex("stp");
-    if (ikey<0 || iunit<0 || iagent<0)
-        throw IException("setup ABE agentDataFile: one (or more) of the required columns 'id','unit', 'agent' not available.");
+    if (ikey<0 || iunit<0)
+        throw IException("setup ABE agentDataFile: one (or more) of the required columns 'id' or 'unit' not available.");
+    if (iagent<0 && iagent_type<0)
+        throw IException("setup ABE agentDataFile: the columns 'agent' or 'agentType' are not available. You have to include at least one of the columns.");
+
 
     QList<QString> unit_codes;
-    QList<QString> agent_codes;
     QHash<FMStand*, QString> initial_stps;
     for (int i=0;i<data_file.rowCount();++i) {
         int stand_id = data_file.value(i,ikey).toInt();
@@ -260,30 +272,37 @@ void ForestManagementEngine::setup()
             qCDebug(abeSetup) << "setting up stand" << stand_id;
 
         // check agents
-        QString agent_code = data_file.value(i, iagent).toString();
-        Agent *agent=0;
+        QString agent_code = iagent>-1 ? data_file.value(i, iagent).toString() : QString();
+        QString agent_type_code = iagent_type>-1 ? data_file.value(i, iagent_type).toString() : QString();
+        Agent *ag=0;
         AgentType *at=0;
-        if (!agent_codes.contains(agent_code)) {
-            // create the agent / agent type
-            at = agentType(agent_code);
-            if (!at)
-                throw IException(QString("Agent '%1' is not set up!").arg(agent_code));
-            agent = new Agent(at);
-            mAgents.append(agent);
-            agent_codes.append(agent_code);
-        } else {
-            // simplified: one agent for all stands with the same agent....
-            agent = mAgents[ agent_codes.indexOf(agent_code) ];
-            at = agent->type();
+        if (agent_code.isEmpty() && agent_type_code.isEmpty())
+            throw IException(QString("setup ABE agentDataFile row '%1': no code for columns 'agent' and 'agentType' available.").arg(i) );
 
+        if (!agent_code.isEmpty()) {
+            // search for a specific agent
+            ag = agent(agent_code);
+            if (!ag)
+                throw IException(QString("Agent '%1' is not set up (row '%2')! Use the 'newAgent()' JS function of agent-types to add agent definitions.").arg(agent_code).arg(i));
+            at = ag->type();
+
+        } else {
+            // look up the agent type and create the agent on the fly
+            // create the agent / agent type
+            at = agentType(agent_type_code);
+            if (!at)
+                throw IException(QString("Agent type '%1' is not set up (row '%2')! Use the 'addAgentType()' JS function to add agent-type definitions.").arg(agent_code).arg(i));
+
+            ag = at->createAgent();
         }
+
 
         // check units
         QString unit_id = data_file.value(i, iunit).toString();
         FMUnit *unit = 0;
         if (!unit_codes.contains(unit_id)) {
             // create the unit
-            unit = new FMUnit(agent);
+            unit = new FMUnit(ag);
             unit->setId(unit_id);
             mUnits.append(unit);
             unit_codes.append(unit_id);
@@ -329,6 +348,7 @@ void ForestManagementEngine::setup()
             s->setSTP(stp);
         }
     }
+    qCDebug(abeSetup) << "ABE setup completed.";
 }
 
 void ForestManagementEngine::initialize()

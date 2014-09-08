@@ -49,8 +49,17 @@ public:
     FomeScript *scriptBridge() const {return mScriptBridge; }
 
     // setting up agents and stps
+    /// add a stand treatment programme to the list of programs.
     void addSTP(FMSTP* stp) { mSTP.push_back(stp);}
-    void addAgent(AgentType* at) { mAgentTypes.push_back(at);}
+    /// add an agent type (called from JS)
+    void addAgentType(AgentType* at) { mAgentTypes.append(at);}
+    /// add an agent (called from JS)
+    void addAgent(Agent *agent) { mAgents.append(agent);}
+    /// return the agent type with the name 'name' or NULL
+    AgentType *agentType(const QString &name);
+    /// return the Agent with the name 'name' or NULL
+    Agent *agent(const QString &name);
+
 
     /// retrieve pointer to stand treatment programme. return 0-pointer if not available.
     FMSTP *stp(QString stp_name) const;
@@ -78,7 +87,6 @@ private:
     void finalizeRun();
     void setupOutputs();
 
-    AgentType *agentType(const QString &name);
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
 

@@ -27,7 +27,7 @@ public:
     // functions
     /// prepares the context for executing javascript functions
     /// by setting up all internal structures for the forest stand 'stand'.
-    static void setExecutionContext(FMStand *stand);
+    static void setExecutionContext(FMStand *stand, bool add_agent=false);
 
     /// special function for setting context without a valid stand
     static void setActivity(Activity *act);
@@ -61,10 +61,14 @@ public slots:
     /// adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
     bool addManagement(QJSValue program, QString name);
     /// add an agent definition (Javascript). 'name' is used internally. Returns true on success.
-    bool addAgent(QJSValue program, QString name);
+    bool addAgentType(QJSValue program, QString name);
+    /// create an agent of type 'agent_type' (the name of an agent type) and give the name 'agent_name'. 'agent_name' needs to be unique.
+    QJSValue addAgent(QString agent_type, QString agent_name);
     /// executes an activity for stand 'stand_id'. This bypasses the normal scheduling (useful for debugging/testing).
     /// returns false if activity could not be found for the stand.
     bool runActivity(int stand_id, QString activity);
+    /// execute 'function' of the agent for the given stand; this is primarily aimed at testing/debugging.
+    bool runAgent(int stand_id, QString function);
     // special functions
 
     void runPlanting(int stand_id, QJSValue planting_item);
@@ -88,6 +92,7 @@ class StandObj: public QObject
 {
     Q_OBJECT
     Q_PROPERTY (bool trace READ trace WRITE setTrace)
+    Q_PROPERTY (QJSValue agent READ agent)
     Q_PROPERTY (double basalArea READ basalArea)
     Q_PROPERTY (double age READ age)
     Q_PROPERTY (double absoluteAge READ absoluteAge WRITE setAbsoluteAge)
@@ -113,6 +118,7 @@ public slots:
     void setFlag(const QString &name, QJSValue value){ const_cast<FMStand*>(mStand)->setProperty(name, value);}
     QJSValue flag(const QString &name) { return const_cast<FMStand*>(mStand)->property(name); }
     QJSValue activity(QString name);
+    QJSValue agent();
 
     // actions
     /// force a reload of the stand data.
