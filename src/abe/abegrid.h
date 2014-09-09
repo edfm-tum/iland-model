@@ -3,8 +3,8 @@
 #include "layeredgrid.h"
 namespace ABE {
 class FMStand; // forward
+class Agent; // forward
 }
-
 
 /** Helper class for visualizing ABE management data.
 */
@@ -19,9 +19,11 @@ class ABELayers: public LayeredGrid<FMStandPtr> {
     void registerLayers();
     void clearClasses(); // clear ID and agent classes...
 private:
-    QHash<QString, int> mAgentIndex;
+    mutable QHash<const ABE::Agent*, int > mAgentIndex;
     mutable QHash<QString, int> mUnitIndex;
     mutable QHash<int, int> mStandIndex;
 };
+
+
 
 #endif // ABEGRID_H

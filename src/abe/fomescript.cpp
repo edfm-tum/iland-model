@@ -220,8 +220,16 @@ bool FomeScript::runAgent(int stand_id, QString function)
         return false;
 
     setExecutionContext(stand, true); // true: add also agent as 'agent'
-    QJSValue val = ForestManagementEngine::scriptEngine()->evaluate(QString("%1()").arg(function));
-    qCDebug(abe) << "running agent-function" << function << "for stand" << stand_id << ":" << val.toString();
+
+    QJSValue val;
+    QJSValue agent_type = stand->unit()->agent()->type()->jsObject();
+    if (agent_type.property(function).isCallable()) {
+        val = agent_type.property(function).callWithInstance(agent_type);
+        qCDebug(abe) << "running agent-function" << function << "for stand" << stand_id << ":" << val.toString();
+    } else {
+       qCDebug(abe) << "function" << function << "is not a valid function of agent-type" << stand->unit()->agent()->type()->name();
+    }
+
     return true;
 
 

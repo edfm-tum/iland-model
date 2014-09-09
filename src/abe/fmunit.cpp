@@ -75,9 +75,9 @@ FMUnit::FMUnit(const Agent *agent)
     mTotalVolume = 0.;
     mAnnualHarvest = 0.;
 
-    if (agent->type()->schedulerOptions().useScheduler)
-        // explicit scheduler only for stands/units that include more than one stand
-        mScheduler = new Scheduler(this);
+    //if (agent->type()->schedulerOptions().useScheduler)
+    // explicit scheduler only for stands/units that include more than one stand
+    mScheduler = new Scheduler(this);
 }
 
 FMUnit::~FMUnit()
@@ -192,27 +192,21 @@ void FMUnit::updatePlanOfCurrentYear()
     mTotalPlanDeviation += delta;
 
     // apply decay function for deviation
-    mTotalPlanDeviation *= mAgent->type()->schedulerOptions().deviationDecayRate;
+    mTotalPlanDeviation *= mAgent->schedulerOptions().deviationDecayRate;
 
     // relative deviation: >0: too many harvests
     double rel_deviation = mAnnualHarvestTarget? mTotalPlanDeviation / mAnnualHarvestTarget : 0;
 
     // the current deviation is reduced to 50% in rebounce_yrs years.
-    double rebounce_yrs = mAgent->type()->schedulerOptions().scheduleRebounceDuration;
+    double rebounce_yrs = mAgent->schedulerOptions().scheduleRebounceDuration;
 
     double new_harvest = mAnnualHarvestTarget * (1. - rel_deviation/rebounce_yrs);
 
     // limit to minimum/maximum parameter
-    new_harvest = qMax(new_harvest, mAgent->type()->schedulerOptions().minScheduleHarvest);
-    new_harvest = qMin(new_harvest, mAgent->type()->schedulerOptions().maxScheduleHarvest);
+    new_harvest = qMax(new_harvest, mAgent->schedulerOptions().minScheduleHarvest);
+    new_harvest = qMin(new_harvest, mAgent->schedulerOptions().maxScheduleHarvest);
     scheduler()->setHarvestTarget(new_harvest, mAnnualThinningTarget);
 
-//    const QMultiMap<FMUnit*, FMStand*> &stands = ForestManagementEngine::instance()->stands();
-//    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(this);
-//    while (it != stands.constEnd() && it.key()==this) {
-//        FMStand *stand = it.value();
-//        ++it;
-//    }
 }
 
 } // namesapce

@@ -18,7 +18,7 @@ namespace ABE {
 void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_schedule, double prob_execute)
 {
     if (FMSTP::verbose())
-        qDebug()<< "ticked added for stand" << stand->id();
+        qCDebug(abe)<< "ticked added for stand" << stand->id();
     
     flags->setIsPending(true);
     SchedulerItem *item = new SchedulerItem();
@@ -239,13 +239,13 @@ QStringList Scheduler::info(const int stand_id) const
 /// accumulated harvest approaches the target, the scheduler is increasingly picky.
 double Scheduler::calculateMinProbability(const double current_harvest)
 {
-    if (current_harvest > mUnit->agent()->type()->schedulerOptions().maxHarvestOvershoot)
+    if (current_harvest > mUnit->agent()->schedulerOptions().maxHarvestOvershoot)
         return 999.; // never reached
 
     // use the provided equation
-    double value =  mUnit->agent()->type()->schedulerOptions().minPriorityFormula->calculate(current_harvest);
+    double value =  mUnit->agent()->schedulerOptions().minPriorityFormula->calculate(current_harvest);
     // use the balanceWorkload property
-    double balance = mUnit->agent()->type()->schedulerOptions().balanceWorkload;
+    double balance = mUnit->agent()->schedulerOptions().balanceWorkload;
     value = balance * value + (1. - balance)*value;
     return std::min( std::max( value, 0.), 1.);
 }
@@ -305,8 +305,10 @@ SchedulerOptions::~SchedulerOptions()
 void SchedulerOptions::setup(QJSValue jsvalue)
 {
     useScheduler = false;
-    if (!jsvalue.isObject())
+    if (!jsvalue.isObject()) {
+        qCDebug(abeSetup) << "Scheduler options are not an object:" << jsvalue.toString();
         return;
+    }
     minScheduleHarvest = FMSTP::valueFromJs(jsvalue, "minScheduleHarvest","0").toNumber();
     maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
     maxHarvestOvershoot = FMSTP::valueFromJs(jsvalue, "maxHarvestOvershoot","2").toNumber();

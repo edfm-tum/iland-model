@@ -5,6 +5,7 @@
 #include "fmunit.h"
 #include "modelcontroller.h"
 #include "scheduler.h"
+#include "agent.h"
 
 
 
@@ -26,7 +27,11 @@ double ABELayers::value(const FMStandPtr &data, const int index) const
         if(!mUnitIndex.contains(data->unit()->id()))
             mUnitIndex[data->unit()->id()] = mUnitIndex.count();
         return mUnitIndex[data->unit()->id()]; // unit
-    case 2: return 0; // "agent"
+    case 2:
+        if(!mAgentIndex.contains(data->unit()->agent()))
+            mAgentIndex[data->unit()->agent()] = mAgentIndex.count();
+        return mAgentIndex[data->unit()->agent()]; // unit
+
     case 3: return data->volume(); // "volume"
     case 4: return data->meanAnnualIncrement(); // mean annual increment m3/ha
     case 5: return data->meanAnnualIncrementTotal(); // mean annual increment m3/ha
@@ -64,6 +69,8 @@ const QString ABELayers::labelvalue(const int value, const int index) const
         return QString::number(mStandIndex.key(value));
     case 1: // unit
         return mUnitIndex.key(value);
+    case 2: // agent
+        return mAgentIndex.key(value)->name();
     default: return QString::number(value);
     }
 }
