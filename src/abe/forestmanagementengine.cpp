@@ -257,7 +257,7 @@ void ForestManagementEngine::setup()
     int iagent_type = data_file.columnIndex("agentType");
     int istp = data_file.columnIndex("stp");
     if (ikey<0 || iunit<0)
-        throw IException("setup ABE agentDataFile: one (or more) of the required columns 'id' or 'unit' not available.");
+        throw IException("setup ABE agentDataFile: one (or two) of the required columns 'id' or 'unit' not available.");
     if (iagent<0 && iagent_type<0)
         throw IException("setup ABE agentDataFile: the columns 'agent' or 'agentType' are not available. You have to include at least one of the columns.");
 
@@ -274,6 +274,8 @@ void ForestManagementEngine::setup()
         // check agents
         QString agent_code = iagent>-1 ? data_file.value(i, iagent).toString() : QString();
         QString agent_type_code = iagent_type>-1 ? data_file.value(i, iagent_type).toString() : QString();
+        QString unit_id = data_file.value(i, iunit).toString();
+
         Agent *ag=0;
         AgentType *at=0;
         if (agent_code.isEmpty() && agent_type_code.isEmpty())
@@ -294,11 +296,13 @@ void ForestManagementEngine::setup()
                 throw IException(QString("Agent type '%1' is not set up (row '%2')! Use the 'addAgentType()' JS function to add agent-type definitions.").arg(agent_code).arg(i));
 
             ag = at->createAgent();
+            if (unit_codes.contains(unit_id)) {
+                throw IException(QString("Error: created another agent for unit '%1'").arg(unit_id));
+            }
         }
 
 
         // check units
-        QString unit_id = data_file.value(i, iunit).toString();
         FMUnit *unit = 0;
         if (!unit_codes.contains(unit_id)) {
             // create the unit
@@ -306,7 +310,7 @@ void ForestManagementEngine::setup()
             unit->setId(unit_id);
             mUnits.append(unit);
             unit_codes.append(unit_id);
-            at->addUnit(unit); // add the unit to the list of managed units of the agent
+            ag->addUnit(unit); // add the unit to the list of managed units of the agent
         } else {
             // get unit by id ... in this case we have the same order of appending values
             unit = mUnits[unit_codes.indexOf(unit_id)];
@@ -366,10 +370,10 @@ void ForestManagementEngine::initialize()
     }
 
     // now initialize the agents....
-    foreach(AgentType *at, mAgentTypes) {
-        at->setup();
+    foreach(Agent *ag, mAgents) {
+        ag->setup();
         if (isCancel()) {
-            throw IException(QString("ABE-Error: setup of agent '%2': %1").arg(mLastErrorMessage).arg(at->name()));
+            throw IException(QString("ABE-Error: setup of agent '%2': %1").arg(mLastErrorMessage).arg(ag->name()));
         }
     }
 
