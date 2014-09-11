@@ -20,6 +20,19 @@ public:
     double area() const { return mTotalArea; } ///< total area of the unit (ha)
     double volume() const { return mTotalVolume/area(); } ///< total volume of the unit (m3/ha)
     double annualIncrement() const { return mMAI; } ///< mean annual increment (m3/ha)
+    // agent properties
+    /// rotation period (years)
+    double U() const { return mU; }
+    /// thinning intensity (class); 1: low, 2: medium, 3: high
+    int thinningIntensity() const { return mThinningIntensityClass; }
+    /// species composition key
+    int targetSpeciesIndex() const { return mSpeciesCompositionIndex; }
+    const QString &harvestMode() const { return mHarvestMode; }
+
+    void setU(const double rotation_length) { mU = rotation_length; }
+    void setThinningIntensity(const int th_class) { mThinningIntensityClass = th_class; }
+    void setTargetSpeciesCompositionIndex(const int index) { mSpeciesCompositionIndex = index; }
+    void setHarvestMode(const QString new_mode) { mHarvestMode = new_mode; }
 
     // actions
 
@@ -52,6 +65,12 @@ private:
     double mTotalArea; ///< total area of the unit (ha)
     double mTotalVolume; ///< total standing volume (m3)
     double mTotalPlanDeviation; ///< cumulative deviation from the planned harvest (m3/ha)
+
+    double mU; ///< rotation length
+    int mSpeciesCompositionIndex; ///< index of the active target species composition
+    int mThinningIntensityClass; ///< currently active thinning intensity level
+    QString mHarvestMode; ///< type of applicable harvesting technique (e.g. skidder, cablecrane)
+
 
     friend class UnitOut;
 };

@@ -21,7 +21,7 @@ FomeScript::FomeScript(QObject *parent) :
     QObject(parent)
 {
     mStandObj = 0;
-    mSiteObj = 0;
+    mUnitObj = 0;
     mSimulationObj = 0;
     mActivityObj = 0;
     mTrees = 0;
@@ -51,9 +51,9 @@ void FomeScript::setupScriptEnvironment()
     ForestManagementEngine::scriptEngine()->globalObject().setProperty("stand", stand_value);
 
     // site variables
-    mSiteObj = new SiteObj;
-    QJSValue site_value = ForestManagementEngine::scriptEngine()->newQObject(mSiteObj);
-    ForestManagementEngine::scriptEngine()->globalObject().setProperty("site", site_value);
+    mUnitObj = new UnitObj;
+    QJSValue site_value = ForestManagementEngine::scriptEngine()->newQObject(mUnitObj);
+    ForestManagementEngine::scriptEngine()->globalObject().setProperty("unit", site_value);
 
     // general simulation variables (mainly scenariolevel)
     mSimulationObj = new SimulationObj;
@@ -82,7 +82,7 @@ void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
     br->mStand = stand;
     br->mStandObj->setStand(stand);
     br->mTrees->setStand(stand);
-    br->mSiteObj->setStand(stand);
+    br->mUnitObj->setStand(stand);
     br->mActivityObj->setStand(stand);
     if (stand->trace())
         qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
@@ -248,6 +248,24 @@ void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
 
 }
 
+int FomeScript::levelIndex(const QString &level_label)
+{
+    if (level_label=="low") return 1;
+    if (level_label=="medium") return 2;
+    if (level_label=="high") return 3;
+    return -1;
+}
+
+const QString FomeScript::levelLabel(const int level_index)
+{
+    switch (level_index) {
+    case 1: return QStringLiteral("low");
+    case 2: return QStringLiteral("medium");
+    case 3: return QStringLiteral("high");
+    }
+    return QStringLiteral("invalid");
+}
+
 QString StandObj::speciesId(int index) const
 {
     if (index>=0 && index<nspecies()) return mStand->speciesData(index).species->id(); else return "error";
@@ -311,10 +329,24 @@ QString StandObj::lastActivity() const
 
 double StandObj::rotationLength() const
 {
-    if (mStand && mStand->stp())
-        return mStand->stp()->rotationLength();
-    throwError("rotationLength");
+    if (mStand)
+        return mStand->U();
+    throwError("U");
     return -1.;
+}
+
+QString StandObj::speciesComposition() const
+{
+    int index = mStand->targetSpeciesIndex();
+    return mStand->unit()->agent()->type()->speciesCompositionName(index);
+
+}
+
+QString StandObj::thinningIntensity() const
+{
+    int t = mStand->thinningIntensity();
+    return FomeScript::levelLabel(t);
+
 }
 
 void StandObj::throwError(QString msg) const
@@ -353,6 +385,68 @@ ActivityFlags &ActivityObj::flags() const
 
 
     throw IException("ActivityObj:flags: invalid access of flags!");
+}
+
+bool UnitObj::agentUpdate(QString what, QString how, QString when)
+{
+    AgentUpdate::UpdateType t;
+    return true;
+}
+
+QString UnitObj::harvestMode() const
+{
+    return mStand->unit()->harvestMode();
+}
+
+QString UnitObj::speciesComposition() const
+{
+    int index = mStand->unit()->targetSpeciesIndex();
+    return mStand->unit()->agent()->type()->speciesCompositionName(index);
+}
+
+double UnitObj::U() const
+{
+    return mStand->unit()->U();
+}
+
+QString UnitObj::thinningIntensity() const
+{
+    int t = mStand->unit()->thinningIntensity();
+    return FomeScript::levelLabel(t);
+}
+
+double UnitObj::MAIChange() const
+{
+    // todo
+    return 1;
+}
+
+double UnitObj::MAILevel() const
+{
+    return mStand->unit()->annualIncrement();
+}
+
+double UnitObj::mortalityChange() const
+{
+    return 1; // todo
+}
+
+double UnitObj::mortalityLevel() const
+{
+    return 1; // todo
+
+}
+
+double UnitObj::regenerationChange() const
+{
+    return 1; // todo
+
+}
+
+double UnitObj::regenerationLevel() const
+{
+    return 1; // todo
+
 }
 
 

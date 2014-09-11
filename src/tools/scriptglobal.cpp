@@ -564,8 +564,13 @@ void ScriptGlobal::setupGlobalScripting()
     engine->evaluate("function print(x) { Globals.print(x); } \n" \
                      "function include(x) { Globals.include(x); } \n" \
                      "function alert(x) { Globals.alert(x); } \n");
-    // add a (fake) console.log
-    engine->evaluate("var console = { log: function(x) {Globals.print(x); } }");
+    // add a (fake) console.log / console.print
+    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
+                     "                print: function(x) { for(var propertyName in x)  " \
+                     "                                       console.log(propertyName + ': ' + x[propertyName]); " \
+                     "                                   } " \
+                     "              }");
+
 
     ScriptObjectFactory *factory = new ScriptObjectFactory;
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(factory);

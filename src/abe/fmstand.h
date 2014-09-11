@@ -50,6 +50,19 @@ public:
     FMSTP *stp() const {return mSTP; }
     int lastUpdate() const { return mLastUpdate; }
     int lastExecution() const { return mLastExecution; }
+    // agent properties
+    /// rotation period (years)
+    double U() const { return mU; }
+    /// thinning intensity (class); 1: low, 2: medium, 3: high
+    int thinningIntensity() const { return mThinningIntensityClass; }
+    /// species composition key
+    int targetSpeciesIndex() const { return mSpeciesCompositionIndex; }
+
+    void setU(const double rotation_length) { mU = rotation_length; }
+    void setThinningIntensity(const int th_class) { mThinningIntensityClass = th_class; }
+    void setTargetSpeciesIndex(const int index) { mSpeciesCompositionIndex = index; }
+
+    // stand properties
     /// total area of the stand (ha)
     double area() const    {  return mArea; }
     /// absolute age: years since the rotation has started (years)
@@ -158,6 +171,10 @@ private:
     int mLastUpdate; ///< year of the last reload of data
     int mLastExecution; ///< year of the last execution of an activity
     int mLastExecutedIndex; ///< index of the last executed activity
+
+    double mU; ///< rotation length
+    int mSpeciesCompositionIndex; ///< index of the active target species composition
+    int mThinningIntensityClass; ///< currently active thinning intensity level
 
     void newRotatation(); ///< reset
 

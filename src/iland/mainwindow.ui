@@ -524,7 +524,7 @@
            </widget>
            <widget class="QWidget" name="tab">
             <attribute name="title">
-             <string>QML test</string>
+             <string>Legend</string>
             </attribute>
             <layout class="QVBoxLayout" name="verticalLayout_7">
              <item>

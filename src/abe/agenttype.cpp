@@ -74,5 +74,20 @@ FMSTP *AgentType::stpByName(const QString &name)
         return 0;
 }
 
+int AgentType::speciesCompositionIndex(const QString &key)
+{
+    for (int i=0;i<mSpeciesCompositions.size(); ++i)
+        if (mSpeciesCompositions[i] == key)
+            return i;
+    return -1;
+}
+
+QString AgentType::speciesCompositionName(const int index)
+{
+    if (index>=0 && index < mSpeciesCompositions.count())
+        return mSpeciesCompositions[index];
+    return QString();
+}
+
 
 } // namespace

@@ -59,7 +59,11 @@ void Agent::setup()
                     // todo.... some automatic stp selection
                     stand->setSTP(stp);
                 }
+                stand->setU( unit->U() );
+                stand->setThinningIntensity( unit->thinningIntensity() );
+                stand->setTargetSpeciesIndex( unit->targetSpeciesIndex() );
                 stand->initialize(); // run initialization
+
             }
             ++it;
         }
