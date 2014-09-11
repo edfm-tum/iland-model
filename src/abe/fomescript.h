@@ -8,7 +8,7 @@
 namespace ABE {
 
 class StandObj;
-class SiteObj;
+class UnitObj;
 class SimulationObj;
 class FMTreeList; // forward
 
@@ -39,7 +39,7 @@ public:
 
 
     StandObj *standObj() const { return mStandObj; }
-    SiteObj *siteObj() const { return mSiteObj; }
+    UnitObj *siteObj() const { return mUnitObj; }
     FMTreeList *treesObj() const { return mTrees; }
     ActivityObj *activityObj() const { return mActivityObj; }
 
@@ -72,13 +72,15 @@ public slots:
     // special functions
 
     void runPlanting(int stand_id, QJSValue planting_item);
-
+public:
+    static int levelIndex(const QString &level_label);
+    static const QString levelLabel(const int level_index);
 
 private:
     static QString mInvalidContext;
     const FMStand *mStand;
     StandObj *mStandObj;
-    SiteObj *mSiteObj;
+    UnitObj *mUnitObj;
     SimulationObj *mSimulationObj;
     ActivityObj *mActivityObj;
     FMTreeList *mTrees;
@@ -101,7 +103,12 @@ class StandObj: public QObject
     Q_PROPERTY (int nspecies READ nspecies)
     Q_PROPERTY (int elapsed READ timeSinceLastExecution)
     Q_PROPERTY (QString lastActivity READ lastActivity)
+
     Q_PROPERTY (double U READ rotationLength)
+    Q_PROPERTY(QString speciesComposition READ speciesComposition )
+    Q_PROPERTY(QString thinningIntensity READ thinningIntensity )
+
+
 /*    basalArea: 0, // total basal area/ha of the stand
     volume: 100, // total volume/ha of the stand
     speciesCount: 3, // number of species present in the stand with trees > 4m
@@ -143,6 +150,9 @@ public:
     int timeSinceLastExecution() const;
     QString lastActivity() const;
     double rotationLength() const;
+    QString speciesComposition() const;
+    QString thinningIntensity() const;
+
 
 
 
@@ -152,14 +162,41 @@ private:
 };
 
 
-class SiteObj: public QObject
+class UnitObj: public QObject
 {
     Q_OBJECT
     Q_PROPERTY (QString harvestMode READ harvestMode)
+    Q_PROPERTY(QString speciesComposition READ speciesComposition )
+    Q_PROPERTY(double U READ U )
+    Q_PROPERTY(QString thinningIntensity READ thinningIntensity )
+    // performance indicators
+    Q_PROPERTY(double MAIChange READ MAIChange )
+    Q_PROPERTY(double MAILevel READ MAILevel )
+    Q_PROPERTY(double mortalityChange READ mortalityChange )
+    Q_PROPERTY(double mortalityLevel READ mortalityLevel )
+    Q_PROPERTY(double regenerationChange READ regenerationChange )
+    Q_PROPERTY(double regenerationLevel READ regenerationLevel )
+
+public slots:
+    /// main function to provide agent decisions to the engine
+    bool agentUpdate(QString what, QString how, QString when);
 public:
-    explicit SiteObj(QObject *parent = 0): QObject(parent) {}
+    explicit UnitObj(QObject *parent = 0): QObject(parent) {}
     void setStand(const FMStand* stand) { mStand = stand; }
-    QString harvestMode() const { return "schlepper"; } // dummy
+    QString harvestMode() const;
+    QString speciesComposition() const;
+    double U() const;
+    QString thinningIntensity() const;
+
+    // performance indicators
+    double MAIChange() const;
+    double MAILevel() const;
+    double mortalityChange() const;
+    double mortalityLevel() const;
+    double regenerationChange() const;
+    double regenerationLevel() const;
+
+
 private:
     const FMStand *mStand;
 

@@ -256,6 +256,13 @@ void ForestManagementEngine::setup()
     int iagent = data_file.columnIndex("agent");
     int iagent_type = data_file.columnIndex("agentType");
     int istp = data_file.columnIndex("stp");
+    // unit properties
+    int ispeciescomp = data_file.columnIndex("speciesComposition");
+    int ithinning = data_file.columnIndex("thinningIntensity");
+    int irotation = data_file.columnIndex("U");
+    int iharvest_mode = data_file.columnIndex("harvestMode");
+
+
     if (ikey<0 || iunit<0)
         throw IException("setup ABE agentDataFile: one (or two) of the required columns 'id' or 'unit' not available.");
     if (iagent<0 && iagent_type<0)
@@ -308,6 +315,19 @@ void ForestManagementEngine::setup()
             // create the unit
             unit = new FMUnit(ag);
             unit->setId(unit_id);
+            if (iharvest_mode>-1)
+                unit->setHarvestMode( data_file.value(i, iharvest_mode).toString());
+            if (ithinning>-1)
+                unit->setThinningIntensity( data_file.value(i, ithinning).toInt() );
+            if (irotation>-1)
+                unit->setU( data_file.value(i, irotation).toDouble() );
+            if (ispeciescomp>-1) {
+                int index;
+                index = at->speciesCompositionIndex( data_file.value(i, ispeciescomp).toString() );
+                if (index==-1)
+                    throw IException(QString("The species composition '%1' for unit '%2' is not a valid composition type (agent type: '%3').").arg(data_file.value(i, ispeciescomp).toString()).arg(unit->id()).arg(at->name()));
+                unit->setTargetSpeciesCompositionIndex( index );
+            }
             mUnits.append(unit);
             unit_codes.append(unit_id);
             ag->addUnit(unit); // add the unit to the list of managed units of the agent
@@ -362,6 +382,11 @@ void ForestManagementEngine::initialize()
 
     foreach (FMStand* stand, mStands) {
         if (stand->stp()) {
+
+            stand->setU( stand->unit()->U() );
+            stand->setThinningIntensity( stand->unit()->thinningIntensity() );
+            stand->setTargetSpeciesIndex( stand->unit()->targetSpeciesIndex() );
+
             stand->initialize();
             if (isCancel()) {
                 throw IException(QString("ABE-Error: init of stand %2: %1").arg(mLastErrorMessage).arg(stand->id()));

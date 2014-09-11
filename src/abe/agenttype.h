@@ -13,8 +13,29 @@ namespace ABE {
  *
  **/
 class FMSTP; // forward
+class FMUnit; // forward
 class FMStand; // forward
 class Agent; // forward
+
+class AgentUpdate
+{
+public:
+    AgentUpdate(): mWhat(UpdateInvalid), mAge(-1), mYear(-1) {}
+    enum UpdateType { UpdateInvalid, UpdateThinning, UpdateU, UpdateSpecies };
+    void setType(UpdateType type) { mWhat = type; }
+    void setValue(QString new_value) { mValue = new_value; }
+    void setTimeAge(int age) { mAge = age; }
+    void setTimeYear(int year) { mYear = year; }
+    void setTimeActivity(QString act) { mAfterActivity = act; }
+private:
+    UpdateType mWhat;
+    QString mValue; ///< new value of the given type
+    int mAge; ///< update should happen in that age
+    int mYear; ///< update should happen in the given year
+    QString mAfterActivity; ///< update should happen after given activity is executed
+
+    friend class AgentType;
+};
 
 class AgentType
 {
@@ -30,11 +51,17 @@ public:
     FMSTP *stpByName(const QString &name);
     /// access to the javascript object
     QJSValue &jsObject() { return mJSObj; }
-    // factory functions to create agents.... (
+
+    /// return the index (0-based) of the species composition given by 'key'. Returns -1 if not found.
+    int speciesCompositionIndex(const QString &key);
+    QString speciesCompositionName(const int index);
+
 private:
     QString mName; // agent name
     QJSValue mJSObj; ///< javascript object
     QHash<QString,FMSTP*> mSTP; ///< list of all STP linked to this agent type
+    QVector<QString> mSpeciesCompositions; ///< list of available target species composition (objects)
+    QMultiHash<FMUnit*, AgentUpdate> mAgentChanges;
 };
 
 } // namespace

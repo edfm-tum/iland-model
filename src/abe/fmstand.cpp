@@ -29,6 +29,8 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mPhase = Activity::Tending;
     mStandType = 1; // just testing...
 
+    mU = 0, mSpeciesCompositionIndex = -1, mThinningIntensityClass = -1;
+
     newRotatation();
     mSTP = 0;
     mVolume = 0.;
