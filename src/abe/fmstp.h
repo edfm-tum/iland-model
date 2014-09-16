@@ -34,7 +34,8 @@ public:
     Events &events() { return mEvents; }
 
     /// rotation length (years)
-    int rotationLength() const {return 100; } // TODO: fix
+    int rotationLengthOfType(const int type) { if (type>0 && type<4) return mRotationLength[type-1]; return 0;}
+    int rotationLengthType(const int length) const { for (int i=0;i<3;++i) if (mRotationLength[i]==length) return i+1; return -1; } // TODO: fix
     ActSalvage *salvageActivity() const { return mSalvage; }
 
     /// run repeating activities
@@ -64,6 +65,9 @@ private:
     QStringList mActivityNames;  ///< names of all available activities
     // special activities
     ActSalvage *mSalvage;
+
+    // STP-level properties
+    int mRotationLength[3]; ///< three levels (low, medium,high) of rotation length
 
 };
 

@@ -72,7 +72,7 @@ QString Schedule::dump() const
 
 double Schedule::value(const FMStand *stand)
 {
-    double U = stand->stp()->rotationLength();
+    double U = stand->U();
     double current;
     double current_year = ForestManagementEngine::instance()->currentYear();
     // absolute age: years since the start of the rotation

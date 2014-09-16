@@ -112,8 +112,17 @@
     <addaction name="actionOnline_ressources"/>
     <addaction name="actionAbout"/>
    </widget>
-   <addaction name="menuOutput_menu"/>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuOutput_menu"/>
    <addaction name="menuDebug_Data"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -185,7 +194,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="editStackPage1">
         <attribute name="title">
@@ -1129,6 +1138,25 @@ QProgressBar::chunk {
     <string>select and execute a test routine</string>
    </property>
   </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a XML Project File</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="toolTip">
+    <string>Quit iLand</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1150,12 +1178,12 @@ QProgressBar::chunk {
    <slot>setText(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>378</y>
+     <x>106</x>
+     <y>184</y>
     </hint>
     <hint type="destinationlabel">
-     <x>64</x>
-     <y>251</y>
+     <x>62</x>
+     <y>177</y>
     </hint>
    </hints>
   </connection>
@@ -1198,8 +1226,8 @@ QProgressBar::chunk {
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>265</x>
-     <y>196</y>
+     <x>106</x>
+     <y>170</y>
     </hint>
     <hint type="destinationlabel">
      <x>810</x>

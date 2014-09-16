@@ -1893,3 +1893,21 @@ void MainWindow::on_pbReloadQml_clicked()
     mRuler->engine()->clearComponentCache();
     mRuler->setSource(mRuler->source());
 }
+
+void MainWindow::on_actionExit_triggered()
+{
+    if (Helper::question("Do you really want to quit?"))
+        close();
+}
+
+void MainWindow::on_actionOpen_triggered()
+{
+    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml");
+    if (fileName.isEmpty())
+        return;
+    ui->initFileName->setText(fileName);
+    QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
+    ui->iniEdit->setPlainText(xmlFile);
+    checkModelState();
+
+}

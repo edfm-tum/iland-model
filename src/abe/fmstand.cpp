@@ -89,10 +89,10 @@ void FMStand::initialize()
             continue;
         // set active to false which have already passed
         if (!mStandFlags[i].activity()->isRepeatingActivity()) {
-            if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(mSTP->rotationLength()) < age()) {
+            if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(U()) < age()) {
                 mStandFlags[i].setActive(false);
             } else {
-                int delta = mStandFlags[i].activity()->earlistSchedule(mSTP->rotationLength()) - age();
+                int delta = mStandFlags[i].activity()->earlistSchedule(U()) - age();
                 if (mStandFlags[i].activity()->schedule().absolute)
                     delta += age(); // absolute timing: starting from 0
 
@@ -213,6 +213,10 @@ bool FMStand::execute()
     if (trace())
         mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
 
+    // check if agent update required
+    unit()->agent()->type()->agentUpdateForStand(this, QString(), age());
+
+
     // what to do if there is no active activity??
     if (mCurrentIndex==-1) {
         if (trace())
@@ -315,6 +319,9 @@ bool FMStand::executeActivity(Activity *act)
 
 bool FMStand::afterExecution(bool cancel)
 {
+    // check if an agent update is necessary
+    unit()->agent()->type()->agentUpdateForStand(this, currentFlags().activity()->name(), -1);
+
     // is called after an activity has run
     int tmin = 10000000;
     int indexmin = -1;
@@ -527,6 +534,8 @@ void FMStand::newRotatation()
     mLastMAIVolume = 0.;
     mMAIdecade = 0.;
     mMAItotal = 0.;
+    unit()->agent()->type()->agentUpdateForStand(this, QString(), 0); // update at age 0?
+
 }
 
 SSpeciesStand &FMStand::speciesData(const Species *species)

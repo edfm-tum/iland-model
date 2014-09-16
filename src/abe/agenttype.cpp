@@ -66,6 +66,75 @@ Agent *AgentType::createAgent(QString agent_name)
 
 }
 
+void AgentType::addAgentUpdate(const AgentUpdate &update, const FMUnit *unit)
+{
+    mAgentChanges.insertMulti(unit, update);
+
+    if (update.age()==-1)
+        return;
+
+    // check stands that are currently sleeping
+    const QMultiMap<FMUnit*, FMStand*> &stands = ForestManagementEngine::instance()->stands();
+    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(const_cast<FMUnit*>(unit));
+    while (it != stands.constEnd() && it.key()==unit) {
+        FMStand *stand = it.value();
+        if (stand->sleepYears()>0 && stand->age() <= update.age() &&  stand->sleepYears()+stand->age() >= update.age())
+            agentUpdateForStand(stand, QString(), update.age());
+    }
+
+}
+
+bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int  age)
+{
+    //
+    QMultiHash<const FMUnit*, AgentUpdate>::iterator uit = mAgentChanges.find(stand->unit());
+    bool action = false;
+    while (uit != mAgentChanges.end() && uit.key()==stand->unit()) {
+        AgentUpdate &update = uit.value();
+
+        // timing of update
+        if (!after_activity.isEmpty() && update.afterActivity()==after_activity) {
+            // do something
+            action = true;
+        }
+        if (update.age()>-1 && age==update.age()) {
+            // do something
+            action = true;
+        }
+
+        // update the stand
+        if (action) {
+            switch (update.type()) {
+            case AgentUpdate::UpdateU: {
+                int current_u = stand->stp()->rotationLengthType(stand->U());
+                int new_u = update.value().toInt();
+                if (current_u == new_u) {
+                    if (stand->trace())
+                        qCDebug(abe) << stand->context() << "AgentUpdate: update of U to" << new_u << " not done (value already set).";
+                    break;
+                }
+                stand->setU( stand->stp()->rotationLengthOfType(new_u) );
+                qCDebug(abe) << stand->context() << "AgentUpdate: changed to U" << stand->U();
+                break;
+            }
+            case AgentUpdate::UpdateThinning: {
+                int current_th = stand->thinningIntensity();
+                int new_th = update.value().toInt();
+                if (current_th == new_th) {
+                    if (stand->trace())
+                        qCDebug(abe) << stand->context() << "AgentUpdate: update of thinningIntensity class to" << new_th << " not done (value already set).";
+                    break;
+                }
+                stand->setThinningIntensity(new_th );
+                qCDebug(abe) << stand->context() << "AgentUpdate: changed to thinningIntensity class:" << stand->thinningIntensity();
+                break;
+            }
+            }
+        }
+    }
+    return action;
+}
+
 FMSTP *AgentType::stpByName(const QString &name)
 {
     if (mSTP.contains(name))
@@ -87,6 +156,14 @@ QString AgentType::speciesCompositionName(const int index)
     if (index>=0 && index < mSpeciesCompositions.count())
         return mSpeciesCompositions[index];
     return QString();
+}
+
+AgentUpdate::UpdateType AgentUpdate::label(const QString &name)
+{
+    if (name=="U") return UpdateU;
+    if (name=="thinningIntensity") return UpdateThinning;
+    if (name=="species") return UpdateSpecies;
+    return UpdateInvalid;
 }
 
 

@@ -78,7 +78,7 @@ double FOMEWrapper::valueSite(const int variableIndex)
 {
     switch (variableIndex) {
     case 0: return mStand->unit()->annualIncrement(); // annualIncrement
-    case 2: return mStand->stp()->rotationLength(); // just testing
+    case 2: return mStand->U(); // just testing
     default: return 0;
     }
 }
