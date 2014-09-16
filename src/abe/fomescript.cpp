@@ -424,7 +424,7 @@ QString UnitObj::speciesComposition() const
 
 double UnitObj::U() const
 {
-    return mStand->unit()->U();
+    return mStand->U();
 }
 
 QString UnitObj::thinningIntensity() const
