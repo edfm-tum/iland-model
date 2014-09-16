@@ -15,6 +15,9 @@ bool FMSTP::mVerbose = false;
 FMSTP::FMSTP()
 {
     mSalvage = 0;
+    mRotationLength[0] = 90.; // sensible defaults
+    mRotationLength[1] = 100.;
+    mRotationLength[2] = 110.;
 }
 
 FMSTP::~FMSTP()
@@ -103,6 +106,15 @@ void FMSTP::internalSetup(QJSValue &js_value, int level)
         QJSValueIterator it(js_value);
         while (it.hasNext()) {
             it.next();
+            // parse special properties
+            if (it.name()=="U" && it.value().isArray()) {
+                QVariantList list = it.value().toVariant().toList();
+                if (list.length()!=3)
+                    throw IException("STP: the 'U'-property needs to be an array with three elements!");
+                for (int i=0;i<list.length();++i)
+                    mRotationLength[i] = list.at(i).toInt();
+                continue;
+            }
             if (it.value().hasOwnProperty("type")) {
                 // try to set up as activity
                 setupActivity(it.value(), it.name());

@@ -300,7 +300,7 @@ void ForestManagementEngine::setup()
             // create the agent / agent type
             at = agentType(agent_type_code);
             if (!at)
-                throw IException(QString("Agent type '%1' is not set up (row '%2')! Use the 'addAgentType()' JS function to add agent-type definitions.").arg(agent_code).arg(i));
+                throw IException(QString("Agent type '%1' is not set up (row '%2')! Use the 'addAgentType()' JS function to add agent-type definitions.").arg(agent_type_code).arg(i));
 
             ag = at->createAgent();
             if (unit_codes.contains(unit_id)) {

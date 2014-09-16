@@ -182,6 +182,8 @@ private slots:
     void on_paintGridBox_currentIndexChanged(int index);
     void on_actionTest_triggered();
     void on_pbReloadQml_clicked();
+    void on_actionExit_triggered();
+    void on_actionOpen_triggered();
 };
 
 #endif // MAINWINDOW_H

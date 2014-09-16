@@ -389,7 +389,25 @@ ActivityFlags &ActivityObj::flags() const
 
 bool UnitObj::agentUpdate(QString what, QString how, QString when)
 {
-    AgentUpdate::UpdateType t;
+    AgentUpdate::UpdateType type = AgentUpdate::label(what);
+    if (type == AgentUpdate::UpdateInvalid)
+        qCDebug(abe) << "unit.agentUpdate: invalid 'what':" << what;
+
+    AgentUpdate update;
+    update.setType( type );
+
+    // how
+    update.setValue( how );
+
+    // when
+    bool ok;
+    int age = when.toInt(&ok);
+    if (ok)
+        update.setTimeAge(age);
+    else
+        update.setTimeActivity(when);
+
+    mStand->unit()->agent()->type()->addAgentUpdate( update, mStand->unit() );
     return true;
 }
 
