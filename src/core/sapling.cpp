@@ -153,10 +153,10 @@ double Sapling::heightAt(const QPoint &position) const
 }
 
 
-void Sapling::setBit(const QPoint &pos_index)
+void Sapling::setBit(const QPoint &pos_index, bool value)
 {
     int index = (pos_index.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(pos_index.y() - mRUS->ru()->cornerPointOffset().y());
-    mSapBitset.set(index,true); // set bit: now there is a sapling there
+    mSapBitset.set(index,value); // set bit: now there is a sapling there
 }
 
 /// add a sapling at the given position (index on the LIF grid, i.e. 2x2m)
@@ -168,7 +168,7 @@ int Sapling::addSapling(const QPoint &pos_lif, const float height)
     t.height = height; // default is 5cm height
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
     t.pixel = lif_map.ptr(pos_lif.x(), pos_lif.y());
-    setBit(pos_lif);
+    setBit(pos_lif, true);
     mAdded++;
     return mSaplingTrees.count()-1; // index of the newly added tree.
 }
@@ -186,8 +186,9 @@ void Sapling::clearSaplings(const QPoint &position)
             clearSapling(const_cast<SaplingTree&>(*it), false); // kill sapling and move carbon to soil
         }
     }
-    int index = (position.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(position.y() - mRUS->ru()->cornerPointOffset().y());
-    mSapBitset.set(index,false); // clear bit: now there is no sapling on this position
+    setBit(position, false); // clear bit: now there is no sapling on this position
+    //int index = (position.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(position.y() - mRUS->ru()->cornerPointOffset().y());
+    //mSapBitset.set(index,false); // clear bit: now there is no sapling on this position
 
 }
 
@@ -205,7 +206,9 @@ void Sapling::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
 
 void Sapling::clearSapling(SaplingTree &tree, const bool remove)
 {
+    QPoint p=tree.coords();
     tree.pixel=0;
+    setBit(p, false); // no tree left
     if (!remove) {
         // killing of saplings:
         // if remove=false, then remember dbh/number of trees (used later in calculateGrowth() to estimate carbon flow)

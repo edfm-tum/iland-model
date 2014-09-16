@@ -49,7 +49,7 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         q.exec("create table trees (ID integer, RUindex integer, posX integer, posY integer, species text,  age integer, height real, dbh real, leafArea real, opacity real, foliageMass real, woodyMass real, fineRootMass real, coarseRootMass real, NPPReserve real, stressIndex real)");
         // soil
         q.exec("drop table soil");
-        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inRefC real, inRefN real, YLC real, YLN real, YRC real, YRN real, SOMC real, SOMN real)");
+        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLP real, YRC real, YRN real, YRP real, SOMC real, SOMN real)");
         // snag
         q.exec("drop table snag");
         q.exec("create table snag(RUIndex integer, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
@@ -141,7 +141,7 @@ void Snapshot::loadTrees()
     // setForwardOnly() -> helps avoiding that the query caches all the data
     // during iterating
     q.setForwardOnly(true);
-    q.exec("select * from trees");
+    q.exec("select ID, RUindex, posX, posY, species,  age, height, dbh, leafArea, opacity, foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex from trees");
     int ru_index = -1;
     int new_ru;
     ResourceUnit *ru = 0;
@@ -204,8 +204,8 @@ void Snapshot::saveSoil()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inRefC, inRefN, YLC, YLN, YRC, YRN, SOMC, SOMN) " \
-                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iRC, :iRN, :ylc, :yln, :yrc, :yrn, :somc, :somn)")))
+    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN) " \
+                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylp, :yrc, :yrn, :yrp, :somc, :somn)")))
         throw IException(QString("Snapshot::saveSoil: prepare:") + q.lastError().text());
 
     int n = 0;
@@ -218,12 +218,16 @@ void Snapshot::saveSoil()
             q.addBindValue(s->mKyr);
             q.addBindValue(s->mInputLab.C);
             q.addBindValue(s->mInputLab.N);
+            q.addBindValue(s->mInputLab.parameter());
             q.addBindValue(s->mInputRef.C);
             q.addBindValue(s->mInputRef.N);
+            q.addBindValue(s->mInputRef.parameter());
             q.addBindValue(s->mYL.C);
             q.addBindValue(s->mYL.N);
+            q.addBindValue(s->mYL.parameter());
             q.addBindValue(s->mYR.C);
             q.addBindValue(s->mYR.N);
+            q.addBindValue(s->mYR.parameter());
             q.addBindValue(s->mSOM.C);
             q.addBindValue(s->mSOM.N);
             if (!q.exec()) {
@@ -244,7 +248,7 @@ void Snapshot::loadSoil()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    q.exec("select * from soil");
+    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN from soil");
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
@@ -261,14 +265,18 @@ void Snapshot::loadSoil()
         s->mKyr = q.value(2).toDouble();
         s->mInputLab.C = q.value(3).toDouble();
         s->mInputLab.N = q.value(4).toDouble();
-        s->mInputRef.C = q.value(5).toDouble();
-        s->mInputRef.N = q.value(6).toDouble();
-        s->mYL.C = q.value(7).toDouble();
-        s->mYL.N = q.value(8).toDouble();
-        s->mYR.C = q.value(9).toDouble();
-        s->mYR.N = q.value(10).toDouble();
-        s->mSOM.C = q.value(11).toDouble();
-        s->mSOM.N = q.value(12).toDouble();
+        s->mInputLab.setParameter( q.value(5).toDouble());
+        s->mInputRef.C = q.value(6).toDouble();
+        s->mInputRef.N = q.value(7).toDouble();
+        s->mInputRef.setParameter( q.value(8).toDouble());
+        s->mYL.C = q.value(9).toDouble();
+        s->mYL.N = q.value(10).toDouble();
+        s->mYL.setParameter( q.value(11).toDouble());
+        s->mYR.C = q.value(12).toDouble();
+        s->mYR.N = q.value(13).toDouble();
+        s->mYR.setParameter( q.value(14).toDouble());
+        s->mSOM.C = q.value(15).toDouble();
+        s->mSOM.N = q.value(16).toDouble();
 
         if (++n % 1000 == 0) {
             qDebug() << n << "soil units loaded...";
@@ -353,7 +361,7 @@ void Snapshot::loadSnags()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    q.exec("select * from snag");
+    q.exec("select RUIndex, climateFactor, SWD1C, SWD1N, SWD2C, SWD2N, SWD3C, SWD3N, totalSWDC, totalSWDN, NSnags1, NSnags2, NSnags3, dbh1, dbh2, dbh3, height1, height2, height3, volume1, volume2, volume3, tsd1, tsd2, tsd3, ksw1, ksw2, ksw3, halflife1, halflife2, halflife3, branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex from snag");
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
@@ -455,11 +463,19 @@ void Snapshot::loadSaplings()
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
     q.setForwardOnly(true); // avoid huge memory usage in query component
-    if (!q.exec("select * from saplings")) {
+    if (!q.exec("select RUindex, species, posx, posy, age, height, stress_years from saplings")) {
         qDebug() << "Error when loading from saplings table...." << q.lastError().text();
         return;
     }
     int ru_index = -1;
+
+    // clear all saplings in the whole project area: added for testing/debugging
+//    foreach( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+//        foreach (ResourceUnitSpecies *rus, ru->ruSpecies()) {
+//            rus->changeSapling().clear();
+//            rus->changeSapling().clearStatistics();
+//        }
+//    }
 
     ResourceUnit *ru = 0;
     int n=0;
@@ -492,7 +508,7 @@ void Snapshot::loadSaplings()
         t.age.age = q.value(ci++).toInt();
         t.height = q.value(ci++).toFloat();
         t.age.stress_years = q.value(ci++).toInt();
-        sap.setBit(QPoint(posx, posy)); // set the flag in the bitmap
+        sap.setBit(QPoint(posx, posy), true); // set the flag in the bitmap
         if (++n % 10000 == 0) {
             qDebug() << n << "saplings loaded...";
             QCoreApplication::processEvents();

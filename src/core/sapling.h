@@ -85,7 +85,7 @@ public:
     void fillMaxHeightGrid(Grid<float> &grid) const;
 private:
     bool growSapling(SaplingTree &tree, const double f_env_yr, Species* species);
-    void setBit(const QPoint &pos_index);
+    void setBit(const QPoint &pos_index, bool value);
     ResourceUnitSpecies *mRUS;
     QVector<SaplingTree> mSaplingTrees;
     std::bitset<cPxPerRU*cPxPerRU> mSapBitset;
