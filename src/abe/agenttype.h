@@ -16,9 +16,13 @@ class Agent; // forward
 class AgentUpdate
 {
 public:
-    AgentUpdate(): mWhat(UpdateInvalid), mAge(-1), mYear(-1) {}
+    AgentUpdate(): mWhat(UpdateInvalid), mAge(-1), mYear(-1), mCounter(0) {}
     enum UpdateType { UpdateInvalid, UpdateThinning, UpdateU, UpdateSpecies };
     static UpdateType label(const QString &name);
+    bool isValid() const { return mCounter>0; }
+    void setCounter(int n) { mCounter = n; }
+    void decrease() {--mCounter; }
+    QString dump();
     // getters
     UpdateType type() const { return mWhat; }
     const QString &value() const { return mValue;}
@@ -36,6 +40,8 @@ private:
     int mAge; ///< update should happen in that age
     int mYear; ///< update should happen in the given year
     QString mAfterActivity; ///< update should happen after given activity is executed
+
+    int mCounter; ///< number of stands that have not "seen" this update request
 
     friend class AgentType;
 };

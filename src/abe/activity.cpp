@@ -254,13 +254,13 @@ void Constraints::setup(QJSValue &js_value)
             it.next();
             if (it.name()==QStringLiteral("length"))
                 continue;
-            mConstraints.append(constraint_item());
-            constraint_item &item = mConstraints.last();
+            mConstraints.append(DynamicExpression());
+            DynamicExpression &item = mConstraints.last();
             item.setup(it.value());
         }
     } else {
-        mConstraints.append(constraint_item());
-        constraint_item &item = mConstraints.last();
+        mConstraints.append(DynamicExpression());
+        DynamicExpression &item = mConstraints.last();
         item.setup(js_value);
 
     }
@@ -296,13 +296,13 @@ QStringList Constraints::dump()
 }
 
 
-Constraints::constraint_item::~constraint_item()
+DynamicExpression::~DynamicExpression()
 {
     if (expr)
         delete expr;
 }
 
-void Constraints::constraint_item::setup(QJSValue &js_value)
+void DynamicExpression::setup(QJSValue &js_value)
 {
     filter_type = ftInvalid;
     if (expr) delete expr;
@@ -322,6 +322,7 @@ void Constraints::constraint_item::setup(QJSValue &js_value)
         exprstr = exprstr.replace("activity.", "activity__");
         exprstr = exprstr.replace("stand.", "stand__");
         exprstr = exprstr.replace("site.", "site__");
+        exprstr = exprstr.replace("unit.", "unit__");
         // add ....
         expr = new Expression(exprstr);
         filter_type = ftExpression;
@@ -330,7 +331,7 @@ void Constraints::constraint_item::setup(QJSValue &js_value)
     }
 }
 
-bool Constraints::constraint_item::evaluate(FMStand *stand) const
+bool DynamicExpression::evaluate(FMStand *stand) const
 {
     switch (filter_type) {
     case ftInvalid: return true; // message?
@@ -376,7 +377,7 @@ bool Constraints::constraint_item::evaluate(FMStand *stand) const
     return true;
 }
 
-QString Constraints::constraint_item::dump() const
+QString DynamicExpression::dump() const
 {
     switch (filter_type){
     case ftInvalid: return "Invalid";
@@ -454,6 +455,10 @@ void Activity::setup(QJSValue value)
     if (!constraints.isUndefined())
         mConstraints.setup(constraints);
 
+    // enabledIf property
+    QJSValue enabled_if = FMSTP::valueFromJs(value, "enabledIf");
+    if (!enabled_if.isUndefined())
+        mEnabledIf.setup(enabled_if);
 }
 
 double Activity::scheduleProbability(FMStand *stand)
@@ -480,6 +485,15 @@ bool Activity::evaluate(FMStand *stand)
     // execute the "onEvaluate" event: the execution is canceled, if the function returns false.
     bool cancel = events().run(QStringLiteral("onEvaluate"), stand)==QStringLiteral("false");
     return !cancel;
+}
+
+void Activity::evaluateDyanamicExpressions(FMStand *stand)
+{
+    // evaluate the enabled-if property and set the enabled flag of the stand (i.e. the ActivityFlags)
+    if (mEnabledIf.isValid()) {
+        bool result = mEnabledIf.evaluate(stand);
+        stand->flags(mIndex).setEnabled(result);
+    }
 }
 
 QStringList Activity::info()

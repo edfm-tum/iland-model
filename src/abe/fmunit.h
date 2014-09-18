@@ -18,6 +18,8 @@ public:
     const Scheduler *constScheduler() const { return mScheduler; }
     const Agent* agent() const { return mAgent; }
     double area() const { return mTotalArea; } ///< total area of the unit (ha)
+    int numberOfStands() const { return mNumberOfStands; } ///< the total number of stands
+    void setNumberOfStands(int new_number) { mNumberOfStands = new_number; } ///< set the number of stands
     double volume() const { return mTotalVolume/area(); } ///< total volume of the unit (m3/ha)
     double annualIncrement() const { return mMAI; } ///< mean annual increment (m3/ha)
     // agent properties
@@ -54,6 +56,7 @@ private:
     QString mId;
     const Agent *mAgent;
     Scheduler *mScheduler;
+    int mNumberOfStands; ///< the number of stands
     double mAnnualHarvestTarget; ///< planned annual harvest (final harvests) (m3)
     double mAnnualThinningTarget; ///< planned annual harvests (thinnings and tendings) (m3)
     double mRealizedHarvest; ///< sum of realized harvest in the current planning period (final harvests) (m3)

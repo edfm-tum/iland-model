@@ -213,9 +213,6 @@ bool FMStand::execute()
     if (trace())
         mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
 
-    // check if agent update required
-    unit()->agent()->type()->agentUpdateForStand(this, QString(), age());
-
 
     // what to do if there is no active activity??
     if (mCurrentIndex==-1) {
@@ -534,7 +531,10 @@ void FMStand::newRotatation()
     mLastMAIVolume = 0.;
     mMAIdecade = 0.;
     mMAItotal = 0.;
-    unit()->agent()->type()->agentUpdateForStand(this, QString(), 0); // update at age 0?
+    // use default values
+    setU( unit()->U() );
+    setThinningIntensity( unit()->thinningIntensity() );
+    unit()->agent()->type()->agentUpdateForStand(this, QString(), 0); // update at age 0? maybe switch to new STP?
 
 }
 

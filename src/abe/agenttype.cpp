@@ -68,23 +68,36 @@ Agent *AgentType::createAgent(QString agent_name)
 
 void AgentType::addAgentUpdate(const AgentUpdate &update, const FMUnit *unit)
 {
-    mAgentChanges.insertMulti(unit, update);
+
+    // clear agent updates...
+    QMultiHash<const FMUnit*, AgentUpdate>::iterator hi= mAgentChanges.begin();
+    while (hi != mAgentChanges.end()) {
+        if (!hi.value().isValid())
+            mAgentChanges.erase(hi);
+        else
+            ++hi;
+    }
+
+
+    AgentUpdate &rUpdate = mAgentChanges.insertMulti(unit, update).value();
+    rUpdate.setCounter( unit->numberOfStands() );
 
     if (update.age()==-1)
         return;
 
-    // check stands that are currently sleeping
+    // check stands that should be updated immediateley
     const QMultiMap<FMUnit*, FMStand*> &stands = ForestManagementEngine::instance()->stands();
     QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(const_cast<FMUnit*>(unit));
     while (it != stands.constEnd() && it.key()==unit) {
         FMStand *stand = it.value();
-        if (stand->sleepYears()>0 && stand->age() <= update.age() &&  stand->sleepYears()+stand->age() >= update.age())
+        if (stand->age() <= update.age())
             agentUpdateForStand(stand, QString(), update.age());
+        ++it;
     }
 
 }
 
-bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int  age)
+bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int age)
 {
     //
     QMultiHash<const FMUnit*, AgentUpdate>::iterator uit = mAgentChanges.find(stand->unit());
@@ -92,6 +105,8 @@ bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int 
     while (uit != mAgentChanges.end() && uit.key()==stand->unit()) {
         AgentUpdate &update = uit.value();
 
+        if (!update.isValid())
+            continue;
         // timing of update
         if (!after_activity.isEmpty() && update.afterActivity()==after_activity) {
             // do something
@@ -104,6 +119,7 @@ bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int 
 
         // update the stand
         if (action) {
+            update.decrease();
             switch (update.type()) {
             case AgentUpdate::UpdateU: {
                 int current_u = stand->stp()->rotationLengthType(stand->U());
@@ -115,6 +131,8 @@ bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int 
                 }
                 stand->setU( stand->stp()->rotationLengthOfType(new_u) );
                 qCDebug(abe) << stand->context() << "AgentUpdate: changed to U" << stand->U();
+                // QML like dynamic expressions
+                stand->stp()->evaluateDynamicExpressions(stand);
                 break;
             }
             case AgentUpdate::UpdateThinning: {
@@ -127,10 +145,14 @@ bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int 
                 }
                 stand->setThinningIntensity(new_th );
                 qCDebug(abe) << stand->context() << "AgentUpdate: changed to thinningIntensity class:" << stand->thinningIntensity();
+                stand->stp()->evaluateDynamicExpressions(stand);
                 break;
             }
+
             }
         }
+
+        ++uit;
     }
     return action;
 }
@@ -164,6 +186,19 @@ AgentUpdate::UpdateType AgentUpdate::label(const QString &name)
     if (name=="thinningIntensity") return UpdateThinning;
     if (name=="species") return UpdateSpecies;
     return UpdateInvalid;
+}
+
+QString AgentUpdate::dump()
+{
+    QString line;
+    switch (type()) {
+    case UpdateU:   line= QString("AgentUpdate: update U to '%1'.").arg(mValue); break;
+    case UpdateThinning:   line= QString("AgentUpdate: update thinning interval to '%1'.").arg(mValue); break;
+    case UpdateSpecies:   line= QString("AgentUpdate: update species composition to '%1'.").arg(mValue); break;
+    }
+    if (!mAfterActivity.isEmpty())
+        return line + QString("Update after activity '%1'.").arg(mAfterActivity);
+    return line + QString("Update (before) age '%1'.").arg(mAge);
 }
 
 
