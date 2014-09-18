@@ -74,6 +74,7 @@ FMUnit::FMUnit(const Agent *agent)
     mTotalArea = 0.; mTotalPlanDeviation = 0.;
     mTotalVolume = 0.;
     mAnnualHarvest = 0.;
+    mNumberOfStands = 0;
     mU = 100, mThinningIntensityClass = 2, mSpeciesCompositionIndex = 0;
 
     //if (agent->type()->schedulerOptions().useScheduler)

@@ -397,7 +397,11 @@ bool UnitObj::agentUpdate(QString what, QString how, QString when)
     update.setType( type );
 
     // how
-    update.setValue( how );
+    int idx = FomeScript::levelIndex(how);
+    if (idx>-1)
+        update.setValue( QString::number(idx));
+    else
+        update.setValue( how );
 
     // when
     bool ok;
@@ -408,6 +412,7 @@ bool UnitObj::agentUpdate(QString what, QString how, QString when)
         update.setTimeActivity(when);
 
     mStand->unit()->agent()->type()->addAgentUpdate( update, mStand->unit() );
+    qCDebug(abe) << "Unit::agentUpdate:" << update.dump();
     return true;
 }
 

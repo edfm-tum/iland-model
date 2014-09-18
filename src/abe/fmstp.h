@@ -41,7 +41,8 @@ public:
     /// run repeating activities
     bool executeRepeatingActivities(FMStand *stand);
 
-
+    /// evaluate bound expressions for all activities of the STP for the given stand
+    void evaluateDynamicExpressions(FMStand *stand);
     // helper functions
     void dumpInfo();
     /// if verbose is true, detailed debug information is provided.

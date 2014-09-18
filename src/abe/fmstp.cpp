@@ -91,6 +91,12 @@ bool FMSTP::executeRepeatingActivities(FMStand *stand)
 
 }
 
+void FMSTP::evaluateDynamicExpressions(FMStand *stand)
+{
+    foreach(Activity *act, mActivities)
+        act->evaluateDyanamicExpressions(stand);
+}
+
 // read the setting from the setup-javascript object
 void FMSTP::internalSetup(QJSValue &js_value, int level)
 {

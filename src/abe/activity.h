@@ -59,6 +59,21 @@ private:
     QMap<QString, QJSValue> mEvents; ///< list of event names and javascript functions
 };
 
+/** DynamicExpression encapsulates an "expression" that can be either a iLand expression, a constant or a javascript function.
+*/
+struct DynamicExpression {
+    DynamicExpression(): filter_type(ftInvalid), expr(0) {}
+    ~DynamicExpression();
+    void setup(QJSValue &js_value);
+    bool evaluate(FMStand *stand) const;
+    bool isValid() const { return filter_type!=ftInvalid;}
+    QString dump() const;
+private:
+    enum { ftInvalid, ftExpression, ftJavascript} filter_type;
+    Expression *expr;
+    QJSValue func;
+};
+
 class Constraints {
 public:
     Constraints() {}
@@ -66,19 +81,7 @@ public:
     double evaluate(FMStand *stand); ///< run the constraints
     QStringList dump(); ///< prints some debug info
 private:
-    struct constraint_item {
-        constraint_item(): filter_type(ftInvalid), expr(0) {}
-        ~constraint_item();
-        void setup(QJSValue &js_value);
-        bool evaluate(FMStand *stand) const;
-        QString dump() const;
-
-        enum { ftInvalid, ftExpression, ftJavascript} filter_type;
-        Expression *expr;
-        QJSValue func;
-    };
-
-    QList<constraint_item> mConstraints;
+    QList<DynamicExpression> mConstraints;
 };
 
 class Activity; //forward
@@ -149,8 +152,8 @@ public:
     enum Phase { Invalid, Tending, Thinning, Regeneration, All };
     const FMSTP *program() const { return mProgram; }
     virtual QString type() const;
-    QString name() const {return mName; }
-    int index() const { return mIndex; }
+    QString name() const {return mName; } ///< name of the activity as provided by JS
+    int index() const { return mIndex; } ///< index of the activity within the STP
     /// get earlist possible scheduled year (relative to rotation begin)
     int earlistSchedule(const double U=100.) const {return mSchedule.minValue(U); }
     /// get latest possible scheduled year (relative to rotation begin)
@@ -171,6 +174,8 @@ public:
     /// executes the evaluation of the forest stand.
     /// returns true, when the stand should enter the scheduler.
     virtual bool evaluate(FMStand *stand);
+    /// function that evaluates "bound" dynamic expressions
+    virtual void evaluateDyanamicExpressions(FMStand *stand);
     /// dumps some information for debugging
     virtual QStringList info();
 protected:
@@ -182,12 +187,13 @@ protected:
 private:
     void setIndex(const int index) { mIndex = index; } // used during setup
     void setName(const QString &name) { mName = name; }
-    int mIndex;
+    int mIndex; ///< index of the activity within the STP
     QString mName; ///< the name of the activity;
     const FMSTP *mProgram; // link to the management programme the activity is part of
     Schedule mSchedule; // timing of activity
     Constraints mConstraints; // constraining factors
     Events mEvents; // action handlers such as "onExecute"
+    DynamicExpression mEnabledIf; // enabledIf property (dynamically evaluated)
     friend class FMSTP; // allow access of STP class to internals
     friend class FMStand; // allow access of the activity class (e.g for events)
     friend class ActivityObj; // allow access to scripting function

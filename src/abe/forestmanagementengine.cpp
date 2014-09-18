@@ -348,6 +348,11 @@ void ForestManagementEngine::setup()
         mStands.append(stand);
 
     }
+
+    // count the number of stands within each unit
+    foreach(FMUnit *unit, mUnits)
+        unit->setNumberOfStands( mUnitStandMap.count(unit) );
+
     // set up the stand grid (visualizations)...
     // set up a hash for helping to establish stand-id <-> fmstand-link
     mStandHash.clear();
@@ -571,6 +576,11 @@ FMSTP *ForestManagementEngine::stp(QString stp_name) const
 
 FMStand *ForestManagementEngine::stand(int stand_id) const
 {
+    if (mStandHash.contains(stand_id))
+        return mStandHash[stand_id];
+
+    // exhaustive search... should not happen
+    qCDebug(abe) << "ForestManagementEngine::stand() fallback to exhaustive search.";
     for (QVector<FMStand*>::const_iterator it=mStands.constBegin(); it!=mStands.constEnd(); ++it)
         if ( (*it)->id() == stand_id)
             return *it;
@@ -597,10 +607,11 @@ FMStand *ForestManagementEngine::splitExistingStand(FMStand *stand)
     FMUnit *unit = const_cast<FMUnit*> (stand->unit());
     FMStand *new_stand = new FMStand(unit,new_stand_id);
 
-
     mUnitStandMap.insertMulti(unit,new_stand);
     mStands.append(new_stand);
     mStandHash[new_stand_id] = new_stand;
+
+    unit->setNumberOfStands( mUnitStandMap.count(unit) );
 
     mStandLayoutChanged = true;
 
