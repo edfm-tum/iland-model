@@ -364,7 +364,7 @@ double Canopy::flow(const double &preciptitation_mm)
     if (mLAIBroadleaved>0.) {
         // (1) calculate maximum fraction of thru-flow the crown (based on precipitation)
         double max_flow_broad = 0.9 * pow(1.22 - exp(-0.055*preciptitation_mm), 0.35);
-        max_interception_mm += preciptitation_mm *  (1. - max_flow_broad * mLAIBroadleaved/mLAI);
+        max_interception_mm += preciptitation_mm *  (1. - max_flow_broad) * mLAIBroadleaved/mLAI;
         // (2) calculate maximum storage potential based on the current LAI
         max_storage_potentital += mDecidousFactor * mLAIBroadleaved/mLAI;
     }
