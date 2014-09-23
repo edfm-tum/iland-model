@@ -309,7 +309,7 @@ double SnowPack::flow(const double &preciptitation_mm, const double &temperature
             return preciptitation_mm; // no change
         else {
             // snow melts
-            const double melting_coefficient = 0.7; // mm/°C
+            const double melting_coefficient = 0.7; // mm/C
             double melt = qMin( (temperature-mSnowTemperature) * melting_coefficient, mSnowPack);
             mSnowPack -=melt;
             return preciptitation_mm + melt;
@@ -325,11 +325,11 @@ double SnowPack::flow(const double &preciptitation_mm, const double &temperature
 
 inline double SnowPack::add(const double &preciptitation_mm, const double &temperature)
 {
-    // do nothing for temps > 0°
+    // do nothing for temps > 0 C
     if (temperature>mSnowTemperature)
         return preciptitation_mm;
 
-    // temps < 0°: add to snow
+    // temps < 0 C: add to snow
     mSnowPack += preciptitation_mm;
     return 0.;
 }
@@ -349,15 +349,16 @@ double Canopy::flow(const double &preciptitation_mm)
     if (!preciptitation_mm)
         return 0.;
     double max_interception_mm=0.; // maximum interception based on the current foliage
-    double max_storage_mm=0.; // maximum storage in canopy
+    double max_storage_mm=0.; // maximum storage in canopy (current LAI)
+    double max_storage_potentital = 0.; // storage capacity at very high LAI
 
     if (mLAINeedle>0.) {
         // (1) calculate maximum fraction of thru-flow the crown (based on precipitation)
         double max_flow_needle = 0.9 * sqrt(1.03 - exp(-0.055*preciptitation_mm));
         max_interception_mm += preciptitation_mm *  (1. - max_flow_needle * mLAINeedle/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
-        double max_storage_needle = mNeedleFactor * (1. - exp(-0.55*mLAINeedle) );
-        max_storage_mm += max_storage_needle;
+        //     by weighing the needle/decidious storage capacity
+        max_storage_potentital += mNeedleFactor * mLAINeedle/mLAI;
     }
 
     if (mLAIBroadleaved>0.) {
@@ -365,15 +366,17 @@ double Canopy::flow(const double &preciptitation_mm)
         double max_flow_broad = 0.9 * pow(1.22 - exp(-0.055*preciptitation_mm), 0.35);
         max_interception_mm += preciptitation_mm *  (1. - max_flow_broad * mLAIBroadleaved/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
-        double max_storage_broad = mDecidousFactor * (1. - exp(-0.5*mLAIBroadleaved) );
-        max_storage_mm += max_storage_broad;
+        max_storage_potentital += mDecidousFactor * mLAIBroadleaved/mLAI;
     }
+
+    // the extent to which the maximum stoarge capacity is exploited, depends on LAI:
+    max_storage_mm = max_storage_potentital * (1. - exp(-0.5 * mLAI));
 
     // (3) calculate actual interception and store for evaporation calculation
     mInterception = qMin( max_storage_mm, max_interception_mm );
 
     // (4) limit interception with amount of precipitation
-    mInterception = qMin( mInterception, preciptitation_mm);
+    mInterception = qMin( mInterception, preciptitation_mm );
 
     // (5) reduce preciptitaion by the amount that is intercepted by the canopy
     return preciptitation_mm - mInterception;
@@ -406,7 +409,7 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
 double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double daylength_h, const double combined_response)
 {
     double vpd_mbar = climate->vpd * 10.; // convert from kPa to mbar
-    double temperature = climate->temperature; // average temperature of the day (°C)
+    double temperature = climate->temperature; // average temperature of the day (degree C)
     double daylength = daylength_h * 3600.; // daylength in seconds (convert from length in hours)
     double rad = climate->radiation / daylength * 1000000; //convert from MJ/m2 (day sum) to average radiation flow W/m2 [MJ=MWs -> /s * 1,000,000
 
