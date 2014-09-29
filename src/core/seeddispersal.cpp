@@ -177,7 +177,7 @@ void SeedDispersal::setupExternalSeeds()
     mExternalSeedBaseMap->setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
     mExternalSeedBaseMap->initialize(0.);
     if (mExternalSeedBaseMap->count()*4 != GlobalSettings::instance()->model()->heightGrid()->count())
-        throw IException("error in setting up external seeds");
+        throw IException("error in setting up external seeds: the width and height of the project area need to be a multiple of 20m when external seeds are enabled.");
     // make a copy of the 10m height grid in lower resolution and mark pixels that are forested and outside of
     // the project area.
     for (int y=0;y<mExternalSeedBaseMap->sizeY();y++)

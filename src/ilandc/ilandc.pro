@@ -16,7 +16,7 @@ INCLUDEPATH += ../core \
     ../output \
     ../abe \
     ../abe/output \
-    ../iland
+    ../ilandc
 
 
 DEPENDPATH += plugins
@@ -152,6 +152,7 @@ SOURCES += main.cpp \
     ../abe/actsalvage.cpp \
     ../abe/output/unitout.cpp \
     ../abe/output/abestandout.cpp \
+    ../abe/output/abestandremovalout.cpp \
     ../abe/actthinning.cpp
 
 HEADERS += \
@@ -248,6 +249,7 @@ HEADERS += \
     ../abe/actsalvage.h \
     ../abe/output/unitout.h \
     ../abe/output/abestandout.h \
+    ../abe/output/abestandremovalout.h \
     ../abe/actthinning.h
 
 

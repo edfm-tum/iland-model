@@ -25,7 +25,7 @@
 #include "global.h"
 #include "model.h"
 #include "modelcontroller.h"
-#include "version.h"
+#include "../iland/version.h"
 
 QTextStream *ConsoleShell::mLogStream = 0;
 
