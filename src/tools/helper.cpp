@@ -30,7 +30,11 @@
 //#include "cycle.h"
 #include <limits>
 
+#ifdef ILAND_GUI
 #include "version.h"
+#else
+#include "../iland/version.h"
+#endif
 
 Helper::Helper()
 {
