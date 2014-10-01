@@ -294,51 +294,41 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
         my_content = rx.cap(1).trimmed();
     }
 
-    QStringList lines=my_content.split('\n');
-    if (lines.count()<2)
-        return 0;
-    // drop comments
-    while (!lines.isEmpty() && lines.front().startsWith('#') )
-        lines.pop_front();
-    while (!lines.isEmpty() && lines.last().isEmpty())
-        lines.removeLast();
+    CSVFile infile;
+    infile.loadFromString(my_content);
 
-    char sep='\t';
-    if (!lines[0].contains(sep))
-        sep=';';
-    QStringList headers = lines[0].trimmed().split(sep);
 
-    int iID = headers.indexOf("id");
-    int iX = headers.indexOf("x");
-    int iY = headers.indexOf("y");
-    int iBhd = headers.indexOf("bhdfrom");
+    int iID =  infile.columnIndex("id");
+    int iX = infile.columnIndex("x");
+    int iY = infile.columnIndex("y");
+    int iBhd = infile.columnIndex("bhdfrom");
     if (iBhd<0)
-        iBhd = headers.indexOf("dbh");
+        iBhd = infile.columnIndex("dbh");
     double height_conversion = 100.;
-    int iHeight = headers.indexOf("treeheight");
+    int iHeight =infile.columnIndex("treeheight");
     if (iHeight<0) {
-        iHeight = headers.indexOf("height");
+        iHeight = infile.columnIndex("height");
         height_conversion = 1.; // in meter
     }
-    int iSpecies = headers.indexOf("species");
-    int iAge = headers.indexOf("age");
+    int iSpecies = infile.columnIndex("species");
+    int iAge = infile.columnIndex("age");
     if (iX==-1 || iY==-1 || iBhd==-1 || iSpecies==-1 || iHeight==-1)
-        throw IException(QString("Initfile %1 is not valid!\nObligatory columns are: x,y, bhdfrom or dbh, species, treeheight or height.").arg(fileName));
+        throw IException(QString("Initfile %1 is not valid!\nRequired columns are: x,y, bhdfrom or dbh, species, treeheight or height.").arg(fileName));
 
     double dbh;
     bool ok;
     int cnt=0;
     QString speciesid;
-    for (int i=1;i<lines.count();i++) {
-        QString &line = lines[i];
-        dbh = line.section(sep, iBhd, iBhd).toDouble();
-        if (dbh<5.)
-            continue;
+    for (int i=1;i<infile.rowCount();i++) {
+        dbh = infile.value(i, iBhd).toDouble();
+
+        //if (dbh<5.)
+        //    continue;
 
         QPointF f;
         if (iX>=0 && iY>=0) {
-           f.setX( line.section(sep, iX, iX).toDouble() );
-           f.setY( line.section(sep, iY, iY).toDouble() );
+           f.setX( infile.value(i, iX).toDouble() );
+           f.setY( infile.value(i, iY).toDouble() );
            f+=offset;
 
         }
@@ -348,12 +338,12 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
         Tree &tree = ru->newTree();
         tree.setPosition(f);
         if (iID>=0)
-            tree.setId(line.section(sep, iID, iID).toInt() );
+            tree.setId(infile.value(i, iID).toInt());
 
         tree.setDbh(dbh);
-        tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/height_conversion); // convert from Picus-cm to m if necessary
+        tree.setHeight(infile.value(i,iHeight).toDouble()/height_conversion); // convert from Picus-cm to m if necessary
 
-        speciesid = line.section(sep, iSpecies, iSpecies).trimmed();
+        speciesid = infile.value(i,iSpecies).toString();
         int picusid = speciesid.toInt(&ok);
         if (ok) {
             int idx = picusSpeciesIds.indexOf(picusid);
@@ -368,7 +358,7 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
 
         ok = true;
         if (iAge>=0)
-           tree.setAge(line.section(sep, iAge, iAge).toInt(&ok), tree.height()); // this is a *real* age
+           tree.setAge(infile.value(i, iAge).toInt(&ok), tree.height()); // this is a *real* age
         if (iAge<0 || !ok || tree.age()==0)
            tree.setAge(0, tree.height()); // no real tree age available
 

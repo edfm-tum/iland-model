@@ -1226,6 +1226,7 @@ void MainWindow::yearSimulated(int year)
     checkModelState();
     ui->modelRunProgress->setValue(year);
     labelMessage(QString("Running.... year %1 of %2.").arg(year).arg(mRemoteControl.totalYears()));
+    ui->treeChange->setProperty("tree",0);
     ui->PaintWidget->update();
     QApplication::processEvents();
 }
@@ -1371,6 +1372,7 @@ void MainWindow::on_actionModelRun_triggered()
    if (!ok)
        return;
    count = count + mRemoteControl.currentYear();
+   ui->treeChange->setProperty("tree",0);
    ui->modelRunProgress->setMaximum(count-1);
    mRemoteControl.run(count);
    // process debug outputs...
@@ -1382,6 +1384,7 @@ void MainWindow::on_actionRun_one_year_triggered()
 {
    if (!mRemoteControl.canRun())
         return;
+   ui->treeChange->setProperty("tree",0);
    mRemoteControl.runYear();
    GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
    labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
