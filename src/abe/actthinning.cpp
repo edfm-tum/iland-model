@@ -172,7 +172,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     else
         trees.loadAll();
 
-    if (custom.remainingStems>0 && custom.remainingStems<trees.trees().size())
+    if (custom.remainingStems>0 && custom.remainingStems>=trees.trees().size())
         return false;
 
     if (trees.trees().size()==0)
@@ -252,6 +252,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     double p;
     int removed_trees = 0;
     double removed_value = 0.;
+    int no_tree_found = 0;
+    bool target_value_reached=false;
     do {
         // look up a random number: it decides in which class to select a tree:
         p = nrandom(0,100);
@@ -267,13 +269,20 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
             // a random number decides whether the tree should be included or not.
             double tree_value = target_dbh?1.:trees.trees()[tree_idx].second;
             if (custom.targetValue>0.) {
-                if (removed_value + tree_value > target_value)
-                    if (drandom()>0.5)
+                if (removed_value + tree_value > target_value) {
+                    if (drandom()>0.5 || target_value_reached)
                         break;
+                    else
+                        target_value_reached = true;
+                }
+
             }
             trees.remove_single_tree(tree_idx, true);
             removed_trees++;
             removed_value += tree_value;
+        } else {
+            if (no_tree_found++ > 10)
+                finished=true;
         }
         // stop harvesting, when the minimum remaining number of stems is reached
         if (trees.trees().size()-removed_trees <= custom.remainingStems*stand->area())
@@ -298,7 +307,7 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
     // search randomly for a couple of times
     for (int i=0;i<5;i++) {
         idx = irandom(pct_min, pct_max);
-        Tree *tree = list->trees()[idx].first;
+        Tree *tree = list->trees().at(idx).first;
         if (!tree->isDead() && !tree->isMarkedForHarvest() && !tree->isMarkedForCut())
             return idx;
     }
@@ -307,8 +316,8 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
     if (drandom()>0.5) direction=-1;
     // start in one direction from the last selected random position
     int ridx=idx;
-    while (ridx>=pct_min && ridx<=pct_max) {
-        Tree *tree = list->trees()[ridx].first;
+    while (ridx>=pct_min && ridx<pct_max) {
+        Tree *tree = list->trees().at(ridx).first;
         if (!tree->isDead() && !tree->isMarkedForHarvest() && !tree->isMarkedForCut())
             return ridx;
 
@@ -317,8 +326,8 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
     // now look in the other direction
     direction = -direction;
     ridx = idx;
-    while (ridx>=pct_min && ridx<=pct_max) {
-        Tree *tree = list->trees()[ridx].first;
+    while (ridx>=pct_min && ridx<pct_max) {
+        Tree *tree = list->trees().at(ridx).first;
         if (!tree->isDead() && !tree->isMarkedForHarvest() && !tree->isMarkedForCut())
             return ridx;
 

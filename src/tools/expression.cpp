@@ -526,8 +526,8 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
     ExtExecListItem *exec=m_execList;
     int i;
     double result=0.;
-    double Stack[20];
-    bool   LogicStack[20];
+    double Stack[200];
+    bool   LogicStack[200];
     bool   *lp=LogicStack;
     double *p=Stack;  // p=head pointer
     *lp++=true; // zumindest eins am anfang...
