@@ -479,9 +479,12 @@ void ForestManagementEngine::run(int debug_year)
     }
 
     // create outputs
+    {
+    DebugTimer plu("ABE:outputs");
     GlobalSettings::instance()->outputManager()->execute("abeUnit");
     GlobalSettings::instance()->outputManager()->execute("abeStand");
     GlobalSettings::instance()->outputManager()->execute("abeStandRemoval");
+    }
 
     finalizeRun();
 
