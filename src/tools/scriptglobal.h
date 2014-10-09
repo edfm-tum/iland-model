@@ -111,7 +111,7 @@ public slots:
     int addTrees(const int resourceIndex, QString content); ///< add tree distribution
     int addTreesOnMap(const int standID, QString content); ///< add trees (distribution mode) for stand 'standID'
     // add saplings
-    int addSaplingsOnMap(const MapGridWrapper *map, const int mapID, QString species, int px_per_hectare, double height=-1);
+    int addSaplingsOnMap(MapGridWrapper *map, const int mapID, QString species, int px_per_hectare, double height);
     // enable/disable outputs
     bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful

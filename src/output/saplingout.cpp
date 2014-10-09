@@ -29,7 +29,8 @@ SaplingOut::SaplingOut()
     setName("Sapling Output", "sapling");
     setDescription("Output of the establishment/sapling layer per resource unit and species.\n" \
                    "The output covers trees between a dbh of 1cm and the recruitment threshold (i.e. a height of 4m)." \
-                   "Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.");
+                   "Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.\n\n" \
+                   "You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
             << OutputColumn("count_ha", "number of represented individuals per ha.", OutInteger)
             << OutputColumn("cohort_count_ha", "number of cohorts per ha.", OutInteger)
@@ -40,15 +41,30 @@ SaplingOut::SaplingOut()
 
 void SaplingOut::setup()
 {
+    // use a condition for to control execuation for the current year
+    QString condition = settings().value(".condition", "");
+    mCondition.setExpression(condition);
+    if (!mCondition.isEmpty()) {
+        mVarRu = mCondition.addVar("ru");
+        mVarYear = mCondition.addVar("year");
+    }
 }
 
 void SaplingOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
+
     double n, avg_dbh, avg_height, avg_age;
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
+
+        if (!mCondition.isEmpty()) {
+            *mVarRu = ru->id();
+            *mVarYear = GlobalSettings::instance()->currentYear();
+            if (!mCondition.execute() )
+                continue;
+        }
 
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
             const StandStatistics &stat = rus->constStatistics();
