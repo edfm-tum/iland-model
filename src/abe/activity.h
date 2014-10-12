@@ -184,6 +184,7 @@ protected:
     Events &events()  { return mEvents; }
     ActivityFlags &standFlags(FMStand *stand=0);
     ActivityFlags mBaseActivity; // base properties of the activity (that can be changed for each stand)
+    static QStringList mAllowedProperties; // list of properties (e.g. 'schedule') that are parsed by the base activity
 private:
     void setIndex(const int index) { mIndex = index; } // used during setup
     void setName(const QString &name) { mName = name; }

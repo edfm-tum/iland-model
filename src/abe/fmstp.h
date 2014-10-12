@@ -53,6 +53,8 @@ public:
     static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QString(), const QString &errorMessage=QString());
     static bool boolValueFromJs(const QJSValue &js_value, const QString &key, const bool default_bool_value, const QString &errorMessage=QString());
 
+    static bool checkObjectProperties(const QJSValue &js_value, const QStringList &allowed_properties, const QString &errorMessage=QString());
+
 private:
     void internalSetup(QJSValue &js_value, int level=0);
     QString mName; ///< the name of the stand treatment program

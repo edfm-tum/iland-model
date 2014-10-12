@@ -104,6 +104,8 @@ public:
     bool isMarkedForCut() const { return flag(Tree::MarkForCut);}
     void markCropTree(bool do_mark) { setFlag(Tree::MarkCropTree, do_mark);}
     bool isMarkedAsCropTree() const { return flag(Tree::MarkCropTree);}
+    void markCropCompetitor(bool do_mark) { setFlag(Tree::MarkCropCompetitor, do_mark);}
+    bool isMarkedAsCropCompetitor() const { return flag(Tree::MarkCropCompetitor);}
 
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
@@ -169,7 +171,8 @@ private:
     enum Flags { TreeDead=1, TreeDebugging=2,
                  MarkForCut=256, // mark tree for being cut down
                  MarkForHarvest=512, // mark tree for being harvested
-                 MarkCropTree=1024 // mark as crop tree
+                 MarkCropTree=1024, // mark as crop tree
+                 MarkCropCompetitor=2048 // mark as competitor for a crop tree
                };
     /// set a Flag 'flag' to the value 'value'.
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}

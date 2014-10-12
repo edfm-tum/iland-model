@@ -163,10 +163,10 @@ void FMSTP::setupActivity(QJSValue &js_value, const QString &name)
     Activity *act = Activity::createActivity(type, this);
     if (!act) return; // actually, an error is thrown in the previous call.
 
-    // call the setup routine (overloaded version)
-    act->setup(js_value);
     // use id-property if available, or the object-name otherwise
     act->setName(valueFromJs(js_value, "id", name).toString());
+    // call the setup routine (overloaded version)
+    act->setup(js_value);
 
     // call the onCreate handler:
     FomeScript::bridge()->setActivity(act);
@@ -203,6 +203,20 @@ bool FMSTP::boolValueFromJs(const QJSValue &js_value, const QString &key, const 
     }
     return js_value.property(key).toBool();
 
+}
+
+bool FMSTP::checkObjectProperties(const QJSValue &js_value, const QStringList &allowed_properties, const QString &errorMessage)
+{
+    QJSValueIterator it(js_value);
+    bool found_issues = false;
+    while (it.hasNext()) {
+        it.next();
+        if (!allowed_properties.contains(it.name()) && it.name()!=QLatin1String("length")) {
+            qCDebug(abe) << "Syntax-warning: The javascript property" << it.name() << "is not used! In:" << errorMessage;
+            found_issues = true;
+        }
+    }
+    return !found_issues;
 }
 
 } // namespace

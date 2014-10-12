@@ -160,12 +160,13 @@ void Sapling::setBit(const QPoint &pos_index, bool value)
 }
 
 /// add a sapling at the given position (index on the LIF grid, i.e. 2x2m)
-int Sapling::addSapling(const QPoint &pos_lif, const float height)
+int Sapling::addSapling(const QPoint &pos_lif, const float height, const int age)
 {
     // adds a sapling...
     mSaplingTrees.push_back(SaplingTree());
     SaplingTree &t = mSaplingTrees.back();
     t.height = height; // default is 5cm height
+    t.age.age = age;
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
     t.pixel = lif_map.ptr(pos_lif.x(), pos_lif.y());
     setBit(pos_lif, true);

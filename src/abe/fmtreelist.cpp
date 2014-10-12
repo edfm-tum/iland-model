@@ -365,6 +365,7 @@ void FMTreeList::prepareGrids()
     // the memory of the grids is only reallocated if the current box is larger then the previous...
     mStandGrid.setup(box, cHeightSize);
     mTreeCountGrid.setup(box, cHeightSize);
+    mLocalGrid.setup(box, cPxSize);
     // mark areas outside of the grid...
     GridRunner<int> runner(ForestManagementEngine::instance()->standGrid()->grid(), box);
     float *p=mStandGrid.begin();
@@ -373,6 +374,10 @@ void FMTreeList::prepareGrids()
             *p=-1.f;
         ++p;
     }
+    // copy stand limits to the grid
+    for (int iy=0;iy<mLocalGrid.sizeY();++iy)
+        for (int ix=0;ix<mLocalGrid.sizeX();++ix)
+            mLocalGrid.valueAtIndex(ix,iy) = mStandGrid.valueAtIndex(ix/cPxPerHeight, iy/cPxPerHeight)==-1.f ? -1.f: 0.f;
 }
 
 void FMTreeList::runGrid(void (*func)(float &, int &, const Tree *, const FMTreeList *))

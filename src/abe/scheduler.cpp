@@ -168,15 +168,15 @@ void Scheduler::run()
 bool Scheduler::forceHarvest(const FMStand *stand, const int max_years)
 {
     // check if we have the stand in the list:
-     for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit) {
-         const SchedulerItem *item = *nit;
-         if (item->stand == stand)
-             if (abs(item->optimalYear -  GlobalSettings::instance()->currentYear()) < max_years ) {
-                 item->flags->setExecuteImmediate(true);
-                 return true;
-             }
-     }
-     return false;
+    for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit) {
+        const SchedulerItem *item = *nit;
+        if (item->stand == stand)
+            if (abs(item->optimalYear -  GlobalSettings::instance()->currentYear()) < max_years ) {
+                item->flags->setExecuteImmediate(true);
+                return true;
+            }
+    }
+    return false;
 }
 
 void Scheduler::addExtraHarvest(const FMStand *stand, const double volume, Scheduler::HarvestType type)
@@ -260,8 +260,8 @@ void Scheduler::dump()
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
         qCDebug(abe) << QString("%1, %2, %3, %4, %5").arg(item->stand->id()).arg(item->score).arg(item->optimalYear)
-                                                    .arg(item->flags->activity()->name())
-                                                    .arg(item->harvest);
+                        .arg(item->flags->activity()->name())
+                        .arg(item->harvest);
         ++it;
     }
 }
@@ -278,8 +278,8 @@ Scheduler::SchedulerItem *Scheduler::item(const int stand_id) const
 bool Scheduler::SchedulerItem::operator<(const Scheduler::SchedulerItem &item)
 {
     // sort *descending*, i.e. after sorting, the item with the highest score is in front.
-//    if (this->score == item.score)
-//        return this->enterYear < item.enterYear; // higher prob. for items that entered earlier TODO: change to due/overdue
+    //    if (this->score == item.score)
+    //        return this->enterYear < item.enterYear; // higher prob. for items that entered earlier TODO: change to due/overdue
     return this->score > item.score;
 }
 
@@ -296,6 +296,11 @@ void Scheduler::SchedulerItem::calculate()
 
 
 // **************************************************************************************
+QStringList SchedulerOptions::mAllowedProperties = QStringList()
+        << "minScheduleHarvest" << "maxScheduleHarvest" << "minSchedulemaxHarvestOvershoot"
+        << "useSustainableHarvest" << "scheduleRebounceDuration" << "deviationDecayRate"
+        << "minPriorityFormula" << "balanceWorkload";
+
 SchedulerOptions::~SchedulerOptions()
 {
     if (minPriorityFormula)
@@ -309,6 +314,8 @@ void SchedulerOptions::setup(QJSValue jsvalue)
         qCDebug(abeSetup) << "Scheduler options are not an object:" << jsvalue.toString();
         return;
     }
+    FMSTP::checkObjectProperties(jsvalue, mAllowedProperties, "setup of scheduler options");
+
     minScheduleHarvest = FMSTP::valueFromJs(jsvalue, "minScheduleHarvest","0").toNumber();
     maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
     maxHarvestOvershoot = FMSTP::valueFromJs(jsvalue, "maxHarvestOvershoot","2").toNumber();

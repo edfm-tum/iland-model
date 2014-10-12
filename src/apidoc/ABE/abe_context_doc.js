@@ -66,6 +66,13 @@
   @return {boolean} true on success.
   */
 
+/**
+  checks if a given `stand_id` is valid (i.e., part of the currently simulated area).
+
+  @method isValidStand
+  @param {int} stand_id The id of the stand to check.
+  @return {boolean} true, if 'stand_id' is a valid stand in the current setup.
+  */
 
 /**
   Runs a planting activity (without the context of stand treatment programmes). This is especially useful for

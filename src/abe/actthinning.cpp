@@ -4,11 +4,21 @@
 #include "fmstand.h"
 #include "fmtreelist.h"
 #include "fmstp.h"
+#include "forestmanagementengine.h"
+#include "fomescript.h"
 
 #include "tree.h"
 
 #include <QJSValueIterator>
 namespace ABE {
+// statics
+QStringList ActThinning::mSyntaxCustom = QStringList()  << Activity::mAllowedProperties
+                                                        << "percentile" << "removal" << "thinning"
+                                                        << "relative" << "remainingStems" << "minDbh"
+                                                        << "filter" << "targetVariable" << "targetRelative"
+                                                        << "targetValue" << "classes";
+
+
 
 ActThinning::ActThinning(FMSTP *parent): Activity(parent)
 {
@@ -45,6 +55,7 @@ void ActThinning::setup(QJSValue value)
 
     switch (mThinningType) {
     case Custom: setupCustom(value); break;
+    case Selection: setupSelective(value); break;
     default: throw IException("No setup defined for thinning type");
     }
 
@@ -59,6 +70,8 @@ bool ActThinning::evaluate(FMStand *stand)
             return_value = return_value && evaluateCustom(stand, mCustomThinnings[i]);
         return return_value; // false if one fails
 
+    case Selection:
+        return evaluateSelective(stand);
     default: throw IException("ActThinning::evaluate: not available for thinning type");
     }
     return false;
@@ -102,9 +115,16 @@ void ActThinning::setupCustom(QJSValue value)
     }
 }
 
+void ActThinning::setupSelective(QJSValue value)
+{
+    mSelectiveThinning.N = FMSTP::valueFromJs(value, "N", "400").toInt();
+}
+
 // setup of the "custom" thinning operation
 void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
 {
+    FMSTP::checkObjectProperties(value, mSyntaxCustom, "setup of 'custom' thinning:" + name());
+
     custom.usePercentiles = FMSTP::boolValueFromJs(value, "percentile", true);
     custom.removal = FMSTP::boolValueFromJs(value, "removal", true);
     custom.relative = FMSTP::boolValueFromJs(value, "relative", true);
@@ -150,6 +170,7 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
             throw IException("setup of custom thinnings: 'classes' do not add up to 100 (relative=true).");
     }
 
+    // span the range between 0..100: from e.g. 10,20,30,20,20 -> 0,10,30,60,80,100
     double f = 100. / custom.classValues.size();
     double p = 0.;
     for (int i=0;i<custom.classValues.size();++i, p+=f)
@@ -211,8 +232,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         tree_counts[class_index]++;
         total_value += target_dbh?1.:it->second; // e.g., sum of volume in the class, or simply count
     }
-    while (class_index<percentiles.size())
-        percentiles[class_index++]=n+1;
+    while (++class_index<percentiles.size())
+        percentiles[class_index]=n+1;
 
     double target_value=0.;
     if (custom.targetRelative)
@@ -221,6 +242,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         target_value = custom.targetValue * stand->area();
 
     if (!custom.relative) {
+        // TODO: does not work now!!! redo!!
         // class values are given in absolute terms, e.g. 40m3/ha.
         // this needs to be translated to relative classes.
         // if the demand in a class cannot be met (e.g. planned removal of 40m3/ha, but there are only 20m3/ha in the class),
@@ -228,7 +250,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         for (int i=0;i<values.size();++i) {
             if (values[i]>0){
                 if (values[i]<=custom.classValues[i]*stand->area()) {
-                    values[i] = 1.;
+                    values[i] = 1.; // take all from the class
                 } else {
                     values[i] = custom.classValues[i]*stand->area() / values[i];
                 }
@@ -247,6 +269,9 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     // *****************************************************************
     // ***************    Main loop
     // *****************************************************************
+    for (int i=0;i<values.size();++i)
+        values[i] = 0;
+
     bool finished = false;
     int cls;
     double p;
@@ -258,9 +283,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         // look up a random number: it decides in which class to select a tree:
         p = nrandom(0,100);
         for (cls=0;cls<values.size();++cls) {
-            if (p < values[cls])
+            if (p < custom.classPercentiles[cls+1])
                 break;
-            p-=values[cls];
         }
         // select a tree:
         int tree_idx = selectRandomTree(&trees, percentiles[cls], percentiles[cls+1]-1);
@@ -280,6 +304,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
             trees.remove_single_tree(tree_idx, true);
             removed_trees++;
             removed_value += tree_value;
+            values[cls]++;
+
         } else {
             if (no_tree_found++ > 10)
                 finished=true;
@@ -292,6 +318,12 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
             finished = true;
 
     } while (!finished);
+
+    if (stand->trace()) {
+        qCDebug(abe) << stand->context() << "custom-thinning: removed" << removed_trees << ". Reached cumulative 'value' of:" << removed_value << "(planned value:" << target_value << "). #of no trees found:" << no_tree_found << "; stand-area:" << stand->area();
+        for (int i=0;i<values.count();++i)
+            qCDebug(abe) << stand->context() << "class" << i << ": removed" << values[i] << "of" << percentiles[i+1]-percentiles[i];
+    }
 
     return true;
 
@@ -351,6 +383,151 @@ void ActThinning::clearTreeMarks(FMTreeList *list)
             tree->markForCut(false);
 
     }
+}
+
+bool ActThinning::evaluateSelective(FMStand *stand)
+{
+    markCropTrees(stand);
+    return true;
+}
+
+bool ActThinning::markCropTrees(FMStand *stand)
+{
+    // tree list from current exeution context
+    FMTreeList *treelist = ForestManagementEngine::instance()->scriptBridge()->treesObj();
+    treelist->setStand(stand);
+    treelist->loadAll();
+    clearTreeMarks(treelist);
+
+    // get the 2x2m grid for the current stand
+    Grid<float> &grid = treelist->localGrid();
+    // clear (except the out of "stand" pixels)
+    for (float *p=grid.begin(); p!=grid.end(); ++p)
+        if (*p > -1.f)
+            *p = 0.f;
+
+    int target_n = mSelectiveThinning.N * stand->area();
+
+    if (target_n>=treelist->trees().count())
+        target_n = treelist->trees().count();
+
+    int max_target_n = qMax(target_n * 1.5, treelist->trees().count()/2.);
+    if (max_target_n>=treelist->trees().count())
+        max_target_n = treelist->trees().count();
+    // we have 2500 px per ha (2m resolution)
+    // if each tree dominates its Moore-neighborhood, 2500/9 = 267 trees are possible (/ha)
+    // if *more* trees should be marked, some trees need to be on neighbor pixels:
+    // pixels = 2500 / N; if 9 px are the Moore neighborhood, the "overprint" is N*9 / 2500.
+    // N*)/2500 -1 = probability of having more than zero overlapping pixels
+    double overprint = (mSelectiveThinning.N * 9) / double(cPxPerHectare) - 1.;
+
+    // order the list of trees according to tree height
+    treelist->sort("-height");
+
+    // start with a part of N and 0 overlap
+    int n_found = 0;
+    int tests=0;
+    for (int i=0;i<target_n/3;i++) {
+        float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
+        if (f==0.f) {
+            setPixel(treelist->trees().at(i).first->position(), grid);
+            treelist->trees()[i].first->markCropTree(true);
+            ++n_found;
+        }
+    }
+    // continue with a higher probability --- incr
+    for (int run=0;run<4;++run) {
+        for (int i=0; i<max_target_n;++i) {
+            if (treelist->trees().at(i).first->isMarkedAsCropTree())
+                continue;
+
+            float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
+
+            if ( (f==0.f) ||
+                 (f<=2.f && drandom()<overprint) ||
+                 (run==1 && f<=4 && drandom()<overprint) ||
+                 (run==2 && drandom()<overprint) ||
+                 (run==3) ) {
+
+                setPixel(treelist->trees().at(i).first->position(), grid);
+                treelist->trees()[i].first->markCropTree(true);
+                ++n_found;
+                if (n_found == target_n)
+                    break;
+            }
+        }
+        if (n_found==target_n)
+            break;
+    }
+
+    // now mark the competitors:
+    // competitors are trees up to 75th percentile of the tree population that
+    int n_competitor=0;
+    for (int run=0;run<3;++run) {
+        for (int i=0; i<max_target_n;++i) {
+            Tree *tree = treelist->trees().at(i).first;
+            if (tree->isMarkedAsCropTree() || tree->isMarkedAsCropCompetitor())
+                continue;
+
+            float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
+
+            if ( (f>12.f) ||
+                 (run==1 && f>8) ||
+                 (run==2 && f>4) ) {
+                tree->markCropCompetitor(true);
+                n_competitor++;
+            }
+        }
+    }
+
+
+    if (FMSTP::verbose()) {
+        qCDebug(abe) << stand->context() << "Thinning::markCropTrees: marked" << n_found << "(plan:" << target_n << ") from total" << treelist->trees().count()
+                     << ". Tests performed:" << tests << "marked as competitors:" << n_competitor;
+    }
+    return n_found==target_n;
+
+}
+
+float ActThinning::testPixel(const QPointF &pos, Grid<float> &grid)
+{
+    // check Moore neighborhood
+    int x=grid.indexAt(pos).x();
+    int y=grid.indexAt(pos).y();
+
+    float sum = 0.f;
+    sum += grid.isIndexValid(x-1,y-1) ? grid.valueAtIndex(x-1, y-1) : 0;
+    sum += grid.isIndexValid(x,y-1) ? grid.valueAtIndex(x, y-1) : 0;
+    sum += grid.isIndexValid(x+1,y-1) ? grid.valueAtIndex(x+1, y-1) : 0;
+
+    sum += grid.isIndexValid(x-1,y) ? grid.valueAtIndex(x-1, y) : 0;
+    sum += grid.isIndexValid(x,y) ? grid.valueAtIndex(x, y) : 0;
+    sum += grid.isIndexValid(x+1,y) ? grid.valueAtIndex(x+1, y) : 0;
+
+    sum += grid.isIndexValid(x-1,y+1) ? grid.valueAtIndex(x-1, y+1) : 0;
+    sum += grid.isIndexValid(x,y+1) ? grid.valueAtIndex(x, y+1) : 0;
+    sum += grid.isIndexValid(x+1,y+1) ? grid.valueAtIndex(x+1, y+1) : 0;
+
+    return sum;
+}
+
+void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
+{
+    // check Moore neighborhood
+    int x=grid.indexAt(pos).x();
+    int y=grid.indexAt(pos).y();
+
+    if (grid.isIndexValid(x-1,y-1)) grid.valueAtIndex(x-1, y-1)++;
+    if (grid.isIndexValid(x,y-1)) grid.valueAtIndex(x, y-1)++;
+    if (grid.isIndexValid(x+1,y-1)) grid.valueAtIndex(x+1, y-1)++;
+
+    if (grid.isIndexValid(x-1,y)) grid.valueAtIndex(x-1, y)++;
+    if (grid.isIndexValid(x,y)) grid.valueAtIndex(x, y) += 3; // more impact on center pixel
+    if (grid.isIndexValid(x+1,y)) grid.valueAtIndex(x+1, y)++;
+
+    if (grid.isIndexValid(x-1,y+1)) grid.valueAtIndex(x-1, y+1)++;
+    if (grid.isIndexValid(x,y+1)) grid.valueAtIndex(x, y+1)++;
+    if (grid.isIndexValid(x+1,y+1)) grid.valueAtIndex(x+1, y+1)++;
 }
 
 

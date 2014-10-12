@@ -22,6 +22,7 @@ ABEStandOut::ABEStandOut()
               << OutputColumn("dbh", "mean diameter (basal area weighted, of trees >4m) (cm)", OutDouble)
               << OutputColumn("height", "mean stand tree height (basal area weighted, of trees >4m)(cm)", OutDouble)
               << OutputColumn("stems", "number of trees (trees >4m) per ha", OutDouble)
+              << OutputColumn("age", "the age of the stand (years since beginning of the rotation)", OutDouble)
                  ;
 }
 
@@ -39,6 +40,7 @@ void ABEStandOut::exec()
         *this << qRound(stand->dbh()*100.)/100.;
         *this << qRound(stand->height()*100.)/100.;
         *this << qRound(stand->stems());
+        *this << stand->absoluteAge();
         writeRow();
 
     }

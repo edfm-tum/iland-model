@@ -1,6 +1,7 @@
 #ifndef ACTTHINNING_H
 #define ACTTHINNING_H
 #include "activity.h"
+#include "grid.h"
 
 namespace ABE {
 
@@ -32,15 +33,34 @@ private:
         double minDbh; ///< only trees with dbh > minDbh are considered (default: 0)
         int remainingStems; ///< minimum remaining stems/ha (>minDbh)
     };
+    struct SSelectiveThinning {
+        int N; // stems pro ha target
+    };
+
+    SSelectiveThinning mSelectiveThinning;
+
     QVector<SCustomThinning> mCustomThinnings;
     /// setup function for custom thinnings
     void setupCustom(QJSValue value);
+    /// setup function for selective thinnings ("auslesedurchforstung")
+    void setupSelective(QJSValue value);
+
     // setup a single thinning definition
     void setupSingleCustom(QJSValue value, SCustomThinning &custom);
     bool evaluateCustom(FMStand *stand, SCustomThinning &custom);
     int selectRandomTree(FMTreeList *list, const int pct_min, const int pct_max);
     void clearTreeMarks(FMTreeList *list);
+
+    // selective
+    bool evaluateSelective(FMStand *stand);
+    bool markCropTrees(FMStand* stand);
+    float testPixel(const QPointF &pos,  Grid<float> &grid);
+    void setPixel(const QPointF &pos,  Grid<float> &grid);
     ThinningType mThinningType;
+
+    // syntax checking
+    static QStringList mSyntaxCustom;
+    static QStringList mSyntaxSelective;
 
 };
 

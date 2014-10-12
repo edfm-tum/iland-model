@@ -46,7 +46,7 @@ public:
     // establishment, sapling growth
     void calculateEstablishment(); ///< perform establishment calculations
     void calclulateSaplingGrowth(); ///< growth of saplings
-    int addSapling(const QPoint &position, const float height=0.05f) { return mSapling.addSapling(position, height); } ///< add a saplings on a given position
+    int addSapling(const QPoint &position, const float height=0.05f, const int age=1) { return mSapling.addSapling(position, height, age); } ///< add a saplings on a given position
     void clearSaplings(const QPoint &position) { mSapling.clearSaplings(position);} ///< clear saplings on a given position (after recruitment)
     bool hasSaplingAt(const QPoint &position) const { return mSapling.hasSapling(position); } ///< return true if a sapling of the current speices is present at 'position'
     // visualization/graphical output

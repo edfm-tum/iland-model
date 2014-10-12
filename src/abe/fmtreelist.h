@@ -28,6 +28,9 @@ public:
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
 
+    /// access to local grid (setup if necessary)
+    Grid<float> &localGrid() { prepareGrids(); return mLocalGrid; }
+
 signals:
 
 public slots:
@@ -69,6 +72,9 @@ public slots:
       @param slash_fraction 0: no change, 1: 100%
        */
 //    void slashSnags(MapGridWrapper *wrap, int key, double slash_fraction);
+    /**  sort the list according to 'statement'. Note that sorting is in ascending order. To
+     *   have e.g. tallest trees first in the list, use '-height'.
+    */
     void sort(QString statement); ///< sort trees in the list according to a criterion
 //    int filter(QString filter); ///< apply a filter on the list of trees (expression), return number of remaining trees.
 //    int filterIdList(QVariantList idList); ///< apply filter in form of a list of ids, return number of remaining trees
@@ -110,8 +116,9 @@ private:
     int mNumberOfStems; ///< estimate for the number of trees in the stand
     bool mOnlySimulate; ///< mode
     QRectF mStandRect;
-    FloatGrid mStandGrid;
-    Grid<int> mTreeCountGrid;
+    FloatGrid mStandGrid; ///< local stand grid (10m pixel)
+    Grid<int> mTreeCountGrid; ///< tree counts on local stand grid (10m)
+    Grid<float> mLocalGrid; ///< 2m grid of the stand
     Expression *mRunGridCustom;
     double *mRunGridCustomCell;
     friend void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *list);

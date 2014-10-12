@@ -24,6 +24,7 @@ struct SchedulerOptions {
     double balanceWorkload; ///< factor between 0..1; 1: use only the minPriority formula, 0: no balancing
     Expression *minPriorityFormula; ///< formula to determine the minimum required activity rating for a given amount of harvest objective achievment.
     void setup(QJSValue jsvalue);
+    static QStringList mAllowedProperties;
 };
 
 /**
