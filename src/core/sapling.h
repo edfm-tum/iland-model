@@ -59,8 +59,9 @@ public:
     const QVector<SaplingTree> &saplings() const {return mSaplingTrees; }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
-    /// add a new sapling at 'pos_lif' (i.e. QPoint with LIF-coordiantes) and with 'height' (m). Returns the index of the newly added sapling.
-    int addSapling(const QPoint &pos_lif, const float height=0.05f);
+    /// add a new sapling at 'pos_lif' (i.e. QPoint with LIF-coordiantes) and with (optionally) 'height' (m) and 'age' (years)
+    /// Returns the index of the newly added sapling.
+    int addSapling(const QPoint &pos_lif, const float height=0.05f, const int age=1);
     /// clear (either remove or kill) a specific sapling
     void clearSapling(SaplingTree &tree, const bool remove);
     void clearSapling(int index, const bool remove);

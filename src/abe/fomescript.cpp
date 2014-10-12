@@ -235,6 +235,15 @@ bool FomeScript::runAgent(int stand_id, QString function)
 
 }
 
+bool FomeScript::isValidStand(int stand_id)
+{
+    FMStand *stand = ForestManagementEngine::instance()->stand(stand_id);
+    if (stand)
+        return true;
+
+    return false;
+}
+
 void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
 {
     FMStand *stand = ForestManagementEngine::instance()->stand(stand_id);

@@ -304,19 +304,21 @@ template <class T>
 bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 {
     mSizeX=sizex; mSizeY=sizey;
-    if (mRect.isNull()) // only set rect if not set before
+    if (mRect.isNull()) // only set rect if not set before (e.g. by call to setup(QRectF, double))
         mRect.setCoords(0., 0., cellsize*sizex, cellsize*sizey);
 
     if (mData) {
         // test if we can re-use the allocated memory.
-        if (mSizeX*mSizeY < mCount || mCellsize != cellsize) {
+        if (mSizeX*mSizeY > mCount || mCellsize != cellsize) {
             // we cannot re-use the memory - create new data
             delete[] mData; mData=NULL;
         }
     }
     mCellsize=cellsize;
     mCount = mSizeX*mSizeY;
-    if (mCount>0)
+    if (mCount==0)
+        return false;
+    if (mData==NULL)
         mData = new T[mCount];
     mEnd = &(mData[mCount]);
     return true;

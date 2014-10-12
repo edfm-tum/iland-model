@@ -19,8 +19,8 @@ namespace ABE {
 // Planting patterns
 QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
 << QPair<QString, int>(
-                       "11"\
-                       "11", 2)
+        "11"\
+        "11", 2)
 << QPair<QString, int>("11111"\
                        "11111"\
                        "11111"\
@@ -53,7 +53,9 @@ QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
                        "0000110000", 10);
 QStringList planting_pattern_names = QStringList() << "rect2" << "rect10" << "rect20" << "circle5" << "circle10";
 
-
+QStringList ActPlanting::mAllowedProperties = QStringList() << Activity::mAllowedProperties
+                                                            << "species" << "fraction" << "height" << "age" << "clear"
+                                                            << "pattern" << "spacing" << "offset" << "random" << "n";
 
 
 ActPlanting::ActPlanting(FMSTP *parent): Activity(parent)
@@ -80,11 +82,15 @@ void ActPlanting::setup(QJSValue value)
             mItems.append(SPlantingItem());
             SPlantingItem &item = mItems.last();
             qDebug() << it.name() << ": " << it.value().toString();
+            FMSTP::checkObjectProperties(it.value(), mAllowedProperties, "setup of planting activity:" + name() + "; " + it.name());
+
             item.setup(it.value());
         }
     } else {
         mItems.append(SPlantingItem());
         SPlantingItem &item = mItems.last();
+        FMSTP::checkObjectProperties(items, mAllowedProperties, "setup of planting activity:" + name());
+
         item.setup(items);
     }
     mRequireLoading = false;
@@ -151,12 +157,14 @@ void ActPlanting::runSinglePlantingItem(FMStand *stand, QJSValue value)
 
 bool ActPlanting::SPlantingItem::setup(QJSValue value)
 {
+
     QString species_id = FMSTP::valueFromJs(value, "species",QString(), "setup of planting item for planting activity.").toString();
     species = GlobalSettings::instance()->model()->speciesSet()->species(species_id);
     if (!species)
         throw IException(QString("'%1' is not a valid species id for setting up a planting item.").arg(species_id));
     fraction = FMSTP::valueFromJs(value, "fraction", "0").toNumber();
     height = FMSTP::valueFromJs(value, "height", "0.05").toNumber();
+    age = FMSTP::valueFromJs(value, "age", "1").toNumber();
     clear = FMSTP::valueFromJs(value, "clear", "false").toBool();
 
     // pattern
@@ -191,7 +199,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMult
             if (drandom() < fraction) {
                 ResourceUnit *ru = model->ru(runner.currentCoord());
                 ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
-                int t=rus.addSapling(runner.currentIndex(), height);
+                int t=rus.addSapling(runner.currentIndex(), height, age);
                 if (require_loading)
                     sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
             }

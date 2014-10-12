@@ -825,7 +825,7 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
            } else {
                // ok
                hits++;
-               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset);
+               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
            }
            if (misses > 3*pxcount) {
                qDebug() << "tried to add" << pxcount << "saplings at stand" << stand_id << "but failed in finding enough free positions. Added" << hits << "and stopped.";

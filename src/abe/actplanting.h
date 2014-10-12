@@ -25,10 +25,11 @@ public:
     static void runSinglePlantingItem(FMStand *stand, QJSValue value);
 private:
     struct SPlantingItem {
-        SPlantingItem(): species(0), fraction(0.), height(0.05), clear(false), grouped(false), group_type(-1), group_random_count(-1), offset(0), spacing(0) {}
+        SPlantingItem(): species(0), fraction(0.), height(0.05), age(1), clear(false), grouped(false), group_type(-1), group_random_count(-1), offset(0), spacing(0) {}
         Species *species;
         double fraction;
         double height;
+        int age;
         bool clear;
         bool grouped; ///< true for pattern creation
         int group_type; ///< index of the pattern in the pattern list
@@ -40,6 +41,8 @@ private:
     };
     QVector<SPlantingItem> mItems;
     bool mRequireLoading;
+
+    static QStringList mAllowedProperties;
 
 
 };

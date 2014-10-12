@@ -70,6 +70,7 @@ public slots:
     /// execute 'function' of the agent for the given stand; this is primarily aimed at testing/debugging.
     bool runAgent(int stand_id, QString function);
     // special functions
+    bool isValidStand(int stand_id);
 
     void runPlanting(int stand_id, QJSValue planting_item);
 public:
