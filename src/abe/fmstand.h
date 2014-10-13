@@ -93,7 +93,7 @@ public:
     /// mean annual increment (MAI), m3 timber/ha for the full rotation period
     double meanAnnualIncrementTotal() const { return mMAItotal; }
 
-    bool readyForFinalHarvest() { return currentActivity()?(currentFlags().isFinalHarvest() && currentFlags().isScheduled()):false; }
+    bool readyForFinalHarvest() {return absoluteAge()> 0.8*U(); } // { return currentActivity()?(currentFlags().isFinalHarvest() && currentFlags().isScheduled()):false; }
 
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
