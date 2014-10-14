@@ -49,6 +49,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
 
     mCurrentIndex=-1;
     mLastExecutedIndex=-1;
+    mLastRotationAge = -1;
 
     mArea = ForestManagementEngine::standGrid()->area(mId)/10000.;
 
@@ -482,6 +483,8 @@ QStringList FMStand::info()
         lines <<  "/-";
     }
     lines << QString("agent: %1").arg(unit()->agent()->type()->name());
+    lines << QString("U (yrs): %1").arg(U());
+    lines << QString("thinning int.: %1").arg(thinningIntensity());
     lines << QString("last update: %1").arg(lastUpdate());
     lines << QString("sleep (years): %1").arg(sleepYears());
     lines << QString("scheduled harvest: %1").arg(scheduledHarvest());
@@ -525,6 +528,7 @@ QStringList FMStand::info()
 
 void FMStand::newRotatation()
 {
+    mLastRotationAge = absoluteAge();
     mRotationStartYear = ForestManagementEngine::instance()->currentYear(); // reset stand age to 0.
     mRemovedVolumeTotal = 0.;
     mRemovedVolumeDecade = 0.;

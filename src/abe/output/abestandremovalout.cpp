@@ -17,6 +17,7 @@ ABEStandRemovalOut::ABEStandRemovalOut()
               << OutputColumn("unitid", "unique identifier of the planning unit", OutString)
               << OutputColumn("standid", "unique identifier of the forest stand", OutInteger)
               << OutputColumn("area", "total area of the forest stand (ha)", OutDouble)
+              << OutputColumn("age", "absolute stand age at the time of the activity (yrs)", OutDouble)
               << OutputColumn("activity", "name of the management activity that is executed", OutString)
               << OutputColumn("volumeAfter", "standing timber volume after the harvest operation (m3/ha)", OutDouble)
               << OutputColumn("volumeThinning", "removed timber volume due to thinning, m3/ha", OutDouble)
@@ -29,7 +30,7 @@ void ABEStandRemovalOut::exec()
     foreach(const FMStand *stand, ForestManagementEngine::instance()->stands()) {
         if (stand->totalHarvest()>0.) {
             *this << currentYear();
-            *this << stand->unit()->id() << stand->id() << stand->area();
+            *this << stand->unit()->id() << stand->id() << stand->area() << stand->lastExecutionAge();
             *this << (stand->lastExecutedActivity()?stand->lastExecutedActivity()->name():QString());
             *this << qRound(stand->volume()*100.)/100. << stand->totalThinningHarvest() / stand->area() //  thinning alone
                                      << (stand->totalHarvest() - stand->totalThinningHarvest() ) / stand->area() // final harvests (including salvage operations)

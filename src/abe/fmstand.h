@@ -126,8 +126,10 @@ public:
     /// get a pointer to the current activity; returns 0 if no activity is set.
     Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():0; }
 
-    /// get a pointer to the current activity; returns 0 if no activity is set.
+    /// get a pointer to the last executed activity; returns 0 if no activity has been executed before.
     Activity *lastExecutedActivity() const { return mLastExecutedIndex>-1?mStandFlags[mLastExecutedIndex].activity():0; }
+
+    int lastExecutionAge() const { return absoluteAge()>0 ? absoluteAge() : mLastRotationAge; }
 
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }
@@ -171,6 +173,7 @@ private:
     int mLastUpdate; ///< year of the last reload of data
     int mLastExecution; ///< year of the last execution of an activity
     int mLastExecutedIndex; ///< index of the last executed activity
+    int mLastRotationAge; ///< age at which the last rotation ended
 
     double mU; ///< rotation length
     int mSpeciesCompositionIndex; ///< index of the active target species composition
