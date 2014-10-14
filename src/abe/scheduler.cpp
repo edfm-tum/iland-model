@@ -55,11 +55,16 @@ void Scheduler::run()
     if (FMSTP::verbose() && total_final_harvested>0.)
         qCDebug(abe) << "Got extra harvest (e.g. salvages), m3=" << total_final_harvested;
 
+    int current_year = ForestManagementEngine::instance()->currentYear();
+
+    double scheduled_harvest[MAX_YEARS];
+    double over_values[MAX_YEARS];
+
     // update the schedule probabilities....
     QList<SchedulerItem*>::iterator it = mItems.begin();
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
-        harvest_in_queue += item->harvest;
+
         double p_sched = item->flags->activity()->scheduleProbability(item->stand);
         item->scheduleScore = p_sched;
         item->calculate();
@@ -78,9 +83,25 @@ void Scheduler::run()
             it = mItems.erase(it);
             delete item;
         } else {
+
+            // handle item
+            harvest_in_queue += item->harvest;
             ++it;
         }
     }
+
+    it = mItems.begin();
+    for (int i=0;i<MAX_YEARS;++i) { scheduled_harvest[i]=0.;  over_values[i] = 0.;}
+
+    while (it!=mItems.end()) {
+        if (item->flags->isFinalHarvest()) {
+            int year_index = qMin(qMax(0, item->optimalYear-current_year),MAX_YEARS-1);
+            over_values[ year_index ] = scheduled_harvest[year_index] + 0.5*item->harvest < mFinalCutTarget ? 0. : 1.;
+            scheduled_harvest[ year_index ] += item->harvest;
+        }
+        ++it;
+    }
+
 
     // sort the probabilities, highest probs go first....
     qSort(mItems);
@@ -89,7 +110,6 @@ void Scheduler::run()
 
     int no_executed = 0;
     double harvest_scheduled = 0.;
-    int current_year = ForestManagementEngine::instance()->currentYear();
     // now execute the activities with the highest ranking...
 
     it = mItems.begin();
@@ -249,6 +269,7 @@ double Scheduler::calculateMinProbability(const double current_harvest)
     value = balance * value + (1. - balance)*1.;
     return std::min( std::max( value, 0.), 1.);
 }
+
 
 void Scheduler::dump()
 {

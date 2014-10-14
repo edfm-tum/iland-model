@@ -101,6 +101,7 @@ private:
     double mFinalCutTarget; ///< current harvest target for regeneration harvests (m3/ha)
     double mThinningTarget; ///< current harvest target for thinning/tending operations (m3/ha)
 
+    static const int MAX_YEARS = 30;
     friend class UnitOut;
 };
 
