@@ -246,7 +246,7 @@ double Scheduler::calculateMinProbability(const double current_harvest)
     double value =  mUnit->agent()->schedulerOptions().minPriorityFormula->calculate(current_harvest);
     // use the balanceWorkload property
     double balance = mUnit->agent()->schedulerOptions().balanceWorkload;
-    value = balance * value + (1. - balance)*value;
+    value = balance * value + (1. - balance)*1.;
     return std::min( std::max( value, 0.), 1.);
 }
 

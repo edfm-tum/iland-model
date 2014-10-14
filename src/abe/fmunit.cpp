@@ -102,8 +102,6 @@ void FMUnit::managementPlanUpdate()
     mScheduler->plannedHarvests(plan_final, plan_thinning);
     // the actual harvests of the last planning period
     double realized = mRealizedHarvest;
-    // the plan of the last period
-    double old_plan = mAnnualHarvestTarget * period_length;
 
     mRealizedHarvest = 0.; // reset
     mRealizedHarvestLastYear = 0.;
@@ -129,7 +127,7 @@ void FMUnit::managementPlanUpdate()
         volume += stand->volume() * area;
         // HDZ: "haubarer" average increment: timber that is ready for final harvest
         if (stand->readyForFinalHarvest())
-            hdz += stand->volume() / stand->absoluteAge() * area;
+            hdz += stand->volume() / (0.1* stand->U()) * area; // note: changed!!!! was: volume/age * area
         total_area += area;
         ++it;
     }
@@ -151,7 +149,7 @@ void FMUnit::managementPlanUpdate()
     double rotation_length = 100.; // TODO
     double h_tot = mai * 2.*age / rotation_length;  //
     double h_reg = hdz * 2.*age / rotation_length;
-    double h_thi = h_tot - h_reg;
+    double h_thi = qMax(h_tot - h_reg, 0.);
 
     qCDebug(abe) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
     double sf = mAgent->useSustainableHarvest();
@@ -161,11 +159,11 @@ void FMUnit::managementPlanUpdate()
 
     // the sustainable harvest yield is the current yield and some carry over from the last period
     double sustainable_harvest = h_reg;
-    if (old_plan>0.) {
-        double delta = (realized-old_plan) / period_length;
-        // if delta > 0: timber removal was too high -> plan less for the current period, and vice versa.
-        sustainable_harvest -= delta;
-    }
+//    if (mAnnualHarvestTarget>0.) {
+//        double delta = realized/(total_area*period_length) - mAnnualHarvestTarget;
+//        // if delta > 0: timber removal was too high -> plan less for the current period, and vice versa.
+//        sustainable_harvest -= delta;
+//    }
     mAnnualHarvestTarget = sustainable_harvest * sf + bottom_up_harvest * (1.-sf);
     mAnnualHarvestTarget = qMax(mAnnualHarvestTarget, 0.);
 
