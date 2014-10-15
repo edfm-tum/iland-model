@@ -90,10 +90,12 @@ private:
         HarvestType harvestType; ///< type of harvest
         int  enterYear; ///< the year the ticket was created
         int  optimalYear; ///< the (first) year where execution is considered as optimal
+        int scheduledYear; ///< planned execution year
         int forbiddenTo; ///< year until which the harvest operation is forbidden
         ActivityFlags *flags; ///< the details of the activity/stand context
     };
     QList<SchedulerItem*> mItems; ///< the list of active tickets
+    QMultiHash<int, SchedulerItem*> mSchedule;
     /// find scheduler item for 'stand_id' or return NULL.
     SchedulerItem* item(const int stand_id) const;
     FMUnit *mUnit;
