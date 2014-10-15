@@ -57,9 +57,6 @@ void Scheduler::run()
 
     int current_year = ForestManagementEngine::instance()->currentYear();
 
-    double scheduled_harvest[MAX_YEARS];
-    double over_values[MAX_YEARS];
-
     // update the schedule probabilities....
     QList<SchedulerItem*>::iterator it = mItems.begin();
     while (it!=mItems.end()) {
@@ -90,18 +87,7 @@ void Scheduler::run()
         }
     }
 
-    it = mItems.begin();
-    for (int i=0;i<MAX_YEARS;++i) { scheduled_harvest[i]=0.;  over_values[i] = 0.;}
-
-    while (it!=mItems.end()) {
-        if (item->flags->isFinalHarvest()) {
-            int year_index = qMin(qMax(0, item->optimalYear-current_year),MAX_YEARS-1);
-            over_values[ year_index ] = scheduled_harvest[year_index] + 0.5*item->harvest < mFinalCutTarget ? 0. : 1.;
-            scheduled_harvest[ year_index ] += item->harvest;
-        }
-        ++it;
-    }
-
+    updateCurrentPlan();
 
     // sort the probabilities, highest probs go first....
     qSort(mItems);
@@ -121,6 +107,9 @@ void Scheduler::run()
             continue;
         }
 
+        if (item->scheduledYear > current_year)
+            break; // finished! TODO: check if this works ok ;)
+
         bool remove = false;
         bool final_harvest = item->flags->isFinalHarvest();
         //
@@ -129,6 +118,8 @@ void Scheduler::run()
             rel_harvest = total_final_harvested / mUnit->area() / mFinalCutTarget;
         else
             rel_harvest = total_thinning_harvested/mUnit->area() / mThinningTarget;
+
+
         double min_exec_probability = calculateMinProbability( rel_harvest );
 
 
@@ -270,6 +261,122 @@ double Scheduler::calculateMinProbability(const double current_harvest)
     return std::min( std::max( value, 0.), 1.);
 }
 
+void Scheduler::updateCurrentPlan()
+{
+    if (mSchedule.isEmpty())
+        return;
+    double scheduled_harvest[MAX_YEARS];
+    double state[MAX_YEARS];
+
+    for (int i=0;i<MAX_YEARS;++i) {
+        scheduled_harvest[i]=0.;
+        state[i] = 0.;
+    }
+
+    scheduled_harvest[0] = mExtraHarvest; // salvaging
+    mSchedule.clear();
+    int current_year = ForestManagementEngine::instance()->currentYear();
+    int max_year = 0;
+    double total_plan = mExtraHarvest;
+    for (QList<SchedulerItem*>::const_iterator it=mItems.begin(); it!=mItems.end(); ++it) {
+        SchedulerItem *item = *it;
+        mSchedule.insert(qMax(item->optimalYear, current_year), item);
+        total_plan += item->harvest;
+        int year_index = qMin(qMax(0, item->optimalYear-current_year),MAX_YEARS-1);
+        scheduled_harvest[ year_index ] += item->harvest;
+        max_year = qMax(max_year, year_index);
+    }
+
+    double mean_harvest = total_plan / (max_year + 1.);
+    double level = (mFinalCutTarget + mThinningTarget) * mUnit->area();
+
+    level = qMax(level, mean_harvest);
+
+    for (int i=0;i<MAX_YEARS;++i)
+        state[i] = scheduled_harvest[i]>level? 1. : 0.;
+
+    bool updated = false;
+    int max_iter = mItems.size() * 10;
+    do {
+
+        do {
+            // look for a relocate candidate and relocate
+
+            // look for the highest planned harvest
+            int year=-1; double max_harvest = -1.;
+            for (int i=0;i<MAX_YEARS;++i) {
+                if (scheduled_harvest[i]>max_harvest && state[i] == 1.) {
+                    year = i;
+                    max_harvest = scheduled_harvest[i];
+                }
+            }
+            // if no further slot is found, then stop
+            if (year==-1)
+                break;
+            // if the maximum harvest in the next x years is below the current plan,
+            // then we simply call it a day (and execute everything on its "optimal" point in time)
+            if (max_harvest < level)
+                break;
+            state[year] = -1.; // processed
+            // pick an element of that year and try to find another year
+            int pick = irandom(0, mSchedule.count(year + current_year)-1);
+            QMultiHash<int, SchedulerItem*>::iterator i = mSchedule.find(year + current_year);
+            while (i!=mSchedule.end() && i.key()==year+current_year) {
+                if (pick--==0) // select 'pick'ed element
+                    break;
+                ++i;
+            }
+            if (i==mSchedule.end())
+                throw IException("error scheduler");
+
+            SchedulerItem *item = i.value();
+            // try to change something only if the years' schedule is above the level without the focal item
+            if (scheduled_harvest[year]-item->harvest > level ) {
+                //
+                int calendar_year = year + current_year;
+                int dist = -1;
+                do {
+                    double value = item->flags->activity()->scheduleProbability(item->stand, calendar_year + dist);
+                    if (value>0. && year+dist>=0 && year+dist<MAX_YEARS) {
+                        if (state[year+dist] == 0.) {
+                            // simple: finish!
+                            mSchedule.erase(i);
+                            scheduled_harvest[year] -= item->harvest;
+                            scheduled_harvest[year+dist] += item->harvest;
+                            mSchedule.insert(calendar_year+dist, item);
+                            updated = true;
+                            // reset also the processed flag
+                            state[year] = scheduled_harvest[year]>level? 1. : 0.;
+                            state[year+dist] = scheduled_harvest[year+dist]>level? 1. : 0.;
+                            break;
+                        }
+                    }
+                    // series of: -1 +1 -2 +2 -3 +3 ...
+                    if (dist<0)
+                        dist = -dist;
+                    else
+                        dist = - (dist++);
+                } while (1=1);
+                if (updated)
+                    break;
+            } // end if
+            if (--max_iter<0) {
+                qDebug(abe) << "scheduler: max iterations reached in updateCurrentPlan()";
+                break;
+            }
+
+
+        } while (1==1); // continue until no further candidate exists or a relocate happened
+
+    } while (updated); // stop when no new candidate is found
+
+    // write back the execution plan....
+    for (QMultiHash<int, SchedulerItem*>::iterator it=mSchedule.begin(); it!=mSchedule.end(); ++it)
+        it.value()->scheduledYear = it.key();
+
+
+}
+
 
 void Scheduler::dump()
 {
@@ -301,7 +408,10 @@ bool Scheduler::SchedulerItem::operator<(const Scheduler::SchedulerItem &item)
     // sort *descending*, i.e. after sorting, the item with the highest score is in front.
     //    if (this->score == item.score)
     //        return this->enterYear < item.enterYear; // higher prob. for items that entered earlier TODO: change to due/overdue
-    return this->score > item.score;
+    if (this->scheduledYear==item.scheduledYear)
+        return this->score > item.score;
+    else
+        return this->scheduledYear < item.scheduledYear;
 }
 
 void Scheduler::SchedulerItem::calculate()

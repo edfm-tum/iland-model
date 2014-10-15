@@ -73,11 +73,13 @@ QString Schedule::dump() const
                 .arg(tminrel).arg(toptrel).arg(tmaxrel).arg(force_execution);
 }
 
-double Schedule::value(const FMStand *stand)
+double Schedule::value(const FMStand *stand, const int specific_year)
 {
     double U = stand->U();
     double current;
     double current_year = ForestManagementEngine::instance()->currentYear();
+    if (specific_year>=0)
+        current_year = specific_year;
     // absolute age: years since the start of the rotation
     current = stand->absoluteAge();
 
@@ -159,6 +161,7 @@ double Schedule::value(const FMStand *stand)
 
 double Schedule::minValue(const double U) const
 {
+    if (absolute) return tmin;
     if (repeat) return 100000000.;
     if (tmin>-1) return tmin;
     if (tminrel>-1.) return tminrel * U; // assume a fixed U of 100yrs
@@ -169,6 +172,7 @@ double Schedule::minValue(const double U) const
 
 double Schedule::maxValue(const double U) const
 {
+    if (absolute) return tmax;
     if (tmax>-1) return tmax;
     if (tmaxrel>-1.) return tmaxrel * U; // assume a fixed U of 100yrs
     if (repeat) return -1.; // repeating executions are treated specially
@@ -464,10 +468,10 @@ void Activity::setup(QJSValue value)
         mEnabledIf.setup(enabled_if);
 }
 
-double Activity::scheduleProbability(FMStand *stand)
+double Activity::scheduleProbability(FMStand *stand, const int specific_year)
 {
     // return a value between 0 and 1; return -1 if the activity is expired.
-    return schedule().value(stand);
+    return schedule().value(stand, specific_year);
 }
 
 double Activity::execeuteProbability(FMStand *stand)

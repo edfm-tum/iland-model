@@ -25,7 +25,7 @@ public:
     /// value() evaluates the schedule for the given 'stand'.
     /// return 0..1 (0: no fit, 1: perfect time).
     /// Special value -1: expired (i.e. current time past the maximum schedule time).
-    double value(const FMStand *stand);
+    double value(const FMStand *stand, const int specific_year=-1);
     /// gives (fixed) earliest possible execution time
     double minValue(const double U=100.) const;
     /// returns the latest possible execution time
@@ -165,7 +165,7 @@ public:
     /// setup of the activity (events, schedule, constraints). additional setup in derived classes.
     virtual void setup(QJSValue value);
     /// returns a value > 0 if the activity coult be scheduled now
-    virtual double scheduleProbability(FMStand *stand);
+    virtual double scheduleProbability(FMStand *stand, const int specific_year=-1);
     /// returns a probability for the activity to be executed (ie all constraints are fulfilled)
     /// return value is 0 if the activity can not be executed (maximum result is 1)
     virtual double execeuteProbability(FMStand *stand);
