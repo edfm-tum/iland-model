@@ -127,7 +127,7 @@ void FMUnit::managementPlanUpdate()
         volume += stand->volume() * area;
         // HDZ: "haubarer" average increment: timber that is ready for final harvest
         if (stand->readyForFinalHarvest())
-            hdz += stand->volume() / (0.1* stand->U()) * area; // note: changed!!!! was: volume/age * area
+            hdz += stand->volume() / stand->absoluteAge() * area; //(0.1* stand->U()) * area; // note: changed!!!! was: volume/age * area
         total_area += area;
         ++it;
     }
@@ -146,9 +146,12 @@ void FMUnit::managementPlanUpdate()
     mMeanAge = age;
     mTotalVolume = volume;
 
-    double rotation_length = 100.; // TODO
+    double rotation_length = U();
     double h_tot = mai * 2.*age / rotation_length;  //
     double h_reg = hdz * 2.*age / rotation_length;
+    h_reg = h_tot * 0.85; // hack!
+    h_reg *= agent()->schedulerOptions().harvestIntensity;
+    h_tot *= agent()->schedulerOptions().harvestIntensity;
     double h_thi = qMax(h_tot - h_reg, 0.);
 
     qCDebug(abe) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
