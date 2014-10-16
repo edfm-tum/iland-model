@@ -87,10 +87,13 @@ void Scheduler::run()
         }
     }
 
-    updateCurrentPlan();
+    if (mUnit->agent()->schedulerOptions().useScheduler)
+        updateCurrentPlan();
 
     // sort the probabilities, highest probs go first....
-    qSort(mItems);
+    //qSort(mItems);
+    //qSort(mItems.begin(), mItems.end(), )
+    std::sort(mItems.begin(), mItems.end(), ItemComparator());
     if (FMSTP::verbose())
         dump();
 
@@ -120,7 +123,10 @@ void Scheduler::run()
             rel_harvest = total_thinning_harvested/mUnit->area() / mThinningTarget;
 
 
-        double min_exec_probability = calculateMinProbability( rel_harvest );
+        double min_exec_probability = 0; // calculateMinProbability( rel_harvest );
+
+        if ((total_final_harvested+total_thinning_harvested) / (mFinalCutTarget+mThinningTarget) / mUnit->area() > mUnit->agent()->schedulerOptions().maxHarvestOvershoot )
+            break;
 
 
         if (item->score >= min_exec_probability) {
@@ -142,7 +148,6 @@ void Scheduler::run()
                 item->stand->afterExecution(!executed); // check what comes next for the stand
             }
             no_executed++;
-            //MapGrid::freeLocksForStand( item->stand->id() );
 
             // flag neighbors of the stand, if a clearcut happened
             // this is to avoid large unforested areas
@@ -263,7 +268,7 @@ double Scheduler::calculateMinProbability(const double current_harvest)
 
 void Scheduler::updateCurrentPlan()
 {
-    if (mSchedule.isEmpty())
+    if (mItems.isEmpty())
         return;
     double scheduled_harvest[MAX_YEARS];
     double state[MAX_YEARS];
@@ -295,10 +300,11 @@ void Scheduler::updateCurrentPlan()
     for (int i=0;i<MAX_YEARS;++i)
         state[i] = scheduled_harvest[i]>level? 1. : 0.;
 
-    bool updated = false;
     int max_iter = mItems.size() * 10;
+    bool updated = false;
     do {
 
+        updated = false;
         do {
             // look for a relocate candidate and relocate
 
@@ -353,15 +359,15 @@ void Scheduler::updateCurrentPlan()
                     }
                     // series of: -1 +1 -2 +2 -3 +3 ...
                     if (dist<0)
-                        dist = -dist;
+                        dist = -dist; // switch sign
                     else
-                        dist = - (dist++);
-                } while (1=1);
+                        dist = - (dist+1); // switch sign and add 1
+                } while (dist<MAX_YEARS);
                 if (updated)
                     break;
             } // end if
             if (--max_iter<0) {
-                qDebug(abe) << "scheduler: max iterations reached in updateCurrentPlan()";
+                qCDebug(abe) << "scheduler: max iterations reached in updateCurrentPlan()";
                 break;
             }
 
@@ -374,7 +380,7 @@ void Scheduler::updateCurrentPlan()
     for (QMultiHash<int, SchedulerItem*>::iterator it=mSchedule.begin(); it!=mSchedule.end(); ++it)
         it.value()->scheduledYear = it.key();
 
-
+    dump();
 }
 
 
@@ -383,11 +389,11 @@ void Scheduler::dump()
     if(mItems.isEmpty())
         return;
     qCDebug(abe)<< "***** Scheduler items **** Unit:" << mUnit->id();
-    qCDebug(abe)<< "stand.id, score, opt.year, act.name, planned.harvest";
+    qCDebug(abe)<< "stand.id, scheduled.year, score, opt.year, act.name, planned.harvest";
     QList<SchedulerItem*>::iterator it = mItems.begin();
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
-        qCDebug(abe) << QString("%1, %2, %3, %4, %5").arg(item->stand->id()).arg(item->score).arg(item->optimalYear)
+        qCDebug(abe) << QString("%1, %2, %3, %4, %5, %6").arg(item->stand->id()).arg(item->scheduledYear).arg(item->score).arg(item->optimalYear)
                         .arg(item->flags->activity()->name())
                         .arg(item->harvest);
         ++it;
@@ -402,6 +408,7 @@ Scheduler::SchedulerItem *Scheduler::item(const int stand_id) const
         }
     return 0;
 }
+
 
 bool Scheduler::SchedulerItem::operator<(const Scheduler::SchedulerItem &item)
 {
@@ -430,7 +437,7 @@ void Scheduler::SchedulerItem::calculate()
 QStringList SchedulerOptions::mAllowedProperties = QStringList()
         << "minScheduleHarvest" << "maxScheduleHarvest" << "minSchedulemaxHarvestOvershoot"
         << "useSustainableHarvest" << "scheduleRebounceDuration" << "deviationDecayRate"
-        << "minPriorityFormula" << "balanceWorkload";
+        << "minPriorityFormula" << "balanceWorkload" << "enabled" << "harvestIntensity";
 
 SchedulerOptions::~SchedulerOptions()
 {
@@ -454,6 +461,7 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     if (useSustainableHarvest<0. || useSustainableHarvest>1.)
         throw IException("Setup of scheduler-options: invalid value for 'useSustainableHarvest' (0..1 allowed).");
 
+    harvestIntensity = FMSTP::valueFromJs(jsvalue, "harvestIntensity", "1").toNumber();
     scheduleRebounceDuration = FMSTP::valueFromJs(jsvalue, "scheduleRebounceDuration", "5").toNumber();
     if (scheduleRebounceDuration==0.)
         throw IException("Setup of scheduler-options: '0' is not a valid value for 'scheduleRebounceDuration'!");
@@ -467,7 +475,16 @@ void SchedulerOptions::setup(QJSValue jsvalue)
         minPriorityFormula = new Expression();
     minPriorityFormula->setExpression(FMSTP::valueFromJs(jsvalue, "minPriorityFormula","x^4").toString());
     balanceWorkload = FMSTP::valueFromJs(jsvalue, "balanceWorkload", "0.5").toNumber();
-    useScheduler = true;
+    useScheduler = FMSTP::boolValueFromJs(jsvalue, "enabled", true);
+
+}
+
+bool Scheduler::ItemComparator::operator()(const Scheduler::SchedulerItem *lx, const Scheduler::SchedulerItem *rx) const
+{
+    if (lx->scheduledYear==rx->scheduledYear)
+        return lx->score > rx->score;
+    else
+        return lx->scheduledYear < rx->scheduledYear;
 
 }
 
