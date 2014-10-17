@@ -26,6 +26,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     item->flags = flags;
     item->enterYear = ForestManagementEngine::instance()->currentYear();
     item->optimalYear = item->enterYear + flags->activity()->optimalSchedule(stand->U())- stand->absoluteAge();
+    item->scheduledYear = item->optimalYear;
     // estimate growth from now to the optimal time - we assume that growth of the last decade continues
     int t = item->optimalYear - item->enterYear; // in t years harvest is optimal
     double time_factor = 0.;
@@ -124,9 +125,15 @@ void Scheduler::run()
 
 
         double min_exec_probability = 0; // calculateMinProbability( rel_harvest );
-
-        if ((total_final_harvested+total_thinning_harvested) / (mFinalCutTarget+mThinningTarget) / mUnit->area() > mUnit->agent()->schedulerOptions().maxHarvestOvershoot )
+        rel_harvest = (total_final_harvested+total_thinning_harvested)/ mUnit->area() / (mFinalCutTarget+mThinningTarget);
+        if (rel_harvest > mUnit->agent()->schedulerOptions().maxHarvestOvershoot)
             break;
+
+        if (rel_harvest + item->harvest/mUnit->area()/(mFinalCutTarget+mThinningTarget) > mUnit->agent()->schedulerOptions().maxHarvestOvershoot) {
+            // including the *current* harvest, the threshold would be exceeded -> draw a random number
+            if (drandom() <0.5)
+                break;
+        }
 
 
         if (item->score >= min_exec_probability) {
@@ -158,7 +165,7 @@ void Scheduler::run()
                 QList<int> neighbors = ForestManagementEngine::instance()->standGrid()->neighborsOf(item->stand->id());
                 for (QList<SchedulerItem*>::iterator nit = mItems.begin(); nit!=mItems.end(); ++nit)
                     if (neighbors.contains((*nit)->stand->id()))
-                        (*nit)->forbiddenTo = current_year + 5;
+                        (*nit)->forbiddenTo = current_year + 7;
 
             }
 
