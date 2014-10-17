@@ -80,7 +80,7 @@ private:
     void dump();
     class SchedulerItem {
     public:
-        SchedulerItem(): stand(0), score(0.) {}
+        SchedulerItem(): stand(0), score(0.), scheduledYear(-1) {}
         bool operator<(const SchedulerItem &item);
         void calculate(); ///< calculate the final score
         FMStand *stand; ///< the stand to be harvested
