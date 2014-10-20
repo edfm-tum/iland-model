@@ -66,14 +66,14 @@ Agent *AgentType::createAgent(QString agent_name)
 
 }
 
-void AgentType::addAgentUpdate(const AgentUpdate &update, const FMUnit *unit)
+void AgentType::addAgentUpdate(const AgentUpdate &update, FMUnit *unit)
 {
 
     // clear agent updates...
     QMultiHash<const FMUnit*, AgentUpdate>::iterator hi= mAgentChanges.begin();
     while (hi != mAgentChanges.end()) {
         if (!hi.value().isValid())
-            mAgentChanges.erase(hi);
+            hi = mAgentChanges.erase(hi);
         else
             ++hi;
     }
@@ -81,6 +81,13 @@ void AgentType::addAgentUpdate(const AgentUpdate &update, const FMUnit *unit)
 
     AgentUpdate &rUpdate = mAgentChanges.insertMulti(unit, update).value();
     rUpdate.setCounter( unit->numberOfStands() );
+
+    // set default unit value
+    switch (update.type()) {
+    case AgentUpdate::UpdateU: unit->setU( update.value().toInt() ); break;
+    case AgentUpdate::UpdateThinning: unit->setThinningIntensity(update.value().toInt()); break;
+    case AgentUpdate::UpdateSpecies: break;
+    }
 
     if (update.age()==-1)
         return;
@@ -105,14 +112,16 @@ bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int 
     while (uit != mAgentChanges.end() && uit.key()==stand->unit()) {
         AgentUpdate &update = uit.value();
 
-        if (!update.isValid())
+        if (!update.isValid()) {
+            ++uit;
             continue;
+        }
         // timing of update
         if (!after_activity.isEmpty() && update.afterActivity()==after_activity) {
             // do something
             action = true;
         }
-        if (update.age()>-1 && age==update.age()) {
+        if (update.age()>-1 && age<update.age()) {
             // do something
             action = true;
         }
@@ -122,14 +131,15 @@ bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int 
             update.decrease();
             switch (update.type()) {
             case AgentUpdate::UpdateU: {
-                int current_u = stand->stp()->rotationLengthType(stand->U());
+                int current_u = stand->U(); // stand->stp()->rotationLengthType(stand->U());
                 int new_u = update.value().toInt();
                 if (current_u == new_u) {
                     if (stand->trace())
                         qCDebug(abe) << stand->context() << "AgentUpdate: update of U to" << new_u << " not done (value already set).";
                     break;
                 }
-                stand->setU( stand->stp()->rotationLengthOfType(new_u) );
+                stand->setU( new_u );
+                // stand->setU( stand->stp()->rotationLengthOfType(new_u) );
                 qCDebug(abe) << stand->context() << "AgentUpdate: changed to U" << stand->U();
                 // QML like dynamic expressions
                 stand->stp()->evaluateDynamicExpressions(stand);

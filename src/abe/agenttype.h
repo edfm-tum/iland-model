@@ -61,7 +61,7 @@ public:
     /// create an agent of the agent type
     Agent *createAgent(QString agent_name=QString());
 
-    void addAgentUpdate(const AgentUpdate &update, const FMUnit *unit);
+    void addAgentUpdate(const AgentUpdate &update, FMUnit *unit);
     bool agentUpdateForStand(FMStand *stand, QString after_activity, int age);
 
 

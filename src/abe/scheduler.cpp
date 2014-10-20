@@ -126,10 +126,10 @@ void Scheduler::run()
 
         double min_exec_probability = 0; // calculateMinProbability( rel_harvest );
         rel_harvest = (total_final_harvested+total_thinning_harvested)/ mUnit->area() / (mFinalCutTarget+mThinningTarget);
-        if (rel_harvest > mUnit->agent()->schedulerOptions().maxHarvestOvershoot)
+        if (rel_harvest > mUnit->agent()->schedulerOptions().maxHarvestLevel)
             break;
 
-        if (rel_harvest + item->harvest/mUnit->area()/(mFinalCutTarget+mThinningTarget) > mUnit->agent()->schedulerOptions().maxHarvestOvershoot) {
+        if (rel_harvest + item->harvest/mUnit->area()/(mFinalCutTarget+mThinningTarget) > mUnit->agent()->schedulerOptions().maxHarvestLevel) {
             // including the *current* harvest, the threshold would be exceeded -> draw a random number
             if (drandom() <0.5)
                 break;
@@ -254,23 +254,6 @@ QStringList Scheduler::info(const int stand_id) const
     lines << QString("in scheduler since: %1").arg(si->enterYear);
     lines << "/-";
     return lines;
-}
-
-/// calculate the result of the response function that indicates, given the accumulated harvest of the current year,
-/// the minimum priority ranking of stands that should be executed.
-/// The idea: if the harvest level is low, the scheduler tends to run also harvests with low priority; if the
-/// accumulated harvest approaches the target, the scheduler is increasingly picky.
-double Scheduler::calculateMinProbability(const double current_harvest)
-{
-    if (current_harvest > mUnit->agent()->schedulerOptions().maxHarvestOvershoot)
-        return 999.; // never reached
-
-    // use the provided equation
-    double value =  mUnit->agent()->schedulerOptions().minPriorityFormula->calculate(current_harvest);
-    // use the balanceWorkload property
-    double balance = mUnit->agent()->schedulerOptions().balanceWorkload;
-    value = balance * value + (1. - balance)*1.;
-    return std::min( std::max( value, 0.), 1.);
 }
 
 void Scheduler::updateCurrentPlan()
@@ -442,15 +425,10 @@ void Scheduler::SchedulerItem::calculate()
 
 // **************************************************************************************
 QStringList SchedulerOptions::mAllowedProperties = QStringList()
-        << "minScheduleHarvest" << "maxScheduleHarvest" << "minSchedulemaxHarvestOvershoot"
+        << "minScheduleHarvest" << "maxScheduleHarvest" << "maxHarvestLevel"
         << "useSustainableHarvest" << "scheduleRebounceDuration" << "deviationDecayRate"
-        << "minPriorityFormula" << "balanceWorkload" << "enabled" << "harvestIntensity";
+        << "enabled" << "harvestIntensity";
 
-SchedulerOptions::~SchedulerOptions()
-{
-    if (minPriorityFormula)
-        delete minPriorityFormula;
-}
 
 void SchedulerOptions::setup(QJSValue jsvalue)
 {
@@ -463,7 +441,7 @@ void SchedulerOptions::setup(QJSValue jsvalue)
 
     minScheduleHarvest = FMSTP::valueFromJs(jsvalue, "minScheduleHarvest","0").toNumber();
     maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
-    maxHarvestOvershoot = FMSTP::valueFromJs(jsvalue, "maxHarvestOvershoot","2").toNumber();
+    maxHarvestLevel = FMSTP::valueFromJs(jsvalue, "maxHarvestLevel","2").toNumber();
     useSustainableHarvest = FMSTP::valueFromJs(jsvalue, "useSustainableHarvest", "1").toNumber();
     if (useSustainableHarvest<0. || useSustainableHarvest>1.)
         throw IException("Setup of scheduler-options: invalid value for 'useSustainableHarvest' (0..1 allowed).");
@@ -478,10 +456,6 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     if (deviationDecayRate==1.)
         throw IException("Setup of scheduler-options: '0' is not a valid value for 'deviationDecayRate'!");
     deviationDecayRate = 1. - deviationDecayRate; // if eg value is 0.05 -> multiplier 0.95
-    if (!minPriorityFormula)
-        minPriorityFormula = new Expression();
-    minPriorityFormula->setExpression(FMSTP::valueFromJs(jsvalue, "minPriorityFormula","x^4").toString());
-    balanceWorkload = FMSTP::valueFromJs(jsvalue, "balanceWorkload", "0.5").toNumber();
     useScheduler = FMSTP::boolValueFromJs(jsvalue, "enabled", true);
 
 }
