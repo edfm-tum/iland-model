@@ -7,6 +7,7 @@
 #include "agenttype.h"
 #include "agent.h"
 #include "fmtreelist.h"
+#include "scheduler.h"
 
 #include "actplanting.h"
 
@@ -24,6 +25,7 @@ FomeScript::FomeScript(QObject *parent) :
     mUnitObj = 0;
     mSimulationObj = 0;
     mActivityObj = 0;
+    mSchedulerObj = 0;
     mTrees = 0;
     mStand = 0;
 }
@@ -70,6 +72,11 @@ void FomeScript::setupScriptEnvironment()
     QJSValue treelist_value = ForestManagementEngine::scriptEngine()->newQObject(mTrees);
     ForestManagementEngine::scriptEngine()->globalObject().setProperty("trees", treelist_value);
 
+    // scheduler options
+    mSchedulerObj = new SchedulerObj;
+    QJSValue scheduler_value = ForestManagementEngine::scriptEngine()->newQObject(mSchedulerObj);
+    ForestManagementEngine::scriptEngine()->globalObject().setProperty("scheduler", scheduler_value);
+
     // the script object itself
     QJSValue script_value = ForestManagementEngine::scriptEngine()->newQObject(this);
     ForestManagementEngine::scriptEngine()->globalObject().setProperty("fmengine", script_value);
@@ -84,7 +91,8 @@ void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
     br->mTrees->setStand(stand);
     br->mUnitObj->setStand(stand);
     br->mActivityObj->setStand(stand);
-    if (stand->trace())
+    br->mSchedulerObj->setStand(stand);
+    if (stand && stand->trace())
         qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
     if (add_agent) {
         const Agent *ag = stand->unit()->agent();
@@ -420,7 +428,7 @@ bool UnitObj::agentUpdate(QString what, QString how, QString when)
     else
         update.setTimeActivity(when);
 
-    mStand->unit()->agent()->type()->addAgentUpdate( update, mStand->unit() );
+    mStand->unit()->agent()->type()->addAgentUpdate( update, const_cast<FMUnit*>(mStand->unit()) );
     qCDebug(abe) << "Unit::agentUpdate:" << update.dump();
     return true;
 }
@@ -479,6 +487,69 @@ double UnitObj::regenerationLevel() const
 {
     return 1; // todo
 
+}
+
+bool SchedulerObj::enabled()
+{
+    if (!mStand) return false;
+    const SchedulerOptions &opt = mStand->unit()->agent()->schedulerOptions();
+    return opt.useScheduler;
+}
+
+void SchedulerObj::setEnabled(bool is_enabled)
+{
+    if (!mStand)
+        return;
+    SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
+    opt.useScheduler = is_enabled;
+
+}
+
+double SchedulerObj::harvestIntensity()
+{
+    if (!mStand) return false;
+    const SchedulerOptions &opt = mStand->unit()->agent()->schedulerOptions();
+    return opt.harvestIntensity;
+}
+
+void SchedulerObj::setHarvestIntensity(double new_intensity)
+{
+    if (!mStand)
+        return;
+    SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
+    opt.harvestIntensity = new_intensity;
+
+}
+
+double SchedulerObj::useSustainableHarvest()
+{
+    if (!mStand) return false;
+    const SchedulerOptions &opt = mStand->unit()->agent()->schedulerOptions();
+    return opt.useSustainableHarvest;
+}
+
+void SchedulerObj::setUseSustainableHarvest(double new_level)
+{
+    if (!mStand)
+        return;
+    SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
+    opt.useSustainableHarvest = new_level;
+
+}
+
+double SchedulerObj::maxHarvestLevel()
+{
+    if (!mStand) return false;
+    const SchedulerOptions &opt = mStand->unit()->agent()->schedulerOptions();
+    return opt.maxHarvestLevel;
+}
+
+void SchedulerObj::setMaxHarvestLevel(double new_harvest_level)
+{
+    if (!mStand)
+        return;
+    SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
+    opt.maxHarvestLevel = new_harvest_level;
 }
 
 

@@ -10,6 +10,7 @@ namespace ABE {
 class StandObj;
 class UnitObj;
 class SimulationObj;
+class SchedulerObj;
 class FMTreeList; // forward
 
 /// FomeScript provides general helping functions for the Javascript world.
@@ -85,6 +86,7 @@ private:
     SimulationObj *mSimulationObj;
     ActivityObj *mActivityObj;
     FMTreeList *mTrees;
+    SchedulerObj *mSchedulerObj;
     QString mLastErrorMessage;
 
 };
@@ -255,6 +257,31 @@ private:
     Activity *mActivity; // pointer
     FMStand *mStand; // and to the forest stand....
 
+};
+
+
+class SchedulerObj : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(double harvestIntensity READ harvestIntensity WRITE setHarvestIntensity)
+    Q_PROPERTY(double useSustainableHarvest READ useSustainableHarvest WRITE setUseSustainableHarvest)
+    Q_PROPERTY(double maxHarvestLevel READ maxHarvestLevel WRITE setMaxHarvestLevel)
+public:
+    explicit SchedulerObj(QObject *parent = 0): QObject(parent) {mStand=0; }
+    void setStand(FMStand *stand) { mStand = stand;}
+
+    bool enabled();
+    void setEnabled(bool is_enabled);
+    double harvestIntensity();
+    void setHarvestIntensity(double new_intensity);
+    double useSustainableHarvest();
+    void setUseSustainableHarvest(double new_level);
+    double maxHarvestLevel();
+    void setMaxHarvestLevel(double new_harvest_level);
+
+private:
+    FMStand *mStand; // link to the forest stand
 };
 
 

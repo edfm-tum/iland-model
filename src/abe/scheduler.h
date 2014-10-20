@@ -12,18 +12,15 @@ class FMUnit; // forward
 /** @brief SchedulerOptions store agent-specific options.
  * */
 struct SchedulerOptions {
-    SchedulerOptions(): useScheduler(false), useSustainableHarvest(1.), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestOvershoot(0), harvestIntensity(1.), scheduleRebounceDuration(0), deviationDecayRate(0.), balanceWorkload(0.){ minPriorityFormula = 0; }
-    ~SchedulerOptions();
+    SchedulerOptions(): useScheduler(false), useSustainableHarvest(1.), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestLevel(0), harvestIntensity(1.), scheduleRebounceDuration(0), deviationDecayRate(0.){  }
     bool useScheduler; ///< true, if the agent is using the scheduler at all
     double useSustainableHarvest; ///< scaling factor (0..1), 1 if scheduler used by agent (exclusively), 0: bottom up, linearly scaled in between.
     double minScheduleHarvest; ///< minimum amount of m3/ha*yr that should be scheduled
     double maxScheduleHarvest; ///< the maximum number of m3/ha*yr that should be scheduled
-    double maxHarvestOvershoot; ///< multiplier to define the maximum overshoot over the planned volume (e.g. 1.2 -> 20% max. overshoot)
+    double maxHarvestLevel; ///< multiplier to define the maximum overshoot over the planned volume (e.g. 1.2 -> 20% max. overshoot)
     double harvestIntensity; ///< multiplier for the "sustainable" harvest level
     double scheduleRebounceDuration; ///< number of years for which deviations from the planned volume are split into
     double deviationDecayRate; ///< factor to reduce accumulated harvest deviation
-    double balanceWorkload; ///< factor between 0..1; 1: use only the minPriority formula, 0: no balancing
-    Expression *minPriorityFormula; ///< formula to determine the minimum required activity rating for a given amount of harvest objective achievment.
 
     void setup(QJSValue jsvalue);
     static QStringList mAllowedProperties;
@@ -75,7 +72,6 @@ public:
     QStringList info(const int stand_id) const;
 
 private:
-    double calculateMinProbability(const double current_harvest);
     void updateCurrentPlan();
     void dump();
     class SchedulerItem {

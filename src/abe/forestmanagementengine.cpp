@@ -139,6 +139,26 @@ void ForestManagementEngine::setupOutputs()
     GlobalSettings::instance()->outputManager()->addOutput(new ABEStandRemovalOut);
 }
 
+void ForestManagementEngine::runJavascript()
+{
+    scriptBridge()->setExecutionContext(0, false);
+    QJSValue handler = scriptEngine()->globalObject().property("run");
+    if (handler.isCallable()) {
+        QJSValue result = handler.call(QJSValueList() << mCurrentYear);
+        if (FMSTP::verbose())
+            qCDebug(abe) << "executing 'run' function for year" << mCurrentYear << ", result:" << result.toString();
+    }
+
+    handler = scriptEngine()->globalObject().property("runStand");
+    if (handler.isCallable()) {
+        qCDebug(abe) << "running the 'runStand' javascript function for" << mStands.size() << "stands.";
+        foreach (FMStand *stand, mStands) {
+            scriptBridge()->setExecutionContext(stand, true);
+            handler.call(QJSValueList() << mCurrentYear);
+        }
+    }
+}
+
 AgentType *ForestManagementEngine::agentType(const QString &name)
 {
     for (int i=0;i<mAgentTypes.count();++i)
@@ -465,7 +485,11 @@ void ForestManagementEngine::run(int debug_year)
     // now re-evaluate stands
     if (FMSTP::verbose()) qCDebug(abe) << "ForestManagementEngine: run year" << mCurrentYear;
 
+
     prepareRun();
+
+    // execute an event handler before invoking the ABE core
+    runJavascript();
 
     {
     // launch the planning unit level update (annual and thorough analysis every ten years)

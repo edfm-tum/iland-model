@@ -86,6 +86,7 @@ private:
     void prepareRun();
     void finalizeRun();
     void setupOutputs();
+    void runJavascript();
 
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
