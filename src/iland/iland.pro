@@ -31,7 +31,8 @@ win32-msvc*:{
 #debug msvc
 PRE_TARGETDEPS += ../plugins/iland_fired.lib
 PRE_TARGETDEPS += ../plugins/iland_windd.lib
-LIBS += -L../plugins -liland_fired -liland_windd
+PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
+LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
 }
 }
 
@@ -46,7 +47,8 @@ win32-msvc*:{
 #debug msvc
 PRE_TARGETDEPS += ../plugins/iland_fire.lib
 PRE_TARGETDEPS += ../plugins/iland_wind.lib
-LIBS += -L../plugins -liland_fire -liland_wind
+PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
+LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 }
 }
 
