@@ -115,7 +115,7 @@ void WindModule::setup()
     // setup the grid (using the size/resolution)
     mRUGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
                   GlobalSettings::instance()->model()->RUgrid().cellsize());
-    // setup the fire spread grid
+    // setup the wind grid
     mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellsize());
     //mFireId = 0;
 
