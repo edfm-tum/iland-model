@@ -19,6 +19,7 @@
 
 #include "global.h"
 #include "barkbeetleplugin.h"
+#include "barkbeetlescript.h"
 #include "outputmanager.h"
 
 #include <QObject>
@@ -70,12 +71,12 @@ void BarkBeetlePlugin::setup()
 // add the fire script interface
 void BarkBeetlePlugin::setupScripting(QJSEngine *engine)
 {
-//    FireScript *fire_script = new FireScript();
-//    fire_script->setFireModule(&mFire);
-//    QJSValue obj = engine->newQObject(fire_script);
-//    engine->globalObject().setProperty("Fire", obj);
+    BarkBeetleScript *script = new BarkBeetleScript();
+    script->setBBModule(&mBeetle);
+    QJSValue obj = engine->newQObject(script);
+    engine->globalObject().setProperty("BarkBeetle", obj);
 
-//    qDebug() << "setup scripting called...";
+    qDebug() << "setup scripting called...";
 }
 
 

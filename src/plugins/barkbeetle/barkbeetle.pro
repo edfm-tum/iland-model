@@ -18,11 +18,13 @@ INCLUDEPATH  += ../.. \
 CONFIG += exceptions
 HEADERS       = \
     barkbeetleplugin.h \
-    barkbeetlemodule.h
+    barkbeetlemodule.h \
+    barkbeetlescript.h
 
 SOURCES       = \
     barkbeetleplugin.cpp \
-    barkbeetlemodule.cpp
+    barkbeetlemodule.cpp \
+    barkbeetlescript.cpp
 TARGET        = $$qtLibraryTarget(iland_barkbeetle)
 DESTDIR       = ../../plugins
 
