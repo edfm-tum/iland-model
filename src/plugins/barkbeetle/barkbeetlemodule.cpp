@@ -63,3 +63,9 @@ const QVector<LayeredGridBase::LayerElement> BarkBeetleLayers::names() const
     return QVector<LayeredGridBase::LayerElement>()
             << LayeredGridBase::LayerElement(QLatin1Literal("value"), QLatin1Literal("grid value of the pixel"), GridViewRainbow);
 }
+
+bool BarkBeetleLayers::onClick(const QPointF &world_coord) const
+{
+    qDebug() << "received click" << world_coord;
+    return true; // handled the click
+}

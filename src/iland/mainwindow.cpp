@@ -1078,6 +1078,10 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
 bool MainWindow::showABEDetails(const QPointF &coord)
 {
     if (!mRemoteControl.canRun()) return false;
+    if (mPaintNext.layered) {
+        if (mPaintNext.layered->onClick(coord))
+            return true;
+    }
     if (!mPaintNext.layered || !mRemoteControl.model()->ABEngine()) return false;
     QString grid_name = mPaintNext.name;
     QStringList list = mRemoteControl.model()->ABEngine()->evaluateClick(coord, grid_name);

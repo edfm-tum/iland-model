@@ -19,6 +19,7 @@ class BarkBeetleLayers: public LayeredGrid<BarkBeetleCell> {
     void setGrid(const Grid<BarkBeetleCell> &grid) { mGrid = &grid; }
     double value(const BarkBeetleCell& data, const int index) const;
     const QVector<LayeredGridBase::LayerElement> names() const;
+    bool onClick(const QPointF &world_coord) const;
 };
 
 

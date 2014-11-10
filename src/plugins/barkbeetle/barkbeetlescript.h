@@ -9,10 +9,12 @@ class BarkBeetleModule; // forward
 class BarkBeetleScript : public QObject
 {
     Q_OBJECT
-    //Q_PROPERTY(JSValue init READ testfun WRITE setTestfun)
+    Q_PROPERTY(QJSValue onClick READ onClick WRITE setOnClick)
 public:
     explicit BarkBeetleScript(QObject *parent = 0);
     void setBBModule(BarkBeetleModule *module) { mBeetle = module; }
+    QJSValue onClick() const { return mOnClick; }
+    void setOnClick(QJSValue handler) { mOnClick = handler; }
 signals:
 
 public slots:
@@ -24,6 +26,7 @@ public slots:
     void setPixelValue(int ix, int iy, double val);
 
 private:
+    QJSValue mOnClick;
     BarkBeetleModule *mBeetle;
 
 };
