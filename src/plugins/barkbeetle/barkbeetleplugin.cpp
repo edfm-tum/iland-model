@@ -62,7 +62,6 @@ void BarkBeetlePlugin::setup()
 //    fire_output->setFireModule(&mFire);
 //    GlobalSettings::instance()->outputManager()->addOutput(fire_output);
 //    // setup of the fire module: load parameters from project file, etc.
-//    mFire.setup();
     mBeetle.setup();
 }
 

@@ -443,6 +443,7 @@ void ScriptGlobal::wait(int milliseconds)
     dummy.lock();
     QWaitCondition waitCondition;
     waitCondition.wait(&dummy, milliseconds);
+    dummy.unlock();
 }
 
 int ScriptGlobal::addSaplingsOnMap(MapGridWrapper *map, const int mapID, QString species, int px_per_hectare, double height, int age)

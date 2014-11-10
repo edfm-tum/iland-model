@@ -46,6 +46,7 @@ public:
     virtual int sizeY() const=0;
     virtual QRectF metricRect() const=0;
     virtual QRectF cellRect(const QPoint &p) const=0;
+    virtual bool onClick(const QPointF &world_coord) const { Q_UNUSED(world_coord); return false; /*false: not handled*/ }
     // available variables
     /// list of stored layers
     virtual const QVector<LayeredGridBase::LayerElement> names() const=0;
@@ -103,6 +104,7 @@ public:
                                                               for (int i=0;i<mGrid->count(); ++i) {
                                                                   rMin=qMin(rMin, value(i, index));
                                                                   rMax=qMax(rMax, value(i,index));}}
+
 
 protected:
     const Grid<T> *mGrid;
