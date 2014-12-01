@@ -98,7 +98,7 @@ void FMSTP::evaluateDynamicExpressions(FMStand *stand)
 }
 
 // read the setting from the setup-javascript object
-void FMSTP::internalSetup(QJSValue &js_value, int level)
+void FMSTP::internalSetup(const QJSValue &js_value, int level)
 {
 
     // top-level
@@ -155,7 +155,7 @@ void FMSTP::dumpInfo()
     }
 }
 
-void FMSTP::setupActivity(QJSValue &js_value, const QString &name)
+void FMSTP::setupActivity(const QJSValue &js_value, const QString &name)
 {
     QString type = js_value.property("type").toString();
     if (verbose())

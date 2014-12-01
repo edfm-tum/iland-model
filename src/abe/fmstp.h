@@ -56,9 +56,9 @@ public:
     static bool checkObjectProperties(const QJSValue &js_value, const QStringList &allowed_properties, const QString &errorMessage=QString());
 
 private:
-    void internalSetup(QJSValue &js_value, int level=0);
+    void internalSetup(const QJSValue &js_value, int level=0);
     QString mName; ///< the name of the stand treatment program
-    void setupActivity(QJSValue &js_value, const QString &name);
+    void setupActivity(const QJSValue &js_value, const QString &name);
     void clear(); ///< remove all activites
     Events mEvents;
     static bool mVerbose; ///< debug mode

@@ -28,7 +28,7 @@ QStringList Activity::mAllowedProperties = QStringList() << "schedule" << "const
 /***************************************************************************/
 
 
-void Schedule::setup(QJSValue &js_value)
+void Schedule::setup(const QJSValue &js_value)
 {
     clear();
     if (js_value.isObject()) {
@@ -309,7 +309,7 @@ DynamicExpression::~DynamicExpression()
         delete expr;
 }
 
-void DynamicExpression::setup(QJSValue &js_value)
+void DynamicExpression::setup(const QJSValue &js_value)
 {
     filter_type = ftInvalid;
     if (expr) delete expr;

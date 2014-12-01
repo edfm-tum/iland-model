@@ -7,12 +7,13 @@ QT += sql
 QT += widgets
 # quick: for QML based user interface
 QT += quick
+QT += concurrent
 
 TARGET = iland
 TEMPLATE = app
 CONFIG += precompile_header
 
-LIBS += -lQt5Concurrent
+#LIBS += -lQt5Concurrent
 
 # includepath: adds directories to the standard include (no directory needed when #include a file).
 INCLUDEPATH += ../core \
