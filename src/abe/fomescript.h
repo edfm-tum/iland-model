@@ -12,6 +12,7 @@ class UnitObj;
 class SimulationObj;
 class SchedulerObj;
 class FMTreeList; // forward
+class ActivityObj;
 
 /// FomeScript provides general helping functions for the Javascript world.
 /// the object is known as 'fmengine'.
@@ -90,7 +91,6 @@ private:
     QString mLastErrorMessage;
 
 };
-class ActivityObj;
 
 /// StandObj is the bridge to stand variables from the Javascript world
 class StandObj: public QObject

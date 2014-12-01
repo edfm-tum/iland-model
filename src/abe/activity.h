@@ -19,7 +19,7 @@ public:
     Schedule()  {}
     Schedule(QJSValue &js_value) { clear(); setup(js_value); }
     void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat=false; absolute=false; }
-    void setup(QJSValue &js_value);
+    void setup(const QJSValue &js_value);
     QString dump() const;
     // functions
     /// value() evaluates the schedule for the given 'stand'.
@@ -64,7 +64,7 @@ private:
 struct DynamicExpression {
     DynamicExpression(): filter_type(ftInvalid), expr(0) {}
     ~DynamicExpression();
-    void setup(QJSValue &js_value);
+    void setup(const QJSValue &js_value);
     bool evaluate(FMStand *stand) const;
     bool isValid() const { return filter_type!=ftInvalid;}
     QString dump() const;
@@ -135,7 +135,7 @@ private:
     Activity *mActivity; ///< link to activity
     int mFlags;
 };
-Q_DECLARE_TYPEINFO(ActivityFlags, Q_PRIMITIVE_TYPE); // declare as POD structure to allow more efficient copying
+
 
 
 /// Activity is the base class for management activities
@@ -201,4 +201,7 @@ private:
 };
 
 } // namespace
+
+Q_DECLARE_TYPEINFO(ABE::ActivityFlags, Q_PRIMITIVE_TYPE); // declare as POD structure to allow more efficient copying
+
 #endif // ACTIVITY_H

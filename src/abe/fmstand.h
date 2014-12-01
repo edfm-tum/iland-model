@@ -8,7 +8,7 @@
 
 class Species; // forward (iLand species)
 class Tree; // forward (iLand tree)
-enum TreeRemovalType; // forward
+//enum TreeRemovalType; // forward
 
 namespace ABE {
 
