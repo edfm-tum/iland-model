@@ -19,12 +19,14 @@ CONFIG += exceptions
 HEADERS       = \
     barkbeetleplugin.h \
     barkbeetlemodule.h \
-    barkbeetlescript.h
+    barkbeetlescript.h \
+    bbgenerations.h
 
 SOURCES       = \
     barkbeetleplugin.cpp \
     barkbeetlemodule.cpp \
-    barkbeetlescript.cpp
+    barkbeetlescript.cpp \
+    bbgenerations.cpp
 TARGET        = $$qtLibraryTarget(iland_barkbeetle)
 DESTDIR       = ../../plugins
 

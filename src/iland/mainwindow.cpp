@@ -393,9 +393,9 @@ void MainWindow::checkModelState()
 {
     ui->actionModelCreate->setEnabled(mRemoteControl.canCreate()&& !mRemoteControl.isRunning());
     ui->actionModelDestroy->setEnabled(mRemoteControl.canDestroy() && !mRemoteControl.isRunning());
-    ui->actionModelRun->setEnabled(mRemoteControl.canRun( )&& !mRemoteControl.isPaused() && !mRemoteControl.isRunning());
+    ui->actionModelRun->setEnabled(mRemoteControl.canRun() && !mRemoteControl.isPaused() && !mRemoteControl.isRunning());
     ui->actionRun_one_year->setEnabled(mRemoteControl.canRun() && !mRemoteControl.isPaused()&& !mRemoteControl.isRunning());
-    ui->actionReload->setEnabled(mRemoteControl.canDestroy()&& !mRemoteControl.isRunning());
+    ui->actionReload->setEnabled(mRemoteControl.canDestroy() && !mRemoteControl.isRunning());
     ui->actionStop->setEnabled(mRemoteControl.isRunning());
     ui->actionPause->setEnabled(mRemoteControl.isRunning());
     ui->actionPause->setText(mRemoteControl.isPaused()?"Continue":"Pause");

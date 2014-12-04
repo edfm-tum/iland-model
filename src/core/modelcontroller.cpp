@@ -266,6 +266,7 @@ void ModelController::internalStop()
         mFinished = true;
     }
     mRunning = false;
+    mPaused = false; // in any case
     emit bufferLogs(false); // stop buffering
     emit finished(QString());
     emit stateChanged();
