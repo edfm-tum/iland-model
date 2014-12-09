@@ -320,6 +320,9 @@ MainWindow::MainWindow(QWidget *parent)
         QTimer::singleShot(3000, this, SLOT(automaticRun()));
     }
 
+    // to silence some warnings during startup - maybe not required (anymore):
+    qRegisterMetaType<QTextBlock>("QTextBlock");
+    qRegisterMetaType<QTextCursor>("QTextCursor");
     // qml setup
     QQuickView *view = new QQuickView();
     mRuler = view;
