@@ -419,7 +419,7 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     double net_rad = qa + qb*rad;
 
     //: Landsberg original: const double e20 = 2.2;  //rate of change of saturated VP with T at 20C
-    const double VPDconv = 0.000622; //convert VPD to saturation deficit = 18/29/1000
+    const double VPDconv = 0.000622; //convert VPD to saturation deficit = 18/29/1000 = molecular weight of H2O/molecular weight of air
     const double latent_heat = 2460000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
 
     double gBL  = Model::settings().boundaryLayerConductance; // boundary layer conductance
