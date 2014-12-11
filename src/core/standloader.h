@@ -53,6 +53,8 @@ public:
     int loadDistributionList(const QString &content, ResourceUnit *ru = NULL, int stand_id=0, const QString &fileName="");
     // load regeneration in stands
     int loadSaplings(const QString &content, int stand_id, const QString &fileName=QString());
+    // load regen in stand but consider also the light conditions on the ground
+    int loadSaplingsLIF(const QString &content, int stand_id, const QString &fileName=QString());
 private:
     struct InitFileItem
     {
