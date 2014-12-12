@@ -206,6 +206,47 @@ void StandLoader::processInit()
     throw IException("StandLoader::processInit: invalid initalization.mode!");
 }
 
+void StandLoader::processAfterInit()
+{
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.initialization"));
+
+    QString mode = xml.value("mode", "copy");
+    if (mode=="standgrid") {
+        // load a file with saplings per polygon
+        QString  filename = xml.value("saplingFile", "");
+        if (filename.isEmpty())
+            return;
+        filename = GlobalSettings::instance()->path(filename, "init");
+        if (!QFile::exists(filename))
+            throw IException(QString("load-sapling-ini-file: file '%1' does not exist.").arg(filename));
+        CSVFile init_file(filename);
+        int istandid = init_file.columnIndex("stand_id");
+        if (istandid==-1)
+            throw IException("Sapling-Init: the init file contains no 'stand_id' column (required in 'standgrid' mode).");
+
+        int stand_id = -99999;
+        int ilow = -1, ihigh = 0;
+        int total = 0;
+        for (int i=0;i<init_file.rowCount();++i) {
+            int row_stand = init_file.value(i, istandid).toInt();
+            if (row_stand != stand_id) {
+                if (stand_id>=0) {
+                    // process stand
+                    ihigh = i-1; // up to the last
+                    total += loadSaplingsLIF(stand_id, init_file, ilow, ihigh);
+                }
+                ilow = i; // mark beginning of new stand
+                stand_id = row_stand;
+            }
+        }
+        if (stand_id>=0)
+            total += loadSaplingsLIF(stand_id, init_file, ilow, init_file.rowCount()-1); // the last stand
+        qDebug() << "initialization of sapling: total created:" << total;
+
+    }
+
+}
+
 void StandLoader::evaluateDebugTrees()
 {
     // evaluate debugging
@@ -838,43 +879,45 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
     return total;
 }
 
-bool LIFValueLower(const float *a, const float *b)
+bool LIFValueHigher(const float *a, const float *b)
 {
-    return *a < *b;
+    return *a > *b;
 }
 
-int StandLoader::loadSaplingsLIF(const QString &content, int stand_id, const QString &fileName)
+int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_index, int high_index)
 {
-    Q_UNUSED(fileName);
     const MapGrid *stand_grid;
     if (mCurrentMap)
         stand_grid = mCurrentMap; // if set
     else
         stand_grid = GlobalSettings::instance()->model()->standGrid(); // default
 
+    if (!stand_grid->isValid(stand_id))
+        return 0;
+
     QList<int> indices = stand_grid->gridIndices(stand_id); // list of 10x10m pixels
     if (indices.isEmpty()) {
         qDebug() << "stand" << stand_id << "not in project area. No init performed.";
-        return -1;
+        return 0;
     }
     // prepare space for LIF-pointers (2m Pixel)
     QVector<float*> lif_ptrs;
-    lif_ptrs.resize(indices.size() * cPxPerHeight * cPxPerHeight);
+    lif_ptrs.reserve(indices.size() * cPxPerHeight * cPxPerHeight);
     for (int l=0;l<indices.size();++l){
         QPoint offset=stand_grid->grid().indexOf(indices[l]);
         offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
-        lif_ptrs.push_back( GlobalSettings::instance()->model()->grid()->ptr(offset.x(), offset.y()) );
+        for (int y=0;y<cPxPerHeight;++y)
+            for(int x=0;x<cPxPerHeight;++x)
+                lif_ptrs.push_back( GlobalSettings::instance()->model()->grid()->ptr(offset.x()+x, offset.y()+y) );
     }
     // sort based on LIF-Value
-    std::sort(lif_ptrs.begin(), lif_ptrs.end(), LIFValueLower);
+    std::sort(lif_ptrs.begin(), lif_ptrs.end(), LIFValueHigher); // higher: highest values first
 
 
     double area_factor = stand_grid->area(stand_id) / 10000.; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
 
     // parse the content of the init-file
     // species
-    CSVFile init;
-    init.loadFromString(content);
     int ispecies = init.columnIndex("species");
     int icount = init.columnIndex("count");
     int iheight = init.columnIndex("height");
@@ -891,8 +934,8 @@ int StandLoader::loadSaplingsLIF(const QString &content, int stand_id, const QSt
     const SpeciesSet *set = GlobalSettings::instance()->model()->ru()->speciesSet();
     double height, age;
     int total = 0;
-    for (int row=0;row<init.rowCount();++row) {
-        int pxcount = init.value(row, icount).toDouble() * area_factor + 0.5; // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
+    for (int row=low_index;row<=high_index;++row) {
+        double pxcount = init.value(row, icount).toDouble() * area_factor; // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
         const Species *species = set->species(init.value(row, ispecies).toString());
         if (!species)
             throw IException(QString("Error while loading saplings: invalid species '%1'.").arg(init.value(row, ispecies).toString()));
@@ -905,7 +948,7 @@ int StandLoader::loadSaplingsLIF(const QString &content, int stand_id, const QSt
         // find LIF-level in the pixels
         int min_lif_index = 0;
         for (QVector<float*>::ConstIterator it=lif_ptrs.constBegin(); it!=lif_ptrs.constEnd(); ++it, ++min_lif_index)
-            if (**it >= min_lif)
+            if (**it <= min_lif)
                 break;
 
         if (min_lif_index < pxcount) {
@@ -913,8 +956,7 @@ int StandLoader::loadSaplingsLIF(const QString &content, int stand_id, const QSt
             min_lif_index = pxcount; // try the brightest pixels (ie with the largest value for the LIF)
         }
 
-        int misses = 0;
-        int hits = 0;
+        double hits = 0.;
         while (hits < pxcount) {
            int rnd_index = irandom(0, min_lif_index-1);
            if (iheightfrom!=-1) {
@@ -925,10 +967,9 @@ int StandLoader::loadSaplingsLIF(const QString &content, int stand_id, const QSt
 
            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(GlobalSettings::instance()->model()->grid()->cellCenterPoint(offset));
            ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
-           if (misses > 3*pxcount) {
-               qDebug() << "tried to add" << pxcount << "saplings at stand" << stand_id << "but failed in finding enough free positions. Added" << hits << "and stopped.";
-               break;
-           }
+           hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(height);
+
+
         }
         total += pxcount;
 

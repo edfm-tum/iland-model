@@ -575,9 +575,9 @@ void Model::beforeRun()
     GlobalSettings::instance()->clearDebugLists();
 
     // initialize stands
+    StandLoader loader(this);
     {
     DebugTimer loadtrees("load trees");
-    StandLoader loader(this);
     loader.processInit();
     }
     // initalization of ABE
@@ -603,6 +603,7 @@ void Model::beforeRun()
     // debugCheckAllTrees(); // introduced for debugging session (2012-04-06)
     applyPattern();
     readPattern();
+    loader.processAfterInit(); // e.g. initialization of saplings
 
     // force the compilation of initial stand statistics
     createStandStatistics();
