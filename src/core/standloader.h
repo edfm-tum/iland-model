@@ -21,6 +21,8 @@
 #define STANDLOADER_H
 #include <QtCore/QString>
 
+#include "csvfile.h"
+
 class Model;
 class ResourceUnit;
 class RandomCustomPDF;
@@ -41,6 +43,8 @@ public:
     /// main function of stand initialization
     /// the function loads - depending on the XML project file - inits for a single resource unit, for polygons or a snapshot from a database.
     void processInit();
+    /// this function is called *after* the init and after  initial LIF-calculations.
+     void processAfterInit();
 
     /// load a single tree file (picus or iland style). return number of trees loaded.
     int loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL);
@@ -54,7 +58,7 @@ public:
     // load regeneration in stands
     int loadSaplings(const QString &content, int stand_id, const QString &fileName=QString());
     // load regen in stand but consider also the light conditions on the ground
-    int loadSaplingsLIF(const QString &content, int stand_id, const QString &fileName=QString());
+    int loadSaplingsLIF(int stand_id, const CSVFile &init, int low_index, int high_index);
 private:
     struct InitFileItem
     {

@@ -79,6 +79,8 @@ public:
     double averageAge() const { return mAvgAge; }
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
+    /// return the number of trees represented by one sapling of the current species and given 'height'
+    double representedStemNumber(float height) const;
     // carbon and nitrogen
     const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living

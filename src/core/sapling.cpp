@@ -82,6 +82,14 @@ double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rA
     return total;
 }
 
+double Sapling::representedStemNumber(float height) const
+{
+    const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
+    float dbh = height / p.hdSapling * 100.f;
+    double n = p.representedStemNumber(dbh);
+    return n;
+}
+
 /// maintenance function to clear dead/recruited saplings from storage
 void Sapling::cleanupStorage()
 {
