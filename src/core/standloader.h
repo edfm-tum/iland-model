@@ -63,7 +63,7 @@ private:
     struct InitFileItem
     {
         Species *species;
-        int count;
+        double count;
         double dbh_from, dbh_to;
         double hd;
         int age;

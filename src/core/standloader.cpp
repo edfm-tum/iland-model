@@ -478,7 +478,7 @@ int StandLoader::parseInitFile(const QString &content, const QString &fileName, 
     bool ok;
     int total_count = 0;
     for (int row=0;row<infile.rowCount();row++) {
-        item.count = infile.value(row, icount).toInt();
+        item.count = infile.value(row, icount).toDouble();
         total_count += item.count;
         item.dbh_from = infile.value(row, idbh_from).toDouble();
         item.dbh_to = infile.value(row, idbh_to).toDouble();
