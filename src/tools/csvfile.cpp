@@ -232,7 +232,7 @@ QVariant CSVFile::value(const int row, const int col) const
         if (sepcount==col)
             result = s.mid(s.lastIndexOf(sep)+1);
         //qDebug() << "CSVFile::value: found no result:" << row << col << ". Size is:" << mRowCount << mColCount;
-        return QVariant();
+        return result;
 
     }
 
