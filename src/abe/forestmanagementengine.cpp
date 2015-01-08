@@ -376,8 +376,9 @@ void ForestManagementEngine::setup()
     // set up the stand grid (visualizations)...
     // set up a hash for helping to establish stand-id <-> fmstand-link
     mStandHash.clear();
-    for (int i=0;i<mStands.size(); ++i)
+    for (int i=0;i<mStands.size(); ++i) {
         mStandHash[mStands[i]->id()] = mStands[i];
+    }
 
     mFMStandGrid.setup(standGrid()->grid().metricRect(), standGrid()->grid().cellsize());
     mFMStandGrid.initialize(0);
