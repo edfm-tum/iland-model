@@ -497,7 +497,7 @@ int StandLoader::parseInitFile(const QString &content, const QString &fileName, 
             item.density = infile.value(row, idensity).toDouble();
         else
             item.density = 0.;
-        if (item.density<-1 || item.density>1)
+        if (item.density<-1)
             throw IException(QString("load-ini-file: invalid value for density. Allowed range is -1..1: '%1' in file '%2', line %3.")
                              .arg(item.density)
                              .arg(fileName)
@@ -548,7 +548,8 @@ struct SInitPixel {
     QPoint pixelOffset; // location of the pixel
     ResourceUnit *resource_unit; // pointer to the resource unit the pixel belongs to
     double h_max; // predefined maximum height at given pixel (if available from LIDAR or so)
-    SInitPixel(): basal_area(0.), resource_unit(0), h_max(-1.) {}
+    bool locked; // pixel is dedicated to a single species
+    SInitPixel(): basal_area(0.), resource_unit(0), h_max(-1.), locked(false) {}
 };
 
 bool sortInitPixelLessThan(const SInitPixel &s1, const SInitPixel &s2)
@@ -556,6 +557,10 @@ bool sortInitPixelLessThan(const SInitPixel &s1, const SInitPixel &s2)
     return s1.basal_area < s2.basal_area;
 }
 
+bool sortInitPixelUnlocked(const SInitPixel &s1, const SInitPixel &s2)
+{
+    return !s1.locked && s2.locked;
+}
 
 /**
 */
@@ -709,8 +714,29 @@ void StandLoader::executeiLandInitStand(int stand_id)
     int total_misses = 0;
     if (mInitHeightGrid && !mHeightGridResponse)
         throw IException("executeiLandInitStand: trying to initialize with height grid but without response function.");
+
+    Species *last_locked_species=0;
     foreach(const InitFileItem &item, mInitItems) {
-        rand_fraction = fabs(double(item.density));
+        if (item.density>1.) {
+            // special case with single-species-area
+            if (total_count==0) {
+                // randomize the pixels
+                for (QList<SInitPixel>::iterator it=pixel_list.begin();it!=pixel_list.end();++it)
+                    it->basal_area = drandom();
+                qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+                for (QList<SInitPixel>::iterator it=pixel_list.begin();it!=pixel_list.end();++it)
+                    it->basal_area = 0.;
+            }
+
+            if (item.species != last_locked_species) {
+                last_locked_species=item.species;
+                qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelUnlocked);
+            }
+        } else {
+            qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+            last_locked_species=0;
+        }
+        rand_fraction = item.density;
         int count = item.count * area_factor + 0.5; // round
         double init_max_height = item.dbh_to/100. * item.hd;
         for (int i=0;i<count;i++) {
@@ -719,10 +745,15 @@ void StandLoader::executeiLandInitStand(int stand_id)
             int tries = mHeightGridTries;
             while (!found &&--tries) {
                 // calculate random value. "density" is from 1..-1.
-                rand_val = mRandom->get();
-                if (item.density<0)
-                    rand_val = 1. - rand_val;
-                rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
+                if (item.density <= 1.) {
+                    rand_val = mRandom->get();
+                    if (item.density<0)
+                        rand_val = 1. - rand_val;
+                    rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
+                } else {
+                    // limited area: limit potential area using the "density" input parameter
+                    rand_val = drandom() * qMin(item.density/100., 1.);
+                }
                 ++total_tries;
 
                 // key: rank of target pixel
@@ -736,6 +767,8 @@ void StandLoader::executeiLandInitStand(int stand_id)
                 } else {
                     found = true;
                 }
+                if (!last_locked_species && pixel_list[key].locked)
+                    found = false;
             }
             if (tries<0) ++total_misses;
 
@@ -757,15 +790,16 @@ void StandLoader::executeiLandInitStand(int stand_id)
             // store in the multiHash the position of the pixel and the tree_idx in the resepctive resource unit
             tree_map.insert(pixel_list[key].pixelOffset, tree_idx);
             pixel_list[key].basal_area+=tree.basalArea(); // aggregate the basal area for each 10m pixel
+            if (last_locked_species)
+                pixel_list[key].locked = true;
 
             // resort list
-            if ( (total_count < 20 && i%2==0)
+            if (last_locked_species==0 && ((total_count < 20 && i%2==0)
                 || (total_count<100 && i%10==0 )
-                || (i%30==0) ) {
+                || (i%30==0)) ) {
                 qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
             }
         }
-        qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
     }
     if (total_misses>0 || total_tries > total_count) {
         if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "treecount:" << total_count << ", tries:" << total_tries << ", misses:" << total_misses << ", %miss:" << qRound(total_misses*100 / (double)total_count);
@@ -808,7 +842,8 @@ void StandLoader::executeiLandInitStand(int stand_id)
                 qDebug() << "Standloader: invalid position!";
         }
     }
-    if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "with area" << "area (m2)" << grid->area(stand_id) << "count of 10m pixels:"  << indices.count() << "initialized trees:" << total_count;
+    if (logLevelInfo())
+        qDebug() << "init for stand" << stand_id << "with area" << "area (m2)" << grid->area(stand_id) << "count of 10m pixels:"  << indices.count() << "initialized trees:" << total_count;
 
 }
 
