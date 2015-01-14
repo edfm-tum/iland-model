@@ -259,7 +259,7 @@ void SeedDispersal::setupExternalSeeds()
     }
     if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false)) {
         QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
-        img.save(path + "seedbeltmap_after.png");
+        img.save(path + "/seedbeltmap_after.png");
     }
     mExtSeedData.clear();
     int sectors_x = xml.valueDouble("sizeX",0);
