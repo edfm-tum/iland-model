@@ -97,8 +97,10 @@ void AgentType::addAgentUpdate(const AgentUpdate &update, FMUnit *unit)
     QMultiMap<FMUnit*, FMStand*>::const_iterator it = stands.constFind(const_cast<FMUnit*>(unit));
     while (it != stands.constEnd() && it.key()==unit) {
         FMStand *stand = it.value();
+        if (stand->trace())
+            qCDebug(abe) << stand->context() << "Agent-update: update if stand-age: " << stand->age() << " < update-age: " << update.age();
         if (stand->age() <= update.age())
-            agentUpdateForStand(stand, QString(), update.age());
+            agentUpdateForStand(stand, QString(), stand->age());
         ++it;
     }
 
