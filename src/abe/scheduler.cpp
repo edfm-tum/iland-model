@@ -160,8 +160,8 @@ void Scheduler::run()
             // this is to avoid large unforested areas
             if (executed && final_harvest) {
                 if (FMSTP::verbose()) qCDebug(abe) << item->stand->context() << "ran final harvest -> flag neighbors";
-                // simple rule: do not allow harvests for neighboring stands for 5 years
-                item->forbiddenTo = current_year + 5;
+                // simple rule: do not allow harvests for neighboring stands for 7 years
+                item->forbiddenTo = current_year + 7;
                 QList<int> neighbors = ForestManagementEngine::instance()->standGrid()->neighborsOf(item->stand->id());
                 for (QList<SchedulerItem*>::iterator nit = mItems.begin(); nit!=mItems.end(); ++nit)
                     if (neighbors.contains((*nit)->stand->id()))
