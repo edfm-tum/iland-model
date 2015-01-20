@@ -1,6 +1,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 #include <QList>
+#include <QHash>
 
 #include "activity.h"
 class Expression;
