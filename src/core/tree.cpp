@@ -69,6 +69,7 @@ Tree::Tree()
     mOpacity=mFoliageMass=mWoodyMass=mCoarseRootMass=mFineRootMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
     mLightResponse = 0.;
+    mStamp=0;
     mId = m_nextId++;
     m_statCreated++;
 }
@@ -113,8 +114,9 @@ void Tree::dumpList(DebugList &rTargetList)
 
 void Tree::setup()
 {
-    if (mDbh<=0 || mHeight<=0)
-        return;
+    if (mDbh<=0 || mHeight<=0) {
+        throw IException(QString("Error: trying to set up a tree with invalid dimensions: dbh: %1 height: %2 id: %3 RU-index: %4").arg(mDbh).arg(mHeight).arg(mId).arg(mRU->index()));
+    }
     // check stamp
     Q_ASSERT_X(species()!=0, "Tree::setup()", "species is NULL");
     mStamp = species()->stamp(mDbh, mHeight);
@@ -936,6 +938,13 @@ void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double 
     mWoodyMass *= (1. - removeStemFraction);
     // we have a problem with the branches: this currently cannot be done properly!
     (void) removeBranchFraction; // silence warning
+}
+
+void Tree::setHeight(const float height)
+{
+    if (height<=0. || height>150.)
+        qWarning() << "trying to set tree height to invalid value:" << height << " for tree on RU:" << (mRU?mRU->boundingBox():QRect());
+    mHeight=height;
 }
 
 void Tree::mortality(TreeGrowthData &d)

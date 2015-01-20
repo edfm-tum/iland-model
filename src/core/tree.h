@@ -92,7 +92,7 @@ public:
     void setPosition(const QPointF pos) { Q_ASSERT(mGrid!=0); mPositionIndex = mGrid->indexAt(pos); }
     void setPosition(const QPoint posIndex) { mPositionIndex = posIndex; }
     void setDbh(const float dbh) { mDbh=dbh; }
-    void setHeight(const float height) { mHeight=height; }
+    void setHeight(const float height);
     void setSpecies(Species *ts) { mSpecies=ts; }
     void setRU(ResourceUnit *ru) { mRU = ru; }
     void setAge(const int age, const float treeheight);
