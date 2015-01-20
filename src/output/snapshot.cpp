@@ -26,6 +26,7 @@
 #include "soil.h"
 #include "snag.h"
 #include "debugtimer.h"
+#include "watercycle.h"
 
 #include <QString>
 #include <QtSql>
@@ -49,7 +50,7 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         q.exec("create table trees (ID integer, RUindex integer, posX integer, posY integer, species text,  age integer, height real, dbh real, leafArea real, opacity real, foliageMass real, woodyMass real, fineRootMass real, coarseRootMass real, NPPReserve real, stressIndex real)");
         // soil
         q.exec("drop table soil");
-        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLP real, YRC real, YRN real, YRP real, SOMC real, SOMN real)");
+        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLP real, YRC real, YRN real, YRP real, SOMC real, SOMN real, WaterContent, SnowPack real)");
         // snag
         q.exec("drop table snag");
         q.exec("create table snag(RUIndex integer, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
@@ -87,10 +88,20 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     loadSoil();
     loadSnags();
     loadSaplings();
+    QSqlDatabase::database("snapshot").close();
+
     // after changing the trees, do a complete apply/read pattern cycle over the landscape...
     GlobalSettings::instance()->model()->onlyApplyLightPattern();
     qDebug() << "applied light pattern...";
-    QSqlDatabase::database("snapshot").close();
+
+    // refresh the stand statistics
+    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+         ru->recreateStandStatistics();
+     }
+
+    qDebug() << "created stand statistics...";
+    qDebug() << "loading of snapshot completed.";
+
     return true;
 }
 
@@ -196,6 +207,7 @@ void Snapshot::loadTrees()
         throw IException(QString("bad_alloc exception after %1 trees!!!!").arg(n));
     }
 
+
     qDebug() << "Snapshot: finished trees. N=" << n;
 }
 
@@ -204,8 +216,8 @@ void Snapshot::saveSoil()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN) " \
-                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylp, :yrc, :yrn, :yrp, :somc, :somn)")))
+    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN, WaterContent, SnowPack) " \
+                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylp, :yrc, :yrn, :yrp, :somc, :somn, :wc, :snowpack)")))
         throw IException(QString("Snapshot::saveSoil: prepare:") + q.lastError().text());
 
     int n = 0;
@@ -230,6 +242,8 @@ void Snapshot::saveSoil()
             q.addBindValue(s->mYR.parameter());
             q.addBindValue(s->mSOM.C);
             q.addBindValue(s->mSOM.N);
+            q.addBindValue(ru->waterCycle()->currentContent());
+            q.addBindValue(ru->waterCycle()->currentSnowPack());
             if (!q.exec()) {
                 throw IException(QString("Snapshot::saveSoil: execute:") + q.lastError().text());
             }
@@ -248,7 +262,7 @@ void Snapshot::loadSoil()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN from soil");
+    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN, WaterContent, SnowPack from soil");
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
@@ -277,6 +291,7 @@ void Snapshot::loadSoil()
         s->mYR.setParameter( q.value(14).toDouble());
         s->mSOM.C = q.value(15).toDouble();
         s->mSOM.N = q.value(16).toDouble();
+        const_cast<WaterCycle*>(ru->waterCycle())->setContent(q.value(17).toDouble(), q.value(18).toDouble());
 
         if (++n % 1000 == 0) {
             qDebug() << n << "soil units loaded...";
@@ -306,6 +321,8 @@ void Snapshot::saveSnags()
     db.transaction();
     foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         Snag *s = ru->snag();
+        if (!s)
+            continue;
         q.addBindValue(s->mRU->index());
         q.addBindValue(s->mClimateFactor);
         q.addBindValue(s->mSWD[0].C);
@@ -372,6 +389,8 @@ void Snapshot::loadSnags()
         if (!ru)
             throw IException("Snapshot::loadSoil: Invalid resource unit");
         Snag *s = ru->snag();
+        if (!s)
+            continue;
         s->mClimateFactor = q.value(ci++).toDouble();
         s->mSWD[0].C = q.value(ci++).toDouble();
         s->mSWD[0].N = q.value(ci++).toDouble();

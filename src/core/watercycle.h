@@ -37,6 +37,7 @@ class SnowPack
 public:
     SnowPack(): mSnowPack(0.) {}
     void setup() { mSnowPack=0.; }
+    void setSnow(double snow_mm) { mSnowPack = snow_mm; }
     /// process the snow layer. Returns the mm of preciptitation/melt water that leaves the snow layer.
     double flow(const double &preciptitation_mm, const double &temperature);
     /// additional precipitation (e.g. non evaporated water of canopy interception).
@@ -98,6 +99,7 @@ class WaterCycle
 public:
     WaterCycle();
     void setup(const ResourceUnit *ru);
+    void setContent(double content, double snow_mm) { mContent = content; mSnowPack.setSnow(snow_mm); }
     // actions
     void run(); ///< run the current year
     // properties
@@ -105,6 +107,7 @@ public:
     const double &psi_kPa(const int doy) const { return mPsi[doy]; } ///< soil water potential for the day 'doy' (0-index) in kPa
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
     double currentContent() const { return mContent; } ///< current water content in mm
+    double currentSnowPack() const { return mSnowPack.snowPack(); } ///< current water stored as snow (mm water)
     double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
     /// monthly values for PET (mm sum)
     const double *referenceEvapotranspiration() const { return mCanopy.referenceEvapotranspiration(); }
