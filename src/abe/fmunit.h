@@ -36,10 +36,15 @@ public:
     void setTargetSpeciesCompositionIndex(const int index) { mSpeciesCompositionIndex = index; }
     void setHarvestMode(const QString new_mode) { mHarvestMode = new_mode; }
 
+    void setAverageMAI(const double avg_mai) { mAverageMAI = avg_mai; }
+    double averageMAI() const { return mAverageMAI; }
     // actions
 
     /// update decadal management objectives for the planning unit.
     void managementPlanUpdate();
+
+    /// run the agent main function
+    void runAgent();
 
     /// update objectives of the current year.
     void updatePlanOfCurrentYear();
@@ -73,6 +78,8 @@ private:
     int mSpeciesCompositionIndex; ///< index of the active target species composition
     int mThinningIntensityClass; ///< currently active thinning intensity level
     QString mHarvestMode; ///< type of applicable harvesting technique (e.g. skidder, cablecrane)
+
+    double mAverageMAI; ///< reference value for mean annual increment
 
 
     friend class UnitOut;

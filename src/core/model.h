@@ -82,6 +82,7 @@ public:
     Management *management() const { return mManagement; }
     ABE::ForestManagementEngine *ABEngine() const { return mABEManagement; }
     Environment *environment() const {return mEnvironment; }
+    TimeEvents *timeEvents() const { return mTimeEvents; }
     Modules *modules() const { return mModules; }
     const DEM *dem() const { return mDEM; }
     SpeciesSet *speciesSet() const { if (mSpeciesSets.count()==1) return mSpeciesSets.first(); return NULL; }

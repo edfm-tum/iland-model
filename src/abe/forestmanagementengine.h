@@ -66,7 +66,8 @@ public:
     /// get stand with id 'stand_id'. Return 0 if not found.
     FMStand *stand(int stand_id) const;
     //QVector<FMStand*> stands() const {return mStands; }
-    const QMultiMap<FMUnit*, FMStand*> stands() const {return mUnitStandMap; }
+    const QMultiMap<FMUnit*, FMStand*> &stands() const {return mUnitStandMap; }
+    const QVector<FMUnit*> &units() const { return mUnits; }
     // functions
 
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.

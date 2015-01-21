@@ -91,3 +91,16 @@ void TimeEvents::run()
     if (values_set)
         qDebug() << "TimeEvents: year" << current_year << ":" << values_set << "values set.";
 }
+
+// read value for key 'key' and year 'year' from the list of items.
+// return a empty QVariant if for 'year' no value is set
+QVariant TimeEvents::value(int year, const QString &key) const
+{
+    QMultiMap<int, QPair<QString, QVariant> >::ConstIterator it = mData.find(year);
+    while (it!=mData.constEnd()) {
+        if (it->first == key)
+            return it->second;
+        ++it;
+    }
+    return QVariant();
+}
