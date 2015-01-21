@@ -175,6 +175,7 @@ class UnitObj: public QObject
     // performance indicators
     Q_PROPERTY(double MAIChange READ MAIChange )
     Q_PROPERTY(double MAILevel READ MAILevel )
+    Q_PROPERTY(double landscapeMAI READ landscapeMAI )
     Q_PROPERTY(double mortalityChange READ mortalityChange )
     Q_PROPERTY(double mortalityLevel READ mortalityLevel )
     Q_PROPERTY(double regenerationChange READ regenerationChange )
@@ -194,6 +195,7 @@ public:
     // performance indicators
     double MAIChange() const;
     double MAILevel() const;
+    double landscapeMAI() const;
     double mortalityChange() const;
     double mortalityLevel() const;
     double regenerationChange() const;

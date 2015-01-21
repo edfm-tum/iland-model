@@ -26,6 +26,7 @@
 #include "global.h"
 #include "climate.h"
 #include "model.h"
+#include "timeevents.h"
 
 double ClimateDay::co2 = 350.; // base value of ambient CO2-concentration (ppm)
 QVector<int> sampled_years; // list of sampled years to use
@@ -195,6 +196,18 @@ void Climate::load()
     int yeardays;
     for (int i=0;i<mLoadYears;i++) {
         yeardays = 0;
+        if (GlobalSettings::instance()->model()->timeEvents()) {
+            QVariant val_temp = GlobalSettings::instance()->model()->timeEvents()->value(GlobalSettings::instance()->currentYear() + i, "model.climate.temperatureShift");
+            QVariant val_prec = GlobalSettings::instance()->model()->timeEvents()->value(GlobalSettings::instance()->currentYear() + i, "model.climate.precipitationShift");
+            if (val_temp.isValid())
+                mTemperatureShift = val_temp.toDouble();
+            if (val_prec.isValid())
+                mPrecipitationShift = val_prec.toDouble();
+
+            if (mTemperatureShift!=0. || mPrecipitationShift!=1.)
+                qDebug() << "Climate modifaction: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
+        }
+
         //qDebug() << "loading year" << lastyear+1;
         while(1==1) {
             if(!mClimateQuery.next()) {

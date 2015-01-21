@@ -76,6 +76,7 @@ FMUnit::FMUnit(const Agent *agent)
     mAnnualHarvest = 0.;
     mNumberOfStands = 0;
     mU = 100, mThinningIntensityClass = 2, mSpeciesCompositionIndex = 0;
+    mAverageMAI = 0.;
 
     //if (agent->type()->schedulerOptions().useScheduler)
     // explicit scheduler only for stands/units that include more than one stand
@@ -175,6 +176,29 @@ void FMUnit::managementPlanUpdate()
 
     if (scheduler())
         scheduler()->setHarvestTarget(mAnnualHarvestTarget, mAnnualThinningTarget);
+}
+
+QMutex _protect_agent_exec;
+void FMUnit::runAgent()
+{
+    QMutexLocker m(&_protect_agent_exec); // avoid parallel execution of agent-code....
+
+    // we need to set an execution context
+    FMStand *stand = *ForestManagementEngine::instance()->stands().find(this);
+    if (!stand)
+        throw IException("Invalid stand in FMUnit::runAgent");
+
+    FomeScript::setExecutionContext(stand, true); // true: add also agent as 'agent'
+
+    QJSValue val;
+    QJSValue agent_type = agent()->type()->jsObject();
+    if (agent_type.property("run").isCallable()) {
+        val = agent_type.property("run").callWithInstance(agent_type);
+        qCDebug(abe) << "running agent-function 'run' for unit" <<  id() << ":" << val.toString();
+    } else {
+       qCDebug(abe) << "function 'run' is not a valid function of agent-type" << agent()->type()->name();
+    }
+
 }
 
 void FMUnit::updatePlanOfCurrentYear()

@@ -458,12 +458,28 @@ QString UnitObj::thinningIntensity() const
 double UnitObj::MAIChange() const
 {
     // todo
-    return 1;
+    return mStand->unit()->annualIncrement();
 }
 
 double UnitObj::MAILevel() const
 {
-    return mStand->unit()->annualIncrement();
+    return mStand->unit()->averageMAI();
+}
+
+double UnitObj::landscapeMAI() const
+{
+    // hacky way of getting a MAI on landscape level
+    double total_area = 0.;
+    double total_mai = 0.;
+    const QVector<FMUnit*> &units = ForestManagementEngine::instance()->units();
+    for (int i=0;i<units.size();++i) {
+        total_area += units[i]->area();
+        total_mai += units[i]->annualIncrement()*units[i]->area();
+    }
+    if (total_area>0.)
+        return total_mai / total_area;
+    else
+        return 0.;
 }
 
 double UnitObj::mortalityChange() const

@@ -229,6 +229,7 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
     if (ForestManagementEngine::instance()->currentYear() % 10 == 0) {
         qCDebug(abe) << "*** execute decadal plan update ***";
         unit->managementPlanUpdate();
+        unit->runAgent();
     }
 
 
@@ -280,6 +281,7 @@ void ForestManagementEngine::setup()
     int ispeciescomp = data_file.columnIndex("speciesComposition");
     int ithinning = data_file.columnIndex("thinningIntensity");
     int irotation = data_file.columnIndex("U");
+    int iMAI = data_file.columnIndex("MAI");
     int iharvest_mode = data_file.columnIndex("harvestMode");
 
 
@@ -322,9 +324,9 @@ void ForestManagementEngine::setup()
             if (!at)
                 throw IException(QString("Agent type '%1' is not set up (row '%2')! Use the 'addAgentType()' JS function to add agent-type definitions.").arg(agent_type_code).arg(i));
 
-            ag = at->createAgent();
-            if (unit_codes.contains(unit_id)) {
-                throw IException(QString("Error: created another agent for unit '%1'").arg(unit_id));
+            if (!unit_codes.contains(unit_id)) {
+                // we create an agent for the unit only once (per unit)
+                ag = at->createAgent();
             }
         }
 
@@ -341,6 +343,8 @@ void ForestManagementEngine::setup()
                 unit->setThinningIntensity( data_file.value(i, ithinning).toInt() );
             if (irotation>-1)
                 unit->setU( data_file.value(i, irotation).toDouble() );
+            if (iMAI)
+                unit->setAverageMAI(data_file.value(i, iMAI).toDouble());
             if (ispeciescomp>-1) {
                 int index;
                 index = at->speciesCompositionIndex( data_file.value(i, ispeciescomp).toString() );
@@ -495,10 +499,10 @@ void ForestManagementEngine::run(int debug_year)
     {
     // launch the planning unit level update (annual and thorough analysis every ten years)
     DebugTimer plu("ABE:planUpdate");
-    GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits);
+    GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits, true);
     }
 
-    GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits);
+    GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits, true); // force single thread operation for now
     if (isCancel()) {
         throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
     }
