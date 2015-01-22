@@ -4,6 +4,7 @@
 #include "forestmanagementengine.h"
 #include "fmstand.h"
 #include "fomescript.h"
+#include "fmstp.h"
 
 namespace ABE {
 
@@ -42,6 +43,7 @@ void Agent::setup()
     const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
     foreach (FMUnit *unit, mUnits) {
         QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
+        unit->setU(stp->rotationLengthOfType(2)); // medium
         while (it!=stand_map.constEnd() && it.key()==unit) {
             FMStand *stand = it.value();
             // check if STP is already assigned. If not, do it now.
