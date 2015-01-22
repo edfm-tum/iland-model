@@ -18,6 +18,8 @@ UnitOut::UnitOut()
               << OutputColumn("id", "unique identifier of the planning unit", OutString)
               << OutputColumn("area", "total area of the unit (ha)", OutDouble)
               << OutputColumn("age", "mean stand age (area weighted) (updated every 10yrs)", OutDouble)
+              << OutputColumn("U", "default rotation length for stands of the unit (years)", OutInteger)
+              << OutputColumn("thinningIntensity", "default thinning intensity for the unit", OutDouble)
               << OutputColumn("volume", "mean standing volume (updated every 10yrs), m3/ha", OutDouble)
               << OutputColumn("MAI", "mean annual increment (updated every 10yrs), m3/ha*yr", OutDouble)
               << OutputColumn("decadePlan", "planned mean harvest per year for the decade (m3/ha*yr)", OutDouble)
@@ -39,7 +41,9 @@ void UnitOut::exec()
     foreach(unit, ForestManagementEngine::instance()->mUnits) {
         *this << currentYear() << unit->id(); // keys
         *this << unit->area();
-        *this << unit->mMeanAge << unit->mTotalVolume/unit->area() << unit->mMAI;
+        *this << unit->mMeanAge;
+        *this << unit->U() << unit->thinningIntensity();
+        *this << unit->mTotalVolume/unit->area() << unit->mMAI;
         *this << unit->mAnnualHarvestTarget;
         if (unit->scheduler()) {
             salvage_harvest = unit->scheduler()->mExtraHarvest / unit->area();

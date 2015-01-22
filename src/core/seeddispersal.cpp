@@ -167,7 +167,7 @@ void SeedDispersal::setupExternalSeeds()
     if (!GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.seedBelt.enabled",false))
         return;
 
-    DebugTimer t("setup of texternal seed maps.");
+    DebugTimer t("setup of external seed maps.");
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.seedDispersal.seedBelt"));
     int seedbelt_width = xml.valueDouble(".width",10);
     // setup of sectors

@@ -78,6 +78,7 @@ FMUnit::FMUnit(const Agent *agent)
     mU = 100, mThinningIntensityClass = 2, mSpeciesCompositionIndex = 0;
     mAverageMAI = 0.;
 
+
     //if (agent->type()->schedulerOptions().useScheduler)
     // explicit scheduler only for stands/units that include more than one stand
     mScheduler = new Scheduler(this);
