@@ -62,7 +62,6 @@ class ResourceUnit;
 
 QObject *ScriptGlobal::scriptOutput = 0;
 
-
 ScriptGlobal::ScriptGlobal(QObject *)
 {
     mModel = GlobalSettings::instance()->model();
@@ -316,6 +315,34 @@ void MapGridWrapper::createStand(int stand_id, QString paint_function, bool wrap
     }
     // after changing the map, recreate the index
     mMap->createIndex();
+}
+
+double MapGridWrapper::copyPolygonFromRect(MapGridWrapper *source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2)
+{
+    const Grid<int> &src = source->map()->grid();
+    Grid<int> &dest = const_cast<Grid<int> &>( mMap->grid() );
+    QRect r = dest.rectangle().intersected(QRect(dest.indexAt(QPointF(destx, desty)),dest.indexAt(QPointF(destx+(x2-x1),desty+(y2-y1)))) );
+    GridRunner<int> gr(dest, r);
+    QPoint dest_coord = dest.indexAt(QPointF(destx, desty));
+    QPoint offset = dest_coord - dest.indexAt(QPointF(x1,y1));
+    qDebug() << "Rectangle" << r << "offset" << offset << "from" << QPointF(x1,y1) << "to" << QPointF(destx, desty);
+    if (r.isNull())
+        return 0.;
+    int i=0, j=0;
+    while (gr.next()) {
+        if (gr.current()>=0) {
+            QPoint dp=gr.currentIndex()+offset;
+            i++;
+            if (src.isIndexValid(dp) && src.constValueAtIndex(dp)>=0 && *gr.current()==id_in) {
+                *gr.current() = id;
+                //if (j<100) qDebug() << dp << gr.currentIndex() << src.constValueAtIndex(dp) << *gr.current();
+                ++j;
+            }
+        }
+    }
+    qDebug() << "copied" << j << "from" << i;
+    return double(j)/100.; // in ha
+
 }
 
 QString MapGridWrapper::name() const
@@ -583,6 +610,11 @@ void ScriptGlobal::setupGlobalScripting()
     MapGridWrapper::addToScriptEngine(*engine);
     SpatialAnalysis::addToScriptEngine();
 
+}
+
+int ScriptGlobal::msec() const
+{
+    return QTime::currentTime().msecsSinceStartOfDay();
 }
 
 // Factory functions

@@ -54,6 +54,13 @@ public slots:
     /// if wrap_around=true, then the shape is wrapped around the edges of the simulated area (torus)
     void createStand(int stand_id, QString paint_function, bool wrap_around);
 
+    /// copy a bit of the source-map 'source' to this map. The
+    /// source rectangle is given by coordinates (x1/y1) to (x2/y2).
+    /// The rectangle will be blitted to the new coordinates destx/desty (moved from x1/y1).
+    /// id_in: the id of the polygon to copy, id: the id of the pixels in the target
+    /// return the size (ha) of the valid thing
+    double copyPolygonFromRect(MapGridWrapper *source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2);
+
 private:
     MapGrid *mMap;
     bool mCreated;
@@ -74,6 +81,7 @@ class ScriptGlobal : public QObject
     Q_PROPERTY(double worldX READ worldX)
     Q_PROPERTY(double worldY READ worldY)
     Q_PROPERTY(bool qt5 READ qt5)
+    Q_PROPERTY(int msec READ msec)
 
 
 public:
@@ -81,6 +89,7 @@ public:
     static void setupGlobalScripting();
     // properties accesible by scripts
     bool qt5() const {return true; } ///< is this the qt5-model? (changes in script object creation)
+    int msec() const; ///< the milliseconds since the start of the day
     int year() const; ///< current year in the model
     int resourceUnitCount() const; ///< get number of resource uinit
     QString currentDir() const { return mCurrentDir; } ///< current execution directory (default is the Script execution directory)
