@@ -49,6 +49,7 @@ public slots:
     void paint(double min_value, double max_value);
     // active modifications of the map
     void clear(); ///< clears the map (set all values to 0)
+    void clearProjectArea(); ///< clear the project area (set to 0), but copy mask with pixels from "outside of project area" (i.e., -1, -2)
     /// paint a shape on the stand grid with id stand_id
     /// paint_function is a valid expression (paramters: x, y as *metric* coordinates)
     /// if wrap_around=true, then the shape is wrapped around the edges of the simulated area (torus)
@@ -60,6 +61,8 @@ public slots:
     /// id_in: the id of the polygon to copy, id: the id of the pixels in the target
     /// return the size (ha) of the valid thing
     double copyPolygonFromRect(MapGridWrapper *source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2);
+
+    void createMapIndex(); ///< call after creating stands with copyPolygonFromRect
 
 private:
     MapGrid *mMap;

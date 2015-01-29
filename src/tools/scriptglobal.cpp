@@ -270,6 +270,23 @@ void MapGridWrapper::clear()
     const_cast<Grid<int>& >(mMap->grid()).initialize(0); // clear all data and set to 0
 }
 
+void MapGridWrapper::clearProjectArea()
+{
+    if (!mCreated) {
+        // create a empty map
+        mMap = new MapGrid();
+        mMap->createEmptyGrid();
+        mCreated = true;
+    }
+    const MapGrid *stand_grid = GlobalSettings::instance()->model()->standGrid();
+    if (!stand_grid) {
+        qDebug() << "MapGridWrapper::clearProjectArea: no valid stand grid to copy from!";
+        return;
+    }
+    for(int *src=stand_grid->grid().begin(), *dest=mMap->grid().begin(); src!=stand_grid->grid().end(); ++src, ++dest)
+        *dest = *src<0? *src : 0;
+}
+
 void MapGridWrapper::createStand(int stand_id, QString paint_function, bool wrap_around)
 {
     if (!mMap)
@@ -322,27 +339,38 @@ double MapGridWrapper::copyPolygonFromRect(MapGridWrapper *source, int id_in, in
     const Grid<int> &src = source->map()->grid();
     Grid<int> &dest = const_cast<Grid<int> &>( mMap->grid() );
     QRect r = dest.rectangle().intersected(QRect(dest.indexAt(QPointF(destx, desty)),dest.indexAt(QPointF(destx+(x2-x1),desty+(y2-y1)))) );
-    GridRunner<int> gr(dest, r);
     QPoint dest_coord = dest.indexAt(QPointF(destx, desty));
-    QPoint offset = dest_coord - dest.indexAt(QPointF(x1,y1));
+    QPoint offset = dest.indexAt(QPointF(x1,y1)) - dest_coord;
     qDebug() << "Rectangle" << r << "offset" << offset << "from" << QPointF(x1,y1) << "to" << QPointF(destx, desty);
     if (r.isNull())
         return 0.;
+
+    GridRunner<int> gr(dest, r);
     int i=0, j=0;
     while (gr.next()) {
-        if (gr.current()>=0) {
+        //if (gr.current()>=0) {
             QPoint dp=gr.currentIndex()+offset;
             i++;
-            if (src.isIndexValid(dp) && src.constValueAtIndex(dp)>=0 && *gr.current()==id_in) {
+            if (src.isIndexValid(dp) && src.constValueAtIndex(dp)==id_in && *gr.current()>=0) {
                 *gr.current() = id;
                 //if (j<100) qDebug() << dp << gr.currentIndex() << src.constValueAtIndex(dp) << *gr.current();
                 ++j;
             }
-        }
+        //}
     }
-    qDebug() << "copied" << j << "from" << i;
+    qDebug() << "copyPolygonFromRect: copied" << j << "from" << i;
+
+    // after changing the map, recreate the index
+    // mMap->createIndex();
+
     return double(j)/100.; // in ha
 
+}
+
+void MapGridWrapper::createMapIndex()
+{
+    if (mMap)
+        mMap->createIndex();
 }
 
 QString MapGridWrapper::name() const
@@ -531,8 +559,15 @@ void ScriptGlobal::loadScript(const QString &fileName)
 
     QJSValue result = engine->evaluate(program);
     qDebug() << "javascript file loaded" << fileName;
-    if (result.isError())
-        qDebug() << "Script Error occured: " << result.toString(); // << "\n" << engine->uncaughtExceptionBacktrace();
+    if (result.isError()) {
+        int lineno = result.property("lineNumber").toInt();
+        QStringList code_lines = program.replace('\r', "").split('\n'); // remove CR, split by LF
+        QString code_part;
+        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+            code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        qDebug() << "Javascript Error in file" << fileName << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
+
+    }
 
 }
 
