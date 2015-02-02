@@ -405,10 +405,11 @@ bool ScriptGlobal::startOutput(QString table_name)
     if (!om) return false;
     Output *out = om->find(table_name);
     if (!out) {
-        QString err=QString("Output '%1' is not a valid output.").arg(table_name);
+        QString err=QString("startOutput: Output '%1' is not a valid output.").arg(table_name);
         // TODO: ERROR function in script
 //        if (context())
 //           context()->throwError(err);
+        qWarning() << err;
         return false;
     }
     out->setEnabled(true);
@@ -434,7 +435,8 @@ bool ScriptGlobal::stopOutput(QString table_name)
     if (!om) return false;
     Output *out = om->find(table_name);
     if (!out) {
-        QString err=QString("Output '%1' is not a valid output.").arg(table_name);
+        QString err=QString("stopOutput: Output '%1' is not a valid output.").arg(table_name);
+        qWarning() << err;
         // TODO: ERROR function in script
 //        if (context())
 //           context()->throwError(err);

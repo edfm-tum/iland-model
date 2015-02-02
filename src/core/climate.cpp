@@ -130,7 +130,7 @@ void Climate::setup()
             // check for validity
             foreach(int year, mRandomYearList)
                 if (year < 0 || year>=mLoadYears)
-                    throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1!!!");
+                    throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!!");
         }
 
         if (mRandomYearList.count()>0)
@@ -204,8 +204,12 @@ void Climate::load()
             if (val_prec.isValid())
                 mPrecipitationShift = val_prec.toDouble();
 
-            if (mTemperatureShift!=0. || mPrecipitationShift!=1.)
-                qDebug() << "Climate modifaction: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
+            if (mTemperatureShift!=0. || mPrecipitationShift!=1.) {
+                qDebug() << "Climate modification: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
+                if (mDoRandomSampling) {
+                    throw IException("Climate: cannot use a randomSamplingList and temperatureShift/precipitationShift at the same time. Sorry.");
+                }
+            }
         }
 
         //qDebug() << "loading year" << lastyear+1;
