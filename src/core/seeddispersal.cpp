@@ -476,10 +476,12 @@ void SeedDispersal::execute()
         path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_before_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
         qDebug() << "saved seed map image to" << path;
+    }
 #else
+    if (mDumpSeedMaps)
         qDebug() << "saving of seedmaps only supported in the iLand GUI.";
 #endif
-    }
+
     {
     DebugTimer t("seed dispersal");
     // (1) detect edges
