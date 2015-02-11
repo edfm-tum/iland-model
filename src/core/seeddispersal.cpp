@@ -469,10 +469,10 @@ void SeedDispersal::clear()
 
 void SeedDispersal::execute()
 {
-    if (mDumpSeedMaps) {
 #ifdef ILAND_GUI
-        int year = GlobalSettings::instance()->currentYear();
-        QString path;
+    int year = GlobalSettings::instance()->currentYear();
+    QString path;
+    if (mDumpSeedMaps) {
         path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_before_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
         qDebug() << "saved seed map image to" << path;
