@@ -49,7 +49,7 @@ unix {
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle.lib
+LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 message(linux release)
 }
 win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
