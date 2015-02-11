@@ -12,12 +12,6 @@
 #include <QJSValueIterator>
 namespace ABE {
 // statics
-/*QStringList ActThinning::mSyntaxCustom = QStringList()  << Activity::mAllowedProperties
-                                                        << "percentile" << "removal" << "thinning"
-                                                        << "relative" << "remainingStems" << "minDbh"
-                                                        << "filter" << "targetVariable" << "targetRelative"
-                                                        << "targetValue" << "classes";
-*/
 QStringList ActThinning::mSyntaxCustom;
 
 
@@ -26,6 +20,12 @@ ActThinning::ActThinning(FMSTP *parent): Activity(parent)
     mBaseActivity.setIsScheduled(true); // use the scheduler
     mBaseActivity.setDoSimulate(true); // simulate per default
     mThinningType = Invalid;
+    if (mSyntaxCustom.isEmpty())
+        mSyntaxCustom = QStringList()  << Activity::mAllowedProperties
+                                       << "percentile" << "removal" << "thinning"
+                                       << "relative" << "remainingStems" << "minDbh"
+                                       << "filter" << "targetVariable" << "targetRelative"
+                                       << "targetValue" << "classes";
 }
 
 QString ActThinning::type() const

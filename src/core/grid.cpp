@@ -20,7 +20,7 @@ QString gridToString(const FloatGrid &grid, const QChar sep, const int newline_a
     return res;
 }
 #ifdef ILAND_GUI
-#incldue <QImage>
+#include <QImage>
 
 QImage gridToImage(const FloatGrid &grid,
                    bool black_white,

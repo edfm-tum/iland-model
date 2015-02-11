@@ -53,9 +53,6 @@ QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
                        "0000110000", 10);
 QStringList planting_pattern_names = QStringList() << "rect2" << "rect10" << "rect20" << "circle5" << "circle10";
 
-/*QStringList ActPlanting::mAllowedProperties = QStringList() << Activity::mAllowedProperties
-                                                            << "species" << "fraction" << "height" << "age" << "clear"
-                                                            << "pattern" << "spacing" << "offset" << "random" << "n";*/
 QStringList ActPlanting::mAllowedProperties;
 
 
@@ -63,6 +60,10 @@ ActPlanting::ActPlanting(FMSTP *parent): Activity(parent)
 {
     //mBaseActivity.setIsScheduled(true); // use the scheduler
     //mBaseActivity.setDoSimulate(true); // simulate per default
+    if (mAllowedProperties.isEmpty())
+        mAllowedProperties = QStringList() << Activity::mAllowedProperties
+                                           << "species" << "fraction" << "height" << "age" << "clear"
+                                           << "pattern" << "spacing" << "offset" << "random" << "n";
 
 }
 
