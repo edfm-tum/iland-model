@@ -54,7 +54,11 @@ void Species::setup()
     mId = stringVar("shortName");
     mName = stringVar("name");
     QString col_name = '#' + stringVar("displayColor");
+#ifdef ILAND_GUI
     mDisplayColor.setNamedColor(col_name);
+#else
+    mDisplayColor = 0;
+#endif
     QString stampFile = stringVar("LIPFile");
     // load stamps
     mLIPs.load( GlobalSettings::instance()->path(stampFile, "lip") );

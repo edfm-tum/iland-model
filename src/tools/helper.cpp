@@ -26,11 +26,11 @@
 #include <QtWidgets>
 #endif
 #endif
-#include <QColor>
 //#include "cycle.h"
 #include <limits>
 
 #ifdef ILAND_GUI
+#include <QColor>
 #include "version.h"
 #else
 #include "../iland/version.h"

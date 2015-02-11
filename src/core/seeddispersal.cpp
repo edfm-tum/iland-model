@@ -24,8 +24,9 @@
 #include "debugtimer.h"
 #include "helper.h"
 #include "species.h"
-
+#ifdef ILAND_GUI
 #include <QtGui/QImage>
+#endif
 
 /** @class SeedDispersal
     @ingroup core
@@ -190,8 +191,10 @@ void SeedDispersal::setupExternalSeeds()
     QString path = GlobalSettings::instance()->path(GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath"));
 
     if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false)) {
+#ifdef ILAND_GUI
         QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
         img.save(path + "/seedbeltmap_before.png");
+#endif
     }
     //    img.save("seedmap.png");
     // now scan the pixels of the belt: paint all pixels that are close to the project area
@@ -258,8 +261,10 @@ void SeedDispersal::setupExternalSeeds()
         }
     }
     if (GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false)) {
+#ifdef ILAND_GUI
         QImage img = gridToImage(*mExternalSeedBaseMap, true, -1., 2.);
         img.save(path + "/seedbeltmap_after.png");
+#endif
     }
     mExtSeedData.clear();
     int sectors_x = xml.valueDouble("sizeX",0);
@@ -464,12 +469,16 @@ void SeedDispersal::clear()
 
 void SeedDispersal::execute()
 {
-    int year = GlobalSettings::instance()->currentYear();
-    QString path;
     if (mDumpSeedMaps) {
+#ifdef ILAND_GUI
+        int year = GlobalSettings::instance()->currentYear();
+        QString path;
         path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_before_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
         qDebug() << "saved seed map image to" << path;
+#else
+        qDebug() << "saving of seedmaps only supported in the iLand GUI.";
+#endif
     }
     {
     DebugTimer t("seed dispersal");
@@ -479,8 +488,10 @@ void SeedDispersal::execute()
         distribute();
     }
     }
+#ifdef ILAND_GUI
     if (mDumpSeedMaps)
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_after_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
+#endif
 }
 
 /** scans the seed image and detects "edges".
