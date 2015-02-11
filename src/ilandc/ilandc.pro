@@ -33,14 +33,25 @@ PRE_TARGETDEPS += ../plugins/iland_windd.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
 }
+unix {
+PRE_TARGETDEPS += ../plugins/libiland_fired.a
+PRE_TARGETDEPS += ../plugins/libiland_windd.a
+PRE_TARGETDEPS += ../plugins/libiland_barkbeetled.a
+LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
+}
+
 }
 
 
 CONFIG(release, debug|release) {
+unix {
 # release stuff
-#PRE_TARGETDEPS += ../plugins/libiland_fire.a
-#PRE_TARGETDEPS += ../plugins/libiland_wind.a
-#LIBS += -L../plugins -liland_fire -liland_wind
+PRE_TARGETDEPS += ../plugins/libiland_fire.a
+PRE_TARGETDEPS += ../plugins/libiland_wind.a
+PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
+LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle.lib
+message(linux release)
+}
 win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
 #debug msvc
 PRE_TARGETDEPS += ../plugins/iland_fire.lib
@@ -48,6 +59,7 @@ PRE_TARGETDEPS += ../plugins/iland_wind.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
 
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+message(windows release)
 }
 }
 
