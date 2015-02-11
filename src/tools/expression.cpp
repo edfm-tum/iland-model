@@ -204,8 +204,11 @@ void Expression::setExpression(const QString& aExpression)
     if (m_expr)
         delete[] m_expr;
     m_expr=new char[ba.length()+1]; // reserve memory...
-    //strcpy(m_expr, ba.constData());
+#ifdef Q_CC_INTEL
+    strcpy(m_expr, ba.constData());
+#else
     strcpy_s(m_expr, (size_t) ba.size()+1, ba.constData());
+#endif
 
     m_pos=m_expr;  // set starting point...
 
