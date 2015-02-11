@@ -252,7 +252,6 @@ inline void MTRand::seed()
     FILE* urandom;
     fopen_s(&urandom, "/dev/urandom", "rb" );
 #endif
-
 	if( urandom )
 	{
 		uint32 bigSeed[N];
