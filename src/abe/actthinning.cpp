@@ -12,12 +12,13 @@
 #include <QJSValueIterator>
 namespace ABE {
 // statics
-QStringList ActThinning::mSyntaxCustom = QStringList()  << Activity::mAllowedProperties
+/*QStringList ActThinning::mSyntaxCustom = QStringList()  << Activity::mAllowedProperties
                                                         << "percentile" << "removal" << "thinning"
                                                         << "relative" << "remainingStems" << "minDbh"
                                                         << "filter" << "targetVariable" << "targetRelative"
                                                         << "targetValue" << "classes";
-
+*/
+QStringList ActThinning::mSyntaxCustom;
 
 
 ActThinning::ActThinning(FMSTP *parent): Activity(parent)
