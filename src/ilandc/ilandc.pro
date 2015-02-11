@@ -6,7 +6,7 @@
 
 ## iLand console application
 QT       += core
-#QT       -= gui ### we include the GUI library for QColor, QImage
+QT       -= gui ### we include the GUI library for QColor, QImage
 QT       += xml
 QT       += sql
 QT       += qml
@@ -147,7 +147,7 @@ SOURCES += main.cpp \
     ../tools/spatialanalysis.cpp \
     ../tools/statdata.cpp \
     ../tools/debugtimer.cpp \
-    ../tools/viewport.cpp \
+#    ../tools/viewport.cpp \
     ../abe/fomewrapper.cpp \
     ../abe/fmstand.cpp \
     ../abe/agent.cpp \
@@ -242,7 +242,7 @@ HEADERS += \
     ../tools/spatialanalysis.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
-    ../tools/viewport.h \
+#    ../tools/viewport.h \
     ../abe/activity.h \
     ../abe/forestmanagementengine.h \
     ../abe/abe_global.h \

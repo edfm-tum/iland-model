@@ -19,8 +19,9 @@
 
 #ifndef SPECIES_H
 #define SPECIES_H
-
+#ifdef ILAND_GUI
 #include <QColor>
+#endif
 
 #include "expression.h"
 #include "globalsettings.h"
@@ -75,7 +76,9 @@ public:
     const QString &id() const { return mId; }
     /// the full name (e.g. Picea Abies) of the species
     const QString &name() const { return mName; }
+#ifdef ILAND_GUI
     const QColor displayColor() const { return mDisplayColor; }
+#endif
     int index() const { return mIndex; } ///< unique index of species within current set
     bool active() const { return true; } ///< active??? todo!
     int phenologyClass() const { return mPhenologyClass; } ///< phenology class defined in project file. class 0 = evergreen
@@ -148,7 +151,11 @@ private:
     StampContainer mLIPs; ///< ptr to the container of the LIP-pattern
     QString mId;
     QString mName;
+#ifdef ILAND_GUI
     QColor mDisplayColor;
+#else
+    int mDisplayColor;
+#endif
     int mIndex; ///< internal index within the SpeciesSet
     bool mConiferous; ///< true if confierous species (vs. broadleaved)
     bool mEvergreen; ///< true if evergreen species

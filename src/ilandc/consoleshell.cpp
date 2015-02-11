@@ -20,7 +20,7 @@
 #include "consoleshell.h"
 
 #include <QtCore>
-#include <QKeyEvent>
+//#include <QKeyEvent>
 
 #include "global.h"
 #include "model.h"

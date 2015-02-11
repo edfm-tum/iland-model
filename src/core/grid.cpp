@@ -1,4 +1,4 @@
-#include <QtGui>
+//#include <QtGui>
 #include "grid.h"
 #include "exception.h"
 #include "global.h"
@@ -19,6 +19,8 @@ QString gridToString(const FloatGrid &grid, const QChar sep, const int newline_a
     }
     return res;
 }
+#ifdef ILAND_GUI
+#incldue <QImage>
 
 QImage gridToImage(const FloatGrid &grid,
                    bool black_white,
@@ -67,3 +69,16 @@ bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid)
         }
     return true;
 }
+#else
+//QImage gridToImage(const FloatGrid &grid,
+//                   bool black_white,
+//                   double min_value, double max_value,
+//                   bool reverse)
+//{
+//}
+
+bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid) {
+    return false;
+}
+#endif
+
