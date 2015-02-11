@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     printf("iLand console (%s - #%s)\n", currentVersion(), svnRevision());
     printf("This is the console version of iLand, the individual based\nlandscape and disturbance forest model.\n");
     printf("More at: http://iland.boku.ac.at \n");
-    printf("(c) Werner Rammer, Rupert Seidl, 2009-2013 \n");
+    printf("(c) Werner Rammer, Rupert Seidl, 2009-2015 \n");
     printf("compiled: %s\n", compiler().toLocal8Bit().data());
     printf("****************************************\n\n");
     if (a.arguments().count()<3) {
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         printf("Options:\n");
         printf("you specify a number key=value pairs, and *after* loading of the project\n");
         printf("the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand.enabled=false output.stand.landscape=false\n");
-        printf("See also http://iland.boku.ac.at/iLand+console\".");
+        printf("See also http://iland.boku.ac.at/iLand+console\n.");
         return 0;
     }
     ConsoleShell iland_shell;
