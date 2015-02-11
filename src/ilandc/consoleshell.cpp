@@ -165,16 +165,16 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
          break;
      case QtWarningMsg:
         *ConsoleShell::logStream() << msg << endl;
-        printf("Warning: %s\n", msg);
+        printf("Warning: %s\n", msg.toLocal8Bit().data());
 
          break;
      case QtCriticalMsg:
         *ConsoleShell::logStream() << msg << endl;
-        printf("Critical: %s\n", msg);
+        printf("Critical: %s\n", msg.toLocal8Bit().data());
          break;
      case QtFatalMsg:
         *ConsoleShell::logStream() << msg << endl;
-        printf("Fatal: %s\n", msg);
+        printf("Fatal: %s\n", msg.toLocal8Bit().data());
      }
  }
 

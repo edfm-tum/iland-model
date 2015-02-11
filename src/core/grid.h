@@ -193,7 +193,7 @@ private:
     T* mCurrent;
     size_t mLineLength;
     size_t mCols;
-    size_t mCurrentCol;
+    int mCurrentCol;
 };
 
 /** @class Vector3D is a simple 3d vector.
