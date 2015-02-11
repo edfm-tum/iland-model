@@ -11,6 +11,9 @@ const char *svnRevision(){ return svn_revision;}
 #ifdef Q_CC_GNU
 #define MYCC "GCC"
 #endif
+#ifdef Q_CC_INTEL
+#define MYCC "Intel"
+#endif
 #ifndef MYCC
 #define MYCC "unknown"
 #endif
@@ -39,6 +42,7 @@ const char *svnRevision(){ return svn_revision;}
 #else
 #define BITS "64 bit"
 #endif
+
 
 QString compiler()
 {
