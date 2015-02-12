@@ -59,7 +59,7 @@ class TTickTack
 public:
     TTickTack() {}
     void reset() {}
-    double elapsed() { return 1.; }
+    double elapsed() { return 0.; }
 };
 #endif
 
