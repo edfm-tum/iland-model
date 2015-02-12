@@ -67,11 +67,13 @@ void ConsoleShell::run()
     int years = QCoreApplication::arguments().at(2).toInt(&ok);
     if (years<0 || !ok) {
         qDebug() << QCoreApplication::arguments().at(2) << "is an invalid number of years to run!";
+        QCoreApplication::quit();
         return;
     }
 
     if (!QFile::exists(xml_name)) {
         qDebug() << "invalid XML project file: " << xml_name;
+        QCoreApplication::quit();
         return;
     }
     try {
@@ -83,6 +85,7 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
+            QCoreApplication::quit();
             return;
         }
 
@@ -95,8 +98,8 @@ void ConsoleShell::run()
                 mParams.append(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
-                qWarning() << "set" << key << "to value:" << value;
                 const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
+                qWarning() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
             }
         }
         qDebug() << "**************************************************";
@@ -114,6 +117,7 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
+            QCoreApplication::quit();
             return;
         }
         runJavascript("onCreate");
@@ -126,6 +130,7 @@ void ConsoleShell::run()
             qWarning() << "!!!! ERROR !!!!";
             qWarning() << iland_model.lastError();
             qWarning() << "!!!! ERROR !!!!";
+            QCoreApplication::quit();
             return;
         }
         runJavascript("onFinish");
