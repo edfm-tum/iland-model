@@ -197,7 +197,11 @@ void Snapshot::loadTrees()
             t.mStamp = s->stamp(t.mDbh, t.mHeight);
 
 
-            if (++n % 10000 == 0) {
+            if (n<10000000 && ++n % 10000 == 0) {
+                qDebug() << n << "trees loaded...";
+                QCoreApplication::processEvents();
+            }
+            if (n>10000000 && ++n % 1000000 == 0) {
                 qDebug() << n << "trees loaded...";
                 QCoreApplication::processEvents();
             }
@@ -528,7 +532,11 @@ void Snapshot::loadSaplings()
         t.height = q.value(ci++).toFloat();
         t.age.stress_years = q.value(ci++).toInt();
         sap.setBit(QPoint(posx, posy), true); // set the flag in the bitmap
-        if (++n % 10000 == 0) {
+        if (n<10000000 && ++n % 10000 == 0) {
+            qDebug() << n << "saplings loaded...";
+            QCoreApplication::processEvents();
+        }
+        if (n>10000000 && ++n % 1000000 == 0) {
             qDebug() << n << "saplings loaded...";
             QCoreApplication::processEvents();
         }
