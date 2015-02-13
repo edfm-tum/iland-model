@@ -53,13 +53,16 @@ _LARGE_INTEGER getCount()
     }
 };
 #else
-// fake implementation
+// non windows implementation
+#include <QElapsedTimer>
 class TTickTack
 {
 public:
-    TTickTack() {}
-    void reset() {}
-    double elapsed() { return 0.; }
+    TTickTack() { reset(); }
+    void reset() { t.start(); }
+    double elapsed() { return t.elapsed()/1000000.; }
+private:
+    QElapsedTimer t;
 };
 #endif
 
