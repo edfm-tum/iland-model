@@ -60,7 +60,7 @@ class TTickTack
 public:
     TTickTack() { reset(); }
     void reset() { t.start(); }
-    double elapsed() { return t.elapsed()/1000000.; }
+    double elapsed() { return t.elapsed()/1000.; }
 private:
     QElapsedTimer t;
 };
