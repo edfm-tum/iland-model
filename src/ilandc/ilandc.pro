@@ -63,6 +63,7 @@ message(windows release)
 }
 }
 
+DEFINES += NO_DEBUG_MSGS
 
 CONFIG += precompile_header
 

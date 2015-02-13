@@ -201,7 +201,7 @@ void Snapshot::loadTrees()
                 qDebug() << n << "trees loaded...";
                 QCoreApplication::processEvents();
             }
-            if (n>10000000 && ++n % 1000000 == 0) {
+            if (n>=10000000 && ++n % 1000000 == 0) {
                 qDebug() << n << "trees loaded...";
                 QCoreApplication::processEvents();
             }
@@ -536,7 +536,7 @@ void Snapshot::loadSaplings()
             qDebug() << n << "saplings loaded...";
             QCoreApplication::processEvents();
         }
-        if (n>10000000 && ++n % 1000000 == 0) {
+        if (n>=10000000 && ++n % 1000000 == 0) {
             qDebug() << n << "saplings loaded...";
             QCoreApplication::processEvents();
         }
