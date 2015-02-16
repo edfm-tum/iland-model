@@ -521,6 +521,7 @@ void Model::initOutputDatabase()
 ResourceUnit *nc_sapling_growth_establishment(ResourceUnit *unit)
 {
     try {
+        { DebugTimer t("nc_saplingGrowth");
         // define a height map for the current resource unit on the stack
         float sapling_map[cPxPerRU*cPxPerRU];
         // set the map and initialize it:
@@ -532,10 +533,13 @@ ResourceUnit *nc_sapling_growth_establishment(ResourceUnit *unit)
         for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
             (*rus)->calclulateSaplingGrowth();
 
+        } { DebugTimer t("nc_Establishment");
+
         // (2) calculate the establishment probabilities of new saplings
-        for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
+        for (QList<ResourceUnitSpecies*>::const_iterator rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
             (*rus)->calculateEstablishment();
 
+        }
 
     } catch (const IException& e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
