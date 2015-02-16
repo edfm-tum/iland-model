@@ -34,6 +34,7 @@
 
 Snapshot::Snapshot()
 {
+    mIgnoreErrors = false;
 }
 
 bool Snapshot::openDatabase(const QString &file_name, const bool read)
@@ -83,6 +84,7 @@ bool Snapshot::createSnapshot(const QString &file_name)
 bool Snapshot::loadSnapshot(const QString &file_name)
 {
     DebugTimer t("loadSnapshot");
+    mIgnoreErrors = GlobalSettings::instance()->settings().valueBool("model.initialization.snapshotIgnoreErrors");
     openDatabase(file_name, true);
     loadTrees();
     loadSoil();
@@ -168,9 +170,11 @@ void Snapshot::loadTrees()
                 ru_index = new_ru;
                 // remove all trees...
                 ru = GlobalSettings::instance()->model()->ru(ru_index);
-                if (!ru)
+                if (!ru && !mIgnoreErrors)
                     throw IException("Snapshot::loadTrees: Invalid resource unit");
             }
+            if (!ru)
+                continue;
             // add a new tree to the tree list
             //ru->trees().append(Tree());
             //Tree &t = ru->trees().back();
@@ -273,8 +277,10 @@ void Snapshot::loadSoil()
     while (q.next()) {
         ru_index = q.value(0).toInt();
         ru = GlobalSettings::instance()->model()->ru(ru_index);
-        if (!ru)
+        if (!ru && !mIgnoreErrors)
             throw IException("Snapshot::loadSoil: Invalid resource unit");
+        if (!ru)
+            continue;
         Soil *s = ru->soil();
         if (!s) {
             throw IException("Snapshot::loadSoil: trying to load soil data but soil module is disabled.");
@@ -390,8 +396,10 @@ void Snapshot::loadSnags()
     while (q.next()) {
         ru_index = q.value(ci++).toInt();
         ru = GlobalSettings::instance()->model()->ru(ru_index);
-        if (!ru)
+        if (!ru && !mIgnoreErrors)
             throw IException("Snapshot::loadSoil: Invalid resource unit");
+        if (!ru)
+            continue;
         Snag *s = ru->snag();
         if (!s)
             continue;
@@ -509,8 +517,10 @@ void Snapshot::loadSaplings()
         ci = 0;
         ru_index = q.value(ci++).toInt();
         ru = GlobalSettings::instance()->model()->ru(ru_index);
-        if (!ru)
+        if (!ru && !mIgnoreErrors)
             throw IException("Snapshot::loadSaplings: Invalid resource unit");
+        if (!ru)
+            continue;
         Species *species = ru->speciesSet()->species(q.value(ci++).toString());
         if (!species)
             throw IException("Snapshot::loadSaplings: Invalid species");
@@ -524,10 +534,14 @@ void Snapshot::loadSaplings()
         SaplingTree &t = sap.mSaplingTrees.back();
         posx = q.value(ci++).toInt();
         posy = q.value(ci++).toInt();
-        if (GlobalSettings::instance()->model()->grid()->isIndexValid(posx, posy))
+        if (GlobalSettings::instance()->model()->grid()->isIndexValid(posx, posy)) {
             t.pixel = GlobalSettings::instance()->model()->grid()->ptr(posx,posy );
-        else
-            throw IException(QString("Snapshot: loadSaplings: invalid position: %1/%2").arg(posx).arg(posy));
+        } else {
+            if (mIgnoreErrors)
+                continue;
+            else
+                throw IException(QString("Snapshot: loadSaplings: invalid position: %1/%2").arg(posx).arg(posy));
+        }
         t.age.age = q.value(ci++).toInt();
         t.height = q.value(ci++).toFloat();
         t.age.stress_years = q.value(ci++).toInt();
