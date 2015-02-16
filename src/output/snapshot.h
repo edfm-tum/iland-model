@@ -28,6 +28,7 @@ public:
     bool createSnapshot(const QString &file_name);
     bool loadSnapshot(const QString &file_name);
 private:
+    bool mIgnoreErrors;
     bool openDatabase(const QString &file_name, const bool read);
     void saveTrees();
     void saveSoil();
