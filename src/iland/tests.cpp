@@ -938,3 +938,149 @@ void Tests::testFOMEstep()
         fome->run(1);
     }
 }
+
+void Tests::testDbgEstablishment()
+{
+    // test speeed of debugtimer
+    DebugTimer::clearAllTimers();
+    DebugTimer total("total");
+    // 4x1,000,000 timers: ca 1.5 seks...
+    for (int i=0;i<100000;i++) {
+        { DebugTimer a("aasdf asdfasdf"); }
+        { DebugTimer a("basdflk asdf"); }
+        { DebugTimer a("bas asdfasdf"); }
+        { DebugTimer a("dasdflkj asdfalskfj"); }
+    }
+
+    qDebug() << "finsihed timers";
+
+    const Grid<float> &seed_map = GlobalSettings::instance()->model()->speciesSet()->activeSpecies()[0]->seedDispersal()->seedMap();
+
+    int n_established = 0;
+    int n_tested = 0, n_seed=0, n_dropped=0;
+    double mPAbiotic = 0.8;
+    DebugTimer runt("run est");
+    int dbg_numbers = RandomGenerator::debugNRandomNumbers();
+    // define a height map for the current resource unit on the stack
+    float sapling_map[cPxPerRU*cPxPerRU];
+    // set the map and initialize it:
+
+    for (int i=0;i<100;i++)
+        foreach ( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+
+             ru->setSaplingHeightMap(sapling_map);
+             ResourceUnitSpecies *mRUS = ru->ruSpecies()[0];
+
+            const QRectF &ru_rect = ru->boundingBox();
+
+            // test the establishment code....
+            GridRunner<float> seed_runner(seed_map, ru_rect);
+            Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
+
+            // check every pixel inside the bounding box of the pixel with
+            while (float *p = seed_runner.next()) {
+                ++n_tested;
+                if (*p>0.f) {
+                    ++n_seed;
+                    //double p_establish = drandom(mRUS->ru()->randomGenerator());
+                    //if (p_establish > mPAbiotic)
+                    //    continue;
+                    // pixel with seeds: now really iterate over lif pixels
+                    GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_runner.currentIndex()));
+                    while (float *lif_px = lif_runner.next()) {
+                        DBGMODE(
+                                    if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
+                                    qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
+                                );
+                        double p_establish = drandom();
+                        if (p_establish < mPAbiotic) {
+                            //if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
+                            QPoint pos_lif = lif_map->indexOf(lif_px);
+
+                            if (ru->saplingHeightAt(pos_lif) > 1.3f)
+                                ++n_dropped;
+
+                            // check if sapling of the current tree species is already established -> if so, no establishment.
+                            if (mRUS->hasSaplingAt(pos_lif))
+                                ++n_dropped;
+
+                            const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight);
+                            if (hgv.count()>0) n_dropped++;
+                            double h_height_grid = hgv.height;
+                            double rel_height = 4. / h_height_grid;
+
+                             double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(*lif_px, rel_height);
+                             if (lif_corrected < drandom())
+                                 ++n_dropped;
+
+
+                            n_established++;
+                        }
+                    }
+                }
+            }
+        }
+    qDebug() << "Orig tested " << n_tested << "with seed" << n_seed << "est: " << n_established << "time" << runt.elapsed() << "debug numbers used:" << RandomGenerator::debugNRandomNumbers()-dbg_numbers << "n_dropped" << n_dropped;
+
+    runt.start();
+    n_established = 0;
+    n_tested = 0; n_seed=0; n_dropped=0;
+    for (int i=0;i<100;i++)
+        foreach ( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+
+             ru->setSaplingHeightMap(sapling_map);
+             ResourceUnitSpecies *mRUS = ru->ruSpecies()[0];
+             const std::bitset<cPxPerRU*cPxPerRU> &pos_bitset = mRUS->sapling().presentPositions();
+
+            const QRectF &ru_rect = ru->boundingBox();
+            //DebugTimer estasd("establish:from_search");
+            // 3rd step: check actual pixels in the LIF grid
+
+            // a large part has available seeds. simply scan the pixels...
+            QPoint lif_index;
+            Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
+            GridRunner<float> lif_runner(lif_map, ru_rect);
+            float *sap_height = sapling_map;
+            size_t bit_idx=0;
+            while (float *lif_px = lif_runner.next()) {
+                ++n_tested;
+                // check for height of sapling < 1.3m (for all species
+                // and for presence of a sapling of the given species
+                if (*sap_height < 1.3 && pos_bitset[bit_idx]==false) {
+                    ++n_seed;
+                    lif_index = lif_map->indexOf(lif_px);
+                    double sap_random_number = drandom();
+                    const float seed_map_value = seed_map.constValueAt( lif_runner.currentCoord() );
+
+                    if (seed_map_value*mPAbiotic > sap_random_number)
+                        ++n_dropped;
+
+
+//                    DBGMODE(
+//                                if (!ru_rect.contains(lif_map->cellCenterPoint(lif_index)))
+//                                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map->cellCenterPoint(lif_index) << "not in" << ru_rect;
+//                            );
+
+
+                    const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(lif_index.x()/cPxPerHeight, lif_index.y()/cPxPerHeight);
+
+                    double h_height_grid = hgv.height;
+                    double rel_height = 4. / h_height_grid;
+
+                     double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(*lif_px, rel_height);
+                     if (lif_corrected < sap_random_number)
+                         ++n_dropped;
+
+                     if (seed_map_value*mPAbiotic*lif_corrected < sap_random_number)
+                         n_established++;
+                }
+                ++sap_height;
+                ++bit_idx;
+            }
+
+
+        }
+    qDebug() << "Upd tested " << n_tested << "with seed" << n_seed << "est: " << n_established << "time" << runt.elapsed() << "debug numbers used:" << RandomGenerator::debugNRandomNumbers()-dbg_numbers << "n_dropped" << n_dropped;
+
+    DebugTimer::printAllTimers();
+}

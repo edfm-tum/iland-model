@@ -1865,7 +1865,8 @@ void MainWindow::on_actionTest_triggered()
                                      "19: test wind module\n" \
                                      "20: test rumple index\n" \
                                      "21: test FOME setup\n" \
-                                     "22: test FOME step",-1);
+                                     "22: test FOME step\n" \
+                                     "23: test debug establishment",-1);
     switch (which) {
     case 0: t.speedOfExpression();break;
     case 1: t.clearTrees(); break;
@@ -1890,6 +1891,7 @@ void MainWindow::on_actionTest_triggered()
     case 20: t.testRumple(); break;
     case 21: t.testFOMEsetup(); break;
     case 22: t.testFOMEstep(); break;
+    case 23: t.testDbgEstablishment(); break;
     }
 
 }

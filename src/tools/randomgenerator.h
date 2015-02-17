@@ -34,6 +34,7 @@ public:
     /// set the type of the random generator that should be used.
     static void setGeneratorType(const ERandomGenerators gen) { mGeneratorType = gen; mRotationCount=RANDOMGENERATORROTATIONS+1;mIndex=0;mRefillCounter=0; }
     static void debugState(int &rIndex, int &rGeneration, int &rRefillCount) { rIndex = mIndex; rGeneration = mRotationCount; rRefillCount = mRefillCounter; }
+    static int debugNRandomNumbers() { return mIndex + RANDOMGENERATORSIZE*mRotationCount + (RANDOMGENERATORROTATIONS+1)*RANDOMGENERATORSIZE*mRefillCounter; }
     /// call this function to check if we need to create new random numbers.
     /// this function is not reentrant! (e.g. call every year in the model)
     static void checkGenerator() { if (mRotationCount>RANDOMGENERATORROTATIONS) { refill();  } }
