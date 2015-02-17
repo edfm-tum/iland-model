@@ -26,6 +26,7 @@
 #include "seeddispersal.h"
 #include "model.h"
 #include "helper.h"
+#include "debugtimer.h"
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
@@ -59,6 +60,8 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
 
 inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
 {
+
+   // DebugTimer t("est_establishTree"); t.setSilent();
 
     // check window of opportunity...if regeneration (of any species) on the current pixel is above breast height (1.3m), then
     // no establishment is possible
@@ -100,6 +103,8 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
 // see http://iland.boku.ac.at/establishment
 void Establishment::calculate()
 {
+    //DebugTimer t("est_calculate"); t.setSilent();
+
     mPAbiotic = 0.;
     mNumberEstablished = 0;
     mPxDensity = 0.;
@@ -170,6 +175,7 @@ void Establishment::calculate()
 
 //    } else {
         // relatively few seed-pixels are filled. So examine seed pixels first, and check light only on "filled" pixels
+    //DebugTimer t2("est_calculate-grid"); t2.setSilent();
         GridRunner<float> seed_runner(seed_map, ru_rect);
         Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
         // check every pixel inside the bounding box of the pixel with
@@ -179,7 +185,7 @@ void Establishment::calculate()
                 //if (p_establish > mPAbiotic)
                 //    continue;
                 // pixel with seeds: now really iterate over lif pixels
-                GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_map.indexOf(p)));
+                GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_runner.currentIndex()));
                 while (float *lif_px = lif_runner.next()) {
                     DBGMODE(
                     if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
@@ -208,6 +214,8 @@ void Establishment::calculate()
  */
 void Establishment::calculateAbioticEnvironment()
 {
+    //DebugTimer t("est_abiotic"); t.setSilent();
+
     const EstablishmentParameters &p = mRUS->species()->establishmentParameters();
     const Phenology &pheno = mClimate->phenology(mRUS->species()->phenologyClass());
 

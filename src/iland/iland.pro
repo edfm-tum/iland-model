@@ -62,6 +62,10 @@ DEFINES += NO_DEBUG_MSGS
 #QMAKE_CXXFLAGS_RELEASE += -g
 #QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
+## MSVC: debug in release-mode
+#QMAKE_CXXFLAGS_RELEASE += -Zi
+#QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
+
 ### Flag to allow 3GB on Win 32
 ### you also need to modify boot.ini ... not necessary for 64bit
 #QMAKE_LFLAGS_WINDOWS += -Wl,--large-address-aware
