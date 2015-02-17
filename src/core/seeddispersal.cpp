@@ -483,7 +483,7 @@ void SeedDispersal::execute()
 #endif
 
     {
-    DebugTimer t("seed dispersal");
+    //DebugTimer t("seed dispersal");
     // (1) detect edges
     if (edgeDetection()) {
     // (2) distribute seed probabilites from edges

@@ -27,6 +27,7 @@
 #include "model.h"
 #include "seeddispersal.h"
 #include "modelsettings.h"
+#include "debugtimer.h"
 
 /** @class SpeciesSet
     A SpeciesSet acts as a container for individual Species objects. In iLand, theoretically,
@@ -164,7 +165,7 @@ void SpeciesSet::regeneration()
 {
     if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
         return;
-
+    DebugTimer t("seed dispersal (all species)");
 
     ThreadRunner runner(mActiveSpecies); // initialize a thread runner object with all active species
     runner.run(nc_seed_distribution);
