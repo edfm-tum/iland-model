@@ -58,6 +58,7 @@ public:
     void testRumple();
     void testFOMEsetup();
     void testFOMEstep();
+    void testDbgEstablishment();
     private:
     QString dumpTreeList();
     QObject *mParent;

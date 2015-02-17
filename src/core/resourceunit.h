@@ -107,6 +107,8 @@ public:
             float h =  mSaplingHeightMap[pixel_index];
             return h;
     }
+    /// access to the internal sapling height map pointer
+    const float *saplingHeightMapPointer() const {return mSaplingHeightMap; }
     /// return maximum sapling height at point 'position' (LIF-index). This call is slower but works witout a prior call
     /// to setSaplingHeightMap().
     float saplingHeightForInit(const QPoint &position) const;
