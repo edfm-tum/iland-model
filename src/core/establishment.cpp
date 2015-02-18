@@ -304,12 +304,11 @@ void Establishment::calculatePerRU()
         if (*sap_height++ >=1.3f || pos_bitset[bit_idx++])
             continue;
 
-        double sap_random_number = drandom();
-        const float seed_map_value = seed_map.constValueAt( lif_runner.currentCoord() );
-
-        // check the abiotic environment and the seed availability against a random number
-        if (sap_random_number > seed_map_value*mPAbiotic)
+        // check the abiotic environment against a random number
+        if (drandom() > mPAbiotic)
             continue;
+
+        const float seed_map_value = seed_map.constValueAt( lif_runner.currentCoord() );
 
         // check the light availability at that pixel
         QPoint lif_index = lif_map->indexOf(lif_px);
@@ -323,10 +322,9 @@ void Establishment::calculatePerRU()
         mLIFcount++;
         mSumLIFvalue+=*lif_px;
 
-        // check for the combination of seed availability, abiotic factors and light
-        if (sap_random_number < seed_map_value*mPAbiotic*lif_corrected ) {
+        // check for the combination of seed availability and light on the forest floor
+        if (drandom() < seed_map_value*lif_corrected ) {
             // ok, a new tree should be established - we do not use the establishTree() function
-
             const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(lif_index);
             n_established++;
         }
