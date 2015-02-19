@@ -305,7 +305,8 @@ void Establishment::calculatePerRU()
             continue;
 
         // check the abiotic environment against a random number
-        if (drandom() > mPAbiotic)
+        double p = drandom();
+        if (p > mPAbiotic)
             continue;
 
         const float seed_map_value = seed_map.constValueAt( lif_runner.currentCoord() );
@@ -313,6 +314,10 @@ void Establishment::calculatePerRU()
         // check the light availability at that pixel
         QPoint lif_index = lif_map->indexOf(lif_px);
         const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(lif_index.x()/cPxPerHeight, lif_index.y()/cPxPerHeight);
+        // no establishment if pixel is not in project area
+        if (!hgv.isValid())
+            continue;
+
 
         double h_height_grid = hgv.height;
         double rel_height = 4. / h_height_grid;
