@@ -260,20 +260,35 @@ void Establishment::calculatePerSeedPixel()
     // check every pixel inside the bounding box of the pixel with
     while (float *p = seed_runner.next()) {
         if (*p>0.f) {
-            //double p_establish = drandom(mRUS->ru()->randomGenerator());
-            //if (p_establish > mPAbiotic)
-            //    continue;
-            // pixel with seeds: now really iterate over lif pixels
-            GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_runner.currentIndex()));
-            while (float *lif_px = lif_runner.next()) {
-                DBGMODE(
-                            if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
-                            qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
-                        );
+
+            if (*p>100.) { //(*p<0.01): OK this seems also to change the results....
+                // select a pixel randomly, but increase probability by the same factor
+                float mod_p = *p * 100;
+                QPoint lif_index = lif_map->indexAt(seed_runner.currentCoord());
+                lif_index += QPoint( irandom(-5,4), irandom(-5,4) );
                 double p_establish = drandom();
                 if (p_establish < mPAbiotic) {
-                    if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
+                    if (establishTree(lif_index, lif_map->constValueAtIndex(lif_index) ,mod_p))
                         n_established++;
+                }
+
+
+            } else {
+                //double p_establish = drandom(mRUS->ru()->randomGenerator());
+                //if (p_establish > mPAbiotic)
+                //    continue;
+                // pixel with seeds: now really iterate over lif pixels
+                GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_runner.currentIndex()));
+                while (float *lif_px = lif_runner.next()) {
+                    DBGMODE(
+                                if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
+                                qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
+                            );
+                    double p_establish = drandom();
+                    if (p_establish < mPAbiotic) {
+                        if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
+                            n_established++;
+                    }
                 }
             }
         }
