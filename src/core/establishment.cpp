@@ -127,6 +127,7 @@ void Establishment::calculate()
     if (total==0)
         throw IException("Establishment: number of seed map pixels on resource unit " + QString::number(mRUS->ru()->index()) + " is 0.");
     mPxDensity /= double(total);
+    //mPxDensity = with_seeds / double(total);
     if (with_seeds==0)
         return;
 
@@ -136,6 +137,7 @@ void Establishment::calculate()
     if (mPAbiotic == 0.)
         return;
 
+
     // the effect of water, nitrogen, co2, .... is a bulk factor: f_env,yr
     const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (only if that is not already done)
     double f_env_yr = mRUS->prod3PG().fEnvYear();
@@ -144,10 +146,12 @@ void Establishment::calculate()
         return;
 
     // switch the algorithm:
-    // the original algorithm (started in 2010 (approx.), and tinkered with later on)
-    //calculatePerSeedPixel();
-    // the new one (2015)
-    calculatePerRU();
+    // use the new algorithm, if most of the area is covered with seed pixels
+
+    if (with_seeds/double(total) < 0.9)
+        calculatePerSeedPixel();     // the original algorithm (started in 2010 (approx.), and tinkered with later on)
+    else
+        calculatePerRU(); // the new one (2015) - works best if seeds are available everywhere
 
 }
 

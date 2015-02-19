@@ -83,7 +83,9 @@ void ResourceUnitSpecies::updateGWL()
 
 void ResourceUnitSpecies::calculateEstablishment()
 {
+    //DebugTimer t("to remove");
     mEstablishment.calculate();
+    //qDebug() << species()->id() << t.elapsed() << mEstablishment.avgSeedDensity() << mEstablishment.numberEstablished()<< "new";
     //DBGMODE(
         if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment)) {
             DebugList &out = GlobalSettings::instance()->debugList(ru()->index(), GlobalSettings::dEstablishment);
