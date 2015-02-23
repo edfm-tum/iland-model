@@ -53,7 +53,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
 {
     switch(param_index){
     case 0: return data.n; // height
-    default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
+    default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
 
