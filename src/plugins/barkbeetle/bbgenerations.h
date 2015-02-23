@@ -5,6 +5,9 @@ class BBGenerations
 {
 public:
     BBGenerations();
+private:
+    void calculateBarkTemperature(const ResourceUnit *ru);
+    double mBarkTemp[366];
 };
 
 #endif // BBGENERATIONS_H
