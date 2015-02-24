@@ -4,11 +4,19 @@
 #include "grid.h"
 #include "layeredgrid.h"
 
+#include "bbgenerations.h"
 
 class BarkBeetleCell
 {
 public:
+    BarkBeetleCell(): n(0) {}
     int n;
+};
+class BarkBeetleRUCell
+{
+public:
+    BarkBeetleRUCell(): generations(0.) {}
+    double generations;
 };
 
 /** Helper class manage and visualize data layers related to the barkbeetle module.
@@ -21,6 +29,14 @@ class BarkBeetleLayers: public LayeredGrid<BarkBeetleCell> {
     const QVector<LayeredGridBase::LayerElement> names() const;
     bool onClick(const QPointF &world_coord) const;
 };
+class BarkBeetleRULayers: public LayeredGrid<BarkBeetleRUCell> {
+  public:
+    void setGrid(const Grid<BarkBeetleRUCell> &grid) { mGrid = &grid; }
+    double value(const BarkBeetleRUCell& data, const int index) const;
+    const QVector<LayeredGridBase::LayerElement> names() const;
+    bool onClick(const QPointF &world_coord) const;
+};
+
 
 
 class ResourceUnit; // forward
@@ -41,8 +57,11 @@ public:
 
     void yearBegin();
 private:
+    BBGenerations mGenerations;
     Grid<BarkBeetleCell> mGrid;
+    Grid<BarkBeetleRUCell> mRUGrid;
     BarkBeetleLayers mLayers;
+    BarkBeetleRULayers mRULayers;
 
     friend class BarkBeetleScript;
 

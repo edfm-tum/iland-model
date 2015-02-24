@@ -53,11 +53,13 @@ public:
     int longestDay() const { return mDayWithMaxLength; }
     bool northernHemishere() const { return mDayWithMaxLength<300; }
     int dayShorter10_5hrs() const { return mDayWith10_5hrs; }
+    int dayShorter14_5hrs() const { return mDayWith14_5hrs; }
 private:
     double mLatitude; ///< latitude in radians
     int mDayWithMaxLength; ///< day of year with maximum day length
     double mDaylength_h[366]; ///< daylength per day in hours
     int mDayWith10_5hrs; // last day of year with a day length > 10.5 hours (see Establishment)
+    int mDayWith14_5hrs; // last doy with at least 14.5 hours of day length
 };
 
 class Climate
@@ -72,6 +74,7 @@ public:
     // access to climate data
     const ClimateDay *dayOfYear(const int dayofyear) const { return mBegin + dayofyear;} ///< get pointer to climate structure by day of year (0-based-index)
     const ClimateDay *day(const int month, const int day) const; ///< gets pointer to climate structure of given day (0-based indices, i.e. month=11=december!)
+    int whichDayOfYear(const ClimateDay *climate) const {return climate-mBegin; } ///< get the 0-based index of the climate given by 'climate' within the current year
     /// returns two pointer (arguments!!!) to the begin and one after end of the given month (month: 0..11)
     void monthRange(const int month, const ClimateDay **rBegin, const ClimateDay **rEnd) const;
     double days(const int month) const; ///< returns number of days of given month (0..11)
