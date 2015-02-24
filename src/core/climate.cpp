@@ -55,7 +55,14 @@ void Sun::setup(double latitude_rad)
             mDayWith10_5hrs = day;
             break;
         }
-   }
+    }
+    mDayWith14_5hrs = 0;
+    for (int day=mDayWithMaxLength;day<366;day++) {
+        if (mDaylength_h[day]<14.5) {
+            mDayWith14_5hrs = day;
+            break;
+        }
+    }
 }
 
 QString Sun::dump()

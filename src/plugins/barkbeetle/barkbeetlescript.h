@@ -24,6 +24,10 @@ public slots:
     void run(QJSValue fun);
     double pixelValue(int ix, int iy);
     void setPixelValue(int ix, int iy, double val);
+    double generations(int ix, int iy);
+
+    // the real thing
+    void runBB();
 
 private:
     QJSValue mOnClick;

@@ -60,3 +60,19 @@ void BarkBeetleScript::setPixelValue(int ix, int iy, double val)
         mBeetle->mGrid.valueAtIndex(ix, iy).n = val;
     }
 }
+
+double BarkBeetleScript::generations(int ix, int iy)
+{
+    if (mBeetle->mGrid.isIndexValid(ix,iy)) {
+        return mBeetle->mRUGrid.valueAt( mBeetle->mGrid.cellCenterPoint(QPoint(ix,iy)) ).generations;
+    } else {
+        return -9999;
+    }
+
+}
+
+void BarkBeetleScript::runBB()
+{
+    qDebug() << "running bark beetle module....";
+    mBeetle->run();
+}
