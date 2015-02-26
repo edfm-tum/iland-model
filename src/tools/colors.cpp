@@ -1,5 +1,5 @@
 #include "colors.h"
-
+#include "dem.h"
 
 QVector<QColor> Colors::mBrewerDiv = QVector<QColor>() << QColor("#543005") << QColor("#8c510a") << QColor("#bf812d") << QColor("#dfc27d")
                                                        << QColor("#f6e8c3") << QColor("#f5f5f5") << QColor("#fdbf6f") << QColor("##c7eae5")
@@ -96,6 +96,22 @@ QColor Colors::colorFromPalette(const int value, const GridViewType view_type)
     if (n<48) return col.darker(300);
     return col.lighter(200);
 
+}
+
+QColor Colors::shadeColor(const QColor col, const QPointF &coordinates, const DEM *dem)
+{
+    if (dem) {
+        float val = dem->viewGrid()->constValueAt(coordinates); // scales from 0..1
+        double h, s, v;
+        col.getHsvF(&h, &s, &v);
+        // we adjust the 'v', the lightness: if val=0.5 -> nothing changes
+        v=limit( v - (1.-val)*0.4, 0.1, 1.);
+        QColor c;
+        c.setHsvF(h,s,v);
+        return c;
+
+    } else
+        return col;
 }
 
 // colors

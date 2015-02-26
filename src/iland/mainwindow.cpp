@@ -55,6 +55,7 @@
 #include "tests.h"
 #include "mapgrid.h"
 #include "layeredgrid.h"
+#include "dem.h"
 
 #include "forestmanagementengine.h" // ABE
 
@@ -840,6 +841,10 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
 {
     painter.fillRect(ui->PaintWidget->rect(), object.background_color);
     bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
+    bool shading = ui->visShading->isChecked();
+    if (!mRemoteControl.model() || !mRemoteControl.model()->dem())
+         shading=false;
+
 
     int sx=0, sy=0;
     QRect total_rect;
@@ -911,6 +916,8 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
                 fill_color = Qt::white;
             } else {
                 fill_color = Colors::colorFromValue(value, object.view_type, object.cur_min_value, object.cur_max_value);
+                if (shading)
+                    fill_color = Colors::shadeColor(fill_color, pmetric, mRemoteControl.model()->dem());
             }
             painter.fillRect(r, fill_color);
         }

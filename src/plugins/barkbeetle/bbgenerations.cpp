@@ -87,7 +87,7 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
 
     }
     qDebug() << "rid" <<ru->id() << "parent/filial:" << parental_generations << filial_generations << "offspring:" << total_offspring << "started generations:" << n;
-    return parental_generations + filial_generations;
+    return parental_generations + (filial_generations>0?0.5:0);
 }
 
 
