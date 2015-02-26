@@ -6,6 +6,7 @@
 /** Colors: helper class for managing/selecting colors
  *
  * */
+class DEM; // forward
 class Colors: public QObject
 {
     Q_OBJECT
@@ -53,6 +54,7 @@ public:
     static QColor colorFromValue(const float value, const float min_value=0.f, const float max_value=1.f, const bool reverse=false, const bool black_white=false);
     static QColor colorFromValue(const float value, const GridViewType view_type, const float min_value=0.f, const float max_value=1.f);
     static QColor colorFromPalette(const int value, const GridViewType view_type);
+    static QColor shadeColor(const QColor col, const QPointF &coordinates, const DEM *dem);
 private:
     static QVector<QColor> mBrewerDiv;
     static QVector<QColor> mBrewerQual;

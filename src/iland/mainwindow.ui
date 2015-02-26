@@ -707,64 +707,7 @@ QProgressBar::chunk {
         <string>Visualization Options</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="7" column="0">
-         <widget class="QCheckBox" name="visClipStandGrid">
-          <property name="text">
-           <string>clip to stands</string>
-          </property>
-         </widget>
-        </item>
-        <item row="16" column="0" colspan="3">
-         <widget class="QComboBox" name="speciesFilterBox"/>
-        </item>
-        <item row="5" column="0">
-         <widget class="QRadioButton" name="visResourceUnits">
-          <property name="text">
-           <string>resource units</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="3">
-         <widget class="QRadioButton" name="visOtherGrid">
-          <property name="text">
-           <string>other grid</string>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>12</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Expression</string>
-          </property>
-         </widget>
-        </item>
-        <item row="15" column="0" colspan="3">
-         <widget class="QLabel" name="fonValue">
-          <property name="text">
-           <string>(value)</string>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="0" colspan="3">
-         <widget class="QComboBox" name="paintGridBox"/>
-        </item>
-        <item row="14" column="0" colspan="2">
-         <widget class="QLineEdit" name="lTreeExpr"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QRadioButton" name="visDomGrid">
-          <property name="text">
-           <string>dominace grid</string>
-          </property>
-         </widget>
-        </item>
-        <item row="14" column="2">
+        <item row="15" column="2">
          <widget class="QPushButton" name="pbExecExpression">
           <property name="maximumSize">
            <size>
@@ -787,14 +730,61 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QRadioButton" name="visRegeneration">
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="visDomGrid">
           <property name="text">
-           <string>Regeneration</string>
+           <string>dominace grid</string>
           </property>
          </widget>
         </item>
-        <item row="10" column="0" colspan="3">
+        <item row="15" column="0" colspan="2">
+         <widget class="QLineEdit" name="lTreeExpr"/>
+        </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="drawTransparent">
+          <property name="toolTip">
+           <string>draw single trees transparent</string>
+          </property>
+          <property name="text">
+           <string>draw transparent</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QCheckBox" name="visSpeciesColor">
+          <property name="text">
+           <string>color by species</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>12</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Expression</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="0" colspan="3">
+         <widget class="QLabel" name="fonValue">
+          <property name="text">
+           <string>(value)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QRadioButton" name="visResourceUnits">
+          <property name="text">
+           <string>resource units</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0" colspan="3">
          <widget class="QLabel" name="label_8">
           <property name="text">
            <string>other grids</string>
@@ -818,27 +808,44 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="7" column="1">
+        <item row="6" column="0" colspan="3">
+         <widget class="QRadioButton" name="visOtherGrid">
+          <property name="text">
+           <string>other grid</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QRadioButton" name="visRegeneration">
+          <property name="text">
+           <string>Regeneration</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QCheckBox" name="visClipStandGrid">
+          <property name="text">
+           <string>clip to stands</string>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="0" colspan="3">
+         <widget class="QComboBox" name="speciesFilterBox"/>
+        </item>
+        <item row="13" column="0" colspan="3">
+         <widget class="QComboBox" name="paintGridBox"/>
+        </item>
+        <item row="8" column="0">
          <widget class="QCheckBox" name="visAutoScale">
           <property name="text">
            <string>Autoscale colors</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="drawTransparent">
-          <property name="toolTip">
-           <string>draw single trees transparent</string>
-          </property>
+        <item row="8" column="1">
+         <widget class="QCheckBox" name="visShading">
           <property name="text">
-           <string>draw transparent</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QCheckBox" name="visSpeciesColor">
-          <property name="text">
-           <string>color by species</string>
+           <string>Shading</string>
           </property>
          </widget>
         </item>

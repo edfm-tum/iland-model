@@ -121,11 +121,11 @@ bool DEM::loadFromFile(const QString &fileName)
 /// @param point metric coordinates of point to derive orientation
 /// @param rslope_angle RESULTING (passed by reference) slope angle as percentage (i.e: 1:=45 degrees)
 /// @param rslope_aspect RESULTING slope direction in degrees (0: North, 90: east, 180: south, 270: west)
-float DEM::orientation(const QPointF &point, float &rslope_angle, float &rslope_aspect)
+float DEM::orientation(const QPointF &point, float &rslope_angle, float &rslope_aspect) const
 {
     QPoint pt = indexAt(point);
     if (pt.x()>0 && pt.x()<sizeX()+1 && pt.y()>0 && pt.y()<sizeY()-1) {
-        float *p = ptr(pt.x(), pt.y());
+        float *p = const_cast<DEM*>(this)->ptr(pt.x(), pt.y());
         float z2 = *(p-sizeX());
         float z4 = *(p-1);
         float z6 = *(p+1);
@@ -156,7 +156,7 @@ float DEM::orientation(const QPointF &point, float &rslope_angle, float &rslope_
     }
 }
 
-void DEM::createSlopeGrid()
+void DEM::createSlopeGrid() const
 {
     if (slope_grid.isEmpty()) {
         // setup custom grids with the same size as this DEM
