@@ -138,7 +138,7 @@ public:
     /// normalized returns a normalized grid, in a way that the sum()  = @param targetvalue.
     /// if the grid is empty or the sum is 0, no modifications are performed.
     Grid<T> normalized(const T targetvalue) const;
-    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); } ///< get a pointer to the element denoted by "x" and "y"
+    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); } ///< get a pointer to the element indexed by "x" and "y"
     inline double distance(const QPoint &p1, const QPoint &p2); ///< distance (metric) between p1 and p2
     const QPoint randomPosition() const; ///< returns a (valid) random position within the grid
 private:
@@ -173,11 +173,14 @@ public:
     GridRunner(Grid<T> *target_grid) {setup(target_grid, target_grid->rectangle()); }
     T* next(); ///< to to next element, return NULL if finished
     T* current() const { return mCurrent; }
+    bool isValid() const {return mCurrent>=mFirst && mCurrent<=mLast; }
     /// return the (index) - coordinates of the current position in the grid
     QPoint currentIndex() const { return mGrid->indexOf(mCurrent); }
     /// return the coordinates of the cell center point of the current position in the grid.
     QPointF currentCoord() const {return mGrid->cellCenterPoint(mGrid->indexOf(mCurrent));}
     void reset() { mCurrent = mFirst-1; mCurrentCol = -1; }
+    /// set the internal pointer to the pixel at index 'new_index'. The index is relative to the base grid!
+    void setPosition(QPoint new_index) { if (mGrid->isIndexValid(new_index)) mCurrent = const_cast<Grid<T> *>(mGrid)->ptr(new_index.x(), new_index.y()); else mCurrent=0; }
     // helpers
     /// fill array with pointers to neighbors (north, east, west, south)
     /// or Null-pointers if out of range.
