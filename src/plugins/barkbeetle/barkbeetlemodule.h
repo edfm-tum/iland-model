@@ -4,26 +4,38 @@
 #include "grid.h"
 #include "layeredgrid.h"
 #include "random.h"
+#include "expression.h"
 
 #include "bbgenerations.h"
 
 class BarkBeetleCell
 {
 public:
-    BarkBeetleCell() { clear(); }
-    void clear() { n=0; dbh=0.f; }
-    bool isHost() { return dbh>0.; }
+    BarkBeetleCell() { reset(); }
+    void clear() { n=0; dbh=0.f; tree_stress=0.f; }
+    void reset() {clear(); killed=0; infested=false; }
+    bool isHost() const { return dbh>0.f; }
+    bool isPotentialHost() const {return dbh>0.f && killed==0 && infested==false; }
+    void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killed=0; n=0;} }
+    void finishedSpread(int iteration) { infested=false; killed=iteration; }
+    bool infested;
     float dbh; // the dbh of the biggest spruce on the pixel
+    float tree_stress; // the stress rating of this tree
     int n; // number of cohorts that landed on the pixel
-    int killed; // year
+    int killed; // year at which pixel was killed ??
+    static void resetCounters() { total_infested=0; }
+    static int total_infested;
 
 };
 class BarkBeetleRUCell
 {
 public:
-    BarkBeetleRUCell(): generations(0.), scanned(false) {}
+    BarkBeetleRUCell(): generations(0.), scanned(false), add_sister(false), cold_days(0), cold_days_late(0) {}
     bool scanned;
     double generations;
+    bool add_sister;
+    int cold_days; // number of days in the winter season with t_min below a given threshold (-15 degree Celsius)
+    int cold_days_late;
 };
 
 /** Helper class manage and visualize data layers related to the barkbeetle module.
@@ -65,6 +77,9 @@ public:
 
     void yearBegin();
 private:
+    void calculateGenerations();
+    void startSpread(); ///< beginning of a calculation
+    void barkbeetleSpread(); ///< main function of bark beetle spread
     void scanResourceUnitTrees(const QPoint &position);
     struct SBBParams {
         SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50), backgroundInfestationProbability(0.0001) {}
@@ -73,12 +88,24 @@ private:
         int cohortsPerSisterbrood; ///< cohorts that spread from a pixel when a full sister brood developed
         QString spreadKernelFormula; ///< formula of the PDF for the BB-spread
         double backgroundInfestationProbability; ///< p that a pixel gets spontaneously infested each year
+        double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
     } params;
+    struct SBBStats {
+        void clear() { infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;}
+        int infestedBackground;
+        int maxGenerations;
+        int NCohortsLanded;
+        int NCohortsSpread;
+        int NInfested;
+        int NWinterMortality;
+    } stats;
 
 
 
     BBGenerations mGenerations;
     RandomCustomPDF mKernelPDF;
+    Expression mColonizeProbability;
+    Expression mWinterMortalityFormula; ///< temperature dependent winter mortality (more beetle die if there are more cold days)
     Grid<BarkBeetleCell> mGrid;
     Grid<BarkBeetleRUCell> mRUGrid;
     BarkBeetleLayers mLayers;

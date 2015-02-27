@@ -62,6 +62,7 @@ public:
     float biomassCoarseRoot() const { return mCoarseRootMass; } ///< mass (kg) of coarse roots
     float biomassStem() const { return mWoodyMass; } ///< mass (kg) of stem
     double barkThickness() const; ///< thickness of the bark (cm)
+    float stressIndex() const { return mStressIndex; } ///< the scalar stress rating (0..1)
 
     // actions
     enum TreeRemovalType { TreeDeath, TreeHarvest, TreeDisturbance};

@@ -24,10 +24,12 @@ public slots:
     void run(QJSValue fun);
     double pixelValue(int ix, int iy);
     void setPixelValue(int ix, int iy, double val);
+
     double generations(int ix, int iy);
 
     // the real thing
-    void runBB();
+    void reloadSettings(); ///< reload the BB-Module settings from the XML-File
+    void runBB(); ///< run a full cycle of the bark beetle module
 
 private:
     QJSValue mOnClick;

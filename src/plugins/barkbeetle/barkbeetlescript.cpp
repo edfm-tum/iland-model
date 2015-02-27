@@ -71,6 +71,11 @@ double BarkBeetleScript::generations(int ix, int iy)
 
 }
 
+void BarkBeetleScript::reloadSettings()
+{
+    mBeetle->loadParameters();
+}
+
 void BarkBeetleScript::runBB()
 {
     qDebug() << "running bark beetle module....";

@@ -34,7 +34,7 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
     // start with the first generation....
     BBGeneration bbgen;
     bbgen.start_day = ru->climate()->whichDayOfYear(clim);
-    bbgen.is_filial_generation = false;
+    bbgen.is_sister_brood = false;
     bbgen.gen = 1; // the first generation
     mGenerations.append(bbgen);
 
@@ -47,7 +47,7 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
         double base_temp = mEffectiveBarkTemp[doy];
 
         double t_sum;
-        bool added_filial = false;
+        bool added_sister_brood = false;
         while (c < last_day) {
             t_sum = (mEffectiveBarkTemp[doy]-base_temp) / 557.;
             if (t_sum>=1.) {
@@ -56,12 +56,12 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
                     mGenerations.append(BBGeneration(doy, false, bb.gen+1));
                 }
                 break;
-            } else if (t_sum>0.5 && !added_filial) {
-                // start a filial generation, *if* the maximum air temperature is high enough, and if the
+            } else if (t_sum>0.5 && !added_sister_brood) {
+                // start a sister brood, *if* the maximum air temperature is high enough, and if the
                 // length of the day > 14.5 hours
                 if (c->max_temperature>16.5 && c<day_too_short) {
-                    mGenerations.append(BBGeneration(doy, true, bb.is_filial_generation?bb.gen+1:1)); // add a filial generation
-                    added_filial = true;
+                    mGenerations.append(BBGeneration(doy, true, bb.is_sister_brood?bb.gen+1:1)); // add a sister brood generation
+                    added_sister_brood = true;
                 }
             }
             ++c; ++doy;
@@ -71,8 +71,8 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
     }
 
     // now accumulate the generations
-    double parental_generations = 0.;
     double filial_generations = 0.;
+    double sister_generations = 0.;
     // accumulate possible number of offspring
     const double offspring_factor = 25.; // assuming sex-ratio of 1:1 and 50 offspring per female (sse p. 59)
     int n=0;
@@ -82,12 +82,15 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
             ++n;
             total_offspring+= pow(offspring_factor, mGenerations[i].gen-1)*2.*offspring_factor;
         }
-        if (mGenerations[i].value>0.6 && mGenerations[i].is_filial_generation) filial_generations+=mGenerations[i].value;
-        if (mGenerations[i].value>0.6 && !mGenerations[i].is_filial_generation) parental_generations+=mGenerations[i].value;
+        if (mGenerations[i].value>0.6 && mGenerations[i].is_sister_brood) sister_generations+=mGenerations[i].value;
+        if (mGenerations[i].value>0.6 && !mGenerations[i].is_sister_brood) filial_generations+=mGenerations[i].value;
 
     }
-    qDebug() << "rid" <<ru->id() << "parent/filial:" << parental_generations << filial_generations << "offspring:" << total_offspring << "started generations:" << n;
-    return parental_generations + (filial_generations>0?0.5:0);
+    qDebug() << "rid" <<ru->id() << "filial/sister:" << filial_generations << sister_generations << "offspring:" << total_offspring << "started generations:" << n;
+    mNSisterBroods = sister_generations;
+    mNFilialBroods = filial_generations;
+
+    return filial_generations + (sister_generations>0?0.5:0);
 }
 
 
@@ -104,6 +107,8 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
     const double k = 0.5; // constant for the beer lambert function
     double ground_light_fraction = exp(-k * ru->leafAreaIndex() );
 
+    mFrostDaysEarly=0;
+    mFrostDaysLate=0;
 
     for (int i=0;i<ru->climate()->daysOfYear();++i) {
         const ClimateDay *clim = ru->climate()->dayOfYear(i);
@@ -127,6 +132,14 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
         double bt_sum_eff = (bt_sum - diff_bt) / 24.; // degree * days
 
         mEffectiveBarkTemp[i] = (i>0? mEffectiveBarkTemp[i-1] : 0.) + bt_sum_eff;
+
+        // frost days:
+        if (clim->min_temperature < -15.) {
+            if (i < ru->climate()->sun().longestDay())
+                mFrostDaysEarly++;
+            else
+                mFrostDaysLate++;
+        }
 
     }
 
