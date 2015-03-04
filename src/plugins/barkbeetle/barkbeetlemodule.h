@@ -12,8 +12,8 @@ class BarkBeetleCell
 {
 public:
     BarkBeetleCell() { reset(); }
-    void clear() { n=0; dbh=0.f; tree_stress=0.f; }
-    void reset() {clear(); killed=0; infested=false; }
+    void clear() { n=0; killed=0; infested=false;  p_colonize=0.f; }
+    void reset() {clear(); dbh=0.f; tree_stress=0.f; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killed==0 && infested==false; }
     void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killed=0; n=0;} }
@@ -21,6 +21,7 @@ public:
     bool infested;
     float dbh; // the dbh of the biggest spruce on the pixel
     float tree_stress; // the stress rating of this tree
+    float p_colonize; // the highest probability (0..1) that a pixel is killed
     int n; // number of cohorts that landed on the pixel
     int killed; // year at which pixel was killed ??
     static void resetCounters() { total_infested=0; }
@@ -71,9 +72,10 @@ public:
     void setup(); ///< general setup
     void setup(const ResourceUnit *ru); ///< setup for a specific resource unit
     void loadParameters(); ///< load params from XML
+    void clearGrids(); ///< reset the state of the internal grids (used for javascript based tests)
 
     /// main function to execute the bark beetle module
-    void run();
+    void run(int iteration=0);
 
     void yearBegin();
 private:
@@ -81,12 +83,14 @@ private:
     void startSpread(); ///< beginning of a calculation
     void barkbeetleSpread(); ///< main function of bark beetle spread
     void scanResourceUnitTrees(const QPoint &position);
+    int mIteration;
     struct SBBParams {
-        SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50), backgroundInfestationProbability(0.0001) {}
+        SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50), spreadKernelMaxDistance(100.), backgroundInfestationProbability(0.0001) {}
         float minDbh; ///< minimum dbh of spruce trees that are considered as potential hosts
         int cohortsPerGeneration; ///< 'packages' of beetles that spread from an infested pixel
         int cohortsPerSisterbrood; ///< cohorts that spread from a pixel when a full sister brood developed
         QString spreadKernelFormula; ///< formula of the PDF for the BB-spread
+        double spreadKernelMaxDistance; ///< upper limit for the spread distance (the kernel is cut at this distance)
         double backgroundInfestationProbability; ///< p that a pixel gets spontaneously infested each year
         double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
     } params;

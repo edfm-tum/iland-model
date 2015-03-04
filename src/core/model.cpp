@@ -203,9 +203,6 @@ void Model::setupSpace()
 
         if (!mEnvironment->loadFromFile(env_file))
             return;
-        // retrieve species sets and climates:
-        mSpeciesSets << mEnvironment->speciesSetList();
-        mClimates << mEnvironment->climateList();
     } else {
         // load and prepare default values
         // (2) SpeciesSets: currently only one a global species set.
@@ -280,6 +277,12 @@ void Model::setupSpace()
                 mRU.append(new_ru);
                 *p = new_ru; // save in the RUmap grid
             }
+        }
+        if (mEnvironment) {
+            // retrieve species sets and climates (that were really used)
+            mSpeciesSets << mEnvironment->speciesSetList();
+            mClimates << mEnvironment->climateList();
+
         }
 
         qDebug() << "setup of" << mEnvironment->climateList().size() << "climates performed.";
