@@ -282,6 +282,8 @@ void Model::setupSpace()
             }
         }
 
+        qDebug() << "setup of" << mEnvironment->climateList().size() << "climates performed.";
+
         if (mStandGrid && mStandGrid->isValid())
             mStandGrid->createIndex();
         // now store the pointers in the grid.

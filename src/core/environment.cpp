@@ -138,14 +138,11 @@ bool Environment::loadFromString(const QString &source)
             climateNames.removeDuplicates();
             qDebug() << "creating climatae: " << climateNames;
             foreach (QString name, climateNames) {
+                // create an entry in the list of created objects, but
+                // really create the climate only if required (see setPosition() )
+                mCreatedObjects[name]=(void*)0;
                 xml.setNodeValue(climateKey,name); // set xml value
-                // create climate sets
-                Climate *climate = new Climate();
-                mClimate.push_back(climate);
-                mCreatedObjects[name]=(void*)climate;
-                climate->setup();
             }
-            qDebug() << mClimate.count() << "climates created";
         } else {
             // no climate defined - setup default climate
             Climate *c = new Climate();
@@ -216,8 +213,19 @@ void Environment::setPosition(const QPointF position)
             // special handling for constructed objects:
             if (mKeys[col]==speciesKey)
                 mCurrentSpeciesSet = (SpeciesSet*)mCreatedObjects[value];
-            if (mKeys[col]==climateKey)
+            if (mKeys[col]==climateKey) {
                 mCurrentClimate = (Climate*)mCreatedObjects[value];
+                if (mCurrentClimate==0) {
+                    // create only those climate sets that are really used in the current landscape
+                    Climate *climate = new Climate();
+                    mClimate.push_back(climate);
+                    mCreatedObjects[value]=(void*)climate;
+                    climate->setup();
+                    mCurrentClimate = climate;
+
+                }
+            }
+
 
         }
 
