@@ -49,8 +49,9 @@ void BarkBeetleModule::loadParameters()
     const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
     params.cohortsPerGeneration = xml.valueDouble(".cohortsPerGeneration", params.cohortsPerGeneration);
     params.cohortsPerSisterbrood = xml.valueDouble(".cohortsPerSisterbrood", params.cohortsPerSisterbrood);
+    params.spreadKernelMaxDistance = xml.valueDouble(".spreadKernelMaxDistance", params.spreadKernelMaxDistance);
     params.spreadKernelFormula = xml.value(".spreadKernelFormula", "100*(1-x)^4");
-    mKernelPDF.setup(params.spreadKernelFormula);
+    mKernelPDF.setup(params.spreadKernelFormula,0.,params.spreadKernelMaxDistance);
     params.backgroundInfestationProbability = xml.valueDouble(".backgroundInfestationProbability", params.backgroundInfestationProbability);
     QString formula = xml.value(".colonizeProbabilityFormula", "0.1");
     mColonizeProbability.setExpression(formula);
@@ -71,11 +72,27 @@ void BarkBeetleModule::loadParameters()
 
 }
 
-void BarkBeetleModule::run()
+void BarkBeetleModule::clearGrids()
+{
+
+    for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b)
+        b->clear();
+
+    BarkBeetleRUCell ru_cell;
+    mRUGrid.initialize(ru_cell);
+
+    BarkBeetleCell::resetCounters();
+    stats.clear();
+
+}
+
+void BarkBeetleModule::run(int iteration)
 {
     // reset statistics
     BarkBeetleCell::resetCounters();
+    int old_max_gen = stats.maxGenerations;
     stats.clear();
+    mIteration = iteration;
 
     // clear cells
 //    HeightGridValue *hgv = GlobalSettings::instance()->model()->heightGrid()->begin();
@@ -87,13 +104,21 @@ void BarkBeetleModule::run()
 //    }
 
     // calculate the potential bark beetle generations for each resource unit
-    calculateGenerations();
+    if (iteration==0)
+        calculateGenerations();
+    else
+        stats.maxGenerations = old_max_gen; // save that value....
 
     // background probability of infestation
     startSpread();
 
     // the spread of beetles (and attacking of trees)
     barkbeetleSpread();
+
+    // write back to the real iLand structure: TODO
+
+    // create some outputs....
+    qDebug() << "iter/background-inf/winter-mort/N spread/N landed/N infested: " << mIteration << stats.infestedBackground << stats.NWinterMortality << stats.NCohortsSpread << stats.NCohortsLanded << stats.NInfested;
 
 
 }
@@ -214,7 +239,7 @@ void BarkBeetleModule::barkbeetleSpread()
             stats.NCohortsSpread += n_packets;
 
             // mark this cell as "dead" (as the beetles have killed the host trees and now move on)
-            b->finishedSpread(generation);
+            b->finishedSpread(mIteration>0 ? mIteration+1 : generation);
 
             BarkBeetleCell *nb8[8];
             for (int i=0;i<n_packets;++i) {
@@ -266,6 +291,7 @@ void BarkBeetleModule::barkbeetleSpread()
                 double p_col = limit(mColonizeProbability.calculate(b->tree_stress), 0., 1.);
                 // the attack happens 'n' times, therefore the probability is higher
                 double p_ncol = 1. - pow(1.-p_col, b->n);
+                b->p_colonize = std::max(b->p_colonize, float(p_ncol));
                 if (drandom() < p_ncol) {
                     // attack successful - the pixel gets infested
                     b->setInfested(true);
@@ -290,7 +316,8 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 0: return data.n; // height
     case 1: return data.dbh; // diameter of host
     case 2: return data.infested?1.:0.; // infested yes/no
-    case 3: return data.isHost()? data.killed : -5.; // -5: no host, 0: not killed, >0: iteration/generation
+    case 3: return data.isHost()? data.killed : -1.; // -1: no host, 0: not killed, >0: iteration/generation
+    case 4: return data.p_colonize; // probability of kill
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -302,7 +329,8 @@ const QVector<LayeredGridBase::LayerElement> BarkBeetleLayers::names() const
             << LayeredGridBase::LayerElement(QLatin1Literal("value"), QLatin1Literal("grid value of the pixel"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QLatin1Literal("dbh"), QLatin1Literal("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
             << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
-            << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -5: no host trees)"), GridViewRainbow);
+            << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees)"), GridViewRainbow)
+            << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat);
 
 }
 

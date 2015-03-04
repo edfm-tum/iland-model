@@ -76,8 +76,14 @@ void BarkBeetleScript::reloadSettings()
     mBeetle->loadParameters();
 }
 
-void BarkBeetleScript::runBB()
+void BarkBeetleScript::runBB(int iteration)
 {
     qDebug() << "running bark beetle module....";
-    mBeetle->run();
+    mBeetle->run(iteration);
+}
+
+void BarkBeetleScript::clear()
+{
+    qDebug() << "clear bark beetle module....";
+    mBeetle->clearGrids();
 }
