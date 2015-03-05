@@ -20,7 +20,6 @@
 #include "global.h"
 #include "barkbeetleplugin.h"
 #include "barkbeetleout.h"
-
 #include "barkbeetlescript.h"
 #include "outputmanager.h"
 
