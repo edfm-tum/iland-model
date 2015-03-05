@@ -20,13 +20,15 @@ HEADERS       = \
     barkbeetleplugin.h \
     barkbeetlemodule.h \
     barkbeetlescript.h \
-    bbgenerations.h
+    bbgenerations.h \
+    barkbeetleout.h
 
 SOURCES       = \
     barkbeetleplugin.cpp \
     barkbeetlemodule.cpp \
     barkbeetlescript.cpp \
-    bbgenerations.cpp
+    bbgenerations.cpp \
+    barkbeetleout.cpp
 TARGET        = $$qtLibraryTarget(iland_barkbeetle)
 DESTDIR       = ../../plugins
 

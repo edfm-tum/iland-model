@@ -6,6 +6,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "debugtimer.h"
+#include "outputmanager.h"
 
 
 int BarkBeetleCell::total_infested = 0;
@@ -59,6 +60,8 @@ void BarkBeetleModule::loadParameters()
     formula = xml.value(".winterMortalityFormula", "polygon(days, 0,0, 30, 0.6)");
     mWinterMortalityFormula.setExpression(formula);
     params.winterMortalityBaseLevel = xml.valueDouble(".baseWinterMortality", 0.5);
+
+    mAfterExecEvent = xml.value(".onAfterBarkbeetle");
 
     HeightGridValue *hgv = GlobalSettings::instance()->model()->heightGrid()->begin();
     for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b, ++hgv) {
@@ -119,6 +122,16 @@ void BarkBeetleModule::run(int iteration)
 
     // create some outputs....
     qDebug() << "iter/background-inf/winter-mort/N spread/N landed/N infested: " << mIteration << stats.infestedBackground << stats.NWinterMortality << stats.NCohortsSpread << stats.NCohortsLanded << stats.NInfested;
+    GlobalSettings::instance()->outputManager()->execute("barkbeetle");
+    //GlobalSettings::instance()->outputManager()->save();
+
+    // execute the after fire event
+    if (!mAfterExecEvent.isEmpty()) {
+        // evaluate the javascript function...
+        GlobalSettings::instance()->executeJavascript(mAfterExecEvent);
+    }
+
+
 
 
 }
@@ -323,14 +336,16 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
 }
 
 
-const QVector<LayeredGridBase::LayerElement> BarkBeetleLayers::names() const
+const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
 {
-    return QVector<LayeredGridBase::LayerElement>()
-            << LayeredGridBase::LayerElement(QLatin1Literal("value"), QLatin1Literal("grid value of the pixel"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("dbh"), QLatin1Literal("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
-            << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat);
+    if (mNames.isEmpty())
+        mNames = QVector<LayeredGridBase::LayerElement>()
+                << LayeredGridBase::LayerElement(QLatin1Literal("value"), QLatin1Literal("grid value of the pixel"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("dbh"), QLatin1Literal("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
+                << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat);
+    return mNames;
 
 }
 
@@ -350,10 +365,12 @@ double BarkBeetleRULayers::value(const BarkBeetleRUCell &data, const int index) 
 
 }
 
-const QVector<LayeredGridBase::LayerElement> BarkBeetleRULayers::names() const
+const QVector<LayeredGridBase::LayerElement> &BarkBeetleRULayers::names()
 {
-    return QVector<LayeredGridBase::LayerElement>()
-            << LayeredGridBase::LayerElement(QLatin1Literal("generations"), QLatin1Literal("total number of bark beetle generations"), GridViewHeat);
+    if (mNames.isEmpty())
+        mNames = QVector<LayeredGridBase::LayerElement>()
+                << LayeredGridBase::LayerElement(QLatin1Literal("generations"), QLatin1Literal("total number of bark beetle generations"), GridViewHeat);
+    return mNames;
 }
 
 bool BarkBeetleRULayers::onClick(const QPointF &world_coord) const

@@ -25,12 +25,15 @@ public slots:
     double pixelValue(int ix, int iy);
     void setPixelValue(int ix, int iy, double val);
 
+    /// access the number of bark beetle generation at position ix/iy (indices on the 10m grid)
     double generations(int ix, int iy);
 
     // the real thing
     void reloadSettings(); ///< reload the BB-Module settings from the XML-File
     void runBB(int iteration); ///< run a full cycle of the bark beetle module
     void clear(); ///< reset the barkbeetle module (clear damage and spread data - makes only sense if in simulation mode)
+
+
 
 private:
     QJSValue mOnClick;

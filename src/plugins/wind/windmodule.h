@@ -64,10 +64,11 @@ class WindLayers: public LayeredGrid<WindCell> {
   public:
     void setGrid(const Grid<WindCell> &grid) { mGrid = &grid; }
     double value(const WindCell& data, const int index) const;
-    const QVector<LayerElement> names() const;
+    const QVector<LayerElement> &names();
     // specifics for wind layers
     void setRUGrid(const Grid<WindRUCell> *grid) { mRUGrid = grid; }
 private:
+    QVector<LayerElement> mNames;
     double ruValueAt(const WindCell *cell, const int what) const; // get resource-unit level factor at cell "cell"
     const Grid<WindRUCell> *mRUGrid;
 };

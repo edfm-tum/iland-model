@@ -69,18 +69,20 @@ double WindLayers::value(const WindCell &data, const int param_index) const
 }
 
 
-const QVector<LayeredGridBase::LayerElement> WindLayers::names() const
+const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
 {
-    return QVector<LayeredGridBase::LayerElement>()
-            << LayeredGridBase::LayerElement(QLatin1Literal("height"), QLatin1Literal("max height at pixel (m)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("edge"), QLatin1Literal("result of edge detection"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("cwsUproot"), QLatin1Literal("critical wind speed uprooting (m/s)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("cwsBreak"), QLatin1Literal("critical wind speed stem breakage (m/s)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("basalAreaKilled"), QLatin1Literal("killed basal area"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("iteration"), QLatin1Literal("iteration # of the spread algorithm"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("windSpeedCrown"), QLatin1Literal("wind speed at tree crown height (m/s)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("topo"), QLatin1Literal("the topography modifier for wind speeds"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow);
+    if (mNames.isEmpty())
+        mNames= QVector<LayeredGridBase::LayerElement>()
+                << LayeredGridBase::LayerElement(QLatin1Literal("height"), QLatin1Literal("max height at pixel (m)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("edge"), QLatin1Literal("result of edge detection"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("cwsUproot"), QLatin1Literal("critical wind speed uprooting (m/s)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("cwsBreak"), QLatin1Literal("critical wind speed stem breakage (m/s)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("basalAreaKilled"), QLatin1Literal("killed basal area"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("iteration"), QLatin1Literal("iteration # of the spread algorithm"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("windSpeedCrown"), QLatin1Literal("wind speed at tree crown height (m/s)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("topo"), QLatin1Literal("the topography modifier for wind speeds"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow);
+    return mNames;
 }
 
 // helper function (avoid a special ru-level grid and use the 10m cell resolution instead)

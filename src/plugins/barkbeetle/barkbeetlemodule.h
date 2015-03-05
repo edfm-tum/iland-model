@@ -46,15 +46,20 @@ class BarkBeetleLayers: public LayeredGrid<BarkBeetleCell> {
   public:
     void setGrid(const Grid<BarkBeetleCell> &grid) { mGrid = &grid; }
     double value(const BarkBeetleCell& data, const int index) const;
-    const QVector<LayeredGridBase::LayerElement> names() const;
+    const QVector<LayeredGridBase::LayerElement> &names();
     bool onClick(const QPointF &world_coord) const;
+private:
+    QVector<LayeredGridBase::LayerElement> mNames;
 };
+
 class BarkBeetleRULayers: public LayeredGrid<BarkBeetleRUCell> {
   public:
     void setGrid(const Grid<BarkBeetleRUCell> &grid) { mGrid = &grid; }
     double value(const BarkBeetleRUCell& data, const int index) const;
-    const QVector<LayeredGridBase::LayerElement> names() const;
+    const QVector<LayeredGridBase::LayerElement> &names();
     bool onClick(const QPointF &world_coord) const;
+private:
+    QVector<LayeredGridBase::LayerElement> mNames;
 };
 
 
@@ -84,6 +89,7 @@ private:
     void barkbeetleSpread(); ///< main function of bark beetle spread
     void scanResourceUnitTrees(const QPoint &position);
     int mIteration;
+    QString mAfterExecEvent;
     struct SBBParams {
         SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50), spreadKernelMaxDistance(100.), backgroundInfestationProbability(0.0001) {}
         float minDbh; ///< minimum dbh of spruce trees that are considered as potential hosts
@@ -116,6 +122,7 @@ private:
     BarkBeetleRULayers mRULayers;
 
     friend class BarkBeetleScript;
+    friend class BarkBeetleOut;
 
 };
 

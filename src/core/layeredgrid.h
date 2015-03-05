@@ -49,9 +49,9 @@ public:
     virtual bool onClick(const QPointF &world_coord) const { Q_UNUSED(world_coord); return false; /*false: not handled*/ }
     // available variables
     /// list of stored layers
-    virtual const QVector<LayeredGridBase::LayerElement> names() const=0;
+    virtual const QVector<LayeredGridBase::LayerElement> &names()=0;
     /// get layer index by name of the layer. returns -1 if layer is not available.
-    virtual int indexOf(const QString &layer_name) const
+    virtual int indexOf(const QString &layer_name)
     {
         for(int i=0;i<names().count();++i)
             if (names().at(i).name == layer_name)
@@ -118,7 +118,7 @@ void modelToWorld(const Vector3D &From, Vector3D &To);
 template <class T>
     QString gridToESRIRaster(const LayeredGrid<T> &grid, const QString name)
 {
-        int index = grid.indexOf(name);
+        int index = const_cast<LayeredGrid<T> &>(grid).indexOf(name);
         if (index<0)
             return QString();
         Vector3D model(grid.metricRect().left(), grid.metricRect().top(), 0.);
