@@ -82,7 +82,7 @@ public:
     SpatialLayeredGrid() { setup(); }
     void setup(); ///< initial setup of the grid
     int addGrid(const QString name, FloatGrid *grid); ///< adds a 'grid' named 'name'. returns index of the newly added grid.
-    const QStringList names() { return mGridNames; }
+    const QStringList &gridNames() { return mGridNames; }
 
     double value(const float x, const float y, const int index) const { checkGrid(index); return mGrids[index]->constValueAt(x,y); }
     double value(const QPointF &world_coord, const int index) const { checkGrid(index); return mGrids[index]->constValueAt(world_coord); }

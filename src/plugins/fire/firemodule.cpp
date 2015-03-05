@@ -85,17 +85,19 @@ double FireLayers::value(const FireRUData &data, const int param_index) const
     }
 }
 
-const QVector<LayeredGridBase::LayerElement> FireLayers::names() const
+const QVector<LayeredGridBase::LayerElement> &FireLayers::names()
 {
-    return QVector<LayeredGridBase::LayerElement>()
-            << LayeredGridBase::LayerElement(QLatin1Literal("baseIgnition"), QLatin1Literal("base ignition rate"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("KBDI"), QLatin1Literal("KBDI"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("KBDIref"), QLatin1Literal("reference KBDI value"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("fireID"), QLatin1Literal("Id of the fire"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("crownKill"), QLatin1Literal("crown kill rate"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("diedBasalArea"), QLatin1Literal("m2 of died basal area"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("diedStemsFrac"), QLatin1Literal("fraction of died stems"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QLatin1Literal("fuel"), QLatin1Literal("fuel"), GridViewRainbow);
+    if (mNames.isEmpty())
+        mNames= QVector<LayeredGridBase::LayerElement>()
+                << LayeredGridBase::LayerElement(QLatin1Literal("baseIgnition"), QLatin1Literal("base ignition rate"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("KBDI"), QLatin1Literal("KBDI"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("KBDIref"), QLatin1Literal("reference KBDI value"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("fireID"), QLatin1Literal("Id of the fire"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("crownKill"), QLatin1Literal("crown kill rate"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("diedBasalArea"), QLatin1Literal("m2 of died basal area"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("diedStemsFrac"), QLatin1Literal("fraction of died stems"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("fuel"), QLatin1Literal("fuel"), GridViewRainbow);
+    return mNames;
 
 }
 

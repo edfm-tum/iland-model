@@ -14,11 +14,12 @@ class ABELayers: public LayeredGrid<FMStandPtr> {
     ~ABELayers();
     void setGrid(Grid<FMStandPtr> &grid) { mGrid = &grid; }
     double value(const FMStandPtr &data, const int index) const;
-    const QVector<LayeredGridBase::LayerElement> names() const;
+    const QVector<LayeredGridBase::LayerElement> &names();
     const QString labelvalue(const int value, const int index) const;
     void registerLayers();
     void clearClasses(); // clear ID and agent classes...
 private:
+    QVector<LayeredGridBase::LayerElement> mNames;
     mutable QHash<const ABE::Agent*, int > mAgentIndex;
     mutable QHash<QString, int> mUnitIndex;
     mutable QHash<int, int> mStandIndex;

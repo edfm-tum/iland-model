@@ -45,21 +45,23 @@ double ABELayers::value(const FMStandPtr &data, const int index) const
     }
 }
 
-const QVector<LayeredGridBase::LayerElement> ABELayers::names() const
+const QVector<LayeredGridBase::LayerElement> &ABELayers::names()
 {
-    return QVector<LayeredGridBase::LayerElement>()
-            << LayeredGridBase::LayerElement(QStringLiteral("id"), QStringLiteral("stand ID"), GridViewBrewerDiv)
-            << LayeredGridBase::LayerElement(QStringLiteral("unit"), QStringLiteral("ID of the management unit"), GridViewBrewerDiv)
-            << LayeredGridBase::LayerElement(QStringLiteral("agent"), QStringLiteral("managing agent"), GridViewBrewerDiv)
-            << LayeredGridBase::LayerElement(QStringLiteral("volume"), QStringLiteral("stocking volume (m3/ha)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QStringLiteral("MAI"), QStringLiteral("mean annual increment (of the decade) (m3/ha)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QStringLiteral("MAITotal"), QStringLiteral("mean annual increment (full rotation) (m3/ha)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("stocking basal area (m2/ha)"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QStringLiteral("age"), QStringLiteral("stand age"), GridViewRainbow)
-            << LayeredGridBase::LayerElement(QStringLiteral("last execution"), QStringLiteral("years since the last execution of an activity on the stand."), GridViewHeat)
-            << LayeredGridBase::LayerElement(QStringLiteral("next evaluation"), QStringLiteral("year of the last execution"), GridViewHeat)
-            << LayeredGridBase::LayerElement(QStringLiteral("last update"), QStringLiteral("year of the last update of the forest state."), GridViewRainbowReverse)
-            << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow);
+    if (mNames.isEmpty())
+        mNames= QVector<LayeredGridBase::LayerElement>()
+                << LayeredGridBase::LayerElement(QStringLiteral("id"), QStringLiteral("stand ID"), GridViewBrewerDiv)
+                << LayeredGridBase::LayerElement(QStringLiteral("unit"), QStringLiteral("ID of the management unit"), GridViewBrewerDiv)
+                << LayeredGridBase::LayerElement(QStringLiteral("agent"), QStringLiteral("managing agent"), GridViewBrewerDiv)
+                << LayeredGridBase::LayerElement(QStringLiteral("volume"), QStringLiteral("stocking volume (m3/ha)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("MAI"), QStringLiteral("mean annual increment (of the decade) (m3/ha)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("MAITotal"), QStringLiteral("mean annual increment (full rotation) (m3/ha)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("stocking basal area (m2/ha)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("age"), QStringLiteral("stand age"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("last execution"), QStringLiteral("years since the last execution of an activity on the stand."), GridViewHeat)
+                << LayeredGridBase::LayerElement(QStringLiteral("next evaluation"), QStringLiteral("year of the last execution"), GridViewHeat)
+                << LayeredGridBase::LayerElement(QStringLiteral("last update"), QStringLiteral("year of the last update of the forest state."), GridViewRainbowReverse)
+                << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow);
+    return mNames;
 }
 
 const QString ABELayers::labelvalue(const int value, const int index) const

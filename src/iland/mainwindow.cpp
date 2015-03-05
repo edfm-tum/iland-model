@@ -466,7 +466,7 @@ void MainWindow::updatePaintGridList()
 
 void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
 {
-    const QVector<LayeredGridBase::LayerElement> names = layer->names();
+    const QVector<LayeredGridBase::LayerElement> &names = const_cast<LayeredGridBase*>(layer)->names();
     int layer_id = 0;
     foreach (const LayeredGridBase::LayerElement &layername, names) {
         QString comb_name = QString("%1 - %2").arg(name, layername.name);
@@ -870,7 +870,8 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
         if (object.auto_range) {
             object.layered->range( object.cur_min_value, object.cur_max_value, object.layer_id );
         }
-        mRulerColors->setCaption(object.layered->names()[object.layer_id].name, object.layered->names()[object.layer_id].description);
+        mRulerColors->setCaption(const_cast<LayeredGridBase*>(object.layered)->names()[object.layer_id].name,
+                const_cast<LayeredGridBase*>(object.layered)->names()[object.layer_id].description);
         break;
     case PaintObject::PaintNothing:
         mRulerColors->setCaption("-");

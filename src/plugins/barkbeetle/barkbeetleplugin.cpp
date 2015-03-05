@@ -19,6 +19,8 @@
 
 #include "global.h"
 #include "barkbeetleplugin.h"
+#include "barkbeetleout.h"
+
 #include "barkbeetlescript.h"
 #include "outputmanager.h"
 
@@ -57,11 +59,11 @@ BarkBeetlePlugin::BarkBeetlePlugin()
 
 void BarkBeetlePlugin::setup()
 {
-//    // setup of the fire related outputs: note: here the fire module is passed directly to the output
-//    FireOut *fire_output = new FireOut();
-//    fire_output->setFireModule(&mFire);
-//    GlobalSettings::instance()->outputManager()->addOutput(fire_output);
-//    // setup of the fire module: load parameters from project file, etc.
+    // setup of the fire related outputs: note: here the fire module is passed directly to the output
+    BarkBeetleOut *bb_output = new BarkBeetleOut();
+    bb_output->setBarkBeetleModule(&mBeetle);
+    GlobalSettings::instance()->outputManager()->addOutput(bb_output);
+    // setup of the fire module: load parameters from project file, etc.
     mBeetle.setup();
 }
 
@@ -74,6 +76,7 @@ void BarkBeetlePlugin::setupScripting(QJSEngine *engine)
     script->setBBModule(&mBeetle);
     QJSValue obj = engine->newQObject(script);
     engine->globalObject().setProperty("BarkBeetle", obj);
+
 
     qDebug() << "setup scripting called...";
 }
