@@ -101,7 +101,8 @@ void Viewport::setViewPoint(const QPointF &world_center, const double px_per_met
     QPoint p = toScreen(world_center); // point where world_center would be
     QPoint target = m_screen.center();
     moveTo(p,target);
-    double factor = px_per_meter * m_scale_worldtoscreen;
+    double px_p_m = qMax(px_per_meter, 0.001);
+    double factor =  m_scale_worldtoscreen / px_p_m;
     zoomTo(target, factor);
 }
 
