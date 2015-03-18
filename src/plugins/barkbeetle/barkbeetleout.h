@@ -28,7 +28,6 @@ class BarkBeetleOut : public Output
 {
 public:
     BarkBeetleOut();
-    ~BarkBeetleOut();
     virtual void exec();
     virtual void setup();
     void setBarkBeetleModule(BarkBeetleModule *module) { mBB = module; }

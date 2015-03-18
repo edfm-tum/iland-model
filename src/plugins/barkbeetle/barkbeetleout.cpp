@@ -36,10 +36,6 @@ BarkBeetleOut::BarkBeetleOut()
 
 }
 
-BarkBeetleOut::~BarkBeetleOut()
-{
-
-}
 
 void BarkBeetleOut::exec()
 {

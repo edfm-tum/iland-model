@@ -65,6 +65,7 @@ private:
 
 
 class ResourceUnit; // forward
+class BarkBeetleOut; // forward
 /** Main class of the bark beetle module.
   @ingroup barkbeetle
 */
