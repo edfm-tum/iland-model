@@ -20,7 +20,10 @@
 
 #include "globalsettings.h"
 #include "model.h"
+#include "tree.h"
+#include "stamp.h"
 #include "helper.h"
+#include "resourceunit.h"
 
 #include <QJSEngine>
 #include <QJSValue>
@@ -50,8 +53,63 @@ void SpatialAnalysis::saveRumpleGrid(QString fileName)
     if (!mRumple)
         mRumple = new RumpleIndex;
 
-    Helper::saveToTextFile(fileName, gridToESRIRaster(mRumple->rumpleGrid()) );
+    Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mRumple->rumpleGrid()) );
 
+}
+
+void SpatialAnalysis::saveCrownCoverGrid(QString fileName)
+{
+    calculateCrownCover();
+    Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mCrownCoverGrid) );
+
+}
+
+void SpatialAnalysis::calculateCrownCover()
+{
+    mCrownCoverGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
+                          GlobalSettings::instance()->model()->RUgrid().cellsize());
+
+    // calculate the crown cover per resource unit. We use the "reader"-stamps of the individual trees
+    // as they represent the crown (size). We also simply hijack the LIF grid for our calculations.
+    FloatGrid *grid = GlobalSettings::instance()->model()->grid();
+    grid->initialize(0.f);
+    // we simply iterate over all trees of all resource units (not bothering about multithreading here)
+    int x,y;
+    AllTreeIterator ati(GlobalSettings::instance()->model());
+    while (Tree *t = ati.nextLiving()) {
+        // apply the reader-stamp
+        const Stamp *reader = t->stamp()->reader();
+        QPoint pos_reader = t->positionIndex(); // tree position
+        pos_reader-=QPoint(reader->offset(), reader->offset());
+        int reader_size = reader->size();
+        int rx = pos_reader.x();
+        int ry = pos_reader.y();
+
+        // add the reader-stamp values: multiple (partial) crowns can add up to being fully covered
+        for (y=0;y<reader_size; ++y) {
+            for (x=0;x<reader_size;++x) {
+                 grid->valueAtIndex(rx+x, ry+y) += (*reader)(x,y);
+            }
+        }
+    }
+    // now aggregate values for each resource unit
+    Model *model = GlobalSettings::instance()->model();
+    for (float *rg = mCrownCoverGrid.begin(); rg!=mCrownCoverGrid.end();++rg) {
+        ResourceUnit *ru =  model->RUgrid().constValueAtIndex(mCrownCoverGrid.indexOf(rg));
+        if (!ru)
+            continue;
+        float cc_sum = 0.f;
+        GridRunner<float> runner(grid, mCrownCoverGrid.cellRect(mCrownCoverGrid.indexOf(rg)));
+        while (float *gv = runner.next()) {
+            if (model->heightGridValue(runner.currentIndex().x(), runner.currentIndex().y()).isValid())
+                if (*gv >= 1.f)
+                    cc_sum++;
+        }
+        if (ru->stockableArea()>0.) {
+            double value = 100.*cc_sum/ru->stockableArea();
+            *rg = limit(value, 0., 1.);
+        }
+    }
 }
 
 
