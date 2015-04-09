@@ -92,6 +92,8 @@ public:
     HeightGrid *heightGrid() { return mHeightGrid; } ///< stores maximum heights of trees and some flags (currently 10x10m)
     const MapGrid *standGrid() { return mStandGrid; } ///< retrieve the spatial grid that defines the stands (10m resolution)
     const Grid<ResourceUnit*> &RUgrid() { return mRUmap; }
+    /// get the value of the (10m) Height grid at the position index ix and iy (of the LIF grid)
+    const HeightGridValue heightGridValue(const int ix, const int iy) { return  mHeightGrid->constValueAtIndex(ix/cPxPerHeight, iy/cPxPerHeight); }
 
     // setup/maintenance
     void clear(); ///< free ressources

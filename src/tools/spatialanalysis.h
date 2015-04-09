@@ -44,10 +44,13 @@ public:
 public slots:
     // API for Javascript
     void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
+    void saveCrownCoverGrid(QString fileName); ///< save a grid if crown cover percentages (RU level) to a ESRI grid file (ascii)
 
 private:
+    void calculateCrownCover();
     RumpleIndex *mRumple;
     SpatialLayeredGrid *mLayers;
+    FloatGrid mCrownCoverGrid;
     friend class SpatialLayeredGrid;
 
 };
