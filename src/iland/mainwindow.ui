@@ -269,6 +269,9 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="lineWrapMode">
+            <enum>QTextEdit::NoWrap</enum>
+           </property>
           </widget>
          </item>
         </layout>
