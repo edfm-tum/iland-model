@@ -106,7 +106,7 @@ void SpatialAnalysis::calculateCrownCover()
                     cc_sum++;
         }
         if (ru->stockableArea()>0.) {
-            double value = 100.*cc_sum/ru->stockableArea();
+            double value = cPxSize*cPxSize*cc_sum/ru->stockableArea();
             *rg = limit(value, 0., 1.);
         }
     }
