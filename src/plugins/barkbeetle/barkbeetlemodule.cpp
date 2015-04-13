@@ -202,6 +202,7 @@ void BarkBeetleModule::startSpread()
     // background probability of infestation
     for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b) {
         if (b->infested) {
+            stats.infestedStart++;
             // base mortality
             if (drandom()<params.winterMortalityBaseLevel) {
                 // the beetles on the pixel died
@@ -217,10 +218,8 @@ void BarkBeetleModule::startSpread()
                 }
             }
 
-        }
-
-        // background activation
-        if (b->isPotentialHost() && drandom()<params.backgroundInfestationProbability) {
+        } else if (b->isPotentialHost() && drandom()<params.backgroundInfestationProbability) {
+            // background activation
             b->setInfested(true);
             stats.infestedBackground++;
         }
@@ -299,6 +298,7 @@ void BarkBeetleModule::barkbeetleSpread()
         while (BarkBeetleCell *b=runner.next()) {
             if (b->n > 0) {
                 stats.NCohortsLanded+=b->n;
+                stats.NPixelsLanded++;
                 // the cell is attacked by n packages. Calculate the probability that the beetles win.
                 // the probability is derived from an expression with the parameter "tree_stress"
                 double p_col = limit(mColonizeProbability.calculate(b->tree_stress), 0., 1.);

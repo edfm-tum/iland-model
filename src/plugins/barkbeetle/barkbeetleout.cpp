@@ -28,19 +28,26 @@ BarkBeetleOut::BarkBeetleOut()
                    "The outputs are created after each year (or spread event) and contain information about bark beetle generations, spread and damage for the total landscape.\n " \
                    "For spatially explicit outputs, see also the script functions for extracting gridded data.");
     columns() << OutputColumn::year()
-              << OutputColumn("fireId", "unique ID of the fire event (1..N) on the whole project area.", OutInteger)
-              << OutputColumn("area_plan_m2", "Area of the planned fire m2", OutInteger)
-              << OutputColumn("area_m2", "Realized area of burnt cells m2", OutInteger);
+              << OutputColumn("initialInfestedArea_ha", "Area of infested pixels (ha) at the start of the iteration (i.e. before winter mortality or background activation happen).", OutDouble)
+              << OutputColumn("backgroundMortality_ha", "Area of infested pixels (ha) that die due to winter mortality.", OutDouble)
+              << OutputColumn("backgroundActivation_ha", "Area of (not infested) pixels (ha) that are 'ignited' and consequently a source of bark beetles.", OutDouble)
+              << OutputColumn("spreadCohorts", "Number of bark beetle 'packages' (x1000) that are spread from the source pixels (kilo-cohorts).", OutDouble)
+              << OutputColumn("landedCohorts", "Number of bark beetle 'packages' (x1000) that reach potential hosts (cohorts x 1000).", OutDouble)
+              << OutputColumn("landedArea_ha", "Area (ha) of potential host trees where bark beetles landed.", OutDouble)
+              << OutputColumn("infestedArea_ha", "Area (ha) of newly infected host pixels.", OutDouble);
 
-//     qDebug() << "iter/background-inf/winter-mort/N spread/N landed/N infested: " << mIteration << stats.infestedBackground << stats.NWinterMortality << stats.NCohortsSpread << stats.NCohortsLanded << stats.NInfested;
 
 }
 
 
 void BarkBeetleOut::exec()
 {
+    const double area_factor = 0.01; // area in ha of one pixel
     *this << currentYear();
-    // ....
+    *this << mBB->stats.infestedStart*area_factor << mBB->stats.NWinterMortality*area_factor << mBB->stats.infestedBackground*area_factor;
+    *this << mBB->stats.NCohortsSpread * 0.001 << mBB->stats.NCohortsLanded*0.001 << mBB->stats.NPixelsLanded*area_factor;
+    *this << mBB->stats.NInfested*area_factor;
+
 
     writeRow();
 }
