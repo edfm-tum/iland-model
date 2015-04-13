@@ -107,7 +107,7 @@ void SpatialAnalysis::calculateCrownCover()
         GridRunner<float> runner(grid, mCrownCoverGrid.cellRect(mCrownCoverGrid.indexOf(rg)));
         while (float *gv = runner.next()) {
             if (model->heightGridValue(runner.currentIndex().x(), runner.currentIndex().y()).isValid())
-                if (*gv >= 0.5f) // 0.9: make sure that
+                if (*gv >= 0.5f) // 0.5: half of a 2m cell is covered by a tree crown; is a bit pragmatic but seems reasonable (and works)
                     cc_sum++;
         }
         if (ru->stockableArea()>0.) {

@@ -102,13 +102,15 @@ private:
         double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
     } params;
     struct SBBStats {
-        void clear() { infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;}
-        int infestedBackground;
-        int maxGenerations;
-        int NCohortsLanded;
-        int NCohortsSpread;
-        int NInfested;
-        int NWinterMortality;
+        void clear() { infestedStart=0;infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;}
+        int infestedStart; // # of pixels that are infested at the beginning of an iteration
+        int infestedBackground; // # of pixels that are getting active
+        int maxGenerations; // maxium number of generations found this year
+        int NCohortsLanded; // number of cohorts that landed on new potential host pixels
+        int NPixelsLanded; // number of potential host pixels that received at least one cohort
+        int NCohortsSpread; // number of pixels that are spread from infested cells
+        int NInfested; // number of newly infested pixels (those of the 'landed'
+        int NWinterMortality; // number of (infested) pixels that died off during winter
     } stats;
 
 
