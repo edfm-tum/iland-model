@@ -88,7 +88,7 @@ void SpatialAnalysis::calculateCrownCover()
         // (i.e.: they express the percentage for each cell contributing to the full crown).
         // we thus calculate a the factor to "blow up" cell values; a fully covered cell has then a value of 1,
         // and values between 0-1 are cells that are partially covered by the crown.
-        double crown_factor = reader->crownRadius()*reader->crownRadius()*M_PI/double(cPxSize*cPxSize);
+        double crown_factor = reader->crownArea()/double(cPxSize*cPxSize);
 
         // add the reader-stamp values: multiple (partial) crowns can add up to being fully covered
         for (y=0;y<reader_size; ++y) {
