@@ -84,11 +84,16 @@ void SpatialAnalysis::calculateCrownCover()
         int reader_size = reader->size();
         int rx = pos_reader.x();
         int ry = pos_reader.y();
+        // the reader stamps are stored such as to have a sum of 1.0 over all pixels
+        // (i.e.: they express the percentage for each cell contributing to the full crown).
+        // we thus calculate a the factor to "blow up" cell values; a fully covered cell has then a value of 1,
+        // and values between 0-1 are cells that are partially covered by the crown.
+        double crown_factor = reader->crownRadius()*reader->crownRadius()*M_PI/double(cPxSize*cPxSize);
 
         // add the reader-stamp values: multiple (partial) crowns can add up to being fully covered
         for (y=0;y<reader_size; ++y) {
             for (x=0;x<reader_size;++x) {
-                 grid->valueAtIndex(rx+x, ry+y) += (*reader)(x,y);
+                 grid->valueAtIndex(rx+x, ry+y) += (*reader)(x,y)*crown_factor;
             }
         }
     }
@@ -102,7 +107,7 @@ void SpatialAnalysis::calculateCrownCover()
         GridRunner<float> runner(grid, mCrownCoverGrid.cellRect(mCrownCoverGrid.indexOf(rg)));
         while (float *gv = runner.next()) {
             if (model->heightGridValue(runner.currentIndex().x(), runner.currentIndex().y()).isValid())
-                if (*gv >= 1.f)
+                if (*gv >= 0.5f) // 0.9: make sure that
                     cc_sum++;
         }
         if (ru->stockableArea()>0.) {
