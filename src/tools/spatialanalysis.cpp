@@ -101,8 +101,10 @@ void SpatialAnalysis::calculateCrownCover()
     Model *model = GlobalSettings::instance()->model();
     for (float *rg = mCrownCoverGrid.begin(); rg!=mCrownCoverGrid.end();++rg) {
         ResourceUnit *ru =  model->RUgrid().constValueAtIndex(mCrownCoverGrid.indexOf(rg));
-        if (!ru)
+        if (!ru) {
+            *rg=0.f;
             continue;
+        }
         float cc_sum = 0.f;
         GridRunner<float> runner(grid, mCrownCoverGrid.cellRect(mCrownCoverGrid.indexOf(rg)));
         while (float *gv = runner.next()) {
