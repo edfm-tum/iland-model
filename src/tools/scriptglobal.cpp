@@ -358,7 +358,7 @@ double MapGridWrapper::copyPolygonFromRect(MapGridWrapper *source, int id_in, in
             }
         //}
     }
-    qDebug() << "copyPolygonFromRect: copied" << j << "from" << i;
+    //qDebug() << "copyPolygonFromRect: copied" << j << "from" << i;
 
     // after changing the map, recreate the index
     // mMap->createIndex();
