@@ -9,12 +9,14 @@
 #include "outputmanager.h"
 
 
+
 int BarkBeetleCell::total_infested = 0;
 
 BarkBeetleModule::BarkBeetleModule()
 {
     mLayers.setGrid(mGrid);
     mRULayers.setGrid(mRUGrid);
+    mSimulate = false;
 
 }
 
@@ -67,11 +69,13 @@ void BarkBeetleModule::loadParameters()
     for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b, ++hgv) {
         b->reset();
         //scanResourceUnitTrees(mGrid.indexOf(b)); // scan all - not efficient
-        if (hgv->isValid()) {
-            b->dbh = drandom()<0.6 ? nrandom(20.,40.) : 0.; // random landscape
-            b->tree_stress = nrandom(0., 0.4);
-        }
+//        if (hgv->isValid()) {
+//            b->dbh = drandom()<0.6 ? nrandom(20.,40.) : 0.; // random landscape
+//            b->tree_stress = nrandom(0., 0.4);
+//        }
     }
+
+    yearBegin(); // also reset the "scanned" flags
 
 }
 
@@ -89,6 +93,12 @@ void BarkBeetleModule::clearGrids()
 
 }
 
+void BarkBeetleModule::loadAllVegetation()
+{
+    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
+        scanResourceUnitTrees(ru->boundingBox().center());
+}
+
 void BarkBeetleModule::run(int iteration)
 {
     // reset statistics
@@ -97,20 +107,14 @@ void BarkBeetleModule::run(int iteration)
     stats.clear();
     mIteration = iteration;
 
-    // clear cells
-//    HeightGridValue *hgv = GlobalSettings::instance()->model()->heightGrid()->begin();
-//    for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b, ++hgv) {
-//        b->clear();
-//        //scanResourceUnitTrees(mGrid.indexOf(b)); // scan all - not efficient
-//        //if (hgv->isValid())
-//        //    b->dbh = drandom()<0.6 ? nrandom(20.,40.) : 0.; // random landscape
-//    }
-
     // calculate the potential bark beetle generations for each resource unit
     if (iteration==0)
         calculateGenerations();
     else
         stats.maxGenerations = old_max_gen; // save that value....
+
+    // load the vegetation (skipped if not the initial iteration)
+    loadAllVegetation();
 
     // background probability of infestation
     startSpread();
@@ -119,6 +123,9 @@ void BarkBeetleModule::run(int iteration)
     barkbeetleSpread();
 
     // write back to the real iLand structure: TODO
+    if (!mSimulate) {
+        barkbeetleKill();
+    }
 
     // create some outputs....
     qDebug() << "iter/background-inf/winter-mort/N spread/N landed/N infested: " << mIteration << stats.infestedBackground << stats.NWinterMortality << stats.NCohortsSpread << stats.NCohortsLanded << stats.NInfested;
@@ -136,18 +143,17 @@ void BarkBeetleModule::run(int iteration)
 
 }
 
-void BarkBeetleModule::scanResourceUnitTrees(const QPoint &position)
+void BarkBeetleModule::scanResourceUnitTrees(const QPointF &position)
 {
-    QPointF p_m = mGrid.cellCenterPoint(position);
     // if this resource unit was already scanned in this bark beetle event, then do nothing
     // the flags are reset
-    if (!mRUGrid.coordValid(p_m))
+    if (!mRUGrid.coordValid(position))
         return;
 
-    if (mRUGrid.valueAt(p_m).scanned)
+    if (mRUGrid.valueAt(position).scanned)
         return;
 
-    ResourceUnit *ru = GlobalSettings::instance()->model()->ru(p_m);
+    ResourceUnit *ru = GlobalSettings::instance()->model()->ru(position);
     if (!ru)
         return;
 
@@ -159,7 +165,7 @@ void BarkBeetleModule::scanResourceUnitTrees(const QPoint &position)
             QPoint pcell(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
 
             BarkBeetleCell &bb=mGrid.valueAtIndex(pcell);
-            if (t->dbh() >bb.dbh) {
+            if (t->dbh() > bb.dbh) {
                 bb.dbh = t->dbh();
                 bb.tree_stress = t->stressIndex();
             }
@@ -167,13 +173,15 @@ void BarkBeetleModule::scanResourceUnitTrees(const QPoint &position)
         }
     }
     // set the "processed" flag
-    mRUGrid.valueAt(p_m).scanned = true;
+    mRUGrid.valueAt(position).scanned = true;
 }
 
 
 void BarkBeetleModule::yearBegin()
 {
-
+    // reset the scanned flag of resource units (force reload of stand structure)
+    for (BarkBeetleRUCell *bbru=mRUGrid.begin();bbru!=mRUGrid.end();++bbru)
+        bbru->scanned = false;
 }
 
 void BarkBeetleModule::calculateGenerations()
@@ -185,6 +193,7 @@ void BarkBeetleModule::calculateGenerations()
     while (bbptr<mRUGrid.end()) {
         if (*ruptr) {
             bbptr->scanned = false;
+            bbptr->killed_trees = false;
             bbptr->generations = mGenerations.calculateGenerations(*ruptr);
             bbptr->add_sister = mGenerations.hasSisterBrood();
             bbptr->cold_days = bbptr->cold_days_late + mGenerations.frostDaysEarly();
@@ -210,7 +219,8 @@ void BarkBeetleModule::startSpread()
                 stats.NWinterMortality++;
             } else {
                 // winter mortality - maybe the beetles die due to low winter temperatures
-                int cold_days = mRUGrid.valueAtIndex(mGrid.indexOf(b)/cHeightPerRU).cold_days;
+                int cold_days = mRUGrid.constValueAt(mGrid.cellCenterPoint(mGrid.indexOf(b))).cold_days;
+                // int cold_days = mRUGrid.valueAtIndex(mGrid.indexOf(b)/cHeightPerRU).cold_days;
                 double p_winter = mWinterMortalityFormula.calculate(cold_days);
                 if (drandom()<p_winter) {
                     b->setInfested(false);
@@ -225,6 +235,7 @@ void BarkBeetleModule::startSpread()
         }
 
         b->n = 0;
+        b->killed=false;
     }
 
 }
@@ -240,7 +251,7 @@ void BarkBeetleModule::barkbeetleSpread()
             if (!b->infested)
                 continue;
             QPoint start_index = runner.currentIndex();
-            BarkBeetleRUCell &bbru=mRUGrid.valueAtIndex( start_index.x()/cHeightPerRU, start_index.y()/cHeightPerRU);
+            BarkBeetleRUCell &bbru=mRUGrid.valueAt(runner.currentCoord());
             if (generation>bbru.generations)
                 continue;
 
@@ -252,6 +263,8 @@ void BarkBeetleModule::barkbeetleSpread()
 
             // mark this cell as "dead" (as the beetles have killed the host trees and now move on)
             b->finishedSpread(mIteration>0 ? mIteration+1 : generation);
+            // mark the resource unit, that some killing is required
+            bbru.killed_trees = true;
 
             BarkBeetleCell *nb8[8];
             for (int i=0;i<n_packets;++i) {
@@ -317,6 +330,36 @@ void BarkBeetleModule::barkbeetleSpread()
     }
 }
 
+void BarkBeetleModule::barkbeetleKill()
+{
+    int n_killed=0;
+    double basal_area=0;
+    for (BarkBeetleRUCell *rucell=mRUGrid.begin(); rucell!=mRUGrid.end(); ++rucell)
+        if (rucell->killed_trees) {
+            // there are killed pixels within the resource unit....
+            QVector<Tree> &tv = GlobalSettings::instance()->model()->RUgrid().constValueAtIndex(mRUGrid.indexOf(rucell))->trees();
+            for (QVector<Tree>::const_iterator t=tv.constBegin(); t!=tv.constEnd(); ++t) {
+                if (!t->isDead() && t->dbh()>params.minDbh && t->species()->id()==QStringLiteral("piab")) {
+                    // check if on killed pixel?
+                    if (mGrid.constValueAt(t->position()).killed) {
+                        // yes: kill the tree:
+                        Tree *tree = const_cast<Tree*>(&(*t));
+                        n_killed++;
+                        basal_area+=tree->basalArea();
+                        tree->removeDisturbance(0., 1., // 0% of the stem to soil, 100% to snag (keeps standing)
+                                                1., 0.,   // 100% of branches to soil
+                                                1.);      // 100% of foliage to soil
+
+                    }
+                }
+            }
+
+        }
+    stats.NTreesKilled = n_killed;
+    stats.BasalAreaKilled = basal_area;
+
+}
+
 
 //*********************************************************************************
 //************************************ BarkBeetleLayers ***************************
@@ -329,7 +372,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 0: return data.n; // height
     case 1: return data.dbh; // diameter of host
     case 2: return data.infested?1.:0.; // infested yes/no
-    case 3: return data.isHost()? data.killed : -1.; // -1: no host, 0: not killed, >0: iteration/generation
+    case 3: return data.isHost()? data.killedYear : -1.; // -1: no host, 0: not killed, >0: iteration/generation
     case 4: return data.p_colonize; // probability of kill
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }

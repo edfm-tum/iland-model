@@ -1,7 +1,7 @@
 #include "barkbeetlescript.h"
 
 #include "barkbeetlemodule.h"
-
+#include "outputmanager.h"
 
 
 BarkBeetleScript::BarkBeetleScript(QObject *)
@@ -74,16 +74,28 @@ double BarkBeetleScript::generations(int ix, int iy)
 void BarkBeetleScript::reloadSettings()
 {
     mBeetle->loadParameters();
+    mBeetle->loadAllVegetation();
 }
 
 void BarkBeetleScript::runBB(int iteration)
 {
     qDebug() << "running bark beetle module....";
     mBeetle->run(iteration);
+    GlobalSettings::instance()->outputManager()->save(); // just make sure database outputs are properly written
 }
 
 void BarkBeetleScript::clear()
 {
     qDebug() << "clear bark beetle module....";
     mBeetle->clearGrids();
+}
+
+bool BarkBeetleScript::simulate()
+{
+    return mBeetle->simulate();
+}
+
+void BarkBeetleScript::setSimulate(bool do_simulate)
+{
+    mBeetle->setSimulate(do_simulate);
 }

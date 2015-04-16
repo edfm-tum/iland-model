@@ -12,18 +12,19 @@ class BarkBeetleCell
 {
 public:
     BarkBeetleCell() { reset(); }
-    void clear() { n=0; killed=0; infested=false;  p_colonize=0.f; }
+    void clear() { n=0; killedYear=0; infested=false;  p_colonize=0.f; }
     void reset() {clear(); dbh=0.f; tree_stress=0.f; }
     bool isHost() const { return dbh>0.f; }
-    bool isPotentialHost() const {return dbh>0.f && killed==0 && infested==false; }
-    void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killed=0; n=0;} }
-    void finishedSpread(int iteration) { infested=false; killed=iteration; }
+    bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
+    void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killedYear=0; n=0;} }
+    void finishedSpread(int iteration) { infested=false; killedYear=iteration; killed=true; }
     bool infested;
+    bool killed;
     float dbh; // the dbh of the biggest spruce on the pixel
     float tree_stress; // the stress rating of this tree
     float p_colonize; // the highest probability (0..1) that a pixel is killed
     int n; // number of cohorts that landed on the pixel
-    int killed; // year at which pixel was killed ??
+    int killedYear; // year at which pixel was killed ??
     static void resetCounters() { total_infested=0; }
     static int total_infested;
 
@@ -31,12 +32,13 @@ public:
 class BarkBeetleRUCell
 {
 public:
-    BarkBeetleRUCell(): generations(0.), scanned(false), add_sister(false), cold_days(0), cold_days_late(0) {}
+    BarkBeetleRUCell(): generations(0.), scanned(false), add_sister(false), cold_days(0), cold_days_late(0), killed_trees(false) {}
     bool scanned;
     double generations;
     bool add_sister;
     int cold_days; // number of days in the winter season with t_min below a given threshold (-15 degree Celsius)
     int cold_days_late;
+    bool killed_trees;
 };
 
 /** Helper class manage and visualize data layers related to the barkbeetle module.
@@ -79,16 +81,21 @@ public:
     void setup(const ResourceUnit *ru); ///< setup for a specific resource unit
     void loadParameters(); ///< load params from XML
     void clearGrids(); ///< reset the state of the internal grids (used for javascript based tests)
+    void loadAllVegetation(); ///< scan the state of the vegetation of the full landscape
 
     /// main function to execute the bark beetle module
     void run(int iteration=0);
 
     void yearBegin();
+    // properties
+    void setSimulate(bool do_simulate) { mSimulate = do_simulate; }
+    bool simulate() const {return mSimulate; }
 private:
-    void calculateGenerations();
+    void calculateGenerations(); ///< calculate on Resource Unit level the number of potential generations
     void startSpread(); ///< beginning of a calculation
     void barkbeetleSpread(); ///< main function of bark beetle spread
-    void scanResourceUnitTrees(const QPoint &position);
+    void barkbeetleKill(); ///< kill the trees on pixels marked as killed
+    void scanResourceUnitTrees(const QPointF &position); ///< load tree data of the resource unit 'position' (metric) lies inside
     int mIteration;
     QString mAfterExecEvent;
     struct SBBParams {
@@ -102,19 +109,21 @@ private:
         double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
     } params;
     struct SBBStats {
-        void clear() { infestedStart=0;infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;}
+        void clear() { infestedStart=0;infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NTreesKilled=0;BasalAreaKilled=0.;}
         int infestedStart; // # of pixels that are infested at the beginning of an iteration
         int infestedBackground; // # of pixels that are getting active
         int maxGenerations; // maxium number of generations found this year
         int NCohortsLanded; // number of cohorts that landed on new potential host pixels
         int NPixelsLanded; // number of potential host pixels that received at least one cohort
         int NCohortsSpread; // number of pixels that are spread from infested cells
-        int NInfested; // number of newly infested pixels (those of the 'landed'
+        int NInfested; // number of newly infested pixels (a subset of those who 'landed')
         int NWinterMortality; // number of (infested) pixels that died off during winter
+        int NTreesKilled; // number of spruce trees killed
+        double BasalAreaKilled; // sum of basal area of killed trees
     } stats;
 
 
-
+    bool mSimulate; ///< true if bark beetle are only simulated, i.e. no trees get killed
     BBGenerations mGenerations;
     RandomCustomPDF mKernelPDF;
     Expression mColonizeProbability;

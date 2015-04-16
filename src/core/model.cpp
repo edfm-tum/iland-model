@@ -597,11 +597,15 @@ void Model::beforeRun()
 
     // load climate
     {
-    if (logLevelDebug()) qDebug() << "attempting to load climate..." ;
-    DebugTimer loadclim("load climate");
-    foreach(Climate *c, mClimates)
-        if (!c->isSetup())
-            c->setup();
+        if (logLevelDebug()) qDebug() << "attempting to load climate..." ;
+        DebugTimer loadclim("load climate");
+        foreach(Climate *c, mClimates) {
+            if (!c->isSetup())
+                c->setup();
+        }
+        // load the first year of the climate database
+        foreach(Climate *c, mClimates)
+            c->nextYear();
 
     }
 
@@ -634,6 +638,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
 
     GlobalSettings::instance()->setCurrentYear(1); // set to first year
+
 }
 
 /** Main model runner.
@@ -660,9 +665,11 @@ void Model::runYear()
     if (mTimeEvents)
         mTimeEvents->run();
 
-    // load the next year of the climate database
-    foreach(Climate *c, mClimates)
-        c->nextYear();
+    // load the next year of the climate database (except for the first year - the first climate year is loaded immediately
+    if (GlobalSettings::instance()->currentYear()>1) {
+        foreach(Climate *c, mClimates)
+            c->nextYear();
+    }
 
     // reset statistics
     foreach(ResourceUnit *ru, mRU)
