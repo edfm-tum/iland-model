@@ -10,6 +10,8 @@ class BarkBeetleScript : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QJSValue onClick READ onClick WRITE setOnClick)
+    Q_PROPERTY(bool simulate READ simulate WRITE setSimulate)
+
 public:
     explicit BarkBeetleScript(QObject *parent = 0);
     void setBBModule(BarkBeetleModule *module) { mBeetle = module; }
@@ -33,9 +35,14 @@ public slots:
     void runBB(int iteration); ///< run a full cycle of the bark beetle module
     void clear(); ///< reset the barkbeetle module (clear damage and spread data - makes only sense if in simulation mode)
 
+    // properties
+    bool simulate();
+    void setSimulate(bool do_simulate);
+
 
 
 private:
+
     QJSValue mOnClick;
     BarkBeetleModule *mBeetle;
 

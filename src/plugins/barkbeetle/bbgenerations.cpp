@@ -74,7 +74,7 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
     double filial_generations = 0.;
     double sister_generations = 0.;
     // accumulate possible number of offspring
-    const double offspring_factor = 25.; // assuming sex-ratio of 1:1 and 50 offspring per female (sse p. 59)
+    const double offspring_factor = 25.; // assuming sex-ratio of 1:1 and 50 offspring per female (see p. 59)
     int n=0;
     int total_offspring = 0;
     for (i=0;i<mGenerations.count();++i) {
@@ -96,7 +96,7 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
 
 /**
  * Calculate the bark temperatures for this year and a given resource unit.
- * Input: climate data (tmax (C), tmean (C), radiation (MJ/m2)
+ * Input: climate data (tmax (C), tmean (C), radiation (MJ/m2))
  * the LAI to estimate the radiation on the ground (Wh/m2)
  * Output: calculates for each day of the year the "effective" bark-temperature and saves a cumulative sum
  * Source: Schopf et al 2004: Risikoabschaetzung von Borkenkaefermassenkalamitaeten im Nationalpark Kalkalpen

@@ -66,6 +66,11 @@ ResourceUnit::ResourceUnit(const int index)
     mPixelCount=0;
     mStockedArea = 0;
     mStockedPixelCount = 0;
+    mAggregatedWLA = 0.;
+    mAggregatedLA = 0.;
+    mAggregatedLR = 0.;
+    mEffectiveArea = 0.;
+    mLRI_modification = 0.;
     mIndex = index;
     mSaplingHeightMap = 0;
     mEffectiveArea_perWLA = 0.;
