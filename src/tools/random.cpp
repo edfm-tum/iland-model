@@ -225,7 +225,7 @@ void RandomCustomPDF::setup(const QString &funcExpr,
         // areaval: numerische integration zwischen x1 und x2
         areaval = (p1 + p2)/2 * mDeltaX;
         if (isSumFunc)
-            areaval=areaval - p1*mDeltaX; // summenwahrscheinlichkeit: nur das Delta zählt.
+            areaval=areaval - p1*mDeltaX; // summenwahrscheinlichkeit: nur das Delta zaehlt.
         // tsetWeightghted operiert mit integers -> umrechnung: * huge_val
         mRandomIndex.setWeight(i, int(areaval*BIGINTVAL));
     }
