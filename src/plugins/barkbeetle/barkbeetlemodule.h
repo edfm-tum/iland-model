@@ -24,7 +24,7 @@ public:
     float tree_stress; // the stress rating of this tree
     float p_colonize; // the highest probability (0..1) that a pixel is killed
     int n; // number of cohorts that landed on the pixel
-    int killedYear; // year at which pixel was killed ??
+    int killedYear; // year (iteration) at which pixel was killed ??
     static void resetCounters() { total_infested=0; }
     static int total_infested;
 
