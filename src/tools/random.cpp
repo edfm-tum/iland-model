@@ -165,8 +165,11 @@ void RandomWeighted::updateValues()
     int i;
     mMaxVal=0;
     for (i=0;i<mSize;i++) {
-        if (mGrid[i]!=0)
+        if (mGrid[i]!=0) {
             mMaxVal+=mGrid[i];
+            if (mMaxVal < 0)
+                throw IException("Error: RandomWeighted::updateValues: integer overflow.");
+        }
         mGrid[i]=mMaxVal;
     }
     mUpdated=true;
