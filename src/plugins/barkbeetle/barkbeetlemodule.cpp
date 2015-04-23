@@ -122,10 +122,8 @@ void BarkBeetleModule::run(int iteration)
     // the spread of beetles (and attacking of trees)
     barkbeetleSpread();
 
-    // write back to the real iLand structure: TODO
-    if (!mSimulate) {
-        barkbeetleKill();
-    }
+    // write back to the real iLand structure
+    barkbeetleKill();
 
     // create some outputs....
     qDebug() << "iter/background-inf/winter-mort/N spread/N landed/N infested: " << mIteration << stats.infestedBackground << stats.NWinterMortality << stats.NCohortsSpread << stats.NCohortsLanded << stats.NInfested;
@@ -346,9 +344,10 @@ void BarkBeetleModule::barkbeetleKill()
                         Tree *tree = const_cast<Tree*>(&(*t));
                         n_killed++;
                         basal_area+=tree->basalArea();
-                        tree->removeDisturbance(0., 1., // 0% of the stem to soil, 100% to snag (keeps standing)
-                                                1., 0.,   // 100% of branches to soil
-                                                1.);      // 100% of foliage to soil
+                        if (!mSimulate) // remove tree only if not in simulation mode
+                            tree->removeDisturbance(0., 1., // 0% of the stem to soil, 100% to snag (keeps standing)
+                                                    0., 1.,   // 100% of branches to snags
+                                                    0.);      // 100% of foliage to snags (will be dropped from there anyways)
 
                     }
                 }

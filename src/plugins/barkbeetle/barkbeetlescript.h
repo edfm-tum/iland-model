@@ -17,6 +17,9 @@ public:
     void setBBModule(BarkBeetleModule *module) { mBeetle = module; }
     QJSValue onClick() const { return mOnClick; }
     void setOnClick(QJSValue handler) { mOnClick = handler; }
+    // properties
+    bool simulate();
+    void setSimulate(bool do_simulate);
 signals:
 
 public slots:
@@ -35,9 +38,6 @@ public slots:
     void runBB(int iteration); ///< run a full cycle of the bark beetle module
     void clear(); ///< reset the barkbeetle module (clear damage and spread data - makes only sense if in simulation mode)
 
-    // properties
-    bool simulate();
-    void setSimulate(bool do_simulate);
 
 
 
