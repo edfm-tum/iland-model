@@ -32,7 +32,7 @@ public:
 class BarkBeetleRUCell
 {
 public:
-    BarkBeetleRUCell(): generations(0.), scanned(false), add_sister(false), cold_days(0), cold_days_late(0), killed_trees(false) {}
+    BarkBeetleRUCell(): scanned(false), generations(0.), add_sister(false), cold_days(0), cold_days_late(0), killed_trees(false) {}
     bool scanned;
     double generations;
     bool add_sister;
