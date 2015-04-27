@@ -35,25 +35,42 @@ PRE_TARGETDEPS += ../plugins/iland_windd.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
 }
-*gcc*: {
-# debug GCC
+win32:*gcc*: {
+# debug GCC, windows
 PRE_TARGETDEPS += ../plugins/libiland_fired.a
 PRE_TARGETDEPS += ../plugins/libiland_windd.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetled.a
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
+}
+linux-g++: {
+ ## debug on linux
+message("linux g++ debug")
+PRE_TARGETDEPS += ../plugins/libiland_fire.a
+PRE_TARGETDEPS += ../plugins/libiland_wind.a
+PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
+LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 }
 }
 
 ## win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{ ... } nur 64bit
 
 CONFIG(release, debug|release) {
-# release gcc
-*gcc*: {
+# release gcc, windows
+win32:*gcc*: {
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 }
+linux-g++: {
+ ## release on linux
+message("linux g++ release")
+PRE_TARGETDEPS += ../plugins/libiland_fire.a
+PRE_TARGETDEPS += ../plugins/libiland_wind.a
+PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
+LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+}
+
 win32-msvc*:{
 #release msvc
 PRE_TARGETDEPS += ../plugins/iland_fire.lib
