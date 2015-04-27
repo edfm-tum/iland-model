@@ -374,7 +374,7 @@ void Climate::climateCalculations(const ClimateDay &lastDay)
         c->temp_delayed = c->temperature;
     c++;
     while (c->isValid()) {
-        // first order dynamic delayed model (Mäkela 2008)
+        // first order dynamic delayed model (Maekela 2008)
         c->temp_delayed=(c-1)->temp_delayed + 1./tau * (c->temperature - (c-1)->temp_delayed);
         ++c;
     }
