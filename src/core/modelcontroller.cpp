@@ -251,6 +251,8 @@ bool ModelController::internalRun()
     } catch (IException &e) {
 #ifdef ILAND_GUI
         Helper::msg(e.message());
+#else
+        qDebug() << e.message();
 #endif
 
     }
