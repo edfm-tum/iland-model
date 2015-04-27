@@ -269,6 +269,7 @@ void SpatialLayeredGrid::setup()
 
 void SpatialLayeredGrid::createGrid(const int grid_index)
 {
+    Q_UNUSED(grid_index); // TODO: what should happen here?
 }
 
 
