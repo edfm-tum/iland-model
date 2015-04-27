@@ -106,7 +106,7 @@ void Establishment::calculate()
     mPAbiotic = 0.;
     mNumberEstablished = 0;
     mPxDensity = 0.;
-    mTACA_chill=mTACA_frostfree=mTACA_gdd=mTACA_gdd=mTACA_min_temp=false;
+    mTACA_min_temp=mTACA_chill=mTACA_gdd=mTACA_frostfree=false;
     mTACA_frostAfterBuds=0;
     mSumLIFvalue = 0.;
     mLIFcount = 0;

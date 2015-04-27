@@ -103,7 +103,7 @@ void FMUnit::managementPlanUpdate()
     double plan_thinning, plan_final;
     mScheduler->plannedHarvests(plan_final, plan_thinning);
     // the actual harvests of the last planning period
-    double realized = mRealizedHarvest;
+    //double realized = mRealizedHarvest;
 
     mRealizedHarvest = 0.; // reset
     mRealizedHarvestLastYear = 0.;

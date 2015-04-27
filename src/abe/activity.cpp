@@ -222,7 +222,7 @@ QString Events::run(const QString event, FMStand *stand)
             DebugTimer t("ABE:JSEvents:run");
 
             result = func.callWithInstance(mInstance);
-            if (FMSTP::verbose() || stand && stand->trace())
+            if (FMSTP::verbose() || (stand && stand->trace()))
                 qCDebug(abe) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
         }
 

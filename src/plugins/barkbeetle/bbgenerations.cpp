@@ -46,7 +46,7 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
         int doy = bb.start_day;
         double base_temp = mEffectiveBarkTemp[doy];
 
-        double t_sum;
+        double t_sum=0.;
         bool added_sister_brood = false;
         while (c < last_day) {
             t_sum = (mEffectiveBarkTemp[doy]-base_temp) / 557.;

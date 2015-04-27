@@ -58,7 +58,7 @@ void MapGridRULock::lock(const int id, QList<ResourceUnit *> &elements)
         ok = true;
         mLock.lock();
         for (int i=0;i<elements.size();++i)
-            if (mLockedElements.contains(elements[i]))
+            if (mLockedElements.contains(elements[i])) {
                 if (mLockedElements[elements[i]] != id){
                     qDebug() << "MapGridRULock: must wait (" << QThread::currentThread() << id << "). stand with lock: " << mLockedElements[elements[i]] << ".Lock list length" << mLockedElements.size();
 
@@ -71,6 +71,7 @@ void MapGridRULock::lock(const int id, QList<ResourceUnit *> &elements)
                     mLock.unlock();
                     return;
                 }
+            }
         mLock.unlock();
     } while (!ok);
 

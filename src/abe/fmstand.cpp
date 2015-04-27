@@ -301,7 +301,7 @@ bool FMStand::executeActivity(Activity *act)
     int old_activity_index = mCurrentIndex;
 
     int new_index = stp()->activityIndex(act);
-    bool result;
+    bool result=false;
     if (new_index>-1) {
         mCurrentIndex = new_index;
         int old_years = mYearsToWait;

@@ -87,6 +87,7 @@ void AgentType::addAgentUpdate(const AgentUpdate &update, FMUnit *unit)
     case AgentUpdate::UpdateU: unit->setU( update.value().toInt() ); break;
     case AgentUpdate::UpdateThinning: unit->setThinningIntensity(update.value().toInt()); break;
     case AgentUpdate::UpdateSpecies: break;
+    default: break;
     }
 
     if (update.age()==-1)
@@ -160,6 +161,7 @@ bool AgentType::agentUpdateForStand(FMStand *stand, QString after_activity, int 
                 stand->stp()->evaluateDynamicExpressions(stand);
                 break;
             }
+            default: break; // TODO: UpdateSpecies???
 
             }
         }
@@ -207,6 +209,7 @@ QString AgentUpdate::dump()
     case UpdateU:   line= QString("AgentUpdate: update U to '%1'.").arg(mValue); break;
     case UpdateThinning:   line= QString("AgentUpdate: update thinning interval to '%1'.").arg(mValue); break;
     case UpdateSpecies:   line= QString("AgentUpdate: update species composition to '%1'.").arg(mValue); break;
+    default: break;
     }
     if (!mAfterActivity.isEmpty())
         return line + QString("Update after activity '%1'.").arg(mAfterActivity);

@@ -484,6 +484,8 @@ void ModelController::saveScreenshot(QString file_name)
         return;
     QImage img = mViewerWindow->screenshot();
     img.save(file_name);
+#else
+    Q_UNUSED(file_name);
 #endif
 }
 
