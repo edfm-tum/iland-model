@@ -1051,7 +1051,7 @@ void MainWindow::mouseClick(const QPoint& pos)
             //qDebug() <<p->dump();
             showTreeDetails(p);
 
-            ui->treeChange->setProperty("tree", (int)p);
+            ui->treeChange->setProperty("tree", qVariantFromValue((void*)p));
             ui->treeDbh->setValue(p->dbh());
             ui->treeHeight->setValue(p->height());
             ui->treePosX->setValue(p->position().x());
