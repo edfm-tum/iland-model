@@ -33,18 +33,18 @@ PRE_TARGETDEPS += ../plugins/iland_windd.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
 }
-unix {
-PRE_TARGETDEPS += ../plugins/libiland_fire.a
-PRE_TARGETDEPS += ../plugins/libiland_wind.a
-PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
-LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+*gcc*: {
+PRE_TARGETDEPS += ../plugins/libiland_fired.a
+PRE_TARGETDEPS += ../plugins/libiland_windd.a
+PRE_TARGETDEPS += ../plugins/libiland_barkbeetled.a
+LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
 }
 
 }
 
 
 CONFIG(release, debug|release) {
-unix {
+*gcc*: {
 # release stuff
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a

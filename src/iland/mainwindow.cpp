@@ -876,6 +876,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     case PaintObject::PaintNothing:
         mRulerColors->setCaption("-");
         return;
+    default: return;
     }
 
 

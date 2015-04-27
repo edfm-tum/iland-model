@@ -78,6 +78,7 @@ bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid)
 //}
 
 bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid) {
+    Q_UNUSED(fileName); Q_UNUSED(rGrid);
     return false;
 }
 #endif

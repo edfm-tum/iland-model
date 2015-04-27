@@ -194,7 +194,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMult
     Model *model = GlobalSettings::instance()->model();
     GridRunner<float> runner(model->grid(), box);
     if (!grouped) {
-        while (float *p=runner.next()) {
+        while (runner.next()) {
             if (sgrid->LIFgridValue(runner.currentIndex()) != stand->id())
                 continue;
             //

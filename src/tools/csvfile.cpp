@@ -43,6 +43,7 @@
 //Q_SCRIPT_DECLARE_QMETAOBJECT(CSVFile, QObject*)
 void CSVFile::addToScriptEngine(QJSEngine &engine)
 {
+    Q_UNUSED(engine); // remove this code?
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
     //QJSValue cc_class = engine.scriptValueFromQMetaObject<CSVFile>();
 

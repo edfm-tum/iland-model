@@ -144,7 +144,7 @@ class Activity
 public:
     // life cycle
     Activity(const FMSTP *parent);
-    ~Activity();
+    virtual ~Activity();
     /// Activity factory - create activities for given 'type'
     static Activity *createActivity(const QString &type, FMSTP *stp);
 

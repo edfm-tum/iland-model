@@ -213,12 +213,13 @@ double Scheduler::plannedHarvests(double &rFinal, double &rThinning)
     rFinal = 0.; rThinning = 0.;
     int current_year = ForestManagementEngine::instance()->currentYear();
     for (QList<SchedulerItem*>::const_iterator nit = mItems.constBegin(); nit!=mItems.constEnd(); ++nit)
-        if ((*nit)->optimalYear < current_year + 10)
+        if ((*nit)->optimalYear < current_year + 10) {
             if ((*nit)->flags->isFinalHarvest()) {
                 rFinal += (*nit)->harvest; // scheduled harvest in m3
             } else {
                 rThinning += (*nit)->harvest;
             }
+        }
 
     return rFinal + rThinning;
 
