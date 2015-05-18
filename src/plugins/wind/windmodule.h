@@ -58,7 +58,7 @@ public:
 };
 
 /** Helper class manage and visualize data layers related to fire.
-  @ingroup firemodule
+  @ingroup windmodule
 */
 class WindLayers: public LayeredGrid<WindCell> {
   public:

@@ -35,7 +35,7 @@ public:
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
     void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killedYear=0; n=0;} }
-    void finishedSpread(int iteration) { infested=false; killedYear=iteration; killed=true; }
+    void finishedSpread(int iteration) { infested=false; killedYear=iteration; killed=true; max_iteration=qMax(max_iteration, iteration); }
     bool infested;
     bool killed;
     float dbh; // the dbh of the biggest spruce on the pixel
@@ -43,8 +43,9 @@ public:
     float p_colonize; // the highest probability (0..1) that a pixel is killed
     int n; // number of cohorts that landed on the pixel
     int killedYear; // year (iteration) at which pixel was killed ??
-    static void resetCounters() { total_infested=0; }
+    static void resetCounters() { total_infested=0; max_iteration=0; }
     static int total_infested;
+    static int max_iteration;
 
 };
 class BarkBeetleRUCell

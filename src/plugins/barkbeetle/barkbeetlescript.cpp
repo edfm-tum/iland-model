@@ -21,6 +21,7 @@
 
 #include "barkbeetlemodule.h"
 #include "outputmanager.h"
+#include "helper.h"
 
 
 BarkBeetleScript::BarkBeetleScript(QObject *)
@@ -107,6 +108,28 @@ void BarkBeetleScript::clear()
 {
     qDebug() << "clear bark beetle module....";
     mBeetle->clearGrids();
+}
+
+bool BarkBeetleScript::gridToFile(QString type, QString filename)
+{
+    if (!GlobalSettings::instance()->model())
+        return false;
+    QString result;
+    result = gridToESRIRaster(mBeetle->mLayers, type); // use a specific value function (see above)
+
+    if (result.isEmpty()) {
+        result = gridToESRIRaster(mBeetle->mRULayers, type); // try RU-level indicators
+    }
+
+    if (!result.isEmpty()) {
+        filename = GlobalSettings::instance()->path(filename);
+        Helper::saveToTextFile(filename, result);
+        qDebug() << "saved grid to " << filename;
+        return true;
+    }
+    qDebug() << "could not save gridToFile because" << type << "is not a valid grid.";
+    return false;
+
 }
 
 bool BarkBeetleScript::simulate()
