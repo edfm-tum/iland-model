@@ -13,7 +13,9 @@ Rectangle {
         anchors.margins: 10
         spacing: 10
 
+
         ColumnLayout{
+            Layout.fillWidth: true
 
             Text {
                 id: rulerCaption
@@ -23,9 +25,12 @@ Rectangle {
             Text {
                 id: rulerDesc
                 text: rulercolors.description
+                wrapMode: Text.WordWrap
                 width: 100
                 anchors.top: rulerCaption.bottom
                 anchors.topMargin: 10
+                anchors.leftMargin: 10
+                anchors.rightMargin: 10
 
             }
             Rectangle { height: 10}
