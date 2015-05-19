@@ -141,3 +141,13 @@ void BarkBeetleScript::setSimulate(bool do_simulate)
 {
     mBeetle->setSimulate(do_simulate);
 }
+
+bool BarkBeetleScript::enabled()
+{
+    return mBeetle->enabled();
+}
+
+void BarkBeetleScript::setEnabled(bool do_set_enable)
+{
+    mBeetle->setEnabled(do_set_enable);
+}

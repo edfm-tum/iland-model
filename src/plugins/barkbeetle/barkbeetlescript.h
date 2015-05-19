@@ -30,6 +30,7 @@ class BarkBeetleScript : public QObject
     Q_OBJECT
     Q_PROPERTY(QJSValue onClick READ onClick WRITE setOnClick)
     Q_PROPERTY(bool simulate READ simulate WRITE setSimulate)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
 
 public:
     explicit BarkBeetleScript(QObject *parent = 0);
@@ -39,6 +40,8 @@ public:
     // properties
     bool simulate();
     void setSimulate(bool do_simulate);
+    bool enabled();
+    void setEnabled(bool do_set_enable);
 signals:
 
 public slots:

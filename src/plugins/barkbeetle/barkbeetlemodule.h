@@ -51,13 +51,23 @@ public:
 class BarkBeetleRUCell
 {
 public:
-    BarkBeetleRUCell(): scanned(false), generations(0.), add_sister(false), cold_days(0), cold_days_late(0), killed_trees(false) {}
+    BarkBeetleRUCell(): scanned(false), generations(0.), add_sister(false),
+        cold_days(0), cold_days_late(0), killed_trees(false),
+        killed_pixels(0), host_pixels(0),
+        smoothed_damage(0.), damage_last_year(0.) {}
+    /// relative damage: fraction of host pixels that died in the current or the last year
+    double currentDamageFraction() { return host_pixels+killed_pixels>0? (killed_pixels)/double(host_pixels+killed_pixels): 0.; }
+    double damageFraction() const { return smoothed_damage; }
     bool scanned;
     double generations;
     bool add_sister;
     int cold_days; // number of days in the winter season with t_min below a given threshold (-15 degree Celsius)
     int cold_days_late;
     bool killed_trees;
+    int killed_pixels;
+    int host_pixels;
+    double smoothed_damage; // mean damage (3x3 resource units) of the current year
+    double damage_last_year; // smoothed damage of the previous year
 };
 
 /** Helper class manage and visualize data layers related to the barkbeetle module.
@@ -109,12 +119,16 @@ public:
     // properties
     void setSimulate(bool do_simulate) { mSimulate = do_simulate; }
     bool simulate() const {return mSimulate; }
+
+    void setEnabled(bool do_set_enabled) { mEnabled = do_set_enabled; }
+    bool enabled() const { return mEnabled; }
 private:
     void calculateGenerations(); ///< calculate on Resource Unit level the number of potential generations
     void startSpread(); ///< beginning of a calculation
     void barkbeetleSpread(); ///< main function of bark beetle spread
     void barkbeetleKill(); ///< kill the trees on pixels marked as killed
     void scanResourceUnitTrees(const QPointF &position); ///< load tree data of the resource unit 'position' (metric) lies inside
+    void calculateMeanDamage(); ///< calculate the mean damage percentage (fraction of killed pixels to host pixels)
     int mIteration;
     QString mAfterExecEvent;
     struct SBBParams {
@@ -143,9 +157,11 @@ private:
 
 
     bool mSimulate; ///< true if bark beetle are only simulated, i.e. no trees get killed
+    bool mEnabled; ///< if false, no bark beetles are simulates
     BBGenerations mGenerations;
     RandomCustomPDF mKernelPDF;
-    Expression mColonizeProbability;
+    Expression mColonizeProbability; ///< function that calculates probability of infestation for one landed beetle package given the trees' stress level
+    Expression mAntagonistFormula; ///< antagonist effect: if many beetles are around, more of them are killed by antagonists; fraction of killed beetles = f(damage_fraction)
     Expression mWinterMortalityFormula; ///< temperature dependent winter mortality (more beetle die if there are more cold days)
     Grid<BarkBeetleCell> mGrid;
     Grid<BarkBeetleRUCell> mRUGrid;
