@@ -241,7 +241,7 @@ void BarkBeetleModule::calculateMeanDamage()
                     sum_host+=neighbors[i]->host_pixels;
                     sum_kill+=neighbors[i]->killed_pixels;
                 }
-            runner.current()->smoothed_damage = sum_host>0. ? sum_kill/sum_host : 0.;
+            runner.current()->smoothed_damage = sum_host>0. ? sum_kill/(sum_host+sum_kill) : 0.;
         }
 
     }
