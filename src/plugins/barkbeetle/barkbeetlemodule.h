@@ -26,6 +26,41 @@
 
 #include "bbgenerations.h"
 
+class BarkBeetleAntagonist
+{
+public:
+    // lifecycle
+    BarkBeetleAntagonist() { reset(); mArea=0.; }
+    void reset() {mPopulation=1.;mBeetlePopulation=1.; }
+    void clear() { mBeetlePopulation=0.; }
+    /// add area (under control of the current antagonist) in ha
+    void addArea(double area) { mArea+=area; }
+    static void setup(); // global parameters (static)
+    /// size of the antagonist-cell (m)
+    static int cellsize() { return mSize; }
+
+    /// current population of antagonists
+    double population() const { return mPopulation; }
+    /// the fraction of prey (bark beetles) that is eaten up by antagonists
+    double feedFraction() const { return mPopulation * mRfeeding; }
+
+    /// updates the internal beetle population counter
+    void addDamage(int infested_cells) { mBeetlePopulation += infested_cells / 100. / mArea; /* /100: 1cell=0.01ha*/ }
+
+    /// antagonist activity: returns the
+    double calculate();
+private:
+    double mPopulation; ///< current antagonist population (per ha)
+    double mBeetlePopulation; ///< size of the beetle population (ha)
+    double mArea; ///< size of the area covered by this antagonist (ha)
+
+    // Lotka-Volterra constants
+    static double mRmortality; ///< mortality rate
+    static double mRreproduction; ///< reproduction rate (reproduction / prey)
+    static double mRfeeding; ///< feeding rate (feed / prey)
+    static int mSize; ///< extent of the BBA-Cell im meters (must be multiple of 100)
+};
+
 class BarkBeetleCell
 {
 public:
@@ -54,7 +89,7 @@ public:
     BarkBeetleRUCell(): scanned(false), generations(0.), add_sister(false),
         cold_days(0), cold_days_late(0), killed_trees(false),
         killed_pixels(0), host_pixels(0),
-        smoothed_damage(0.), damage_last_year(0.) {}
+        smoothed_damage(0.), damage_last_year(0.), antagonist(0) {}
     /// relative damage: fraction of host pixels that died in the current or the last year
     double currentDamageFraction() { return host_pixels+killed_pixels>0? (killed_pixels)/double(host_pixels+killed_pixels): 0.; }
     double damageFraction() const { return smoothed_damage; }
@@ -68,6 +103,8 @@ public:
     int host_pixels;
     double smoothed_damage; // mean damage (3x3 resource units) of the current year
     double damage_last_year; // smoothed damage of the previous year
+    BarkBeetleAntagonist *antagonist; // link to the antagonist population
+
 };
 
 /** Helper class manage and visualize data layers related to the barkbeetle module.
@@ -104,6 +141,7 @@ class BarkBeetleModule
 {
 public:
     BarkBeetleModule();
+    ~BarkBeetleModule();
     static double cellsize() { return 10.; }
 
     void setup(); ///< general setup
@@ -167,6 +205,7 @@ private:
     Grid<BarkBeetleRUCell> mRUGrid;
     BarkBeetleLayers mLayers;
     BarkBeetleRULayers mRULayers;
+    QVector<BarkBeetleAntagonist*> mAntagonists; ///< the antagonist populations
 
     friend class BarkBeetleScript;
     friend class BarkBeetleOut;
