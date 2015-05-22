@@ -94,7 +94,6 @@ double BarkBeetleScript::generations(int ix, int iy)
 void BarkBeetleScript::reloadSettings()
 {
     mBeetle->loadParameters();
-    mBeetle->loadAllVegetation();
 }
 
 void BarkBeetleScript::runBB(int iteration)
@@ -108,6 +107,8 @@ void BarkBeetleScript::clear()
 {
     qDebug() << "clear bark beetle module....";
     mBeetle->clearGrids();
+    mBeetle->loadParameters();
+    mBeetle->loadAllVegetation();
 }
 
 bool BarkBeetleScript::gridToFile(QString type, QString filename)

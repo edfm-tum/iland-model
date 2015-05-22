@@ -105,7 +105,8 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
         if (mGenerations[i].value>0.6 && !mGenerations[i].is_sister_brood) filial_generations+=mGenerations[i].value;
 
     }
-    qDebug() << "rid" <<ru->id() << "filial/sister:" << filial_generations << sister_generations << "offspring:" << total_offspring << "started generations:" << n;
+    if (logLevelDebug())
+        qDebug() << "rid" <<ru->id() << "filial/sister:" << filial_generations << sister_generations << "offspring:" << total_offspring << "started generations:" << n;
     mNSisterBroods = sister_generations;
     mNFilialBroods = filial_generations;
 
