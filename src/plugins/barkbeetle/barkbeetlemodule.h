@@ -42,21 +42,21 @@ public:
     /// current population of antagonists
     double population() const { return mPopulation; }
     /// the fraction of prey (bark beetles) that is eaten up by antagonists
-    double feedFraction() const { return mPopulation * mRfeeding; }
+    double feedFraction() const { return qMin(mPopulation * mRfeeding, 1.); }
 
     /// updates the internal beetle population counter
-    void addDamage(int infested_cells) { mBeetlePopulation += infested_cells / 100. / mArea; /* /100: 1cell=0.01ha*/ }
+    void addDamage(int infested_cells) { mBeetlePopulation += infested_cells / mArea;  }
 
     /// antagonist activity: returns the
     double calculate();
 private:
-    double mPopulation; ///< current antagonist population (per ha)
-    double mBeetlePopulation; ///< size of the beetle population (ha)
+    double mPopulation; ///< current antagonist population (px per ha)
+    double mBeetlePopulation; ///< size of the beetle population (px per ha)
     double mArea; ///< size of the area covered by this antagonist (ha)
 
     // Lotka-Volterra constants
     static double mRmortality; ///< mortality rate
-    static double mRreproduction; ///< reproduction rate (reproduction / prey)
+    static double mRreproduction; ///< reproduction rate of the antagonist (reproduction / prey)
     static double mRfeeding; ///< feeding rate (feed / prey)
     static int mSize; ///< extent of the BBA-Cell im meters (must be multiple of 100)
 };

@@ -148,6 +148,19 @@ QColor Colors::colorFromValue(const float value, const GridViewType view_type, c
     if (view_type==GridViewRainbow || view_type==GridViewRainbowReverse)
         return colorFromValue(value, min_value, max_value, view_type==GridViewRainbowReverse, false);
 
+    if (view_type == GridViewGreens || view_type==GridViewBlues || view_type==GridViewReds) {
+        float rval = value;
+        rval = std::max(min_value, rval);
+        rval = std::min(max_value, rval);
+        float rel_value = (max_value!=min_value)?(rval - min_value) / (max_value - min_value): 0;
+        int r,g,b;
+        switch (view_type) {
+        case GridViewGreens: r=197 - rel_value*(197-11); g=197-rel_value*(197-111); b=197-rel_value*(197-19); break;
+        default: r=g=b=0;
+        }
+        return QColor(r,g,b);
+
+    }
     if (view_type == GridViewHeat) {
         float rval = value;
         rval = std::max(min_value, rval);

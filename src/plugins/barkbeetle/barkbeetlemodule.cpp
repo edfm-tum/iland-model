@@ -121,20 +121,20 @@ void BarkBeetleModule::loadParameters()
     // set up the antagonists
     qDeleteAll(mAntagonists); mAntagonists.clear();
     BarkBeetleAntagonist *ant=0;
-    int oldx=-1;
+    int ru_steps=BarkBeetleAntagonist::cellsize() / cRUSize;
 
-    for (BarkBeetleRUCell *cell=mRUGrid.begin();cell!=mRUGrid.end();++cell ) {
-        QPointF center = mRUGrid.cellCenterPoint(mRUGrid.indexOf(cell));
-        if (int(center.x())/BarkBeetleAntagonist::cellsize() != oldx) {
-            oldx = int(center.x())/BarkBeetleAntagonist::cellsize();
+    for (int y=0;y< mRUGrid.sizeY(); y+=ru_steps)
+        for (int x=0;x<mRUGrid.sizeX(); x+=ru_steps) {
             ant = new BarkBeetleAntagonist();
             mAntagonists.push_back(ant);
-        }
-        cell->antagonist = ant;
+            for (int dy=0;dy<ru_steps;++dy)
+                for (int dx=0;dx<ru_steps;++dx)
+                   if (GlobalSettings::instance()->model()->RUgrid().constValueAtIndex(x+dx,y+dy)) {
+                       ant->addArea(1.); // fixed size of 1ha
+                       mRUGrid.valueAtIndex(x+dx, y+dy).antagonist = ant;
+                   }
 
-        if (GlobalSettings::instance()->model()->RUgrid().constValueAt(center))
-            ant->addArea(1.); // fixed size of 1 ha
-    }
+        }
 
 
     yearBegin(); // also reset the "scanned" flags
@@ -172,6 +172,7 @@ void BarkBeetleModule::loadAllVegetation()
         qDebug() << mRUGrid.indexOf(bbru) << bbru->antagonist;
     }
 
+    // reset antagonist counters for bark beetle damage of the year
     for (int i=0;i<mAntagonists.size();++i)
         mAntagonists[i]->clear();
 
@@ -582,9 +583,9 @@ bool BarkBeetleRULayers::onClick(const QPointF &world_coord) const
 void BarkBeetleAntagonist::setup()
 {
     const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
-    mRmortality = xml.valueDouble(".antagonistMortality", 0.2);
-    mRreproduction = xml.valueDouble(".antagonistReproduction", 0.1);
-    mRfeeding = xml.valueDouble(".antagonistFeedFraction", 0.6);
+    mRmortality = xml.valueDouble(".antagonistMortality", 2);
+    mRreproduction = xml.valueDouble(".antagonistReproduction", 0.4);
+    mRfeeding = xml.valueDouble(".antagonistFeedFraction", 2.);
     mSize = xml.valueDouble(".antagonistCellsize", 1000);
 }
 
@@ -594,6 +595,6 @@ double BarkBeetleAntagonist::calculate()
     // dAntagonist/dt = -Antagonist * (mortalityRate - prey*reproduction_rate)
     double change_antagonist = -mPopulation * (mRmortality - mRreproduction * mBeetlePopulation);
     mPopulation += change_antagonist;
-    mPopulation = qMax(mPopulation, 1.);
+    mPopulation = qMax(mPopulation, 0.1);
     return mPopulation;
 }

@@ -700,9 +700,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 if (hgv.isForestOutside()) {
                     QRect r = vp.toScreen(domGrid->cellRect(p));
                     if (hgv.isRadiating())
-                        painter.fillRect(r, Qt::darkGray);
-                    else
                         painter.fillRect(r, Qt::gray);
+                    else
+                        painter.fillRect(r, Qt::lightGray);
 
                 }
             }
@@ -718,6 +718,14 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         Expression ru_value(ru_expr, &ru_wrapper);
         ru_value.setCatchExceptions(); // silent catching...
+
+        const Species *drawspecies=0;
+        GridViewType view_type = GridViewRainbow;
+        if (species_color) {
+            drawspecies = model->speciesSet()->species(species);
+            view_type = GridViewGreens;
+        }
+
         double min_value = 0.;
         double max_value = 1.; // defaults
         double value;
@@ -725,22 +733,38 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             min_value = 9999999999999999999.;
             max_value = -999999999999999999.;
             foreach (const ResourceUnit *ru, model->ruList()) {
-                ru_wrapper.setResourceUnit(ru);
-                value = ru_value.execute();
+                if (drawspecies) {
+                    value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
+                } else {
+                    ru_wrapper.setResourceUnit(ru);
+                    value = ru_value.execute();
+                }
                 min_value = qMin(min_value, value);
                 max_value = qMax(max_value, value);
             }
             qDebug() << "scale colors: min" << min_value << "max:" << max_value;
         }
-        mRulerColors->setCaption("Resource Units", QString("Result of expression: '%1'").arg(ru_expr));
-        mRulerColors->setPalette(GridViewRainbow, min_value, max_value); // ruler
+
+        if (species_color) {
+            drawspecies = model->speciesSet()->species(species);
+            mRulerColors->setCaption("Species share", QString("Species: '%1'").arg(species));
+            mRulerColors->setPalette(GridViewGreens, min_value, max_value); // ruler
+        } else {
+            mRulerColors->setCaption("Resource Units", QString("Result of expression: '%1'").arg(ru_expr));
+            mRulerColors->setPalette(GridViewRainbow, min_value, max_value); // ruler
+        }
 
         // paint resource units
         foreach (const ResourceUnit *ru, model->ruList()) {
-            ru_wrapper.setResourceUnit(ru);
+            if (drawspecies) {
+                value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
+            } else {
+                ru_wrapper.setResourceUnit(ru);
+                value = ru_value.execute();
+            }
             QRect r = vp.toScreen(ru->boundingBox());
-            value = ru_value.execute();
-            fill_color = Colors::colorFromValue(value, min_value, max_value);
+            //fill_color = Colors::colorFromValue(value, min_value, max_value);
+            fill_color = Colors::colorFromValue(value, view_type, min_value, max_value);
             painter.fillRect(r, fill_color);
         }
         if (!ru_value.lastError().isEmpty())

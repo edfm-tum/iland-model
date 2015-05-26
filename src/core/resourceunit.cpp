@@ -153,6 +153,11 @@ ResourceUnitSpecies &ResourceUnit::resourceUnitSpecies(const Species *species)
     return *mRUSpecies[species->index()];
 }
 
+const ResourceUnitSpecies *ResourceUnit::constResourceUnitSpecies(const Species *species) const
+{
+    return mRUSpecies[species->index()];
+}
+
 Tree &ResourceUnit::newTree()
 {
     // start simple: just append to the vector...
