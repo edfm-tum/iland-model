@@ -58,6 +58,8 @@ public:
     static QPlainTextEdit* logSpace() { return mLogSpace; }
     static QTextStream* logStream() { return mLogStream;}
     ~MainWindow();
+    Ui::MainWindowClass *uiclass() {return ui; }
+    Colors *ruler() { return mRulerColors; }
 public slots:
     void repaint(); ///< force a repaint of the main drawing area
     void yearSimulated(int year);
