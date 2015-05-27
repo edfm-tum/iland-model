@@ -331,9 +331,9 @@ MainWindow::MainWindow(QWidget *parent)
     mRulerColors = new Colors();
     view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
     view->setResizeMode(QQuickView::SizeRootObjectToView);
-    ui->pbReloadQml->setVisible(false); // enable for debug...
-    //view->setSource(QUrl::fromLocalFile("qml/ruler.qml"));
-    view->setSource(QUrl("qrc:/qml/ruler.qml"));
+    //ui->pbReloadQml->setVisible(false); // enable for debug...
+    view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
+    //view->setSource(QUrl("qrc:/qml/ruler.qml"));
     //view->show();
     ui->qmlRulerLayout->addWidget(container);
 //    QDir d(":/qml");
@@ -602,6 +602,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     // what to paint??
 
     float maxval=1.f; // default maximum
+    float minval=0.f;
     if (!auto_scale_color)
         maxval =grid->max();
     if (maxval==0.)
@@ -619,6 +620,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         // start from each pixel and query value in grid for the pixel
         mRulerColors->setCaption("Light Influence Field", "value of the LIF at 2m resolution.");
         mRulerColors->setPalette(GridViewRainbow,0., maxval); // ruler
+        if (!mRulerColors->autoScale()) {
+            maxval = mRulerColors->maxValue(); minval = mRulerColors->minValue();
+        }
         int x,y;
         int sizex = rect.width();
         int sizey = rect.height();
@@ -630,7 +634,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 world = vp.toWorld(QPoint(x,y));
                 if (grid->coordValid(world)) {
                     value = grid->valueAt(world);
-                    col = Colors::colorFromValue(value, 0., maxval, true).rgb();
+                    col = Colors::colorFromValue(value, minval, maxval, true).rgb();
                     img.setPixel(x,y,col);
                 }
             }
@@ -679,6 +683,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     if (show_dom) {
         // paint the lower-res-grid;
         float max_val = 50.;
+        float min_val = 0.;
         if (auto_scale_color) {
             max_val = 0.;
             for (HeightGridValue *v = domGrid->begin(); v!=domGrid->end(); ++v)
@@ -686,6 +691,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
         mRulerColors->setCaption("Dominant height (m)", "dominant tree height on 10m pixel.");
         mRulerColors->setPalette(GridViewRainbow,0., max_val); // ruler
+        if (!mRulerColors->autoScale()) {
+            max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
+        }
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
                 QPoint p(ix,iy);
@@ -702,7 +710,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     if (hgv.isRadiating())
                         painter.fillRect(r, Qt::gray);
                     else
-                        painter.fillRect(r, Qt::lightGray);
+                        painter.fillRect(r, QColor(240,240,240));
 
                 }
             }
@@ -719,6 +727,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         Expression ru_value(ru_expr, &ru_wrapper);
         ru_value.setCatchExceptions(); // silent catching...
 
+        species_color = ui->visRUSpeciesColor->isChecked();
         const Species *drawspecies=0;
         GridViewType view_type = GridViewRainbow;
         if (species_color) {
@@ -729,7 +738,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         double min_value = 0.;
         double max_value = 1.; // defaults
         double value;
-        if (auto_scale_color) {
+        if (!mRulerColors->autoScale()) {
+            max_value = mRulerColors->maxValue();
+            min_value = mRulerColors->minValue();
+
+        } else if (auto_scale_color) {
             min_value = 9999999999999999999.;
             max_value = -999999999999999999.;
             foreach (const ResourceUnit *ru, model->ruList()) {
@@ -792,6 +805,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         AllTreeIterator treelist(model);
         Tree *tree;
         painter.setPen(Qt::gray);
+        double max_val=1., min_val=0.;
+        if (!mRulerColors->autoScale()) {
+            max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
+        }
+
         while ((tree = treelist.next())) {
             if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
                 continue;
@@ -821,7 +839,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 // calculate expression
                 tw.setTree(tree);
                 value = tree_value.execute();
-                fill_color = Colors::colorFromValue(value, 0., 1., false);
+                fill_color = Colors::colorFromValue(value, min_val, max_val, false);
             }
             if (draw_transparent)
                 fill_color.setAlpha(80); // 50%
@@ -901,6 +919,10 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
         mRulerColors->setCaption("-");
         return;
     default: return;
+    }
+    if (!mRulerColors->autoScale()) {
+        object.cur_max_value = mRulerColors->maxValue();
+        object.cur_min_value = mRulerColors->minValue();
     }
 
 

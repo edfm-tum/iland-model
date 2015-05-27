@@ -33,18 +33,22 @@ public:
     int colorCount() const { return mColors.count(); }
     double minValue() const {return mMinValue; }
     double maxValue() const {return mMaxValue; }
-    void setMinValue(double val) { mMinValue = val; setPalette(mCurrentType, mMinValue, mMaxValue); }
-    void setMaxValue(double val) { mMaxValue = val; setPalette(mCurrentType, mMinValue, mMaxValue); }
+    void setMinValue(double val) { if(val==mMinValue) return;
+        mNeedsPaletteUpdate=true; setPalette(mCurrentType, val, mMaxValue); mMinValue = val; }
+    void setMaxValue(double val) { if(val==mMaxValue) return;
+        mNeedsPaletteUpdate=true; setPalette(mCurrentType, mMinValue, val); mMaxValue = val; }
     bool hasFactors() const { return mHasFactors; }
     bool autoScale() const {return mAutoScale; }
-    void setAutoScale(bool value) { mAutoScale=value; }
+    void setAutoScale(bool value) { if (value==mAutoScale) return; mAutoScale=value; mNeedsPaletteUpdate=true; setPalette(mCurrentType, mMinValue, mMaxValue);}
     QString caption() const {return mCaption; }
     QString description() const {return mDescription; }
 
     void setPalette(const GridViewType type, const float min_val, const float max_val);
     void setFactorLabels(QStringList labels);
     void setFactorColors(QStringList colors) { mColors = colors; }
-    void setCaption(QString caption, QString description=QString()) { mCaption = caption; mDescription=description;mNeedsPaletteUpdate=true; }
+    void setCaption(QString caption, QString description=QString()) {
+        if (mCaption==caption) return;
+        mCaption = caption; mDescription=description;mNeedsPaletteUpdate=true; }
 
     // scale
     double meterPerPixel() const {return mMeterPerPixel; }

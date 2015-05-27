@@ -34,6 +34,7 @@ public:
     ModelController();
     ~ModelController();
     void setMainWindow(MainWindow *mw) { mViewerWindow = mw; }
+    MainWindow *mainWindow() { return mViewerWindow; }
     void connectSignals(); // connect signal/slots to the main window if available
     Model *model() const { return mModel; }
     // bool checkers...

@@ -85,6 +85,7 @@ class ScriptGlobal : public QObject
     Q_PROPERTY(double worldY READ worldY)
     Q_PROPERTY(bool qt5 READ qt5)
     Q_PROPERTY(int msec READ msec)
+    Q_PROPERTY(QJSValue viewOptions READ viewOptions WRITE setViewOptions)
 
 
 public:
@@ -105,6 +106,16 @@ public:
     static QString executeScript(QString cmd);
     static QObject *scriptOutput; ///< public "pipe" for script output (is redirected to GUI if available)
     static QString formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode);
+
+    // view options
+    /* View options:
+     * * type: {...}
+     * * species: bool
+     * * shade: bool
+     *
+    */
+    QJSValue viewOptions(); ///< retrieve current viewing options (JS - object)
+    void setViewOptions(QJSValue opts); ///< set current view options
 
 public slots:
     // system stuff

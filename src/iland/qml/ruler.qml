@@ -51,87 +51,116 @@ Rectangle {
                 anchors.fill: parent
 
 
-                Item {
-                    id: details
-                    anchors.topMargin: 10
-                    SpinBox {
-                        id: minValueSpin
-                        decimals: 2
-                        minimumValue: -10000
-                        maximumValue: 1000000
-                        width: 80
-                        value: rulercolors.minValue
-                        onValueChanged: rulercolors.minValue = value
-                    }
-                    SpinBox {
-                        id: maxValueSpin
-                        decimals: 2
-                        width: 80
-                        minimumValue: -10000
-                        maximumValue: 1000000
-                        value: rulercolors.maxValue
-                        anchors.left: minValueSpin.right
-                        anchors.leftMargin: 10
-                        onValueChanged: rulercolors.maxValue = value
-                    }
-                }
+                ColumnLayout {
+                    id: rulerDetailsLayout
 
-                Column {
-                    id: colorRamp
-                    anchors.topMargin: 40
-                    anchors.top: details.bottom
+                    CheckBox {
+                        id: showRulerDetails
+                        text: "Show details"
+                    }
 
-                    Repeater {
-                        //model: ["yellow", "red", "green", "darkgrey", "blue","yellow", "red", "green", "darkgrey", "blue", "darkgrey", "blue"]
-                        model: rulercolors.colors
-                        Rectangle {
-                            width: 60; height: 150 / rulercolors.count
-                            color: modelData
+                    GroupBox {
+                        id: details
+                        flat: true
+                        visible: showRulerDetails.checked
+                        anchors.top: showRulerDetails.bottom
+                        height: visible?50:0
+
+                        anchors.topMargin: 10
+                        SpinBox {
+                            id: minValueSpin
+                            enabled: !rangeAuto.checked
+                            decimals: 2
+                            minimumValue: -10000
+                            maximumValue: 1000000
+                            width: 80
+                            value: rulercolors.minValue
+                            onValueChanged: rulercolors.minValue = value
+                        }
+                        SpinBox {
+                            id: maxValueSpin
+                            enabled: !rangeAuto.checked
+                            decimals: 2
+                            width: 80
+                            minimumValue: -10000
+                            maximumValue: 1000000
+                            value: rulercolors.maxValue
+                            anchors.left: minValueSpin.right
+                            anchors.leftMargin: 10
+                            onValueChanged: rulercolors.maxValue = value
+                        }
+                        CheckBox {
+                            id: rangeAuto
+                            anchors.left: maxValueSpin.right
+                            anchors.leftMargin: 5
+                            text: "Auto"
+                            checked: rulercolors.autoScale
+                            onClicked: rulercolors.autoScale=rangeAuto.checked
                         }
                     }
-                }
-                Text {
-                    id: maxValue
-                    text: rulercolors.labels[4]
-                    anchors.left: colorRamp.right
-                    anchors.top: colorRamp.top
-                    anchors.topMargin: -height/2
-                    anchors.leftMargin: 5
-                }
-                Text {
-                    id: upperQuartileValue
-                    text: rulercolors.labels[3]
-                    anchors.left: colorRamp.right
-                    anchors.top:  colorRamp.top
-                    anchors.topMargin: colorRamp.height/4 - height/2
-                    anchors.leftMargin: 5
-                    visible: colorRamp.height>100
-                }
-                Text {
-                    id: centerValue
-                    text: rulercolors.labels[2]
-                    anchors.left: colorRamp.right
-                    anchors.verticalCenter:  colorRamp.verticalCenter
-                    anchors.topMargin: height/2
-                    anchors.leftMargin: 5
-                }
-                Text {
-                    id: lowerQuartileValue
-                    text: rulercolors.labels[1]
-                    anchors.left: colorRamp.right
-                    anchors.top:  colorRamp.top
-                    anchors.topMargin: colorRamp.height*3/4 - height/2
-                    anchors.leftMargin: 5
-                    visible: colorRamp.height>100
-                }
-                Text {
-                    id: minValue
-                    text: rulercolors.labels[0]
-                    anchors.left: colorRamp.right
-                    anchors.bottom: colorRamp.bottom
-                    anchors.topMargin: height/2
-                    anchors.leftMargin: 5
-                }
+                    GroupBox {
+                        anchors.top: details.bottom
+                        anchors.topMargin: 10
+                        flat: true
+                        Column {
+                            id: colorRamp
+                            anchors.topMargin: 10
+
+
+                            Repeater {
+                                //model: ["yellow", "red", "green", "darkgrey", "blue","yellow", "red", "green", "darkgrey", "blue", "darkgrey", "blue"]
+                                model: rulercolors.colors
+                                Rectangle {
+                                    width: 60; height: 150 / rulercolors.count
+                                    color: modelData
+                                }
+                            }
+                        }
+                        Text {
+                            id: maxValue
+                            text: rulercolors.labels[4]
+                            anchors.left: colorRamp.right
+                            anchors.top: colorRamp.top
+                            anchors.topMargin: -height/2
+                            anchors.leftMargin: 5
+                        }
+                        Text {
+                            id: upperQuartileValue
+                            text: rulercolors.labels[3]
+                            anchors.left: colorRamp.right
+                            anchors.top:  colorRamp.top
+                            anchors.topMargin: colorRamp.height/4 - height/2
+                            anchors.leftMargin: 5
+                            visible: colorRamp.height>100
+                        }
+                        Text {
+                            id: centerValue
+                            text: rulercolors.labels[2]
+                            anchors.left: colorRamp.right
+                            anchors.verticalCenter:  colorRamp.verticalCenter
+                            anchors.topMargin: height/2
+                            anchors.leftMargin: 5
+                        }
+                        Text {
+                            id: lowerQuartileValue
+                            text: rulercolors.labels[1]
+                            anchors.left: colorRamp.right
+                            anchors.top:  colorRamp.top
+                            anchors.topMargin: colorRamp.height*3/4 - height/2
+                            anchors.leftMargin: 5
+                            visible: colorRamp.height>100
+                        }
+                        Text {
+                            id: minValue
+                            text: rulercolors.labels[0]
+                            anchors.left: colorRamp.right
+                            anchors.bottom: colorRamp.bottom
+                            anchors.topMargin: height/2
+                            anchors.leftMargin: 5
+                        }
+                    }                }
+
+
             }
             ScrollView {
                 visible: rulercolors.hasFactors
@@ -191,12 +220,12 @@ Rectangle {
                     model: 4
                     property real cellWidth
                     cellWidth: { var n = rulercolors.meterPerPixel*main.width/5;
-                                 var sig=1;
-                                 var mult = Math.pow(10, sig - Math.floor(Math.log(n) / Math.LN10) - 1);
-                                 var s= Math.round(n * mult) / mult;
-                                 //console.log("n: " + n + " s: " + s);
-                                 return s / rulercolors.meterPerPixel;
-                               }
+                        var sig=1;
+                        var mult = Math.pow(10, sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+                        var s= Math.round(n * mult) / mult;
+                        //console.log("n: " + n + " s: " + s);
+                        return s / rulercolors.meterPerPixel;
+                    }
                     Item {
                         width: scaleRep.cellWidth
                         height: 30

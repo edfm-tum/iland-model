@@ -39,6 +39,13 @@
 #include "climateconverter.h"
 #include "csvfile.h"
 #include "spatialanalysis.h"
+
+#ifdef ILAND_GUI
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "colors.h"
+#endif
+
 class ResourceUnit;
 
 /** @class ScriptGlobal
@@ -607,6 +614,99 @@ QString ScriptGlobal::formattedErrorMessage(const QJSValue &error_value, const Q
         return error_string;
     }
     return QString();
+}
+
+QJSValue ScriptGlobal::viewOptions()
+{
+    QJSValue res;
+#ifdef ILAND_GUI
+    MainWindow *mw = GlobalSettings::instance()->controller()->mainWindow();
+    Ui::MainWindowClass *ui = mw->uiclass();
+
+#endif
+    return res;
+}
+
+void ScriptGlobal::setViewOptions(QJSValue opts)
+{
+#ifdef ILAND_GUI
+    MainWindow *mw = GlobalSettings::instance()->controller()->mainWindow();
+    Ui::MainWindowClass *ui = mw->uiclass();
+    // ruler options
+    if (opts.hasProperty("maxValue") || opts.hasProperty("minValue")) {
+        mw->ruler()->setMaxValue(opts.property("maxValue").toNumber());
+        mw->ruler()->setMinValue(opts.property("minValue").toNumber());
+        mw->ruler()->setAutoScale(false);
+    } else {
+        mw->ruler()->setAutoScale(true);
+    }
+
+    // main visualization options
+    QString type = opts.property("type").toString();
+    if (type=="lif")
+        ui->visFon->setChecked(true);
+    if (type=="dom")
+        ui->visDomGrid->setChecked(true);
+    if (type=="regeneration")
+        ui->visRegeneration->setChecked(true);
+    if (type=="trees") {
+        ui->visImpact->setChecked(true);
+        ui->visSpeciesColor->setChecked(false);
+    }
+    if (type=="ru") {
+        ui->visResourceUnits->setChecked(true);
+        ui->visRUSpeciesColor->setChecked(false);
+    }
+
+    // further options
+    if (opts.hasProperty("clip"))
+        ui->visClipStandGrid->setChecked(opts.property("clip").toBool());
+
+    if (opts.hasProperty("transparent"))
+        ui->drawTransparent->setChecked(opts.property("transparent").toBool());
+
+    // color by a species ID
+    if (opts.hasProperty("species") && opts.property("species").isBool() && type=="trees") {
+        ui->visSpeciesColor->setChecked(opts.property("species").toBool());
+        ui->speciesFilterBox->setCurrentIndex(0); // all species
+    }
+
+    if (opts.hasProperty("species") && opts.property("species").isString()) {
+        QString species=opts.property("species").toString();
+        if (type=="ru")
+            ui->visRUSpeciesColor->setChecked(true);
+        else
+            ui->visSpeciesColor->setChecked(true);
+
+        int idx = ui->speciesFilterBox->findData(species);
+        ui->speciesFilterBox->setCurrentIndex(idx);
+    }
+    if (opts.hasProperty("autoscale"))
+        ui->visAutoScale->setChecked(opts.property("autoscale").toBool());
+
+    if (opts.hasProperty("shade"))
+        ui->visAutoScale->setChecked(opts.property("shade").toBool());
+
+    // draw a specific grid
+    if (opts.property("grid").isString()) {
+        QString grid=opts.property("grid").toString();
+        ui->visOtherGrid->setChecked(true);
+        int idx = ui->paintGridBox->findData(grid);
+        ui->paintGridBox->setCurrentIndex(idx);
+    }
+
+    ui->lTreeExpr->setText(opts.property("expression").toString());
+
+    if (opts.hasProperty("filter")) {
+        ui->expressionFilter->setText(opts.property("filter").toString());
+        ui->cbDrawFiltered->setChecked(!ui->expressionFilter->text().isEmpty());
+    }
+
+
+
+
+#endif
+
 }
 
 

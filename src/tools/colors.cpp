@@ -16,7 +16,8 @@ QVector<QColor> Colors::mTerrainCol = QVector<QColor>() << QColor("#00A600") << 
 
 void Colors::setPalette(const GridViewType type, const float min_val, const float max_val)
 {
-    if (type==mCurrentType && minValue()==min_val && maxValue()==max_val && mNeedsPaletteUpdate==false)
+    if (mNeedsPaletteUpdate==false && type==mCurrentType &&
+            (mAutoScale==false || (minValue()==min_val && maxValue()==max_val))  )
         return;
 
     mHasFactors = false;
@@ -155,7 +156,7 @@ QColor Colors::colorFromValue(const float value, const GridViewType view_type, c
         float rel_value = (max_value!=min_value)?(rval - min_value) / (max_value - min_value): 0;
         int r,g,b;
         switch (view_type) {
-        case GridViewGreens: r=197 - rel_value*(197-11); g=197-rel_value*(197-111); b=197-rel_value*(197-19); break;
+        case GridViewGreens: r=220 - rel_value*(220-11); g=220-rel_value*(220-111); b=220-rel_value*(220-19); break;
         default: r=g=b=0;
         }
         return QColor(r,g,b);
