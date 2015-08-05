@@ -331,9 +331,9 @@ MainWindow::MainWindow(QWidget *parent)
     mRulerColors = new Colors();
     view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
     view->setResizeMode(QQuickView::SizeRootObjectToView);
-    //ui->pbReloadQml->setVisible(false); // enable for debug...
-    view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
-    //view->setSource(QUrl("qrc:/qml/ruler.qml"));
+    ui->pbReloadQml->setVisible(false); // enable for debug...
+    //view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
+    view->setSource(QUrl("qrc:/qml/ruler.qml"));
     //view->show();
     ui->qmlRulerLayout->addWidget(container);
 //    QDir d(":/qml");

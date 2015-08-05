@@ -34,9 +34,8 @@ int BarkBeetleCell::max_iteration = 0;
 
 double BarkBeetleAntagonist::mRmortality = 0.; ///< mortality rate
 double BarkBeetleAntagonist::mRreproduction = 0.; ///< reproduction rate (reproduction / prey)
-double BarkBeetleAntagonist::mRfeeding = 0.; ///< feeding rate (feed / prey)
 int BarkBeetleAntagonist::mSize = 0; ///< extent of the BBA-Cell im meters (must be multiple of 100)
-
+Expression BarkBeetleAntagonist::mAntagonistFormula;
 
 BarkBeetleModule::BarkBeetleModule()
 {
@@ -93,9 +92,6 @@ void BarkBeetleModule::loadParameters()
 
     QString formula = xml.value(".colonizeProbabilityFormula", "0.1");
     mColonizeProbability.setExpression(formula);
-
-    formula = xml.value(".antagonistFormula", "0.1"); // default: no effect
-    mAntagonistFormula.setExpression(formula);
 
     formula = xml.value(".winterMortalityFormula", "polygon(days, 0,0, 30, 0.6)");
     mWinterMortalityFormula.setExpression(formula);
@@ -167,7 +163,6 @@ void BarkBeetleModule::loadAllVegetation()
 
     // save the damage information of the last year
     for (BarkBeetleRUCell *bbru=mRUGrid.begin(); bbru!=mRUGrid.end(); ++bbru) {
-        bbru->damage_last_year = bbru->smoothed_damage;
         bbru->killed_pixels = 0; // reset
         qDebug() << mRUGrid.indexOf(bbru) << bbru->antagonist;
     }
@@ -267,35 +262,35 @@ void BarkBeetleModule::scanResourceUnitTrees(const QPointF &position)
     ru_cell.scanned = true;
 }
 
-void BarkBeetleModule::calculateMeanDamage()
-{
-    // calculate mean damage
-    GridRunner<BarkBeetleRUCell> runner(mRUGrid, mRUGrid.rectangle());
+//void BarkBeetleModule::calculateMeanDamage()
+//{
+//    // calculate mean damage
+//    GridRunner<BarkBeetleRUCell> runner(mRUGrid, mRUGrid.rectangle());
 
-    BarkBeetleRUCell *neighbors[8];
-    while (runner.next()) {
-        double max_damage = 0.;
-        if (runner.current()) {
-            runner.neighbors8(neighbors);
-            double sum_kill = runner.current()->killed_pixels;
-            double sum_host= runner.current()->host_pixels;
-            max_damage = sum_host>0. ? sum_kill/(sum_host+sum_kill) : 0.;
-            int n=0;
-            for (int i=0;i<8;++i)
-                if (neighbors[i]) {
-                    ++n;
-                    sum_host=neighbors[i]->host_pixels;
-                    sum_kill=neighbors[i]->killed_pixels;
-                    if (sum_host>0. && sum_kill/(sum_host+sum_kill) > max_damage)
-                        max_damage = sum_kill/(sum_host+sum_kill);
-                }
-            runner.current()->smoothed_damage = max_damage;
-            //runner.current()->smoothed_damage = sum_host>0. ? sum_kill/(sum_host+sum_kill) : 0.;
-        }
+//    BarkBeetleRUCell *neighbors[8];
+//    while (runner.next()) {
+//        double max_damage = 0.;
+//        if (runner.current()) {
+//            runner.neighbors8(neighbors);
+//            double sum_kill = runner.current()->killed_pixels;
+//            double sum_host= runner.current()->host_pixels;
+//            max_damage = sum_host>0. ? sum_kill/(sum_host+sum_kill) : 0.;
+//            int n=0;
+//            for (int i=0;i<8;++i)
+//                if (neighbors[i]) {
+//                    ++n;
+//                    sum_host=neighbors[i]->host_pixels;
+//                    sum_kill=neighbors[i]->killed_pixels;
+//                    if (sum_host>0. && sum_kill/(sum_host+sum_kill) > max_damage)
+//                        max_damage = sum_kill/(sum_host+sum_kill);
+//                }
+//            runner.current()->smoothed_damage = max_damage;
+//            //runner.current()->smoothed_damage = sum_host>0. ? sum_kill/(sum_host+sum_kill) : 0.;
+//        }
 
-    }
+//    }
 
-}
+//}
 
 
 void BarkBeetleModule::yearBegin()
@@ -383,10 +378,9 @@ void BarkBeetleModule::barkbeetleSpread()
             int n_packets = bbru.add_sister ? params.cohortsPerSisterbrood : params.cohortsPerGeneration;
 
             // now antagonists come in: if the population density of bark beetle is high,
-            // the density of antagonists increases as well (and antagonists find beetles easier if they are more common
+            // the density of antagonists increases as well (and antagonists find beetles easier if they are more common)
             // this is expressed by a function that reduces the number of beetle packages based on the local/regional beetle density
-            // double antagonist_kill = limit(mAntagonistFormula.calculate( bbru.smoothed_damage ), 0., 1.);
-            double antagonist_kill = bbru.antagonist->feedFraction();
+            double antagonist_kill = limit( bbru.antagonist->feedFraction(), 0., 1.);
 
             n_packets = qRound(n_packets * (1. - antagonist_kill) ); // reduce the number of packages
 
@@ -398,7 +392,7 @@ void BarkBeetleModule::barkbeetleSpread()
             bbru.killed_trees = true;
             bbru.killed_pixels++;
             bbru.host_pixels--;
-            bbru.antagonist->addDamage(1);
+            bbru.antagonist->addDamage(n_packets);
 
             BarkBeetleCell *nb8[8];
             for (int i=0;i<n_packets;++i) {
@@ -461,14 +455,21 @@ void BarkBeetleModule::barkbeetleSpread()
 
             }
         }
-        // finally, calculate mean damage (for the antagonist population)
-        calculateMeanDamage();
+
     } // for(generations)
 
+    // update antagonists
+    stats.maxAntagonistFillFraction = 0.;
+    stats.meanAntagonistPopulation = 0.;
+    for (int i=0;i<mAntagonists.size();++i) {
 
-    // update antagonists (for the next year)
-    for (int i=0;i<mAntagonists.size();++i)
         mAntagonists[i]->calculate();
+
+        stats.meanAntagonistPopulation += mAntagonists[i]->population();
+        stats.maxAntagonistFillFraction = qMax(stats.maxAntagonistFillFraction, mAntagonists[i]->feedFraction());
+    }
+    stats.meanAntagonistPopulation /= double(mAntagonists.size());
+
 }
 
 void BarkBeetleModule::barkbeetleKill()
@@ -551,10 +552,8 @@ double BarkBeetleRULayers::value(const BarkBeetleRUCell &data, const int index) 
 {
     switch(index){
     case 0: return data.generations; // number of generation
-    case 1: return data.damageFraction(); // damage (0..1) over the last two years
-    case 2: return (data.smoothed_damage + data.damage_last_year) / 2.; // mean damage of the current and the last year
-    case 3: return (data.antagonist->population());
-    case 4: return (data.antagonist->feedFraction());
+    case 1: return (data.antagonist->population());
+    case 2: return (data.antagonist->feedFraction());
     default: throw IException(QString("invalid variable index for a BarkBeetleRUCell: %1").arg(index));
     }
 
@@ -565,10 +564,8 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleRULayers::names()
     if (mNames.isEmpty())
         mNames = QVector<LayeredGridBase::LayerElement>()
                 << LayeredGridBase::LayerElement(QLatin1Literal("generations"), QLatin1Literal("total number of bark beetle generations"), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("damage"), QLatin1Literal("damage (fraction of killed (potential) host pixels of the current year), moving average over 3x3 resource units."), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("damage2yrs"), QLatin1Literal("mean damage of the last two years (fraction of killed (potential) host pixels in the last two years), moving average over 3x3 resource units."), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("antagonistDensity"), QLatin1Literal("Antagonist population density (pixels/ha)."), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("antagonistKillFraction"), QLatin1Literal("fraction of bark beetle that are killed by antagonists."), GridViewHeat);
+                << LayeredGridBase::LayerElement(QLatin1Literal("antagonistKillFraction"), QLatin1Literal("fraction of beetles that are killed by antagonists (0-1)."), GridViewHeat);
     return mNames;
 }
 
@@ -585,8 +582,10 @@ void BarkBeetleAntagonist::setup()
     const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
     mRmortality = xml.valueDouble(".antagonistMortality", 2);
     mRreproduction = xml.valueDouble(".antagonistReproduction", 0.4);
-    mRfeeding = xml.valueDouble(".antagonistFeedFraction", 2.);
     mSize = xml.valueDouble(".antagonistCellsize", 1000);
+    QString formula = xml.value(".antagonistFormula", "0"); // default: no effect
+    mAntagonistFormula.setExpression(formula);
+
 }
 
 double BarkBeetleAntagonist::calculate()
@@ -595,6 +594,7 @@ double BarkBeetleAntagonist::calculate()
     // dAntagonist/dt = -Antagonist * (mortalityRate - prey*reproduction_rate)
     double change_antagonist = -mPopulation * (mRmortality - mRreproduction * mBeetlePopulation);
     mPopulation += change_antagonist;
-    mPopulation = qMax(mPopulation, 0.1);
+    mPopulation = qMax(mPopulation, cBackgroundAntagonistPop);
+    mBeetlePopulation = cBackgroundBeetlePop;
     return mPopulation;
 }

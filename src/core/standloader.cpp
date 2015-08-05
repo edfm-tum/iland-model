@@ -896,7 +896,7 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
            offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
            int in_p = irandom(0, cPxPerHeight*cPxPerHeight-1); // index of lif-pixel
            offset += QPoint(in_p / cPxPerHeight, in_p % cPxPerHeight);
-           if (ru->saplingHeightForInit(offset) > height) {
+           if (!ru || ru->saplingHeightForInit(offset) > height) {
                misses++;
            } else {
                // ok
@@ -1001,8 +1001,12 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
            QPoint offset = GlobalSettings::instance()->model()->grid()->indexOf(lif_ptrs[rnd_index]);
 
            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(GlobalSettings::instance()->model()->grid()->cellCenterPoint(offset));
-           ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
-           hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(height);
+           if (ru) {
+               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
+               hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(height);
+           } else {
+               hits++; // avoid an infinite loop
+           }
 
 
         }
