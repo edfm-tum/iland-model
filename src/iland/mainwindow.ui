@@ -1165,12 +1165,12 @@ QProgressBar::chunk {
    <slot>setText(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>106</x>
-     <y>184</y>
+     <x>110</x>
+     <y>402</y>
     </hint>
     <hint type="destinationlabel">
-     <x>62</x>
-     <y>177</y>
+     <x>66</x>
+     <y>251</y>
     </hint>
    </hints>
   </connection>
@@ -1181,12 +1181,12 @@ QProgressBar::chunk {
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>348</x>
-     <y>613</y>
+     <x>358</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>439</x>
-     <y>615</y>
+     <y>638</y>
     </hint>
    </hints>
   </connection>
@@ -1213,8 +1213,8 @@ QProgressBar::chunk {
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>106</x>
-     <y>170</y>
+     <x>238</x>
+     <y>203</y>
     </hint>
     <hint type="destinationlabel">
      <x>810</x>

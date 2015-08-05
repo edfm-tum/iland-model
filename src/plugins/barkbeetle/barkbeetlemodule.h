@@ -39,25 +39,27 @@ public:
     /// size of the antagonist-cell (m)
     static int cellsize() { return mSize; }
 
-    /// current population of antagonists
+    /// current population of antagonists (per ha)
     double population() const { return mPopulation; }
-    /// the fraction of prey (bark beetles) that is eaten up by antagonists
-    double feedFraction() const { return qMin(mPopulation * mRfeeding, 1.); }
 
     /// updates the internal beetle population counter
-    void addDamage(int infested_cells) { mBeetlePopulation += infested_cells / mArea;  }
+    void addDamage(int beetle_packets) { mBeetlePopulation += beetle_packets / mArea;  }
+
+    double feedFraction() const {return mAntagonistFormula.calculate(mPopulation); }
 
     /// antagonist activity: returns the
     double calculate();
 private:
+    const double cBackgroundBeetlePop = 100.; // per ha
+    const double cBackgroundAntagonistPop = 100; // per ha
     double mPopulation; ///< current antagonist population (px per ha)
     double mBeetlePopulation; ///< size of the beetle population (px per ha)
     double mArea; ///< size of the area covered by this antagonist (ha)
 
     // Lotka-Volterra constants
+    static Expression mAntagonistFormula; ///< antagonist effect: if many beetles are around, more of them are killed by antagonists; fraction of killed beetles = f(damage_fraction)
     static double mRmortality; ///< mortality rate
     static double mRreproduction; ///< reproduction rate of the antagonist (reproduction / prey)
-    static double mRfeeding; ///< feeding rate (feed / prey)
     static int mSize; ///< extent of the BBA-Cell im meters (must be multiple of 100)
 };
 
@@ -89,10 +91,9 @@ public:
     BarkBeetleRUCell(): scanned(false), generations(0.), add_sister(false),
         cold_days(0), cold_days_late(0), killed_trees(false),
         killed_pixels(0), host_pixels(0),
-        smoothed_damage(0.), damage_last_year(0.), antagonist(0) {}
+        damage_last_year(0.), antagonist(0) {}
     /// relative damage: fraction of host pixels that died in the current or the last year
     double currentDamageFraction() { return host_pixels+killed_pixels>0? (killed_pixels)/double(host_pixels+killed_pixels): 0.; }
-    double damageFraction() const { return smoothed_damage; }
     bool scanned;
     double generations;
     bool add_sister;
@@ -101,7 +102,6 @@ public:
     bool killed_trees;
     int killed_pixels;
     int host_pixels;
-    double smoothed_damage; // mean damage (3x3 resource units) of the current year
     double damage_last_year; // smoothed damage of the previous year
     BarkBeetleAntagonist *antagonist; // link to the antagonist population
 
@@ -166,7 +166,7 @@ private:
     void barkbeetleSpread(); ///< main function of bark beetle spread
     void barkbeetleKill(); ///< kill the trees on pixels marked as killed
     void scanResourceUnitTrees(const QPointF &position); ///< load tree data of the resource unit 'position' (metric) lies inside
-    void calculateMeanDamage(); ///< calculate the mean damage percentage (fraction of killed pixels to host pixels)
+    //void calculateMeanDamage(); ///< calculate the mean damage percentage (fraction of killed pixels to host pixels)
     int mIteration;
     QString mAfterExecEvent;
     struct SBBParams {
@@ -180,7 +180,7 @@ private:
         double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
     } params;
     struct SBBStats {
-        void clear() { infestedStart=0;infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NTreesKilled=0;BasalAreaKilled=0.;}
+        void clear() { infestedStart=0;infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NTreesKilled=0;BasalAreaKilled=0.; meanAntagonistPopulation=0.; maxAntagonistFillFraction=0.; }
         int infestedStart; // # of pixels that are infested at the beginning of an iteration
         int infestedBackground; // # of pixels that are getting active
         int maxGenerations; // maxium number of generations found this year
@@ -191,6 +191,8 @@ private:
         int NWinterMortality; // number of (infested) pixels that died off during winter
         int NTreesKilled; // number of spruce trees killed
         double BasalAreaKilled; // sum of basal area of killed trees
+        double meanAntagonistPopulation; // mean antagonists/ha
+        double maxAntagonistFillFraction; // kill fraction of cell with highest fraction
     } stats;
 
 
@@ -199,7 +201,6 @@ private:
     BBGenerations mGenerations;
     RandomCustomPDF mKernelPDF;
     Expression mColonizeProbability; ///< function that calculates probability of infestation for one landed beetle package given the trees' stress level
-    Expression mAntagonistFormula; ///< antagonist effect: if many beetles are around, more of them are killed by antagonists; fraction of killed beetles = f(damage_fraction)
     Expression mWinterMortalityFormula; ///< temperature dependent winter mortality (more beetle die if there are more cold days)
     Grid<BarkBeetleCell> mGrid;
     Grid<BarkBeetleRUCell> mRUGrid;
