@@ -595,6 +595,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
             if (!mSimulationMode) {
                 // all trees > 4m are killed on the cell
                 Tree *tree = const_cast<Tree*>(&(*t));
+                tree->setDeathReasonWind();
                 if (do_break) {
                     // the tree is breaking
                     // half of the stem as well as foliage/branches are moved to the soil. The other half

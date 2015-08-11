@@ -60,6 +60,9 @@ void Modules::init()
                 WaterInterface *wi = qobject_cast<WaterInterface *>(plugin);
                 if (wi)
                     mWater.append(wi);
+                TreeDeathInterface *td = qobject_cast<TreeDeathInterface*>(plugin);
+                if (td)
+                    mTreeDeath.append(td);
             }
         }
     }
@@ -97,6 +100,13 @@ void Modules::calculateWater(const ResourceUnit *resource_unit, const WaterCycle
 {
     foreach(WaterInterface *wi, mWater)
         wi->calculateWater(resource_unit, water_data);
+}
+
+void Modules::treeDeath(const Tree *tree, int removal_type)
+{
+    for (QList<TreeDeathInterface*>::const_iterator it=mTreeDeath.constBegin(); it!=mTreeDeath.constEnd(); ++it)
+        (*it)->treeDeath(tree, removal_type);
+
 }
 
 void Modules::run()

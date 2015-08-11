@@ -82,6 +82,8 @@ public slots:
     int manageAll(); ///< manage all trees in the list
     /** manage 'fraction' of all trees with 'filter'=true */
     int manage(QString filter, double fraction);
+    /// kill trees, cut down to the ground
+    void cutAndDrop();
 
     double percentile(int pct); ///< get value for the pct th percentile (1..100)
     int loadAll() { return load(QString()); } ///< load all trees, return number of trees

@@ -71,10 +71,24 @@ public:
     virtual void calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data)=0;
 };
 
+/**
+
+    */
+class Tree; // forward
+//class Tree::TreeRemovalType;
+class TreeDeathInterface
+{
+public:
+    virtual ~TreeDeathInterface() {}
+    virtual void treeDeath(const Tree *tree, const int removal_type)=0;
+};
+
 Q_DECLARE_INTERFACE(DisturbanceInterface, "at.ac.boku.iland.DisturbanceInterface/1.0")
 
 Q_DECLARE_INTERFACE(WaterInterface, "at.ac.boku.iland.WaterInterface/1.0")
 
 Q_DECLARE_INTERFACE(SetupResourceUnitInterface, "at.ac.boku.iland.SetupResourceUnitInterface/1.0")
+
+Q_DECLARE_INTERFACE(TreeDeathInterface, "at.ac.boku.iland.TreeDeathInterface/1.0")
 
 #endif // PLUGIN_INTERFACE_H

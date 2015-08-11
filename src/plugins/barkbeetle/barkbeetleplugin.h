@@ -26,13 +26,14 @@
 #include "plugin_interface.h"
 class BarkBeetlePlugin: public QObject,
         public DisturbanceInterface,
-        public SetupResourceUnitInterface
+        public SetupResourceUnitInterface,
+        public TreeDeathInterface
 {
     Q_OBJECT
     #if QT_VERSION >= 0x050000
     Q_PLUGIN_METADATA(IID "at.ac.boku.iland.barkbeetleplugin" FILE "barkbeetleplugin.json")
     #endif
-    Q_INTERFACES(DisturbanceInterface SetupResourceUnitInterface)
+    Q_INTERFACES(DisturbanceInterface SetupResourceUnitInterface TreeDeathInterface)
 
 
 public:
@@ -50,6 +51,8 @@ public:
     /// setup additional javascript related features
     void setupScripting(QJSEngine *engine);
 
+    /// function is called whenever a tree dies in iLand (in order to track storm damage)
+    void treeDeath(const Tree *tree, const int removal_type)   {  Q_UNUSED(removal_type); mBeetle.treeDeath(tree);   }
 
     // calculations
     void yearBegin() { mBeetle.yearBegin(); }
