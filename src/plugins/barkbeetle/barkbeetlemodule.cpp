@@ -216,6 +216,25 @@ void BarkBeetleModule::run(int iteration)
 
 }
 
+void BarkBeetleModule::treeDeath(const Tree *tree)
+{
+    // do nothing if the tree was killed by bark beetles
+    if (tree->isDeadBarkBeetle())
+        return;
+    // we only process trees here that are either killed by storm or deliberately killed and dropped by management
+    if (!tree->isDeadWind() && !tree->isCutdown())
+        return;
+    // ignore the death of trees that are too small or are not Norway spruce
+    if (tree->dbh()<params.minDbh || tree->species()->id()!=QStringLiteral("piab"))
+        return;
+
+    BarkBeetleCell &cell = mGrid.valueAt(tree->position());
+    cell.deadtrees=1;
+
+
+
+}
+
 void BarkBeetleModule::scanResourceUnitTrees(const QPointF &position)
 {
     // if this resource unit was already scanned in this bark beetle event, then do nothing
@@ -486,6 +505,7 @@ void BarkBeetleModule::barkbeetleKill()
                     if (mGrid.constValueAt(t->position()).killed) {
                         // yes: kill the tree:
                         Tree *tree = const_cast<Tree*>(&(*t));
+                        tree->setDeathReasonBarkBeetle();
                         n_killed++;
                         basal_area+=tree->basalArea();
                         if (!mSimulate) // remove tree only if not in simulation mode
@@ -523,6 +543,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
             }
             return -1; // no host
     case 4: return data.p_colonize; // probability of kill
+    case 5: return data.deadtrees; // absence of deadwood (spruce)
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -536,7 +557,8 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("dbh"), QLatin1Literal("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). Newly infested pixels are included (max iteration + 1)."), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat);
+                << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
+                << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("1: presence of dead potential host trees on the pixel"), GridViewRainbow);
     return mNames;
 
 }

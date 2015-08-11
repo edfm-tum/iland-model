@@ -28,6 +28,7 @@
 #include "snag.h"
 
 #include "forestmanagementengine.h"
+#include "modules.h"
 
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
@@ -971,6 +972,9 @@ void Tree::recordRemovedVolume(TreeRemovalType reason)
     ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
     if (abe)
         abe->addTreeRemoval(this, (int)reason);
+
+    // tell disturbance modules that a tree died
+    GlobalSettings::instance()->model()->modules()->treeDeath(this, (int) reason);
 }
 
 //////////////////////////////////////////////////

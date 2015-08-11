@@ -22,6 +22,8 @@
 #include "barkbeetleout.h"
 #include "barkbeetlescript.h"
 #include "outputmanager.h"
+#include "tree.h"
+#include "species.h"
 
 #include <QObject>
 #include <QJSValue>
@@ -79,6 +81,8 @@ void BarkBeetlePlugin::setupScripting(QJSEngine *engine)
 
     qDebug() << "setup scripting called...";
 }
+
+
 
 
 

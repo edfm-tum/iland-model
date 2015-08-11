@@ -83,7 +83,7 @@ public:
     inline const T& operator()(const int ix, const int iy) const { return constValueAtIndex(ix, iy); }
     /// access (const) using metric variables. use float.
     inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
-    inline const T& operator[] (const QPointF &p) const { return constValueAt(p); }
+    //inline const T& operator[] (const QPointF &p) const { return constValueAt(p); }
 
     inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return mData[iy*mSizeX + ix];  } ///< const value at position defined by indices (x,y)

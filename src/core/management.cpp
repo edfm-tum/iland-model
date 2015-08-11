@@ -118,6 +118,16 @@ int Management::manage(QString filter, double fraction)
     return remove_trees(filter, fraction, true);
 }
 
+void Management::cutAndDrop()
+{
+    int c = mTrees.count();
+    for (int i=0;i<mTrees.count();i++) {
+        mTrees[i].first->setDeathCutdown(); // set flat that tree is cut down
+        mTrees[i].first->die();
+    }
+    mTrees.clear();
+}
+
 int Management::remove_percentiles(int pctfrom, int pctto, int number, bool management)
 {
     if (mTrees.isEmpty())
@@ -192,6 +202,7 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
                     tp->first->remove(removeFoliage(), removeBranch(), removeStem()); // management with removal fractions
                 else
                     tp->first->remove(); // kill
+
                 // remove from tree list
                 tp = mTrees.erase(tp);
                 n++;

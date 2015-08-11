@@ -23,7 +23,9 @@
 class DisturbanceInterface; // forward
 class SetupResourceUnitInterface; // forward
 class WaterInterface; // forward
+class TreeDeathInterface; // forward
 class ResourceUnit; // forward
+class Tree; // forward
 class WaterCycleData; // forward
 class QJSEngine; // forward
 /** The Modules class is the container for iLand modules (e.g. Fire, Wind, ...).
@@ -48,11 +50,15 @@ public:
     void run(); ///< execute the modules
     // water
     void calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data);
+
+    // tree death
+    void treeDeath(const Tree *tree, int removal_type);
 private:
     void init();
     QList<DisturbanceInterface*> mInterfaces; ///< the list stores only the active modules
     QList<SetupResourceUnitInterface*> mSetupRUs;
     QList<WaterInterface*> mWater;
+    QList<TreeDeathInterface*> mTreeDeath;
 };
 
 #endif // MODULES_H

@@ -780,6 +780,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
             if (!mOnlyFireSimulation) {
                 // before tree biomass is transferred to the snag-state, a part of the biomass is combusted:
                 t->removeBiomassOfTree(mBurnFoliageFraction, mBurnBranchFraction, mBurnStemFraction);
+                t->setDeathReasonFire();
                 t->die();
             }
             ++died;

@@ -26,6 +26,11 @@
 
 #include "bbgenerations.h"
 
+/**
+ * @brief The BarkBeetleAntagonist simualtes population development of bark beetle antagonists (antagonist insects, birds, etc.)
+ * Antagonist populations are tracked on larger cells (of user-defined size) and follow a Lotka-Volterra-type of dynamics.
+ * @ingroup barkbeetle
+ */
 class BarkBeetleAntagonist
 {
 public:
@@ -63,11 +68,17 @@ private:
     static int mSize; ///< extent of the BBA-Cell im meters (must be multiple of 100)
 };
 
+
+/** @brief The BarkBeetleCell is the basic unit (10m pixels) of the bark beetle module.
+ * Cells can be infested (i.e. beetles attacked/killed all spruce trees within its perimeter), and
+ * new beetle (packages) spread from the cell to infest new cells.
+ * @ingroup barkbeetle
+ * */
 class BarkBeetleCell
 {
 public:
     BarkBeetleCell() { reset(); }
-    void clear() { n=0; killedYear=0; infested=false;  p_colonize=0.f; }
+    void clear() { n=0; killedYear=0; infested=false;  p_colonize=0.f; deadtrees=0; }
     void reset() {clear(); dbh=0.f; tree_stress=0.f; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
@@ -80,11 +91,19 @@ public:
     float p_colonize; // the highest probability (0..1) that a pixel is killed
     int n; // number of cohorts that landed on the pixel
     int killedYear; // year (iteration) at which pixel was killed ??
+    int deadtrees; // 0: no dead trees, 1: pot. hosts (after storm), 2: lure trees (fangbaueme)
+
     static void resetCounters() { total_infested=0; max_iteration=0; }
     static int total_infested;
     static int max_iteration;
 
 };
+
+/**
+ * @brief The BarkBeetleRUCell class collects information on resource unit (100m pixel) level.
+ * This includes the number of bark beetle generations that are possible on given the climate and leaf area on the cell.
+ * @ingroup barkbeetle
+ */
 class BarkBeetleRUCell
 {
 public:
@@ -133,8 +152,11 @@ private:
 
 
 class ResourceUnit; // forward
+class Tree; // forward
 class BarkBeetleOut; // forward
-/** Main class of the bark beetle module.
+/** The BarkBeetleModule class is the main class of the bark beetle module.
+ * The module simulates the spruce bark beetle (Ips typographus) spatially explicit on the landscape.
+ * The number of possible bark beetle generations is calculated based on climate data (BBGenerations)
   @ingroup barkbeetle
 */
 class BarkBeetleModule
@@ -152,6 +174,8 @@ public:
 
     /// main function to execute the bark beetle module
     void run(int iteration=0);
+
+    void treeDeath(const Tree *tree);
 
     void yearBegin();
     // properties

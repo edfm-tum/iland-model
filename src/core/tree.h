@@ -65,7 +65,7 @@ public:
     float stressIndex() const { return mStressIndex; } ///< the scalar stress rating (0..1)
 
     // actions
-    enum TreeRemovalType { TreeDeath, TreeHarvest, TreeDisturbance};
+    enum TreeRemovalType { TreeDeath=0, TreeHarvest=1, TreeDisturbance=2};
     /// the tree dies (is killed)
     void die(TreeGrowthData *d=0);
     /// remove the tree (management). removalFractions for tree compartments: if 0: all biomass stays in the system, 1: all is "removed"
@@ -107,6 +107,15 @@ public:
     bool isMarkedAsCropTree() const { return flag(Tree::MarkCropTree);}
     void markCropCompetitor(bool do_mark) { setFlag(Tree::MarkCropCompetitor, do_mark);}
     bool isMarkedAsCropCompetitor() const { return flag(Tree::MarkCropCompetitor);}
+    // death reasons
+    void setDeathReasonWind()  { setFlag(Tree::TreeDeadWind, true); }
+    void setDeathReasonBarkBeetle()  { setFlag(Tree::TreeDeadBarkBeetle, true); }
+    void setDeathReasonFire()  { setFlag(Tree::TreeDeadFire, true); }
+    void setDeathCutdown()  { setFlag(Tree::TreeDeadKillAndDrop, true); }
+    bool isDeadWind() const { return flag(Tree::TreeDeadWind);}
+    bool isDeadBarkBeetle() const { return flag(Tree::TreeDeadBarkBeetle);}
+    bool isDeadFire() const { return flag(Tree::TreeDeadFire);}
+    bool isCutdown() const { return flag(Tree::TreeDeadKillAndDrop);}
 
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
@@ -170,6 +179,7 @@ private:
     int mFlags;
     /// (binary coded) tree flags
     enum Flags { TreeDead=1, TreeDebugging=2,
+                 TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128,
                  MarkForCut=256, // mark tree for being cut down
                  MarkForHarvest=512, // mark tree for being harvested
                  MarkCropTree=1024, // mark as crop tree
