@@ -1370,6 +1370,9 @@ void MainWindow::setupModel()
         ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(mRemoteControl.model()->management()->scriptFile()));
     labelMessage("Model created. Ready to run.");
     checkModelState();
+
+    //recent file menu
+    recentFileMenu();
 }
 
 
@@ -1866,6 +1869,12 @@ void MainWindow::writeSettings()
     settings.beginGroup("project");
     settings.setValue("lastxmlfile", ui->initFileName->text());
     settings.endGroup();
+    //recent files menu qsettings registry save
+    settings.beginGroup("recent_files");
+    for(int i = 0;i < mList.size();i++){
+        settings.setValue(QString("file-%1").arg(i),mList[i]);
+    }
+    settings.endGroup();
 }
 void MainWindow::readSettings()
 {
@@ -1887,7 +1896,22 @@ void MainWindow::readSettings()
         ui->scriptCommandHistory->addItem(settings.value("item").toString());
     }
     settings.endArray();
-
+    //recent files menu qsettings registry load
+    settings.beginGroup("recent_files");
+    for(int i = 0;i < settings.childKeys().size();i++){
+       //resize(settings.value("size", QSize(400, 400)).toSize());
+        mList.append(settings.value(QString("file-%1").arg(i)).toString());
+    }
+    for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
+        if(i < mList.size()){
+            ui->menuRecent_Files->actions()[i]->setText(mList[i]);
+            connect(ui->menuRecent_Files->actions()[i],SIGNAL(triggered()),this,SLOT(menuRecent_Files()));
+            ui->menuRecent_Files->actions()[i]->setVisible(true);
+        }else{
+            ui->menuRecent_Files->actions()[i]->setVisible(false);
+        }
+     }
+    settings.endGroup();
 }
 
 
@@ -1977,4 +2001,30 @@ void MainWindow::on_actionOpen_triggered()
     ui->iniEdit->setPlainText(xmlFile);
     checkModelState();
 
+}
+
+void MainWindow::menuRecent_Files()
+{
+        QAction* action = dynamic_cast<QAction*>(sender());
+        ui->initFileName->setText(action->text());
+}
+
+void MainWindow::recentFileMenu(){
+    if(mList.size() > 4){
+        mList.removeAt(4);
+    }
+    if(mList.contains(ui->initFileName->text())){
+        mList.removeAt(mList.indexOf(ui->initFileName->text()));
+     }
+    mList.prepend(ui->initFileName->text());
+
+    for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
+        if(i < mList.size()){
+            ui->menuRecent_Files->actions()[i]->setText(mList[i]);
+            connect(ui->menuRecent_Files->actions()[i],SIGNAL(triggered()),this,SLOT(menuRecent_Files()));
+            ui->menuRecent_Files->actions()[i]->setVisible(true);
+        }else{
+            ui->menuRecent_Files->actions()[i]->setVisible(false);
+        }
+     }
 }

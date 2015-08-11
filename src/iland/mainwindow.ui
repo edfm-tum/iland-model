@@ -116,8 +116,19 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecent_Files">
+     <property name="title">
+      <string>Recent Files</string>
+     </property>
+     <addaction name="action"/>
+     <addaction name="action_2"/>
+     <addaction name="action_3"/>
+     <addaction name="action_4"/>
+     <addaction name="action_5"/>
+    </widget>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
+    <addaction name="menuRecent_Files"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -1142,6 +1153,46 @@ QProgressBar::chunk {
    </property>
    <property name="toolTip">
     <string>Quit iLand</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string/>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string/>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string/>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string/>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string/>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
  </widget>

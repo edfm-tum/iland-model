@@ -121,6 +121,9 @@ private:
     void batchLog(const QString s); ///< logging function for batch mode
     // visualization helper grid
     Grid<float> mRegenerationGrid;
+    //recent file menu
+    void recentFileMenu();
+    QList<QString> mList;
 
 private slots:
     void automaticRun(); ///< automatically start a simulation...
@@ -186,6 +189,8 @@ private slots:
     void on_pbReloadQml_clicked();
     void on_actionExit_triggered();
     void on_actionOpen_triggered();
+    //recent file menu
+    void menuRecent_Files();
 };
 
 #endif // MAINWINDOW_H
