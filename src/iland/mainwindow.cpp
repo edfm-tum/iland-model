@@ -324,6 +324,9 @@ MainWindow::MainWindow(QWidget *parent)
     // to silence some warnings during startup - maybe not required (anymore):
     qRegisterMetaType<QTextBlock>("QTextBlock");
     qRegisterMetaType<QTextCursor>("QTextCursor");
+
+    ui->iniEdit->setVisible(false);
+    ui->editStack->setTabEnabled(3,false); // the "other" tab
     // qml setup
     QQuickView *view = new QQuickView();
     mRuler = view;
@@ -335,6 +338,7 @@ MainWindow::MainWindow(QWidget *parent)
     //view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
     view->setSource(QUrl("qrc:/qml/ruler.qml"));
     //view->show();
+    ui->qmlRulerLayout->addWidget(container);
     ui->qmlRulerLayout->addWidget(container);
 //    QDir d(":/qml");
 //    qDebug() << d.entryList();
@@ -407,13 +411,6 @@ void MainWindow::checkModelState()
 }
 
 
-void MainWindow::on_saveFile_clicked()
-{
-    QString content = ui->iniEdit->toPlainText();
-    if (!content.isEmpty())
-         Helper::saveToTextFile(ui->initFileName->text(), content);
-
-}
 
 
 void MainWindow::readwriteCycle()
@@ -2027,4 +2024,9 @@ void MainWindow::recentFileMenu(){
             ui->menuRecent_Files->actions()[i]->setVisible(false);
         }
      }
+}
+
+void MainWindow::on_saveFile_clicked()
+{
+    ui->iniEdit->setVisible(!ui->iniEdit->isVisible());
 }

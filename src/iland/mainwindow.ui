@@ -168,7 +168,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockEditor">
    <property name="windowTitle">
-    <string>DockDock</string>
+    <string>Main</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -204,14 +204,19 @@
          <height>0</height>
         </size>
        </property>
-       <property name="currentIndex">
-        <number>0</number>
+       <property name="styleSheet">
+        <string notr="true">@
+QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: none; }
+@</string>
        </property>
-       <widget class="QWidget" name="editStackPage1">
+       <property name="currentIndex">
+        <number>3</number>
+       </property>
+       <widget class="QWidget" name="editStackMain">
         <attribute name="title">
-         <string>XML</string>
+         <string>Main</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout">
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="1,2,10">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
@@ -251,7 +256,7 @@
              </property>
              <property name="icon">
               <iconset resource="res/iland.qrc">
-               <normaloff>:/document-save.png</normaloff>:/document-save.png</iconset>
+               <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -265,9 +270,6 @@
          </item>
          <item>
           <widget class="QTextEdit" name="iniEdit">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -283,7 +285,24 @@
            <property name="lineWrapMode">
             <enum>QTextEdit::NoWrap</enum>
            </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
           </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="qmlRulerLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="pbReloadQml">
+             <property name="text">
+              <string>reload</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -363,13 +382,67 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="editStackPage2">
+       <widget class="QWidget" name="editStackExpressions">
+        <attribute name="title">
+         <string>Expressions</string>
+        </attribute>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Filter expression</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLineEdit" name="expressionFilter"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="cbDrawFiltered">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;when checked, only &amp;quot;filtered&amp;quot; trees are drawn in the main visualization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>draw filtered</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Aggregate Expression</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLineEdit" name="expressionText"/>
+         </item>
+         <item row="3" column="1">
+          <widget class="QPushButton" name="pbCalculateExpression">
+           <property name="text">
+            <string>calculate</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Expression history</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0" colspan="2">
+          <widget class="QListWidget" name="expressionHistory"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="editOtherFunctions">
         <attribute name="title">
          <string>Other</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
-          <widget class="QTabWidget" name="tabQmlHost">
+          <widget class="QTabWidget" name="tabRest">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -377,7 +450,7 @@
             </sizepolicy>
            </property>
            <property name="currentIndex">
-            <number>2</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="tab_2">
             <attribute name="title">
@@ -490,81 +563,6 @@
               <string>Results</string>
              </property>
             </widget>
-           </widget>
-           <widget class="QWidget" name="Seite">
-            <attribute name="title">
-             <string>Experssions</string>
-            </attribute>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Filter expression</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLineEdit" name="expressionFilter"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Aggregate Expression</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLineEdit" name="expressionText"/>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label">
-               <property name="text">
-                <string>Expression history</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QListWidget" name="expressionHistory"/>
-             </item>
-             <item row="3" column="1">
-              <widget class="QPushButton" name="pbCalculateExpression">
-               <property name="text">
-                <string>calculate</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QCheckBox" name="cbDrawFiltered">
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;when checked, only &amp;quot;filtered&amp;quot; trees are drawn in the main visualization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="text">
-                <string>draw filtered</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="tab">
-            <attribute name="title">
-             <string>Legend</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_7">
-             <item>
-              <layout class="QVBoxLayout" name="qmlRulerLayout">
-               <property name="spacing">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QPushButton" name="pbReloadQml">
-                 <property name="text">
-                  <string>reload</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
            </widget>
           </widget>
          </item>
@@ -1210,22 +1208,6 @@ QProgressBar::chunk {
  </resources>
  <connections>
   <connection>
-   <sender>expressionHistory</sender>
-   <signal>currentTextChanged(QString)</signal>
-   <receiver>expressionText</receiver>
-   <slot>setText(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>110</x>
-     <y>402</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>66</x>
-     <y>251</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>logFilterExpression</sender>
    <signal>returnPressed()</signal>
    <receiver>pbFilterExecute</receiver>
@@ -1254,22 +1236,6 @@ QProgressBar::chunk {
     <hint type="destinationlabel">
      <x>872</x>
      <y>219</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>cbDrawFiltered</sender>
-   <signal>clicked()</signal>
-   <receiver>visImpact</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>238</x>
-     <y>203</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>810</x>
-     <y>214</y>
     </hint>
    </hints>
   </connection>

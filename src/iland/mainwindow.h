@@ -172,7 +172,6 @@ private slots:
 
     void on_actionEdit_XML_settings_triggered();
 
-    void on_saveFile_clicked();
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
     void mouseMove(const QPoint& pos);
@@ -191,6 +190,7 @@ private slots:
     void on_actionOpen_triggered();
     //recent file menu
     void menuRecent_Files();
+    void on_saveFile_clicked();
 };
 
 #endif // MAINWINDOW_H
