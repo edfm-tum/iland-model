@@ -27,6 +27,9 @@
 #include "snag.h"
 #include "debugtimer.h"
 #include "watercycle.h"
+#include "expressionwrapper.h"
+#include "helper.h"
+#include "gisgrid.h"
 
 #include <QString>
 #include <QtSql>
@@ -34,7 +37,6 @@
 
 Snapshot::Snapshot()
 {
-    mIgnoreErrors = false;
 }
 
 bool Snapshot::openDatabase(const QString &file_name, const bool read)
@@ -78,14 +80,63 @@ bool Snapshot::createSnapshot(const QString &file_name)
     // save saplings
     saveSaplings();
     QSqlDatabase::database("snapshot").close();
+    // save a grid of the indices
+    QFileInfo fi(file_name);
+    QString grid_file = fi.absolutePath() + "/" + fi.completeBaseName() + ".asc";
+    Grid<double> index_grid;
+    index_grid.setup( GlobalSettings::instance()->model()->RUgrid().metricRect(), GlobalSettings::instance()->model()->RUgrid().cellsize());
+    RUWrapper ru_wrap;
+    Expression ru_value("index", &ru_wrap);
+    double *grid_ptr = index_grid.begin();
+    for (ResourceUnit **ru = GlobalSettings::instance()->model()->RUgrid().begin(); ru!=GlobalSettings::instance()->model()->RUgrid().end(); ++ru, ++grid_ptr) {
+        if(ru) {
+            ru_wrap.setResourceUnit(*ru);
+            *grid_ptr = ru_value.execute();
+        } else
+            *grid_ptr = -1.;
+    }
+    QString grid_text = gridToESRIRaster(index_grid);
+    Helper::saveToTextFile(grid_file, grid_text);
+    qDebug() << "saved grid to " << grid_file;
+
     return true;
 }
 
 bool Snapshot::loadSnapshot(const QString &file_name)
 {
     DebugTimer t("loadSnapshot");
-    mIgnoreErrors = GlobalSettings::instance()->settings().valueBool("model.initialization.snapshotIgnoreErrors");
     openDatabase(file_name, true);
+
+
+    QFileInfo fi(file_name);
+    QString grid_file = fi.absolutePath() + "/" + fi.completeBaseName() + ".asc";
+    GisGrid grid;
+    mRUHash.clear();
+
+    if (!grid.loadFromFile(grid_file)) {
+        qDebug() << "loading of snapshot: not a valid grid file (containing resource unit inidices) expected at:" << grid_file;
+        for (ResourceUnit **ru = GlobalSettings::instance()->model()->RUgrid().begin(); ru!=GlobalSettings::instance()->model()->RUgrid().end();++ru) {
+            if (ru)
+                mRUHash[ (*ru)->index() ] = *ru;
+        }
+    } else {
+        // setup link between resource unit index and index grid:
+        // store for each resource unit *in the snapshot database* the corresponding
+        // resource unit index of the *current* simulation.
+
+        const Grid<ResourceUnit*> &rugrid = GlobalSettings::instance()->model()->RUgrid();
+        for (int i=0;i<rugrid.count();++i) {
+            const ResourceUnit *ru = rugrid.constValueAtIndex(i);
+            if (ru && ru->index()>-1) {
+               int value = grid.value( rugrid.cellCenterPoint(i) );
+               if (value>-1)
+                   mRUHash[value] = const_cast<ResourceUnit*>(ru);
+            }
+        }
+
+    }
+
+
     loadTrees();
     loadSoil();
     loadSnags();
@@ -157,6 +208,7 @@ void Snapshot::loadTrees()
     q.exec("select ID, RUindex, posX, posY, species,  age, height, dbh, leafArea, opacity, foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex from trees");
     int ru_index = -1;
     int new_ru;
+    int offsetx, offsety;
     ResourceUnit *ru = 0;
     int n=0;
     try {
@@ -168,10 +220,12 @@ void Snapshot::loadTrees()
             new_ru = q.value(1).toInt();
             if (new_ru != ru_index) {
                 ru_index = new_ru;
-                // remove all trees...
-                ru = GlobalSettings::instance()->model()->ru(ru_index);
-                if (!ru && !mIgnoreErrors)
-                    throw IException("Snapshot::loadTrees: Invalid resource unit");
+                ru = mRUHash[ru_index];
+                if (ru) {
+                    offsetx = ru->cornerPointOffset().x();
+                    offsety = ru->cornerPointOffset().y();
+                }
+
             }
             if (!ru)
                 continue;
@@ -181,8 +235,8 @@ void Snapshot::loadTrees()
             Tree &t = ru->newTree();
             t.setRU(ru);
             t.mId = q.value(0).toInt();
-            t.mPositionIndex.setX(q.value(2).toInt());
-            t.mPositionIndex.setY(q.value(3).toInt());
+            t.mPositionIndex.setX(offsetx + q.value(2).toInt() % cPxPerRU);
+            t.mPositionIndex.setY(offsety + q.value(3).toInt() % cPxPerRU);
             Species *s = GlobalSettings::instance()->model()->speciesSet()->species(q.value(4).toString());
             if (!s)
                 throw IException("Snapshot::loadTrees: Invalid species");
@@ -276,9 +330,7 @@ void Snapshot::loadSoil()
     int n=0;
     while (q.next()) {
         ru_index = q.value(0).toInt();
-        ru = GlobalSettings::instance()->model()->ru(ru_index);
-        if (!ru && !mIgnoreErrors)
-            throw IException("Snapshot::loadSoil: Invalid resource unit");
+        ru = ru = mRUHash[ru_index];
         if (!ru)
             continue;
         Soil *s = ru->soil();
@@ -395,9 +447,7 @@ void Snapshot::loadSnags()
     int ci=0;
     while (q.next()) {
         ru_index = q.value(ci++).toInt();
-        ru = GlobalSettings::instance()->model()->ru(ru_index);
-        if (!ru && !mIgnoreErrors)
-            throw IException("Snapshot::loadSoil: Invalid resource unit");
+        ru = mRUHash[ru_index];
         if (!ru)
             continue;
         Snag *s = ru->snag();
@@ -512,13 +562,13 @@ void Snapshot::loadSaplings()
     int n=0;
     int ci;
     int posx, posy;
+    int offsetx, offsety;
     Sapling *last_sapling = 0;
+
     while (q.next()) {
         ci = 0;
         ru_index = q.value(ci++).toInt();
-        ru = GlobalSettings::instance()->model()->ru(ru_index);
-        if (!ru && !mIgnoreErrors)
-            throw IException("Snapshot::loadSaplings: Invalid resource unit");
+        ru = mRUHash[ru_index];
         if (!ru)
             continue;
         Species *species = ru->speciesSet()->species(q.value(ci++).toString());
@@ -529,18 +579,19 @@ void Snapshot::loadSaplings()
             last_sapling = &sap;
             sap.clear(); // clears the trees and the bitmap
             sap.clearStatistics();
+            offsetx = ru->cornerPointOffset().x();
+            offsety = ru->cornerPointOffset().y();
         }
         sap.mSaplingTrees.push_back(SaplingTree());
         SaplingTree &t = sap.mSaplingTrees.back();
-        posx = q.value(ci++).toInt();
-        posy = q.value(ci++).toInt();
+        //posx = q.value(ci++).toInt();
+        //posy = q.value(ci++).toInt();
+        posx = offsetx + q.value(ci++).toInt() % cPxPerRU;
+        posy = offsety + q.value(ci++).toInt() % cPxPerRU;
         if (GlobalSettings::instance()->model()->grid()->isIndexValid(posx, posy)) {
             t.pixel = GlobalSettings::instance()->model()->grid()->ptr(posx,posy );
         } else {
-            if (mIgnoreErrors)
-                continue;
-            else
-                throw IException(QString("Snapshot: loadSaplings: invalid position: %1/%2").arg(posx).arg(posy));
+            continue;
         }
         t.age.age = q.value(ci++).toInt();
         t.height = q.value(ci++).toFloat();

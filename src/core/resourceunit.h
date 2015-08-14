@@ -68,7 +68,7 @@ public:
     int index() const { return mIndex; }
     int id() const { return mID; }
     const QRectF &boundingBox() const { return mBoundingBox; }
-    const QPoint &cornerPointOffset() const { return mCornerCoord; }
+    const QPoint &cornerPointOffset() const { return mCornerCoord; } ///< coordinates on the LIF grid of the upper left corner of the RU
     double area() const { return mPixelCount*100; } ///< get the resource unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
     double stockableArea() const { return mStockableArea; } ///< total stockable area in m2
