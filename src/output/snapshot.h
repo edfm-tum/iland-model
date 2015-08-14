@@ -20,7 +20,8 @@
 #define SNAPSHOT_H
 
 #include <QString>
-
+#include <QHash>
+class ResourceUnit;
 class Snapshot
 {
 public:
@@ -28,7 +29,6 @@ public:
     bool createSnapshot(const QString &file_name);
     bool loadSnapshot(const QString &file_name);
 private:
-    bool mIgnoreErrors;
     bool openDatabase(const QString &file_name, const bool read);
     void saveTrees();
     void saveSoil();
@@ -38,6 +38,7 @@ private:
     void loadSoil();
     void loadSnags();
     void loadSaplings();
+    QHash<int, ResourceUnit* > mRUHash;
 };
 
 #endif // SNAPSHOT_H

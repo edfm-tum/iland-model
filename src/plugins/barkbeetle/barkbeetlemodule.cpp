@@ -125,7 +125,8 @@ void BarkBeetleModule::loadParameters()
             mAntagonists.push_back(ant);
             for (int dy=0;dy<ru_steps;++dy)
                 for (int dx=0;dx<ru_steps;++dx)
-                   if (GlobalSettings::instance()->model()->RUgrid().constValueAtIndex(x+dx,y+dy)) {
+                   if (GlobalSettings::instance()->model()->RUgrid().isIndexValid(x+dx, y+dy)
+                           && GlobalSettings::instance()->model()->RUgrid().constValueAtIndex(x+dx,y+dy)) {
                        ant->addArea(1.); // fixed size of 1ha
                        mRUGrid.valueAtIndex(x+dx, y+dy).antagonist = ant;
                    }
