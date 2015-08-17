@@ -96,7 +96,7 @@ private:
     void updatePaintGridList();
     /// PaintObject stores what kind of object to paint during next repaint
     PaintObject mPaintNext;
-    QHash<QString, PaintObject> mPaintList;
+    QMap<QString, PaintObject> mPaintList;
     void paintGrid(QPainter &painter, PaintObject &object);
 
     static QPlainTextEdit *mLogSpace;

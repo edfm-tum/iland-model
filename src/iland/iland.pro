@@ -89,7 +89,7 @@ DEFINES += NO_DEBUG_MSGS
 #QMAKE_CXXFLAGS_RELEASE += -g
 #QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
-## MSVC: debug in release-mode
+## MSVC: debug symbols in release-mode
 #QMAKE_CXXFLAGS_RELEASE += /Zi
 #QMAKE_LFLAGS_RELEASE += /DEBUG /OPT:REF /OPT:ICF
 
