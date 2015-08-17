@@ -89,7 +89,7 @@ bool Snapshot::createSnapshot(const QString &file_name)
     Expression ru_value("index", &ru_wrap);
     double *grid_ptr = index_grid.begin();
     for (ResourceUnit **ru = GlobalSettings::instance()->model()->RUgrid().begin(); ru!=GlobalSettings::instance()->model()->RUgrid().end(); ++ru, ++grid_ptr) {
-        if(ru) {
+        if (*ru) {
             ru_wrap.setResourceUnit(*ru);
             *grid_ptr = ru_value.execute();
         } else
@@ -116,7 +116,7 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     if (!grid.loadFromFile(grid_file)) {
         qDebug() << "loading of snapshot: not a valid grid file (containing resource unit inidices) expected at:" << grid_file;
         for (ResourceUnit **ru = GlobalSettings::instance()->model()->RUgrid().begin(); ru!=GlobalSettings::instance()->model()->RUgrid().end();++ru) {
-            if (ru)
+            if (*ru)
                 mRUHash[ (*ru)->index() ] = *ru;
         }
     } else {

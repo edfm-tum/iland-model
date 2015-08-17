@@ -454,7 +454,7 @@ void MainWindow::updatePaintGridList()
 {
     ui->paintGridBox->clear();
     ui->paintGridBox->addItem("<none>", "");
-    QHash<QString, PaintObject>::const_iterator i = mPaintList.begin();
+    QMap<QString, PaintObject>::const_iterator i = mPaintList.begin();
     while (i!=mPaintList.constEnd()) {
         ui->paintGridBox->addItem(i.key(),i.key());
         ++i;
@@ -481,7 +481,7 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
 
 void MainWindow::removeLayers(const LayeredGridBase *layer)
 {
-    QHash<QString, PaintObject>::iterator it=mPaintList.begin();
+    QMap<QString, PaintObject>::iterator it=mPaintList.begin();
     while(it!=mPaintList.end())
         if (it->layered == layer)
             it = mPaintList.erase(it);
@@ -2003,7 +2003,8 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::menuRecent_Files()
 {
         QAction* action = dynamic_cast<QAction*>(sender());
-        ui->initFileName->setText(action->text());
+        if (action)
+            ui->initFileName->setText(action->text());
 }
 
 void MainWindow::recentFileMenu(){
