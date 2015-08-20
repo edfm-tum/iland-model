@@ -93,6 +93,10 @@ void Species::setup()
     mCNFoliage = doubleVar("cnFoliage");
     mCNFineroot = doubleVar("cnFineRoot");
     mCNWood = doubleVar("cnWood");
+    if (mCNFineroot*mCNFoliage*mCNWood == 0.) {
+        throw IException( QString("Error setting up species %1: CN ratio is 0.").arg(id()));
+    }
+
 
     // turnover rates
     mTurnoverLeaf = doubleVar("turnoverLeaf");

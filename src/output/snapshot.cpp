@@ -210,7 +210,7 @@ void Snapshot::loadTrees()
     int new_ru;
     int offsetx, offsety;
     ResourceUnit *ru = 0;
-    int n=0;
+    int n=0, ntotal=0;
     try {
         // clear all trees on the landscape
         foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
@@ -218,6 +218,7 @@ void Snapshot::loadTrees()
         // load the trees from the database
         while (q.next()) {
             new_ru = q.value(1).toInt();
+            ++ntotal;
             if (new_ru != ru_index) {
                 ru_index = new_ru;
                 ru = mRUHash[ru_index];
@@ -259,10 +260,6 @@ void Snapshot::loadTrees()
                 qDebug() << n << "trees loaded...";
                 QCoreApplication::processEvents();
             }
-            if (n>=10000000 && ++n % 1000000 == 0) {
-                qDebug() << n << "trees loaded...";
-                QCoreApplication::processEvents();
-            }
 
         }
     } catch (const std::bad_alloc &) {
@@ -270,7 +267,7 @@ void Snapshot::loadTrees()
     }
 
 
-    qDebug() << "Snapshot: finished trees. N=" << n;
+    qDebug() << "Snapshot: finished trees. N=" << n << "from trees in snapshot:" << ntotal;
 }
 
 
@@ -559,7 +556,7 @@ void Snapshot::loadSaplings()
 //    }
 
     ResourceUnit *ru = 0;
-    int n=0;
+    int n=0, ntotal=0;
     int ci;
     int posx, posy;
     int offsetx, offsety;
@@ -568,6 +565,7 @@ void Snapshot::loadSaplings()
     while (q.next()) {
         ci = 0;
         ru_index = q.value(ci++).toInt();
+        ++ntotal;
         ru = mRUHash[ru_index];
         if (!ru)
             continue;
@@ -608,7 +606,7 @@ void Snapshot::loadSaplings()
 
 
     }
-    qDebug() << "Snapshot: finished loading saplings. N=" << n;
+    qDebug() << "Snapshot: finished loading saplings. N=" << n << "from N in snapshot:" << ntotal;
 
 }
 
