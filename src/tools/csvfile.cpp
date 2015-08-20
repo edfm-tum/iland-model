@@ -117,11 +117,11 @@ bool CSVFile::loadFromString(const QString &content)
 
     // captions
     if (mHasCaptions) {
-        mCaptions = first.split(mSeparator, QString::SkipEmptyParts).replaceInStrings("\"", ""); // drop "-characters
+        mCaptions = first.split(mSeparator, QString::KeepEmptyParts).replaceInStrings("\"", ""); // drop "-characters
         mRows.pop_front(); // drop the first line
     } else {
         // create pseudo captions
-        mCaptions = first.split(mSeparator, QString::SkipEmptyParts);
+        mCaptions = first.split(mSeparator, QString::KeepEmptyParts);
         for (int i=0;i<mCaptions.count();i++)
             mCaptions[i] = QString("c%1").arg(i);
     }
