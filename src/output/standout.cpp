@@ -33,6 +33,7 @@ StandOut::StandOut()
                    "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'. " \
                    "You can use the 'condition' to control if the output should be created for the current year(see dynamic stand output)");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
+               //<< OutputColumn("x_m", "x-coord", OutInteger) <<  OutputColumn("y_m", "y-coord", OutInteger) // temp
               << OutputColumn("count_ha", "tree count (living, >4m height) per ha", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
               << OutputColumn("height_avg_m", "average tree height (m)", OutDouble)
@@ -70,6 +71,7 @@ void StandOut::exec()
             if (stat.count()==0 && stat.cohortCount()==0)
                 continue;
             *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
+            // *this << ru->boundingBox().center().x() << ru->boundingBox().center().y();  // temp
             *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                     << stat.volume() << stat.totalCarbon() << stat.gwl() << stat.basalArea()
                     << stat.npp() << stat.nppAbove() << stat.leafAreaIndex() << stat.cohortCount();

@@ -624,7 +624,7 @@ bool BarkBeetleRULayers::onClick(const QPointF &world_coord) const
 void BarkBeetleAntagonist::setup()
 {
     const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
-    mRmortality = xml.valueDouble(".antagonistMortality", 2);
+    mRmortality = xml.valueDouble(".antagonistMortality", 0.8);
     mRreproduction = xml.valueDouble(".antagonistReproduction", 0.4);
     mSize = xml.valueDouble(".antagonistCellsize", 1000);
     QString formula = xml.value(".antagonistFormula", "0"); // default: no effect

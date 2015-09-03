@@ -462,6 +462,7 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     minScheduleHarvest = FMSTP::valueFromJs(jsvalue, "minScheduleHarvest","0").toNumber();
     maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
     maxHarvestLevel = FMSTP::valueFromJs(jsvalue, "maxHarvestLevel","2").toNumber();
+    qCDebug(abe) << "maxHarvestLevel" << maxHarvestLevel;
     useSustainableHarvest = FMSTP::valueFromJs(jsvalue, "useSustainableHarvest", "1").toNumber();
     if (useSustainableHarvest<0. || useSustainableHarvest>1.)
         throw IException("Setup of scheduler-options: invalid value for 'useSustainableHarvest' (0..1 allowed).");
