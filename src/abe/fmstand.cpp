@@ -423,6 +423,7 @@ void FMStand::addTreeRemoval(Tree *tree, int reason)
         if (mSTP->salvageActivity()) {
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
                 mFinalHarvested += removed_volume;
+                tree->setIsHarvested(); // set the flag that the tree is removed from the forest
             }
         }
 

@@ -222,15 +222,15 @@ void BarkBeetleModule::treeDeath(const Tree *tree)
     // do nothing if the tree was killed by bark beetles
     if (tree->isDeadBarkBeetle())
         return;
-    // we only process trees here that are either killed by storm or deliberately killed and dropped by management
-    if (!tree->isDeadWind() && !tree->isCutdown())
+    // we only process trees here that are either killed by storm or deliberately killed and dropped by management or are already salvaged
+    if (!tree->isDeadWind() && !tree->isCutdown() && !tree->isHarvested())
         return;
     // ignore the death of trees that are too small or are not Norway spruce
     if (tree->dbh()<params.minDbh || tree->species()->id()!=QStringLiteral("piab"))
         return;
 
     BarkBeetleCell &cell = mGrid.valueAt(tree->position());
-    cell.deadtrees=1;
+    cell.deadtrees=10;
 
 
 
@@ -374,8 +374,29 @@ void BarkBeetleModule::startSpread()
         b->n = 0;
         b->killed=false;
     }
-
 }
+
+void BarkBeetleModule::prepareInteractions()
+{
+    // loop over all cells of the grid and decide
+    // for each pixel if it is in the proximinity of (attractive) deadwood
+    // we assume an influence within the 5x5 pixel neighborhood
+
+    for (int y=0;y<mGrid.sizeY();++y)
+        for (int x=0;x<mGrid.sizeX();++x) {
+            if (!mGrid(x,y).deadtrees>1) {
+                int has_neighbors=0;
+                for (int dy=-2;dy<=2;++dy)
+                    for (int dx=-2;dx<=2;++dx)
+                        has_neighbors += mGrid.isIndexValid(x+dx,y+dy) ? (mGrid(x+dx,y+dy).deadtrees>1 ? 1: 0) : 0;
+
+                 mGrid(x,y).deadtrees = has_neighbors>0 ? 1 : 0;
+            } else {
+
+            }
+        }
+}
+
 
 void BarkBeetleModule::barkbeetleSpread()
 {

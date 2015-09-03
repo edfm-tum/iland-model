@@ -112,10 +112,13 @@ public:
     void setDeathReasonBarkBeetle()  { setFlag(Tree::TreeDeadBarkBeetle, true); }
     void setDeathReasonFire()  { setFlag(Tree::TreeDeadFire, true); }
     void setDeathCutdown()  { setFlag(Tree::TreeDeadKillAndDrop, true); }
+    void setIsHarvested()  { setFlag(Tree::TreeHarvested, true); }
+
     bool isDeadWind() const { return flag(Tree::TreeDeadWind);}
     bool isDeadBarkBeetle() const { return flag(Tree::TreeDeadBarkBeetle);}
     bool isDeadFire() const { return flag(Tree::TreeDeadFire);}
     bool isCutdown() const { return flag(Tree::TreeDeadKillAndDrop);}
+    bool isHarvested() const { return flag(Tree::TreeHarvested);}
 
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
@@ -179,11 +182,11 @@ private:
     int mFlags;
     /// (binary coded) tree flags
     enum Flags { TreeDead=1, TreeDebugging=2,
-                 TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128,
-                 MarkForCut=256, // mark tree for being cut down
-                 MarkForHarvest=512, // mark tree for being harvested
-                 MarkCropTree=1024, // mark as crop tree
-                 MarkCropCompetitor=2048 // mark as competitor for a crop tree
+                 TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256,
+                 MarkForCut=512, // mark tree for being cut down
+                 MarkForHarvest=1024, // mark tree for being harvested
+                 MarkCropTree=2048, // mark as crop tree
+                 MarkCropCompetitor=4096 // mark as competitor for a crop tree
                };
     /// set a Flag 'flag' to the value 'value'.
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
