@@ -104,6 +104,9 @@ void Modules::calculateWater(const ResourceUnit *resource_unit, const WaterCycle
 
 void Modules::treeDeath(const Tree *tree, int removal_type)
 {
+    if (mTreeDeath.isEmpty())
+        return;
+
     for (QList<TreeDeathInterface*>::const_iterator it=mTreeDeath.constBegin(); it!=mTreeDeath.constEnd(); ++it)
         (*it)->treeDeath(tree, removal_type);
 

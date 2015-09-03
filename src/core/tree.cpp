@@ -909,6 +909,7 @@ void Tree::die(TreeGrowthData *d)
 void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
+    setIsHarvested();
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
