@@ -77,6 +77,7 @@ const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("edge"), QLatin1Literal("result of edge detection"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("cwsUproot"), QLatin1Literal("critical wind speed uprooting (m/s)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("cwsBreak"), QLatin1Literal("critical wind speed stem breakage (m/s)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("treesKilled"), QLatin1Literal("trees killed on pixel"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("basalAreaKilled"), QLatin1Literal("killed basal area"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("iteration"), QLatin1Literal("iteration # of the spread algorithm"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("windSpeedCrown"), QLatin1Literal("wind speed at tree crown height (m/s)"), GridViewRainbow)
@@ -227,7 +228,7 @@ const WindSpeciesParameters &WindModule::speciesParameter(const Species *s)
     return mSpeciesParameters[s];
 }
 
-/// the run() function executes the fire events
+/// the run() function executes the wind events
 void WindModule::run(const int iteration, const bool execute_from_script)
 {
     // initialize things in the first iteration
@@ -756,25 +757,28 @@ void WindModule::scanResourceUnitTrees(const QPoint &position)
 
     ResourceUnit *ru = GlobalSettings::instance()->model()->ru(p_m);
 
-    QVector<Tree>::const_iterator tend = ru->trees().constEnd();
-    for (QVector<Tree>::const_iterator t = ru->trees().constBegin(); t!=tend; ++t) {
-        if (!t->isDead()) {
-            const QPoint &tp = t->positionIndex();
-            QPoint pwind(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
-            WindCell &wind=mGrid.valueAtIndex(pwind);
-            if (!wind.tree || t->height()>wind.tree->height()) {
-                wind.height = t->height();
-                wind.tree = &(*t);
+    if (ru) {
+        QVector<Tree>::const_iterator tend = ru->trees().constEnd();
+        for (QVector<Tree>::const_iterator t = ru->trees().constBegin(); t!=tend; ++t) {
+            if (!t->isDead()) {
+                const QPoint &tp = t->positionIndex();
+                QPoint pwind(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
+                WindCell &wind=mGrid.valueAtIndex(pwind);
+                if (!wind.tree || t->height()>wind.tree->height()) {
+                    wind.height = t->height();
+                    wind.tree = &(*t);
+                }
             }
         }
+        // check if the soil on the resource unit is frozen
+        switch(mSoilFreezeMode){
+        case esfAuto: mRUGrid.valueAt(p_m).soilIsFrozen = isSoilFrozen(ru, mWindDayOfYear); break;
+        case esfFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = true; break;
+        case esfNotFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = false; break;
+        default: break;
+        }
     }
-    // check if the soil on the resource unit is frozen
-    switch(mSoilFreezeMode){
-    case esfAuto: mRUGrid.valueAt(p_m).soilIsFrozen = isSoilFrozen(ru, mWindDayOfYear); break;
-    case esfFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = true; break;
-    case esfNotFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = false; break;
-    default: break;
-    }
+
     // set the "processed" flag
     mRUGrid.valueAt(p_m).flag = 1;
 }

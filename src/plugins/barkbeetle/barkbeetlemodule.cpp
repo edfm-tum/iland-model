@@ -390,7 +390,7 @@ void BarkBeetleModule::prepareInteractions()
                     for (int dx=-2;dx<=2;++dx)
                         has_neighbors += mGrid.isIndexValid(x+dx,y+dy) ? (mGrid(x+dx,y+dy).deadtrees>1 ? 1: 0) : 0;
 
-                 mGrid(x,y).deadtrees = has_neighbors>0 ? 1 : 0;
+                 mGrid.valueAt(x,y).deadtrees = has_neighbors>0 ? 1 : 0;
             } else {
 
             }
