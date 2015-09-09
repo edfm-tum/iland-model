@@ -55,8 +55,8 @@ public:
     /// antagonist activity: returns the
     double calculate();
 private:
-    const double cBackgroundBeetlePop = 100.; // per ha
-    const double cBackgroundAntagonistPop = 100; // per ha
+    static const double cBackgroundBeetlePop; // per ha
+    static const double cBackgroundAntagonistPop; // per ha
     double mPopulation; ///< current antagonist population (px per ha)
     double mBeetlePopulation; ///< size of the beetle population (px per ha)
     double mArea; ///< size of the area covered by this antagonist (ha)

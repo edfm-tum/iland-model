@@ -131,7 +131,7 @@ bool Helper::question(const QString &message, QWidget *parent)
 #endif
 }
 
-QString Helper::fileDialog(const QString &title, const QString &start_directory, const QString &filter)
+QString Helper::fileDialog(const QString &title, const QString &start_directory, const QString &filter, QWidget *parent)
 {
 #ifdef ILAND_GUI
     QString the_filter = filter;
@@ -140,7 +140,7 @@ QString Helper::fileDialog(const QString &title, const QString &start_directory,
     else
         the_filter += ";;All files (*.*)"; // as 2nd filter
 
-    QString fileName = QFileDialog::getOpenFileName(0,
+    QString fileName = QFileDialog::getOpenFileName(parent,
      title, start_directory, the_filter);
 #else
     Q_UNUSED(title); Q_UNUSED(start_directory); Q_UNUSED(filter);

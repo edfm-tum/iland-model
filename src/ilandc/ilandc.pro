@@ -33,18 +33,27 @@ PRE_TARGETDEPS += ../plugins/iland_windd.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
 }
-*gcc*: {
+win32:*gcc*: {
 PRE_TARGETDEPS += ../plugins/libiland_fired.a
 PRE_TARGETDEPS += ../plugins/libiland_windd.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetled.a
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
+}
+linux-g++: {
+ ## debug on linux
+message("linux g++ debug")
+QMAKE_CXXFLAGS += -g -O2
+PRE_TARGETDEPS += ../plugins/libiland_fire.a
+PRE_TARGETDEPS += ../plugins/libiland_wind.a
+PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
+LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 }
 
 }
 
 
 CONFIG(release, debug|release) {
-*gcc*: {
+win32:*gcc*: {
 # release stuff
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
@@ -61,6 +70,20 @@ PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 message(windows release)
 }
+linux-g++: {
+ ## release on linux
+message("linux g++ release")
+PRE_TARGETDEPS += ../plugins/libiland_fire.a
+PRE_TARGETDEPS += ../plugins/libiland_wind.a
+PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
+LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
+message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
+message($$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO)
+
+}
+
 }
 
 DEFINES += NO_DEBUG_MSGS

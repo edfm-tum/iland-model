@@ -36,6 +36,9 @@ double BarkBeetleAntagonist::mRmortality = 0.; ///< mortality rate
 double BarkBeetleAntagonist::mRreproduction = 0.; ///< reproduction rate (reproduction / prey)
 int BarkBeetleAntagonist::mSize = 0; ///< extent of the BBA-Cell im meters (must be multiple of 100)
 Expression BarkBeetleAntagonist::mAntagonistFormula;
+const double BarkBeetleAntagonist::cBackgroundBeetlePop = 100.; // per ha
+const double BarkBeetleAntagonist::cBackgroundAntagonistPop = 100; // per ha
+
 
 BarkBeetleModule::BarkBeetleModule()
 {

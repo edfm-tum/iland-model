@@ -622,6 +622,7 @@ QJSValue ScriptGlobal::viewOptions()
 #ifdef ILAND_GUI
     MainWindow *mw = GlobalSettings::instance()->controller()->mainWindow();
     Ui::MainWindowClass *ui = mw->uiclass();
+    // TODO: fix??
 
 #endif
     return res;
