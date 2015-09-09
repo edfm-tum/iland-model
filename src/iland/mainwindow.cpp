@@ -107,7 +107,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     QMutexLocker m(&qdebug_mutex);
      //QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
-     case QtDebugMsg:
+    case QtDebugMsg:
         if (showDebugMessages) {
             if (qstrcmp(context.category, "default")!=0)
                 bufferedMessages.append(QString("%1: %2").arg(context.category).arg(msg));
@@ -115,27 +115,28 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
                 bufferedMessages.append(QString(msg));
         }
 
-         break;
-     case QtWarningMsg:
-         //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
-         //MainWindow::logSpace()->ensureCursorVisible();
-          bufferedMessages.append(msg);
-         break;
-     case QtCriticalMsg: {
+        break;
+    case QtWarningMsg:
+    case QtInfoMsg:
+        //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
+        //MainWindow::logSpace()->ensureCursorVisible();
+        bufferedMessages.append(msg);
+        break;
+    case QtCriticalMsg: {
         QByteArray localMsg = msg.toLocal8Bit();
-         fprintf(stderr, "Critical: %s\n", localMsg.constData());
-         break; }
-     case QtFatalMsg: {
+        fprintf(stderr, "Critical: %s\n", localMsg.constData());
+        break; }
+    case QtFatalMsg: {
         QByteArray localMsg = msg.toLocal8Bit();
-         fprintf(stderr, "Fatal: %s\n", localMsg.constData());
-         bufferedMessages.append(msg);
+        fprintf(stderr, "Fatal: %s\n", localMsg.constData());
+        bufferedMessages.append(msg);
 
-         QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
-         Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
-         dumpMessages();
-         Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
-        }
-     }
+        QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
+        Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
+        dumpMessages();
+        Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
+    }
+    }
      if (!doBufferMessages || bufferedMessages.count()>5000)
              dumpMessages();
  }
@@ -274,7 +275,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (!xmldoc.setContent(xmlFile, &errMsg, &errLine, &errCol)) {
             QMessageBox::information(this, "title text", QString("Cannot set content of XML file %1. \nat line %2 col %3: %4 ")
                                      .arg(ui->initFileName->text()).arg(errLine).arg(errCol).arg(errMsg));
-            return;
+            //return;
         }
     }
 
@@ -679,8 +680,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     if (show_dom) {
         // paint the lower-res-grid;
-        float max_val = 50.;
-        float min_val = 0.;
+        float max_val = 50.f;
+        float min_val = 0.f;
         if (auto_scale_color) {
             max_val = 0.;
             for (HeightGridValue *v = domGrid->begin(); v!=domGrid->end(); ++v)
@@ -689,7 +690,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         mRulerColors->setCaption("Dominant height (m)", "dominant tree height on 10m pixel.");
         mRulerColors->setPalette(GridViewRainbow,0., max_val); // ruler
         if (!mRulerColors->autoScale()) {
-            max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
+            min_val = mRulerColors->minValue();
+            max_val = mRulerColors->maxValue();
         }
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
@@ -867,7 +869,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     } // if (show_trees)
 
     // highlight selected tree
-    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
+    Tree *t = (Tree*) ui->treeChange->property("tree").toLongLong();
     if (t) {
         QPointF pos = t->position();
         painter.setPen(Qt::black);
@@ -1260,7 +1262,7 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
     }
     wantDrag = false;
     qDebug() << "drag from" << from << "to" << to;
-    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
+    Tree *t = (Tree*) ui->treeChange->property("tree").toLongLong();
     if (!t)
         return;
     QPointF pos = vp.toWorld(to);
@@ -1376,7 +1378,7 @@ void MainWindow::setupModel()
 
 void MainWindow::on_pbSetAsDebug_clicked()
 {
-    int pt = ui->treeChange->property("tree").toInt();
+    int pt = ui->treeChange->property("tree").toLongLong();
     if (!pt)
         return;
     Tree *t = (Tree*)pt;
@@ -1386,7 +1388,7 @@ void MainWindow::on_pbSetAsDebug_clicked()
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml");
+    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml",this);
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);

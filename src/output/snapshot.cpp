@@ -327,7 +327,7 @@ void Snapshot::loadSoil()
     int n=0;
     while (q.next()) {
         ru_index = q.value(0).toInt();
-        ru = ru = mRUHash[ru_index];
+        ru = mRUHash[ru_index];
         if (!ru)
             continue;
         Soil *s = ru->soil();
