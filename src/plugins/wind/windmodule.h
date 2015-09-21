@@ -33,7 +33,7 @@ class ResourceUnit; // forward
 */
 class WindCell {
 public:
-    WindCell() { topex = 0; clear(); }
+    WindCell() { topex = 0; n_affected=0; clear(); }
     void clear() {height = edge = 0.f; n_trees=0; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
     bool isValid() const { return height<9999.f; } ///< returns true if the pixel is on the valid project area
     float topex; ///< topographic modifier for wind speed (-)
@@ -48,6 +48,7 @@ public:
     double cws_uproot; ///< critital wind speed for uprooting (m/s)
     double cws_break; ///< critical wind speed for tree breakage (m/s)
     double crown_windspeed; ///< wind speed (m/s) on the cecll
+    int n_affected; ///< number of storm that killed trees on that pixel.
 };
 // data structure for a resource unit
 class WindRUCell {
@@ -159,6 +160,7 @@ private:
     Expression mLRITransferFunction;
 
     friend class WindScript;
+    friend class WindOut;
 
 };
 

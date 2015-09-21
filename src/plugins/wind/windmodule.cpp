@@ -28,6 +28,7 @@
 #include "resourceunit.h"
 #include "climate.h"
 #include "gisgrid.h"
+#include "outputmanager.h"
 
 /** @defgroup windmodule iLand windmodule
   The wind module is a disturbance module within the iLand framework.
@@ -64,6 +65,7 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 7: return data.crown_windspeed; // effective wind speed in the crown (m/s)
     case 8: return data.topex; // topo modifier of the current pixel
     case 9: return ruValueAt(&data, 0); // 1 if soil is frozen on the current pixel
+    case 10: return data.n_affected; // number of storm events affecting the pixel
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -82,7 +84,8 @@ const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("iteration"), QLatin1Literal("iteration # of the spread algorithm"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("windSpeedCrown"), QLatin1Literal("wind speed at tree crown height (m/s)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("topo"), QLatin1Literal("the topography modifier for wind speeds"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewRainbow);
     return mNames;
 }
 
@@ -119,6 +122,7 @@ void WindModule::setup()
     mRUGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
                   GlobalSettings::instance()->model()->RUgrid().cellsize());
     // setup the wind grid
+    mGrid.clear(); // force a recreate (incl. c'tor)
     mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellsize());
     //mFireId = 0;
 
@@ -270,6 +274,9 @@ void WindModule::run(const int iteration, const bool execute_from_script)
                  << "gustfactor:" << mCurrentGustFactor;
     }
     qDebug() << "iterations: " << mCurrentIteration << "total pixels affected:" << mPixelAffected << "totals: killed trees:" << mTreesKilled << "basal-area:" << mTotalKilledBasalArea;
+
+    GlobalSettings::instance()->outputManager()->execute("wind");
+    GlobalSettings::instance()->outputManager()->save();
 }
 
 void WindModule::initWindGrid()
@@ -627,6 +634,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     cell->edge = 0.f;
     cell->n_iteration = mCurrentIteration;
     cell->tree = 0;
+    cell->n_affected++; // pixel has been cleared this time...
     return true;
 }
 

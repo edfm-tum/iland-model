@@ -8,10 +8,18 @@ Rectangle {
     id: main
     //anchors.fill: parent
     //color:  "gray"
+    Image {
+        id: splash_image
+        source: "qrc:/iland_splash.png"
+        visible: rulercolors.caption == '';
+        fillMode: Image.PreserveAspectFit
+        anchors.fill: parent
+    }
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 10
         spacing: 10
+        visible: rulercolors.caption != '';
 
 
         ColumnLayout{

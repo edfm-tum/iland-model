@@ -13,11 +13,13 @@ INCLUDEPATH  += ../.. \
 HEADERS       = \
         windplugin.h \
     windmodule.h \
-    windscript.h
+    windscript.h \
+    windout.h
 SOURCES       = \
         windplugin.cpp \
     windmodule.cpp \
-    windscript.cpp
+    windscript.cpp \
+    windout.cpp
 TARGET        = $$qtLibraryTarget(iland_wind)
 DESTDIR       = ../../plugins
 

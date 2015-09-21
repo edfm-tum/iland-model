@@ -61,6 +61,7 @@ FirePlugin::FirePlugin()
 void FirePlugin::setup()
 {
     // setup of the fire related outputs: note: here the fire module is passed directly to the output
+    GlobalSettings::instance()->outputManager()->removeOutput("fire");
     FireOut *fire_output = new FireOut();
     fire_output->setFireModule(&mFire);
     GlobalSettings::instance()->outputManager()->addOutput(fire_output);

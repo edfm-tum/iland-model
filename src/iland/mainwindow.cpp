@@ -117,7 +117,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
         break;
     case QtWarningMsg:
-    case QtInfoMsg:
+    //case QtInfoMsg:
         //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
         //MainWindow::logSpace()->ensureCursorVisible();
         bufferedMessages.append(msg);
@@ -1574,8 +1574,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::on_actionImageToClipboard_triggered()
 {
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setImage( screenshot() );
-    qDebug() << "copied image to clipboard.";
+    QImage my_img = screenshot();
+    my_img.convertToFormat(QImage::Format_RGB32);
+    //clipboard->setImage( my_img, QClipboard::Clipboard );
+    QString pth = GlobalSettings::instance()->path("screenshot.png", "temp");
+    screenshot().save(pth);
+    qDebug() << "copied image to clipboard. save also to: " << pth;
+    my_img.load(pth);
+    QApplication::clipboard()->setImage(my_img);
+
 }
 
 void MainWindow::saveDebugOutputs()
