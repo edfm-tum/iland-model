@@ -25,6 +25,7 @@
 class ResourceUnit; // forward
 class QJSEngine;
 class WindModule;// forward
+class WindOut;
 
 /** a iLand plugin for wind disturbances.
   */
@@ -63,6 +64,7 @@ public:
 
 private:
     WindModule *mWind;
+    WindOut *mWindOut;
 };
 
 

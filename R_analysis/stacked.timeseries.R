@@ -4,7 +4,7 @@
 library(RSQLite)
 
 # connect to an existing database
-db.conn <<- dbConnect("SQLite", dbname="e:/Daten/iLand/projects/HJA_WS12_v2/output/HJA_WS12.sqlite" )
+db.conn <<- dbConnect(RSQLite::SQLite(), dbname="e:/Daten/iLand/projects/HJA_WS12_v2/output/HJA_WS12.sqlite" )
 
 ### load data from the iLand output table
 stand <- dbReadTable(db.conn, "stand")

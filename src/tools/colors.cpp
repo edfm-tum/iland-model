@@ -72,7 +72,7 @@ Colors::Colors(QWidget *parent): QObject(parent)
     //default start palette
     //setPalette(GridViewRainbow, 0, 1);
     // factors test
-    setCaption("-");
+    setCaption("");
     setPalette(GridViewTerrain, 0, 4);
 }
 

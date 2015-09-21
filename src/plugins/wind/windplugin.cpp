@@ -25,6 +25,9 @@
 #include "windplugin.h"
 #include "windmodule.h"
 #include "windscript.h"
+#include "windout.h"
+#include "outputmanager.h"
+
 #if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(iland_wind, WindPlugin)
 #endif
@@ -34,6 +37,7 @@ WindPlugin::WindPlugin()
     qDebug() << "Wind plugin created";
     DBGMODE( qDebug("(Wind plugin in debug mode)"););
     mWind = 0;
+    mWindOut = 0;
 }
 
 WindPlugin::~WindPlugin()
@@ -57,13 +61,21 @@ QString WindPlugin::version()
 QString WindPlugin::description()
 {
     return "Wind disturbance module for iLand. " \
-            "Designed and written by by Rupert Seidl/Werner Rammer.";
+            "Designed and written by Rupert Seidl/Werner Rammer.";
 }
 
 void WindPlugin::setup()
 {
-    mWind = new WindModule;
+    if (!mWind)
+        mWind = new WindModule;
+
     mWind->setup();
+
+    mWindOut = new WindOut();
+    mWindOut->setWindModule(mWind);
+    GlobalSettings::instance()->outputManager()->removeOutput(mWindOut->tableName());
+    GlobalSettings::instance()->outputManager()->addOutput(mWindOut);
+
 }
 
 void WindPlugin::setupResourceUnit(const ResourceUnit *ru)

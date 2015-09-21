@@ -63,6 +63,7 @@ void BarkBeetlePlugin::setup()
     // setup of the fire related outputs: note: here the fire module is passed directly to the output
     BarkBeetleOut *bb_output = new BarkBeetleOut();
     bb_output->setBarkBeetleModule(&mBeetle);
+    GlobalSettings::instance()->outputManager()->removeOutput(bb_output->tableName());
     GlobalSettings::instance()->outputManager()->addOutput(bb_output);
     // setup of the fire module: load parameters from project file, etc.
     mBeetle.setup();

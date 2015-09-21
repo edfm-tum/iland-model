@@ -210,13 +210,20 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
 @</string>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="editStackMain">
         <attribute name="title">
          <string>Main</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout" stretch="1,2,10">
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,2,10">
+         <item>
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>iLand project file</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
@@ -249,7 +256,7 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
            <item>
             <widget class="QPushButton" name="saveFile">
              <property name="toolTip">
-              <string>Save the current project file</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;View the XML project file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string/>

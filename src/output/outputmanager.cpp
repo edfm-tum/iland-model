@@ -64,6 +64,15 @@ void OutputManager::addOutput(Output *output)
     mOutputs.append(output);
 }
 
+void OutputManager::removeOutput(const QString &tableName)
+{
+    Output *o = find(tableName);
+    if (o) {
+        mOutputs.removeAt(mOutputs.indexOf(o));
+        delete o;
+    }
+}
+
 
 OutputManager::~OutputManager()
 {
