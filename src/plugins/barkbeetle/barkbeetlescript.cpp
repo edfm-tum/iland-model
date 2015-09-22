@@ -96,6 +96,12 @@ void BarkBeetleScript::reloadSettings()
     mBeetle->loadParameters();
 }
 
+void BarkBeetleScript::newYear()
+{
+    int y = mBeetle->manualYearBegin();
+    qDebug() << "Barkbeetle-module: year=" << y;
+}
+
 void BarkBeetleScript::runBB(int iteration)
 {
     qDebug() << "running bark beetle module....";
