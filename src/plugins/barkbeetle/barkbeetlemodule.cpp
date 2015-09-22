@@ -41,6 +41,7 @@ BarkBeetleModule::BarkBeetleModule()
     mRULayers.setGrid(mRUGrid);
     mSimulate = false;
     mEnabled = false;
+    mYear = 0;
 
 }
 
@@ -133,7 +134,7 @@ void BarkBeetleModule::loadParameters()
         }
     qDebug() << "refclimate" << mRefClimateAverages;
     if (!mRefClimate)
-        throw IException(QString("Barkbeetle Setup: Error: a climate table '%1' (given in modules.barkbeetle.refernceClimate.tableName) for the barkbeetle reference climate does not exist.").arg(ref_table_name));
+        throw IException(QString("Barkbeetle Setup: Error: a climate table '%1' (given in modules.barkbeetle.referenceClimate.tableName) for the barkbeetle reference climate does not exist.").arg(ref_table_name));
 
     params.winterMortalityBaseLevel = xml.valueDouble(".baseWinterMortality", 0.5);
 
@@ -301,6 +302,7 @@ void BarkBeetleModule::yearBegin()
     for (BarkBeetleRUCell *bbru=mRUGrid.begin();bbru!=mRUGrid.end();++bbru) {
         bbru->scanned = false;
     }
+    mYear = GlobalSettings::instance()->instance()->currentYear();
 }
 
 void BarkBeetleModule::calculateGenerations()
@@ -335,21 +337,22 @@ void BarkBeetleModule::calculateOutbreakFactor()
     *mClimateVariables[0] = (p[2]+p[3]+p[4]) / mRefClimateAverages[0];
     *mClimateVariables[1] = (p[5]+p[6]+p[7]) / mRefClimateAverages[1];
     *mClimateVariables[2] = (p[8]+p[9]+p[10]) / mRefClimateAverages[2];
-    *mClimateVariables[3] = (t[11]+t[0]+t[1])  / mRefClimateAverages[3]; // not really clean.... using all month of the current year
+    *mClimateVariables[3] = (p[11]+p[0]+p[1])  / mRefClimateAverages[3]; // not really clean.... using all month of the current year
     // temperatures (mean monthly temp) -> delta
     *mClimateVariables[4] = (t[2]+t[3]+t[4])/3. - mRefClimateAverages[4];
     *mClimateVariables[5] = (t[5]+t[6]+t[7])/3. - mRefClimateAverages[5];
     *mClimateVariables[6] = (t[8]+t[9]+t[10])/3. - mRefClimateAverages[6];
     *mClimateVariables[7] = (t[11]+t[0]+t[1])/3. - mRefClimateAverages[7];
 
-    mRc = mOutbreakClimateSensitivityFormula.calculate();
+    mRc = qMax(mOutbreakClimateSensitivityFormula.execute(), 0.);
+    qDebug() << "Barkbeelte: rc:" << mRc;
 
 }
 
 void BarkBeetleModule::startSpread()
 {
     // calculate winter mortality
-    // background probability of infestation
+    //  probability of infestation
     for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b) {
         if (b->infested) {
             stats.infestedStart++;
@@ -369,14 +372,21 @@ void BarkBeetleModule::startSpread()
                 }
             }
 
-        } else if (b->isPotentialHost() && drandom()< b->backgroundInfestationProbability * mRc ) {
-            // background activation
-            b->setInfested(true);
-            stats.infestedBackground++;
+        } else if (b->isPotentialHost()) {
+            // calculate probability
+            double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
+            double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
+            if (drandom() < p_mod) {
+                // background activation
+                b->setInfested(true);
+                b->outbreakYear = mYear; // this outbreak starts in the current year
+                stats.infestedBackground++;
+            }
         }
 
         b->n = 0;
         b->killed=false;
+        b->packageOutbreakYear = 0.f;
     }
 }
 
@@ -405,6 +415,8 @@ void BarkBeetleModule::prepareInteractions()
 void BarkBeetleModule::barkbeetleSpread()
 {
     DebugTimer t("BBSpread");
+    double ant_years = irandom(500,700)/100.;
+    Expression antagonist_mortality(QString("polygon(x,%1,0, %2,1)").arg(ant_years-1.).arg(ant_years+1.));
     for (int generation=1;generation<=stats.maxGenerations;++generation) {
 
         GridRunner<BarkBeetleCell> runner(mGrid, mGrid.rectangle());
@@ -421,6 +433,11 @@ void BarkBeetleModule::barkbeetleSpread()
             // could develop (e.g. 1 generation and 1 sister generation -> higher number of beetles that
             // start spreading from the current pixel
             int n_packets = bbru.add_sister ? params.cohortsPerSisterbrood : params.cohortsPerGeneration;
+
+            // antagonists:
+            double t_ob = mYear - b->outbreakYear;
+            double p_antagonist_mort = antagonist_mortality.calculate(t_ob);
+            n_packets = qRound(n_packets * (1. - p_antagonist_mort));
 
             stats.NCohortsSpread += n_packets;
 
@@ -467,6 +484,7 @@ void BarkBeetleModule::barkbeetleSpread()
                 // attack the target pixel if a target could be identified
                 if (target) {
                     target->n++;
+                    target->packageOutbreakYear += b->outbreakYear;
                 }
             }
         }  // while
@@ -485,10 +503,13 @@ void BarkBeetleModule::barkbeetleSpread()
                 b->p_colonize = std::max(b->p_colonize, float(p_ncol));
                 if (drandom() < p_ncol) {
                     // attack successful - the pixel gets infested
+                    b->outbreakYear = b->packageOutbreakYear / float(b->n);
                     b->setInfested(true);
                     stats.NInfested++;
+                } else {
+                    b->n = 0; // reset the counter
+                    b->packageOutbreakYear = 0.f;
                 }
-                b->n = 0; // reset the counter
 
             }
         }
@@ -551,6 +572,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 4: return data.p_colonize; // probability of kill
     case 5: return data.deadtrees; // absence of deadwood (spruce)
     case 6: return data.backgroundInfestationProbability;
+    case 7: return data.outbreakYear;
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -566,7 +588,8 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). Newly infested pixels are included (max iteration + 1)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("1: presence of dead potential host trees on the pixel"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray);
+                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
+                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("year of the outbreak (simulation year)"), GridViewGray);
     return mNames;
 
 }

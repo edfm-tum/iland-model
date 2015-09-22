@@ -37,8 +37,8 @@ class BarkBeetleCell
 {
 public:
     BarkBeetleCell() { reset(); }
-    void clear() { n=0; killedYear=0; infested=false;  p_colonize=0.f; deadtrees=0;  }
-    void reset() {clear(); dbh=0.f; tree_stress=0.f; }
+    void clear() { n=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=0; packageOutbreakYear=0.f; }
+    void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
     void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killedYear=0; n=0;} }
@@ -52,6 +52,8 @@ public:
     float p_colonize; // the highest probability (0..1) that a pixel is killed
     int n; // number of cohorts that landed on the pixel
     int killedYear; // year (iteration) at which pixel was killed ??
+    float outbreakYear; // year in which the outbreak started (this information is preserved by spreading beatles)
+    float packageOutbreakYear; // outbreak year of packages landing on a cell
     int deadtrees; // 0: no dead trees, 1: pot. hosts (after storm), 2: lure trees (fangbaueme)
 
     static void resetCounters() { total_infested=0; max_iteration=0; }
@@ -139,7 +141,8 @@ public:
     /// function that is called whenever a tree dies somewhere in iLand
     void treeDeath(const Tree *tree);
 
-    void yearBegin();
+    void yearBegin(); ///< called automatically
+    int manualYearBegin() { mYear++; return mYear; }
     // properties
     void setSimulate(bool do_simulate) { mSimulate = do_simulate; }
     bool simulate() const {return mSimulate; }
@@ -179,13 +182,12 @@ private:
         int NWinterMortality; // number of (infested) pixels that died off during winter
         int NTreesKilled; // number of spruce trees killed
         double BasalAreaKilled; // sum of basal area of killed trees
-        //double meanAntagonistPopulation; // mean antagonists/ha
-        //double maxAntagonistFillFraction; // kill fraction of cell with highest fraction
     } stats;
 
 
     bool mSimulate; ///< true if bark beetle are only simulated, i.e. no trees get killed
     bool mEnabled; ///< if false, no bark beetles are simulates
+    int mYear; ///< year (usually synchronized with iLand clock, but for testing purposes the module has a separate year)
     BBGenerations mGenerations;
     RandomCustomPDF mKernelPDF;
     Expression mColonizeProbability; ///< function that calculates probability of infestation for one landed beetle package given the trees' stress level
