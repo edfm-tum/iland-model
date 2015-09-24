@@ -169,6 +169,8 @@ private:
         double spreadKernelMaxDistance; ///< upper limit for the spread distance (the kernel is cut at this distance)
         double backgroundInfestationProbability; ///< p that a pixel gets spontaneously infested each year
         double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
+        double outbreakDurationMin; ///< minimum value for the duration of a barkbeetle outbreak
+        double outbreakDurationMax; ///< maximum value for the duration of a barkbeetle outbreak
     } params;
     struct SBBStats {
         void clear() { infestedStart=0;infestedBackground=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NTreesKilled=0;BasalAreaKilled=0.; }

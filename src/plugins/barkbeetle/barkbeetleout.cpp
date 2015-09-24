@@ -35,7 +35,7 @@ BarkBeetleOut::BarkBeetleOut()
               << OutputColumn("landedCohorts", "Number of bark beetle 'packages' (x1000) that reach potential hosts (cohorts x 1000).", OutDouble)
               << OutputColumn("landedArea_ha", "Area (ha) of potential host trees where bark beetles landed.", OutDouble)
               << OutputColumn("infestedArea_ha", "Area (ha) of newly infected host pixels.", OutDouble)
-              << OutputColumn("killedTrees", "total number of Norway spruce trees  that were killed in this iteration.", OutDouble)
+              << OutputColumn("killedTrees", "total number of Norway spruce trees that were killed in this iteration.", OutDouble)
               << OutputColumn("killedBasalArea", "Total Basal Area of killed trees in the current year.", OutDouble);
 
 
