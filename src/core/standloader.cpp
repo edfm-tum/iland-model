@@ -112,7 +112,11 @@ void StandLoader::processInit()
 
     // one global init-file for the whole area:
     if (copy_mode=="single") {
-        loadInitFile(fileName, type);
+        // useful for 1ha simulations only...
+        if (GlobalSettings::instance()->model()->ruList().size()>1)
+            throw IException("Error initialization: 'mode' is 'single' but more than one resource unit is simulated (consider using another 'mode').");
+
+        loadInitFile(fileName, type, 0, GlobalSettings::instance()->model()->ru()); // this is the first resource unit
         evaluateDebugTrees();
         return;
     }
