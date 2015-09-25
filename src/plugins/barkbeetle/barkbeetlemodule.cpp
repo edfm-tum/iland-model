@@ -116,6 +116,11 @@ void BarkBeetleModule::loadParameters()
     *p++ = mOutbreakClimateSensitivityFormula.addVar("Twinter");
     mOutbreakClimateSensitivityFormula.parse();
 
+    params.outbreakDurationMin = xml.valueDouble(".outbreakDurationMin", 0.);
+    params.outbreakDurationMax = xml.valueDouble(".outbreakDurationMax", 0.);
+    formula = xml.value(".outbreakDurationMortalityFormula", "0");
+    mOutbreakDurationFormula.setExpression(formula);
+
     QString ref_table_name = xml.value(".referenceClimate.tableName");
     QString ref_climate_values = xml.value(".referenceClimate.seasonalPrecipSum");
     QStringList tmp = ref_climate_values.split(',');
@@ -415,8 +420,8 @@ void BarkBeetleModule::prepareInteractions()
 void BarkBeetleModule::barkbeetleSpread()
 {
     DebugTimer t("BBSpread");
-    double ant_years = irandom(500,700)/100.;
-    Expression antagonist_mortality(QString("polygon(x,%1,0, %2,1)").arg(ant_years-1.).arg(ant_years+1.));
+
+    double ant_years = qMax(nrandom(params.outbreakDurationMin, params.outbreakDurationMax), 1.);
     for (int generation=1;generation<=stats.maxGenerations;++generation) {
 
         GridRunner<BarkBeetleCell> runner(mGrid, mGrid.rectangle());
@@ -436,7 +441,7 @@ void BarkBeetleModule::barkbeetleSpread()
 
             // antagonists:
             double t_ob = mYear - b->outbreakYear;
-            double p_antagonist_mort = antagonist_mortality.calculate(t_ob);
+            double p_antagonist_mort = mOutbreakDurationFormula.calculate(limit(t_ob / ant_years, 0., 1.));
             n_packets = qRound(n_packets * (1. - p_antagonist_mort));
 
             stats.NCohortsSpread += n_packets;

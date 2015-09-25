@@ -162,7 +162,7 @@ void FMUnit::managementPlanUpdate()
     hdz /= total_area; // =sum(Vol/age * share)
 
     mMAI = mai;
-    mMAI = mMAI * 1.15; // 15% increase, hack WR
+    //mMAI = mMAI * 1.15; // 15% increase, hack WR
     mHDZ = hdz;
     mMeanAge = age;
     mTotalVolume = volume;

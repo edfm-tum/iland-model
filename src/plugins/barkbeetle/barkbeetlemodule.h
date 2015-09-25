@@ -197,6 +197,7 @@ private:
     /// equation calculating the 'r_c' factor (modifying probability of outbreak linked to climate means)
     /// variables: <Var><season>; Var: [T|P]: T current temperature - average temperature, P: current precipitation / average precipitation, <season>: [spring, summer, autumn, winter]; e.g.: Tspring, Psummer
     Expression mOutbreakClimateSensitivityFormula;
+    Expression mOutbreakDurationFormula;
     Grid<BarkBeetleCell> mGrid;
     Grid<BarkBeetleRUCell> mRUGrid;
     BarkBeetleLayers mLayers;
