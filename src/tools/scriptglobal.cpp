@@ -551,6 +551,12 @@ bool ScriptGlobal::loadModelSnapshot(QString file_name)
     return false;
 }
 
+void ScriptGlobal::reloadABE()
+{
+    qDebug() << "attempting to reload ABE";
+    GlobalSettings::instance()->model()->reloadABE();
+}
+
 void ScriptGlobal::throwError(const QString &errormessage)
 {
     GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));

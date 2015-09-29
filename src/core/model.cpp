@@ -495,6 +495,20 @@ void Model::loadProject()
 
 }
 
+void Model::reloadABE()
+{
+    // delete firest
+    if (mABEManagement)
+        delete mABEManagement;
+    mABEManagement = new ABE::ForestManagementEngine();
+    // and setup
+    mABEManagement->setup();
+    mABEManagement->runOnInit();
+
+    mABEManagement->initialize();
+
+}
+
 
 ResourceUnit *Model::ru(QPointF coord)
 {

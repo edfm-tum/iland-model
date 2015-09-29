@@ -1323,6 +1323,9 @@ void MainWindow::modelFinished(QString errorMessage)
 /// creates the iLand model
 void MainWindow::setupModel()
 {
+    //recent file menu
+    recentFileMenu();
+
     // load project xml file to global xml settings structure
     mRemoteControl.setFileName(ui->initFileName->text());
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
@@ -1370,8 +1373,6 @@ void MainWindow::setupModel()
     labelMessage("Model created. Ready to run.");
     checkModelState();
 
-    //recent file menu
-    recentFileMenu();
 }
 
 
@@ -1877,8 +1878,8 @@ void MainWindow::writeSettings()
     settings.endGroup();
     //recent files menu qsettings registry save
     settings.beginGroup("recent_files");
-    for(int i = 0;i < mList.size();i++){
-        settings.setValue(QString("file-%1").arg(i),mList[i]);
+    for(int i = 0;i < mRecentFileList.size();i++){
+        settings.setValue(QString("file-%1").arg(i),mRecentFileList[i]);
     }
     settings.endGroup();
 }
@@ -1906,11 +1907,11 @@ void MainWindow::readSettings()
     settings.beginGroup("recent_files");
     for(int i = 0;i < settings.childKeys().size();i++){
        //resize(settings.value("size", QSize(400, 400)).toSize());
-        mList.append(settings.value(QString("file-%1").arg(i)).toString());
+        mRecentFileList.append(settings.value(QString("file-%1").arg(i)).toString());
     }
     for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
-        if(i < mList.size()){
-            ui->menuRecent_Files->actions()[i]->setText(mList[i]);
+        if(i < mRecentFileList.size()){
+            ui->menuRecent_Files->actions()[i]->setText(mRecentFileList[i]);
             connect(ui->menuRecent_Files->actions()[i],SIGNAL(triggered()),this,SLOT(menuRecent_Files()));
             ui->menuRecent_Files->actions()[i]->setVisible(true);
         }else{
@@ -2017,17 +2018,17 @@ void MainWindow::menuRecent_Files()
 }
 
 void MainWindow::recentFileMenu(){
-    if(mList.size() > 4){
-        mList.removeAt(4);
+    if(mRecentFileList.size() > 9){
+        mRecentFileList.removeAt(9);
     }
-    if(mList.contains(ui->initFileName->text())){
-        mList.removeAt(mList.indexOf(ui->initFileName->text()));
+    if(mRecentFileList.contains(ui->initFileName->text())){
+        mRecentFileList.removeAt(mRecentFileList.indexOf(ui->initFileName->text()));
      }
-    mList.prepend(ui->initFileName->text());
+    mRecentFileList.prepend(ui->initFileName->text());
 
     for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
-        if(i < mList.size()){
-            ui->menuRecent_Files->actions()[i]->setText(mList[i]);
+        if(i < mRecentFileList.size()){
+            ui->menuRecent_Files->actions()[i]->setText(mRecentFileList[i]);
             connect(ui->menuRecent_Files->actions()[i],SIGNAL(triggered()),this,SLOT(menuRecent_Files()));
             ui->menuRecent_Files->actions()[i]->setVisible(true);
         }else{

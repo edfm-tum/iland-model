@@ -503,6 +503,7 @@ QStringList FMStand::info()
         lines <<  "/-";
     }
     lines << QString("agent: %1").arg(unit()->agent()->type()->name());
+    lines << QString("STP: %1").arg(stp()?stp()->name():QStringLiteral("-"));
     lines << QString("U (yrs): %1").arg(U());
     lines << QString("thinning int.: %1").arg(thinningIntensity());
     lines << QString("last update: %1").arg(lastUpdate());

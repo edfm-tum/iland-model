@@ -147,6 +147,8 @@ public slots:
     // vegetation snapshots
     bool saveModelSnapshot(QString file_name);
     bool loadModelSnapshot(QString file_name);
+    // agent-based-model of forest management
+    void reloadABE();
 private:
     void throwError(const QString &errormessage);
     QString mCurrentDir;

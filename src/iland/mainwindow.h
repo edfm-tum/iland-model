@@ -123,7 +123,7 @@ private:
     Grid<float> mRegenerationGrid;
     //recent file menu
     void recentFileMenu();
-    QList<QString> mList;
+    QList<QString> mRecentFileList;
 
 private slots:
     void automaticRun(); ///< automatically start a simulation...
