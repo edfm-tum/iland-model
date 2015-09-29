@@ -41,6 +41,7 @@ private:
     mutable QHash<const ABE::Agent*, int > mAgentIndex;
     mutable QHash<QString, int> mUnitIndex;
     mutable QHash<int, int> mStandIndex;
+    mutable QHash<QString, int> mSTPIndex;
 };
 
 

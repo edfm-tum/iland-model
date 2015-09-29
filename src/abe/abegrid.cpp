@@ -24,6 +24,7 @@
 #include "modelcontroller.h"
 #include "scheduler.h"
 #include "agent.h"
+#include "fmstp.h"
 
 
 
@@ -59,6 +60,10 @@ double ABELayers::value(const FMStandPtr &data, const int index) const
     case 9: return data->sleepYears(); // "next evaluation"
     case 10: return data->lastUpdate(); // last update
     case 11: return data->unit()->constScheduler()?data->unit()->constScheduler()->scoreOf(data->id()) : -1.; // scheduler score
+    case 12: if (!mSTPIndex.contains(data->stp()->name())) // stand treatment program
+                mSTPIndex[data->stp()->name()] = mSTPIndex.count();
+             return mSTPIndex[data->stp()->name()];
+
     default: throw IException("ABELayers:value(): Invalid index");
     }
 }
@@ -78,7 +83,8 @@ const QVector<LayeredGridBase::LayerElement> &ABELayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("last execution"), QStringLiteral("years since the last execution of an activity on the stand."), GridViewHeat)
                 << LayeredGridBase::LayerElement(QStringLiteral("next evaluation"), QStringLiteral("year of the last execution"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QStringLiteral("last update"), QStringLiteral("year of the last update of the forest state."), GridViewRainbowReverse)
-                << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("stp"), QStringLiteral("Stand treatment program currently active"), GridViewBrewerDiv);
     return mNames;
 }
 
@@ -91,6 +97,8 @@ const QString ABELayers::labelvalue(const int value, const int index) const
         return mUnitIndex.key(value);
     case 2: // agent
         return mAgentIndex.key(value)->name();
+    case 12: // stp
+        return mSTPIndex.key(value);
     default: return QString::number(value);
     }
 }

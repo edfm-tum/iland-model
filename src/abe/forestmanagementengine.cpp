@@ -419,6 +419,8 @@ void ForestManagementEngine::setup()
         FMSTP* stp = s->unit()->agent()->type()->stpByName(it.value());
         if (stp) {
             s->setSTP(stp);
+        } else {
+            qCDebug(abeSetup) << "Warning during reading of CSV setup file: the STP '" << it.value() << "' is not valid for Agenttype: " << s->unit()->agent()->type()->name();
         }
     }
     qCDebug(abeSetup) << "ABE setup completed.";

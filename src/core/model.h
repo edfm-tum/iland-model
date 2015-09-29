@@ -103,6 +103,7 @@ public:
     static const ModelSettings &settings() {return mSettings;} ///< access to global model settings.
     static ModelSettings &changeSettings() {return mSettings;} ///< write access to global model settings.
     void onlyApplyLightPattern() { applyPattern(); readPattern(); }
+    void reloadABE(); ///< force a recreate of the agent based forest management engine
 
     // actions
     /// build stand statistics (i.e. stats based on resource units)

@@ -990,7 +990,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
             if (**it <= min_lif)
                 break;
 
-        if (min_lif_index < pxcount) {
+        if (pxcount < min_lif_index) {
             // not enough LIF pixels available
             min_lif_index = pxcount; // try the brightest pixels (ie with the largest value for the LIF)
         }
