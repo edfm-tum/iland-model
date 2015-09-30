@@ -75,6 +75,15 @@
   */
 
 /**
+  returns a list of valid stand-ids within the model.
+  See also: {{#crossLink "standId:property"}}{{/crossLink}}
+
+
+  @method standIds
+  @return {array} Array of valid stand-ids.
+  */
+
+/**
   Runs a planting activity (without the context of stand treatment programmes). This is especially useful for
   setting up initial stand conditions. The `planting` defines the activity according to the syntax of the planting activity.
 
@@ -175,6 +184,22 @@
 */
 
 /**
+  The mean height of the stand (meter). It is calculated as basal area weighted mean height of all trees on the stand (>4m).
+  See also {{#crossLink "Stand/topHeight:property"}}{{/crossLink}}.
+
+  @property height
+  @type double
+*/
+
+/**
+  The top height (in meters) is defined as the mean height of the 100 thickest trees per ha. For larger/ smaller stands, the number of trees is scaled accordingly.
+  See also {{#crossLink "Stand/height:property"}}{{/crossLink}}.
+
+  @property topHeight
+  @type double
+*/
+
+/**
   The mean age of the stand (years). It is calculated as basal area weighted mean age of all trees on the stand (>4m).
   Note the difference to `absoluteAge`, which is the number of years since the rotation started.
 
@@ -207,6 +232,13 @@
   @type int
 */
 
+/**
+  The total area of the stand in hectares.
+
+
+  @property area
+  @type double
+*/
 /**
   Retrieve the species id at position `index`.
 

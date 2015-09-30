@@ -3,6 +3,9 @@
 // see also the yuidoc.json for more options.
 // http://127.0.0.1:3000/
 
+// Installation of YUIDOC: http://yui.github.io/yuidoc/
+// you need node.js -> download and install
+
 /**
  * The agent based forest management engine.
 #Overview

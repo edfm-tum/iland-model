@@ -32,7 +32,7 @@ namespace ABE {
 // (2) stand variables
 QStringList standVarList=QStringList() << "basalArea" << "age"  << "absoluteAge" << "nspecies"
                                        << "volume" << "dbh" << "height"
-                                       << "annualIncrement" << "elapsed";
+                                       << "annualIncrement" << "elapsed" << "topHeight" << "area";
 
 // (3) site variables
 QStringList siteVarList=QStringList() << "annualIncrement" << "harvestMode" << "U";
@@ -88,6 +88,8 @@ double FOMEWrapper::valueStand(const int variableIndex)
     case 6: return mStand->height(); // "height" (m)
     case 7: return mStand->meanAnnualIncrementTotal(); // annual increment (since beginning of the rotation) m3/ha
     case 8: return ForestManagementEngine::instance()->currentYear() - mStand->lastExecution(); // years since last execution of an activity for the stand (yrs)
+    case 9: return mStand->topHeight(); // top height (m)
+    case 10: return mStand->area(); // stand area (ha)
     default: return 0;
     }
 }

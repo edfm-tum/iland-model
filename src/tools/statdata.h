@@ -20,7 +20,7 @@ public:
     double median() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mMedian; } ///< 2nd quartil = median
     double percentile25() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mP25; } ///< 1st quartil
     double percentile75() const { if (mP25==std::numeric_limits<double>::max()) calculatePercentiles(); return mP75; } ///< 3rd quartil
-    double percentile(const int perc) const; ///< get value of a given percentile (0..100)
+    double percentile(const int percent) const; ///< get value of a given percentile (0..100)
     double standardDev() const { if (mSD==std::numeric_limits<double>::max()) calculateSD(); return mSD; } ///< get the standard deviation (of the population)
     // additional functions
     static QVector<int> calculateRanks(const QVector<double> &data, bool descending=false); ///< rank data.

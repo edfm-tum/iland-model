@@ -97,6 +97,8 @@ public:
     double dbh() const {return mDbh; }
     /// mean tree height (basal area weighted, of trees>4m), in m
     double height() const {return mHeight; }
+    /// top height (mean height of the 100 thickest trees/ha), in m
+    double topHeight() const {return mTopHeight; }
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
     /// total realized harvest (m3 on the full stand area) (note: salvage harvest ist part of final harvest)
@@ -172,6 +174,7 @@ private:
     double mStems; ///< stems per ha (above 4m)
     double mDbh; ///< mean dbh (basal area weighted, of trees>4m) in cm
     double mHeight; ///< mean tree height (basal area weighted, of trees>4m), in m
+    double mTopHeight; ///< top height (mean height of the 100 thickest trees per ha)
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
     double mFinalHarvested; ///< m3 of timber volume that has been harvested (regeneration phase)
     double mThinningHarvest; ///< m3 of timber that was harvested for thinning/tending
