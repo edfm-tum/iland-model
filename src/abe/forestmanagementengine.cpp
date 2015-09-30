@@ -640,6 +640,14 @@ FMStand *ForestManagementEngine::stand(int stand_id) const
     return 0;
 }
 
+QStringList ForestManagementEngine::standIds() const
+{
+    QStringList standids;
+    foreach(FMStand *s, mStands)
+        standids.push_back(QString::number(s->id()));
+    return standids;
+}
+
 void ForestManagementEngine::addTreeRemoval(Tree *tree, int reason)
 {
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work

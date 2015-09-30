@@ -59,12 +59,13 @@ double StatData::calculateSD() const
     return mSD;
 }
 
-double StatData::percentile(const int perc) const
+double StatData::percentile(const int percent) const
 {
 // double *Values, int ValueCount,
     // code von: Fast median search: an ANSI C implementation, Nicolas Devillard, http://ndevilla.free.fr/median/median/index.html
         // algo. kommt von Wirth, hier nur an c++ angepasst.
 
+    int perc = limit(percent, 1, 100);
     int ValueCount = mData.count();
     int i,j,l,m, n, k ;
     double x, temp ;

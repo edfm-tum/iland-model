@@ -271,6 +271,11 @@ bool FomeScript::isValidStand(int stand_id)
     return false;
 }
 
+QStringList FomeScript::standIds()
+{
+    return ForestManagementEngine::instance()->standIds();
+}
+
 void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
 {
     FMStand *stand = ForestManagementEngine::instance()->stand(stand_id);

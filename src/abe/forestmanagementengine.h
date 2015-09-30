@@ -86,6 +86,7 @@ public:
     //QVector<FMStand*> stands() const {return mStands; }
     const QMultiMap<FMUnit*, FMStand*> &stands() const {return mUnitStandMap; }
     const QVector<FMUnit*> &units() const { return mUnits; }
+    QStringList standIds() const;
     // functions
 
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.

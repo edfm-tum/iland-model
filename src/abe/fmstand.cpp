@@ -34,6 +34,7 @@
 #include "tree.h"
 #include "species.h"
 
+#include "statdata.h"
 #include "debugtimer.h"
 
 namespace ABE {
@@ -174,6 +175,7 @@ void FMStand::reload(bool force)
     mStems = 0.;
     mDbh = 0.;
     mHeight = 0.;
+    mTopHeight = 0.;
     mLastUpdate = ForestManagementEngine::instance()->currentYear();
     mSpeciesData.clear();
 
@@ -186,16 +188,35 @@ void FMStand::reload(bool force)
     // use: value_per_ha = value_stand * area_factor
     double area_factor = 1. / area();
     const QVector<QPair<Tree*, double> > &treelist = trees->trees();
+
+    // calculate top-height: diameter of the 100 thickest trees per ha
+    QVector<double> dbhvalues;
+    dbhvalues.reserve(trees->trees().size());
+
+    for ( QVector<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it)
+        dbhvalues.push_back(it->first->dbh());
+
+    double topheight_threshhold;
+    double topheight_height = 0.;
+    int topheight_trees = 0;
+    if (treelist.size()>0) {
+        StatData s(dbhvalues);
+        topheight_threshhold= s.percentile( 100*(1- area()*100/treelist.size()) ); // sorted ascending -> thick trees at the end of the list
+    }
     for ( QVector<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it) {
         double ba = it->first->basalArea() * area_factor;
         mTotalBasalArea+=ba;
         mVolume += it->first->volume() * area_factor;
         mAge += it->first->age()*ba;
         mDbh += it->first->dbh()*ba;
-        mHeight += it->first->dbh()*ba;
+        mHeight += it->first->height()*ba;
         mStems++;
         SSpeciesStand &sd = speciesData(it->first->species());
         sd.basalArea += ba;
+        if (it->first->dbh() >= topheight_threshhold) {
+            topheight_height += it->first->height();
+            ++topheight_trees;
+        }
     }
     if (mTotalBasalArea>0.) {
         mAge /= mTotalBasalArea;
@@ -204,6 +225,9 @@ void FMStand::reload(bool force)
         for (int i=0;i<mSpeciesData.count();++i) {
             mSpeciesData[i].relBasalArea =  mSpeciesData[i].basalArea / mTotalBasalArea;
         }
+    }
+    if (topheight_trees>0) {
+        mTopHeight = topheight_height / double(topheight_trees);
     }
     mStems *= area_factor; // convert to stems/ha
     // sort species data by relative share....

@@ -92,6 +92,7 @@ public slots:
     bool runAgent(int stand_id, QString function);
     // special functions
     bool isValidStand(int stand_id);
+    QStringList standIds();
 
     void runPlanting(int stand_id, QJSValue planting_item);
 public:
@@ -121,8 +122,11 @@ class StandObj: public QObject
     Q_PROPERTY (double age READ age)
     Q_PROPERTY (double absoluteAge READ absoluteAge WRITE setAbsoluteAge)
     Q_PROPERTY (double volume READ volume)
+    Q_PROPERTY (double height READ height)
+    Q_PROPERTY (double topHeight READ topHeight)
     Q_PROPERTY (int id READ id)
     Q_PROPERTY (int nspecies READ nspecies)
+    Q_PROPERTY (double area READ area)
     Q_PROPERTY (int elapsed READ timeSinceLastExecution)
     Q_PROPERTY (QString lastActivity READ lastActivity)
 
@@ -164,11 +168,14 @@ public:
 
     // properties of the forest
     double basalArea() const { if (mStand)return mStand->basalArea(); throwError("basalArea"); return -1.;}
+    double height() const { if (mStand)return mStand->height(); throwError("height"); return -1.;}
+    double topHeight() const { if (mStand)return mStand->topHeight(); throwError("topHeight"); return -1.;}
     double age() const {if (mStand)return mStand->age(); throwError("age"); return -1.;}
     double absoluteAge() const {if (mStand)return mStand->absoluteAge(); throwError("absoluteAge"); return -1.;  }
     double volume() const {if (mStand) return mStand->volume(); throwError("volume"); return -1.; }
     int id() const { if (mStand) return mStand->id(); throwError("id"); return -1; }
     int nspecies() const {if (mStand) return mStand->nspecies();  throwError("id"); return -1;}
+    double area() const {if (mStand) return mStand->area();  throwError("area"); return -1;}
     int timeSinceLastExecution() const;
     QString lastActivity() const;
     double rotationLength() const;
