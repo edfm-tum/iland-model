@@ -284,6 +284,7 @@ void WindModule::initWindGrid()
     DebugTimer t("wind:init");
     // reset some statistics
     mTotalKilledBasalArea = 0.;
+    mTotalKilledVolume = 0.;
     mTreesKilled = 0;
     mPixelAffected = 0;
     // as long as we have 10m -> easy!
@@ -333,17 +334,28 @@ void WindModule::detectEdges()
                 if (max_h > 0) {
                     // check 8-neighborhood. if one of those pixels exceed the threshold, then the current
                     // pixel is not an "edge".
-                    if (((p_above-1)->height < max_h) ||
-                            ((p_above)->height < max_h) ||
-                            ((p_above+1)->height < max_h) ||
-                            ((p-1)->height < max_h)  ||
-                            ((p+1)->height < max_h) ||
-                            ((p_below-1)->height < max_h) ||
-                            ((p_below)->height < max_h) ||
-                            ((p_below+1)->height < max_h) ) {
-                        // edge found:
-                        p->edge = 1.f;
-                    }
+//                    if (((p_above-1)->height < max_h) ||
+//                            ((p_above)->height < max_h) ||
+//                            ((p_above+1)->height < max_h) ||
+//                            ((p-1)->height < max_h)  ||
+//                            ((p+1)->height < max_h) ||
+//                            ((p_below-1)->height < max_h) ||
+//                            ((p_below)->height < max_h) ||
+//                            ((p_below+1)->height < max_h) ) {
+//                        // edge found:
+//                        p->edge = 1.f;
+//                     }
+                    p->edge = ((p_above-1)->height < max_h) +
+                            ((p_above)->height < max_h) +
+                            ((p_above+1)->height < max_h) +
+                            ((p-1)->height < max_h)  +
+                            ((p+1)->height < max_h) +
+                            ((p_below-1)->height < max_h)+
+                            ((p_below)->height < max_h) +
+                            ((p_below+1)->height < max_h) ;
+
+                     p->edge = p->edge>1? 1.f : 0.f;
+
                 }
             }
         }
@@ -624,6 +636,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
             cell->basal_area_killed += t->basalArea();
             cell->n_killed ++;
             mTotalKilledBasalArea += t->basalArea();
+            mTotalKilledVolume += t->volume();
             mTreesKilled ++;
 
         }

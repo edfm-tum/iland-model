@@ -32,7 +32,8 @@ WindOut::WindOut()
               << OutputColumn("direction", "Main wind direction of the event in degrees (0°: north, 90°: east, 180°: south, 270°: west).", OutDouble)
               << OutputColumn("area_ha", "Total area affected (sum of area of pixels with affected trees)", OutDouble)
               << OutputColumn("killedTrees", "total number of trees that were killed in the event.", OutDouble)
-              << OutputColumn("killedBasalArea", "Total Basal Area (m2) of killed during the event.", OutDouble);
+              << OutputColumn("killedBasalArea", "Total Basal Area (m2) of killed during the event.", OutDouble)
+              << OutputColumn("killedVolume", "Sum of tree volume (m3) killed during the event.", OutDouble);
 
 
 }
@@ -50,7 +51,7 @@ void WindOut::exec()
     const double area_factor = 0.01; // area in ha of one pixel
     *this << currentYear();
     *this << mWM->mCurrentIteration << mWM->mWindSpeed << GRAD(mWM->mWindDirection) << mWM->mPixelAffected*area_factor;
-    *this << mWM->mTreesKilled << mWM->mTotalKilledBasalArea;
+    *this << mWM->mTreesKilled << mWM->mTotalKilledBasalArea << mWM->mTotalKilledVolume;
 
     qDebug() << "windout" << mWM->mTotalKilledBasalArea;
 
