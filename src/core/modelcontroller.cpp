@@ -547,6 +547,16 @@ void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
 #endif
 }
 
+void ModelController::setUIShortcuts(QVariantMap shortcuts)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow)
+        mViewerWindow->setUIshortcuts(shortcuts);
+#else
+    Q_UNUSED(shortcuts);
+#endif
+}
+
 void ModelController::repaint()
 {
 #ifdef ILAND_GUI

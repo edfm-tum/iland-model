@@ -78,6 +78,7 @@ public slots:
     void addLayers(const LayeredGridBase *layer, const QString &name);
     void removeLayers(const LayeredGridBase *layer);
     void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
+    void setUIshortcuts(QVariantMap shortcuts);
 
 protected:
      void closeEvent(QCloseEvent *event);
@@ -191,6 +192,7 @@ private slots:
     //recent file menu
     void menuRecent_Files();
     void on_saveFile_clicked();
+    void on_lJSShortcuts_linkActivated(const QString &link);
 };
 
 #endif // MAINWINDOW_H

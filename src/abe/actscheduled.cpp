@@ -67,12 +67,13 @@ bool ActScheduled::evaluate(FMStand *stand)
 {
     // this is called when it should be tested
     stand->currentFlags().setDoSimulate(true);
-    QString result = events().run(QStringLiteral("onEvaluate"), stand);
+    QJSValue result = events().run(QStringLiteral("onEvaluate"), stand);
     if (stand->trace())
-        qCDebug(abe) << stand->context() << "executed onEvaluate event of" << name() << "with result:" << result;
-    bool ok;
-    double harvest = result.toDouble(&ok);
-    if (ok) {
+        qCDebug(abe) << stand->context() << "executed onEvaluate event of" << name() << "with result:" << result.toString();
+
+    if (result.isNumber()) {
+        double harvest = result.toNumber();
+
         // the return value is interpreted as scheduled harvest; if this value is 0, then no
         if (harvest==0.)
             return false;
@@ -81,7 +82,7 @@ bool ActScheduled::evaluate(FMStand *stand)
             qCDebug(abe) << stand->context() << "scheduled harvest is now" << stand->scheduledHarvest();
         return true;
     }
-    bool bool_result = result == "true";
+    bool bool_result = result.toBool();
     return bool_result;
 }
 

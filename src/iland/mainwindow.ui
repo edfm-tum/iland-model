@@ -210,7 +210,7 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
 @</string>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="editStackMain">
         <attribute name="title">
@@ -376,6 +376,16 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
          </item>
          <item>
           <widget class="QComboBox" name="scriptCommandHistory"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="lJSShortcuts">
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(no shortcuts defined)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="textFormat">
+            <enum>Qt::RichText</enum>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_6">

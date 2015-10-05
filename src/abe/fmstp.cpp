@@ -140,6 +140,10 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
                     mRotationLength[i] = list.at(i).toInt();
                 continue;
             }
+            if (it.name()=="options") {
+                mOptions = it.value();
+                continue;
+            }
             if (it.value().hasOwnProperty("type")) {
                 // try to set up as activity
                 setupActivity(it.value(), it.name());

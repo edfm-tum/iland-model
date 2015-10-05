@@ -7,7 +7,7 @@
 
   @class FMEngine
   */
-
+var fmengine= {
 /**
   `log` writes a log message. Each message is prefixed with a code for identifying the current stand and the current year of the simulation.
   The format of the prefix is: 'S_standid_Y_year_:'.
@@ -19,6 +19,7 @@
   @method log
   @param {string} message The message to be printed.
   */
+    log: function(x){},
 
 /**
   Calling `abort` stops the execution of ABE and prints the error message `message` to the console (and shows the error). Note that `abort` does not
@@ -35,9 +36,11 @@
   @method abort
   @param {string} message The error message.
   */
+    abort: function(x),
 
 /**
     `runActivity` executes an {{#crossLink "Activity"}}{{/crossLink}} for stand given by `standId`. This bypasses the normal scheduling (useful for debugging/testing).
+    This function calls the main execution function of the activity.
 
   @method runActivity
   @param {int} standId the (integer) id of the stand in which context the activity should be executed.
@@ -45,6 +48,19 @@
   @return {boolean} returns false if the stand or activity were not found.
 
   */
+    runActivity: function(id, activity),
+
+/**
+  `runActivityEvaluate` executes an {{#crossLink "Activity"}}{{/crossLink}} for stand given by `standId`. This bypasses the normal scheduling (useful for debugging/testing).
+  'runActivityEvaluate' invokes the evaluation code of scheduled activites (e.g., ActThinning, ActScheduled).
+
+  @method runActivity
+  @param {int} standId the (integer) id of the stand in which context the activity should be executed.
+  @param {string} activity the name of the activity that should be executed.
+  @return {boolean} returns false if the stand or activity were not found.
+
+  */
+    runActivityEvaluate: function(id, activity),
 
 /**
   adds a management program (STP) whose definition is provided by the Javascript object `program`. The `name` of the program is used internally.
@@ -56,6 +72,7 @@
   @param {string} name The name that ABE should be use for this STP.
   @return {boolean} true on success.
   */
+     addManatgement: function(obj, name),
 
 /**
   add an agent definition (Javascript) and gives the agent the name `name`.
@@ -65,6 +82,7 @@
   @param {string} name The name that ABE should be use for this {{#crossLink "Agent"}}{{/crossLink}}.
   @return {boolean} true on success.
   */
+    addAgent: function(obj, name),
 
 /**
   checks if a given `stand_id` is valid (i.e., part of the currently simulated area).
@@ -73,6 +91,7 @@
   @param {int} stand_id The id of the stand to check.
   @return {boolean} true, if 'stand_id' is a valid stand in the current setup.
   */
+    isValidStand: function(id),
 
 /**
   returns a list of valid stand-ids within the model.
@@ -82,6 +101,7 @@
   @method standIds
   @return {array} Array of valid stand-ids.
   */
+    standIds: function(),
 
 /**
   Runs a planting activity (without the context of stand treatment programmes). This is especially useful for
@@ -97,6 +117,7 @@
   @param {int} standId (integer) of the stand for which a planting activity should be executed.
   @param {object} planting A javascript object with the definition of the planting activity (see ABE documentation).
   */
+    runPlanting: function(standid, obj),
 
 /**
   ABE generates much more detailed log messages, if `verbose` is true. This is generally useful for debugging and
@@ -113,6 +134,7 @@
   @type boolean
   @default false
   */
+    verbose: false,
 
 /**
   `standId` is the numeric Id of the stand that is set as the current execution context, i.e. the `stand`, `site`, etc. variables
@@ -127,8 +149,22 @@
   @type int
   @default -1
   */
+    standId: -1,
+/**
+  This function adds quicklinks that trigger Javascript functions to the user interface of iLand. Each name-value pair
+  defines one function call (name) and its description (value).
 
 
+        // call this anywhere (e.g. in the body of the main javascript)
+        Globals.setUIShortcuts( { 'Globals.reloadABE()': 'full reload of ABE', 'test()': 'my dearest test function' } );
+
+
+  @method setUIShortcuts
+  @param {object} A object containt name/value pairs that are used in the iLand UI to create quicklinks for calling javascript functions.
+  */
+    setUIShortcuts: function(obj)
+
+}
 
 
 /**
@@ -137,11 +173,14 @@
 * of the stand that is currently processed.
 *
 * Note that the variable `stand` is provided through the C++ framework and does not need to be created separately.
-
+*
+* Use the 'flag' and 'setFlag' methods to (persistently) modify / read user-specific properties for each stand. This is a means
+* to pass stand-specific information between activities (or between different events within one activity).
+*
 *
 @class Stand
 */
-
+var stand = {
 /**
   If `trace` is set to true, detailed log information is produced by ABE. This is useful for testing/ debugging.
   The trace-mode can be switched on/ off like this:
@@ -157,6 +196,7 @@
   @type boolean
   @default false
   */
+    trace: false,
 
 /**
   The id of the stand that is currently processed.
@@ -167,6 +207,7 @@
   @type integer
   @default -1
 */
+    id: -1,
 
 /**
   The basal area / ha stocking on the stand (living trees, >4m).
@@ -174,6 +215,7 @@
   @property basalArea
   @type double
 */
+    basalArea: 0,
 
 
 /**
@@ -182,6 +224,7 @@
   @property volume
   @type double
 */
+    volume: 0,
 
 /**
   The mean height of the stand (meter). It is calculated as basal area weighted mean height of all trees on the stand (>4m).
@@ -190,6 +233,7 @@
   @property height
   @type double
 */
+    height: 0,
 
 /**
   The top height (in meters) is defined as the mean height of the 100 thickest trees per ha. For larger/ smaller stands, the number of trees is scaled accordingly.
@@ -198,6 +242,7 @@
   @property topHeight
   @type double
 */
+    topHeight: 0,
 
 /**
   The mean age of the stand (years). It is calculated as basal area weighted mean age of all trees on the stand (>4m).
@@ -208,6 +253,7 @@
   @property age
   @type double
 */
+    age: 0,
 
 /**
     The age of the stand given in years since the rotation started. At startup, the `absoluteAge` is estimated from
@@ -219,6 +265,7 @@
   @property absoluteAge
   @type double
 */
+    absoulteAge: 0,
 
 /**
   The number of different tree species present on the stand (trees >4m). Use to iterate over the available species on the stand:
@@ -231,6 +278,7 @@
   @property nspecies
   @type int
 */
+    nspecies: 0,
 
 /**
   The total area of the stand in hectares.
@@ -239,12 +287,14 @@
   @property area
   @type double
 */
+    area: 0,
 /**
   Retrieve the species id at position `index`.
 
   @method speciesId
   @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
   @return {string} The unique id of the species.*/
+    speciesId: function(index) {},
 
 /**
   Retrieve the basal area of the species at position `index`.
@@ -252,6 +302,24 @@
   @method basalArea
   @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
   @return {double} The basal area (m2/ha) of the species.*/
+    basalArea: function(index){},
+
+/**
+  Retrieve the basal area of the species with the species code 'speciescode'.
+  Note that only trees with height > 4m are included.
+
+  @method basalAreaOf
+  @param {string} speciescode The code of the species (e.g., 'piab').
+  @return {double} The basal area (m2/ha) of the species, or 0 if the species is not present.*/
+    basalAreaOf: function(name){},
+
+ /**
+  Retrieve the relative basal area of the species 'speciescode'.
+
+  @method relBasalAreaOf
+  @param {string} speciescode The code of the species (e.g., 'piab').
+  @return {double} The basal area (m2/ha) of the species, or 0 if the species is not present.*/
+    relBasalAreaOf: function(name){},
 
 /**
   Retrieve the basal area share (0..1) of the species at position `index`.
@@ -262,6 +330,7 @@
   @method basalAreaRel
   @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
   @return {double} The basal area share (0..1) of the species.*/
+    relBasalArea: function(index){},
 
 /**
   Force a reload of the stand data, i.e. fetch stand statistics (e.g. basal area, age)
@@ -272,6 +341,8 @@
   @method reload
 
 */
+    reload: function(){},
+
 
 /**
   Use `activity` to retrieve an {{#crossLink "Activity"}}{{/crossLink}} object.
@@ -287,7 +358,30 @@
   @param {string} activity_name The name of the activity to be retrieved. Activity names are provided during activity definition (see {{#crossLink "FMEngine/addManagement:method"}}fmengine.addManagement{{/crossLink}})
   @return {Activity} the Activity, or `undefined` if not found.
 */
+    activity: function(name),
 
+/**
+  Retrieves the stand-specific property associated with the name 'name' for the stand of the current execution context.
+
+        stand.setFlag('test', 3); // simple values
+        stand.setFlag('my_goal', { s1: 10, s2: 20, s3: function(){return this.s1+this.s2;} } ); // complex objects (including functions are allowed)
+
+        fmengine.log( stand.flag('my_goal').s3 + stand.flag('test') + stand.U  ); // -> 133 (if U=100 of the stand)
+
+@method flag
+@param {string} name The (user-defined) property name of the stored parameter.
+@return {value} The associated value for the given 'name'. Returns 'undefined' if no value is assigned.*/
+    flag: function(name){},
+
+/**
+  Sets 'value' as the stand-specific property associated with the name 'name' for the stand of the current execution context.
+
+
+  @method setFlag
+  @param {string} name The (user-defined) property name of the stored parameter.
+  @param {value} value The value that should be stored for 'name'. 'value' can be any valid Javascript expression (including objects).
+*/
+    setFlag: function(name, value){},
 
 /**
   The number of years since the execution of the last activity for the current stand. Value is -1 if no activity was executed previously.
@@ -295,6 +389,7 @@
   @property elapsed
   @type int
 */
+    elapsed: 0,
 
 
 /**
@@ -308,6 +403,7 @@
   @property lastActivity
   @type string
 */
+    lastActivity: '',
 
 /**
   The rotation length of the current stand. The rotation length is defined by the stand treatment programme that is currently assigned to a given
@@ -316,8 +412,8 @@
   @property U
   @type double
 */
-
-
+    U: 0
+}
 
 
 
@@ -338,7 +434,7 @@
 *
 @class Activity
 */
-
+var activity: {
 
 /**
   The `active` property indicates whether an activity __can__ still be executed during this rotation. After an activity is executed,
@@ -356,6 +452,7 @@
   @type boolean
   @default false
   */
+    active: false,
 
 /**
   An activity can only be executed, if the `enabled` property is true. Activities can be switched on/ off using this flag.
@@ -373,6 +470,7 @@
   @type boolean
   @default false
   */
+    enabled: false,
 
 /**
   This flag indicates whether the {{#crossLink "Scheduler"}}{{/crossLink}} is used when this activity is run, i.e. if the
@@ -383,6 +481,7 @@
   @type boolean
   @default depends on activity type.
   */
+    scheduled: false,
 
 /**
   An activity with `finalHarvest`=true ends a rotation when (successfully) executed. This resets the `{{#crossLink "Stand/age:property"}}{{/crossLink}}`
@@ -392,6 +491,7 @@
   @type boolean
   @default depends on activity type.
   */
+    finalHarvest: false,
 
 
 /**
@@ -403,3 +503,63 @@
   @type string
   @readonly
   */
+    name: ''
+}
+
+
+
+
+/**
+* Access to properties of the current stand treatment program.
+* The `stp` variable is available in the execution context of forest management and provides access to properties STP
+* activity (linked to a `stand`).
+*
+* Note that the variable `stp` is provided through the C++ framework and does not need to be created separately.
+*
+* See also: Variables `stand` ({{#crossLink "Stand"}}{{/crossLink}})
+
+*
+@class STP
+*/
+var stp: {
+    /**
+      The name of the stand treatment program as provided when called the respecitve 'fmengine' functions.
+
+      See also: {{#crossLink "FMEngine/addManagement:method"}}fmengine.addManagement{{/crossLink}}
+
+      @property name
+      @type string
+      @readonly
+      */
+        name: ''
+    },
+    /**
+      * The 'options' property provides a link to the 'options' property of the STP *definition*, i.e., this is a mechanism
+      * that can be used to pass purely javascript options/values to other javascript code (e.g., when an activity within the
+      * stand context is executed). Note that the C++ part of ABE does not interfere with these options.
+
+                // definition of the STP
+                var stp: { U: [110, 130, 150], // define the rotation period
+                    clearcut: a_clearcut, // some activities
+                    options: { dbh: 5, someOtherParameter: 50}
+                }
+
+                // definition of activities… here the ‘dbh’ options is used
+                // in the Javascript code to select trees to harvest.
+                var a_clearcut: {
+                   type: "scheduled", … ,
+                   onEvaluate: function() {
+                            trees.loadAll();
+                            trees.harvest("dbh>" + stp.options.dbh );}
+                         }
+                };
+
+
+
+      @property options
+      @type object
+        */
+        options: {}
+
+
+}

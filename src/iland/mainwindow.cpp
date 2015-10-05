@@ -1566,6 +1566,25 @@ void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
     QCoreApplication::processEvents();
 }
 
+void MainWindow::setUIshortcuts(QVariantMap shortcuts)
+{
+    if (shortcuts.isEmpty()) {
+        ui->lJSShortcuts->setText("(no shortcuts defined)");
+        return;
+    }
+    QString msg = "<html><head/><body><p>Javascript shortcuts<br>";
+    QVariantMap::const_iterator i;
+    for (i = shortcuts.constBegin(); i != shortcuts.constEnd(); ++i) {
+        QString line = QString("<a href =\"%1\"><span style=\" text-decoration: underline; color:#0000ff;\">%1</span></a>: %2<br>").arg(i.key(), i.value().toString());
+        msg += line;
+    }
+    msg += "</body></html>";
+    //qDebug() << msg;
+
+    ui->lJSShortcuts->setText(msg);
+    ui->lJSShortcuts->setTextInteractionFlags(Qt::TextBrowserInteraction);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     writeSettings();
@@ -1574,7 +1593,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_actionImageToClipboard_triggered()
 {
-    QClipboard *clipboard = QApplication::clipboard();
+    //QClipboard *clipboard = QApplication::clipboard();
     QImage my_img = screenshot();
     my_img.convertToFormat(QImage::Format_RGB32);
     //clipboard->setImage( my_img, QClipboard::Clipboard );
@@ -2040,4 +2059,17 @@ void MainWindow::recentFileMenu(){
 void MainWindow::on_saveFile_clicked()
 {
     ui->iniEdit->setVisible(!ui->iniEdit->isVisible());
+}
+
+void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
+{
+    qDebug() << "executing: " << link;
+    try {
+
+        qDebug() << ScriptGlobal::executeScript(link);
+
+    } catch(const IException &e) {
+        Helper::msg(e.message());
+    }
+
 }

@@ -229,7 +229,7 @@ void Events::setup(QJSValue &js_value, QStringList event_names)
     }
 }
 
-QString Events::run(const QString event, FMStand *stand)
+QJSValue Events::run(const QString event, FMStand *stand)
 {
     if (mEvents.contains(event)) {
         if (stand)
@@ -248,9 +248,9 @@ QString Events::run(const QString event, FMStand *stand)
         if (result.isError()) {
             throw IException(QString("%3 Javascript error in event %1: %2").arg(event).arg(result.toString()).arg(stand?stand->context():"----"));
         }
-        return result.toString();
+        return result;
     }
-    return QString();
+    return QJSValue();
 }
 
 bool Events::hasEvent(const QString &event) const
@@ -508,7 +508,7 @@ bool Activity::execute(FMStand *stand)
 bool Activity::evaluate(FMStand *stand)
 {
     // execute the "onEvaluate" event: the execution is canceled, if the function returns false.
-    bool cancel = events().run(QStringLiteral("onEvaluate"), stand)==QStringLiteral("false");
+    bool cancel = events().run(QStringLiteral("onEvaluate"), stand).toBool();
     return !cancel;
 }
 

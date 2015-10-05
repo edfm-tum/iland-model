@@ -21,6 +21,8 @@
 #include "activity.h"
 #include "grid.h"
 
+class Species; // forward
+
 namespace ABE {
 
 class FMSTP; // forward
@@ -66,8 +68,10 @@ private:
     // setup a single thinning definition
     void setupSingleCustom(QJSValue value, SCustomThinning &custom);
     bool evaluateCustom(FMStand *stand, SCustomThinning &custom);
-    int selectRandomTree(FMTreeList *list, const int pct_min, const int pct_max);
+    int selectRandomTree(FMTreeList *list, const int pct_min, const int pct_max, const bool selective);
+    int selectSelectiveSpecies(FMTreeList *list, const bool is_selective, const int index);
     void clearTreeMarks(FMTreeList *list);
+    QHash<const Species*, double> mSpeciesSelectivity;
 
     // selective
     bool evaluateSelective(FMStand *stand);

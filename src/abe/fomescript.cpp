@@ -27,6 +27,7 @@
 #include "agent.h"
 #include "fmtreelist.h"
 #include "scheduler.h"
+#include "fmstp.h"
 
 #include "actplanting.h"
 
@@ -91,6 +92,11 @@ void FomeScript::setupScriptEnvironment()
     QJSValue treelist_value = ForestManagementEngine::scriptEngine()->newQObject(mTrees);
     ForestManagementEngine::scriptEngine()->globalObject().setProperty("trees", treelist_value);
 
+    // options of the STP
+    mSTPObj = new STPObj;
+    QJSValue stp_value = ForestManagementEngine::scriptEngine()->newQObject(mSTPObj);
+    ForestManagementEngine::scriptEngine()->globalObject().setProperty("stp", stp_value);
+
     // scheduler options
     mSchedulerObj = new SchedulerObj;
     QJSValue scheduler_value = ForestManagementEngine::scriptEngine()->newQObject(mSchedulerObj);
@@ -111,6 +117,7 @@ void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
     br->mUnitObj->setStand(stand);
     br->mActivityObj->setStand(stand);
     br->mSchedulerObj->setStand(stand);
+    br->mSTPObj->setSTP(stand);
     if (stand && stand->trace())
         qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
     if (add_agent) {
@@ -237,6 +244,23 @@ bool FomeScript::runActivity(int stand_id, QString activity)
     // run the activity....
     qCDebug(abe) << "running activity" << activity << "for stand" << stand_id;
     return act->execute(stand);
+}
+
+bool FomeScript::runActivityEvaluate(int stand_id, QString activity)
+{
+    // find stand
+    FMStand *stand = ForestManagementEngine::instance()->stand(stand_id);
+    if (!stand)
+        return false;
+    if (!stand->stp())
+        return false;
+    Activity *act = stand->stp()->activity(activity);
+    if (!act)
+        return false;
+    // run the activity....
+    qCDebug(abe) << "running evaluate of activity" << activity << "for stand" << stand_id;
+    return act->evaluate(stand);
+
 }
 
 bool FomeScript::runAgent(int stand_id, QString function)
@@ -590,6 +614,25 @@ void SchedulerObj::setMaxHarvestLevel(double new_harvest_level)
         return;
     SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
     opt.maxHarvestLevel = new_harvest_level;
+}
+
+void STPObj::setSTP(FMStand *stand)
+{
+    if (stand && stand->stp()) {
+        mSTP = stand->stp();
+        mOptions = mSTP->JSoptions();
+    } else {
+        mOptions = QJSValue();
+        mSTP = 0;
+    }
+}
+
+QString STPObj::name()
+{
+    if (mSTP)
+        return mSTP->name();
+    else
+        return "undefined";
 }
 
 

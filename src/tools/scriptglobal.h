@@ -149,6 +149,9 @@ public slots:
     bool loadModelSnapshot(QString file_name);
     // agent-based-model of forest management
     void reloadABE();
+
+    // UI interface
+    void setUIshortcuts(QJSValue shortcuts); ///< set a list of JS shortcuts in the UI
 private:
     void throwError(const QString &errormessage);
     QString mCurrentDir;
