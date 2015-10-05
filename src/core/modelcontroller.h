@@ -65,6 +65,8 @@ public:
     void addLayers(const LayeredGridBase *layers, const QString &name);
     void removeLayers(const LayeredGridBase *layers);
     void setViewport(QPointF center_point, double scale_px_per_m);
+
+    void setUIShortcuts(QVariantMap shortcuts);
 signals:
     void finished(QString errorMessage); ///< model has finished run (errorMessage is empty in case of success)
     void year(int year); ///< signal indicating a year of the simulation has been processed

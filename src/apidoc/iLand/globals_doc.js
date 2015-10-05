@@ -47,4 +47,10 @@ e.g. 1 value of 0.5 would mean that each screen pixel are two meters in the real
       */
     function setViewport(x,y,scale) {}
 
+/**
+Completely reloads the ABE (agent based management engine) sub module. This includes loading of the (static) stand description file,
+and the javascript source code of ABE.
+@method reloadABE
+      */
+    function reloadABE() {}
 }

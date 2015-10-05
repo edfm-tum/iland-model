@@ -117,6 +117,7 @@ public:
 
     // specialized functions (invokable also from javascript)
     double basalArea(const QString &species_id) const;
+    double relBasalArea(const QString &species_id) const;
 
     void setAbsoluteAge(const double age);
     // actions

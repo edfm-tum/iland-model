@@ -30,7 +30,9 @@ class StandObj;
 class UnitObj;
 class SimulationObj;
 class SchedulerObj;
+class STPObj;
 class FMTreeList; // forward
+class FMSTP; // forward
 class ActivityObj;
 
 /// FomeScript provides general helping functions for the Javascript world.
@@ -88,6 +90,10 @@ public slots:
     /// executes an activity for stand 'stand_id'. This bypasses the normal scheduling (useful for debugging/testing).
     /// returns false if activity could not be found for the stand.
     bool runActivity(int stand_id, QString activity);
+    /// executes an the "evaluate" part of the activity for stand 'stand_id'. This bypasses the normal scheduling (useful for debugging/testing).
+    /// returns false if activity could not be found for the stand.
+    bool runActivityEvaluate(int stand_id, QString activity);
+
     /// execute 'function' of the agent for the given stand; this is primarily aimed at testing/debugging.
     bool runAgent(int stand_id, QString function);
     // special functions
@@ -108,6 +114,7 @@ private:
     ActivityObj *mActivityObj;
     FMTreeList *mTrees;
     SchedulerObj *mSchedulerObj;
+    STPObj *mSTPObj;
     QString mLastErrorMessage;
 
 };
@@ -143,6 +150,7 @@ class StandObj: public QObject
 public slots:
     /// basal area of a given species (m2/ha) given by Id.
     double basalAreaOf(QString species_id) const {return mStand->basalArea(species_id); }
+    double relBasalAreaOf(QString species_id) const {return mStand->relBasalArea(species_id); }
     double basalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).basalArea; else return 0.; }
     double relBasalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).relBasalArea; else return 0.; }
     QString speciesId(int index) const;
@@ -190,7 +198,9 @@ private:
     FMStand *mStand;
 };
 
-
+/** @brief The UnitObj class is the Javascript object known as 'unit' in JS and represents
+ * a management unit.
+*/
 class UnitObj: public QObject
 {
     Q_OBJECT
@@ -233,6 +243,9 @@ private:
 
 };
 
+/** @brief The SimulationObj encapsulates the 'simulation' object in JS. The 'simulation' object
+ * is used for global scenarios (e.g., changes in timber price).
+*/
 class SimulationObj: public QObject
 {
     Q_OBJECT
@@ -244,7 +257,29 @@ private:
 
 };
 
+/** @brief The STPObj encapsulates the 'stp' object in JS. The 'stp' object
+ * is provides a link to the currently active stand treatment programme.
+*/
+class STPObj: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY (QString name READ name)
+    Q_PROPERTY (QJSValue options READ options)
+public:
+    void setSTP(FMStand *stand);
+    explicit STPObj(QObject *parent = 0): QObject(parent) { mSTP = 0;}
+    QJSValue options() { return mOptions; }
+    QString name();
+private:
+    FMSTP *mSTP;
+    QJSValue mOptions; ///< options of the current STP
 
+
+};
+/**
+ * @brief The ActivityObj class encapsulates the 'activity' object in JS. The 'activity'
+ * can be used to fine-tune the management activities (e.g., set the enable/disable flags).
+ */
 class ActivityObj : public QObject
 {
     Q_OBJECT
@@ -287,7 +322,9 @@ private:
 
 };
 
-
+/**
+ * @brief The SchedulerObj class is accessible via 'scheduler' in Javascript.
+ */
 class SchedulerObj : public QObject
 {
     Q_OBJECT

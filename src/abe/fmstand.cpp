@@ -481,6 +481,14 @@ double FMStand::basalArea(const QString &species_id) const
     return 0.;
 }
 
+double FMStand::relBasalArea(const QString &species_id) const
+{
+    foreach (const SSpeciesStand &sd, mSpeciesData)
+        if (sd.species->id()==species_id)
+            return sd.relBasalArea;
+    return 0.;
+}
+
 void FMStand::setAbsoluteAge(const double age)
 {
     mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age;

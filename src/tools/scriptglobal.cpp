@@ -119,6 +119,7 @@ void ScriptGlobal::alert(QString message)
 
 }
 
+
 void ScriptGlobal::include(QString filename)
 {
     QString path = GlobalSettings::instance()->path(filename);
@@ -555,6 +556,15 @@ void ScriptGlobal::reloadABE()
 {
     qDebug() << "attempting to reload ABE";
     GlobalSettings::instance()->model()->reloadABE();
+}
+
+void ScriptGlobal::setUIshortcuts(QJSValue shortcuts)
+{
+    if (!shortcuts.isObject()) {
+        qDebug() << "setUIShortcuts: expected a JS-object (name: javascript-call, value: description). Got: " << shortcuts.toString();
+    }
+    QVariantMap vm = shortcuts.toVariant().toMap();
+    GlobalSettings::instance()->controller()->setUIShortcuts(vm);
 }
 
 void ScriptGlobal::throwError(const QString &errormessage)

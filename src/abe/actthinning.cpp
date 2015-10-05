@@ -24,6 +24,9 @@
 #include "fmstp.h"
 #include "forestmanagementengine.h"
 #include "fomescript.h"
+#include "model.h"
+#include "speciesset.h"
+#include "species.h"
 
 #include "tree.h"
 
@@ -118,6 +121,7 @@ bool ActThinning::execute(FMStand *stand)
 
 void ActThinning::setupCustom(QJSValue value)
 {
+    events().setup(value, QStringList() << "onEvaluate");
     mCustomThinnings.clear();
     if (value.hasProperty("thinnings") && value.property("thinnings").isArray()) {
         QJSValueIterator it(value.property("thinnings"));
@@ -199,6 +203,28 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
 
 bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
 {
+    // fire onEvaluate event and collect probabilities
+    QJSValue eval_result = events().run(QStringLiteral("onEvaluate"), stand);
+    if (eval_result.isBool() && eval_result.toBool()==false)
+        return false; // do nothing
+    bool species_selective = false;
+
+    if( eval_result.isObject()) {
+        // expecting a list of probabilities....
+        // create list if not present
+        if (mSpeciesSelectivity.isEmpty()) {
+            foreach(const Species *s, GlobalSettings::instance()->model()->speciesSet()->activeSpecies())
+                mSpeciesSelectivity[s] = 1.;
+        }
+        // fetch from javascript
+        double rest_val = eval_result.property(QStringLiteral("rest")).isNumber() ?  eval_result.property(QStringLiteral("rest")).toNumber() : 1.;
+        foreach(const Species *s, mSpeciesSelectivity.keys()) {
+            mSpeciesSelectivity[s] = limit( eval_result.property(s->id()).isNumber() ? eval_result.property(s->id()).toNumber() : rest_val, 0., 1.);
+        }
+        species_selective = true;
+    }
+
+
     FMTreeList trees(stand);
     QString filter = custom.filter;
     if (custom.minDbh>0.) {
@@ -306,7 +332,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
                 break;
         }
         // select a tree:
-        int tree_idx = selectRandomTree(&trees, percentiles[cls], percentiles[cls+1]-1);
+        int tree_idx = selectRandomTree(&trees, percentiles[cls], percentiles[cls+1]-1, species_selective);
         if (tree_idx>=0) {
             // stop harvesting, when the target size is reached: if the current tree would surpass the limit,
             // a random number decides whether the tree should be included or not.
@@ -326,7 +352,9 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
             values[cls]++;
 
         } else {
-            if (no_tree_found++ > 10)
+            // tree_idx = -1: no tree found in list, -2: tree found but is not selected
+            no_tree_found += tree_idx == -1 ? 100 : 1; // empty list counts much more
+            if (no_tree_found > 1000)
                 finished=true;
         }
         // stop harvesting, when the minimum remaining number of stems is reached
@@ -348,7 +376,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
 
 }
 
-int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int pct_max)
+int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int pct_max, const bool selective)
 {
     // pct_min, pct_max: the indices of the first and last tree in the list to be looked for, including pct_max
     // seek a tree in the class 'cls' (which has not already been removed);
@@ -360,7 +388,7 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
         idx = irandom(pct_min, pct_max);
         Tree *tree = list->trees().at(idx).first;
         if (!tree->isDead() && !tree->isMarkedForHarvest() && !tree->isMarkedForCut())
-            return idx;
+            return selectSelectiveSpecies(list, selective, idx);
     }
     // not found, now walk in a random direction...
     int direction = 1;
@@ -370,7 +398,7 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
     while (ridx>=pct_min && ridx<pct_max) {
         Tree *tree = list->trees().at(ridx).first;
         if (!tree->isDead() && !tree->isMarkedForHarvest() && !tree->isMarkedForCut())
-            return ridx;
+            return selectSelectiveSpecies(list, selective, ridx);
 
         ridx+=direction;
     }
@@ -380,7 +408,7 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
     while (ridx>=pct_min && ridx<pct_max) {
         Tree *tree = list->trees().at(ridx).first;
         if (!tree->isDead() && !tree->isMarkedForHarvest() && !tree->isMarkedForCut())
-            return ridx;
+            return selectSelectiveSpecies(list, selective, ridx);
 
         ridx+=direction;
     }
@@ -389,6 +417,18 @@ int ActThinning::selectRandomTree(FMTreeList *list, const int pct_min, const int
     return -1;
 
 
+}
+
+int ActThinning::selectSelectiveSpecies(FMTreeList *list, const bool is_selective, const int index)
+{
+    if (!is_selective)
+        return index;
+    // check probability for species [0..1, 0: 0% chance to take a tree of that species] against a random number
+    if (mSpeciesSelectivity[list->trees()[index].first->species()] < drandom())
+        return index; // take the tree
+
+    // a tree was found but is not going to be removed
+    return -2;
 }
 
 void ActThinning::clearTreeMarks(FMTreeList *list)
