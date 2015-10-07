@@ -163,7 +163,7 @@ public slots:
 
     // actions
     /// force a reload of the stand data.
-    void reload() { mStand->reload(); }
+    void reload() { mStand->reload(true); }
 
     void setAbsoluteAge(double arg);
 

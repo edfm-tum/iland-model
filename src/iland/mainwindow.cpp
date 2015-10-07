@@ -466,6 +466,7 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
 {
     const QVector<LayeredGridBase::LayerElement> &names = const_cast<LayeredGridBase*>(layer)->names();
     int layer_id = 0;
+    QString current_layer = mPaintNext.name;
     foreach (const LayeredGridBase::LayerElement &layername, names) {
         QString comb_name = QString("%1 - %2").arg(name, layername.name);
         PaintObject po;
@@ -476,6 +477,8 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
         po.name = layername.name;
         po.auto_range = true;
         mPaintList[comb_name] = po;
+        if (current_layer == po.name)
+            mPaintNext.what = PaintObject::PaintHeightGrid;
     }
     updatePaintGridList();
 }

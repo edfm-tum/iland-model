@@ -34,6 +34,7 @@
 #include "csvfile.h"
 #include "mapgrid.h"
 #include "snapshot.h"
+#include "grasscover.h"
 
 /** @class StandLoader
     @ingroup tools
@@ -1017,5 +1018,15 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
         total += pxcount;
 
     }
+
+    // initialize grass cover
+    if (init.columnIndex("grass_cover")>-1) {
+        int grass_cover_value = init.value(low_index, "grass_cover").toInt();
+        if (grass_cover_value<0 || grass_cover_value>100)
+            throw IException(QString("The grass cover percentage (column 'grass_cover') for stand '%1' is '%2', which is invalid (expected: 0-100)").arg(stand_id).arg(grass_cover_value));
+        GlobalSettings::instance()->model()->grassCover()->setInitialValues(lif_ptrs, grass_cover_value);
+    }
+
+
     return total;
 }

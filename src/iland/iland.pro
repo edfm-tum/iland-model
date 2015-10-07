@@ -195,7 +195,8 @@ SOURCES += main.cpp \
     ../abe/output/unitout.cpp \
     ../abe/output/abestandout.cpp \
     ../abe/output/abestandremovalout.cpp \
-    ../abe/actthinning.cpp
+    ../abe/actthinning.cpp \
+    ../core/grasscover.cpp
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -292,7 +293,8 @@ HEADERS += mainwindow.h \
     ../abe/output/unitout.h \
     ../abe/output/abestandout.h \
     ../abe/output/abestandremovalout.h \
-    ../abe/actthinning.h
+    ../abe/actthinning.h \
+    ../core/grasscover.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

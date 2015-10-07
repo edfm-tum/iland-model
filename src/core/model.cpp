@@ -47,6 +47,7 @@
 #include "modelcontroller.h"
 #include "modules.h"
 #include "dem.h"
+#include "grasscover.h"
 
 #include "outputmanager.h"
 
@@ -144,6 +145,7 @@ void Model::initialize()
    mStandGrid = 0;
    mModules = 0;
    mDEM = 0;
+   mGrassCover = 0;
 }
 
 /** sets up the simulation space.
@@ -331,6 +333,11 @@ void Model::setupSpace()
 
         }
 
+        // setup of the grass cover
+        if (!mGrassCover)
+            mGrassCover = new GrassCover();
+        mGrassCover->setup();
+
         // setup of external modules
         mModules->setup();
         if (mModules->hasSetupResourceUnits()) {
@@ -390,6 +397,8 @@ void Model::clear()
         delete mModules;
     if (mDEM)
         delete mDEM;
+    if (mGrassCover)
+        delete mGrassCover;
     if (mABEManagement)
         delete mABEManagement;
 
@@ -401,6 +410,7 @@ void Model::clear()
     mStandGrid  = 0;
     mModules = 0;
     mDEM = 0;
+    mGrassCover = 0;
     mABEManagement = 0;
 
     GlobalSettings::instance()->outputManager()->close();
@@ -712,6 +722,7 @@ void Model::runYear()
     applyPattern(); // create Light Influence Patterns
     readPattern(); // readout light state of individual trees
     grow(); // let the trees grow (growth on stand-level, tree-level, mortality)
+    mGrassCover->execute(); // evaluate the grass / herb cover (and its effect on regeneration)
 
     // regeneration
     if (settings().regenerationEnabled) {
