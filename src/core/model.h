@@ -41,6 +41,7 @@ class TimeEvents;
 class MapGrid;
 class Modules;
 class DEM;
+class GrassCover;
 
 struct HeightGridValue
 {
@@ -85,6 +86,7 @@ public:
     TimeEvents *timeEvents() const { return mTimeEvents; }
     Modules *modules() const { return mModules; }
     const DEM *dem() const { return mDEM; }
+    GrassCover *grassCover() const { return mGrassCover; }
     SpeciesSet *speciesSet() const { if (mSpeciesSets.count()==1) return mSpeciesSets.first(); return NULL; }
     const QList<Climate*> climates() const { return mClimates; }
 
@@ -94,7 +96,8 @@ public:
     const MapGrid *standGrid() { return mStandGrid; } ///< retrieve the spatial grid that defines the stands (10m resolution)
     const Grid<ResourceUnit*> &RUgrid() { return mRUmap; }
     /// get the value of the (10m) Height grid at the position index ix and iy (of the LIF grid)
-    const HeightGridValue heightGridValue(const int ix, const int iy) { return  mHeightGrid->constValueAtIndex(ix/cPxPerHeight, iy/cPxPerHeight); }
+    const HeightGridValue heightGridValue(const int ix, const int iy) const { return  mHeightGrid->constValueAtIndex(ix/cPxPerHeight, iy/cPxPerHeight); }
+    const HeightGridValue &heightGridValue(const float *lif_ptr) const { QPoint p = mGrid->indexOf(lif_ptr); return mHeightGrid->constValueAtIndex(p.x()/cPxPerHeight, p.y()/cPxPerHeight); }
 
     // setup/maintenance
     void clear(); ///< free ressources
@@ -154,6 +157,7 @@ private:
     MapGrid *mStandGrid; ///< map of the stand map (10m resolution)
     // Digital elevation model
     DEM *mDEM; ///< digital elevation model
+    GrassCover *mGrassCover; ///< cover of the ground with grass / herbs
 };
 
 class Tree;

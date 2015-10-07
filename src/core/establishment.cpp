@@ -25,6 +25,7 @@
 #include "resourceunitspecies.h"
 #include "seeddispersal.h"
 #include "model.h"
+#include "grasscover.h"
 #include "helper.h"
 #include "debugtimer.h"
 
@@ -256,7 +257,8 @@ void Establishment::calculatePerSeedPixel()
     const QRectF &ru_rect = mRUS->ru()->boundingBox();
 
     GridRunner<float> seed_runner(seed_map, ru_rect);
-    Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
+    Model *model = GlobalSettings::instance()->model();
+    Grid<float> *lif_map = model->grid();
     // check every pixel inside the bounding box of the pixel with
     while (float *p = seed_runner.next()) {
         if (*p>0.f) {
@@ -285,8 +287,10 @@ void Establishment::calculatePerSeedPixel()
                                 qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
                             );
                     double p_establish = drandom();
-                    if (p_establish < mPAbiotic) {
-                        if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
+                    QPoint lif_index = lif_map->indexOf(lif_px);
+                    double grass_cover = 1. - model->grassCover()->regenerationInhibition(lif_index);
+                    if (p_establish < mPAbiotic*grass_cover) {
+                        if (establishTree(lif_index, *lif_px ,*p))
                             n_established++;
                     }
                 }
@@ -316,6 +320,7 @@ void Establishment::calculatePerRU()
 
     const float *sap_height = mRUS->ru()->saplingHeightMapPointer();
     size_t bit_idx=0;
+    Model *model = GlobalSettings::instance()->model();
     while (float *lif_px = lif_runner.next()) {
 
         // check for height of sapling < 1.3m (for all species
@@ -323,16 +328,18 @@ void Establishment::calculatePerRU()
         if (*sap_height++ >=1.3f || pos_bitset[bit_idx++])
             continue;
 
+        QPoint lif_index = lif_map->indexOf(lif_px);
+
         // check the abiotic environment against a random number
         double p = drandom();
-        if (p > mPAbiotic)
+        double grass_cover = 1. - model->grassCover()->regenerationInhibition(lif_index);
+        if (p > mPAbiotic * grass_cover)
             continue;
 
         const float seed_map_value = seed_map.constValueAt( lif_runner.currentCoord() );
 
         // check the light availability at that pixel
-        QPoint lif_index = lif_map->indexOf(lif_px);
-        const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(lif_index.x()/cPxPerHeight, lif_index.y()/cPxPerHeight);
+        const HeightGridValue &hgv = model->heightGrid()->constValueAtIndex(lif_index.x()/cPxPerHeight, lif_index.y()/cPxPerHeight);
         // no establishment if pixel is not in project area
         if (!hgv.isValid())
             continue;
