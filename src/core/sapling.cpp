@@ -34,6 +34,7 @@
   */
 
 double Sapling::mRecruitmentVariation = 0.1; // +/- 10%
+double Sapling::mBrowsingPressure = 0.;
 
 Sapling::Sapling()
 {
@@ -51,6 +52,14 @@ void Sapling::clearStatistics()
     mAvgHeight=0.;
     mAvgAge=0.;
     mAvgDeltaHPot=mAvgHRealized=0.;
+}
+
+void Sapling::updateBrowsingPressure()
+{
+    if (GlobalSettings::instance()->settings().valueBool("model.settings.browsing.enabled"))
+        Sapling::mBrowsingPressure = GlobalSettings::instance()->settings().valueDouble("model.settings.browsing.browsingPressure");
+    else
+        Sapling::mBrowsingPressure = 0.;
 }
 
 /// get the *represented* (Reineke's Law) number of trees (N/ha)
@@ -261,6 +270,17 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
 
     if (h_pot<0. || delta_h_pot<0. || lif_corrected<0. || lif_corrected>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";
+
+    // check browsing
+    if (mBrowsingPressure>0. && tree.height<=2.f) {
+        double p = mRUS->species()->saplingGrowthParameters().browsingProbability;
+        // calculate modifed annual browsing probability via odds-ratios
+        // odds = p/(1-p) -> odds_mod = odds * browsingPressure -> p_mod = odds_mod /( 1 + odds_mod) === p*pressure/(1-p+p*pressure)
+        double p_browse = p*mBrowsingPressure / (1. - p + p*mBrowsingPressure);
+        if (drandom() < p_browse) {
+            delta_h_factor = 0.;
+        }
+    }
 
     // check mortality of saplings
     if (delta_h_factor < species->saplingGrowthParameters().stressThreshold) {

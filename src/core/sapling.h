@@ -55,6 +55,8 @@ public:
     void newYear() { clearStatistics(); }
     void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
+    static void updateBrowsingPressure();
+
     // access
     const QVector<SaplingTree> &saplings() const {return mSaplingTrees; }
     // actions
@@ -103,8 +105,10 @@ private:
     double mAvgDeltaHPot; ///< average height increment potential (m)
     double mAvgHRealized; ///< average realized height increment
     static double mRecruitmentVariation; ///< defines range of random variation for recruited trees
+    static double mBrowsingPressure; ///< scalar for the browsing pressure
     CNPair mCarbonLiving;
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
+
 
     friend class Snapshot;
 };

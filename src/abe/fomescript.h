@@ -60,6 +60,9 @@ public:
     /// returns a string for debug/trace messages
     const QString &context() const { return mStand?mStand->context():mInvalidContext; }
 
+    /// convert a javascript object to a string (for debug output)
+    static QString JStoString(QJSValue value);
+
 
     StandObj *standObj() const { return mStandObj; }
     UnitObj *siteObj() const { return mUnitObj; }
@@ -163,7 +166,8 @@ public slots:
 
     // actions
     /// force a reload of the stand data.
-    void reload() { mStand->reload(true); }
+    void reload() { if (mStand) mStand->reload(true); }
+    void sleep(int years) { if (mStand) mStand->sleep(years); }
 
     void setAbsoluteAge(double arg);
 
@@ -316,6 +320,7 @@ public:
 public slots:
 private:
     ActivityFlags &flags() const; // get (depending on the linked objects) the right flags
+    static ActivityFlags mEmptyFlags;
     int mActivityIndex; // link to base activity
     Activity *mActivity; // pointer
     FMStand *mStand; // and to the forest stand....
@@ -332,6 +337,8 @@ class SchedulerObj : public QObject
     Q_PROPERTY(double harvestIntensity READ harvestIntensity WRITE setHarvestIntensity)
     Q_PROPERTY(double useSustainableHarvest READ useSustainableHarvest WRITE setUseSustainableHarvest)
     Q_PROPERTY(double maxHarvestLevel READ maxHarvestLevel WRITE setMaxHarvestLevel)
+public slots:
+    void dump() const; ///< write log to console
 public:
     explicit SchedulerObj(QObject *parent = 0): QObject(parent) {mStand=0; }
     void setStand(FMStand *stand) { mStand = stand;}

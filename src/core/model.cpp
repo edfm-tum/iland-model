@@ -733,6 +733,8 @@ void Model::runYear()
 
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
         // establishment
+        Sapling::updateBrowsingPressure();
+
         { DebugTimer t("saplingGrowthEstablishment");
         executePerResourceUnit( nc_sapling_growth_establishment, false /* true: force single thraeded operation */);
         GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
@@ -743,7 +745,7 @@ void Model::runYear()
     // calculate soil / snag dynamics
     if (settings().carbonCycleEnabled) {
         DebugTimer ccycle("carbon cylce");
-        executePerResourceUnit( nc_carbonCycle, false /* true: force single thraeded operation */);
+        executePerResourceUnit( nc_carbonCycle, false /* true: force single threaded operation */);
         GlobalSettings::instance()->systemStatistics()->tCarbonCycle+=ccycle.elapsed();
 
     }
