@@ -69,7 +69,7 @@ bool ActScheduled::evaluate(FMStand *stand)
     stand->currentFlags().setDoSimulate(true);
     QJSValue result = events().run(QStringLiteral("onEvaluate"), stand);
     if (stand->trace())
-        qCDebug(abe) << stand->context() << "executed onEvaluate event of" << name() << "with result:" << result.toString();
+        qCDebug(abe) << stand->context() << "executed onEvaluate event of" << name() << "with result:" << FomeScript::JStoString(result);
 
     if (result.isNumber()) {
         double harvest = result.toNumber();

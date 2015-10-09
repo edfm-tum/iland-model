@@ -101,7 +101,7 @@ void ActPlanting::setup(QJSValue value)
 
             mItems.append(SPlantingItem());
             SPlantingItem &item = mItems.last();
-            qDebug() << it.name() << ": " << it.value().toString();
+            qDebug() << it.name() << ": " << FomeScript::JStoString(it.value());
             FMSTP::checkObjectProperties(it.value(), mAllowedProperties, "setup of planting activity:" + name() + "; " + it.name());
 
             item.setup(it.value());

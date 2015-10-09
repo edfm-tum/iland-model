@@ -90,10 +90,11 @@ public:
     /// return -1 if stand is invalid, 0..1 for probabilities, 1.1 for forced execution
     double scoreOf(const int stand_id) const;
     QStringList info(const int stand_id) const;
+    /// write state of the scheduler to the console
+    void dump() const;
 
 private:
     void updateCurrentPlan();
-    void dump();
     class SchedulerItem {
     public:
         SchedulerItem(): stand(0), score(0.), scheduledYear(-1) {}

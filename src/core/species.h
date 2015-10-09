@@ -57,6 +57,8 @@ struct SaplingGrowthParameters
     SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReinekesR(1450.), referenceRatio(1.) {}
     /// represented stem number by one cohort (using Reinekes Law):
     double representedStemNumber(const double dbh) const { return ReinekesR*pow(dbh/25., -1.605) / double(cPxPerHectare); }
+    /// browsing probability
+    double browsingProbability;
 };
 
 

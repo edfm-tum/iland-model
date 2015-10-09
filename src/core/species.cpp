@@ -198,6 +198,7 @@ void Species::setup()
     mSaplingGrowthParams.maxStressYears = intVar("sapMaxStressYears");
     mSaplingGrowthParams.referenceRatio = doubleVar("sapReferenceRatio");
     mSaplingGrowthParams.ReinekesR = doubleVar("sapReinekesR");
+    mSaplingGrowthParams.browsingProbability = doubleVar("browsingProbability");
 
 }
 

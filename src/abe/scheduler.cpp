@@ -390,17 +390,18 @@ void Scheduler::updateCurrentPlan()
     for (QMultiHash<int, SchedulerItem*>::iterator it=mSchedule.begin(); it!=mSchedule.end(); ++it)
         it.value()->scheduledYear = it.key();
 
-    dump();
+    if (FMSTP::verbose())
+        dump();
 }
 
 
-void Scheduler::dump()
+void Scheduler::dump() const
 {
     if(mItems.isEmpty())
         return;
     qCDebug(abe)<< "***** Scheduler items **** Unit:" << mUnit->id();
     qCDebug(abe)<< "stand.id, scheduled.year, score, opt.year, act.name, planned.harvest";
-    QList<SchedulerItem*>::iterator it = mItems.begin();
+    QList<SchedulerItem*>::const_iterator it = mItems.begin();
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
         qCDebug(abe) << QString("%1, %2, %3, %4, %5, %6").arg(item->stand->id()).arg(item->scheduledYear).arg(item->score).arg(item->optimalYear)

@@ -207,7 +207,7 @@ QJSValue FMSTP::valueFromJs(const QJSValue &js_value, const QString &key, const 
 {
    if (!js_value.hasOwnProperty(key)) {
        if (!errorMessage.isEmpty())
-           throw IException(QString("Error: required key '%1' not found. In: %2 (JS: %3)").arg(key).arg(errorMessage).arg(js_value.toString()));
+           throw IException(QString("Error: required key '%1' not found. In: %2 (JS: %3)").arg(key).arg(errorMessage).arg(FomeScript::JStoString(js_value)));
        else if (default_value.isEmpty())
            return QJSValue();
        else
@@ -220,7 +220,7 @@ bool FMSTP::boolValueFromJs(const QJSValue &js_value, const QString &key, const 
 {
     if (!js_value.hasOwnProperty(key)) {
         if (!errorMessage.isEmpty())
-            throw IException(QString("Error: required key '%1' not found. In: %2 (JS: %3)").arg(key).arg(errorMessage).arg(js_value.toString()));
+            throw IException(QString("Error: required key '%1' not found. In: %2 (JS: %3)").arg(key).arg(errorMessage).arg(FomeScript::JStoString(js_value)));
         else
             return default_bool_value;
     }

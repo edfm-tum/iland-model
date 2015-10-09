@@ -343,6 +343,15 @@ var stand = {
 */
     reload: function(){},
 
+/**
+  The ´sleep´ method suspends the activities on the stand for `years` years. Only after the specified has elapsed,
+  ABE continues to examine the stand.
+
+  @method sleep
+  @param {integer} years The number of years that the stand should sleep.
+
+*/
+    reload: sleep(years){},
 
 /**
   Use `activity` to retrieve an {{#crossLink "Activity"}}{{/crossLink}} object.

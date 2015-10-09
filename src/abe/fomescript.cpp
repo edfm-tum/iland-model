@@ -37,6 +37,7 @@
 namespace ABE {
 
 QString FomeScript::mInvalidContext = "S---";
+ActivityFlags ActivityObj::mEmptyFlags;
 
 FomeScript::FomeScript(QObject *parent) :
     QObject(parent)
@@ -140,6 +141,17 @@ FomeScript *FomeScript::bridge()
     return ForestManagementEngine::instance()->scriptBridge();
 }
 
+QString FomeScript::JStoString(QJSValue value)
+{
+    if (value.isArray() || value.isObject()) {
+        QJSValue fun = ForestManagementEngine::scriptEngine()->evaluate("(function(a) { return JSON.stringify(a); })");
+        QJSValue result = fun.call(QJSValueList() << value);
+        return result.toString();
+    } else
+        return value.toString();
+
+}
+
 bool FomeScript::verbose() const
 {
     return FMSTP::verbose();
@@ -170,7 +182,7 @@ void FomeScript::setStandId(int new_stand_id)
 
 void FomeScript::log(QJSValue value)
 {
-    QString msg = value.toString();
+    QString msg = JStoString(value);
     qCDebug(abe) << bridge()->context() << msg;
 }
 
@@ -428,7 +440,7 @@ bool ActivityObj::enabled() const
 
 QString ActivityObj::name() const
 {
-    return mActivity->name();
+    return mActivity? mActivity->name() : QStringLiteral("undefined");
 }
 
 void ActivityObj::setEnabled(bool do_enable)
@@ -449,7 +461,8 @@ ActivityFlags &ActivityObj::flags() const
         return mActivity->mBaseActivity;
 
 
-    throw IException("ActivityObj:flags: invalid access of flags!");
+    qCDebug(abe) << "ActivityObj:flags: invalid access of flags! stand: " << mStand << "activity-index:" << mActivityIndex;
+    return mEmptyFlags;
 }
 
 bool UnitObj::agentUpdate(QString what, QString how, QString when)
@@ -551,6 +564,13 @@ double UnitObj::regenerationLevel() const
 {
     return 1; // todo
 
+}
+
+void SchedulerObj::dump() const
+{
+    if (!mStand || !mStand->unit() || !mStand->unit()->constScheduler())
+        return;
+    mStand->unit()->constScheduler()->dump();
 }
 
 bool SchedulerObj::enabled()

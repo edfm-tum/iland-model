@@ -62,23 +62,24 @@ void Schedule::setup(const QJSValue &js_value)
         repeat = FMSTP::boolValueFromJs(js_value, "repeat", false);
         absolute = FMSTP::boolValueFromJs(js_value, "absolute", false);
         if (!repeat) {
+
             if (tmin>-1 && tmax>-1 && topt==-1)
                 topt = (tmax+tmin) / 2;
             if (tmin>-1 && tmax>-1 && topt>-1 && (topt<tmin || topt>tmax))
-                throw IException(QString("Error in setting up schedule: 'opt' out of range: %1").arg(js_value.toString()));
+                throw IException(QString("Error in setting up schedule: 'opt' either missing or out of range: %1").arg(FomeScript::JStoString(js_value)));
             if (tminrel>-1 && tmaxrel>-1 && toptrel>-1 && (toptrel<tminrel || toptrel>tmaxrel))
-                throw IException(QString("Error in setting up schedule: 'opt' out of range: %1").arg(js_value.toString()));
+                throw IException(QString("Error in setting up schedule: 'opt' either missing or out of range: %1").arg(FomeScript::JStoString(js_value)));
             if (tminrel*tmaxrel < 0. || tmin*tmax<0.)
-                throw IException(QString("Error in setting up schedule: min and max required: %1").arg(js_value.toString()));
+                throw IException(QString("Error in setting up schedule: min and max required: %1").arg(FomeScript::JStoString(js_value)));
 
             if (topt==-1 && toptrel==-1.)
-                throw IException(QString("Error in setting up schedule: neither 'opt' nor 'optRel' point can be derived in: %1").arg(js_value.toString()));
+                throw IException(QString("Error in setting up schedule: neither 'opt' nor 'optRel' point can be derived in: %1").arg(FomeScript::JStoString(js_value)));
         }
 
     } else if (js_value.isNumber()) {
         topt = js_value.toNumber();
     } else {
-        throw IException(QString("Error in setting up schedule/timing. Invalid javascript object: %1").arg(js_value.toString()));
+        throw IException(QString("Error in setting up schedule/timing. Invalid javascript object: %1").arg(FomeScript::JStoString(js_value)));
     }
 }
 
