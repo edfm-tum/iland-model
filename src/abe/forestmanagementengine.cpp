@@ -648,13 +648,13 @@ QStringList ForestManagementEngine::standIds() const
     return standids;
 }
 
-void ForestManagementEngine::addTreeRemoval(Tree *tree, int reason)
+void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
 {
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
     FMStand *stand = mFMStandGrid.valueAt(tree->position());
     if (stand)
-        stand->addTreeRemoval(tree, reason);
+        stand->notifyTreeRemoval(tree, reason);
 }
 
 QMutex protect_split;

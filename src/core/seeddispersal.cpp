@@ -493,6 +493,13 @@ void SeedDispersal::execute()
 #ifdef ILAND_GUI
     if (mDumpSeedMaps)
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_after_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
+
+    if (!mDumpNextYearFileName.isEmpty()) {
+        Helper::saveToTextFile(GlobalSettings::instance()->path(mDumpNextYearFileName), gridToESRIRaster(seedMap()));
+        qDebug() << "saved seed map for " << species()->id() << "to" << GlobalSettings::instance()->path(mDumpNextYearFileName);
+        mDumpNextYearFileName = QString();
+    }
+
 #endif
 }
 
@@ -513,9 +520,9 @@ bool SeedDispersal::edgeDetection()
         for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
             if (*p == 1.) {
                 found = true;
-                if (*(p_above-1)==0.f || *p_above==0.f || *(p_above+1)==0.f ||
-                    *(p-1)==0.f || *(p+1)==0.f ||
-                    *(p_below-1)==0.f || *p_below==0.f || *(p_below+1)==0.f )
+                if (*(p_above-1)!=1.f || *p_above!=1.f || *(p_above+1)!=1.f ||
+                    *(p-1)!=1.f || *(p+1)!=1.f ||
+                    *(p_below-1)!=1.f || *p_below!=1.f || *(p_below+1)!=1.f )
                     *p=-1; // if any surrounding pixel is 0: -> mark as edge
             }
 

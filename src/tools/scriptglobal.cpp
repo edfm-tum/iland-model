@@ -33,6 +33,9 @@
 #include "modelcontroller.h"
 #include "grid.h"
 #include "snapshot.h"
+#include "speciesset.h"
+#include "species.h"
+#include "seeddispersal.h"
 
 
 // for accessing script publishing functions
@@ -499,6 +502,36 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
     qDebug() << "could not save gridToFile because" << grid_type << "is not a valid grid.";
     return false;
 
+}
+
+bool ScriptGlobal::seedMapToFile(QString species, QString file_name)
+{
+    // does not fully work:
+    // Problem: after a full year cycle the seed maps are already cleared and prepared for the next round
+    // --> this is now more an "occurence" map
+
+    if (!GlobalSettings::instance()->model())
+        return false;
+    // find species
+    Species *s = GlobalSettings::instance()->model()->speciesSet()->species(species);
+    if (!s) {
+        qDebug() << "invalid species" << species << ". No seed map saved.";
+        return false;
+    }
+    s->seedDispersal()->dumpMapNextYear(file_name);
+    qDebug() << "creating raster in the next year cycle for species" << s->id();
+    return true;
+
+    //gridToImage( s->seedDispersal()->seedMap(), true, 0., 1.).save(GlobalSettings::instance()->path(file_name));
+//    QString result = gridToESRIRaster(s->seedDispersal()->seedMap());
+//    if (!result.isEmpty()) {
+//        file_name = GlobalSettings::instance()->path(file_name);
+//        Helper::saveToTextFile(file_name, result);
+//        qDebug() << "saved grid to " << file_name;
+//        return true;
+//    }
+//    qDebug() << "failed creating seed map";
+//    return false;
 }
 
 void ScriptGlobal::wait(int milliseconds)

@@ -900,7 +900,7 @@ void Tree::die(TreeGrowthData *d)
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, d); // add tree to statistics
-    recordRemovedVolume(TreeDeath);
+    notifyTreeRemoved(TreeDeath);
     if (ru()->snag())
         ru()->snag()->addMortality(this);
 }
@@ -913,7 +913,7 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
-    recordRemovedVolume(TreeHarvest);
+    notifyTreeRemoved(TreeHarvest);
 
     if (ru()->snag())
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
@@ -927,7 +927,7 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction, const double st
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, 0);
-    recordRemovedVolume(TreeDisturbance);
+    notifyTreeRemoved(TreeDisturbance);
 
     if (ru()->snag())
         ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
@@ -966,13 +966,13 @@ void Tree::mortality(TreeGrowthData &d)
     }
 }
 
-void Tree::recordRemovedVolume(TreeRemovalType reason)
+void Tree::notifyTreeRemoved(TreeRemovalType reason)
 {
     // add the volume of the current tree to the height grid
     // this information is used to track the removed volume for stands based on grids.
     ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
     if (abe)
-        abe->addTreeRemoval(this, (int)reason);
+        abe->notifyTreeRemoval(this, (int)reason);
 
     // tell disturbance modules that a tree died
     GlobalSettings::instance()->model()->modules()->treeDeath(this, (int) reason);

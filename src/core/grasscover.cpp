@@ -53,7 +53,7 @@ void GrassCover::setup()
     if (formula.isEmpty())
         throw IException("setup of 'grass': required expression 'grassPotential' is missing.");
     mGrassPotential.setExpression(formula);
-    mGrassPotential.linearize(0.,1., 512);
+    mGrassPotential.linearize(0.,1., qMin(GRASSCOVERSTEPS, 1000));
 
     formula = xml.value("model.settings.grass.grassEffect");
     if (formula.isEmpty())
@@ -62,15 +62,15 @@ void GrassCover::setup()
     mMaxTimeLag = xml.valueDouble("model.settings.grass.maxTimeLag");
     if (mMaxTimeLag==0)
         throw IException("setup of 'grass': value of 'maxTimeLag' is invalid or missing.");
-    mGrowthRate = 256 / mMaxTimeLag;
+    mGrowthRate = GRASSCOVERSTEPS / mMaxTimeLag;
 
-    // set up the effect on regeneration in 256 steps
-    for (int i=0;i<256;++i) {
-        double effect = mGrassEffect.calculate(i/255.);
+    // set up the effect on regeneration in NSTEPS steps
+    for (int i=0;i<GRASSCOVERSTEPS;++i) {
+        double effect = mGrassEffect.calculate(i/double(GRASSCOVERSTEPS-1));
         mEffect[i] = limit(effect, 0., 1.);
     }
 
-    mMaxState = limit(mGrassPotential.calculate(1.f), 0., 1.)*255; // the max value of the potential function
+    mMaxState = limit(mGrassPotential.calculate(1.f), 0., 1.)*(GRASSCOVERSTEPS-1); // the max value of the potential function
 
     GlobalSettings::instance()->controller()->addLayers(mLayers, QStringLiteral("grass cover"));
     mEnabled = true;
@@ -82,7 +82,10 @@ void GrassCover::setInitialValues(const QVector<float *> &LIFpixels, const int p
 {
     if (!enabled())
         return;
-    unsigned char cval = limit(percent / 100., 0., 1.)*255;
+    grid_type cval = limit(percent / 100., 0., 1.)*(GRASSCOVERSTEPS-1);
+    if (cval > mMaxState)
+        cval = mMaxState;
+
     Grid<float> *lif_grid = GlobalSettings::instance()->model()->grid();
     for (QVector<float *>::const_iterator it = LIFpixels.constBegin(); it!=LIFpixels.constEnd(); ++it)
         mGrid.valueAtIndex(lif_grid->indexOf(*it)) = cval;
@@ -96,29 +99,33 @@ void GrassCover::execute()
     // Main function of the grass submodule
     float *lif = GlobalSettings::instance()->model()->grid()->begin();
     float *end_lif = GlobalSettings::instance()->model()->grid()->end();
-    unsigned char *gr = mGrid.begin();
+    grid_type *gr = mGrid.begin();
 
     // loop over every LIF pixel
+    int skipped=0;
     for (; lif!=end_lif;++lif, ++gr) {
         // calculate potential grass vegetation cover
-        if (*lif == 1.f && *gr==mMaxState)
+        if (*lif == 1.f && *gr==mMaxState) {
+            ++skipped;
             continue;
+        }
 
-        int potential = limit(mGrassPotential.calculate(1.f- *lif), 0., 1.)*255;
+        int potential = limit(mGrassPotential.calculate(*lif), 0., 1.)*(GRASSCOVERSTEPS-1);
         *gr = qMin( int(*gr) + mGrowthRate, potential);
 
     }
+    qDebug() << "skipped" << skipped;
 
 }
 
 
 
-double GrassCoverLayers::value(const unsigned char &data, const int index) const
+double GrassCoverLayers::value(const grid_type &data, const int index) const
 {
     if (!mGrassCover->enabled()) return 0.;
     switch(index){
     case 0: return mGrassCover->effect(data); //effect
-    case 1: return data/255.; // state
+    case 1: return data/double(GRASSCOVERSTEPS-1); // state
     default: throw IException(QString("invalid variable index for a GrassCoverLayers: %1").arg(index));
     }
 }

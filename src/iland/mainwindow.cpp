@@ -596,7 +596,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     // draw rectangle around the grid
     QRectF r = grid->metricRect();
     QRect rs = vp.toScreen(r);
-    painter.setPen(Qt::black);
+    painter.setPen(Qt::darkGray);
     painter.drawRect(rs);
     //qDebug() << rs;
 
@@ -620,7 +620,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         // start from each pixel and query value in grid for the pixel
         mRulerColors->setCaption("Light Influence Field", "value of the LIF at 2m resolution.");
-        mRulerColors->setPalette(GridViewRainbow,0., maxval); // ruler
+        mRulerColors->setPalette(GridViewRainbowReverse,0., maxval); // ruler
         if (!mRulerColors->autoScale()) {
             maxval = mRulerColors->maxValue(); minval = mRulerColors->minValue();
         }
@@ -635,7 +635,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 world = vp.toWorld(QPoint(x,y));
                 if (grid->coordValid(world)) {
                     value = grid->valueAt(world);
-                    col = Colors::colorFromValue(value, minval, maxval, true).rgb();
+                    col = Colors::colorFromValue(value, minval, maxval,true).rgb();
                     img.setPixel(x,y,col);
                 }
             }
@@ -670,6 +670,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         QPointF world;
         QRgb col;
         QImage &img = ui->PaintWidget->drawImage();
+
         for (x=0;x<sizex;x++)
             for (y=0;y<sizey;y++) {
                 world = vp.toWorld(QPoint(x,y));
@@ -1372,7 +1373,9 @@ void MainWindow::setupModel()
 
     // retrieve the active management script file
     if (mRemoteControl.model()->management())
-        ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(mRemoteControl.model()->management()->scriptFile()));
+        ui->scriptActiveScriptFile->setText(QString("%1").arg(mRemoteControl.model()->management()->scriptFile()));
+    if (!mRemoteControl.loadedJavascriptFile().isEmpty())
+        ui->scriptActiveScriptFile->setText(QString("%1").arg(mRemoteControl.loadedJavascriptFile()));
     labelMessage("Model created. Ready to run.");
     checkModelState();
 
@@ -1716,16 +1719,8 @@ void MainWindow::on_reloadJavaScript_clicked()
 {
     if (!GlobalSettings::instance()->model())
         MSGRETURN("no model available.");
-    Management *mgmt = GlobalSettings::instance()->model()->management();
-    if (!mgmt) {
-        qDebug() << "no valid Management object available! (no model created). Loading the script into the global engine.";
-        ScriptGlobal::loadScript(ui->scriptActiveScriptFile->text());
-        return;
-    }
-    if (mgmt->scriptFile().isEmpty())
-        Helper::msg("no mangement script file specified");
-    mgmt->loadScript(mgmt->scriptFile());
-    qDebug() << "reloaded" << mgmt->scriptFile();
+
+    ScriptGlobal::loadScript(ui->scriptActiveScriptFile->text());
     ScriptGlobal::scriptOutput = ui->scriptResult;
 }
 

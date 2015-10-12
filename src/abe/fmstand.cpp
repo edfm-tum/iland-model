@@ -422,7 +422,7 @@ bool FMStand::afterExecution(bool cancel)
     return mCurrentIndex > -1;
 }
 
-void FMStand::addTreeRemoval(Tree *tree, int reason)
+void FMStand::notifyTreeRemoval(Tree *tree, int reason)
 {
     double removed_volume = tree->volume();
     mVolume -= removed_volume/area();
