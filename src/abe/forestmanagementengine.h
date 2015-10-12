@@ -90,7 +90,7 @@ public:
     // functions
 
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.
-    void addTreeRemoval(Tree* tree, int reason);
+    void notifyTreeRemoval(Tree* tree, int reason);
 
     ///
     FMStand *splitExistingStand(FMStand *stand);

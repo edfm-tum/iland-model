@@ -150,7 +150,7 @@ private:
     double relative_height_growth(); ///< estimate height growth based on light status.
     void grow_diameter(TreeGrowthData &d); ///< actual growth of the tree's stem.
     void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
-    void recordRemovedVolume(TreeRemovalType reason); ///< record the removed volume in the height grid
+    void notifyTreeRemoved(TreeRemovalType reason); ///< record the removed volume in the height grid
 
     // state variables
     int mId; ///< unique ID of tree

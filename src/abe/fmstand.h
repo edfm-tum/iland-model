@@ -129,7 +129,7 @@ public:
     /// add a (simulated) harvest to the amount of planned harvest (used by the scheduling)
     void addScheduledHarvest(const double add_volume) {mScheduledHarvest += add_volume; }
     /// is called whenever a tree is removed (death, management, disturbance)
-    void addTreeRemoval(Tree *tree, int reason);
+    void notifyTreeRemoval(Tree *tree, int reason);
     void resetHarvestCounter() { mFinalHarvested = 0.; mDisturbed=0.; mThinningHarvest=0.; }
 
     /// sleep() pauses the evaluation/execution of management activities

@@ -57,6 +57,9 @@ public:
     QString dynamicOutput();
     // some informational services
     QHash<QString, QString> availableSpecies();
+    void setLoadedJavascriptFile(QString filename) { mLastLoadedJSFile = filename; }
+    QString loadedJavascriptFile() const { return mLastLoadedJSFile; }
+
 
     void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
     void addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value);
@@ -101,6 +104,7 @@ private:
     bool mDynamicOutputEnabled;
     QStringList mDynFieldList;
     QStringList mDynData;
+    QString mLastLoadedJSFile;
 
 };
 

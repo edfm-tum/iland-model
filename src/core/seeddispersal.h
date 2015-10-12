@@ -45,6 +45,7 @@ public:
     void distribute(); ///< phase 2: distribute seeds
     // debug and helpers
     void loadFromImage(const QString &fileName); ///< debug function...
+    void dumpMapNextYear(QString file_name) { mDumpNextYearFileName = file_name; }
 private:
     void createKernel(Grid<float> &kernel, const float max_seed); ///< initializes / creates the kernel
     double treemig(const double &distance);
@@ -61,6 +62,7 @@ private:
     Species *mSpecies;
     bool mDumpSeedMaps; ///< if true, seedmaps are stored as images
     bool mHasExternalSeedInput; ///< if true, external seeds are modelled for the species
+    QString mDumpNextYearFileName; ///< debug output - dump of the content of the grid to a file during the next execution
     int mExternalSeedDirection; ///< direction of external seeds
     int mExternalSeedBuffer; ///< how many 20m pixels away from the simulation area should the seeding start?
     double mExternalSeedBackgroundInput; ///< background propability for this species; if set, then a certain seed availability is provided for the full area

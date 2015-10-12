@@ -37,7 +37,7 @@ class BarkBeetleCell
 {
 public:
     BarkBeetleCell() { reset(); }
-    void clear() { n=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=0; packageOutbreakYear=0.f; }
+    void clear() { n=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=NoDeadTrees; packageOutbreakYear=0.f; }
     void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
@@ -54,7 +54,9 @@ public:
     int killedYear; // year (iteration) at which pixel was killed ??
     float outbreakYear; // year in which the outbreak started (this information is preserved by spreading beatles)
     float packageOutbreakYear; // outbreak year of packages landing on a cell
-    int deadtrees; // 0: no dead trees, 1: pot. hosts (after storm), 2: lure trees (fangbaueme)
+    enum DeadTrees { NoDeadTrees=0, StormDamage=10, StormDamageVicinity=5, BeetleTrapTree=8 };
+    DeadTrees deadtrees; // 0: no dead trees, 1: pot. hosts (after storm), 2: lure trees (fangbaueme) (in the vicinity of the pixel)
+    bool isNeutralized() const { return deadtrees!=NoDeadTrees; }
 
     static void resetCounters() { total_infested=0; max_iteration=0; }
     static int total_infested;

@@ -284,6 +284,17 @@ void Model::setupSpace()
             // retrieve species sets and climates (that were really used)
             mSpeciesSets << mEnvironment->speciesSetList();
             mClimates << mEnvironment->climateList();
+            QString climate_file_list;
+            for (int i=0, c=0;i<mClimates.count();++i) {
+                climate_file_list += mClimates[i]->name() + ", ";
+                if (++c>5) {
+                    climate_file_list += "...";
+                    break;
+                }
+
+            }
+            qDebug() << "Setup of climates: #loaded:" << mClimates.count() << "tables:" << climate_file_list;
+
 
         }
 
@@ -474,7 +485,11 @@ void Model::loadProject()
 
     // (3) additional issues
     // (3.1) load javascript code into the engine
-    ScriptGlobal::loadScript(g->path(xml.value("system.javascript.fileName"),"script"));
+    QString script_file = g->path(xml.value("system.javascript.fileName"),"script");
+    if (!script_file.isEmpty()) {
+        ScriptGlobal::loadScript(script_file);
+        g->controller()->setLoadedJavascriptFile(script_file);
+    }
 
     // (3.2) setup of regeneration
     changeSettings().regenerationEnabled = xml.valueBool("model.settings.regenerationEnabled", false);

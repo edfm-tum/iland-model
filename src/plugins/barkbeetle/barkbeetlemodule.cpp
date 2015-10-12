@@ -218,7 +218,7 @@ void BarkBeetleModule::run(int iteration)
     // the spread of beetles (and attacking of trees)
     barkbeetleSpread();
 
-    // write back to the real iLand structure
+    // write back the effects of the bark beetle module to the forest in iLand
     barkbeetleKill();
 
     // create some outputs....
@@ -247,7 +247,7 @@ void BarkBeetleModule::treeDeath(const Tree *tree)
         return;
 
     BarkBeetleCell &cell = mGrid.valueAt(tree->position());
-    cell.deadtrees=10;
+    cell.deadtrees = BarkBeetleCell::StormDamage;
 
 
 
@@ -393,6 +393,8 @@ void BarkBeetleModule::startSpread()
         b->killed=false;
         b->packageOutbreakYear = 0.f;
     }
+
+    prepareInteractions();
 }
 
 void BarkBeetleModule::prepareInteractions()
@@ -403,14 +405,17 @@ void BarkBeetleModule::prepareInteractions()
 
     for (int y=0;y<mGrid.sizeY();++y)
         for (int x=0;x<mGrid.sizeX();++x) {
-            if (mGrid(x,y).deadtrees>1) {
+            if (mGrid(x,y).deadtrees!=BarkBeetleCell::NoDeadTrees) {
                 int has_neighbors=0;
                 for (int dy=-2;dy<=2;++dy)
                     for (int dx=-2;dx<=2;++dx)
-                        has_neighbors += mGrid.isIndexValid(x+dx,y+dy) ? (mGrid(x+dx,y+dy).deadtrees>1 ? 1: 0) : 0;
+                        has_neighbors += mGrid.isIndexValid(x+dx,y+dy) ? (mGrid(x+dx,y+dy).deadtrees!=BarkBeetleCell::NoDeadTrees ? 1: 0) : 0;
 
-                 mGrid.valueAt(x,y).deadtrees = has_neighbors>0 ? 1 : 0;
-            } else {
+                 mGrid.valueAt(x,y).deadtrees = has_neighbors>0 ? BarkBeetleCell::StormDamageVicinity : BarkBeetleCell::NoDeadTrees;
+                 if (mGrid(x,y).deadtrees==BarkBeetleCell::StormDamage) {
+                     // the pixel acts as a source
+                     mGrid.valueAtIndex(x,y).setInfested(true);
+                 }
 
             }
         }
@@ -466,6 +471,11 @@ void BarkBeetleModule::barkbeetleSpread()
                     continue;
                 targeter.setPosition(pos);
                 if (!targeter.isValid())
+                    continue;
+
+
+                // effect of windthrown trees or "fangbaume"
+                if (targeter.current()->isNeutralized())
                     continue;
 
                 BarkBeetleCell *target=0;
@@ -553,6 +563,10 @@ void BarkBeetleModule::barkbeetleKill()
     stats.NTreesKilled = n_killed;
     stats.BasalAreaKilled = basal_area;
 
+    // reset the effect of wind-damaged trees and "fangbaueme"
+    for (BarkBeetleCell *c=mGrid.begin(); c!=mGrid.end(); ++c)
+        c->deadtrees = BarkBeetleCell::NoDeadTrees;
+
 }
 
 
@@ -575,7 +589,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
             }
             return -1; // no host
     case 4: return data.p_colonize; // probability of kill
-    case 5: return data.deadtrees; // absence of deadwood (spruce)
+    case 5: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
     case 6: return data.backgroundInfestationProbability;
     case 7: return data.outbreakYear;
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));

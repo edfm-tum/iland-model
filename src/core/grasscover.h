@@ -25,6 +25,12 @@
 
 class GrassCoverLayers; // forwared
 
+// the number of steps used internally
+const int GRASSCOVERSTEPS = 64000;
+// define the data type that is used to store the grass-levels
+// use unsigned char for 1 byte (or quint8), unsigned short int (quint16) for two bytes per pixel
+#define grid_type quint16
+
 /**
  * @brief The GrassCover class specifies the limiting effect of ground vegetation (grasses, herbs)
  * on the regeneration success of the tree species.
@@ -46,29 +52,29 @@ public:
     /// returns 'true' if the module is enabled
     bool enabled() const { return mEnabled; }
     ///
-    double effect(unsigned char level) const { return mEffect[level]; }
+    double effect(grid_type level) const { return mEffect[level]; }
     double regenerationInhibition(QPoint &lif_index) const { return mEnabled?effect(mGrid.constValueAtIndex(lif_index)) : 0.; }
     /// retrieve the grid of current grass cover
-    const Grid<unsigned char> &grid() { return mGrid; }
+    const Grid<grid_type> &grid() { return mGrid; }
 private:
     bool mEnabled; ///< is module enabled?
     Expression mGrassPotential; ///< function defining max. grass cover [0..1] as function of the LIF pixel value
     Expression mGrassEffect; ///< equation giving probability of *prohibiting* regeneration as a function of grass level [0..1]
     int mMaxTimeLag; ///< maximum duration (years) from 0 to full cover
-    double mEffect[256]; ///< effect lookup table
-    Grid<unsigned char> mGrid; ///< grid covering state of grass cover (in integer steps)
+    double mEffect[GRASSCOVERSTEPS]; ///< effect lookup table
+    Grid<grid_type> mGrid; ///< grid covering state of grass cover (in integer steps)
     int mGrowthRate; ///< max. annual growth rate of herbs and grasses (in 1/256th)
-    unsigned char mMaxState; ///< potential at lif=1
+    grid_type mMaxState; ///< potential at lif=1
     GrassCoverLayers *mLayers; // visualization
 };
 
 /** Helper class manage and visualize data layers.
 
 */
-class GrassCoverLayers: public LayeredGrid<unsigned char> {
+class GrassCoverLayers: public LayeredGrid<grid_type> {
   public:
-    void setGrid(const Grid<unsigned char> &grid, const GrassCover *gc) { mGrid = &grid; mGrassCover=gc; }
-    double value(const unsigned char &data, const int index) const;
+    void setGrid(const Grid<grid_type> &grid, const GrassCover *gc) { mGrid = &grid; mGrassCover=gc; }
+    double value(const grid_type &data, const int index) const;
     const QVector<LayeredGridBase::LayerElement> &names();
 private:
     QVector<LayeredGridBase::LayerElement> mNames;
