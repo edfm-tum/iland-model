@@ -144,7 +144,8 @@ public:
     void treeDeath(const Tree *tree);
 
     void yearBegin(); ///< called automatically
-    int manualYearBegin() { mYear++; return mYear; }
+    /// call from script (from script)
+    int manualYearBegin() { int y=mYear; yearBegin(); mYear = y + 1; return mYear; }
     // properties
     void setSimulate(bool do_simulate) { mSimulate = do_simulate; }
     bool simulate() const {return mSimulate; }

@@ -612,8 +612,10 @@ void ScriptGlobal::loadScript(const QString &fileName)
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
 
     QString program = Helper::loadTextFile(fileName);
-    if (program.isEmpty())
+    if (program.isEmpty()) {
+        qDebug() << "loading of Javascript file" << fileName << "failed because file is either missing or empty.";
         return;
+    }
 
     QJSValue result = engine->evaluate(program);
     qDebug() << "javascript file loaded" << fileName;

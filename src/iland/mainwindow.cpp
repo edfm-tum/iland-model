@@ -1198,7 +1198,7 @@ void MainWindow::showTreeDetails(Tree *tree)
 void MainWindow::mouseMove(const QPoint& pos)
 {
 
-    if (!mRemoteControl.canRun())
+    if (!mRemoteControl.canRun() || mPaintNext.what == PaintObject::PaintNothing)
         return;
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);
@@ -1428,6 +1428,7 @@ void MainWindow::on_actionModelCreate_triggered()
 
 void MainWindow::on_actionModelDestroy_triggered()
 {
+    mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
     checkModelState();
 }
@@ -1468,6 +1469,7 @@ void MainWindow::on_actionReload_triggered()
 {
     if (!mRemoteControl.canDestroy())
         return;
+    mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
     setupModel();
 }
