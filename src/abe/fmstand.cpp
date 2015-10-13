@@ -254,8 +254,8 @@ bool FMStand::execute()
             return false;
         }
     }
-    if (trace())
-        mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
+
+    mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
 
 
     // what to do if there is no active activity??

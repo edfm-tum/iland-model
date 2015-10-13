@@ -485,8 +485,9 @@ void Model::loadProject()
 
     // (3) additional issues
     // (3.1) load javascript code into the engine
-    QString script_file = g->path(xml.value("system.javascript.fileName"),"script");
+    QString script_file = xml.value("system.javascript.fileName");
     if (!script_file.isEmpty()) {
+        script_file = g->path(script_file, "script");
         ScriptGlobal::loadScript(script_file);
         g->controller()->setLoadedJavascriptFile(script_file);
     }

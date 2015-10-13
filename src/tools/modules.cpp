@@ -67,6 +67,16 @@ void Modules::init()
         }
     }
 
+    // fix the order of modules: make sure that "barkbeetle" is after "wind"
+    DisturbanceInterface *wind = module(QStringLiteral("wind"));
+    DisturbanceInterface *bb = module(QStringLiteral("barkbeetle"));
+    if (wind && bb) {
+        int iw = mInterfaces.indexOf(wind), ib = mInterfaces.indexOf(bb);
+        if (ib<iw)
+            mInterfaces.swap(iw, ib);
+    }
+
+
 }
 
 DisturbanceInterface * Modules::module(const QString &module_name)
@@ -115,25 +125,39 @@ void Modules::treeDeath(const Tree *tree, int removal_type)
 void Modules::run()
 {
     DebugTimer t("modules");
-    QList<DisturbanceInterface*> run_list = mInterfaces;
 
-    // execute modules in random order
-    while (!run_list.isEmpty()) {
-        int idx = irandom(0, run_list.size()-1);
-        if (logLevelDebug())
-            qDebug() << "executing disturbance module: " << run_list[idx]->name();
-
+    // *** run in fixed order ***
+    foreach(DisturbanceInterface *di, mInterfaces) {
         try {
-            run_list[idx]->run();
+            di->run();
         } catch (const IException &e) {
-            qWarning() << "ERROR: uncaught exception in module '" << run_list[idx]->name() << "':";
+            qWarning() << "ERROR: uncaught exception in module '" << di->name() << "':";
             qWarning() << "ERROR:" << e.message();
             qWarning() << " **************************************** ";
         }
-
-        // remove from list
-        run_list.removeAt(idx);
     }
+
+
+    // *** run in random order ****
+    //    QList<DisturbanceInterface*> run_list = mInterfaces;
+
+    //    // execute modules in random order
+    //    while (!run_list.isEmpty()) {
+    //        int idx = irandom(0, run_list.size()-1);
+    //        if (logLevelDebug())
+    //            qDebug() << "executing disturbance module: " << run_list[idx]->name();
+
+    //        try {
+    //            run_list[idx]->run();
+    //        } catch (const IException &e) {
+    //            qWarning() << "ERROR: uncaught exception in module '" << run_list[idx]->name() << "':";
+    //            qWarning() << "ERROR:" << e.message();
+    //            qWarning() << " **************************************** ";
+    //        }
+
+    //        // remove from list
+    //        run_list.removeAt(idx);
+    //    }
 }
 
 void Modules::yearBegin()

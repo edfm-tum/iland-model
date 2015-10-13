@@ -307,6 +307,11 @@ void BarkBeetleModule::yearBegin()
     for (BarkBeetleRUCell *bbru=mRUGrid.begin();bbru!=mRUGrid.end();++bbru) {
         bbru->scanned = false;
     }
+
+    // reset the effect of wind-damaged trees and "fangbaueme"
+    for (BarkBeetleCell *c=mGrid.begin(); c!=mGrid.end(); ++c)
+        c->deadtrees = BarkBeetleCell::NoDeadTrees;
+
     mYear = GlobalSettings::instance()->instance()->currentYear();
 }
 
@@ -405,18 +410,21 @@ void BarkBeetleModule::prepareInteractions()
 
     for (int y=0;y<mGrid.sizeY();++y)
         for (int x=0;x<mGrid.sizeX();++x) {
-            if (mGrid(x,y).deadtrees!=BarkBeetleCell::NoDeadTrees) {
+            BarkBeetleCell &cell = mGrid.valueAtIndex(x,y);
+            if (cell.deadtrees==BarkBeetleCell::NoDeadTrees) {
                 int has_neighbors=0;
                 for (int dy=-2;dy<=2;++dy)
                     for (int dx=-2;dx<=2;++dx)
-                        has_neighbors += mGrid.isIndexValid(x+dx,y+dy) ? (mGrid(x+dx,y+dy).deadtrees!=BarkBeetleCell::NoDeadTrees ? 1: 0) : 0;
+                        has_neighbors += mGrid.isIndexValid(x+dx,y+dy) ? (mGrid(x+dx,y+dy).deadtrees==BarkBeetleCell::StormDamage || mGrid(x+dx,y+dy).deadtrees==BarkBeetleCell::BeetleTrapTree ? 1: 0) : 0;
 
-                 mGrid.valueAt(x,y).deadtrees = has_neighbors>0 ? BarkBeetleCell::StormDamageVicinity : BarkBeetleCell::NoDeadTrees;
-                 if (mGrid(x,y).deadtrees==BarkBeetleCell::StormDamage) {
-                     // the pixel acts as a source
-                     mGrid.valueAtIndex(x,y).setInfested(true);
-                 }
+                if (has_neighbors>0)
+                    cell.deadtrees = BarkBeetleCell::StormDamageVicinity;
 
+
+            }
+            if (cell.deadtrees==BarkBeetleCell::StormDamage) {
+                // the pixel acts as a source
+                cell.setInfested(true);
             }
         }
 }
@@ -563,9 +571,9 @@ void BarkBeetleModule::barkbeetleKill()
     stats.NTreesKilled = n_killed;
     stats.BasalAreaKilled = basal_area;
 
-    // reset the effect of wind-damaged trees and "fangbaueme"
-    for (BarkBeetleCell *c=mGrid.begin(); c!=mGrid.end(); ++c)
-        c->deadtrees = BarkBeetleCell::NoDeadTrees;
+    // reset the effect of wind-damaged trees and "fangbaueme" -> year begin
+//    for (BarkBeetleCell *c=mGrid.begin(); c!=mGrid.end(); ++c)
+//        c->deadtrees = BarkBeetleCell::NoDeadTrees;
 
 }
 

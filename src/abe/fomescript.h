@@ -21,6 +21,7 @@
 #define FOMESCRIPT_H
 
 #include <QObject>
+#include <QStringList>
 
 #include "fmstand.h"
 #include "fmunit.h"
