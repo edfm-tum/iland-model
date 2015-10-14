@@ -53,7 +53,7 @@ void WindOut::exec()
     *this << mWM->mCurrentIteration << mWM->mWindSpeed << GRAD(mWM->mWindDirection) << mWM->mPixelAffected*area_factor;
     *this << mWM->mTreesKilled << mWM->mTotalKilledBasalArea << mWM->mTotalKilledVolume;
 
-    qDebug() << "windout" << mWM->mTotalKilledBasalArea;
+    //qDebug() << "windout" << mWM->mTotalKilledBasalArea;
 
     writeRow();
 

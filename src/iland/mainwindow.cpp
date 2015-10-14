@@ -855,11 +855,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         // ruler
         if (species_color) {
             mRulerColors->setCaption("Single trees", "species specific colors.");
-            QHash<QString, QString> specieslist=mRemoteControl.availableSpecies();
+            QList<const Species*> specieslist=mRemoteControl.availableSpecies();
             QStringList colors; QStringList speciesnames;
-            for (QHash<QString, QString>::const_iterator it=specieslist.constBegin(); it!=specieslist.constEnd(); ++it) {
-                colors.append( GlobalSettings::instance()->model()->speciesSet()->species(it.key())->displayColor().name());
-                speciesnames.append(it.value());
+            for (int i=0; i<specieslist.count();++i) {
+                colors.append(specieslist[i]->displayColor().name());
+                speciesnames.append(specieslist[i]->name());
             }
             mRulerColors->setFactorColors(colors);
             mRulerColors->setFactorLabels(speciesnames);
@@ -1364,12 +1364,9 @@ void MainWindow::setupModel()
     // populate the tree species filter list
     ui->speciesFilterBox->clear();
     ui->speciesFilterBox->addItem("<all species>", "");
-    QHash<QString, QString> list = mRemoteControl.availableSpecies();
-    QHash<QString, QString>::const_iterator i = list.begin();
-    while (i!=list.constEnd()) {
-        ui->speciesFilterBox->addItem(i.value(), i.key());
-        ++i;
-    }
+    QList<const Species*> list = mRemoteControl.availableSpecies();
+    for (int i=0;i<list.size();++i)
+        ui->speciesFilterBox->addItem(list[i]->name(), list[i]->id());
 
     // retrieve the active management script file
     if (mRemoteControl.model()->management())

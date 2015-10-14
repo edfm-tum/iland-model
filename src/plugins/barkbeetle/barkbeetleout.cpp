@@ -31,6 +31,7 @@ BarkBeetleOut::BarkBeetleOut()
               << OutputColumn("initialInfestedArea_ha", "Area of infested pixels (ha) at the start of the iteration (i.e. before winter mortality or background activation happen).", OutDouble)
               << OutputColumn("backgroundMortality_ha", "Area of infested pixels (ha) that die due to winter mortality.", OutDouble)
               << OutputColumn("backgroundActivation_ha", "Area of (not infested) pixels (ha) that are 'ignited' and consequently a source of bark beetles.", OutDouble)
+              << OutputColumn("stormActivation_ha", "Area of (not infested) pixels (ha) that are 'ignited' by storm and consequently infested.", OutDouble)
               << OutputColumn("spreadCohorts", "Number of bark beetle 'packages' (x1000) that are spread from the source pixels (kilo-cohorts).", OutDouble)
               << OutputColumn("landedCohorts", "Number of bark beetle 'packages' (x1000) that reach potential hosts (cohorts x 1000).", OutDouble)
               << OutputColumn("landedArea_ha", "Area (ha) of potential host trees where bark beetles landed.", OutDouble)
@@ -46,7 +47,7 @@ void BarkBeetleOut::exec()
 {
     const double area_factor = 0.01; // area in ha of one pixel
     *this << currentYear();
-    *this << mBB->stats.infestedStart*area_factor << mBB->stats.NWinterMortality*area_factor << mBB->stats.infestedBackground*area_factor;
+    *this << mBB->stats.infestedStart*area_factor << mBB->stats.NWinterMortality*area_factor << mBB->stats.infestedBackground*area_factor << mBB->stats.infestedStorm*area_factor;
 
     *this << mBB->stats.NCohortsSpread * 0.001 << mBB->stats.NCohortsLanded*0.001 << mBB->stats.NPixelsLanded*area_factor;
     *this << mBB->stats.NInfested*area_factor;

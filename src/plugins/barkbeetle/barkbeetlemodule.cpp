@@ -96,6 +96,9 @@ void BarkBeetleModule::loadParameters()
     params.minDbh = xml.valueDouble(".minimumDbh", params.minDbh);
     mKernelPDF.setup(params.spreadKernelFormula,0.,params.spreadKernelMaxDistance);
     params.backgroundInfestationProbability = xml.valueDouble(".backgroundInfestationProbability", params.backgroundInfestationProbability);
+    params.stormInfestationProbability = xml.valueDouble(".stormInfestationProbability", params.stormInfestationProbability);
+    params.deadTreeSelectivity = xml.valueDouble(".deadTreeSelectivity", params.deadTreeSelectivity);
+
 
     QString formula = xml.value(".colonizeProbabilityFormula", "0.1");
     mColonizeProbability.setExpression(formula);
@@ -222,7 +225,7 @@ void BarkBeetleModule::run(int iteration)
     barkbeetleKill();
 
     // create some outputs....
-    qDebug() << "iter/background-inf/winter-mort/N spread/N landed/N infested: " << mIteration << stats.infestedBackground << stats.NWinterMortality << stats.NCohortsSpread << stats.NCohortsLanded << stats.NInfested;
+    qDebug() << "iter/background-inf/winter-mort/storm-inf/N spread/N landed/N infested: " << mIteration << stats.infestedBackground << stats.NWinterMortality << stats.infestedStorm << stats.NCohortsSpread << stats.NCohortsLanded << stats.NInfested;
     GlobalSettings::instance()->outputManager()->execute("barkbeetle");
     //GlobalSettings::instance()->outputManager()->save();
 
@@ -239,9 +242,11 @@ void BarkBeetleModule::treeDeath(const Tree *tree)
     // do nothing if the tree was killed by bark beetles
     if (tree->isDeadBarkBeetle())
         return;
-    // we only process trees here that are either killed by storm or deliberately killed and dropped by management or are already salvaged
-    if (!tree->isDeadWind() && !tree->isCutdown() && !tree->isHarvested())
+    // we only process trees here that are either killed by storm or deliberately killed and dropped by management and are not are already salvaged
+    if ((tree->isDeadWind()==false && tree->isCutdown()==false)
+            || tree->isHarvested()==true )
         return;
+
     // ignore the death of trees that are too small or are not Norway spruce
     if (tree->dbh()<params.minDbh || tree->species()->id()!=QStringLiteral("piab"))
         return;
@@ -425,6 +430,8 @@ void BarkBeetleModule::prepareInteractions()
             if (cell.deadtrees==BarkBeetleCell::StormDamage) {
                 // the pixel acts as a source
                 cell.setInfested(true);
+                cell.outbreakYear = mYear; // this outbreak starts in the current year
+                stats.infestedStorm++;
             }
         }
 }
@@ -484,7 +491,8 @@ void BarkBeetleModule::barkbeetleSpread()
 
                 // effect of windthrown trees or "fangbaume"
                 if (targeter.current()->isNeutralized())
-                    continue;
+                    if (drandom() < params.deadTreeSelectivity)
+                        continue;
 
                 BarkBeetleCell *target=0;
                 if (targeter.current()->isPotentialHost()) {
@@ -526,8 +534,8 @@ void BarkBeetleModule::barkbeetleSpread()
                 b->p_colonize = std::max(b->p_colonize, float(p_ncol));
                 if (drandom() < p_ncol) {
                     // attack successful - the pixel gets infested
-                    b->outbreakYear = b->packageOutbreakYear / float(b->n);
                     b->setInfested(true);
+                    b->outbreakYear = b->n>0 ? b->packageOutbreakYear / float(b->n) : mYear; // b->n always >0, but just to silence compiler warning ;)
                     stats.NInfested++;
                 } else {
                     b->n = 0; // reset the counter
@@ -614,9 +622,9 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). Newly infested pixels are included (max iteration + 1)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("1: presence of dead potential host trees on the pixel"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 5/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
-                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("year of the outbreak (simulation year)"), GridViewGray);
+                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("year of the outbreak (simulation year) that led to the infestation of the pixel."), GridViewGray);
     return mNames;
 
 }
