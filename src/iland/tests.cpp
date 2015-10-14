@@ -1084,3 +1084,62 @@ void Tests::testDbgEstablishment()
 
     DebugTimer::printAllTimers();
 }
+
+void Tests::testGridIndexHack()
+{
+    Grid<float> m2, m10;
+    const int n=10000;
+    m2.setup(2,n,n);
+    m10.setup(10, n/5, n/5 );
+    m10.wipe();
+
+    for (float *f = m2.begin(), i=0.; f!=m2.end(); ++f, ++i)
+        *f = i;
+
+//    for (int i=0;i<m2.count();++i) {
+//        qDebug() << i << m2.index5(i);
+//    }
+//    return;
+
+    int el;
+    { DebugTimer t("optimized");
+        for (float *f = m2.begin(); f!=m2.end(); ++f) {
+            m10[ m2.index5(f-m2.begin()) ] += *f;
+        }
+        el = t.elapsed();
+    }
+
+    float s=m10.sum() / m10.count();
+    qDebug() << "test average value (new):" << s << "time" << el;
+
+    m10.wipe();
+
+    { DebugTimer t("old");
+        for (float *f = m2.begin(); f!=m2.end(); ++f) {
+            m10.valueAt(m2.cellCenterPoint(m2.indexOf(f))) += *f;
+        }
+        el = t.elapsed();
+    }
+    s=m10.sum() / m10.count();
+    qDebug() << "test average value (old):" << s << "time" << el;
+
+     int errors=0;
+     { DebugTimer t("compare");
+         for (float *f = m2.begin(); f!=m2.end(); ++f) {
+             if ( m10.valueAtIndex( m2.index5(f-m2.begin()) ) != m10.valueAt(m2.cellCenterPoint(m2.indexOf(f))))
+                     errors++;
+         }
+     }
+      qDebug() << "test e:differenczes" << errors;
+
+      { DebugTimer t("optimized");
+          for (int i=0;i<m2.count();++i) {
+              m10[ m2.index5(i)] += m2[i];
+          }
+          el = t.elapsed();
+      }
+
+      s=m10.sum() / m10.count();
+      qDebug() << "test average value (square brackets):" << s << "time" << el;
+
+}
