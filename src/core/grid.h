@@ -83,7 +83,12 @@ public:
     inline const T& operator()(const int ix, const int iy) const { return constValueAtIndex(ix, iy); }
     /// access (const) using metric variables. use float.
     inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
-    //inline const T& operator[] (const QPointF &p) const { return constValueAt(p); }
+    /// access value of grid with a QPoint
+    inline const T& operator[](const QPoint &p) const { return constValueAtIndex(p); }
+    /// use the square brackets to access by index
+    inline T& operator[](const int idx) const { return mData[idx]; }
+    /// use the square bracket to access by QPointF
+    inline T& operator[] (const QPointF &p) const { return valueAt(p); }
 
     inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return mData[iy*mSizeX + ix];  } ///< const value at position defined by indices (x,y)
@@ -101,6 +106,12 @@ public:
 
     T& valueAt(const float x, const float y); ///< value at position defined by metric coordinates (x,y)
     const T& constValueAt(const float x, const float y) const; ///< value at position defined by metric coordinates (x,y)
+
+    //floor( floor(i/n)/2 )*(n/2) + floor((i%%n)/2)
+    //floor( floor(i/n)/5 )*(n/2) + floor((i%%n)/2)
+    int index2(int idx) const {return ((idx/mSizeX)/2)*mSizeX/2 + (idx%mSizeX)/2; }
+    int index5(int idx) const {return ((idx/mSizeX)/5)*mSizeX/5 + (idx%mSizeX)/5; }
+
 
     bool coordValid(const float x, const float y) const { return x>=mRect.left() && x<mRect.right()  && y>=mRect.top() && y<mRect.bottom(); }
     bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
@@ -151,6 +162,7 @@ private:
     int mSizeY; ///< count of cells in y-direction
     int mCount; ///< total number of cells in the grid
 };
+
 
 typedef Grid<float> FloatGrid;
 
