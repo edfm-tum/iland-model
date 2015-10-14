@@ -69,15 +69,15 @@ void ModelController::connectSignals()
 }
 
 /// prepare a list of all (active) species
-QHash<QString, QString> ModelController::availableSpecies()
+QList<const Species*> ModelController::availableSpecies()
 {
-    QHash<QString, QString> list;
+    QList<const Species*> list;
     if (mModel) {
         SpeciesSet *set = mModel->speciesSet();
         if (!set)
             throw IException("there are 0 or more than one species sets.");
         foreach (const Species *s, set->activeSpecies()) {
-            list[s->id()] = s->name();
+            list.append(s);
         }
     }
     return list;

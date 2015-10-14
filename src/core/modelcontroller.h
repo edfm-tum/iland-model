@@ -26,6 +26,7 @@
 class Model;
 class MainWindow;
 class MapGrid;
+class Species;
 
 class ModelController: public QObject
 {
@@ -56,7 +57,7 @@ public:
     void setupDynamicOutput(QString fieldList);
     QString dynamicOutput();
     // some informational services
-    QHash<QString, QString> availableSpecies();
+    QList<const Species *> availableSpecies();
     void setLoadedJavascriptFile(QString filename) { mLastLoadedJSFile = filename; }
     QString loadedJavascriptFile() const { return mLastLoadedJSFile; }
 
