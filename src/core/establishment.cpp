@@ -99,6 +99,9 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      return false; // no establishment
 }
 
+int _est_old_algo=0;
+int _est_new_algo=0;
+
 // see http://iland.boku.ac.at/establishment
 void Establishment::calculate()
 {
@@ -149,11 +152,19 @@ void Establishment::calculate()
     // switch the algorithm:
     // use the new algorithm, if most of the area is covered with seed pixels
 
-    if (with_seeds/double(total) < 0.9)
+    if (with_seeds/double(total) < 0.9) {
         calculatePerSeedPixel();     // the original algorithm (started in 2010 (approx.), and tinkered with later on)
-    else
+        ++_est_old_algo;
+    } else {
         calculatePerRU(); // the new one (2015) - works best if seeds are available everywhere
+        ++_est_new_algo;
+    }
 
+}
+
+void Establishment::debugInfo()
+{
+    qDebug() << "Establisment: new algo:"  << _est_new_algo << "old algo:" << _est_old_algo;
 }
 
 
@@ -331,8 +342,11 @@ void Establishment::calculatePerRU()
         QPoint lif_index = lif_map->indexOf(lif_px);
 
         // check the abiotic environment against a random number
-        double p = drandom();
         double grass_cover = 1. - model->grassCover()->regenerationInhibition(lif_index);
+        if (grass_cover == 0.)
+            continue; // no chance of establishment
+
+        double p = drandom();
         if (p > mPAbiotic * grass_cover)
             continue;
 

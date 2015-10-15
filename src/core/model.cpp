@@ -756,6 +756,8 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
         }
 
+        Establishment::debugInfo(); // debug test
+
     }
 
     // calculate soil / snag dynamics

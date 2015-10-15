@@ -43,7 +43,7 @@ public:
     int TACAfrostDaysAfterBudBirst() const { return mTACA_frostAfterBuds; } ///< number of frost days after bud birst
     double avgLIFValue() const { return mLIFcount>0?mSumLIFvalue/double(mLIFcount):0.; } ///< average LIF value of LIF pixels where establishment is tested
 
-
+    static void debugInfo();
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
     inline bool establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value); ///< do the final check whether a seedling can establish at given location

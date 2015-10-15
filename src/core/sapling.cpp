@@ -249,6 +249,7 @@ void Sapling::clearSapling(int index, const bool remove)
 bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* species)
 {
     QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
+    //GlobalSettings::instance()->model()->heightGrid()[Grid::index5(tree.pixel-GlobalSettings::instance()->model()->grid()->begin())];
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height); // TODO check if this can be source of crashes (race condition)

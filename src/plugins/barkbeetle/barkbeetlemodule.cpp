@@ -402,6 +402,7 @@ void BarkBeetleModule::startSpread()
         b->n = 0;
         b->killed=false;
         b->packageOutbreakYear = 0.f;
+
     }
 
     prepareInteractions();

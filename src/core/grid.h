@@ -107,11 +107,6 @@ public:
     T& valueAt(const float x, const float y); ///< value at position defined by metric coordinates (x,y)
     const T& constValueAt(const float x, const float y) const; ///< value at position defined by metric coordinates (x,y)
 
-    //floor( floor(i/n)/2 )*(n/2) + floor((i%%n)/2)
-    //floor( floor(i/n)/5 )*(n/2) + floor((i%%n)/2)
-    int index2(int idx) const {return ((idx/mSizeX)/2)*mSizeX/2 + (idx%mSizeX)/2; }
-    int index5(int idx) const {return ((idx/mSizeX)/5)*mSizeX/5 + (idx%mSizeX)/5; }
-
 
     bool coordValid(const float x, const float y) const { return x>=mRect.left() && x<mRect.right()  && y>=mRect.top() && y<mRect.bottom(); }
     bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
@@ -121,6 +116,12 @@ public:
     QPoint indexOf(const int index) const {return QPoint(index % mSizeX,  index / mSizeX); }
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } ///< return true, if position is within the grid
     bool isIndexValid(const int x, const int y) const {return (x>=0 && x<mSizeX && y>=0 && y<mSizeY); } ///< return true, if index is within the grid
+
+    /// returns the index of an aligned grid (with the same size and matching origin) with the double cell size (e.g. to scale from a 10m grid to a 20m grid)
+    int index2(int idx) const {return ((idx/mSizeX)/2)*mSizeX/2 + (idx%mSizeX)/2; }
+    /// returns the index of an aligned grid (the same size) with the 5 times bigger cells (e.g. to scale from a 2m grid to a 10m grid)
+    int index5(int idx) const {return ((idx/mSizeX)/5)*mSizeX/5 + (idx%mSizeX)/5; }
+
     /// force @param pos to contain valid indices with respect to this grid.
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} ///< ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
     /// get the (metric) centerpoint of cell with index @p pos
