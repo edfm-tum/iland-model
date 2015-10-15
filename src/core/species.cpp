@@ -192,6 +192,7 @@ void Species::setup()
 
     // sapling and sapling growth parameters
     mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));
+    mSaplingGrowthParams.heightGrowthPotential.setLinearizationEnabled(true);
     mSaplingGrowthParams.heightGrowthPotential.linearize(0., 1.);
     mSaplingGrowthParams.hdSapling = doubleVar("sapHDSapling");
     mSaplingGrowthParams.stressThreshold = doubleVar("sapStressThreshold");
