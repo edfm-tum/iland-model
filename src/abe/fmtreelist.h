@@ -77,6 +77,9 @@ public slots:
      *  return the number of removed trees. */
 //    int managePct(int pctfrom, int pctto, int number);
 //    int manageAll(); ///< manage all trees in the list
+    /// kill (i.e., cut down and do not remove from the forest) the trees in the list, filtered with 'filter'.
+    int kill(QString filter);
+
     /** manage 'fraction' of all trees [0..1] with 'filter'. Return number of removed trees. */
     int harvest(QString filter=QString(), double fraction=1.);
 

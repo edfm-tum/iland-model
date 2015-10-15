@@ -38,8 +38,13 @@ public:
         void setModelObject(ExpressionWrapper *wrapper) { mModelObject = wrapper; }
         const QString &expression() const { return m_expression; }
         void  parse(ExpressionWrapper *wrapper=0); ///< force a parsing of the expression
+
+        /// call linearize() to 'linarize' an expression, i.e. approximate the function by linear interpolation.
         void linearize(const double low_value, const double high_value, const int steps=1000);
+        /// lineraize2d works with two variables
         void linearize2d(const double low_x, const double high_x, const double low_y, const double high_y, const int stepsx=50, const int stepsy=50);
+
+        /// global switch for linerization. If set to false, subsequent calls to linearize are ignored.
         static void setLinearizationEnabled(const bool enable) {mLinearizationAllowed = enable; }
         // calculations
         double execute(double *varlist=0, ExpressionWrapper *object=0) const; ///< calculate formula and return result. variable values need to be set using "setVar()"

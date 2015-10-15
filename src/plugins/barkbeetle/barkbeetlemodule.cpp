@@ -27,7 +27,7 @@
 #include "debugtimer.h"
 #include "outputmanager.h"
 #include "climate.h"
-
+#include "abe/forestmanagementengine.h"
 
 
 int BarkBeetleCell::total_infested = 0;
@@ -242,17 +242,22 @@ void BarkBeetleModule::treeDeath(const Tree *tree)
     // do nothing if the tree was killed by bark beetles
     if (tree->isDeadBarkBeetle())
         return;
-    // we only process trees here that are either killed by storm or deliberately killed and dropped by management and are not are already salvaged
-    if ((tree->isDeadWind()==false && tree->isCutdown()==false)
-            || tree->isHarvested()==true )
+    // we only process trees here that are either
+    // killed by storm or deliberately killed and dropped
+    // by management and are not are already salvaged
+    if ( !(tree->isDeadWind() || tree->isCutdown()))
         return;
+
 
     // ignore the death of trees that are too small or are not Norway spruce
     if (tree->dbh()<params.minDbh || tree->species()->id()!=QStringLiteral("piab"))
         return;
 
     BarkBeetleCell &cell = mGrid.valueAt(tree->position());
-    cell.deadtrees = BarkBeetleCell::StormDamage;
+    if (tree->isDeadWind())
+        cell.deadtrees = BarkBeetleCell::StormDamage;
+    if (tree->isCutdown())
+        cell.deadtrees = BarkBeetleCell::BeetleTrapTree;
 
 
 
@@ -311,6 +316,7 @@ void BarkBeetleModule::yearBegin()
     // reset the scanned flag of resource units (force reload of stand structure)
     for (BarkBeetleRUCell *bbru=mRUGrid.begin();bbru!=mRUGrid.end();++bbru) {
         bbru->scanned = false;
+        bbru->infested=0;
     }
 
     // reset the effect of wind-damaged trees and "fangbaueme"
@@ -406,6 +412,26 @@ void BarkBeetleModule::startSpread()
     }
 
     prepareInteractions();
+
+    // tell the forest management (at least if someone is interested)
+    // if bark beetle attacks are likely
+    ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
+    if (abe) {
+        // reset the scanned flag of resource units (force reload of stand structure)
+        bool forest_changed = false;
+        for (BarkBeetleRUCell *bbru=mRUGrid.begin();bbru!=mRUGrid.end();++bbru) {
+            if (bbru->generations>=1. && bbru->infested>0) {
+                // notify about potential bb-attack
+                ResourceUnit *ru = GlobalSettings::instance()->model()->RUgrid()[mRUGrid.indexOf(bbru)];
+                forest_changed |= abe->notifyBarkbeetleAttack(ru, bbru->generations, bbru->infested);
+
+            }
+
+        }
+        if (forest_changed)
+            prepareInteractions();
+    }
+
 }
 
 void BarkBeetleModule::prepareInteractions()
@@ -433,6 +459,10 @@ void BarkBeetleModule::prepareInteractions()
                 cell.setInfested(true);
                 cell.outbreakYear = mYear; // this outbreak starts in the current year
                 stats.infestedStorm++;
+            }
+            if (cell.infested) {
+                // record infestation for the resource unit
+                mRUGrid[mGrid.cellCenterPoint(QPoint(x,y))].infested++;
             }
         }
 }

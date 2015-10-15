@@ -41,6 +41,7 @@ public:
 
     /// return true, if the (disturbed) tree should be harvested by the salvage activity
     bool evaluateRemove(Tree* tree) const;
+    bool barkbeetleAttack(FMStand *stand, double generations, int infested_px_ha);
 private:
     void checkStandAfterDisturbance(FMStand *stand);
     int floodFillHelper(Grid<int> &grid, QPoint start, int color);

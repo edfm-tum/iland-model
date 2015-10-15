@@ -75,7 +75,7 @@ public:
     BarkBeetleRUCell(): scanned(false), generations(0.), add_sister(false),
         cold_days(0), cold_days_late(0), killed_trees(false),
         killed_pixels(0), host_pixels(0),
-        damage_last_year(0.) {}
+        infested(0.) {}
     /// relative damage: fraction of host pixels that died in the current or the last year
     double currentDamageFraction() { return host_pixels+killed_pixels>0? (killed_pixels)/double(host_pixels+killed_pixels): 0.; }
     bool scanned;
@@ -86,7 +86,7 @@ public:
     bool killed_trees;
     int killed_pixels;
     int host_pixels;
-    double damage_last_year; // smoothed damage of the previous year
+    int infested; // number of pixels that are currently infested
 
 };
 

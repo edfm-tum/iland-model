@@ -130,6 +130,10 @@ public:
     void addScheduledHarvest(const double add_volume) {mScheduledHarvest += add_volume; }
     /// is called whenever a tree is removed (death, management, disturbance)
     void notifyTreeRemoval(Tree *tree, int reason);
+    /// is called when bark beetles are likely to attack: return ABE changed forest structure
+    bool notifyBarkBeetleAttack(double generations, int infested_px_per_ha);
+
+    /// resets the harvest counters
     void resetHarvestCounter() { mFinalHarvested = 0.; mDisturbed=0.; mThinningHarvest=0.; }
 
     /// sleep() pauses the evaluation/execution of management activities
