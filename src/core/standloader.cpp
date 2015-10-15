@@ -106,7 +106,7 @@ void StandLoader::processInit()
 
         QString expr=xml.value("heightGrid.fitFormula", "polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0)");
         mHeightGridResponse = new Expression(expr);
-        mHeightGridResponse->setLinearizationEnabled(true);
+        mHeightGridResponse->linearize(0., 2.);
     }
 
     Tree::resetStatistics();

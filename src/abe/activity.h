@@ -68,7 +68,7 @@ public:
     /// setup events from the javascript object
     void setup(QJSValue &js_value, QStringList event_names);
     /// execute javascript event /if registered) in the context of the forest stand 'stand'.
-    QJSValue run(const QString event, FMStand *stand);
+    QJSValue run(const QString event, FMStand *stand, QJSValueList *params=0);
     /// returns true, if the event 'event' is available.
     bool hasEvent(const QString &event) const;
     QString dump(); ///< prints some debug info

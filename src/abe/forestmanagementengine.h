@@ -25,6 +25,7 @@
 
 class QJSEngine; // forward
 class MapGrid; // forward
+class ResourceUnit; // forward
 class Tree; // forward
 
 
@@ -91,6 +92,8 @@ public:
 
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.
     void notifyTreeRemoval(Tree* tree, int reason);
+    /// called when bark beetle are likely going to spread
+    bool notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, double n_infested_ha);
 
     ///
     FMStand *splitExistingStand(FMStand *stand);

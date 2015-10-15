@@ -55,6 +55,7 @@ ActSalvage::~ActSalvage()
 void ActSalvage::setup(QJSValue value)
 {
     Activity::setup(value); // setup base events
+    events().setup(value, QStringList() << "onBarkBeetleAttack");
 
     QString condition = FMSTP::valueFromJs(value, "disturbanceCondition").toString();
     if (!condition.isEmpty() && condition!="undefined") {
@@ -115,6 +116,18 @@ bool ActSalvage::evaluateRemove(Tree *tree) const
     TreeWrapper tw(tree);
     bool result = mCondition->execute(0, &tw);
     return result;
+}
+
+bool ActSalvage::barkbeetleAttack(FMStand *stand, double generations, int infested_px_ha)
+{
+
+    //QJSValue params;
+    QJSValueList params=QJSValueList() << QJSValue(generations) << QJSValue(infested_px_ha);
+
+    QJSValue result = events().run(QStringLiteral("onBarkBeetleAttack"), stand, &params);
+    if (!result.isBool())
+        qCDebug(abe) << "Salvage-Activity:onBarkBeetleAttack: expecting a boolean return";
+    return result.toBool();
 }
 
 void ActSalvage::checkStandAfterDisturbance(FMStand *stand)

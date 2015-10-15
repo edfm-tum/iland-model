@@ -136,6 +136,11 @@ int FMTreeList::removeMarkedTrees()
     return n_removed;
 }
 
+int FMTreeList::kill(QString filter)
+{
+    return remove_trees(filter, 1., false);
+}
+
 int FMTreeList::harvest(QString filter, double fraction)
 {
     return remove_trees(filter, fraction, true);
@@ -244,14 +249,20 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
                     if (simulate()) {
                         tp->first->markForHarvest(true);
                         mStand->addScheduledHarvest(tp->first->volume());
-                    } else
+                    } else {
+                        tp->first->markForHarvest(true);
                         tp->first->remove(removeFoliage(), removeBranch(), removeStem()); // management with removal fractions
+                    }
                 } else {
                     if (simulate()) {
                         tp->first->markForCut(true);
+                        tp->first->setDeathCutdown();
                         mStand->addScheduledHarvest(tp->first->volume());
-                    } else
+                    } else {
+                        tp->first->markForCut(true);
+                        tp->first->setDeathCutdown();
                         tp->first->remove(); // kill
+                    }
                 }
                 // remove from tree list
                 tp = mTrees.erase(tp);
@@ -406,11 +417,17 @@ void FMTreeList::runGrid(void (*func)(float &, int &, const Tree *, const FMTree
 
     mStandGrid.initialize(0.f);
     mTreeCountGrid.initialize(0);
+    int invalid_index = 0;
     for (QVector<QPair<Tree*, double> >::const_iterator it=mTrees.constBegin(); it!=mTrees.constEnd(); ++it) {
         const Tree* tree = it->first;
         QPoint p = mStandGrid.indexAt(tree->position());
-        (*func)(mStandGrid.valueAtIndex(p), mTreeCountGrid.valueAtIndex(p), tree, this);
+        if (mStandGrid.isIndexValid(p))
+            (*func)(mStandGrid.valueAtIndex(p), mTreeCountGrid.valueAtIndex(p), tree, this);
+        else
+            ++invalid_index;
     }
+    if (invalid_index)
+        qDebug() << "FMTreeList::runGrid: invalid index: n=" << invalid_index;
 
     // finalization: call again for each *cell*
     for (int i=0;i<mStandGrid.count();++i)

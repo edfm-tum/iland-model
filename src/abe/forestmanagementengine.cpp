@@ -49,6 +49,7 @@
 #include "outputmanager.h"
 
 #include "tree.h"
+#include "resourceunit.h"
 
 
 
@@ -362,7 +363,7 @@ void ForestManagementEngine::setup()
                 unit->setThinningIntensity( data_file.value(i, ithinning).toInt() );
             if (irotation>-1)
                 unit->setU( data_file.value(i, irotation).toDouble() );
-            if (iMAI)
+            if (iMAI>-1)
                 unit->setAverageMAI(data_file.value(i, iMAI).toDouble());
             if (ispeciescomp>-1) {
                 int index;
@@ -652,9 +653,24 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
 {
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
-    FMStand *stand = mFMStandGrid.valueAt(tree->position());
+    FMStand *stand = mFMStandGrid[tree->position()];
     if (stand)
         stand->notifyTreeRemoval(tree, reason);
+}
+
+bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, double n_infested_ha)
+{
+    // find out which stands are within the stand
+    GridRunner<FMStand*> gr(mFMStandGrid, ru->boundingBox());
+    QHash<FMStand*, bool> processed_items;
+    bool forest_changed = false;
+    while (FMStand **s=gr.next()) {
+        if (*s && !processed_items.contains(*s)) {
+            processed_items[*s] = true;
+            forest_changed |=  (*s)->notifyBarkBeetleAttack(generations, n_infested_ha);
+        }
+    }
+    return forest_changed;
 }
 
 QMutex protect_split;

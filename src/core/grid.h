@@ -88,7 +88,7 @@ public:
     /// use the square brackets to access by index
     inline T& operator[](const int idx) const { return mData[idx]; }
     /// use the square bracket to access by QPointF
-    inline T& operator[] (const QPointF &p) const { return valueAt(p); }
+    inline T& operator[] (const QPointF &p) { return valueAt(p); }
 
     inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return mData[iy*mSizeX + ix];  } ///< const value at position defined by indices (x,y)

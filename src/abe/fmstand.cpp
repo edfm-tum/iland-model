@@ -436,10 +436,11 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
         return; // do nothing atm
     if (r==Tree::TreeHarvest) {
         // regular harvest
-        if (currentFlags().isFinalHarvest())
-            mFinalHarvested += removed_volume;
-        else
-            mThinningHarvest += removed_volume;
+        if (currentActivity())
+            if (currentFlags().isFinalHarvest())
+                mFinalHarvested += removed_volume;
+            else
+                mThinningHarvest += removed_volume;
     }
     if (r==Tree::TreeDisturbance) {
         // if we have an active salvage activity, then store
@@ -452,6 +453,14 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
         }
 
     }
+}
+
+bool FMStand::notifyBarkBeetleAttack(double generations, int infested_px_per_ha)
+{
+    if (mSTP->salvageActivity()) {
+        return mSTP->salvageActivity()->barkbeetleAttack(this, generations, infested_px_per_ha);
+    }
+    return false;
 }
 
 

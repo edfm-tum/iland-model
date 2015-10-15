@@ -230,7 +230,7 @@ void Events::setup(QJSValue &js_value, QStringList event_names)
     }
 }
 
-QJSValue Events::run(const QString event, FMStand *stand)
+QJSValue Events::run(const QString event, FMStand *stand, QJSValueList *params)
 {
     if (mEvents.contains(event)) {
         if (stand)
@@ -240,7 +240,10 @@ QJSValue Events::run(const QString event, FMStand *stand)
         if (func.isCallable()) {
             DebugTimer t("ABE:JSEvents:run");
 
-            result = func.callWithInstance(mInstance);
+            if (params)
+                result = func.callWithInstance(mInstance, *params);
+            else
+                result = func.callWithInstance(mInstance);
             if (FMSTP::verbose() || (stand && stand->trace()))
                 qCDebug(abe) << (stand?stand->context():QString("<no stand>")) << "invoking javascript event" << event << " result: " << result.toString();
         }
