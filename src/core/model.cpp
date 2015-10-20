@@ -367,6 +367,7 @@ void Model::setupSpace()
         threadRunner.setMultithreading(GlobalSettings::instance()->settings().valueBool("system.settings.multithreading"));
         threadRunner.print();
 
+
     } else  {
         throw IException("resourceUnitsAsGrid MUST be set to true - at least currently :)");
     }

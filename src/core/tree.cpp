@@ -30,6 +30,8 @@
 #include "forestmanagementengine.h"
 #include "modules.h"
 
+
+
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
 HeightGrid *Tree::mHeightGrid = 0;
@@ -37,6 +39,12 @@ int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
+
+#ifdef ALT_TREE_MORTALITY
+double _stress_threshold = 0.05;
+int _stress_years = 5;
+double _stress_death_prob = 0.33;
+#endif
 
 /** @class Tree
     @ingroup core
@@ -585,6 +593,14 @@ void Tree::resetStatistics()
     m_nextId=1;
 }
 
+void Tree::mortalityParams(double dbh_inc_threshold, int stress_years, double stress_mort_prob)
+{
+    _stress_threshold = dbh_inc_threshold;
+    _stress_years = stress_years;
+    _stress_death_prob = stress_mort_prob;
+    qDebug() << "Alternative Mortality enabled: threshold" << dbh_inc_threshold << ", years:" << _stress_years << ", level:" << _stress_death_prob;
+}
+
 void Tree::calcLightResponse()
 {
     // calculate a light response from lri:
@@ -638,10 +654,16 @@ void Tree::grow()
         partitioning(d); // split npp to compartments and grow (diameter, height)
 
     // mortality
+#ifdef ALT_TREE_MORTALITY
+    // alternative variant of tree mortality (note: mStrssIndex used otherwise)
+    altMortality(d);
+
+#else
     if (Model::settings().mortalityEnabled)
         mortality(d);
 
     mStressIndex = d.stress_index;
+#endif
 
     if (!isDead())
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
@@ -964,6 +986,32 @@ void Tree::mortality(TreeGrowthData &d)
         // die...
         die();
     }
+}
+
+
+void Tree::altMortality(TreeGrowthData &d)
+{
+    // death if leaf area is 0
+    if (mFoliageMass<0.00001)
+        die();
+
+    double  p_intrinsic, p_stress=0.;
+    p_intrinsic = species()->deathProb_intrinsic();
+
+    if (mDbhDelta < _stress_threshold) {
+        mStressIndex++;
+        if (mStressIndex> _stress_years)
+            p_stress = _stress_death_prob;
+    } else
+        mStressIndex = 0;
+
+    double p = drandom(); //0..1
+    if (p<p_intrinsic + p_stress) {
+        // die...
+        die();
+    }
+
+
 }
 
 void Tree::notifyTreeRemoved(TreeRemovalType reason)

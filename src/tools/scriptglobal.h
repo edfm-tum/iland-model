@@ -154,6 +154,8 @@ public slots:
 
     // UI interface
     void setUIshortcuts(QJSValue shortcuts); ///< set a list of JS shortcuts in the UI
+
+    void test_tree_mortality(double thresh, int years, double p_death);
 private:
     void throwError(const QString &errormessage);
     QString mCurrentDir;
