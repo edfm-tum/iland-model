@@ -22,6 +22,12 @@
 #include <QPointF>
 
 #include "grid.h"
+
+
+// mortality workshop 2015 / COST Action with H. Bugmann
+#define ALT_TREE_MORTALITY
+
+
 // forwards
 class Species;
 class Stamp;
@@ -139,6 +145,9 @@ public:
     static void resetStatistics();
     static int statPrints() { return m_statPrint; }
     static int statCreated() { return m_statCreated; }
+#ifdef ALT_TREE_MORTALITY
+    static void mortalityParams(double dbh_inc_threshold, int stress_years, double stress_mort_prob);
+#endif
 
     QString dump();
     void dumpList(QList<QVariant> &rTargetList);
@@ -150,6 +159,9 @@ private:
     double relative_height_growth(); ///< estimate height growth based on light status.
     void grow_diameter(TreeGrowthData &d); ///< actual growth of the tree's stem.
     void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
+#ifdef ALT_TREE_MORTALITY
+    void altMortality(TreeGrowthData &d); ///< alternative version of the mortality sub module
+#endif
     void notifyTreeRemoved(TreeRemovalType reason); ///< record the removed volume in the height grid
 
     // state variables

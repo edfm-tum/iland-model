@@ -600,6 +600,14 @@ void ScriptGlobal::setUIshortcuts(QJSValue shortcuts)
     GlobalSettings::instance()->controller()->setUIShortcuts(vm);
 }
 
+void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
+{
+#ifdef ALT_TREE_MORTALITY
+    Tree::mortalityParams(thresh, years, p_death );
+#endif
+
+}
+
 void ScriptGlobal::throwError(const QString &errormessage)
 {
     GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
