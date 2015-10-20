@@ -265,6 +265,9 @@ void ModelController::internalStop()
     if (mRunning) {
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
+        if (GlobalSettings::instance()->dbout().isOpen())
+            GlobalSettings::instance()->dbout().close();
+
         mFinished = true;
     }
     mRunning = false;
