@@ -593,6 +593,7 @@ void Tree::resetStatistics()
     m_nextId=1;
 }
 
+#ifdef ALT_TREE_MORTALITY
 void Tree::mortalityParams(double dbh_inc_threshold, int stress_years, double stress_mort_prob)
 {
     _stress_threshold = dbh_inc_threshold;
@@ -600,6 +601,7 @@ void Tree::mortalityParams(double dbh_inc_threshold, int stress_years, double st
     _stress_death_prob = stress_mort_prob;
     qDebug() << "Alternative Mortality enabled: threshold" << dbh_inc_threshold << ", years:" << _stress_years << ", level:" << _stress_death_prob;
 }
+#endif
 
 void Tree::calcLightResponse()
 {
@@ -988,7 +990,7 @@ void Tree::mortality(TreeGrowthData &d)
     }
 }
 
-
+#ifdef ALT_TREE_MORTALITY
 void Tree::altMortality(TreeGrowthData &d)
 {
     // death if leaf area is 0
@@ -1010,9 +1012,8 @@ void Tree::altMortality(TreeGrowthData &d)
         // die...
         die();
     }
-
-
 }
+#endif
 
 void Tree::notifyTreeRemoved(TreeRemovalType reason)
 {

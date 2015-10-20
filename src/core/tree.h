@@ -25,7 +25,7 @@
 
 
 // mortality workshop 2015 / COST Action with H. Bugmann
-#define ALT_TREE_MORTALITY
+// #define ALT_TREE_MORTALITY
 
 
 // forwards
