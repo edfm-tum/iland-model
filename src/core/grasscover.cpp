@@ -196,7 +196,7 @@ const QVector<LayeredGridBase::LayerElement> &GrassCoverLayers::names()
     if (mNames.isEmpty())
         mNames = QVector<LayeredGridBase::LayerElement>()
                 << LayeredGridBase::LayerElement(QLatin1Literal("effect"), QLatin1Literal("prohibiting effect on regeneration [0..1]"), GridViewGreens)
-                << LayeredGridBase::LayerElement(QLatin1Literal("cover"), QLatin1Literal("current grass cover on pixels [0..1 for continuous, or #years for pixel mode]"), GridViewGreens);
+                << LayeredGridBase::LayerElement(QLatin1Literal("cover"), QLatin1Literal("current grass cover on pixels [0..1 for continuous, or #(years+2) for pixel mode]"), GridViewGreens);
     return mNames;
 
 }
