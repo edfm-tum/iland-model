@@ -23,14 +23,15 @@
 #include "fmstand.h"
 #include "fmunit.h"
 #include "scheduler.h"
+#include "species.h"
 
 namespace ABE {
 
 ABEStandOut::ABEStandOut()
 {
     setName("Annual stand output (state).", "abeStand");
-    setDescription("This output provides details about realized timber harvests on stand level. " \
-                   "The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning, final, and disturbed volume.\n" \
+    setDescription("This output provides details about the forest state on stand level. " \
+                   "The timber is provided as standing timber per hectare. \n" \
                    "The output is rather performance critical. You can use the ''condition'' XML-tag to limit the execution to certain years (e.g., mod(year,10)=1 ).");
     columns() << OutputColumn::year()
               << OutputColumn("unitid", "unique identifier of the planning unit", OutString)
@@ -70,6 +71,56 @@ void ABEStandOut::exec()
 }
 
 void ABEStandOut::setup()
+{
+    // use a condition for to control execuation for the current year
+    QString condition = settings().value(".condition", "");
+    mCondition.setExpression(condition);
+
+}
+
+ABEStandDetailsOut::ABEStandDetailsOut()
+{
+    setName("Detailed annual stand output (state).", "abeStandDetail");
+    setDescription("This output provides details about the forest state on species- and stand level. " \
+                   "This output is more detailed than the abeStand output.\n" \
+                   "The output is rather performance critical. You can use the ''condition'' XML-tag to limit the execution to certain years (e.g., mod(year,10)=1 ).");
+    columns() << OutputColumn::year()
+              << OutputColumn::species()
+              << OutputColumn("standid", "unique identifier of the forest stand", OutInteger)
+              << OutputColumn("basalarea", "basal area of the species(trees >4m) (m2/ha)", OutDouble)
+              << OutputColumn("relBasalarea", "relative basal area share of the species (trees >4m) (0..1)", OutDouble)
+                 ;
+
+}
+
+void ABEStandDetailsOut::exec()
+{
+    if (!mCondition.isEmpty())
+        if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
+            return;
+
+    foreach(FMStand *stand, ForestManagementEngine::instance()->stands()) {
+
+        // Note: EXPENSIVE reload operation for every stand and every year....
+        stand->reload();
+
+        // loop over all species
+        for (int i = 0; i<stand->nspecies(); ++i) {
+            SSpeciesStand &sss = stand->speciesData(i);
+            *this << currentYear();
+            *this << sss.species->id();
+            *this << stand->id();
+            *this << sss.basalArea;
+            *this << sss.relBasalArea;
+            writeRow();
+        }
+
+    }
+
+
+}
+
+void ABEStandDetailsOut::setup()
 {
     // use a condition for to control execuation for the current year
     QString condition = settings().value(".condition", "");

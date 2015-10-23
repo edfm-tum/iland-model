@@ -156,6 +156,7 @@ void ForestManagementEngine::setupOutputs()
         return; // already set up
     GlobalSettings::instance()->outputManager()->addOutput(new UnitOut);
     GlobalSettings::instance()->outputManager()->addOutput(new ABEStandOut);
+    GlobalSettings::instance()->outputManager()->addOutput(new ABEStandDetailsOut);
     GlobalSettings::instance()->outputManager()->addOutput(new ABEStandRemovalOut);
 }
 
@@ -534,6 +535,7 @@ void ForestManagementEngine::run(int debug_year)
     DebugTimer plu("ABE:outputs");
     GlobalSettings::instance()->outputManager()->execute("abeUnit");
     GlobalSettings::instance()->outputManager()->execute("abeStand");
+    GlobalSettings::instance()->outputManager()->execute("abeStandDetail");
     GlobalSettings::instance()->outputManager()->execute("abeStandRemoval");
     }
 

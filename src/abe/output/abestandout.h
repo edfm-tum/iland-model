@@ -34,6 +34,16 @@ private:
 
 };
 
+class ABEStandDetailsOut : public Output
+{
+public:
+    ABEStandDetailsOut();
+    virtual void exec();
+    virtual void setup();
+private:
+    Expression mCondition;
+
+};
 
 } // namespace
 
