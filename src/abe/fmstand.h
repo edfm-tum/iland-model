@@ -119,6 +119,12 @@ public:
     double basalArea(const QString &species_id) const;
     double relBasalArea(const QString &species_id) const;
 
+    int nspecies() const  { return mSpeciesData.count(); }
+    /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)
+    SSpeciesStand &speciesData(const int index) {return mSpeciesData[index]; }
+    SSpeciesStand &speciesData(const Species *species); ///< species-specific meta data by Species pointer
+
+
     void setAbsoluteAge(const double age);
     // actions
     /// main function
@@ -207,10 +213,6 @@ private:
 
     void newRotatation(); ///< reset
 
-    int nspecies() const  { return mSpeciesData.count(); }
-    /// retrieve species-specific meta data by index (0: largest basal area share, up to nspecies()-1)
-    SSpeciesStand &speciesData(const int index) {return mSpeciesData[index]; }
-    SSpeciesStand &speciesData(const Species *species); ///< species-specific meta data by Species pointer
     // storage for stand meta data (species level)
     QVector<SSpeciesStand> mSpeciesData;
     // storage for stand-specific management properties

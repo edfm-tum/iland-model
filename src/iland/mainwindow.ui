@@ -125,6 +125,11 @@
      <addaction name="action_3"/>
      <addaction name="action_4"/>
      <addaction name="action_5"/>
+     <addaction name="action_10"/>
+     <addaction name="action_9"/>
+     <addaction name="action_8"/>
+     <addaction name="action_7"/>
+     <addaction name="action_6"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
@@ -1208,6 +1213,31 @@ QProgressBar::chunk {
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>action_6</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="text">
+    <string>action_7</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="text">
+    <string>action_8</string>
+   </property>
+  </action>
+  <action name="action_9">
+   <property name="text">
+    <string>action_9</string>
+   </property>
+  </action>
+  <action name="action_10">
+   <property name="text">
+    <string>action_10</string>
    </property>
   </action>
  </widget>
