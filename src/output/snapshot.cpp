@@ -140,7 +140,9 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     loadTrees();
     loadSoil();
     loadSnags();
-    loadSaplings();
+    // load saplings only when regeneration is enabled (this can save a lot of time)
+    if (GlobalSettings::instance()->model()->settings().regenerationEnabled)
+        loadSaplings();
     QSqlDatabase::database("snapshot").close();
 
     // after changing the trees, do a complete apply/read pattern cycle over the landscape...

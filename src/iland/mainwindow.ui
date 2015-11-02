@@ -125,11 +125,11 @@
      <addaction name="action_3"/>
      <addaction name="action_4"/>
      <addaction name="action_5"/>
-     <addaction name="action_10"/>
-     <addaction name="action_9"/>
-     <addaction name="action_8"/>
-     <addaction name="action_7"/>
      <addaction name="action_6"/>
+     <addaction name="action_7"/>
+     <addaction name="action_8"/>
+     <addaction name="action_9"/>
+     <addaction name="action_10"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
