@@ -89,7 +89,6 @@ void ConsoleShell::run()
             return;
         }
 
-        setupLogging();
         mParams.clear();
         if (QCoreApplication::arguments().count()>3) {
             qWarning() << "set command line values:";
@@ -102,6 +101,8 @@ void ConsoleShell::run()
                 qWarning() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
             }
         }
+        setupLogging();
+
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
         qDebug() << "**************************************************";
