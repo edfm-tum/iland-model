@@ -156,7 +156,7 @@ private:
     void calculateGenerations(); ///< calculate on Resource Unit level the number of potential generations
     void calculateOutbreakFactor(); ///< calculate 'rc'-factor (climate sensitive outbreak sensitivity)
     void startSpread(); ///< beginning of a calculation
-    void prepareInteractions(); ///< effect of dead trees (wind interactions), etc.
+    void prepareInteractions(bool update_interaction=false); ///< effect of dead trees (wind interactions), etc.
     void barkbeetleSpread(); ///< main function of bark beetle spread
     void barkbeetleKill(); ///< kill the trees on pixels marked as killed
     void scanResourceUnitTrees(const QPointF &position); ///< load tree data of the resource unit 'position' (metric) lies inside
