@@ -146,6 +146,11 @@ QString ScriptGlobal::defaultDirectory(QString dir)
     return result;
 }
 
+QString ScriptGlobal::path(QString filename)
+{
+    return GlobalSettings::instance()->path(filename);
+}
+
 int ScriptGlobal::year() const
 {
     return GlobalSettings::instance()->currentYear();
@@ -604,6 +609,9 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
 {
 #ifdef ALT_TREE_MORTALITY
     Tree::mortalityParams(thresh, years, p_death );
+#else
+    qDebug() << "test_tree_mortality() not enabled!!";
+    Q_UNUSED(thresh); Q_UNUSED(years); Q_UNUSED(p_death);
 #endif
 
 }

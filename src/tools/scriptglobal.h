@@ -126,6 +126,7 @@ public slots:
     void include(QString filename); ///< "include" the given script file and evaluate. The path is relative to the "script" path
     // file stuff
     QString defaultDirectory(QString dir); ///< get default directory of category 'dir'
+    QString path(QString filename); ///< get a path relative to the project main folder
     QString loadTextFile(QString fileName); ///< load content from a text file in a String (@sa CSVFile)
     void saveTextFile(QString fileName, QString content); ///< save string (@p content) to a text file.
     bool fileExists(QString fileName); ///< return true if the given file exists.

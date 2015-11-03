@@ -429,16 +429,25 @@ void BarkBeetleModule::startSpread()
 
         }
         if (forest_changed)
-            prepareInteractions();
+            prepareInteractions(true);
     }
 
 }
 
-void BarkBeetleModule::prepareInteractions()
+void BarkBeetleModule::prepareInteractions(bool update_interaction)
 {
     // loop over all cells of the grid and decide
     // for each pixel if it is in the proximinity of (attractive) deadwood
     // we assume an influence within the 5x5 pixel neighborhood
+
+    if (!update_interaction && params.stormInfestationProbability<1.) {
+        // reduce the effect of wind-damaged trees for bark beetle spread (disable pixels with p=1-stormInfestationProbability), but do
+        // it only during the first pass
+        for (BarkBeetleCell *c=mGrid.begin(); c!=mGrid.end(); ++c)
+            if (c->deadtrees == BarkBeetleCell::StormDamage && drandom()>params.stormInfestationProbability)
+                c->deadtrees = BarkBeetleCell::NoDeadTrees;
+    }
+
 
     for (int y=0;y<mGrid.sizeY();++y)
         for (int x=0;x<mGrid.sizeX();++x) {
