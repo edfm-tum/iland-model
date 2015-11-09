@@ -38,6 +38,7 @@
 #include "speciesset.h"
 #include "tree.h"
 #include "species.h"
+#include "climate.h"
 
 #include "exception.h"
 #include "helper.h"
@@ -1123,6 +1124,10 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
     foreach(QString name, names) {
         items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(ruw.valueByName(name)) ));
     }
+    // add special values (strings)
+    if (ru->climate())
+        items.append(new QTreeWidgetItem(QStringList()<<"climate"<<ru->climate()->name() ));
+
     QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(-ru->index()); // hack: use negative values for resource units
 
     QList<QPair<QString, QVariant> >::const_iterator i = dbgdata.constBegin();
