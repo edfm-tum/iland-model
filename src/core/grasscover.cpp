@@ -19,6 +19,7 @@
 #include "grasscover.h"
 
 #include "globalsettings.h"
+#include "debugtimer.h"
 #include "xmlhelper.h"
 #include "model.h"
 #include "modelcontroller.h"
@@ -67,7 +68,9 @@ void GrassCover::setup()
         QString formula = xml.value("model.settings.grass.grassDuration");
         if (formula.isEmpty())
             throw IException("GrassCover::setup(): missing equation for 'grassDuration'.");
-        mPDF.setup(formula, 0., 100.);
+        //mPDF.setup(formula, 0., 100.);
+        mGrassEffect.setExpression(formula);
+
         mGrassLIFThreshold = xml.valueDouble("model.settings.grass.LIFThreshold", 0.2);
 
         // clear array
@@ -126,7 +129,7 @@ void GrassCover::setInitialValues(const QVector<float *> &LIFpixels, const int p
         Grid<float> *lif_grid = GlobalSettings::instance()->model()->grid();
         for (QVector<float *>::const_iterator it = LIFpixels.constBegin(); it!=LIFpixels.constEnd(); ++it) {
             if (percent > irandom(0,100))
-                mGrid.valueAtIndex(lif_grid->indexOf(*it)) = mPDF.get();
+                mGrid.valueAtIndex(lif_grid->indexOf(*it)) = 1;
             else
                 mGrid.valueAtIndex(lif_grid->indexOf(*it)) = 0;
         }
@@ -138,6 +141,8 @@ void GrassCover::execute()
 {
     if (!enabled())
         return;
+
+    DebugTimer t("GrassCover");
 
     // Main function of the grass submodule
     float *lif = GlobalSettings::instance()->model()->grid()->begin();
@@ -162,17 +167,22 @@ void GrassCover::execute()
     } else {
         // type = Pixel
         for (; lif!=end_lif;++lif, ++gr) {
-            if (*gr>1)
-                (*gr)--; // count down the years (until gr=1)
+            //if (*gr>1)
+            //    (*gr)--; // count down the years (until gr=1)
 
             if (*gr==0 && *lif>mGrassLIFThreshold) {
                 // enable grass cover
-                double v = qMax(mPDF.get(), 0.);
-                *gr = v + 1;
+                //double v = qMax(mPDF.get(), 0.);
+                *gr = 1; // switch on...
             }
             if (*gr==1 && *lif<mGrassLIFThreshold) {
-                // now LIF is below the threshold - this enables the pixel get grassy again
+                // switch off
                 *gr = 0;
+            }
+            if (*gr==1) {
+                // switch off pixel with a given probability
+                if (drandom() < mGrassEffect.calculate(*lif))
+                    *gr = 0;
             }
         }
     }

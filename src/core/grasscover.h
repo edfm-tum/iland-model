@@ -61,7 +61,7 @@ public:
     /// main function
     double regenerationInhibition(QPoint &lif_index) const {
         if (mType==Pixel)
-            return mGrid.constValueAtIndex(lif_index)>1 ? 1. : 0.;
+            return mGrid.constValueAtIndex(lif_index)>0 ? 1. : 0.;
         return mEnabled?effect(mGrid.constValueAtIndex(lif_index)) : 0.; }
 
     /// retrieve the grid of current grass cover
