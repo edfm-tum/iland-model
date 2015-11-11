@@ -20,6 +20,7 @@
 #include "windscript.h"
 #include "windmodule.h"
 #include "helper.h"
+#include "spatialanalysis.h"
 
 WindScript::WindScript(QObject *parent) :
     QObject(parent)
@@ -65,4 +66,21 @@ void WindScript::initialize()
 {
     mModule->setup();
     qDebug() << "initialized the wind module.";
+}
+
+int WindScript::damagedArea(int threshold)
+{
+    // get damage grid:
+    Grid<double> *damage_grid = mModule->layers().grid(mModule->layers().indexOf("basalAreaKilled"));
+    SpatialAnalysis spat;
+    QVector<int> patches = spat.extractPatches(*damage_grid, "testgrid.asc");
+    int n=0, size=0;
+    for (int i=0;i<patches.count();++i)
+        if (patches[i]>threshold) {
+            size+=patches[i];
+            n++;
+        }
+    qDebug() << "WindScript:damagedArea:" << n << "patches (area=" << size << ") above threshold" << threshold;
+    delete damage_grid;
+    return size;
 }

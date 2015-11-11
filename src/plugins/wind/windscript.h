@@ -45,6 +45,9 @@ public slots:
     /// initialize/ reset the wind module
     void initialize();
 
+    /// number of damaged pixels with a patchsize>'threshold'
+    int damagedArea(int threshold);
+
 private:
     WindModule *mModule;
 };

@@ -48,6 +48,62 @@ double SpatialAnalysis::rumpleIndexFullArea()
     return rum;
 }
 
+/// extract patches (clumps) from the grid 'src'.
+/// Patches are defined as adjacent pixels (8-neighborhood)
+/// Return: vector with number of pixels per patch (first element: patch 1, second element: patch 2, ...)
+QVector<int> SpatialAnalysis::extractPatches(Grid<double> &src, QString fileName)
+{
+    mClumpGrid.setup(src.cellsize(), src.sizeX(), src.sizeY());
+    mClumpGrid.wipe();
+
+    // now loop over all pixels and run a floodfill algorithm
+    QPoint start;
+    QQueue<QPoint> pqueue; // for the flood fill algorithm
+    QVector<int> counts;
+    int patch_index = 0;
+    int total_size = 0;
+    for (int i=0;i<src.count();++i) {
+        if (src[i]>0. && mClumpGrid[i]==0) {
+            start = src.indexOf(i);
+            pqueue.clear();
+            patch_index++;
+
+            // quick and dirty implementation of the flood fill algroithm.
+            // based on: http://en.wikipedia.org/wiki/Flood_fill
+            // returns the number of pixels colored
+
+            pqueue.enqueue(start);
+            int found = 0;
+            while (!pqueue.isEmpty()) {
+                QPoint p = pqueue.dequeue();
+                if (!src.isIndexValid(p))
+                    continue;
+                if (src.valueAtIndex(p)>0.) {
+                    mClumpGrid.valueAtIndex(p) = patch_index;
+                    pqueue.enqueue(p+QPoint(-1,0));
+                    pqueue.enqueue(p+QPoint(1,0));
+                    pqueue.enqueue(p+QPoint(0,-1));
+                    pqueue.enqueue(p+QPoint(0,1));
+                    pqueue.enqueue(p+QPoint(1,1));
+                    pqueue.enqueue(p+QPoint(-1,1));
+                    pqueue.enqueue(p+QPoint(-1,-1));
+                    pqueue.enqueue(p+QPoint(1,-1));
+                    ++found;
+                }
+            }
+            counts.push_back(found);
+            total_size+=found;
+        }
+    }
+    qDebug() << "extractPatches: found" << patch_index << "patches, total valid pixels:" << total_size;
+    if (!fileName.isEmpty()) {
+        qDebug() << "extractPatches: save to file:" << GlobalSettings::instance()->path(fileName);
+        Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mClumpGrid) );
+    }
+    return counts;
+
+}
+
 void SpatialAnalysis::saveRumpleGrid(QString fileName)
 {
     if (!mRumple)

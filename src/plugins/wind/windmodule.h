@@ -97,6 +97,7 @@ public:
     /// the general setup routine after starting iland
     void setup();
     void setupResourceUnit(const ResourceUnit* ru);
+    WindLayers &layers() { return mWindLayers; }
 
     /// main function of the disturbance module
     void run(const int iteration=-1, const bool execute_from_script=false);

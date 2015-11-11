@@ -104,6 +104,16 @@ public:
                                                               for (int i=0;i<mGrid->count(); ++i) {
                                                                   rMin=qMin(rMin, value(i, index));
                                                                   rMax=qMax(rMax, value(i,index));}}
+    /// extract a (newly created) grid filled by the value of the variable given by 'index'
+    /// caller need to free memory!
+    Grid<double> *grid(const int index) const
+    {
+        Grid<double> *data_grid= new Grid<double>(mGrid->cellsize(), mGrid->sizeX(), mGrid->sizeY());
+        double *p = data_grid->begin();
+        for (int i=0;i<mGrid->count();++i)
+            *p++ = value(i, index);
+        return data_grid;
+    }
 
 
 protected:
