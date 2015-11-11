@@ -41,6 +41,9 @@ public:
     static void addToScriptEngine();
 
     double rumpleIndexFullArea(); ///< retrieve the rumple index for the full landscape (one value)
+    /// extract patches ('clumps') and save the resulting grid to 'fileName' (if not empty). Returns a vector with
+    /// the number of pixels for each patch-id
+    QVector<int> extractPatches(Grid<double> &src, QString fileName);
 public slots:
     // API for Javascript
     void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
@@ -51,6 +54,7 @@ private:
     RumpleIndex *mRumple;
     SpatialLayeredGrid *mLayers;
     FloatGrid mCrownCoverGrid;
+    Grid<int> mClumpGrid;
     friend class SpatialLayeredGrid;
 
 };
