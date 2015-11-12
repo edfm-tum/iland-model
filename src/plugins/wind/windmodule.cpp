@@ -282,6 +282,7 @@ void WindModule::run(const int iteration, const bool execute_from_script)
 void WindModule::initWindGrid()
 {
     DebugTimer t("wind:init");
+    mWindDayOfYear = GlobalSettings::instance()->settings().valueDouble("modules.wind.dayOfYear");
     // reset some statistics
     mTotalKilledBasalArea = 0.;
     mTotalKilledVolume = 0.;

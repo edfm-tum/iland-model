@@ -66,7 +66,9 @@ win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
 PRE_TARGETDEPS += ../plugins/iland_fire.lib
 PRE_TARGETDEPS += ../plugins/iland_wind.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
-
+### debug symbols...
+#QMAKE_CXXFLAGS_RELEASE += /Zi
+#QMAKE_LFLAGS_RELEASE += /DEBUG
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 message(windows release)
 }
@@ -193,7 +195,8 @@ SOURCES += main.cpp \
     ../abe/output/abestandout.cpp \
     ../abe/output/abestandremovalout.cpp \
     ../abe/actthinning.cpp \
-    ../core/grasscover.cpp
+    ../core/grasscover.cpp \
+    ../tools/scriptgrid.cpp
 
 HEADERS += \
     consoleshell.h \
@@ -290,8 +293,9 @@ HEADERS += \
     ../abe/output/unitout.h \
     ../abe/output/abestandout.h \
     ../abe/output/abestandremovalout.h \
-    ../abe/actthinning.h\
-    ../core/grasscover.h
+    ../abe/actthinning.h \
+    ../core/grasscover.h \
+    ../tools/scriptgrid.h
 
 
 

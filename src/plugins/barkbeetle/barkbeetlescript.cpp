@@ -22,6 +22,8 @@
 #include "barkbeetlemodule.h"
 #include "outputmanager.h"
 #include "helper.h"
+#include "spatialanalysis.h"
+#include "scriptgrid.h"
 
 
 BarkBeetleScript::BarkBeetleScript(QObject *)
@@ -136,6 +138,36 @@ bool BarkBeetleScript::gridToFile(QString type, QString filename)
     }
     qDebug() << "could not save gridToFile because" << type << "is not a valid grid.";
     return false;
+
+}
+
+QJSValue BarkBeetleScript::grid(QString type)
+{
+    int idx = mBeetle->mLayers.indexOf(type);
+    if (idx<0)
+        qDebug() << "ERROR: BarkBeetleScript:grid(): invalid grid" << type;
+    // this is a copy
+    Grid<double> *damage_grid = mBeetle->mLayers.grid(idx);
+
+    QJSValue g = ScriptGrid::createGrid(damage_grid, type);
+    return g;
+}
+
+int BarkBeetleScript::damagedArea(int threshold, QString fileName)
+{
+    // get damage grid:
+    Grid<double> *damage_grid = mBeetle->mLayers.grid(mBeetle->mLayers.indexOf("dead"));
+    SpatialAnalysis spat;
+    QVector<int> patches = spat.extractPatches(*damage_grid, fileName);
+    int n=0, size=0;
+    for (int i=0;i<patches.count();++i)
+        if (patches[i]>threshold) {
+            size+=patches[i];
+            n++;
+        }
+    qDebug() << "BarkBeetleScript:damagedArea:" << n << "patches (area=" << size << ") above threshold" << threshold;
+    delete damage_grid;
+    return size;
 
 }
 

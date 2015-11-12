@@ -45,8 +45,8 @@ public slots:
     /// initialize/ reset the wind module
     void initialize();
 
-    /// number of damaged pixels with a patchsize>'threshold'
-    int damagedArea(int threshold);
+    /// number of damaged pixels with a patchsize>'threshold'; save to grid to "fileName" (if not empty)
+    int damagedArea(int threshold, QString fileName);
 
 private:
     WindModule *mModule;

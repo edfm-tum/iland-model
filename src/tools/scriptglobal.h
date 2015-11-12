@@ -144,6 +144,9 @@ public slots:
     bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
     void repaint(); ///< force a repainting of the GUI visualization (if available)
     bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
+
+    /// return Javascript grid for given type
+    QJSValue grid(QString type);
     // DOES NOT FULLY WORK
     bool seedMapToFile(QString species, QString file_name); ///< save the "seedmap" (i.e. a grid showing the seed distribution) as ESRI rastser file
     void wait(int milliseconds); ///< wait for 'milliseconds' or (if ms=-1 until a key is pressed)

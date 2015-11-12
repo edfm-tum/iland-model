@@ -574,8 +574,8 @@ void BarkBeetleModule::barkbeetleSpread()
                 b->p_colonize = std::max(b->p_colonize, float(p_ncol));
                 if (drandom() < p_ncol) {
                     // attack successful - the pixel gets infested
-                    b->setInfested(true);
                     b->outbreakYear = b->n>0 ? b->packageOutbreakYear / float(b->n) : mYear; // b->n always >0, but just to silence compiler warning ;)
+                    b->setInfested(true);
                     stats.NInfested++;
                 } else {
                     b->n = 0; // reset the counter
@@ -647,7 +647,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 4: return data.p_colonize; // probability of kill
     case 5: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
     case 6: return data.backgroundInfestationProbability;
-    case 7: return data.outbreakYear;
+    case 7: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -664,7 +664,7 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 5/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
-                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("year of the outbreak (simulation year) that led to the infestation of the pixel."), GridViewGray);
+                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray);
     return mNames;
 
 }

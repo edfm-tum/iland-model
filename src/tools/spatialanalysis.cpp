@@ -78,7 +78,7 @@ QVector<int> SpatialAnalysis::extractPatches(Grid<double> &src, QString fileName
                 QPoint p = pqueue.dequeue();
                 if (!src.isIndexValid(p))
                     continue;
-                if (src.valueAtIndex(p)>0.) {
+                if (src.valueAtIndex(p)>0. && mClumpGrid.valueAtIndex(p) == 0) {
                     mClumpGrid.valueAtIndex(p) = patch_index;
                     pqueue.enqueue(p+QPoint(-1,0));
                     pqueue.enqueue(p+QPoint(1,0));
