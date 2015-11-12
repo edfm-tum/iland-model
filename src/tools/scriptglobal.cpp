@@ -36,6 +36,7 @@
 #include "speciesset.h"
 #include "species.h"
 #include "seeddispersal.h"
+#include "scriptgrid.h"
 
 
 // for accessing script publishing functions
@@ -506,6 +507,35 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
     }
     qDebug() << "could not save gridToFile because" << grid_type << "is not a valid grid.";
     return false;
+
+}
+
+QJSValue ScriptGlobal::grid(QString type)
+{
+    int index = -1;
+    if (type=="height") index = 0;
+    if (type=="valid") index = 1;
+    if (type=="count") index = 2;
+    if (type=="forestoutside") index=3;
+    if (index<0) {
+        qDebug()<< "ScriptGlobal::grid(): error: invalid grid specified:" << type;
+    }
+
+    HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
+    Grid<double> *dgrid = new Grid<double>(h->cellsize(), h->sizeX(), h->sizeY());
+    // fetch data from height grid
+    double *p=dgrid->begin();
+    for (HeightGridValue *hgv=h->begin(); hgv!=h->end(); ++hgv, ++p) {
+        switch (index) {
+        case 0: *p = hgv->height; break;
+        case 1: *p = hgv->isValid()?1. : 0.; break;
+        case 2: *p = hgv->count(); break;
+        case 3: *p = hgv->isForestOutside()?1. : 0.; break;
+        }
+    }
+
+    QJSValue g = ScriptGrid::createGrid(dgrid, type);
+    return g;
 
 }
 

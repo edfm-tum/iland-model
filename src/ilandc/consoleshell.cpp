@@ -79,6 +79,7 @@ void ConsoleShell::run()
     try {
 
         ModelController iland_model;
+        GlobalSettings::instance()->setModelController( &iland_model );
         QObject::connect(&iland_model, SIGNAL(year(int)),SLOT(runYear(int)));
         iland_model.setFileName(xml_name);
         if (iland_model.hasError()) {

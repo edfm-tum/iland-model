@@ -68,12 +68,12 @@ void WindScript::initialize()
     qDebug() << "initialized the wind module.";
 }
 
-int WindScript::damagedArea(int threshold)
+int WindScript::damagedArea(int threshold, QString fileName)
 {
     // get damage grid:
     Grid<double> *damage_grid = mModule->layers().grid(mModule->layers().indexOf("basalAreaKilled"));
     SpatialAnalysis spat;
-    QVector<int> patches = spat.extractPatches(*damage_grid, "testgrid.asc");
+    QVector<int> patches = spat.extractPatches(*damage_grid, fileName);
     int n=0, size=0;
     for (int i=0;i<patches.count();++i)
         if (patches[i]>threshold) {

@@ -214,7 +214,8 @@ void Climate::load()
             if (mTemperatureShift!=0. || mPrecipitationShift!=1.) {
                 qDebug() << "Climate modification: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
                 if (mDoRandomSampling) {
-                    throw IException("Climate: cannot use a randomSamplingList and temperatureShift/precipitationShift at the same time. Sorry.");
+                    qWarning() << "WARNING - Climate: using a randomSamplingList and temperatureShift/precipitationShift at the same time. The same offset is applied for *all* years!!";
+                    //throw IException("Climate: cannot use a randomSamplingList and temperatureShift/precipitationShift at the same time. Sorry.");
                 }
             }
         }

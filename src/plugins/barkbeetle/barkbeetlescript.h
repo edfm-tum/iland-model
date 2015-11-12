@@ -62,6 +62,11 @@ public slots:
     void clear(); ///< reset the barkbeetle module (clear damage and spread data - makes only sense if in simulation mode)
     bool gridToFile(QString type, QString filename);
 
+    /// get a JS representation of the grid given by 'type'
+    QJSValue grid(QString type);
+    /// number of damaged pixels with a patchsize>'threshold'; save to grid to "fileName" (if not empty)
+    int damagedArea(int threshold, QString fileName);
+
 
 
 private:
