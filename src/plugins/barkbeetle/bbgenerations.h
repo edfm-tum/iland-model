@@ -49,7 +49,7 @@ private:
     void calculateBarkTemperature(const ResourceUnit *ru);
     struct BBGeneration {
         BBGeneration(): start_day(-1), gen(0), is_sister_brood(false), value(0.) {}
-        BBGeneration(int start, bool is_filial, int generation) { start_day=start; is_sister_brood=is_filial; value=0.; gen=generation; }
+        BBGeneration(int start, bool is_sister, int generation) { start_day=start; is_sister_brood=is_sister; value=0.; gen=generation; }
         int start_day;
         int gen;
         bool is_sister_brood;

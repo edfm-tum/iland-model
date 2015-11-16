@@ -28,7 +28,7 @@ class GrassCoverLayers; // forwared
 
 // define the data type that is used to store the grass-levels
 // use unsigned char for 1 byte (or quint8), unsigned short int (quint16) for two bytes per pixel
-#define grass_grid_type quint16
+#define grass_grid_type qint16
 
 /**
  * @brief The GrassCover class specifies the limiting effect of ground vegetation (grasses, herbs)
@@ -42,7 +42,7 @@ public:
     ~GrassCover();
     void setup();
     // the number of steps used internally
-    static const int GRASSCOVERSTEPS = 64000;
+    static const int GRASSCOVERSTEPS = 32000;
 
     /// set for all the pixels (LIFPixels) the corresponding grass value (in percent: 0-100)
     void setInitialValues(const QVector<float*> &LIFpixels, const int percent);

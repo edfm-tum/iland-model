@@ -71,15 +71,20 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
             t_sum = (mEffectiveBarkTemp[doy]-base_temp) / 557.;
             if (t_sum>=1.) {
                 if (c<day_too_short) {
-                    // start a new parental generation (a full cycle)
-                    mGenerations.append(BBGeneration(doy, false, bb.gen+1));
+                    // start a new parental generation (a full cycle), only if the current
+                    // generation is also a filial generation.
+                    if (bb.is_sister_brood)
+                        mGenerations.append(BBGeneration(doy, true, bb.gen)); // sisterbrood: (true), keep counter of filial generation
+                    else
+                        mGenerations.append(BBGeneration(doy, false, bb.gen+1)); // new filial brood (false), start a new gen
+
                 }
                 break;
             } else if (t_sum>0.5 && !added_sister_brood) {
                 // start a sister brood, *if* the maximum air temperature is high enough, and if the
                 // length of the day > 14.5 hours
                 if (c->max_temperature>16.5 && c<day_too_short) {
-                    mGenerations.append(BBGeneration(doy, true, bb.is_sister_brood?bb.gen+1:1)); // add a sister brood generation
+                    mGenerations.append(BBGeneration(doy, true, bb.gen)); // add a sister brood generation (true), keep gen. of originating brood
                     added_sister_brood = true;
                 }
             }
@@ -89,28 +94,44 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
         ++i; // now process the next generation
     }
 
-    // now accumulate the generations
-    double filial_generations = 0.;
-    double sister_generations = 0.;
-    // accumulate possible number of offspring
-    const double offspring_factor = 25.; // assuming sex-ratio of 1:1 and 50 offspring per female (see p. 59)
-    int n=0;
-    int total_offspring = 0;
+
+    mNSisterBroods = 0; mNFilialBroods = 0;
+
     for (i=0;i<mGenerations.count();++i) {
-        if (mGenerations[i].value>0.6)  {
-            ++n;
-            total_offspring+= pow(offspring_factor, mGenerations[i].gen-1)*2.*offspring_factor;
-        }
-        if (mGenerations[i].value>0.6 && mGenerations[i].is_sister_brood) sister_generations+=mGenerations[i].value;
-        if (mGenerations[i].value>0.6 && !mGenerations[i].is_sister_brood) filial_generations+=mGenerations[i].value;
+        if (mGenerations[i].value>0.6 && mGenerations[i].is_sister_brood==true)
+            mNSisterBroods = std::max( mGenerations[i].gen, mNSisterBroods );
 
+        if (mGenerations[i].value>0.6 && mGenerations[i].is_sister_brood==false)
+            mNFilialBroods = mGenerations[i].gen;
     }
-    if (logLevelDebug())
-        qDebug() << "rid" <<ru->id() << "filial/sister:" << filial_generations << sister_generations << "offspring:" << total_offspring << "started generations:" << n;
-    mNSisterBroods = sister_generations;
-    mNFilialBroods = filial_generations;
 
-    return filial_generations + (sister_generations>0?0.5:0);
+    // return the number of filial broods, and increase by 0.5 if a sister brood of the last filial generation has successfully developed.
+    return mNFilialBroods + ( hasSisterBrood() ? 0.5 : 0.);
+
+//    // now accumulate the generations
+//    double filial_generations = 0.;
+//    double sister_generations = 0.;
+//    // accumulate possible number of offspring
+//    const double offspring_factor = 25.; // assuming sex-ratio of 1:1 and 50 offspring per female (see p. 59)
+//    int n=0;
+//    int total_offspring = 0;
+//    for (i=0;i<mGenerations.count();++i) {
+//        if (mGenerations[i].value>0.6)  {
+//            ++n;
+//            total_offspring+= pow(offspring_factor, mGenerations[i].gen-1)*2.*offspring_factor;
+//        }
+//        if (mGenerations[i].value>0.6 && mGenerations[i].is_sister_brood==true)
+//            sister_generations+=mGenerations[i].value;
+//        if (mGenerations[i].value>0.6 && mGenerations[i].is_sister_brood==false)
+//            filial_generations+=mGenerations[i].value;
+
+//    }
+//    if (logLevelDebug())
+//        qDebug() << "rid" <<ru->id() << "filial/sister:" << filial_generations << sister_generations << "offspring:" << total_offspring << "started generations:" << n;
+//    mNSisterBroods = sister_generations;
+//    mNFilialBroods = filial_generations;
+
+//    return filial_generations + (sister_generations>0?0.5:0);
 }
 
 
