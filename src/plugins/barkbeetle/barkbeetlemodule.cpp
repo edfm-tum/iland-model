@@ -496,8 +496,11 @@ void BarkBeetleModule::barkbeetleSpread()
 
             // the number of cohorts that spread is higher, if sister broods
             // could develop (e.g. 1 generation and 1 sister generation -> higher number of beetles that
-            // start spreading from the current pixel
-            int n_packets = bbru.add_sister ? params.cohortsPerSisterbrood : params.cohortsPerGeneration;
+            // start spreading from the current pixel ). For earlier generations than the last, the
+            // number of packages is always higher (e.g, if we have 2 gens, the first gen always has a fully developed sister-brood
+            int n_packets = params.cohortsPerGeneration;
+            if (generation<bbru.generations || bbru.add_sister)
+                n_packets = params.cohortsPerSisterbrood;
 
             // antagonists:
             double t_ob = mYear - b->outbreakYear;
@@ -660,7 +663,7 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("value"), QLatin1Literal("grid value of the pixel"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("dbh"), QLatin1Literal("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). Newly infested pixels are included (max iteration + 1)."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). \nNewly infested pixels are included (max iteration + 1)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 5/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)

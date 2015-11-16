@@ -58,7 +58,7 @@ public slots:
     double sum(QString expression);
 
     /// access values of the grid
-    double value(int x, int y) const { if(isValid()) return mGrid->isIndexValid(x,y) ? mGrid->valueAtIndex(x,y) : -1.;}
+    double value(int x, int y) const {return (isValid() && mGrid->isIndexValid(x,y)) ? mGrid->valueAtIndex(x,y) : -1.;}
     /// write values to the grid
     void setValue(int x, int y, double value) const { if(isValid() && mGrid->isIndexValid(x,y)) mGrid->valueAtIndex(x,y)=value;}
 

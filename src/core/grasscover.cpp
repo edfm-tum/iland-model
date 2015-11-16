@@ -51,6 +51,11 @@ void GrassCover::setup()
     // create the grid
     mGrid.setup(GlobalSettings::instance()->model()->grid()->metricRect(), GlobalSettings::instance()->model()->grid()->cellsize());
     mGrid.wipe();
+    // mask out out-of-project areas
+    HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
+    for (int i=0;i<mGrid.count();++i)
+        if (!hg->valueAtIndex(mGrid.index5(i)).isValid())
+            mGrid[i] = -1;
 
     mType = Invalid;
     QString type = xml.value("model.settings.grass.type");
@@ -167,6 +172,8 @@ void GrassCover::execute()
     } else {
         // type = Pixel
         for (; lif!=end_lif;++lif, ++gr) {
+            if (*gr<0)
+                continue;
             //if (*gr>1)
             //    (*gr)--; // count down the years (until gr=1)
 
