@@ -24,6 +24,7 @@
 #include "stamp.h"
 #include "helper.h"
 #include "resourceunit.h"
+#include "scriptgrid.h"
 
 #include <QJSEngine>
 #include <QJSValue>
@@ -51,7 +52,7 @@ double SpatialAnalysis::rumpleIndexFullArea()
 /// extract patches (clumps) from the grid 'src'.
 /// Patches are defined as adjacent pixels (8-neighborhood)
 /// Return: vector with number of pixels per patch (first element: patch 1, second element: patch 2, ...)
-QVector<int> SpatialAnalysis::extractPatches(Grid<double> &src, QString fileName)
+QVector<int> SpatialAnalysis::extractPatches(Grid<double> &src, int min_size, QString fileName)
 {
     mClumpGrid.setup(src.cellsize(), src.sizeX(), src.sizeY());
     mClumpGrid.wipe();
@@ -62,6 +63,7 @@ QVector<int> SpatialAnalysis::extractPatches(Grid<double> &src, QString fileName
     QVector<int> counts;
     int patch_index = 0;
     int total_size = 0;
+    int patches_skipped = 0;
     for (int i=0;i<src.count();++i) {
         if (src[i]>0. && mClumpGrid[i]==0) {
             start = src.indexOf(i);
@@ -91,11 +93,36 @@ QVector<int> SpatialAnalysis::extractPatches(Grid<double> &src, QString fileName
                     ++found;
                 }
             }
-            counts.push_back(found);
-            total_size+=found;
+            if (found<min_size) {
+                // delete the patch again
+                pqueue.enqueue(start);
+                while (!pqueue.isEmpty()) {
+                    QPoint p = pqueue.dequeue();
+                    if (!src.isIndexValid(p))
+                        continue;
+                    if (mClumpGrid.valueAtIndex(p) == patch_index) {
+                        mClumpGrid.valueAtIndex(p) = -1;
+                        pqueue.enqueue(p+QPoint(-1,0));
+                        pqueue.enqueue(p+QPoint(1,0));
+                        pqueue.enqueue(p+QPoint(0,-1));
+                        pqueue.enqueue(p+QPoint(0,1));
+                        pqueue.enqueue(p+QPoint(1,1));
+                        pqueue.enqueue(p+QPoint(-1,1));
+                        pqueue.enqueue(p+QPoint(-1,-1));
+                        pqueue.enqueue(p+QPoint(1,-1));
+                    }
+                }
+                --patch_index;
+                patches_skipped++;
+
+            } else {
+                // save the patch in the result
+                counts.push_back(found);
+                total_size+=found;
+            }
         }
     }
-    qDebug() << "extractPatches: found" << patch_index << "patches, total valid pixels:" << total_size;
+    qDebug() << "extractPatches: found" << patch_index << "patches, total valid pixels:" << total_size << "skipped" << patches_skipped;
     if (!fileName.isEmpty()) {
         qDebug() << "extractPatches: save to file:" << GlobalSettings::instance()->path(fileName);
         Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mClumpGrid) );
@@ -118,6 +145,20 @@ void SpatialAnalysis::saveCrownCoverGrid(QString fileName)
     calculateCrownCover();
     Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mCrownCoverGrid) );
 
+}
+
+QJSValue SpatialAnalysis::patches(QJSValue grid, int min_size)
+{
+    ScriptGrid *sg = qobject_cast<ScriptGrid*>(grid.toQObject());
+    if (sg) {
+        // extract patches (keep patches with a size >= min_size
+        extractPatches(*sg->grid(), min_size, QString());
+        // create a (double) copy of the internal clump grid, and return this grid
+        // as a JS value
+        QJSValue v = ScriptGrid::createGrid(mClumpGrid.toDouble(),"patch");
+        return v;
+    }
+    return QJSValue();
 }
 
 void SpatialAnalysis::calculateCrownCover()

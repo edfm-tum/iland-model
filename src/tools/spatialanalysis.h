@@ -23,6 +23,8 @@
 #include "layeredgrid.h"
 
 #include <QObject>
+#include <QJSValue>
+
 class RumpleIndex; // forward
 class SpatialLayeredGrid; // forward
 /**
@@ -43,11 +45,12 @@ public:
     double rumpleIndexFullArea(); ///< retrieve the rumple index for the full landscape (one value)
     /// extract patches ('clumps') and save the resulting grid to 'fileName' (if not empty). Returns a vector with
     /// the number of pixels for each patch-id
-    QVector<int> extractPatches(Grid<double> &src, QString fileName);
+    QVector<int> extractPatches(Grid<double> &src, int min_size, QString fileName);
 public slots:
     // API for Javascript
     void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
     void saveCrownCoverGrid(QString fileName); ///< save a grid if crown cover percentages (RU level) to a ESRI grid file (ascii)
+    QJSValue patches(QJSValue grid, int min_size);
 
 private:
     void calculateCrownCover();
