@@ -54,6 +54,7 @@ public slots:
     /// combine multiple grids, and calculate the result of 'expression'
     void combine(QString expression, QJSValue grid_object);
 
+
     /// apply the expression "expression" on all pixels of the grid and return the sum of the values
     double sum(QString expression);
 
