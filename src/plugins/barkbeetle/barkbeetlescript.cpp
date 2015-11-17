@@ -158,7 +158,7 @@ int BarkBeetleScript::damagedArea(int threshold, QString fileName)
     // get damage grid:
     Grid<double> *damage_grid = mBeetle->mLayers.grid(mBeetle->mLayers.indexOf("dead"));
     SpatialAnalysis spat;
-    QVector<int> patches = spat.extractPatches(*damage_grid, fileName);
+    QVector<int> patches = spat.extractPatches(*damage_grid, threshold+1, fileName);
     int n=0, size=0;
     for (int i=0;i<patches.count();++i)
         if (patches[i]>threshold) {

@@ -62,6 +62,9 @@ public:
     /// copies the content of the source grid to this grid.
     /// no operation, if the grids are not of the same size.
     void copy(const Grid<T> source) { if (source.count()==count()) memcpy(mData, source.mData, count()*sizeof(T)); }
+    /// create a double grid (same size as this grid) and convert this grid to double values.
+    /// NOTE: caller is responsible for freeing memory!
+    Grid<double> *toDouble() const;
 
     // get the number of cells in x and y direction
     int sizeX() const { return mSizeX; }
@@ -436,6 +439,19 @@ void  Grid<T>::wipe(const T value)
         memset(mData, *((int*)pf), mCount*sizeof(T));
     } else
         initialize(value);
+}
+
+template <class T>
+Grid<double> *Grid<T>::toDouble() const
+{
+    Grid<double> *g = new Grid<double>();
+    g->setup(cellsize(), sizeX(), sizeY());
+    if (g->isEmpty())
+        return g;
+    double *dp = g->begin();
+    for (T *p=begin(); p!=end(); ++p, ++dp)
+        *dp = *p;
+    return g;
 }
 
 template <class T>
