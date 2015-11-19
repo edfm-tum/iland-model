@@ -145,6 +145,9 @@ public:
     // modifying operations
     void add(const T& summand);
     void multiply(const T& factor);
+    /// limit each cell value to (including) min_value and (including) max_value
+    void limit(const T min_value, const T max_value);
+
     /// creates a grid with lower resolution and averaged cell values.
     /// @param factor factor by which grid size is reduced (e.g. 3 -> 3x3=9 pixels are averaged to 1 result pixel)
     /// @param offsetx, offsety: start averaging with an offset from 0/0 (e.g.: x=1, y=2, factor=3: -> 1/2-3/4 -> 0/0)
@@ -418,7 +421,15 @@ void Grid<T>::multiply(const T& factor)
 {
     T* pend = end();
     for (T *p=begin(); p!=pend;*p*=factor,++p)
-       ;
+        ;
+}
+
+template <class T>
+void Grid<T>::limit(const T min_value, const T max_value)
+{
+    T* pend = end();
+    for (T *p=begin(); p!=pend;++p)
+        *p = *p < min_value ? min_value : (*p>max_value? max_value : *p);
 }
 
 

@@ -21,6 +21,8 @@
 #define WINDSCRIPT_H
 
 #include <QObject>
+#include <QJSValue>
+
 class WindModule; // forward
 
 class WindScript : public QObject
@@ -42,6 +44,8 @@ public slots:
     int windEvent(double windspeed, double winddirection, int max_iteration, bool simulate=false, int iteration=-1);
     /// create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
     bool gridToFile(QString grid_type, QString file_name);
+    /// returns a ScriptGrid with the requested type
+    QJSValue grid(QString type);
     /// initialize/ reset the wind module
     void initialize();
 

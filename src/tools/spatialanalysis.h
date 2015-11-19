@@ -36,6 +36,7 @@ class SpatialAnalysis: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(double rumpleIndex READ rumpleIndexFullArea)
+    Q_PROPERTY(QList<int> patchsizes READ patchsizes)
 
 public:
     SpatialAnalysis(QObject *parent=0): QObject(parent), mRumple(0) {}
@@ -45,7 +46,8 @@ public:
     double rumpleIndexFullArea(); ///< retrieve the rumple index for the full landscape (one value)
     /// extract patches ('clumps') and save the resulting grid to 'fileName' (if not empty). Returns a vector with
     /// the number of pixels for each patch-id
-    QVector<int> extractPatches(Grid<double> &src, int min_size, QString fileName);
+    QList<int> extractPatches(Grid<double> &src, int min_size, QString fileName);
+    QList<int> patchsizes() const { return mLastPatches; }
 public slots:
     // API for Javascript
     void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
@@ -58,6 +60,7 @@ private:
     SpatialLayeredGrid *mLayers;
     FloatGrid mCrownCoverGrid;
     Grid<int> mClumpGrid;
+    QList<int> mLastPatches;
     friend class SpatialLayeredGrid;
 
 };

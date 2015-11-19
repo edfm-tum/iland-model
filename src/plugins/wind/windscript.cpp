@@ -21,6 +21,7 @@
 #include "windmodule.h"
 #include "helper.h"
 #include "spatialanalysis.h"
+#include "scriptgrid.h"
 
 WindScript::WindScript(QObject *parent) :
     QObject(parent)
@@ -62,6 +63,19 @@ bool WindScript::gridToFile(QString grid_type, QString file_name)
 
 }
 
+QJSValue WindScript::grid(QString type)
+{
+        int idx = mModule->mWindLayers.indexOf(type);
+        if (idx<0)
+            qDebug() << "ERROR: WindScript:grid(): invalid grid" << type << "valid:" << mModule->mWindLayers.layerNames();
+        // this is a copy
+        Grid<double> *damage_grid =  mModule->mWindLayers.grid(idx);
+
+        QJSValue g = ScriptGrid::createGrid(damage_grid, type);
+        return g;
+
+}
+
 void WindScript::initialize()
 {
     mModule->setup();
@@ -73,7 +87,7 @@ int WindScript::damagedArea(int threshold, QString fileName)
     // get damage grid:
     Grid<double> *damage_grid = mModule->layers().grid(mModule->layers().indexOf("basalAreaKilled"));
     SpatialAnalysis spat;
-    QVector<int> patches = spat.extractPatches(*damage_grid, threshold+1, fileName);
+    QList<int> patches = spat.extractPatches(*damage_grid, threshold+1, fileName);
     int n=0, size=0;
     for (int i=0;i<patches.count();++i)
         if (patches[i]>threshold) {

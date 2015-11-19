@@ -29,7 +29,7 @@ BBGenerations::BBGenerations()
 /**
  * @brief BBGenerations::calculateGenerations
  * @param ru
- * @return
+ * @return the number of filial generation (i.e, main generations) + 0.5 if a sister brood develops also for the last generation
  */
 double BBGenerations::calculateGenerations(const ResourceUnit *ru)
 {

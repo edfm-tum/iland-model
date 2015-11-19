@@ -799,6 +799,9 @@ void Model::runYear()
     GlobalSettings::instance()->systemStatistics()->writeOutput();
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
+
+    // try to clean up a bit of memory (useful if many large JS objects (e.g., grids) are used)
+    GlobalSettings::instance()->scriptEngine()->collectGarbage();
 }
 
 

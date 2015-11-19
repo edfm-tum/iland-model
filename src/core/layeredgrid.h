@@ -58,6 +58,13 @@ public:
                 return i;
         return -1;
     }
+    virtual QStringList layerNames() {
+        QStringList l;
+         for(int i=0;i<names().count();++i)
+             l.append(names().at(i).name);
+         return l;
+    }
+
     // statistics
     /// retrieve min and max of variable 'index'
     virtual void range(double &rMin, double &rMax, const int index) const=0;
@@ -104,7 +111,8 @@ public:
                                                               for (int i=0;i<mGrid->count(); ++i) {
                                                                   rMin=qMin(rMin, value(i, index));
                                                                   rMax=qMax(rMax, value(i,index));}}
-    /// extract a (newly created) grid filled by the value of the variable given by 'index'
+
+    /// extract a (newly created) grid filled with the value of the variable given by 'index'
     /// caller need to free memory!
     Grid<double> *grid(const int index) const
     {
