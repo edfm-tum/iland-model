@@ -494,12 +494,11 @@ void BarkBeetleModule::barkbeetleSpread()
             if (generation>bbru.generations)
                 continue;
 
-            // the number of cohorts that spread is higher, if sister broods
-            // could develop (e.g. 1 generation and 1 sister generation -> higher number of beetles that
-            // start spreading from the current pixel ). For earlier generations than the last, the
-            // number of packages is always higher (e.g, if we have 2 gens, the first gen always has a fully developed sister-brood
+            // the number of packages is increased if there is a developed sisterbrood *and* one filial generation
+            // (Wermelinger and Seiffert, 1999, Wermelinger 2004). If more than one generation develops, we assume
+            // that the effect of sister broods is reduced.
             int n_packets = params.cohortsPerGeneration;
-            if (generation<bbru.generations || bbru.add_sister)
+            if (bbru.generations<2. && bbru.add_sister)
                 n_packets = params.cohortsPerSisterbrood;
 
             // antagonists:
@@ -640,17 +639,18 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 0: return data.n; // grid value on pixel
     case 1: return data.dbh; // diameter of host
     case 2: return data.infested?1.:0.; // infested yes/no
-    case 3: if (data.isHost()) { // dead
+    case 3: return data.killed?1.:0.; // pixel has been killed in the (last) year
+    case 4: if (data.isHost()) { // dead
                 if (data.infested)
                     return data.max_iteration+1; // infested right now (will be dead soon next year)
                 else
                     return data.killedYear; // iteration when killed
             }
             return -1; // no host
-    case 4: return data.p_colonize; // probability of kill
-    case 5: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
-    case 6: return data.backgroundInfestationProbability;
-    case 7: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
+    case 5: return data.p_colonize; // probability of kill
+    case 6: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
+    case 7: return data.backgroundInfestationProbability;
+    case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -663,6 +663,7 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("value"), QLatin1Literal("grid value of the pixel"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("dbh"), QLatin1Literal("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
+                << LayeredGridBase::LayerElement(QLatin1Literal("killed"), QLatin1Literal("1 for pixels that have been killed (0 otherwise)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). \nNewly infested pixels are included (max iteration + 1)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 5/8, 0: no dead trees"), GridViewRainbow)

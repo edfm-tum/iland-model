@@ -7,16 +7,22 @@
 #include <QJSEngine>
 #include <QJSValueIterator>
 
+int ScriptGrid::mDeleted = 0;
+int ScriptGrid::mCreated = 0;
+
 ScriptGrid::ScriptGrid(QObject *parent) : QObject(parent)
 {
     mGrid = 0;
     mVariableName = "x"; // default name
+    mCreated++;
 }
 
 ScriptGrid::~ScriptGrid()
 {
     if (mGrid)
         delete mGrid;
+    mDeleted++;
+    qDebug() << "ScriptGrid::balance: created:" << mCreated << "deleted:" << mDeleted;
 }
 
 QJSValue ScriptGrid::createGrid(Grid<double> *grid, QString name)
