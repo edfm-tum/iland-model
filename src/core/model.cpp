@@ -353,9 +353,11 @@ void Model::setupSpace()
         mModules->setup();
         if (mModules->hasSetupResourceUnits()) {
             for (ResourceUnit **p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
-                QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-                mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
-                mModules->setupResourceUnit( *p );
+                if (*p) {
+                    QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
+                    mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
+                    mModules->setupResourceUnit( *p );
+                }
             }
         }
 
