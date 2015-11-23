@@ -80,7 +80,7 @@ void BarkBeetlePlugin::setupScripting(QJSEngine *engine)
     engine->globalObject().setProperty("BarkBeetle", obj);
 
 
-    qDebug() << "setup scripting of BarkBeetlePlungin called...";
+    qDebug() << "setup scripting of BarkBeetlePlugin called...";
 }
 
 

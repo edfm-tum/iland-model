@@ -28,6 +28,7 @@
 #include "../iland/version.h"
 
 QTextStream *ConsoleShell::mLogStream = 0;
+bool ConsoleShell::mFlushLog = false;
 
 // a try to really get keyboard strokes in console mode...
 // did not work.
@@ -169,18 +170,26 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     switch (type) {
      case QtDebugMsg:
         *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();;
          break;
      case QtWarningMsg:
         *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();;
         printf("Warning: %s\n", msg.toLocal8Bit().data());
 
          break;
      case QtCriticalMsg:
         *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();;
         printf("Critical: %s\n", msg.toLocal8Bit().data());
          break;
      case QtFatalMsg:
         *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();;
         printf("Fatal: %s\n", msg.toLocal8Bit().data());
      }
  }
@@ -196,6 +205,7 @@ void ConsoleShell::setupLogging()
     }
 
     QString fname = GlobalSettings::instance()->settings().value("system.logging.logFile", "logfile.txt");
+    mFlushLog = GlobalSettings::instance()->settings().valueBool("system.logging.flush");
     QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
     fname.replace("$date$", timestamp);
     fname = GlobalSettings::instance()->path(fname, "log");
