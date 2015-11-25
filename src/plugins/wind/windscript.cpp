@@ -69,7 +69,7 @@ QJSValue WindScript::grid(QString type)
         if (idx<0)
             qDebug() << "ERROR: WindScript:grid(): invalid grid" << type << "valid:" << mModule->mWindLayers.layerNames();
         // this is a copy
-        Grid<double> *damage_grid =  mModule->mWindLayers.grid(idx);
+        Grid<double> *damage_grid =  mModule->mWindLayers.copyGrid(idx);
 
         QJSValue g = ScriptGrid::createGrid(damage_grid, type);
         return g;
@@ -85,7 +85,7 @@ void WindScript::initialize()
 int WindScript::damagedArea(int threshold, QString fileName)
 {
     // get damage grid:
-    Grid<double> *damage_grid = mModule->layers().grid(mModule->layers().indexOf("basalAreaKilled"));
+    Grid<double> *damage_grid = mModule->layers().copyGrid(mModule->layers().indexOf("basalAreaKilled"));
     SpatialAnalysis spat;
     QList<int> patches = spat.extractPatches(*damage_grid, threshold+1, fileName);
     int n=0, size=0;

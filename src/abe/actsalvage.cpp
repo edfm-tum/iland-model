@@ -62,8 +62,8 @@ void ActSalvage::setup(QJSValue value)
         mCondition = new Expression(condition);
     }
     mMaxPreponeActivity = FMSTP::valueFromJs(value, "maxPrepone", "0").toInt();
-    mThresholdTotal = FMSTP::valueFromJs(value, "thresholdFullClearance", "0.95").toInt();
-    mThresholdMinimal = FMSTP::valueFromJs(value, "thresholdSplitStand", "0.25").toInt();
+    mThresholdTotal = FMSTP::valueFromJs(value, "thresholdFullClearance", "0.95").toNumber();
+    mThresholdMinimal = FMSTP::valueFromJs(value, "thresholdSplitStand", "0.25").toNumber();
     mDebugSplit = FMSTP::boolValueFromJs(value, "debugSplit", false);
 
 }
@@ -93,7 +93,7 @@ bool ActSalvage::execute(FMStand *stand)
     const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->totalHarvest(), Scheduler::Salvage);
     // check if we should re-assess the stand grid (after large disturbances)
     // as a preliminary check we only look closer, if we have more than 10m3/ha of damage.
-    if (stand->disturbedTimber()/stand->area() > 10)
+    if (stand->disturbedTimber()/stand->area() > mThresholdMinimal)
         checkStandAfterDisturbance(stand);
 
     // the harvest happen(ed) anyways.

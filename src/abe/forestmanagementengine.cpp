@@ -162,9 +162,9 @@ void ForestManagementEngine::setupOutputs()
 
 void ForestManagementEngine::runJavascript()
 {
-    scriptBridge()->setExecutionContext(0, false);
     QJSValue handler = scriptEngine()->globalObject().property("run");
     if (handler.isCallable()) {
+        scriptBridge()->setExecutionContext(0, false);
         QJSValue result = handler.call(QJSValueList() << mCurrentYear);
         if (FMSTP::verbose())
             qCDebug(abe) << "executing 'run' function for year" << mCurrentYear << ", result:" << result.toString();
@@ -662,7 +662,7 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
 
 bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, double n_infested_ha)
 {
-    // find out which stands are within the stand
+    // find out which stands are within the resource unit
     GridRunner<FMStand*> gr(mFMStandGrid, ru->boundingBox());
     QHash<FMStand*, bool> processed_items;
     bool forest_changed = false;
