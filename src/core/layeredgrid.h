@@ -114,9 +114,9 @@ public:
 
     /// extract a (newly created) grid filled with the value of the variable given by 'index'
     /// caller need to free memory!
-    Grid<double> *grid(const int index) const
+    Grid<double> *copyGrid(const int index) const
     {
-        Grid<double> *data_grid= new Grid<double>(mGrid->cellsize(), mGrid->sizeX(), mGrid->sizeY());
+        Grid<double> *data_grid= new Grid<double>(mGrid->metricRect(), mGrid->cellsize());
         double *p = data_grid->begin();
         for (int i=0;i<mGrid->count();++i)
             *p++ = value(i, index);

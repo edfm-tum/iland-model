@@ -246,7 +246,8 @@ Grid<T>::Grid(const Grid<T>& toCopy)
 {
     mData = 0;
     mRect = toCopy.mRect;
-    setup(toCopy.cellsize(), toCopy.sizeX(), toCopy.sizeY());
+    setup(toCopy.metricRect(), toCopy.cellsize());
+    //setup(toCopy.cellsize(), toCopy.sizeX(), toCopy.sizeY());
     const T* end = toCopy.end();
     T* ptr = begin();
     for (T* i= toCopy.begin(); i!=end; ++i, ++ptr)
@@ -456,7 +457,7 @@ template <class T>
 Grid<double> *Grid<T>::toDouble() const
 {
     Grid<double> *g = new Grid<double>();
-    g->setup(cellsize(), sizeX(), sizeY());
+    g->setup(metricRect(), cellsize());
     if (g->isEmpty())
         return g;
     double *dp = g->begin();

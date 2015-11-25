@@ -953,8 +953,12 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction, const double st
     rus.statisticsDead().add(this, 0);
     notifyTreeRemoved(TreeDisturbance);
 
+
     if (ru()->snag())
-        ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
+        if (isHarvested()) // if the tree is harvested, do the same as in normal tree harvest (but with default values)
+            ru()->snag()->addHarvest(this, 1., 0., 0.);
+        else
+            ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
 }
 
 /// remove a part of the biomass of the tree, e.g. due to fire.

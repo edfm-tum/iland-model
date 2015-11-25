@@ -54,7 +54,7 @@ double SpatialAnalysis::rumpleIndexFullArea()
 /// Return: vector with number of pixels per patch (first element: patch 1, second element: patch 2, ...)
 QList<int> SpatialAnalysis::extractPatches(Grid<double> &src, int min_size, QString fileName)
 {
-    mClumpGrid.setup(src.cellsize(), src.sizeX(), src.sizeY());
+    mClumpGrid.setup(src.metricRect(), src.cellsize());
     mClumpGrid.wipe();
 
     // now loop over all pixels and run a floodfill algorithm

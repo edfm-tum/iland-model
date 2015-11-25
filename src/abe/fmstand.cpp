@@ -445,7 +445,7 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
     if (r==Tree::TreeDisturbance) {
         // if we have an active salvage activity, then store
         mDisturbed += removed_volume;
-        if (mSTP->salvageActivity()) {
+        if (mSTP->salvageActivity() && flags(mSTP->salvageActivity()->index()).active() ) {
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
                 mFinalHarvested += removed_volume;
                 tree->setIsHarvested(); // set the flag that the tree is removed from the forest
@@ -457,7 +457,7 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
 
 bool FMStand::notifyBarkBeetleAttack(double generations, int infested_px_per_ha)
 {
-    if (mSTP->salvageActivity()) {
+    if (mSTP->salvageActivity() && flags(mSTP->salvageActivity()->index()).active()) {
         return mSTP->salvageActivity()->barkbeetleAttack(this, generations, infested_px_per_ha);
     }
     return false;

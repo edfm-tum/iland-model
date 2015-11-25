@@ -24,6 +24,8 @@
 #include "helper.h"
 #include "spatialanalysis.h"
 #include "scriptgrid.h"
+#include "mapgrid.h"
+#include "scriptglobal.h"
 
 
 BarkBeetleScript::BarkBeetleScript(QObject *)
@@ -147,7 +149,7 @@ QJSValue BarkBeetleScript::grid(QString type)
     if (idx<0)
         qDebug() << "ERROR: BarkBeetleScript:grid(): invalid grid" << type;
     // this is a copy
-    Grid<double> *damage_grid = mBeetle->mLayers.grid(idx);
+    Grid<double> *damage_grid = mBeetle->mLayers.copyGrid(idx);
 
     QJSValue g = ScriptGrid::createGrid(damage_grid, type);
     return g;
@@ -156,7 +158,7 @@ QJSValue BarkBeetleScript::grid(QString type)
 int BarkBeetleScript::damagedArea(int threshold, QString fileName)
 {
     // get damage grid:
-    Grid<double> *damage_grid = mBeetle->mLayers.grid(mBeetle->mLayers.indexOf("dead"));
+    Grid<double> *damage_grid = mBeetle->mLayers.copyGrid(mBeetle->mLayers.indexOf("dead"));
     SpatialAnalysis spat;
     QList<int> patches = spat.extractPatches(*damage_grid, threshold+1, fileName);
     int n=0, size=0;
@@ -169,6 +171,31 @@ int BarkBeetleScript::damagedArea(int threshold, QString fileName)
     delete damage_grid;
     return size;
 
+}
+
+int BarkBeetleScript::clearInfestedPixels(QJSValue standmap, int stand_id, double fraction)
+{
+    MapGridWrapper *gr = qobject_cast<MapGridWrapper*> ( standmap.toQObject() );
+    if (!gr || !gr->map()) {
+        qDebug() << "BarkBeetleScript::clearInfestedPixels: no valid stand-map!";
+        return 0;
+    }
+    QRectF box = gr->map()->boundingBox(stand_id);
+    //GridRunner<BarkBeetleCell> runner(mBeetle->mGrid, box);
+    GridRunner<int> runner(gr->map()->grid(), box);
+    int n_cleared = 0;
+    while (runner.next()) {
+        if (*runner.current() == stand_id) {
+            BarkBeetleCell &bbc = mBeetle->mGrid.valueAt( runner.currentCoord() );
+            if (bbc.infested) {
+                if (fraction==1. || drandom()<fraction) {
+                    bbc.infested = false;
+                    n_cleared++;
+                }
+            }
+        }
+    }
+    return n_cleared;
 }
 
 bool BarkBeetleScript::simulate()

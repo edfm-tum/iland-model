@@ -51,6 +51,7 @@ private:
     double mThresholdTotal; ///< threshold (relative disturbend volume) for total disturbance
     double mThresholdMinimal; ///< lower threshold (below no action is taken)
 
+
 };
 
 

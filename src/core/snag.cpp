@@ -453,7 +453,7 @@ void Snag::addMortality(const Tree *tree)
 }
 
 /// add residual biomass of 'tree' after harvesting.
-/// remove_{stem, branch, foliage}_fraction: percentage of biomass compartment that is *removed* by the harvest operation (i.e.: not to stay in the system)
+/// remove_{stem, branch, foliage}_fraction: percentage of biomass compartment that is *removed* by the harvest operation [0..1] (i.e.: not to stay in the system)
 /// records on harvested biomass is collected (mTotalToExtern-pool).
 void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const double remove_branch_fraction, const double remove_foliage_fraction )
 {
