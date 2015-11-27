@@ -488,12 +488,13 @@ void ForestManagementEngine::abortExecution(const QString &message)
     mCancel = true;
 }
 
-void ForestManagementEngine::runOnInit()
+void ForestManagementEngine::runOnInit(bool before_init)
 {
-    if (GlobalSettings::instance()->scriptEngine()->globalObject().hasProperty("onInit")) {
-        QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate("onInit()");
+    QString handler = before_init ? QStringLiteral("onInit") : QStringLiteral("onAfterInit");
+    if (GlobalSettings::instance()->scriptEngine()->globalObject().hasProperty(handler)) {
+        QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(QString("%1()").arg(handler));
         if (result.isError())
-            qCDebug(abeSetup) << "Javascript Error in global 'onInit'-Handler:" << result.toString();
+            qCDebug(abeSetup) << "Javascript Error in global"<< handler << "-Handler:" << result.toString();
 
     }
 }

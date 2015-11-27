@@ -387,7 +387,7 @@ bool FMStand::afterExecution(bool cancel)
 
         // look for the next (enabled) activity.
         for (int i=0;i<mStandFlags.count(); ++i) {
-            if ( mStandFlags[i].enabled() && mStandFlags[i].active())
+            if ( mStandFlags[i].enabled() && mStandFlags[i].active() && !mStandFlags[i].isRepeating())
                 if (mStandFlags[i].activity()->earlistSchedule() < tmin) {
                     tmin =  mStandFlags[i].activity()->earlistSchedule();
                     indexmin = i;
@@ -445,7 +445,8 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
     if (r==Tree::TreeDisturbance) {
         // if we have an active salvage activity, then store
         mDisturbed += removed_volume;
-        if (mSTP->salvageActivity() && flags(mSTP->salvageActivity()->index()).active() ) {
+        // check if we have an (active) salvage activity; both the activity flags and the stand flags need to be "enabled"
+        if (mSTP->salvageActivity() && mSTP->salvageActivity()->standFlags().enabled() && mSTP->salvageActivity()->standFlags(this).enabled() ) {
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
                 mFinalHarvested += removed_volume;
                 tree->setIsHarvested(); // set the flag that the tree is removed from the forest
@@ -457,7 +458,8 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
 
 bool FMStand::notifyBarkBeetleAttack(double generations, int infested_px_per_ha)
 {
-    if (mSTP->salvageActivity() && flags(mSTP->salvageActivity()->index()).active()) {
+    // check if we have an (active) salvage activity; both the activity flags and the stand flags need to be "enabled"
+    if (mSTP->salvageActivity() && mSTP->salvageActivity()->standFlags().enabled() && mSTP->salvageActivity()->standFlags(this).enabled()) {
         return mSTP->salvageActivity()->barkbeetleAttack(this, generations, infested_px_per_ha);
     }
     return false;

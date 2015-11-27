@@ -312,6 +312,28 @@ QStringList FomeScript::standIds()
     return ForestManagementEngine::instance()->standIds();
 }
 
+QJSValue FomeScript::activity(QString stp_name, QString activity_name)
+{
+
+    FMSTP *stp = ForestManagementEngine::instance()->stp(stp_name);
+    if (!stp) {
+        qCDebug(abe) << "fmengine.activty: invalid stp" << stp_name;
+        return QJSValue();
+    }
+
+    Activity *act = stp->activity(activity_name);
+    if (!act) {
+        qCDebug(abe) << "fmengine.activty: activity" << activity_name << "not found in stp:" << stp_name;
+        return QJSValue();
+    }
+
+    int idx = stp->activityIndex(act);
+    ActivityObj *ao = new ActivityObj(0, act, idx);
+    QJSValue value = ForestManagementEngine::scriptEngine()->newQObject(ao);
+    return value;
+
+}
+
 void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
 {
     FMStand *stand = ForestManagementEngine::instance()->stand(stand_id);

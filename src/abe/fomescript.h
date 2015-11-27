@@ -103,6 +103,7 @@ public slots:
     // special functions
     bool isValidStand(int stand_id);
     QStringList standIds();
+    QJSValue activity(QString stp_name, QString activity_name);
 
     void runPlanting(int stand_id, QJSValue planting_item);
 public:
