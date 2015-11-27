@@ -532,9 +532,11 @@ void Model::reloadABE()
     mABEManagement = new ABE::ForestManagementEngine();
     // and setup
     mABEManagement->setup();
-    mABEManagement->runOnInit();
+    mABEManagement->runOnInit(true);
 
     mABEManagement->initialize();
+
+    mABEManagement->runOnInit(false);
 
 }
 
@@ -635,7 +637,7 @@ void Model::beforeRun()
     // initalization of ABE
     if (mABEManagement) {
         mABEManagement->setup();
-        mABEManagement->runOnInit();
+        mABEManagement->runOnInit(true);
     }
 
     // load climate
@@ -668,6 +670,7 @@ void Model::beforeRun()
     // initalization of ABE (now all stands are properly set up)
     if (mABEManagement) {
         mABEManagement->initialize();
+        mABEManagement->runOnInit(false);
     }
 
 

@@ -56,7 +56,7 @@ public:
     void clear(); ///< delete all objects and free memory
     void abortExecution(const QString &message);
     bool isCancel() const { return mCancel; }
-    void runOnInit(); ///< run javascript code that can be used to initialize forest stands
+    void runOnInit(bool before_init); ///< run javascript code that can be used to initialize forest stands
 
     // main function
     void run(int debug_year=-1);

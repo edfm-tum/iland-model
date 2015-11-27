@@ -39,7 +39,6 @@ ActSalvage::ActSalvage(FMSTP *parent): Activity(parent)
     mCondition = 0;
     mMaxPreponeActivity = 0;
 
-    mBaseActivity.setEnabled(false); // avoid active scheduling...
     mBaseActivity.setIsSalvage(true);
     mBaseActivity.setIsRepeating(true);
     mBaseActivity.setExecuteImmediate(true);
