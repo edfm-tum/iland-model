@@ -3,6 +3,8 @@
 #include "helper.h"
 #include "expression.h"
 #include "modelcontroller.h"
+#include "mapgrid.h"
+
 
 #include <QJSEngine>
 #include <QJSValueIterator>
@@ -60,6 +62,13 @@ void ScriptGrid::paint(double min_val, double max_val)
     //    GlobalSettings::instance()->controller()->addGrid(mGrid, mVariableName, GridViewRainbow, min_val, max_val);
 }
 
+QString ScriptGrid::info()
+{
+    if (!mGrid || mGrid->isEmpty())
+        return QString("not valid / empty.");
+    return QString("grid-dimensions: %1/%2 (cellsize: %5, N cells: %3), grid-name='%4'").arg(mGrid->sizeX()).arg(mGrid->sizeY()).arg(mGrid->count()).arg(mVariableName).arg(mGrid->cellsize());
+}
+
 void ScriptGrid::save(QString fileName)
 {
     if (!mGrid || mGrid->isEmpty())
@@ -68,6 +77,24 @@ void ScriptGrid::save(QString fileName)
     QString result = gridToESRIRaster(*mGrid);
     Helper::saveToTextFile(fileName, result);
     qDebug() << "saved grid " << name() << " to " << fileName;
+}
+
+bool ScriptGrid::load(QString fileName)
+{
+    fileName = GlobalSettings::instance()->path(fileName);
+    // load the grid from file
+    MapGrid mg(fileName, false);
+    if (!mg.isValid()) {
+        qDebug() << "ScriptGrid::load(): load not successful of file:" << fileName;
+        return false;
+    }
+    if (mGrid) {
+        delete mGrid;
+    }
+    mGrid = mg.grid().toDouble(); // create a copy of the mapgrid-grid
+    mVariableName = QFileInfo(fileName).baseName();
+    return !mGrid->isEmpty();
+
 }
 
 void ScriptGrid::apply(QString expression)
@@ -109,7 +136,7 @@ void ScriptGrid::combine(QString expression, QJSValue grid_object)
         if (o && qobject_cast<ScriptGrid*>(o)) {
             grids.push_back(qobject_cast<ScriptGrid*>(o)->grid());
             if (grids.last()->isEmpty() || grids.last()->cellsize() != mGrid->cellsize() || grids.last()->rectangle()!=mGrid->rectangle()) {
-                qDebug() << "ERROR: ScriptGrid::combine(): the grid " << it.name() << "is empty or has different dimensions.";
+                qDebug() << "ERROR: ScriptGrid::combine(): the grid " << it.name() << "is empty or has different dimensions:" << qobject_cast<ScriptGrid*>(o)->info();
                 return;
             }
         } else {
