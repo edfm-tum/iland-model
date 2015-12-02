@@ -44,8 +44,14 @@ public slots:
     /// draw the map
     void paint(double min_val, double max_val);
 
-    /// save to a file as ESRI ASC raster grid (relativ to project file)
+    QString info();
+
+    /// save to a file as ESRI ASC raster grid (relative to project file)
     void save(QString fileName);
+
+    /// load from a file (ESRI ASC raster grid), relative to project root.
+    /// return true on success.
+    bool load(QString fileName);
 
     /// apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
     /// The function is given as an Expression and is run for each cell of the grid.

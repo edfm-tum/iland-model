@@ -93,7 +93,11 @@ void FMStand::initialize()
     // when a stand is initialized, we assume that 20% of the standing volume
     // have been removed already.
     mRemovedVolumeTotal = volume() * 0.2;
-    mMAItotal = volume() * 1.2 / absoluteAge();
+    if (absoluteAge()>0)
+        mMAItotal = volume() * 1.2 / absoluteAge();
+    else
+        mMAItotal = 0.;
+
     mMAIdecade = mMAItotal;
     mLastMAIVolume = volume();
 
@@ -477,7 +481,9 @@ double FMStand::calculateMAI()
     // MAI: delta standing volume + removed volume, per year
     // removed volume: mortality, management, disturbances
     mMAIdecade = ((mVolume - mLastMAIVolume) + mRemovedVolumeDecade) / 10.;
-    mMAItotal = (mVolume + mRemovedVolumeTotal) / absoluteAge();
+    if (absoluteAge()>0)
+        mMAItotal = (mVolume + mRemovedVolumeTotal) / absoluteAge();
+
     mLastMAIVolume = mVolume;
     // reset counters
     mRemovedVolumeDecade = 0.;
