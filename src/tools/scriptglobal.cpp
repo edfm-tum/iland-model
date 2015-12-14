@@ -24,6 +24,7 @@
 #include "global.h"
 #include "scriptglobal.h"
 #include "model.h"
+#include "resourceunit.h"
 #include "globalsettings.h"
 #include "helper.h"
 #include "debugtimer.h"
@@ -37,6 +38,7 @@
 #include "species.h"
 #include "seeddispersal.h"
 #include "scriptgrid.h"
+#include "expressionwrapper.h"
 
 
 // for accessing script publishing functions
@@ -518,7 +520,7 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="count") index = 2;
     if (type=="forestoutside") index=3;
     if (index<0) {
-        qDebug()<< "ScriptGlobal::grid(): error: invalid grid specified:" << type;
+        qDebug()<< "ScriptGlobal::grid(): error: invalid grid specified:" << type << ". valid options: 'height', 'valid', 'count', 'forestoutside'.";
     }
 
     HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
@@ -538,6 +540,49 @@ QJSValue ScriptGlobal::grid(QString type)
     return g;
 
 }
+
+QJSValue ScriptGlobal::speciesShareGrid(QString species)
+{
+    Species *s = GlobalSettings::instance()->model()->speciesSet()->species(species);
+    if (!s) {
+        qDebug() << "speciesShareGrid: invalid species" << species;
+        return QJSValue();
+    }
+    const Grid<ResourceUnit*> &rug = GlobalSettings::instance()->model()->RUgrid();
+    Grid<double> *grid = new Grid<double>(rug.cellsize(), rug.sizeX(), rug.sizeY());
+    double *p=grid->begin();
+    for (ResourceUnit **ru=rug.begin(); ru!=rug.end(); ++ru, ++p) {
+        if (*ru && (*ru)->constResourceUnitSpecies(s))
+            *p = (*ru)->resourceUnitSpecies(s).statistics().basalArea();
+        else
+            *p=0.;
+    }
+    QJSValue g = ScriptGrid::createGrid(grid, species);
+    return g;
+}
+
+QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
+{
+    const Grid<ResourceUnit*> &rug = GlobalSettings::instance()->model()->RUgrid();
+    Grid<double> *grid = new Grid<double>(rug.cellsize(), rug.sizeX(), rug.sizeY());
+    double *p=grid->begin();
+    RUWrapper ru_wrap;
+    Expression ru_value(expression, &ru_wrap);
+
+    for (ResourceUnit **ru=rug.begin(); ru!=rug.end(); ++ru, ++p) {
+        if (*ru) {
+            ru_wrap.setResourceUnit(*ru);
+            double value = ru_value.execute();
+            *p = value;
+        } else {
+            *p=0.;
+        }
+    }
+    QJSValue g = ScriptGrid::createGrid(grid, "ru");
+    return g;
+
+}
+
 
 bool ScriptGlobal::seedMapToFile(QString species, QString file_name)
 {

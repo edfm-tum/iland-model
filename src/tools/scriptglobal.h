@@ -147,6 +147,11 @@ public slots:
 
     /// return Javascript grid for given type
     QJSValue grid(QString type);
+    /// return a grid with the basal area of the given species (resource unit resolution)
+    QJSValue speciesShareGrid(QString species);
+    /// return a grid (level of resource units) with the result of an expression evaluated in the context of the resource unit.
+    QJSValue resourceUnitGrid(QString expression);
+
     // DOES NOT FULLY WORK
     bool seedMapToFile(QString species, QString file_name); ///< save the "seedmap" (i.e. a grid showing the seed distribution) as ESRI rastser file
     void wait(int milliseconds); ///< wait for 'milliseconds' or (if ms=-1 until a key is pressed)
