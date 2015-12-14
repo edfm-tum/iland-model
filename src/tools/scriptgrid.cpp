@@ -27,6 +27,7 @@ ScriptGrid::~ScriptGrid()
     qDebug() << "ScriptGrid::balance: created:" << mCreated << "deleted:" << mDeleted;
 }
 
+// create a ScriptGrid-Wrapper around "grid". Note: destructing the 'grid' is done via the JS-garbage-collector.
 QJSValue ScriptGrid::createGrid(Grid<double> *grid, QString name)
 {
     ScriptGrid *g = new ScriptGrid(grid);
