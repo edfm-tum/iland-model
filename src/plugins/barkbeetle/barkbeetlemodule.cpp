@@ -349,8 +349,10 @@ void BarkBeetleModule::calculateGenerations()
 
 void BarkBeetleModule::calculateOutbreakFactor()
 {
-    if (!mRefClimate)
+    if (!mRefClimate) {
+        mRc = 1.;
         return;
+    }
     const double *t = mRefClimate->temperatureMonth();
     const double *p = mRefClimate->precipitationMonth();
     // Pspring, Psummer, Pautumn, Pwinter, Tspring, Tsummer, Tautumn, Twinter
@@ -377,15 +379,14 @@ void BarkBeetleModule::startSpread()
     for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b) {
         if (b->infested) {
             stats.infestedStart++;
-            // base mortality
+            // base mortality (Mbg)
             if (drandom()<params.winterMortalityBaseLevel) {
                 // the beetles on the pixel died
                 b->setInfested(false);
                 stats.NWinterMortality++;
             } else {
-                // winter mortality - maybe the beetles die due to low winter temperatures
+                // winter mortality - maybe the beetles die due to low winter temperatures (Mw)
                 int cold_days = mRUGrid.constValueAt(mGrid.cellCenterPoint(mGrid.indexOf(b))).cold_days;
-                // int cold_days = mRUGrid.valueAtIndex(mGrid.indexOf(b)/cHeightPerRU).cold_days;
                 double p_winter = mWinterMortalityFormula.calculate(cold_days);
                 if (drandom()<p_winter) {
                     b->setInfested(false);
@@ -459,7 +460,7 @@ void BarkBeetleModule::prepareInteractions(bool update_interaction)
                         has_neighbors += mGrid.isIndexValid(x+dx,y+dy) ? (mGrid(x+dx,y+dy).deadtrees==BarkBeetleCell::StormDamage || mGrid(x+dx,y+dy).deadtrees==BarkBeetleCell::BeetleTrapTree ? 1: 0) : 0;
 
                 if (has_neighbors>0)
-                    cell.deadtrees = BarkBeetleCell::StormDamageVicinity;
+                    cell.deadtrees = BarkBeetleCell::SinkInVicinity;
 
 
             }

@@ -41,21 +41,24 @@ public:
     void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
+    /// sets the 'infested' state (true: the cell is newly infested, false: the cell stops being infested, e.g. by winter mortality)
     void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killedYear=0; n=0;} }
+    /// called after beetles spread out from the cell. The cell is marked as 'killed', and trees will be killed later (barkbeetleKill()).
     void finishedSpread(int iteration) { infested=false; killedYear=iteration; killed=true; max_iteration=qMax(max_iteration, iteration); }
     float backgroundInfestationProbability; ///< background prob. of infestation per 10m cell
 
-    bool infested;
-    bool killed;
+    bool infested; // true for cells that are currently occupied by beetles
+    bool killed; // true for cells that are killed in the current year
     float dbh; // the dbh of the biggest spruce on the pixel
-    float tree_stress; // the stress rating of this tree
+    float tree_stress; // the stress rating of this tree (SI)
     float p_colonize; // the highest probability (0..1) that a pixel is killed
     int n; // number of cohorts that landed on the pixel
     int killedYear; // year (iteration) at which pixel was killed ??
     float outbreakYear; // year in which the outbreak started (this information is preserved by spreading beatles)
     float packageOutbreakYear; // outbreak year of packages landing on a cell
-    enum DeadTrees { NoDeadTrees=0, StormDamage=10, StormDamageVicinity=5, BeetleTrapTree=8 };
-    DeadTrees deadtrees; // 0: no dead trees, 1: pot. hosts (after storm), 2: lure trees (fangbaueme) (in the vicinity of the pixel)
+    enum DeadTrees { NoDeadTrees=0, StormDamage=10, SinkInVicinity=5, BeetleTrapTree=8 };
+    DeadTrees deadtrees;
+    /// return true if either storm damaged trees or trap trees are on the pixel or in the Moore neighborhood of the cell
     bool isNeutralized() const { return deadtrees!=NoDeadTrees; }
 
     static void resetCounters() { total_infested=0; max_iteration=0; }
@@ -79,7 +82,7 @@ public:
     /// relative damage: fraction of host pixels that died in the current or the last year
     double currentDamageFraction() { return host_pixels+killed_pixels>0? (killed_pixels)/double(host_pixels+killed_pixels): 0.; }
     bool scanned;
-    double generations;
+    double generations; // filial generations + 0.5 if full sisterbrood develops for last filial generation
     bool add_sister;
     int cold_days; // number of days in the winter season with t_min below a given threshold (-15 degree Celsius)
     int cold_days_late;
