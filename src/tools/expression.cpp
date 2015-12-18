@@ -78,13 +78,13 @@
 #define opAnd 7
 #define opOr  8
 
-QString mathFuncList=" sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg in round "; // a space at the end is important!
+static QString mathFuncList=" sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg in round "; // a space at the end is important!
 const int  MaxArgCount[17]={1,1,1,1,  1, 1,   -1, -1, 3, 1,     -1,     2,  4,      2,  2,   -1, 1};
 #define    AGGFUNCCOUNT 6
-QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
+static QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
 
 // space for constants
-QHash<QString, double> mConstants;
+static QHash<QString, double> mConstants;
 
 void Expression::addConstant(const QString const_name, const double const_value)
 {

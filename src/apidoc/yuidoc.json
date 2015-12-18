@@ -4,6 +4,6 @@
     "version": "1.0",
     "url": "http://iland.boku.ac.at",
     "options": {
-        "outdir": "../../build/apidocs"
+        "outdir": "../../build/apidocs/docs"
     }
 }

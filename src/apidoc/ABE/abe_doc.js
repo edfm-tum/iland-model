@@ -6,6 +6,11 @@
 // Installation of YUIDOC: http://yui.github.io/yuidoc/
 // you need node.js -> download and install
 
+// including a nice search box:
+// https://github.com/jiannicello/yuidocsite
+// run in 'apidocs' folder (the generated YUI docs are pushed to the 'docs' folder):
+// yuidocsite --port 3000 --search_desc
+
 /**
  * The agent based forest management engine.
 #Overview
