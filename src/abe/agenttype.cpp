@@ -29,6 +29,12 @@
 #include <QJSEngine>
 namespace ABE {
 
+/** @class AgentType
+    @ingroup abe
+    AgentType implements an abstract agent type (e.g., farmer or forest company). The class defines basic behavior of
+    agents.
+
+  */
 
 AgentType::AgentType()
 {

@@ -26,6 +26,12 @@
 
 namespace ABE {
 
+/** @class ActScheduled
+    @ingroup abe
+    The ActScheduled class is an all-purpose activity (similar to ActGeneral). The execution time of ActScheduled-activities, however,
+    is defined by the ABE Scheduler.
+
+  */
 
 
 

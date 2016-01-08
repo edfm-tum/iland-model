@@ -31,6 +31,14 @@
 
 namespace ABE {
 
+/** @class FMUnit
+    @ingroup abe
+    The FMUnit class encapsulates a forest management unit, comprised of forest stands. Units are the base level at which
+    the scheduling works.
+
+  */
+
+
 void FMUnit::aggregate()
 {
     // loop over all stands

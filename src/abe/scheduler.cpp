@@ -33,6 +33,12 @@
 
 namespace ABE {
 
+/** @class Scheduler
+    @ingroup abe
+    The Scheduler class implements the logic of scheduling the when and what of activties.
+
+  */
+
 
 void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_schedule, double prob_execute)
 {

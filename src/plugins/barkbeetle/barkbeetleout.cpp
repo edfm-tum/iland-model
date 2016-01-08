@@ -20,6 +20,12 @@
 #include "barkbeetleout.h"
 #include "barkbeetlemodule.h"
 
+/** @class BarkBeetleOut
+    @ingroup beetlemodule
+    BarkBeetleOut handles the database output of the bark beetle module. Note that grid-based outputs are also available via Javascript.
+
+  */
+
 BarkBeetleOut::BarkBeetleOut()
 {
     mBB = 0;

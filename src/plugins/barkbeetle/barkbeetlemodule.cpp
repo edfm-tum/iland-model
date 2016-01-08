@@ -30,9 +30,23 @@
 #include "abe/forestmanagementengine.h"
 
 
+/** @defgroup beetlemodule iLand barkbeetle module
+  The bark beetle module is a disturbance module within the iLand framework.
+
+  See http://iland.boku.ac.at/barkbeetle for the science behind the module,
+  and http://iland.boku.ac.at/barkbeetle+module for the implementation/ using side.
+ */
+
+
 int BarkBeetleCell::total_infested = 0;
 int BarkBeetleCell::max_iteration = 0;
 
+/** @class BarkBeetleModule
+    @ingroup beetlemodule
+    BarkBeetleModule is the main class for the bark beetle module. It calculates the development of generations, the spread and attack of beetles.
+    It operates on a 10m grid.
+
+  */
 
 
 BarkBeetleModule::BarkBeetleModule()

@@ -36,6 +36,14 @@
 
 namespace ABE {
 
+/** @class FomeScript
+    @ingroup abe
+    The FomeScript class is visible to Javascript via the 'fmengine' object. The main functions of ABE are available through this class.
+
+
+  */
+
+
 QString FomeScript::mInvalidContext = "S---";
 ActivityFlags ActivityObj::mEmptyFlags;
 

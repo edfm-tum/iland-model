@@ -32,6 +32,13 @@
 
 #include <QJSValueIterator>
 namespace ABE {
+
+/** @class ActThinning
+    @ingroup abe
+    The ActThinning class implements a very general interface to thinning activties.
+
+  */
+
 // statics
 QStringList ActThinning::mSyntaxCustom;
 

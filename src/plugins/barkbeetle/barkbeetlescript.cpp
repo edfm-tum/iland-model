@@ -27,6 +27,10 @@
 #include "mapgrid.h"
 #include "scriptglobal.h"
 
+/** @class BarkBeetleScript
+    @ingroup beetlemodule
+    BarkBeetleScript is the scripting shell for the bark beetle module.
+  */
 
 BarkBeetleScript::BarkBeetleScript(QObject *)
 {

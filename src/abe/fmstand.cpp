@@ -39,6 +39,15 @@
 
 namespace ABE {
 
+/** @class FMStand
+    @ingroup abe
+    The FMStand class encapsulates forest stands which are defined as polygons. FMStand tracks properties of the stands (e.g. mean volume), and
+    is a central player in the ABE system.
+
+
+  */
+
+
 FMStand::FMStand(FMUnit *unit, const int id)
 {
     mUnit = unit;

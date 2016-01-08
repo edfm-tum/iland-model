@@ -33,6 +33,14 @@
 
 namespace ABE {
 
+/** @class FMTreeList
+    @ingroup abe
+    The FMTreeList class implements low-level functionality for selecting and harvesting of trees.
+    The functions of the class are usually accessed via Javascript.
+
+  */
+
+
 // TODO: fix: removal fractions need to be moved to agent/units/ whatever....
 double removeFoliage()  {return 0.;}
 double removeStem()  {return 1.;}
