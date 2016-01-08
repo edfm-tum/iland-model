@@ -59,7 +59,23 @@ Q_LOGGING_CATEGORY(abeSetup, "abe.setup")
 
 namespace ABE {
 
+/** @defgroup abe iLand agent based forest management engine (ABE)
+  ABE is the Agent Based management Engine that allows the simulation of both forest management activties (e.g., harvesting of trees)
+  and forest managers (e.g., deciding when and where to execute an activity).
+  The ABE framework relies heavily on a blend of C++ (for low-level management activties) and Javascript (for higher level definition of
+  management programs).
+
+  The smallest spatial entity is a forest stand (FMStand), which may be grouped into forest management unit (FMUnit). Forest managers (Agent) can select
+  stand treatment programs (FMSTP) for a unit. The management activities derive from a basic activity (Activity); specialized code exists
+  for various activities such as planting or thinning. A scheduler (Scheduler) keeps track of where and when to execute activities following
+  guidelines given by the management agent (Agent). Agents represent individual foresters that may be grouped into AgentTypes (e.g., farmers).
+
+
+ */
+
+
 /** @class ForestManagementEngine
+ * @ingroup abe
 */
 
 ForestManagementEngine *ForestManagementEngine::singleton_fome_engine = 0;

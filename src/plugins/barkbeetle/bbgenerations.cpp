@@ -21,7 +21,10 @@
 
 #include "resourceunit.h"
 #include "climate.h"
-
+/** @class BBGenerations
+    @ingroup beetlemodule
+    BBGenerations calculates potential bark beetle generations based on climate data (including bark temperature).
+  */
 BBGenerations::BBGenerations()
 {
 }

@@ -28,6 +28,13 @@
 
 
 namespace ABE {
+
+/** @class FMSTP
+    @ingroup abe
+    The FMSTP class encapsulates a stand treatment program, which is defined in Javascript.
+
+  */
+
 // static values
 bool FMSTP::mVerbose = false;
 

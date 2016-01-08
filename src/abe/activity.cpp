@@ -38,6 +38,13 @@
 
 namespace ABE {
 
+/** @class Activity
+    @ingroup abe
+    An activity is the basic silvicultural building block; it holds state information and defines basic capabilities
+    of all activities (such as having a given Schedule, or Events).
+
+  */
+
 // statics
 QStringList Activity::mAllowedProperties = QStringList() << "schedule" << "constraint" << "type";
 

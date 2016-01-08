@@ -27,6 +27,11 @@
 #include "fmstp.h"
 
 
+/** @class ABELayers
+    @ingroup abe
+    ABELayers is a helper class for spatial visualization of ABE data.
+
+  */
 
 ABELayers::~ABELayers()
 {

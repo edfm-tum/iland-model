@@ -34,6 +34,13 @@
 
 namespace ABE {
 
+/** @class ActPlanting
+    @ingroup abe
+    The ActPlanting class implements artificial regeneration (i.e., planting of trees).
+
+  */
+
+
 // Planting patterns
 QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
 << QPair<QString, int>(

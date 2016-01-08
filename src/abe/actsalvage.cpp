@@ -34,6 +34,12 @@
 
 namespace ABE {
 
+/** @class ActSalvage
+    @ingroup abe
+    The ActSalvage class handles salvage logging after disturbances.
+
+  */
+
 ActSalvage::ActSalvage(FMSTP *parent): Activity(parent)
 {
     mCondition = 0;

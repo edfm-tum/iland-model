@@ -26,6 +26,13 @@
 
 namespace ABE {
 
+/** @class Agent
+    @ingroup abe
+    The Agent class is a lightweight implementation of a single forest manager. Several agents (responsible for particular parts
+    of the landscape) may be of the same AgentType and thus share certain characteristics.
+
+  */
+
 int Agent::mAgentsCreated = 0;
 
 Agent::Agent(AgentType *type, QJSValue js)

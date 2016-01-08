@@ -26,6 +26,12 @@
 
 namespace ABE {
 
+/** @class ActGeneral
+    @ingroup abe
+    The ActGeneral class is an all-purpose activity and implements no specific forest management activity.
+
+  */
+
 
 QStringList ActGeneral::info()
 {
