@@ -91,7 +91,7 @@ void GrassCover::setup()
         if (formula.isEmpty())
             throw IException("setup of 'grass': required expression 'grassPotential' is missing.");
         mGrassPotential.setExpression(formula);
-        mGrassPotential.linearize(0.,1., qMin(GRASSCOVERSTEPS, 1000));
+        mGrassPotential.linearize(0.,1., qMin(GrassCover::GRASSCOVERSTEPS, 1000));
 
         formula = xml.value("model.settings.grass.grassEffect");
         if (formula.isEmpty())
@@ -100,15 +100,15 @@ void GrassCover::setup()
         mMaxTimeLag = static_cast<int>( xml.valueDouble("model.settings.grass.maxTimeLag") );
         if (mMaxTimeLag==0)
             throw IException("setup of 'grass': value of 'maxTimeLag' is invalid or missing.");
-        mGrowthRate = GRASSCOVERSTEPS / mMaxTimeLag;
+        mGrowthRate = GrassCover::GRASSCOVERSTEPS / mMaxTimeLag;
 
         // set up the effect on regeneration in NSTEPS steps
-        for (int i=0;i<GRASSCOVERSTEPS;++i) {
-            double effect = mGrassEffect.calculate(i/double(GRASSCOVERSTEPS-1));
+        for (int i=0;i<GrassCover::GRASSCOVERSTEPS;++i) {
+            double effect = mGrassEffect.calculate(i/double(GrassCover::GRASSCOVERSTEPS-1));
             mEffect[i] = limit(effect, 0., 1.);
         }
 
-        mMaxState = static_cast<qint16>( limit(mGrassPotential.calculate(1.f), 0., 1.)*(GRASSCOVERSTEPS-1)  ); // the max value of the potential function
+        mMaxState = static_cast<qint16>( limit(mGrassPotential.calculate(1.f), 0., 1.)*(GrassCover::GRASSCOVERSTEPS-1)  ); // the max value of the potential function
     }
 
     GlobalSettings::instance()->controller()->addLayers(mLayers, QStringLiteral("grass cover"));
@@ -122,7 +122,7 @@ void GrassCover::setInitialValues(const QVector<float *> &LIFpixels, const int p
     if (!enabled())
         return;
     if (mType == Continuous) {
-        grass_grid_type cval = static_cast<grass_grid_type>( limit(percent / 100., 0., 1.)*(GRASSCOVERSTEPS-1) );
+        grass_grid_type cval = static_cast<grass_grid_type>( limit(percent / 100., 0., 1.)*(GrassCover::GRASSCOVERSTEPS-1) );
         if (cval > mMaxState)
             cval = mMaxState;
 
@@ -164,7 +164,7 @@ void GrassCover::execute()
                 continue;
             }
 
-            int potential = static_cast<int>( limit(mGrassPotential.calculate(*lif), 0., 1.)*(GRASSCOVERSTEPS-1) );
+            int potential = static_cast<int>( limit(mGrassPotential.calculate(*lif), 0., 1.)*(GrassCover::GRASSCOVERSTEPS-1) );
             *gr = static_cast<qint16>( qMin( int(*gr) + mGrowthRate, potential) );
 
         }
