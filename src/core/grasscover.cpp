@@ -73,13 +73,13 @@ void GrassCover::setup()
         QString formula = xml.value("model.settings.grass.grassDuration");
         if (formula.isEmpty())
             throw IException("GrassCover::setup(): missing equation for 'grassDuration'.");
-        //mPDF.setup(formula, 0., 100.);
-        mGrassEffect.setExpression(formula);
+        mPDF.setup(formula, 0., 100.);
+        //mGrassEffect.setExpression(formula);
 
-        mGrassLIFThreshold = xml.valueDouble("model.settings.grass.LIFThreshold", 0.2);
+        mGrassLIFThreshold = static_cast<float>( xml.valueDouble("model.settings.grass.LIFThreshold", 0.2) );
 
         // clear array
-        for (int i=0;i<GRASSCOVERSTEPS;++i) {
+        for (int i=0;i<GrassCover::GRASSCOVERSTEPS;++i) {
             mEffect[i] = 0.;
         }
 
@@ -97,7 +97,7 @@ void GrassCover::setup()
         if (formula.isEmpty())
             throw IException("setup of 'grass': required expression 'grassEffect' is missing.");
         mGrassEffect.setExpression(formula);
-        mMaxTimeLag = xml.valueDouble("model.settings.grass.maxTimeLag");
+        mMaxTimeLag = static_cast<int>( xml.valueDouble("model.settings.grass.maxTimeLag") );
         if (mMaxTimeLag==0)
             throw IException("setup of 'grass': value of 'maxTimeLag' is invalid or missing.");
         mGrowthRate = GRASSCOVERSTEPS / mMaxTimeLag;
@@ -108,7 +108,7 @@ void GrassCover::setup()
             mEffect[i] = limit(effect, 0., 1.);
         }
 
-        mMaxState = limit(mGrassPotential.calculate(1.f), 0., 1.)*(GRASSCOVERSTEPS-1); // the max value of the potential function
+        mMaxState = static_cast<qint16>( limit(mGrassPotential.calculate(1.f), 0., 1.)*(GRASSCOVERSTEPS-1)  ); // the max value of the potential function
     }
 
     GlobalSettings::instance()->controller()->addLayers(mLayers, QStringLiteral("grass cover"));
@@ -122,7 +122,7 @@ void GrassCover::setInitialValues(const QVector<float *> &LIFpixels, const int p
     if (!enabled())
         return;
     if (mType == Continuous) {
-        grass_grid_type cval = limit(percent / 100., 0., 1.)*(GRASSCOVERSTEPS-1);
+        grass_grid_type cval = static_cast<grass_grid_type>( limit(percent / 100., 0., 1.)*(GRASSCOVERSTEPS-1) );
         if (cval > mMaxState)
             cval = mMaxState;
 
@@ -134,7 +134,7 @@ void GrassCover::setInitialValues(const QVector<float *> &LIFpixels, const int p
         Grid<float> *lif_grid = GlobalSettings::instance()->model()->grid();
         for (QVector<float *>::const_iterator it = LIFpixels.constBegin(); it!=LIFpixels.constEnd(); ++it) {
             if (percent > irandom(0,100))
-                mGrid.valueAtIndex(lif_grid->indexOf(*it)) = 1;
+                mGrid.valueAtIndex(lif_grid->indexOf(*it)) = static_cast<qint16>( mPDF.get() );
             else
                 mGrid.valueAtIndex(lif_grid->indexOf(*it)) = 0;
         }
@@ -164,8 +164,8 @@ void GrassCover::execute()
                 continue;
             }
 
-            int potential = limit(mGrassPotential.calculate(*lif), 0., 1.)*(GRASSCOVERSTEPS-1);
-            *gr = qMin( int(*gr) + mGrowthRate, potential);
+            int potential = static_cast<int>( limit(mGrassPotential.calculate(*lif), 0., 1.)*(GRASSCOVERSTEPS-1) );
+            *gr = static_cast<qint16>( qMin( int(*gr) + mGrowthRate, potential) );
 
         }
         //qDebug() << "skipped" << skipped;
@@ -174,22 +174,17 @@ void GrassCover::execute()
         for (; lif!=end_lif;++lif, ++gr) {
             if (*gr<0)
                 continue;
-            //if (*gr>1)
-            //    (*gr)--; // count down the years (until gr=1)
+            if (*gr>1)
+                (*gr)--; // count down the years (until gr=1)
 
             if (*gr==0 && *lif>mGrassLIFThreshold) {
                 // enable grass cover
-                //double v = qMax(mPDF.get(), 0.);
-                *gr = 1; // switch on...
+                qint16 v = static_cast<qint16>( qMax(mPDF.get(), 0.) );
+                *gr = v + 1; // switch on...
             }
             if (*gr==1 && *lif<mGrassLIFThreshold) {
-                // switch off
+                // now LIF is below the threshold - this enables the pixel get grassy again
                 *gr = 0;
-            }
-            if (*gr==1) {
-                // switch off pixel with a given probability
-                if (drandom() < mGrassEffect.calculate(*lif))
-                    *gr = 0;
             }
         }
     }
