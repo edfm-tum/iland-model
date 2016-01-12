@@ -210,7 +210,7 @@ void Snapshot::loadTrees()
     q.exec("select ID, RUindex, posX, posY, species,  age, height, dbh, leafArea, opacity, foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex from trees");
     int ru_index = -1;
     int new_ru;
-    int offsetx, offsety;
+    int offsetx=0, offsety=0;
     ResourceUnit *ru = 0;
     int n=0, ntotal=0;
     try {
