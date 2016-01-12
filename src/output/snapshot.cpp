@@ -561,7 +561,7 @@ void Snapshot::loadSaplings()
     int n=0, ntotal=0;
     int ci;
     int posx, posy;
-    int offsetx, offsety;
+    int offsetx=0, offsety=0;
     Sapling *last_sapling = 0;
 
     while (q.next()) {
@@ -593,9 +593,9 @@ void Snapshot::loadSaplings()
         } else {
             continue;
         }
-        t.age.age = q.value(ci++).toInt();
+        t.age.age = static_cast<short unsigned int>( q.value(ci++).toInt() );
         t.height = q.value(ci++).toFloat();
-        t.age.stress_years = q.value(ci++).toInt();
+        t.age.stress_years = static_cast<short unsigned int> (q.value(ci++).toInt() );
         sap.setBit(QPoint(posx, posy), true); // set the flag in the bitmap
         if (n<10000000 && ++n % 10000 == 0) {
             qDebug() << n << "saplings loaded...";

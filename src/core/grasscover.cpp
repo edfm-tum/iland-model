@@ -24,6 +24,8 @@
 #include "model.h"
 #include "modelcontroller.h"
 
+const int GrassCover::GRASSCOVERSTEPS;
+
 GrassCover::GrassCover()
 {
     mLayers = new GrassCoverLayers();
