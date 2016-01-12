@@ -209,7 +209,7 @@ void FMStand::reload(bool force)
     for ( QVector<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it)
         dbhvalues.push_back(it->first->dbh());
 
-    double topheight_threshhold;
+    double topheight_threshhold=0.;
     double topheight_height = 0.;
     int topheight_trees = 0;
     if (treelist.size()>0) {
@@ -449,11 +449,12 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
         return; // do nothing atm
     if (r==Tree::TreeHarvest) {
         // regular harvest
-        if (currentActivity())
+        if (currentActivity()) {
             if (currentFlags().isFinalHarvest())
                 mFinalHarvested += removed_volume;
             else
                 mThinningHarvest += removed_volume;
+        }
     }
     if (r==Tree::TreeDisturbance) {
         // if we have an active salvage activity, then store

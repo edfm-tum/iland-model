@@ -143,7 +143,7 @@ QString Helper::fileDialog(const QString &title, const QString &start_directory,
     QString fileName = QFileDialog::getOpenFileName(parent,
      title, start_directory, the_filter);
 #else
-    Q_UNUSED(title); Q_UNUSED(start_directory); Q_UNUSED(filter);
+    Q_UNUSED(title); Q_UNUSED(start_directory); Q_UNUSED(filter); Q_UNUSED(parent);
     QString fileName="undefined";
 #endif
     return fileName;

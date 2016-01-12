@@ -59,7 +59,7 @@ PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-message(linux release)
+message(gcc release)
 }
 win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{
 #debug msvc
@@ -82,10 +82,9 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
 QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
 message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
-message($$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO)
 
 }
-linux-icc: {
+linux-icc*: {
  ## release on linux
 message("linux intel icc release")
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
@@ -94,8 +93,6 @@ PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 #QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
 #QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
-message($$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO)
 
 }
 }
