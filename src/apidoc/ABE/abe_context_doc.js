@@ -302,7 +302,7 @@ var stand = {
   @method basalArea
   @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
   @return {double} The basal area (m2/ha) of the species.*/
-    basalArea: function(index){},
+    speciesBasalArea: function(index){},
 
 /**
   Retrieve the basal area of the species with the species code 'speciescode'.
@@ -311,7 +311,7 @@ var stand = {
   @method basalAreaOf
   @param {string} speciescode The code of the species (e.g., 'piab').
   @return {double} The basal area (m2/ha) of the species, or 0 if the species is not present.*/
-    basalAreaOf: function(name){},
+    speciesBasalAreaOf: function(name){},
 
  /**
   Retrieve the relative basal area of the species 'speciescode'.
@@ -319,7 +319,7 @@ var stand = {
   @method relBasalAreaOf
   @param {string} speciescode The code of the species (e.g., 'piab').
   @return {double} The basal area (m2/ha) of the species, or 0 if the species is not present.*/
-    relBasalAreaOf: function(name){},
+    relSpeciesBasalAreaOf: function(name){},
 
 /**
   Retrieve the basal area share (0..1) of the species at position `index`.
@@ -330,7 +330,7 @@ var stand = {
   @method basalAreaRel
   @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
   @return {double} The basal area share (0..1) of the species.*/
-    relBasalArea: function(index){},
+    relSpeciesBasalArea: function(index){},
 
 /**
   Force a reload of the stand data, i.e. fetch stand statistics (e.g. basal area, age)

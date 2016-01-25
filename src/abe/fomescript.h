@@ -154,10 +154,10 @@ class StandObj: public QObject
     flags: {}*/
 public slots:
     /// basal area of a given species (m2/ha) given by Id.
-    double basalAreaOf(QString species_id) const {return mStand->basalArea(species_id); }
-    double relBasalAreaOf(QString species_id) const {return mStand->relBasalArea(species_id); }
-    double basalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).basalArea; else return 0.; }
-    double relBasalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).relBasalArea; else return 0.; }
+    double speciesBasalAreaOf(QString species_id) const {return mStand->basalArea(species_id); }
+    double relSpeciesBasalAreaOf(QString species_id) const {return mStand->relBasalArea(species_id); }
+    double speciesBasalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).basalArea; else return 0.; }
+    double relSpeciesBasalArea(int index) const { if (index>=0 && index<nspecies()) return mStand->speciesData(index).relBasalArea; else return 0.; }
     QString speciesId(int index) const;
 
     // set and get standspecific data (persistent!)
