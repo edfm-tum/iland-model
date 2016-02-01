@@ -47,7 +47,7 @@ public:
     void loadFromImage(const QString &fileName); ///< debug function...
     void dumpMapNextYear(QString file_name) { mDumpNextYearFileName = file_name; }
 private:
-    void createKernel(Grid<float> &kernel, const float max_seed); ///< initializes / creates the kernel
+    void createKernel(Grid<float> &kernel, const double max_seed); ///< initializes / creates the kernel
     double treemig(const double &distance);
     double treemig_distanceTo(const double value);
     double mTM_as1, mTM_as2, mTM_ks; ///< seed dispersal paramaters (treemig)

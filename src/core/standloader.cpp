@@ -993,7 +993,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
 
         if (pxcount < min_lif_index) {
             // not enough LIF pixels available
-            min_lif_index = pxcount; // try the brightest pixels (ie with the largest value for the LIF)
+            min_lif_index = static_cast<int>(pxcount); // try the brightest pixels (ie with the largest value for the LIF)
         }
 
         double hits = 0.;
@@ -1007,8 +1007,8 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
 
            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(GlobalSettings::instance()->model()->grid()->cellCenterPoint(offset));
            if (ru) {
-               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
-               hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(height);
+               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, static_cast<float>(height), static_cast<int>(age));
+               hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(static_cast<float>(height));
            } else {
                hits++; // avoid an infinite loop
            }

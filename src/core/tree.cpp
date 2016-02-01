@@ -30,20 +30,21 @@
 #include "forestmanagementengine.h"
 #include "modules.h"
 
-
+#include "treeout.h"
 
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
 HeightGrid *Tree::mHeightGrid = 0;
+TreeRemovedOut *Tree::mRemovalOutput = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
 
 #ifdef ALT_TREE_MORTALITY
-double _stress_threshold = 0.05;
-int _stress_years = 5;
-double _stress_death_prob = 0.33;
+static double _stress_threshold = 0.05;
+static int _stress_years = 5;
+static double _stress_death_prob = 0.33;
 #endif
 
 /** @class Tree
@@ -58,11 +59,11 @@ double _stress_death_prob = 0.33;
 
 /** get distance and direction between two points.
   returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle. */
-float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAngle)
+double dist_and_direction(const QPointF &PStart, const QPointF &PEnd, double &rAngle)
 {
-    float dx = PEnd.x() - PStart.x();
-    float dy = PEnd.y() - PStart.y();
-    float d = sqrt(dx*dx + dy*dy);
+    double dx = PEnd.x() - PStart.x();
+    double dy = PEnd.y() - PStart.y();
+    double d = sqrt(dx*dx + dy*dy);
     // direction:
     rAngle = atan2(dx, dy);
     return d;
@@ -91,7 +92,7 @@ float Tree::crownRadius() const
 
 float Tree::biomassBranch() const
 {
-    return mSpecies->biomassBranch(mDbh);
+    return static_cast<float>( mSpecies->biomassBranch(mDbh) );
 }
 
 void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
@@ -133,15 +134,15 @@ void Tree::setup()
         throw IException("Tree::setup() with invalid stamp!");
     }
 
-    mFoliageMass = species()->biomassFoliage(mDbh);
-    mCoarseRootMass = species()->biomassRoot(mDbh); // coarse root (allometry)
-    mFineRootMass = mFoliageMass * species()->finerootFoliageRatio(); //  fine root (size defined  by finerootFoliageRatio)
-    mWoodyMass = species()->biomassWoody(mDbh);
+    mFoliageMass = static_cast<float>( species()->biomassFoliage(mDbh) );
+    mCoarseRootMass = static_cast<float>( species()->biomassRoot(mDbh) ); // coarse root (allometry)
+    mFineRootMass = static_cast<float>( mFoliageMass * species()->finerootFoliageRatio() ); //  fine root (size defined  by finerootFoliageRatio)
+    mWoodyMass = static_cast<float>( species()->biomassWoody(mDbh) );
 
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
-    mLeafArea = mFoliageMass * species()->specificLeafArea();
-    mOpacity = 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea());
-    mNPPReserve = (1+species()->finerootFoliageRatio())*mFoliageMass; // initial value
+    mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() );
+    mOpacity = static_cast<float>( 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea()) );
+    mNPPReserve = static_cast<float>( (1+species()->finerootFoliageRatio())*mFoliageMass ); // initial value
     mDbhDelta = 0.1f; // initial value: used in growth() to estimate diameter increment
 
 }
@@ -193,7 +194,7 @@ void Tree::applyLIP()
                 local_dom = (*mHeightGrid)(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
                 z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
                 z_zstar = (z>=local_dom)?1.f:z/local_dom;
-                value = 1. - value*mOpacity * z_zstar; // calculated value
+                value = 1.f - value*mOpacity * z_zstar; // calculated value
                 value = std::max(value, 0.02f); // limit value
 
                 *grid_value_ptr *= value;
@@ -256,7 +257,7 @@ void Tree::applyLIP_torus()
             z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
             value = (*mStamp)(x,y); // stampvalue
-            value = 1. - value*mOpacity * z_zstar; // calculated value
+            value = 1.f - value*mOpacity * z_zstar; // calculated value
             // old: value = 1. - value*mOpacity / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
 
@@ -488,11 +489,11 @@ void Tree::readLIF()
 
         }
     }
-    mLRI = sum;
+    mLRI = static_cast<float>( sum );
     // LRI correction...
     double hrel = mHeight / mHeightGrid->valueAtIndex(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight).height;
     if (hrel<1.)
-        mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
+        mLRI = static_cast<float>( species()->speciesSet()->LRIcorrection(mLRI, hrel) );
 
 
     if (mLRI > 1.)
@@ -563,12 +564,12 @@ void Tree::readLIF_torus()
             //} // isIndexValid
         }
     }
-    mLRI = sum;
+    mLRI = static_cast<float>( sum );
 
     // LRI correction...
     double hrel = mHeight / mHeightGrid->valueAtIndex(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight).height;
     if (hrel<1.)
-        mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
+        mLRI = static_cast<float>( species()->speciesSet()->LRIcorrection(mLRI, hrel) );
 
 
     if (isnan(mLRI)) {
@@ -608,7 +609,7 @@ void Tree::calcLightResponse()
     // calculate a light response from lri:
     // http://iland.boku.ac.at/individual+tree+light+availability
     double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.); // Eq. (3)
-    mLightResponse = mSpecies->lightResponse(lri); // Eq. (4)
+    mLightResponse = static_cast<float>( mSpecies->lightResponse(lri) ); // Eq. (4)
     mRU->addLR(mLeafArea, mLightResponse);
 
 }
@@ -742,7 +743,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
         if (ru()->snag())
             ru()->snag()->addTurnoverWood(species(), mCoarseRootMass-max_coarse_root);
 
-        mCoarseRootMass = max_coarse_root;
+        mCoarseRootMass = static_cast<float>( max_coarse_root );
     }
 
     // Foliage
@@ -752,7 +753,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
         qDebug() << "foliage mass invalid!";
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
 
-    mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area
+    mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() ); // update leaf area
 
     // stress index: different varaints at denominator: to_fol*foliage_mass = leafmass to rebuild,
     // foliage_mass_allo: simply higher chance for stress
@@ -764,7 +765,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // (1) transfer to reserve pool
     double gross_woody = apct_wood * npp;
     double to_reserve = qMin(reserve_size, gross_woody);
-    mNPPReserve = to_reserve;
+    mNPPReserve = static_cast<float>( to_reserve );
     double net_woody = gross_woody - to_reserve;
     double net_stem = 0.;
     mDbhDelta = 0.;
@@ -887,15 +888,15 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     d_increment = qMax(d_increment, 0.);
 
     // update state variables
-    mDbh += d_increment*100; // convert from [m] to [cm]
-    mDbhDelta = d_increment*100; // save for next year's growth
+    mDbh += d_increment*100.f; // convert from [m] to [cm]
+    mDbhDelta = static_cast<float>( d_increment*100. ); // save for next year's growth
     mHeight += d_increment * hd_growth;
 
     // update state of LIP stamp and opacity
     mStamp = species()->stamp(mDbh, mHeight); // get new stamp for updated dimensions
     // calculate the CrownFactor which reflects the opacity of the crown
     const double k=Model::settings().lightExtinctionCoefficientOpacity;
-    mOpacity = 1. - exp(-k * mLeafArea / mStamp->crownArea());
+    mOpacity = static_cast<float>( 1. - exp(-k * mLeafArea / mStamp->crownArea()) );
 
 }
 
@@ -955,10 +956,11 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction, const double st
 
 
     if (ru()->snag()) {
-        if (isHarvested()) // if the tree is harvested, do the same as in normal tree harvest (but with default values)
+        if (isHarvested()) { // if the tree is harvested, do the same as in normal tree harvest (but with default values)
             ru()->snag()->addHarvest(this, 1., 0., 0.);
-        else
+        } else {
             ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
+        }
     }
 }
 
@@ -1026,10 +1028,14 @@ void Tree::notifyTreeRemoved(TreeRemovalType reason)
     // this information is used to track the removed volume for stands based on grids (and for salvaging operations)
     ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
     if (abe)
-        abe->notifyTreeRemoval(this, (int)reason);
+        abe->notifyTreeRemoval(this, static_cast<int>(reason));
 
     // tell disturbance modules that a tree died
-    GlobalSettings::instance()->model()->modules()->treeDeath(this, (int) reason);
+    GlobalSettings::instance()->model()->modules()->treeDeath(this, static_cast<int>(reason) );
+
+    // create output for tree removals
+    if (mRemovalOutput && mRemovalOutput->isEnabled())
+        mRemovalOutput->execRemovedTree(this, static_cast<int>(reason));
 }
 
 //////////////////////////////////////////////////

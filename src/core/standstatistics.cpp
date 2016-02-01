@@ -81,10 +81,9 @@ void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
 // note: mRUS = 0 for aggregated statistics
 void StandStatistics::calculate()
 {
-    double dcount = (double) mCount;
-    if (mCount) {
-        mAverageDbh = mSumDbh / dcount;
-        mAverageHeight = mSumHeight / dcount;
+    if (mCount>0.) {
+        mAverageDbh = mSumDbh / mCount;
+        mAverageHeight = mSumHeight / mCount;
         if (mRUS && mRUS->ru()->stockableArea()>0.)
             mLeafAreaIndex /= mRUS->ru()->stockableArea(); // convert from leafarea to LAI
     }

@@ -25,7 +25,7 @@
 
 
 // mortality workshop 2015 / COST Action with H. Bugmann
-// #define ALT_TREE_MORTALITY
+//#define ALT_TREE_MORTALITY
 
 
 // forwards
@@ -35,6 +35,7 @@ class ResourceUnit;
 struct HeightGridValue;
 struct TreeGrowthData;
 class TreeOut;
+class TreeRemovedOut;
 
 class Tree
 {
@@ -213,6 +214,8 @@ private:
     // static data
     static FloatGrid *mGrid;
     static Grid<HeightGridValue> *mHeightGrid;
+    static TreeRemovedOut *mRemovalOutput;
+    static void setTreeRemovalOutput(TreeRemovedOut *rout) { mRemovalOutput=rout; }
 
     // statistics
     static int m_statPrint;
@@ -224,6 +227,7 @@ private:
     friend class TreeWrapper;
     friend class StandStatistics;
     friend class TreeOut;
+    friend class TreeRemovedOut;
     friend class Snapshot;
 };
 

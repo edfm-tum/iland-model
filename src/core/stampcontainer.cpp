@@ -60,7 +60,7 @@ inline void StampContainer::getKey(const float dbh, const float hd_value, int &d
     // fixed scheme: smallest classification scheme for tree-diameters:
     // 1cm width from 4 up to 9cm,
     // 2cm bins from 10 to 18cm
-    // 4cm bins starting from 20cm
+    // 4cm bins starting from 20cm, max DBH=255 (with 70 classes)
     if (dbh < 10.f) {
         dbh_class = qMax(0, int(dbh-4.)); // classes from 0..5
     } else if (dbh<20.f) {
