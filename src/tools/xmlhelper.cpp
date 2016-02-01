@@ -166,6 +166,12 @@ double XmlHelper::valueDouble(const QString &path, const double defaultValue) co
     }
 }
 
+int XmlHelper::valueInt(const QString &path, const int defaultValue) const
+{
+    double dbl_val = valueDouble(path, defaultValue);
+    return static_cast<int>(dbl_val);
+}
+
 /// retreives node with given @p path and a element where isNull() is true if nothing is found.
 QDomElement XmlHelper::node(const QString &path) const
 {

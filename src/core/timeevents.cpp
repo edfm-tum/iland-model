@@ -26,7 +26,7 @@
 TimeEvents::TimeEvents()
 {
 }
-QString lastLoadedFile;
+static QString lastLoadedFile;
 bool TimeEvents::loadFromFile(const QString &fileName)
 {
     QString source = Helper::loadTextFile(GlobalSettings::instance()->path(fileName));

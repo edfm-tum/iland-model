@@ -92,7 +92,7 @@ void SeedDispersal::setup()
     // debug info
     mDumpSeedMaps = GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false);
     if (mDumpSeedMaps) {
-        QString path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
+        QString path = GlobalSettings::instance()->path( GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath") );
         Helper::saveToTextFile(QString("%1/seedkernelYes_%2.csv").arg(path).arg(mSpecies->id()),gridToString(mKernelSeedYear));
         Helper::saveToTextFile(QString("%1/seedkernelNo_%2.csv").arg(path).arg(mSpecies->id()),gridToString(mKernelNonSeedYear));
     }
@@ -170,7 +170,7 @@ void SeedDispersal::setupExternalSeeds()
 
     DebugTimer t("setup of external seed maps.");
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.seedDispersal.seedBelt"));
-    int seedbelt_width = xml.valueDouble(".width",10);
+    int seedbelt_width =xml.valueInt(".width",10);
     // setup of sectors
     // setup of base map
     const float seedmap_size = 20.f;
@@ -267,8 +267,8 @@ void SeedDispersal::setupExternalSeeds()
 #endif
     }
     mExtSeedData.clear();
-    int sectors_x = xml.valueDouble("sizeX",0);
-    int sectors_y = xml.valueDouble("sizeY",0);
+    int sectors_x = xml.valueInt("sizeX",0);
+    int sectors_y = xml.valueInt("sizeY",0);
     if(sectors_x<1 || sectors_y<1)
         throw IException(QString("setup of external seed dispersal: invalid number of sectors x=%1 y=%3").arg(sectors_x).arg(sectors_y));
     QDomElement elem = xml.node(".");
@@ -309,7 +309,7 @@ void SeedDispersal::finalizeExternalSeeds()
 }
 
 // ************ Kernel **************
-void SeedDispersal::createKernel(Grid<float> &kernel, const float max_seed)
+void SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
 {
 
     double max_dist = treemig_distanceTo(0.0001);
@@ -328,18 +328,18 @@ void SeedDispersal::createKernel(Grid<float> &kernel, const float max_seed)
     const float *sk_end = kernel.end();
     for (float *p=kernel.begin(); p!=sk_end;++p) {
         double d = kernel.distance(center, kernel.indexOf(p));
-        *p = d<=max_dist?treemig(d):0.f;
+        *p = d<=max_dist?static_cast<float>(treemig(d)):0.f;
     }
 
     // normalize
-    double sum = kernel.sum();
+    float sum = kernel.sum();
     if (sum==0. || occupation==0.)
         throw IException("create seed kernel: sum of probabilities = 0!");
 
     // the sum of all kernel cells has to equal 1
-    kernel.multiply(1./sum);
+    kernel.multiply(1.f/sum);
     // probabilities are derived in multiplying by seed number, and dividing by occupancy criterion
-    kernel.multiply( max_seed / occupation);
+    kernel.multiply( static_cast<float>( max_seed / occupation));
     // all cells that get more seeds than the occupancy criterion are considered to have no seed limitation for regeneration
     for (float *p=kernel.begin(); p!=sk_end;++p) {
         *p = qMin(*p, 1.f);
@@ -434,12 +434,12 @@ void SeedDispersal::clear()
         return;
     }
     // clear the map
-    float background_value = mExternalSeedBackgroundInput; // there is potentitally a background probability <>0 for all pixels.
+    float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
     mSeedMap.initialize(background_value);
     if (mHasExternalSeedInput) {
         // if external seed input is enabled, the buffer area of the seed maps is
         // "turned on", i.e. set to 1.
-        int buf_size = GlobalSettings::instance()->settings().valueDouble("model.world.buffer",0.) / mSeedMap.cellsize();
+        int buf_size = GlobalSettings::instance()->settings().valueInt("model.world.buffer",0.) / mSeedMap.cellsize();
         // if a special buffer is defined, reduce the size of the input
         if (mExternalSeedBuffer>0)
             buf_size -= mExternalSeedBuffer;
@@ -473,7 +473,7 @@ void SeedDispersal::execute()
     int year = GlobalSettings::instance()->currentYear();
     QString path;
     if (mDumpSeedMaps) {
-        path = GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath");
+        path = GlobalSettings::instance()->path( GlobalSettings::instance()->settings().value("model.settings.seedDispersal.dumpSeedMapsPath") );
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_before_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
         qDebug() << "saved seed map image to" << path;
     }
@@ -482,8 +482,8 @@ void SeedDispersal::execute()
         qDebug() << "saving of seedmaps only supported in the iLand GUI.";
 #endif
 
+    DebugTimer t("seed dispersal", true);
     {
-    //DebugTimer t("seed dispersal");
     // (1) detect edges
     if (edgeDetection()) {
     // (2) distribute seed probabilites from edges
@@ -491,8 +491,10 @@ void SeedDispersal::execute()
     }
     }
 #ifdef ILAND_GUI
-    if (mDumpSeedMaps)
+    if (mDumpSeedMaps) {
+        qDebug() << "finished seed dispersal for species" << mSpecies->id() << t.elapsed();
         gridToImage(seedMap(), true, 0., 1.).save(QString("%1/seed_after_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
+    }
 
     if (!mDumpNextYearFileName.isEmpty()) {
         Helper::saveToTextFile(GlobalSettings::instance()->path(mDumpNextYearFileName), gridToESRIRaster(seedMap()));

@@ -77,7 +77,7 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
         return false;
 
     double h_height_grid = hgv.height;
-    if (h_height_grid==0)
+    if (h_height_grid==0.)
         throw IException(QString("establishTree: height grid at %1/%2 has value 0").arg(pos_lif.x()).arg(pos_lif.y()));
     double rel_height = 4. / h_height_grid;
 
@@ -99,8 +99,8 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      return false; // no establishment
 }
 
-int _est_old_algo=0;
-int _est_new_algo=0;
+static int _est_old_algo=0;
+static int _est_new_algo=0;
 
 // see http://iland.boku.ac.at/establishment
 void Establishment::calculate()

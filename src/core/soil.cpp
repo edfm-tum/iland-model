@@ -37,7 +37,7 @@ double Soil::mNitrogenDeposition = 0.;
 // (proportional to its mineralization in the mineral soil horizon) is leached
 // see separate wiki-page (http://iland.boku.ac.at/soil+parametrization+and+initialization)
 // and R-script on parameter estimation and initialization
-struct SoilParams {
+static struct SoilParams {
     // ICBM/2N parameters
     SoilParams(): qb(5.), qh(25.), leaching(0.15), el(0.0577), er(0.073), is_setup(false) {}
     double qb; ///< C/N ratio of soil microbes

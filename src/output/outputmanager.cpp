@@ -48,6 +48,7 @@ OutputManager::OutputManager()
     mTransactionOpen = false;
     // add all the outputs
     mOutputs.append(new TreeOut);
+    mOutputs.append(new TreeRemovedOut);
     mOutputs.append(new StandOut);
     mOutputs.append(new LandscapeOut);
     mOutputs.append(new DynamicStandOut);
