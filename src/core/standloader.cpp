@@ -197,6 +197,7 @@ void StandLoader::processInit()
             ++it;
         }
         qDebug() << "finished setup of trees.";
+        evaluateDebugTrees();
         return;
 
     }
@@ -987,31 +988,38 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
         double min_lif = iminlif==-1?1.: init.value(row, iminlif).toDouble();
         // find LIF-level in the pixels
         int min_lif_index = 0;
-        for (QVector<float*>::ConstIterator it=lif_ptrs.constBegin(); it!=lif_ptrs.constEnd(); ++it, ++min_lif_index)
-            if (**it <= min_lif)
-                break;
-
-        if (pxcount < min_lif_index) {
-            // not enough LIF pixels available
-            min_lif_index = static_cast<int>(pxcount); // try the brightest pixels (ie with the largest value for the LIF)
+        if (min_lif < 1.) {
+            for (QVector<float*>::ConstIterator it=lif_ptrs.constBegin(); it!=lif_ptrs.constEnd(); ++it, ++min_lif_index)
+                if (**it <= min_lif)
+                    break;
+            if (pxcount < min_lif_index) {
+                // not enough LIF pixels available
+                min_lif_index = static_cast<int>(pxcount); // try the brightest pixels (ie with the largest value for the LIF)
+            }
+        } else {
+            // No LIF threshold: the full range of pixels is valid
+            min_lif_index = lif_ptrs.size();
         }
+
+
 
         double hits = 0.;
         while (hits < pxcount) {
-           int rnd_index = irandom(0, min_lif_index-1);
-           if (iheightfrom!=-1) {
-               height = limit(nrandom(height_from, height_to), 0.05,4.);
-               age = qMax(qRound(height/4. * age4m),1); // assume a linear relationship between height and age
-           }
-           QPoint offset = GlobalSettings::instance()->model()->grid()->indexOf(lif_ptrs[rnd_index]);
+            int rnd_index = irandom(0, min_lif_index-1);
+            if (iheightfrom!=-1) {
+                height = limit(nrandom(height_from, height_to), 0.05,4.);
+                if (age<=1.)
+                    age = qMax(qRound(height/4. * age4m),1); // assume a linear relationship between height and age
+            }
+            QPoint offset = GlobalSettings::instance()->model()->grid()->indexOf(lif_ptrs[rnd_index]);
 
-           ResourceUnit *ru = GlobalSettings::instance()->model()->ru(GlobalSettings::instance()->model()->grid()->cellCenterPoint(offset));
-           if (ru) {
-               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, static_cast<float>(height), static_cast<int>(age));
-               hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(static_cast<float>(height));
-           } else {
-               hits++; // avoid an infinite loop
-           }
+            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(GlobalSettings::instance()->model()->grid()->cellCenterPoint(offset));
+            if (ru) {
+                ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, static_cast<float>(height), static_cast<int>(age));
+                hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(static_cast<float>(height));
+            } else {
+                hits++; // avoid an infinite loop
+            }
 
 
         }
