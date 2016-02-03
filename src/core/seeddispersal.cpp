@@ -204,7 +204,7 @@ void SeedDispersal::setupExternalSeeds()
             if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
                 continue;
             int look_forward = std::min(x + seedbelt_width, mExternalSeedBaseMap->sizeX()-1);
-            if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.) {
+            if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.f) {
                 // fill pixels
                 for(; x<look_forward;++x) {
                     float &v = mExternalSeedBaseMap->valueAtIndex(x, y);
@@ -219,7 +219,7 @@ void SeedDispersal::setupExternalSeeds()
             if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
                 continue;
             int look_forward = std::max(x - seedbelt_width, 0);
-            if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.) {
+            if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.f) {
                 // fill pixels
                 for(; x>look_forward;--x) {
                     float &v = mExternalSeedBaseMap->valueAtIndex(x, y);
@@ -486,7 +486,14 @@ void SeedDispersal::execute()
     {
     // (1) detect edges
     if (edgeDetection()) {
-    // (2) distribute seed probabilites from edges
+
+#ifdef ILAND_GUI
+        if (mDumpSeedMaps) {
+            gridToImage(seedMap(), true, -1., 1.).save(QString("%1/seed_edge_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
+        }
+#endif
+
+        // (2) distribute seed probabilites from edges
         distribute();
     }
     }
@@ -515,21 +522,50 @@ bool SeedDispersal::edgeDetection()
     int dx = mSeedMap.sizeX();
     int x,y;
     bool found = false;
+
+    // fill mini-gaps
     for (y=1;y<dy-1;++y){
         p = mSeedMap.ptr(1,y);
         p_above = p - dx; // one line above
         p_below = p + dx; // one line below
         for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
-            if (*p == 1.) {
-                found = true;
-                if (*(p_above-1)!=1.f || *p_above!=1.f || *(p_above+1)!=1.f ||
-                    *(p-1)!=1.f || *(p+1)!=1.f ||
-                    *(p_below-1)!=1.f || *p_below!=1.f || *(p_below+1)!=1.f )
-                    *p=-1; // if any surrounding pixel is 0: -> mark as edge
+            if (*p < 0.999f) {
+
+                if ((*(p_above-1)==1.f) + (*p_above==1.f) + (*(p_above+1)==1.f) +
+                    (*(p-1)==1.f) + (*(p+1)==1.f) +
+                    (*(p_below-1)==1.f) + (*p_below==1.f) + (*(p_below+1)==1.f) > 3)
+                    *p=0.999f; // if more than 3 neighbors are active pixels, the value is high
             }
 
         }
     }
+
+
+    // now detect the edges
+    int n_edges=0 ;
+    for (y=1;y<dy-1;++y){
+        p = mSeedMap.ptr(1,y);
+        p_above = p - dx; // one line above
+        p_below = p + dx; // one line below
+        for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
+            if (*p == 1.f) {
+                found = true;
+                if ( (*(p_above-1)<0.999f && *(p_above-1)>=0.f)
+                     || (*p_above<0.999f && *p_above>=0.f)
+                     || (*(p_above+1)<0.999f && *(p_above+1)>=0.f)
+                     || (*(p-1)<0.999f && *(p-1)>=0.f)
+                     || (*(p+1)<0.999f && (*p+1)>=0.f)
+                     || (*(p_below-1)<0.999f && *(p_below-1)>=0.f)
+                     || (*p_below<0.999f && *p_below>=0.f)
+                     || (*(p_below+1)<0.999f && *(p_below+1)>=0.f ) ) {
+                    *p=-1.f; // if any surrounding pixel is >=0 & <0.999: -> mark as edge
+                    ++n_edges;
+                }
+            }
+
+        }
+    }
+    //qDebug() << "species:" << mSpecies->id() << "# of edge-pixels:" << n_edges;
     return found;
 }
 
@@ -553,7 +589,7 @@ void SeedDispersal::distribute()
                 for (x=-offset;x<=offset;++x)
                     if (mSeedMap.isIndexValid(pt.x()+x, pt.y()+y)) {
                         float &val = mSeedMap.valueAtIndex(pt.x()+x, pt.y()+y);
-                        if (val!=-1)
+                        if (val!=-1.f)
                             val = qMin(1.f - (1.f - val)*(1.f-kernel.valueAtIndex(x+offset, y+offset)),1.f );
                     }
             *p=1.f; // mark as processed
