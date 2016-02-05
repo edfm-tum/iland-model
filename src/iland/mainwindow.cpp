@@ -1432,6 +1432,7 @@ void MainWindow::on_actionModelDestroy_triggered()
 {
     mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
+    mRegenerationGrid.clear();
     checkModelState();
 }
 
@@ -1473,6 +1474,7 @@ void MainWindow::on_actionReload_triggered()
         return;
     mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
+    mRegenerationGrid.clear();
     setupModel();
 }
 
