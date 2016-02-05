@@ -247,7 +247,7 @@ void ResourceUnit::newYear()
 void ResourceUnit::production()
 {
 
-    if (mAggregatedWLA==0 || mPixelCount==0) {
+    if (mAggregatedWLA==0. || mPixelCount==0) {
         // clear statistics of resourceunitspecies
         for ( QList<ResourceUnitSpecies*>::const_iterator i=mRUSpecies.constBegin(); i!=mRUSpecies.constEnd(); ++i)
             (*i)->statistics().clear();
@@ -258,6 +258,24 @@ void ResourceUnit::production()
 
     // the pixel counters are filled during the height-grid-calculations
     mStockedArea = 100. * mStockedPixelCount; // m2 (1 height grid pixel = 10x10m)
+    if (leafAreaIndex()<3.) {
+        // estimate stocked area based on crown projections
+        double crown_area = 0.;
+        for (int i=0;i<mTrees.count();++i)
+            crown_area += mTrees.at(i).isDead() ? 0. : mTrees.at(i).stamp()->reader()->crownArea();
+
+        if (logLevelDebug())
+            qDebug() << "crown area: lai" << leafAreaIndex() << "stocked area (pixels)" << mStockedArea << " area (crown)" << crown_area;
+        if (leafAreaIndex()<2.) {
+            mStockedArea = crown_area;
+        } else {
+
+            double px_frac = leafAreaIndex()-2.; // 0 at LAI=2, 1 at LAI=3
+            mStockedArea = mStockedArea * px_frac + crown_area * (1. - px_frac);
+        }
+        if (mStockedArea==0.)
+            return;
+    }
 
     // calculate the leaf area index (LAI)
     double LAI = mAggregatedLA / mStockedArea;
