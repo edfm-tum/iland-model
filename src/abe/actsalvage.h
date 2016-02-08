@@ -48,8 +48,9 @@ private:
     bool mDebugSplit;
     Expression *mCondition; ///< formula to determine which trees should be harvested
     int mMaxPreponeActivity; ///< no of years that a already scheduled (regular) activity is 'preponed'
-    double mThresholdTotal; ///< threshold (relative disturbend volume) for total disturbance
-    double mThresholdMinimal; ///< lower threshold (below no action is taken)
+    double mThresholdMinimal; ///< lower threshold (below no action is taken) in m3/ha
+    double mThresholdSplit; ///<threshold (relative damage, 0..1) when a split of the stand should be initiated
+    double mThresholdClear; ///<threshold (relative damage, 0..1) when a stand should be completely cleared
 
 
 };
