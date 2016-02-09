@@ -60,9 +60,14 @@ public:
 
     /// main function
     double regenerationInhibition(QPoint &lif_index) const {
+
         if (mType==Pixel)
-            return mGrid.constValueAtIndex(lif_index)>0 ? 1. : 0.;
-        return mEnabled?effect(mGrid.constValueAtIndex(lif_index)) : 0.; }
+            // -1: off, out of project area, 0: off, ready to get grassy again, 1: off (waiting for LIF threshold), >1 on, counting down
+            return mGrid.constValueAtIndex(lif_index)>1 ? 1. : 0.;
+
+        // type continuous
+        return mEnabled?effect(mGrid.constValueAtIndex(lif_index)) : 0.;
+    }
 
     /// retrieve the grid of current grass cover
     const Grid<grass_grid_type> &grid() { return mGrid; }
