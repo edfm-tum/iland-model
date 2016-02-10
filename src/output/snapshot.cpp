@@ -513,7 +513,7 @@ void Snapshot::saveSaplings()
             const Sapling &sap = rus->sapling();
             if (sap.saplings().isEmpty())
                 continue;
-            foreach (const SaplingTree &t, sap.saplings()) {
+            foreach (const SaplingTreeOld &t, sap.saplings()) {
                 if (!t.pixel)
                     continue;
                 q.addBindValue(ru->index());
@@ -582,8 +582,8 @@ void Snapshot::loadSaplings()
             offsetx = ru->cornerPointOffset().x();
             offsety = ru->cornerPointOffset().y();
         }
-        sap.mSaplingTrees.push_back(SaplingTree());
-        SaplingTree &t = sap.mSaplingTrees.back();
+        sap.mSaplingTrees.push_back(SaplingTreeOld());
+        SaplingTreeOld &t = sap.mSaplingTrees.back();
         //posx = q.value(ci++).toInt();
         //posy = q.value(ci++).toInt();
         posx = offsetx + q.value(ci++).toInt() % cPxPerRU;

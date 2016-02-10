@@ -96,7 +96,8 @@ public:
     inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return mData[iy*mSizeX + ix];  } ///< const value at position defined by indices (x,y)
     T& valueAtIndex(const int index) {return mData[index]; } ///< get a ref ot value at (one-dimensional) index 'index'.
-
+    inline int index(const int ix, const int iy) { return iy*mSizeX + ix; } ///< get the 0-based index of the cell with indices ix and iy.
+    inline int index(const QPoint &pos) { return pos.y()*mSizeX + pos.x(); } ///< get the 0-based index of the cell at 'pos'.
     /// value at position defined by a (integer) QPoint
     inline const T& constValueAtIndex(const QPoint& pos) const {return constValueAtIndex(pos.x(), pos.y()); }
     /// value at position defined by a pair of integer coordinates
@@ -124,6 +125,8 @@ public:
     int index2(int idx) const {return ((idx/mSizeX)/2)*mSizeX/2 + (idx%mSizeX)/2; }
     /// returns the index of an aligned grid (the same size) with the 5 times bigger cells (e.g. to scale from a 2m grid to a 10m grid)
     int index5(int idx) const {return ((idx/mSizeX)/5)*mSizeX/5 + (idx%mSizeX)/5; }
+    /// returns the index of an aligned grid (the same size) with the 10 times bigger cells (e.g. to scale from a 2m grid to a 20m grid)
+    int index10(int idx) const {return ((idx/mSizeX)/10)*mSizeX/10 + (idx%mSizeX)/10; }
 
     /// force @param pos to contain valid indices with respect to this grid.
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} ///< ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.

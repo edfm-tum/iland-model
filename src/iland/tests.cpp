@@ -38,6 +38,7 @@
 #include "exception.h"
 #include "seeddispersal.h"
 #include "establishment.h"
+#include "saplings.h"
 //
 #include "standloader.h"
 #include "soil.h"
@@ -600,9 +601,19 @@ void Tests::testMultithreadExecute()
 void Tests::testEstablishment()
 {
     Model *model = GlobalSettings::instance()->model();
+    model->saplings()->clearStats();
+
+    {
+    DebugTimer test("test establishment");
+    foreach (ResourceUnit *ru, model->ruList())
+        model->saplings()->establishment(ru);
+    }
+    qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
+
+
     //model->ru(0)
-    Establishment est(model->ru(0)->climate(),model->ru(0)->ruSpecies().first());
-    est.calculate();
+    //Establishment est(model->ru(0)->climate(),model->ru(0)->ruSpecies().first());
+    //est.calculate();
 }
 
 void Tests::testLinearExpressions()

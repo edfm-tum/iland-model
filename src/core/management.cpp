@@ -428,9 +428,9 @@ void Management::killSaplings(MapGridWrapper *wrap, int key)
     //}
     //loadFromMap(wrap->map(), key);
     // retrieve all sapling trees on the stand:
-    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > list = wrap->map()->saplingTrees(key);
+    QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > list = wrap->map()->saplingTrees(key);
     // for now, just kill em all...
-    for (QList<QPair<ResourceUnitSpecies *, SaplingTree *> >::iterator it = list.begin(); it!=list.end(); ++it) {
+    for (QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> >::iterator it = list.begin(); it!=list.end(); ++it) {
         // (*it).second->pixel = 0;
         (*it).first->changeSapling().clearSapling( *(*it).second, false); // kill and move biomass to soil
     }
