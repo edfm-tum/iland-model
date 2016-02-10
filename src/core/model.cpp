@@ -41,6 +41,7 @@
 #include "standloader.h"
 #include "tree.h"
 #include "management.h"
+#include "saplings.h"
 #include "modelsettings.h"
 #include "standstatistics.h"
 #include "mapgrid.h"
@@ -146,6 +147,7 @@ void Model::initialize()
    mModules = 0;
    mDEM = 0;
    mGrassCover = 0;
+   mSaplings=0;
 }
 
 /** sets up the simulation space.
@@ -344,6 +346,16 @@ void Model::setupSpace()
 
         }
 
+        // setup of saplings
+        if (mSaplings) {
+            delete mSaplings; mSaplings=0;
+        }
+        if (settings().regenerationEnabled) {
+            mSaplings = new Saplings();
+            mSaplings->setup();
+        }
+
+
         // setup of the grass cover
         if (!mGrassCover)
             mGrassCover = new GrassCover();
@@ -399,6 +411,8 @@ void Model::clear()
         delete mGrid;
     if (mHeightGrid)
         delete mHeightGrid;
+    if (mSaplings)
+        delete mSaplings;
     if (mManagement)
         delete mManagement;
     if (mEnvironment)
@@ -482,6 +496,9 @@ void Model::loadProject()
         delete mModules;
     mModules = new Modules();
 
+    changeSettings().regenerationEnabled = xml.valueBool("model.settings.regenerationEnabled", false);
+
+
     setupSpace();
     if (mRU.isEmpty())
         throw IException("Setup of Model: no resource units present!");
@@ -496,7 +513,6 @@ void Model::loadProject()
     }
 
     // (3.2) setup of regeneration
-    changeSettings().regenerationEnabled = xml.valueBool("model.settings.regenerationEnabled", false);
     if (settings().regenerationEnabled) {
         foreach(SpeciesSet *ss, mSpeciesSets)
             ss->setupRegeneration();

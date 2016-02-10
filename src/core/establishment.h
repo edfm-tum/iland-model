@@ -32,6 +32,7 @@ public:
     void setup(const Climate *climate, const ResourceUnitSpecies *rus);
     /// main function "calculate()": process the establishment routine
     void calculate();
+    void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
     // some informations after execution
     double avgSeedDensity() const { return mPxDensity;} ///< average seed density on the RU
     double abioticEnvironment() const {return mPAbiotic; } ///< integrated value of abiotic environment (i.e.: TACA-climate + total iLand environment)
@@ -47,7 +48,6 @@ public:
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
     inline bool establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value); ///< do the final check whether a seedling can establish at given location
-    void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
     // 2 different approaches for calculating the establishment
     void calculatePerSeedPixel(); ///< function that checks seed pixels first
     void calculatePerRU(); ///< function that starts with 2m LIF pixels

@@ -32,6 +32,8 @@
 class ResourceUnit;
 class SpeciesSet;
 class Management;
+class Saplings;
+
 namespace ABE {
 class ForestManagementEngine;
 }
@@ -83,6 +85,7 @@ public:
     Management *management() const { return mManagement; }
     ABE::ForestManagementEngine *ABEngine() const { return mABEManagement; }
     Environment *environment() const {return mEnvironment; }
+    Saplings *saplings() const {return mSaplings; }
     TimeEvents *timeEvents() const { return mTimeEvents; }
     Modules *modules() const { return mModules; }
     const DEM *dem() const { return mDEM; }
@@ -150,6 +153,7 @@ private:
     // global grids...
     FloatGrid *mGrid; ///< the main LIF grid of the model (2x2m resolution)
     HeightGrid *mHeightGrid; ///< grid with 10m resolution that stores maximum-heights, tree counts and some flags
+    Saplings *mSaplings;
     Management *mManagement; ///< management sub-module (simple mode)
     ABE::ForestManagementEngine *mABEManagement; ///< management sub-module (agent based management engine)
     Environment *mEnvironment; ///< definition of paramter values on resource unit level (modify the settings tree)

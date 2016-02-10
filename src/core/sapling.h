@@ -26,9 +26,9 @@
 #include "snag.h"
 #include "model.h"
 /// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
-class SaplingTree {
+class SaplingTreeOld {
 public:
-    SaplingTree() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }
+    SaplingTreeOld() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }
     bool isValid() const {return pixel!=0; }
     float *pixel; // pointer to the lifpixel the sapling lives on, set to 0 if sapling died/removed
     QPoint coords() const { return GlobalSettings::instance()->model()->grid()->indexOf(pixel); }
@@ -58,14 +58,14 @@ public:
     static void updateBrowsingPressure();
 
     // access
-    const QVector<SaplingTree> &saplings() const {return mSaplingTrees; }
+    const QVector<SaplingTreeOld> &saplings() const {return mSaplingTrees; }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
     /// add a new sapling at 'pos_lif' (i.e. QPoint with LIF-coordiantes) and with (optionally) 'height' (m) and 'age' (years)
     /// Returns the index of the newly added sapling.
     int addSapling(const QPoint &pos_lif, const float height=0.05f, const int age=1);
     /// clear (either remove or kill) a specific sapling
-    void clearSapling(SaplingTree &tree, const bool remove);
+    void clearSapling(SaplingTreeOld &tree, const bool remove);
     void clearSapling(int index, const bool remove);
     void clearSaplings(const QPoint &position); ///< clear  saplings on a given position (after recruitment)
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass); ///< clear  saplings within a given rectangle
@@ -90,10 +90,10 @@ public:
     void fillMaxHeightGrid(Grid<float> &grid) const;
     const std::bitset<cPxPerRU*cPxPerRU> &presentPositions() const { return mSapBitset; }
 private:
-    bool growSapling(SaplingTree &tree, const double f_env_yr, Species* species);
+    bool growSapling(SaplingTreeOld &tree, const double f_env_yr, Species* species);
     void setBit(const QPoint &pos_index, bool value);
     ResourceUnitSpecies *mRUS;
-    QVector<SaplingTree> mSaplingTrees;
+    QVector<SaplingTreeOld> mSaplingTrees;
     std::bitset<cPxPerRU*cPxPerRU> mSapBitset;
     int mAdded; ///< number of trees added
     int mRecruited; ///< number recruited (i.e. grown out of regeneration layer)

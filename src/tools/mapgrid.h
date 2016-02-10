@@ -25,7 +25,7 @@
 #include "gisgrid.h"
 class ResourceUnit; // forward
 class Tree; // forward
-class SaplingTree; // forward
+class SaplingTreeOld; // forward
 class ResourceUnitSpecies; // forward
 
 class MapGrid
@@ -63,7 +63,7 @@ public:
     /// return a list of grid-indices of a given stand-id
     QList<int> gridIndices(const int id) const;
     /// get a list of sapling trees on a given stand.
-    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > saplingTrees(const int id) const;
+    QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > saplingTrees(const int id) const;
 
     QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > saplingTreeHash(const int id) const;
     /// extract a list of neighborhood relationships between all the polygons of the grid

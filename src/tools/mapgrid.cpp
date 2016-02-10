@@ -301,15 +301,15 @@ QList<int> MapGrid::gridIndices(const int id) const
 }
 
 /// retrieve a list of saplings on a given stand polygon.
-QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const int id) const
+QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > MapGrid::saplingTrees(const int id) const
 {
-    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > result;
+    QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > result;
     QList<ResourceUnit*> resource_units = resourceUnits(id);
     foreach(ResourceUnit *ru, resource_units) {
         foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
-            foreach(const SaplingTree &tree, rus->sapling().saplings()) {
+            foreach(const SaplingTreeOld &tree, rus->sapling().saplings()) {
                 if (LIFgridValue( tree.coords() ) == id)
-                    result.push_back( QPair<ResourceUnitSpecies *, SaplingTree *>(rus, &const_cast<SaplingTree&>(tree)) );
+                    result.push_back( QPair<ResourceUnitSpecies *, SaplingTreeOld *>(rus, &const_cast<SaplingTreeOld&>(tree)) );
             }
         }
     }

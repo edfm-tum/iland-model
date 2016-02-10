@@ -70,7 +70,7 @@ double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rA
     double h_sum = 0.;
     double age_sum = 0.;
     const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
-    for (QVector<SaplingTree>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+    for (QVector<SaplingTreeOld>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         float dbh = it->height / p.hdSapling * 100.f;
         if (dbh<1.) // minimum size: 1cm
             continue;
@@ -102,8 +102,8 @@ double Sapling::representedStemNumber(float height) const
 /// maintenance function to clear dead/recruited saplings from storage
 void Sapling::cleanupStorage()
 {
-    QVector<SaplingTree>::iterator forw=mSaplingTrees.begin();
-    QVector<SaplingTree>::iterator back;
+    QVector<SaplingTreeOld>::iterator forw=mSaplingTrees.begin();
+    QVector<SaplingTreeOld>::iterator back;
 
     // seek last valid
     for (back=mSaplingTrees.end()-1; back>=mSaplingTrees.begin(); --back)
@@ -159,7 +159,7 @@ double Sapling::heightAt(const QPoint &position) const
     if (!hasSapling(position))
         return 0.;
     // ok, we'll have to search through all saplings
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     float *lif_ptr = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         if (it->isValid() && it->pixel == lif_ptr)
@@ -180,8 +180,8 @@ void Sapling::setBit(const QPoint &pos_index, bool value)
 int Sapling::addSapling(const QPoint &pos_lif, const float height, const int age)
 {
     // adds a sapling...
-    mSaplingTrees.push_back(SaplingTree());
-    SaplingTree &t = mSaplingTrees.back();
+    mSaplingTrees.push_back(SaplingTreeOld());
+    SaplingTreeOld &t = mSaplingTrees.back();
     t.height = height; // default is 5cm height
     t.age.age = age;
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
@@ -195,13 +195,13 @@ int Sapling::addSapling(const QPoint &pos_lif, const float height, const int age
 void Sapling::clearSaplings(const QPoint &position)
 {
     float *target = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         if (it->pixel==target) {
             // trick: use a const iterator to avoid a deep copy of the vector; then do an ugly const_cast to actually write the data
             //const SaplingTree &t = *it;
             //const_cast<SaplingTree&>(t).pixel=0;
-            clearSapling(const_cast<SaplingTree&>(*it), false); // kill sapling and move carbon to soil
+            clearSapling(const_cast<SaplingTreeOld&>(*it), false); // kill sapling and move carbon to soil
         }
     }
     setBit(position, false); // clear bit: now there is no sapling on this position
@@ -213,16 +213,16 @@ void Sapling::clearSaplings(const QPoint &position)
 /// clear  saplings within a given rectangle
 void Sapling::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
 {
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     FloatGrid *grid = GlobalSettings::instance()->model()->grid();
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         if (rectangle.contains(grid->cellCenterPoint(it->coords()))) {
-            clearSapling(const_cast<SaplingTree&>(*it), remove_biomass);
+            clearSapling(const_cast<SaplingTreeOld&>(*it), remove_biomass);
         }
     }
 }
 
-void Sapling::clearSapling(SaplingTree &tree, const bool remove)
+void Sapling::clearSapling(SaplingTreeOld &tree, const bool remove)
 {
     QPoint p=tree.coords();
     tree.pixel=0;
@@ -246,7 +246,7 @@ void Sapling::clearSapling(int index, const bool remove)
 /// growth function for an indivudal sapling.
 /// returns true, if sapling survives, false if sapling dies or is recruited to iLand.
 /// see also http://iland.boku.ac.at/recruitment
-bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* species)
+bool Sapling::growSapling(SaplingTreeOld &tree, const double f_env_yr, Species* species)
 {
     QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
     //GlobalSettings::instance()->model()->heightGrid()[Grid::index5(tree.pixel-GlobalSettings::instance()->model()->grid()->begin())];
@@ -363,15 +363,15 @@ void Sapling::calculateGrowth()
     double f_env_yr = mRUS->prod3PG().fEnvYear();
 
     mLiving=0;
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
-        const SaplingTree &tree = *it;
+        const SaplingTreeOld &tree = *it;
         if (tree.height<0)
             qDebug() << "Sapling::calculateGrowth(): h<0";
         // if sapling is still living check execute growth routine
         if (tree.isValid()) {
             // growing (increases mLiving if tree did not die, mDied otherwise)
-            if (growSapling(const_cast<SaplingTree&>(tree), f_env_yr, species)) {
+            if (growSapling(const_cast<SaplingTreeOld&>(tree), f_env_yr, species)) {
                 // set the sapling height to the maximum value on the current pixel
                 ru->setMaxSaplingHeightAt(tree.coords(),tree.height);
             }
@@ -456,7 +456,7 @@ void Sapling::calculateGrowth()
 /// this function is used for visualization only
 void Sapling::fillMaxHeightGrid(Grid<float> &grid) const
 {
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     for (it = mSaplingTrees.begin(); it!=mSaplingTrees.end(); ++it) {
         if (it->isValid()) {
              QPoint p=it->coords();
