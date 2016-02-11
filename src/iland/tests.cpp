@@ -610,6 +610,12 @@ void Tests::testEstablishment()
     }
     qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
 
+    {
+    DebugTimer test("test sapling growth");
+    foreach (ResourceUnit *ru, model->ruList())
+        model->saplings()->saplingGrowth(ru);
+    }
+    qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
 
     //model->ru(0)
     //Establishment est(model->ru(0)->climate(),model->ru(0)->ruSpecies().first());
