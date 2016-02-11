@@ -86,7 +86,7 @@ void Saplings::establishment(const ResourceUnit *ru)
                         }
                     }
 
-                    if (viable) {
+                    if (viable && i_occupied>=0) {
                         // grass cover?
                         DBG_IF(i_occupied<0, "establishment", "invalid value i_occupied<0");
                         float seed_map_value = seedmap[seedmap.index10(isc)];
