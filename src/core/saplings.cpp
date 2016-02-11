@@ -122,22 +122,29 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
 
+    for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i)
+        (*i)->saplingStat().clearStatistics();
+
     QPoint imap =  mGrid.indexAt(ru->boundingBox().topLeft());
+    bool need_check=false;
     for (int iy=0; iy<cPxPerRU; ++iy) {
         SaplingCell *s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
         int isc = mGrid.index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
             if (s->state != SaplingCell::CellInvalid) {
+                need_check=false;
                 for (int i=0;i<NSAPCELLS;++i) {
                     if (s->saplings[i].is_occupied()) {
                         // growth of this sapling tree
                         const HeightGridValue &hgv = (*height_grid)[height_grid->index5(isc)];
                         float lif_value = (*lif_grid)[isc];
 
-                        growSapling(ru, s->saplings[i], isc, hgv.height, lif_value);
+                        need_check |= growSapling(ru, s->saplings[i], isc, hgv.height, lif_value);
                     }
                 }
+                if (need_check)
+                    s->checkState();
             }
         }
     }
@@ -152,7 +159,7 @@ void Saplings::updateBrowsingPressure()
         Saplings::mBrowsingPressure = 0.;
 }
 
-void Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, float dom_height, float lif_value)
+bool Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, float dom_height, float lif_value)
 {
     ResourceUnitSpecies *rus = const_cast<ResourceUnitSpecies*>(ru->ruSpecies()[tree.species_index]);
     const Species *species = rus->species();
@@ -193,8 +200,8 @@ void Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
         if (tree.stress_years > species->saplingGrowthParameters().maxStressYears) {
             // sapling dies...
             tree.clear();
-            rus->saplingStat().addCarbonOfDeadSapling( tree.height / species->saplingGrowthParameters().hdSapling * 100. );
-            return;
+            rus->saplingStat().addCarbonOfDeadSapling( tree.height / species->saplingGrowthParameters().hdSapling * 100.f );
+            return true; // need cleanup
         }
     } else {
         tree.stress_years=0; // reset stress counter
@@ -244,7 +251,7 @@ void Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
                 s.saplings[i].clear();
             }
         }
-        return;
+        return true; // need cleanup
     }
     // book keeping (only for survivors) for the sapling of the resource unit / species
     SaplingStat &ss = rus->saplingStat();
@@ -253,7 +260,7 @@ void Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
     ss.mAvgAge+=tree.age;
     ss.mAvgDeltaHPot+=delta_h_pot;
     ss.mAvgHRealized += delta_h_pot * delta_h_factor;
-
+    return false;
 }
 
 void SaplingStat::clearStatistics()

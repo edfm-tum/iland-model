@@ -42,6 +42,7 @@ class Saplings;
 class SaplingStat
 {
 public:
+    SaplingStat() { clearStatistics(); }
     void clearStatistics();
     // actions
     void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh; }
@@ -99,7 +100,7 @@ public:
     static void updateBrowsingPressure();
 
 private:
-    void growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, float dom_height, float lif_value);
+    bool growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, float dom_height, float lif_value);
     Grid<SaplingCell> mGrid;
     int mAdded;
     int mTested;
