@@ -37,4 +37,28 @@ private:
     QMap<QString,StandStatistics> mLandscapeStats;
 };
 
+
+/** LandscapeRemovedOut is aggregated output for removed trees on the full landscape. All values are per hectare values. */
+class LandscapeRemovedOut : public Output
+{
+public:
+    LandscapeRemovedOut();
+    void execRemovedTree(const Tree *t, int reason);
+    virtual void exec();
+    virtual void setup();
+private:
+    bool mIncludeDeadTrees;
+    bool mIncludeHarvestTrees;
+    Expression mCondition;
+    struct LROdata {
+        LROdata() { clear(); }
+        void clear() { volume=0.; basal_area=0.; n=0.; }
+        double volume;
+        double basal_area;
+        double n;
+    };
+
+    QHash<int,LROdata> mLandscapeRemoval;
+};
+
 #endif // LANDSCAPEOUT_H

@@ -51,6 +51,7 @@ OutputManager::OutputManager()
     mOutputs.append(new TreeRemovedOut);
     mOutputs.append(new StandOut);
     mOutputs.append(new LandscapeOut);
+    mOutputs.append(new LandscapeRemovedOut);
     mOutputs.append(new DynamicStandOut);
     mOutputs.append(new ProductionOut);
     mOutputs.append(new StandDeadOut);

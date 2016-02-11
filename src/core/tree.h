@@ -36,6 +36,7 @@ struct HeightGridValue;
 struct TreeGrowthData;
 class TreeOut;
 class TreeRemovedOut;
+class LandscapeRemovedOut;
 
 class Tree
 {
@@ -216,6 +217,8 @@ private:
     static Grid<HeightGridValue> *mHeightGrid;
     static TreeRemovedOut *mRemovalOutput;
     static void setTreeRemovalOutput(TreeRemovedOut *rout) { mRemovalOutput=rout; }
+    static LandscapeRemovedOut *mLSRemovalOutput;
+    static void setLandscapeRemovalOutput(LandscapeRemovedOut *rout) { mLSRemovalOutput=rout; }
 
     // statistics
     static int m_statPrint;
@@ -228,6 +231,7 @@ private:
     friend class StandStatistics;
     friend class TreeOut;
     friend class TreeRemovedOut;
+    friend class LandscapeRemovedOut;
     friend class Snapshot;
 };
 
