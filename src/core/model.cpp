@@ -792,6 +792,7 @@ void Model::runYear()
     om->execute("treeremoval"); // single removed tree output
     om->execute("stand"); //resource unit level x species
     om->execute("landscape"); //landscape x species
+    om->execute("landscape_removed"); //removed trees on landscape x species
     om->execute("sapling"); // sapling layer per RU x species
     om->execute("production_month"); // 3pg responses growth per species x RU x month
     om->execute("dynamicstand"); // output with user-defined columns (based on species x RU)
@@ -1019,6 +1020,7 @@ void Model::calculateStockedArea()
 void Model::calculateStockableArea()
 {
 
+    mTotalStockableArea = 0.;
     foreach(ResourceUnit *ru, mRU) {
         // //
         //        if (ru->id()==-1) {
@@ -1033,7 +1035,8 @@ void Model::calculateStockableArea()
             total++;
         }
         if (total) {
-            ru->setStockableArea( cHeightPixelArea * valid);
+            ru->setStockableArea( cHeightPixelArea * valid); // in m2
+            mTotalStockableArea += cHeightPixelArea * valid / 10000.; // in ha
             if (valid==0 && ru->id()>-1) {
                 // invalidate this resource unit
                 ru->setID(-1);
@@ -1066,6 +1069,8 @@ void Model::calculateStockableArea()
 
         }
     }
+
+    qDebug() << "Total stockable area of the landscape is" << mTotalStockableArea << "ha.";
 
 }
 
