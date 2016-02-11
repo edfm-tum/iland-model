@@ -76,6 +76,7 @@ public:
     // access to elements
     const ThreadRunner &threadExec() const {return threadRunner; }
     const QRectF &extent() const { return mModelRect; } ///< extent of the model (without buffer)
+    double totalStockableArea() const { return mTotalStockableArea; } ///< total stockable area of the landscape (ha)
     ResourceUnit *ru() { return mRU.front(); }
     ResourceUnit *ru(QPointF coord); ///< ressource unit at given coordinates
     ResourceUnit *ru(int index) { return (index>=0&&index<mRU.count())? mRU[index] : NULL; } ///< get resource unit by index
@@ -147,6 +148,7 @@ private:
     Modules *mModules; ///< the list of modules/plugins
     //
     QRectF mModelRect; ///< extent of the model (without buffer)
+    double mTotalStockableArea; ///< total stockable area (ha)
     // global grids...
     FloatGrid *mGrid; ///< the main LIF grid of the model (2x2m resolution)
     HeightGrid *mHeightGrid; ///< grid with 10m resolution that stores maximum-heights, tree counts and some flags

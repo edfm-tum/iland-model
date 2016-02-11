@@ -94,3 +94,73 @@ void LandscapeOut::exec()
         ++i;
     }
 }
+
+LandscapeRemovedOut::LandscapeRemovedOut()
+{
+    mIncludeDeadTrees = false;
+    mIncludeHarvestTrees = true;
+
+    setName("Aggregates of removed trees due to death, harvest, and disturbances per species", "landscape_removed");
+    setDescription("Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape."\
+                   "The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing). " \
+                   "Set the setting in the XML project file 'includeNatural' to 'true' to include trees that died due to natural mortality, " \
+                   "the setting 'includeHarvest' controls whether to include ('true') or exclude ('false') harvested trees. ");
+    columns() << OutputColumn::year()
+              << OutputColumn::species()
+              << OutputColumn("resaon", "Resaon for tree death: 'N': Natural mortality, 'H': Harvest, 'D': Disturbance", OutString)
+              << OutputColumn("count_ha", "number of died trees (living, >4m height) ", OutInteger)
+              << OutputColumn("volume_m3", "sum of volume (geomery, taper factor) in m3", OutDouble)
+              << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble);
+
+}
+
+void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
+{
+    Tree::TreeRemovalType rem_type = static_cast<Tree::TreeRemovalType>(reason);
+    if (rem_type==Tree::TreeDeath && !mIncludeDeadTrees)
+        return;
+    if (rem_type==Tree::TreeHarvest && !mIncludeHarvestTrees)
+        return;
+
+    int key = reason*10000 + t->species()->index();
+    LROdata &d = mLandscapeRemoval[key];
+    d.basal_area += t->basalArea();
+    d.volume += t->volume();
+    d.n++;
+
+
+}
+
+void LandscapeRemovedOut::exec()
+{
+    QHash<int,LROdata>::iterator i  = mLandscapeRemoval.begin();
+
+    while (i != mLandscapeRemoval.end()) {
+        if (i.value().n>0) {
+            Tree::TreeRemovalType rem_type = static_cast<Tree::TreeRemovalType>(i.key() / 10000);
+            int species_index = i.key() % 10000;
+            *this << currentYear() << GlobalSettings::instance()->model()->speciesSet()->species(species_index)->id();
+            if (rem_type==Tree::TreeDeath) *this << QStringLiteral("N");
+            if (rem_type==Tree::TreeHarvest) *this << QStringLiteral("H");
+            if (rem_type==Tree::TreeDisturbance) *this << QStringLiteral("D");
+            *this << i.value().n << i.value().volume<< i.value().basal_area;
+            writeRow();
+        }
+        ++i;
+    }
+
+    // clear data (no need to clear the hash table, right?)
+    i = mLandscapeRemoval.begin();
+    while (i != mLandscapeRemoval.end()) {
+        i.value().clear();
+        ++i;
+    }
+}
+
+void LandscapeRemovedOut::setup()
+{
+    mIncludeHarvestTrees = settings().valueBool(".includeHarvest", true);
+    mIncludeDeadTrees = settings().valueBool(".includeNatural", false);
+    Tree::setLandscapeRemovalOutput(this);
+
+}

@@ -31,11 +31,13 @@
 #include "modules.h"
 
 #include "treeout.h"
+#include "landscapeout.h"
 
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
 HeightGrid *Tree::mHeightGrid = 0;
 TreeRemovedOut *Tree::mRemovalOutput = 0;
+LandscapeRemovedOut *Tree::mLSRemovalOutput = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
@@ -1036,6 +1038,8 @@ void Tree::notifyTreeRemoved(TreeRemovalType reason)
     // create output for tree removals
     if (mRemovalOutput && mRemovalOutput->isEnabled())
         mRemovalOutput->execRemovedTree(this, static_cast<int>(reason));
+    if (mLSRemovalOutput && mLSRemovalOutput->isEnabled())
+        mLSRemovalOutput->execRemovedTree(this, static_cast<int>(reason));
 }
 
 //////////////////////////////////////////////////
