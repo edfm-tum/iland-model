@@ -24,10 +24,12 @@
 #include "speciesresponse.h"
 #include "establishment.h"
 #include "sapling.h"
+#include "saplings.h"
 #include "grid.h"
 #include "snag.h"
 class Species;
 class ResourceUnit;
+
 
 class ResourceUnitSpecies
 {
@@ -42,6 +44,9 @@ public:
     const ResourceUnit *ru() const { return mRU; } ///< return pointer to resource unit
     const Production3PG &prod3PG() const { return m3PG; } ///< the 3pg production model of this speies x resourceunit
     const Sapling &sapling() const { return mSapling; } ///< sapling growth submodel
+
+    SaplingStat &saplingStat() { return mSaplingStat; } ///< statistics for the sapling sub module
+
     Establishment &establishment() { return mEstablishment; } ///< establishment submodel
     Sapling &changeSapling() { return mSapling; } ///< sapling growth submodel (non-const access)
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
@@ -84,6 +89,7 @@ private:
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
     Establishment mEstablishment; ///< establishment for seedlings and sapling growth
     Sapling mSapling; ///< saplings storage/growth
+    SaplingStat mSaplingStat; ///< statistics on saplings
     Species *mSpecies; ///< link to speices
     ResourceUnit *mRU; ///< link to resource unit
     int mLastYear;
