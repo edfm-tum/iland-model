@@ -25,7 +25,7 @@
 #include "grid.h"
 #include "snag.h"
 #include "model.h"
-/// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
+/// SaplingTreeOld holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
 class SaplingTreeOld {
 public:
     SaplingTreeOld() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }

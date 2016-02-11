@@ -11,7 +11,7 @@ struct SaplingTree {
     unsigned char flags;
     float height; // height of the sapling in meter
     bool is_occupied() const { return height>0.f; }
-    void setSapling(const float h_m, const int age_yrs, const int species_idx) { height=h_m; age=static_cast<short unsigned int>(age_yrs); stress_years=0; species_index=species_idx; }
+    void setSapling(const float h_m, const int age_yrs, const int species_idx) { height=h_m; age=static_cast<short unsigned int>(age_yrs); stress_years=0; species_index=static_cast<short unsigned int>(species_idx); }
 };
 #define NSAPCELLS 5
 struct SaplingCell {
@@ -22,10 +22,10 @@ struct SaplingCell {
     ECellState state;
     SaplingTree saplings[NSAPCELLS];
     void checkState() { if (state==CellInvalid) return;
-                        bool free=true;
+                        bool free = false;
                         for (int i=0;i<NSAPCELLS;++i) {
                             // locked for all species, if a sapling of one species >1.3m
-                            if (saplings[i].height>1.3f) {free=false; break; }
+                            if (saplings[i].height>1.3f) {state = CellFull; return; }
                             // locked, if all slots are occupied.
                             if (!saplings[i].is_occupied())
                                 free=true;
