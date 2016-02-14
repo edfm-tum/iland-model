@@ -38,6 +38,7 @@ private:
     void loadSoil();
     void loadSnags();
     void loadSaplings();
+    void loadSaplingsOld();
     QHash<int, ResourceUnit* > mRUHash;
 };
 

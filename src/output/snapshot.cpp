@@ -25,6 +25,7 @@
 #include "tree.h"
 #include "soil.h"
 #include "snag.h"
+#include "saplings.h"
 #include "debugtimer.h"
 #include "watercycle.h"
 #include "expressionwrapper.h"
@@ -141,8 +142,10 @@ bool Snapshot::loadSnapshot(const QString &file_name)
     loadSoil();
     loadSnags();
     // load saplings only when regeneration is enabled (this can save a lot of time)
-    if (GlobalSettings::instance()->model()->settings().regenerationEnabled)
+    if (GlobalSettings::instance()->model()->settings().regenerationEnabled) {
         loadSaplings();
+        //loadSaplingsOld();
+    }
     QSqlDatabase::database("snapshot").close();
 
     // after changing the trees, do a complete apply/read pattern cycle over the landscape...
@@ -563,6 +566,83 @@ void Snapshot::loadSaplings()
     int posx, posy;
     int offsetx=0, offsety=0;
     Sapling *last_sapling = 0;
+    Saplings *saplings = GlobalSettings::instance()->model()->saplings();
+
+    while (q.next()) {
+        ci = 0;
+        ru_index = q.value(ci++).toInt();
+        ru = mRUHash[ru_index];
+        if (!ru)
+            continue;
+        Species *species = ru->speciesSet()->species(q.value(ci++).toString());
+        if (!species)
+            throw IException("Snapshot::loadSaplings: Invalid species");
+        Sapling &sap = ru->resourceUnitSpecies(species).changeSapling();
+        if (last_sapling != &sap) {
+            last_sapling = &sap;
+            //sap.clear(); // clears the trees and the bitmap
+            //sap.clearStatistics();
+            offsetx = ru->cornerPointOffset().x();
+            offsety = ru->cornerPointOffset().y();
+        }
+
+
+        posx = offsetx + q.value(ci++).toInt() % cPxPerRU;
+        posy = offsety + q.value(ci++).toInt() % cPxPerRU;
+
+        SaplingCell *sc = saplings->cell(QPoint(posx, posy));
+        if (!sc)
+            continue;
+
+        int age=q.value(ci++).toInt();
+        SaplingTree *st = sc->addSapling(q.value(ci++).toFloat(), age, species->index());
+        if (!st)
+            continue;
+        st->stress_years = static_cast<unsigned char> (q.value(ci++).toInt());
+        ++ntotal;
+
+
+         if (n<10000000 && ++n % 10000 == 0) {
+            qDebug() << n << "saplings loaded...";
+            QCoreApplication::processEvents();
+        }
+        if (n>=10000000 && ++n % 1000000 == 0) {
+            qDebug() << n << "saplings loaded...";
+            QCoreApplication::processEvents();
+        }
+
+
+    }
+    qDebug() << "Snapshot: finished loading saplings. N=" << n << "from N in snapshot:" << ntotal;
+
+}
+
+
+void Snapshot::loadSaplingsOld()
+{
+    QSqlDatabase db=QSqlDatabase::database("snapshot");
+    QSqlQuery q(db);
+    q.setForwardOnly(true); // avoid huge memory usage in query component
+    if (!q.exec("select RUindex, species, posx, posy, age, height, stress_years from saplings")) {
+        qDebug() << "Error when loading from saplings table...." << q.lastError().text();
+        return;
+    }
+    int ru_index = -1;
+
+    // clear all saplings in the whole project area: added for testing/debugging
+//    foreach( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+//        foreach (ResourceUnitSpecies *rus, ru->ruSpecies()) {
+//            rus->changeSapling().clear();
+//            rus->changeSapling().clearStatistics();
+//        }
+//    }
+
+    ResourceUnit *ru = 0;
+    int n=0, ntotal=0;
+    int ci;
+    int posx, posy;
+    int offsetx=0, offsety=0;
+    Sapling *last_sapling = 0;
 
     while (q.next()) {
         ci = 0;
@@ -611,6 +691,5 @@ void Snapshot::loadSaplings()
     qDebug() << "Snapshot: finished loading saplings. N=" << n << "from N in snapshot:" << ntotal;
 
 }
-
 
 

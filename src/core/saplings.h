@@ -35,10 +35,42 @@ struct SaplingCell {
                         }
                         state = free? CellFree : CellFull;
                       }
+    /// get an index to an open slot in the cell, or -1 if all slots are occupied
+    int free_index() {
+        for (int i=0;i<NSAPCELLS;++i)
+            if (!saplings[i].is_occupied())
+                return i;
+        return -1;
+    }
+    /// add a sapling to this cell, return a pointer to the tree on success, or 0 otherwise
+    SaplingTree *addSapling(const float h_m, const int age_yrs, const int species_idx) {
+        int idx = free_index();
+        if (idx==-1)
+            return 0;
+        saplings[idx].setSapling(h_m, age_yrs, species_idx);
+        return &saplings[idx];
+    }
+    /// return the maximum height on the pixel
+    float max_height() { if (state==CellInvalid) return 0.f;
+                         float h_max = 0.f;
+                         for (int i=0;i<NSAPCELLS;++i)
+                             h_max = std::max(saplings[i].height, h_max);
+                         return h_max;
+                       }
+    /// return the sapling tree of the requested species, or 0
+    SaplingTree *sapling(int species_index) {
+        if (state==CellInvalid) return 0;
+        for (int i=0;i<NSAPCELLS;++i)
+            if (saplings[i].species_index == species_index)
+                return &saplings[i];
+        return 0;
+    }
 };
 class ResourceUnit;
 class Saplings;
 
+/** The SaplingStat class stores statistics on the resource unit x species level.
+ */
 class SaplingStat
 {
 public:
@@ -81,7 +113,9 @@ private:
     friend class Saplings;
 
 };
-
+/** The Saplings class the container for the establishment and sapling growth in iLand.
+ *
+*/
 class Saplings
 {
 public:
@@ -91,7 +125,9 @@ public:
     void establishment(const ResourceUnit *ru);
     void saplingGrowth(const ResourceUnit *ru);
 
-
+    // access
+    const Grid<SaplingCell> &grid() const { return mGrid; }
+    SaplingCell *cell(QPoint lif_coords)  { SaplingCell *s=mGrid.ptr(lif_coords.x(), lif_coords.y()); if (s && s->state!=SaplingCell::CellInvalid) return s; else return 0; }
     void clearStats() { mAdded=0; mTested=0;}
     int saplingsAdded() const { return mAdded; }
     int pixelTested() const { return mTested; }
