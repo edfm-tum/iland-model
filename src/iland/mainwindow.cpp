@@ -38,6 +38,7 @@
 #include "speciesset.h"
 #include "tree.h"
 #include "species.h"
+#include "saplings.h"
 #include "climate.h"
 
 #include "exception.h"
@@ -647,6 +648,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         if (mRegenerationGrid.isEmpty())
             mRegenerationGrid.setup(*model->grid()); // copy
+        if (!GlobalSettings::instance()->model()->saplings())
+            return;
         static int last_year=0;
         static QString last_species="";
         if (last_year!=GlobalSettings::instance()->currentYear() || species!=last_species) {
@@ -655,10 +658,19 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             // fill grid...
             DebugTimer t("create regeneration map...");
             mRegenerationGrid.wipe(0.f);
-            foreach(const ResourceUnit *ru, model->ruList()) {
-                foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
-                    if (species.isEmpty() || rus->species()->id() == species)
-                        rus->visualGrid(mRegenerationGrid);
+            if (species.isEmpty()) {
+                // hmax of all species
+                SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->grid().begin();
+                for (float *rg=mRegenerationGrid.begin(); rg!=mRegenerationGrid.end(); ++rg, ++sc) {
+                    *rg = sc->max_height();
+                }
+            } else {
+                // filter a specific species
+                int sidx = GlobalSettings::instance()->model()->speciesSet()->species(species)->index();
+                SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->grid().begin();
+                for (float *rg=mRegenerationGrid.begin(); rg!=mRegenerationGrid.end(); ++rg, ++sc) {
+                    SaplingTree *st=sc->sapling(sidx);
+                    *rg = st ? st->height : 0.f;
                 }
             }
         }

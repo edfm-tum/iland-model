@@ -797,21 +797,21 @@ void Model::runYear()
     // regeneration
     if (settings().regenerationEnabled) {
         // seed dispersal
-        DebugTimer tseed("Regeneration and Establishment old");
+        DebugTimer tseed("Seed dispersal, establishment, sapling growth");
         foreach(SpeciesSet *set, mSpeciesSets)
             set->regeneration(); // parallel execution for each species set
 
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
         // establishment
-        Sapling::updateBrowsingPressure();
+        //Sapling::updateBrowsingPressure();
         Saplings::updateBrowsingPressure();
 
-        { DebugTimer t("saplingGrowthEstablishment old");
-        executePerResourceUnit( nc_sapling_growth_establishment_old, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
-        }
+//        { DebugTimer t("saplingGrowthEstablishment old");
+//            // ignore old mode
+//            // executePerResourceUnit( nc_sapling_growth_establishment_old, false /* true: force single thraeded operation */);
+//        GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
+//        }
 
-        DebugTimer t28("Regeneration and Establishment");
         { DebugTimer t("establishment");
         executePerResourceUnit( nc_establishment, false /* true: force single thraeded operation */);
         GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
