@@ -36,12 +36,11 @@ void Saplings::setup()
 
 void Saplings::establishment(const ResourceUnit *ru)
 {
-    Grid<float> &seedmap =  const_cast<Grid<float>& > (ru->ruSpecies().first()->species()->seedDispersal()->seedMap() );
     HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
 
-    QPoint iseedmap =  seedmap.indexAt(ru->boundingBox().topLeft()) ;
-    QPoint imap =  mGrid.indexAt(ru->boundingBox().topLeft());
+    QPoint imap = ru->cornerPointOffset(); // offset on LIF/saplings grid
+    QPoint iseedmap = QPoint(imap.x()/10, imap.y()/10); // seed-map has 20m resolution, LIF 2m -> factor 10
 
     int species_idx = irandom(0, ru->ruSpecies().size()-1);
     for (int s_idx = 0; s_idx<ru->ruSpecies().size(); ++s_idx) {
@@ -52,6 +51,7 @@ void Saplings::establishment(const ResourceUnit *ru)
         ResourceUnitSpecies *rus = ru->ruSpecies()[species_idx];
         // check if there are seeds of the given species on the resource unit
         float seeds = 0.f;
+        Grid<float> &seedmap =  const_cast<Grid<float>& >(rus->species()->seedDispersal()->seedMap());
         for (int iy=0;iy<5;++iy) {
             float *p = seedmap.ptr(iseedmap.x(), iseedmap.y());
             for (int ix=0;ix<5;++ix)
@@ -92,10 +92,10 @@ void Saplings::establishment(const ResourceUnit *ru)
                     if (viable && i_occupied>=0) {
                         // grass cover?
                         DBG_IF(i_occupied<0, "establishment", "invalid value i_occupied<0");
-                        float seed_map_value = seedmap[seedmap.index10(isc)];
+                        float seed_map_value = seedmap[mGrid.index10(isc)];
                         if (seed_map_value==0.f)
                             continue;
-                        const HeightGridValue &hgv = (*height_grid)[height_grid->index5(isc)];
+                        const HeightGridValue &hgv = (*height_grid)[mGrid.index5(isc)];
                         float lif_value = (*lif_grid)[isc];
                         double lif_corrected = rus->species()->speciesSet()->LRIcorrection(lif_value, 4. / hgv.height);
                         // check for the combination of seed availability and light on the forest floor
@@ -178,7 +178,10 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
 
     double lr = species->lightResponse(lif_corrected); // species specific light response (LUI, light utilization index)
 
-    double delta_h_factor = rus->prod3PG().fEnvYear() * lr; // relative growth
+    rus->calculate(true); // calculate the 3pg module (this is done only if that did not happen up to now); true: call comes from regeneration
+    double f_env_yr = rus->prod3PG().fEnvYear();
+
+    double delta_h_factor = f_env_yr * lr; // relative growth
 
     if (h_pot<0. || delta_h_pot<0. || lif_corrected<0. || lif_corrected>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";

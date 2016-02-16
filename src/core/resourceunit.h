@@ -68,7 +68,7 @@ public:
     int index() const { return mIndex; }
     int id() const { return mID; }
     const QRectF &boundingBox() const { return mBoundingBox; }
-    const QPoint &cornerPointOffset() const { return mCornerCoord; } ///< coordinates on the LIF grid of the upper left corner of the RU
+    const QPoint &cornerPointOffset() const { return mCornerOffset; } ///< coordinates on the LIF grid of the upper left corner of the RU
     double area() const { return mPixelCount*100; } ///< get the resource unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
     double stockableArea() const { return mStockableArea; } ///< total stockable area in m2
@@ -105,7 +105,7 @@ public:
     /// you must call setSaplingHeightMap() with a valid map before.
     float saplingHeightAt(const QPoint &position) const {
             Q_ASSERT(mSaplingHeightMap);
-            int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
+            int pixel_index = cPxPerRU*(position.x()-mCornerOffset.x())+(position.y()-mCornerOffset.y());
             float h =  mSaplingHeightMap[pixel_index];
             return h;
     }
@@ -145,7 +145,7 @@ private:
     QList<ResourceUnitSpecies*> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
-    QPoint mCornerCoord; ///< coordinates on the LIF grid of the upper left corner of the RU
+    QPoint mCornerOffset; ///< coordinates on the LIF grid of the upper left corner of the RU
     double mAggregatedLA; ///< sum of leafArea
     double mAggregatedWLA; ///< sum of lightResponse * LeafArea for all trees
     double mAggregatedLR; ///< sum of lightresponse*LA of the current unit
