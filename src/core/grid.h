@@ -122,11 +122,11 @@ public:
     bool isIndexValid(const int x, const int y) const {return (x>=0 && x<mSizeX && y>=0 && y<mSizeY); } ///< return true, if index is within the grid
 
     /// returns the index of an aligned grid (with the same size and matching origin) with the double cell size (e.g. to scale from a 10m grid to a 20m grid)
-    int index2(int idx) const {return ((idx/mSizeX)/2)*mSizeX/2 + (idx%mSizeX)/2; }
+    int index2(int idx) const {return ((idx/mSizeX)/2)*(mSizeX/2) + (idx%mSizeX)/2; }
     /// returns the index of an aligned grid (the same size) with the 5 times bigger cells (e.g. to scale from a 2m grid to a 10m grid)
-    int index5(int idx) const {return ((idx/mSizeX)/5)*mSizeX/5 + (idx%mSizeX)/5; }
+    int index5(int idx) const {return ((idx/mSizeX)/5)*(mSizeX/5) + (idx%mSizeX)/5; }
     /// returns the index of an aligned grid (the same size) with the 10 times bigger cells (e.g. to scale from a 2m grid to a 20m grid)
-    int index10(int idx) const {return ((idx/mSizeX)/10)*mSizeX/10 + (idx%mSizeX)/10; }
+    int index10(int idx) const {return ((idx/mSizeX)/10)*(mSizeX/10) + (idx%mSizeX)/10; }
 
     /// force @param pos to contain valid indices with respect to this grid.
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} ///< ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.

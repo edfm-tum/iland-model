@@ -122,7 +122,7 @@ void ResourceUnit::setup()
 void ResourceUnit::setBoundingBox(const QRectF &bb)
 {
     mBoundingBox = bb;
-    mCornerCoord = GlobalSettings::instance()->model()->grid()->indexAt(bb.topLeft());
+    mCornerOffset = GlobalSettings::instance()->model()->grid()->indexAt(bb.topLeft());
 }
 
 /// set species and setup the species-per-RU-data
@@ -442,9 +442,9 @@ void ResourceUnit::setSaplingHeightMap(float *map_pointer)
 void ResourceUnit::setMaxSaplingHeightAt(const QPoint &position, const float height)
 {
     Q_ASSERT(mSaplingHeightMap);
-    int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
+    int pixel_index = cPxPerRU*(position.x()-mCornerOffset.x())+(position.y()-mCornerOffset.y());
     if (pixel_index<0 || pixel_index>=cPxPerRU*cPxPerRU) {
-        qDebug() << "setSaplingHeightAt-Error for position" << position << "for RU at" << boundingBox() << "with corner" << mCornerCoord;
+        qDebug() << "setSaplingHeightAt-Error for position" << position << "for RU at" << boundingBox() << "with corner" << mCornerOffset;
     } else {
         if (mSaplingHeightMap[pixel_index]<height)
             mSaplingHeightMap[pixel_index]=height;
