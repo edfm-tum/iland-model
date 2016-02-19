@@ -170,6 +170,7 @@ void WindModule::setup()
     mWindLayers.setRUGrid(&mRUGrid);
     GlobalSettings::instance()->controller()->addLayers(&mWindLayers, "wind");
 
+    mAfterExecEvent = xml.value(".onAfterWind");
 
     // setup the species parameters that are specific to the wind module
     QString parameter_table_name = xml.value(".speciesParameter", "wind");
@@ -181,7 +182,7 @@ void WindModule::setup()
 void WindModule::setupResourceUnit(const ResourceUnit *ru)
 {
     if (!mTopexFromGrid) {
-        float topo_value =  GlobalSettings::instance()->settings().valueDouble("modules.wind.topoModifier", 1.);
+        float topo_value =  static_cast<float>( GlobalSettings::instance()->settings().valueDouble("modules.wind.topoModifier", 1.) );
         GridRunner<WindCell> runner(mGrid, ru->boundingBox());
         while (WindCell *p=runner.next()) {
             p->topex = topo_value;
@@ -277,6 +278,13 @@ void WindModule::run(const int iteration, const bool execute_from_script)
 
     GlobalSettings::instance()->outputManager()->execute("wind");
     GlobalSettings::instance()->outputManager()->save();
+
+    // execute the after wind event
+    if (!mAfterExecEvent.isEmpty()) {
+        // evaluate the javascript function...
+        GlobalSettings::instance()->executeJavascript(mAfterExecEvent);
+    }
+
 }
 
 void WindModule::initWindGrid()
@@ -323,7 +331,7 @@ void WindModule::detectEdges()
     int dy = mGrid.sizeY();
     int dx = mGrid.sizeX();
     int x,y;
-    const float threshold = mEdgeDetectionThreshold;
+    const float threshold = static_cast<float>( mEdgeDetectionThreshold );
     for (y=1;y<dy-1;++y){
         p = mGrid.ptr(1,y);
         p_above = p - dx; // one line above
@@ -332,7 +340,8 @@ void WindModule::detectEdges()
             p->edge = 0.f; // no edge
             if (p->isValid()) {
                 float max_h = p->height - threshold; // max_h: if a surrounding pixel is higher than this value, then there is no edge here
-                if (max_h > 0) {
+                // edges are only detected if trees are >10m high
+                if (p->height>10.f && max_h > 0) {
                     // check 8-neighborhood. if one of those pixels exceed the threshold, then the current
                     // pixel is not an "edge".
 //                    if (((p_above-1)->height < max_h) ||
@@ -375,6 +384,11 @@ void WindModule::calculateFetch()
             current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
             checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
             ++calculated;
+            // only simulate edges with gapsize > 20m
+            // this skips small gaps (e.g. areas marked as "stones")
+            if (p->edge < 20.f) {
+                p->edge = 0.f;
+            }
         }
    }
     qDebug() << "calculated fetch for" << calculated << "pixels";
