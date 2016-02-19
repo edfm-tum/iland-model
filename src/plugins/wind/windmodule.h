@@ -161,6 +161,8 @@ private:
     /// formula for the transfer function LRI
     Expression mLRITransferFunction;
 
+    QString mAfterExecEvent;
+
     friend class WindScript;
     friend class WindOut;
 

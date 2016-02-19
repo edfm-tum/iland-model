@@ -1083,6 +1083,9 @@ void MainWindow::mouseClick(const QPoint& pos)
             return;
     }
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
+    if (!ru)
+        return;
+
     ui->treeChange->setProperty("tree",0);
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
