@@ -143,6 +143,7 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
     //trees->runGrid();
     trees->prepareStandGrid(QStringLiteral("height"), QString());
 
+    const int min_split_size = 50; // min size (100=1ha)
     FloatGrid &grid = trees->standGrid();
     static int no_split = 0;
     if (mDebugSplit)
@@ -169,13 +170,13 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
         r_low = h_lower / double(h_lower+h_higher);
     }
 
-    if (r_low < mThresholdSplit) {
+    if (r_low < mThresholdSplit || (r_low<0.5 && h_lower<min_split_size)) {
         // no big damage: return and do nothing
         return;
     }
 
     // restart if a large fraction is cleared, or if the remaining forest is <0.25ha
-    if (r_low > mThresholdClear || (r_low>0.5 && h_higher<25)) {
+    if (r_low > mThresholdClear || (r_low>0.5 && h_higher<min_split_size)) {
         // total disturbance: restart rotation...
         qCDebug(abe) << "ActSalvage: total damage for stand" << stand->id() << "Restarting rotation.";
         stand->setProperty("_run_salvage", true);
@@ -221,7 +222,6 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
 
     // now flood-fill 0ed areas....
     // if the "new" areas are too small (<0.25ha), then nothing happens.
-    QVector<int> new_stands; // internal ids that should become new stands
     QVector<QPair<int,int> > cleared_small_areas; // areas of cleared "patches"
     QVector<QPair<int,int> > stand_areas; // areas of remaining forested "patches"
     int fill_color = -1;
@@ -229,26 +229,23 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
     id_runner.reset();
     while (id_runner.next()) {
         if (*id_runner.current()==0) {
-            int s = floodFillHelper(my_map, id_runner.currentIndex(), --fill_color);
-            if (s>25)
-                new_stands.push_back(fill_color); // candidate for new stand
+            int s = floodFillHelper(my_map, id_runner.currentIndex(), 0, --fill_color);
             cleared_small_areas.push_back(QPair<int,int>(fill_color, s)); // patch size
         } else if (*id_runner.current()==stand->id()) {
-            int s=floodFillHelper(my_map, id_runner.currentIndex(), ++stand_fill_color);
+            int s=floodFillHelper(my_map, id_runner.currentIndex(), stand->id(), stand_fill_color);
             stand_areas.push_back(QPair<int,int>(stand_fill_color,s));
+            stand_fill_color++;
         }
     }
     if (mDebugSplit)
         Helper::saveToTextFile(GlobalSettings::instance()->path(QString("temp/split_stands_%1.txt").arg(no_split)), gridToESRIRaster(my_map) );
 
-    if (new_stands.size()>0)
-        qCDebug(abe) << "ActSalvage: attempting to split stand " << stand->id() << ". New stand ids:" << new_stands;
 
-    // case: remainnig forest are only small patches
+    // special case: remainnig forest are only small patches
     int max_size=0;
     for (int i=0;i<stand_areas.size();++i)
         max_size=std::max(max_size, stand_areas[i].second);
-    if (max_size<25) {
+    if (max_size<min_split_size) {
         // total disturbance: restart rotation...
         qCDebug(abe) << "ActSalvage: total damage for stand" << stand->id() << "(remaining patches too small). Restarting rotation.";
         stand->setProperty("_run_salvage", true);
@@ -257,40 +254,109 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
     }
 
     // clear small areas
-    bool finished=false;
     QVector<int> neighbor_ids;
-    while (!finished) {
-        if (cleared_small_areas.size()>0) {
-            // find smallest area....
-            int i_min=-1;
-            for (int i=0;i<cleared_small_areas.size();++i) {
-                if (cleared_small_areas[i].second<cleared_small_areas[i_min].second && cleared_small_areas[i].second<25)
-                    i_min=i;
-            }
-            if (i_min==-1)
-                continue; // TODO: fix, avoid endless loop
+    bool finished=false;
+    int iter=100;
+    while (!finished && cleared_small_areas.size()>0 && --iter>0) {
 
-            // attach to largest neighbor
-            neighborFinderHelper(my_map,neighbor_ids, cleared_small_areas[i_min].first);
-            // look for "empty patches" first
+        // find smallest area....
+        int i_min=-1;
+        for (int i=0;i<cleared_small_areas.size();++i) {
+            if (cleared_small_areas[i].second<min_split_size) {
+                if (i_min==-1 || (i_min>-1 && cleared_small_areas[i].second<cleared_small_areas[i_min].second))
+                    i_min = i;
+            }
+        }
+        if (i_min==-1) {
+            finished = true;
+            continue;
+        }
+
+        // loook for neighbors of the area
+        // attach to largest "cleared" neighbor (if such a neighbor exists)
+        neighborFinderHelper(my_map,neighbor_ids, cleared_small_areas[i_min].first);
+        if (neighbor_ids.size()==0) {
+            // patch fully surrounded by "out of project area". We'll add it to the *first* stand map entry
+            neighbor_ids.append(stand_areas.first().first);
+        }
+        // look for "empty patches" first
+        int i_empty=-1; int max_size=0;
+        for (int i=0;i<cleared_small_areas.size();++i) {
+            if (neighbor_ids.contains(cleared_small_areas[i].first))
+                if (cleared_small_areas[i].second>max_size) {
+                    i_empty=i;
+                    max_size=cleared_small_areas[i].second;
+                }
+        }
+        if (i_empty>-1) {
+            // replace "i_min" with "i_empty"
+            int r = replaceValueHelper(my_map, cleared_small_areas[i_min].first, cleared_small_areas[i_empty].first);
+            cleared_small_areas[i_empty].second += r;
+            cleared_small_areas.remove(i_min);
+            continue;
+        }
+
+
+        if (stand_areas.size()>0) {
+            // attach to largest stand part which is a neighbor
+
             int i_empty=-1; int max_size=0;
-            for (int i=0;i<cleared_small_areas.size();++i) {
-                if (neighbor_ids.contains(cleared_small_areas[i].first))
-                    if (cleared_small_areas[i].second>max_size)
+            for (int i=0;i<stand_areas.size();++i) {
+                if (neighbor_ids.contains(stand_areas[i].first))
+                    if (stand_areas[i].second>max_size) {
                         i_empty=i;
+                        max_size=stand_areas[i].second;
+                    }
             }
             if (i_empty>-1) {
                 // replace "i_min" with "i_empty"
-                int r = replaceValueHelper(my_map, cleared_small_areas[i_min].first, cleared_small_areas[i_empty].first);
-                cleared_small_areas[i_empty].second += r;
+                int r = replaceValueHelper(my_map, cleared_small_areas[i_min].first, stand_areas[i_empty].first);
+                stand_areas[i_empty].second += r;
                 cleared_small_areas.remove(i_min);
             }
         }
-        if (stand_areas.size()>0) {
-
-        }
     }
 
+
+    // clear small forested stands
+    finished = false;
+    iter = 100;
+    while (!finished && --iter>0) {
+        finished=true;
+        for (int i=0;i<stand_areas.size();++i) {
+            if (stand_areas[i].second < min_split_size) {
+                neighborFinderHelper(my_map, neighbor_ids, stand_areas[i].first);
+
+                if (neighbor_ids.size()>0) {
+                    int r = replaceValueHelper(my_map, neighbor_ids[0], stand_areas[i].first);
+                    stand_areas[i].second += r;
+                    if (neighbor_ids[0]>0) {
+                        stand_areas.remove(i);
+                    }
+                    finished=false;
+                    break;
+                }
+            }
+        }
+    }
+    if (mDebugSplit)
+        Helper::saveToTextFile(GlobalSettings::instance()->path(QString("temp/split_final_%1.txt").arg(no_split)), gridToESRIRaster(my_map) );
+
+
+    // determine final new stands....
+    QVector<int> new_stands; // internal ids that should become new stands
+
+    for (int i=0;i<cleared_small_areas.size();++i)
+        new_stands.push_back(cleared_small_areas[i].first);
+
+    if (new_stands.size()>0) {
+        // if there are no "cleared" parts, we keep the stand as is.
+        for (int i=0;i<stand_areas.size();++i)
+            if (stand_areas[i].first != stand->id()+1000)
+                new_stands.push_back(stand_areas[i].first);
+    }
+    if (new_stands.size()>0)
+        qCDebug(abe) << "ActSalvage: attempting to split stand " << stand->id() << ". New stand ids:" << new_stands << "#split:" << no_split;
 
     for (int i=0;i<new_stands.size(); ++i) {
         // ok: we have new stands. Now do the actual splitting
@@ -315,7 +381,7 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
 // quick and dirty implementation of the flood fill algroithm.
 // based on: http://en.wikipedia.org/wiki/Flood_fill
 // returns the number of pixels colored
-int ActSalvage::floodFillHelper(Grid<int> &grid, QPoint start, int color)
+int ActSalvage::floodFillHelper(Grid<int> &grid, QPoint start, int old_color, int color)
 {
     QQueue<QPoint> pqueue;
     pqueue.enqueue(start);
@@ -324,7 +390,7 @@ int ActSalvage::floodFillHelper(Grid<int> &grid, QPoint start, int color)
         QPoint p = pqueue.dequeue();
         if (!grid.isIndexValid(p))
             continue;
-        if (grid.valueAtIndex(p)==0) {
+        if (grid.valueAtIndex(p)==old_color) {
             grid.valueAtIndex(p) = color;
             pqueue.enqueue(p+QPoint(-1,0));
             pqueue.enqueue(p+QPoint(1,0));
@@ -362,7 +428,7 @@ int ActSalvage::neighborFinderHelper(Grid<int> &grid, QVector<int> &neighbors, i
 int ActSalvage::replaceValueHelper(Grid<int> &grid, int old_value, int new_value)
 {
     int n=0;
-    for (int *p=grid.begin(); p!=grid.end(); ++i)
+    for (int *p=grid.begin(); p!=grid.end(); ++p)
         if (*p == old_value) {
             *p = new_value;
             ++n;
