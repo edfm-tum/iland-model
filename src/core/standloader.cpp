@@ -91,7 +91,7 @@ void StandLoader::processInit()
     QString  fileName = xml.value("file", "");
 
     bool height_grid_enabled = xml.valueBool("heightGrid.enabled", false);
-    mHeightGridTries = xml.valueDouble("heightGrid.maxTries", 10.);
+    mHeightGridTries = xml.valueInt("heightGrid.maxTries", 10);
     QScopedPointer<const MapGrid> height_grid; // use a QScopedPointer to guarantee that the resource is freed at the end of the processInit() function
     if (height_grid_enabled) {
         QString init_height_grid_file = GlobalSettings::instance()->path(xml.value("heightGrid.fileName"), "init");

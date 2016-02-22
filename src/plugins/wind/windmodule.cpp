@@ -383,6 +383,9 @@ void WindModule::calculateFetch()
             QPoint pt=mGrid.indexOf(p);
             current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
             checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
+            // clear small edges
+            if (p->edge < 20.f)
+                p->edge = 0.f;
             ++calculated;
             // only simulate edges with gapsize > 20m
             // this skips small gaps (e.g. areas marked as "stones")

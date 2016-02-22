@@ -45,6 +45,8 @@ public:
 private:
     void checkStandAfterDisturbance(FMStand *stand);
     int floodFillHelper(Grid<int> &grid, QPoint start, int color);
+    int neighborFinderHelper(Grid<int> &grid, QVector<int> &neighbors, int stand_id);
+    int replaceValueHelper(Grid<int> &grid, int old_value, int new_value);
     bool mDebugSplit;
     Expression *mCondition; ///< formula to determine which trees should be harvested
     int mMaxPreponeActivity; ///< no of years that a already scheduled (regular) activity is 'preponed'
