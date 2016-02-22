@@ -677,7 +677,7 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
         stand->notifyTreeRemoval(tree, reason);
 }
 
-bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, double n_infested_ha)
+bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, int n_infested_px)
 {
     // find out which stands are within the resource unit
     GridRunner<FMStand*> gr(mFMStandGrid, ru->boundingBox());
@@ -686,7 +686,7 @@ bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, cons
     while (FMStand **s=gr.next()) {
         if (*s && !processed_items.contains(*s)) {
             processed_items[*s] = true;
-            forest_changed |=  (*s)->notifyBarkBeetleAttack(generations, n_infested_ha);
+            forest_changed |=  (*s)->notifyBarkBeetleAttack(generations, n_infested_px);
         }
     }
     return forest_changed;

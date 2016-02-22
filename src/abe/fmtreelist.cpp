@@ -423,7 +423,10 @@ void FMTreeList::runGrid(void (*func)(float &, int &, const Tree *, const FMTree
     if (mStandRect.isNull())
         prepareGrids();
 
-    mStandGrid.initialize(0.f);
+    // set all values to 0 (within the limits of the stand grid)
+    for (float *p=mStandGrid.begin(); p!=mStandGrid.end(); ++p)
+        if (*p!=-1.f)
+            *p=0.f;
     mTreeCountGrid.initialize(0);
     int invalid_index = 0;
     for (QVector<QPair<Tree*, double> >::const_iterator it=mTrees.constBegin(); it!=mTrees.constEnd(); ++it) {
@@ -477,7 +480,7 @@ void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *lis
     if (tree) {
         *list->mRunGridCustomCell = cell;
         TreeWrapper tw(tree);
-        cell = list->mRunGridCustom->calculate(tw);
+        cell = static_cast<float>(list->mRunGridCustom->calculate(tw));
         ++n;
     }
 }

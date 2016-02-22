@@ -45,7 +45,7 @@ class Grid {
 public:
 
     Grid();
-    Grid(int cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
+    Grid(float cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
     /// create from a metric rect
     Grid(const QRectF rect_metric, const float cellsize) { mData=0; setup(rect_metric,cellsize); }
     // copy ctor
