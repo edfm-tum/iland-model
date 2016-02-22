@@ -59,6 +59,8 @@ public:
     bool trace() const { return property(QStringLiteral("trace")).toBool(); }
     const QString &context() const { return mContextStr; }
 
+    void checkArea();
+
     void reload(bool force=false); // fetch new data from the forest stand
     // general properties
     int id() const {return mId; }

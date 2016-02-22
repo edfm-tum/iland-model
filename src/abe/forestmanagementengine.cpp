@@ -158,10 +158,14 @@ void ForestManagementEngine::finalizeRun()
         mStandLayoutChanged = false;
 
         // now check the stands
-        for (QVector<FMStand*>::iterator it=mStands.begin(); it!=mStands.end(); ++it)
+        for (QVector<FMStand*>::iterator it=mStands.begin(); it!=mStands.end(); ++it) {
+            // renew area
+            (*it)->checkArea();
+            // initial activity (if missing)
             if (!(*it)->currentActivity()) {
                 (*it)->initialize();
             }
+        }
     }
 
 }

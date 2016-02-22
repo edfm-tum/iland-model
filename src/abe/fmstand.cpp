@@ -170,6 +170,11 @@ void FMStand::reset(FMSTP *stp)
     mCurrentIndex = -1;
 }
 
+void FMStand::checkArea()
+{
+    mArea = ForestManagementEngine::standGrid()->area(mId)/10000.;
+}
+
 bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)
 {
     return a.relBasalArea > b.relBasalArea;

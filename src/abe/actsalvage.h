@@ -44,7 +44,7 @@ public:
     bool barkbeetleAttack(FMStand *stand, double generations, int infested_px_ha);
 private:
     void checkStandAfterDisturbance(FMStand *stand);
-    int floodFillHelper(Grid<int> &grid, QPoint start, int color);
+    int floodFillHelper(Grid<int> &grid, QPoint start, int old_color, int color);
     int neighborFinderHelper(Grid<int> &grid, QVector<int> &neighbors, int stand_id);
     int replaceValueHelper(Grid<int> &grid, int old_value, int new_value);
     bool mDebugSplit;
