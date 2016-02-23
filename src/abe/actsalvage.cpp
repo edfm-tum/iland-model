@@ -82,9 +82,11 @@ bool ActSalvage::execute(FMStand *stand)
         // 2nd phase: do the after disturbance cleanup of a stand.
         bool simu = stand->currentFlags().isDoSimulate();
         stand->currentFlags().setDoSimulate(false);
+        stand->currentFlags().setFinalHarvest(true); // this should be accounted as "final harvest"
         // execute the "onExecute" event
         bool result =  Activity::execute(stand);
         stand->currentFlags().setDoSimulate(simu);
+        stand->currentFlags().setFinalHarvest(false);
         stand->setProperty("_run_salvage", false);
         return result;
     }
@@ -315,6 +317,8 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
                 cleared_small_areas.remove(i_min);
             }
         }
+        if (iter==3)
+            qCDebug(abe) << "ActSalvage:Loop1: no solution.";
     }
 
 
@@ -328,17 +332,30 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
                 neighborFinderHelper(my_map, neighbor_ids, stand_areas[i].first);
 
                 if (neighbor_ids.size()>0) {
-                    int r = replaceValueHelper(my_map, neighbor_ids[0], stand_areas[i].first);
-                    stand_areas[i].second += r;
+                    int r = replaceValueHelper(my_map, stand_areas[i].first, neighbor_ids[0]);
                     if (neighbor_ids[0]>0) {
-                        stand_areas.remove(i);
+                        // another stand
+                        for (int j=0;j<stand_areas.size();++j)
+                            if (stand_areas[j].first == neighbor_ids[0]) {
+                                stand_areas[j].second += r;
+                            }
+                    } else {
+                        // clearing
+                        for (int j=0;j<cleared_small_areas.size();++j)
+                            if (cleared_small_areas[j].first == neighbor_ids[0]) {
+                                cleared_small_areas[j].second += r;
+                            }
                     }
+
+                    stand_areas.remove(i);
                     finished=false;
                     break;
                 }
             }
         }
     }
+    if (iter==0)
+        qCDebug(abe) << "ActSalvage:Loop2: no solution.";
     if (mDebugSplit)
         Helper::saveToTextFile(GlobalSettings::instance()->path(QString("temp/split_final_%1.txt").arg(no_split)), gridToESRIRaster(my_map) );
 
@@ -349,14 +366,14 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
     for (int i=0;i<cleared_small_areas.size();++i)
         new_stands.push_back(cleared_small_areas[i].first);
 
-    if (new_stands.size()>0) {
-        // if there are no "cleared" parts, we keep the stand as is.
-        for (int i=0;i<stand_areas.size();++i)
-            if (stand_areas[i].first != stand->id()+1000)
-                new_stands.push_back(stand_areas[i].first);
-    }
-    if (new_stands.size()>0)
-        qCDebug(abe) << "ActSalvage: attempting to split stand " << stand->id() << ". New stand ids:" << new_stands << "#split:" << no_split;
+    // only add new stands - keep the old stand as is
+    //    if (new_stands.size()>0) {
+//        // if there are no "cleared" parts, we keep the stand as is.
+//        for (int i=0;i<stand_areas.size();++i)
+//            if (stand_areas[i].first != stand->id()+1000)
+//                new_stands.push_back(stand_areas[i].first);
+//    }
+
 
     for (int i=0;i<new_stands.size(); ++i) {
         // ok: we have new stands. Now do the actual splitting
@@ -364,18 +381,25 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
         // copy back to the stand grid
         GridRunner<int> sgrid(ForestManagementEngine::instance()->standGrid()->grid(), grid.metricRect());
         id_runner.reset();
+        int n_px=0;
         while (sgrid.next() && id_runner.next()) {
-            if (*id_runner.current() == new_stands[i])
+            if (*id_runner.current() == new_stands[i]) {
                 *sgrid.current() = new_stand->id();
+                ++n_px;
+            }
         }
 
         // the new stand  is prepared.
         // at the end of this years execution, the stand will be re-evaluated.
+        new_stand->setInitialId(stand->id());
+        // year of splitting: all the area of the stand is still accounted for for the "old" stand
+        // in the next year (after the update of the stand grid), the old stand shrinks and the new
+        // stands get their correct size.
+        // new_stand->setArea(n_px / (cHeightSize*cHeightSize));
+        new_stand->setProperty("_run_salvage", true);
         new_stand->reset(stand->stp());
-
+        qCDebug(abe) << "ActSalvage: new stand" << new_stand->id() << "parent stand" << stand->id() << "#split:" << no_split;
     }
-
-
 }
 
 // quick and dirty implementation of the flood fill algroithm.

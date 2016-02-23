@@ -52,6 +52,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
 {
     mUnit = unit;
     mId = id;
+    mInitialId = id;
     mPhase = Activity::Invalid;
 
     // testing:

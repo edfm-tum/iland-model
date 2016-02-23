@@ -540,7 +540,7 @@ void GridRunner<T>::neighbors4(T** rArray)
     // south:
     rArray[3] = mCurrent - (mCols + mLineLength) < mFirst?0: mCurrent -  (mCols + mLineLength);
     // east / west
-    rArray[1] = mCurrentCol<int(mCols)? mCurrent + 1 : 0;
+    rArray[1] = mCurrentCol+1<int(mCols)? mCurrent + 1 : 0;
     rArray[2] = mCurrentCol>0? mCurrent-1 : 0;
 }
 
