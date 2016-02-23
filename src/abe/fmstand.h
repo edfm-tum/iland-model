@@ -60,6 +60,7 @@ public:
     const QString &context() const { return mContextStr; }
 
     void checkArea();
+    void setArea(const double new_area_ha) { mArea = new_area_ha; } // area in ha
 
     void reload(bool force=false); // fetch new data from the forest stand
     // general properties
@@ -70,6 +71,8 @@ public:
     FMSTP *stp() const {return mSTP; }
     int lastUpdate() const { return mLastUpdate; }
     int lastExecution() const { return mLastExecution; }
+    int initialStandId() const { return mInitialId; }
+    void setInitialId(int origin_id) { mInitialId = origin_id; }
     // agent properties
     /// rotation period (years)
     double U() const { return mU; }
@@ -179,8 +182,9 @@ private:
     FMUnit *mUnit; ///< management unit that
     FMSTP *mSTP; ///< the stand treatment program assigned to this stand
     Activity::Phase mPhase; ///< silvicultural phase
+    int mInitialId; ///< stand-id that was assigned in the beginning (this Id is kept when stands are split)
     int mStandType; ///< enumeration of stand (compositional)
-    double mArea; ///< total stand area (m3)
+    double mArea; ///< total stand area (ha)
     double mTotalBasalArea; ///< basal area of the stand
     double mAge; ///< average age (yrs) of the stand (basal area weighted)
     double mVolume; ///< standing volume (m3/ha) of the stand
