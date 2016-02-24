@@ -463,7 +463,7 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
 
 
 ///////// Path functions
-void GlobalSettings::printDirecories() const
+void GlobalSettings::printDirectories() const
 {
     qDebug() << "current File Paths:";
     QHash<QString, QString>::const_iterator i;
@@ -481,10 +481,10 @@ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &proje
     // make other paths relativ to "home" if given as relative paths
     mFilePath.insert("lip", path(xml.value("lip", "lip"), "home"));
     mFilePath.insert("database", path(xml.value("database", "database"), "home"));
-    mFilePath.insert("temp", path(xml.value("temp", "temp"), "home"));
-    mFilePath.insert("log", path(xml.value("log", "log"), "home"));
-    mFilePath.insert("script", path(xml.value("script", "script"), "home"));
-    mFilePath.insert("init", path(xml.value("init", "init"), "home"));
+    mFilePath.insert("temp", path(xml.value("temp", ""), "home"));
+    mFilePath.insert("log", path(xml.value("log", ""), "home"));
+    mFilePath.insert("script", path(xml.value("script", ""), "home"));
+    mFilePath.insert("init", path(xml.value("init", ""), "home"));
     mFilePath.insert("output", path(xml.value("output", "output"), "home"));
 }
 
