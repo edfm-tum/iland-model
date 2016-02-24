@@ -124,7 +124,7 @@ public:
 
     // path
     void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
-    void printDirecories() const;
+    void printDirectories() const;
 
 
 private:
