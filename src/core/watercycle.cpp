@@ -82,6 +82,9 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mCanopy.mNeedleFactor = xml.valueDouble("model.settings.interceptionStorageNeedle", 4.);
     mCanopy.mDecidousFactor = xml.valueDouble("model.settings.interceptionStorageBroadleaf", 2.);
     mSnowPack.mSnowTemperature = xml.valueDouble("model.settings.snowMeltTemperature", 0.);
+
+    mTotalET = mTotalExcess = mSnowRad = 0.;
+    mSnowDays = 0;
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
@@ -225,7 +228,10 @@ void WaterCycle::run()
     const ClimateDay *day = climate->begin();
     const ClimateDay *end = climate->end();
     int doy=0;
-    double total_excess = 0.;
+    mTotalExcess = 0.;
+    mTotalET = 0.;
+    mSnowRad = 0.;
+    mSnowDays = 0;
     for (; day<end; ++day, ++doy) {
         // (1) precipitation of the day
         prec_mm = day->preciptitation;
@@ -236,6 +242,11 @@ void WaterCycle::run()
         // save extra data (used by e.g. fire module)
         add_data.water_to_ground[doy] = prec_to_soil;
         add_data.snow_cover[doy] = mSnowPack.snowPack();
+        if (mSnowPack.snowPack()>0.) {
+            mSnowRad += day->radiation;
+            mSnowDays++;
+        }
+
         // (4) add rest to soil
         mContent += prec_to_soil;
 
@@ -243,7 +254,7 @@ void WaterCycle::run()
         if (mContent>mFieldCapacity) {
             // excess water runoff
             excess = mContent - mFieldCapacity;
-            total_excess += excess;
+            mTotalExcess += excess;
             mContent = mFieldCapacity;
         }
 
@@ -269,6 +280,7 @@ void WaterCycle::run()
             mContent = mPermanentWiltingPoint;
         }
 
+        mTotalET += et;
 
         //DBGMODE(
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {

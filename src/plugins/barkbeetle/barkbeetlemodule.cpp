@@ -409,14 +409,15 @@ void BarkBeetleModule::startSpread()
             }
 
         } else if (b->isPotentialHost()) {
-            // calculate probability
-            double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
+            // calculate probability for an outbreak of 10 px
+            double odds_base = b->backgroundInfestationProbability/10. / (1. - b->backgroundInfestationProbability/10.);
             double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
             if (drandom() < p_mod) {
-                // background activation
-                b->setInfested(true);
-                b->outbreakYear = mYear; // this outbreak starts in the current year
-                stats.infestedBackground++;
+                // background activation: 10 px
+                clumpedBackgroundActivation(mGrid.indexOf(b));
+                //b->setInfested(true);
+                //b->outbreakYear = mYear; // this outbreak starts in the current year
+                //stats.infestedBackground++;
             }
         }
 
@@ -447,6 +448,35 @@ void BarkBeetleModule::startSpread()
             prepareInteractions(true);
     }
 
+}
+
+int BarkBeetleModule::clumpedBackgroundActivation(QPoint start_idx)
+{
+    // we assume to start the infestation by randomly activating 10 cells
+    // in the neighborhood of the starting point
+    QRect rect(start_idx-QPoint(5,5), start_idx+QPoint(5,5));
+    if (!mGrid.isIndexValid(rect.topLeft()) || !mGrid.isIndexValid(rect.bottomRight()))
+        return 0;
+    GridRunner<BarkBeetleCell> runner(mGrid, rect);
+    int n_pot = 0;
+    while (runner.next())
+        if (runner.current()->isHost())
+            ++n_pot;
+
+    if (n_pot==0)
+        return 0;
+    runner.reset();
+    double p_infest = 10. / n_pot;
+    int n_infest=0;
+    while (runner.next())
+        if (runner.current()->isHost())
+            if (drandom()<p_infest) {
+                runner.current()->setInfested(true);
+                runner.current()->outbreakYear = mYear; // this outbreak starts in the current year
+                stats.infestedBackground++; ++n_infest;
+            }
+
+    return n_infest;
 }
 
 void BarkBeetleModule::prepareInteractions(bool update_interaction)
