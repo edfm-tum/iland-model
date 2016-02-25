@@ -205,7 +205,9 @@ SOURCES += main.cpp \
     ../abe/output/abestandremovalout.cpp \
     ../abe/actthinning.cpp \
     ../core/grasscover.cpp \
-    ../tools/scriptgrid.cpp
+    ../tools/scriptgrid.cpp \
+    ../output/waterout.cpp
+
 
 HEADERS += \
     consoleshell.h \
@@ -304,7 +306,9 @@ HEADERS += \
     ../abe/output/abestandremovalout.h \
     ../abe/actthinning.h \
     ../core/grasscover.h \
-    ../tools/scriptgrid.h
+    ../tools/scriptgrid.h \
+    ../output/waterout.h
+
 
 
 

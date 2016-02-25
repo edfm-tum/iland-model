@@ -800,6 +800,7 @@ void Model::runYear()
     om->execute("management"); // resource unit level x species
     om->execute("carbon"); // resource unit level, carbon pools above and belowground
     om->execute("carbonflow"); // resource unit level, GPP, NPP and total carbon flows (atmosphere, harvest, ...)
+    om->execute("water"); // resource unit/landscape level water output (ET, rad, snow cover, ...)
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t.elapsed();

@@ -35,7 +35,7 @@ DynamicStandOut::DynamicStandOut()
                    "!!!Specifying the aggregation\n" \
                    "The ''by_species'' and ''by_ru'' option allow to define the aggregation level. When ''by_species'' is set to ''true'', " \
                    "a row for each species will be created, otherwise all trees of all species are aggregated to one row. " \
-                   "Similarly, ''by_ru''=''true'' means outputs for each resource unit, while a value of ''false'' aggregates over the full project area." \
+                   "Similarly, ''by_ru''=''true'' means outputs for each resource unit, while a value of ''false'' aggregates over the full project area.\n" \
                    "!!!Specifying filters\n" \
                    "You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees. " \
                    "Both filters are valid expressions (for resource unit level and tree level, respectively). For example, a ''treefilter'' of 'speciesindex=0' reduces the output to just one species.\n" \
