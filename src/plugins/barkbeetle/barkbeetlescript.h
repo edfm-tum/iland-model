@@ -71,7 +71,9 @@ public slots:
     /// this does not remove trees!
     int clearInfestedPixels(QJSValue standmap, int stand_id, double fraction);
 
-
+    /// initiate damage
+    /// sets pixel at (x/y) (grid indices) as infested, return true if pixel was a potential host pixel
+    bool setInfested(int x, int y);
 
 private:
 
