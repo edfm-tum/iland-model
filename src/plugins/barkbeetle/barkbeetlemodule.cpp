@@ -408,9 +408,9 @@ void BarkBeetleModule::startSpread()
                 }
             }
 
-        } else if (b->isPotentialHost()) {
-            // calculate probability for an outbreak of 10 px
-            double odds_base = b->backgroundInfestationProbability/10. / (1. - b->backgroundInfestationProbability/10.);
+        } else if (b->isPotentialHost() && b->backgroundInfestationProbability>0.f) {
+            // calculate probability for an outbreak
+            double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
             double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
             if (drandom() < p_mod) {
                 // background activation: 10 px
@@ -452,9 +452,9 @@ void BarkBeetleModule::startSpread()
 
 int BarkBeetleModule::clumpedBackgroundActivation(QPoint start_idx)
 {
-    // we assume to start the infestation by randomly activating 10 cells
-    // in the neighborhood of the starting point
-    QRect rect(start_idx-QPoint(5,5), start_idx+QPoint(5,5));
+    // we assume to start the infestation by randomly activating 8 cells
+    // in the neighborhood of the starting point (a 5x5 grid)
+    QRect rect(start_idx-QPoint(2,2), start_idx+QPoint(2,2));
     if (!mGrid.isIndexValid(rect.topLeft()) || !mGrid.isIndexValid(rect.bottomRight()))
         return 0;
     GridRunner<BarkBeetleCell> runner(mGrid, rect);
@@ -466,7 +466,7 @@ int BarkBeetleModule::clumpedBackgroundActivation(QPoint start_idx)
     if (n_pot==0)
         return 0;
     runner.reset();
-    double p_infest = 10. / n_pot;
+    double p_infest = 8. / n_pot;
     int n_infest=0;
     while (runner.next())
         if (runner.current()->isHost())

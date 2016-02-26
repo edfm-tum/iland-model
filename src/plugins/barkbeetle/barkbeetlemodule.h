@@ -149,6 +149,7 @@ public:
     void yearBegin(); ///< called automatically
     /// call from script (from script)
     int manualYearBegin() { int y=mYear; yearBegin(); mYear = y + 1; return mYear; }
+    int internalYear() const { return mYear; }
     // properties
     void setSimulate(bool do_simulate) { mSimulate = do_simulate; }
     bool simulate() const {return mSimulate; }
