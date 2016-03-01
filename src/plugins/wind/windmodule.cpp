@@ -417,12 +417,28 @@ void WindModule::calculateFetch()
     qDebug() << "calculated fetch for" << calculated << "pixels";
 }
 
+void nc_calculateWindImpact(ResourceUnit *unit)
+{
+    GridRunner<WindCell> runner(wind_module->mGrid, unit->boundingBox());
+    int calculated=0;
+    int effective=0;
+    while (WindCell *p = runner.next()) {
+        if (p->edge >= 1.f) {
+            QPoint pt=wind_module->mGrid.indexOf(p);
+            if (wind_module->windImpactOnPixel(pt, p))
+                ++effective;
+            ++calculated;
+        }
+    }
+}
+
 /** calculate for each pixel the impact of wind
   @return number of pixels with killed trees
   */
 int WindModule::calculateWindImpact()
 {
     DebugTimer t("wind:impact");
+    GlobalSettings::instance()->model()->executePerResourceUnit(nc_calculateWindImpact);
     int calculated = 0;
     int effective = 0;
     WindCell *end = mGrid.end();
@@ -574,7 +590,7 @@ function line(x0, y0, x1, y1)
 }
 
 
-
+static QMutex tree_kill_lock;
 
 /** Main function of the wind module
   @param position the integer index (x/y) of the grid cell for which the wind effect should be calculated
@@ -637,6 +653,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
         do_break = cws_break < cws_uproot; // either break or uproot depending on the critical wind speeds
     }
 
+    QMutexLocker locker(&tree_kill_lock); // make sure that the following code is not run in parallel
 
     // *****************************************************************************
     // Kill the trees that are thrown/uprooted by the wind
