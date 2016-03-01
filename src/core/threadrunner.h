@@ -38,12 +38,38 @@ public:
     // actions
     void run( ResourceUnit* (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for all resource units in parallel
     void run( Species* (*funcptr)(Species*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for set of species in parallel
+    // run over elements of a vector of type T
     template<class T> void run(T* (*funcptr)(T*), const QVector<T*> &container, const bool forceSingleThreaded=false) const;
+    // run over chunks of a larger array (or grid)
+    template<class T> void runGrid(void (*funcptr)(T*, T*), T* begin, T* end, const bool forceSingleThreaded=false, int minsize=10000, int maxchunks=10000) const;
 private:
     QList<ResourceUnit*> mMap1, mMap2;
     QList<Species*> mSpeciesMap;
     static bool mMultithreaded;
 };
+
+template<class T>
+void ThreadRunner::runGrid(void (*funcptr)(T *, T*), T *begin, T *end, const bool forceSingleThreaded, int minsize, int maxchunks) const
+{
+    int length = end - begin; // # of elements
+    if (mMultithreaded && length>minsize*3 && forceSingleThreaded==false) {
+        // create multiple calls
+        int chunksize = minsize;
+        if (length > chunksize*maxchunks) {
+            chunksize = length / maxchunks;
+        }
+        // execute operations
+        T* p = begin;
+        while (p<end) {
+            T* pend = std::min(p+chunksize, end);
+            QtConcurrent::run(funcptr, p, pend);
+            p = pend;
+        }
+    } else {
+        // run all in one big function call
+        (*funcptr)(begin, end);
+    }
+}
 
 // multirunning function
 template<class T>

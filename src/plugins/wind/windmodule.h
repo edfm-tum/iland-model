@@ -165,6 +165,7 @@ private:
 
     friend class WindScript;
     friend class WindOut;
+    friend void nc_calculateFetch(WindCell *begin, WindCell *end);
 
 };
 
