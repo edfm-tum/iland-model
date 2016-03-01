@@ -372,9 +372,32 @@ void WindModule::detectEdges()
     }
 }
 
+static WindModule *wind_module=0;
+void nc_calculateFetch(WindCell *begin, WindCell *end)
+{
+    double current_direction;
+    for (WindCell *p=begin; p!=end; ++p) {
+        if (p->edge == 1.f) {
+            QPoint pt=wind_module->mGrid.indexOf(p);
+            current_direction = wind_module->mWindDirection + (wind_module->mWindDirectionVariation>0.?nrandom(-wind_module->mWindDirectionVariation, wind_module->mWindDirectionVariation):0);
+            wind_module->checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - wind_module->mEdgeDetectionThreshold);
+            //++calculated;
+            // only simulate edges with gapsize > 20m
+            // this skips small gaps (e.g. areas marked as "stones")
+            if (p->edge < 20.f) {
+                p->edge = 0.f;
+            }
+        }
+   }
+
+}
+
 void WindModule::calculateFetch()
 {
     DebugTimer t("wind:fetch");
+    wind_module = this;
+    GlobalSettings::instance()->model()->threadExec().runGrid(nc_calculateFetch, mGrid.begin(), mGrid.end());
+    return;
     int calculated = 0;
     double current_direction;
     WindCell *end = mGrid.end();
