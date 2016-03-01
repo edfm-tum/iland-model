@@ -36,8 +36,8 @@ public:
     void setMultithreading(const bool do_multithreading) { mMultithreaded = do_multithreading; }
     void print(); ///< print useful debug messages
     // actions
-    void run( ResourceUnit* (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for all resource units in parallel
-    void run( Species* (*funcptr)(Species*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for set of species in parallel
+    void run( void (*funcptr)(ResourceUnit*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for all resource units in parallel
+    void run( void (*funcptr)(Species*), const bool forceSingleThreaded=false ); ///< execute 'funcptr' for set of species in parallel
     // run over elements of a vector of type T
     template<class T> void run(T* (*funcptr)(T*), const QVector<T*> &container, const bool forceSingleThreaded=false) const;
     // run over chunks of a larger array (or grid)

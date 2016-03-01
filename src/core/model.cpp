@@ -568,7 +568,7 @@ void Model::initOutputDatabase()
 
 
 /// multithreaded running function for the resource unit level establishment
-ResourceUnit *nc_sapling_growth_establishment(ResourceUnit *unit)
+void nc_sapling_growth_establishment(ResourceUnit *unit)
 {
     try {
         { // DebugTimer t("nc_saplingGrowth"); t.setSilent();
@@ -596,13 +596,12 @@ ResourceUnit *nc_sapling_growth_establishment(ResourceUnit *unit)
     }
 
     unit->setSaplingHeightMap(0); // invalidate again
-    return unit;
 
 }
 
 
 /// multithreaded execution of the carbon cycle routine
-ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
+void nc_carbonCycle(ResourceUnit *unit)
 {
     try {
         // (1) do calculations on snag dynamics for the resource unit
@@ -612,7 +611,6 @@ ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
 
-    return unit;
 }
 
 /// beforeRun performs several steps before the models starts running.
@@ -820,7 +818,7 @@ void Model::afterStop()
 }
 
 /// multithreaded running function for LIP printing
-ResourceUnit* nc_applyPattern(ResourceUnit *unit)
+void nc_applyPattern(ResourceUnit *unit)
 {
 
     QVector<Tree>::iterator tit;
@@ -845,15 +843,14 @@ ResourceUnit* nc_applyPattern(ResourceUnit *unit)
             for (tit=unit->trees().begin(); tit!=tend; ++tit)
                 (*tit).applyLIP_torus(); // do it the wraparound way
         }
-        return unit;
+
     } catch (const IException &e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-    return unit;
 }
 
 /// multithreaded running function for LIP value extraction
-ResourceUnit *nc_readPattern(ResourceUnit *unit)
+void nc_readPattern(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -868,11 +865,10 @@ ResourceUnit *nc_readPattern(ResourceUnit *unit)
     } catch (const IException &e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-    return unit;
 }
 
 /// multithreaded running function for the growth of individual trees
-ResourceUnit *nc_grow(ResourceUnit *unit)
+void nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -894,18 +890,16 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     }
 
     GlobalSettings::instance()->systemStatistics()->treeCount+=unit->trees().count();
-    return unit;
 }
 
 /// multithreaded running function for the resource level production
-ResourceUnit *nc_production(ResourceUnit *unit)
+void nc_production(ResourceUnit *unit)
 {
     try {
         unit->production();
     } catch (const IException &e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-    return unit;
 }
 
 
