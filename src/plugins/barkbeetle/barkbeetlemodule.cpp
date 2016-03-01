@@ -423,6 +423,7 @@ void BarkBeetleModule::startSpread()
 
         b->n = 0;
         b->killed=false;
+        b->killedYear = 0;
         b->packageOutbreakYear = 0.f;
 
     }
@@ -650,13 +651,14 @@ void BarkBeetleModule::barkbeetleKill()
                     if (mGrid.constValueAt(t->position()).killed) {
                         // yes: kill the tree:
                         Tree *tree = const_cast<Tree*>(&(*t));
-                        tree->setDeathReasonBarkBeetle();
                         n_killed++;
                         basal_area+=tree->basalArea();
-                        if (!mSimulate) // remove tree only if not in simulation mode
+                        if (!mSimulate) { // remove tree only if not in simulation mode
+                            tree->setDeathReasonBarkBeetle();
                             tree->removeDisturbance(0., 1., // 0% of the stem to soil, 100% to snag (keeps standing)
                                                     0., 1.,   // 100% of branches to snags
                                                     0.);      // 100% of foliage to snags (will be dropped from there anyways)
+                        }
 
                     }
                 }
