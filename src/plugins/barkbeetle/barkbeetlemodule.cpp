@@ -211,6 +211,7 @@ void BarkBeetleModule::loadAllVegetation()
 
 void BarkBeetleModule::run(int iteration)
 {
+    DebugTimer t("barkbeetle:total");
     // reset statistics
     BarkBeetleCell::resetCounters();
     int old_max_gen = stats.maxGenerations;
@@ -414,10 +415,10 @@ void BarkBeetleModule::startSpread()
             double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
             if (drandom() < p_mod) {
                 // background activation: 10 px
-                clumpedBackgroundActivation(mGrid.indexOf(b));
-                //b->setInfested(true);
-                //b->outbreakYear = mYear; // this outbreak starts in the current year
-                //stats.infestedBackground++;
+                //clumpedBackgroundActivation(mGrid.indexOf(b));
+                b->setInfested(true);
+                b->outbreakYear = mYear; // this outbreak starts in the current year
+                stats.infestedBackground++;
             }
         }
 

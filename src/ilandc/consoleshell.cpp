@@ -47,7 +47,7 @@ class KeyboardTaker : public QThread
          QString input = qin.read(1);
          if (!input.isNull()) {
              // .. process input
-             qWarning() << "input:" << input;
+             qInfo() << "input:" << input;
          }
      }
  }
@@ -84,23 +84,23 @@ void ConsoleShell::run()
         QObject::connect(&iland_model, SIGNAL(year(int)),SLOT(runYear(int)));
         iland_model.setFileName(xml_name);
         if (iland_model.hasError()) {
-            qWarning() << "!!!! ERROR !!!!";
-            qWarning() << iland_model.lastError();
-            qWarning() << "!!!! ERROR !!!!";
+            qInfo() << "!!!! ERROR !!!!";
+            qInfo() << iland_model.lastError();
+            qInfo() << "!!!! ERROR !!!!";
             QCoreApplication::quit();
             return;
         }
 
         mParams.clear();
         if (QCoreApplication::arguments().count()>3) {
-            qWarning() << "set command line values:";
+            qInfo() << "set command line values:";
             for (int i=3;i<QCoreApplication::arguments().count();++i) {
                 QString line = QCoreApplication::arguments().at(i);
                 mParams.append(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
                 const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
-                qWarning() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
+                qInfo() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
             }
         }
         setupLogging();
@@ -108,48 +108,47 @@ void ConsoleShell::run()
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
         qDebug() << "**************************************************";
-        qDebug() << "started at: " << QDateTime::currentDateTime().toString(Qt::ISODate);
+        qDebug() << "started at: " << QDateTime::currentDateTime().toString("hh:mm:ss");
         qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
         qDebug() << "**************************************************";
 
-        qWarning() << "*** creating model...";
-        qWarning() << "**************************************************";
+        qInfo() << "*** creating model...";
+        qInfo() << "**************************************************";
 
         iland_model.create();
         if (iland_model.hasError()) {
-            qWarning() << "!!!! ERROR !!!!";
-            qWarning() << iland_model.lastError();
-            qWarning() << "!!!! ERROR !!!!";
+            qInfo() << "!!!! ERROR !!!!";
+            qInfo() << iland_model.lastError();
+            qInfo() << "!!!! ERROR !!!!";
             QCoreApplication::quit();
             return;
         }
         runJavascript("onCreate");
-        qWarning() << "**************************************************";
-        qWarning() << "*** running model for" << years << "years";
-        qWarning() << "**************************************************";
+        qInfo() << "**************************************************";
+        qInfo() << "*** running model for" << years << "years";
+        qInfo() << "**************************************************";
 
         iland_model.run(years + 1);
         if (iland_model.hasError()) {
-            qWarning() << "!!!! ERROR !!!!";
-            qWarning() << iland_model.lastError();
-            qWarning() << "!!!! ERROR !!!!";
+            qInfo() << "!!!! ERROR !!!!";
+            qInfo() << iland_model.lastError();
+            qInfo() << "!!!! ERROR !!!!";
             QCoreApplication::quit();
             return;
         }
         runJavascript("onFinish");
 
-        qWarning() << "**************************************************";
-        qWarning() << "*** model run finished.";
-        qWarning() << "*** " << QDateTime::currentDateTime();
-        qWarning() << "**************************************************";
+        qInfo() << "**************************************************";
+        qInfo() << "*** model run finished.";
+        qInfo() << "**************************************************";
 
     } catch (const IException &e) {
-        qWarning() << "*** An exception occured ***";
-        qWarning() << e.message();
+        qInfo() << "*** An exception occured ***";
+        qInfo() << e.message();
     }
     catch (const std::exception &e) {
-        qWarning() << "*** An (std)exception occured ***";
-        qWarning() << e.what();
+        qInfo() << "*** An (std)exception occured ***";
+        qInfo() << e.what();
     }
     QCoreApplication::quit();
 
@@ -158,40 +157,46 @@ void ConsoleShell::run()
 
 void ConsoleShell::runYear(int year)
 {
-    printf("simulating year %d ...\n", year-1);
+    printf("%s: simulating year %d ...\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), year-1);
 }
 
-QMutex qdebug_mutex;
+static QMutex qdebug_mutex;
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
     Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
 
     switch (type) {
-     case QtDebugMsg:
+    case QtDebugMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
-         break;
-     case QtWarningMsg:
+            ConsoleShell::logStream()->flush();
+        break;
+    case QtWarningMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
+            ConsoleShell::logStream()->flush();
         printf("Warning: %s\n", msg.toLocal8Bit().data());
+        break;
+    case QtInfoMsg:
+        *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();
+        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
 
-         break;
-     case QtCriticalMsg:
+        break;
+    case QtCriticalMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
+            ConsoleShell::logStream()->flush();
         printf("Critical: %s\n", msg.toLocal8Bit().data());
-         break;
-     case QtFatalMsg:
+        break;
+    case QtFatalMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
+            ConsoleShell::logStream()->flush();
         printf("Fatal: %s\n", msg.toLocal8Bit().data());
-     }
+    }
  }
 
 
@@ -230,8 +235,8 @@ void ConsoleShell::runJavascript(const QString key)
         if (pkey == key) {
             QString command = line.mid(line.indexOf('=')+1);
             // execute the function
-            qWarning() << "executing trigger" << key;
-            qWarning() << GlobalSettings::instance()->executeJavascript(command);
+            qInfo() << "executing trigger" << key;
+            qInfo() << GlobalSettings::instance()->executeJavascript(command);
         }
     }
 
