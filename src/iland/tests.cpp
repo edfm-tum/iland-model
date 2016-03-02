@@ -511,6 +511,15 @@ void Tests::testGridRunner()
         QPoint point = lif.indexOf(p);
         qDebug() << i++ << point.x() << point.y() << *p << p;
     }
+    for (int i=0;i<GlobalSettings::instance()->model()->ruList().size();++i) {
+        if (i==10) break;
+        ResourceUnit *ru = GlobalSettings::instance()->model()->ruList()[i];
+        GridRunner<float> runner(lif, ru->boundingBox());
+        int n=0;
+        while (runner.next())
+            ++n;
+        qDebug() << "RU" <<  ru->index() << ru->boundingBox() << lif.indexOf(runner.first()) << lif.indexOf(runner.last()) << "n:" << n;
+    }
 }
 
 void Tests::testSeedDispersal()

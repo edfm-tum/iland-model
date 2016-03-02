@@ -372,40 +372,20 @@ void WindModule::detectEdges()
     }
 }
 
+static QMutex wind_mt_counter;
 static WindModule *wind_module=0;
+static int impact_c;
+
+// multithreading enabled main function for fetch calculationg
 void nc_calculateFetch(WindCell *begin, WindCell *end)
 {
+    int calculated = 0;
     double current_direction;
     for (WindCell *p=begin; p!=end; ++p) {
         if (p->edge == 1.f) {
             QPoint pt=wind_module->mGrid.indexOf(p);
             current_direction = wind_module->mWindDirection + (wind_module->mWindDirectionVariation>0.?nrandom(-wind_module->mWindDirectionVariation, wind_module->mWindDirectionVariation):0);
             wind_module->checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - wind_module->mEdgeDetectionThreshold);
-            //++calculated;
-            // only simulate edges with gapsize > 20m
-            // this skips small gaps (e.g. areas marked as "stones")
-            if (p->edge < 20.f) {
-                p->edge = 0.f;
-            }
-        }
-   }
-
-}
-
-void WindModule::calculateFetch()
-{
-    DebugTimer t("wind:fetch");
-    wind_module = this;
-    GlobalSettings::instance()->model()->threadExec().runGrid(nc_calculateFetch, mGrid.begin(), mGrid.end());
-    return;
-    int calculated = 0;
-    double current_direction;
-    WindCell *end = mGrid.end();
-    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
-        if (p->edge == 1.f) {
-            QPoint pt=mGrid.indexOf(p);
-            current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
-            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
             ++calculated;
             // only simulate edges with gapsize > 20m
             // this skips small gaps (e.g. areas marked as "stones")
@@ -413,10 +393,40 @@ void WindModule::calculateFetch()
                 p->edge = 0.f;
             }
         }
-   }
-    qDebug() << "calculated fetch for" << calculated << "pixels";
+    }
+    QMutexLocker lock(&wind_mt_counter);
+    impact_c += calculated;
+
 }
 
+void WindModule::calculateFetch()
+{
+    DebugTimer t("wind:fetch");
+    wind_module = this;
+    impact_c=0;
+    GlobalSettings::instance()->model()->threadExec().runGrid(nc_calculateFetch, mGrid.begin(), mGrid.end());
+    qDebug() << "calculated fetch for" << impact_c << "pixels";
+    return;
+//    int calculated = 0;
+//    double current_direction;
+//    WindCell *end = mGrid.end();
+//    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
+//        if (p->edge == 1.f) {
+//            QPoint pt=mGrid.indexOf(p);
+//            current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
+//            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
+//            ++calculated;
+//            // only simulate edges with gapsize > 20m
+//            // this skips small gaps (e.g. areas marked as "stones")
+//            if (p->edge < 20.f) {
+//                p->edge = 0.f;
+//            }
+//        }
+//   }
+//    qDebug() << "calculated fetch for" << calculated << "pixels";
+}
+
+static int effective_c;
 void nc_calculateWindImpact(ResourceUnit *unit)
 {
     GridRunner<WindCell> runner(wind_module->mGrid, unit->boundingBox());
@@ -430,6 +440,10 @@ void nc_calculateWindImpact(ResourceUnit *unit)
             ++calculated;
         }
     }
+    QMutexLocker lock(&wind_mt_counter);
+
+    impact_c += calculated;
+    effective_c+=effective;
 }
 
 /** calculate for each pixel the impact of wind
@@ -438,20 +452,24 @@ void nc_calculateWindImpact(ResourceUnit *unit)
 int WindModule::calculateWindImpact()
 {
     DebugTimer t("wind:impact");
+    wind_module = this;
+    impact_c=0; effective_c=0;
     GlobalSettings::instance()->model()->executePerResourceUnit(nc_calculateWindImpact);
-    int calculated = 0;
-    int effective = 0;
-    WindCell *end = mGrid.end();
-    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
-        if (p->edge >= 1.f) {
-            QPoint pt=mGrid.indexOf(p);
-            if (windImpactOnPixel(pt, p))
-                ++effective;
-            ++calculated;
-        }
-    }
-    qDebug() << "calculated impact for" << calculated << "pixels";
-    return effective;
+    qDebug() << "calculated impact for" << impact_c << "pixels, affected" << effective_c;
+    return effective_c;
+//    int calculated = 0;
+//    int effective = 0;
+//    WindCell *end = mGrid.end();
+//    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
+//        if (p->edge >= 1.f) {
+//            QPoint pt=mGrid.indexOf(p);
+//            if (windImpactOnPixel(pt, p))
+//                ++effective;
+//            ++calculated;
+//        }
+//    }
+//    qDebug() << "calculated impact for" << calculated << "pixels";
+//    return effective;
 }
 
 

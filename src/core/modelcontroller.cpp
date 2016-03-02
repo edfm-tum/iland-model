@@ -305,7 +305,7 @@ bool ModelController::runYear()
 {
     if (!canRun()) return false;
     DebugTimer t("ModelController:runYear");
-    qDebug() << "ModelController: run year" << currentYear();
+    qDebug() << QDateTime::currentDateTime().toString("hh:mm:ss:") << "ModelController: run year" << currentYear();
 
     if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
         GlobalSettings::instance()->clearDebugLists();  // clear debug data

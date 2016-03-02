@@ -192,7 +192,13 @@ public:
     GridRunner(Grid<T> *target_grid, const QRect &rectangle) {setup(target_grid, rectangle);}
     GridRunner(Grid<T> *target_grid) {setup(target_grid, target_grid->rectangle()); }
     T* next(); ///< to to next element, return NULL if finished
+    /// return the current element, or NULL
     T* current() const { return mCurrent; }
+    /// return the first element
+    T* first() const { return mFirst; }
+    /// return the last element (not one element behind the last element!)
+    T* last() const { return mLast; }
+    /// checks if the state of the GridRunner is valid, returns false if out of scope
     bool isValid() const {return mCurrent>=mFirst && mCurrent<=mLast; }
     /// return the (index) - coordinates of the current position in the grid
     QPoint currentIndex() const { return mGrid->indexOf(mCurrent); }
