@@ -33,6 +33,7 @@
 
 #include <QString>
 #include <QtSql>
+#include <QVector3D>
 
 
 Snapshot::Snapshot()
@@ -123,6 +124,15 @@ bool Snapshot::loadSnapshot(const QString &file_name)
         // setup link between resource unit index and index grid:
         // store for each resource unit *in the snapshot database* the corresponding
         // resource unit index of the *current* simulation.
+        QPointF to=GisGrid::worldToModel(grid.origin());
+
+        if (fmod(to.x(), cRUSize) != 0. || fmod(to.y(), cRUSize) != 0.) {
+            QPointF world_offset = GisGrid::modelToWorld(QPointF(0., 0.));
+            throw IException(QString("Loading of the snapshot '%1' failed: The offset from the current location of the project (%4/%5) " \
+                                     "is not a multiple of the resource unit size (100m) relative to grid of the snapshot (origin-x: %2, origin-y: %3).").arg(file_name)
+                             .arg(grid.origin().x()).arg(grid.origin().y()).arg(world_offset.x()).arg(world_offset.y()));
+        }
+
 
         const Grid<ResourceUnit*> &rugrid = GlobalSettings::instance()->model()->RUgrid();
         for (int i=0;i<rugrid.count();++i) {

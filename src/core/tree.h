@@ -73,7 +73,7 @@ public:
     float stressIndex() const { return mStressIndex; } ///< the scalar stress rating (0..1)
 
     // actions
-    enum TreeRemovalType { TreeDeath=0, TreeHarvest=1, TreeDisturbance=2};
+    enum TreeRemovalType { TreeDeath=0, TreeHarvest=1, TreeDisturbance=2, TreeSalavaged=3, TreeKilled=4, TreeCutDown=5};
     /// the tree dies (is killed)
     void die(TreeGrowthData *d=0);
     /// remove the tree (management). removalFractions for tree compartments: if 0: all biomass stays in the system, 1: all is "removed"
