@@ -119,7 +119,7 @@ void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
     Tree::TreeRemovalType rem_type = static_cast<Tree::TreeRemovalType>(reason);
     if (rem_type==Tree::TreeDeath && !mIncludeDeadTrees)
         return;
-    if (rem_type==Tree::TreeHarvest && !mIncludeHarvestTrees)
+    if ((rem_type==Tree::TreeHarvest || rem_type==Tree::TreeSalavaged || rem_type==Tree::TreeCutDown) && !mIncludeHarvestTrees)
         return;
 
     int key = reason*10000 + t->species()->index();
@@ -143,6 +143,8 @@ void LandscapeRemovedOut::exec()
             if (rem_type==Tree::TreeDeath) *this << QStringLiteral("N");
             if (rem_type==Tree::TreeHarvest) *this << QStringLiteral("H");
             if (rem_type==Tree::TreeDisturbance) *this << QStringLiteral("D");
+            if (rem_type==Tree::TreeSalavaged) *this << QStringLiteral("S");
+            if (rem_type==Tree::TreeCutDown) *this << QStringLiteral("C");
             *this << i.value().n << i.value().volume<< i.value().basal_area;
             writeRow();
         }

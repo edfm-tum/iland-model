@@ -60,6 +60,8 @@ void setupGISTransformation(const double offsetx,
 // transformation routines.
 void worldToModel(const Vector3D &From, Vector3D &To);
 void modelToWorld(const Vector3D &From, Vector3D &To);
+QPointF modelToWorld(QPointF model_coordinates);
+QPointF worldToModel(QPointF world_coordinates);
 
 
 class GisGrid
@@ -73,6 +75,7 @@ public:
     int dataSize() const { return mDataSize; }   ///< number of data items (rows*cols)
     int rows() const { return mNRows; } ///< number of rows
     int cols() const { return mNCols; } ///< number of columns
+    QPointF origin() const { return mOrigin; } ///< coordinates of the lower left corner of the grid
     double cellSize() const { return mCellSize; } ///< size of a cell (meters)
     double minValue() const { return min_value; } ///< minimum data value
     double maxValue() const { return max_value; } ///< maximum data value
@@ -96,6 +99,14 @@ public:
     //void CountOccurence(int intID, int & Count, int & left, int &upper, int &right, int &lower, SBoundingBox *OuterBox);
     //S3dVector GetNthOccurence(int ID, int N, int left, int upper, int right, int lower);
     //void ExportToTable(AnsiString OutFileName);
+
+    // global conversion functions between local and world coordinates
+    // the world-context is created by calling setupGISTransformation() (once).
+    /// convert model to world coordinates (metric)
+    static QPointF modelToWorld(QPointF model_coordinates);
+    /// convert world (i.e. GIS) to model coordinates (metric) (with 0/0 at lower left edge of project area)
+    static QPointF worldToModel(QPointF world_coordinates);
+
 
 private:
 
