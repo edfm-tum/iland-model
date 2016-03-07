@@ -144,6 +144,10 @@ void ForestManagementEngine::finalizeRun()
         stand->resetHarvestCounter();
     }
 
+    foreach (FMUnit *unit, mUnits) {
+        unit->resetHarvestCounter();
+    }
+
     //
     if (mStandLayoutChanged) {
         DebugTimer timer("ABE:stand_layout_update");

@@ -40,7 +40,7 @@ ABEStandRemovalOut::ABEStandRemovalOut()
               << OutputColumn("volumeAfter", "standing timber volume after the harvest operation (m3/ha)", OutDouble)
               << OutputColumn("volumeThinning", "removed timber volume due to thinning, m3/ha", OutDouble)
               << OutputColumn("volumeFinal", "removed timber volume due to final harvests (regeneration cuts) and due to salvage operations, m3/ha", OutDouble)
-              << OutputColumn("volumeDisturbed", "disturbed trees on the stand, m3/ha. Note: all killed trees are recorded here, even if not 100% of those trees are salvaged (due to size constraints)", OutDouble);
+              << OutputColumn("volumeDisturbed", "disturbed trees on the stand, m3/ha. Note: all killed trees are recorded here,also those trees that are not salvaged (due to size and other constraints)", OutDouble);
 }
 
 void ABEStandRemovalOut::exec()
