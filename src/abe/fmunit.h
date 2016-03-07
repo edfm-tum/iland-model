@@ -19,6 +19,8 @@
 
 #ifndef FMUNIT_H
 #define FMUNIT_H
+#include <QString>
+
 namespace ABE {
 
 
@@ -41,6 +43,7 @@ public:
     void setNumberOfStands(int new_number) { mNumberOfStands = new_number; } ///< set the number of stands
     double volume() const { return mTotalVolume/area(); } ///< total volume of the unit (m3/ha)
     double annualIncrement() const { return mMAI; } ///< mean annual increment (m3/ha)
+    void resetHarvestCounter();
     // agent properties
     /// rotation period (years)
     double U() const { return mU; }

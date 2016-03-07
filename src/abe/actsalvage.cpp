@@ -105,7 +105,7 @@ bool ActSalvage::execute(FMStand *stand)
         checkStandAfterDisturbance(stand);
 
     // the harvest happen(ed) anyways.
-    stand->resetHarvestCounter(); // set back to zero...
+    //stand->resetHarvestCounter(); // set back to zero...
     return true;
 }
 

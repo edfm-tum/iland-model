@@ -121,6 +121,12 @@ void FMUnit::setId(const QString &id)
     mId = id;
 }
 
+void FMUnit::resetHarvestCounter()
+{
+    if (scheduler())
+        scheduler()->resetHarvestCounter();
+}
+
 void FMUnit::managementPlanUpdate()
 {
     const double period_length = 10.;
