@@ -33,7 +33,7 @@ class ResourceUnit; // forward
 */
 class WindCell {
 public:
-    WindCell() { topex = 0; n_affected=0; clear(); }
+    WindCell() { topex = 0; n_affected=0; edge_age=0; clear(); }
     void clear() {height = edge = 0.f; n_trees=0; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
     bool isValid() const { return height<9999.f; } ///< returns true if the pixel is on the valid project area
     float topex; ///< topographic modifier for wind speed (-)
@@ -44,6 +44,7 @@ public:
     // statistics
     int n_iteration; ///< number of iteration this pixel is processed (and trees are killed)
     int n_killed; ///< number of trees killed on the pixel
+    int edge_age; ///< age of an edge (consecutive number of years of being an edge)
     double basal_area_killed; ///< basal area of trees that died (m2)
     double cws_uproot; ///< critital wind speed for uprooting (m/s)
     double cws_break; ///< critical wind speed for tree breakage (m/s)
@@ -127,10 +128,13 @@ private:
     double calculateCrititalWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double gap_length, double &rCWS_uproot, double &rCWS_break);
     /// check if the soil on current resource unit is frozen or not
     bool isSoilFrozen(const ResourceUnit *ru, const int day_of_year) const;
+
     // helping functions
     void scanResourceUnitTrees(const QPoint &position);
     void loadSpeciesParameter(const QString &table_name);
     const WindSpeciesParameters &speciesParameter(const Species *s);
+    void initializeEdgeAge(const int years);
+    void incrementEdgeAge();
 
     // variables
     bool mTopexFromGrid; ///< indicates if topex grid is a real grid or by ressource unit
@@ -147,6 +151,9 @@ private:
     double mCurrentGustFactor; ///< gustfactor of the current year (multiplier)
     enum ETopexFactorModificationType {gfMultiply, gfAdd} mTopexFactorModificationType; ///< determines if topo-modifier is added multiplicatively or additively.
     double mIterationsPerMinute; ///< number of iterations per minute of the events' duration
+    int mEdgeAgeBaseValue; ///< initial value for the age of edges in the initial state of the forest
+    Expression mEdgeProbability; ///< function that determines the probability that an edge is calculated (old edges are less likely to being tested)
+    double mEdgeBackgroundProbability; ///< probability that a 10x10m pixel is marked as edge during a wind event (randomly)
     // some statistics
     int mPixelAffected; ///< total number of pixels that are impacted
     int mTreesKilled; ///< total number of killed trees
