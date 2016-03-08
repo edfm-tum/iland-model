@@ -33,7 +33,7 @@
 
 #include <QString>
 #include <QtSql>
-#include <QVector3D>
+//#include <QVector3D>
 
 
 Snapshot::Snapshot()

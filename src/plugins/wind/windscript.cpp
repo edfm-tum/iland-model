@@ -82,6 +82,12 @@ void WindScript::initialize()
     qDebug() << "initialized the wind module.";
 }
 
+void WindScript::initializeEdgeAge(int years)
+{
+    if (mModule)
+        mModule->initializeEdgeAge(years);
+}
+
 int WindScript::damagedArea(int threshold, QString fileName)
 {
     // get damage grid:
