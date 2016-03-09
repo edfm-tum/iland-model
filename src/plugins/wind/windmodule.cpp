@@ -59,7 +59,7 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 1: return data.edge; // maximum difference to neighboring cells
     case 2: return data.cws_uproot; // critical wind speed for uprooting
     case 3: return data.cws_break; // critical wind speed for stem breakage
-    case 4: return (double) data.n_killed; // trees killed on pixel
+    case 4: return data.n_killed; // trees killed on pixel
     case 5: return data.basal_area_killed; // basal area killed on pixel
     case 6: return data.n_iteration; // iteration in processing that the current pixel is processed (and trees are killed)
     case 7: return data.crown_windspeed; // effective wind speed in the crown (m/s)
@@ -86,7 +86,7 @@ const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("windSpeedCrown"), QLatin1Literal("wind speed at tree crown height (m/s)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("topo"), QLatin1Literal("the topography modifier for wind speeds"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
                 << LayeredGridBase::LayerElement(QLatin1Literal("edgeAge"), QLatin1Literal("age of an edge (consecutive number of years that a cell is an edge)."), GridViewBlues);
     return mNames;
 }
@@ -142,7 +142,7 @@ void WindModule::setup()
         mTopexFactorModificationType = gfAdd;
 
     mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 10.); // default: 10mins/iteration is 60m/h
-    mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
+    mWindDayOfYear = xml.valueInt(".dayOfYear", 100.);
     mLRITransferFunction.setAndParse(xml.value(".LRITransferFunction", "max(min(3.733-6.467*LRI,3.41),0.5)"));
 
     // edge age
@@ -158,7 +158,7 @@ void WindModule::setup()
         topex_grid_file = GlobalSettings::instance()->path(topex_grid_file);
         if (topex_grid.loadFromFile(topex_grid_file)) {
             for (int i=0;i<mGrid.count();i++) {
-                mGrid.valueAtIndex(i).topex = topex_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i)));
+                mGrid.valueAtIndex(i).topex = static_cast<float>( topex_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i))) );
             }
             mTopexFromGrid = true;
         }
@@ -242,21 +242,35 @@ const WindSpeciesParameters &WindModule::speciesParameter(const Species *s)
 
 void WindModule::initializeEdgeAge(const int years)
 {
+    detectEdges(true); // in startup-mode
     int val = qMax(years,0);
+    int n=0;
     for (WindCell *p=mGrid.begin(); p!=mGrid.end(); ++p) {
-        if (p->edge_age>=0) // skip out-of-project area
+        if (p->edge_age>=0 && p->edge==1.f) {
+            // skip out-of-project area
             p->edge_age = val;
+            ++n;
+        }
     }
+    qDebug() << "Wind:initializeEdges: set" << n << "edges to" << years;
 }
 
 void WindModule::incrementEdgeAge()
 {
     for (WindCell *p=mGrid.begin(); p!=mGrid.end(); ++p) {
         if (p->edge_age>0) {
-            double p_edge = mEdgeProbability.calculate(static_cast<double>(p->edge_age));
-            if (drandom() > p_edge)
-                p->edge = -2.f; // the edge is disabled for this event
-            p->edge_age++;
+            if (!p->tree || p->height<10.f) {
+                p->edge_age = 0;
+            } else {
+                if (p->edge<=1.f) {
+                    // calculate probability that the pixel is disabled for the event
+                    // (only if this pixel is not a random-edge)
+                    double p_edge = mEdgeProbability.calculate(static_cast<double>(p->edge_age));
+                    if (drandom() < p_edge)
+                        p->edge = -2.f; // the edge is disabled for this event
+                }
+                p->edge_age++;
+            }
         }
     }
 }
@@ -372,7 +386,7 @@ void WindModule::initWindGrid()
 
 /** mark all pixels that are at stand edges, i.e. pixels with trees that are much taller (treeheight) than their neighbors.
   */
-void WindModule::detectEdges()
+void WindModule::detectEdges(bool at_startup)
 {
     DebugTimer t("wind:edges");
     WindCell *p_above, *p, *p_below;
@@ -386,34 +400,44 @@ void WindModule::detectEdges()
         p_above = p - dx; // one line above
         p_below = p + dx; // one line below
         for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
+            if (at_startup)
+                p->edge=0.f;
             if (p->n_trees>0) {
-                float max_h = p->height - threshold; // max_h: if a surrounding pixel is higher than this value, then there is no edge here
+                float min_h = p->height - threshold; // max_h: if no surrounding pixel is lower than this value, then there is no edge here
                 // edges are only detected if trees are >10m high
-                if (p->height>10.f && max_h > 0) {
+                if (p->height>10.f && min_h > 0) {
                     // check 8-neighborhood. if one of those pixels exceed the threshold, then the current
                     // pixel is not an "edge".
-                    int edge = ((p_above-1)->height < max_h) +
-                            ((p_above)->height < max_h) +
-                            ((p_above+1)->height < max_h) +
-                            ((p-1)->height < max_h)  +
-                            ((p+1)->height < max_h) +
-                            ((p_below-1)->height < max_h)+
-                            ((p_below)->height < max_h) +
-                            ((p_below+1)->height < max_h) ;
+                    int edge = ((p_above-1)->height < min_h) +
+                            ((p_above)->height < min_h) +
+                            ((p_above+1)->height < min_h) +
+                            ((p-1)->height < min_h)  +
+                            ((p+1)->height < min_h) +
+                            ((p_below-1)->height < min_h)+
+                            ((p_below)->height < min_h) +
+                            ((p_below+1)->height < min_h) ;
 
-                    if (edge>0) {
+                    if (edge>2) {
                         // set flag for gap size determination (randomly activated edges are overwritten here,
                         // but edges disabled due to the age of the edge not (=-2)
-                        if (p->edge>-1.f)
+                        if (at_startup) {
                             p->edge = 1.f;
-                        // start couting the edge age for new edges
-                        if (p->edge_age==0)
-                            p->edge_age=1;
+                        } else {
+                            // we exclude age-protected pixels only in the first iteration
+                            //if (mCurrentIteration!=1 || p->edge>-1.f)
+                            if (p->edge>-1.f)
+                                p->edge = qMax(p->edge, 1.f);
+                            // start couting the edge age for new edges
+                            if (p->edge_age==0)
+                                p->edge_age=1;
+                        }
+                    } else {
+                        p->edge=0.f;
                     }
                 }
             }
             // reset age counter
-            if (p->edge_age>0.f && p->edge<=0.f)
+            if (p->edge_age>0.f && p->edge==0.f)
                 p->edge_age = 0;
         }
     }
@@ -429,14 +453,19 @@ void nc_calculateFetch(WindCell *begin, WindCell *end)
     int calculated = 0;
     double current_direction;
     for (WindCell *p=begin; p!=end; ++p) {
-        if (p->edge == 1.f) {
+        if (p->edge >= 1.f) {
             QPoint pt=wind_module->mGrid.indexOf(p);
             current_direction = wind_module->mWindDirection + (wind_module->mWindDirectionVariation>0.?nrandom(-wind_module->mWindDirectionVariation, wind_module->mWindDirectionVariation):0);
+            float old_edge = p->edge;
             wind_module->checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - wind_module->mEdgeDetectionThreshold);
             ++calculated;
             // only simulate edges with gapsize > 20m
             // this skips small gaps (e.g. areas marked as "stones")
-            if (p->edge < 20.f) {
+            if (old_edge>1.f) {
+                // for random starts only increase the distance
+                p->edge = qMax(p->edge, old_edge);
+            } else if (p->edge < 10.f) {
+                // minimum fetch distance for edges
                 p->edge = 0.f;
             }
         }

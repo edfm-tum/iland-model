@@ -84,8 +84,10 @@ void WindScript::initialize()
 
 void WindScript::initializeEdgeAge(int years)
 {
-    if (mModule)
+    if (mModule) {
+        mModule->initWindGrid();
         mModule->initializeEdgeAge(years);
+    }
 }
 
 int WindScript::damagedArea(int threshold, QString fileName)
