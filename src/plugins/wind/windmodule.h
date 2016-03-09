@@ -114,7 +114,7 @@ private:
     // main functions
     bool eventTriggered(); ///< determine details of this years' wind event (and return false if no event happens)
     void initWindGrid(); ///< load state from iland main module
-    void detectEdges(); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
+    void detectEdges(bool at_startup=false); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
     void calculateFetch(); ///< calculate maximum gap sizes in upwind direction
     int calculateWindImpact(); ///< do one round of wind effect calculations
 
