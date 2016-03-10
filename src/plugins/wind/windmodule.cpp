@@ -252,27 +252,39 @@ void WindModule::initializeEdgeAge(const int years)
             ++n;
         }
     }
-    qDebug() << "Wind:initializeEdges: set" << n << "edges to" << years;
+    qDebug() << "Wind:initializeEdgeAge: set" << n << "edges to" << years << "years.";
 }
 
 void WindModule::incrementEdgeAge()
 {
+    int n_background=0;
+    int n_disabled=0;
     for (WindCell *p=mGrid.begin(); p!=mGrid.end(); ++p) {
         if (p->edge_age>0) {
             if (!p->tree || p->height<10.f) {
                 p->edge_age = 0;
             } else {
+
+                if (mEdgeBackgroundProbability>0.)
+                    if (drandom() < mEdgeBackgroundProbability) {
+                        p->edge = 10.f; //10m is the minium upwind gap size for edges activated by background probability
+                        ++n_background;
+                    }
                 if (p->edge<=1.f) {
                     // calculate probability that the pixel is disabled for the event
                     // (only if this pixel is not a random-edge)
                     double p_edge = mEdgeProbability.calculate(static_cast<double>(p->edge_age));
-                    if (drandom() < p_edge)
+                    if (drandom() < p_edge) {
                         p->edge = -2.f; // the edge is disabled for this event
+                        ++n_disabled;
+                    }
                 }
                 p->edge_age++;
             }
         }
     }
+    qDebug() << "Wind:incrementEdgeAge: background activation of" << n_background << "potential start edges (with trees), protection not active for" << n_disabled << "px.";
+
 }
 
 /// the run() function executes the wind events
@@ -280,9 +292,15 @@ void WindModule::run(const int iteration, const bool execute_from_script)
 {
     // initialize things in the first iteration
     if (iteration<=0) {
-        if (GlobalSettings::instance()->currentYear() == 1) {
+
+        if (!execute_from_script) {
+            setSimulationMode(false);
             initWindGrid();
-            initializeEdgeAge(mEdgeAgeBaseValue - 1);
+            if (GlobalSettings::instance()->currentYear() == 1) {
+                initializeEdgeAge(mEdgeAgeBaseValue - 1);
+            } else {
+                detectEdges(); //  needed for the increment
+            }
             // edges get one year older (even if no wind event is triggered this year)
             incrementEdgeAge();
         }
@@ -292,12 +310,7 @@ void WindModule::run(const int iteration, const bool execute_from_script)
             if (!eventTriggered())
                 return;
         }
-        // setup the wind data
-        if (GlobalSettings::instance()->currentYear() != 1) {
-            initWindGrid();
-            // edges get one year older
-            incrementEdgeAge();
-        }
+
     }
 
 
@@ -360,9 +373,6 @@ void WindModule::initWindGrid()
                 // p->height = hgv->height;
                 p->n_trees = hgv->count();
 
-                if (mEdgeBackgroundProbability>0.)
-                    if (drandom() < mEdgeBackgroundProbability)
-                        p->edge = 10.f; //10m is the minium upwind gap size for edges activated by background probability
             } else {
                 // the "height" of pixels not in the project area depends on a flag provided with the "stand map"
                 if (hgv->isForestOutside()) {
@@ -428,16 +438,14 @@ void WindModule::detectEdges(bool at_startup)
                             if (p->edge>-1.f)
                                 p->edge = qMax(p->edge, 1.f);
                             // start couting the edge age for new edges
-                            if (p->edge_age==0)
+                            if (!mSimulationMode && p->edge_age==0)
                                 p->edge_age=1;
                         }
-                    } else {
-                        p->edge=0.f;
                     }
                 }
             }
             // reset age counter
-            if (p->edge_age>0.f && p->edge==0.f)
+            if (!mSimulationMode && p->edge_age>0.f && p->edge==0.f)
                 p->edge_age = 0;
         }
     }
@@ -797,7 +805,8 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     cell->n_iteration = mCurrentIteration;
     cell->tree = 0;
     cell->n_trees = 0; // no more trees on the pixel
-    cell->edge_age = 0; // ... and no edge
+    if (!mSimulationMode)
+        cell->edge_age = 0; // ... and no edge
     cell->n_affected++; // pixel has been cleared this time...
     return true;
 }
