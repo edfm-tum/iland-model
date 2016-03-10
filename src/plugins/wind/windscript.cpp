@@ -85,8 +85,12 @@ void WindScript::initialize()
 void WindScript::initializeEdgeAge(int years)
 {
     if (mModule) {
+        bool mode = mModule->simulationMode();
+        mModule->setSimulationMode(true);
         mModule->initWindGrid();
         mModule->initializeEdgeAge(years);
+        mModule->incrementEdgeAge();
+        mModule->setSimulationMode(mode);
     }
 }
 

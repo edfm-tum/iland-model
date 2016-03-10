@@ -106,6 +106,7 @@ public:
     // test functions
     void setWindProperties(const double direction_rad, const double speed_ms) { mWindDirection = direction_rad; mWindSpeed = speed_ms; }
     void setSimulationMode(const bool mode) { mSimulationMode = mode; }
+    bool simulationMode() const { return mSimulationMode; }
     void setMaximumIterations(const double maxit) { mMaxIteration = maxit; }
 
     void testFetch(double degree_direction);
