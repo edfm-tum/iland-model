@@ -67,6 +67,7 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 9: return ruValueAt(&data, 0); // 1 if soil is frozen on the current pixel
     case 10: return data.n_affected; // number of storm events affecting the pixel
     case 11: return data.edge_age; // # of years that a cell is an edge
+    case 12: return data.n_trees; // # of trees
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -87,7 +88,8 @@ const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("topo"), QLatin1Literal("the topography modifier for wind speeds"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
-                << LayeredGridBase::LayerElement(QLatin1Literal("edgeAge"), QLatin1Literal("age of an edge (consecutive number of years that a cell is an edge)."), GridViewBlues);
+                << LayeredGridBase::LayerElement(QLatin1Literal("edgeAge"), QLatin1Literal("age of an edge (consecutive number of years that a cell is an edge)."), GridViewBlues)
+                << LayeredGridBase::LayerElement(QLatin1Literal("basalArea"), QLatin1Literal("sum of basal area (trees>4m) on the cel.l"), GridViewRainbow);
     return mNames;
 }
 
@@ -371,7 +373,7 @@ void WindModule::initWindGrid()
             p->clear();
             if (hgv->isValid()) {
                 // p->height = hgv->height;
-                p->n_trees = hgv->count();
+                //p->n_trees = hgv->count();
 
             } else {
                 // the "height" of pixels not in the project area depends on a flag provided with the "stand map"
@@ -733,7 +735,10 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     else
         wind_speed_10 =( mWindSpeed + topo_mod) * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy, topo modifier calculated additively
 
-    double u_crown = calculateCrownWindSpeed(cell->tree, params, cell->n_trees, wind_speed_10);
+    // cell->n_trees: sum of basal area of all trees on the pixel
+    double n_trees = cell->n_trees / cell->tree->basalArea(); // number of trees with the dimension of the focal tree
+
+    double u_crown = calculateCrownWindSpeed(cell->tree, params, n_trees, wind_speed_10);
 
     // now calculate the critical wind speed for the tallest tree on the pixel (i.e. the speed at which stem breakage/uprooting occurs)
     double cws_uproot, cws_break;
@@ -804,7 +809,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     cell->edge = 0.f;
     cell->n_iteration = mCurrentIteration;
     cell->tree = 0;
-    cell->n_trees = 0; // no more trees on the pixel
+    cell->n_trees = 0.f; // no more trees on the pixel
     if (!mSimulationMode)
         cell->edge_age = 0; // ... and no edge
     cell->n_affected++; // pixel has been cleared this time...
@@ -817,7 +822,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
   @param n_trees number of trees that are on the 10x10m cell
   @param wind_speed_10 wind speed in 10m above canopy (m/s)
   */
-double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10)
+double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double n_trees, const double wind_speed_10)
 {
      // frontal area index
     const double porosity = 0.5;
@@ -945,6 +950,7 @@ void WindModule::scanResourceUnitTrees(const QPoint &position)
                 const QPoint &tp = t->positionIndex();
                 QPoint pwind(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
                 WindCell &wind=mGrid.valueAtIndex(pwind);
+                wind.n_trees += t->basalArea();
                 if (!wind.tree || t->height()>wind.tree->height()) {
                     wind.height = t->height();
                     wind.tree = &(*t);
