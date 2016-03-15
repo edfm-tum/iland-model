@@ -38,13 +38,14 @@ class BarkBeetleCell
 public:
     BarkBeetleCell() { reset(); }
     void clear() { n=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=NoDeadTrees; packageOutbreakYear=0.f; }
-    void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; }
+    /// full reset of the pixel
+    void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; n_events=0; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
     /// sets the 'infested' state (true: the cell is newly infested, false: the cell stops being infested, e.g. by winter mortality)
     void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killedYear=0; n=0;} }
     /// called after beetles spread out from the cell. The cell is marked as 'killed', and trees will be killed later (barkbeetleKill()).
-    void finishedSpread(int iteration) { infested=false; killedYear=iteration; killed=true; max_iteration=qMax(max_iteration, iteration); }
+    void finishedSpread(int iteration) { infested=false; killedYear=iteration; killed=true; max_iteration=qMax(max_iteration, iteration); ++n_events; }
     float backgroundInfestationProbability; ///< background prob. of infestation per 10m cell
 
     bool infested; // true for cells that are currently occupied by beetles
@@ -56,6 +57,7 @@ public:
     int killedYear; // year (iteration) at which pixel was killed ??
     float outbreakYear; // year in which the outbreak started (this information is preserved by spreading beatles)
     float packageOutbreakYear; // outbreak year of packages landing on a cell
+    int n_events; // total number of events on the pixel since the start of the simulation
     enum DeadTrees { NoDeadTrees=0, StormDamage=10, SinkInVicinity=5, BeetleTrapTree=8 };
     DeadTrees deadtrees;
     /// return true if either storm damaged trees or trap trees are on the pixel or in the Moore neighborhood of the cell
@@ -187,7 +189,7 @@ private:
 
     } params;
     struct SBBStats {
-        void clear() { infestedStart=0;infestedBackground=0; infestedStorm=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NTreesKilled=0;BasalAreaKilled=0.; }
+        void clear() { infestedStart=0;infestedBackground=0; infestedStorm=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NAreaKilled=0;NTreesKilled=0;BasalAreaKilled=0.; }
         int infestedStart; // # of pixels that are infested at the beginning of an iteration
         int infestedBackground; // # of pixels that are getting active
         int infestedStorm; // # of pixels that are activated due to storm damage
@@ -197,6 +199,7 @@ private:
         int NCohortsSpread; // number of pixels that are spread from infested cells
         int NInfested; // number of newly infested pixels (a subset of those who 'landed')
         int NWinterMortality; // number of (infested) pixels that died off during winter
+        int NAreaKilled; // number of pixels on which trees were killed
         int NTreesKilled; // number of spruce trees killed
         double BasalAreaKilled; // sum of basal area of killed trees
     } stats;
