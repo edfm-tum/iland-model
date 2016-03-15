@@ -559,6 +559,7 @@ void BarkBeetleModule::barkbeetleSpread()
             b->finishedSpread(mIteration>0 ? mIteration+1 : generation);
             // mark the resource unit, that some killing is required
             bbru.killed_trees = true;
+            stats.NAreaKilled++;
             bbru.killed_pixels++;
             bbru.host_pixels--;
 
@@ -699,6 +700,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 6: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
     case 7: return data.backgroundInfestationProbability;
     case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
+    case 9: return data.n_events; // number of events on a specific pixel
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -716,7 +718,8 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 5/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
-                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray);
+                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray)
+                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds);
     return mNames;
 
 }

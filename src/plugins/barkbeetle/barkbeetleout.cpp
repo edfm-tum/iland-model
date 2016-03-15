@@ -42,6 +42,7 @@ BarkBeetleOut::BarkBeetleOut()
               << OutputColumn("landedCohorts", "Number of bark beetle 'packages' (x1000) that reach potential hosts (cohorts x 1000).", OutDouble)
               << OutputColumn("landedArea_ha", "Area (ha) of potential host trees where bark beetles landed.", OutDouble)
               << OutputColumn("infestedArea_ha", "Area (ha) of newly infected host pixels.", OutDouble)
+              << OutputColumn("killedArea_ha", "Area (ha) with trees killed by bark beetles (sum of 10m cells with dead trees).", OutDouble)
               << OutputColumn("killedTrees", "total number of Norway spruce trees that were killed in this iteration.", OutDouble)
               << OutputColumn("killedBasalArea", "Total Basal Area of killed trees in the current year.", OutDouble);
 
@@ -57,6 +58,7 @@ void BarkBeetleOut::exec()
 
     *this << mBB->stats.NCohortsSpread * 0.001 << mBB->stats.NCohortsLanded*0.001 << mBB->stats.NPixelsLanded*area_factor;
     *this << mBB->stats.NInfested*area_factor;
+    *this << mBB->stats.NAreaKilled*area_factor;
     *this << mBB->stats.NTreesKilled << mBB->stats.BasalAreaKilled;
 
     writeRow();
