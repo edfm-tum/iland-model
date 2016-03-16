@@ -172,7 +172,7 @@ private:
     QString mAfterExecEvent;
     struct SBBParams {
         SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50),
-            spreadKernelMaxDistance(100.), backgroundInfestationProbability(0.0001),
+            spreadKernelMaxDistance(100.), backgroundInfestationProbability(0.0001), initialInfestationProbability(0.),
             stormInfestationProbability(1.), winterMortalityBaseLevel(0.),
             outbreakDurationMin(0.), outbreakDurationMax(0.), deadTreeSelectivity(1.) {}
         float minDbh; ///< minimum dbh of spruce trees that are considered as potential hosts
@@ -181,6 +181,7 @@ private:
         QString spreadKernelFormula; ///< formula of the PDF for the BB-spread
         double spreadKernelMaxDistance; ///< upper limit for the spread distance (the kernel is cut at this distance)
         double backgroundInfestationProbability; ///< p that a pixel gets spontaneously infested each year
+        double initialInfestationProbability; ///< p that a pixel is infested at startup (as a result of pre-simulation dynamics)
         double stormInfestationProbability; ///< p that a pixel with storm damage gets infested
         double winterMortalityBaseLevel; ///< p that a infested pixel dies out over the winter (due to antagonists, bad luck, ...)
         double outbreakDurationMin; ///< minimum value for the duration of a barkbeetle outbreak

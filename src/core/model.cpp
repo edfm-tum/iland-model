@@ -462,7 +462,7 @@ void Model::loadProject()
     bool do_linearization = xml.valueBool("system.settings.expressionLinearizationEnabled", false);
     Expression::setLinearizationEnabled(do_linearization);
     if (do_linearization)
-        qDebug() << "The linearization of certains expressions is enabled (performance optimization).";
+        qDebug() << "The linearization of expressions is enabled (performance optimization).";
 
     // log level
     QString log_level = xml.value("system.settings.logLevel", "debug").toLower();

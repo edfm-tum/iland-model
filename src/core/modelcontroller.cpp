@@ -159,6 +159,7 @@ void ModelController::create()
         GlobalSettings::instance()->setCurrentYear(1); // reset clock
         // initialization of trees, output on startup
         mModel->beforeRun();
+        GlobalSettings::instance()->executeJSFunction("onAfterCreate");
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
@@ -174,6 +175,7 @@ void ModelController::create()
 void ModelController::destroy()
 {
     if (canDestroy()) {
+        GlobalSettings::instance()->executeJSFunction("onBeforeDestroy");
         Model *m = mModel;
         mModel = 0;
         delete m;
@@ -312,7 +314,9 @@ bool ModelController::runYear()
     bool err=false;
     try {
         emit bufferLogs(true);
+        GlobalSettings::instance()->executeJSFunction("onYearBegin");
         mModel->runYear();
+        GlobalSettings::instance()->executeJSFunction("onYearEnd");
         fetchDynamicOutput();
     } catch(const IException &e) {
         QString error_msg = e.message();

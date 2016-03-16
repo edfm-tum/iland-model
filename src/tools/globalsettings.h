@@ -64,6 +64,8 @@ public:
     /// access the global QScriptEngine used throughout the model
     /// for all Javascript related functionality.
     QString executeJavascript(const QString &command);
+    /// execute a javasript function in the global context
+    QString executeJSFunction(const QString function_name);
     QJSEngine *scriptEngine() const { return mScriptEngine; }
     void resetScriptEngine(); ///< re-creates the script engine (when the Model is re-created)
 
