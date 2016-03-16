@@ -96,20 +96,21 @@ void BarkBeetleModule::setup(const ResourceUnit *ru)
     // set all pixel within the resource unit
     GridRunner<BarkBeetleCell> runner(mGrid, ru->boundingBox());
     while (BarkBeetleCell *cell = runner.next())
-        cell->backgroundInfestationProbability = pixel_value;
+        cell->backgroundInfestationProbability = static_cast<float>(pixel_value);
 
 }
 
 void BarkBeetleModule::loadParameters()
 {
     const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
-    params.cohortsPerGeneration = xml.valueDouble(".cohortsPerGeneration", params.cohortsPerGeneration);
-    params.cohortsPerSisterbrood = xml.valueDouble(".cohortsPerSisterbrood", params.cohortsPerSisterbrood);
+    params.cohortsPerGeneration = xml.valueInt(".cohortsPerGeneration", params.cohortsPerGeneration);
+    params.cohortsPerSisterbrood = xml.valueInt(".cohortsPerSisterbrood", params.cohortsPerSisterbrood);
     params.spreadKernelMaxDistance = xml.valueDouble(".spreadKernelMaxDistance", params.spreadKernelMaxDistance);
     params.spreadKernelFormula = xml.value(".spreadKernelFormula", "100*(1-x)^4");
-    params.minDbh = xml.valueDouble(".minimumDbh", params.minDbh);
+    params.minDbh = static_cast<float>( xml.valueDouble(".minimumDbh", params.minDbh) );
     mKernelPDF.setup(params.spreadKernelFormula,0.,params.spreadKernelMaxDistance);
     params.backgroundInfestationProbability = xml.valueDouble(".backgroundInfestationProbability", params.backgroundInfestationProbability);
+    params.initialInfestationProbability = xml.valueDouble(".initialInfestationProbability", params.initialInfestationProbability);
     params.stormInfestationProbability = xml.valueDouble(".stormInfestationProbability", params.stormInfestationProbability);
     params.deadTreeSelectivity = xml.valueDouble(".deadTreeSelectivity", params.deadTreeSelectivity);
 
@@ -409,16 +410,24 @@ void BarkBeetleModule::startSpread()
                 }
             }
 
-        } else if (b->isPotentialHost() && b->backgroundInfestationProbability>0.f) {
-            // calculate probability for an outbreak
-            double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
-            double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
-            if (drandom() < p_mod) {
-                // background activation: 10 px
-                //clumpedBackgroundActivation(mGrid.indexOf(b));
-                b->setInfested(true);
-                b->outbreakYear = mYear; // this outbreak starts in the current year
-                stats.infestedBackground++;
+        } else if (b->isPotentialHost()) {
+            if (mYear==1 && params.initialInfestationProbability>0.) {
+                if (drandom() < params.initialInfestationProbability) {
+                    b->setInfested(true);
+                    b->outbreakYear = 1 - irandom(0,3); // initial outbreaks has an age of 1-4 years
+                    stats.infestedBackground++;
+                }
+            } else if (b->backgroundInfestationProbability>0.f) {
+                // calculate probability for an outbreak
+                double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
+                double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
+                if (drandom() < p_mod) {
+                    // background activation: 10 px
+                    //clumpedBackgroundActivation(mGrid.indexOf(b));
+                    b->setInfested(true);
+                    b->outbreakYear = mYear; // this outbreak starts in the current year
+                    stats.infestedBackground++;
+                }
             }
         }
 

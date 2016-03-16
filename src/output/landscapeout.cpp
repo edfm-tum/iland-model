@@ -107,7 +107,7 @@ LandscapeRemovedOut::LandscapeRemovedOut()
                    "the setting 'includeHarvest' controls whether to include ('true') or exclude ('false') harvested trees. ");
     columns() << OutputColumn::year()
               << OutputColumn::species()
-              << OutputColumn("reason", "Resaon for tree death: 'N': Natural mortality, 'H': Harvest, 'D': Disturbance", OutString)
+              << OutputColumn("reason", "Resaon for tree death: 'N': Natural mortality, 'H': Harvest, 'D': Disturbance, 'S': Salvage harvesting, 'C': killed/cut down by management", OutString)
               << OutputColumn("count_ha", "number of died trees (living, >4m height) ", OutInteger)
               << OutputColumn("volume_m3", "sum of volume (geomery, taper factor) in m3", OutDouble)
               << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble);

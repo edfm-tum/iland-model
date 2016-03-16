@@ -160,6 +160,11 @@ QString GlobalSettings::executeJavascript(const QString &command)
     return ScriptGlobal::executeScript(command);
 }
 
+QString GlobalSettings::executeJSFunction(const QString function_name)
+{
+    return ScriptGlobal::executeJSFunction(function_name);
+}
+
 void GlobalSettings::resetScriptEngine()
 {
     if (mScriptEngine)
