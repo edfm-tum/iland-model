@@ -88,8 +88,7 @@ void WaterOut::setup()
     // use a condition for to control execuation for the current year
     QString condition = settings().value(".condition", "");
     mCondition.setExpression(condition);
-    if (!mCondition.isEmpty()) {
-    }
+
     condition = settings().value(".conditionRU", "");
     mConditionDetails.setExpression(condition);
 

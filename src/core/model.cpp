@@ -804,6 +804,9 @@ void Model::runYear()
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t.elapsed();
     GlobalSettings::instance()->systemStatistics()->writeOutput();
 
+    // global javascript event
+    GlobalSettings::instance()->executeJSFunction("onYearEnd");
+
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 
     // try to clean up a bit of memory (useful if many large JS objects (e.g., grids) are used)
