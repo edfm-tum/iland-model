@@ -28,39 +28,68 @@
 CarbonFlowOut::CarbonFlowOut()
 {
 
-    setName("Carbon fluxes per RU/yr", "carbonflow");
-    setDescription("Carbon fluxes per resource unit and year. Note that all fluxes are reported on a per ru basis, " \
-                   "i.e. on the actual simulated area. Thus summing over all ru should give the overall C fluxes for"\
-                   " the simulated landscape. Fluxes that are internally calculated on a per ha basis thus need to be "\
-                   "scaled to the stockable area. Furthermore, the following sign convention is used in iLand: fluxes "\
-                   "from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.");
+    setName("Carbon fluxes per RU or landscape/yr", "carbonflow");
+    setDescription("Carbon fluxes per resource unit and year and/or aggregated for the full landscape. For resource unit-level details, note that all fluxes are reported on a per ru basis, " \
+                   "i.e. on the full area covered by resource units, potentially including areas that are not within the project area."\
+                   "For results limited to the project area, the data values need to be scaled to the stockable area.\n" \
+                   "For landsacpe level outputs, data is always given per ha of project area (i.e. scaling with stockable area is already included).\n" \
+                   "Furthermore, the following sign convention is used in iLand: fluxes "\
+                   "from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.\n" \
+                   "You can specify a 'condition' to limit output execution to specific years (variable 'year'). " \
+                   "The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 " \
+                   "(leaving 'conditionRU' blank enables details per default).");
+
+
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("area", "total stockable area of the resource unit (m2)", OutInteger)
-              << OutputColumn("GPP_pot", "potential gross primary production, kg C/ru; GPP as calculated ((primary production|here)), " \
+              << OutputColumn("GPP_pot", "potential gross primary production, kg C; GPP as calculated ((primary production|here)), " \
                               "sans the effect of the aging modifier f_age; note that a rough estimate of ((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) " \
                               "is added to the GPP of adult trees here.", OutDouble)
-              << OutputColumn("GPP_act", "actually relaized gross primary production, kg C/ru; ((primary production|GPP)) including " \
+              << OutputColumn("GPP_act", "actually relaized gross primary production, kg C; ((primary production|GPP)) including " \
                               "the effect of decreasing productivity with age; note that a rough estimate of "\
                               "((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) is added to the GPP of adult trees here.", OutDouble)
-              << OutputColumn("NPP", "net primary production, kg C/ru; calculated as NPP=GPP-Ra; Ra, the autotrophic respiration (kg C/ru) is calculated as"\
+              << OutputColumn("NPP", "net primary production, kg C; calculated as NPP=GPP-Ra; Ra, the autotrophic respiration (kg C/ru) is calculated as"\
                               " a fixed fraction of GPP in iLand (see ((primary production|here)) for details). ", OutDouble)
-              << OutputColumn("Rh", "heterotrophic respiration, kg C/ru; sum of C released to the atmosphere from detrital pools, i.e."\
+              << OutputColumn("Rh", "heterotrophic respiration, kg C; sum of C released to the atmosphere from detrital pools, i.e."\
                               " ((snag dynamics|#Snag decomposition|snags)), ((soil C and N cycling|downed deadwood, litter, and mineral soil)).", OutDouble)
-              << OutputColumn("dist_loss", "disturbance losses, kg C/ru; C that leaves the ecosystem as a result of disturbances, e.g. fire consumption", OutDouble)
-              << OutputColumn("mgmt_loss", "management losses, kg C/ru; C that leaves the ecosystem as a result of management interventions, e.g. harvesting", OutDouble)
-              << OutputColumn("NEP", "net ecosytem productivity kg C/ru, NEP=NPP - Rh - disturbance losses - management losses. "\
+              << OutputColumn("dist_loss", "disturbance losses, kg C; C that leaves the ecosystem as a result of disturbances, e.g. fire consumption", OutDouble)
+              << OutputColumn("mgmt_loss", "management losses, kg C; C that leaves the ecosystem as a result of management interventions, e.g. harvesting", OutDouble)
+              << OutputColumn("NEP", "net ecosytem productivity kg C, NEP=NPP - Rh - disturbance losses - management losses. "\
                               "Note that NEP is also equal to the total net changes over all ecosystem C pools, as reported in the "\
                               "carbon output (cf. [http://www.jstor.org/stable/3061028|Randerson et al. 2002])", OutDouble);
 }
 
 void CarbonFlowOut::setup()
 {
+    // use a condition for to control execuation for the current year
+    QString condition = settings().value(".condition", "");
+    mCondition.setExpression(condition);
+
+    condition = settings().value(".conditionRU", "");
+    mConditionDetails.setExpression(condition);
+
 }
 
 
 void CarbonFlowOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
+
+    // global condition
+    if (!mCondition.isEmpty() && mCondition.calculate(GlobalSettings::instance()->currentYear())==0.)
+        return;
+
+    bool ru_level = true;
+    // switch off details if this is indicated in the conditionRU option
+    if (!mConditionDetails.isEmpty() && mConditionDetails.calculate(GlobalSettings::instance()->currentYear())==0.)
+        ru_level = false;
+
+    double gpp_pot = 0.;
+    double npp = 0.;
+    int ru_count = 0;
+    QVector<double> v(8, 0.); // 8 data values
+    QVector<double>::iterator vit;
+
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
@@ -68,10 +97,10 @@ void CarbonFlowOut::exec()
             qDebug() << "CarbonFlowOut::exec: resource unit without soil or snags module - no output generated.";
             continue;
         }
-        *this << currentYear() << ru->index() << ru->id() << ru->stockableArea(); // keys
 
-        double gpp_pot = 0.;
-        double npp = 0.;
+
+        gpp_pot = 0.;
+        npp = 0.;
         // calculate the GPP based on the 3PG GPP for the resource units;
         // the NPP is calculated as the sum of NPP of tree individuals
         // an estimate for the saplings layer is added for both pools (based on average dbh and stem number)
@@ -91,16 +120,40 @@ void CarbonFlowOut::exec()
 
         double nep = npp - to_atm - to_harvest - to_dist;
 
-        *this << gpp_pot // GPP_pot
-        << npp / cAutotrophicRespiration // GPP_act
-        << npp // NPP
-        << -to_atm // rh
-        << -to_dist // disturbance
-        << -to_harvest // management loss
-        << nep; // nep
+        if (ru_level) {
+            *this << currentYear() << ru->index() << ru->id() << ru->stockableArea(); // keys
+            *this << gpp_pot // GPP_pot
+                    << npp / cAutotrophicRespiration // GPP_act
+                    << npp // NPP
+                    << -to_atm // rh
+                    << -to_dist // disturbance
+                    << -to_harvest // management loss
+                    << nep; // nep
 
-        writeRow();
+            writeRow();
+        }
+        // landscape level
+        ++ru_count;
+        vit = v.begin();
+        *vit++ += ru->stockableArea(); // total area in m2
+        *vit++ += gpp_pot;
+        *vit++ += npp / cAutotrophicRespiration; // GPP_act
+        *vit++ += -to_atm; // rh
+        *vit++ += -to_dist; // disturbance
+        *vit++ += -to_harvest; // management loss
+        *vit++ += nep; // net ecosystem productivity
     }
+
+    // write landscape sums
+    double total_stockable_area = v[0]/ 10000.; // convert to ha of stockable area
+    if (ru_count==0. || total_stockable_area==0.)
+        return;
+    *this << currentYear() << -1 << -1; // codes -1/-1 for landscape level
+    *this << v[0]; // stockable area [m2]
+    for (int i=1;i<v.size();++i)
+        *this << v[i] / total_stockable_area;
+    writeRow();
+
 
 }
 

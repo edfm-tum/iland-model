@@ -30,7 +30,7 @@ ABEStandRemovalOut::ABEStandRemovalOut()
 {
     setName("Annual harvests on stand level.", "abeStandRemoval");
     setDescription("This output provides details about realized timber harvests on stand level. " \
-                   "The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning, final, and disturbed volume.");
+                   "The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final.");
     columns() << OutputColumn::year()
               << OutputColumn("unitid", "unique identifier of the planning unit", OutString)
               << OutputColumn("standid", "unique identifier of the forest stand", OutInteger)

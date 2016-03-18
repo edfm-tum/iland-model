@@ -316,7 +316,7 @@ bool ModelController::runYear()
         emit bufferLogs(true);
         GlobalSettings::instance()->executeJSFunction("onYearBegin");
         mModel->runYear();
-        GlobalSettings::instance()->executeJSFunction("onYearEnd");
+
         fetchDynamicOutput();
     } catch(const IException &e) {
         QString error_msg = e.message();
@@ -325,6 +325,12 @@ bool ModelController::runYear()
         err=true;
     }
     emit bufferLogs(false);
+#ifdef ILAND_GUI
+    QApplication::processEvents();
+#else
+    QCoreApplication::processEvents();
+#endif
+
     return err;
 }
 
