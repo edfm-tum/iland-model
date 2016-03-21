@@ -41,10 +41,10 @@ CarbonFlowOut::CarbonFlowOut()
 
 
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
-              << OutputColumn("area", "total stockable area of the resource unit (m2)", OutInteger)
+              << OutputColumn("area", "total stockable area of the resource unit (or landscape) (m2)", OutInteger)
               << OutputColumn("GPP_pot", "potential gross primary production, kg C; GPP as calculated ((primary production|here)), " \
                               "sans the effect of the aging modifier f_age; note that a rough estimate of ((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) " \
-                              "is added to the GPP of adult trees here.", OutDouble)
+                              "is added to the GPP of adult trees here. This value is of limited use for multi-species forests.", OutDouble)
               << OutputColumn("GPP_act", "actually relaized gross primary production, kg C; ((primary production|GPP)) including " \
                               "the effect of decreasing productivity with age; note that a rough estimate of "\
                               "((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) is added to the GPP of adult trees here.", OutDouble)
@@ -134,18 +134,20 @@ void CarbonFlowOut::exec()
         }
         // landscape level
         ++ru_count;
+        double rusa = ru->stockableArea() / (cRUSize*cRUSize); // stockable area / ha
         vit = v.begin();
         *vit++ += ru->stockableArea(); // total area in m2
-        *vit++ += gpp_pot;
-        *vit++ += npp / cAutotrophicRespiration; // GPP_act
-        *vit++ += -to_atm; // rh
-        *vit++ += -to_dist; // disturbance
-        *vit++ += -to_harvest; // management loss
-        *vit++ += nep; // net ecosystem productivity
+        *vit++ += gpp_pot * rusa;
+        *vit++ += npp / cAutotrophicRespiration * rusa; // GPP_act
+        *vit++ += npp * rusa; // NPP
+        *vit++ += -to_atm * rusa; // rh
+        *vit++ += -to_dist * rusa; // disturbance
+        *vit++ += -to_harvest * rusa; // management loss
+        *vit++ += nep *rusa; // net ecosystem productivity
     }
 
     // write landscape sums
-    double total_stockable_area = v[0]/ 10000.; // convert to ha of stockable area
+    double total_stockable_area = v[0]/ (cRUSize*cRUSize); // convert to ha of stockable area
     if (ru_count==0. || total_stockable_area==0.)
         return;
     *this << currentYear() << -1 << -1; // codes -1/-1 for landscape level

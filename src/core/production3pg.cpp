@@ -27,8 +27,10 @@
 
 Production3PG::Production3PG()
 {
+    clear();
     mResponse=0;
     mEnvYear = 0.;
+
 }
 
 /**
@@ -81,6 +83,8 @@ void Production3PG::clear()
         mGPP[i] = 0.; mUPAR[i]=0.;
     }
     mEnvYear = 0.;
+    mGPPperArea = 0.;
+    mRootFraction = 0.;
 }
 
 /** calculate the stand-level NPP
