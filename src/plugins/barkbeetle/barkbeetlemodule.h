@@ -39,7 +39,7 @@ public:
     BarkBeetleCell() { reset(); }
     void clear() { n=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=NoDeadTrees; packageOutbreakYear=0.f; }
     /// full reset of the pixel
-    void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; n_events=0; }
+    void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; n_events=0; sum_volume_killed=0.f; }
     bool isHost() const { return dbh>0.f; }
     bool isPotentialHost() const {return dbh>0.f && killedYear==0 && infested==false; }
     /// sets the 'infested' state (true: the cell is newly infested, false: the cell stops being infested, e.g. by winter mortality)
@@ -58,6 +58,7 @@ public:
     float outbreakYear; // year in which the outbreak started (this information is preserved by spreading beatles)
     float packageOutbreakYear; // outbreak year of packages landing on a cell
     int n_events; // total number of events on the pixel since the start of the simulation
+    float sum_volume_killed; // total killed volume (since start of the simulation) on a pixel (m3)
     enum DeadTrees { NoDeadTrees=0, StormDamage=10, SinkInVicinity=5, BeetleTrapTree=8 };
     DeadTrees deadtrees;
     /// return true if either storm damaged trees or trap trees are on the pixel or in the Moore neighborhood of the cell
@@ -190,7 +191,7 @@ private:
 
     } params;
     struct SBBStats {
-        void clear() { infestedStart=0;infestedBackground=0; infestedStorm=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NAreaKilled=0;NTreesKilled=0;BasalAreaKilled=0.; }
+        void clear() { infestedStart=0;infestedBackground=0; infestedStorm=0; maxGenerations=0;NCohortsLanded=0;NPixelsLanded=0;NCohortsSpread=0;NInfested=0;NWinterMortality=0;NAreaKilled=0;NTreesKilled=0;BasalAreaKilled=0.; VolumeKilled=0.;}
         int infestedStart; // # of pixels that are infested at the beginning of an iteration
         int infestedBackground; // # of pixels that are getting active
         int infestedStorm; // # of pixels that are activated due to storm damage
@@ -203,6 +204,7 @@ private:
         int NAreaKilled; // number of pixels on which trees were killed
         int NTreesKilled; // number of spruce trees killed
         double BasalAreaKilled; // sum of basal area of killed trees
+        double VolumeKilled; // sum of killed tree volumes (m3)
     } stats;
 
 

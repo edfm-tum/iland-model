@@ -267,11 +267,11 @@ void ResourceUnit::production()
         if (logLevelDebug())
             qDebug() << "crown area: lai" << leafAreaIndex() << "stocked area (pixels)" << mStockedArea << " area (crown)" << crown_area;
         if (leafAreaIndex()<1.) {
-            mStockedArea = crown_area;
+            mStockedArea = std::min(crown_area, mStockedArea);
         } else {
 
             double px_frac = (leafAreaIndex()-1.)/2.; // 0 at LAI=1, 1 at LAI=3
-            mStockedArea = mStockedArea * px_frac + crown_area * (1. - px_frac);
+            mStockedArea = mStockedArea * px_frac + std::min(crown_area, mStockedArea) * (1. - px_frac);
         }
         if (mStockedArea==0.)
             return;

@@ -651,7 +651,8 @@ void BarkBeetleModule::barkbeetleSpread()
 void BarkBeetleModule::barkbeetleKill()
 {
     int n_killed=0;
-    double basal_area=0;
+    double basal_area=0.;
+    double volume=0.;
     for (BarkBeetleRUCell *rucell=mRUGrid.begin(); rucell!=mRUGrid.end(); ++rucell)
         if (rucell->killed_trees) {
             // there are killed pixels within the resource unit....
@@ -659,11 +660,15 @@ void BarkBeetleModule::barkbeetleKill()
             for (QVector<Tree>::const_iterator t=tv.constBegin(); t!=tv.constEnd(); ++t) {
                 if (!t->isDead() && t->dbh()>params.minDbh && t->species()->id()==QStringLiteral("piab")) {
                     // check if on killed pixel?
-                    if (mGrid.constValueAt(t->position()).killed) {
+                    BarkBeetleCell &bbc = mGrid.valueAt(t->position());
+                    if (bbc.killed) {
                         // yes: kill the tree:
                         Tree *tree = const_cast<Tree*>(&(*t));
                         n_killed++;
                         basal_area+=tree->basalArea();
+                        volume+=tree->volume();
+                        bbc.sum_volume_killed += tree->volume();
+
                         if (!mSimulate) { // remove tree only if not in simulation mode
                             tree->setDeathReasonBarkBeetle();
                             tree->removeDisturbance(0., 1., // 0% of the stem to soil, 100% to snag (keeps standing)
@@ -678,6 +683,7 @@ void BarkBeetleModule::barkbeetleKill()
         }
     stats.NTreesKilled = n_killed;
     stats.BasalAreaKilled = basal_area;
+    stats.VolumeKilled = volume;
 
     // reset the effect of wind-damaged trees and "fangbaueme" -> year begin
 //    for (BarkBeetleCell *c=mGrid.begin(); c!=mGrid.end(); ++c)
@@ -710,6 +716,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 7: return data.backgroundInfestationProbability;
     case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
     case 9: return data.n_events; // number of events on a specific pixel
+    case 10: return data.sum_volume_killed; // total sum of trees killed for a pixel
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -728,7 +735,8 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 5/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray)
-                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds);
+                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
+                << LayeredGridBase::LayerElement(QLatin1Literal("sumVolume"), QLatin1Literal("running sum of damages trees (volume, m3)."), GridViewReds);
     return mNames;
 
 }

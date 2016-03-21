@@ -66,8 +66,9 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 8: return data.topex; // topo modifier of the current pixel
     case 9: return ruValueAt(&data, 0); // 1 if soil is frozen on the current pixel
     case 10: return data.n_affected; // number of storm events affecting the pixel
-    case 11: return data.edge_age; // # of years that a cell is an edge
-    case 12: return data.n_trees; // # of trees
+    case 11: return data.sum_volume_killed; // sum of killed volume
+    case 12: return data.edge_age; // # of years that a cell is an edge
+    case 13: return data.n_trees; // # of trees
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -88,6 +89,7 @@ const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("topo"), QLatin1Literal("the topography modifier for wind speeds"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
+                << LayeredGridBase::LayerElement(QLatin1Literal("sumVolume"), QLatin1Literal("running sum of damaged tree volume on the pixel."), GridViewReds)
                 << LayeredGridBase::LayerElement(QLatin1Literal("edgeAge"), QLatin1Literal("age of an edge (consecutive number of years that a cell is an edge)."), GridViewBlues)
                 << LayeredGridBase::LayerElement(QLatin1Literal("basalArea"), QLatin1Literal("sum of basal area (trees>4m) on the cel.l"), GridViewRainbow);
     return mNames;
@@ -796,6 +798,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
             }
             // statistics
             cell->basal_area_killed += t->basalArea();
+            cell->sum_volume_killed += t->volume();
             cell->n_killed ++;
             mTotalKilledBasalArea += t->basalArea();
             mTotalKilledVolume += t->volume();
