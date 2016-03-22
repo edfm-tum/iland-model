@@ -43,6 +43,7 @@ void StandStatistics::clear()
     mSumBasalArea = mSumVolume = mGWL = 0.;
     mLeafAreaIndex = 0.;
     mNPP = mNPPabove = 0.;
+    mNPPsaplings = 0.;
     mCohortCount = mSaplingCount = 0;
     mAverageSaplingAge = 0.;
     mSumSaplingAge = 0.;
@@ -100,6 +101,7 @@ void StandStatistics::calculate()
             mSumVolume *= area_factor;
             mNPP *= area_factor;
             mNPPabove *= area_factor;
+            mNPPsaplings *= area_factor;
             //mGWL *= area_factor;
             mCohortCount *= area_factor;
             mSaplingCount *= area_factor;
@@ -118,6 +120,7 @@ void StandStatistics::add(const StandStatistics &stat)
     mLeafAreaIndex += stat.mLeafAreaIndex;
     mNPP += stat.mNPP;
     mNPPabove += stat.mNPPabove;
+    mNPPsaplings += stat.mNPPsaplings;
     mGWL+=stat.mGWL;
     // regeneration
     mCohortCount += stat.mCohortCount;
@@ -146,6 +149,7 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
     mLeafAreaIndex += stat.mLeafAreaIndex * weight;
     mNPP += stat.mNPP * weight;
     mNPPabove += stat.mNPPabove * weight;
+    mNPPsaplings += stat.mNPPsaplings * weight;
     mGWL+=stat.mGWL * weight;
     // regeneration
     mCohortCount += stat.mCohortCount * weight;
@@ -172,6 +176,8 @@ void StandStatistics::add(const Sapling *sapling)
 
     mCRegeneration += sapling->carbonLiving().C;
     mNRegeneration += sapling->carbonLiving().N;
+
+    mNPPsaplings += sapling->carbonGain().C / biomassCFraction;
 }
 
 void SystemStatistics::writeOutput()

@@ -258,7 +258,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
     // (2) reduce height growth potential with species growth response f_env_yr and with light state (i.e. LIF-value) of home-pixel.
     double lif_value = *tree.pixel;
     double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(p.x()/cPxPerHeight, p.y()/cPxPerHeight).height;
-    if (h_height_grid==0)
+    if (h_height_grid==0.)
         throw IException(QString("growSapling: height grid at %1/%2 has value 0").arg(p.x()).arg(p.y()));
 
     double rel_height = tree.height / h_height_grid;
@@ -390,7 +390,7 @@ void Sapling::calculateGrowth()
     CNPair dead_wood, dead_fine; // pools for mortality
     // average dbh
     if (mLiving) {
-        // calculate the avg dbh number of stems
+        // calculate the avg dbh and number of stems
         double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
         double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh );
         // woody parts: stem, branchse and coarse roots
