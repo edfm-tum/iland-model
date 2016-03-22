@@ -76,7 +76,7 @@ void LandscapeOut::exec()
             continue; // do not include if out of project area
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
             const StandStatistics &stat = rus->constStatistics();
-            if (stat.count()==0 && stat.cohortCount()==0 && stat.gwl()==0.) {
+            if (stat.count()==0. && stat.cohortCount()==0 && stat.gwl()==0.) {
                 continue;
             }
             mLandscapeStats[rus->species()->id()].addAreaWeighted(stat, ru->stockableArea() / total_area);

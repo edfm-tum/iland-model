@@ -29,7 +29,8 @@ public:
     virtual void exec();
     virtual void setup();
 private:
-    Expression mCondition;
+    Expression mCondition; // condition for landscape-level output
+    Expression mConditionDetails; // condition for resource-unit-level output
 
 };
 

@@ -370,6 +370,27 @@ void ResourceUnit::yearEnd()
     }
     mStatistics.calculate(); // aggreagte on stand level
 
+    // update carbon flows
+    if (soil() && GlobalSettings::instance()->model()->settings().carbonCycleEnabled) {
+        mUnitVariables.carbonUptake = statistics().npp() * biomassCFraction;
+        mUnitVariables.carbonUptake += statistics().nppSaplings() * biomassCFraction;
+        double to_atm = snag()->fluxToAtmosphere().C; // from snags, kg/ha
+        to_atm += soil()->fluxToAtmosphere().C * stockableArea()/10.; // soil: t/ha -> t/m2 -> kg/ha
+        mUnitVariables.carbonToAtm = to_atm;
+
+        double to_dist = snag()->fluxToDisturbance().C;
+        to_dist += soil()->fluxToDisturbance().C * stockableArea()/10.;
+        double to_harvest = snag()->fluxToExtern().C;
+
+        mUnitVariables.NEP = mUnitVariables.carbonUptake - to_atm - to_dist - to_harvest;
+
+        // incremental values....
+        mUnitVariables.cumCarbonUptake += mUnitVariables.carbonUptake;
+        mUnitVariables.cumCarbonToAtm += mUnitVariables.carbonToAtm;
+        mUnitVariables.cumNEP += mUnitVariables.NEP;
+
+    }
+
 }
 
 void ResourceUnit::addTreeAgingForAllTrees()
@@ -469,7 +490,7 @@ void ResourceUnit::clearSaplings(const QRectF pixel_rect, const bool remove_from
 
 }
 
-float ResourceUnit::saplingHeightForInit(const QPoint &position) const
+double ResourceUnit::saplingHeightForInit(const QPoint &position) const
 {
     double maxh = 0.;
     foreach(ResourceUnitSpecies* rus, mRUSpecies)

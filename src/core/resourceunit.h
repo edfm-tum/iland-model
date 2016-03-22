@@ -33,7 +33,12 @@ class Soil;
 
 struct ResourceUnitVariables
 {
+    ResourceUnitVariables(): nitrogenAvailable(0.), cumCarbonUptake(0.), cumCarbonToAtm(0.), cumNEP(0.), carbonUptake(0.), carbonToAtm(0.), NEP(0.) {}
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year)
+    double cumCarbonUptake; ///< NPP  (kg C/RU)
+    double cumCarbonToAtm; ///< total flux of carbon to atmosphere (kg C/RU)
+    double cumNEP; ///< cumulative ecosystem productivity (kg C/RU), i.e. cumulative(NPP-losses(atm,harvest)
+    double carbonUptake, carbonToAtm, NEP; ///< values of the current year (NPP, flux to atmosphere, net ecosystem prod., all values in kgC/RU)
 };
 
 class ResourceUnit
@@ -112,7 +117,7 @@ public:
     const float *saplingHeightMapPointer() const {return mSaplingHeightMap; }
     /// return maximum sapling height at point 'position' (LIF-index). This call is slower but works witout a prior call
     /// to setSaplingHeightMap().
-    float saplingHeightForInit(const QPoint &position) const;
+    double saplingHeightForInit(const QPoint &position) const;
     /// set the height of the sapling map to the maximum of current value and 'height'.
     void setMaxSaplingHeightAt(const QPoint &position, const float height);
     /// clear all saplings of all species on a given position (after recruitment)
