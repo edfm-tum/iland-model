@@ -16,8 +16,8 @@ WaterOut::WaterOut()
                    "The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 " \
                    "(leaving 'conditionRU' blank enables details per default).");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
-              << OutputColumn("stocked_area", "area (m2/ha) which is stocked (covered by crowns, absorbing radiation)", OutDouble)
-              << OutputColumn("stockable_area", "area (m2/ha) which is stockable (within the project area)", OutDouble)
+              << OutputColumn("stocked_area", "area (ha/ha) which is stocked (covered by crowns, absorbing radiation)", OutDouble)
+              << OutputColumn("stockable_area", "area (ha/ha) which is stockable (and within the project area)", OutDouble)
               << OutputColumn("precipitation_mm", "Annual precipitation sum (mm)", OutDouble)
               << OutputColumn("et_mm", "Evapotranspiration (mm)", OutDouble)
               << OutputColumn("excess_mm", "annual sum of water loss due to lateral outflow/groundwater flow (mm)", OutDouble)
@@ -53,7 +53,7 @@ void WaterOut::exec()
         const WaterCycle *wc = ru->waterCycle();
         if (ru_level) {
             *this << currentYear() << ru->index() << ru->id();
-            *this << ru->stockedArea() << ru->stockableArea();
+            *this << ru->stockedArea()/(cRUSize*cRUSize) << ru->stockableArea()/(cRUSize*cRUSize);
             *this << ru->climate()->annualPrecipitation();
             *this << wc->mTotalET << wc->mTotalExcess;
             *this << wc->mSnowDays;
@@ -72,7 +72,7 @@ void WaterOut::exec()
     if (ru_count==0.)
         return;
     *this << currentYear() << -1 << -1; // codes -1/-1 for landscape level
-    *this << stocked/ru_count << stockable/ru_count;
+    *this << stocked/ru_count/(cRUSize*cRUSize) << stockable/ru_count/(cRUSize*cRUSize);
     *this << p / ru_count; // mean precip
     *this << et / ru_count;
     *this << excess / ru_count;

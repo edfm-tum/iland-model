@@ -31,7 +31,7 @@ DynamicStandOut::DynamicStandOut()
     setName("dynamic stand output by species/RU", "dynamicstand");
     setDescription("Userdefined outputs for tree aggregates for each stand or species.\n"\
                    "Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) "\
-                   "are calculated.\n" \
+                   "are calculated. The aggregated values are not scaled to any area unit.\n" \
                    "!!!Specifying the aggregation\n" \
                    "The ''by_species'' and ''by_ru'' option allow to define the aggregation level. When ''by_species'' is set to ''true'', " \
                    "a row for each species will be created, otherwise all trees of all species are aggregated to one row. " \

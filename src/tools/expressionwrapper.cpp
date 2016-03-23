@@ -136,7 +136,7 @@ QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveAre
                       << "leafAreaIndex" << "aging" << "cohortCount" << "saplingCount" << "saplingAge"
                       << "canopyConductance"
                       << "soilC" << "soilN"
-                      << "snagC" << "index" << "area" << "meanTemp" << "annualPrecip" << "annualRad";
+                      << "snagC" << "index" << "meanTemp" << "annualPrecip" << "annualRad";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -172,13 +172,12 @@ double RUWrapper::value(const int variableIndex)
         // snags
     case 19: if (mRU->snag()) return mRU->snag()->totalCarbon(); else return 0.;
     case 20: return mRU->index(); // numeric index
-    case 21: return mRU->stockableArea(); // stockable area on resource unit
-    case 22: return mRU->climate()->meanAnnualTemperature(); // mean temperature
-    case 23: { double psum=0;
+    case 21: return mRU->climate()->meanAnnualTemperature(); // mean temperature
+    case 22: { double psum=0;
         for (int i=0;i<12;++i)
             psum+=mRU->climate()->precipitationMonth()[i];
         return psum; }
-    case 24: return mRU->climate()->totalRadiation();
+    case 23: return mRU->climate()->totalRadiation();
 
     }
     return ExpressionWrapper::value(variableIndex);

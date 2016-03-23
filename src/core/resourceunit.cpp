@@ -372,17 +372,19 @@ void ResourceUnit::yearEnd()
 
     // update carbon flows
     if (soil() && GlobalSettings::instance()->model()->settings().carbonCycleEnabled) {
+        double area_factor = stockableArea() / (cRUSize*cRUSize); //conversion factor
         mUnitVariables.carbonUptake = statistics().npp() * biomassCFraction;
         mUnitVariables.carbonUptake += statistics().nppSaplings() * biomassCFraction;
-        double to_atm = snag()->fluxToAtmosphere().C; // from snags, kg/ha
-        to_atm += soil()->fluxToAtmosphere().C * stockableArea()/10.; // soil: t/ha -> t/m2 -> kg/ha
+
+        double to_atm = snag()->fluxToAtmosphere().C / area_factor; // from snags, kgC/ha
+        to_atm += soil()->fluxToAtmosphere().C *10000./10.; // soil: t/ha -> t/m2 -> kg/ha
         mUnitVariables.carbonToAtm = to_atm;
 
-        double to_dist = snag()->fluxToDisturbance().C;
-        to_dist += soil()->fluxToDisturbance().C * stockableArea()/10.;
-        double to_harvest = snag()->fluxToExtern().C;
+        double to_dist = snag()->fluxToDisturbance().C / area_factor;
+        to_dist += soil()->fluxToDisturbance().C * 10000./10.;
+        double to_harvest = snag()->fluxToExtern().C / area_factor;
 
-        mUnitVariables.NEP = mUnitVariables.carbonUptake - to_atm - to_dist - to_harvest;
+        mUnitVariables.NEP = mUnitVariables.carbonUptake - to_atm - to_dist - to_harvest; // kgC/ha
 
         // incremental values....
         mUnitVariables.cumCarbonUptake += mUnitVariables.carbonUptake;
