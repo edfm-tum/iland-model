@@ -35,10 +35,10 @@ struct ResourceUnitVariables
 {
     ResourceUnitVariables(): nitrogenAvailable(0.), cumCarbonUptake(0.), cumCarbonToAtm(0.), cumNEP(0.), carbonUptake(0.), carbonToAtm(0.), NEP(0.) {}
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year)
-    double cumCarbonUptake; ///< NPP  (kg C/RU)
-    double cumCarbonToAtm; ///< total flux of carbon to atmosphere (kg C/RU)
-    double cumNEP; ///< cumulative ecosystem productivity (kg C/RU), i.e. cumulative(NPP-losses(atm,harvest)
-    double carbonUptake, carbonToAtm, NEP; ///< values of the current year (NPP, flux to atmosphere, net ecosystem prod., all values in kgC/RU)
+    double cumCarbonUptake; ///< NPP  (kg C/ha)
+    double cumCarbonToAtm; ///< total flux of carbon to atmosphere (kg C/ha)
+    double cumNEP; ///< cumulative ecosystem productivity (kg C/ha), i.e. cumulative(NPP-losses(atm,harvest)
+    double carbonUptake, carbonToAtm, NEP; ///< values of the current year (NPP, flux to atmosphere, net ecosystem prod., all values in kgC/ha)
 };
 
 class ResourceUnit

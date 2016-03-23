@@ -29,8 +29,7 @@ CarbonFlowOut::CarbonFlowOut()
 {
 
     setName("Carbon fluxes per RU or landscape/yr", "carbonflow");
-    setDescription("Carbon fluxes per resource unit and year and/or aggregated for the full landscape. For resource unit-level details, note that all fluxes are reported on a per ru basis, " \
-                   "i.e. on the full area covered by resource units, potentially including areas that are not within the project area."\
+    setDescription("Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). " \
                    "For results limited to the project area, the data values need to be scaled to the stockable area.\n" \
                    "For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included).\n" \
                    "Furthermore, the following sign convention is used in iLand: fluxes "\
@@ -41,14 +40,11 @@ CarbonFlowOut::CarbonFlowOut()
 
 
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
-              << OutputColumn("area", "total stockable area of the resource unit (or landscape) (m2)", OutInteger)
-              << OutputColumn("GPP_pot", "potential gross primary production, kg C; GPP as calculated ((primary production|here)), " \
-                                         "sans the effect of the aging modifier f_age; note that a rough estimate of ((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) " \
-                                         "is added to the GPP of adult trees here. This value is of limited use for multi-species forests.", OutDouble)
-              << OutputColumn("GPP_act", "actually relaized gross primary production, kg C; ((primary production|GPP)) including " \
+              << OutputColumn("area_ha", "total stockable area of the resource unit (or landscape) (ha)", OutInteger)
+              << OutputColumn("GPP", "actually realized gross primary production, kg C; ((primary production|GPP)) including " \
                                          "the effect of decreasing productivity with age; note that a rough estimate of "\
                                          "((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) is added to the GPP of adult trees here.", OutDouble)
-              << OutputColumn("NPP", "net primary production, kg C; calculated as NPP=GPP-Ra; Ra, the autotrophic respiration (kg C/ru) is calculated as"\
+              << OutputColumn("NPP", "net primary production, kg C; calculated as NPP=GPP-Ra; Ra, the autotrophic respiration (kg C/ha) is calculated as"\
                                      " a fixed fraction of GPP in iLand (see ((primary production|here)) for details). ", OutDouble)
               << OutputColumn("Rh", "heterotrophic respiration, kg C; sum of C released to the atmosphere from detrital pools, i.e."\
                                     " ((snag dynamics|#Snag decomposition|snags)), ((soil C and N cycling|downed deadwood, litter, and mineral soil)).", OutDouble)
@@ -87,10 +83,9 @@ void CarbonFlowOut::exec()
     if (!mConditionDetails.isEmpty() && mConditionDetails.calculate(GlobalSettings::instance()->currentYear())==0.)
         ru_level = false;
 
-    double gpp_pot = 0.;
     double npp = 0.;
     int ru_count = 0;
-    QVector<double> v(11, 0.); // 11 data values
+    QVector<double> v(10, 0.); // 11 data values
     QVector<double>::iterator vit;
 
     foreach(ResourceUnit *ru, m->ruList()) {
@@ -102,31 +97,23 @@ void CarbonFlowOut::exec()
         }
 
 
-        gpp_pot = 0.;
         npp = 0.;
-        // calculate the GPP based on the 3PG GPP for the resource units;
-        // the NPP is calculated as the sum of NPP of tree individuals
-        // an estimate for the saplings layer is added for both pools (based on average dbh and stem number)
-        foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
-            gpp_pot += rus->prod3PG().GPPperArea() * ru->stockedArea() * biomassCFraction; // GPP kg Biomass/m2 -> kg/RU -> kg C/RU
-            gpp_pot += rus->sapling().carbonGain().C / cAutotrophicRespiration; // add GPP of the saplings (estimate GPP from NPP)
-        }
-        npp += ru->statistics().npp() * biomassCFraction;
-        npp += ru->statistics().nppSaplings() * biomassCFraction;
-        double to_atm = ru->snag()->fluxToAtmosphere().C; // from snags, kg/ha
-        to_atm += ru->soil()->fluxToAtmosphere().C * ru->stockableArea()/10.; // soil: t/ha -> t/m2 -> kg/ha
+        double area_factor = ru->stockableArea() / (cRUSize*cRUSize); //conversion factor
+        npp += ru->statistics().npp() * biomassCFraction; // kg C/ha
+        npp += ru->statistics().nppSaplings() * biomassCFraction; // kgC/ha
+        double to_atm = ru->snag()->fluxToAtmosphere().C / area_factor; // from snags, kg/ha
+        to_atm += ru->soil()->fluxToAtmosphere().C * 10000./10.; // soil: t/ha -> t/m2 -> kg/ha
 
-        double to_dist = ru->snag()->fluxToDisturbance().C;
-        to_dist += ru->soil()->fluxToDisturbance().C * ru->stockableArea()/10.;
+        double to_dist = ru->snag()->fluxToDisturbance().C / area_factor; // convert to kgC/ha
+        to_dist += ru->soil()->fluxToDisturbance().C * 10000./10.; // kgC/ha
 
-        double to_harvest = ru->snag()->fluxToExtern().C;
+        double to_harvest = ru->snag()->fluxToExtern().C / area_factor; // kgC/ha
 
-        double nep = npp - to_atm - to_harvest - to_dist;
+        double nep = npp - to_atm - to_harvest - to_dist; // kgC/ha
 
         if (ru_level) {
-            *this << currentYear() << ru->index() << ru->id() << ru->stockableArea(); // keys
-            *this << gpp_pot // GPP_pot
-                    << npp / cAutotrophicRespiration // GPP_act
+            *this << currentYear() << ru->index() << ru->id() << area_factor; // keys
+            *this <<  npp / cAutotrophicRespiration // GPP_act
                     << npp // NPP
                     << -to_atm // rh
                     << -to_dist // disturbance
@@ -138,24 +125,22 @@ void CarbonFlowOut::exec()
         }
         // landscape level
         ++ru_count;
-        double rusa = ru->stockableArea() / (cRUSize*cRUSize); // stockable area / ha
         vit = v.begin();
-        *vit++ += ru->stockableArea(); // total area in m2
-        *vit++ += gpp_pot * rusa;
-        *vit++ += npp / cAutotrophicRespiration * rusa; // GPP_act
-        *vit++ += npp * rusa; // NPP
-        *vit++ += -to_atm * rusa; // rh
-        *vit++ += -to_dist * rusa; // disturbance
-        *vit++ += -to_harvest * rusa; // management loss
-        *vit++ += nep *rusa; // net ecosystem productivity
-        *vit++ += ru->resouceUnitVariables().cumCarbonUptake * rusa; // cum. NPP
-        *vit++ += ru->resouceUnitVariables().cumCarbonToAtm * rusa; // cum. Rh
-        *vit++ += ru->resouceUnitVariables().cumNEP * rusa; // cum. NEP
+        *vit++ += area_factor; // total area in ha
+        *vit++ += npp / cAutotrophicRespiration * area_factor; // GPP_act
+        *vit++ += npp * area_factor; // NPP
+        *vit++ += -to_atm * area_factor; // rh
+        *vit++ += -to_dist * area_factor; // disturbance
+        *vit++ += -to_harvest * area_factor; // management loss
+        *vit++ += nep *area_factor; // net ecosystem productivity
+        *vit++ += ru->resouceUnitVariables().cumCarbonUptake * area_factor; // cum. NPP
+        *vit++ += ru->resouceUnitVariables().cumCarbonToAtm * area_factor; // cum. Rh
+        *vit++ += ru->resouceUnitVariables().cumNEP * area_factor; // cum. NEP
 
     }
 
     // write landscape sums
-    double total_stockable_area = v[0]/ (cRUSize*cRUSize); // convert to ha of stockable area
+    double total_stockable_area = v[0]; // total ha of stockable area
     if (ru_count==0. || total_stockable_area==0.)
         return;
     *this << currentYear() << -1 << -1; // codes -1/-1 for landscape level
