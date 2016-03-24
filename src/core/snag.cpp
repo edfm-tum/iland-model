@@ -140,6 +140,17 @@ void Snag::setup( const ResourceUnit *ru)
         mOtherWood[i] = other;
 }
 
+void Snag::scaleInitialState()
+{
+    double area_factor = mRU->stockableArea() / (cRUSize*cRUSize); // fraction stockable area
+    mSWD[1] *= area_factor;
+    mNumberOfSnags[1] *= area_factor;
+    for (int i=0;i<5;i++)
+        mOtherWood[i]*= area_factor;
+    mTotalSnagCarbon *= area_factor;
+
+}
+
 // debug outputs
 QList<QVariant> Snag::debugList()
 {
