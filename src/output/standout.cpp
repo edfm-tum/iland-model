@@ -72,7 +72,7 @@ void StandOut::exec()
             const StandStatistics &stat = rus->constStatistics();
             if (stat.count()==0 && stat.cohortCount()==0)
                 continue;
-            *this << currentYear() << ru->index() << ru->id() << rus->species()->id() << ru->stockableArea()/(cRUSize*cRUSize); // keys
+            *this << currentYear() << ru->index() << ru->id() << rus->species()->id() << ru->stockableArea()/cRUArea; // keys
             // *this << ru->boundingBox().center().x() << ru->boundingBox().center().y();  // temp
             *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                     << stat.volume() << stat.totalCarbon() << stat.gwl() << stat.basalArea()

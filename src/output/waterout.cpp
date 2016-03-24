@@ -53,7 +53,7 @@ void WaterOut::exec()
         const WaterCycle *wc = ru->waterCycle();
         if (ru_level) {
             *this << currentYear() << ru->index() << ru->id();
-            *this << ru->stockedArea()/(cRUSize*cRUSize) << ru->stockableArea()/(cRUSize*cRUSize);
+            *this << ru->stockedArea()/cRUArea << ru->stockableArea()/cRUArea;
             *this << ru->climate()->annualPrecipitation();
             *this << wc->mTotalET << wc->mTotalExcess;
             *this << wc->mSnowDays;
@@ -72,7 +72,7 @@ void WaterOut::exec()
     if (ru_count==0.)
         return;
     *this << currentYear() << -1 << -1; // codes -1/-1 for landscape level
-    *this << stocked/ru_count/(cRUSize*cRUSize) << stockable/ru_count/(cRUSize*cRUSize);
+    *this << stocked/ru_count/cRUArea << stockable/ru_count/cRUArea;
     *this << p / ru_count; // mean precip
     *this << et / ru_count;
     *this << excess / ru_count;

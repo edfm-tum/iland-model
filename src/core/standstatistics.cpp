@@ -94,7 +94,7 @@ void StandStatistics::calculate()
     // scale values to per hectare if resource unit <> 1ha
     // note: no scaling for carbon/nitrogen pools
     if (mRUS) {
-        double area_factor =  10000. / mRUS->ru()->stockableArea();
+        double area_factor =  cRUArea / mRUS->ru()->stockableArea();
         if (area_factor!=1.) {
             mCount = mCount * area_factor;
             mSumBasalArea *= area_factor;
