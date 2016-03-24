@@ -1036,7 +1036,7 @@ void Model::calculateStockableArea()
             ru->setStockableArea( cHeightPixelArea * valid); // in m2
             if (ru->snag())
                 ru->snag()->scaleInitialState();
-            mTotalStockableArea += cHeightPixelArea * valid / 10000.; // in ha
+            mTotalStockableArea += cHeightPixelArea * valid / cRUArea; // in ha
             if (valid==0 && ru->id()>-1) {
                 // invalidate this resource unit
                 ru->setID(-1);

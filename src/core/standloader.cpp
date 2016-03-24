@@ -711,7 +711,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
            p.h_max = mInitHeightGrid->grid().constValueAtIndex(p.pixelOffset);
        pixel_list.append(p);
     }
-    double area_factor = grid->area(stand_id) / 10000.;
+    double area_factor = grid->area(stand_id) / cRUArea;
 
     int key=0;
     double rand_val, rand_fraction;
@@ -868,7 +868,7 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
         qDebug() << "stand" << stand_id << "not in project area. No init performed.";
         return -1;
     }
-    double area_factor = stand_grid->area(stand_id) / 10000.; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
+    double area_factor = stand_grid->area(stand_id) / cRUArea; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
 
     // parse the content of the init-file
     // species
@@ -955,7 +955,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
     std::sort(lif_ptrs.begin(), lif_ptrs.end(), LIFValueHigher); // higher: highest values first
 
 
-    double area_factor = stand_grid->area(stand_id) / 10000.; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
+    double area_factor = stand_grid->area(stand_id) / cRUArea; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
 
     // parse the content of the init-file
     // species

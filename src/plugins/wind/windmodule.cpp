@@ -882,7 +882,7 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     double c_hegyi;
     c_hegyi = mLRITransferFunction.calculate(tree->lightResourceIndex());
     // the turning moment coefficient incorporating the competition state
-    double tc = 4.42+122.1*(tree->dbh()*tree->dbh()/10000.)*tree->height()-0.141*c_hegyi-14.6*(tree->dbh()*tree->dbh()/10000.)*tree->height()*c_hegyi;
+    double tc = 4.42+122.1*(tree->dbh()*tree->dbh()/cRUArea)*tree->height()-0.141*c_hegyi-14.6*(tree->dbh()*tree->dbh()/cRUArea)*tree->height()*c_hegyi;
     // now derive the critital wind speeds for uprooting and breakage
     const double f_knot = 1.; // a reduction factor accounting for the presence of knots, currenty no reduction.
     // a factor to scale average wind speeds to gust, which transport much more energy. Orignially, the factor depends on the distance from the edge;

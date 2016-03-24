@@ -98,14 +98,14 @@ void CarbonFlowOut::exec()
 
 
         npp = 0.;
-        double area_factor = ru->stockableArea() / (cRUSize*cRUSize); //conversion factor
+        double area_factor = ru->stockableArea() / cRUArea; //conversion factor
         npp += ru->statistics().npp() * biomassCFraction; // kg C/ha
         npp += ru->statistics().nppSaplings() * biomassCFraction; // kgC/ha
         double to_atm = ru->snag()->fluxToAtmosphere().C / area_factor; // from snags, kg/ha
-        to_atm += ru->soil()->fluxToAtmosphere().C * 10000./10.; // soil: t/ha -> t/m2 -> kg/ha
+        to_atm += ru->soil()->fluxToAtmosphere().C * cRUArea/10.; // soil: t/ha -> t/m2 -> kg/ha
 
         double to_dist = ru->snag()->fluxToDisturbance().C / area_factor; // convert to kgC/ha
-        to_dist += ru->soil()->fluxToDisturbance().C * 10000./10.; // kgC/ha
+        to_dist += ru->soil()->fluxToDisturbance().C * cRUArea/10.; // kgC/ha
 
         double to_harvest = ru->snag()->fluxToExtern().C / area_factor; // kgC/ha
 

@@ -97,7 +97,7 @@ void CarbonOut::exec()
 
         const StandStatistics &s = ru->statistics();
         int ru_count = 0;
-        double area_factor = ru->stockableArea() / (cRUSize*cRUSize); // conversion factor from real area to per ha values
+        double area_factor = ru->stockableArea() / cRUArea; // conversion factor from real area to per ha values
         if (ru_level) {
             *this << currentYear() << ru->index() << ru->id() << area_factor; // keys
             // biomass from trees (scaled to 1ha already)
