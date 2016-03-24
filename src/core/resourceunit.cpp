@@ -66,6 +66,7 @@ ResourceUnit::ResourceUnit(const int index)
     mPixelCount=0;
     mStockedArea = 0;
     mStockedPixelCount = 0;
+    mStockableArea = 0;
     mAggregatedWLA = 0.;
     mAggregatedLA = 0.;
     mAggregatedLR = 0.;
