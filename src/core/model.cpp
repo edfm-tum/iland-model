@@ -1132,7 +1132,7 @@ void Model::cleanTreeLists()
     foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         if (ru->hasDiedTrees()) {
             ru->cleanTreeList();
-            ru->recreateStandStatistics();
+            ru->recreateStandStatistics(false);
         }
     }
 }
