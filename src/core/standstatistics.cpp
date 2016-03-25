@@ -92,7 +92,7 @@ void StandStatistics::calculate()
         mAverageSaplingAge = mSumSaplingAge / double(mCohortCount);
 
     // scale values to per hectare if resource unit <> 1ha
-    // note: no scaling for carbon/nitrogen pools
+    // note: do this only on species-level (avoid double scaling)
     if (mRUS) {
         double area_factor =  cRUArea / mRUS->ru()->stockableArea();
         if (area_factor!=1.) {
