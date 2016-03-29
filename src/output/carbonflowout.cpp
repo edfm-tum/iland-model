@@ -40,7 +40,7 @@ CarbonFlowOut::CarbonFlowOut()
 
 
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
-              << OutputColumn("area_ha", "total stockable area of the resource unit (or landscape) (ha)", OutInteger)
+              << OutputColumn("area_ha", "total stockable area of the resource unit (or landscape) (ha)", OutDouble)
               << OutputColumn("GPP", "actually realized gross primary production, kg C; ((primary production|GPP)) including " \
                                          "the effect of decreasing productivity with age; note that a rough estimate of "\
                                          "((sapling growth and competition|#sapling C and N dynamics|sapling GPP)) is added to the GPP of adult trees here.", OutDouble)
