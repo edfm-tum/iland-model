@@ -126,7 +126,7 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     // this reduces rapid input pulses (e.g. if one large tree dies).
     // Put differently: for resource units with stockable area < 0.1ha, we add a "blank" area.
     // the soil module always calculates per ha values, so nothing else needs to be done here.
-    area_ha = std::max(area_ha, 0.1);
+    // area_ha = std::max(area_ha, 0.1);
 
     mInputLab = labile_input_kg_ha * (0.001 / area_ha); // transfer from kg/ha -> tons/ha and scale to 1 ha
     mInputRef = refractory_input_kg_ha * (0.001 / area_ha);

@@ -35,7 +35,7 @@ CarbonOut::CarbonOut()
                    "The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 " \
                    "(leaving 'conditionRU' blank enables details per default).");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
-              << OutputColumn("area", "total stockable area of the resource unit (ha)", OutInteger)
+              << OutputColumn("area_ha", "total stockable area of the resource unit (ha)", OutDouble)
               << OutputColumn("stem_c", "Stem carbon kg/ha", OutDouble)
               << OutputColumn("stem_n", "Stem nitrogen kg/ha", OutDouble)
               << OutputColumn("branch_c", "branches carbon kg/ha", OutDouble)
