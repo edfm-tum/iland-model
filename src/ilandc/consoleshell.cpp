@@ -48,7 +48,7 @@ class KeyboardTaker : public QThread
          QString input = qin.read(1);
          if (!input.isNull()) {
              // .. process input
-             qInfo() << "input:" << input;
+             qWarning() << "input:" << input;
          }
      }
  }
@@ -85,23 +85,23 @@ void ConsoleShell::run()
         QObject::connect(&iland_model, SIGNAL(year(int)),SLOT(runYear(int)));
         iland_model.setFileName(xml_name);
         if (iland_model.hasError()) {
-            qInfo() << "!!!! ERROR !!!!";
-            qInfo() << iland_model.lastError();
-            qInfo() << "!!!! ERROR !!!!";
+            qWarning() << "!!!! ERROR !!!!";
+            qWarning() << iland_model.lastError();
+            qWarning() << "!!!! ERROR !!!!";
             QCoreApplication::quit();
             return;
         }
 
         mParams.clear();
         if (QCoreApplication::arguments().count()>3) {
-            qInfo() << "set command line values:";
+            qWarning() << "set command line values:";
             for (int i=3;i<QCoreApplication::arguments().count();++i) {
                 QString line = QCoreApplication::arguments().at(i);
                 mParams.append(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
                 const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
-                qInfo() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
+                qWarning() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
             }
         }
         setupLogging();
@@ -113,43 +113,43 @@ void ConsoleShell::run()
         qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
         qDebug() << "**************************************************";
 
-        qInfo() << "*** creating model...";
-        qInfo() << "**************************************************";
+        qWarning() << "*** creating model...";
+        qWarning() << "**************************************************";
 
         iland_model.create();
         if (iland_model.hasError()) {
-            qInfo() << "!!!! ERROR !!!!";
-            qInfo() << iland_model.lastError();
-            qInfo() << "!!!! ERROR !!!!";
+            qWarning() << "!!!! ERROR !!!!";
+            qWarning() << iland_model.lastError();
+            qWarning() << "!!!! ERROR !!!!";
             QCoreApplication::quit();
             return;
         }
         runJavascript("onCreate");
-        qInfo() << "**************************************************";
-        qInfo() << "*** running model for" << years << "years";
-        qInfo() << "**************************************************";
+        qWarning() << "**************************************************";
+        qWarning() << "*** running model for" << years << "years";
+        qWarning() << "**************************************************";
 
         iland_model.run(years + 1);
         if (iland_model.hasError()) {
-            qInfo() << "!!!! ERROR !!!!";
-            qInfo() << iland_model.lastError();
-            qInfo() << "!!!! ERROR !!!!";
+            qWarning() << "!!!! ERROR !!!!";
+            qWarning() << iland_model.lastError();
+            qWarning() << "!!!! ERROR !!!!";
             QCoreApplication::quit();
             return;
         }
         runJavascript("onFinish");
 
-        qInfo() << "**************************************************";
-        qInfo() << "*** model run finished.";
-        qInfo() << "**************************************************";
+        qWarning() << "**************************************************";
+        qWarning() << "*** model run finished.";
+        qWarning() << "**************************************************";
 
     } catch (const IException &e) {
-        qInfo() << "*** An exception occured ***";
-        qInfo() << e.message();
+        qWarning() << "*** An exception occured ***";
+        qWarning() << e.message();
     }
     catch (const std::exception &e) {
-        qInfo() << "*** An (std)exception occured ***";
-        qInfo() << e.what();
+        qWarning() << "*** An (std)exception occured ***";
+        qWarning() << e.what();
     }
     QCoreApplication::quit();
 
@@ -177,15 +177,16 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
-        printf("Warning: %s\n", msg.toLocal8Bit().data());
-        break;
-    case QtInfoMsg:
-        *ConsoleShell::logStream() << msg << endl;
-        if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
-
         break;
+// available from qt5.5
+//    case QtInfoMsg:
+//        *ConsoleShell::logStream() << msg << endl;
+//        if (ConsoleShell::flush())
+//            ConsoleShell::logStream()->flush();
+//        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
+
+//        break;
     case QtCriticalMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
@@ -236,8 +237,8 @@ void ConsoleShell::runJavascript(const QString key)
         if (pkey == key) {
             QString command = line.mid(line.indexOf('=')+1);
             // execute the function
-            qInfo() << "executing trigger" << key;
-            qInfo() << GlobalSettings::instance()->executeJavascript(command);
+            qWarning() << "executing trigger" << key;
+            qWarning() << GlobalSettings::instance()->executeJavascript(command);
         }
     }
 
