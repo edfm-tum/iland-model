@@ -64,6 +64,10 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mRemovedGrowth = 0.;
     mLastYear = -1;
 
+    DBGMODE( if(mSpecies->index()>1000 || mSpecies->index()<0)
+             qDebug() << "suspicious species?? in RUS::setup()";
+                );
+
 }
 
 
