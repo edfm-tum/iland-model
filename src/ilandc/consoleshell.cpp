@@ -99,6 +99,7 @@ void ConsoleShell::run()
                 QString line = QCoreApplication::arguments().at(i);
                 line = line.remove(QChar('"')); // drop quotes
                 mParams.append(line);
+                qDebug() << qPrintable(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
                 const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
