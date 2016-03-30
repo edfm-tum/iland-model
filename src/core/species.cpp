@@ -53,8 +53,8 @@ void Species::setup()
     // setup general information
     mId = stringVar("shortName");
     mName = stringVar("name");
-    QString col_name = '#' + stringVar("displayColor");
 #ifdef ILAND_GUI
+    QString col_name = '#' + stringVar("displayColor");
     mDisplayColor.setNamedColor(col_name);
 #else
     mDisplayColor = 0;

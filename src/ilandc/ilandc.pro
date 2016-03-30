@@ -97,7 +97,7 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 }
 }
 
-DEFINES += NO_DEBUG_MSGS
+#DEFINES += NO_DEBUG_MSGS
 
 CONFIG += precompile_header
 

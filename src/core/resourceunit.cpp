@@ -308,10 +308,13 @@ void ResourceUnit::production()
     // note: LAIFactors are only 1 if sum of LAI is > 1. (see WaterCycle)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         double lai_factor = (*i)->statistics().leafAreaIndex() / ru_lai;
-        DBGMODE(
-        if (lai_factor > 1.)
-            qDebug() << "LAI factor > 1";
-        );
+
+        //DBGMODE(
+        if (lai_factor > 1.) {
+                        const ResourceUnitSpecies* rus=*i;
+                        qDebug() << "LAI factor > 1: species ru-index:" << rus->species()->name() << rus->ru()->index();
+                    }
+        //);
         (*i)->setLAIfactor( lai_factor );
     }
 
@@ -322,6 +325,12 @@ void ResourceUnit::production()
 
     // invoke species specific calculation (3PG)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
+        //DBGMODE(
+        if ((*i)->LAIfactor() > 1.) {
+                    const ResourceUnitSpecies* rus=*i;
+                    qDebug() << "LAI factor > 1: species ru-index value:" << rus->species()->name() << rus->ru()->index() << rus->LAIfactor();
+                    }
+        //);
         (*i)->calculate(); // CALCULATE 3PG
         if (logLevelInfo() &&  (*i)->LAIfactor()>0)
             qDebug() << "ru" << mIndex << "species" << (*i)->species()->id() << "LAIfraction" << (*i)->LAIfactor() << "raw_gpp_m2"
