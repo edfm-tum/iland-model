@@ -101,7 +101,7 @@ void ConsoleShell::run()
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
                 const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
-                qWarning() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
+                qWarning() << QString("set '%1' to value '%2'. (set: '%3'").arg(key).arg(value).arg(GlobalSettings::instance()->settings().value(key));
             }
         }
         setupLogging();
