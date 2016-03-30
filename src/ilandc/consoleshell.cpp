@@ -97,6 +97,7 @@ void ConsoleShell::run()
             qWarning() << "set command line values:";
             for (int i=3;i<QCoreApplication::arguments().count();++i) {
                 QString line = QCoreApplication::arguments().at(i);
+                line = line.remove(QChar('"')); // drop quotes
                 mParams.append(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
