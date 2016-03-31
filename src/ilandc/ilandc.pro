@@ -32,17 +32,19 @@ PRE_TARGETDEPS += ../plugins/iland_fired.lib
 PRE_TARGETDEPS += ../plugins/iland_windd.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
+message(windows debug)
 }
 win32:*gcc*: {
 PRE_TARGETDEPS += ../plugins/libiland_fired.a
 PRE_TARGETDEPS += ../plugins/libiland_windd.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetled.a
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
+message(gcc debug)
 }
 linux-g++: {
  ## debug on linux
 message("linux g++ debug")
-QMAKE_CXXFLAGS += -g -O2
+# QMAKE_CXXFLAGS += -g -O2
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
@@ -70,7 +72,7 @@ PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
 #QMAKE_CXXFLAGS_RELEASE += /Zi
 #QMAKE_LFLAGS_RELEASE += /DEBUG
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
-message(windows release)
+message(windows release x)
 }
 linux-g++: {
  ## release on linux

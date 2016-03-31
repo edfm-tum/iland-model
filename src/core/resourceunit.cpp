@@ -446,7 +446,7 @@ void ResourceUnit::createStandStatistics()
 /** recreate statistics. This is necessary after events that changed the structure
     of the stand *after* the growth of trees (where stand statistics are updated).
     An example is after disturbances.  */
-void ResourceUnit::recreateStandStatistics(bool afterSnapshot)
+void ResourceUnit::recreateStandStatistics(bool recalculate_stats)
 {
     for (int i=0;i<mRUSpecies.count();i++) {
         mRUSpecies[i]->statistics().clear();
@@ -454,7 +454,8 @@ void ResourceUnit::recreateStandStatistics(bool afterSnapshot)
     foreach(const Tree &t, mTrees) {
         resourceUnitSpecies(t.species()).statistics().add(&t, 0);
     }
-    if (afterSnapshot){
+
+    if (recalculate_stats) {
         for (int i=0;i<mRUSpecies.count();i++) {
             mRUSpecies[i]->statistics().calculate();
         }

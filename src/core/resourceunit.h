@@ -100,7 +100,7 @@ public:
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics(); ///< helping function to create an initial state for stand statistics
-    void recreateStandStatistics(bool afterSnapshot); ///< re-build stand statistics after some change happened to the resource unit
+    void recreateStandStatistics(bool recalculate_stats); ///< re-build stand statistics after some change happened to the resource unit
     void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
     // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
     // the map itself is a local variable and only filled temporarily.

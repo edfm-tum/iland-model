@@ -736,7 +736,7 @@ void Model::runYear()
 
     // if trees are dead/removed because of management, the tree lists
     // need to be cleaned (and the statistics need to be recreated)
-    cleanTreeLists();
+    cleanTreeLists(true); // recalculate statistics (LAIs per species needed later in production)
 
     // process a cycle of individual growth
     applyPattern(); // create Light Influence Patterns
@@ -776,7 +776,7 @@ void Model::runYear()
     mModules->run();
 
     // cleanup of tree lists if external modules removed trees.
-    cleanTreeLists();
+    cleanTreeLists(false); // do not recalculate statistics - this is done in ru->yearEnd()
 
 
     DebugTimer toutput("outputs");
@@ -1127,12 +1127,12 @@ void Model::createStandStatistics()
     }
 }
 
-void Model::cleanTreeLists()
+void Model::cleanTreeLists(bool recalculate_stats)
 {
     foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         if (ru->hasDiedTrees()) {
             ru->cleanTreeList();
-            ru->recreateStandStatistics(false);
+            ru->recreateStandStatistics(recalculate_stats);
         }
     }
 }
