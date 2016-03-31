@@ -161,7 +161,7 @@ bool Snapshot::loadSnapshot(const QString &file_name)
 
     // refresh the stand statistics
     foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-         ru->recreateStandStatistics(true);
+         ru->recreateStandStatistics(true); // true: recalculate statistics
      }
 
     qDebug() << "created stand statistics...";

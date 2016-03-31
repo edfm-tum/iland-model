@@ -74,12 +74,13 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
 void ResourceUnitSpecies::calculate(const bool fromEstablishment)
 {
 
-    if (mLastYear == GlobalSettings::instance()->currentYear())
-        return;
-
     // if *not* called from establishment, clear the species-level-stats
     if (!fromEstablishment)
         statistics().clear();
+
+    // if already processed in this year, do not repeat
+    if (mLastYear == GlobalSettings::instance()->currentYear())
+        return;
 
     if (mLAIfactor>0. || fromEstablishment==true) {
         // execute the water calculation...
