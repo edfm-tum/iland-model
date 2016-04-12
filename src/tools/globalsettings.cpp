@@ -299,7 +299,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                    << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN"
                    << "NAvailable" << "NAVLab" << "NAVRef" << "NAVSom";
     case dPerformance: return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
-                << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "saplingGrowthEstablishment" << "carbonCycle"
+                << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "establishment"<< "saplingGrowth" << "carbonCycle"
                 << "writeOutput" << "totalYear";
 
     }

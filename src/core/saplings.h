@@ -14,7 +14,7 @@ struct SaplingTree {
     float height; // height of the sapling in meter
     bool is_occupied() const { return height>0.f; }
     void clear()  {  age=0; species_index=-1; stress_years=0; flags=0; height=0.f;  }
-    void setSapling(const float h_m, const int age_yrs, const int species_idx) { height=h_m; age=static_cast<short unsigned int>(age_yrs); stress_years=0; species_index=static_cast<short unsigned int>(species_idx); }
+    void setSapling(const float h_m, const int age_yrs, const int species_idx) { height=h_m; age=static_cast<short unsigned int>(age_yrs); stress_years=0; species_index=static_cast<short signed int>(species_idx); }
 };
 #define NSAPCELLS 5
 struct SaplingCell {
@@ -76,6 +76,7 @@ class SaplingStat
 public:
     SaplingStat() { clearStatistics(); }
     void clearStatistics();
+    void calculate(const Species *species, ResourceUnit *ru);
     // actions
     void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh; }
 
@@ -128,9 +129,6 @@ public:
     // access
     const Grid<SaplingCell> &grid() const { return mGrid; }
     SaplingCell *cell(QPoint lif_coords)  { SaplingCell *s=mGrid.ptr(lif_coords.x(), lif_coords.y()); if (s && s->state!=SaplingCell::CellInvalid) return s; else return 0; }
-    void clearStats() { mAdded=0; mTested=0;}
-    int saplingsAdded() const { return mAdded; }
-    int pixelTested() const { return mTested; }
 
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     static void updateBrowsingPressure();
@@ -138,8 +136,6 @@ public:
 private:
     bool growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, float dom_height, float lif_value);
     Grid<SaplingCell> mGrid;
-    int mAdded;
-    int mTested;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;
 };
