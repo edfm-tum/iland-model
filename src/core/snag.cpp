@@ -140,6 +140,19 @@ void Snag::setup( const ResourceUnit *ru)
         mOtherWood[i] = other;
 }
 
+void Snag::scaleInitialState()
+{
+    double area_factor = mRU->stockableArea() / cRUArea; // fraction stockable area
+    // avoid huge snag pools on very small resource units (see also soil.cpp)
+    // area_factor = std::max(area_factor, 0.1);
+    mSWD[1] *= area_factor;
+    mNumberOfSnags[1] *= area_factor;
+    for (int i=0;i<5;i++)
+        mOtherWood[i]*= area_factor;
+    mTotalSnagCarbon *= area_factor;
+
+}
+
 // debug outputs
 QList<QVariant> Snag::debugList()
 {

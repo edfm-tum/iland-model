@@ -807,7 +807,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 /// biomass of living trees is consumed in the burnPixel() routine.
 void FireModule::afterFire()
 {
-    const double pixel_fraction = cellsize()*cellsize() / (cRUSize*cRUSize); // fraction of one pixel, default: 0.04 (20x20 / 100x100)
+    const double pixel_fraction = cellsize()*cellsize() / cRUArea; // fraction of one pixel, default: 0.04 (20x20 / 100x100)
 
     int ru_idx=0;
     for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds, ++ru_idx) {

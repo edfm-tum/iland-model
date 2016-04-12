@@ -62,8 +62,8 @@
 #include "forestmanagementengine.h" // ABE
 
 // global settings
-QDomDocument xmldoc;
-QDomNode xmlparams;
+static QDomDocument xmldoc;
+static QDomNode xmlparams;
 
 /** @class MainWindow
    @ingroup GUI
@@ -84,10 +84,10 @@ double nrandom(const float& p1, const float& p2)
     return p1 + (p2-p1)*(rand()/float(RAND_MAX));
 }
 
-bool showDebugMessages=true;
-QStringList bufferedMessages;
-bool doBufferMessages = false;
-bool doLogToWindow = false;
+static bool showDebugMessages=true;
+static QStringList bufferedMessages;
+static bool doBufferMessages = false;
+static bool doLogToWindow = false;
 void logToWindow(bool mode)
 {
    doLogToWindow = mode;
@@ -100,7 +100,7 @@ public:
 };
 
 
-QMutex qdebug_mutex;
+static QMutex qdebug_mutex;
 void dumpMessages();
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
@@ -143,7 +143,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
              dumpMessages();
  }
 
-QMutex dump_message_mutex;
+static QMutex dump_message_mutex;
 void dumpMessages()
 {
     QMutexLocker m(&dump_message_mutex); // serialize access
@@ -624,7 +624,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         mRulerColors->setCaption("Light Influence Field", "value of the LIF at 2m resolution.");
         mRulerColors->setPalette(GridViewRainbowReverse,0., maxval); // ruler
         if (!mRulerColors->autoScale()) {
-            maxval = mRulerColors->maxValue(); minval = mRulerColors->minValue();
+            maxval = static_cast<float>( mRulerColors->maxValue());
+            minval = static_cast<float>( mRulerColors->minValue() );
         }
         int x,y;
         int sizex = rect.width();
@@ -707,8 +708,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         mRulerColors->setCaption("Dominant height (m)", "dominant tree height on 10m pixel.");
         mRulerColors->setPalette(GridViewRainbow,0., max_val); // ruler
         if (!mRulerColors->autoScale()) {
-            min_val = mRulerColors->minValue();
-            max_val = mRulerColors->maxValue();
+            min_val = static_cast<float>( mRulerColors->minValue() );
+            max_val = static_cast<float>( mRulerColors->maxValue() );
         }
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
@@ -777,10 +778,10 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (species_color) {
             drawspecies = model->speciesSet()->species(species);
             mRulerColors->setCaption("Species share", QString("Species: '%1'").arg(species));
-            mRulerColors->setPalette(GridViewGreens, min_value, max_value); // ruler
+            mRulerColors->setPalette(GridViewGreens, static_cast<float>(min_value), static_cast<float>(max_value)); // ruler
         } else {
             mRulerColors->setCaption("Resource Units", QString("Result of expression: '%1'").arg(ru_expr));
-            mRulerColors->setPalette(GridViewRainbow, min_value, max_value); // ruler
+            mRulerColors->setPalette(GridViewRainbow, static_cast<float>(min_value), static_cast<float>(max_value)); // ruler
         }
 
         // paint resource units
@@ -793,7 +794,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             }
             QRect r = vp.toScreen(ru->boundingBox());
             //fill_color = Colors::colorFromValue(value, min_value, max_value);
-            fill_color = Colors::colorFromValue(value, view_type, min_value, max_value);
+            fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
             painter.fillRect(r, fill_color);
         }
         if (!ru_value.lastError().isEmpty())
@@ -854,8 +855,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             } else {
                 // calculate expression
                 tw.setTree(tree);
-                value = tree_value.execute();
-                fill_color = Colors::colorFromValue(value, min_val, max_val, false);
+                value = static_cast<float>(tree_value.execute());
+                fill_color = Colors::colorFromValue(value, static_cast<float>(min_val), static_cast<float>(max_val), false);
             }
             if (draw_transparent)
                 fill_color.setAlpha(80); // 50%
@@ -886,7 +887,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     } // if (show_trees)
 
     // highlight selected tree
-    Tree *t = (Tree*) ui->treeChange->property("tree").toLongLong();
+    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
     if (t) {
         QPointF pos = t->position();
         painter.setPen(Qt::black);
@@ -1095,6 +1096,9 @@ void MainWindow::mouseClick(const QPoint& pos)
             return;
     }
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
+    if (!ru)
+        return;
+
     ui->treeChange->setProperty("tree",0);
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
@@ -1283,7 +1287,7 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
     }
     wantDrag = false;
     qDebug() << "drag from" << from << "to" << to;
-    Tree *t = (Tree*) ui->treeChange->property("tree").toLongLong();
+    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
     if (!t)
         return;
     QPointF pos = vp.toWorld(to);
@@ -1399,10 +1403,9 @@ void MainWindow::setupModel()
 
 void MainWindow::on_pbSetAsDebug_clicked()
 {
-    int pt = ui->treeChange->property("tree").toLongLong();
-    if (!pt)
+    Tree *t = reinterpret_cast<Tree *>( ui->treeChange->property("tree").toLongLong() );
+    if (!t)
         return;
-    Tree *t = (Tree*)pt;
     t->enableDebugging();
 
 }
@@ -1444,6 +1447,7 @@ void MainWindow::on_actionModelDestroy_triggered()
 {
     mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
+    mRegenerationGrid.clear();
     checkModelState();
 }
 
@@ -1485,6 +1489,7 @@ void MainWindow::on_actionReload_triggered()
         return;
     mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
+    mRegenerationGrid.clear();
     setupModel();
 }
 

@@ -104,6 +104,7 @@ public:
     // general functions
     static void loadScript(const QString &fileName);
     static QString executeScript(QString cmd);
+    static QString executeJSFunction(QString function);
     static QObject *scriptOutput; ///< public "pipe" for script output (is redirected to GUI if available)
     static QString formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode);
 

@@ -31,7 +31,7 @@ public:
     void setResourceUnitSpecies(const ResourceUnitSpecies *rus) { mRUS=rus; }
 
     void add(const StandStatistics &stat); ///< add aggregates of @p stat to own aggregates
-    void addAreaWeighted(const StandStatistics &stat, const double weight); ///< add aggregates of @p stat to own aggregates (include own stockable area)
+    void addAreaWeighted(const StandStatistics &stat, const double weight); ///< add aggregates of @p stat to this aggregate and scale using the weight (e.g. stockable area)
     void add(const Tree *tree, const TreeGrowthData *tgd); ///< call for each tree within the domain
     void add(const Sapling *sapling); ///< call for regeneration layer of a species in resource unit
     void clear(); ///< call before trees are aggregated
@@ -44,8 +44,9 @@ public:
     double gwl() const { return mGWL;} ///< total increment (m3/ha)
     double basalArea() const { return mSumBasalArea; } ///< sum of basal area of all trees (m2/ha)
     double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]/ha stocked area.
-    double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground)/ha
+    double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground, trees >4m)/ha
     double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)/ha
+    double nppSaplings() const { return mNPPsaplings; } ///< carbon gain of saplings (kg Biomass increment)/ha
     int cohortCount() const { return mCohortCount; } ///< number of cohorts of saplings / ha
     int saplingCount() const { return mSaplingCount; } ///< number individuals in regeneration layer (represented by "cohortCount" cohorts) N/ha
     double saplingAge() const { return mAverageSaplingAge; } ///< average age of sapling (currenty not weighted with represented sapling numbers...)
@@ -62,7 +63,7 @@ public:
     double nFineRoot() const { return mNFineRoot; }
     double cRegeneration() const { return mCRegeneration; }
     double nRegeneration() const { return mNRegeneration; }
-    /// total carbon: sum of carbon of all living trees + regeneration layer
+    /// total carbon stock: sum of carbon of all living trees + regeneration layer
     double totalCarbon() const { return mCStem + mCBranch + mCFoliage + mCFineRoot + mCCoarseRoot + mCRegeneration; }
 
 private:
@@ -79,6 +80,7 @@ private:
     double mLeafAreaIndex;
     double mNPP;
     double mNPPabove;
+    double mNPPsaplings; // carbon gain of saplings
     // regeneration layer
     int mCohortCount; ///< number of cohrots
     int mSaplingCount; ///< number of sapling (Reinekes Law)

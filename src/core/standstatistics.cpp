@@ -43,6 +43,7 @@ void StandStatistics::clear()
     mSumBasalArea = mSumVolume = mGWL = 0.;
     mLeafAreaIndex = 0.;
     mNPP = mNPPabove = 0.;
+    mNPPsaplings = 0.;
     mCohortCount = mSaplingCount = 0;
     mAverageSaplingAge = 0.;
     mSumSaplingAge = 0.;
@@ -91,18 +92,30 @@ void StandStatistics::calculate()
         mAverageSaplingAge = mSumSaplingAge / double(mCohortCount);
 
     // scale values to per hectare if resource unit <> 1ha
-    // note: no scaling for carbon/nitrogen pools
+    // note: do this only on species-level (avoid double scaling)
     if (mRUS) {
-        double area_factor =  10000. / mRUS->ru()->area();
+        double area_factor =  cRUArea / mRUS->ru()->stockableArea();
         if (area_factor!=1.) {
             mCount = mCount * area_factor;
             mSumBasalArea *= area_factor;
             mSumVolume *= area_factor;
+            mSumDbh *= area_factor;
             mNPP *= area_factor;
             mNPPabove *= area_factor;
+            mNPPsaplings *= area_factor;
             //mGWL *= area_factor;
             mCohortCount *= area_factor;
             mSaplingCount *= area_factor;
+            //double mCStem, mCFoliage, mCBranch, mCCoarseRoot, mCFineRoot;
+            //double mNStem, mNFoliage, mNBranch, mNCoarseRoot, mNFineRoot;
+            //double mCRegeneration, mNRegeneration;
+            mCStem *= area_factor; mNStem *= area_factor;
+            mCFoliage *= area_factor; mNFoliage *= area_factor;
+            mCBranch *= area_factor; mNBranch *= area_factor;
+            mCCoarseRoot *= area_factor; mNCoarseRoot *= area_factor;
+            mCFineRoot *= area_factor; mNFineRoot *= area_factor;
+            mCRegeneration *= area_factor; mNRegeneration *= area_factor;
+
         }
         mGWL = mSumVolume + mRUS->removedVolume(); // removedVolume: per ha, SumVolume now too
     }
@@ -118,6 +131,7 @@ void StandStatistics::add(const StandStatistics &stat)
     mLeafAreaIndex += stat.mLeafAreaIndex;
     mNPP += stat.mNPP;
     mNPPabove += stat.mNPPabove;
+    mNPPsaplings += stat.mNPPsaplings;
     mGWL+=stat.mGWL;
     // regeneration
     mCohortCount += stat.mCohortCount;
@@ -135,17 +149,21 @@ void StandStatistics::add(const StandStatistics &stat)
 
 void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double weight)
 {
+    // aggregates that are not scaled to hectares
     mCount+=stat.mCount * weight;
     mSumBasalArea+=stat.mSumBasalArea * weight;
     mSumDbh+=stat.mSumDbh * weight;
     mSumHeight+=stat.mSumHeight * weight;
     mSumVolume+=stat.mSumVolume * weight;
+    // averages that are scaled to per hectare need to be scaled
     mAverageDbh+=stat.mAverageDbh * weight;
     mAverageHeight+=stat.mAverageHeight * weight;
     mAverageSaplingAge+=stat.mAverageSaplingAge * weight;
     mLeafAreaIndex += stat.mLeafAreaIndex * weight;
+
     mNPP += stat.mNPP * weight;
     mNPPabove += stat.mNPPabove * weight;
+    mNPPsaplings += stat.mNPPsaplings * weight;
     mGWL+=stat.mGWL * weight;
     // regeneration
     mCohortCount += stat.mCohortCount * weight;
@@ -172,6 +190,8 @@ void StandStatistics::add(const Sapling *sapling)
 
     mCRegeneration += sapling->carbonLiving().C;
     mNRegeneration += sapling->carbonLiving().N;
+
+    mNPPsaplings += sapling->carbonGain().C / biomassCFraction;
 }
 
 void SystemStatistics::writeOutput()

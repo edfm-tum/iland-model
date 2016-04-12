@@ -76,7 +76,7 @@ void LandscapeOut::exec()
             continue; // do not include if out of project area
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
             const StandStatistics &stat = rus->constStatistics();
-            if (stat.count()==0 && stat.cohortCount()==0 && stat.gwl()==0.) {
+            if (stat.count()==0. && stat.cohortCount()==0 && stat.gwl()==0.) {
                 continue;
             }
             mLandscapeStats[rus->species()->id()].addAreaWeighted(stat, ru->stockableArea() / total_area);
@@ -107,8 +107,8 @@ LandscapeRemovedOut::LandscapeRemovedOut()
                    "the setting 'includeHarvest' controls whether to include ('true') or exclude ('false') harvested trees. ");
     columns() << OutputColumn::year()
               << OutputColumn::species()
-              << OutputColumn("resaon", "Resaon for tree death: 'N': Natural mortality, 'H': Harvest, 'D': Disturbance", OutString)
-              << OutputColumn("count_ha", "number of died trees (living, >4m height) ", OutInteger)
+              << OutputColumn("reason", "Resaon for tree death: 'N': Natural mortality, 'H': Harvest, 'D': Disturbance, 'S': Salvage harvesting, 'C': killed/cut down by management", OutString)
+              << OutputColumn("count", "number of died trees (living, >4m height) ", OutInteger)
               << OutputColumn("volume_m3", "sum of volume (geomery, taper factor) in m3", OutDouble)
               << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble);
 
@@ -119,7 +119,7 @@ void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
     Tree::TreeRemovalType rem_type = static_cast<Tree::TreeRemovalType>(reason);
     if (rem_type==Tree::TreeDeath && !mIncludeDeadTrees)
         return;
-    if (rem_type==Tree::TreeHarvest && !mIncludeHarvestTrees)
+    if ((rem_type==Tree::TreeHarvest || rem_type==Tree::TreeSalavaged || rem_type==Tree::TreeCutDown) && !mIncludeHarvestTrees)
         return;
 
     int key = reason*10000 + t->species()->index();
@@ -143,6 +143,8 @@ void LandscapeRemovedOut::exec()
             if (rem_type==Tree::TreeDeath) *this << QStringLiteral("N");
             if (rem_type==Tree::TreeHarvest) *this << QStringLiteral("H");
             if (rem_type==Tree::TreeDisturbance) *this << QStringLiteral("D");
+            if (rem_type==Tree::TreeSalavaged) *this << QStringLiteral("S");
+            if (rem_type==Tree::TreeCutDown) *this << QStringLiteral("C");
             *this << i.value().n << i.value().volume<< i.value().basal_area;
             writeRow();
         }

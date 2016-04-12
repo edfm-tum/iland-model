@@ -159,6 +159,7 @@ void ModelController::create()
         GlobalSettings::instance()->setCurrentYear(1); // reset clock
         // initialization of trees, output on startup
         mModel->beforeRun();
+        GlobalSettings::instance()->executeJSFunction("onAfterCreate");
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
@@ -174,6 +175,7 @@ void ModelController::create()
 void ModelController::destroy()
 {
     if (canDestroy()) {
+        GlobalSettings::instance()->executeJSFunction("onBeforeDestroy");
         Model *m = mModel;
         mModel = 0;
         delete m;
@@ -305,14 +307,16 @@ bool ModelController::runYear()
 {
     if (!canRun()) return false;
     DebugTimer t("ModelController:runYear");
-    qDebug() << "ModelController: run year" << currentYear();
+    qDebug() << QDateTime::currentDateTime().toString("hh:mm:ss:") << "ModelController: run year" << currentYear();
 
     if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
     bool err=false;
     try {
         emit bufferLogs(true);
+        GlobalSettings::instance()->executeJSFunction("onYearBegin");
         mModel->runYear();
+
         fetchDynamicOutput();
     } catch(const IException &e) {
         QString error_msg = e.message();
@@ -321,6 +325,12 @@ bool ModelController::runYear()
         err=true;
     }
     emit bufferLogs(false);
+#ifdef ILAND_GUI
+    QApplication::processEvents();
+#else
+    QCoreApplication::processEvents();
+#endif
+
     return err;
 }
 

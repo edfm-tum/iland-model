@@ -22,6 +22,7 @@
 class ResourceUnit;
 struct ClimateDay;
 class WaterCycle; // forward
+class WaterOut; // forward
 /// Water contains helper classes for the water cycle calculations
 namespace Water
 {
@@ -133,6 +134,12 @@ private:
     double mLAINeedle;
     double mLAIBroadleaved;
     double mCanopyConductance; ///< m/s
+    // annual sums
+    double mTotalET; ///< annual sum of evapotranspiration (mm)
+    double mTotalExcess; ///< annual sum of water loss due to lateral outflow/groundwater flow (mm)
+    double mSnowRad; ///< sum of radiation input (MJ/m2) for days with snow cover (used in albedo calculations)
+    double mSnowDays; ///< # of days with snowcover >0
+    friend class ::WaterOut;
 };
 
 /// WaterCycleData is a data transfer container for water-related details.

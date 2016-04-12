@@ -85,9 +85,11 @@ public:
     //
     double totalRadiation() const { return mAnnualRadiation; } ///< return radiation sum (MJ) of the whole year
     const double* precipitationMonth() const { return mPrecipitationMonth; }
-    /// the mean annual temperature of the current year
+    /// the mean annual temperature of the current year (degree C)
     double meanAnnualTemperature() const { return mMeanAnnualTemperature; }
-    /// get a array with mean temperatures per month
+    /// annual precipitation sum (mm)
+    double annualPrecipitation() const { double r=0.; for (int i=0;i<12;++i) r+=mPrecipitationMonth[i]; return r;}
+    /// get a array with mean temperatures per month (deg C)
     const double *temperatureMonth() const { return mTemperatureMonth; }
     // access to other subsystems
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type

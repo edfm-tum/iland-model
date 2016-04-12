@@ -732,11 +732,32 @@ QString ScriptGlobal::executeScript(QString cmd)
     if (result.isError()) {
         //int line = mEngine->uncaughtExceptionLineNumber();
         QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
+        qDebug() << msg;
         //msg+=engine->uncaughtExceptionBacktrace().join("\n");
         return msg;
     } else {
         return QString();
     }
+}
+
+QString ScriptGlobal::executeJSFunction(QString function)
+{
+    DebugTimer t("execute javascript");
+    QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
+    QJSValue result;
+    if (!engine)
+        return QStringLiteral("No valid javascript engine!");
+
+    if (engine->globalObject().property(function).isCallable()) {
+        result = engine->globalObject().property(function).call();
+        if (result.isError()) {
+            QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
+            qDebug() << msg;
+            return msg;
+        }
+    }
+    return QString();
+
 }
 
 QString ScriptGlobal::formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode)

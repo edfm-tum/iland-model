@@ -20,6 +20,7 @@
 #include "consoleshell.h"
 
 #include <QtCore>
+#include <QtDebug>
 //#include <QKeyEvent>
 
 #include "global.h"
@@ -96,11 +97,13 @@ void ConsoleShell::run()
             qWarning() << "set command line values:";
             for (int i=3;i<QCoreApplication::arguments().count();++i) {
                 QString line = QCoreApplication::arguments().at(i);
+                line = line.remove(QChar('"')); // drop quotes
                 mParams.append(line);
+                //qDebug() << qPrintable(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
                 const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
-                qWarning() << "set" << key << "to value:" << value << "(set:" << GlobalSettings::instance()->settings().value(key) << ").";
+                qWarning() << QString("set '%1' to value '%2'. result: '%3'").arg(key).arg(value).arg(GlobalSettings::instance()->settings().value(key));
             }
         }
         setupLogging();
@@ -108,7 +111,7 @@ void ConsoleShell::run()
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
         qDebug() << "**************************************************";
-        qDebug() << "started at: " << QDateTime::currentDateTime().toString(Qt::ISODate);
+        qDebug() << "started at: " << QDateTime::currentDateTime().toString("hh:mm:ss");
         qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
         qDebug() << "**************************************************";
 
@@ -140,7 +143,6 @@ void ConsoleShell::run()
 
         qWarning() << "**************************************************";
         qWarning() << "*** model run finished.";
-        qWarning() << "*** " << QDateTime::currentDateTime();
         qWarning() << "**************************************************";
 
     } catch (const IException &e) {
@@ -158,40 +160,47 @@ void ConsoleShell::run()
 
 void ConsoleShell::runYear(int year)
 {
-    printf("simulating year %d ...\n", year-1);
+    printf("%s: simulating year %d ...\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), year-1);
 }
 
-QMutex qdebug_mutex;
+static QMutex qdebug_mutex;
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
     Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
 
     switch (type) {
-     case QtDebugMsg:
+    case QtDebugMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
-         break;
-     case QtWarningMsg:
+            ConsoleShell::logStream()->flush();
+        break;
+    case QtWarningMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
-        printf("Warning: %s\n", msg.toLocal8Bit().data());
+            ConsoleShell::logStream()->flush();
+        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
+        break;
+// available from qt5.5
+//    case QtInfoMsg:
+//        *ConsoleShell::logStream() << msg << endl;
+//        if (ConsoleShell::flush())
+//            ConsoleShell::logStream()->flush();
+//        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
 
-         break;
-     case QtCriticalMsg:
+//        break;
+    case QtCriticalMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
+            ConsoleShell::logStream()->flush();
         printf("Critical: %s\n", msg.toLocal8Bit().data());
-         break;
-     case QtFatalMsg:
+        break;
+    case QtFatalMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())
-            ConsoleShell::logStream()->flush();;
+            ConsoleShell::logStream()->flush();
         printf("Fatal: %s\n", msg.toLocal8Bit().data());
-     }
+    }
  }
 
 

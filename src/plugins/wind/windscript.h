@@ -48,6 +48,8 @@ public slots:
     QJSValue grid(QString type);
     /// initialize/ reset the wind module
     void initialize();
+    /// initialize/reset the age of edges
+    void initializeEdgeAge(int years);
 
     /// number of damaged pixels with a patchsize>'threshold'; save to grid to "fileName" (if not empty)
     int damagedArea(int threshold, QString fileName);

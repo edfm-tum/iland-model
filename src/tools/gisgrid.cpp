@@ -33,7 +33,7 @@
   */
 
 // global transformation record:
-SCoordTrans GISCoordTrans;
+static SCoordTrans GISCoordTrans;
 
 // setup of global GIS transformation
 // not a good place to put that code here.... please relocate!
@@ -183,6 +183,21 @@ QList<double> GisGrid::distinctValues()
     return temp_map.keys();
 }
 
+QPointF GisGrid::modelToWorld(QPointF model_coordinates)
+{
+    Vector3D to;
+    ::modelToWorld(Vector3D(model_coordinates.x(), model_coordinates.y(), 0.), to);
+    return QPointF(to.x(), to.y());
+}
+
+QPointF GisGrid::worldToModel(QPointF world_coordinates)
+{
+    Vector3D to;
+    ::worldToModel(Vector3D(world_coordinates.x(), world_coordinates.y(), 0.), to);
+    return QPointF(to.x(), to.y());
+
+}
+
 /*
 void GISGrid::GetDistinctValues(TStringList *ResultList, double x_m, double y_m)
 {
@@ -233,7 +248,8 @@ double GisGrid::value(const double X, const double Y) const
     model.setY(Y);
     model.setZ(0.);
     Vector3D world;
-    modelToWorld(model, world);
+    ::modelToWorld(model, world);
+
 
     world.setX(world.x() - mOrigin.x());
     world.setY(world.y() - mOrigin.y());
@@ -260,7 +276,7 @@ Vector3D GisGrid::coord(const int indexx, const int indexy) const
                     (indexy+0.5)*mCellSize + mOrigin.y(),
                     0.);
     Vector3D model;
-    worldToModel(world, model);
+    ::worldToModel(world, model);
     return model;
 }
 
@@ -270,7 +286,7 @@ QRectF GisGrid::rectangle(const int indexx, const int indexy) const
                     indexy*mCellSize + mOrigin.y(),
                     0.);
     Vector3D model;
-    worldToModel(world, model);
+    ::worldToModel(world, model);
     QRectF rect(model.x(), // left
                 model.y(), // top
                 mCellSize, // width

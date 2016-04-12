@@ -156,11 +156,11 @@ void SpeciesSet::setupRegeneration()
     qDebug() << "Setup of seed dispersal maps finished.";
 }
 
-Species *nc_seed_distribution(Species *species)
+void nc_seed_distribution(Species *species)
 {
     species->seedDispersal()->execute();
-    return species;
 }
+
 void SpeciesSet::regeneration()
 {
     if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)

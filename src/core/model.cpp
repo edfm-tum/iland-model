@@ -453,7 +453,7 @@ void Model::loadProject()
 {
     DebugTimer dt("load project");
     GlobalSettings *g = GlobalSettings::instance();
-    g->printDirecories();
+    g->printDirectories();
     const XmlHelper &xml = g->settings();
 
     g->clearDatabaseConnections();
@@ -476,7 +476,7 @@ void Model::loadProject()
     bool do_linearization = xml.valueBool("system.settings.expressionLinearizationEnabled", false);
     Expression::setLinearizationEnabled(do_linearization);
     if (do_linearization)
-        qDebug() << "The linearization of certains expressions is enabled (performance optimization).";
+        qDebug() << "The linearization of expressions is enabled (performance optimization).";
 
     // log level
     QString log_level = xml.value("system.settings.logLevel", "debug").toLower();
@@ -584,7 +584,7 @@ void Model::initOutputDatabase()
 }
 
 /// multithreaded running function for the resource unit level establishment
-ResourceUnit *nc_establishment(ResourceUnit *unit)
+void nc_establishment(ResourceUnit *unit)
 {
     Saplings *s = GlobalSettings::instance()->model()->saplings();
     try {
@@ -596,12 +596,10 @@ ResourceUnit *nc_establishment(ResourceUnit *unit)
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
 
-    return unit;
-
 }
 
 /// multithreaded running function for the resource unit level establishment
-ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
+void nc_sapling_growth(ResourceUnit *unit)
 {
     Saplings *s = GlobalSettings::instance()->model()->saplings();
     try {
@@ -610,13 +608,10 @@ ResourceUnit *nc_sapling_growth(ResourceUnit *unit)
     } catch (const IException& e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-
-    return unit;
-
 }
 
 /// multithreaded running function for the resource unit level establishment
-ResourceUnit *nc_sapling_growth_establishment_old(ResourceUnit *unit)
+void nc_sapling_growth_establishment_old(ResourceUnit *unit)
 {
     try {
         { // DebugTimer t("nc_saplingGrowth"); t.setSilent();
@@ -644,13 +639,12 @@ ResourceUnit *nc_sapling_growth_establishment_old(ResourceUnit *unit)
     }
 
     unit->setSaplingHeightMap(0); // invalidate again
-    return unit;
 
 }
 
 
 /// multithreaded execution of the carbon cycle routine
-ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
+void nc_carbonCycle(ResourceUnit *unit)
 {
     try {
         // (1) do calculations on snag dynamics for the resource unit
@@ -660,7 +654,6 @@ ResourceUnit *nc_carbonCycle(ResourceUnit *unit)
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
 
-    return unit;
 }
 
 /// beforeRun performs several steps before the models starts running.
@@ -786,7 +779,7 @@ void Model::runYear()
 
     // if trees are dead/removed because of management, the tree lists
     // need to be cleaned (and the statistics need to be recreated)
-    cleanTreeLists();
+    cleanTreeLists(true); // recalculate statistics (LAIs per species needed later in production)
 
     // process a cycle of individual growth
     applyPattern(); // create Light Influence Patterns
@@ -837,7 +830,7 @@ void Model::runYear()
     mModules->run();
 
     // cleanup of tree lists if external modules removed trees.
-    cleanTreeLists();
+    cleanTreeLists(false); // do not recalculate statistics - this is done in ru->yearEnd()
 
 
     DebugTimer toutput("outputs");
@@ -859,10 +852,14 @@ void Model::runYear()
     om->execute("management"); // resource unit level x species
     om->execute("carbon"); // resource unit level, carbon pools above and belowground
     om->execute("carbonflow"); // resource unit level, GPP, NPP and total carbon flows (atmosphere, harvest, ...)
+    om->execute("water"); // resource unit/landscape level water output (ET, rad, snow cover, ...)
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t.elapsed();
     GlobalSettings::instance()->systemStatistics()->writeOutput();
+
+    // global javascript event
+    GlobalSettings::instance()->executeJSFunction("onYearEnd");
 
     GlobalSettings::instance()->setCurrentYear(GlobalSettings::instance()->currentYear()+1);
 
@@ -878,7 +875,7 @@ void Model::afterStop()
 }
 
 /// multithreaded running function for LIP printing
-ResourceUnit* nc_applyPattern(ResourceUnit *unit)
+void nc_applyPattern(ResourceUnit *unit)
 {
 
     QVector<Tree>::iterator tit;
@@ -903,15 +900,14 @@ ResourceUnit* nc_applyPattern(ResourceUnit *unit)
             for (tit=unit->trees().begin(); tit!=tend; ++tit)
                 (*tit).applyLIP_torus(); // do it the wraparound way
         }
-        return unit;
+
     } catch (const IException &e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-    return unit;
 }
 
 /// multithreaded running function for LIP value extraction
-ResourceUnit *nc_readPattern(ResourceUnit *unit)
+void nc_readPattern(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -926,11 +922,10 @@ ResourceUnit *nc_readPattern(ResourceUnit *unit)
     } catch (const IException &e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-    return unit;
 }
 
 /// multithreaded running function for the growth of individual trees
-ResourceUnit *nc_grow(ResourceUnit *unit)
+void nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -952,18 +947,16 @@ ResourceUnit *nc_grow(ResourceUnit *unit)
     }
 
     GlobalSettings::instance()->systemStatistics()->treeCount+=unit->trees().count();
-    return unit;
 }
 
 /// multithreaded running function for the resource level production
-ResourceUnit *nc_production(ResourceUnit *unit)
+void nc_production(ResourceUnit *unit)
 {
     try {
         unit->production();
     } catch (const IException &e) {
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
-    return unit;
 }
 
 
@@ -1095,7 +1088,9 @@ void Model::calculateStockableArea()
         }
         if (total) {
             ru->setStockableArea( cHeightPixelArea * valid); // in m2
-            mTotalStockableArea += cHeightPixelArea * valid / 10000.; // in ha
+            if (ru->snag())
+                ru->snag()->scaleInitialState();
+            mTotalStockableArea += cHeightPixelArea * valid / cRUArea; // in ha
             if (valid==0 && ru->id()>-1) {
                 // invalidate this resource unit
                 ru->setID(-1);
@@ -1186,12 +1181,12 @@ void Model::createStandStatistics()
     }
 }
 
-void Model::cleanTreeLists()
+void Model::cleanTreeLists(bool recalculate_stats)
 {
     foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
         if (ru->hasDiedTrees()) {
             ru->cleanTreeList();
-            ru->recreateStandStatistics();
+            ru->recreateStandStatistics(recalculate_stats);
         }
     }
 }

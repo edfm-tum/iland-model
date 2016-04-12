@@ -38,6 +38,7 @@
 #include "saplingout.h"
 #include "carbonout.h"
 #include "carbonflowout.h"
+#include "waterout.h"
 
 
 // on creation of the output manager
@@ -59,6 +60,7 @@ OutputManager::OutputManager()
     mOutputs.append(new SaplingOut);
     mOutputs.append(new CarbonOut);
     mOutputs.append(new CarbonFlowOut);
+    mOutputs.append(new WaterOut);
 }
 
 void OutputManager::addOutput(Output *output)

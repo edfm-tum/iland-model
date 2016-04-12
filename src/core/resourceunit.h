@@ -33,7 +33,12 @@ class Soil;
 
 struct ResourceUnitVariables
 {
+    ResourceUnitVariables(): nitrogenAvailable(0.), cumCarbonUptake(0.), cumCarbonToAtm(0.), cumNEP(0.), carbonUptake(0.), carbonToAtm(0.), NEP(0.) {}
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year)
+    double cumCarbonUptake; ///< NPP  (kg C/ha)
+    double cumCarbonToAtm; ///< total flux of carbon to atmosphere (kg C/ha)
+    double cumNEP; ///< cumulative ecosystem productivity (kg C/ha), i.e. cumulative(NPP-losses(atm,harvest)
+    double carbonUptake, carbonToAtm, NEP; ///< values of the current year (NPP, flux to atmosphere, net ecosystem prod., all values in kgC/ha)
 };
 
 class ResourceUnit
@@ -95,7 +100,7 @@ public:
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics(); ///< helping function to create an initial state for stand statistics
-    void recreateStandStatistics(); ///< re-build stand statistics after some change happened to the resource unit
+    void recreateStandStatistics(bool recalculate_stats); ///< re-build stand statistics after some change happened to the resource unit
     void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
 
     // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
@@ -113,7 +118,7 @@ public:
     const float *saplingHeightMapPointer() const {return mSaplingHeightMap; }
     /// return maximum sapling height at point 'position' (LIF-index). This call is slower but works witout a prior call
     /// to setSaplingHeightMap().
-    float saplingHeightForInit(const QPoint &position) const;
+    double saplingHeightForInit(const QPoint &position) const;
     /// set the height of the sapling map to the maximum of current value and 'height'.
     void setMaxSaplingHeightAt(const QPoint &position, const float height);
     /// clear all saplings of all species on a given position (after recruitment)

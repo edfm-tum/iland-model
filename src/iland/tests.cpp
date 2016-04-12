@@ -512,6 +512,15 @@ void Tests::testGridRunner()
         QPoint point = lif.indexOf(p);
         qDebug() << i++ << point.x() << point.y() << *p << p;
     }
+    for (int i=0;i<GlobalSettings::instance()->model()->ruList().size();++i) {
+        if (i==10) break;
+        ResourceUnit *ru = GlobalSettings::instance()->model()->ruList()[i];
+        GridRunner<float> runner(lif, ru->boundingBox());
+        int n=0;
+        while (runner.next())
+            ++n;
+        qDebug() << "RU" <<  ru->index() << ru->boundingBox() << lif.indexOf(runner.first()) << lif.indexOf(runner.last()) << "n:" << n;
+    }
 }
 
 void Tests::testSeedDispersal()
@@ -554,8 +563,42 @@ double tme_test3(const double &x) {
         tme_count++;
     return result;
 }
+
+static double testf_sum = 0.;
+void testF(double *begin, double *end) {
+    double sum = 0.;
+    for (double *p=begin;p!=end;++p) {
+        sum += *p;
+    }
+    QMutexLocker l(&tme_mutex);
+    testf_sum += sum;
+    //qDebug() << "testf min:" << *begin << "end:" << *(end-1);
+}
+
 void Tests::testMultithreadExecute()
 {
+    // test of threadrunner
+    int l=12345;
+    double *dat=new double[l];
+    for (int i=0;i<l;++i)
+        dat[i] = i+1;
+    ThreadRunner tr;
+    tr.runGrid(testF, dat, &dat[l], true, 100);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+
+    testf_sum = 0.;
+    tr.runGrid(testF, dat, &dat[l], true, 17);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+
+    testf_sum = 0.;
+    tr.runGrid(testF, dat, &dat[l], true, 170000);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+
+    testf_sum = 0.;
+    tr.runGrid(testF, dat, &dat[l], true);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+    return;
+
     tme_exp.setExpression("(x+x+x+x)/(sqrt(x*x)*4)");
     tme_exp.setStrict(false);
     try {
