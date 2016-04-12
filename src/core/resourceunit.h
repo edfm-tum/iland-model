@@ -30,6 +30,7 @@ class Climate;
 class WaterCycle;
 class Snag;
 class Soil;
+struct SaplingCell;
 
 struct ResourceUnitVariables
 {
@@ -59,6 +60,7 @@ public:
     const WaterCycle *waterCycle() const { return mWater; } ///< water model of the unit
     Snag *snag() const { return mSnag; } ///< access the snag object
     Soil *soil() const { return mSoil; } ///< access the soil model
+    SaplingCell *saplingCellArray() const { return mSaplings; } ///< access the array of sapling-cells
 
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
     const ResourceUnitSpecies *constResourceUnitSpecies(const Species *species) const; ///< get RU-Species-container of @p species from the RU
@@ -149,6 +151,7 @@ private:
     Soil *mSoil; ///< ptr to CN dynamics soil submodel
     QList<ResourceUnitSpecies*> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
+    SaplingCell *mSaplings; ///< pointer to the array of Sapling-cells for the resource unit
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
     QPoint mCornerOffset; ///< coordinates on the LIF grid of the upper left corner of the RU
     double mAggregatedLA; ///< sum of leafArea

@@ -661,17 +661,20 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             mRegenerationGrid.wipe(0.f);
             if (species.isEmpty()) {
                 // hmax of all species
-                SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->grid().begin();
-                for (float *rg=mRegenerationGrid.begin(); rg!=mRegenerationGrid.end(); ++rg, ++sc) {
-                    *rg = sc->max_height();
+                for (float *rg=mRegenerationGrid.begin();rg!=mRegenerationGrid.end(); ++rg) {
+                    SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(mRegenerationGrid.indexOf(rg));
+                    if (sc)
+                        *rg = sc->max_height();
                 }
             } else {
                 // filter a specific species
                 int sidx = GlobalSettings::instance()->model()->speciesSet()->species(species)->index();
-                SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->grid().begin();
-                for (float *rg=mRegenerationGrid.begin(); rg!=mRegenerationGrid.end(); ++rg, ++sc) {
-                    SaplingTree *st=sc->sapling(sidx);
-                    *rg = st ? st->height : 0.f;
+                for (float *rg=mRegenerationGrid.begin(); rg!=mRegenerationGrid.end(); ++rg) {
+                    SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(mRegenerationGrid.indexOf(rg));
+                    if (sc) {
+                        SaplingTree *st=sc->sapling(sidx);
+                        *rg = st ? st->height : 0.f;
+                    }
                 }
             }
         }

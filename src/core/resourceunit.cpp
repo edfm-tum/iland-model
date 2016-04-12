@@ -54,8 +54,12 @@ ResourceUnit::~ResourceUnit()
 
     qDeleteAll(mRUSpecies);
 
+    if (mSaplings)
+        delete[] mSaplings;
+
     mSnag = 0;
     mSoil = 0;
+    mSaplings = 0;
 }
 
 ResourceUnit::ResourceUnit(const int index)
@@ -78,6 +82,7 @@ ResourceUnit::ResourceUnit(const int index)
     mWater = new WaterCycle();
     mSnag = 0;
     mSoil = 0;
+    mSaplings = 0;
     mID = 0;
 }
 
@@ -105,6 +110,12 @@ void ResourceUnit::setup()
                                       xml.valueDouble("model.site.youngRefractoryN", -1),
                                       xml.valueDouble("model.site.youngRefractoryDecompRate", -1)),
                                CNPair(xml.valueDouble("model.site.somC", -1), xml.valueDouble("model.site.somN", -1)));
+    }
+
+    if (mSaplings)
+        delete mSaplings;
+    if (Model::settings().regenerationEnabled) {
+        mSaplings = new SaplingCell[cPxPerHectare];
     }
 
     // setup variables
