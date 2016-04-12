@@ -33,6 +33,7 @@
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
 #include "sapling.h"
+#include "saplings.h"
 #include "species.h"
 
 void StandStatistics::clear()
@@ -194,13 +195,27 @@ void StandStatistics::add(const Sapling *sapling)
     mNPPsaplings += sapling->carbonGain().C / biomassCFraction;
 }
 
+void StandStatistics::add(const SaplingStat *sapling)
+{
+    mCohortCount += sapling->livingSaplings();
+    mSaplingCount += sapling->livingSaplings(); // TODO to change!!! Reineke!
+
+    mSumSaplingAge += sapling->averageAge() * sapling->livingSaplings();
+
+    mCRegeneration += sapling->carbonLiving().C;
+    mNRegeneration += sapling->carbonLiving().N;
+
+    mNPPsaplings += sapling->carbonGain().C / biomassCFraction;
+
+}
+
 void SystemStatistics::writeOutput()
 {
     if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dPerformance)) {
         DebugList &out = GlobalSettings::instance()->debugList(0, GlobalSettings::dPerformance);
         out << treeCount << saplingCount << newSaplings << tManagement
             << tApplyPattern << tReadPattern << tTreeGrowth
-            << tSeedDistribution  << tSaplingAndEstablishment
+            << tSeedDistribution  << tEstablishment << tSapling
             << tCarbonCycle << tWriteOutput << tTotalYear;
     }
 }

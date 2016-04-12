@@ -23,6 +23,7 @@ class Tree;
 struct TreeGrowthData;
 class ResourceUnitSpecies;
 class Sapling;
+class SaplingStat;
 
 class StandStatistics
 {
@@ -33,7 +34,8 @@ public:
     void add(const StandStatistics &stat); ///< add aggregates of @p stat to own aggregates
     void addAreaWeighted(const StandStatistics &stat, const double weight); ///< add aggregates of @p stat to this aggregate and scale using the weight (e.g. stockable area)
     void add(const Tree *tree, const TreeGrowthData *tgd); ///< call for each tree within the domain
-    void add(const Sapling *sapling); ///< call for regeneration layer of a species in resource unit
+    void add(const Sapling *sapling); ///< call for regeneration layer of a species in resource unit [old]
+    void add(const SaplingStat *sapling); ///< call for regeneration layer of a species in resource unit
     void clear(); ///< call before trees are aggregated
     void calculate(); ///< call after all trees are processed (postprocessing)
     // getters
@@ -101,7 +103,7 @@ public:
     SystemStatistics() { reset(); }
     void reset() { treeCount=0; saplingCount=0; newSaplings=0;
                    tManagement = 0.; tApplyPattern=tReadPattern=tTreeGrowth=0.;
-                   tSeedDistribution=tSaplingAndEstablishment=tCarbonCycle=tWriteOutput=tTotalYear=0.; }
+                   tSeedDistribution=tSapling=tEstablishment=tCarbonCycle=tWriteOutput=tTotalYear=0.; }
     void writeOutput();
     // the system counters
     int treeCount;
@@ -113,7 +115,8 @@ public:
     double tReadPattern;
     double tTreeGrowth;
     double tSeedDistribution;
-    double tSaplingAndEstablishment;
+    double tSapling;
+    double tEstablishment;
     double tCarbonCycle;
     double tWriteOutput;
     double tTotalYear;

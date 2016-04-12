@@ -589,7 +589,7 @@ void nc_establishment(ResourceUnit *unit)
     Saplings *s = GlobalSettings::instance()->model()->saplings();
     try {
         s->establishment(unit);
-        s->saplingGrowth(unit);
+        //s->saplingGrowth(unit);
 
 
     } catch (const IException& e) {
@@ -806,12 +806,12 @@ void Model::runYear()
 //        }
 
         { DebugTimer t("establishment");
-        executePerResourceUnit( nc_establishment, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
+        executePerResourceUnit( nc_establishment, false /* true: force single threaded operation */);
+        GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
         }
         { DebugTimer t("sapling growth");
-        executePerResourceUnit( nc_sapling_growth, false /* true: force single thraeded operation */);
-        GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
+        executePerResourceUnit( nc_sapling_growth, false /* true: force single threaded operation */);
+        GlobalSettings::instance()->systemStatistics()->tSapling+=t.elapsed();
         }
 
         Establishment::debugInfo(); // debug test

@@ -42,6 +42,13 @@ void Saplings::establishment(const ResourceUnit *ru)
     QPoint imap = ru->cornerPointOffset(); // offset on LIF/saplings grid
     QPoint iseedmap = QPoint(imap.x()/10, imap.y()/10); // seed-map has 20m resolution, LIF 2m -> factor 10
 
+    for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i)
+        (*i)->saplingStat().clearStatistics();
+
+    double lif_corr[cPxPerHectare];
+    for (int i=0;i<cPxPerHectare;++i)
+        lif_corr[i]=-1.;
+
     int species_idx = irandom(0, ru->ruSpecies().size()-1);
     for (int s_idx = 0; s_idx<ru->ruSpecies().size(); ++s_idx) {
 
@@ -74,38 +81,43 @@ void Saplings::establishment(const ResourceUnit *ru)
             s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
             isc = mGrid.index(imap.x(), imap.y()+iy);
 
-            for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc, ++mTested) {
+            for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
                 if (s->state == SaplingCell::CellFree) {
-                    bool viable = true;
                     // is a sapling of the current species already on the pixel?
                     // * test for sapling height already in cell state
                     // * test for grass-cover already in cell state
-                    int i_occupied = -1;
-                    for (int i=0;i<NSAPCELLS;++i) {
-                        if (!s->saplings[i].is_occupied() && i_occupied<0)
-                            i_occupied=i;
-                        if (s->saplings[i].species_index == species_idx) {
-                            viable = false;
+                    SaplingTree *stree=0;
+                    SaplingTree *slot=s->saplings;
+                    for (int i=0;i<NSAPCELLS;++i, ++slot) {
+                        if (!stree && !slot->is_occupied())
+                            stree=slot;
+                        if (slot->species_index == species_idx) {
+                            stree=0;
+                            break;
                         }
                     }
 
-                    if (viable && i_occupied>=0) {
+                    if (stree) {
                         // grass cover?
-                        DBG_IF(i_occupied<0, "establishment", "invalid value i_occupied<0");
                         float seed_map_value = seedmap[mGrid.index10(isc)];
                         if (seed_map_value==0.f)
                             continue;
                         const HeightGridValue &hgv = (*height_grid)[mGrid.index5(isc)];
                         float lif_value = (*lif_grid)[isc];
-                        double lif_corrected = rus->species()->speciesSet()->LRIcorrection(lif_value, 4. / hgv.height);
-                        // check for the combination of seed availability and light on the forest floor
-                         if (drandom() < seed_map_value*lif_corrected*abiotic_env ) {
-                             // ok, lets add a sapling at the given position
-                             s->saplings[i_occupied].setSapling(0.05f, 1, species_idx);
-                             s->checkState();
-                             mAdded++;
 
-                         }
+                        double &lif_corrected = lif_corr[iy*cPxPerRU+ix];
+                        // calculate the LIFcorrected only once per pixel
+                        if (lif_corrected<0.)
+                            lif_corrected = rus->species()->speciesSet()->LRIcorrection(lif_value, 4. / hgv.height);
+
+                        // check for the combination of seed availability and light on the forest floor
+                        if (drandom() < seed_map_value*lif_corrected*abiotic_env ) {
+                            // ok, lets add a sapling at the given position (age is incremented later)
+                            stree->setSapling(0.05f, 0, species_idx);
+                            s->checkState();
+                            rus->saplingStat().mAdded++;
+
+                        }
 
                     }
 
@@ -121,9 +133,6 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
 {
     HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
-
-    for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i)
-        (*i)->saplingStat().clearStatistics();
 
     QPoint imap =  mGrid.indexAt(ru->boundingBox().topLeft());
     bool need_check=false;
@@ -149,6 +158,14 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
         }
     }
 
+
+
+
+    // store statistics on saplings/regeneration
+    for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i) {
+        (*i)->saplingStat().calculate((*i)->species(), const_cast<ResourceUnit*>(ru));
+        (*i)->statistics().add(&((*i)->saplingStat()));
+    }
 }
 
 void Saplings::updateBrowsingPressure()
@@ -204,6 +221,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
             // sapling dies...
             tree.clear();
             rus->saplingStat().addCarbonOfDeadSapling( tree.height / species->saplingGrowthParameters().hdSapling * 100.f );
+            rus->saplingStat().mDied++;
             return true; // need cleanup
         }
     } else {
@@ -235,8 +253,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
 
             bigtree.setPosition(mGrid.indexOf(isc));
             // add variation: add +/-10% to dbh and *independently* to height.
-            bigtree.setDbh(dbh * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
-            bigtree.setHeight(tree.height * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation));
+            bigtree.setDbh(static_cast<float>(dbh * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
+            bigtree.setHeight(static_cast<float>(tree.height * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
             bigtree.setSpecies( const_cast<Species*>(species) );
             bigtree.setAge(tree.age,tree.height);
             bigtree.setRU(const_cast<ResourceUnit*>(ru));
@@ -273,5 +291,79 @@ void SaplingStat::clearStatistics()
     mAvgHeight=0.;
     mAvgAge=0.;
     mAvgDeltaHPot=mAvgHRealized=0.;
+    mAdded=0;
+
+}
+
+void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
+{
+    if (mLiving) {
+        mAvgHeight /= double(mLiving);
+        mAvgAge /= double(mLiving);
+        mAvgDeltaHPot /= double(mLiving);
+        mAvgHRealized /= double(mLiving);
+    }
+
+    // calculate carbon balance
+    CNPair old_state = mCarbonLiving;
+    mCarbonLiving.clear();
+
+    CNPair dead_wood, dead_fine; // pools for mortality
+    // average dbh
+    if (mLiving>0) {
+        // calculate the avg dbh and number of stems
+        double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
+        double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh );
+        // woody parts: stem, branchse and coarse roots
+        double woody_bm = species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
+        double foliage = species->biomassFoliage(avg_dbh);
+        double fineroot = foliage*species->finerootFoliageRatio();
+
+        mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );
+        mCarbonLiving.addBiomass( foliage*n, species->cnFoliage()  );
+        mCarbonLiving.addBiomass( fineroot*n, species->cnFineroot()  );
+
+        // turnover
+        if (ru->snag())
+            ru->snag()->addTurnoverLitter(species, foliage*species->turnoverLeaf(), fineroot*species->turnoverRoot());
+
+        // calculate the "mortality from competition", i.e. carbon that stems from reduction of stem numbers
+        // from Reinekes formula.
+        //
+        if (avg_dbh>1.) {
+            double avg_dbh_before = (mAvgHeight - mAvgHRealized) / species->saplingGrowthParameters().hdSapling * 100.;
+            double n_before = mLiving * species->saplingGrowthParameters().representedStemNumber( qMax(1.,avg_dbh_before) );
+            if (n<n_before) {
+                dead_wood.addBiomass( woody_bm * (n_before-n), species->cnWood() );
+                dead_fine.addBiomass( foliage * (n_before-n), species->cnFoliage()  );
+                dead_fine.addBiomass( fineroot * (n_before-n), species->cnFineroot()  );
+            }
+        }
+
+    }
+    if (mDied) {
+        double avg_dbh_dead = mSumDbhDied / double(mDied);
+        double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead );
+        // woody parts: stem, branchse and coarse roots
+
+        dead_wood.addBiomass( ( species->biomassWoody(avg_dbh_dead) + species->biomassBranch(avg_dbh_dead) + species->biomassRoot(avg_dbh_dead)) * n, species->cnWood()  );
+        double foliage = species->biomassFoliage(avg_dbh_dead)*n;
+
+        dead_fine.addBiomass( foliage, species->cnFoliage()  );
+        dead_fine.addBiomass( foliage*species->finerootFoliageRatio(), species->cnFineroot()  );
+    }
+    if (!dead_wood.isEmpty() || !dead_fine.isEmpty())
+        if (ru->snag())
+            ru->snag()->addToSoil(species, dead_wood, dead_fine);
+
+    // calculate net growth:
+    // delta of stocks
+    mCarbonGain = mCarbonLiving + dead_fine + dead_wood - old_state;
+    if (mCarbonGain.C < 0)
+        mCarbonGain.clear();
+
+
+    GlobalSettings::instance()->systemStatistics()->saplingCount+=mLiving;
+    GlobalSettings::instance()->systemStatistics()->newSaplings+=mAdded;
 
 }
