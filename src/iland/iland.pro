@@ -198,7 +198,9 @@ SOURCES += main.cpp \
     ../abe/actthinning.cpp \
     ../core/grasscover.cpp \
     ../tools/scriptgrid.cpp \
-    ../core/saplings.cpp
+    ../core/saplings.cpp \
+    ../output/waterout.cpp
+
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
@@ -298,7 +300,8 @@ HEADERS += mainwindow.h \
     ../abe/actthinning.h \
     ../core/grasscover.h \
     ../tools/scriptgrid.h \
-    ../core/saplings.h
+    ../core/saplings.h \
+    ../output/waterout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

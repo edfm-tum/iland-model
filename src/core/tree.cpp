@@ -940,7 +940,10 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
-    notifyTreeRemoved(TreeHarvest);
+    if (isCutdown())
+        notifyTreeRemoved(TreeCutDown);
+    else
+        notifyTreeRemoved(TreeHarvest);
 
     if (ru()->snag())
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
@@ -1035,6 +1038,11 @@ void Tree::notifyTreeRemoved(TreeRemovalType reason)
     // tell disturbance modules that a tree died
     GlobalSettings::instance()->model()->modules()->treeDeath(this, static_cast<int>(reason) );
 
+    // update reason, if ABE handled the tree
+    if (reason==TreeDisturbance && isHarvested())
+        reason = TreeSalavaged;
+    if (isCutdown())
+        reason = TreeCutDown;
     // create output for tree removals
     if (mRemovalOutput && mRemovalOutput->isEnabled())
         mRemovalOutput->execRemovedTree(this, static_cast<int>(reason));

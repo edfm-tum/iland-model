@@ -68,6 +68,9 @@ public:
     /// scheduled operations are executed.
     void run();
 
+    /// at the end of the year, reset the salvage harvests
+    void resetHarvestCounter() { mExtraHarvest = 0.; }
+
     /// prepone a stand if in queue for the given stand.
     /// return true if a activity is preponed.
     bool forceHarvest(const FMStand *stand, const int max_years);

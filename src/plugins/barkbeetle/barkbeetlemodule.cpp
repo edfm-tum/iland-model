@@ -96,20 +96,21 @@ void BarkBeetleModule::setup(const ResourceUnit *ru)
     // set all pixel within the resource unit
     GridRunner<BarkBeetleCell> runner(mGrid, ru->boundingBox());
     while (BarkBeetleCell *cell = runner.next())
-        cell->backgroundInfestationProbability = pixel_value;
+        cell->backgroundInfestationProbability = static_cast<float>(pixel_value);
 
 }
 
 void BarkBeetleModule::loadParameters()
 {
     const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
-    params.cohortsPerGeneration = xml.valueDouble(".cohortsPerGeneration", params.cohortsPerGeneration);
-    params.cohortsPerSisterbrood = xml.valueDouble(".cohortsPerSisterbrood", params.cohortsPerSisterbrood);
+    params.cohortsPerGeneration = xml.valueInt(".cohortsPerGeneration", params.cohortsPerGeneration);
+    params.cohortsPerSisterbrood = xml.valueInt(".cohortsPerSisterbrood", params.cohortsPerSisterbrood);
     params.spreadKernelMaxDistance = xml.valueDouble(".spreadKernelMaxDistance", params.spreadKernelMaxDistance);
     params.spreadKernelFormula = xml.value(".spreadKernelFormula", "100*(1-x)^4");
-    params.minDbh = xml.valueDouble(".minimumDbh", params.minDbh);
+    params.minDbh = static_cast<float>( xml.valueDouble(".minimumDbh", params.minDbh) );
     mKernelPDF.setup(params.spreadKernelFormula,0.,params.spreadKernelMaxDistance);
     params.backgroundInfestationProbability = xml.valueDouble(".backgroundInfestationProbability", params.backgroundInfestationProbability);
+    params.initialInfestationProbability = xml.valueDouble(".initialInfestationProbability", params.initialInfestationProbability);
     params.stormInfestationProbability = xml.valueDouble(".stormInfestationProbability", params.stormInfestationProbability);
     params.deadTreeSelectivity = xml.valueDouble(".deadTreeSelectivity", params.deadTreeSelectivity);
 
@@ -211,6 +212,7 @@ void BarkBeetleModule::loadAllVegetation()
 
 void BarkBeetleModule::run(int iteration)
 {
+    DebugTimer t("barkbeetle:total");
     // reset statistics
     BarkBeetleCell::resetCounters();
     int old_max_gen = stats.maxGenerations;
@@ -409,19 +411,29 @@ void BarkBeetleModule::startSpread()
             }
 
         } else if (b->isPotentialHost()) {
-            // calculate probability
-            double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
-            double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
-            if (drandom() < p_mod) {
-                // background activation
-                b->setInfested(true);
-                b->outbreakYear = mYear; // this outbreak starts in the current year
-                stats.infestedBackground++;
+            if (mYear==1 && params.initialInfestationProbability>0.) {
+                if (drandom() < params.initialInfestationProbability) {
+                    b->setInfested(true);
+                    b->outbreakYear = 1 - irandom(0,3); // initial outbreaks has an age of 1-4 years
+                    stats.infestedBackground++;
+                }
+            } else if (b->backgroundInfestationProbability>0.f) {
+                // calculate probability for an outbreak
+                double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
+                double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
+                if (drandom() < p_mod) {
+                    // background activation: 10 px
+                    //clumpedBackgroundActivation(mGrid.indexOf(b));
+                    b->setInfested(true);
+                    b->outbreakYear = mYear; // this outbreak starts in the current year
+                    stats.infestedBackground++;
+                }
             }
         }
 
         b->n = 0;
         b->killed=false;
+        b->killedYear = 0;
         b->packageOutbreakYear = 0.f;
 
     }
@@ -447,6 +459,35 @@ void BarkBeetleModule::startSpread()
             prepareInteractions(true);
     }
 
+}
+
+int BarkBeetleModule::clumpedBackgroundActivation(QPoint start_idx)
+{
+    // we assume to start the infestation by randomly activating 8 cells
+    // in the neighborhood of the starting point (a 5x5 grid)
+    QRect rect(start_idx-QPoint(2,2), start_idx+QPoint(2,2));
+    if (!mGrid.isIndexValid(rect.topLeft()) || !mGrid.isIndexValid(rect.bottomRight()))
+        return 0;
+    GridRunner<BarkBeetleCell> runner(mGrid, rect);
+    int n_pot = 0;
+    while (runner.next())
+        if (runner.current()->isHost())
+            ++n_pot;
+
+    if (n_pot==0)
+        return 0;
+    runner.reset();
+    double p_infest = 8. / n_pot;
+    int n_infest=0;
+    while (runner.next())
+        if (runner.current()->isHost())
+            if (drandom()<p_infest) {
+                runner.current()->setInfested(true);
+                runner.current()->outbreakYear = mYear; // this outbreak starts in the current year
+                stats.infestedBackground++; ++n_infest;
+            }
+
+    return n_infest;
 }
 
 void BarkBeetleModule::prepareInteractions(bool update_interaction)
@@ -527,6 +568,7 @@ void BarkBeetleModule::barkbeetleSpread()
             b->finishedSpread(mIteration>0 ? mIteration+1 : generation);
             // mark the resource unit, that some killing is required
             bbru.killed_trees = true;
+            stats.NAreaKilled++;
             bbru.killed_pixels++;
             bbru.host_pixels--;
 
@@ -609,7 +651,8 @@ void BarkBeetleModule::barkbeetleSpread()
 void BarkBeetleModule::barkbeetleKill()
 {
     int n_killed=0;
-    double basal_area=0;
+    double basal_area=0.;
+    double volume=0.;
     for (BarkBeetleRUCell *rucell=mRUGrid.begin(); rucell!=mRUGrid.end(); ++rucell)
         if (rucell->killed_trees) {
             // there are killed pixels within the resource unit....
@@ -617,16 +660,21 @@ void BarkBeetleModule::barkbeetleKill()
             for (QVector<Tree>::const_iterator t=tv.constBegin(); t!=tv.constEnd(); ++t) {
                 if (!t->isDead() && t->dbh()>params.minDbh && t->species()->id()==QStringLiteral("piab")) {
                     // check if on killed pixel?
-                    if (mGrid.constValueAt(t->position()).killed) {
+                    BarkBeetleCell &bbc = mGrid.valueAt(t->position());
+                    if (bbc.killed) {
                         // yes: kill the tree:
                         Tree *tree = const_cast<Tree*>(&(*t));
-                        tree->setDeathReasonBarkBeetle();
                         n_killed++;
                         basal_area+=tree->basalArea();
-                        if (!mSimulate) // remove tree only if not in simulation mode
+                        volume+=tree->volume();
+                        bbc.sum_volume_killed += tree->volume();
+
+                        if (!mSimulate) { // remove tree only if not in simulation mode
+                            tree->setDeathReasonBarkBeetle();
                             tree->removeDisturbance(0., 1., // 0% of the stem to soil, 100% to snag (keeps standing)
                                                     0., 1.,   // 100% of branches to snags
                                                     0.);      // 100% of foliage to snags (will be dropped from there anyways)
+                        }
 
                     }
                 }
@@ -635,6 +683,7 @@ void BarkBeetleModule::barkbeetleKill()
         }
     stats.NTreesKilled = n_killed;
     stats.BasalAreaKilled = basal_area;
+    stats.VolumeKilled = volume;
 
     // reset the effect of wind-damaged trees and "fangbaueme" -> year begin
 //    for (BarkBeetleCell *c=mGrid.begin(); c!=mGrid.end(); ++c)
@@ -666,6 +715,8 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 6: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
     case 7: return data.backgroundInfestationProbability;
     case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
+    case 9: return data.n_events; // number of events on a specific pixel
+    case 10: return data.sum_volume_killed; // total sum of trees killed for a pixel
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -683,7 +734,9 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 5/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
-                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray);
+                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray)
+                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
+                << LayeredGridBase::LayerElement(QLatin1Literal("sumVolume"), QLatin1Literal("running sum of damages trees (volume, m3)."), GridViewReds);
     return mNames;
 
 }

@@ -115,12 +115,18 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     // stockable area:
     // if the stockable area is < 1ha, then
     // scale the soil inputs to a full hectare
-    double area_ha = mRU?mRU->stockableArea() / 10000.:1.;
+    double area_ha = mRU?mRU->stockableArea() / cRUArea:1.;
+
     if (area_ha==0.) {
         qDebug() << "Soil::setSoilInput: stockable area is 0!";
         return;
         //throw IException("Soil::setSoilInput: stockable area is 0!");
     }
+    // for the carbon input flow from snags/trees we assume a minimum size of the "stand" of 0.1ha
+    // this reduces rapid input pulses (e.g. if one large tree dies).
+    // Put differently: for resource units with stockable area < 0.1ha, we add a "blank" area.
+    // the soil module always calculates per ha values, so nothing else needs to be done here.
+    // area_ha = std::max(area_ha, 0.1);
 
     mInputLab = labile_input_kg_ha * (0.001 / area_ha); // transfer from kg/ha -> tons/ha and scale to 1 ha
     mInputRef = refractory_input_kg_ha * (0.001 / area_ha);
@@ -139,7 +145,7 @@ void Soil::calculateYear()
 {
     SoilParams &sp = *mParams;
     // checks
-    if (mRE==0) {
+    if (mRE==0.) {
         throw IException("Soil::calculateYear(): Invalid value for 're' (=0) for RU(index): " + QString::number(mRU->index()));
     }
     const double t = 1.; // timestep (annual)

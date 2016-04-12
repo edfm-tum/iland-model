@@ -36,6 +36,7 @@ ABEStandOut::ABEStandOut()
     columns() << OutputColumn::year()
               << OutputColumn("unitid", "unique identifier of the planning unit", OutString)
               << OutputColumn("standid", "unique identifier of the forest stand", OutInteger)
+              << OutputColumn("initialstandid", "stand id if not split, stand id of the source stand after splitting a stand.", OutInteger)
               << OutputColumn("area", "total area of the forest stand (ha)", OutDouble)
               << OutputColumn("volume", "standing timber volume (after harvests of the year) (m3/ha)", OutDouble)
               << OutputColumn("basalarea", "basal area (trees >4m) (m2/ha)", OutDouble)
@@ -58,7 +59,7 @@ void ABEStandOut::exec()
         stand->reload();
 
         *this << currentYear();
-        *this << stand->unit()->id() << stand->id() << stand->area();
+        *this << stand->unit()->id() << stand->id() << stand->initialStandId() << stand->area();
         *this << qRound(stand->volume()*100.)/100.;
         *this << qRound(stand->basalArea()*100.)/100.;
         *this << qRound(stand->dbh()*100.)/100.;

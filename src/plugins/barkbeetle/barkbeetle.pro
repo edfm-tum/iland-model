@@ -32,6 +32,7 @@ SOURCES       = \
 TARGET        = $$qtLibraryTarget(iland_barkbeetle)
 DESTDIR       = ../../plugins
 
+DEFINES += NO_DEBUG_MSGS
 
 
 

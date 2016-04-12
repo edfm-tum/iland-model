@@ -52,6 +52,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
 {
     mUnit = unit;
     mId = id;
+    mInitialId = id;
     mPhase = Activity::Invalid;
 
     // testing:
@@ -80,7 +81,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mLastExecutedIndex=-1;
     mLastRotationAge = -1;
 
-    mArea = ForestManagementEngine::standGrid()->area(mId)/10000.;
+    mArea = ForestManagementEngine::standGrid()->area(mId)/cRUArea;
 
 }
 
@@ -168,6 +169,11 @@ void FMStand::reset(FMSTP *stp)
     mSTP = stp;
     newRotatation();
     mCurrentIndex = -1;
+}
+
+void FMStand::checkArea()
+{
+    mArea = ForestManagementEngine::standGrid()->area(mId)/cRUArea;
 }
 
 bool relBasalAreaIsHigher(const SSpeciesStand &a, const SSpeciesStand &b)

@@ -45,7 +45,7 @@ class Grid {
 public:
 
     Grid();
-    Grid(int cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
+    Grid(float cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
     /// create from a metric rect
     Grid(const QRectF rect_metric, const float cellsize) { mData=0; setup(rect_metric,cellsize); }
     // copy ctor
@@ -195,7 +195,13 @@ public:
     GridRunner(Grid<T> *target_grid, const QRect &rectangle) {setup(target_grid, rectangle);}
     GridRunner(Grid<T> *target_grid) {setup(target_grid, target_grid->rectangle()); }
     T* next(); ///< to to next element, return NULL if finished
+    /// return the current element, or NULL
     T* current() const { return mCurrent; }
+    /// return the first element
+    T* first() const { return mFirst; }
+    /// return the last element (not one element behind the last element!)
+    T* last() const { return mLast; }
+    /// checks if the state of the GridRunner is valid, returns false if out of scope
     bool isValid() const {return mCurrent>=mFirst && mCurrent<=mLast; }
     /// return the (index) - coordinates of the current position in the grid
     QPoint currentIndex() const { return mGrid->indexOf(mCurrent); }
@@ -543,7 +549,7 @@ void GridRunner<T>::neighbors4(T** rArray)
     // south:
     rArray[3] = mCurrent - (mCols + mLineLength) < mFirst?0: mCurrent -  (mCols + mLineLength);
     // east / west
-    rArray[1] = mCurrentCol<int(mCols)? mCurrent + 1 : 0;
+    rArray[1] = mCurrentCol+1<int(mCols)? mCurrent + 1 : 0;
     rArray[2] = mCurrentCol>0? mCurrent-1 : 0;
 }
 

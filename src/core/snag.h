@@ -81,6 +81,7 @@ public:
     Snag();
     static void setupThresholds(const double lower, const double upper); ///< setup class thresholds, needs to be called only once... (static)
     void setup( const ResourceUnit *ru); ///< initial setup routine.
+    void scaleInitialState(); ///< used to scale the input to the actual area of the resource unit
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
     void calculateYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
     // access

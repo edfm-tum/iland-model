@@ -64,18 +64,23 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mRemovedGrowth = 0.;
     mLastYear = -1;
 
+    DBGMODE( if(mSpecies->index()>1000 || mSpecies->index()<0)
+             qDebug() << "suspicious species?? in RUS::setup()";
+                );
+
 }
 
 
 void ResourceUnitSpecies::calculate(const bool fromEstablishment)
 {
 
-    if (mLastYear == GlobalSettings::instance()->currentYear())
-        return;
-
     // if *not* called from establishment, clear the species-level-stats
     if (!fromEstablishment)
         statistics().clear();
+
+    // if already processed in this year, do not repeat
+    if (mLastYear == GlobalSettings::instance()->currentYear())
+        return;
 
     if (mLAIfactor>0. || fromEstablishment==true) {
         // execute the water calculation...

@@ -77,7 +77,7 @@ void Scheduler::run()
     double harvest_in_queue = 0.;
     double total_final_harvested = mExtraHarvest;
     double total_thinning_harvested = 0.;
-    mExtraHarvest = 0.;
+    //mExtraHarvest = 0.;
     if (FMSTP::verbose() && total_final_harvested>0.)
         qCDebug(abe) << "Got extra harvest (e.g. salvages), m3=" << total_final_harvested;
 
@@ -348,8 +348,10 @@ void Scheduler::updateCurrentPlan()
                     break;
                 ++i;
             }
-            if (i==mSchedule.end())
-                throw IException("error scheduler");
+            if (i==mSchedule.end() || i.key()!=year+current_year) {
+                qCDebug(abe) << "updateCurrentPlan(): no item found for year" << year << ", #elements:" << mSchedule.count(year + current_year);
+                break;
+            }
 
             SchedulerItem *item = i.value();
             // try to change something only if the years' schedule is above the level without the focal item

@@ -29,8 +29,7 @@ SOURCES       = \
 TARGET        = $$qtLibraryTarget(iland_fire)
 DESTDIR       = ../../plugins
 
-
-
+DEFINES += NO_DEBUG_MSGS
 
 
 

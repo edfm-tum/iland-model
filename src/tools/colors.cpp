@@ -156,7 +156,12 @@ QColor Colors::colorFromValue(const float value, const GridViewType view_type, c
         float rel_value = (max_value!=min_value)?(rval - min_value) / (max_value - min_value): 0;
         int r,g,b;
         switch (view_type) {
-        case GridViewGreens: r=220 - rel_value*(220-11); g=220-rel_value*(220-111); b=220-rel_value*(220-19); break;
+        case GridViewGreens:  // 11,111,19
+            r=220 - rel_value*(220-11); g=220-rel_value*(220-111); b=220-rel_value*(220-19); break;
+        case GridViewBlues: //15,67,138
+            r=220 - rel_value*(220-15); g=220-rel_value*(220-67); b=220-rel_value*(220-138); break;
+        case GridViewReds: //219,31,72
+            r=240 - rel_value*(220-219); g=240-rel_value*(220-31); b=240-rel_value*(220-72); break;
         default: r=g=b=0;
         }
         return QColor(r,g,b);

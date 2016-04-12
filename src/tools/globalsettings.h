@@ -64,6 +64,8 @@ public:
     /// access the global QScriptEngine used throughout the model
     /// for all Javascript related functionality.
     QString executeJavascript(const QString &command);
+    /// execute a javasript function in the global context
+    QString executeJSFunction(const QString function_name);
     QJSEngine *scriptEngine() const { return mScriptEngine; }
     void resetScriptEngine(); ///< re-creates the script engine (when the Model is re-created)
 
@@ -124,7 +126,7 @@ public:
 
     // path
     void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
-    void printDirecories() const;
+    void printDirectories() const;
 
 
 private:
@@ -154,6 +156,7 @@ private:
 // Resource-Unit: 100x100m
 const int cPxSize = 2; // size of light grid (m)
 const int cRUSize = 100; // size of resource unit (m)
+const double cRUArea = 10000.; // area of a resource unit (m2)
 const int cHeightSize = 10; // size of a height grid pixel (m)
 const int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
 const int cPxPerRU = 50; // 100/2

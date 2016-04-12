@@ -66,6 +66,7 @@ ResourceUnit::ResourceUnit(const int index)
     mPixelCount=0;
     mStockedArea = 0;
     mStockedPixelCount = 0;
+    mStockableArea = 0;
     mAggregatedWLA = 0.;
     mAggregatedLA = 0.;
     mAggregatedLR = 0.;
@@ -264,13 +265,14 @@ void ResourceUnit::production()
         for (int i=0;i<mTrees.count();++i)
             crown_area += mTrees.at(i).isDead() ? 0. : mTrees.at(i).stamp()->reader()->crownArea();
 
-        qDebug() << "crown area: lai" << leafAreaIndex() << "stocked area (pixels)" << mStockedArea << " area (crown)" << crown_area;
-        if (leafAreaIndex()<2.) {
-            mStockedArea = crown_area;
+        if (logLevelDebug())
+            qDebug() << "crown area: lai" << leafAreaIndex() << "stocked area (pixels)" << mStockedArea << " area (crown)" << crown_area;
+        if (leafAreaIndex()<1.) {
+            mStockedArea = std::min(crown_area, mStockedArea);
         } else {
 
-            double px_frac = leafAreaIndex()-2.; // 0 at LAI=2, 1 at LAI=3
-            mStockedArea = mStockedArea * px_frac + crown_area * (1. - px_frac);
+            double px_frac = (leafAreaIndex()-1.)/2.; // 0 at LAI=1, 1 at LAI=3
+            mStockedArea = mStockedArea * px_frac + std::min(crown_area, mStockedArea) * (1. - px_frac);
         }
         if (mStockedArea==0.)
             return;
@@ -306,10 +308,13 @@ void ResourceUnit::production()
     // note: LAIFactors are only 1 if sum of LAI is > 1. (see WaterCycle)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         double lai_factor = (*i)->statistics().leafAreaIndex() / ru_lai;
-        DBGMODE(
-        if (lai_factor > 1.)
-            qDebug() << "LAI factor > 1";
-        );
+
+        //DBGMODE(
+        if (lai_factor > 1.) {
+                        const ResourceUnitSpecies* rus=*i;
+                        qDebug() << "LAI factor > 1: species ru-index:" << rus->species()->name() << rus->ru()->index();
+                    }
+        //);
         (*i)->setLAIfactor( lai_factor );
     }
 
@@ -320,6 +325,12 @@ void ResourceUnit::production()
 
     // invoke species specific calculation (3PG)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
+        //DBGMODE(
+        if ((*i)->LAIfactor() > 1.) {
+                    const ResourceUnitSpecies* rus=*i;
+                    qDebug() << "LAI factor > 1: species ru-index value:" << rus->species()->name() << rus->ru()->index() << rus->LAIfactor();
+                    }
+        //);
         (*i)->calculate(); // CALCULATE 3PG
         if (logLevelInfo() &&  (*i)->LAIfactor()>0)
             qDebug() << "ru" << mIndex << "species" << (*i)->species()->id() << "LAIfraction" << (*i)->LAIfactor() << "raw_gpp_m2"
@@ -369,6 +380,29 @@ void ResourceUnit::yearEnd()
     }
     mStatistics.calculate(); // aggreagte on stand level
 
+    // update carbon flows
+    if (soil() && GlobalSettings::instance()->model()->settings().carbonCycleEnabled) {
+        double area_factor = stockableArea() / cRUArea; //conversion factor
+        mUnitVariables.carbonUptake = statistics().npp() * biomassCFraction;
+        mUnitVariables.carbonUptake += statistics().nppSaplings() * biomassCFraction;
+
+        double to_atm = snag()->fluxToAtmosphere().C / area_factor; // from snags, kgC/ha
+        to_atm += soil()->fluxToAtmosphere().C *cRUArea/10.; // soil: t/ha -> t/m2 -> kg/ha
+        mUnitVariables.carbonToAtm = to_atm;
+
+        double to_dist = snag()->fluxToDisturbance().C / area_factor;
+        to_dist += soil()->fluxToDisturbance().C * cRUArea/10.;
+        double to_harvest = snag()->fluxToExtern().C / area_factor;
+
+        mUnitVariables.NEP = mUnitVariables.carbonUptake - to_atm - to_dist - to_harvest; // kgC/ha
+
+        // incremental values....
+        mUnitVariables.cumCarbonUptake += mUnitVariables.carbonUptake;
+        mUnitVariables.cumCarbonToAtm += mUnitVariables.carbonToAtm;
+        mUnitVariables.cumNEP += mUnitVariables.NEP;
+
+    }
+
 }
 
 void ResourceUnit::addTreeAgingForAllTrees()
@@ -412,7 +446,7 @@ void ResourceUnit::createStandStatistics()
 /** recreate statistics. This is necessary after events that changed the structure
     of the stand *after* the growth of trees (where stand statistics are updated).
     An example is after disturbances.  */
-void ResourceUnit::recreateStandStatistics()
+void ResourceUnit::recreateStandStatistics(bool recalculate_stats)
 {
     for (int i=0;i<mRUSpecies.count();i++) {
         mRUSpecies[i]->statistics().clear();
@@ -420,8 +454,11 @@ void ResourceUnit::recreateStandStatistics()
     foreach(const Tree &t, mTrees) {
         resourceUnitSpecies(t.species()).statistics().add(&t, 0);
     }
-    for (int i=0;i<mRUSpecies.count();i++) {
-        mRUSpecies[i]->statistics().calculate();
+
+    if (recalculate_stats) {
+        for (int i=0;i<mRUSpecies.count();i++) {
+            mRUSpecies[i]->statistics().calculate();
+        }
     }
 }
 
@@ -468,7 +505,7 @@ void ResourceUnit::clearSaplings(const QRectF pixel_rect, const bool remove_from
 
 }
 
-float ResourceUnit::saplingHeightForInit(const QPoint &position) const
+double ResourceUnit::saplingHeightForInit(const QPoint &position) const
 {
     double maxh = 0.;
     foreach(ResourceUnitSpecies* rus, mRUSpecies)

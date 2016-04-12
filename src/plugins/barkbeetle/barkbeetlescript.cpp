@@ -202,6 +202,20 @@ int BarkBeetleScript::clearInfestedPixels(QJSValue standmap, int stand_id, doubl
     return n_cleared;
 }
 
+bool BarkBeetleScript::setInfested(int x, int y)
+{
+    if (!mBeetle->mGrid.isIndexValid(QPoint(x,y))) {
+        qDebug() << "invalid index in BarkBeetleScript::setInfested(): x:" << x << "y:" << y;
+        return false;
+    }
+    BarkBeetleCell &c = mBeetle->mGrid.valueAtIndex(QPoint(x,y));
+    if (!c.isHost() || c.killed)
+        return false;
+    c.setInfested(true);
+    c.outbreakYear = mBeetle->internalYear();
+    return true;
+}
+
 bool BarkBeetleScript::simulate()
 {
     return mBeetle->simulate();

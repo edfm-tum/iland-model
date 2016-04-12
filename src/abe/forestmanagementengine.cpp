@@ -144,6 +144,10 @@ void ForestManagementEngine::finalizeRun()
         stand->resetHarvestCounter();
     }
 
+    foreach (FMUnit *unit, mUnits) {
+        unit->resetHarvestCounter();
+    }
+
     //
     if (mStandLayoutChanged) {
         DebugTimer timer("ABE:stand_layout_update");
@@ -158,10 +162,14 @@ void ForestManagementEngine::finalizeRun()
         mStandLayoutChanged = false;
 
         // now check the stands
-        for (QVector<FMStand*>::iterator it=mStands.begin(); it!=mStands.end(); ++it)
+        for (QVector<FMStand*>::iterator it=mStands.begin(); it!=mStands.end(); ++it) {
+            // renew area
+            (*it)->checkArea();
+            // initial activity (if missing)
             if (!(*it)->currentActivity()) {
                 (*it)->initialize();
             }
+        }
     }
 
 }
@@ -675,9 +683,11 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
     FMStand *stand = mFMStandGrid[tree->position()];
     if (stand)
         stand->notifyTreeRemoval(tree, reason);
+    else
+        qDebug() << "ForestManagementEngine::notifyTreeRemoval(): tree not on stand at (metric coords): " << tree->position() << "ID:" << tree->id();
 }
 
-bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, double n_infested_ha)
+bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, int n_infested_px)
 {
     // find out which stands are within the resource unit
     GridRunner<FMStand*> gr(mFMStandGrid, ru->boundingBox());
@@ -686,7 +696,7 @@ bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, cons
     while (FMStand **s=gr.next()) {
         if (*s && !processed_items.contains(*s)) {
             processed_items[*s] = true;
-            forest_changed |=  (*s)->notifyBarkBeetleAttack(generations, n_infested_ha);
+            forest_changed |=  (*s)->notifyBarkBeetleAttack(generations, n_infested_px);
         }
     }
     return forest_changed;
