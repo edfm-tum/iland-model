@@ -562,7 +562,10 @@ ResourceUnit *Model::ru(QPointF coord)
 {
     if (!mRUmap.isEmpty() && mRUmap.coordValid(coord))
         return mRUmap.valueAt(coord);
-    return ru(); // default RU if there is only one
+    if (mRUmap.isEmpty())
+        return ru(); // default RU if there is only one
+    else
+        return 0; // in this case, no valid coords were provided
 }
 
 void Model::initOutputDatabase()

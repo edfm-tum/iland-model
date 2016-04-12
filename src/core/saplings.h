@@ -127,15 +127,14 @@ public:
     void saplingGrowth(const ResourceUnit *ru);
 
     // access
-    const Grid<SaplingCell> &grid() const { return mGrid; }
-    SaplingCell *cell(QPoint lif_coords)  { SaplingCell *s=mGrid.ptr(lif_coords.x(), lif_coords.y()); if (s && s->state!=SaplingCell::CellInvalid) return s; else return 0; }
+    SaplingCell *cell(QPoint lif_coords, bool only_valid=true);
 
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     static void updateBrowsingPressure();
 
 private:
-    bool growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, float dom_height, float lif_value);
-    Grid<SaplingCell> mGrid;
+    bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value);
+    //Grid<SaplingCell> mGrid;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;
 };

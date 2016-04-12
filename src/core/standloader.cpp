@@ -45,8 +45,8 @@
     See http://iland.boku.ac.at/initialize+trees
   */
 // provide a mapping between "Picus"-style and "iLand"-style species Ids
-QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
-QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
+static QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
+static QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
 
 StandLoader::~StandLoader()
 {

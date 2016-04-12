@@ -20,17 +20,20 @@ Saplings::Saplings()
 
 void Saplings::setup()
 {
-    mGrid.setup(GlobalSettings::instance()->model()->grid()->metricRect(), GlobalSettings::instance()->model()->grid()->cellsize());
-
+    //mGrid.setup(GlobalSettings::instance()->model()->grid()->metricRect(), GlobalSettings::instance()->model()->grid()->cellsize());
+    FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
     // mask out out-of-project areas
     HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
-    for (int i=0;i<mGrid.count();++i) {
-        if (!hg->valueAtIndex(mGrid.index5(i)).isValid())
-            mGrid[i].state = SaplingCell::CellInvalid;
-        else
-            mGrid[i].state = SaplingCell::CellFree;
-    }
+    for (int i=0; i<lif_grid->count(); ++i) {
+        SaplingCell *s = cell(lif_grid->indexOf(i), false); // false: retrieve also invalid cells
+        if (s) {
+            if (!hg->valueAtIndex(lif_grid->index5(i)).isValid())
+                s->state = SaplingCell::CellInvalid;
+            else
+                s->state = SaplingCell::CellFree;
+        }
 
+    }
 
 }
 
@@ -75,11 +78,13 @@ void Saplings::establishment(const ResourceUnit *ru)
             continue;
 
         // loop over all 2m cells on this resource unit
+        SaplingCell *sap_cells = ru->saplingCellArray();
         SaplingCell *s;
         int isc = 0; // index on 2m cell
         for (int iy=0; iy<cPxPerRU; ++iy) {
-            s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
-            isc = mGrid.index(imap.x(), imap.y()+iy);
+            //s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
+            s = &sap_cells[iy*cPxPerRU]; // pointer to a row
+            isc = lif_grid->index(imap.x(), imap.y()+iy);
 
             for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
                 if (s->state == SaplingCell::CellFree) {
@@ -99,10 +104,10 @@ void Saplings::establishment(const ResourceUnit *ru)
 
                     if (stree) {
                         // grass cover?
-                        float seed_map_value = seedmap[mGrid.index10(isc)];
+                        float seed_map_value = seedmap[lif_grid->index10(isc)];
                         if (seed_map_value==0.f)
                             continue;
-                        const HeightGridValue &hgv = (*height_grid)[mGrid.index5(isc)];
+                        const HeightGridValue &hgv = (*height_grid)[lif_grid->index5(isc)];
                         float lif_value = (*lif_grid)[isc];
 
                         double &lif_corrected = lif_corr[iy*cPxPerRU+ix];
@@ -134,11 +139,13 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
 
-    QPoint imap =  mGrid.indexAt(ru->boundingBox().topLeft());
+    QPoint imap = ru->cornerPointOffset();
     bool need_check=false;
+    SaplingCell *sap_cells = ru->saplingCellArray();
     for (int iy=0; iy<cPxPerRU; ++iy) {
-        SaplingCell *s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
-        int isc = mGrid.index(imap.x(), imap.y()+iy);
+        //SaplingCell *s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
+        SaplingCell *s = &sap_cells[iy*cPxPerRU]; // ptr to row
+        int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
             if (s->state != SaplingCell::CellInvalid) {
@@ -149,7 +156,7 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
                         const HeightGridValue &hgv = (*height_grid)[height_grid->index5(isc)];
                         float lif_value = (*lif_grid)[isc];
 
-                        need_check |= growSapling(ru, s->saplings[i], isc, hgv.height, lif_value);
+                        need_check |= growSapling(ru, *s, s->saplings[i], isc, hgv.height, lif_value);
                     }
                 }
                 if (need_check)
@@ -168,6 +175,27 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     }
 }
 
+SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid)
+{
+    FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
+
+    // in this case, getting the actual cell is quite cumbersome: first, retrieve the resource unit, then the
+    // cell based on the offset of the given coordiantes relative to the corner of the resource unit.
+    ResourceUnit *ru = GlobalSettings::instance()->model()->ru(lif_grid->cellCenterPoint(lif_coords));
+    // ResourceUnit *ru = GlobalSettings::instance()->model()->RUgrid().constValueAt(lif_grid->cellCenterPoint(lif_coords));
+    if (ru) {
+        QPoint local_coords = lif_coords - ru->cornerPointOffset();
+        int idx = local_coords.y() * cPxPerRU + local_coords.x();
+        DBGMODE( if (idx<0 || idx>=cPxPerHectare)
+                 qDebug("invalid coords in Saplings::cell");
+                    );
+        SaplingCell *s=&ru->saplingCellArray()[idx];
+        if (s && (!only_valid || s->state!=SaplingCell::CellInvalid))
+            return s;
+    }
+    return 0;
+}
+
 void Saplings::updateBrowsingPressure()
 {
     if (GlobalSettings::instance()->settings().valueBool("model.settings.browsing.enabled"))
@@ -176,7 +204,7 @@ void Saplings::updateBrowsingPressure()
         Saplings::mBrowsingPressure = 0.;
 }
 
-bool Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, float dom_height, float lif_value)
+bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value)
 {
     ResourceUnitSpecies *rus = const_cast<ResourceUnitSpecies*>(ru->ruSpecies()[tree.species_index]);
     const Species *species = rus->species();
@@ -251,7 +279,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
         for (int i=0;i<to_establish;i++) {
             Tree &bigtree = const_cast<ResourceUnit*>(ru)->newTree();
 
-            bigtree.setPosition(mGrid.indexOf(isc));
+            bigtree.setPosition(GlobalSettings::instance()->model()->grid()->indexOf(isc));
             // add variation: add +/-10% to dbh and *independently* to height.
             bigtree.setDbh(static_cast<float>(dbh * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
             bigtree.setHeight(static_cast<float>(tree.height * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
@@ -264,12 +292,11 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingTree &tree, int isc, f
         }
         // clear all regeneration from this pixel (including this tree)
         tree.clear(); // clear this tree (no carbon flow to the ground)
-        SaplingCell &s=mGrid[isc];
         for (int i=0;i<NSAPCELLS;++i) {
-            if (s.saplings[i].is_occupied()) {
+            if (scell.saplings[i].is_occupied()) {
                 // add carbon to the ground
-                rus->saplingStat().addCarbonOfDeadSapling( s.saplings[i].height / species->saplingGrowthParameters().hdSapling * 100.f );
-                s.saplings[i].clear();
+                rus->saplingStat().addCarbonOfDeadSapling( scell.saplings[i].height / species->saplingGrowthParameters().hdSapling * 100.f );
+                scell.saplings[i].clear();
             }
         }
         return true; // need cleanup
