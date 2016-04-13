@@ -182,7 +182,7 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid)
     // in this case, getting the actual cell is quite cumbersome: first, retrieve the resource unit, then the
     // cell based on the offset of the given coordiantes relative to the corner of the resource unit.
     ResourceUnit *ru = GlobalSettings::instance()->model()->ru(lif_grid->cellCenterPoint(lif_coords));
-    // ResourceUnit *ru = GlobalSettings::instance()->model()->RUgrid().constValueAt(lif_grid->cellCenterPoint(lif_coords));
+
     if (ru) {
         QPoint local_coords = lif_coords - ru->cornerPointOffset();
         int idx = local_coords.y() * cPxPerRU + local_coords.x();
@@ -247,9 +247,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         tree.stress_years++;
         if (tree.stress_years > species->saplingGrowthParameters().maxStressYears) {
             // sapling dies...
-            tree.clear();
             rus->saplingStat().addCarbonOfDeadSapling( tree.height / species->saplingGrowthParameters().hdSapling * 100.f );
-            rus->saplingStat().mDied++;
+            tree.clear();
             return true; // need cleanup
         }
     } else {
@@ -350,6 +349,11 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         mCarbonLiving.addBiomass( foliage*n, species->cnFoliage()  );
         mCarbonLiving.addBiomass( fineroot*n, species->cnFineroot()  );
 
+        DBGMODE(
+        if (isnan(mCarbonLiving.C))
+            qDebug("carbon NaN in SaplingStat::calculate (living trees).");
+                );
+
         // turnover
         if (ru->snag())
             ru->snag()->addTurnoverLitter(species, foliage*species->turnoverLeaf(), fineroot*species->turnoverRoot());
@@ -364,6 +368,11 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
                 dead_wood.addBiomass( woody_bm * (n_before-n), species->cnWood() );
                 dead_fine.addBiomass( foliage * (n_before-n), species->cnFoliage()  );
                 dead_fine.addBiomass( fineroot * (n_before-n), species->cnFineroot()  );
+                DBGMODE(
+                if (isnan(dead_fine.C))
+                    qDebug("carbon NaN in SaplingStat::calculate (self thinning).");
+                        );
+
             }
         }
 
@@ -378,6 +387,11 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
 
         dead_fine.addBiomass( foliage, species->cnFoliage()  );
         dead_fine.addBiomass( foliage*species->finerootFoliageRatio(), species->cnFineroot()  );
+        DBGMODE(
+        if (isnan(dead_fine.C))
+            qDebug("carbon NaN in SaplingStat::calculate (died trees).");
+                );
+
     }
     if (!dead_wood.isEmpty() || !dead_fine.isEmpty())
         if (ru->snag())

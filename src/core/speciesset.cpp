@@ -225,9 +225,9 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
             return value2 + (responseClass-2)*(value3-value2);
         }
     }
-    if (responseClass==2)
+    if (responseClass==2.)
         return nitrogenResponse(availableNitrogen, mNitrogen_2a, mNitrogen_2b);
-    if (responseClass==1)
+    if (responseClass==1.)
         return nitrogenResponse(availableNitrogen, mNitrogen_1a, mNitrogen_1b);
     // last ressort: interpolate between 1 and 2
     value1 = nitrogenResponse(availableNitrogen, mNitrogen_1a, mNitrogen_1b);
@@ -244,7 +244,7 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
 */
 double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const
 {
-    if (nitrogenResponse==0)
+    if (nitrogenResponse==0.)
         return 0.;
 
     double co2_water = 2. - soilWaterResponse;

@@ -78,7 +78,7 @@ public:
     void clearStatistics();
     void calculate(const Species *species, ResourceUnit *ru);
     // actions
-    void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh; }
+    void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh;  }
 
     // access to statistics
     int newSaplings() const { return mAdded; }

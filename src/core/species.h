@@ -41,8 +41,9 @@ struct EstablishmentParameters
     int bud_birst; // GDDs needed until bud burst
     int frost_free; // minimum number of annual frost-free days required
     double frost_tolerance; //factor in growing season frost tolerance calculation
+    double psi_min; // minimum soil water potential for establishment
     EstablishmentParameters(): min_temp(-37), chill_requirement(56), GDD_min(177), GDD_max(3261), GDD_baseTemperature(3.4),
-                               bud_birst(255), frost_free(65), frost_tolerance(0.5) {}
+                               bud_birst(255), frost_free(65), frost_tolerance(0.5), psi_min(0.) {}
 };
 
 /// parameters for sapling growth
@@ -258,7 +259,7 @@ inline double Species::soilwaterResponse(const double &psi_kPa) const
 /** calculate probabilty of death based on the current stress index. */
 inline double Species::deathProb_stress(const double &stress_index) const
 {
-    if (stress_index==0)
+    if (stress_index==0.)
         return 0.;
     double result = 1. - exp(-mDeathProb_stress*stress_index);
     return result;
