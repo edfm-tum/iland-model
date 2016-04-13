@@ -128,7 +128,7 @@ void Species::setup()
     mMaximumHeight = doubleVar("maximumHeight");
     mAging.setAndParse(stringVar("aging"));
     mAging.linearize(0.,1.); // input is harmonic mean of relative age and relative height
-    if (mMaximumAge*mMaximumHeight==0)
+    if (mMaximumAge*mMaximumHeight==0.)
         throw IException( QString("Error setting up species %1:invalid aging parameters.").arg(id()));
 
     // mortality
@@ -157,7 +157,7 @@ void Species::setup()
     if (mRespNitrogenClass<1 || mRespNitrogenClass>3) throw IException( QString("nitrogen class invalid (must be >=1 and <=3) for species").arg(id()));
 
     // phenology
-    mPhenologyClass = (int)doubleVar("phenologyClass");
+    mPhenologyClass = intVar("phenologyClass");
 
     // water
     mMaxCanopyConductance = doubleVar("maxCanopyConductance");
@@ -172,7 +172,7 @@ void Species::setup()
     int seed_year_interval = intVar("seedYearInterval");
     if (seed_year_interval==0)
         throw IException(QString("seedYearInterval = 0 for %1").arg(id()));
-    mSeedYearProbability = 1 / (double)seed_year_interval;
+    mSeedYearProbability = 1 / static_cast<double>(seed_year_interval);
     mMaturityYears = intVar("maturityYears");
     mTM_as1 = doubleVar("seedKernel_as1");
     mTM_as2 = doubleVar("seedKernel_as2");
@@ -189,6 +189,7 @@ void Species::setup()
     mEstablishmentParams.bud_birst = intVar("estBudBirstGDD");
     mEstablishmentParams.frost_free = intVar("estFrostFreeDays");
     mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
+    mEstablishmentParams.psi_min = doubleVar("estPsiMin");
 
     // sapling and sapling growth parameters
     mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));

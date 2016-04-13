@@ -28,6 +28,7 @@
 #include "grasscover.h"
 #include "helper.h"
 #include "debugtimer.h"
+#include "watercycle.h"
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
@@ -167,6 +168,51 @@ void Establishment::debugInfo()
     qDebug() << "Establisment: new algo:"  << _est_new_algo << "old algo:" << _est_old_algo;
 }
 
+double Establishment::calculateWaterLimitation(const int veg_period_start, const int veg_period_end)
+{
+    // return 1 if effect is disabled
+    if (mRUS->species()->establishmentParameters().psi_min >= 0.)
+        return 1.;
+
+    double psi_min = mRUS->species()->establishmentParameters().psi_min;
+    const WaterCycle *water = mRUS->ru()->waterCycle();
+    int days = mRUS->ru()->climate()->daysOfYear();
+
+    // two week (14 days) running average of actual psi-values on the resource unit
+    static const int nwindow = 14;
+    double psi_buffer[nwindow];
+    for (int i=0;i<nwindow;++i)
+        psi_buffer[i] = 0.;
+    double current_sum = 0.;
+
+    int i_buffer = 0;
+    double min_average = 9999999.;
+    double current_avg = 0.;
+    for (int day=0;day<days;++day) {
+        current_sum -= psi_buffer[i_buffer];
+        psi_buffer[i_buffer] = water->psi_kPa(day);
+        current_sum += psi_buffer[i_buffer];
+
+        if (day>=veg_period_start && day<=veg_period_end) {
+            current_avg = day>0? current_sum / std::min(day, nwindow) : current_sum;
+            min_average = std::min(min_average, current_avg);
+        }
+
+        // move to next value in the buffer
+        i_buffer = ++i_buffer % nwindow;
+    }
+
+    if (min_average > 1000.)
+        return 1.; // invalid vegetation period?
+
+    // calculate the response of the species to this value of psi (see also Species::soilwaterResponse())
+    const double psi_mpa = min_average / 1000.; // convert to MPa
+    double result = limit( (psi_mpa - psi_min) / (-0.015 -  psi_min) , 0., 1.);
+
+    return result;
+
+}
+
 
 
 /** Calculate the abiotic environemnt for seedling for a given species and a given resource unit.
@@ -253,7 +299,10 @@ void Establishment::calculateAbioticEnvironment()
         double frost_effect = 1.;
         if (mTACA_frostAfterBuds>0)
             frost_effect = pow(p.frost_tolerance, sqrt(double(mTACA_frostAfterBuds)));
-        mPAbiotic = frost_effect;
+        // negative effect due to water limitation on establishment [1: no effect]
+        double drought_effect = calculateWaterLimitation(pheno.vegetationPeriodStart(), pheno.vegetationPeriodLength());
+        // combine drought and frost effect multiplicatively
+        mPAbiotic = frost_effect * drought_effect;
     } else {
         mPAbiotic = 0.; // if any of the requirements is not met
     }

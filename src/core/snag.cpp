@@ -339,11 +339,20 @@ void Snag::addTurnoverLitter(const Species *species, const double litter_foliage
 {
     mLabileFlux.addBiomass(litter_foliage, species->cnFoliage(), species->snagKyl());
     mLabileFlux.addBiomass(litter_fineroot, species->cnFineroot(), species->snagKyl());
+    DBGMODE(
+    if (isnan(mLabileFlux.C))
+        qDebug("Snag::addTurnoverLitter: NaN");
+                );
 }
 
 void Snag::addTurnoverWood(const Species *species, const double woody_biomass)
 {
     mRefractoryFlux.addBiomass(woody_biomass, species->cnWood(), species->snagKyr());
+    DBGMODE(
+    if (isnan(mRefractoryFlux.C))
+        qDebug("Snag::addTurnoverWood: NaN");
+                );
+
 }
 
 
@@ -502,6 +511,10 @@ void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNP
 {
     mLabileFlux.add(litter_pool, species->snagKyl());
     mRefractoryFlux.add(woody_pool, species->snagKyr());
+    DBGMODE(
+    if (isnan(mLabileFlux.C) || isnan(mRefractoryFlux.C))
+        qDebug("Snag::addToSoil: NaN in C Pool");
+    );
 }
 
 /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
