@@ -23,7 +23,6 @@
 #include "standstatistics.h"
 #include "speciesresponse.h"
 #include "establishment.h"
-#include "sapling.h"
 #include "saplings.h"
 #include "grid.h"
 #include "snag.h"

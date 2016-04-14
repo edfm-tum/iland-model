@@ -24,7 +24,6 @@
 #include "resourceunit.h"
 #include "tree.h"
 #include "expressionwrapper.h"
-#include "sapling.h"
 #include "soil.h"
 
 //#include "climateconverter.h"

@@ -444,7 +444,7 @@ void Sapling::calculateGrowth()
     if (mSaplingTrees.count() > mLiving*1.3)
         cleanupStorage();
 
-    mRUS->statistics().add(this);
+//    mRUS->statistics().add(this);
     GlobalSettings::instance()->systemStatistics()->saplingCount+=mLiving;
     GlobalSettings::instance()->systemStatistics()->newSaplings+=mAdded;
     mAdded = 0; // reset
