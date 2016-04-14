@@ -19,6 +19,7 @@
 
 #include <QtCore>
 #include <QtSql>
+#include <QVector>
 #include "global.h"
 #include "globalsettings.h"
 #include "xmlhelper.h"
@@ -140,6 +141,8 @@ int SpeciesSet::setup()
     mLRICorrection.setAndParse(light.value("LRImodifier","1"));
     // x: LRI, y: relative heigth
     mLRICorrection.linearize2d(0., 1., 0., 1.);
+
+    createRandomSpeciesOrder();
     return mSpecies.count();
 
 }
@@ -202,6 +205,31 @@ QVariant SpeciesSet::var(const QString& varName)
     //return GlobalSettings::instance()->settingDefaultValue(varName);
 }
 
+void SpeciesSet::randomSpeciesOrder(QVector<int>::const_iterator &rBegin, QVector<int>::const_iterator &rEnd)
+{
+    int iset = irandom(0,mNRandomSets);
+    rBegin=mRandomSpeciesOrder.begin() + iset * mActiveSpecies.size();
+    rEnd=rBegin+mActiveSpecies.size();
+}
+
+//
+void SpeciesSet::createRandomSpeciesOrder()
+{
+
+    mRandomSpeciesOrder.clear();
+    mRandomSpeciesOrder.reserve(mActiveSpecies.size() * mNRandomSets);
+    for (int i=0;i<mNRandomSets;++i) {
+        QList<int> samples;
+        // fill list
+        foreach (const Species* s, mActiveSpecies)
+            samples.push_back(s->index());
+        // sample and reduce list
+        while (!samples.isEmpty()) {
+            mRandomSpeciesOrder.push_back( samples.takeAt(irandom(0, samples.size()))  );
+        }
+    }
+}
+
 inline double SpeciesSet::nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const
 {
     if (availableNitrogen<=NB)
@@ -209,6 +237,8 @@ inline double SpeciesSet::nitrogenResponse(const double &availableNitrogen, cons
     double x = 1. - exp(NA * (availableNitrogen-NB));
     return x;
 }
+
+
 
 /// calculate nitrogen response for a given amount of available nitrogen and a respone class
 /// for fractional values, the response value is interpolated between the fixedly defined classes (1,2,3)

@@ -81,7 +81,7 @@ int Management::remain(int number)
     int to_kill = trees.count() - number;
     qDebug() << trees.count() << " standing, targetsize" << number << ", hence " << to_kill << "trees to remove";
     for (int i=0;i<to_kill;i++) {
-        int index = irandom(0, trees.count()-1);
+        int index = irandom(0, trees.count());
         trees[index]->remove();
         trees.removeAt(index);
     }
@@ -132,7 +132,7 @@ int Management::remove_percentiles(int pctfrom, int pctto, int number, bool mana
     if (mTrees.isEmpty())
         return 0;
     int index_from = limit(int(pctfrom/100. * mTrees.count()), 0, mTrees.count());
-    int index_to = limit(int(pctto/100. * mTrees.count()), 0, mTrees.count()-1);
+    int index_to = limit(int(pctto/100. * mTrees.count()), 0, mTrees.count());
     if (index_from>=index_to)
         return 0;
     qDebug() << "attempting to remove" << number << "trees between indices" << index_from << "and" << index_to;

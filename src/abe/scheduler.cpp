@@ -341,7 +341,7 @@ void Scheduler::updateCurrentPlan()
                 break;
             state[year] = -1.; // processed
             // pick an element of that year and try to find another year
-            int pick = irandom(0, mSchedule.count(year + current_year)-1);
+            int pick = irandom(0, mSchedule.count(year + current_year));
             QMultiHash<int, SchedulerItem*>::iterator i = mSchedule.find(year + current_year);
             while (i!=mSchedule.end() && i.key()==year+current_year) {
                 if (pick--==0) // select 'pick'ed element

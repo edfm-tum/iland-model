@@ -52,11 +52,14 @@ void Saplings::establishment(const ResourceUnit *ru)
     for (int i=0;i<cPxPerHectare;++i)
         lif_corr[i]=-1.;
 
-    int species_idx = irandom(0, ru->ruSpecies().size()-1);
-    for (int s_idx = 0; s_idx<ru->ruSpecies().size(); ++s_idx) {
+    int species_idx;
+    QVector<int>::const_iterator sbegin, send;
+    ru->speciesSet()->randomSpeciesOrder(sbegin, send);
+    for (QVector<int>::const_iterator s_idx=sbegin; s_idx!=send;++s_idx) {
+    //for (int s_idx = 0; s_idx<ru->ruSpecies().size(); ++s_idx) {
 
         // start from a random species (and cycle through the available species)
-        species_idx = ++species_idx % ru->ruSpecies().size();
+        species_idx = *s_idx;
 
         ResourceUnitSpecies *rus = ru->ruSpecies()[species_idx];
         // check if there are seeds of the given species on the resource unit

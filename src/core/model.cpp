@@ -591,8 +591,6 @@ void nc_establishment(ResourceUnit *unit)
     Saplings *s = GlobalSettings::instance()->model()->saplings();
     try {
         s->establishment(unit);
-        //s->saplingGrowth(unit);
-
 
     } catch (const IException& e) {
         GlobalSettings::instance()->controller()->throwError(e.message());

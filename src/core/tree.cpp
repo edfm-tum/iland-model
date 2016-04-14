@@ -573,7 +573,6 @@ void Tree::readLIF_torus()
     if (hrel<1.)
         mLRI = static_cast<float>( species()->speciesSet()->LRIcorrection(mLRI, hrel) );
 
-
     if (isnan(mLRI)) {
         qDebug() << "LRI invalid (nan)!" << id();
         mLRI=0.;
