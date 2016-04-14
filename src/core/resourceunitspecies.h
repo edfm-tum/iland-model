@@ -43,12 +43,10 @@ public:
     const Species *species() const { return mSpecies; } ///< return pointer to species
     const ResourceUnit *ru() const { return mRU; } ///< return pointer to resource unit
     const Production3PG &prod3PG() const { return m3PG; } ///< the 3pg production model of this speies x resourceunit
-    const Sapling &sapling() const { return mSapling; } ///< sapling growth submodel
 
     SaplingStat &saplingStat() { return mSaplingStat; } ///< statistics for the sapling sub module
 
     Establishment &establishment() { return mEstablishment; } ///< establishment submodel
-    Sapling &changeSapling() { return mSapling; } ///< sapling growth submodel (non-const access)
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit
     StandStatistics &statisticsDead() { return mStatisticsDead; } ///< statistics of died trees
     StandStatistics &statisticsMgmt() { return mStatisticsMgmt; } ///< statistics of removed trees
@@ -70,12 +68,6 @@ public:
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
     // establishment, sapling growth
     void calculateEstablishment(); ///< perform establishment calculations
-    void calclulateSaplingGrowth(); ///< growth of saplings
-    int addSapling(const QPoint &position, const float height=0.05f, const int age=1) { return mSapling.addSapling(position, height, age); } ///< add a saplings on a given position
-    void clearSaplings(const QPoint &position) { mSapling.clearSaplings(position);} ///< clear saplings on a given position (after recruitment)
-    bool hasSaplingAt(const QPoint &position) const { return mSapling.hasSapling(position); } ///< return true if a sapling of the current speices is present at 'position'
-    // visualization/graphical output
-    void visualGrid(Grid<float> &grid) const;
 
 private:
     ResourceUnitSpecies(const ResourceUnitSpecies &); // no copy
@@ -88,7 +80,6 @@ private:
     Production3PG m3PG; ///< NPP prodution unit of this species
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
     Establishment mEstablishment; ///< establishment for seedlings and sapling growth
-    //Sapling mSapling; ///< saplings storage/growth [old]
     SaplingStat mSaplingStat; ///< statistics on saplings
     Species *mSpecies; ///< link to speices
     ResourceUnit *mRU; ///< link to resource unit

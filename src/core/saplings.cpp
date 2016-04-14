@@ -175,13 +175,15 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     }
 }
 
-SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid)
+SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **rRUPtr)
 {
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
 
     // in this case, getting the actual cell is quite cumbersome: first, retrieve the resource unit, then the
     // cell based on the offset of the given coordiantes relative to the corner of the resource unit.
     ResourceUnit *ru = GlobalSettings::instance()->model()->ru(lif_grid->cellCenterPoint(lif_coords));
+    if (rRUPtr)
+        *rRUPtr = ru;
 
     if (ru) {
         QPoint local_coords = lif_coords - ru->cornerPointOffset();
@@ -194,6 +196,32 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid)
             return s;
     }
     return 0;
+}
+
+void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
+{
+    GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), rectangle);
+    ResourceUnit *ru;
+    while (runner.next()) {
+        SaplingCell *s = cell(runner.currentIndex(), true, &ru);
+        if (s) {
+
+            for (int i=0;i<NSAPCELLS;++i)
+                if (s->saplings[i].is_occupied()) {
+                    if (remove_biomass) {
+                        ResourceUnitSpecies *rus = ru->resourceUnitSpecies(s->saplings[i].species_index);
+                        if (!rus && !rus->species()) {
+                            qDebug() << "Saplings::clearSaplings(): invalid resource unit!!!";
+                            return;
+                        }
+                        rus->saplingStat().addCarbonOfDeadSapling( s->saplings[i].height / rus->species()->saplingGrowthParameters().hdSapling * 100.f );
+                    }
+                    s->saplings[i].clear();
+                }
+            s->checkState();
+
+        }
+    }
 }
 
 void Saplings::updateBrowsingPressure()
@@ -407,4 +435,38 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     GlobalSettings::instance()->systemStatistics()->saplingCount+=mLiving;
     GlobalSettings::instance()->systemStatistics()->newSaplings+=mAdded;
 
+}
+
+double SaplingStat::livingStemNumber(const Species *species, double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const
+{
+     rAvgHeight = averageHeight();
+     rAvgDbh = rAvgHeight / species->saplingGrowthParameters().hdSapling * 100.f;
+     rAvgAge = averageAge();
+     double n= species->saplingGrowthParameters().representedStemNumber(rAvgDbh);
+     return n;
+// *** old code (sapling.cpp) ***
+//    double total = 0.;
+//    double dbh_sum = 0.;
+//    double h_sum = 0.;
+//    double age_sum = 0.;
+//    const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
+//    for (QVector<SaplingTreeOld>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+//        float dbh = it->height / p.hdSapling * 100.f;
+//        if (dbh<1.) // minimum size: 1cm
+//            continue;
+//        double n = p.representedStemNumber(dbh); // one cohort on the pixel represents that number of trees
+//        dbh_sum += n*dbh;
+//        h_sum += n*it->height;
+//        age_sum += n*it->age.age;
+//        total += n;
+//    }
+//    if (total>0.) {
+//        dbh_sum /= total;
+//        h_sum /= total;
+//        age_sum /= total;
+//    }
+//    rAvgDbh = dbh_sum;
+//    rAvgHeight = h_sum;
+//    rAvgAge = age_sum;
+//    return total;
 }

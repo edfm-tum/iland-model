@@ -65,12 +65,12 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
 
     // check window of opportunity...if regeneration (of any species) on the current pixel is above breast height (1.3m), then
     // no establishment is possible
-    if (mRUS->ru()->saplingHeightAt(pos_lif) > 1.3f)
-        return false;
+//    if (mRUS->ru()->saplingHeightAt(pos_lif) > 1.3f)
+//        return false;
 
     // check if sapling of the current tree species is already established -> if so, no establishment.
-    if (mRUS->hasSaplingAt(pos_lif))
-        return false;
+//    if (mRUS->hasSaplingAt(pos_lif))
+//        return false;
 
     const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight);
     // no establishment if pixel is not in project area
@@ -94,7 +94,7 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      // draw a random number and check against the combined establishment probability
      double p_rand = drandom();
      if (p_rand < p_est) {
-         const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(pos_lif);
+//         const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(pos_lif);
          return true; // establishment
      }
      return false; // no establishment
@@ -377,19 +377,19 @@ void Establishment::calculatePerRU()
 
     // the bit set has true of every 2x2m position that is already occupied by
     // a sapling of the current species
-    const std::bitset<cPxPerRU*cPxPerRU> &pos_bitset = mRUS->sapling().presentPositions();
+//    const std::bitset<cPxPerRU*cPxPerRU> &pos_bitset = mRUS->sapling().presentPositions();
 
     GridRunner<float> lif_runner(lif_map, ru_rect);
 
-    const float *sap_height = mRUS->ru()->saplingHeightMapPointer();
+//    const float *sap_height = mRUS->ru()->saplingHeightMapPointer();
     size_t bit_idx=0;
     Model *model = GlobalSettings::instance()->model();
     while (float *lif_px = lif_runner.next()) {
 
         // check for height of sapling < 1.3m (for all species
         // and for presence of a sapling of the given species
-        if (*sap_height++ >=1.3f || pos_bitset[bit_idx++])
-            continue;
+//        if (*sap_height++ >=1.3f || pos_bitset[bit_idx++])
+//            continue;
 
         QPoint lif_index = lif_map->indexOf(lif_px);
 
@@ -422,7 +422,7 @@ void Establishment::calculatePerRU()
         // check for the combination of seed availability and light on the forest floor
         if (drandom() < seed_map_value*lif_corrected ) {
             // ok, a new tree should be established - we do not use the establishTree() function
-            const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(lif_index);
+//            const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(lif_index);
             n_established++;
         }
 

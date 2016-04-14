@@ -301,37 +301,38 @@ QList<int> MapGrid::gridIndices(const int id) const
 }
 
 /// retrieve a list of saplings on a given stand polygon.
-QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > MapGrid::saplingTrees(const int id) const
-{
-    QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > result;
-    QList<ResourceUnit*> resource_units = resourceUnits(id);
-    foreach(ResourceUnit *ru, resource_units) {
-        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
-            foreach(const SaplingTreeOld &tree, rus->sapling().saplings()) {
-                if (LIFgridValue( tree.coords() ) == id)
-                    result.push_back( QPair<ResourceUnitSpecies *, SaplingTreeOld *>(rus, &const_cast<SaplingTreeOld&>(tree)) );
-            }
-        }
-    }
-    qDebug() << "loaded" << result.count() << "sapling trees";
-    return result;
+//QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > MapGrid::saplingTrees(const int id) const
+//{
+//    QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > result;
+//    QList<ResourceUnit*> resource_units = resourceUnits(id);
+//    foreach(ResourceUnit *ru, resource_units) {
+//        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
+//            foreach(const SaplingTreeOld &tree, rus->sapling().saplings()) {
+//                if (LIFgridValue( tree.coords() ) == id)
+//                    result.push_back( QPair<ResourceUnitSpecies *, SaplingTreeOld *>(rus, &const_cast<SaplingTreeOld&>(tree)) );
+//            }
+//        }
+//    }
+//    qDebug() << "loaded" << result.count() << "sapling trees";
+//    return result;
 
-}
+//}
 
 /// retrieve a *Hash* of sapling positions / saplings.
 QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > MapGrid::saplingTreeHash(const int id) const
 {
+    throw IException("saplingTreeHash not implemented!!!!");
     QHash<QPoint, QPair<ResourceUnitSpecies *, int> > result;
-    QList<ResourceUnit*> resource_units = resourceUnits(id);
-    foreach(ResourceUnit *ru, resource_units) {
-        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
-            for (int i=0;i<rus->sapling().saplings().count();++i) {
-                if (LIFgridValue( rus->sapling().saplings()[i].coords() ) == id)
-                    result.insertMulti(rus->sapling().saplings()[i].coords(), QPair<ResourceUnitSpecies *, int>(rus, i));
-            }
-        }
-    }
-    qDebug() << "loaded" << result.count() << "sapling trees to a Hash.";
+//    QList<ResourceUnit*> resource_units = resourceUnits(id);
+//    foreach(ResourceUnit *ru, resource_units) {
+//        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
+//            for (int i=0;i<rus->sapling().saplings().count();++i) {
+//                if (LIFgridValue( rus->sapling().saplings()[i].coords() ) == id)
+//                    result.insertMulti(rus->sapling().saplings()[i].coords(), QPair<ResourceUnitSpecies *, int>(rus, i));
+//            }
+//        }
+//    }
+//    qDebug() << "loaded" << result.count() << "sapling trees to a Hash.";
     return result;
 }
 

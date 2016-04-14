@@ -64,6 +64,7 @@ public:
 
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
     const ResourceUnitSpecies *constResourceUnitSpecies(const Species *species) const; ///< get RU-Species-container of @p species from the RU
+    ResourceUnitSpecies *resourceUnitSpecies(const int species_index) const { return mRUSpecies[species_index]; } ///< get RU-Species-container with index 'species_index' from the RU
     const QList<ResourceUnitSpecies*> &ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the (const) tree list.
@@ -105,28 +106,6 @@ public:
     void recreateStandStatistics(bool recalculate_stats); ///< re-build stand statistics after some change happened to the resource unit
     void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
 
-    // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
-    // the map itself is a local variable and only filled temporarily.
-    void setSaplingHeightMap(float *map_pointer); ///< set (temporal) storage for sapling-height-map
-    /// returns maximum sapling height at point given by point-index (LIF-index).
-    /// you must call setSaplingHeightMap() with a valid map before.
-    float saplingHeightAt(const QPoint &position) const {
-            Q_ASSERT(mSaplingHeightMap);
-            int pixel_index = cPxPerRU*(position.x()-mCornerOffset.x())+(position.y()-mCornerOffset.y());
-            float h =  mSaplingHeightMap[pixel_index];
-            return h;
-    }
-    /// access to the internal sapling height map pointer
-    const float *saplingHeightMapPointer() const {return mSaplingHeightMap; }
-    /// return maximum sapling height at point 'position' (LIF-index). This call is slower but works witout a prior call
-    /// to setSaplingHeightMap().
-    double saplingHeightForInit(const QPoint &position) const;
-    /// set the height of the sapling map to the maximum of current value and 'height'.
-    void setMaxSaplingHeightAt(const QPoint &position, const float height);
-    /// clear all saplings of all species on a given position (after recruitment)
-    void clearSaplings(const QPoint &position);
-    /// kill all saplings within a given rect
-    void clearSaplings(const QRectF pixel_rect, const bool remove_from_soil);
     // snag / snag dynamics
     // snag dynamics, soil carbon and nitrogen cycle
     void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools

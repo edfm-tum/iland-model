@@ -20,7 +20,7 @@
 #include "saplingout.h"
 #include "model.h"
 #include "resourceunit.h"
-#include "sapling.h"
+#include "saplings.h"
 #include "species.h"
 
 SaplingOut::SaplingOut()
@@ -68,14 +68,14 @@ void SaplingOut::exec()
 
         foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
             const StandStatistics &stat = rus->constStatistics();
-            const Sapling &sap = rus->sapling();
+            const SaplingStat &sap = const_cast<ResourceUnitSpecies*>(rus)->saplingStat();
 
             if (stat.saplingCount()==0)
                 continue;
             *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
 
             // calculate statistics based on the number of represented trees per cohort
-            n = sap.livingStemNumber(avg_dbh, avg_height, avg_age);
+            n = sap.livingStemNumber(rus->species(), avg_dbh, avg_height, avg_age);
             *this << n
                   << stat.saplingCount()
                   << avg_height

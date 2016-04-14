@@ -521,32 +521,33 @@ void Snapshot::saveSaplings()
 
     int n = 0;
     db.transaction();
-    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-        foreach (const ResourceUnitSpecies *rus, ru->ruSpecies()) {
-            const Sapling &sap = rus->sapling();
-            if (sap.saplings().isEmpty())
-                continue;
-            foreach (const SaplingTreeOld &t, sap.saplings()) {
-                if (!t.pixel)
-                    continue;
-                q.addBindValue(ru->index());
-                q.addBindValue(rus->species()->id());
-                QPoint p=t.coords();
-                q.addBindValue(p.x());
-                q.addBindValue(p.y());
-                q.addBindValue(t.age.age);
-                q.addBindValue(t.height);
-                q.addBindValue(t.age.stress_years);
-                if (!q.exec()) {
-                    throw IException(QString("Snapshot::saveSaplings: execute:") + q.lastError().text());
-                }
-                if (++n % 10000 == 0) {
-                    qDebug() << n << "saplings saved...";
-                    QCoreApplication::processEvents();
-                }
-            }
-        }
-    }
+    throw IException("Snapshot::saveSaplings() not implemented");
+//    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+//        foreach (const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+//            const Sapling &sap = rus->sapling();
+//            if (sap.saplings().isEmpty())
+//                continue;
+//            foreach (const SaplingTreeOld &t, sap.saplings()) {
+//                if (!t.pixel)
+//                    continue;
+//                q.addBindValue(ru->index());
+//                q.addBindValue(rus->species()->id());
+//                QPoint p=t.coords();
+//                q.addBindValue(p.x());
+//                q.addBindValue(p.y());
+//                q.addBindValue(t.age.age);
+//                q.addBindValue(t.height);
+//                q.addBindValue(t.age.stress_years);
+//                if (!q.exec()) {
+//                    throw IException(QString("Snapshot::saveSaplings: execute:") + q.lastError().text());
+//                }
+//                if (++n % 10000 == 0) {
+//                    qDebug() << n << "saplings saved...";
+//                    QCoreApplication::processEvents();
+//                }
+//            }
+//        }
+//    }
     db.commit();
     qDebug() << "Snapshot: finished saplings. N=" << n;
 }
@@ -587,15 +588,9 @@ void Snapshot::loadSaplings()
         Species *species = ru->speciesSet()->species(q.value(ci++).toString());
         if (!species)
             throw IException("Snapshot::loadSaplings: Invalid species");
-        Sapling &sap = ru->resourceUnitSpecies(species).changeSapling();
-        if (last_sapling != &sap) {
-            last_sapling = &sap;
-            //sap.clear(); // clears the trees and the bitmap
-            //sap.clearStatistics();
-            offsetx = ru->cornerPointOffset().x();
-            offsety = ru->cornerPointOffset().y();
-        }
 
+        offsetx = ru->cornerPointOffset().x();
+        offsety = ru->cornerPointOffset().y();
 
         posx = offsetx + q.value(ci++).toInt() % cPxPerRU;
         posy = offsety + q.value(ci++).toInt() % cPxPerRU;
@@ -630,75 +625,75 @@ void Snapshot::loadSaplings()
 
 void Snapshot::loadSaplingsOld()
 {
-    QSqlDatabase db=QSqlDatabase::database("snapshot");
-    QSqlQuery q(db);
-    q.setForwardOnly(true); // avoid huge memory usage in query component
-    if (!q.exec("select RUindex, species, posx, posy, age, height, stress_years from saplings")) {
-        qDebug() << "Error when loading from saplings table...." << q.lastError().text();
-        return;
-    }
-    int ru_index = -1;
-
-    // clear all saplings in the whole project area: added for testing/debugging
-//    foreach( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-//        foreach (ResourceUnitSpecies *rus, ru->ruSpecies()) {
-//            rus->changeSapling().clear();
-//            rus->changeSapling().clearStatistics();
-//        }
+//    QSqlDatabase db=QSqlDatabase::database("snapshot");
+//    QSqlQuery q(db);
+//    q.setForwardOnly(true); // avoid huge memory usage in query component
+//    if (!q.exec("select RUindex, species, posx, posy, age, height, stress_years from saplings")) {
+//        qDebug() << "Error when loading from saplings table...." << q.lastError().text();
+//        return;
 //    }
+//    int ru_index = -1;
 
-    ResourceUnit *ru = 0;
-    int n=0, ntotal=0;
-    int ci;
-    int posx, posy;
-    int offsetx=0, offsety=0;
-    Sapling *last_sapling = 0;
+//    // clear all saplings in the whole project area: added for testing/debugging
+////    foreach( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+////        foreach (ResourceUnitSpecies *rus, ru->ruSpecies()) {
+////            rus->changeSapling().clear();
+////            rus->changeSapling().clearStatistics();
+////        }
+////    }
 
-    while (q.next()) {
-        ci = 0;
-        ru_index = q.value(ci++).toInt();
-        ++ntotal;
-        ru = mRUHash[ru_index];
-        if (!ru)
-            continue;
-        Species *species = ru->speciesSet()->species(q.value(ci++).toString());
-        if (!species)
-            throw IException("Snapshot::loadSaplings: Invalid species");
-        Sapling &sap = ru->resourceUnitSpecies(species).changeSapling();
-        if (last_sapling != &sap) {
-            last_sapling = &sap;
-            sap.clear(); // clears the trees and the bitmap
-            sap.clearStatistics();
-            offsetx = ru->cornerPointOffset().x();
-            offsety = ru->cornerPointOffset().y();
-        }
-        sap.mSaplingTrees.push_back(SaplingTreeOld());
-        SaplingTreeOld &t = sap.mSaplingTrees.back();
-        //posx = q.value(ci++).toInt();
-        //posy = q.value(ci++).toInt();
-        posx = offsetx + q.value(ci++).toInt() % cPxPerRU;
-        posy = offsety + q.value(ci++).toInt() % cPxPerRU;
-        if (GlobalSettings::instance()->model()->grid()->isIndexValid(posx, posy)) {
-            t.pixel = GlobalSettings::instance()->model()->grid()->ptr(posx,posy );
-        } else {
-            continue;
-        }
-        t.age.age = static_cast<short unsigned int>( q.value(ci++).toInt() );
-        t.height = q.value(ci++).toFloat();
-        t.age.stress_years = static_cast<short unsigned int> (q.value(ci++).toInt() );
-        sap.setBit(QPoint(posx, posy), true); // set the flag in the bitmap
-        if (n<10000000 && ++n % 10000 == 0) {
-            qDebug() << n << "saplings loaded...";
-            QCoreApplication::processEvents();
-        }
-        if (n>=10000000 && ++n % 1000000 == 0) {
-            qDebug() << n << "saplings loaded...";
-            QCoreApplication::processEvents();
-        }
+//    ResourceUnit *ru = 0;
+//    int n=0, ntotal=0;
+//    int ci;
+//    int posx, posy;
+//    int offsetx=0, offsety=0;
+//    Sapling *last_sapling = 0;
+
+//    while (q.next()) {
+//        ci = 0;
+//        ru_index = q.value(ci++).toInt();
+//        ++ntotal;
+//        ru = mRUHash[ru_index];
+//        if (!ru)
+//            continue;
+//        Species *species = ru->speciesSet()->species(q.value(ci++).toString());
+//        if (!species)
+//            throw IException("Snapshot::loadSaplings: Invalid species");
+//        Sapling &sap = ru->resourceUnitSpecies(species).changeSapling();
+//        if (last_sapling != &sap) {
+//            last_sapling = &sap;
+//            sap.clear(); // clears the trees and the bitmap
+//            sap.clearStatistics();
+//            offsetx = ru->cornerPointOffset().x();
+//            offsety = ru->cornerPointOffset().y();
+//        }
+//        sap.mSaplingTrees.push_back(SaplingTreeOld());
+//        SaplingTreeOld &t = sap.mSaplingTrees.back();
+//        //posx = q.value(ci++).toInt();
+//        //posy = q.value(ci++).toInt();
+//        posx = offsetx + q.value(ci++).toInt() % cPxPerRU;
+//        posy = offsety + q.value(ci++).toInt() % cPxPerRU;
+//        if (GlobalSettings::instance()->model()->grid()->isIndexValid(posx, posy)) {
+//            t.pixel = GlobalSettings::instance()->model()->grid()->ptr(posx,posy );
+//        } else {
+//            continue;
+//        }
+//        t.age.age = static_cast<short unsigned int>( q.value(ci++).toInt() );
+//        t.height = q.value(ci++).toFloat();
+//        t.age.stress_years = static_cast<short unsigned int> (q.value(ci++).toInt() );
+//        sap.setBit(QPoint(posx, posy), true); // set the flag in the bitmap
+//        if (n<10000000 && ++n % 10000 == 0) {
+//            qDebug() << n << "saplings loaded...";
+//            QCoreApplication::processEvents();
+//        }
+//        if (n>=10000000 && ++n % 1000000 == 0) {
+//            qDebug() << n << "saplings loaded...";
+//            QCoreApplication::processEvents();
+//        }
 
 
-    }
-    qDebug() << "Snapshot: finished loading saplings. N=" << n << "from N in snapshot:" << ntotal;
+//    }
+//    qDebug() << "Snapshot: finished loading saplings. N=" << n << "from N in snapshot:" << ntotal;
 
 }
 

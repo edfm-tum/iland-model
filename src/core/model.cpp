@@ -619,15 +619,15 @@ void nc_sapling_growth_establishment_old(ResourceUnit *unit)
     try {
         { // DebugTimer t("nc_saplingGrowth"); t.setSilent();
         // define a height map for the current resource unit on the stack
-        float sapling_map[cPxPerRU*cPxPerRU];
+        //float sapling_map[cPxPerRU*cPxPerRU];
         // set the map and initialize it:
-        unit->setSaplingHeightMap(sapling_map);
+        //unit->setSaplingHeightMap(sapling_map);
 
 
         // (1) calculate the growth of (already established) saplings (populate sapling map)
         QList<ResourceUnitSpecies*>::const_iterator rus;
-        for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
-            (*rus)->calclulateSaplingGrowth();
+        //for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
+        //    (*rus)->calclulateSaplingGrowth();
 
         } { // DebugTimer t("nc_Establishment"); t.setSilent();
 
@@ -641,7 +641,7 @@ void nc_sapling_growth_establishment_old(ResourceUnit *unit)
         GlobalSettings::instance()->controller()->throwError(e.message());
     }
 
-    unit->setSaplingHeightMap(0); // invalidate again
+    //unit->setSaplingHeightMap(0); // invalidate again
 
 }
 
