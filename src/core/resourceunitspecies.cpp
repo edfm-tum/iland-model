@@ -56,7 +56,6 @@ void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
     mResponse.setup(this);
     m3PG.setResponse(&mResponse);
     mEstablishment.setup(ru->climate(), this);
-    mSapling.setup(this);
     mStatistics.setResourceUnitSpecies(this);
     mStatisticsDead.setResourceUnitSpecies(this);
     mStatisticsMgmt.setResourceUnitSpecies(this);
@@ -120,8 +119,8 @@ void ResourceUnitSpecies::calculateEstablishment()
             out << mEstablishment.TACAminTemp() << mEstablishment.TACAchill() << mEstablishment.TACAfrostFree() << mEstablishment.TACgdd();
             out << mEstablishment.TACAfrostDaysAfterBudBirst() << mEstablishment.abioticEnvironment();
             out << m3PG.fEnvYear() << mEstablishment.avgLIFValue() << mEstablishment.numberEstablished();
-            out << mSapling.livingSaplings() << mSapling.averageHeight() << mSapling.averageAge() << mSapling.averageDeltaHPot() << mSapling.averageDeltaHRealized();
-            out << mSapling.newSaplings() << mSapling.diedSaplings() << mSapling.recruitedSaplings() << mSpecies->saplingGrowthParameters().referenceRatio;
+            out << mSaplingStat.livingSaplings() << mSaplingStat.averageHeight() << mSaplingStat.averageAge() << mSaplingStat.averageDeltaHPot() << mSaplingStat.averageDeltaHRealized();
+            out << mSaplingStat.newSaplings() << mSaplingStat.diedSaplings() << mSaplingStat.recruitedSaplings() << mSpecies->saplingGrowthParameters().referenceRatio;
         }
     //); // DBGMODE()
 
@@ -135,14 +134,5 @@ void ResourceUnitSpecies::calculateEstablishment()
 
 }
 
-void ResourceUnitSpecies::calclulateSaplingGrowth()
-{
-    mSapling.calculateGrowth();
-}
-
-void ResourceUnitSpecies::visualGrid(Grid<float> &grid) const
-{
-    mSapling.fillMaxHeightGrid(grid);
-}
 
 

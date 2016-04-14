@@ -3,6 +3,7 @@
 
 #include "grid.h"
 #include "snag.h"
+#include <QRectF>
 
 
 struct SaplingTree {
@@ -86,14 +87,12 @@ public:
     int livingSaplings() const { return mLiving; } ///< get the number
     int recruitedSaplings() const { return mRecruited; }
     ///  returns the *represented* (Reineke's Law) number of trees (N/ha) and the mean dbh/height (cm/m)
-    double livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const;
+    double livingStemNumber(const Species *species, double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const;
 
     double averageHeight() const { return mAvgHeight; }
     double averageAge() const { return mAvgAge; }
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
-    /// return the number of trees represented by one sapling of the current species and given 'height'
-    double representedStemNumber(float height) const;
     // carbon and nitrogen
     const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
@@ -127,7 +126,13 @@ public:
     void saplingGrowth(const ResourceUnit *ru);
 
     // access
-    SaplingCell *cell(QPoint lif_coords, bool only_valid=true);
+    /// return the SaplingCell (i.e. container for the ind. saplings) for the given 2x2m coordinates
+    /// if 'only_valid' is true, then 0 is returned if no living saplings are on the cell
+    /// 'rRUPtr' is a pointer to a RU-ptr: if provided, a pointer to the resource unit is stored
+    SaplingCell *cell(QPoint lif_coords, bool only_valid=true, ResourceUnit **rRUPtr=0);
+    /// clear/kill all saplings within the rectangle given by 'rectangle'.
+    /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt)
+    void clearSaplings(const QRectF &rectangle, const bool remove_biomass);
 
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     static void updateBrowsingPressure();

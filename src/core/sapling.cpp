@@ -331,7 +331,7 @@ bool Sapling::growSapling(SaplingTreeOld &tree, const double f_env_yr, Species* 
         }
         // clear all regeneration from this pixel (including this tree)
         clearSapling(tree, true); // remove this tree (but do not move biomass to soil)
-        ru->clearSaplings(p); // remove all other saplings on the same pixel
+//        ru->clearSaplings(p); // remove all other saplings on the same pixel
 
         return false;
     }
@@ -373,7 +373,7 @@ void Sapling::calculateGrowth()
             // growing (increases mLiving if tree did not die, mDied otherwise)
             if (growSapling(const_cast<SaplingTreeOld&>(tree), f_env_yr, species)) {
                 // set the sapling height to the maximum value on the current pixel
-                ru->setMaxSaplingHeightAt(tree.coords(),tree.height);
+//                ru->setMaxSaplingHeightAt(tree.coords(),tree.height);
             }
         }
     }

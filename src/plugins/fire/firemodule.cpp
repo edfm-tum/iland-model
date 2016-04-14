@@ -797,7 +797,9 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     if (!mOnlyFireSimulation) {
         // (4) effect of forest fire on saplings: all saplings are killed.
         //     As regeneration happens before the fire routine, any newly regenarated saplings are killed as well.
-        ru->clearSaplings(pixel_rect, true);
+        if (GlobalSettings::instance()->model()->saplings())
+            GlobalSettings::instance()->model()->saplings()->clearSaplings(pixel_rect, true);
+        //ru->clearSaplings(pixel_rect, true); [old version]
     }
     return true;
 }

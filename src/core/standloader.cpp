@@ -25,6 +25,7 @@
 #include "model.h"
 #include "resourceunit.h"
 #include "speciesset.h"
+#include "species.h"
 
 #include "helper.h"
 #include "random.h"
@@ -902,12 +903,16 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
            offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
            int in_p = irandom(0, cPxPerHeight*cPxPerHeight-1); // index of lif-pixel
            offset += QPoint(in_p / cPxPerHeight, in_p % cPxPerHeight);
-           if (!ru || ru->saplingHeightForInit(offset) > height) {
+           SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset);
+           if (sc && sc->max_height()>height) {
+           //if (!ru || ru->saplingHeightForInit(offset) > height) {
                misses++;
            } else {
                // ok
                hits++;
-               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
+               if (sc)
+                   sc->addSapling(height, age, species->index());
+               //ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
            }
            if (misses > 3*pxcount) {
                qDebug() << "tried to add" << pxcount << "saplings at stand" << stand_id << "but failed in finding enough free positions. Added" << hits << "and stopped.";
@@ -1012,11 +1017,11 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
                     age = qMax(qRound(height/4. * age4m),1); // assume a linear relationship between height and age
             }
             QPoint offset = GlobalSettings::instance()->model()->grid()->indexOf(lif_ptrs[rnd_index]);
-
-            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(GlobalSettings::instance()->model()->grid()->cellCenterPoint(offset));
-            if (ru) {
-                ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, static_cast<float>(height), static_cast<int>(age));
-                hits += ru->resourceUnitSpecies(species).sapling().representedStemNumber(static_cast<float>(height));
+            ResourceUnit *ru;
+            SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset, true, &ru);
+            if (sc) {
+                if (SaplingTree *st=sc->addSapling(static_cast<float>(height), static_cast<int>(age), species->index()))
+                    hits+=ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberByHeight(st->height);
             } else {
                 hits++; // avoid an infinite loop
             }

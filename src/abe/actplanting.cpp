@@ -226,9 +226,10 @@ void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMult
             if (drandom() < fraction) {
                 ResourceUnit *ru = model->ru(runner.currentCoord());
                 ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
-                int t=rus.addSapling(runner.currentIndex(), height, age);
-                if (require_loading)
-                    sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
+                qDebug() << "ActPlanting: not implemented";
+//                int t=rus.addSapling(runner.currentIndex(), height, age);
+//                if (require_loading)
+//                    sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
             }
         }
     } else {
@@ -252,15 +253,15 @@ void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMult
                         // clear all sapling trees
                         QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(qp);
                         while (i != sapling_list.end() && i.key() == qp) {
-                            i.value().first->changeSapling().clearSapling(i.value().second, false);
+                            // removed saplings: i.value().first->changeSapling().clearSapling(i.value().second, false);
                             ++i;
                         }
                         sapling_list.remove(qp);
                     }
-                    // add sapling
-                    int t = rus.addSapling(runner.currentIndex(), height);
-                    if (require_loading)
-                        sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
+                    // add sapling: removed!!! TODO
+//                    int t = rus.addSapling(runner.currentIndex(), height);
+//                    if (require_loading)
+//                        sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
                 }
             }
         } else {
@@ -297,15 +298,15 @@ void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMult
                             // clear all sapling trees
                             QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(po);
                             while (i != sapling_list.end() && i.key() == po) {
-                                i.value().first->changeSapling().clearSapling(i.value().second, false);
+// removed saplings::                                i.value().first->changeSapling().clearSapling(i.value().second, false);
                                 ++i;
                             }
                             sapling_list.remove(po);
                         }
-                        // add sapling
-                        int t = rus.addSapling(po,height);
-                        if (require_loading)
-                            sapling_list.insert(po, QPair<ResourceUnitSpecies*, int>(&rus, t));
+                        // add sapling: removed: TODO!!
+//                        int t = rus.addSapling(po,height);
+//                        if (require_loading)
+//                            sapling_list.insert(po, QPair<ResourceUnitSpecies*, int>(&rus, t));
                     }
                 }
                 if (!do_random) {

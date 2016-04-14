@@ -245,7 +245,6 @@ void ResourceUnit::newYear()
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         (*i)->statisticsDead().clear();
         (*i)->statisticsMgmt().clear();
-        (*i)->changeSapling().newYear();
     }
 
 }
@@ -473,56 +472,8 @@ void ResourceUnit::recreateStandStatistics(bool recalculate_stats)
     }
 }
 
-void ResourceUnit::setSaplingHeightMap(float *map_pointer)
-{
-    // set to zero
-    mSaplingHeightMap=map_pointer;
-    if (!mSaplingHeightMap)
-        return;
-    for (int i=0;i<cPxPerRU*cPxPerRU;i++)
-        mSaplingHeightMap[i]=0.f;
-    // flag all trees in the resource unit
-    for (QVector<Tree>::const_iterator i=mTrees.cbegin(); i!= mTrees.cend(); ++i) {
-        setMaxSaplingHeightAt(i->positionIndex(), 10.f);
-    }
-}
 
-void ResourceUnit::setMaxSaplingHeightAt(const QPoint &position, const float height)
-{
-    Q_ASSERT(mSaplingHeightMap);
-    int pixel_index = cPxPerRU*(position.x()-mCornerOffset.x())+(position.y()-mCornerOffset.y());
-    if (pixel_index<0 || pixel_index>=cPxPerRU*cPxPerRU) {
-        qDebug() << "setSaplingHeightAt-Error for position" << position << "for RU at" << boundingBox() << "with corner" << mCornerOffset;
-    } else {
-        if (mSaplingHeightMap[pixel_index]<height)
-            mSaplingHeightMap[pixel_index]=height;
-    }
-}
 
-/// clear all saplings of all species on a given position (after recruitment)
-void ResourceUnit::clearSaplings(const QPoint &position)
-{
-    foreach(ResourceUnitSpecies* rus, mRUSpecies)
-        rus->clearSaplings(position);
-
-}
-
-/// kill all saplings within a given rect
-void ResourceUnit::clearSaplings(const QRectF pixel_rect, const bool remove_from_soil)
-{
-    foreach(ResourceUnitSpecies* rus, mRUSpecies) {
-        rus->changeSapling().clearSaplings(pixel_rect, remove_from_soil);
-    }
-
-}
-
-double ResourceUnit::saplingHeightForInit(const QPoint &position) const
-{
-    double maxh = 0.;
-    foreach(ResourceUnitSpecies* rus, mRUSpecies)
-        maxh = qMax(maxh, rus->sapling().heightAt(position));
-    return maxh;
-}
 
 void ResourceUnit::calculateCarbonCycle()
 {
