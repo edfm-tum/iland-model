@@ -392,6 +392,14 @@ void Tests::testCSVFile()
 #include "../3rdparty/MersenneTwister.h"
 void Tests::testRandom()
 {
+
+    QStringList list;
+    for (int i=0;i<1000;i++)
+        list << QString::number(irandom(0,5));
+    qDebug() << "irandom test (0,5): " << list;
+    return;
+
+
     RandomGenerator::setup(RandomGenerator::ergMersenneTwister, 1);
 //    RandomCustomPDF pdf("x^2");
 //    RandomCustomPDF *pdf2 = new RandomCustomPDF("x^3");

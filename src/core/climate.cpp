@@ -311,11 +311,11 @@ void Climate::nextYear()
     } else {
         // random sampling
         if (mRandomYearList.isEmpty()) {
-            // random without list (note: irandom may return the upper bound)
+            // random without list
             // make sure that the sequence of years is the same for the full landscape
             if (sampled_years.size()<GlobalSettings::instance()->currentYear()) {
                 while (sampled_years.size()-1 < GlobalSettings::instance()->currentYear())
-                    sampled_years.append(irandom(0,mLoadYears-1));
+                    sampled_years.append(irandom(0,mLoadYears));
             }
 
             mCurrentYear = sampled_years[GlobalSettings::instance()->currentYear()];

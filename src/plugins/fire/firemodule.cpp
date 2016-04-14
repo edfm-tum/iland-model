@@ -275,7 +275,7 @@ double FireModule::ignition(bool only_ignite)
             if (p < p_cell) {
                 // We have a fire event on the particular resource unit
                 // now randomly select a pixel within the resource unit as the starting point
-                int pixel_index = irandom(0, cells_per_ru-1);
+                int pixel_index = irandom(0, cells_per_ru);
                 int ix = pixel_index % (int((cRUSize / cellsize())));
                 int iy = pixel_index / (int((cRUSize / cellsize())));
                 QPointF startcoord = mRUGrid.cellRect(mRUGrid.indexOf(fd)).bottomLeft();
@@ -631,7 +631,7 @@ void FireModule::testSpread()
 //    QPoint pt = mGrid.indexAt(QPointF(1000., 600.));
 //    spread( pt );
     SimpleRNG rng;
-    rng.SetState(irandom(0, std::numeric_limits<unsigned int>::max()-1), irandom(0, std::numeric_limits<unsigned int>::max()-1));
+    rng.SetState(irandom(0, std::numeric_limits<unsigned int>::max()), irandom(0, std::numeric_limits<unsigned int>::max()));
     int bins[20];
     for(int i=0;i<20;i++) bins[i]=0;
     for (int i=0;i<10000;i++) {

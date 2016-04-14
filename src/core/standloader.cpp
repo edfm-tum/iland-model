@@ -896,12 +896,12 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
         int misses = 0;
         int hits = 0;
         while (hits < pxcount) {
-           int rnd_index = irandom(0, indices.count()-1);
+           int rnd_index = irandom(0, indices.count());
            QPoint offset=stand_grid->grid().indexOf(indices[rnd_index]);
            ResourceUnit *ru = GlobalSettings::instance()->model()->ru(stand_grid->grid().cellCenterPoint(offset));
            //
            offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
-           int in_p = irandom(0, cPxPerHeight*cPxPerHeight-1); // index of lif-pixel
+           int in_p = irandom(0, cPxPerHeight*cPxPerHeight); // index of lif-pixel
            offset += QPoint(in_p / cPxPerHeight, in_p % cPxPerHeight);
            SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset);
            if (sc && sc->max_height()>height) {
@@ -1010,7 +1010,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
 
         double hits = 0.;
         while (hits < pxcount) {
-            int rnd_index = irandom(0, min_lif_index-1);
+            int rnd_index = irandom(0, min_lif_index);
             if (iheightfrom!=-1) {
                 height = limit(nrandom(height_from, height_to), 0.05,4.);
                 if (age<=1.)
@@ -1021,7 +1021,9 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
             SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset, true, &ru);
             if (sc) {
                 if (SaplingTree *st=sc->addSapling(static_cast<float>(height), static_cast<int>(age), species->index()))
-                    hits+=ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberByHeight(st->height);
+                    hits+=std::max(1., ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberByHeight(st->height));
+                else
+                    hits++;
             } else {
                 hits++; // avoid an infinite loop
             }

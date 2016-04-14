@@ -487,7 +487,7 @@ double Grid<T>::distance(const QPoint &p1, const QPoint &p2)
 template <class T>
 const QPoint Grid<T>::randomPosition() const
 {
-    return QPoint(irandom(0,mSizeX-1), irandom(0, mSizeY-1));
+    return QPoint(irandom(0,mSizeX), irandom(0, mSizeY));
 }
 
 ////////////////////////////////////////////////////////////

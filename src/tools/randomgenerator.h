@@ -77,7 +77,7 @@ inline double drandom()
     return RandomGenerator::rand();
     //return rand()/double(RAND_MAX);
 }
-/// return a random number from "from" to "to" (incl.), i.e. irandom(3,5) results in 3, 4 or 5.
+/// return a random number from "from" to "to" (excluding 'to'.), i.e. irandom(3,6) results in 3, 4 or 5.
 inline int irandom(int from, int to)
 {
     return from + RandomGenerator::randInt(to-from);

@@ -414,7 +414,7 @@ void BarkBeetleModule::startSpread()
             if (mYear==1 && params.initialInfestationProbability>0.) {
                 if (drandom() < params.initialInfestationProbability) {
                     b->setInfested(true);
-                    b->outbreakYear = 1 - irandom(0,3); // initial outbreaks has an age of 1-4 years
+                    b->outbreakYear = 1 - irandom(0,4); // initial outbreaks has an age of 1-4 years
                     stats.infestedBackground++;
                 }
             } else if (b->backgroundInfestationProbability>0.f) {
@@ -601,7 +601,7 @@ void BarkBeetleModule::barkbeetleSpread()
                     // get elements of the moore-neighborhood
                     // and look for a potential host
                     targeter.neighbors8(nb8);
-                    int idx = irandom(0,7);
+                    int idx = irandom(0,8);
                     for (int j=0;j<8;j++) {
                         BarkBeetleCell *nb = nb8[ (idx+j) % 8 ];
                         if (nb && nb->isPotentialHost()) {
