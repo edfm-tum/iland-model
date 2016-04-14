@@ -32,7 +32,7 @@
 #include "tree.h"
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
-#include "sapling.h"
+//#include "sapling.h"
 #include "saplings.h"
 #include "species.h"
 
@@ -180,20 +180,7 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
 
 }
 
-/// call for regeneration layer of a species in resource unit
-void StandStatistics::add(const Sapling *sapling)
-{
-    mCohortCount = sapling->livingSaplings();
-    mSaplingCount = sapling->livingSaplings(); // TODO to change!!! Reineke!
 
-    mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
-    mAverageSaplingAge = sapling->averageAge();
-
-    mCRegeneration += sapling->carbonLiving().C;
-    mNRegeneration += sapling->carbonLiving().N;
-
-    mNPPsaplings += sapling->carbonGain().C / biomassCFraction;
-}
 
 void StandStatistics::add(const SaplingStat *sapling)
 {

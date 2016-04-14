@@ -23,7 +23,6 @@
 #include "resourceunit.h"
 #include "tree.h"
 #include "grid.h"
-#include "sapling.h"
 #include "resourceunit.h"
 #include "expressionwrapper.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)

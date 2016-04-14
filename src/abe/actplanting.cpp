@@ -29,7 +29,7 @@
 #include "mapgrid.h"
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
-#include "sapling.h"
+
 #include "debugtimer.h"
 
 namespace ABE {

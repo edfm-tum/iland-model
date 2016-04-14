@@ -517,7 +517,6 @@ void Model::loadProject()
         foreach(SpeciesSet *ss, mSpeciesSets)
             ss->setupRegeneration();
     }
-    Sapling::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.recruitmentDimensionVariation",0.1));
     Saplings::setRecruitmentVariation(xml.valueDouble("model.settings.seedDispersal.recruitmentDimensionVariation",0.1));
 
     // (3.3) management
