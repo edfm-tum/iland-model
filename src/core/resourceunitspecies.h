@@ -88,7 +88,7 @@ private:
     Production3PG m3PG; ///< NPP prodution unit of this species
     SpeciesResponse mResponse; ///< calculation and storage of species specific respones on this resource unit
     Establishment mEstablishment; ///< establishment for seedlings and sapling growth
-    Sapling mSapling; ///< saplings storage/growth
+    //Sapling mSapling; ///< saplings storage/growth [old]
     SaplingStat mSaplingStat; ///< statistics on saplings
     Species *mSpecies; ///< link to speices
     ResourceUnit *mRU; ///< link to resource unit

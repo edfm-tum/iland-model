@@ -189,6 +189,7 @@ double Establishment::calculateWaterLimitation(const int veg_period_start, const
     double min_average = 9999999.;
     double current_avg = 0.;
     for (int day=0;day<days;++day) {
+        // running average: remove oldest item, add new item in a ringbuffer
         current_sum -= psi_buffer[i_buffer];
         psi_buffer[i_buffer] = water->psi_kPa(day);
         current_sum += psi_buffer[i_buffer];
@@ -224,6 +225,8 @@ double Establishment::calculateWaterLimitation(const int veg_period_start, const
 void Establishment::calculateAbioticEnvironment()
 {
     //DebugTimer t("est_abiotic"); t.setSilent();
+    // make sure that required calculations (e.g. watercycle are already performed)
+    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module and run the water cycle (this is done only if that did not happen up to now); true: call comes from regeneration
 
     const EstablishmentParameters &p = mRUS->species()->establishmentParameters();
     const Phenology &pheno = mClimate->phenology(mRUS->species()->phenologyClass());

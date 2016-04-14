@@ -1032,7 +1032,7 @@ void Model::grow()
     { DebugTimer t("growRU()");
     calculateStockedArea();
 
-    // multithreaded: mutex for the message handler in mainwindow solved the crashes.
+    // Production of biomass (stand level, 3PG)
     threadRunner.run(nc_production);
     }
 

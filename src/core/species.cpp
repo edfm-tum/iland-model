@@ -189,7 +189,7 @@ void Species::setup()
     mEstablishmentParams.bud_birst = intVar("estBudBirstGDD");
     mEstablishmentParams.frost_free = intVar("estFrostFreeDays");
     mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
-    mEstablishmentParams.psi_min = doubleVar("estPsiMin");
+    mEstablishmentParams.psi_min = -fabs(doubleVar("estPsiMin")); // force negative value
 
     // sapling and sapling growth parameters
     mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));
