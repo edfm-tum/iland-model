@@ -172,7 +172,7 @@ void Model::setupSpace()
     mGrid->initialize(1.f);
     if (mHeightGrid)
         delete mHeightGrid;
-    mHeightGrid = new HeightGrid(total_grid, cellSize*5);
+    mHeightGrid = new HeightGrid(total_grid, cellSize*cPxPerHeight);
     mHeightGrid->wipe(); // set all to zero
     Tree::setGrid(mGrid, mHeightGrid);
 
@@ -796,14 +796,8 @@ void Model::runYear()
 
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
         // establishment
-        //Sapling::updateBrowsingPressure();
         Saplings::updateBrowsingPressure();
 
-//        { DebugTimer t("saplingGrowthEstablishment old");
-//            // ignore old mode
-//            // executePerResourceUnit( nc_sapling_growth_establishment_old, false /* true: force single thraeded operation */);
-//        GlobalSettings::instance()->systemStatistics()->tSaplingAndEstablishment+=t.elapsed();
-//        }
 
         { DebugTimer t("establishment");
         executePerResourceUnit( nc_establishment, false /* true: force single threaded operation */);

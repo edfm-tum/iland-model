@@ -56,7 +56,6 @@ void Saplings::establishment(const ResourceUnit *ru)
     QVector<int>::const_iterator sbegin, send;
     ru->speciesSet()->randomSpeciesOrder(sbegin, send);
     for (QVector<int>::const_iterator s_idx=sbegin; s_idx!=send;++s_idx) {
-    //for (int s_idx = 0; s_idx<ru->ruSpecies().size(); ++s_idx) {
 
         // start from a random species (and cycle through the available species)
         species_idx = *s_idx;
@@ -208,23 +207,68 @@ void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
     while (runner.next()) {
         SaplingCell *s = cell(runner.currentIndex(), true, &ru);
         if (s) {
+            clearSaplings(s, ru, remove_biomass);
+        }
 
-            for (int i=0;i<NSAPCELLS;++i)
-                if (s->saplings[i].is_occupied()) {
-                    if (remove_biomass) {
-                        ResourceUnitSpecies *rus = ru->resourceUnitSpecies(s->saplings[i].species_index);
-                        if (!rus && !rus->species()) {
-                            qDebug() << "Saplings::clearSaplings(): invalid resource unit!!!";
-                            return;
-                        }
-                        rus->saplingStat().addCarbonOfDeadSapling( s->saplings[i].height / rus->species()->saplingGrowthParameters().hdSapling * 100.f );
+    }
+}
+
+void Saplings::clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass)
+{
+    if (s) {
+        for (int i=0;i<NSAPCELLS;++i)
+            if (s->saplings[i].is_occupied()) {
+                if (!remove_biomass) {
+                    ResourceUnitSpecies *rus = ru->resourceUnitSpecies(s->saplings[i].species_index);
+                    if (!rus && !rus->species()) {
+                        qDebug() << "Saplings::clearSaplings(): invalid resource unit!!!";
+                        return;
                     }
-                    s->saplings[i].clear();
+                    rus->saplingStat().addCarbonOfDeadSapling( s->saplings[i].height / rus->species()->saplingGrowthParameters().hdSapling * 100.f );
                 }
-            s->checkState();
+                s->saplings[i].clear();
+            }
+        s->checkState();
 
+    }
+
+}
+
+int Saplings::addSprout(const Tree *t)
+{
+    if (t->species()->saplingGrowthParameters().sproutGrowth==0.)
+        return 0;
+    SaplingCell *sc = cell(t->positionIndex());
+    if (!sc)
+        return 0;
+    clearSaplings(sc, const_cast<ResourceUnit*>(t->ru()), false );
+    SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
+    if (st)
+        st->set_sprout(true);
+
+    // neighboring cells
+    double crown_area = t->crownRadius()*t->crownRadius() * M_PI; //m2
+    // calculate how many cells on the ground are covered by the crown (this is a rather rough estimate)
+    // n_cells: in addition to the original cell
+    int n_cells = static_cast<int>(round( crown_area / static_cast<double>(cPxSize*cPxSize) - 1.));
+    if (n_cells>0) {
+        ResourceUnit *ru;
+        static const int offsets_x[8] = {1,1,0,-1,-1,-1,0,1};
+        static const int offsets_y[8] = {0,1,1,1,0,-1,-1,-1};
+        int s=irandom(0,8);
+        while(n_cells) {
+            sc = cell(t->positionIndex()+QPoint(offsets_x[s], offsets_y[s]),true,&ru);
+            if (sc) {
+                clearSaplings(sc, ru, false );
+                SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
+                if (st)
+                    st->set_sprout(true);
+            }
+
+            s = (s+1)%8; --n_cells;
         }
     }
+    return 1;
 }
 
 void Saplings::updateBrowsingPressure()
@@ -262,6 +306,10 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     if (h_pot<0. || delta_h_pot<0. || lif_corrected<0. || lif_corrected>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";
 
+    // sprouts grow faster. Sprouts therefore are less prone to stress (threshold), and can grow higher than the growth potential.
+    if (tree.is_sprout())
+        delta_h_factor = delta_h_factor *species->saplingGrowthParameters().sproutGrowth;
+
     // check browsing
     if (mBrowsingPressure>0. && tree.height<=2.f) {
         double p = rus->species()->saplingGrowthParameters().browsingProbability;
@@ -285,7 +333,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     } else {
         tree.stress_years=0; // reset stress counter
     }
-    DBG_IF(delta_h_pot*delta_h_factor < 0.f || delta_h_pot*delta_h_factor > 2., "Sapling::growSapling", "inplausible height growth.");
+    DBG_IF(delta_h_pot*delta_h_factor < 0.f || (!tree.is_sprout() && delta_h_pot*delta_h_factor > 2.), "Sapling::growSapling", "inplausible height growth.");
 
     // grow
     tree.height += delta_h_pot * delta_h_factor;

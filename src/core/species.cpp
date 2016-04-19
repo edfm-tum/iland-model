@@ -200,6 +200,10 @@ void Species::setup()
     mSaplingGrowthParams.referenceRatio = doubleVar("sapReferenceRatio");
     mSaplingGrowthParams.ReinekesR = doubleVar("sapReinekesR");
     mSaplingGrowthParams.browsingProbability = doubleVar("browsingProbability");
+    mSaplingGrowthParams.sproutGrowth = doubleVar("sapSproutGrowth");
+    if (mSaplingGrowthParams.sproutGrowth>0.)
+        if (mSaplingGrowthParams.sproutGrowth<1. || mSaplingGrowthParams.sproutGrowth>10)
+            qDebug() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ")";
 
 }
 
