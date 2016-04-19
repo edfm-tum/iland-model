@@ -944,6 +944,9 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
     else
         notifyTreeRemoved(TreeHarvest);
 
+    if (GlobalSettings::instance()->model()->saplings())
+        GlobalSettings::instance()->model()->saplings()->addSprout(this);
+
     if (ru()->snag())
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
 }
@@ -958,6 +961,8 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction, const double st
     rus.statisticsDead().add(this, 0);
     notifyTreeRemoved(TreeDisturbance);
 
+    if (GlobalSettings::instance()->model()->saplings())
+        GlobalSettings::instance()->model()->saplings()->addSprout(this);
 
     if (ru()->snag()) {
         if (isHarvested()) { // if the tree is harvested, do the same as in normal tree harvest (but with default values)

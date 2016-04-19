@@ -11,11 +11,14 @@ struct SaplingTree {
     short unsigned int age;  // number of consectuive years the sapling suffers from dire conditions
     short signed int species_index; // index of the species within the resource-unit-species container
     unsigned char stress_years; // (upper 16bits) + age of sapling (lower 16 bits)
-    unsigned char flags;
+    unsigned char flags; // flags, e.g. whether sapling stems from sprouting
     float height; // height of the sapling in meter
     bool is_occupied() const { return height>0.f; }
     void clear()  {  age=0; species_index=-1; stress_years=0; flags=0; height=0.f;  }
     void setSapling(const float h_m, const int age_yrs, const int species_idx) { height=h_m; age=static_cast<short unsigned int>(age_yrs); stress_years=0; species_index=static_cast<short signed int>(species_idx); }
+    // flags
+    bool is_sprout() const { return flags & 1; }
+    void set_sprout(const bool sprout) {if (sprout) flags |= 1; else flags &= (1 ^ 0xffffff ); }
 };
 #define NSAPCELLS 5
 struct SaplingCell {
@@ -131,8 +134,13 @@ public:
     /// 'rRUPtr' is a pointer to a RU-ptr: if provided, a pointer to the resource unit is stored
     SaplingCell *cell(QPoint lif_coords, bool only_valid=true, ResourceUnit **rRUPtr=0);
     /// clear/kill all saplings within the rectangle given by 'rectangle'.
-    /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt)
+    /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt), otherwise they are moved to soil
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass);
+    /// clear all saplings on a given cell 's' (if 'remove_biomass' is true: biomass removed from system (e.g. burnt))
+    void clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass);
+
+    /// generate vegetative offspring from 't' (sprouts)
+    int addSprout(const Tree *t);
 
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     static void updateBrowsingPressure();
