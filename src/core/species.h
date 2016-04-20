@@ -124,6 +124,7 @@ public:
     double aging(const float height, const int age) const;
     int estimateAge(const float height) const;///< estimate age for a tree with the current age
     // regeneration
+    /// check the maturity of the tree and flag the position as seed source appropriately
     void seedProduction(const int age, const float height, const QPoint &position_index);
     void setSeedDispersal(SeedDispersal *seed_dispersal) {mSeedDispersal=seed_dispersal; }
     // environmental responses
@@ -138,6 +139,10 @@ public:
     void treeMigKernel(double &ras1, double &ras2, double &ks) const { ras1=mTM_as1; ras2=mTM_as2; ks=mTM_ks; }
     double fecundity_m2() const { return mFecundity_m2; }
     double nonSeedYearFraction() const { return mNonSeedYearFraction; }
+    double fecunditySerotiny() const { return mSerotinyFecundity; }
+    /// returns true of a tree with given age/height is serotinous (i.e. seed release after fire)
+    bool isTreeSerotinous(const int age) const;
+
     const EstablishmentParameters &establishmentParameters() const { return mEstablishmentParams; }
     const SaplingGrowthParameters &saplingGrowthParameters() const { return mSaplingGrowthParams; }
 
@@ -217,6 +222,8 @@ private:
     double mTM_ks; ///< seed dispersal paramaters (treemig)
     EstablishmentParameters mEstablishmentParams; ///< collection of parameters used for establishment
     SaplingGrowthParameters mSaplingGrowthParams; ///< collection of parameters for sapling growth
+    Expression mSerotiny; ///< function that decides (probabilistic) if a tree is serotinous; empty: serotiny not active
+    double mSerotinyFecundity; ///< multiplier that increases fecundity for post-fire seed rain of serotinous species
 
 };
 

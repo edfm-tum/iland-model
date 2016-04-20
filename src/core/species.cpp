@@ -179,6 +179,9 @@ void Species::setup()
     mTM_ks = doubleVar("seedKernel_ks0");
     mFecundity_m2 = doubleVar("fecundity_m2");
     mNonSeedYearFraction = doubleVar("nonSeedYearFraction");
+    // special case for serotinous trees (US)
+    mSerotiny.setExpression(stringVar("serotinyFormula"));
+    mSerotinyFecundity = doubleVar("serotinyFecundity");
 
     // establishment parameters
     mEstablishmentParams.min_temp = doubleVar("estMinTemp");
@@ -245,10 +248,28 @@ void Species::seedProduction(const int age, const float height, const QPoint &po
 {
     if (!mSeedDispersal)
         return; // regeneration is disabled
+
+    // if the tree is considered as serotinous (i.e. seeds need external trigger such as fire)
+    if (isTreeSerotinous(age))
+        return;
+
     // no seed production if maturity age is not reached (species parameter) or if tree height is below 4m.
     if (age > mMaturityYears && height > 4.f) {
         mSeedDispersal->setMatureTree(position_index);
     }
+}
+
+
+bool Species::isTreeSerotinous(const int age) const
+{
+    if (mSerotiny.isEmpty())
+        return false;
+    // the function result (e.g. from a logistic regression model, e.g. Schoennagel 2013) is interpreted as probability
+    double p_serotinous = mSerotiny.calculate(age);
+    if (drandom()<p_serotinous)
+        return true;
+    else
+        return false;
 }
 
 
