@@ -28,6 +28,7 @@
 #include "climate.h"
 #include "soil.h"
 #include "dem.h"
+#include "seeddispersal.h"
 #include "outputmanager.h"
 #include "species.h"
 #include "3rdparty/SimpleRNG.h"
@@ -730,8 +731,8 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     // DWD: downed woody debris (t/ha) = yL pool
 
     // fuel per ha (kg biomass): derive available fuel using the KBDI as estimate for humidity.
-    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * ru->soil()->youngLabile().biomass() * 1000. ;
-    double fuel_dwd = kfc3*ru_data.kbdi() * ru->soil()->youngRefractory().biomass() * 1000. ;
+    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * 1000. : 1000.);
+    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * 1000. : 1000. );
     // calculate fuel (kg biomass / ha)
     double fuel = (fuel_ff + fuel_dwd);
 
@@ -777,6 +778,11 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
             died_basal_area += t->basalArea();
             if (tree_is_psme)
                 fireStats.fire_psme_died += t->basalArea();
+
+            if (t->species()->seedDispersal() && t->species()->isTreeSerotinous(t->age()) ) {
+                t->species()->seedDispersal()->seedProductionSerotiny(t->positionIndex());
+            }
+
             if (!mOnlyFireSimulation) {
                 // before tree biomass is transferred to the snag-state, a part of the biomass is combusted:
                 t->removeBiomassOfTree(mBurnFoliageFraction, mBurnBranchFraction, mBurnStemFraction);
@@ -819,15 +825,17 @@ void FireModule::afterFire()
                 ResourceUnit *ru = GlobalSettings::instance()->model()->ru(ru_idx);
                 double ru_fraction = fds->fireRUStats.n_cells * pixel_fraction; // fraction of RU burned (0..1)
 
-                // (1) effect of forest fire on the dead wood pools. fuel_dwd and fuel_ff is the amount of fuel
-                //     available on the pixels that are burnt. The assumption is: all of it was burnt.
-                ru->soil()->disturbanceBiomass(fds->fireRUStats.fuel_dwd, fds->fireRUStats.fuel_ff, 0.);
+                if (ru && ru->soil()) {
+                    // (1) effect of forest fire on the dead wood pools. fuel_dwd and fuel_ff is the amount of fuel
+                    //     available on the pixels that are burnt. The assumption is: all of it was burnt.
+                    ru->soil()->disturbanceBiomass(fds->fireRUStats.fuel_dwd, fds->fireRUStats.fuel_ff, 0.);
 
-                // (2) remove also a fixed fraction of the biomass that is in the soil
-                if (mBurnSoilBiomass>0.)
-                    ru->soil()->disturbance(0,0, mBurnSoilBiomass*ru_fraction);
-                // (3) effect on the snsgs
-                ru->snag()->removeCarbon(mBurnStemFraction*ru_fraction);
+                    // (2) remove also a fixed fraction of the biomass that is in the soil
+                    if (mBurnSoilBiomass>0.)
+                        ru->soil()->disturbance(0,0, mBurnSoilBiomass*ru_fraction);
+                    // (3) effect on the snsgs
+                    ru->snag()->removeCarbon(mBurnStemFraction*ru_fraction);
+                }
             }
         }
     }

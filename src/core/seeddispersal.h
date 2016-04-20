@@ -38,11 +38,14 @@ public:
     const Species *species() const {return mSpecies; }
     /// setMatureTree is called by individual (mature) trees. This actually fills the initial state of the seed map.
     void setMatureTree(const QPoint &lip_index) { mSeedMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor)=1.f; }
+    /// extra seed rain of serotinous species at 'position_index'
+    void seedProductionSerotiny(const QPoint &position_index);
+
     // operations
     void clear(); ///< clears the grid
     void execute(); ///< execute the seed dispersal
-    bool edgeDetection(); ///< phase 1: detect edges in the image; returns false if *no* pixel is 'lit'
-    void distribute(); ///< phase 2: distribute seeds
+    bool edgeDetection(Grid<float> *seed_map = 0); ///< phase 1: detect edges in the image; returns false if *no* pixel is 'lit'
+    void distribute(Grid<float> *seed_map = 0); ///< phase 2: distribute seeds
     // debug and helpers
     void loadFromImage(const QString &fileName); ///< debug function...
     void dumpMapNextYear(QString file_name) { mDumpNextYearFileName = file_name; }
@@ -58,6 +61,9 @@ private:
     Grid<float> mSeedMap; ///< (large) seedmap. Is filled by individual trees and then processed
     Grid<float> mKernelSeedYear; ///< species specific "seed kernel" (small) for seed years
     Grid<float> mKernelNonSeedYear; ///< species specific "seed kernel" (small) for non-seed-years
+    Grid<float> mKernelSerotiny; ///< seed kernel for extra seed rain
+    Grid<float> mSeedMapSerotiy; ///< seed map that keeps track of serotiny events
+    bool mHasPendingSerotiny; ///< true if active (unprocessed) pixels are on the extra-serotiny map
     bool mSetup;
     Species *mSpecies;
     bool mDumpSeedMaps; ///< if true, seedmaps are stored as images
