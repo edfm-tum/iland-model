@@ -161,6 +161,7 @@ private slots:
     void on_actionSelect_Data_Types_triggered();
     void on_actionTree_Growth_triggered();
     void on_actionTree_Partition_triggered();
+    void on_action_debugSapling_triggered();
     void on_actionModelRun_triggered();
     void on_actionModelDestroy_triggered();
     void on_actionModelCreate_triggered();

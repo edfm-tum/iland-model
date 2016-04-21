@@ -115,6 +115,7 @@ void Establishment::calculate()
     mTACA_frostAfterBuds=0;
     mSumLIFvalue = 0.;
     mLIFcount = 0;
+    mWaterLimitation = 0.;
 
     // Step 1: determine, whether there are seeds in the current resource unit
     const Grid<float> &seed_map = mRUS->species()->seedDispersal()->seedMap();
@@ -160,6 +161,19 @@ void Establishment::calculate()
         calculatePerRU(); // the new one (2015) - works best if seeds are available everywhere
         ++_est_new_algo;
     }
+
+}
+
+void Establishment::clear()
+{
+    mPAbiotic = 0.;
+    mNumberEstablished = 0;
+    mPxDensity = 0.;
+    mTACA_min_temp=mTACA_chill=mTACA_gdd=mTACA_frostfree=false;
+    mTACA_frostAfterBuds=0;
+    mSumLIFvalue = 0.;
+    mLIFcount = 0;
+    mWaterLimitation = 0.;
 
 }
 
@@ -303,12 +317,37 @@ void Establishment::calculateAbioticEnvironment()
         if (mTACA_frostAfterBuds>0)
             frost_effect = pow(p.frost_tolerance, sqrt(double(mTACA_frostAfterBuds)));
         // negative effect due to water limitation on establishment [1: no effect]
-        double drought_effect = calculateWaterLimitation(pheno.vegetationPeriodStart(), pheno.vegetationPeriodLength());
+        mWaterLimitation = calculateWaterLimitation(pheno.vegetationPeriodStart(), pheno.vegetationPeriodLength());
         // combine drought and frost effect multiplicatively
-        mPAbiotic = frost_effect * drought_effect;
+        mPAbiotic = frost_effect * mWaterLimitation;
     } else {
         mPAbiotic = 0.; // if any of the requirements is not met
     }
+
+}
+
+void Establishment::writeDebugOutputs()
+{
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment)) {
+        DebugList &out = GlobalSettings::instance()->debugList(mRUS->ru()->index(), GlobalSettings::dEstablishment);
+        // establishment details
+        out << mRUS->species()->id() << mRUS->ru()->index() << mRUS->ru()->id();
+        out << avgSeedDensity();
+        out << TACAminTemp() << TACAchill() << TACAfrostFree() << TACgdd();
+        out << TACAfrostDaysAfterBudBirst() << waterLimitation() << abioticEnvironment();
+        out << mRUS->prod3PG().fEnvYear() << avgLIFValue() << numberEstablished();
+        //out << mSaplingStat.livingSaplings() << mSaplingStat.averageHeight() << mSaplingStat.averageAge() << mSaplingStat.averageDeltaHPot() << mSaplingStat.averageDeltaHRealized();
+        //out << mSaplingStat.newSaplings() << mSaplingStat.diedSaplings() << mSaplingStat.recruitedSaplings() << mSpecies->saplingGrowthParameters().referenceRatio;
+    }
+    //); // DBGMODE()
+
+
+    if ( logLevelDebug() )
+        qDebug() << "establishment of RU" << mRUS->ru()->index() << "species" << mRUS->species()->id()
+                 << "seeds density:" << avgSeedDensity()
+                 << "abiotic environment:" << abioticEnvironment()
+                 << "f_env,yr:" << mRUS->prod3PG().fEnvYear()
+                 << "N(established):" << numberEstablished();
 
 }
 
