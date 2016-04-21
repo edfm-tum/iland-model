@@ -89,6 +89,18 @@ void SeedDispersal::setup()
     // the central pixel still gets the value of 1 (i.e. 100% probability)
     createKernel(mKernelNonSeedYear, mTM_fecundity_cell*mNonSeedYearFraction);
 
+    if (mSpecies->fecunditySerotiny()>0.) {
+        // an extra seed map is used for storing information related to post-fire seed rain
+        mSeedMapSerotiy.clear();
+        mSeedMapSerotiy.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), seedmap_size );
+        mSeedMapSerotiy.initialize(0.);
+
+        // set up the special seed kernel for post fire seed rain
+        createKernel(mKernelSerotiny, mTM_fecundity_cell * mSpecies->fecunditySerotiny());
+        qDebug() << "created extra seed map and serotiny seed kernel for species" << mSpecies->name() << "with fecundity factor" << mSpecies->fecunditySerotiny();
+    }
+    mHasPendingSerotiny = false;
+
     // debug info
     mDumpSeedMaps = GlobalSettings::instance()->settings().valueBool("model.settings.seedDispersal.dumpSeedMapsEnabled",false);
     if (mDumpSeedMaps) {
@@ -308,6 +320,14 @@ void SeedDispersal::finalizeExternalSeeds()
     mExternalSeedBaseMap = 0;
 }
 
+void SeedDispersal::seedProductionSerotiny(const QPoint &position_index)
+{
+    if (mSeedMapSerotiy.isEmpty())
+        throw IException("Invalid use seedProductionSerotiny(): tried to set a seed source for a non-serotinous species!");
+    mSeedMapSerotiy.valueAtIndex(position_index.x()/mIndexFactor, position_index.y()/mIndexFactor)=1.f;
+    mHasPendingSerotiny = true;
+}
+
 // ************ Kernel **************
 void SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
 {
@@ -439,7 +459,7 @@ void SeedDispersal::clear()
     if (mHasExternalSeedInput) {
         // if external seed input is enabled, the buffer area of the seed maps is
         // "turned on", i.e. set to 1.
-        int buf_size = GlobalSettings::instance()->settings().valueInt("model.world.buffer",0.) / mSeedMap.cellsize();
+        int buf_size = GlobalSettings::instance()->settings().valueInt("model.world.buffer",0.) / static_cast<int>(mSeedMap.cellsize());
         // if a special buffer is defined, reduce the size of the input
         if (mExternalSeedBuffer>0)
             buf_size -= mExternalSeedBuffer;
@@ -496,7 +516,23 @@ void SeedDispersal::execute()
         // (2) distribute seed probabilites from edges
         distribute();
     }
+
+    // special case serotiny
+    if (mHasPendingSerotiny) {
+        if (edgeDetection(&mSeedMapSerotiy))
+            distribute(&mSeedMapSerotiy);
+        // copy back data
+        float *sero=mSeedMapSerotiy.begin();
+        for (float* p=mSeedMap.begin();p!=mSeedMap.end();++p, ++sero)
+            *p = std::max(*p, *sero);
+
+        float total = mSeedMapSerotiy.sum();
+        mSeedMapSerotiy.initialize(0.f); // clear
+        mHasPendingSerotiny = false;
+        qDebug() << "serotiny event: extra seed input" << total << "(total sum of seed probability over all pixels of the serotiny seed map) of species" << mSpecies->name();
+
     }
+    } // debugtimer
 #ifdef ILAND_GUI
     if (mDumpSeedMaps) {
         qDebug() << "finished seed dispersal for species" << mSpecies->id() << t.elapsed();
@@ -515,17 +551,18 @@ void SeedDispersal::execute()
 /** scans the seed image and detects "edges".
     edges are then subsequently marked (set to -1). This is pass 1 of the seed distribution process.
 */
-bool SeedDispersal::edgeDetection()
+bool SeedDispersal::edgeDetection(Grid<float> *seed_map)
 {
     float *p_above, *p, *p_below;
-    int dy = mSeedMap.sizeY();
-    int dx = mSeedMap.sizeX();
+    Grid<float> &seedmap = seed_map ? *seed_map : mSeedMap; // switch to extra seed map if provided
+    int dy = seedmap.sizeY();
+    int dx = seedmap.sizeX();
     int x,y;
     bool found = false;
 
     // fill mini-gaps
     for (y=1;y<dy-1;++y){
-        p = mSeedMap.ptr(1,y);
+        p = seedmap.ptr(1,y);
         p_above = p - dx; // one line above
         p_below = p + dx; // one line below
         for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
@@ -572,23 +609,27 @@ bool SeedDispersal::edgeDetection()
 /** do the seed probability distribution.
     This is phase 2. Apply the seed kernel for each "edge" point identified in phase 1.
 */
-void SeedDispersal::distribute()
+void SeedDispersal::distribute(Grid<float> *seed_map)
 {
     int x,y;
-
-    float *end = mSeedMap.end();
-    float *p = mSeedMap.begin();
+    Grid<float> &seedmap = seed_map ? *seed_map : mSeedMap; // switch to extra seed map if provided
+    float *end = seedmap.end();
+    float *p = seedmap.begin();
     // choose the kernel depending whether there is a seed year for the current species or not
     Grid<float> &kernel = species()->isSeedYear()?mKernelSeedYear:mKernelNonSeedYear;
+    // extra case: serotiny
+    if (seed_map)
+        kernel = mKernelSerotiny;
+
     int offset = kernel.sizeX() / 2; // offset is the index of the center pixel
     for(;p!=end;++p) {
         if (*p==-1.f) {
             // edge pixel found. Now apply the kernel....
-            QPoint pt=mSeedMap.indexOf(p);
+            QPoint pt=seedmap.indexOf(p);
             for (y=-offset;y<=offset;++y)
                 for (x=-offset;x<=offset;++x)
-                    if (mSeedMap.isIndexValid(pt.x()+x, pt.y()+y)) {
-                        float &val = mSeedMap.valueAtIndex(pt.x()+x, pt.y()+y);
+                    if (seedmap.isIndexValid(pt.x()+x, pt.y()+y)) {
+                        float &val = seedmap.valueAtIndex(pt.x()+x, pt.y()+y);
                         if (val!=-1.f)
                             val = qMin(1.f - (1.f - val)*(1.f-kernel.valueAtIndex(x+offset, y+offset)),1.f );
                     }
