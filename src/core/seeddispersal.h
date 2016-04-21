@@ -62,7 +62,7 @@ private:
     Grid<float> mKernelSeedYear; ///< species specific "seed kernel" (small) for seed years
     Grid<float> mKernelNonSeedYear; ///< species specific "seed kernel" (small) for non-seed-years
     Grid<float> mKernelSerotiny; ///< seed kernel for extra seed rain
-    Grid<float> mSeedMapSerotiy; ///< seed map that keeps track of serotiny events
+    Grid<float> mSeedMapSerotiny; ///< seed map that keeps track of serotiny events
     bool mHasPendingSerotiny; ///< true if active (unprocessed) pixels are on the extra-serotiny map
     bool mSetup;
     Species *mSpecies;

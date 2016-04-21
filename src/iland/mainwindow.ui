@@ -101,6 +101,7 @@
     <addaction name="actionWater_Output"/>
     <addaction name="actionDaily_responses_Output"/>
     <addaction name="action_debugEstablishment"/>
+    <addaction name="action_debugSapling"/>
     <addaction name="actionSnag_Dynamics"/>
     <addaction name="actionPerformance"/>
     <addaction name="actionDynamic_Output"/>
@@ -1238,6 +1239,11 @@ QProgressBar::chunk {
   <action name="action_10">
    <property name="text">
     <string>action_10</string>
+   </property>
+  </action>
+  <action name="action_debugSapling">
+   <property name="text">
+    <string>Sapling growth</string>
    </property>
   </action>
  </widget>

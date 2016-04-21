@@ -32,7 +32,9 @@ public:
     void setup(const Climate *climate, const ResourceUnitSpecies *rus);
     /// main function "calculate()": process the establishment routine
     void calculate();
+    void clear();
     void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
+    void writeDebugOutputs();
     // some informations after execution
     double avgSeedDensity() const { return mPxDensity;} ///< average seed density on the RU
     double abioticEnvironment() const {return mPAbiotic; } ///< integrated value of abiotic environment (i.e.: TACA-climate + total iLand environment)
@@ -43,6 +45,7 @@ public:
     bool TACAfrostFree() const { return mTACA_frostfree;} ///< TACA flag for number of frost free days
     int TACAfrostDaysAfterBudBirst() const { return mTACA_frostAfterBuds; } ///< number of frost days after bud birst
     double avgLIFValue() const { return mLIFcount>0?mSumLIFvalue/double(mLIFcount):0.; } ///< average LIF value of LIF pixels where establishment is tested
+    double waterLimitation() const { return mWaterLimitation; } ///< scalar value between 0 and 1 (1: no limitation, 0: no establishment)
 
     static void debugInfo();
 private:
@@ -64,6 +67,7 @@ private:
     bool mTACA_frostfree; // frost free days in vegetation period
     int mTACA_frostAfterBuds; // frost days after bud birst
     double mSumLIFvalue;
+    double mWaterLimitation; // scalar 0..1 signifying the drought limitation of establishment
     int mLIFcount;
 
 };

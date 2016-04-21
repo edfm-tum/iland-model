@@ -1521,6 +1521,14 @@ void MainWindow::on_actionTree_Partition_triggered()
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
 }
 
+void MainWindow::on_action_debugSapling_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+
+}
+
 void MainWindow::on_actionTree_Growth_triggered()
 {
     QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";");
@@ -1650,6 +1658,7 @@ void MainWindow::saveDebugOutputs()
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
     Helper::saveToTextFile(p+"dynamic.csv", mRemoteControl.dynamicOutput());
@@ -1669,8 +1678,9 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "16...Water Cycle\n" \
                                         "32...Daily responses\n" \
                                         "64...Establishment\n" \
-                                        "128...Carbon cycle\n" \
-                                        "256...Performance\n"
+                                        "128...Sapling growth\n" \
+                                        "256...Carbon cycle\n" \
+                                        "512...Performance\n"
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
@@ -2097,3 +2107,5 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
     }
 
 }
+
+

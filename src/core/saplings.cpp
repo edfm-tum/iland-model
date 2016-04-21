@@ -61,6 +61,8 @@ void Saplings::establishment(const ResourceUnit *ru)
         species_idx = *s_idx;
 
         ResourceUnitSpecies *rus = ru->ruSpecies()[species_idx];
+        rus->establishment().clear();
+
         // check if there are seeds of the given species on the resource unit
         float seeds = 0.f;
         Grid<float> &seedmap =  const_cast<Grid<float>& >(rus->species()->seedDispersal()->seedMap());
@@ -76,8 +78,10 @@ void Saplings::establishment(const ResourceUnit *ru)
         // calculate the abiotic environment (TACA)
         rus->establishment().calculateAbioticEnvironment();
         double abiotic_env = rus->establishment().abioticEnvironment();
-        if (abiotic_env==0.)
+        if (abiotic_env==0.) {
+            rus->establishment().writeDebugOutputs();
             continue;
+        }
 
         // loop over all 2m cells on this resource unit
         SaplingCell *sap_cells = ru->saplingCellArray();
@@ -131,7 +135,8 @@ void Saplings::establishment(const ResourceUnit *ru)
                 }
             }
         }
-
+        // create debug output related to establishment
+        rus->establishment().writeDebugOutputs();
     }
 
 }
@@ -175,6 +180,23 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
         (*i)->saplingStat().calculate((*i)->species(), const_cast<ResourceUnit*>(ru));
         (*i)->statistics().add(&((*i)->saplingStat()));
     }
+
+    // debug output related to saplings
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSaplingGrowth)) {
+
+        // establishment details
+        for (QList<ResourceUnitSpecies*>::const_iterator it=ru->ruSpecies().constBegin();it!=ru->ruSpecies().constEnd();++it) {
+            if ((*it)->saplingStat().livingSaplings() == 0)
+                continue;
+            DebugList &out = GlobalSettings::instance()->debugList(ru->index(), GlobalSettings::dSaplingGrowth);
+            out << (*it)->species()->id() << ru->index() <<ru->id();
+            out << (*it)->saplingStat().livingSaplings() << (*it)->saplingStat().averageHeight() << (*it)->saplingStat().averageAge()
+                << (*it)->saplingStat().averageDeltaHPot() << (*it)->saplingStat().averageDeltaHRealized();
+            out << (*it)->saplingStat().newSaplings() << (*it)->saplingStat().diedSaplings()
+                << (*it)->saplingStat().recruitedSaplings() <<(*it)->species()->saplingGrowthParameters().referenceRatio;
+        }
+    }
+
 }
 
 SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **rRUPtr)
