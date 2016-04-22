@@ -427,17 +427,19 @@ double FireModule::calcWindFactor(const double direction) const
     @param height elevation (m) of the origin point
     @param pixel_from pointer to the origin point in the fire grid
     @param pixel_to pointer to the target pixel
-    @param direction codes the direction from the origin point (1..8, N, E, S, W, NE, SE, SW, NW)
+    @param direction codes the direction from the origin point (1..8, N, E, W, S, NE, NW, SE, SW)
   */
 void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const double height, const float *pixel_from, float *pixel_to, const int direction)
 {
-    const double directions[8]= {0., 90., 180., 270., 45., 135., 225., 315. };
+    // directions: N, E, W, S, NE, NW, SE, SW -> convert to 0: north, 90: east, ...
+    const double directions[8]= {0., 90., 270., 180., 45., 315, 135., 225. };
+    //const double directions[8]= {0., 90., 180., 270., 45., 135., 225., 315. };
     (void) pixel_from; // remove 'unused parameter' warning
     double spread_metric; // distance that fire supposedly spreads
 
     // calculate the slope from the curent point (pixel_from) to the spreading cell (pixel_to)
     double h_to = GlobalSettings::instance()->model()->dem()->elevation(mGrid.cellCenterPoint(mGrid.indexOf(pixel_to)));
-    if (h_to==-1) {
+    if (h_to==-1.) {
         // qDebug() << "invalid elevation for pixel during fire spread: " << mGrid.cellCenterPoint(mGrid.indexOf(pixel_to));
         // the pixel is "outside" the project area. No spread is possible.
         return;
@@ -464,7 +466,7 @@ void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const d
     // apply the r_land factor that accounts for different land types
     p_spread *= fire_data.mRefLand;
     // add probabilites
-    *pixel_to = 1. - (1. - *pixel_to)*(1. - p_spread);
+    *pixel_to = 1.f - (1.f - *pixel_to)*(1.f - p_spread);
 
 }
 
@@ -476,7 +478,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     QRect max_spread = QRect(start_point, start_point);
     // grow the rectangle by one row/column but ensure validity
     max_spread.setCoords(qMax(start_point.x()-1,0),qMax(start_point.y()-1,0),
-                         qMin(start_point.x()+2,mGrid.sizeX()),qMin(start_point.y()+2,mGrid.sizeY()) );
+                         qMin(start_point.x()+1,mGrid.sizeX()-1),qMin(start_point.y()+1,mGrid.sizeY()-1) );
 
     FireRUData *rudata = &mRUGrid.valueAt( mGrid.cellCenterPoint(start_point) );
     double fire_size_m2 = calculateFireSize(rudata);
@@ -485,7 +487,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     if (mPrescribedFiresize>=0)
         fire_size_m2 = mPrescribedFiresize;
 
-    fireStats.fire_size_plan_m2 = fire_size_m2;
+    fireStats.fire_size_plan_m2 = static_cast<int>( fire_size_m2 );
     fireStats.iterations = 0;
     fireStats.fire_size_realized_m2 = 0;
     fireStats.fire_psme_died = 0.;
@@ -495,7 +497,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     // fire size of the ignition cell
     double fire_scale_factor = fire_size_m2 / rudata->mAverageFireSize;
 
-    int cells_to_burn = fire_size_m2 / (cellsize() * cellsize());
+    int cells_to_burn = static_cast<int>( fire_size_m2 / (cellsize() * cellsize()) );
     int cells_burned = 1;
     int last_round_burned = cells_burned;
     int iterations = 1;
@@ -520,7 +522,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
                 FireRUData &fire_data = mRUGrid.valueAt(pt);
                 fire_data.fireRUStats.enter(mFireId); // setup/clear statistics if this is the first pixel in the resource unit
                 double h = GlobalSettings::instance()->model()->dem()->elevation(pt);
-                if (h==-1) {
+                if (h==-1.) {
                     qDebug() << "Fire-Spread: invalid elevation at " << pt.x() << "/" << pt.y();
                     qDebug() << "value is: " << GlobalSettings::instance()->model()->dem()->elevation(pt);
                     return;
@@ -586,7 +588,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
             }
         }
 
-        cells_to_burn = (sum_fire_size/(double)cells_burned) / (cellsize() * cellsize());
+        cells_to_burn = static_cast<int>( (sum_fire_size/(double)cells_burned) / (cellsize() * cellsize()) );
         if (cells_to_burn <= cells_burned)
             break;
 
@@ -597,9 +599,9 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
             if (*p == 1.f) {
                 QPoint pt = mGrid.indexOf(p);
                 left = qMin(left, pt.x()-1);
-                right = qMax(right, pt.x()+2);
+                right = qMax(right, pt.x()+1);
                 top = qMin(top, pt.y()-1);
-                bottom = qMax(bottom, pt.y()+2);
+                bottom = qMax(bottom, pt.y()+1);
             }
         }
         max_spread.setCoords(left, top, right, bottom);
@@ -780,7 +782,8 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
                 fireStats.fire_psme_died += t->basalArea();
 
             if (t->species()->seedDispersal() && t->species()->isTreeSerotinous(t->age()) ) {
-                t->species()->seedDispersal()->seedProductionSerotiny(t->positionIndex());
+                qDebug() << "serotinous tree (debug)" << t->id() << t->species()->id() << t->species()->seedDispersal();
+                //t->species()->seedDispersal()->seedProductionSerotiny(t->positionIndex());
             }
 
             if (!mOnlyFireSimulation) {

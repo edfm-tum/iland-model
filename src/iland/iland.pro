@@ -44,7 +44,7 @@ LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
 }
 linux-g++: {
  ## debug on linux
-message("linux g++ debug")
+message("linux g++ debug ")
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
