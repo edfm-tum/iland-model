@@ -503,6 +503,87 @@ void Tests::testRandom()
 
 void Tests::testGridRunner()
 {
+    Grid<int> test_grid(10,5,5); // 5x5 grid
+    test_grid.initialize(1);
+    GridRunner<int> r(&test_grid);
+    int sum = 0;
+    while (int *p=r.next())
+        ++sum;
+    qDebug() << "runner all, expected: 25:" << sum;
+    sum=0;
+    for (int *p=test_grid.begin();p!=test_grid.end();++p)
+        ++sum;
+    qDebug() << "loop expected: 25:" << sum;
+    sum=0;
+    r=GridRunner<int>(test_grid,test_grid.rectangle());
+    sum = 0;
+    while (int *p=r.next())
+        ++sum;
+    qDebug() << "runner rectangle, expected: 25:" << sum;
+
+    r=GridRunner<int>(test_grid,test_grid.metricRect());
+    sum = 0;
+    while (int *p=r.next())
+        ++sum;
+    qDebug() << "runner rectangle metric, expected: 25:" << sum;
+
+    // smaller parts
+    QRect r1(0,0,3,3);
+    r=GridRunner<int>(test_grid,r1);
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(0,0,3,3), expected: 4:" << sum;
+
+
+    r1=QRect(0,0,1,1);
+    r=GridRunner<int>(test_grid,r1);
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(0,0,1,1), expected: 1:" << sum;
+
+    r1=QRect(0,0,2,2);
+    r=GridRunner<int>(test_grid,r1);
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(0,0,2,2), expected: 1:" << sum;
+
+    r=GridRunner<int>(test_grid,QRect(QPoint(0,0), QPoint(3,3)));
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(QPoint(0,0), QPoint(3,3)), expected: 4:" << sum;
+
+    r=GridRunner<int>(test_grid,QRect(QPoint(0,0), QPoint(0,0)));
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(QPoint(0,0), QPoint(0,0)), expected: 1:" << sum;
+
+    r=GridRunner<int>(test_grid,QRect(QPoint(0,0), QPoint(1,1)));
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(QPoint(0,0), QPoint(1,1)), expected: 1:" << sum;
+
+
+    if (!GlobalSettings::instance()->model())
+        return;
+
     Grid<float> &lif = *GlobalSettings::instance()->model()->grid();
     //QRectF box = GlobalSettings::instance()->model()->ru(0)->boundingBox();
     QRectF box2 = QRectF(10,10,10,10);
@@ -520,6 +601,24 @@ void Tests::testGridRunner()
         QPoint point = lif.indexOf(p);
         qDebug() << i++ << point.x() << point.y() << *p << p;
     }
+    index_rect = QRect(0,0,1,1);
+    runner2 = GridRunner<float>(lif, index_rect);
+    qDebug() << "test index: rect" << index_rect;
+    i = 0;
+    while (float *p=runner2.next()) {
+        QPoint point = lif.indexOf(p);
+        qDebug() << i++ << point.x() << point.y() << *p << p;
+    }
+
+    index_rect = QRect(0,0,3,3);
+    runner2 = GridRunner<float>(lif, index_rect);
+    qDebug() << "test index: rect" << index_rect;
+    i = 0;
+    while (float *p=runner2.next()) {
+        QPoint point = lif.indexOf(p);
+        qDebug() << i++ << point.x() << point.y() << *p << p;
+    }
+
     for (int i=0;i<GlobalSettings::instance()->model()->ruList().size();++i) {
         if (i==10) break;
         ResourceUnit *ru = GlobalSettings::instance()->model()->ruList()[i];
