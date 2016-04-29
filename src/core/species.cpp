@@ -41,6 +41,7 @@ Species::~Species()
 {
     if (mSeedDispersal)
         delete mSeedDispersal;
+    mSeedDispersal = 0;
 }
 
 /** main setup routine for tree species.
