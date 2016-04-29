@@ -162,11 +162,7 @@ private:
     StampContainer mLIPs; ///< ptr to the container of the LIP-pattern
     QString mId;
     QString mName;
-#ifdef ILAND_GUI
-    QColor mDisplayColor;
-#else
-    int mDisplayColor;
-#endif
+
     int mIndex; ///< internal index within the SpeciesSet
     bool mConiferous; ///< true if confierous species (vs. broadleaved)
     bool mEvergreen; ///< true if evergreen species
@@ -229,6 +225,11 @@ private:
     Expression mSerotiny; ///< function that decides (probabilistic) if a tree is serotinous; empty: serotiny not active
     double mSerotinyFecundity; ///< multiplier that increases fecundity for post-fire seed rain of serotinous species
 
+#ifdef ILAND_GUI
+    QColor mDisplayColor;
+#else
+    int mDisplayColor;
+#endif
 };
 
 

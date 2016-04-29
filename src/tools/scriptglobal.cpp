@@ -691,6 +691,7 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
 
 }
 
+
 void ScriptGlobal::throwError(const QString &errormessage)
 {
     GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
