@@ -683,8 +683,8 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
     FMStand *stand = mFMStandGrid[tree->position()];
     if (stand)
         stand->notifyTreeRemoval(tree, reason);
-    else
-        qDebug() << "ForestManagementEngine::notifyTreeRemoval(): tree not on stand at (metric coords): " << tree->position() << "ID:" << tree->id();
+//    else
+//        qDebug() << "ForestManagementEngine::notifyTreeRemoval(): tree not on stand at (metric coords): " << tree->position() << "ID:" << tree->id();
 }
 
 bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, int n_infested_px)

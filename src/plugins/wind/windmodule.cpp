@@ -150,7 +150,7 @@ void WindModule::setup()
     mLRITransferFunction.setAndParse(xml.value(".LRITransferFunction", "max(min(3.733-6.467*LRI,3.41),0.5)"));
 
     // edge age
-    mEdgeProbability.setAndParse(xml.value(".edgeProbability", "1")); // default value: all pixels are tested always
+    mEdgeProbability.setAndParse(xml.value(".edgeProbability", "0")); // default value: all pixels are tested always
     mEdgeAgeBaseValue = xml.valueInt(".edgeAgeBaseValue", 10);
     mEdgeBackgroundProbability = xml.valueDouble(".edgeBackgroundProbability", 0.);
     // topographic topex modifier
