@@ -335,7 +335,8 @@ void Establishment::writeDebugOutputs()
         out << avgSeedDensity();
         out << TACAminTemp() << TACAchill() << TACAfrostFree() << TACgdd();
         out << TACAfrostDaysAfterBudBirst() << waterLimitation() << abioticEnvironment();
-        out << mRUS->prod3PG().fEnvYear() << avgLIFValue() << numberEstablished();
+        out << mRUS->prod3PG().fEnvYear() << mRUS->constSaplingStat().newSaplings();
+
         //out << mSaplingStat.livingSaplings() << mSaplingStat.averageHeight() << mSaplingStat.averageAge() << mSaplingStat.averageDeltaHPot() << mSaplingStat.averageDeltaHRealized();
         //out << mSaplingStat.newSaplings() << mSaplingStat.diedSaplings() << mSaplingStat.recruitedSaplings() << mSpecies->saplingGrowthParameters().referenceRatio;
     }

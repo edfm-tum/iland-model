@@ -44,6 +44,7 @@ public:
     const Production3PG &prod3PG() const { return m3PG; } ///< the 3pg production model of this speies x resourceunit
 
     SaplingStat &saplingStat() { return mSaplingStat; } ///< statistics for the sapling sub module
+    const SaplingStat &constSaplingStat() const { return mSaplingStat; } ///< statistics for the sapling sub module
 
     Establishment &establishment() { return mEstablishment; } ///< establishment submodel
     StandStatistics &statistics() { return mStatistics; } ///< statistics of this species on the resourceunit

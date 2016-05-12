@@ -241,7 +241,7 @@ void Saplings::clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove
         for (int i=0;i<NSAPCELLS;++i)
             if (s->saplings[i].is_occupied()) {
                 if (!remove_biomass) {
-                    ResourceUnitSpecies *rus = ru->resourceUnitSpecies(s->saplings[i].species_index);
+                    ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                     if (!rus && !rus->species()) {
                         qDebug() << "Saplings::clearSaplings(): invalid resource unit!!!";
                         return;
@@ -303,7 +303,8 @@ void Saplings::updateBrowsingPressure()
 
 bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value)
 {
-    ResourceUnitSpecies *rus = const_cast<ResourceUnitSpecies*>(ru->ruSpecies()[tree.species_index]);
+    ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
+
     const Species *species = rus->species();
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
@@ -395,7 +396,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         for (int i=0;i<NSAPCELLS;++i) {
             if (scell.saplings[i].is_occupied()) {
                 // add carbon to the ground
-                rus->saplingStat().addCarbonOfDeadSapling( scell.saplings[i].height / species->saplingGrowthParameters().hdSapling * 100.f );
+                ResourceUnitSpecies *srus = scell.saplings[i].resourceUnitSpecies(ru);
+                srus->saplingStat().addCarbonOfDeadSapling( scell.saplings[i].height / srus->species()->saplingGrowthParameters().hdSapling * 100.f );
                 scell.saplings[i].clear();
             }
         }
@@ -542,4 +544,12 @@ double SaplingStat::livingStemNumber(const Species *species, double &rAvgDbh, do
 //    rAvgHeight = h_sum;
 //    rAvgAge = age_sum;
 //    return total;
+}
+
+ResourceUnitSpecies *SaplingTree::resourceUnitSpecies(const ResourceUnit *ru)
+{
+    if (!ru || !is_occupied())
+        return 0;
+    ResourceUnitSpecies *rus = ru->resourceUnitSpecies(species_index);
+    return rus;
 }
