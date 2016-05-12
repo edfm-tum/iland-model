@@ -4,7 +4,8 @@
 #include "grid.h"
 #include "snag.h"
 #include <QRectF>
-
+class ResourceUnitSpecies; // forward
+class ResourceUnit; // forward
 
 struct SaplingTree {
     SaplingTree() { clear(); }
@@ -19,6 +20,8 @@ struct SaplingTree {
     // flags
     bool is_sprout() const { return flags & 1; }
     void set_sprout(const bool sprout) {if (sprout) flags |= 1; else flags &= (1 ^ 0xffffff ); }
+    // get resource unit species of the sapling tree
+    ResourceUnitSpecies *resourceUnitSpecies(const ResourceUnit *ru);
 };
 #define NSAPCELLS 5
 struct SaplingCell {
