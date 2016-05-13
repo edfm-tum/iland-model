@@ -107,6 +107,7 @@ void ResourceUnitSpecies::updateGWL()
 
 void ResourceUnitSpecies::calculateEstablishment()
 {
+    // **** old ******
     //DebugTimer t("to remove");
     mEstablishment.calculate();
     //qDebug() << species()->id() << t.elapsed() << mEstablishment.avgSeedDensity() << mEstablishment.numberEstablished()<< "new";
