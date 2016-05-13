@@ -149,6 +149,8 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     QPoint imap = ru->cornerPointOffset();
     bool need_check=false;
     SaplingCell *sap_cells = ru->saplingCellArray();
+    int total_cohorts = 0;
+    int pixel_with_cohorts = 0;
     for (int iy=0; iy<cPxPerRU; ++iy) {
         //SaplingCell *s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
         SaplingCell *s = &sap_cells[iy*cPxPerRU]; // ptr to row
@@ -168,16 +170,22 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
                 }
                 if (need_check)
                     s->checkState();
+                int n_on_px = s->n_occupied();
+
+                total_cohorts += n_on_px; // count all living cohorts on the pixel (of all species)
+                pixel_with_cohorts += n_on_px>0; // count all pixels that have regeneration
             }
         }
     }
 
 
-
+    double cohorts_per_px = 1;
+    if (pixel_with_cohorts>0)
+        cohorts_per_px = total_cohorts / static_cast<double>(pixel_with_cohorts);
 
     // store statistics on saplings/regeneration
     for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i) {
-        (*i)->saplingStat().calculate((*i)->species(), const_cast<ResourceUnit*>(ru));
+        (*i)->saplingStat().calculate((*i)->species(), const_cast<ResourceUnit*>(ru), cohorts_per_px);
         (*i)->statistics().add(&((*i)->saplingStat()));
     }
 
@@ -416,6 +424,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
 void SaplingStat::clearStatistics()
 {
     mRecruited=mDied=mLiving=0;
+    mLivingSaplings=0.;
     mSumDbhDied=0.;
     mAvgHeight=0.;
     mAvgAge=0.;
@@ -424,7 +433,7 @@ void SaplingStat::clearStatistics()
 
 }
 
-void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
+void SaplingStat::calculate(const Species *species, ResourceUnit *ru, double cohorts_per_area)
 {
     if (mLiving) {
         mAvgHeight /= double(mLiving);
@@ -442,7 +451,9 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     if (mLiving>0) {
         // calculate the avg dbh and number of stems
         double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
-        double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh );
+        double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh ) * cohorts_per_area;
+        mLivingSaplings = n;
+
         // woody parts: stem, branchse and coarse roots
         double woody_bm = species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
         double foliage = species->biomassFoliage(avg_dbh);
@@ -466,7 +477,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         //
         if (avg_dbh>1.) {
             double avg_dbh_before = (mAvgHeight - mAvgHRealized) / species->saplingGrowthParameters().hdSapling * 100.;
-            double n_before = mLiving * species->saplingGrowthParameters().representedStemNumber( qMax(1.,avg_dbh_before) );
+            double n_before = mLiving * species->saplingGrowthParameters().representedStemNumber( qMax(1.,avg_dbh_before) ) * cohorts_per_area;
             if (n<n_before) {
                 dead_wood.addBiomass( woody_bm * (n_before-n), species->cnWood() );
                 dead_fine.addBiomass( foliage * (n_before-n), species->cnFoliage()  );
@@ -482,7 +493,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     }
     if (mDied) {
         double avg_dbh_dead = mSumDbhDied / double(mDied);
-        double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead );
+        double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead ) * cohorts_per_area;
         // woody parts: stem, branchse and coarse roots
 
         dead_wood.addBiomass( ( species->biomassWoody(avg_dbh_dead) + species->biomassBranch(avg_dbh_dead) + species->biomassRoot(avg_dbh_dead)) * n, species->cnWood()  );

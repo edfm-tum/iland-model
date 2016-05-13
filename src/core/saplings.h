@@ -49,6 +49,14 @@ struct SaplingCell {
                 return i;
         return -1;
     }
+    /// count the number of occupied slots on the pixel
+    int n_occupied() {
+        int n=0;
+        for (int i=0;i<NSAPCELLS;++i)
+            n+=saplings[i].is_occupied();
+        return n;
+    }
+
     /// add a sapling to this cell, return a pointer to the tree on success, or 0 otherwise
     SaplingTree *addSapling(const float h_m, const int age_yrs, const int species_idx) {
         int idx = free_index();
@@ -83,7 +91,7 @@ class SaplingStat
 public:
     SaplingStat() { clearStatistics(); }
     void clearStatistics();
-    void calculate(const Species *species, ResourceUnit *ru);
+    void calculate(const Species *species, ResourceUnit *ru, double cohorts_per_area);
     // actions
     void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh;  }
 
@@ -109,11 +117,12 @@ private:
     int mDied; ///< number of trees died
     double mSumDbhDied; ///< running sum of dbh of died trees (used to calculate detritus)
     int mLiving; ///< number of trees (cohorts!!!) currently in the regeneration layer
+    double mLivingSaplings; ///< number of individual trees in the regen layer (using Reinekes R)
     double mAvgHeight; ///< average height of saplings (m)
     double mAvgAge; ///< average age of saplings (years)
     double mAvgDeltaHPot; ///< average height increment potential (m)
     double mAvgHRealized; ///< average realized height increment
-    CNPair mCarbonLiving;
+    CNPair mCarbonLiving; ///< kg Carbon (kg/ru) of saplings
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
 
     friend class Saplings;
