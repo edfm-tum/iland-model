@@ -179,6 +179,7 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     }
 
 
+    // calculate average density of cohorts, i.e. #cohorts / pixel
     double cohorts_per_px = 1;
     if (pixel_with_cohorts>0)
         cohorts_per_px = total_cohorts / static_cast<double>(pixel_with_cohorts);
@@ -451,7 +452,10 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru, double coh
     if (mLiving>0) {
         // calculate the avg dbh and number of stems
         double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
-        double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh ) * cohorts_per_area;
+        // the number of "real" stems is given by the Reineke formula; since the equation calculates stem density on stand level,
+        // the number of trees (and thus also carbon flux) is reduced with the average cohort density (for all species),
+        // i.e., the available space is 'shared' by the cohorts.
+        double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh ) / cohorts_per_area;
         mLivingSaplings = n;
 
         // woody parts: stem, branchse and coarse roots

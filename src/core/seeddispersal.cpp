@@ -78,11 +78,20 @@ void SeedDispersal::setup()
 
     // settings
     mTM_occupancy = 1.; // is currently constant
-    mSpecies->treeMigKernel(mTM_as1, mTM_as2, mTM_ks); // set values
+    // copy values for the species parameters:
+    mSpecies->treeMigKernel(mTM_as1, mTM_as2, mTM_ks);
     mTM_fecundity_cell = mSpecies->fecundity_m2() * seedmap_size*seedmap_size * mTM_occupancy; // scale to production for the whole cell
     mNonSeedYearFraction = mSpecies->nonSeedYearFraction();
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.settings.seedDispersal"));
+    mKernelThresholdArea = xml.valueDouble(".longDistanceDispersal.thresholdArea", 0.0001);
+    mKernelThresholdLDD = xml.valueDouble(".longDistanceDispersal.thresholdLDD", 0.0001);
+    mLDDProbability = xml.valueDouble(".longDistanceDispersal.minProbability", 0.0001);
+    mLDDRings = xml.valueInt(".longDistanceDispersal.rings", 4);
 
-    createKernel(mKernelSeedYear, mTM_fecundity_cell);
+    mLDDProbability = qMax(mLDDProbability, static_cast<float>(mKernelThresholdArea));
+
+
+    mFecundityFactor = createKernel(mKernelSeedYear, mTM_fecundity_cell);
 
     // the kernel for non seed years looks similar, but is simply linearly scaled down
     // using the species parameter NonSeedYearFraction.
@@ -110,6 +119,9 @@ void SeedDispersal::setup()
         if (!mKernelSerotiny.isEmpty())
             Helper::saveToTextFile(QString("%1/seedkernelSerotiny_%2.csv").arg(path).arg(mSpecies->id()),gridToString(mKernelSerotiny));
     }
+    // long distance dispersal
+    setupLDD();
+
     // external seeds
     mHasExternalSeedInput = false;
     mExternalSeedBuffer = 0;
@@ -331,10 +343,10 @@ void SeedDispersal::seedProductionSerotiny(const QPoint &position_index)
 }
 
 // ************ Kernel **************
-void SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
+float SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
 {
 
-    double max_dist = treemig_distanceTo(0.0001);
+    double max_dist = treemig_distanceTo(mKernelThresholdArea);
     double cell_size = mSeedMap.cellsize();
     int max_radius = int(max_dist / cell_size);
     // e.g.: cell_size: regeneration grid (e.g. 400qm), px-size: light-grid (4qm)
@@ -360,8 +372,9 @@ void SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
 
     // the sum of all kernel cells has to equal 1
     kernel.multiply(1.f/sum);
+    float fecundity_factor = static_cast<float>( max_seed / occupation);
     // probabilities are derived in multiplying by seed number, and dividing by occupancy criterion
-    kernel.multiply( static_cast<float>( max_seed / occupation));
+    kernel.multiply( fecundity_factor );
     // all cells that get more seeds than the occupancy criterion are considered to have no seed limitation for regeneration
     for (float *p=kernel.begin(); p!=sk_end;++p) {
         *p = qMin(*p, 1.f);
@@ -372,6 +385,42 @@ void SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
 
     // some final statistics....
     if (logLevelInfo()) qDebug() << "kernel setup.Species:"<< mSpecies->id() << "kernel-size: " << kernel.sizeX() << "x" << kernel.sizeY() << "pixels, sum: " << kernel.sum();
+
+    return fecundity_factor;
+}
+
+void SeedDispersal::setupLDD()
+{
+    mLDDDensity.clear(); mLDDDistance.clear();
+    if (mKernelThresholdLDD >= mKernelThresholdArea) {
+        // no long distance dispersal
+        return;
+
+    }
+    double r_min = treemig_distanceTo(mKernelThresholdArea);
+    double r_max = treemig_distanceTo(mKernelThresholdLDD);
+
+
+    mLDDDistance.push_back(r_min);
+    for (int i=0;i<mLDDRings;++i) {
+        double r_in = mLDDDistance.last();
+        mLDDDistance.push_back(mLDDDistance.last() + (r_max-r_min)/static_cast<float>(mLDDRings));
+        double r_out = mLDDDistance.last();
+        // calculate the value of the kernel for the middle of the ring
+        double ring_in = treemig(r_in); // kernel value at the inner border of the ring
+        double ring_out = treemig(r_out); // kernel value at the outer border of the ring
+        double ring_val = ring_in - ring_out; // this p should be distributed within the ring
+        ring_val *= mFecundityFactor; // include fecundity (along the lines of the kernel calculations)
+        // calculate the area of the ring
+        double ring_area = (r_out*r_out - r_in*r_in)*M_PI; // in square meters
+        double ring_px = ring_area / (mSeedMap.cellsize()*mSeedMap.cellsize()); // # of seed pixels on the ring
+        double n_px = ring_val * ring_px / mLDDProbability;
+
+        mLDDDensity.push_back(n_px);
+    }
+    qDebug() << "Setup LDD for" << species()->name() << ", using probability: "<< mLDDProbability<< ": Distances:" << mLDDDistance << ", seed pixels:" << mLDDDensity;
+
+
 }
 
 /* R-Code:
@@ -489,6 +538,7 @@ void SeedDispersal::clear()
     }
 }
 
+static int _debug_ldd=0;
 void SeedDispersal::execute()
 {
 #ifdef ILAND_GUI
@@ -556,6 +606,7 @@ void SeedDispersal::execute()
         qDebug() << "saved seed map for " << species()->id() << "to" << GlobalSettings::instance()->path(mDumpNextYearFileName);
         mDumpNextYearFileName = QString();
     }
+    qDebug() << "LDD-count:" << _debug_ldd;
 
 #endif
 }
@@ -649,6 +700,27 @@ void SeedDispersal::distribute(Grid<float> *seed_map)
                         float &val = seedmap.valueAtIndex(pt.x()+x, pt.y()+y);
                         if (val!=-1.f)
                             val = qMin(1.f - (1.f - val)*(1.f-kernel_value),1.f );
+                    }
+                }
+            }
+            // long distance dispersal
+            if (!mLDDDensity.isEmpty()) {
+                double m = species()->isSeedYear() ? 1. : mNonSeedYearFraction;
+                for (int r=0;r<mLDDDensity.size(); ++r) {
+                    float ldd_val = mLDDProbability; // pixels will have this probability
+                    int n = round( mLDDDensity[r]*m ); // number of pixels to activate
+                    for (int i=0;i<n;++i) {
+                        // distance and direction:
+                        double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / seedmap.cellsize(); // choose a random distance (in pixels)
+                        double phi = drandom()*2.*M_PI; // choose a random direction
+                        QPoint ldd(pt.x() + radius*cos(phi), pt.y() + radius*sin(phi));
+                        if (seedmap.isIndexValid(ldd)) {
+                            float &val = seedmap.valueAtIndex(ldd);
+                            _debug_ldd++;
+                            // use the same adding of probabilities
+                            if (val!=-1.f)
+                                val = qMin(1.f - (1.f - val)*(1.f-ldd_val), 1.f);
+                        }
                     }
                 }
             }

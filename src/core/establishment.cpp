@@ -100,8 +100,6 @@ inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_
      return false; // no establishment
 }
 
-static int _est_old_algo=0;
-static int _est_new_algo=0;
 
 // see http://iland.boku.ac.at/establishment
 void Establishment::calculate()
@@ -156,10 +154,10 @@ void Establishment::calculate()
 
     if (with_seeds/double(total) < 0.9) {
         calculatePerSeedPixel();     // the original algorithm (started in 2010 (approx.), and tinkered with later on)
-        ++_est_old_algo;
+        //++_est_old_algo;
     } else {
         calculatePerRU(); // the new one (2015) - works best if seeds are available everywhere
-        ++_est_new_algo;
+        //++_est_new_algo;
     }
 
 }
@@ -177,10 +175,6 @@ void Establishment::clear()
 
 }
 
-void Establishment::debugInfo()
-{
-    qDebug() << "Establisment: new algo:"  << _est_new_algo << "old algo:" << _est_old_algo;
-}
 
 double Establishment::calculateWaterLimitation(const int veg_period_start, const int veg_period_end)
 {

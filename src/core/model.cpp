@@ -808,7 +808,7 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tSapling+=t.elapsed();
         }
 
-        Establishment::debugInfo(); // debug test
+        // Establishment::debugInfo(); // debug test
 
     }
 
