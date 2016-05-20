@@ -47,7 +47,6 @@ public:
     double avgLIFValue() const { return mLIFcount>0?mSumLIFvalue/double(mLIFcount):0.; } ///< average LIF value of LIF pixels where establishment is tested
     double waterLimitation() const { return mWaterLimitation; } ///< scalar value between 0 and 1 (1: no limitation, 0: no establishment)
 
-    static void debugInfo();
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
     double calculateWaterLimitation(const int veg_period_start, const int veg_period_end); ///< calculate effect of water limitation on establishment, returns scalar [0..1]

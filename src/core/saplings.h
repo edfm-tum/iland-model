@@ -91,6 +91,8 @@ class SaplingStat
 public:
     SaplingStat() { clearStatistics(); }
     void clearStatistics();
+    /// calculate statistics (and carbon flows) for the saplings of species 'species' on 'ru'.
+    /// The 'cohorts_per_area' gives the average cohort density on the RU (avg. cohorts/pixel).
     void calculate(const Species *species, ResourceUnit *ru, double cohorts_per_area);
     // actions
     void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh;  }

@@ -50,19 +50,26 @@ public:
     void loadFromImage(const QString &fileName); ///< debug function...
     void dumpMapNextYear(QString file_name) { mDumpNextYearFileName = file_name; }
 private:
-    void createKernel(Grid<float> &kernel, const double max_seed); ///< initializes / creates the kernel
+    float createKernel(Grid<float> &kernel, const double max_seed); ///< initializes / creates the kernel
+    void setupLDD(); ///< initialize long distance seed dispersal
     double treemig(const double &distance);
     double treemig_distanceTo(const double value);
     double mTM_as1, mTM_as2, mTM_ks; ///< seed dispersal paramaters (treemig)
     double mTM_fecundity_cell; ///< maximum seeds per source cell
     double mTM_occupancy; ///< seeds required per destination regeneration pixel
+    float mFecundityFactor; ///< multiplier for the seed kernel (based on fecundity/occupancy)
     double mNonSeedYearFraction; ///< fraction of the seed production in non-seed-years
+    double mKernelThresholdArea, mKernelThresholdLDD; ///< value of the kernel function that is the threhold for full coverage and LDD, respectively
     int mIndexFactor; ///< multiplier between light-pixel-size and seed-pixel-size
     Grid<float> mSeedMap; ///< (large) seedmap. Is filled by individual trees and then processed
     Grid<float> mKernelSeedYear; ///< species specific "seed kernel" (small) for seed years
     Grid<float> mKernelNonSeedYear; ///< species specific "seed kernel" (small) for non-seed-years
     Grid<float> mKernelSerotiny; ///< seed kernel for extra seed rain
     Grid<float> mSeedMapSerotiny; ///< seed map that keeps track of serotiny events
+    QVector<double> mLDDDistance; ///< long distance dispersal distances (e.g. the "rings")
+    QVector<double> mLDDDensity;  ///< long distance dispersal # of cells that should be affected in each "ring"
+    int mLDDRings; ///< # of rings (with equal probability) for LDD
+    float mLDDProbability; ///< each LDD pixel has this probability
     bool mHasPendingSerotiny; ///< true if active (unprocessed) pixels are on the extra-serotiny map
     bool mSetup;
     Species *mSpecies;
