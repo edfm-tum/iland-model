@@ -149,44 +149,35 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     QPoint imap = ru->cornerPointOffset();
     bool need_check=false;
     SaplingCell *sap_cells = ru->saplingCellArray();
-    int total_cohorts = 0;
-    int pixel_with_cohorts = 0;
+
     for (int iy=0; iy<cPxPerRU; ++iy) {
-        //SaplingCell *s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
         SaplingCell *s = &sap_cells[iy*cPxPerRU]; // ptr to row
         int isc = lif_grid->index(imap.x(), imap.y()+iy);
 
         for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
             if (s->state != SaplingCell::CellInvalid) {
                 need_check=false;
+                int n_on_px = s->n_occupied();
                 for (int i=0;i<NSAPCELLS;++i) {
                     if (s->saplings[i].is_occupied()) {
                         // growth of this sapling tree
                         const HeightGridValue &hgv = (*height_grid)[height_grid->index5(isc)];
                         float lif_value = (*lif_grid)[isc];
 
-                        need_check |= growSapling(ru, *s, s->saplings[i], isc, hgv.height, lif_value);
+                        need_check |= growSapling(ru, *s, s->saplings[i], isc, hgv.height, lif_value, n_on_px);
                     }
                 }
                 if (need_check)
                     s->checkState();
-                int n_on_px = s->n_occupied();
 
-                total_cohorts += n_on_px; // count all living cohorts on the pixel (of all species)
-                pixel_with_cohorts += n_on_px>0; // count all pixels that have regeneration
             }
         }
     }
 
 
-    // calculate average density of cohorts, i.e. #cohorts / pixel
-    double cohorts_per_px = 1;
-    if (pixel_with_cohorts>0)
-        cohorts_per_px = total_cohorts / static_cast<double>(pixel_with_cohorts);
-
     // store statistics on saplings/regeneration
     for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i) {
-        (*i)->saplingStat().calculate((*i)->species(), const_cast<ResourceUnit*>(ru), cohorts_per_px);
+        (*i)->saplingStat().calculate((*i)->species(), const_cast<ResourceUnit*>(ru));
         (*i)->statistics().add(&((*i)->saplingStat()));
     }
 
@@ -195,11 +186,11 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
 
         // establishment details
         for (QList<ResourceUnitSpecies*>::const_iterator it=ru->ruSpecies().constBegin();it!=ru->ruSpecies().constEnd();++it) {
-            if ((*it)->saplingStat().livingSaplings() == 0)
+            if ((*it)->saplingStat().livingCohorts() == 0)
                 continue;
             DebugList &out = GlobalSettings::instance()->debugList(ru->index(), GlobalSettings::dSaplingGrowth);
             out << (*it)->species()->id() << ru->index() <<ru->id();
-            out << (*it)->saplingStat().livingSaplings() << (*it)->saplingStat().averageHeight() << (*it)->saplingStat().averageAge()
+            out << (*it)->saplingStat().livingCohorts() << (*it)->saplingStat().averageHeight() << (*it)->saplingStat().averageAge()
                 << (*it)->saplingStat().averageDeltaHPot() << (*it)->saplingStat().averageDeltaHRealized();
             out << (*it)->saplingStat().newSaplings() << (*it)->saplingStat().diedSaplings()
                 << (*it)->saplingStat().recruitedSaplings() <<(*it)->species()->saplingGrowthParameters().referenceRatio;
@@ -310,7 +301,7 @@ void Saplings::updateBrowsingPressure()
         Saplings::mBrowsingPressure = 0.;
 }
 
-bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value)
+bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value, int cohorts_on_px)
 {
     ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
 
@@ -414,6 +405,11 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     }
     // book keeping (only for survivors) for the sapling of the resource unit / species
     SaplingStat &ss = rus->saplingStat();
+    double n_repr = species->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px);
+    if (tree.height>1.3f)
+        ss.mLivingSaplings += n_repr;
+    else
+        ss.mLivingSmallSaplings += n_repr;
     ss.mLiving++;
     ss.mAvgHeight+=tree.height;
     ss.mAvgAge+=tree.age;
@@ -425,7 +421,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
 void SaplingStat::clearStatistics()
 {
     mRecruited=mDied=mLiving=0;
-    mLivingSaplings=0.;
+    mLivingSaplings=0.; mLivingSmallSaplings=0.;
     mSumDbhDied=0.;
     mAvgHeight=0.;
     mAvgAge=0.;
@@ -434,7 +430,7 @@ void SaplingStat::clearStatistics()
 
 }
 
-void SaplingStat::calculate(const Species *species, ResourceUnit *ru, double cohorts_per_area)
+void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
 {
     if (mLiving) {
         mAvgHeight /= double(mLiving);
@@ -452,11 +448,8 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru, double coh
     if (mLiving>0) {
         // calculate the avg dbh and number of stems
         double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
-        // the number of "real" stems is given by the Reineke formula; since the equation calculates stem density on stand level,
-        // the number of trees (and thus also carbon flux) is reduced with the average cohort density (for all species),
-        // i.e., the available space is 'shared' by the cohorts.
-        double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh ) / cohorts_per_area;
-        mLivingSaplings = n;
+        // the number of "real" stems is given by the Reineke formula
+        double n = mLivingSaplings; // total number of saplings (>0.05m)
 
         // woody parts: stem, branchse and coarse roots
         double woody_bm = species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
@@ -481,7 +474,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru, double coh
         //
         if (avg_dbh>1.) {
             double avg_dbh_before = (mAvgHeight - mAvgHRealized) / species->saplingGrowthParameters().hdSapling * 100.;
-            double n_before = mLiving * species->saplingGrowthParameters().representedStemNumber( qMax(1.,avg_dbh_before) ) * cohorts_per_area;
+            double n_before = mLiving * species->saplingGrowthParameters().representedStemNumber( qMax(1.,avg_dbh_before) );
             if (n<n_before) {
                 dead_wood.addBiomass( woody_bm * (n_before-n), species->cnWood() );
                 dead_fine.addBiomass( foliage * (n_before-n), species->cnFoliage()  );
@@ -497,7 +490,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru, double coh
     }
     if (mDied) {
         double avg_dbh_dead = mSumDbhDied / double(mDied);
-        double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead ) * cohorts_per_area;
+        double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead );
         // woody parts: stem, branchse and coarse roots
 
         dead_wood.addBiomass( ( species->biomassWoody(avg_dbh_dead) + species->biomassBranch(avg_dbh_dead) + species->biomassRoot(avg_dbh_dead)) * n, species->cnWood()  );
