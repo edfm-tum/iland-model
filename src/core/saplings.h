@@ -11,12 +11,15 @@ struct SaplingTree {
     SaplingTree() { clear(); }
     short unsigned int age;  // number of consectuive years the sapling suffers from dire conditions
     short signed int species_index; // index of the species within the resource-unit-species container
-    unsigned char stress_years; // (upper 16bits) + age of sapling (lower 16 bits)
+    unsigned char stress_years; // number of consecutive years that a sapling suffers from stress
     unsigned char flags; // flags, e.g. whether sapling stems from sprouting
     float height; // height of the sapling in meter
     bool is_occupied() const { return height>0.f; }
     void clear()  {  age=0; species_index=-1; stress_years=0; flags=0; height=0.f;  }
-    void setSapling(const float h_m, const int age_yrs, const int species_idx) { height=h_m; age=static_cast<short unsigned int>(age_yrs); stress_years=0; species_index=static_cast<short signed int>(species_idx); }
+    void setSapling(const float h_m, const int age_yrs, const int species_idx) { height=h_m;
+                                                                                 age=static_cast<short unsigned int>(age_yrs);
+                                                                                 stress_years=0;
+                                                                                 species_index=static_cast<short signed int>(species_idx); }
     // flags
     bool is_sprout() const { return flags & 1; }
     void set_sprout(const bool sprout) {if (sprout) flags |= 1; else flags &= (1 ^ 0xffffff ); }
@@ -92,15 +95,16 @@ public:
     SaplingStat() { clearStatistics(); }
     void clearStatistics();
     /// calculate statistics (and carbon flows) for the saplings of species 'species' on 'ru'.
-    /// The 'cohorts_per_area' gives the average cohort density on the RU (avg. cohorts/pixel).
-    void calculate(const Species *species, ResourceUnit *ru, double cohorts_per_area);
+    void calculate(const Species *species, ResourceUnit *ru);
     // actions
     void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh;  }
 
     // access to statistics
     int newSaplings() const { return mAdded; }
     int diedSaplings() const { return mDied; }
-    int livingSaplings() const { return mLiving; } ///< get the number
+    int livingCohorts() const { return mLiving; } ///< get the number of cohorts
+    double livingSaplings() const { return mLivingSaplings; }
+    double livingSaplingsSmall() const { return mLivingSmallSaplings; }
     int recruitedSaplings() const { return mRecruited; }
     ///  returns the *represented* (Reineke's Law) number of trees (N/ha) and the mean dbh/height (cm/m)
     double livingStemNumber(const Species *species, double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const;
@@ -114,12 +118,13 @@ public:
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
 
 private:
-    int mAdded; ///< number of trees added
-    int mRecruited; ///< number recruited (i.e. grown out of regeneration layer)
-    int mDied; ///< number of trees died
+    int mAdded; ///< number of tree cohorts added
+    int mRecruited; ///< number of cohorts recruited (i.e. grown out of regeneration layer)
+    int mDied; ///< number of tree cohorts died
     double mSumDbhDied; ///< running sum of dbh of died trees (used to calculate detritus)
     int mLiving; ///< number of trees (cohorts!!!) currently in the regeneration layer
-    double mLivingSaplings; ///< number of individual trees in the regen layer (using Reinekes R)
+    double mLivingSaplings; ///< number of individual trees in the regen layer (using Reinekes R), with h>1.3m
+    double mLivingSmallSaplings; ///< number of individual trees of cohorts < 1.3m height
     double mAvgHeight; ///< average height of saplings (m)
     double mAvgAge; ///< average age of saplings (years)
     double mAvgDeltaHPot; ///< average height increment potential (m)
@@ -160,7 +165,7 @@ public:
     static void updateBrowsingPressure();
 
 private:
-    bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value);
+    bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value, int cohorts_on_px);
     //Grid<SaplingCell> mGrid;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;

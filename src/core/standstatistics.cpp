@@ -184,10 +184,10 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
 
 void StandStatistics::add(const SaplingStat *sapling)
 {
-    mCohortCount += sapling->livingSaplings();
-    mSaplingCount += sapling->livingSaplings(); // TODO to change!!! Reineke!
+    mCohortCount += sapling->livingCohorts();
+    mSaplingCount += sapling->livingSaplings(); // saplings with height >1.3m
 
-    mSumSaplingAge += sapling->averageAge() * sapling->livingSaplings();
+    mSumSaplingAge += sapling->averageAge() * sapling->livingCohorts();
 
     mCRegeneration += sapling->carbonLiving().C;
     mNRegeneration += sapling->carbonLiving().N;

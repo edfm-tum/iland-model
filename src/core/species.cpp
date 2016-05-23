@@ -208,7 +208,7 @@ void Species::setup()
     if (mSaplingGrowthParams.sproutGrowth>0.)
         if (mSaplingGrowthParams.sproutGrowth<1. || mSaplingGrowthParams.sproutGrowth>10)
             qDebug() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ")";
-
+    mSaplingGrowthParams.setupReinekeLookup();
 }
 
 
@@ -300,4 +300,14 @@ double SaplingGrowthParameters::representedStemNumberByHeight(const float height
     double n = representedStemNumber(dbh);
     return n;
 
+}
+
+void SaplingGrowthParameters::setupReinekeLookup()
+{
+    mRepresentedClasses.clear();
+    for (int i=0;i<41;i++) {
+        double h = i/10. + 0.05; // 0.05, 0.15, 0.25, ... 4.05
+        double dbh = h / hdSapling  * 100.;
+        mRepresentedClasses.push_back(representedStemNumber(dbh));
+    }
 }

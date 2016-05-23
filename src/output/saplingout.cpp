@@ -32,11 +32,11 @@ SaplingOut::SaplingOut()
                    "Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.\n\n" \
                    "You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
-            << OutputColumn("count_ha", "number of represented individuals per ha.", OutInteger)
+            << OutputColumn("count_ha", "number of represented individuals per ha (tree height >1.3m).", OutInteger)
+               << OutputColumn("count_small_ha", "number of represented individuals per ha (with height <=1.3m).", OutInteger)
             << OutputColumn("cohort_count_ha", "number of cohorts per ha.", OutInteger)
-            << OutputColumn("height_avg_m", "arithmetic average height (m) (using represented individuals >1cm dbh)", OutDouble)
-            << OutputColumn("dbh_avg_cm", "arithmetic average diameter (cm) (using represented individuals >1cm dbh)", OutDouble)
-            << OutputColumn("age_avg", "arithmetic average age of the saplings (years) (using represented individuals >1cm dbh)", OutDouble);
+            << OutputColumn("height_avg_m", "arithmetic average height of the cohorts (m) ", OutDouble)
+            << OutputColumn("age_avg", "arithmetic average age of the sapling cohorts (years)", OutDouble);
  }
 
 void SaplingOut::setup()
@@ -76,11 +76,11 @@ void SaplingOut::exec()
 
             // calculate statistics based on the number of represented trees per cohort
             n = sap.livingStemNumber(rus->species(), avg_dbh, avg_height, avg_age);
-            *this << n
-                  << stat.saplingCount()
-                  << avg_height
-                  << avg_dbh
-                  << avg_age;
+            *this << sap.livingSaplings()
+                  << sap.livingSaplingsSmall()
+                  << sap.livingCohorts()
+                  << sap.averageHeight()
+                  << sap.averageAge();
             writeRow();
         }
     }
