@@ -75,6 +75,13 @@ struct SaplingCell {
                              h_max = std::max(saplings[i].height, h_max);
                          return h_max;
                        }
+    bool has_new_saplings() { if (state==CellInvalid) return 0.f;
+                        for (int i=0;i<NSAPCELLS;++i)
+                            if (saplings[i].is_occupied() && saplings[i].age<2)
+                                return true;
+                        return false;
+
+    }
     /// return the sapling tree of the requested species, or 0
     SaplingTree *sapling(int species_index) {
         if (state==CellInvalid) return 0;
@@ -143,6 +150,7 @@ class Saplings
 public:
     Saplings();
     void setup();
+    void calculateInitialStatistics(const ResourceUnit *ru);
     // main functions
     void establishment(const ResourceUnit *ru);
     void saplingGrowth(const ResourceUnit *ru);

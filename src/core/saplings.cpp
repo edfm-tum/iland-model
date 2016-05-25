@@ -37,6 +37,36 @@ void Saplings::setup()
 
 }
 
+void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
+{
+    SaplingCell *sap_cells = ru->saplingCellArray();
+    SaplingCell *s = sap_cells;
+
+    for (int i=0; i<cPxPerHectare; ++i, ++s) {
+        if (s->state != SaplingCell::CellInvalid) {
+            int cohorts_on_px = s->n_occupied();
+            for (int j=0;j<NSAPCELLS;++j) {
+                if (s->saplings[j].is_occupied()) {
+                    SaplingTree &tree=s->saplings[j];
+                    ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
+                    rus->saplingStat().mLiving++;
+                    double n_repr = rus->species()->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px);
+                    if (tree.height>1.3f)
+                        rus->saplingStat().mLivingSaplings += n_repr;
+                    else
+                        rus->saplingStat().mLivingSmallSaplings += n_repr;
+
+                    rus->saplingStat().mAvgHeight+=tree.height;
+                    rus->saplingStat().mAvgAge+=tree.age;
+
+                }
+            }
+        }
+    }
+
+
+}
+
 void Saplings::establishment(const ResourceUnit *ru)
 {
     HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
@@ -119,7 +149,7 @@ void Saplings::establishment(const ResourceUnit *ru)
                         double &lif_corrected = lif_corr[iy*cPxPerRU+ix];
                         // calculate the LIFcorrected only once per pixel
                         if (lif_corrected<0.)
-                            lif_corrected = rus->species()->speciesSet()->LRIcorrection(lif_value, 4. / hgv.height);
+                            lif_corrected = rus->species()->speciesSet()->LRIcorrection(lif_value, 0.);
 
                         // check for the combination of seed availability and light on the forest floor
                         if (drandom() < seed_map_value*lif_corrected*abiotic_env ) {
@@ -438,6 +468,8 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         mAvgDeltaHPot /= double(mLiving);
         mAvgHRealized /= double(mLiving);
     }
+    if (GlobalSettings::instance()->currentYear()==0)
+        return; // no need for carbon flows in initial run
 
     // calculate carbon balance
     CNPair old_state = mCarbonLiving;

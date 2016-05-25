@@ -53,6 +53,8 @@ private:
     float createKernel(Grid<float> &kernel, const double max_seed); ///< initializes / creates the kernel
     void setupLDD(); ///< initialize long distance seed dispersal
     double treemig(const double &distance);
+    // numerical integration of the treemig function up to a radius 'max_distance'
+    double treemig_centercell(const double &max_distance);
     double treemig_distanceTo(const double value);
     double mTM_as1, mTM_as2, mTM_ks; ///< seed dispersal paramaters (treemig)
     double mTM_fecundity_cell; ///< maximum seeds per source cell

@@ -362,7 +362,10 @@ float SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
     const float *sk_end = kernel.end();
     for (float *p=kernel.begin(); p!=sk_end;++p) {
         double d = kernel.distance(center, kernel.indexOf(p));
-        *p = d<=max_dist?static_cast<float>(treemig(d)):0.f;
+        if (d==0.)
+            *p = treemig_centercell(sqrt(cell_size*cell_size/M_PI)); // r is the radius of a circle with the same area as a cell
+        else
+            *p = d<=max_dist?static_cast<float>(treemig(d)):0.f;
     }
 
     // normalize
@@ -371,7 +374,8 @@ float SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
         throw IException("create seed kernel: sum of probabilities = 0!");
 
     // the sum of all kernel cells has to equal 1
-    kernel.multiply(1.f/sum);
+    // kernel.multiply(1.f/sum);
+
     float fecundity_factor = static_cast<float>( max_seed / occupation);
     // probabilities are derived in multiplying by seed number, and dividing by occupancy criterion
     kernel.multiply( fecundity_factor );
@@ -380,7 +384,7 @@ float SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
         *p = qMin(*p, 1.f);
     }
     // set the parent cell to 1
-    kernel.valueAtIndex(kernel_offset, kernel_offset)=1.f;
+    //kernel.valueAtIndex(kernel_offset, kernel_offset)=1.f;
 
 
     // some final statistics....
@@ -409,7 +413,7 @@ void SeedDispersal::setupLDD()
         // calculate the value of the kernel for the middle of the ring
         double ring_in = treemig(r_in); // kernel value at the inner border of the ring
         double ring_out = treemig(r_out); // kernel value at the outer border of the ring
-        double ring_val = ring_in - ring_out; // this p should be distributed within the ring
+        double ring_val = (ring_in + ring_out)/2.; // this is the average p
         ring_val *= mFecundityFactor; // include fecundity (along the lines of the kernel calculations)
         // calculate the area of the ring
         double ring_area = (r_out*r_out - r_in*r_in)*M_PI; // in square meters
@@ -434,13 +438,35 @@ treemig=function(as1,as2,ks,d) # two-part exponential function, cf. Lischke & Lo
 
 /// the used kernel function
 /// see also Appendix B of iland paper II (note the different variable names)
+/// the function returns the seed density at a point with distance 'distance'.
 double SeedDispersal::treemig(const double &distance)
 {
     double p1 = (1.-mTM_ks)*exp(-distance/mTM_as1)/mTM_as1;
     double p2 = 0.;
     if (mTM_as2>0.)
        p2 = mTM_ks*exp(-distance/mTM_as2)/mTM_as2;
-    return p1 + p2;
+    double s = p1 + p2;
+    // 's' is the density for radius 'distance' - not for specific point with that distance.
+    // (i.e. the integral over the one-dimensional treemig function is 1, but if applied for 2d cells, the
+    // sum would be much larger as all seeds arriving at 'distance' would be arriving somewhere at the circle with radius 'distance')
+    // convert that to a density at a point, by dividing with the circumference at the circle with radius 'distance'
+    s = s / (2.*std::max(distance, 0.01)*M_PI);
+
+    return s;
+}
+
+double SeedDispersal::treemig_centercell(const double &max_distance)
+{
+    // use 100 steps and calculate dispersal kernel for consecutive rings
+    double sum = 0.;
+    for (int i=0;i<100;i++) {
+        double r_in = i*max_distance/100.;
+        double r_out = (i+1)*max_distance/100.;
+        double ring_area = (r_out*r_out-r_in*r_in)*M_PI;
+        // the value of each ring is: treemig(r) * area of the ring
+        sum += treemig((r_out+r_in)/2.)*ring_area;
+    }
+    return sum;
 }
 
 /// calculate the distance where the probability falls below 'value'
