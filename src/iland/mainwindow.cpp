@@ -653,9 +653,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             return;
         static int last_year=0;
         static QString last_species="";
-        if (last_year!=GlobalSettings::instance()->currentYear() || species!=last_species) {
+        static bool last_regen_mode=false;
+        if (last_year!=GlobalSettings::instance()->currentYear() || species!=last_species || ui->visRegenNew->isChecked()!=last_regen_mode) {
             last_year=GlobalSettings::instance()->currentYear();
             last_species=species;
+            bool draw_established = ui->visRegenNew->isChecked();
+            last_regen_mode = draw_established;
             // fill grid...
             DebugTimer t("create regeneration map...");
             mRegenerationGrid.wipe(0.f);
@@ -663,8 +666,13 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 // hmax of all species
                 for (float *rg=mRegenerationGrid.begin();rg!=mRegenerationGrid.end(); ++rg) {
                     SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(mRegenerationGrid.indexOf(rg));
-                    if (sc)
-                        *rg = sc->max_height();
+                    if (sc) {
+                        if (draw_established)
+                            *rg = sc->has_new_saplings() ? 1.f : 0.f;
+                        else
+                            *rg = sc->max_height();
+                    }
+
                 }
             } else {
                 // filter a specific species
@@ -673,7 +681,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(mRegenerationGrid.indexOf(rg));
                     if (sc) {
                         SaplingTree *st=sc->sapling(sidx);
-                        *rg = st ? st->height : 0.f;
+                        if (st) {
+                            if (draw_established)
+                                *rg = st->is_occupied() && st->age<2 ? 1.f : 0.f;
+                            else
+                                *rg = st ? st->height : 0.f;
+                        }
                     }
                 }
             }

@@ -435,6 +435,7 @@ void ResourceUnit::createStandStatistics()
         mRUSpecies[i]->statistics().clear();
         mRUSpecies[i]->statisticsDead().clear();
         mRUSpecies[i]->statisticsMgmt().clear();
+        mRUSpecies[i]->saplingStat().clearStatistics();
     }
 
     // add all trees to the statistics objects of the species
@@ -442,8 +443,13 @@ void ResourceUnit::createStandStatistics()
         if (!t.isDead())
             resourceUnitSpecies(t.species()).statistics().add(&t, 0);
     }
+    // summarise sapling stats
+    GlobalSettings::instance()->model()->saplings()->calculateInitialStatistics(this);
+
     // summarize statistics for the whole resource unit
     for (int i=0;i<mRUSpecies.count();i++) {
+        mRUSpecies[i]->saplingStat().calculate(mRUSpecies[i]->species(), this);
+        mRUSpecies[i]->statistics().add(&mRUSpecies[i]->saplingStat());
         mRUSpecies[i]->statistics().calculate();
         mStatistics.add(mRUSpecies[i]->statistics());
     }
@@ -451,6 +457,7 @@ void ResourceUnit::createStandStatistics()
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*stockableArea()):0.;
     if (mAverageAging<0. || mAverageAging>1.)
         qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
+
 }
 
 /** recreate statistics. This is necessary after events that changed the structure

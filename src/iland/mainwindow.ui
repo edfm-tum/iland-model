@@ -767,8 +767,11 @@ QProgressBar::chunk {
         </item>
         <item row="1" column="0">
          <widget class="QRadioButton" name="visDomGrid">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show the maximum tree height on 10m resolution. In addition, greyed pixels indicates pixels that are not within the project area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
-           <string>dominace grid</string>
+           <string>dominance grid</string>
           </property>
          </widget>
         </item>
@@ -828,6 +831,9 @@ QProgressBar::chunk {
         </item>
         <item row="3" column="0">
          <widget class="QRadioButton" name="visImpact">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show the crown projection of individual trees, colored (by default) with the LRI value of the tree. You can use &amp;quot;Expressions&amp;quot; for visualizing different tree variables, or color the trees with a species-specifc color. Checking 'draw transparent' makes multi-story forests easier to read.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>individual Trees</string>
           </property>
@@ -852,6 +858,9 @@ QProgressBar::chunk {
         </item>
         <item row="2" column="0">
          <widget class="QRadioButton" name="visRegeneration">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show state of the regen layer (2x2m pixels). Value is the maximum height of saplings on the pixel of either all species, or for specific species&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Regeneration</string>
           </property>
@@ -888,6 +897,16 @@ QProgressBar::chunk {
          <widget class="QCheckBox" name="visRUSpeciesColor">
           <property name="text">
            <string>species shares</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="visRegenNew">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;highlight pixels that have newly established saplings (use species list below to filter only saplings of specific species)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>established</string>
           </property>
          </widget>
         </item>
