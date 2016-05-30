@@ -183,6 +183,9 @@ private slots:
     void on_visDomGrid_toggled();
     void on_visImpact_toggled();
     void on_visImpact_clicked() { on_visFon_toggled(); } // force repeaint
+    void on_visSeeds_clicked() { on_visFon_toggled(); } // force repeaint
+    void on_visRegeneration_clicked() { on_visFon_toggled(); } // force repeaint
+    void on_visRegenNew_clicked()    { on_visFon_toggled();    }
     void on_actionPerformance_triggered();
     void on_scriptCommandHistory_currentIndexChanged(int index);
     void on_paintGridBox_currentIndexChanged(int index);
@@ -194,6 +197,7 @@ private slots:
     void menuRecent_Files();
     void on_saveFile_clicked();
     void on_lJSShortcuts_linkActivated(const QString &link);
+
 };
 
 #endif // MAINWINDOW_H

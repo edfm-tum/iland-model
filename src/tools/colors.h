@@ -47,7 +47,7 @@ public:
     void setFactorLabels(QStringList labels);
     void setFactorColors(QStringList colors) { mColors = colors; }
     void setCaption(QString caption, QString description=QString()) {
-        if (mCaption==caption) return;
+        if (mCaption==caption && mDescription==description) return;
         mCaption = caption; mDescription=description;mNeedsPaletteUpdate=true; }
 
     // scale

@@ -358,14 +358,15 @@ float SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed)
     int kernel_offset = max_radius;
 
     // filling of the kernel.... use the treemig
+    double dist_center_cell = sqrt(cell_size*cell_size/M_PI);
     QPoint center = QPoint(kernel_offset, kernel_offset);
     const float *sk_end = kernel.end();
     for (float *p=kernel.begin(); p!=sk_end;++p) {
         double d = kernel.distance(center, kernel.indexOf(p));
         if (d==0.)
-            *p = treemig_centercell(sqrt(cell_size*cell_size/M_PI)); // r is the radius of a circle with the same area as a cell
+            *p = treemig_centercell(dist_center_cell); // r is the radius of a circle with the same area as a cell
         else
-            *p = d<=max_dist?static_cast<float>(treemig(d)):0.f;
+            *p = d<=max_dist?static_cast<float>(( treemig(d+dist_center_cell) + treemig(d+dist_center_cell))/2. ):0.f;
     }
 
     // normalize

@@ -38,6 +38,7 @@
 #include "speciesset.h"
 #include "tree.h"
 #include "species.h"
+#include "seeddispersal.h"
 #include "saplings.h"
 #include "climate.h"
 
@@ -564,6 +565,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool species_color = ui->visSpeciesColor->isChecked();
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
+    bool show_seedmaps = ui->visSeeds->isChecked();
     bool other_grid = ui->visOtherGrid->isChecked();
 
     if (other_grid) {
@@ -639,6 +641,34 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 if (grid->coordValid(world)) {
                     value = grid->valueAt(world);
                     col = Colors::colorFromValue(value, minval, maxval,true).rgb();
+                    img.setPixel(x,y,col);
+                }
+            }
+
+    }
+
+    if (show_seedmaps) {
+        if (species.isEmpty()) {
+            qDebug() << "Please select a species!";
+            return;
+        }
+        int x,y;
+        mRulerColors->setCaption("Seed availability", QString("seed availability of species %1").arg(species));
+        mRulerColors->setPalette(GridViewRainbow,0., 1.); // ruler
+        int sizex = rect.width();
+        int sizey = rect.height();
+        QPointF world;
+        QRgb col;
+        QImage &img = ui->PaintWidget->drawImage();
+        const Grid<float> &grid = GlobalSettings::instance()->model()->speciesSet()->species(species)->seedDispersal()->seedMap();
+        QRgb gray_bg = QColor(100,100,100).rgb();
+
+        for (x=0;x<sizex;x++)
+            for (y=0;y<sizey;y++) {
+                world = vp.toWorld(QPoint(x,y));
+                if (grid.coordValid(world)) {
+                    value = grid.constValueAt(world);
+                    col = value>0.f ? Colors::colorFromValue(value, 0., 1., false).rgb() : gray_bg;
                     img.setPixel(x,y,col);
                 }
             }
@@ -1279,6 +1309,11 @@ void MainWindow::mouseMove(const QPoint& pos)
             location += QString("\n %1").arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height);
         if( ui->visRegeneration->isChecked() && !mRegenerationGrid.isEmpty())
             location += QString("\n %1").arg(mRegenerationGrid.valueAt(p));
+        if (ui->visSeeds->isChecked() && ui->speciesFilterBox->currentIndex()>-1) {
+            Species *s=GlobalSettings::instance()->model()->speciesSet()->species(ui->speciesFilterBox->itemData(ui->speciesFilterBox->currentIndex()).toString());
+            if (s && s->seedDispersal())
+              location += QString("\n %1").arg(s->seedDispersal()->seedMap().constValueAt(p));
+        }
 
         ui->fonValue->setText(location);
     }
@@ -2120,5 +2155,8 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
     }
 
 }
+
+
+
 
 
