@@ -673,7 +673,7 @@ void Tree::grow()
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
 
     // regeneration
-    mSpecies->seedProduction(mAge, mHeight, mPositionIndex);
+    mSpecies->seedProduction(this);
 
 }
 

@@ -131,6 +131,7 @@ public slots:
     QString loadTextFile(QString fileName); ///< load content from a text file in a String (@sa CSVFile)
     void saveTextFile(QString fileName, QString content); ///< save string (@p content) to a text file.
     bool fileExists(QString fileName); ///< return true if the given file exists.
+    void systemCmd(QString command); ///< execute system command (e.g., copy files)
     // add trees
     int addSingleTrees(const int resourceIndex, QString content); ///< add single trees
     int addTrees(const int resourceIndex, QString content); ///< add tree distribution

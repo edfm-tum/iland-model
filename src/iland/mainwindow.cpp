@@ -809,7 +809,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             min_value = 9999999999999999999.;
             max_value = -999999999999999999.;
             foreach (const ResourceUnit *ru, model->ruList()) {
-                if (drawspecies) {
+                if (species_color && drawspecies) {
                     value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
                 } else {
                     ru_wrapper.setResourceUnit(ru);
@@ -822,26 +822,64 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
 
         if (species_color) {
-            drawspecies = model->speciesSet()->species(species);
-            mRulerColors->setCaption("Species share", QString("Species: '%1'").arg(species));
-            mRulerColors->setPalette(GridViewGreens, static_cast<float>(min_value), static_cast<float>(max_value)); // ruler
+            if (drawspecies) {
+                drawspecies = model->speciesSet()->species(species);
+                mRulerColors->setCaption("Species share", QString("Species: '%1'").arg(species));
+                mRulerColors->setPalette(GridViewGreens, static_cast<float>(min_value), static_cast<float>(max_value)); // ruler
+            } else {
+                mRulerColors->setCaption("Dominant species on resource unit", "The color indicates the species with the biggest share of basal area. \nDashed fill, if the basal area of the max-species is <50%.");
+                QList<const Species*> specieslist=mRemoteControl.availableSpecies();
+                QStringList colors; QStringList speciesnames;
+                for (int i=0; i<specieslist.count();++i) {
+                    colors.append(specieslist[i]->displayColor().name());
+                    speciesnames.append(specieslist[i]->name());
+                }
+                mRulerColors->setFactorColors(colors);
+                mRulerColors->setFactorLabels(speciesnames);
+                mRulerColors->setPalette(GridViewCustom, 0., 1.);
+            }
         } else {
             mRulerColors->setCaption("Resource Units", QString("Result of expression: '%1'").arg(ru_expr));
             mRulerColors->setPalette(GridViewRainbow, static_cast<float>(min_value), static_cast<float>(max_value)); // ruler
         }
 
         // paint resource units
+        painter.setPen(Qt::black);
         foreach (const ResourceUnit *ru, model->ruList()) {
-            if (drawspecies) {
-                value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
+            bool stroke = false;
+            if (species_color) {
+                if (drawspecies) {
+                    value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
+                    fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
+                } else {
+                    const Species *max_sp=0; double max_ba = 0.; double total_ba=0.;
+                    foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+                        total_ba += rus->constStatistics().basalArea();
+                        if (rus->constStatistics().basalArea()>max_ba) {
+                            max_ba = rus->constStatistics().basalArea();
+                            max_sp=rus->species();
+                        }
+                    }
+                    if (max_sp) {
+                        fill_color = max_sp->displayColor();
+                        if (max_ba < total_ba*0.5) {
+                            stroke = true;
+                        }
+                    } else
+                        fill_color = Qt::white;
+                }
             } else {
                 ru_wrapper.setResourceUnit(ru);
                 value = ru_value.execute();
+                fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
             }
             QRect r = vp.toScreen(ru->boundingBox());
             //fill_color = Colors::colorFromValue(value, min_value, max_value);
-            fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
-            painter.fillRect(r, fill_color);
+            //fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
+            if (stroke)
+                painter.fillRect(r, QBrush(fill_color, Qt::Dense3Pattern));
+            else
+                painter.fillRect(r, fill_color);
         }
         if (!ru_value.lastError().isEmpty())
             qDebug() << "Expression error while painting: " << ru_value.lastError();
@@ -1518,6 +1556,7 @@ void MainWindow::on_actionModelRun_triggered()
    mRemoteControl.run(count);
    // process debug outputs...
    saveDebugOutputs();
+   GlobalSettings::instance()->executeJSFunction("onAfterRun");
 
 }
 
@@ -1637,7 +1676,10 @@ QImage MainWindow::screenshot()
 /// pixel/m scaling.
 void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
 {
-    vp.setViewPoint(center_point, scale_px_per_m);
+    if (scale_px_per_m>0.)
+        vp.setViewPoint(center_point, scale_px_per_m);
+    else
+        vp.zoomToAll();
 
 //    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
 //    if (current_px==0)
