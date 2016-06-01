@@ -184,7 +184,20 @@ void ScriptGlobal::saveTextFile(QString fileName, QString content)
 }
 bool ScriptGlobal::fileExists(QString fileName)
 {
-   return QFile::exists(fileName);
+    return QFile::exists(fileName);
+}
+
+void ScriptGlobal::systemCmd(QString command)
+{
+    qDebug() << "running system command:" << command;
+    QProcess process;
+    process.start(command);
+    process.waitForFinished(); // will wait forever until finished
+
+    QByteArray res_stdout = process.readAllStandardOutput();
+    QByteArray res_stderr = process.readAllStandardError();
+    qDebug() << "result (stdout):" << res_stdout;
+    qDebug() << "result (stderr):" << res_stderr;
 }
 
 /// add trees on given resource unit

@@ -258,7 +258,6 @@ bool ModelController::internalRun()
 #endif
 
     }
-
     return isFinished();
 }
 
@@ -498,7 +497,7 @@ void ModelController::saveScreenshot(QString file_name)
     if (!mViewerWindow)
         return;
     QImage img = mViewerWindow->screenshot();
-    img.save(file_name);
+    img.save(GlobalSettings::instance()->path(file_name));
 #else
     Q_UNUSED(file_name);
 #endif

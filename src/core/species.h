@@ -29,6 +29,7 @@
 
 class StampContainer; // forwards
 class Stamp;
+class Tree;
 
 
 /// parameters for establishment
@@ -132,7 +133,7 @@ public:
     int estimateAge(const float height) const;///< estimate age for a tree with the current age
     // regeneration
     /// check the maturity of the tree and flag the position as seed source appropriately
-    void seedProduction(const int age, const float height, const QPoint &position_index);
+    void seedProduction(const Tree *tree);
     void setSeedDispersal(SeedDispersal *seed_dispersal) {mSeedDispersal=seed_dispersal; }
     // environmental responses
     double vpdResponse(const double &vpd) const;

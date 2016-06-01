@@ -35,6 +35,7 @@
 #include "stampcontainer.h"
 #include "exception.h"
 #include "seeddispersal.h"
+#include "tree.h"
 
 
 Species::~Species()
@@ -250,18 +251,18 @@ int Species::estimateAge(const float height) const
    This function produces seeds if the tree is older than a species-specific age ("maturity")
    If seeds are produced, this information is stored in a "SeedMap"
   */
-void Species::seedProduction(const int age, const float height, const QPoint &position_index)
+void Species::seedProduction(const Tree *tree)
 {
     if (!mSeedDispersal)
         return; // regeneration is disabled
 
     // if the tree is considered as serotinous (i.e. seeds need external trigger such as fire)
-    if (isTreeSerotinous(age))
+    if (isTreeSerotinous(tree->age()))
         return;
 
     // no seed production if maturity age is not reached (species parameter) or if tree height is below 4m.
-    if (age > mMaturityYears && height > 4.f) {
-        mSeedDispersal->setMatureTree(position_index);
+    if (tree->age() > mMaturityYears && tree->height() > 4.f) {
+        mSeedDispersal->setMatureTree(tree->positionIndex(), tree->leafArea());
     }
 }
 
