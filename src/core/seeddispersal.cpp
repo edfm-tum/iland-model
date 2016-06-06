@@ -846,7 +846,11 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 
                 for (int r=0;r<mLDDDensity.size(); ++r) {
                     float ldd_val = mLDDSeedlings / fec; // pixels will have this probability [note: fecundity will be multiplied below]
-                    int n = round( mLDDDensity[r] ); // number of pixels to activate
+                    int n;
+                    if (mLDDDensity[r]<1)
+                        n = drandom()<mLDDDensity[r] ? 1 : 0;
+                    else
+                        n = round( mLDDDensity[r] ); // number of pixels to activate
                     for (int i=0;i<n;++i) {
                         // distance and direction:
                         double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / mSeedMap.cellsize(); // choose a random distance (in pixels)
@@ -870,7 +874,7 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
     // now we include the fecundity (=seedling potential per m2 crown area), and convert to the establishment probability p_seed.
     // The number of (potential) seedlings per m2 on each cell is: cell * fecundity[m2]
     // We assume that the availability of 10 potential seedlings/m2 is enough for unconstrained establishment;
-    const float n_unlimited = 50.f;
+    const float n_unlimited = 100.f;
     for (float *p=mSeedMap.begin(); p!=mSeedMap.end(); ++p){
         if (*p>0.f) {
             *p = std::min(*p*fec / n_unlimited, 1.f);
