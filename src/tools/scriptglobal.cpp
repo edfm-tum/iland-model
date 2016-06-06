@@ -835,6 +835,9 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
         ui->visResourceUnits->setChecked(true);
         ui->visRUSpeciesColor->setChecked(false);
     }
+    if (type=="seed") {
+        ui->visSeeds->setChecked(true);
+    }
 
     // further options
     if (opts.hasProperty("clip"))
@@ -842,6 +845,7 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
 
     if (opts.hasProperty("transparent"))
         ui->drawTransparent->setChecked(opts.property("transparent").toBool());
+
 
     // color by a species ID
     if (opts.hasProperty("species") && opts.property("species").isBool() && type=="trees") {
@@ -853,7 +857,7 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
         QString species=opts.property("species").toString();
         if (type=="ru")
             ui->visRUSpeciesColor->setChecked(true);
-        else
+        else if (type=="trees")
             ui->visSpeciesColor->setChecked(true);
 
         int idx = ui->speciesFilterBox->findData(species);
@@ -873,7 +877,8 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
         ui->paintGridBox->setCurrentIndex(idx);
     }
 
-    ui->lTreeExpr->setText(opts.property("expression").toString());
+    if (opts.hasProperty("expression"))
+        ui->lTreeExpr->setText(opts.property("expression").toString());
 
     if (opts.hasProperty("filter")) {
         ui->expressionFilter->setText(opts.property("filter").toString());
