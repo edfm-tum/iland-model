@@ -69,7 +69,6 @@ void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
 
 void Saplings::establishment(const ResourceUnit *ru)
 {
-    HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
 
     QPoint imap = ru->cornerPointOffset(); // offset on LIF/saplings grid
@@ -118,7 +117,6 @@ void Saplings::establishment(const ResourceUnit *ru)
         SaplingCell *s;
         int isc = 0; // index on 2m cell
         for (int iy=0; iy<cPxPerRU; ++iy) {
-            //s = mGrid.ptr(imap.x(), imap.y()+iy); // ptr to the row
             s = &sap_cells[iy*cPxPerRU]; // pointer to a row
             isc = lif_grid->index(imap.x(), imap.y()+iy);
 
@@ -143,11 +141,10 @@ void Saplings::establishment(const ResourceUnit *ru)
                         float seed_map_value = seedmap[lif_grid->index10(isc)];
                         if (seed_map_value==0.f)
                             continue;
-                        const HeightGridValue &hgv = (*height_grid)[lif_grid->index5(isc)];
                         float lif_value = (*lif_grid)[isc];
 
                         double &lif_corrected = lif_corr[iy*cPxPerRU+ix];
-                        // calculate the LIFcorrected only once per pixel
+                        // calculate the LIFcorrected only once per pixel; the relative height is 0 (light level on the forest floor)
                         if (lif_corrected<0.)
                             lif_corrected = rus->species()->speciesSet()->LRIcorrection(lif_value, 0.);
 
@@ -351,7 +348,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
 
     double lr = species->lightResponse(lif_corrected); // species specific light response (LUI, light utilization index)
 
-    rus->calculate(true); // calculate the 3pg module (this is done only if that did not happen up to now); true: call comes from regeneration
+    rus->calculate(true); // calculate the 3pg module (this is done only once per RU); true: call comes from regeneration
     double f_env_yr = rus->prod3PG().fEnvYear();
 
     double delta_h_factor = f_env_yr * lr; // relative growth
@@ -411,7 +408,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
             Tree &bigtree = const_cast<ResourceUnit*>(ru)->newTree();
 
             bigtree.setPosition(GlobalSettings::instance()->model()->grid()->indexOf(isc));
-            // add variation: add +/-10% to dbh and *independently* to height.
+            // add variation: add +/-N% to dbh and *independently* to height.
             bigtree.setDbh(static_cast<float>(dbh * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
             bigtree.setHeight(static_cast<float>(tree.height * nrandom(1. - mRecruitmentVariation, 1. + mRecruitmentVariation)));
             bigtree.setSpecies( const_cast<Species*>(species) );

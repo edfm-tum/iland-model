@@ -85,3 +85,63 @@ void SaplingOut::exec()
         }
     }
 }
+
+SaplingDetailsOut::SaplingDetailsOut()
+{
+    setName("Sapling Details Output", "saplingdetail");
+    setDescription("Detailed output on indidvidual sapling cohorts.\n" \
+                   "For each occupied and living 2x2m pixel, a row is generated." \
+                   "You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)");
+    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
+              << OutputColumn("n_represented", "number of trees that are represented by the cohort (Reineke function).", OutDouble)
+              << OutputColumn("dbh", "diameter of the cohort (cm).", OutDouble)
+              << OutputColumn("height", "height of the cohort (m).", OutDouble)
+              << OutputColumn("age", "age of the cohort (years) ", OutInteger);
+
+}
+
+void SaplingDetailsOut::exec()
+{
+    Model *m = GlobalSettings::instance()->model();
+
+    foreach(ResourceUnit *ru, m->ruList()) {
+        if (ru->id()==-1)
+            continue; // do not include if out of project area
+
+        // exclude if a condition is specified and condition is not met
+        if (!mCondition.isEmpty()) {
+            *mVarRu = ru->id();
+            *mVarYear = GlobalSettings::instance()->currentYear();
+            if (!mCondition.execute() )
+                continue;
+        }
+        SaplingCell *s = ru->saplingCellArray();
+        for (int px=0;px<cPxPerHectare;++px, ++s) {
+            int n_on_px = s->n_occupied();
+            if (n_on_px>0) {
+                for (int i=0;i<NSAPCELLS;++i) {
+                    if (s->saplings[i].is_occupied()) {
+                        ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
+                        const Species *species = rus->species();
+                        double n_repr = species->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
+
+                        *this <<  currentYear() << ru->index() << ru->id() << rus->species()->id();
+                        *this << n_repr << s->saplings[i].height /  species->saplingGrowthParameters().hdSapling  * 100. << s->saplings[i].height << s->saplings[i].age;
+                        writeRow();
+                    }
+                }
+            }
+        }
+    }
+}
+
+void SaplingDetailsOut::setup()
+{
+    // use a condition for to control execuation for the current year
+    QString condition = settings().value(".condition", "");
+    mCondition.setExpression(condition);
+    if (!mCondition.isEmpty()) {
+        mVarRu = mCondition.addVar("ru");
+        mVarYear = mCondition.addVar("year");
+    }
+}

@@ -116,8 +116,7 @@ private:
 
     void readSettings();
     void writeSettings();
-    // debug data and outputs
-    void saveDebugOutputs();
+    // logging and outputs
     void setupFileLogging(const bool do_start);
     void batchLog(const QString s); ///< logging function for batch mode
     // visualization helper grid

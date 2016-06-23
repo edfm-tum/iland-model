@@ -1021,7 +1021,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
             SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset, true, &ru);
             if (sc) {
                 if (SaplingTree *st=sc->addSapling(static_cast<float>(height), static_cast<int>(age), species->index()))
-                    hits+=std::max(1., ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberByHeight(st->height));
+                    hits+=std::max(1., ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberH(st->height));
                 else
                     hits++;
             } else {

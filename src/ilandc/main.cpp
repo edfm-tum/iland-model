@@ -22,7 +22,7 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QStringList>
-#include "../iland/version.h"
+#include "version.h"
 #include "exception.h"
 #include <stdexcept>
 #include <QTimer>

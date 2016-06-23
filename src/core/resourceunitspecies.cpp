@@ -105,35 +105,5 @@ void ResourceUnitSpecies::updateGWL()
     mRemovedGrowth+=statisticsDead().volume() + statisticsMgmt().volume();
 }
 
-void ResourceUnitSpecies::calculateEstablishment()
-{
-    // **** old ******
-    //DebugTimer t("to remove");
-    mEstablishment.calculate();
-    //qDebug() << species()->id() << t.elapsed() << mEstablishment.avgSeedDensity() << mEstablishment.numberEstablished()<< "new";
-    //DBGMODE(
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment)) {
-            DebugList &out = GlobalSettings::instance()->debugList(ru()->index(), GlobalSettings::dEstablishment);
-            // establishment details
-            out << mSpecies->id() << ru()->index() << ru()->id();
-            out << mEstablishment.avgSeedDensity();
-            out << mEstablishment.TACAminTemp() << mEstablishment.TACAchill() << mEstablishment.TACAfrostFree() << mEstablishment.TACgdd();
-            out << mEstablishment.TACAfrostDaysAfterBudBirst() << mEstablishment.waterLimitation() << mEstablishment.abioticEnvironment();
-            out << m3PG.fEnvYear() << mEstablishment.avgLIFValue() << mEstablishment.numberEstablished();
-            out << mSaplingStat.livingCohorts() << mSaplingStat.averageHeight() << mSaplingStat.averageAge() << mSaplingStat.averageDeltaHPot() << mSaplingStat.averageDeltaHRealized();
-            out << mSaplingStat.newSaplings() << mSaplingStat.diedSaplings() << mSaplingStat.recruitedSaplings() << mSpecies->saplingGrowthParameters().referenceRatio;
-        }
-    //); // DBGMODE()
-
-
-    if ( logLevelDebug() )
-        qDebug() << "establishment of RU" << mRU->index() << "species" << species()->id()
-        << "seeds density:" << mEstablishment.avgSeedDensity()
-        << "abiotic environment:" << mEstablishment.abioticEnvironment()
-        << "f_env,yr:" << m3PG.fEnvYear()
-        << "N(established):" << mEstablishment.numberEstablished();
-
-}
-
 
 

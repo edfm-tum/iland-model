@@ -29,6 +29,7 @@
 #include "global.h"
 #include "model.h"
 #include "sqlhelper.h"
+#include "version.h"
 
 #include "xmlhelper.h"
 #include "debugtimer.h"
@@ -249,7 +250,7 @@ void Model::setupSpace()
             }
             mask_is_setup = true;
         } else {
-            if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
+            if (!settings().torusMode) {
                 // in the case we have no stand grid but only a large rectangle (without the torus option)
                 // we assume a forest outside
                 for (int i=0;i<mHeightGrid->count();++i) {
@@ -610,37 +611,6 @@ void nc_sapling_growth(ResourceUnit *unit)
     }
 }
 
-/// multithreaded running function for the resource unit level establishment
-void nc_sapling_growth_establishment_old(ResourceUnit *unit)
-{
-    try {
-        { // DebugTimer t("nc_saplingGrowth"); t.setSilent();
-        // define a height map for the current resource unit on the stack
-        //float sapling_map[cPxPerRU*cPxPerRU];
-        // set the map and initialize it:
-        //unit->setSaplingHeightMap(sapling_map);
-
-
-        // (1) calculate the growth of (already established) saplings (populate sapling map)
-        QList<ResourceUnitSpecies*>::const_iterator rus;
-        //for (rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
-        //    (*rus)->calclulateSaplingGrowth();
-
-        } { // DebugTimer t("nc_Establishment"); t.setSilent();
-
-        // (2) calculate the establishment probabilities of new saplings
-        for (QList<ResourceUnitSpecies*>::const_iterator rus=unit->ruSpecies().cbegin(); rus!=unit->ruSpecies().cend(); ++rus)
-            (*rus)->calculateEstablishment();
-
-        }
-
-    } catch (const IException& e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
-    }
-
-    //unit->setSaplingHeightMap(0); // invalidate again
-
-}
 
 
 /// multithreaded execution of the carbon cycle routine
@@ -721,6 +691,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("stand"); // year=0
     GlobalSettings::instance()->outputManager()->execute("landscape"); // year=0
     GlobalSettings::instance()->outputManager()->execute("sapling"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("saplingdetail"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
 
@@ -840,6 +811,7 @@ void Model::runYear()
     om->execute("landscape"); //landscape x species
     om->execute("landscape_removed"); //removed trees on landscape x species
     om->execute("sapling"); // sapling layer per RU x species
+    om->execute("saplingdetail"); // individual sapling cohorts (per RU)
     om->execute("production_month"); // 3pg responses growth per species x RU x month
     om->execute("dynamicstand"); // output with user-defined columns (based on species x RU)
     om->execute("standdead"); // resource unit level x species
@@ -878,7 +850,7 @@ void nc_applyPattern(ResourceUnit *unit)
     try {
 
         // light concurrence influence
-        if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
+        if (!GlobalSettings::instance()->model()->settings().torusMode) {
             // height dominance grid
             for (tit=unit->trees().begin(); tit!=tend; ++tit)
                 (*tit).heightGrid(); // just do it ;)
@@ -906,7 +878,7 @@ void nc_readPattern(ResourceUnit *unit)
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
     try {
-        if (!GlobalSettings::instance()->settings().paramValueBool("torus")) {
+        if (!GlobalSettings::instance()->model()->settings().torusMode) {
             for (tit=unit->trees().begin(); tit!=tend; ++tit)
                 (*tit).readLIF(); // multipliactive approach
         } else {

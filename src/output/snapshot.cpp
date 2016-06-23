@@ -576,7 +576,6 @@ void Snapshot::loadSaplings()
     int ci;
     int posx, posy;
     int offsetx=0, offsety=0;
-    Sapling *last_sapling = 0;
     Saplings *saplings = GlobalSettings::instance()->model()->saplings();
 
     while (q.next()) {

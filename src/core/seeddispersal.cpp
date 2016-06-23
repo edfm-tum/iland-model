@@ -787,10 +787,16 @@ void SeedDispersal::distribute(Grid<float> *seed_map)
     } // for()
 }
 
+// because C modulo operation gives negative numbers for negative values, here a fix
+// that always returns positive numbers: http://www.lemoda.net/c/modulo-operator/
+#define MOD(a,b) ((((a)%(b))+(b))%(b))
+
 void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 {
     Grid<float> &sourcemap = seed_map ? *seed_map : mSourceMap; // switch to extra seed map if provided
     Grid<float> &kernel = mKernelSeedYear;
+
+    // *** estimate seed production (based on leaf area) ***
     // calculate number of seeds; the source map holds now m2 leaf area on 20x20m pixels
     // after this step, each source cell has a value between 0 (no source) and 1 (fully covered cell)
     float fec = species()->fecundity_m2();
@@ -805,68 +811,122 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 
     // sink mode
 
-//    // now look for each pixel in the targetmap and sum up seeds*kernel
-//    int idx=0;
-//    int offset = kernel.sizeX() / 2; // offset is the index of the center pixel
-//    //const Grid<ResourceUnit*> &ru_map = GlobalSettings::instance()->model()->RUgrid();
-//    DebugTimer tsink("seed_sink"); {
-//    for (float *t=mSeedMap.begin(); t!=mSeedMap.end(); ++t, ++idx) {
-//        // skip out-of-project areas
-//        //if (!ru_map.constValueAtIndex(mSeedMap.index5(idx)))
-//        //    continue;
-//        // apply the kernel
-//        QPoint sm=mSeedMap.indexOf(t)-QPoint(offset, offset);
-//        for (int iy=0;iy<kernel.sizeY();++iy) {
-//            for (int ix=0;ix<kernel.sizeX();++ix) {
-//                if (sourcemap.isIndexValid(sm.x()+ix, sm.y()+iy))
-//                    *t+=sourcemap(sm.x()+ix, sm.y()+iy) * kernel(ix, iy);
-//            }
-//        }
-//    }
-//    } // debugtimer
-//    mSeedMap.initialize(0.f); // just for debugging...
+    //    // now look for each pixel in the targetmap and sum up seeds*kernel
+    //    int idx=0;
+    //    int offset = kernel.sizeX() / 2; // offset is the index of the center pixel
+    //    //const Grid<ResourceUnit*> &ru_map = GlobalSettings::instance()->model()->RUgrid();
+    //    DebugTimer tsink("seed_sink"); {
+    //    for (float *t=mSeedMap.begin(); t!=mSeedMap.end(); ++t, ++idx) {
+    //        // skip out-of-project areas
+    //        //if (!ru_map.constValueAtIndex(mSeedMap.index5(idx)))
+    //        //    continue;
+    //        // apply the kernel
+    //        QPoint sm=mSeedMap.indexOf(t)-QPoint(offset, offset);
+    //        for (int iy=0;iy<kernel.sizeY();++iy) {
+    //            for (int ix=0;ix<kernel.sizeX();++ix) {
+    //                if (sourcemap.isIndexValid(sm.x()+ix, sm.y()+iy))
+    //                    *t+=sourcemap(sm.x()+ix, sm.y()+iy) * kernel(ix, iy);
+    //            }
+    //        }
+    //    }
+    //    } // debugtimer
+    //    mSeedMap.initialize(0.f); // just for debugging...
 
     int offset = kernel.sizeX() / 2; // offset is the index of the center pixel
     // source mode
 
-
-    for (float *src=sourcemap.begin(); src!=sourcemap.end(); ++src) {
-        if (*src>0.f) {
-            QPoint sm=sourcemap.indexOf(src)-QPoint(offset, offset);
-            int sx = sm.x(), sy=sm.y();
-            for (int iy=0;iy<kernel.sizeY();++iy) {
-                for (int ix=0;ix<kernel.sizeX();++ix) {
-                    if (mSeedMap.isIndexValid(sx+ix, sy+iy))
-                        mSeedMap.valueAtIndex(sx+ix, sy+iy)+= *src * kernel(ix, iy);
+    // *** seed distribution (Kernel + long distance dispersal) ***
+    if (GlobalSettings::instance()->model()->settings().torusMode==false) {
+        // ** standard case (no torus) **
+        for (float *src=sourcemap.begin(); src!=sourcemap.end(); ++src) {
+            if (*src>0.f) {
+                QPoint sm=sourcemap.indexOf(src)-QPoint(offset, offset);
+                int sx = sm.x(), sy=sm.y();
+                for (int iy=0;iy<kernel.sizeY();++iy) {
+                    for (int ix=0;ix<kernel.sizeX();++ix) {
+                        if (mSeedMap.isIndexValid(sx+ix, sy+iy))
+                            mSeedMap.valueAtIndex(sx+ix, sy+iy)+= *src * kernel(ix, iy);
+                    }
                 }
-            }
-            // long distance dispersal
-            if (!mLDDDensity.isEmpty()) {
-                QPoint pt=sourcemap.indexOf(src);
+                // long distance dispersal
+                if (!mLDDDensity.isEmpty()) {
+                    QPoint pt=sourcemap.indexOf(src);
 
-                for (int r=0;r<mLDDDensity.size(); ++r) {
-                    float ldd_val = mLDDSeedlings / fec; // pixels will have this probability [note: fecundity will be multiplied below]
-                    int n;
-                    if (mLDDDensity[r]<1)
-                        n = drandom()<mLDDDensity[r] ? 1 : 0;
-                    else
-                        n = round( mLDDDensity[r] ); // number of pixels to activate
-                    for (int i=0;i<n;++i) {
-                        // distance and direction:
-                        double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / mSeedMap.cellsize(); // choose a random distance (in pixels)
-                        double phi = drandom()*2.*M_PI; // choose a random direction
-                        QPoint ldd(pt.x() + radius*cos(phi), pt.y() + radius*sin(phi));
-                        if (mSeedMap.isIndexValid(ldd)) {
-                            float &val = mSeedMap.valueAtIndex(ldd);
-                            _debug_ldd++;
-                            val += ldd_val;
+                    for (int r=0;r<mLDDDensity.size(); ++r) {
+                        float ldd_val = mLDDSeedlings / fec; // pixels will have this probability [note: fecundity will be multiplied below]
+                        int n;
+                        if (mLDDDensity[r]<1)
+                            n = drandom()<mLDDDensity[r] ? 1 : 0;
+                        else
+                            n = round( mLDDDensity[r] ); // number of pixels to activate
+                        for (int i=0;i<n;++i) {
+                            // distance and direction:
+                            double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / mSeedMap.cellsize(); // choose a random distance (in pixels)
+                            double phi = drandom()*2.*M_PI; // choose a random direction
+                            QPoint ldd(pt.x() + radius*cos(phi), pt.y() + radius*sin(phi));
+                            if (mSeedMap.isIndexValid(ldd)) {
+                                float &val = mSeedMap.valueAtIndex(ldd);
+                                _debug_ldd++;
+                                val += ldd_val;
+                            }
                         }
                     }
                 }
-            }
 
+            }
         }
-    }
+    } else {
+        // **** seed distribution in torus mode ***
+        int seedmap_offset = sourcemap.indexAt(QPointF(0., 0.)).x(); // the seed maps have x extra rows/columns
+        QPoint torus_pos;
+        int seedpx_per_ru = static_cast<int>((cRUSize/sourcemap.cellsize()));
+        for (float *src=sourcemap.begin(); src!=sourcemap.end(); ++src) {
+            if (*src>0.f) {
+                QPoint sm=sourcemap.indexOf(src);
+                // get the origin of the resource unit *on* the seedmap in *seedmap-coords*:
+                QPoint offset_ru( ((sm.x()-seedmap_offset) / seedpx_per_ru) * seedpx_per_ru + seedmap_offset,
+                                 ((sm.y()-seedmap_offset) / seedpx_per_ru) * seedpx_per_ru + seedmap_offset);  // coords RU origin
+
+                QPoint offset_in_ru((sm.x()-seedmap_offset) % seedpx_per_ru, (sm.y()-seedmap_offset) % seedpx_per_ru );  // offset of current point within the RU
+
+                //QPoint sm=sourcemap.indexOf(src)-QPoint(offset, offset);
+                for (int iy=0;iy<kernel.sizeY();++iy) {
+                    for (int ix=0;ix<kernel.sizeX();++ix) {
+                        torus_pos = offset_ru + QPoint(MOD((offset_in_ru.x() - offset + ix), seedpx_per_ru), MOD((offset_in_ru.y() - offset + iy), seedpx_per_ru));
+
+                        if (mSeedMap.isIndexValid(torus_pos))
+                            mSeedMap.valueAtIndex(torus_pos)+= *src * kernel(ix, iy);
+                    }
+                }
+                // long distance dispersal
+                if (!mLDDDensity.isEmpty()) {
+
+                    for (int r=0;r<mLDDDensity.size(); ++r) {
+                        float ldd_val = mLDDSeedlings / fec; // pixels will have this probability [note: fecundity will be multiplied below]
+                        int n;
+                        if (mLDDDensity[r]<1)
+                            n = drandom()<mLDDDensity[r] ? 1 : 0;
+                        else
+                            n = round( mLDDDensity[r] ); // number of pixels to activate
+                        for (int i=0;i<n;++i) {
+                            // distance and direction:
+                            double radius = nrandom(mLDDDistance[r], mLDDDistance[r+1]) / mSeedMap.cellsize(); // choose a random distance (in pixels)
+                            double phi = drandom()*2.*M_PI; // choose a random direction
+                            QPoint ldd( radius*cos(phi),  + radius*sin(phi)); // destination (offset)
+                            torus_pos = offset_ru + QPoint(MOD((offset_in_ru.x()+ldd.x()),seedpx_per_ru), MOD((offset_in_ru.y()+ldd.y()),seedpx_per_ru) );
+
+                            if (mSeedMap.isIndexValid(torus_pos)) {
+                                float &val = mSeedMap.valueAtIndex(torus_pos);
+                                _debug_ldd++;
+                                val += ldd_val;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    } // torus
 
 
 

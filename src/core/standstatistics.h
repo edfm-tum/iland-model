@@ -22,7 +22,6 @@
 class Tree;
 struct TreeGrowthData;
 class ResourceUnitSpecies;
-class Sapling;
 class SaplingStat;
 
 class StandStatistics

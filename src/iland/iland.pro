@@ -152,12 +152,11 @@ SOURCES += main.cpp \
     ../tools/sqlhelper.cpp \
     ../tools/random.cpp \
     aboutdialog.cpp \
-    version.cpp \
+    ../core/version.cpp \
     ../core/timeevents.cpp \
     ../core/seeddispersal.cpp \
     ../core/establishment.cpp \
     ../core/soil.cpp \
-    ../core/sapling.cpp \
     ../core/snag.cpp \
     ../output/saplingout.cpp \
     ../tools/gisgrid.cpp \
@@ -204,7 +203,7 @@ SOURCES += main.cpp \
 HEADERS += mainwindow.h \
     stable.h \
     paintarea.h \
-    version.h \
+    ../core/version.h \
     ../core/grid.h \
     ../core/tree.h \
     ../tools/expression.h \
@@ -256,7 +255,6 @@ HEADERS += mainwindow.h \
     ../core/seeddispersal.h \
     ../core/establishment.h \
     ../core/soil.h \
-    ../core/sapling.h \
     ../core/snag.h \
     ../output/saplingout.h \
     ../tools/gisgrid.h \

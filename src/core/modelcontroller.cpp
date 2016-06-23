@@ -30,6 +30,7 @@
 #include "model.h"
 #include "debugtimer.h"
 #include "helper.h"
+#include "version.h"
 #include "expression.h"
 #include "expressionwrapper.h"
 #include "../output/outputmanager.h"
@@ -266,6 +267,7 @@ void ModelController::internalStop()
     if (mRunning) {
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
+        saveDebugOutputs();
         //if (GlobalSettings::instance()->dbout().isOpen())
         //    GlobalSettings::instance()->dbout().close();
 
@@ -489,6 +491,32 @@ void ModelController::fetchDynamicOutput()
     line.prepend( QString::number(data.size()) );
     line.prepend( QString::number(GlobalSettings::instance()->currentYear()) );
     mDynData.append(line.join(";"));
+}
+
+void ModelController::saveDebugOutputs()
+{
+    // save to files if switch is true
+    if (!GlobalSettings::instance()->settings().valueBool("system.settings.debugOutputAutoSave"))
+        return;
+
+    QString p = GlobalSettings::instance()->path("debug_", "temp");
+
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandNPP, ";", p + "stand_npp.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
+    Helper::saveToTextFile(p+"dynamic.csv", dynamicOutput());
+    Helper::saveToTextFile(p+ "version.txt", verboseVersion());
+
+
+    qDebug() << "saved debug outputs to" << p;
+
 }
 
 void ModelController::saveScreenshot(QString file_name)

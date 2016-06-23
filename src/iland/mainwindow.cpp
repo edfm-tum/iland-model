@@ -387,8 +387,6 @@ void MainWindow::automaticRun()
     // "1" means in Globals.year that we are in the 1st year.
     // the simulation stops when reaching the count+1 year.
     mRemoteControl.run(count + 1);
-    // process debug outputs...
-    saveDebugOutputs();
 
     // see the finsished() slot
 }
@@ -1554,8 +1552,6 @@ void MainWindow::on_actionModelRun_triggered()
    ui->treeChange->setProperty("tree",0);
    ui->modelRunProgress->setMaximum(count-1);
    mRemoteControl.run(count);
-   // process debug outputs...
-   saveDebugOutputs();
    GlobalSettings::instance()->executeJSFunction("onAfterRun");
 
 }
@@ -1733,28 +1729,6 @@ void MainWindow::on_actionImageToClipboard_triggered()
 
 }
 
-void MainWindow::saveDebugOutputs()
-{
-    // save to files if switch is true
-    if (!GlobalSettings::instance()->settings().valueBool("system.settings.debugOutputAutoSave"))
-        return;
-
-    QString p = GlobalSettings::instance()->path("debug_", "temp");
-
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandNPP, ";", p + "stand_npp.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
-    Helper::saveToTextFile(p+"dynamic.csv", mRemoteControl.dynamicOutput());
-
-    qDebug() << "saved debug outputs to" << p;
-}
 
 void MainWindow::on_actionSelect_Data_Types_triggered()
 {

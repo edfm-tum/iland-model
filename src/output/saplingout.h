@@ -35,4 +35,17 @@ private:
 
 };
 
+class SaplingDetailsOut : public Output
+{
+public:
+    SaplingDetailsOut();
+    virtual void exec();
+    virtual void setup();
+private:
+    Expression mCondition;
+    double *mVarRu;
+    double *mVarYear;
+
+};
+
 #endif // SAPLINGOUT_H
