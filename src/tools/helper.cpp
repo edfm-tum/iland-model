@@ -33,7 +33,7 @@
 #include <QColor>
 #include "version.h"
 #else
-#include "../iland/version.h"
+#include "version.h"
 #endif
 
 Helper::Helper()

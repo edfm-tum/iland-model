@@ -121,7 +121,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     consoleshell.cpp \
-    ../iland/version.cpp \
+    ../core/version.cpp \
     ../core/model.cpp \
     ../core/modelcontroller.cpp \
     ../core/grid.cpp \
@@ -169,8 +169,8 @@ SOURCES += main.cpp \
     ../core/seeddispersal.cpp \
     ../core/establishment.cpp \
     ../core/soil.cpp \
-    ../core/sapling.cpp \
     ../core/snag.cpp \
+    ../core/saplings.cpp \
     ../output/saplingout.cpp \
     ../tools/gisgrid.cpp \
     ../tools/mapgrid.cpp \
@@ -184,7 +184,6 @@ SOURCES += main.cpp \
     ../tools/spatialanalysis.cpp \
     ../tools/statdata.cpp \
     ../tools/debugtimer.cpp \
-#    ../tools/viewport.cpp \
     ../abe/fomewrapper.cpp \
     ../abe/fmstand.cpp \
     ../abe/agent.cpp \
@@ -214,7 +213,7 @@ SOURCES += main.cpp \
 HEADERS += \
     consoleshell.h \
     stable.h \
-    ../iland/version.h \
+    ../core/version.h \
     ../core/model.h \
     ../core/modelcontroller.h \
     ../core/grid.h \
@@ -267,8 +266,8 @@ HEADERS += \
     ../core/seeddispersal.h \
     ../core/establishment.h \
     ../core/soil.h \
-    ../core/sapling.h \
     ../core/snag.h \
+    ../core/saplings.h \
     ../output/saplingout.h \
     ../tools/gisgrid.h \
     ../tools/mapgrid.h \
@@ -283,7 +282,6 @@ HEADERS += \
     ../tools/spatialanalysis.h \
     ../tools/statdata.h \
     ../tools/debugtimer.h \
-#    ../tools/viewport.h \
     ../abe/activity.h \
     ../abe/forestmanagementengine.h \
     ../abe/abe_global.h \

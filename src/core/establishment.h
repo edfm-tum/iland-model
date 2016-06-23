@@ -30,8 +30,6 @@ public:
     Establishment(const Climate *climate, const ResourceUnitSpecies *rus);
     /// setup function that links to a climate and the resource unit / species
     void setup(const Climate *climate, const ResourceUnitSpecies *rus);
-    /// main function "calculate()": process the establishment routine
-    void calculate();
     void clear();
     void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
     void writeDebugOutputs();
@@ -50,10 +48,6 @@ public:
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
     double calculateWaterLimitation(const int veg_period_start, const int veg_period_end); ///< calculate effect of water limitation on establishment, returns scalar [0..1]
-    inline bool establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value); ///< do the final check whether a seedling can establish at given location
-    // 2 different approaches for calculating the establishment
-    void calculatePerSeedPixel(); ///< function that checks seed pixels first
-    void calculatePerRU(); ///< function that starts with 2m LIF pixels
     const Climate *mClimate; ///< link to the current climate
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species (links to production data and species respones)
     // some statistics

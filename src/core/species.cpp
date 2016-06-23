@@ -295,13 +295,6 @@ void Species::newYear()
     }
 }
 
-double SaplingGrowthParameters::representedStemNumberByHeight(const float height) const
-{
-    float dbh = height / hdSapling * 100.f;
-    double n = representedStemNumber(dbh);
-    return n;
-
-}
 
 void SaplingGrowthParameters::setupReinekeLookup()
 {

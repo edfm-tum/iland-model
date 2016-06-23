@@ -58,6 +58,7 @@ OutputManager::OutputManager()
     mOutputs.append(new StandDeadOut);
     mOutputs.append(new ManagementOut);
     mOutputs.append(new SaplingOut);
+    mOutputs.append(new SaplingDetailsOut);
     mOutputs.append(new CarbonOut);
     mOutputs.append(new CarbonFlowOut);
     mOutputs.append(new WaterOut);

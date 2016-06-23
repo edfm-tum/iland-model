@@ -66,8 +66,6 @@ public:
     double leafArea() const; ///< total leaf area of the species on the RU (m2).
     // action
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
-    // establishment, sapling growth
-    void calculateEstablishment(); ///< perform establishment calculations
 
 private:
     ResourceUnitSpecies(const ResourceUnitSpecies &); // no copy

@@ -36,8 +36,9 @@ public:
     // light
     double lightExtinctionCoefficient; ///< "k" parameter (beer lambert) used for calc. of absorbed light on resourceUnit level
     double lightExtinctionCoefficientOpacity; ///< "k" for beer lambert used for opacity of single trees
+    bool torusMode; ///< special mode that treats each resource unit as a "torus" (light calculation, seed distribution)
     // climate
-    double temperatureTau; ///< "tau"-value for delayed temperature calculation acc. to Mäkela 2008
+    double temperatureTau; ///< "tau"-value for delayed temperature calculation acc. to Maekela 2008
     // water
     double airDensity; // density of air [kg / m3]
     double laiThresholdForClosedStands; // for calculation of max-canopy-conductance
