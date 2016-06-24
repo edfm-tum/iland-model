@@ -17,36 +17,9 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 
-#ifndef SAPLINGOUT_H
-#define SAPLINGOUT_H
-#include "output.h"
-#include "expression.h"
+// global functions for current version and svn-revision. version.cpp gets updated automatically.
+const char *currentVersion();
+const char *svnRevision();
+QString compiler();
+QString verboseVersion();
 
-class SaplingOut : public Output
-{
-public:
-    SaplingOut();
-    virtual void exec();
-    virtual void setup();
-private:
-    Expression mCondition;
-    double *mVarRu;
-    double *mVarYear;
-
-};
-
-class SaplingDetailsOut : public Output
-{
-public:
-    SaplingDetailsOut();
-    virtual void exec();
-    virtual void setup();
-private:
-    Expression mCondition;
-    double *mVarRu;
-    double *mVarYear;
-    double mMinDbh;
-
-};
-
-#endif // SAPLINGOUT_H
