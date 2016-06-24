@@ -90,8 +90,9 @@ SaplingDetailsOut::SaplingDetailsOut()
 {
     setName("Sapling Details Output", "saplingdetail");
     setDescription("Detailed output on indidvidual sapling cohorts.\n" \
-                   "For each occupied and living 2x2m pixel, a row is generated." \
-                   "You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)");
+                   "For each occupied and living 2x2m pixel, a row is generated, unless" \
+                   "the tree diameter is below the 'minDbh' threshold (cm). " \
+                   "You can further specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year).");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("n_represented", "number of trees that are represented by the cohort (Reineke function).", OutDouble)
               << OutputColumn("dbh", "diameter of the cohort (cm).", OutDouble)
@@ -123,10 +124,15 @@ void SaplingDetailsOut::exec()
                     if (s->saplings[i].is_occupied()) {
                         ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                         const Species *species = rus->species();
+                        double dbh = s->saplings[i].height / species->saplingGrowthParameters().hdSapling  * 100.;
+                        // check minimum dbh
+                        if (dbh<mMinDbh)
+                            continue;
+
                         double n_repr = species->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
 
                         *this <<  currentYear() << ru->index() << ru->id() << rus->species()->id();
-                        *this << n_repr << s->saplings[i].height /  species->saplingGrowthParameters().hdSapling  * 100. << s->saplings[i].height << s->saplings[i].age;
+                        *this << n_repr << dbh << s->saplings[i].height << s->saplings[i].age;
                         writeRow();
                     }
                 }
@@ -144,4 +150,5 @@ void SaplingDetailsOut::setup()
         mVarRu = mCondition.addVar("ru");
         mVarYear = mCondition.addVar("year");
     }
+    mMinDbh = settings().valueDouble(".minDbh");
 }
