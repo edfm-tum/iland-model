@@ -11,6 +11,10 @@
 // run in 'apidocs' folder (the generated YUI docs are pushed to the 'docs' folder):
 // yuidocsite --port 3000 --search_desc
 
+// bootstrap theme: https://www.npmjs.com/package/yuidoc-bootstrap-theme
+// npm install yuidoc-bootstrap-theme
+//
+
 /**
  * The agent based forest management engine.
 #Overview

@@ -268,7 +268,7 @@ void ResourceUnit::production()
     }
 
     // the pixel counters are filled during the height-grid-calculations
-    mStockedArea = 100. * mStockedPixelCount; // m2 (1 height grid pixel = 10x10m)
+    mStockedArea = cHeightPerRU*cHeightPerRU * mStockedPixelCount; // m2 (1 height grid pixel = 10x10m)
     if (leafAreaIndex()<3.) {
         // estimate stocked area based on crown projections
         double crown_area = 0.;
@@ -280,7 +280,8 @@ void ResourceUnit::production()
         if (leafAreaIndex()<1.) {
             mStockedArea = std::min(crown_area, mStockedArea);
         } else {
-
+            // for LAI between 1 and 3:
+            // interpolate between sum of crown area of trees (at LAI=1) and the pixel-based value (at LAI=3 and above)
             double px_frac = (leafAreaIndex()-1.)/2.; // 0 at LAI=1, 1 at LAI=3
             mStockedArea = mStockedArea * px_frac + std::min(crown_area, mStockedArea) * (1. - px_frac);
         }
