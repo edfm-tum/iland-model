@@ -4,6 +4,8 @@
     "version": "1.0",
     "url": "http://iland.boku.ac.at",
     "options": {
-        "outdir": "../../build/apidocs/docs"
+        "outdir": "../../build/apidocs/docs",
+		"themedir": "node_modules/yuidoc-bootstrap-theme",
+		"helpers": [ "node_modules/yuidoc-bootstrap-theme/helpers/helpers.js" ]
     }
 }
