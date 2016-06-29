@@ -1,6 +1,6 @@
 {
-    "name": "The ABE API",
-    "description": "The Agent Based forest Management API for iLand",
+    "name": "The iLand Javascript API",
+    "description": "The API for iLand and the Agent-Based-management-Engine (ABE)",
     "version": "1.0",
     "url": "http://iland.boku.ac.at",
     "options": {
