@@ -17,12 +17,32 @@
 
 /**
  * The agent based forest management engine.
-#Overview
-One example, the cross is cross
+
+Overview
+========
+The ABE forest management system is:
++ is a hybrid C++/Javascript system
++ follows a declarative paradigma - forest management strategies are described using Javascript-Objects (like JSON), but include also
+imperative section and event handlers that allow a fine grained control
+
+The concept is described in more details on the iLand wiki page: http://iland.boku.ac.at/ABE
+
+building blocks
+---------------
+
+The main classes of ABE are:
+
++ **{{#crossLink "Agent"}}{{/crossLink}}** are conceptually forest managers that are responsible for a part or for the full simulated landscape.
++ **{{#crossLink "STP"}}{{/crossLink}}** a STP object encapsulates a stand treatment program, that includes one or many forest management activities.
++ **{{#crossLink "Activity"}}{{/crossLink}}** is a single management activity such as a thinning or a planting.
 
 
+In addition, the API defines various helper objects:
 
-this is the ....
++ **{{#crossLink "FMEngine"}}{{/crossLink}}** is the main class of ABE. It provides methods to define agents, stand treatment programs, etc and methods to "manually" execute forest mangement
++ **{{#crossLink "Stand"}}{{/crossLink}}** encapsulates a "stand" in the model. A landscape can have multiple stands (e.g., by providing a GIS layer).
++ **{{#crossLink "TreeList"}}{{/crossLink}}** a collection of individual trees that are e.g. fetched from a specific stand
+
  *
  * @module ABE
 */

@@ -1,8 +1,16 @@
 /**
  * iLand Javascript API
+
 Overview
 ========
-this is the ....
+
+iLand - the invidiual based landscape and disturbance model - is capable of simulating the development of forests on landscapes
+of thousands of hectares. The model is built in C++ (using the [Qt-framework](http://qt.io) and utilizes the the built-in
+V8 Javascript engine. The model exposes a number of (C++)-objects to the Javascript context, that allow accessing various iLand functions from Javascript.
+
+See [iLand scripting](http://iland.boku.ac.at/iLand+scripting) for an overview.
+
+
  *
  * @module iLand
 */

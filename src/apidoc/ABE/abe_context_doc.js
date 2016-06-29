@@ -12,9 +12,9 @@ var fmengine= {
   `log` writes a log message. Each message is prefixed with a code for identifying the current stand and the current year of the simulation.
   The format of the prefix is: 'S_standid_Y_year_:'.
 
-           fmengine.log('log message for stand ' + stand.id);
-           // produces (in year 0 and for stand 7)
-           abe: "S7Y0:" log message for stand 7
+        fmengine.log('log message for stand ' + stand.id);
+        // produces (in year 0 and for stand 7)
+        abe: "S7Y0:" log message for stand 7
 
   @method log
   @param {string} message The message to be printed.
@@ -107,11 +107,14 @@ var fmengine= {
   Runs a planting activity (without the context of stand treatment programmes). This is especially useful for
   setting up initial stand conditions. The `planting` defines the activity according to the syntax of the planting activity.
 
-        // global 'onInit' function is called during startup
-        function onInit() {
-            // run a planting activity for the stand 235 (30cm spruce trees on 90% of the pixels)
-            fmengine.runPlanting( 235, { species: "piab", fraction: 0.9, height: 0.3 });
-        }
+    ```test()
+    // global 'onInit' function is called during startup
+    // another comment
+    // another comment
+    function onInit() {
+        // run a planting activity for the stand 235 (30cm spruce trees on 90% of the pixels)
+        fmengine.runPlanting( 235, { species: "piab", fraction: 0.9, height: 0.3 });
+    }```
 
   @method runPlanting
   @param {int} standId (integer) of the stand for which a planting activity should be executed.
