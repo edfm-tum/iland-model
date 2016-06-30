@@ -107,14 +107,12 @@ var fmengine= {
   Runs a planting activity (without the context of stand treatment programmes). This is especially useful for
   setting up initial stand conditions. The `planting` defines the activity according to the syntax of the planting activity.
 
-    ```test()
-    // global 'onInit' function is called during startup
-    // another comment
-    // another comment
-    function onInit() {
-        // run a planting activity for the stand 235 (30cm spruce trees on 90% of the pixels)
-        fmengine.runPlanting( 235, { species: "piab", fraction: 0.9, height: 0.3 });
-    }```
+
+        // global 'onInit' function is called during startup
+        function onInit() {
+          // run a planting activity for the stand 235 (30cm spruce trees on 90% of the pixels)
+          fmengine.runPlanting( 235, { species: "piab", fraction: 0.9, height: 0.3 });
+        }
 
   @method runPlanting
   @param {int} standId (integer) of the stand for which a planting activity should be executed.
