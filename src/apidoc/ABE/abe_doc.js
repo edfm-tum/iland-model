@@ -128,7 +128,7 @@ and a top-down approach (i.e, the scheduling algorithm decides when a stand shou
 /**
   onSelect allows to provide custom code to select the mixture type for a given stand.
   @example
-       onEvent: function() { if (stand.share('piab') > 50)
+       onSelect: function() { if (stand.share('piab') > 50)
                                 return 'piab';
                             return 'default'; }
   @event onSelect

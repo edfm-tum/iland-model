@@ -886,7 +886,7 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
     double height, age;
     int total = 0;
     for (int row=0;row<init.rowCount();++row) {
-        int pxcount = init.value(row, icount).toDouble() * area_factor + 0.5; // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
+        int pxcount = qRound(init.value(row, icount).toDouble() * area_factor + 0.5); // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
         const Species *species = set->species(init.value(row, ispecies).toString());
         if (!species)
             throw IException(QString("Error while loading saplings: invalid species '%1'.").arg(init.value(row, ispecies).toString()));

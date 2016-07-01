@@ -323,6 +323,9 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/iLand/globals_doc.js \
     ../apidoc/abe/abe_context_doc.js
 
+DISTFILES += \
+    ../apidoc/iLand/grid_doc.js
+
 
 
 
