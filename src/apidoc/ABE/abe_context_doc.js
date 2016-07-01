@@ -323,14 +323,14 @@ var stand = {
     relSpeciesBasalAreaOf: function(name){},
 
 /**
-  Retrieve the basal area share (0..1) of the species at position `index`.
-
-        // get the share of the dominant species:
-        log( stand.relBasalArea(0) * 100 + "%");
-
-  @method basalAreaRel
-  @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
-  @return {double} The basal area share (0..1) of the species.*/
+*  Retrieve the basal area share (0..1) of the species at position `index`.
+*
+*      // get the share of the dominant species:
+*      log( stand.relBasalArea(0) * 100 + "%");
+*
+*  @method basalAreaRel
+*  @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
+*  @return {double} The basal area share (0..1) of the species.*/
     relSpeciesBasalArea: function(index){},
 
 /**
