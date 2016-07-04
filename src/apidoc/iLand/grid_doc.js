@@ -1,11 +1,32 @@
 /**
-The `Grid` class encapsulates a floating point grid (double precision)
+The `Grid` class encapsulates a floating point grid (with double precision). The class provides high-performance functions
+for element-wise computations, but also methods for Javascript access. You can {{#crossLink "Grid/load:method"}}{{/crossLink}}
+grids from disk (and {{#crossLink "Grid/save:method"}}{{/crossLink}} to disk), or from iLand by using methods such as
+{{#crossLink "Globals/grid:method"}}Globals.grid{{/crossLink}}, or one of its disturbance submodules (e.g.,
+{{#crossLink "Barkbeetle/grid:method"}}Barkbeetle.grid{{/crossLink}}, {{#crossLink "Wind/grid:method"}}Wind.grid{{/crossLink}}). The extent and
+cell size depend on the respective functions, but usually cover the whole landscape.
+
+
+Use {{#crossLink "Grid/apply:method"}}{{/crossLink}} for updating a single grid, and {{#crossLink "Grid/combine:method"}}{{/crossLink}} for
+calculating grid values based on combining multiple grid sources.
+
+Javacsript based access to grid values is possible via {{#crossLink "Grid/value:method"}}{{/crossLink}} and {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods.
 
 Memory management
 -----------------
+Methods such as {{#crossLink "Globals/grid:method"}}Globals.grid{{/crossLink}} return a copy of the data present in iLand, and calls to
+{{#crossLink "Grid/apply:method"}}{{/crossLink}} or {{#crossLink "Grid/combine:method"}}{{/crossLink}} __alter__ the underlying data; you can use the
+{{#crossLink "Grid/copy:method"}}{{/crossLink}} method create a duplicate grid (if the underlying data should not change). Memory of grids is
+freed automatically by the Javascript engine (garbage collection) when they are no longer referenced.
 
 Examples
 --------
+    // memory management
+    var g=Globals.grid('height');
+    g.apply('height*2'); // modify 'g'
+    var h=g.copy();
+    h.apply('x*2'); // modify copy of 'g'
+
  @module iLand
  @class Grid
  */
@@ -79,6 +100,7 @@ Grid = {
     @Example
         var a = Globals.grid('height');
         var ac = a.copy();
+        ac.name = 'h2'; // change the name
       */
 
     /**
@@ -119,7 +141,7 @@ Grid = {
 
     /**
     apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
-    The function is given as a string representing an [Expression](http://iland.boku.ac.at/Expression) and is run for each cell of the grid.
+    The function is given as a string representing an [Expression](http://iland.boku.ac.at/Expression) and is evaluated for each cell of the grid.
     In the expression, the current value of the grid cell can be accessed using the {{#crossLink "Grid/name:property"}}{{/crossLink}} property.
 
     See also: {{#crossLink "Grid/copy:method"}}{{/crossLink}}, {{#crossLink "Grid/combine:method"}}{{/crossLink}}
@@ -131,14 +153,15 @@ Grid = {
         g.apply('x*x'); // error, invalid variable
         g.apply('min(height, 30'); // ok
         g.apply('if(height<=4, 0, height)'); // ok
-        var h = g.copy().apply('x^2'); // use copy() if the grid should not change (note: copies are named 'x')
+        var h = g.copy();
+        h.apply('x^2'); // use copy() if the grid should not change (note: copies are named 'x')
       */
 
     /**
 
     combine multiple grids, and set the value of the internal grid to the result of `expression` for each cell. The function expects
     an object that includes named source grids. The `expression` is an [iLand Expression](http://iland.boku.ac.at/Expression),
-    and you can refer to combined grids in `grid_objects` with the respective name of the grid. Note that the function
+    and you can refer to the grids in `grid_objects` with the respective name of the grid. Note that the function
     alters the data of the grid.
 
 
@@ -153,8 +176,8 @@ Grid = {
     @Example
         var g = Globals.grid('height'); // name of g is 'height'
         var j = Globals.grid('count');
-        var k = g.copy().apply('if(height>30,1,0)'); // note: calls may be chained,
-
+        var k = g.copy();
+        k.apply('if(height>30,1,0)');
         // update 'k' by combining g,j, and k
         k.combine('height*count * filter', { height: g, filter: k, count: j } );
       */
@@ -186,7 +209,9 @@ Grid = {
 
       */
     /**
-    set the value at position (`x`, `y`) to `value`.
+    set the value at position (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
+    {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods is much slower than using functions such as {{#crossLink "Grid/apply:method"}}{{/crossLink}}.
+
 
     See also: {{#crossLink "Grid/value:method"}}{{/crossLink}}
 
@@ -195,6 +220,19 @@ Grid = {
     @param {integer} y index in y direction (between 0 and grid.height-1)
     @param {double} value value to set
     @Example
-        // todo
+        // using javascript access functions can be 100x times slower:
+        var g = Globals.grid('height');
+        var ela=Globals.msec; // for measuring time, see also the 'msec' doc
+
+        for (var i=0;i<g.width;++i) {
+            for (var j=0;j<g.height;++j) {
+                g.setValue(i,j, g.value(i,j)*2);
+            }
+        }
+        console.log("javascript: " + (Globals.msec - ela) + "ms"); // 1650ms
+        ela = Globals.msec;
+        g.apply('height*2');
+        console.log("apply(): " + (Globals.msec - ela) + "ms"); // 17ms
+
       */
 }
