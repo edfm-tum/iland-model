@@ -135,6 +135,30 @@ See also: {{#crossLink "Globals/worldX:property"}}{{/crossLink}}
 @property worldY
 @type {integer}
 */
+    /**
+    The milliseconds since the start of the day.
+
+    @property msec
+    @type {integer}
+    @Example
+        // simple timer functions:
+        var _elapsed=-1;
+        function start_timer() { _elapsed = Globals.msec; }
+        function elapsed(thingi)
+        {
+            var elapsed=Globals.msec - _elapsed;
+            _elapsed = Globals.msec;
+            console.log("Time: " + thingi + ": " + elapsed + "ms");
+        }
+
+        // use timers:
+        start_timer();
+        // do some lengthy operation x
+        elapsed("x"); // prints time elapsed since start_timer()
+        // some other lenghty operation y
+        elapsed("y"); // print duration of 'y' in ms
+    */
+
 
 /**
 starts the output `table_name`. The table name for each output can be found on the [output](http://iland.boku.ac.at/output) wiki page.
@@ -383,4 +407,51 @@ See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 @return {Grid} a Javascript object encapsulating the {{#crossLink "Grid"}}{{/crossLink}}
 
 */
+
+
+    /**
+    Return a grid with the basal area of the given `species` (resource unit resolution, i.e. 100m).
+
+    See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
+
+    @method speciesShareGrid
+    @param {string} species species code (e.g., 'piab') of the species
+    @return {Grid} a Javascript {{#crossLink "Grid"}}{{/crossLink}}
+    */
+
+    /**
+    Return a grid (resolution of resource units) with the result of an `expression`
+    ([Expression](http://iland.boku.ac.at/Expression)) evaluated in the context of the resource unit
+    (see the wiki for a list of [available variables](http://iland.boku.ac.at/resource+unit+variables)).
+
+
+    @method resourceUnitGrid
+    @param {string} expression Expression to evaluate for each resource unit
+    @return {Grid} a Javascript {{#crossLink "Grid"}}{{/crossLink}}
+    */
+
+    /**
+    Pause model execution for `milliseconds` ms. This can be useful to slow down animations.
+
+
+    See also: {{#crossLink "Globals/repaint:method"}}{{/crossLink}}
+
+    @method wait
+    @param {integer} milliseconds time to wait in milliseconds
+    */
+
+    /**
+    This is a helper function that allows to add shortcut links to the 'Scripting' panel in the iLand Viewer user interface.
+    `shortcuts` is a object with name/value pairs, where the _value_ is the string displayed in iLand, and _name_ the
+    Javascript function call (as a string).
+
+
+    @method setUIshortcuts
+    @param {object} shortcuts Javascript object that defines named Javascript calls
+    @Example
+        Globals.setUIshortcuts({ 'kyrill()': 'run the kyrill storm',
+                         'emma_paula()': 'run the emma/paula storms' }) ;
+
+    */
+
 }
