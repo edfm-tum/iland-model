@@ -93,7 +93,7 @@ Grid = {
     //void clear();
 
     /**
-    create a copy of the current grid and return a new grid object. The `name` of the copied grid is _x_.
+    Create a copy of the current grid and return a new grid object. The `name` of the copied grid is _x_.
 
     @method copy
     @return {grid} a copy of the grid
@@ -104,12 +104,12 @@ Grid = {
       */
 
     /**
-    fill the grid with 0-values
+    Fill the grid with 0-values.
 
     @method clear
       */
     /**
-    retrieve some key parameters of the grid as a string.
+    Retrieve some key parameters of the grid as a string.
 
     @method info
     @return {string} the information string
@@ -120,7 +120,7 @@ Grid = {
       */
 
     /**
-    save to a file `file_name` as ESRI ASCII raster file.
+    Save to a file `file_name` as ESRI ASCII raster file.
 
 
     See also: {{#crossLink "Grid/load:method"}}{{/crossLink}}
@@ -130,7 +130,7 @@ Grid = {
       */
 
     /**
-    load from a file `file_name` (ESRI ASCII raster grid). The `name` property is set to the base file name (without path and extension).
+    Load from a file `file_name` (ESRI ASCII raster grid). The `name` property is set to the base file name (without path and extension).
 
     See also: {{#crossLink "Grid/save:method"}}{{/crossLink}}
 
@@ -140,7 +140,7 @@ Grid = {
       */
 
     /**
-    apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
+    Apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
     The function is given as a string representing an [Expression](http://iland.boku.ac.at/Expression) and is evaluated for each cell of the grid.
     In the expression, the current value of the grid cell can be accessed using the {{#crossLink "Grid/name:property"}}{{/crossLink}} property.
 
@@ -158,8 +158,7 @@ Grid = {
       */
 
     /**
-
-    combine multiple grids, and set the value of the internal grid to the result of `expression` for each cell. The function expects
+    Combine multiple grids, and set the value of the internal grid to the result of `expression` for each cell. The function expects
     an object that includes named source grids. The `expression` is an [iLand Expression](http://iland.boku.ac.at/Expression),
     and you can refer to the grids in `grid_objects` with the respective name of the grid. Note that the function
     alters the data of the grid.
@@ -183,7 +182,7 @@ Grid = {
       */
 
     /**
-    apply the expression `expression` on all pixels of the grid and return the sum of the values
+    Apply the expression `expression` on all pixels of the grid and return the sum of the values
 
     See also: {{#crossLink "Grid/apply:method"}}{{/crossLink}}
 
@@ -197,7 +196,7 @@ Grid = {
       */
 
     /**
-    access individual cell values of the grid at the given position. If the grid is empty, or the the
+    Access individual cell values of the grid at the given position. If the grid is empty, or the the
     given position is invalid, -1 is returned.
 
     See also: {{#crossLink "Grid/setValue:method"}}{{/crossLink}}
@@ -209,7 +208,7 @@ Grid = {
 
       */
     /**
-    set the value at position (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
+    Set the value at position (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
     {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods is much slower than using functions such as {{#crossLink "Grid/apply:method"}}{{/crossLink}}.
 
 

@@ -28,7 +28,7 @@ The provided function cover inter alia:
 
  @class Globals
  */
-globals = {
+
 /**
 The current year of the simulation.
 @property year
@@ -135,29 +135,29 @@ See also: {{#crossLink "Globals/worldX:property"}}{{/crossLink}}
 @property worldY
 @type {integer}
 */
-    /**
-    The milliseconds since the start of the day.
+/**
+The milliseconds since the start of the day.
 
-    @property msec
-    @type {integer}
-    @Example
-        // simple timer functions:
-        var _elapsed=-1;
-        function start_timer() { _elapsed = Globals.msec; }
-        function elapsed(thingi)
-        {
-            var elapsed=Globals.msec - _elapsed;
-            _elapsed = Globals.msec;
-            console.log("Time: " + thingi + ": " + elapsed + "ms");
-        }
+@property msec
+@type {integer}
+@Example
+    // simple timer functions:
+    var _elapsed=-1;
+    function start_timer() { _elapsed = Globals.msec; }
+    function elapsed(thingi)
+    {
+        var elapsed=Globals.msec - _elapsed;
+        _elapsed = Globals.msec;
+        console.log("Time: " + thingi + ": " + elapsed + "ms");
+    }
 
-        // use timers:
-        start_timer();
-        // do some lengthy operation x
-        elapsed("x"); // prints time elapsed since start_timer()
-        // some other lenghty operation y
-        elapsed("y"); // print duration of 'y' in ms
-    */
+    // use timers:
+    start_timer();
+    // do some lengthy operation x
+    elapsed("x"); // prints time elapsed since start_timer()
+    // some other lenghty operation y
+    elapsed("y"); // print duration of 'y' in ms
+*/
 
 
 /**
@@ -204,17 +204,17 @@ See also: {{#crossLink "Globals/loadModelSnapshot:method"}}{{/crossLink}}
 @return {boolean} true on succes.
 */
 
-    /**
-    loads a snapshot database (created with a previous call to {{#crossLink "Globals/saveModelSnapshot:method"}}{{/crossLink}}).
-    The model must be already created (i.e. resource units, ...);
-    exisiting trees are removed and replaced by the trees from the database.
+/**
+loads a snapshot database (created with a previous call to {{#crossLink "Globals/saveModelSnapshot:method"}}{{/crossLink}}).
+The model must be already created (i.e. resource units, ...);
+exisiting trees are removed and replaced by the trees from the database.
 
-    See also: {{#crossLink "Globals/saveModelSnapshot:method"}}{{/crossLink}}
+See also: {{#crossLink "Globals/saveModelSnapshot:method"}}{{/crossLink}}
 
-    @method loadModelSnapshot
-    @param file_name {string} filename of the input database.
-    @return {boolean} true on succes.
-    */
+@method loadModelSnapshot
+@param file_name {string} filename of the input database.
+@return {boolean} true on succes.
+*/
 
 /**
   `viewOptions` allow some control over the visualization of the landscape in the iLand GUI. The `viewOptions` is an object with the following elements:
@@ -249,83 +249,87 @@ See also: {{#crossLink "Globals/loadModelSnapshot:method"}}{{/crossLink}}
   */
 
 
-/** load the content of a text file into a string.
+/**
+Load the content of a text file into a string.
 
-    @method loadTextFile
-    @param file_name {string} filename to load
-    @return {string} the content of the file or an empty text if file does not exist/is empty.
+@method loadTextFile
+@param file_name {string} filename to load
+@return {string} the content of the file or an empty text if file does not exist/is empty.
 
-*/
-/** save the content of a string `content` to a file.
-
-    @method saveTextFile
-    @param file_name {string} filename to save to
-    @param content {string} content that should be written
-    @return {boolean} true on success.
-*/
-/** check if the file `file_name` already exists.
-
-    @method fileExists
-    @param file_name {string} file to check
-    @return {boolean} true if the file already exists
 */
 /**
-    execute a system command (e.g., for copying files). Commands are operating system dependent; For windows,
-    `cmd.exe /C` executes a command without a separate command window (see example below). Output of the executed
-    command is redirected to the iLand log (stdout, stderr).
+Save the content of a string `content` to a file.
 
-    @method systemCmd
-    @param command {string} command to execute
-    @Example
-        // helper function for windows: fix slashes and add 'cmd.exe /C'
-        function winnify(s) {
-             // replace forward with backward slashes
-             s = s.replace(/\//g, '\\');
-             s = "cmd.exe /C " + s;
-             return s;
-        }
+@method saveTextFile
+@param file_name {string} filename to save to
+@param content {string} content that should be written
+@return {boolean} true on success.
+*/
+/**
+Check if the file `file_name` already exists.
 
-        // onYearEnd: is called automtically from iLand at the end of a year
-        function onYearEnd()
-        {
-            v = Globals.setting('user.v'); // 'version' is a user defined variable in the project file
-            // create a folder for the simulation using 'v' at the end of the first simulation year
-            if (Globals.year==1)
-                Globals.systemCmd(winnify('mkdir ' + Globals.path('output/v' + v)));
-        }
+@method fileExists
+@param file_name {string} file to check
+@return {boolean} true if the file already exists
+*/
+/**
+Execute a system command (e.g., for copying files). Commands are operating system dependent; For windows,
+`cmd.exe /C` executes a command without a separate command window (see example below). Output of the executed
+command is redirected to the iLand log (stdout, stderr).
+
+@method systemCmd
+@param command {string} command to execute
+@Example
+    // helper function for windows: fix slashes and add 'cmd.exe /C'
+    function winnify(s) {
+         // replace forward with backward slashes
+         s = s.replace(/\//g, '\\');
+         s = "cmd.exe /C " + s;
+         return s;
+    }
+
+    // onYearEnd: is called automtically from iLand at the end of a year
+    function onYearEnd()
+    {
+        v = Globals.setting('user.v'); // 'version' is a user defined variable in the project file
+        // create a folder for the simulation using 'v' at the end of the first simulation year
+        if (Globals.year==1)
+            Globals.systemCmd(winnify('mkdir ' + Globals.path('output/v' + v)));
+    }
 */
 
 
 
 
 /**
-    add single trees on a specific resource unit with the 0-based index `resourceIndex`.
-    The tree list is in the string `content` and follows the single-tree syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
+Add single trees on a specific resource unit with the 0-based index `resourceIndex`.
+The tree list is in the string `content` and follows the
+single-tree syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
 
 
-    @method addSingleTrees
-    @param resourceIndex {integer} 0-based resource unit index
-    @param content {string} line (or lines) of an init-file to initialize
-    @return {integer} the number of added trees.
+@method addSingleTrees
+@param resourceIndex {integer} 0-based resource unit index
+@param content {string} line (or lines) of an init-file to initialize
+@return {integer} the number of added trees.
 */
 /**
-    add trees distribution on a specific resource unit with the 0-based index `resourceIndex`.
-    The tree list is in the string `content` and follows the distribution-tree syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
+Add trees distribution on a specific resource unit with the 0-based index `resourceIndex`.
+The tree list is in the string `content` and follows the distribution-tree syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
 
-    @method addTrees
-    @param resourceIndex {integer} 0-based resource unit index
-    @param content {string} line (or lines) of an init-file to initialize
-    @return {integer} the number of added trees.
+@method addTrees
+@param resourceIndex {integer} 0-based resource unit index
+@param content {string} line (or lines) of an init-file to initialize
+@return {integer} the number of added trees.
 */
 /**
-    add trees distribution on a specific stand described by the `standID`.
-    The stand is defined in the global stand grid. The tree list is in the string `content` and follows the distribution-tree
-    syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
+Add trees distribution on a specific stand described by the `standID`.
+The stand is defined in the global stand grid. The tree list is in the string `content` and follows the distribution-tree
+syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
 
-    @method addTreesOnMap
-    @param standID {integer} ID of the stand in the stand grid
-    @param content {string} line (or lines) of an init-file to initialize
-    @return {integer} the number of added trees.
+@method addTreesOnMap
+@param standID {integer} ID of the stand in the stand grid
+@param content {string} line (or lines) of an init-file to initialize
+@return {integer} the number of added trees.
 */
 
 
@@ -409,49 +413,49 @@ See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 */
 
 
-    /**
-    Return a grid with the basal area of the given `species` (resource unit resolution, i.e. 100m).
+/**
+Return a grid with the basal area of the given `species` (resource unit resolution, i.e. 100m).
 
-    See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
+See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 
-    @method speciesShareGrid
-    @param {string} species species code (e.g., 'piab') of the species
-    @return {Grid} a Javascript {{#crossLink "Grid"}}{{/crossLink}}
-    */
+@method speciesShareGrid
+@param {string} species species code (e.g., 'piab') of the species
+@return {Grid} a Javascript {{#crossLink "Grid"}}{{/crossLink}}
+*/
 
-    /**
-    Return a grid (resolution of resource units) with the result of an `expression`
-    ([Expression](http://iland.boku.ac.at/Expression)) evaluated in the context of the resource unit
-    (see the wiki for a list of [available variables](http://iland.boku.ac.at/resource+unit+variables)).
-
-
-    @method resourceUnitGrid
-    @param {string} expression Expression to evaluate for each resource unit
-    @return {Grid} a Javascript {{#crossLink "Grid"}}{{/crossLink}}
-    */
-
-    /**
-    Pause model execution for `milliseconds` ms. This can be useful to slow down animations.
+/**
+Return a grid (resolution of resource units) with the result of an `expression`
+([Expression](http://iland.boku.ac.at/Expression)) evaluated in the context of the resource unit
+(see the wiki for a list of [available variables](http://iland.boku.ac.at/resource+unit+variables)).
 
 
-    See also: {{#crossLink "Globals/repaint:method"}}{{/crossLink}}
+@method resourceUnitGrid
+@param {string} expression Expression to evaluate for each resource unit
+@return {Grid} a Javascript {{#crossLink "Grid"}}{{/crossLink}}
+*/
 
-    @method wait
-    @param {integer} milliseconds time to wait in milliseconds
-    */
-
-    /**
-    This is a helper function that allows to add shortcut links to the 'Scripting' panel in the iLand Viewer user interface.
-    `shortcuts` is a object with name/value pairs, where the _value_ is the string displayed in iLand, and _name_ the
-    Javascript function call (as a string).
+/**
+Pause model execution for `milliseconds` ms. This can be useful to slow down animations.
 
 
-    @method setUIshortcuts
-    @param {object} shortcuts Javascript object that defines named Javascript calls
-    @Example
-        Globals.setUIshortcuts({ 'kyrill()': 'run the kyrill storm',
-                         'emma_paula()': 'run the emma/paula storms' }) ;
+See also: {{#crossLink "Globals/repaint:method"}}{{/crossLink}}
 
-    */
+@method wait
+@param {integer} milliseconds time to wait in milliseconds
+*/
 
+/**
+This is a helper function that allows to add shortcut links to the 'Scripting' panel in the iLand Viewer user interface.
+`shortcuts` is a object with name/value pairs, where the _value_ is the string displayed in iLand, and _name_ the
+Javascript function call (as a string).
+
+
+@method setUIshortcuts
+@param {object} shortcuts Javascript object that defines named Javascript calls
+@Example
+    Globals.setUIshortcuts({ 'kyrill()': 'run the kyrill storm',
+                     'emma_paula()': 'run the emma/paula storms' }) ;
+
+*/
+Globals = {
 }
