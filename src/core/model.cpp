@@ -530,7 +530,7 @@ void Model::loadProject()
     }
     // use the standard management
     QString mgmtFile = xml.value("model.management.file");
-    if (!mgmtFile.isEmpty() && xml.valueBool("model.management.enabled")) {
+    if (xml.valueBool("model.management.enabled")) {
         mManagement = new Management();
         QString path = GlobalSettings::instance()->path(mgmtFile, "script");
         mManagement->loadScript(path);
