@@ -343,11 +343,14 @@ void ResourceUnit::production()
                     }
         //);
         (*i)->calculate(); // CALCULATE 3PG
-        if (logLevelInfo() &&  (*i)->LAIfactor()>0)
-            qDebug() << "ru" << mIndex << "species" << (*i)->species()->id() << "LAIfraction" << (*i)->LAIfactor() << "raw_gpp_m2"
-                     << (*i)->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"
-                     << productiveArea()*(*i)->prod3PG().GPPperArea()
-                     << "aging(lastyear):" << averageAging() << "f_env,yr:" << (*i)->prod3PG().fEnvYear();
+
+        // debug output related to production
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandGPP) && (*i)->LAIfactor()>0.) {
+            DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dStandGPP);
+            out << (*i)->species()->id() << index() << id();
+            out << (*i)->LAIfactor() << (*i)->prod3PG().GPPperArea() << productiveArea()*(*i)->LAIfactor()*(*i)->prod3PG().GPPperArea() << averageAging() << (*i)->prod3PG().fEnvYear() ;
+
+        }
     }
 }
 

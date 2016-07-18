@@ -654,8 +654,10 @@ void Tree::grow()
             out << mLRI * mRU->LRImodifier() << mLightResponse << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
         }
     //); // DBGMODE()
-    if (d.NPP>0.)
-        partitioning(d); // split npp to compartments and grow (diameter, height)
+    if (Globals->model()->settings().growthEnabled) {
+        if (d.NPP>0.)
+            partitioning(d); // split npp to compartments and grow (diameter, height)
+    }
 
     // mortality
 #ifdef ALT_TREE_MORTALITY

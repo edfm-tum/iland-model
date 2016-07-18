@@ -504,7 +504,7 @@ void ModelController::saveDebugOutputs()
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandNPP, ";", p + "stand_npp.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandGPP, ";", p + "stand_gpp.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");

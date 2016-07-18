@@ -74,7 +74,7 @@ public:
 
     // debugging fain grained debug outputs
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
-                        dStandNPP=8, dWaterCycle=16, dDailyResponses=32,
+                        dStandGPP=8, dWaterCycle=16, dDailyResponses=32,
                         dEstablishment=64, dSaplingGrowth=128, dCarbonCycle=256,
                         dPerformance=512}; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }

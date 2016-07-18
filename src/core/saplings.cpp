@@ -40,6 +40,9 @@ void Saplings::setup()
 void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
 {
     SaplingCell *sap_cells = ru->saplingCellArray();
+    if (!sap_cells)
+        return;
+
     SaplingCell *s = sap_cells;
 
     for (int i=0; i<cPxPerHectare; ++i, ++s) {
