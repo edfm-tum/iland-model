@@ -990,8 +990,7 @@ void Model::readPattern()
 void Model::grow()
 {
 
-    if (!settings().growthEnabled)
-        return;
+
     { DebugTimer t("growRU()");
     calculateStockedArea();
 

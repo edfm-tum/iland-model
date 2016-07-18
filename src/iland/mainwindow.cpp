@@ -1738,7 +1738,7 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "1 ... Tree NPP\n" \
                                         "2 ... Tree partition\n" \
                                         "4 ... Tree growth (dbh,h)\n" \
-                                        "8 ... Standlevel NPP\n" \
+                                        "8 ... Standlevel GPP\n" \
                                         "16...Water Cycle\n" \
                                         "32...Daily responses\n" \
                                         "64...Establishment\n" \

@@ -277,7 +277,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                                               << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
                                               << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
 
-    case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
+    case dStandGPP: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid" << "lai_factor" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
 
     case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
                                            << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
