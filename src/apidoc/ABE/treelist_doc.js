@@ -42,7 +42,6 @@ Per default, all trees (i.e. trees>4m height) that are located on the forest sta
 of the trees are loaded. `filter` can either be a probability (between 0..1) for selecting individual trees, or an Expression using tree
 variables.
 
-    trees.load(); // load all trees
     trees.load(0.2); // load (randomly selected) 20% of all trees
     trees.load("rnd(0,1)<0.2)"); // the same as above, but using an Expression
     // load a subset of trees (for which the given Expression evalulates to true):
@@ -53,22 +52,6 @@ variables.
 @return {Integer} the number of trees loaded.
 **/
 
-/**
-The `harvest()` method removes trees from iLand. When trees are harvested, the biomass is removed from the system (compare kill/cut).
-When `harvest()` is called without parameters, then all trees that are currently in the list are removed (see also `load()`). Using `filter` and `fraction` the
-selection of trees can be refined.
-
-    trees.load(); // load all trees
-    // remove 40% of trees.
-    trees.harvest("", 0.4);
-    // remove all Beech trees
-    trees.harvest("species=fasy");
-
-@method harvest
-@param {String} filter optional filter criterion (see above), no filter when omitted.
-@param {double} fraction of trees to harvest [0..1], default=1 (i.e. all trees harvested if omitted).
-@return {Integer} the number of trees harvested.
-**/
 
 /**
 When `simulate` is true, harvest operations are not actually executed, but affected trees are marked as either for harvest or killing. Calling `removeMarkedTrees()` then
@@ -78,3 +61,60 @@ Note: tree variables `markharvest`, `markcut`, `markcrop` are available for use 
 @type Boolean
 @default true
 */
+
+/**
+the ID of the currently active stand (or -1).
+@propery stand
+@type Integer
+@readonly
+*/
+
+/**
+Load all trees (living trees, >4m height) of the current `stand` into the internal list.
+
+@method loadAll
+@return {Integer} the number of loaded harvested.
+**/
+
+
+/**
+Check all trees of the stand and either kill or harvest those trees that are marked for that operation.
+
+See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}, {{#crossLink "TreeList/harvest:method"}}{{/crossLink}}
+
+@method removeMarkedTrees
+@return {Integer} the number of trees that have been removed.
+**/
+
+/**
+Kill (i.e., cut down and do not remove from the forest) the trees in the list, filtered with `filter`.
+
+See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}
+
+@method kill
+@param {String} filter A valid filter Expression.
+@return {Integer} the number of trees that have been removed.
+@Example
+    trees.loadAll();
+    trees.kill('dbh<10'); // kill all trees with a dbh<10cm
+**/
+
+
+/**
+Remove the `fraction` of all trees [0..1] for which `filter` evalulates to `true`. Return number of removed trees.
+When trees are harvested, the biomass is removed from the system (compare kill/cut).
+When `harvest()` is called without parameters, then all trees that are currently in the list are removed (see also `load()`).
+
+
+See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}, {{#crossLink "TreeList/kill:method"}}{{/crossLink}}
+
+@method harvest
+@param {string} filter A valid filter Expression.
+@param {double} fraction The fraction [0..1] of trees that should be harvested. Default value is 1.
+@return {Integer} the number of trees that have been removed.
+@Example
+    trees.loadAll();
+    trees.harvest('species=piab', 0.2); // remove 20% (selected randomly) from all spruce
+    trees.harvest('dbh>30'); // harvest all trees with dbh>30cm
+**/
+
