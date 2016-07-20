@@ -329,7 +329,8 @@ DISTFILES += \
     ../apidoc/iLand/factory_doc.js \
     ../apidoc/iLand/spatialAnalysis_doc.js \
     ../apidoc/iLand/management_doc.js \
-    ../apidoc/iLand/iLand_doc.js
+    ../apidoc/iLand/iLand_doc.js \
+    ../apidoc/ABE/abe_stand.js
 
 
 
