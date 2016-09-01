@@ -29,5 +29,12 @@ Factory = {
     @return {object} A Javascript {{#crossLink "Map"}}{{/crossLink}} object
     */
 
+    /**
+    Create an instance of a ClimateConverter (see http://iland.boku.ac.at/Object+ClimateConverter).
+
+    @method newClimateConverter
+    @return {object} A Javascript ClimateConverter object
+    */
+
 }
 
