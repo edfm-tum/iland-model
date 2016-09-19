@@ -37,6 +37,7 @@ TreeOut::TreeOut()
             << OutputColumn("y", "position of the tree, y-direction (m)", OutDouble)
             << OutputColumn("dbh", "dbh (cm) of the tree", OutDouble)
             << OutputColumn("height", "height (m) of the tree", OutDouble)
+            << OutputColumn("age", "age of the tree (years)", OutDouble)
             << OutputColumn("basalArea", "basal area of tree in m2", OutDouble)
             << OutputColumn("volume_m3", "volume of tree (m3)", OutDouble)
             << OutputColumn("leafArea_m2", "current leaf area of the tree (m2)", OutDouble)
@@ -74,7 +75,7 @@ void TreeOut::exec()
                 continue;
         }
         *this << currentYear() << t->ru()->index() << t->ru()->id() << t->species()->id();
-        *this << t->id() << t->position().x() << t->position().y() << t->dbh() << t->height() << t->basalArea() << t->volume();
+        *this << t->id() << t->position().x() << t->position().y() << t->dbh() << t->height() << t->age() << t->basalArea() << t->volume();
         *this << t->leafArea() << t->mFoliageMass << t->mWoodyMass <<  t->mFineRootMass << t->mCoarseRootMass;
         *this << t->lightResourceIndex() << t->mLightResponse << t->mStressIndex << t->mNPPReserve;
         writeRow();
@@ -96,6 +97,7 @@ TreeRemovedOut::TreeRemovedOut()
             << OutputColumn("y", "position of the tree, y-direction (m)", OutDouble)
             << OutputColumn("dbh", "dbh (cm) of the tree", OutDouble)
             << OutputColumn("height", "height (m) of the tree", OutDouble)
+            << OutputColumn("age", "age of the tree (years)", OutDouble)
             << OutputColumn("basalArea", "basal area of tree in m2", OutDouble)
             << OutputColumn("volume_m3", "volume of tree (m3)", OutDouble)
             << OutputColumn("leafArea_m2", "current leaf area of the tree (m2)", OutDouble)
@@ -122,7 +124,7 @@ void TreeRemovedOut::execRemovedTree(const Tree *t, int reason)
 
     *this << currentYear() << t->ru()->index() << t->ru()->id() << t->species()->id();
     *this << t->id()  << reason;
-    *this << t->position().x() << t->position().y() << t->dbh() << t->height() << t->basalArea() << t->volume();
+    *this << t->position().x() << t->position().y() << t->dbh() << t->height() << t->age() << t->basalArea() << t->volume();
     *this << t->leafArea() << t->mFoliageMass << t->mWoodyMass <<  t->mFineRootMass << t->mCoarseRootMass;
     *this << t->lightResourceIndex() << t->mLightResponse << t->mStressIndex << t->mNPPReserve;
     writeRow();
