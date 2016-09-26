@@ -101,6 +101,7 @@ void CarbonFlowOut::exec()
         double area_factor = ru->stockableArea() / cRUArea; //conversion factor
         npp += ru->statistics().npp() * biomassCFraction; // kg C/ha
         npp += ru->statistics().nppSaplings() * biomassCFraction; // kgC/ha
+        // Snag pools are not scaled per ha (but refer to the stockable RU), soil pools and biomass statistics (NPP, ...) are scaled.
         double to_atm = ru->snag()->fluxToAtmosphere().C / area_factor; // from snags, kg/ha
         to_atm += ru->soil()->fluxToAtmosphere().C * cRUArea/10.; // soil: t/ha -> t/m2 -> kg/ha
 

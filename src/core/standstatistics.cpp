@@ -54,6 +54,24 @@ void StandStatistics::clear()
 
 }
 
+void StandStatistics::clearOnlyTrees()
+{
+    // reset only those values that are directly accumulated from trees
+    mCount = 0;
+    mSumDbh=mSumHeight = mAverageDbh=mAverageHeight =0.;
+    mSumBasalArea = mSumVolume = mGWL = 0.;
+    mLeafAreaIndex = 0.;
+    /*mNPP = mNPPabove = 0.;
+    mNPPsaplings = 0.;
+    mCohortCount = mSaplingCount = 0;
+    mAverageSaplingAge = 0.;
+    mSumSaplingAge = 0.;*/
+    mCStem=0., mCFoliage=0., mCBranch=0., mCCoarseRoot=0., mCFineRoot=0.;
+    mNStem=0., mNFoliage=0., mNBranch=0., mNCoarseRoot=0., mNFineRoot=0.;
+    /*mCRegeneration=0., mNRegeneration=0.;*/
+
+}
+
 void StandStatistics::addBiomass(const double biomass, const double CNRatio, double *C, double *N)
 {
     *C+=biomass*biomassCFraction;

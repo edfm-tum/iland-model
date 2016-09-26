@@ -248,13 +248,14 @@ void Snag::calculateYear()
 
     // process branches: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mOtherWood[mBranchCounter];
-
     mOtherWood[mBranchCounter].clear();
     mBranchCounter= (mBranchCounter+1) % 5; // increase index, roll over to 0.
+
     // decay of branches/coarse roots
     for (int i=0;i<5;i++) {
         if (mOtherWood[i].C>0.) {
             double survive_rate = exp(- climate_factor_re * mOtherWood[i].parameter() ); // parameter: the "kyr" value...
+            mTotalToAtm.C += mOtherWood[i].C * (1. - survive_rate); // flux to atmosphere (decayed carbon)
             mOtherWood[i].C *= survive_rate;
         }
     }
@@ -545,9 +546,10 @@ void Snag::management(const double factor)
     // swd pools
     for (int i=0;i<3;i++) {
         mSWDtoSoil += mSWD[i] * factor;
+        mRefractoryFlux += mSWD[i] * factor;
         mSWD[i] *= (1. - factor);
-        mSWDtoSoil += mToSWD[i] * factor;
-        mToSWD[i] *= (1. - factor);
+        //mSWDtoSoil += mToSWD[i] * factor;
+        //mToSWD[i] *= (1. - factor);
     }
     // what to do with the branches: now move also all wood to soil (note: this is note
     // very good w.r.t the coarse roots...

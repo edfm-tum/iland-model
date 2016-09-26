@@ -708,8 +708,9 @@ void Model::beforeRun()
   (5) 3PG on stand level, tree growth. Clear stand-statistcs before they are filled by single-tree-growth. calculate water cycle (with LAIs before management)
   (6) execute Regeneration
   (7) invoke disturbance modules
-  (8) calculate statistics for the year
-  (9) write database outputs
+  (8) calculate carbon cycle
+  (9) calculate statistics for the year
+  (10) write database outputs
   */
 void Model::runYear()
 {
@@ -783,6 +784,12 @@ void Model::runYear()
 
     }
 
+    // external modules/disturbances
+    mModules->run();
+    // cleanup of tree lists if external modules removed trees.
+    cleanTreeLists(false); // do not recalculate statistics - this is done in ru->yearEnd()
+
+
     // calculate soil / snag dynamics
     if (settings().carbonCycleEnabled) {
         DebugTimer ccycle("carbon cylce");
@@ -790,12 +797,6 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tCarbonCycle+=ccycle.elapsed();
 
     }
-
-    // external modules/disturbances
-    mModules->run();
-
-    // cleanup of tree lists if external modules removed trees.
-    cleanTreeLists(false); // do not recalculate statistics - this is done in ru->yearEnd()
 
 
     DebugTimer toutput("outputs");
