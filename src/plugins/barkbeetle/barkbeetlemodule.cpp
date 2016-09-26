@@ -673,7 +673,7 @@ void BarkBeetleModule::barkbeetleKill()
                             tree->setDeathReasonBarkBeetle();
                             tree->removeDisturbance(0., 1., // 0% of the stem to soil, 100% to snag (keeps standing)
                                                     0., 1.,   // 100% of branches to snags
-                                                    0.);      // 100% of foliage to snags (will be dropped from there anyways)
+                                                    1.);      // 100% of foliage to soil
                         }
 
                     }

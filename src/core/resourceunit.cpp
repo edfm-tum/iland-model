@@ -469,8 +469,16 @@ void ResourceUnit::createStandStatistics()
     An example is after disturbances.  */
 void ResourceUnit::recreateStandStatistics(bool recalculate_stats)
 {
+    // when called after disturbances (recalculate_stats=false), we
+    // clear only the tree-specific variables in the stats (i.e. we keep NPP, and regen carbon),
+    // and then re-add all trees (since TreeGrowthData is NULL no NPP is available).
+    // The statistics are not summarised here, because this happens for all resource units
+    // in the yearEnd function of RU.
     for (int i=0;i<mRUSpecies.count();i++) {
-        mRUSpecies[i]->statistics().clear();
+        if (recalculate_stats)
+            mRUSpecies[i]->statistics().clear();
+        else
+            mRUSpecies[i]->statistics().clearOnlyTrees();
     }
     foreach(const Tree &t, mTrees) {
         resourceUnitSpecies(t.species()).statistics().add(&t, 0);

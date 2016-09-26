@@ -35,6 +35,7 @@ public:
     void add(const Tree *tree, const TreeGrowthData *tgd); ///< call for each tree within the domain
     void add(const SaplingStat *sapling); ///< call for regeneration layer of a species in resource unit
     void clear(); ///< call before trees are aggregated
+    void clearOnlyTrees(); ///< clear the statistics only for tree biomass (keep NPP, regen, ...)
     void calculate(); ///< call after all trees are processed (postprocessing)
     // getters
     double count() const { return mCount; }
