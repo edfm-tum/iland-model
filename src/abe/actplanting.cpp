@@ -132,12 +132,8 @@ bool ActPlanting::execute(FMStand *stand)
     qCDebug(abe) << stand->context() << "execute of planting activity....";
     DebugTimer time("ABE:ActPlanting:execute");
 
-    QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > sapling_list;
-    if (mRequireLoading)
-        sapling_list = ForestManagementEngine::instance()->standGrid()->saplingTreeHash(stand->id());
-
     for (int s=0;s<mItems.count();++s) {
-        mItems[s].run(stand, mRequireLoading, sapling_list);
+        mItems[s].run(stand);
     }
 
 
@@ -171,11 +167,7 @@ void ActPlanting::runSinglePlantingItem(FMStand *stand, QJSValue value)
     SPlantingItem item;
     item.setup(value);
 
-    QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > sapling_list;
-    if (item.clear)
-        sapling_list = ForestManagementEngine::instance()->standGrid()->saplingTreeHash(stand->id());
-
-    item.run(stand, item.clear, sapling_list);
+    item.run(stand);
 
 }
 
@@ -212,28 +204,26 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
     return true;
 }
 
-void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > &sapling_list)
+void ActPlanting::SPlantingItem::run(FMStand *stand)
 {
     QRectF box = ForestManagementEngine::instance()->standGrid()->boundingBox(stand->id());
     const MapGrid *sgrid = ForestManagementEngine::instance()->standGrid();
     Model *model = GlobalSettings::instance()->model();
     GridRunner<float> runner(model->grid(), box);
     if (!grouped) {
+        // distribute saplings randomly.
+        // this adds saplings to SaplingCell (only if enough slots are available)
         while (runner.next()) {
-            if (sgrid->LIFgridValue(runner.currentIndex()) != stand->id())
+            if (sgrid->standIDFromLIFCoord(runner.currentIndex()) != stand->id())
                 continue;
             //
             if (drandom() < fraction) {
                 ResourceUnit *ru = model->ru(runner.currentCoord());
-                ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
-                qDebug() << "ActPlanting: not implemented";
-//                int t=rus.addSapling(runner.currentIndex(), height, age);
-//                if (require_loading)
-//                    sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
+                ru->saplingCell(runner.currentIndex())->addSapling(height, age, species->index());
             }
         }
     } else {
-
+        // grouped saplings
         const QString &pp = planting_patterns[group_type].first;
         int n = planting_patterns[group_type].second;
 
@@ -242,26 +232,19 @@ void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMult
             runner.reset();
             while (runner.next()) {
                 QPoint qp = runner.currentIndex();
-                if (sgrid->LIFgridValue(qp) != stand->id())
+                if (sgrid->standIDFromLIFCoord(qp) != stand->id())
                     continue;
+                // check location in the pre-defined planting patterns
                 int idx = (qp.x()+offset)%n + n*((qp.y()+offset)%n);
                 if (pp[idx]=='1') {
                     ResourceUnit *ru = model->ru(runner.currentCoord());
-                    ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
+                    SaplingCell *sc = ru->saplingCell(qp);
 
                     if (clear) {
-                        // clear all sapling trees
-                        QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(qp);
-                        while (i != sapling_list.end() && i.key() == qp) {
-                            // removed saplings: i.value().first->changeSapling().clearSapling(i.value().second, false);
-                            ++i;
-                        }
-                        sapling_list.remove(qp);
+                        // clear all sapling trees on the cell
+                        model->saplings()->clearSaplings(sc,ru,true);
                     }
-                    // add sapling: removed!!! TODO
-//                    int t = rus.addSapling(runner.currentIndex(), height);
-//                    if (require_loading)
-//                        sapling_list.insert(runner.currentIndex(), QPair<ResourceUnitSpecies*, int>(&rus, t));
+                    sc->addSapling(height,age,species->index());
                 }
             }
         } else {
@@ -289,24 +272,16 @@ void ActPlanting::SPlantingItem::run(FMStand *stand, bool require_loading, QMult
                 for (int y=0;y<n;++y) {
                     for (int x=0;x<n;++x) {
                         po=p + QPoint(x,y);
-                        if (sgrid->LIFgridValue(po) != stand->id())
+                        if (sgrid->standIDFromLIFCoord(po) != stand->id())
                             continue;
                         ResourceUnit *ru = model->ru(model->grid()->cellCenterPoint(po));
-                        ResourceUnitSpecies &rus =  ru->resourceUnitSpecies(species);
+                        SaplingCell *sc = ru->saplingCell(po);
 
                         if (clear) {
                             // clear all sapling trees
-                            QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> >::const_iterator i = sapling_list.find(po);
-                            while (i != sapling_list.end() && i.key() == po) {
-// removed saplings::                                i.value().first->changeSapling().clearSapling(i.value().second, false);
-                                ++i;
-                            }
-                            sapling_list.remove(po);
+                            model->saplings()->clearSaplings(sc,ru,true);
                         }
-                        // add sapling: removed: TODO!!
-//                        int t = rus.addSapling(po,height);
-//                        if (require_loading)
-//                            sapling_list.insert(po, QPair<ResourceUnitSpecies*, int>(&rus, t));
+                        sc->addSapling(height,age,species->index());
                     }
                 }
                 if (!do_random) {

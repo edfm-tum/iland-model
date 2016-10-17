@@ -80,7 +80,6 @@ struct SaplingCell {
                             if (saplings[i].is_occupied() && saplings[i].age<2)
                                 return true;
                         return false;
-
     }
     /// return the sapling tree of the requested species, or 0
     SaplingTree *sapling(int species_index) {

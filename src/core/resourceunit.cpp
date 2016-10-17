@@ -137,6 +137,17 @@ void ResourceUnit::setBoundingBox(const QRectF &bb)
     mCornerOffset = GlobalSettings::instance()->model()->grid()->indexAt(bb.topLeft());
 }
 
+/// return the sapling cell at given LIF-coordinates
+SaplingCell *ResourceUnit::saplingCell(const QPoint &lifCoords) const
+{
+    // LIF-Coordinates are global, we here need (RU-)local coordinates
+    int ix = lifCoords.x() % cPxPerRU;
+    int iy = lifCoords.y() % cPxPerRU;
+    int i = iy*cPxPerRU+ix;
+    Q_ASSERT(i>=0 && i<cPxPerHectare);
+    return &mSaplings[i];
+}
+
 /// set species and setup the species-per-RU-data
 void ResourceUnit::setSpeciesSet(SpeciesSet *set)
 {

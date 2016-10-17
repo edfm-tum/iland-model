@@ -55,7 +55,7 @@ private:
         int offset; ///< offset (in LIF-pixels) for the pattern algorithm
         int spacing;  ///< distance between two applications of a pattern
         bool setup(QJSValue value);
-        void run(FMStand *stand, bool require_loading, QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > &sapling_list);
+        void run(FMStand *stand);
     };
     QVector<SPlantingItem> mItems;
     bool mRequireLoading;
