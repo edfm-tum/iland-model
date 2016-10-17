@@ -229,7 +229,7 @@ QList<Tree *> MapGrid::trees(const int id) const
     QList<ResourceUnit*> resource_units = resourceUnits(id);
     foreach(ResourceUnit *ru, resource_units) {
         foreach(const Tree &tree, ru->constTrees())
-            if (LIFgridValue(tree.positionIndex()) == id && !tree.isDead()) {
+            if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
                 tree_list.append( & const_cast<Tree&>(tree) );
             }
     }
@@ -255,7 +255,7 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
 
     foreach(ResourceUnit *ru, resource_units) {
         foreach(const Tree &tree, ru->constTrees())
-            if (LIFgridValue(tree.positionIndex()) == id && !tree.isDead()) {
+            if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
                 Tree *t =  & const_cast<Tree&>(tree);
                 tw.setTree(t);
                 if (expression) {
@@ -317,23 +317,6 @@ QList<int> MapGrid::gridIndices(const int id) const
 
 //}
 
-/// retrieve a *Hash* of sapling positions / saplings.
-QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > MapGrid::saplingTreeHash(const int id) const
-{
-    throw IException("saplingTreeHash not implemented!!!!");
-    QHash<QPoint, QPair<ResourceUnitSpecies *, int> > result;
-//    QList<ResourceUnit*> resource_units = resourceUnits(id);
-//    foreach(ResourceUnit *ru, resource_units) {
-//        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
-//            for (int i=0;i<rus->sapling().saplings().count();++i) {
-//                if (LIFgridValue( rus->sapling().saplings()[i].coords() ) == id)
-//                    result.insertMulti(rus->sapling().saplings()[i].coords(), QPair<ResourceUnitSpecies *, int>(rus, i));
-//            }
-//        }
-//    }
-//    qDebug() << "loaded" << result.count() << "sapling trees to a Hash.";
-    return result;
-}
 
 /// retrieve a list of all stands that are neighbors of the stand with ID "index".
 QList<int> MapGrid::neighborsOf(const int index) const

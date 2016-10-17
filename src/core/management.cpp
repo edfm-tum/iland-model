@@ -426,16 +426,16 @@ void Management::killSaplings(MapGridWrapper *wrap, int key)
     //    return;
     //}
     //loadFromMap(wrap->map(), key);
-    // retrieve all sapling trees on the stand:
-//    QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > list = wrap->map()->saplingTrees(key);
-//    // for now, just kill em all...
-//    for (QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> >::iterator it = list.begin(); it!=list.end(); ++it) {
-//        // (*it).second->pixel = 0;
-//        (*it).first->changeSapling().clearSapling( *(*it).second, false); // kill and move biomass to soil
-//    }
-     throw IException("Management::killSaplings not implemented!");
-
-    // the storage for unused/invalid saplingtrees is released lazily (once a year, after growth)
+    QRectF box = wrap->map()->boundingBox(key);
+    GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), box);
+    ResourceUnit *ru;
+    while (runner.next()) {
+        if (wrap->map()->standIDFromLIFCoord(runner.currentIndex()) == key) {
+            SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(),true, &ru);
+            if (sc)
+                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,true);
+        }
+    }
 }
 
 /// specify removal fractions

@@ -62,17 +62,14 @@ public:
     static void freeLocksForStand(const int id);
     /// return a list of grid-indices of a given stand-id
     QList<int> gridIndices(const int id) const;
-    /// get a list of sapling trees on a given stand.
-    //QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > saplingTrees(const int id) const;
-
-    QMultiHash<QPoint, QPair<ResourceUnitSpecies *, int> > saplingTreeHash(const int id) const;
     /// extract a list of neighborhood relationships between all the polygons of the grid
     const QMultiHash<int, int> neighborList() const { return mNeighborList; }
     void updateNeighborList(); ///< scan the map and fill the mNeighborList
     QList<int> neighborsOf(const int index) const;
     /// return true, if the point 'lif_grid_coords' (x/y integer key within the LIF-Grid)
     inline bool hasValue(const int id, const QPoint &lif_grid_coords) const { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight) == id; }
-    inline int LIFgridValue(const QPoint &lif_grid_coords) const  { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight); }
+    /// return the stand-ID at the coordinates *from* the LIF-Grid (i.e., 2m grid).
+    inline int standIDFromLIFCoord(const QPoint &lif_grid_coords) const  { return mGrid.constValueAtIndex(lif_grid_coords.x()/cPxPerHeight, lif_grid_coords.y()/cPxPerHeight); }
 
 private:
     QString mName; ///< file name of the grid

@@ -189,8 +189,11 @@ void StandLoader::processInit()
             if (logLevelInfo()) qDebug() << "new probabilty density function:" << density_func;
         }
 
-        if (mStandInitItems.isEmpty())
-            throw IException("StandLoader::processInit: 'mode' is 'standgrid' but the init file is either empty or contains no 'stand_id'-column.");
+        if (mStandInitItems.isEmpty()) {
+            qDebug() << "Initialize trees ('standgrid'-mode): no items to process (empty landscape).";
+            return;
+            //throw IException("StandLoader::processInit: 'mode' is 'standgrid' but the init file is either empty or contains no 'stand_id'-column.");
+        }
         QHash<int, QVector<InitFileItem> >::const_iterator it = mStandInitItems.constBegin();
         while (it!=mStandInitItems.constEnd()) {
             mInitItems = it.value(); // copy the items...
@@ -898,7 +901,6 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
         while (hits < pxcount) {
            int rnd_index = irandom(0, indices.count());
            QPoint offset=stand_grid->grid().indexOf(indices[rnd_index]);
-           ResourceUnit *ru = GlobalSettings::instance()->model()->ru(stand_grid->grid().cellCenterPoint(offset));
            //
            offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
            int in_p = irandom(0, cPxPerHeight*cPxPerHeight); // index of lif-pixel
