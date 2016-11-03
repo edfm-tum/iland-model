@@ -436,7 +436,8 @@ double SeedDispersal::setupLDD()
 
         mLDDDensity.push_back(n_px);
     }
-    qDebug() << "Setup LDD for" << species()->name() << ", using probability: "<< mLDDSeedlings<< ": Distances:" << mLDDDistance << ", seed pixels:" << mLDDDensity << "covered prob:" << ldd_sum;
+    if (logLevelInfo())
+        qDebug() << "Setup LDD for" << species()->name() << ", using probability: "<< mLDDSeedlings<< ": Distances:" << mLDDDistance << ", seed pixels:" << mLDDDensity << "covered prob:" << ldd_sum;
 
     return ldd_sum;
 }

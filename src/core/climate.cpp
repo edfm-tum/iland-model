@@ -141,9 +141,9 @@ void Climate::setup()
         }
 
         if (mRandomYearList.count()>0)
-            qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << " of years. ";
+            qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << "of years. climate:" << name();
         else
-            qDebug() << "Climate: Random sampling enabled (without a fixed list).";
+            qDebug() << "Climate: Random sampling enabled (without a fixed list). climate:" << name();
     }
     mTemperatureShift = xml.valueDouble("temperatureShift", 0.);
     mPrecipitationShift = xml.valueDouble("precipitationShift", 1.);

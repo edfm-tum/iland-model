@@ -88,7 +88,7 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 
 DEFINES += ILAND_GUI
 # enable/disble DBGMODE messages
-# DEFINES += NO_DEBUG_MSGS
+DEFINES += NO_DEBUG_MSGS
 
 # to enable debug symbols in release code
 # debug information in release-mode executable

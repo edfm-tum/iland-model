@@ -121,7 +121,7 @@ void Management::cutAndDrop()
 {
     //int c = mTrees.count();
     for (int i=0;i<mTrees.count();i++) {
-        mTrees[i].first->setDeathCutdown(); // set flat that tree is cut down
+        mTrees[i].first->setDeathCutdown(); // set flag that tree is cut down
         mTrees[i].first->die();
     }
     mTrees.clear();

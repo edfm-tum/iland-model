@@ -111,9 +111,6 @@ void ConsoleShell::run()
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
         qDebug() << "**************************************************";
-        qDebug() << "started at: " << QDateTime::currentDateTime().toString("hh:mm:ss");
-        qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
-        qDebug() << "**************************************************";
 
         qWarning() << "*** creating model...";
         qWarning() << "**************************************************";

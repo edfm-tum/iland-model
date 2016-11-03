@@ -121,8 +121,8 @@ Model::Model()
     initialize();
     GlobalSettings::instance()->setModel(this);
     GlobalSettings::instance()->resetScriptEngine(); // clear the script
-    QString dbg="running in release mode.";
-    DBGMODE( dbg="running in debug mode."; );
+    QString dbg="extended debug checks disabled.";
+    DBGMODE( dbg="extended debug checks enabled."; );
     qDebug() << dbg;
 }
 

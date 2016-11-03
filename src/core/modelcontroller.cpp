@@ -144,6 +144,12 @@ void ModelController::create()
     if (!canCreate())
         return;
     emit bufferLogs(true);
+    qDebug() << "**************************************************";
+    qDebug() << "project-file:" << mInitFile;
+    qDebug() << "started at: " << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
+    qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
+    qDebug() << "**************************************************";
+
 
     try {
         mHasError = false;
