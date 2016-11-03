@@ -1035,7 +1035,6 @@ void Tree::altMortality(TreeGrowthData &d)
 
 void Tree::notifyTreeRemoved(TreeRemovalType reason)
 {
-    // add the volume of the current tree to the height grid
     // this information is used to track the removed volume for stands based on grids (and for salvaging operations)
     ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
     if (abe)

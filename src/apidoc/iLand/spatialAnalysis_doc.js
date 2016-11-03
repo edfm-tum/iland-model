@@ -15,7 +15,7 @@ Example
 
 
 /**
-Retrieve the rumple index for the full landscape (i.e., one value). The ca
+Retrieve the rumple index for the full landscape (i.e., one value).
 
 See also: {{#crossLink "SpatialAnalysis/saveRumpleGrid:method"}}{{/crossLink}}
 
