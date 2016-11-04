@@ -120,6 +120,7 @@ void ResourceUnit::setup()
 
     // setup variables
     mUnitVariables.nitrogenAvailable = GlobalSettings::instance()->settings().valueDouble("model.site.availableNitrogen", 40);
+    mUnitVariables.isWaterlogged = GlobalSettings::instance()->settings().valueBool("model.site.isWaterlogged", false);
 
     // if dynamic coupling of soil nitrogen is enabled, a starting value for available N is calculated
     if (mSoil && Model::settings().useDynamicAvailableNitrogen && Model::settings().carbonCycleEnabled) {

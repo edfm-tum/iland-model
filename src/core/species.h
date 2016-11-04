@@ -149,6 +149,8 @@ public:
     double fecunditySerotiny() const { return mSerotinyFecundity; }
     /// returns true of a tree with given age/height is serotinous (i.e. seed release after fire)
     bool isTreeSerotinous(const int age) const;
+    /// waterlogging class: 1: not tolerant, 5: very tolerant
+    int waterloggingClass() const { return mWaterloggingClass; }
 
     const EstablishmentParameters &establishmentParameters() const { return mEstablishmentParams; }
     const SaplingGrowthParameters &saplingGrowthParameters() const { return mSaplingGrowthParams; }
@@ -210,6 +212,7 @@ private:
     double mPsiMin; ///< minimum water potential (MPa), i.e. wilting point (is below zero!)
     // water
     double mMaxCanopyConductance; ///< maximum canopy conductance for transpiration (m/s)
+    int mWaterloggingClass; ///< sensitivty of a species to waterlogging (1..5, 1: not tolerant, 5: very tolerant)
     int mPhenologyClass;
     double mLightResponseClass; ///< light response class (1..5) (1=shade intolerant)
     // regeneration

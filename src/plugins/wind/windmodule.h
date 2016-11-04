@@ -80,12 +80,13 @@ private:
   */
 struct WindSpeciesParameters
 {
-    WindSpeciesParameters():  crown_area_factor(0.5), crown_length(0.5), Creg(111), MOR(30.6), wet_biomass_factor(1.86) {}
+    WindSpeciesParameters():  crown_area_factor(0.5), crown_length(0.5), Creg(111), MOR(30.6), wet_biomass_factor(1.86), Creg_waterlogging(111) {}
     double crown_area_factor; // empirical factor related to the crown shape (fraction of crown shape compared to rectangle)
     double crown_length; // crown length of the tree (fraction of tree height)
     double Creg; // Nm/kg, critical turning coefficient from tree pulling
     double MOR; // MPa, modulus of rupture
     double wet_biomass_factor; // conversion factor between dry and wet biomass (wet = dry*factor)
+    double Creg_waterlogging; // CReg for waterlogged soils
 };
 
 /** @class WindModule

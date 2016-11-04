@@ -218,6 +218,9 @@ void WindModule::loadSpeciesParameter(const QString &table_name)
     int iCrownLength = query.record().indexOf("crownLength");
     int iMOR = query.record().indexOf("MOR");
     int iWet = query.record().indexOf("wetBiomassFactor");
+    int iCregWaterlogging = query.record().indexOf("CregWaterlogging");
+    if (iCregWaterlogging==-1)
+        qDebug()<< "Warning: CregWaterlogging not in wind table... using Creg-values";
     if (iID==-1 || iCreg==-1 || iCrownArea==-1 || iCrownLength==-1 || iMOR==-1 || iWet==-1) {
         throw IException(QString("Error in wind parameter table '%1'. A required column was not found.").arg(table_name));
     }
@@ -228,6 +231,7 @@ void WindModule::loadSpeciesParameter(const QString &table_name)
         if (s) {
             WindSpeciesParameters &p = mSpeciesParameters[s];
             p.Creg = query.value(iCreg).toDouble();
+            p.Creg_waterlogging = iCregWaterlogging!=-1 ? query.value(iCregWaterlogging).toDouble() : p.Creg;
             p.crown_area_factor = query.value(iCrownArea).toDouble();
             p.crown_length = query.value(iCrownLength).toDouble();
             p.MOR = query.value(iMOR).toDouble();
@@ -894,7 +898,11 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     // that the maximum turning moment at the edge is about 5 times as high as "well inside" the forest.
     const double f_edge = mFactorEdge;
 
-    rCWS_uproot = sqrt((params.Creg*stem_mass) / (tc*f_gap*f_edge)); // critical windspeed for uprooting
+    double creg = params.Creg;
+    if (tree->ru()->resouceUnitVariables().isWaterlogged)
+        creg = params.Creg_waterlogging;
+
+    rCWS_uproot = sqrt((creg*stem_mass) / (tc*f_gap*f_edge)); // critical windspeed for uprooting
     rCWS_break = sqrt(params.MOR*pow(tree->dbh(),3)*f_knot*M_PI / (32.*tc*f_gap*f_edge)); // critical windspeed for breakage
 
     // debug info

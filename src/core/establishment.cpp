@@ -212,8 +212,10 @@ void Establishment::calculateAbioticEnvironment()
             frost_effect = pow(p.frost_tolerance, sqrt(double(mTACA_frostAfterBuds)));
         // negative effect due to water limitation on establishment [1: no effect]
         mWaterLimitation = calculateWaterLimitation(pheno.vegetationPeriodStart(), pheno.vegetationPeriodLength());
+        // waterlogging, reduces probability: 5 very tolerant, 1: intolerant
+        double p_waterlogging = (mRUS->species()->waterloggingClass()- 1)/4. ; // transform to 0..1
         // combine drought and frost effect multiplicatively
-        mPAbiotic = frost_effect * mWaterLimitation;
+        mPAbiotic = frost_effect * mWaterLimitation * p_waterlogging;
     } else {
         mPAbiotic = 0.; // if any of the requirements is not met
     }
