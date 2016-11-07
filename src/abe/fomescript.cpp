@@ -215,6 +215,24 @@ bool FomeScript::addManagement(QJSValue program, QString name)
     }
 }
 
+bool FomeScript::updateManagement(QJSValue program, QString name)
+{
+    try {
+        FMSTP *stp = ForestManagementEngine::instance()->stp(name);
+        if (!stp) {
+            qCWarning(abe) << "updateManagement: STP" << name << "not found. No program updated.";
+            return false;
+        }
+        stp->setup(program, name);
+        return true;
+    } catch (const IException &e) {
+        qCWarning(abe) << e.message();
+        ForestManagementEngine::instance()->abortExecution(QString("Error in updating management '%2':\n%1").arg(e.message(), name));
+        return false;
+    }
+
+}
+
 bool FomeScript::addAgentType(QJSValue program, QString name)
 {
     try {
