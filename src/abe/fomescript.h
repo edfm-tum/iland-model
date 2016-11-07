@@ -87,6 +87,9 @@ public slots:
     void abort(QJSValue message);
     /// adds a management program (STP) that is provided as the Javascript object 'program'. 'name' is used internally.
     bool addManagement(QJSValue program, QString name);
+    /// set the STP with the name 'name' to the (new) 'program'. This reloads the STP definition (and all activities).
+    /// if 'name' is not present, nothing happens.
+    bool updateManagement(QJSValue program, QString name);
     /// add an agent definition (Javascript). 'name' is used internally. Returns true on success.
     bool addAgentType(QJSValue program, QString name);
     /// create an agent of type 'agent_type' (the name of an agent type) and give the name 'agent_name'. 'agent_name' needs to be unique.

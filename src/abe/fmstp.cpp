@@ -66,6 +66,8 @@ bool activityScheduledEarlier(const Activity *a, const Activity *b)
 
 void FMSTP::setup(QJSValue &js_value, const QString name)
 {
+    clear();
+
     if(!name.isEmpty())
         mName = name;
 
@@ -208,6 +210,12 @@ void FMSTP::clear()
 {
     qDeleteAll(mActivities);
     mActivities.clear();
+    mEvents.clear();
+    mActivityStand.clear();
+    mActivityNames.clear();
+    mSalvage = 0;
+    mOptions=QJSValue(); // clear
+    mName.clear();
 }
 
 QJSValue FMSTP::valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value, const QString &errorMessage)
