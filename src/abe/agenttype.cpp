@@ -65,6 +65,15 @@ void AgentType::setupSTP(QJSValue agent_code, const QString agent_name)
 
 }
 
+void AgentType::addSTP(QString stp_name)
+{
+    FMSTP *stp = ForestManagementEngine::instance()->stp(stp_name);
+    if (!stp)
+       throw IException(QString("AgentType::addSTP: definition of agent '%1': the STP  '%2' is not available.").arg(mName).arg(stp_name));
+    mSTP[stp_name] = stp;
+
+}
+
 
 Agent *AgentType::createAgent(QString agent_name)
 {

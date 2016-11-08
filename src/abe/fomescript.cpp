@@ -233,6 +233,23 @@ bool FomeScript::updateManagement(QJSValue program, QString name)
 
 }
 
+bool FomeScript::addManagementToAgentType(QString name, QString agentname)
+{
+    FMSTP *stp = ForestManagementEngine::instance()->stp(name);
+    if (!stp) {
+        qCWarning(abe) << "addManagementToAgentType: STP" << name << "not found!";
+        return false;
+    }
+    AgentType *at = ForestManagementEngine::instance()->agentType(agentname);
+    if (!at) {
+        qCWarning(abe) << "addManagementToAgentType: agenttype" << agentname << "not found!";
+        return false;
+    }
+    at->addSTP(name);
+
+
+}
+
 bool FomeScript::addAgentType(QJSValue program, QString name)
 {
     try {
@@ -423,6 +440,13 @@ void StandObj::setAbsoluteAge(double arg)
     if (!mStand) {
         throwError("set absolute age"); return; }
     mStand->setAbsoluteAge(arg);
+}
+
+void StandObj::reset()
+{
+    if (!mStand) {
+        throwError("reset"); return; }
+    mStand->initialize();
 }
 
 bool StandObj::trace() const

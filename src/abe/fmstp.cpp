@@ -44,6 +44,7 @@ FMSTP::FMSTP()
     mRotationLength[0] = 90.; // sensible defaults
     mRotationLength[1] = 100.;
     mRotationLength[2] = 110.;
+    mOptions=QJSValue(0);
 }
 
 FMSTP::~FMSTP()
@@ -214,7 +215,7 @@ void FMSTP::clear()
     mActivityStand.clear();
     mActivityNames.clear();
     mSalvage = 0;
-    mOptions=QJSValue(); // clear
+    mOptions=QJSValue(0); // clear
     mName.clear();
 }
 

@@ -43,6 +43,7 @@ public:
     bool flat() const { return mFlat; } ///< simple list, not multiple columns
     int rowCount() const { return mRowCount; } ///< number or rows (excl. captions), or -1.
     int colCount() const { return mColCount; } ///< number of columns, or -1
+    bool isEmpty() const { return mIsEmpty; } /// returns true when no valid file has been loaded (returns false when a file with 0 rows is loaded)
     QStringList captions() const { return mCaptions; } ///< retrieve (a copy) of column headers
     QStringList column(const int col) const; ///< retrieve a string list of a given row
     QVariantList values(const int row) const; ///< get a list of the values in row "row"
@@ -67,6 +68,7 @@ public slots:
 
 private:
     void clear();
+    bool mIsEmpty;
     bool mHasCaptions;
     bool mFixedWidth;
     bool mFlat;

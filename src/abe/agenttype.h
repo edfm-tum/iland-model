@@ -76,6 +76,8 @@ public:
     const QString &name() const {return mName; }
     /// setup the definition of STPs for the agent
     void setupSTP(QJSValue agent_code, const QString agent_name);
+    /// add a STP to the list of available STPs for the agent
+    void addSTP(QString stp_name);
     /// create an agent of the agent type
     Agent *createAgent(QString agent_name=QString());
 

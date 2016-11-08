@@ -55,6 +55,7 @@ void CSVFile::addToScriptEngine(QJSEngine &engine)
 
 CSVFile::CSVFile(QObject *)
 {
+    mIsEmpty = true;
     mHasCaptions = true;
     mFlat = false;
     mFixedWidth=false;
@@ -66,6 +67,8 @@ void CSVFile::clear()
     mColCount = mRowCount = -1;
     mCaptions.clear();
     mRows.clear();
+    mIsEmpty = true;
+
 }
 
 bool CSVFile::loadFromString(const QString &content)
@@ -80,6 +83,7 @@ bool CSVFile::loadFromString(const QString &content)
     if (mRows.count()==0)
         return false;
 
+    mIsEmpty = false;
     // trimming of whitespaces is a problem
     // when having e.g. tabs as delimiters...
 //    if (!mFixedWidth) {
@@ -137,6 +141,7 @@ bool CSVFile::loadFile(const QString &fileName)
     QString content = Helper::loadTextFile(fileName);
     if (content.isEmpty()) {
         qDebug() << "CSVFile::loadFile" << fileName << "does not exist or is empty.";
+        mIsEmpty = true;
         return false;
     }
     return loadFromString(content);
