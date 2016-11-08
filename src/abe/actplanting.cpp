@@ -94,6 +94,9 @@ ActPlanting::ActPlanting(FMSTP *parent): Activity(parent)
 
 void ActPlanting::setup(QJSValue value)
 {
+    // check if regeneration is enabled
+    if (GlobalSettings::instance()->model()->settings().regenerationEnabled == false)
+        throw IException("Cannot set up planting acitivities when iLand regeneration module is disabled.");
     Activity::setup(value); // setup base events
 
     QJSValue items = FMSTP::valueFromJs(value, "items");

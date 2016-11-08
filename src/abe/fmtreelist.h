@@ -32,6 +32,7 @@ class FMTreeList : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int stand READ standId) ///< return stand, -1 if not set
+    Q_PROPERTY(int count READ count) ///< return the number of trees that are currently loaded
     Q_PROPERTY(bool simulate READ simulate WRITE setSimulate) ///< if 'simulate' is true, trees are only marked for removal
 public:
 
@@ -42,6 +43,7 @@ public:
     void setStand(FMStand *stand);
     bool simulate() const {return mOnlySimulate; }
     void setSimulate(bool do_simulate) {mOnlySimulate = do_simulate; }
+    int count() const { return mTrees.count(); }
 
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }

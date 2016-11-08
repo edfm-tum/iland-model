@@ -315,7 +315,7 @@ void ForestManagementEngine::setup()
     QString data_file_name = GlobalSettings::instance()->path(xml.value("model.management.abe.agentDataFile"));
     qCDebug(abeSetup) << "loading ABE agentDataFile" << data_file_name << "...";
     CSVFile data_file(data_file_name);
-    if (data_file.rowCount()==0)
+    if (data_file.isEmpty())
         throw IException(QString("Stand-Initialization: the standDataFile file %1 is empty or missing!").arg(data_file_name));
     int ikey = data_file.columnIndex("id");
     int iunit = data_file.columnIndex("unit");

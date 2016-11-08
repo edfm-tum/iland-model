@@ -70,6 +70,13 @@ the ID of the currently active stand (or -1).
 */
 
 /**
+the number of trees that are currently loaded in the list.
+@propery count
+@type Integer
+@readonly
+*/
+
+/**
 Load all trees (living trees, >4m height) of the current `stand` into the internal list.
 
 @method loadAll
