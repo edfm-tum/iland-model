@@ -1,3 +1,4 @@
+# iLand project file for the wind module. See iland.boku.ac.at
 QT += xml
 QT += qml
 QT += sql

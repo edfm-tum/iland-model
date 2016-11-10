@@ -1,5 +1,5 @@
 # -------------------------------------------------
-# Project created by QtCreator 2009-02-10T13:47:01
+# iLand project file (GUI version). See iland.boku.ac.at
 # -------------------------------------------------
 QT += xml
 QT += qml

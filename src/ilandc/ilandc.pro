@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2011-10-25T12:33:27
+# iLand console version project file. See iland.boku.ac.at
 #
 #-------------------------------------------------
 
