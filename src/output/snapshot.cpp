@@ -31,6 +31,7 @@
 #include "expressionwrapper.h"
 #include "helper.h"
 #include "gisgrid.h"
+#include "mapgrid.h"
 
 #include <QString>
 #include <QtSql>
@@ -68,6 +69,15 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         qDebug() << "Snapshot - tables created. Database" << file_name;
     }
     return true;
+}
+
+bool Snapshot::openStandDatabase(const QString &file_name, bool read)
+{
+    if (!GlobalSettings::instance()->setupDatabaseConnection("snapshotstand", file_name, read)) {
+        throw IException("Snapshot:createDatabase: database could not be created / opened");
+    }
+    return true;
+
 }
 
 bool Snapshot::createSnapshot(const QString &file_name)
@@ -169,6 +179,188 @@ bool Snapshot::loadSnapshot(const QString &file_name)
 
     qDebug() << "created stand statistics...";
     qDebug() << "loading of snapshot completed.";
+
+    return true;
+}
+
+bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, const QString &file_name)
+{
+    // Check database
+    QSqlDatabase db=QSqlDatabase::database("snapshotstand");
+    if (!db.isOpen()) {
+        openStandDatabase(GlobalSettings::instance()->path(file_name), false);
+        db=QSqlDatabase::database("snapshotstand");
+        // check if tree/sapling tables are already present
+        if (!db.tables().contains("trees_stand") || !db.tables().contains("saplings_stand")) {
+            // create tables
+            QSqlQuery q(db);
+            // trees
+            q.exec("drop table trees_stand");
+            q.exec("create table trees_stand (standID integer, ID integer, posX integer, posY integer, species text,  age integer, height real, dbh real, leafArea real, opacity real, foliageMass real, woodyMass real, fineRootMass real, coarseRootMass real, NPPReserve real, stressIndex real)");
+            // saplings/regeneration
+            q.exec("drop table saplings_stand");
+            q.exec("create table saplings_stand (standID integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
+
+        }
+    }
+    // save trees
+    QSqlQuery q(db);
+    q.exec(QString("delete from trees_stand where standID=%1").arg(stand_id));
+
+    if (!q.prepare(QString("insert into trees_stand (standID, ID, posX, posY, species,  age, height, dbh, leafArea, opacity, foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex) " \
+                      "values (:standid, :id, :x, :y, :spec, :age, :h, :d, :la, :opa, :mfol, :mwood, :mfr, :mcr, :npp, :si)")))
+        throw IException(QString("Snapshot::saveTrees: prepare:") + q.lastError().text());
+
+    db.transaction();
+    QPointF offset = GisGrid::modelToWorld(QPointF(0.,0.));
+    QList<Tree*> tree_list = stand_grid->trees(stand_id);
+    QList<Tree*>::const_iterator it;
+    for (it = tree_list.constBegin(); it!= tree_list.constEnd(); ++it)
+    {
+        Tree *t = *it;
+        q.addBindValue(stand_id);
+        q.addBindValue(t->id());
+        q.addBindValue(t->position().x() + offset.x());
+        q.addBindValue(t->position().y() + offset.y());
+        q.addBindValue(t->species()->id());
+        q.addBindValue(t->age());
+        q.addBindValue(t->height());
+        q.addBindValue(t->dbh());
+        q.addBindValue(t->leafArea());
+        q.addBindValue(t->mOpacity);
+        q.addBindValue(t->biomassFoliage());
+        q.addBindValue(t->biomassStem());
+        q.addBindValue(t->biomassFineRoot());
+        q.addBindValue(t->biomassCoarseRoot());
+        q.addBindValue(t->mNPPReserve);
+        q.addBindValue(t->mStressIndex);
+        if (!q.exec()) {
+            throw IException(QString("Snapshot::saveStandSnapshot, Trees: execute:") + q.lastError().text());
+        }
+
+    }
+    // save saplings
+    // loop over all pixels, only when regeneration is enabled
+    if (GlobalSettings::instance()->model()->settings().regenerationEnabled) {
+        q.exec(QString("delete from saplings_stand where standID=%1").arg(stand_id));
+
+        if (!q.prepare(QString("insert into saplings_stand (standID, posx, posy, species_index, age, height, stress_years, flags) " \
+                               "values (?,?,?,?,?,?,?,?)")))
+            throw IException(QString("Snapshot::saveSaplings: prepare:") + q.lastError().text());
+
+
+        SaplingCellRunner scr(stand_id, stand_grid);
+        while (SaplingCell *sc = scr.next()) {
+            for (int i=0;i<NSAPCELLS;++i)
+                if (sc->saplings[i].is_occupied()) {
+                    q.addBindValue(stand_id);
+                    QPointF t = scr.currentCoord();
+                    q.addBindValue(t.x() + offset.x());
+                    q.addBindValue(t.y() + offset.y());
+                    q.addBindValue(sc->saplings[i].species_index);
+                    q.addBindValue(sc->saplings[i].age);
+                    q.addBindValue(sc->saplings[i].height);
+                    q.addBindValue(sc->saplings[i].stress_years);
+                    q.addBindValue(sc->saplings[i].flags);
+                    if (!q.exec()) {
+                        throw IException(QString("Snapshot::saveStandSnapshot, saplings: execute:") + q.lastError().text());
+                    }
+                }
+        }
+    }
+
+    db.commit();
+
+    return true;
+}
+
+bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, const QString &file_name)
+{
+    QSqlDatabase db=QSqlDatabase::database("snapshotstand");
+    if (!db.isOpen()) {
+        openStandDatabase(GlobalSettings::instance()->path(file_name), true);
+        db=QSqlDatabase::database("snapshotstand");
+    }
+    // load trees
+    // kill all living trees on the stand
+    QList<Tree*> tree_list = stand_grid->trees(stand_id);
+    QList<Tree*>::const_iterator it;
+    int n_removed = tree_list.count();
+    for (it = tree_list.constBegin(); it!= tree_list.constEnd(); ++it) {
+        (*it)->remove(1., 1., 1.);
+    }
+
+    // load from database
+    QSqlQuery q(db);
+    q.setForwardOnly(true);
+    q.exec(QString("select standID, ID, posX, posY, species,  age, height, dbh, leafArea, opacity, "
+                   "foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex "
+                   "from trees_stand where standID=%1").arg(stand_id));
+    QRectF extent = GlobalSettings::instance()->model()->extent();
+    int n=0;
+    while (q.next()) {
+        QPointF coord(GisGrid::worldToModel(QPointF(q.value(2).toInt(), q.value(3).toInt())));
+        if (!extent.contains(coord))
+            continue;
+        ResourceUnit *ru = GlobalSettings::instance()->model()->ru(coord);
+        if (!ru)
+            continue;
+        Tree &t = ru->newTree();
+        t.setRU(ru);
+        t.mId = q.value(1).toInt();
+        t.setPosition(coord);
+        Species *s = GlobalSettings::instance()->model()->speciesSet()->species(q.value(4).toString());
+        if (!s)
+            throw IException("Snapshot::loadTrees: Invalid species");
+        t.setSpecies(s);
+        t.mAge = q.value(5).toInt();
+        t.mHeight = q.value(6).toFloat();
+        t.mDbh = q.value(7).toFloat();
+        t.mLeafArea = q.value(8).toFloat();
+        t.mOpacity = q.value(9).toFloat();
+        t.mFoliageMass = q.value(10).toFloat();
+        t.mWoodyMass = q.value(11).toFloat();
+        t.mFineRootMass = q.value(12).toFloat();
+        t.mCoarseRootMass = q.value(13).toFloat();
+        t.mNPPReserve = q.value(14).toFloat();
+        t.mStressIndex = q.value(15).toFloat();
+        t.mStamp = s->stamp(t.mDbh, t.mHeight);
+        n++;
+    }
+    qDebug() << "load stand snapshot." <<n_removed<<"trees removed," <<n<<"trees loaded.";
+
+    // now the saplings
+    if (GlobalSettings::instance()->model()->settings().regenerationEnabled) {
+        // (1) remove all saplings:
+        SaplingCellRunner scr(stand_id, stand_grid);
+        int n_sap_removed=0;
+        while (SaplingCell *sc = scr.next()) {
+            n_sap_removed += sc->n_occupied();
+            GlobalSettings::instance()->model()->saplings()->clearSaplings(sc, scr.ru(),true);
+        }
+
+        // (2) load saplings from database
+        q.exec(QString("select posx, posy, species_index, age, height, stress_years, flags "
+                       "from saplings_stand where standID=%1").arg(stand_id));
+        int sap_n=0;
+        while (q.next()) {
+            QPointF coord(GisGrid::worldToModel(QPointF(q.value(0).toInt(), q.value(1).toInt())));
+            if (!extent.contains(coord))
+                continue;
+            SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(GlobalSettings::instance()->model()->grid()->indexAt(coord));
+            if (!sc)
+                continue;
+            if (SaplingTree *st = sc->addSapling(q.value(4).toFloat(),
+                                                 q.value(3).toInt(),
+                                                 q.value(2).toInt())) {
+                st->stress_years = q.value(5).toChar();
+                st->flags = q.value(6).toChar();
+            }
+            sap_n++;
+
+        }
+
+    }
 
     return true;
 }
