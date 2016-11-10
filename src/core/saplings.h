@@ -196,4 +196,23 @@ private:
     static double mBrowsingPressure;
 };
 
+
+/** SaplingCellRunner is a helper class to access all SaplingCell that
+ * are located on a given "stand" (in the stand grid)
+  */
+class MapGrid; // forward
+class SaplingCellRunner
+{
+public:
+    SaplingCellRunner(const int stand_id, const MapGrid *stand_grid=0);
+    SaplingCell *next();
+    ResourceUnit *ru() const { return mRU; }
+    QPointF currentCoord() const;
+private:
+    GridRunner<float> *mRunner;
+    ResourceUnit *mRU;
+    const MapGrid *mStandGrid;
+    int mStandId;
+};
+
 #endif // SAPLINGS_H

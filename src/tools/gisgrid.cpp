@@ -203,7 +203,7 @@ void GISGrid::GetDistinctValues(TStringList *ResultList, double x_m, double y_m)
 {
    // alle "distinct" values in einem rechteck (picus-koordinaten)
    // herauslesen. geht nur mit integers.
-    double stepsize=CellSize/2; //  default stepsize, die hälfte der Cellsize, damit sollten alle pixel überstrichen werden.
+    double stepsize=CellSize/2; //  default stepsize, die haelfte der Cellsize, damit sollten alle pixel ueberstrichen werden.
     double x=0, y=0;
     int v;
     TList *List=new TList;
@@ -309,9 +309,9 @@ Vector3D GisGrid::coord(const int Index) const
 
 void GISGrid::CountOccurence(int intID, int & Count, int & left, int & upper, int &right, int &lower, QRectF *OuterBox)
 {
-        // zählt, wie of intID im Grid vorkommt,
+        // zaehlt, wie of intID im Grid vorkommt,
         // ausserdem das rectangle, in dem es vorkommt.
-        // rectangle ist durch indices [z.b. 0..NRows-1] und nicht längen definiert!
+        // rectangle ist durch indices [z.b. 0..NRows-1] und nicht laengen definiert!
         int ix,iy;
         Count=0;
         left=100000;
@@ -327,7 +327,7 @@ void GISGrid::CountOccurence(int intID, int & Count, int & left, int & upper, in
                     if (OuterBox) {
                        akoord = koord(iy*mNCols + ix);
                        if (akoord.x<OuterBox->x1 || akoord.x>OuterBox->x2 || akoord.y<OuterBox->y1 || akoord.y>OuterBox->y2)
-                           continue; // nicht zählen, falls punkt ausserhalb rect.
+                           continue; // nicht zaehlen, falls punkt ausserhalb rect.
                     }
                     Count++;
                     left=ix<left?ix:left;
@@ -353,7 +353,7 @@ QVector3D GISGrid::GetNthOccurence(int ID, int N, int left, int upper, int right
                if (mData[iy*mNCols+ix]==ID) {
                    Counter++;
                    if (Counter==N) {  // N-tes vorkommen gefunden!!!
-                       // Picus-Koordinaten zurückgeben.
+                       // Picus-Koordinaten zurueckgeben.
                        return koord(iy*mNCols + ix);
                    }
                }
@@ -366,7 +366,7 @@ bool GISGrid::GetBoundingBox(int LookFor, QRectF &Result, double x_m, double y_m
 {
      // alle "distinct" values in einem rechteck (picus-koordinaten)
      // herauslesen. geht nur mit integers.
-      double stepsize=CellSize/2; //  default stepsize, die hälfte der Cellsize, damit sollten alle pixel überstrichen werden.
+      double stepsize=CellSize/2; //  default stepsize, die haelfte der Cellsize, damit sollten alle pixel ueberstrichen werden.
       double x=0, y=0;
       int v;
       Result.x1 = 1000000; Result.x2 = -10000000;
@@ -394,7 +394,7 @@ bool GISGrid::GetBoundingBox(int LookFor, QRectF &Result, double x_m, double y_m
 void GisGrid::clip(const QRectF & box)
 {
     // auf das angegebene Rechteck zuschneiden, alle
-    // werte draußen auf -1 setzen.
+    // werte draussen auf -1 setzen.
     int ix,iy;
     Vector3D akoord;
     for (ix=0;ix<mNCols;ix++)

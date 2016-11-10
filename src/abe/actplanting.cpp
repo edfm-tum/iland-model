@@ -186,7 +186,7 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
         throw IException(QString("'%1' is not a valid species id for setting up a planting item.").arg(species_id));
     fraction = FMSTP::valueFromJs(value, "fraction", "0").toNumber();
     height = FMSTP::valueFromJs(value, "height", "0.05").toNumber();
-    age = FMSTP::valueFromJs(value, "age", "1").toNumber();
+    age = FMSTP::valueFromJs(value, "age", "1").toInt();
     clear = FMSTP::valueFromJs(value, "clear", "false").toBool();
 
     // pattern
@@ -194,12 +194,12 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
     group_type = planting_pattern_names.indexOf(group);
     if (!group.isEmpty() && group!="undefined" && group_type==-1)
         throw IException(QString("Planting-activity: the pattern '%1' is not valid!").arg(group));
-    spacing = FMSTP::valueFromJs(value, "spacing", "0").toNumber();
-    offset = FMSTP::valueFromJs(value, "offset", "0").toNumber();
+    spacing = FMSTP::valueFromJs(value, "spacing", "0").toInt();
+    offset = FMSTP::valueFromJs(value, "offset", "0").toInt();
 
     bool random = FMSTP::boolValueFromJs(value, "random", false);
     if (random)
-        group_random_count = FMSTP::valueFromJs(value, "n", "0").toNumber();
+        group_random_count = FMSTP::valueFromJs(value, "n", "0").toInt();
     else
         group_random_count = 0;
 

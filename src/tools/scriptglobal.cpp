@@ -678,6 +678,34 @@ bool ScriptGlobal::loadModelSnapshot(QString file_name)
     return false;
 }
 
+bool ScriptGlobal::saveStandSnapshot(int stand_id, QString file_name)
+{
+    try {
+    Snapshot shot;
+    const MapGrid *map_grid = GlobalSettings::instance()->model()->standGrid();
+    if (!map_grid)
+        return false;
+    return shot.saveStandSnapshot(stand_id, map_grid, GlobalSettings::instance()->path(file_name));
+    } catch (const IException &e) {
+        throwError(e.message());
+    }
+    return false;
+}
+
+bool ScriptGlobal::loadStandSnapshot(int stand_id, QString file_name)
+{
+    try {
+    Snapshot shot;
+    const MapGrid *map_grid = GlobalSettings::instance()->model()->standGrid();
+    if (!map_grid)
+        return false;
+    return shot.loadStandSnapshot(stand_id, map_grid, GlobalSettings::instance()->path(file_name));
+    } catch (const IException &e) {
+        throwError(e.message());
+    }
+    return false;
+}
+
 void ScriptGlobal::reloadABE()
 {
     qDebug() << "attempting to reload ABE";

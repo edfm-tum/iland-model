@@ -26,6 +26,7 @@
 #include "establishment.h"
 #include "species.h"
 #include "seeddispersal.h"
+#include "mapgrid.h"
 
 double Saplings::mRecruitmentVariation = 0.1; // +/- 10%
 double Saplings::mBrowsingPressure = 0.;
@@ -610,4 +611,41 @@ ResourceUnitSpecies *SaplingTree::resourceUnitSpecies(const ResourceUnit *ru)
         return 0;
     ResourceUnitSpecies *rus = ru->resourceUnitSpecies(species_index);
     return rus;
+}
+
+SaplingCellRunner::SaplingCellRunner(const int stand_id, const MapGrid *stand_grid)
+{
+    mRunner = 0;
+    mRU = 0;
+    mStandId = stand_id;
+    mStandGrid = stand_grid ? stand_grid : GlobalSettings::instance()->model()->standGrid();
+    QRectF box = mStandGrid->boundingBox(stand_id);
+    mRunner = new GridRunner<float>(GlobalSettings::instance()->model()->grid(), box);
+
+}
+
+SaplingCell *SaplingCellRunner::next()
+{
+    if (!mRunner)
+        return 0;
+    while (float *n = mRunner->next()) {
+        if (!n)
+            return 0; // end of the bounding box
+        if (mStandGrid->standIDFromLIFCoord(mRunner->currentIndex()) != mStandId)
+            continue; // pixel does not belong to the target stand
+        mRU = GlobalSettings::instance()->model()->ru(mRunner->currentCoord());
+        SaplingCell *sc=0;
+        if (mRU)
+            sc=mRU->saplingCell(mRunner->currentIndex());
+        if (sc)
+            return sc;
+        qDebug() << "SaplingCellRunner::next(): unexected missing SaplingCell!";
+        return 0;
+    }
+    return 0;
+}
+
+QPointF SaplingCellRunner::currentCoord() const
+{
+    return mRunner->currentCoord();
 }
