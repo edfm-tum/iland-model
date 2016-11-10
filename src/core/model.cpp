@@ -200,7 +200,7 @@ void Model::setupSpace()
         bool grid_mode = (xml.value("environmentMode")=="grid");
         QString grid_file = GlobalSettings::instance()->path(xml.value("environmentGrid"));
         if (grid_mode) {
-            if (QFile::exists(grid_file))
+            if (QFile::exists(grid_file) && !xml.value("environmentGrid").isEmpty())
                 mEnvironment->setGridMode(grid_file);
             else
                 throw IException(QString("File '%1' specified in key 'environmentGrid' does not exit ('environmentMode' is 'grid').").arg(grid_file) );
