@@ -56,8 +56,10 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
     mPAbiotic = 0.;
     mPxDensity = 0.;
     mNumberEstablished = 0;
-    if (climate==0 || rus==0 || rus->species()==0 || rus->ru()==0)
-        throw IException("Establishment::setup: important variable is null.");
+    if (climate==0)
+        throw IException("Establishment::setup: no valid climate for a resource unit.");
+    if (rus==0 || rus->species()==0 || rus->ru()==0)
+        throw IException("Establishment::setup: important variable is null (are the species properly set up?).");
 }
 
 
