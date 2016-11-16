@@ -297,7 +297,7 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
                    "foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex "
                    "from trees_stand where standID=%1").arg(stand_id));
     QRectF extent = GlobalSettings::instance()->model()->extent();
-    int n=0;
+    int n=0, sap_n=0, n_sap_removed=0;
     while (q.next()) {
         QPointF coord(GisGrid::worldToModel(QPointF(q.value(2).toInt(), q.value(3).toInt())));
         if (!extent.contains(coord))
@@ -327,13 +327,11 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         t.mStamp = s->stamp(t.mDbh, t.mHeight);
         n++;
     }
-    qDebug() << "load stand snapshot." <<n_removed<<"trees removed," <<n<<"trees loaded.";
 
     // now the saplings
     if (GlobalSettings::instance()->model()->settings().regenerationEnabled) {
         // (1) remove all saplings:
         SaplingCellRunner scr(stand_id, stand_grid);
-        int n_sap_removed=0;
         while (SaplingCell *sc = scr.next()) {
             n_sap_removed += sc->n_occupied();
             GlobalSettings::instance()->model()->saplings()->clearSaplings(sc, scr.ru(),true);
@@ -342,7 +340,6 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         // (2) load saplings from database
         q.exec(QString("select posx, posy, species_index, age, height, stress_years, flags "
                        "from saplings_stand where standID=%1").arg(stand_id));
-        int sap_n=0;
         while (q.next()) {
             QPointF coord(GisGrid::worldToModel(QPointF(q.value(0).toInt(), q.value(1).toInt())));
             if (!extent.contains(coord))
@@ -353,14 +350,18 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
             if (SaplingTree *st = sc->addSapling(q.value(4).toFloat(),
                                                  q.value(3).toInt(),
                                                  q.value(2).toInt())) {
-                st->stress_years = q.value(5).toChar();
-                st->flags = q.value(6).toChar();
+                st->stress_years = static_cast<unsigned char>(q.value(5).toChar().toLatin1());
+                st->flags = static_cast<unsigned char>(q.value(6).toChar().toLatin1());
             }
             sap_n++;
 
         }
 
     }
+    // clean up
+    GlobalSettings::instance()->model()->cleanTreeLists(true);
+
+    qDebug() << "load stand snapshot for stand "<< stand_id << ": trees (removed/loaded): " <<n_removed<<"/" << n <<", saplings (removed/loaded):" << n_sap_removed << "/" << sap_n;
 
     return true;
 }
