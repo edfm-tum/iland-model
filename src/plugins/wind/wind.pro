@@ -1,5 +1,6 @@
+# iLand project file for the wind module. See iland.boku.ac.at
 QT += xml
-QT += script
+QT += qml
 QT += sql
 
 TEMPLATE      = lib
@@ -13,13 +14,18 @@ INCLUDEPATH  += ../.. \
 HEADERS       = \
         windplugin.h \
     windmodule.h \
-    windscript.h
+    windscript.h \
+    windout.h
 SOURCES       = \
         windplugin.cpp \
     windmodule.cpp \
-    windscript.cpp
+    windscript.cpp \
+    windout.cpp
 TARGET        = $$qtLibraryTarget(iland_wind)
-DESTDIR       = ../
+DESTDIR       = ../../plugins
+
+DEFINES += NO_DEBUG_MSGS
+
 
 
 

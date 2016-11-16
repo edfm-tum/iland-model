@@ -81,7 +81,8 @@ QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << "height
                         << "woodymass" << "rootmass" << "foliagemass" << "age" << "opacity" // 10-14
                         << "dead" << "stress" << "deltad" //15-17
                         << "afoliagemass" << "species" // 18, 19
-                        << "basalarea" << "crownarea"; // 20, 21
+                        << "basalarea" << "crownarea" // 20, 21
+                        << "markharvest" << "markcut" << "markcrop" << "markcompetitor"; // 22-25
 
 const QStringList TreeWrapper::getVariablesList()
 {
@@ -116,6 +117,10 @@ double TreeWrapper::value(const int variableIndex)
     case 19: return mTree->species()->index();
     case 20: return mTree->basalArea();
     case 21: return mTree->crownRadius()*mTree->crownRadius()*M_PI; // area (m2) of the crown
+    case 22: return mTree->isMarkedForHarvest()?1:0; // markharvest
+    case 23: return mTree->isMarkedForCut()?1:0; // markcut
+    case 24: return mTree->isMarkedAsCropTree()?1:0; // markcrop
+    case 25: return mTree->isMarkedAsCropCompetitor()?1:0; // markcompetitor
     }
     return ExpressionWrapper::value(variableIndex);
 }
@@ -126,12 +131,12 @@ double TreeWrapper::value(const int variableIndex)
 ////////////////////////////////////////////////
 
 QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffectiveArea"
-                      << "nitrogenAvailable" << "soilDepth" << "stockedArea"
+                      << "nitrogenAvailable" << "soilDepth" << "stockedArea" << "stockableArea"
                       << "count" << "volume" << "avgDbh" << "avgHeight" << "basalArea"
                       << "leafAreaIndex" << "aging" << "cohortCount" << "saplingCount" << "saplingAge"
                       << "canopyConductance"
                       << "soilC" << "soilN"
-                      << "snagC" << "index" << "area" << "meanTemp";
+                      << "snagC" << "index" << "meanTemp" << "annualPrecip" << "annualRad";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -149,25 +154,30 @@ double RUWrapper::value(const int variableIndex)
     case 2: return mRU->mUnitVariables.nitrogenAvailable;
     case 3: return mRU->waterCycle()->soilDepth();
     case 4: return mRU->stockedArea();
-    case 5: return mRU->mStatistics.count();
-    case 6: return mRU->mStatistics.volume();
-    case 7: return mRU->mStatistics.dbh_avg();
-    case 8: return mRU->mStatistics.height_avg();
-    case 9: return mRU->mStatistics.basalArea();
-    case 10: return mRU->mStatistics.leafAreaIndex();
-    case 11: return mRU->mAverageAging;
-    case 12: return mRU->statistics().cohortCount();
-    case 13: return mRU->statistics().saplingCount();
-    case 14: return mRU->statistics().saplingAge();
-    case 15: return mRU->waterCycle()->canopyConductance();
+    case 5: return mRU->stockableArea();
+    case 6: return mRU->mStatistics.count();
+    case 7: return mRU->mStatistics.volume();
+    case 8: return mRU->mStatistics.dbh_avg();
+    case 9: return mRU->mStatistics.height_avg();
+    case 10: return mRU->mStatistics.basalArea();
+    case 11: return mRU->mStatistics.leafAreaIndex();
+    case 12: return mRU->mAverageAging;
+    case 13: return mRU->statistics().cohortCount();
+    case 14: return mRU->statistics().saplingCount();
+    case 15: return mRU->statistics().saplingAge();
+    case 16: return mRU->waterCycle()->canopyConductance();
         // soil C + soil N
-    case 16: if (mRU->soil()) return mRU->soil()->youngLabile().C + mRU->soil()->youngRefractory().C + mRU->soil()->oldOrganicMatter().C; else return 0.;
-    case 17: if (mRU->soil()) return mRU->soil()->youngLabile().N + mRU->soil()->youngRefractory().N + mRU->soil()->oldOrganicMatter().N; else return 0.;
+    case 17: if (mRU->soil()) return mRU->soil()->youngLabile().C + mRU->soil()->youngRefractory().C + mRU->soil()->oldOrganicMatter().C; else return 0.;
+    case 18: if (mRU->soil()) return mRU->soil()->youngLabile().N + mRU->soil()->youngRefractory().N + mRU->soil()->oldOrganicMatter().N; else return 0.;
         // snags
-    case 18: if (mRU->snag()) return mRU->snag()->totalCarbon(); else return 0.;
-    case 19: return mRU->index(); // numeric index
-    case 20: return mRU->stockableArea(); // stockable area on resource unit
+    case 19: if (mRU->snag()) return mRU->snag()->totalCarbon(); else return 0.;
+    case 20: return mRU->index(); // numeric index
     case 21: return mRU->climate()->meanAnnualTemperature(); // mean temperature
+    case 22: { double psum=0;
+        for (int i=0;i<12;++i)
+            psum+=mRU->climate()->precipitationMonth()[i];
+        return psum; }
+    case 23: return mRU->climate()->totalRadiation();
 
     }
     return ExpressionWrapper::value(variableIndex);

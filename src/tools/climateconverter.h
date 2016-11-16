@@ -19,8 +19,10 @@
 
 #ifndef CLIMATECONVERTER_H
 #define CLIMATECONVERTER_H
-#include <QtScript>
 #include <QObject>
+#include <QJSEngine>
+#include <QJSValue>
+
 #include "expression.h"
 
 class ClimateConverter : public QObject
@@ -43,7 +45,7 @@ class ClimateConverter : public QObject
 
 public:
     ClimateConverter(QObject *parent=0);
-    static void addToScriptEngine(QScriptEngine &engine); ///< add this class to scripting engine
+    static void addToScriptEngine(QJSEngine &engine); ///< add this class to scripting engine
     // getters
     const QString fileName() const { return mFileName; }
     const QString tableName() const { return mTableName; }

@@ -19,8 +19,14 @@
 
 #ifndef TESTS_H
 #define TESTS_H
-#include <QtCore/QString>
-#include <QtCore/QObject>
+#include <QString>
+#include <QObject>
+#if QT_VERSION < 0x050000
+#include <QtGui>
+#else
+#include <QtWidgets>
+#endif
+
 
 class Climate;
 class Tests
@@ -50,6 +56,10 @@ public:
     void testFire();
     void testWind();
     void testRumple();
+    void testFOMEsetup();
+    void testFOMEstep();
+    void testDbgEstablishment();
+    void testGridIndexHack();
     private:
     QString dumpTreeList();
     QObject *mParent;

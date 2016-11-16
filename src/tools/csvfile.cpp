@@ -38,18 +38,24 @@
   Planned is also a "streaming" mode for large files (loadFile(), while(file.next()) file.value(x) ), but not finsihed yet.
 
 */
-#include <QtScript>
-Q_SCRIPT_DECLARE_QMETAOBJECT(CSVFile, QObject*)
-void CSVFile::addToScriptEngine(QScriptEngine &engine)
+#include <QJSEngine>
+#include <QJSValue>
+//Q_SCRIPT_DECLARE_QMETAOBJECT(CSVFile, QObject*)
+void CSVFile::addToScriptEngine(QJSEngine &engine)
 {
+    Q_UNUSED(engine); // remove this code?
     // about this kind of scripting magic see: http://qt.nokia.com/developer/faqs/faq.2007-06-25.9557303148
-    QScriptValue cc_class = engine.scriptValueFromQMetaObject<CSVFile>();
+    //QJSValue cc_class = engine.scriptValueFromQMetaObject<CSVFile>();
+
+    // TODO: solution for creating objects (on the C++ side...)
+
     // the script name for the object is "CSVFile".
-    engine.globalObject().setProperty("CSVFile", cc_class);
+    //engine.globalObject().setProperty("CSVFile", cc_class);
 }
 
 CSVFile::CSVFile(QObject *)
 {
+    mIsEmpty = true;
     mHasCaptions = true;
     mFlat = false;
     mFixedWidth=false;
@@ -61,6 +67,8 @@ void CSVFile::clear()
     mColCount = mRowCount = -1;
     mCaptions.clear();
     mRows.clear();
+    mIsEmpty = true;
+
 }
 
 bool CSVFile::loadFromString(const QString &content)
@@ -75,6 +83,7 @@ bool CSVFile::loadFromString(const QString &content)
     if (mRows.count()==0)
         return false;
 
+    mIsEmpty = false;
     // trimming of whitespaces is a problem
     // when having e.g. tabs as delimiters...
 //    if (!mFixedWidth) {
@@ -112,11 +121,11 @@ bool CSVFile::loadFromString(const QString &content)
 
     // captions
     if (mHasCaptions) {
-        mCaptions = first.split(mSeparator, QString::SkipEmptyParts).replaceInStrings("\"", ""); // drop "-characters
+        mCaptions = first.split(mSeparator, QString::KeepEmptyParts).replaceInStrings("\"", ""); // drop "-characters
         mRows.pop_front(); // drop the first line
     } else {
         // create pseudo captions
-        mCaptions = first.split(mSeparator, QString::SkipEmptyParts);
+        mCaptions = first.split(mSeparator, QString::KeepEmptyParts);
         for (int i=0;i<mCaptions.count();i++)
             mCaptions[i] = QString("c%1").arg(i);
     }
@@ -132,6 +141,7 @@ bool CSVFile::loadFile(const QString &fileName)
     QString content = Helper::loadTextFile(fileName);
     if (content.isEmpty()) {
         qDebug() << "CSVFile::loadFile" << fileName << "does not exist or is empty.";
+        mIsEmpty = true;
         return false;
     }
     return loadFromString(content);
@@ -201,6 +211,8 @@ QVariant CSVFile::value(const int row, const int col) const
             // last element:
             if (s.count(sep)==mColCount-1) {
                 result =  s.mid(s.lastIndexOf(sep)+1);
+                if (result.toString().startsWith('\"') && result.toString().endsWith('\"'))
+                    result = result.toString().mid(1, result.toString().length()-2);
             }
             // if there are less than colcount-1 separators, then
             // the last columns is empty
@@ -226,7 +238,7 @@ QVariant CSVFile::value(const int row, const int col) const
         if (sepcount==col)
             result = s.mid(s.lastIndexOf(sep)+1);
         //qDebug() << "CSVFile::value: found no result:" << row << col << ". Size is:" << mRowCount << mColCount;
-        return QVariant();
+        return result;
 
     }
 

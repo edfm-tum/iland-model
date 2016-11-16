@@ -30,10 +30,16 @@ class Climate;
 class WaterCycle;
 class Snag;
 class Soil;
+struct SaplingCell;
 
 struct ResourceUnitVariables
 {
+    ResourceUnitVariables(): nitrogenAvailable(0.), cumCarbonUptake(0.), cumCarbonToAtm(0.), cumNEP(0.), carbonUptake(0.), carbonToAtm(0.), NEP(0.) {}
     double nitrogenAvailable; ///< nitrogen content (kg/m2/year)
+    double cumCarbonUptake; ///< NPP  (kg C/ha)
+    double cumCarbonToAtm; ///< total flux of carbon to atmosphere (kg C/ha)
+    double cumNEP; ///< cumulative ecosystem productivity (kg C/ha), i.e. cumulative(NPP-losses(atm,harvest)
+    double carbonUptake, carbonToAtm, NEP; ///< values of the current year (NPP, flux to atmosphere, net ecosystem prod., all values in kgC/ha)
 };
 
 class ResourceUnit
@@ -54,8 +60,12 @@ public:
     const WaterCycle *waterCycle() const { return mWater; } ///< water model of the unit
     Snag *snag() const { return mSnag; } ///< access the snag object
     Soil *soil() const { return mSoil; } ///< access the soil model
+    SaplingCell *saplingCellArray() const { return mSaplings; } ///< access the array of sapling-cells
+    SaplingCell *saplingCell(const QPoint &lifCoords) const; ///< return a pointer to the 2x2m SaplingCell located at 'lif'
 
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
+    const ResourceUnitSpecies *constResourceUnitSpecies(const Species *species) const; ///< get RU-Species-container of @p species from the RU
+    ResourceUnitSpecies *resourceUnitSpecies(const int species_index) const { return mRUSpecies[species_index]; } ///< get RU-Species-container with index 'species_index' from the RU
     const QList<ResourceUnitSpecies*> &ruSpecies() const { return mRUSpecies; }
     QVector<Tree> &trees() { return mTrees; } ///< reference to the tree list.
     const QVector<Tree> &constTrees() const { return mTrees; } ///< reference to the (const) tree list.
@@ -67,8 +77,8 @@ public:
     int index() const { return mIndex; }
     int id() const { return mID; }
     const QRectF &boundingBox() const { return mBoundingBox; }
-    const QPoint &cornerPointOffset() const { return mCornerCoord; }
-    double area() const { return mPixelCount*100; } ///< get the resuorce unit area in m2
+    const QPoint &cornerPointOffset() const { return mCornerOffset; } ///< coordinates on the LIF grid of the upper left corner of the RU
+    double area() const { return mPixelCount*100; } ///< get the resource unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
     double stockableArea() const { return mStockableArea; } ///< total stockable area in m2
     double productiveArea() const { return mEffectiveArea; } ///< TotalArea - Unstocked Area - loss due to BeerLambert (m2)
@@ -94,28 +104,9 @@ public:
     // stocked area calculation
     void countStockedPixel(bool pixelIsStocked) { mPixelCount++; if (pixelIsStocked) mStockedPixelCount++; }
     void createStandStatistics(); ///< helping function to create an initial state for stand statistics
-    void recreateStandStatistics(); ///< re-build stand statistics after some change happened to the resource unit
+    void recreateStandStatistics(bool recalculate_stats); ///< re-build stand statistics after some change happened to the resource unit
     void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
-    // sapling growth: the height map is per resource unit and holds the maximum height of saplings for each LIF-pixel and all species
-    // the map itself is a local variable and only filled temporarily.
-    void setSaplingHeightMap(float *map_pointer) { mSaplingHeightMap=map_pointer; } ///< set (temporal) storage for sapling-height-map
-    /// returns maximum sapling height at point given by point-index (LIF-index).
-    /// you must call setSaplingHeightMap() with a valid map before.
-    float saplingHeightAt(const QPoint &position) const {
-            Q_ASSERT(mSaplingHeightMap);
-            int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
-            float h =  mSaplingHeightMap[pixel_index];
-            return h;
-    }
-    /// return maximum sapling height at point 'position' (LIF-index). This call is slower but works witout a prior call
-    /// to setSaplingHeightMap().
-    float saplingHeightForInit(const QPoint &position) const;
-    /// set the height of the sapling map to the maximum of current value and 'height'.
-    void setMaxSaplingHeightAt(const QPoint &position, const float height);
-    /// clear all saplings of all species on a given position (after recruitment)
-    void clearSaplings(const QPoint &position);
-    /// kill all saplings within a given rect
-    void clearSaplings(const QRectF pixel_rect, const bool remove_from_soil);
+
     // snag / snag dynamics
     // snag dynamics, soil carbon and nitrogen cycle
     void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools
@@ -140,8 +131,9 @@ private:
     Soil *mSoil; ///< ptr to CN dynamics soil submodel
     QList<ResourceUnitSpecies*> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
+    SaplingCell *mSaplings; ///< pointer to the array of Sapling-cells for the resource unit
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
-    QPoint mCornerCoord; ///< coordinates on the LIF grid of the upper left corner of the RU
+    QPoint mCornerOffset; ///< coordinates on the LIF grid of the upper left corner of the RU
     double mAggregatedLA; ///< sum of leafArea
     double mAggregatedWLA; ///< sum of lightResponse * LeafArea for all trees
     double mAggregatedLR; ///< sum of lightresponse*LA of the current unit

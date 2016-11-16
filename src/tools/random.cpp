@@ -165,8 +165,11 @@ void RandomWeighted::updateValues()
     int i;
     mMaxVal=0;
     for (i=0;i<mSize;i++) {
-        if (mGrid[i]!=0)
+        if (mGrid[i]!=0) {
             mMaxVal+=mGrid[i];
+            if (mMaxVal < 0)
+                throw IException("Error: RandomWeighted::updateValues: integer overflow.");
+        }
         mGrid[i]=mMaxVal;
     }
     mUpdated=true;
@@ -216,6 +219,7 @@ void RandomCustomPDF::setup(const QString &funcExpr,
     double x1, x2;
     double p1, p2;
     double areaval;
+    double step_width = 1. / mSteps;
     for (int i=0;i<mSteps;i++) {
         x1=mLowerBound + i*mDeltaX;
         x2=x1 + mDeltaX;
@@ -223,9 +227,9 @@ void RandomCustomPDF::setup(const QString &funcExpr,
         p1=mExpression->calculate(x1);
         p2=mExpression->calculate(x2);
         // areaval: numerische integration zwischen x1 und x2
-        areaval = (p1 + p2)/2 * mDeltaX;
+        areaval = (p1 + p2)/2 * step_width;
         if (isSumFunc)
-            areaval=areaval - p1*mDeltaX; // summenwahrscheinlichkeit: nur das Delta zählt.
+            areaval=areaval - p1 * step_width; // summenwahrscheinlichkeit: nur das Delta zaehlt.
         // tsetWeightghted operiert mit integers -> umrechnung: * huge_val
         mRandomIndex.setWeight(i, int(areaval*BIGINTVAL));
     }
@@ -236,11 +240,11 @@ double RandomCustomPDF::get()
     // zufallszahl ziehen.
     if (!mExpression)
         throw IException("TRandomCustomPDF: get() without setup()!"); // not set up properly
-    // (1) slot zufgetig auswählen:
+    // (1) select slot randomly:
     int slot = mRandomIndex.get();
-    // der aktuelle slot ist:
+    // the current slot is:
     double basevalue = mLowerBound + slot*mDeltaX;
-    // (2): innerhalb des aktuellen slots gleichverteilt eine zahl ziehen
+    // (2): draw a uniform random number within the slot
     double value = nrandom(basevalue, basevalue + mDeltaX);
     return value;
 }
@@ -258,7 +262,7 @@ double RandomCustomPDF::getProbOfRange(const double lowerBound, const double upp
         return 0.;
     if (lowerBound < mLowerBound || upperBound>mUpperBound)
         return 0.;
-    // "steps" ist die auflösung innerhalb lower und upper:
+    // "steps" is the resolution between lower and upper bound
     int iLow, iHigh;
     iLow = int( (mUpperBound- mLowerBound)/double(mSteps)*(lowerBound - mLowerBound) );
     iHigh = int( (mUpperBound -mLowerBound)/double(mSteps)*(upperBound - mUpperBound) );

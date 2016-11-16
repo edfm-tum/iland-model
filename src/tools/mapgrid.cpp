@@ -23,8 +23,8 @@
 #include "resourceunit.h"
 #include "tree.h"
 #include "grid.h"
-#include "sapling.h"
 #include "resourceunit.h"
+#include "expressionwrapper.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)
   @ingroup tools
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
@@ -35,6 +35,77 @@
   location (in LIF-coordinates).
 
   */
+
+/// MapGridRULock is a custom class to serialize (write) access to (the trees of a) resource units.
+///
+class MapGridRULock {
+public:
+    void lock(const int id, QList<ResourceUnit*> &elements);
+    void unlock(const int id);
+private:
+    QHash<ResourceUnit*, int> mLockedElements;
+    QMutex mLock;
+    QWaitCondition mWC;
+};
+static MapGridRULock mapGridLock;
+
+void MapGridRULock::lock(const int id, QList<ResourceUnit *> &elements)
+{
+    // check if one of the elements is already in the LockedElements-list
+    bool ok;
+    do {
+        ok = true;
+        mLock.lock();
+        for (int i=0;i<elements.size();++i)
+            if (mLockedElements.contains(elements[i])) {
+                if (mLockedElements[elements[i]] != id){
+                    qDebug() << "MapGridRULock: must wait (" << QThread::currentThread() << id << "). stand with lock: " << mLockedElements[elements[i]] << ".Lock list length" << mLockedElements.size();
+
+                    // we have to wait until
+                    mWC.wait(&mLock);
+                    ok = false;
+                } else {
+                    // this resource unit is already locked for the same stand-id, therefore do nothing
+                    // qDebug() << "MapGridRULock: already locked for (" << QThread::currentThread() << ", stand "<< id <<"). Lock list length" << mLockedElements.size();
+                    mLock.unlock();
+                    return;
+                }
+            }
+        mLock.unlock();
+    } while (!ok);
+
+    // now add the elements
+    mLock.lock();
+    for (int i=0;i<elements.size();++i)
+        mLockedElements[elements[i]] = id;
+    //qDebug() << "MapGridRULock:  created lock " << QThread::currentThread() << " for stand" << id << ". lock list length" << mLockedElements.size();
+
+    mLock.unlock();
+}
+
+void MapGridRULock::unlock(const int id)
+{
+    QMutexLocker locker(&mLock); // protect changing the list
+    QMutableHashIterator<ResourceUnit*, int> i(mLockedElements);
+    bool found = false;
+    while (i.hasNext()) {
+        i.next();
+        if (i.value() == id) {
+            i.remove();
+            found = true;
+        }
+    }
+
+    // notify all waiting threads that now something changed....
+    if (found) {
+        //qDebug() << "MapGridRULock: free" << QThread::currentThread() << "for stand " << id << "lock list length" << mLockedElements.size();
+        mWC.wakeAll();
+    }
+
+}
+
+
+
 MapGrid::MapGrid()
 {
 }
@@ -109,6 +180,8 @@ void MapGrid::createIndex()
         data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
 
         ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+        if (!ru)
+            continue;
         // find all entries for the current grid id
         QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
 
@@ -156,13 +229,59 @@ QList<Tree *> MapGrid::trees(const int id) const
     QList<ResourceUnit*> resource_units = resourceUnits(id);
     foreach(ResourceUnit *ru, resource_units) {
         foreach(const Tree &tree, ru->constTrees())
-            if (gridValue(tree.positionIndex()) == id && !tree.isDead()) {
+            if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
                 tree_list.append( & const_cast<Tree&>(tree) );
             }
     }
 //    qDebug() << "MapGrid::trees: found" << c << "/" << tree_list.size();
     return tree_list;
 
+}
+
+int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, const QString filter, int n_estimate) const
+{
+    rList.clear();
+    if (n_estimate>0)
+        rList.reserve(n_estimate);
+    Expression *expression = 0;
+    TreeWrapper tw;
+    if (!filter.isEmpty()) {
+        expression = new Expression(filter, &tw);
+        expression ->enableIncSum();
+    }
+    QList<ResourceUnit*> resource_units = resourceUnits(id);
+    // lock the resource units: removed again, WR20140821
+    // mapGridLock.lock(id, resource_units);
+
+    foreach(ResourceUnit *ru, resource_units) {
+        foreach(const Tree &tree, ru->constTrees())
+            if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
+                Tree *t =  & const_cast<Tree&>(tree);
+                tw.setTree(t);
+                if (expression) {
+                    double value = expression->calculate(tw);
+                    // keep if expression returns true (1)
+                    bool keep = value==1.;
+                    // if value is >0 (i.e. not "false"), then draw a random number
+                    if (!keep && value>0.)
+                        keep = drandom() < value;
+
+                    if (!keep)
+                        continue;
+                }
+                rList.push_back(QPair<Tree*, double>(t,0.));
+            }
+    }
+    if (expression)
+        delete expression;
+    return rList.size();
+
+}
+
+void MapGrid::freeLocksForStand(const int id)
+{
+    if (id>-1)
+        mapGridLock.unlock(id);
 }
 
 /// return a list of grid-indices of a given stand-id (a grid-index
@@ -180,23 +299,57 @@ QList<int> MapGrid::gridIndices(const int id) const
     return result;
 }
 
-QList<QPair<ResourceUnitSpecies *, SaplingTree *> > MapGrid::saplingTrees(const int id) const
-{
-    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > result;
-    QList<ResourceUnit*> resource_units = resourceUnits(id);
-    foreach(ResourceUnit *ru, resource_units) {
-        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
-            foreach(const SaplingTree &tree, rus->sapling().saplings()) {
-                if (gridValue( GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel) ) == id)
-                    result.push_back( QPair<ResourceUnitSpecies *, SaplingTree *>(rus, &const_cast<SaplingTree&>(tree)) );
-            }
-        }
-    }
-    qDebug() << "loaded" << result.count() << "sapling trees";
-    return result;
+/// retrieve a list of saplings on a given stand polygon.
+//QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > MapGrid::saplingTrees(const int id) const
+//{
+//    QList<QPair<ResourceUnitSpecies *, SaplingTreeOld *> > result;
+//    QList<ResourceUnit*> resource_units = resourceUnits(id);
+//    foreach(ResourceUnit *ru, resource_units) {
+//        foreach(ResourceUnitSpecies *rus, ru->ruSpecies()) {
+//            foreach(const SaplingTreeOld &tree, rus->sapling().saplings()) {
+//                if (LIFgridValue( tree.coords() ) == id)
+//                    result.push_back( QPair<ResourceUnitSpecies *, SaplingTreeOld *>(rus, &const_cast<SaplingTreeOld&>(tree)) );
+//            }
+//        }
+//    }
+//    qDebug() << "loaded" << result.count() << "sapling trees";
+//    return result;
 
+//}
+
+
+/// retrieve a list of all stands that are neighbors of the stand with ID "index".
+QList<int> MapGrid::neighborsOf(const int index) const
+{
+    if (mNeighborList.isEmpty())
+        const_cast<MapGrid*>(this)->updateNeighborList(); // fill the list
+    return mNeighborList.values(index);
 }
 
+
+/// scan the map and add neighborhood-relations to the mNeighborList
+/// the 4-neighborhood is used to identify neighbors.
+void MapGrid::updateNeighborList()
+{
+    mNeighborList.clear();
+    GridRunner<int> gr(mGrid, mGrid.rectangle()); //  the full grid
+    int *n4[4];
+    QHash<int,int>::iterator it_hash;
+    while (gr.next()) {
+        gr.neighbors4(n4); // get the four-neighborhood (0-pointers possible)
+        for (int i=0;i<4;++i)
+            if (n4[i] && *gr.current() != *n4[i]) {
+                // look if we already have the pair
+                it_hash = mNeighborList.find(*gr.current(), *n4[i]);
+                if (it_hash == mNeighborList.end()) {
+                    // add the "edge" two times in the hash
+                    mNeighborList.insertMulti(*gr.current(), *n4[i]);
+                    mNeighborList.insertMulti(*n4[i], *gr.current());
+                }
+            }
+    }
+
+}
 
 
 

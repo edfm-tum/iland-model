@@ -19,6 +19,7 @@
 
 #include <QtCore>
 #include <QtSql>
+#include <QVector>
 #include "global.h"
 #include "globalsettings.h"
 #include "xmlhelper.h"
@@ -27,6 +28,7 @@
 #include "model.h"
 #include "seeddispersal.h"
 #include "modelsettings.h"
+#include "debugtimer.h"
 
 /** @class SpeciesSet
     A SpeciesSet acts as a container for individual Species objects. In iLand, theoretically,
@@ -139,6 +141,8 @@ int SpeciesSet::setup()
     mLRICorrection.setAndParse(light.value("LRImodifier","1"));
     // x: LRI, y: relative heigth
     mLRICorrection.linearize2d(0., 1., 0., 1.);
+
+    createRandomSpeciesOrder();
     return mSpecies.count();
 
 }
@@ -155,16 +159,16 @@ void SpeciesSet::setupRegeneration()
     qDebug() << "Setup of seed dispersal maps finished.";
 }
 
-Species *nc_seed_distribution(Species *species)
+void nc_seed_distribution(Species *species)
 {
     species->seedDispersal()->execute();
-    return species;
 }
+
 void SpeciesSet::regeneration()
 {
     if (!GlobalSettings::instance()->model()->settings().regenerationEnabled)
         return;
-
+    DebugTimer t("seed dispersal (all species)");
 
     ThreadRunner runner(mActiveSpecies); // initialize a thread runner object with all active species
     runner.run(nc_seed_distribution);
@@ -201,6 +205,31 @@ QVariant SpeciesSet::var(const QString& varName)
     //return GlobalSettings::instance()->settingDefaultValue(varName);
 }
 
+void SpeciesSet::randomSpeciesOrder(QVector<int>::const_iterator &rBegin, QVector<int>::const_iterator &rEnd)
+{
+    int iset = irandom(0,mNRandomSets);
+    rBegin=mRandomSpeciesOrder.begin() + iset * mActiveSpecies.size();
+    rEnd=rBegin+mActiveSpecies.size();
+}
+
+//
+void SpeciesSet::createRandomSpeciesOrder()
+{
+
+    mRandomSpeciesOrder.clear();
+    mRandomSpeciesOrder.reserve(mActiveSpecies.size() * mNRandomSets);
+    for (int i=0;i<mNRandomSets;++i) {
+        QList<int> samples;
+        // fill list
+        foreach (const Species* s, mActiveSpecies)
+            samples.push_back(s->index());
+        // sample and reduce list
+        while (!samples.isEmpty()) {
+            mRandomSpeciesOrder.push_back( samples.takeAt(irandom(0, samples.size()))  );
+        }
+    }
+}
+
 inline double SpeciesSet::nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const
 {
     if (availableNitrogen<=NB)
@@ -208,6 +237,8 @@ inline double SpeciesSet::nitrogenResponse(const double &availableNitrogen, cons
     double x = 1. - exp(NA * (availableNitrogen-NB));
     return x;
 }
+
+
 
 /// calculate nitrogen response for a given amount of available nitrogen and a respone class
 /// for fractional values, the response value is interpolated between the fixedly defined classes (1,2,3)
@@ -224,9 +255,9 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
             return value2 + (responseClass-2)*(value3-value2);
         }
     }
-    if (responseClass==2)
+    if (responseClass==2.)
         return nitrogenResponse(availableNitrogen, mNitrogen_2a, mNitrogen_2b);
-    if (responseClass==1)
+    if (responseClass==1.)
         return nitrogenResponse(availableNitrogen, mNitrogen_1a, mNitrogen_1b);
     // last ressort: interpolate between 1 and 2
     value1 = nitrogenResponse(availableNitrogen, mNitrogen_1a, mNitrogen_1b);
@@ -243,7 +274,7 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
 */
 double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const
 {
-    if (nitrogenResponse==0)
+    if (nitrogenResponse==0.)
         return 0.;
 
     double co2_water = 2. - soilWaterResponse;

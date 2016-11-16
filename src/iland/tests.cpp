@@ -21,6 +21,7 @@
 #include "tests.h"
 
 #include "helper.h"
+#include "debugtimer.h"
 #include "random.h"
 #include "model.h"
 #include "resourceunit.h"
@@ -37,6 +38,7 @@
 #include "exception.h"
 #include "seeddispersal.h"
 #include "establishment.h"
+#include "saplings.h"
 //
 #include "standloader.h"
 #include "soil.h"
@@ -52,8 +54,12 @@
 #include "../plugins/wind/windmodule.h"
 #include "../plugins/wind/windplugin.h"
 #include <QInputDialog>
+#include <QtConcurrent/QtConcurrent>
 
 #include "spatialanalysis.h"
+
+#include "forestmanagementengine.h"
+#include "fmstp.h"
 
 Tests::Tests(QObject *wnd)
 {
@@ -122,7 +128,7 @@ void Tests::speedOfExpression()
             sum = 0.;
             count = 0;
             while (Tree *tree=at.next()) {
-                sum += pow(tree->dbh(),2.1); count++;
+                sum += pow(tree->dbh(),2.1f); count++;
             }
         }
         qDebug() << "Sum of volume" << sum << "count" << count;
@@ -386,6 +392,14 @@ void Tests::testCSVFile()
 #include "../3rdparty/MersenneTwister.h"
 void Tests::testRandom()
 {
+
+    QStringList list;
+    for (int i=0;i<1000;i++)
+        list << QString::number(irandom(0,5));
+    qDebug() << "irandom test (0,5): " << list;
+    return;
+
+
     RandomGenerator::setup(RandomGenerator::ergMersenneTwister, 1);
 //    RandomCustomPDF pdf("x^2");
 //    RandomCustomPDF *pdf2 = new RandomCustomPDF("x^3");
@@ -489,6 +503,87 @@ void Tests::testRandom()
 
 void Tests::testGridRunner()
 {
+    Grid<int> test_grid(10,5,5); // 5x5 grid
+    test_grid.initialize(1);
+    GridRunner<int> r(&test_grid);
+    int sum = 0;
+    while (int *p=r.next())
+        ++sum;
+    qDebug() << "runner all, expected: 25:" << sum;
+    sum=0;
+    for (int *p=test_grid.begin();p!=test_grid.end();++p)
+        ++sum;
+    qDebug() << "loop expected: 25:" << sum;
+    sum=0;
+    r=GridRunner<int>(test_grid,test_grid.rectangle());
+    sum = 0;
+    while (int *p=r.next())
+        ++sum;
+    qDebug() << "runner rectangle, expected: 25:" << sum;
+
+    r=GridRunner<int>(test_grid,test_grid.metricRect());
+    sum = 0;
+    while (int *p=r.next())
+        ++sum;
+    qDebug() << "runner rectangle metric, expected: 25:" << sum;
+
+    // smaller parts
+    QRect r1(0,0,3,3);
+    r=GridRunner<int>(test_grid,r1);
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(0,0,3,3), expected: 4:" << sum;
+
+
+    r1=QRect(0,0,1,1);
+    r=GridRunner<int>(test_grid,r1);
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(0,0,1,1), expected: 1:" << sum;
+
+    r1=QRect(0,0,2,2);
+    r=GridRunner<int>(test_grid,r1);
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(0,0,2,2), expected: 1:" << sum;
+
+    r=GridRunner<int>(test_grid,QRect(QPoint(0,0), QPoint(3,3)));
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(QPoint(0,0), QPoint(3,3)), expected: 4:" << sum;
+
+    r=GridRunner<int>(test_grid,QRect(QPoint(0,0), QPoint(0,0)));
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(QPoint(0,0), QPoint(0,0)), expected: 1:" << sum;
+
+    r=GridRunner<int>(test_grid,QRect(QPoint(0,0), QPoint(1,1)));
+    sum = 0;
+    while (int *p=r.next()) {
+        ++sum;
+        qDebug() << r.currentIndex();
+    }
+    qDebug() << "runner QRect(QPoint(0,0), QPoint(1,1)), expected: 1:" << sum;
+
+
+    if (!GlobalSettings::instance()->model())
+        return;
+
     Grid<float> &lif = *GlobalSettings::instance()->model()->grid();
     //QRectF box = GlobalSettings::instance()->model()->ru(0)->boundingBox();
     QRectF box2 = QRectF(10,10,10,10);
@@ -505,6 +600,33 @@ void Tests::testGridRunner()
     while (float *p=runner2.next()) {
         QPoint point = lif.indexOf(p);
         qDebug() << i++ << point.x() << point.y() << *p << p;
+    }
+    index_rect = QRect(0,0,1,1);
+    runner2 = GridRunner<float>(lif, index_rect);
+    qDebug() << "test index: rect" << index_rect;
+    i = 0;
+    while (float *p=runner2.next()) {
+        QPoint point = lif.indexOf(p);
+        qDebug() << i++ << point.x() << point.y() << *p << p;
+    }
+
+    index_rect = QRect(0,0,3,3);
+    runner2 = GridRunner<float>(lif, index_rect);
+    qDebug() << "test index: rect" << index_rect;
+    i = 0;
+    while (float *p=runner2.next()) {
+        QPoint point = lif.indexOf(p);
+        qDebug() << i++ << point.x() << point.y() << *p << p;
+    }
+
+    for (int i=0;i<GlobalSettings::instance()->model()->ruList().size();++i) {
+        if (i==10) break;
+        ResourceUnit *ru = GlobalSettings::instance()->model()->ruList()[i];
+        GridRunner<float> runner(lif, ru->boundingBox());
+        int n=0;
+        while (runner.next())
+            ++n;
+        qDebug() << "RU" <<  ru->index() << ru->boundingBox() << lif.indexOf(runner.first()) << lif.indexOf(runner.last()) << "n:" << n;
     }
 }
 
@@ -548,8 +670,42 @@ double tme_test3(const double &x) {
         tme_count++;
     return result;
 }
+
+static double testf_sum = 0.;
+void testF(double *begin, double *end) {
+    double sum = 0.;
+    for (double *p=begin;p!=end;++p) {
+        sum += *p;
+    }
+    QMutexLocker l(&tme_mutex);
+    testf_sum += sum;
+    //qDebug() << "testf min:" << *begin << "end:" << *(end-1);
+}
+
 void Tests::testMultithreadExecute()
 {
+    // test of threadrunner
+    int l=12345;
+    double *dat=new double[l];
+    for (int i=0;i<l;++i)
+        dat[i] = i+1;
+    ThreadRunner tr;
+    tr.runGrid(testF, dat, &dat[l], true, 100);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+
+    testf_sum = 0.;
+    tr.runGrid(testF, dat, &dat[l], true, 17);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+
+    testf_sum = 0.;
+    tr.runGrid(testF, dat, &dat[l], true, 170000);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+
+    testf_sum = 0.;
+    tr.runGrid(testF, dat, &dat[l], true);
+    qDebug() << "sum" << testf_sum << l*(l+1)/2. - testf_sum;
+    return;
+
     tme_exp.setExpression("(x+x+x+x)/(sqrt(x*x)*4)");
     tme_exp.setStrict(false);
     try {
@@ -595,9 +751,25 @@ void Tests::testMultithreadExecute()
 void Tests::testEstablishment()
 {
     Model *model = GlobalSettings::instance()->model();
+    //model->saplings()->clearStats();
+
+    {
+    DebugTimer test("test establishment");
+    foreach (ResourceUnit *ru, model->ruList())
+        model->saplings()->establishment(ru);
+    }
+    //qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
+
+    {
+    DebugTimer test("test sapling growth");
+    foreach (ResourceUnit *ru, model->ruList())
+        model->saplings()->saplingGrowth(ru);
+    }
+    //qDebug() << "pixel tested" << model->saplings()->pixelTested() << "saplings added" << model->saplings()->saplingsAdded();
+
     //model->ru(0)
-    Establishment est(model->ru(0)->climate(),model->ru(0)->ruSpecies().first());
-    est.calculate();
+    //Establishment est(model->ru(0)->climate(),model->ru(0)->ruSpecies().first());
+    //est.calculate();
 }
 
 void Tests::testLinearExpressions()
@@ -772,7 +944,8 @@ void Tests::testMap()
     foreach (const ResourceUnit *ru, ru_list)
         qDebug() << ru->index() << ru->boundingBox();
 
-
+    qDebug() << "neighbors of" << test_id << "are" << map.neighborsOf(test_id);
+    return;
     HeightGrid *hgrid = GlobalSettings::instance()->model()->heightGrid();
     for (int i=0;i<map.grid().count();i++)
         hgrid->valueAtIndex(i).height = map.grid().constValueAtIndex(map.grid().indexOf(i));
@@ -782,7 +955,7 @@ void Tests::testMap()
     Management mgmt;
 
     mgmt.loadFromTreeList(tree_list);
-    mgmt.kill();
+    mgmt.killAll();
 }
 
 DEM *_dem = 0;
@@ -900,5 +1073,240 @@ void Tests::testRumple()
 
     Helper::saveToTextFile("rumple_test.txt", gridToESRIRaster(rumple_index.rumpleGrid()) );
     qDebug() << "surface area test triangle" << rumple_index.test_triangle_area();
+
+}
+
+ABE::ForestManagementEngine *fome=0;
+void Tests::testFOMEsetup()
+{
+
+    fome = GlobalSettings::instance()->model()->ABEngine();
+    if (!fome)
+        fome = new ABE::ForestManagementEngine();
+    //fome.test();
+    try {
+
+        ABE::FMSTP::setVerbose(true);
+        fome->setup();
+    } catch(const IException &e) {
+       Helper::msg(e.message());
+    }
+    // todo: re-enable delete!!!
+    // delete fome;
+}
+
+void Tests::testFOMEstep()
+{
+    if (!fome)
+        return;
+    int n = Helper::userValue("how many years?", "1").toInt();
+    for (int i=0;i<n;++i) {
+        qDebug()<< "running ABE year" << i;
+        fome->run(1);
+    }
+}
+
+void Tests::testDbgEstablishment()
+{
+    // test speeed of debugtimer
+    DebugTimer::clearAllTimers();
+    DebugTimer total("total");
+    // 4x1,000,000 timers: ca 1.5 seks...
+    for (int i=0;i<100000;i++) {
+        { DebugTimer a("aasdf asdfasdf"); }
+        { DebugTimer a("basdflk asdf"); }
+        { DebugTimer a("bas asdfasdf"); }
+        { DebugTimer a("dasdflkj asdfalskfj"); }
+    }
+
+    qDebug() << "finsihed timers";
+
+//    const Grid<float> &seed_map = GlobalSettings::instance()->model()->speciesSet()->activeSpecies()[0]->seedDispersal()->seedMap();
+
+//    int n_established = 0;
+//    int n_tested = 0, n_seed=0, n_dropped=0;
+//    double mPAbiotic = 0.8;
+//    DebugTimer runt("run est");
+//    int dbg_numbers = RandomGenerator::debugNRandomNumbers();
+//    // define a height map for the current resource unit on the stack
+//    float sapling_map[cPxPerRU*cPxPerRU];
+    // set the map and initialize it:
+
+//    for (int i=0;i<100;i++)
+//        foreach ( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+
+//             ru->setSaplingHeightMap(sapling_map);
+//             ResourceUnitSpecies *mRUS = ru->ruSpecies()[0];
+
+//            const QRectF &ru_rect = ru->boundingBox();
+
+//            // test the establishment code....
+//            GridRunner<float> seed_runner(seed_map, ru_rect);
+//            Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
+
+//            // check every pixel inside the bounding box of the pixel with
+//            while (float *p = seed_runner.next()) {
+//                ++n_tested;
+//                if (*p>0.f) {
+//                    ++n_seed;
+//                    //double p_establish = drandom(mRUS->ru()->randomGenerator());
+//                    //if (p_establish > mPAbiotic)
+//                    //    continue;
+//                    // pixel with seeds: now really iterate over lif pixels
+//                    GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_runner.currentIndex()));
+//                    while (float *lif_px = lif_runner.next()) {
+//                        DBGMODE(
+//                                    if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
+//                                    qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
+//                                );
+//                        double p_establish = drandom();
+//                        if (p_establish < mPAbiotic) {
+//                            //if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
+//                            QPoint pos_lif = lif_map->indexOf(lif_px);
+
+//                            if (ru->saplingHeightAt(pos_lif) > 1.3f)
+//                                ++n_dropped;
+
+//                            // check if sapling of the current tree species is already established -> if so, no establishment.
+//                            if (mRUS->hasSaplingAt(pos_lif))
+//                                ++n_dropped;
+
+//                            const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight);
+//                            if (hgv.count()>0) n_dropped++;
+//                            double h_height_grid = hgv.height;
+//                            double rel_height = 4. / h_height_grid;
+
+//                             double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(*lif_px, rel_height);
+//                             if (lif_corrected < drandom())
+//                                 ++n_dropped;
+
+
+//                            n_established++;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    qDebug() << "Orig tested " << n_tested << "with seed" << n_seed << "est: " << n_established << "time" << runt.elapsed() << "debug numbers used:" << RandomGenerator::debugNRandomNumbers()-dbg_numbers << "n_dropped" << n_dropped;
+
+//    runt.start();
+//    n_established = 0;
+//    n_tested = 0; n_seed=0; n_dropped=0;
+//    for (int i=0;i<100;i++)
+//        foreach ( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+
+//             ru->setSaplingHeightMap(sapling_map);
+//             ResourceUnitSpecies *mRUS = ru->ruSpecies()[0];
+//             const std::bitset<cPxPerRU*cPxPerRU> &pos_bitset = mRUS->sapling().presentPositions();
+
+//            const QRectF &ru_rect = ru->boundingBox();
+//            //DebugTimer estasd("establish:from_search");
+//            // 3rd step: check actual pixels in the LIF grid
+
+//            // a large part has available seeds. simply scan the pixels...
+//            QPoint lif_index;
+//            Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
+//            GridRunner<float> lif_runner(lif_map, ru_rect);
+//            float *sap_height = sapling_map;
+//            size_t bit_idx=0;
+//            while (float *lif_px = lif_runner.next()) {
+//                ++n_tested;
+//                // check for height of sapling < 1.3m (for all species
+//                // and for presence of a sapling of the given species
+//                if (*sap_height < 1.3 && pos_bitset[bit_idx]==false) {
+//                    ++n_seed;
+//                    lif_index = lif_map->indexOf(lif_px);
+//                    double sap_random_number = drandom();
+//                    const float seed_map_value = seed_map.constValueAt( lif_runner.currentCoord() );
+
+//                    if (seed_map_value*mPAbiotic > sap_random_number)
+//                        ++n_dropped;
+
+
+////                    DBGMODE(
+////                                if (!ru_rect.contains(lif_map->cellCenterPoint(lif_index)))
+////                                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map->cellCenterPoint(lif_index) << "not in" << ru_rect;
+////                            );
+
+
+//                    const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(lif_index.x()/cPxPerHeight, lif_index.y()/cPxPerHeight);
+
+//                    double h_height_grid = hgv.height;
+//                    double rel_height = 4. / h_height_grid;
+
+//                     double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(*lif_px, rel_height);
+//                     if (lif_corrected < sap_random_number)
+//                         ++n_dropped;
+
+//                     if (seed_map_value*mPAbiotic*lif_corrected < sap_random_number)
+//                         n_established++;
+//                }
+//                ++sap_height;
+//                ++bit_idx;
+//            }
+
+
+//        }
+//    qDebug() << "Upd tested " << n_tested << "with seed" << n_seed << "est: " << n_established << "time" << runt.elapsed() << "debug numbers used:" << RandomGenerator::debugNRandomNumbers()-dbg_numbers << "n_dropped" << n_dropped;
+
+//    DebugTimer::printAllTimers();
+}
+
+void Tests::testGridIndexHack()
+{
+    Grid<float> m2, m10;
+    const int n=10000;
+    m2.setup(2,n,n);
+    m10.setup(10, n/5, n/5 );
+    m10.wipe();
+
+    for (float *f = m2.begin(), i=0.; f!=m2.end(); ++f, ++i)
+        *f = i;
+
+//    for (int i=0;i<m2.count();++i) {
+//        qDebug() << i << m2.index5(i);
+//    }
+//    return;
+
+    int el;
+    { DebugTimer t("optimized");
+        for (float *f = m2.begin(); f!=m2.end(); ++f) {
+            m10[ m2.index5(f-m2.begin()) ] += *f;
+        }
+        el = t.elapsed();
+    }
+
+    float s=m10.sum() / m10.count();
+    qDebug() << "test average value (new):" << s << "time" << el;
+
+    m10.wipe();
+
+    { DebugTimer t("old");
+        for (float *f = m2.begin(); f!=m2.end(); ++f) {
+            m10.valueAt(m2.cellCenterPoint(m2.indexOf(f))) += *f;
+        }
+        el = t.elapsed();
+    }
+    s=m10.sum() / m10.count();
+    qDebug() << "test average value (old):" << s << "time" << el;
+
+     int errors=0;
+     { DebugTimer t("compare");
+         for (float *f = m2.begin(); f!=m2.end(); ++f) {
+             if ( m10.valueAtIndex( m2.index5(f-m2.begin()) ) != m10.valueAt(m2.cellCenterPoint(m2.indexOf(f))))
+                     errors++;
+         }
+     }
+      qDebug() << "test e:differenczes" << errors;
+
+      { DebugTimer t("optimized");
+          for (int i=0;i<m2.count();++i) {
+              m10[ m2.index5(i)] += m2[i];
+          }
+          el = t.elapsed();
+      }
+
+      s=m10.sum() / m10.count();
+      qDebug() << "test average value (square brackets):" << s << "time" << el;
 
 }

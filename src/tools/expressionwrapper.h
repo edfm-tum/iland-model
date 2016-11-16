@@ -20,7 +20,9 @@
 #ifndef EXPRESSIONWRAPPER_H
 #define EXPRESSIONWRAPPER_H
 #include <QtCore/QString>
-
+/** ExpressionWrapper is the base class for exposing C++ elements
+ *  to the built-in Expression engine. See TreeWrapper for an example.
+*/
 class ExpressionWrapper
 {
 public:
@@ -31,6 +33,9 @@ public:
     virtual int variableIndex(const QString &variableName);
 };
 
+/** TreeWrapper wraps an individual tree in iLand.
+ *
+ **/
 class Tree;
 class TreeWrapper: public ExpressionWrapper
 {
@@ -45,6 +50,8 @@ private:
     const Tree *mTree;
 };
 
+/** RUWrapper encapsualates an iLand resource unit (1 ha pixel)
+*/
 class ResourceUnit;
 class RUWrapper: public ExpressionWrapper
 {
@@ -58,5 +65,6 @@ public:
 private:
     const ResourceUnit *mRU;
 };
+
 
 #endif // EXPRESSIONWRAPPER_H

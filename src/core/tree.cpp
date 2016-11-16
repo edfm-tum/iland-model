@@ -27,13 +27,27 @@
 #include "model.h"
 #include "snag.h"
 
+#include "forestmanagementengine.h"
+#include "modules.h"
+
+#include "treeout.h"
+#include "landscapeout.h"
+
 // static varaibles
 FloatGrid *Tree::mGrid = 0;
 HeightGrid *Tree::mHeightGrid = 0;
+TreeRemovedOut *Tree::mRemovalOutput = 0;
+LandscapeRemovedOut *Tree::mLSRemovalOutput = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
 int Tree::m_nextId=0;
+
+#ifdef ALT_TREE_MORTALITY
+static double _stress_threshold = 0.05;
+static int _stress_years = 5;
+static double _stress_death_prob = 0.33;
+#endif
 
 /** @class Tree
     @ingroup core
@@ -47,11 +61,11 @@ int Tree::m_nextId=0;
 
 /** get distance and direction between two points.
   returns the distance (m), and the angle between PStart and PEnd (radians) in referenced param rAngle. */
-float dist_and_direction(const QPointF &PStart, const QPointF &PEnd, float &rAngle)
+double dist_and_direction(const QPointF &PStart, const QPointF &PEnd, double &rAngle)
 {
-    float dx = PEnd.x() - PStart.x();
-    float dy = PEnd.y() - PStart.y();
-    float d = sqrt(dx*dx + dy*dy);
+    double dx = PEnd.x() - PStart.x();
+    double dy = PEnd.y() - PStart.y();
+    double d = sqrt(dx*dx + dy*dy);
     // direction:
     rAngle = atan2(dx, dy);
     return d;
@@ -67,6 +81,7 @@ Tree::Tree()
     mOpacity=mFoliageMass=mWoodyMass=mCoarseRootMass=mFineRootMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
     mLightResponse = 0.;
+    mStamp=0;
     mId = m_nextId++;
     m_statCreated++;
 }
@@ -79,7 +94,7 @@ float Tree::crownRadius() const
 
 float Tree::biomassBranch() const
 {
-    return mSpecies->biomassBranch(mDbh);
+    return static_cast<float>( mSpecies->biomassBranch(mDbh) );
 }
 
 void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
@@ -111,8 +126,9 @@ void Tree::dumpList(DebugList &rTargetList)
 
 void Tree::setup()
 {
-    if (mDbh<=0 || mHeight<=0)
-        return;
+    if (mDbh<=0 || mHeight<=0) {
+        throw IException(QString("Error: trying to set up a tree with invalid dimensions: dbh: %1 height: %2 id: %3 RU-index: %4").arg(mDbh).arg(mHeight).arg(mId).arg(mRU->index()));
+    }
     // check stamp
     Q_ASSERT_X(species()!=0, "Tree::setup()", "species is NULL");
     mStamp = species()->stamp(mDbh, mHeight);
@@ -120,16 +136,16 @@ void Tree::setup()
         throw IException("Tree::setup() with invalid stamp!");
     }
 
-    mFoliageMass = species()->biomassFoliage(mDbh);
-    mCoarseRootMass = species()->biomassRoot(mDbh); // coarse root (allometry)
-    mFineRootMass = mFoliageMass * species()->finerootFoliageRatio(); //  fine root (size defined  by finerootFoliageRatio)
-    mWoodyMass = species()->biomassWoody(mDbh);
+    mFoliageMass = static_cast<float>( species()->biomassFoliage(mDbh) );
+    mCoarseRootMass = static_cast<float>( species()->biomassRoot(mDbh) ); // coarse root (allometry)
+    mFineRootMass = static_cast<float>( mFoliageMass * species()->finerootFoliageRatio() ); //  fine root (size defined  by finerootFoliageRatio)
+    mWoodyMass = static_cast<float>( species()->biomassWoody(mDbh) );
 
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
-    mLeafArea = mFoliageMass * species()->specificLeafArea();
-    mOpacity = 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea());
-    mNPPReserve = (1+species()->finerootFoliageRatio())*mFoliageMass; // initial value
-    mDbhDelta = 0.1; // initial value: used in growth() to estimate diameter increment
+    mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() );
+    mOpacity = static_cast<float>( 1. - exp(- Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea()) );
+    mNPPReserve = static_cast<float>( (1+species()->finerootFoliageRatio())*mFoliageMass ); // initial value
+    mDbhDelta = 0.1f; // initial value: used in growth() to estimate diameter increment
 
 }
 
@@ -178,9 +194,9 @@ void Tree::applyLIP()
             value = (*mStamp)(x,y); // stampvalue
             //if (value>0.f) {
                 local_dom = (*mHeightGrid)(grid_x/cPxPerHeight, grid_y/cPxPerHeight).height;
-                z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+                z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
                 z_zstar = (z>=local_dom)?1.f:z/local_dom;
-                value = 1. - value*mOpacity * z_zstar; // calculated value
+                value = 1.f - value*mOpacity * z_zstar; // calculated value
                 value = std::max(value, 0.02f); // limit value
 
                 *grid_value_ptr *= value;
@@ -240,10 +256,10 @@ void Tree::applyLIP_torus()
 
             local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight,yt/cPxPerHeight).height;
 
-            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z = std::max(mHeight - (*mStamp).distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
             value = (*mStamp)(x,y); // stampvalue
-            value = 1. - value*mOpacity * z_zstar; // calculated value
+            value = 1.f - value*mOpacity * z_zstar; // calculated value
             // old: value = 1. - value*mOpacity / local_dom; // calculated value
             value = qMax(value, 0.02f); // limit value
 
@@ -435,7 +451,7 @@ void Tree::readLIF()
     if (!reader)
         return;
     QPoint pos_reader = mPositionIndex;
-    const float outside_area_factor = 0.1; //
+    const float outside_area_factor = 0.1f; //
 
     int offset_reader = reader->offset();
     int offset_writer = mStamp->offset();
@@ -459,7 +475,7 @@ void Tree::readLIF()
 
             const HeightGridValue &hgv = mHeightGrid->constValueAtIndex((rx+x)/cPxPerHeight, ry/cPxPerHeight); // the height grid value, ry: gets ++ed in outer loop, rx not
             local_dom = hgv.height;
-            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
 
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;
@@ -475,11 +491,11 @@ void Tree::readLIF()
 
         }
     }
-    mLRI = sum;
+    mLRI = static_cast<float>( sum );
     // LRI correction...
     double hrel = mHeight / mHeightGrid->valueAtIndex(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight).height;
     if (hrel<1.)
-        mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
+        mLRI = static_cast<float>( species()->speciesSet()->LRIcorrection(mLRI, hrel) );
 
 
     if (mLRI > 1.)
@@ -530,7 +546,7 @@ void Tree::readLIF_torus()
             grid_value = mGrid->ptr(xt,yt);
 
             local_dom = mHeightGrid->valueAtIndex(xt/cPxPerHeight, yt/cPxPerHeight).height; // ry: gets ++ed in outer loop, rx not
-            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45° line)
+            z = std::max(mHeight - reader->distanceToCenter(x,y), 0.f); // distance to center = height (45 degree line)
             z_zstar = (z>=local_dom)?1.f:z/local_dom;
 
             own_value = 1. - mStamp->offsetValue(x,y,d_offset)*mOpacity * z_zstar;
@@ -550,13 +566,12 @@ void Tree::readLIF_torus()
             //} // isIndexValid
         }
     }
-    mLRI = sum;
+    mLRI = static_cast<float>( sum );
 
     // LRI correction...
     double hrel = mHeight / mHeightGrid->valueAtIndex(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight).height;
     if (hrel<1.)
-        mLRI = species()->speciesSet()->LRIcorrection(mLRI, hrel);
-
+        mLRI = static_cast<float>( species()->speciesSet()->LRIcorrection(mLRI, hrel) );
 
     if (isnan(mLRI)) {
         qDebug() << "LRI invalid (nan)!" << id();
@@ -580,12 +595,22 @@ void Tree::resetStatistics()
     m_nextId=1;
 }
 
+#ifdef ALT_TREE_MORTALITY
+void Tree::mortalityParams(double dbh_inc_threshold, int stress_years, double stress_mort_prob)
+{
+    _stress_threshold = dbh_inc_threshold;
+    _stress_years = stress_years;
+    _stress_death_prob = stress_mort_prob;
+    qDebug() << "Alternative Mortality enabled: threshold" << dbh_inc_threshold << ", years:" << _stress_years << ", level:" << _stress_death_prob;
+}
+#endif
+
 void Tree::calcLightResponse()
 {
     // calculate a light response from lri:
     // http://iland.boku.ac.at/individual+tree+light+availability
     double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.); // Eq. (3)
-    mLightResponse = mSpecies->lightResponse(lri); // Eq. (4)
+    mLightResponse = static_cast<float>( mSpecies->lightResponse(lri) ); // Eq. (4)
     mRU->addLR(mLeafArea, mLightResponse);
 
 }
@@ -629,20 +654,28 @@ void Tree::grow()
             out << mLRI * mRU->LRImodifier() << mLightResponse << effective_area << raw_gpp << gpp << d.NPP << aging_factor;
         }
     //); // DBGMODE()
-    if (d.NPP>0.)
-        partitioning(d); // split npp to compartments and grow (diameter, height)
+    if (Globals->model()->settings().growthEnabled) {
+        if (d.NPP>0.)
+            partitioning(d); // split npp to compartments and grow (diameter, height)
+    }
 
     // mortality
+#ifdef ALT_TREE_MORTALITY
+    // alternative variant of tree mortality (note: mStrssIndex used otherwise)
+    altMortality(d);
+
+#else
     if (Model::settings().mortalityEnabled)
         mortality(d);
 
     mStressIndex = d.stress_index;
+#endif
 
     if (!isDead())
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
 
     // regeneration
-    mSpecies->seedProduction(mAge, mHeight, mPositionIndex);
+    mSpecies->seedProduction(this);
 
 }
 
@@ -674,8 +707,9 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     // Duursma 2007, Eq. (20)
     apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mWoodyMass + b_wf );
-    if (apct_wood<0)
-        apct_wood = 0.;
+
+    apct_wood = limit(apct_wood, 0., 1.-apct_root);
+
     apct_foliage = 1. - apct_root - apct_wood;
 
 
@@ -712,7 +746,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
         if (ru()->snag())
             ru()->snag()->addTurnoverWood(species(), mCoarseRootMass-max_coarse_root);
 
-        mCoarseRootMass = max_coarse_root;
+        mCoarseRootMass = static_cast<float>( max_coarse_root );
     }
 
     // Foliage
@@ -722,7 +756,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
         qDebug() << "foliage mass invalid!";
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
 
-    mLeafArea = mFoliageMass * species()->specificLeafArea(); // update leaf area
+    mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() ); // update leaf area
 
     // stress index: different varaints at denominator: to_fol*foliage_mass = leafmass to rebuild,
     // foliage_mass_allo: simply higher chance for stress
@@ -734,7 +768,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // (1) transfer to reserve pool
     double gross_woody = apct_wood * npp;
     double to_reserve = qMin(reserve_size, gross_woody);
-    mNPPReserve = to_reserve;
+    mNPPReserve = static_cast<float>( to_reserve );
     double net_woody = gross_woody - to_reserve;
     double net_stem = 0.;
     mDbhDelta = 0.;
@@ -804,12 +838,12 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     // the final increment is then:
     double d_increment = factor_diameter * (net_stem_npp - stem_residual); // Eq. (11)
     double res_final  = 0.;
-    if (fabs(stem_residual) > 1.) {
+    if (fabs(stem_residual) > std::min(1.,stem_mass)) {
 
         // calculate final residual in stem
         res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
-        if (fabs(res_final)>1.) {
-            // for large errors in stem biomass due to errors in diameter increment (> 1kg), we solve the increment iteratively.
+        if (fabs(res_final)>std::min(1.,stem_mass)) {
+            // for large errors in stem biomass due to errors in diameter increment (> 1kg or >stem mass), we solve the increment iteratively.
             // first, increase increment with constant step until we overestimate the first time
             // then,
             d_increment = 0.02; // start with 2cm increment
@@ -834,15 +868,14 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
         }
     }
 
-    DBGMODE(
     if (d_increment<0.f)
         qDebug() << "Tree::grow_diameter: d_inc < 0.";
-    ); // dbgmode
-           //DBGMODE(
     DBG_IF_X(d_increment<0. || d_increment>0.1, "Tree::grow_dimater", "increment out of range.", dump()
              + QString("\nhdz %1 factor_diameter %2 stem_residual %3 delta_d_estimate %4 d_increment %5 final residual(kg) %6")
                .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
                .arg( mass_factor * (mDbh + d_increment)*(mDbh + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp)) ));
+
+    //DBGMODE(
         // do not calculate res_final twice if already done
         DBG_IF_X( (res_final==0.?fabs(mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp))):res_final) > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
@@ -858,15 +891,15 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     d_increment = qMax(d_increment, 0.);
 
     // update state variables
-    mDbh += d_increment*100; // convert from [m] to [cm]
-    mDbhDelta = d_increment*100; // save for next year's growth
+    mDbh += d_increment*100.f; // convert from [m] to [cm]
+    mDbhDelta = static_cast<float>( d_increment*100. ); // save for next year's growth
     mHeight += d_increment * hd_growth;
 
     // update state of LIP stamp and opacity
     mStamp = species()->stamp(mDbh, mHeight); // get new stamp for updated dimensions
     // calculate the CrownFactor which reflects the opacity of the crown
     const double k=Model::settings().lightExtinctionCoefficientOpacity;
-    mOpacity = 1. - exp(-k * mLeafArea / mStamp->crownArea());
+    mOpacity = static_cast<float>( 1. - exp(-k * mLeafArea / mStamp->crownArea()) );
 
 }
 
@@ -878,7 +911,7 @@ inline double Tree::relative_height_growth()
     mSpecies->hdRange(mDbh, hd_low, hd_high);
 
     DBG_IF_X(hd_low>hd_high, "Tree::relative_height_growth", "hd low higher dann hd_high for ", dump());
-    DBG_IF_X(hd_low < 20 || hd_high>250, "Tree::relative_height_growth", "hd out of range ", dump() + QString(" hd-low: %1 hd-high: %2").arg(hd_low).arg(hd_high));
+    DBG_IF_X(hd_low < 10 || hd_high>250, "Tree::relative_height_growth", "hd out of range ", dump() + QString(" hd-low: %1 hd-high: %2").arg(hd_low).arg(hd_high));
 
     // scale according to LRI: if receiving much light (LRI=1), the result is hd_low (for open grown trees)
     // use the corrected LRI (see tracker#11)
@@ -895,37 +928,67 @@ void Tree::die(TreeGrowthData *d)
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, d); // add tree to statistics
+    notifyTreeRemoved(TreeDeath);
     if (ru()->snag())
         ru()->snag()->addMortality(this);
 }
 
+/// remove a tree (most likely due to harvest) from the system.
 void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
+    setIsHarvested();
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsMgmt().add(this, 0);
+    if (isCutdown())
+        notifyTreeRemoved(TreeCutDown);
+    else
+        notifyTreeRemoved(TreeHarvest);
+
+    if (GlobalSettings::instance()->model()->saplings())
+        GlobalSettings::instance()->model()->saplings()->addSprout(this);
+
     if (ru()->snag())
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
 }
 
 /// remove the tree due to an special event (disturbance)
+/// this is +- the same as die().
 void Tree::removeDisturbance(const double stem_to_soil_fraction, const double stem_to_snag_fraction, const double branch_to_soil_fraction, const double branch_to_snag_fraction, const double foliage_to_soil_fraction)
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
     rus.statisticsDead().add(this, 0);
-    if (ru()->snag())
-        ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
+    notifyTreeRemoved(TreeDisturbance);
+
+    if (GlobalSettings::instance()->model()->saplings())
+        GlobalSettings::instance()->model()->saplings()->addSprout(this);
+
+    if (ru()->snag()) {
+        if (isHarvested()) { // if the tree is harvested, do the same as in normal tree harvest (but with default values)
+            ru()->snag()->addHarvest(this, 1., 0., 0.);
+        } else {
+            ru()->snag()->addDisturbance(this, stem_to_snag_fraction, stem_to_soil_fraction, branch_to_snag_fraction, branch_to_soil_fraction, foliage_to_soil_fraction);
+        }
+    }
 }
 
-void Tree::removeBiomass(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
+/// remove a part of the biomass of the tree, e.g. due to fire.
+void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
 {
     mFoliageMass *= 1. - removeFoliageFraction;
     mWoodyMass *= (1. - removeStemFraction);
     // we have a problem with the branches: this currently cannot be done properly!
     (void) removeBranchFraction; // silence warning
+}
+
+void Tree::setHeight(const float height)
+{
+    if (height<=0. || height>150.)
+        qWarning() << "trying to set tree height to invalid value:" << height << " for tree on RU:" << (mRU?mRU->boundingBox():QRect());
+    mHeight=height;
 }
 
 void Tree::mortality(TreeGrowthData &d)
@@ -943,6 +1006,53 @@ void Tree::mortality(TreeGrowthData &d)
         // die...
         die();
     }
+}
+
+#ifdef ALT_TREE_MORTALITY
+void Tree::altMortality(TreeGrowthData &d)
+{
+    // death if leaf area is 0
+    if (mFoliageMass<0.00001)
+        die();
+
+    double  p_intrinsic, p_stress=0.;
+    p_intrinsic = species()->deathProb_intrinsic();
+
+    if (mDbhDelta < _stress_threshold) {
+        mStressIndex++;
+        if (mStressIndex> _stress_years)
+            p_stress = _stress_death_prob;
+    } else
+        mStressIndex = 0;
+
+    double p = drandom(); //0..1
+    if (p<p_intrinsic + p_stress) {
+        // die...
+        die();
+    }
+}
+#endif
+
+void Tree::notifyTreeRemoved(TreeRemovalType reason)
+{
+    // this information is used to track the removed volume for stands based on grids (and for salvaging operations)
+    ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
+    if (abe)
+        abe->notifyTreeRemoval(this, static_cast<int>(reason));
+
+    // tell disturbance modules that a tree died
+    GlobalSettings::instance()->model()->modules()->treeDeath(this, static_cast<int>(reason) );
+
+    // update reason, if ABE handled the tree
+    if (reason==TreeDisturbance && isHarvested())
+        reason = TreeSalavaged;
+    if (isCutdown())
+        reason = TreeCutDown;
+    // create output for tree removals
+    if (mRemovalOutput && mRemovalOutput->isEnabled())
+        mRemovalOutput->execRemovedTree(this, static_cast<int>(reason));
+    if (mLSRemovalOutput && mLSRemovalOutput->isEnabled())
+        mLSRemovalOutput->execRemovedTree(this, static_cast<int>(reason));
 }
 
 //////////////////////////////////////////////////

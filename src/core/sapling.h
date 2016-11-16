@@ -24,13 +24,14 @@
 #include <bitset>
 #include "grid.h"
 #include "snag.h"
-
-/// SaplingTree holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
-class SaplingTree {
+#include "model.h"
+/// SaplingTreeOld holds information of a sapling (which represents N trees). Emphasis is on efficient storage.
+class SaplingTreeOld {
 public:
-    SaplingTree() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }
+    SaplingTreeOld() { pixel=0; age.age=0; age.stress_years=0; height=0.05f; }
     bool isValid() const {return pixel!=0; }
-    float *pixel; // pointer to the lifpixel the sapling lives on
+    float *pixel; // pointer to the lifpixel the sapling lives on, set to 0 if sapling died/removed
+    QPoint coords() const { return GlobalSettings::instance()->model()->grid()->indexOf(pixel); }
     struct  { // packed two 16bit to a 32 bit integer
         short unsigned int age;  // number of consectuive years the sapling suffers from dire conditions
         short unsigned int stress_years; // (upper 16bits) + age of sapling (lower 16 bits)
@@ -54,13 +55,18 @@ public:
     void newYear() { clearStatistics(); }
     void clear() { mSaplingTrees.clear(); mSapBitset.reset(); }
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
+    static void updateBrowsingPressure();
+
     // access
-    const QVector<SaplingTree> &saplings() const {return mSaplingTrees; }
+    const QVector<SaplingTreeOld> &saplings() const {return mSaplingTrees; }
     // actions
     void calculateGrowth(); ///< perform growth + mortality + recruitment of all saplings of this RU and species
-    void addSapling(const QPoint &pos_lif);
+    /// add a new sapling at 'pos_lif' (i.e. QPoint with LIF-coordiantes) and with (optionally) 'height' (m) and 'age' (years)
+    /// Returns the index of the newly added sapling.
+    int addSapling(const QPoint &pos_lif, const float height=0.05f, const int age=1);
     /// clear (either remove or kill) a specific sapling
-    void clearSapling(SaplingTree &tree, const bool remove);
+    void clearSapling(SaplingTreeOld &tree, const bool remove);
+    void clearSapling(int index, const bool remove);
     void clearSaplings(const QPoint &position); ///< clear  saplings on a given position (after recruitment)
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass); ///< clear  saplings within a given rectangle
     bool hasSapling(const QPoint &position) const; ///< return true if sapling is present at position
@@ -75,16 +81,19 @@ public:
     double averageAge() const { return mAvgAge; }
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
+    /// return the number of trees represented by one sapling of the current species and given 'height'
+    double representedStemNumber(float height) const;
     // carbon and nitrogen
     const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
     // output maps
     void fillMaxHeightGrid(Grid<float> &grid) const;
+    const std::bitset<cPxPerRU*cPxPerRU> &presentPositions() const { return mSapBitset; }
 private:
-    bool growSapling(SaplingTree &tree, const double f_env_yr, Species* species);
-    void setBit(const QPoint &pos_index);
+    bool growSapling(SaplingTreeOld &tree, const double f_env_yr, Species* species);
+    void setBit(const QPoint &pos_index, bool value);
     ResourceUnitSpecies *mRUS;
-    QVector<SaplingTree> mSaplingTrees;
+    QVector<SaplingTreeOld> mSaplingTrees;
     std::bitset<cPxPerRU*cPxPerRU> mSapBitset;
     int mAdded; ///< number of trees added
     int mRecruited; ///< number recruited (i.e. grown out of regeneration layer)
@@ -96,8 +105,10 @@ private:
     double mAvgDeltaHPot; ///< average height increment potential (m)
     double mAvgHRealized; ///< average realized height increment
     static double mRecruitmentVariation; ///< defines range of random variation for recruited trees
+    static double mBrowsingPressure; ///< scalar for the browsing pressure
     CNPair mCarbonLiving;
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
+
 
     friend class Snapshot;
 };

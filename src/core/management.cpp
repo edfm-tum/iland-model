@@ -24,7 +24,6 @@
 #include "resourceunit.h"
 #include "tree.h"
 #include "expressionwrapper.h"
-#include "sapling.h"
 #include "soil.h"
 
 //#include "climateconverter.h"
@@ -33,7 +32,8 @@
 #include "mapgrid.h"
 //#include "modules.h"
 
-#include <QtScript>
+#include <QJSEngine>
+#include <QJSValue>
 
 /** @class Management Management executes management routines.
   @ingroup core
@@ -54,7 +54,7 @@ Management::Management()
 {
     // setup the scripting engine
     mEngine = GlobalSettings::instance()->scriptEngine();
-    QScriptValue objectValue = mEngine->newQObject(this);
+    QJSValue objectValue = mEngine->newQObject(this);
     mEngine->globalObject().setProperty("management", objectValue);
 
     // default values for removal fractions
@@ -81,7 +81,7 @@ int Management::remain(int number)
     int to_kill = trees.count() - number;
     qDebug() << trees.count() << " standing, targetsize" << number << ", hence " << to_kill << "trees to remove";
     for (int i=0;i<to_kill;i++) {
-        int index = irandom(0, trees.count()-1);
+        int index = irandom(0, trees.count());
         trees[index]->remove();
         trees.removeAt(index);
     }
@@ -90,11 +90,20 @@ int Management::remain(int number)
 }
 
 
-int Management::kill()
+int Management::killAll()
 {
     int c = mTrees.count();
     for (int i=0;i<mTrees.count();i++)
         mTrees[i].first->remove();
+    mTrees.clear();
+    return c;
+}
+
+int Management::disturbanceKill()
+{
+    int c = mTrees.count();
+    for (int i=0;i<mTrees.count();i++)
+        mTrees[i].first->removeDisturbance(0.1, 0.1, 0.1, 0.1, 1.);
     mTrees.clear();
     return c;
 }
@@ -108,12 +117,22 @@ int Management::manage(QString filter, double fraction)
     return remove_trees(filter, fraction, true);
 }
 
+void Management::cutAndDrop()
+{
+    //int c = mTrees.count();
+    for (int i=0;i<mTrees.count();i++) {
+        mTrees[i].first->setDeathCutdown(); // set flag that tree is cut down
+        mTrees[i].first->die();
+    }
+    mTrees.clear();
+}
+
 int Management::remove_percentiles(int pctfrom, int pctto, int number, bool management)
 {
     if (mTrees.isEmpty())
         return 0;
     int index_from = limit(int(pctfrom/100. * mTrees.count()), 0, mTrees.count());
-    int index_to = limit(int(pctto/100. * mTrees.count()), 0, mTrees.count()-1);
+    int index_to = limit(int(pctto/100. * mTrees.count()), 0, mTrees.count());
     if (index_from>=index_to)
         return 0;
     qDebug() << "attempting to remove" << number << "trees between indices" << index_from << "and" << index_to;
@@ -182,6 +201,7 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
                     tp->first->remove(removeFoliage(), removeBranch(), removeStem()); // management with removal fractions
                 else
                     tp->first->remove(); // kill
+
                 // remove from tree list
                 tp = mTrees.erase(tp);
                 n++;
@@ -190,7 +210,7 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
             }
         }
     } catch(const IException &e) {
-        context()->throwError(e.message());
+        throwError(e.message());
     }
     return n;
 }
@@ -229,7 +249,7 @@ double Management::aggregate_function(QString expression, QString filter, QStrin
         }
 
     } catch(const IException &e) {
-        context()->throwError(e.message());
+        throwError(e.message());
     }
     if (type=="sum")
         return sum;
@@ -238,20 +258,28 @@ double Management::aggregate_function(QString expression, QString filter, QStrin
     return 0.;
 }
 
+// introduced with switch to QJSEngine (context->throwMessage not available any more)
+void Management::throwError(const QString &errormessage)
+{
+    GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
+    qDebug() << "Management-script error:" << errormessage;
+    // no idea if this works!!!
+}
+
 
 // from the range percentile range pctfrom to pctto (each 1..100)
-int Management::kill(int pctfrom, int pctto, int number)
+int Management::killPct(int pctfrom, int pctto, int number)
 {
     return remove_percentiles(pctfrom, pctto, number, false);
 }
 
 // from the range percentile range pctfrom to pctto (each 1..100)
-int Management::manage(int pctfrom, int pctto, int number)
+int Management::managePct(int pctfrom, int pctto, int number)
 {
     return remove_percentiles(pctfrom, pctto, number, true);
 }
 
-int Management::manage()
+int Management::manageAll()
 {
     int c = mTrees.count();
     for (int i=0;i<mTrees.count();i++)
@@ -269,16 +297,13 @@ void Management::run()
     mTrees.clear();
     mRemoved=0;
     qDebug() << "Management::run() called";
-    QScriptValue mgmt = mEngine->globalObject().property("manage");
+    QJSValue mgmt = mEngine->globalObject().property("manage");
     int year = GlobalSettings::instance()->currentYear();
-    mgmt.call(QScriptValue(), QScriptValueList()<<year);
-    if (mEngine->hasUncaughtException())
-        qDebug() << "Script Error occured: " << mEngine->uncaughtException().toString() << "\n" << mEngine->uncaughtExceptionBacktrace();
+    //mgmt.call(QJSValue(), QScriptValueList()<<year);
+    QJSValue result = mgmt.call(QJSValueList() << year);
+    if (result.isError())
+        qDebug() << "Script Error occured: " << result.toString();//  << "\n" << mEngine->uncaughtExceptionBacktrace();
 
-    if (mRemoved>0) {
-        foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList())
-           ru->cleanTreeList();
-    }
 }
 
 void Management::loadScript(const QString &fileName)
@@ -331,14 +356,14 @@ int Management::filter(QString filter)
                 ++tp;
         }
     } catch(const IException &e) {
-        context()->throwError(e.message());
+        throwError(e.message());
     }
 
     qDebug() << "filtering with" << filter << "N=" << n_before << "/" << mTrees.count()  << "trees (before/after filtering).";
     return mTrees.count();
 }
 
-int Management::load(int ruindex)
+int Management::loadResourceUnit(int ruindex)
 {
     Model *m = GlobalSettings::instance()->model();
     ResourceUnit *ru = m->ru(ruindex);
@@ -387,7 +412,7 @@ void Management::loadFromTreeList(QList<Tree*>tree_list)
 void Management::loadFromMap(MapGridWrapper *wrap, int key)
 {
     if (!wrap) {
-        context()->throwError("loadFromMap called with invalid map object!");
+        throwError("loadFromMap called with invalid map object!");
         return;
     }
     loadFromMap(wrap->map(), key);
@@ -401,15 +426,16 @@ void Management::killSaplings(MapGridWrapper *wrap, int key)
     //    return;
     //}
     //loadFromMap(wrap->map(), key);
-    // retrieve all sapling trees on the stand:
-    QList<QPair<ResourceUnitSpecies *, SaplingTree *> > list = wrap->map()->saplingTrees(key);
-    // for now, just kill em all...
-    for (QList<QPair<ResourceUnitSpecies *, SaplingTree *> >::iterator it = list.begin(); it!=list.end(); ++it) {
-        // (*it).second->pixel = 0;
-        (*it).first->changeSapling().clearSapling( *(*it).second, false); // kill and move biomass to soil
+    QRectF box = wrap->map()->boundingBox(key);
+    GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), box);
+    ResourceUnit *ru;
+    while (runner.next()) {
+        if (wrap->map()->standIDFromLIFCoord(runner.currentIndex()) == key) {
+            SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(),true, &ru);
+            if (sc)
+                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,true);
+        }
     }
-
-    // the storage for unused/invalid saplingtrees is released lazily (once a year, after growth)
 }
 
 /// specify removal fractions
@@ -420,7 +446,7 @@ void Management::killSaplings(MapGridWrapper *wrap, int key)
 void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
 {
     if (!(SWDfrac>=0. && SWDfrac<=1. && DWDfrac>=0. && DWDfrac<=1. && soilFrac>=0. && soilFrac<=1. && litterFrac>=0. && litterFrac<=1.)) {
-        context()->throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: %1").arg(context()->argumentsObject().toString()));
+        throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: ---"));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
@@ -448,7 +474,7 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
 void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction)
 {
     if (slash_fraction<0 || slash_fraction>1) {
-        context()->throwError(QString("slashSnags called with invalid parameters!!\nArgs: %1").arg(context()->argumentsObject().toString()));
+        throwError(QString("slashSnags called with invalid parameters!!\nArgs: ...."));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);

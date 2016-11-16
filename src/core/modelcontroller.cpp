@@ -28,7 +28,9 @@
 #include <QObject>
 
 #include "model.h"
+#include "debugtimer.h"
 #include "helper.h"
+#include "version.h"
 #include "expression.h"
 #include "expressionwrapper.h"
 #include "../output/outputmanager.h"
@@ -36,6 +38,7 @@
 #include "species.h"
 #include "speciesset.h"
 #include "mapgrid.h"
+#include "statdata.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h" // for the debug message buffering
@@ -67,15 +70,15 @@ void ModelController::connectSignals()
 }
 
 /// prepare a list of all (active) species
-QHash<QString, QString> ModelController::availableSpecies()
+QList<const Species*> ModelController::availableSpecies()
 {
-    QHash<QString, QString> list;
+    QList<const Species*> list;
     if (mModel) {
         SpeciesSet *set = mModel->speciesSet();
         if (!set)
             throw IException("there are 0 or more than one species sets.");
         foreach (const Species *s, set->activeSpecies()) {
-            list[s->id()] = s->name();
+            list.append(s);
         }
     }
     return list;
@@ -141,6 +144,12 @@ void ModelController::create()
     if (!canCreate())
         return;
     emit bufferLogs(true);
+    qDebug() << "**************************************************";
+    qDebug() << "project-file:" << mInitFile;
+    qDebug() << "started at: " << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
+    qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
+    qDebug() << "**************************************************";
+
 
     try {
         mHasError = false;
@@ -157,6 +166,7 @@ void ModelController::create()
         GlobalSettings::instance()->setCurrentYear(1); // reset clock
         // initialization of trees, output on startup
         mModel->beforeRun();
+        GlobalSettings::instance()->executeJSFunction("onAfterCreate");
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
@@ -172,8 +182,10 @@ void ModelController::create()
 void ModelController::destroy()
 {
     if (canDestroy()) {
-        delete mModel;
+        GlobalSettings::instance()->executeJSFunction("onBeforeDestroy");
+        Model *m = mModel;
         mModel = 0;
+        delete m;
         GlobalSettings::instance()->setCurrentYear(0);
         qDebug() << "ModelController: Model destroyed.";
     }
@@ -241,9 +253,17 @@ void ModelController::runloop()
 bool ModelController::internalRun()
 {
     // main loop
+    try {
+        while (mRunning && !mPaused &&  !mFinished) {
+            runloop(); // start the running loop
+        }
+    } catch (IException &e) {
+#ifdef ILAND_GUI
+        Helper::msg(e.message());
+#else
+        qDebug() << e.message();
+#endif
 
-    while (mRunning && !mPaused &&  !mFinished) {
-        runloop(); // start the running loop
     }
     return isFinished();
 }
@@ -253,9 +273,14 @@ void ModelController::internalStop()
     if (mRunning) {
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
+        saveDebugOutputs();
+        //if (GlobalSettings::instance()->dbout().isOpen())
+        //    GlobalSettings::instance()->dbout().close();
+
         mFinished = true;
     }
     mRunning = false;
+    mPaused = false; // in any case
     emit bufferLogs(false); // stop buffering
     emit finished(QString());
     emit stateChanged();
@@ -289,14 +314,16 @@ bool ModelController::runYear()
 {
     if (!canRun()) return false;
     DebugTimer t("ModelController:runYear");
-    qDebug() << "ModelController: run year" << currentYear();
+    qDebug() << QDateTime::currentDateTime().toString("hh:mm:ss:") << "ModelController: run year" << currentYear();
 
     if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
     bool err=false;
     try {
         emit bufferLogs(true);
+        GlobalSettings::instance()->executeJSFunction("onYearBegin");
         mModel->runYear();
+
         fetchDynamicOutput();
     } catch(const IException &e) {
         QString error_msg = e.message();
@@ -305,6 +332,12 @@ bool ModelController::runYear()
         err=true;
     }
     emit bufferLogs(false);
+#ifdef ILAND_GUI
+    QApplication::processEvents();
+#else
+    QCoreApplication::processEvents();
+#endif
+
     return err;
 }
 
@@ -341,6 +374,8 @@ void ModelController::cancel()
     emit stateChanged();
 }
 
+
+// this function is called when exceptions occur in multithreaded code.
 QMutex error_mutex;
 void ModelController::throwError(const QString msg)
 {
@@ -352,6 +387,7 @@ void ModelController::throwError(const QString msg)
     emit bufferLogs(false);
     emit bufferLogs(true); // start buffering again
 
+    emit finished(msg);
     throw IException(msg); // raise error again
 
 }
@@ -463,13 +499,41 @@ void ModelController::fetchDynamicOutput()
     mDynData.append(line.join(";"));
 }
 
+void ModelController::saveDebugOutputs()
+{
+    // save to files if switch is true
+    if (!GlobalSettings::instance()->settings().valueBool("system.settings.debugOutputAutoSave"))
+        return;
+
+    QString p = GlobalSettings::instance()->path("debug_", "temp");
+
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandGPP, ";", p + "stand_gpp.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
+    Helper::saveToTextFile(p+"dynamic.csv", dynamicOutput());
+    Helper::saveToTextFile(p+ "version.txt", verboseVersion());
+
+
+    qDebug() << "saved debug outputs to" << p;
+
+}
+
 void ModelController::saveScreenshot(QString file_name)
 {
 #ifdef ILAND_GUI
     if (!mViewerWindow)
         return;
     QImage img = mViewerWindow->screenshot();
-    img.save(file_name);
+    img.save(GlobalSettings::instance()->path(file_name));
+#else
+    Q_UNUSED(file_name);
 #endif
 }
 
@@ -480,6 +544,8 @@ void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
         mViewerWindow->paintGrid(map, "", GridViewRainbow, min_value, max_value);
         qDebug() << "painted map grid" << map->name() << "min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
+#else
+    Q_UNUSED(map);Q_UNUSED(min_value);Q_UNUSED(max_value);
 #endif
 }
 
@@ -491,6 +557,8 @@ void ModelController::addGrid(const FloatGrid *grid, const QString &name, const 
         mViewerWindow->paintGrid(grid, name, view_type, min_value, max_value);
         qDebug() << "painted grid min-value (blue):" << min_value << "max-value(red):" << max_value;
     }
+#else
+    Q_UNUSED(grid); Q_UNUSED(name); Q_UNUSED(view_type); Q_UNUSED(min_value);Q_UNUSED(max_value);
 #endif
 }
 
@@ -500,6 +568,18 @@ void ModelController::addLayers(const LayeredGridBase *layers, const QString &na
     if (mViewerWindow)
         mViewerWindow->addLayers(layers, name);
     //qDebug() << layers->names();
+#else
+    Q_UNUSED(layers); Q_UNUSED(name);
+#endif
+}
+void ModelController::removeLayers(const LayeredGridBase *layers)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow)
+        mViewerWindow->removeLayers(layers);
+    //qDebug() << layers->names();
+#else
+    Q_UNUSED(layers);
 #endif
 }
 
@@ -508,6 +588,18 @@ void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
 #ifdef ILAND_GUI
     if (mViewerWindow)
         mViewerWindow->setViewport(center_point, scale_px_per_m);
+#else
+    Q_UNUSED(center_point);Q_UNUSED(scale_px_per_m);
+#endif
+}
+
+void ModelController::setUIShortcuts(QVariantMap shortcuts)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow)
+        mViewerWindow->setUIshortcuts(shortcuts);
+#else
+    Q_UNUSED(shortcuts);
 #endif
 }
 
@@ -518,6 +610,8 @@ void ModelController::repaint()
         mViewerWindow->repaint();
 #endif
 }
+
+
 
 
 

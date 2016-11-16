@@ -26,7 +26,7 @@
 TimeEvents::TimeEvents()
 {
 }
-QString lastLoadedFile;
+static QString lastLoadedFile;
 bool TimeEvents::loadFromFile(const QString &fileName)
 {
     QString source = Helper::loadTextFile(GlobalSettings::instance()->path(fileName));
@@ -76,8 +76,10 @@ void TimeEvents::run()
         // special values: if (key=="xxx" ->
         if (key=="script" || key=="javascript") {
             // execute as javascript expression within the management script context...
-            if (!entries[i].second.toString().isEmpty())
+            if (!entries[i].second.toString().isEmpty()) {
+                qDebug() << "executing Javascript time event:" << entries[i].second.toString();
                 GlobalSettings::instance()->executeJavascript(entries[i].second.toString());
+            }
 
         } else {
             // no special value: a xml node...
@@ -90,4 +92,17 @@ void TimeEvents::run()
     }
     if (values_set)
         qDebug() << "TimeEvents: year" << current_year << ":" << values_set << "values set.";
+}
+
+// read value for key 'key' and year 'year' from the list of items.
+// return a empty QVariant if for 'year' no value is set
+QVariant TimeEvents::value(int year, const QString &key) const
+{
+    QMultiMap<int, QPair<QString, QVariant> >::ConstIterator it = mData.find(year);
+    while (it!=mData.constEnd()) {
+        if (it->first == key)
+            return it->second;
+        ++it;
+    }
+    return QVariant();
 }

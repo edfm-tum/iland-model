@@ -73,7 +73,7 @@
 #include <QtCore>
 #include <QtXml>
 #include <QtSql>
-#include <QtScript/QScriptEngine>
+#include <QJSEngine>
 #include <algorithm>
 #include "global.h"
 #include "helper.h"
@@ -160,15 +160,20 @@ QString GlobalSettings::executeJavascript(const QString &command)
     return ScriptGlobal::executeScript(command);
 }
 
+QString GlobalSettings::executeJSFunction(const QString function_name)
+{
+    return ScriptGlobal::executeJSFunction(function_name);
+}
+
 void GlobalSettings::resetScriptEngine()
 {
     if (mScriptEngine)
         delete mScriptEngine;
 
-    mScriptEngine = new QScriptEngine();
+    mScriptEngine = new QJSEngine();
     // globals object: instatiate here, but ownership goes to script engine
     ScriptGlobal *global = new ScriptGlobal();
-    QScriptValue glb = mScriptEngine->newQObject(global,QScriptEngine::ScriptOwnership);
+    QJSValue glb = mScriptEngine->newQObject(global);
     mScriptEngine->globalObject().setProperty("Globals", glb);
 }
 
@@ -221,7 +226,7 @@ DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
     int id = ID;
     // use negative values for debug-outputs on RU - level
     // Note: at some point we will also have to handle RUS-level...
-    if (dbg == dEstablishment || dbg == dCarbonCycle)
+    if (dbg == dEstablishment || dbg == dCarbonCycle || dbg == dSaplingGrowth)
         id = -id;
     QMultiHash<int, DebugList>::iterator newitem = mDebugLists.insert(id, dbglist);
     return *newitem;
@@ -250,7 +255,8 @@ const QList<const DebugList*> GlobalSettings::debugLists(const int ID, const Deb
         }
     }
     // sort result list
-    std::sort(result_list.begin(), result_list.end(), debuglist_sorter);
+    //std::sort(result_list.begin(), result_list.end(), debuglist_sorter); // changed because of compiler warnings
+    qSort(result_list.begin(), result_list.end(), debuglist_sorter);
     return result_list;
 }
 
@@ -262,38 +268,43 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
         return treeCaps;
     switch(dbg) {
     case dTreeNPP: return QStringList() << "id" << "type" << "year" << treeCaps
-                << "LRI_modRU" <<"lightResponse" << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging";
+                                        << "LRI_modRU" <<"lightResponse" << "effective_area" << "raw_gpp" << "gpp" << "npp" << "aging";
 
     case dTreeGrowth: return QStringList() << "id" << "type" << "year" <<  treeCaps
-                << "netNPPStem" << "massStemOld" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
+                                           << "netNPPStem" << "massStemOld" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
 
     case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps
-                << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
-                << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
+                                              << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
+                                              << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
 
-    case dStandNPP: return QStringList() << "id" << "type" << "year" << "standnpp" << "hach" << "hech";
+    case dStandGPP: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid" << "lai_factor" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
 
     case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
-                << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
-                << "content" << "psi_kpa" << "excess_mm" << "snow_height";
+                                           << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
+                                           << "content" << "psi_kpa" << "excess_mm" << "snow_height";
 
     case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
-                << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
+                                               << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
 
     case dEstablishment: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
-                 << "avgProbDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "TACAAbioticEnv"
-                 << "fEnvYr" << "avgLIFValue" <<"N_Established" << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
-                 << "Added" << "Died" << "Recruited" << "refRatio";
+                                              << "avgProbDensity" << "TACAminTemp" << "TACAchill" << "TACAfrostFree" << "TACAgdd" << "TACAFrostAfterBud" << "waterLimitation" << "TACAAbioticEnv"
+                                              << "fEnvYr" <<"N_Established" ;
+
+    case dSaplingGrowth: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid"
+                                              << "Living_cohorts" << "averageHeight" << "averageAge" << "avgDeltaHPot" << "avgDeltaHRealized"
+                                              << "Added" << "Died" << "Recruited" << "refRatio";
+
     case dCarbonCycle: return QStringList() << "id" << "type" << "year" << "RU_index" << "rid"
-                << "SnagState_c" << "TotalC_in" << "TotalC_toAtm" << "SWDtoDWD_c" << "SWDtoDWD_n" << "toLabile_c" << "toLabile_n" << "toRefr_c" << "toRefr_n"
-                << "swd1_c" << "swd1_n" << "swd1_count" << "swd1_tsd" << "toSwd1_c" << "toSwd1_n" << "dbh1" << "height1" << "volume1"  // pool of small dbhs
-                << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" << "dbh2" << "height2" << "volume2"   // standing woody debris medium dbhs
-                << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n" << "dbh3" << "height3" << "volume3"   // large trees
-                << "otherWood1_c" << "otherWood1_n" << "otherWood2_c" << "otherWood2_n" << "otherWood3_c" << "otherWood3_n" << "otherWood4_c" << "otherWood4_n" << "otherWood5_c" << "otherWood5_n"
-                   << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN" << "NAvailable";
+                                            << "SnagState_c" << "TotalC_in" << "TotalC_toAtm" << "SWDtoDWD_c" << "SWDtoDWD_n" << "toLabile_c" << "toLabile_n" << "toRefr_c" << "toRefr_n"
+                                            << "swd1_c" << "swd1_n" << "swd1_count" << "swd1_tsd" << "toSwd1_c" << "toSwd1_n" << "dbh1" << "height1" << "volume1"  // pool of small dbhs
+                                            << "swd2_c" << "swd2_n" << "swd2_count" << "swd2_tsd" << "toSwd2_c" << "toSwd2_n" << "dbh2" << "height2" << "volume2"   // standing woody debris medium dbhs
+                                            << "swd3_c" << "swd3_n" << "swd3_count" << "swd3_tsd" << "toSwd3_c" << "toSwd3_n" << "dbh3" << "height3" << "volume3"   // large trees
+                                            << "otherWood1_c" << "otherWood1_n" << "otherWood2_c" << "otherWood2_n" << "otherWood3_c" << "otherWood3_n" << "otherWood4_c" << "otherWood4_n" << "otherWood5_c" << "otherWood5_n"
+                                            << "iLabC" << "iLabN" << "iKyl" << "iRefC" << "iRefN" << "iKyr" << "re" << "kyl" << "kyr" << "ylC" << "ylN" << "yrC" << "yrN" << "somC" << "somN"
+                                            << "NAvailable" << "NAVLab" << "NAVRef" << "NAVSom";
     case dPerformance: return QStringList() << "id" << "type" << "year" << "treeCount" << "saplingCount" << "newSaplings" << "management"
-                << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "saplingGrowthEstablishment" << "carbonCycle"
-                << "writeOutput" << "totalYear";
+                                            << "applyPattern" << "readPattern" << "treeGrowth" << "seedDistribution" <<  "establishment"<< "saplingGrowth" << "carbonCycle"
+                                            << "writeOutput" << "totalYear";
 
     }
     return QStringList() << "invalid debug output!";
@@ -461,7 +472,7 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
 
 
 ///////// Path functions
-void GlobalSettings::printDirecories() const
+void GlobalSettings::printDirectories() const
 {
     qDebug() << "current File Paths:";
     QHash<QString, QString>::const_iterator i;
@@ -479,10 +490,10 @@ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &proje
     // make other paths relativ to "home" if given as relative paths
     mFilePath.insert("lip", path(xml.value("lip", "lip"), "home"));
     mFilePath.insert("database", path(xml.value("database", "database"), "home"));
-    mFilePath.insert("temp", path(xml.value("temp", "temp"), "home"));
-    mFilePath.insert("log", path(xml.value("log", "log"), "home"));
-    mFilePath.insert("script", path(xml.value("script", "script"), "home"));
-    mFilePath.insert("init", path(xml.value("init", "init"), "home"));
+    mFilePath.insert("temp", path(xml.value("temp", ""), "home"));
+    mFilePath.insert("log", path(xml.value("log", ""), "home"));
+    mFilePath.insert("script", path(xml.value("script", ""), "home"));
+    mFilePath.insert("init", path(xml.value("init", ""), "home"));
     mFilePath.insert("output", path(xml.value("output", "output"), "home"));
 }
 

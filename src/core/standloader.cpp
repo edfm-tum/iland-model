@@ -25,6 +25,7 @@
 #include "model.h"
 #include "resourceunit.h"
 #include "speciesset.h"
+#include "species.h"
 
 #include "helper.h"
 #include "random.h"
@@ -34,6 +35,7 @@
 #include "csvfile.h"
 #include "mapgrid.h"
 #include "snapshot.h"
+#include "grasscover.h"
 
 /** @class StandLoader
     @ingroup tools
@@ -44,8 +46,8 @@
     See http://iland.boku.ac.at/initialize+trees
   */
 // provide a mapping between "Picus"-style and "iLand"-style species Ids
-QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
-QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
+static QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
+static QStringList iLandSpeciesIds = QStringList() << "piab" << "piab" << "fasy";
 
 StandLoader::~StandLoader()
 {
@@ -90,7 +92,7 @@ void StandLoader::processInit()
     QString  fileName = xml.value("file", "");
 
     bool height_grid_enabled = xml.valueBool("heightGrid.enabled", false);
-    mHeightGridTries = xml.valueDouble("heightGrid.maxTries", 10.);
+    mHeightGridTries = xml.valueInt("heightGrid.maxTries", 10);
     QScopedPointer<const MapGrid> height_grid; // use a QScopedPointer to guarantee that the resource is freed at the end of the processInit() function
     if (height_grid_enabled) {
         QString init_height_grid_file = GlobalSettings::instance()->path(xml.value("heightGrid.fileName"), "init");
@@ -105,14 +107,18 @@ void StandLoader::processInit()
 
         QString expr=xml.value("heightGrid.fitFormula", "polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0)");
         mHeightGridResponse = new Expression(expr);
-        mHeightGridResponse->setLinearizationEnabled(true);
+        mHeightGridResponse->linearize(0., 2.);
     }
 
     Tree::resetStatistics();
 
     // one global init-file for the whole area:
     if (copy_mode=="single") {
-        loadInitFile(fileName, type);
+        // useful for 1ha simulations only...
+        if (GlobalSettings::instance()->model()->ruList().size()>1)
+            throw IException("Error initialization: 'mode' is 'single' but more than one resource unit is simulated (consider using another 'mode').");
+
+        loadInitFile(fileName, type, 0, GlobalSettings::instance()->model()->ru()); // this is the first resource unit
         evaluateDebugTrees();
         return;
     }
@@ -162,6 +168,43 @@ void StandLoader::processInit()
         evaluateDebugTrees();
         return;
     }
+
+    // standgrid mode: load one large init file
+    if (copy_mode=="standgrid") {
+        fileName = GlobalSettings::instance()->path(fileName, "init");
+        if (!QFile::exists(fileName))
+            throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
+        QString content = Helper::loadTextFile(fileName);
+        // this processes the init file (also does the checking) and
+        // stores in a QHash datastrucutre
+        parseInitFile(content, fileName);
+
+        // setup the random distribution
+        QString density_func = xml.value("model.initialization.randomFunction", "1-x^2");
+        if (logLevelInfo())  qDebug() << "density function:" << density_func;
+        if (!mRandom || (mRandom->densityFunction()!= density_func)) {
+            if (mRandom)
+                delete mRandom;
+            mRandom=new RandomCustomPDF(density_func);
+            if (logLevelInfo()) qDebug() << "new probabilty density function:" << density_func;
+        }
+
+        if (mStandInitItems.isEmpty()) {
+            qDebug() << "Initialize trees ('standgrid'-mode): no items to process (empty landscape).";
+            return;
+            //throw IException("StandLoader::processInit: 'mode' is 'standgrid' but the init file is either empty or contains no 'stand_id'-column.");
+        }
+        QHash<int, QVector<InitFileItem> >::const_iterator it = mStandInitItems.constBegin();
+        while (it!=mStandInitItems.constEnd()) {
+            mInitItems = it.value(); // copy the items...
+            executeiLandInitStand(it.key());
+            ++it;
+        }
+        qDebug() << "finished setup of trees.";
+        evaluateDebugTrees();
+        return;
+
+    }
     if (copy_mode=="snapshot") {
         // load a snapshot from a file
         Snapshot shot;
@@ -171,6 +214,47 @@ void StandLoader::processInit()
         return;
     }
     throw IException("StandLoader::processInit: invalid initalization.mode!");
+}
+
+void StandLoader::processAfterInit()
+{
+    XmlHelper xml(GlobalSettings::instance()->settings().node("model.initialization"));
+
+    QString mode = xml.value("mode", "copy");
+    if (mode=="standgrid") {
+        // load a file with saplings per polygon
+        QString  filename = xml.value("saplingFile", "");
+        if (filename.isEmpty())
+            return;
+        filename = GlobalSettings::instance()->path(filename, "init");
+        if (!QFile::exists(filename))
+            throw IException(QString("load-sapling-ini-file: file '%1' does not exist.").arg(filename));
+        CSVFile init_file(filename);
+        int istandid = init_file.columnIndex("stand_id");
+        if (istandid==-1)
+            throw IException("Sapling-Init: the init file contains no 'stand_id' column (required in 'standgrid' mode).");
+
+        int stand_id = -99999;
+        int ilow = -1, ihigh = 0;
+        int total = 0;
+        for (int i=0;i<init_file.rowCount();++i) {
+            int row_stand = init_file.value(i, istandid).toInt();
+            if (row_stand != stand_id) {
+                if (stand_id>=0) {
+                    // process stand
+                    ihigh = i-1; // up to the last
+                    total += loadSaplingsLIF(stand_id, init_file, ilow, ihigh);
+                }
+                ilow = i; // mark beginning of new stand
+                stand_id = row_stand;
+            }
+        }
+        if (stand_id>=0)
+            total += loadSaplingsLIF(stand_id, init_file, ilow, init_file.rowCount()-1); // the last stand
+        qDebug() << "initialization of sapling: total created:" << total;
+
+    }
+
 }
 
 void StandLoader::evaluateDebugTrees()
@@ -207,6 +291,7 @@ void StandLoader::evaluateDebugTrees()
         qDebug() << "evaluateDebugTrees: enabled debugging for" << counter << "trees.";
     }
 }
+
 
 /// load a single init file. Calls loadPicusFile() or loadiLandFile()
 /// @param fileName file to load
@@ -260,51 +345,41 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
         my_content = rx.cap(1).trimmed();
     }
 
-    QStringList lines=my_content.split('\n');
-    if (lines.count()<2)
-        return 0;
-    // drop comments
-    while (!lines.isEmpty() && lines.front().startsWith('#') )
-        lines.pop_front();
-    while (!lines.isEmpty() && lines.last().isEmpty())
-        lines.removeLast();
+    CSVFile infile;
+    infile.loadFromString(my_content);
 
-    char sep='\t';
-    if (!lines[0].contains(sep))
-        sep=';';
-    QStringList headers = lines[0].trimmed().split(sep);
 
-    int iID = headers.indexOf("id");
-    int iX = headers.indexOf("x");
-    int iY = headers.indexOf("y");
-    int iBhd = headers.indexOf("bhdfrom");
+    int iID =  infile.columnIndex("id");
+    int iX = infile.columnIndex("x");
+    int iY = infile.columnIndex("y");
+    int iBhd = infile.columnIndex("bhdfrom");
     if (iBhd<0)
-        iBhd = headers.indexOf("dbh");
+        iBhd = infile.columnIndex("dbh");
     double height_conversion = 100.;
-    int iHeight = headers.indexOf("treeheight");
+    int iHeight =infile.columnIndex("treeheight");
     if (iHeight<0) {
-        iHeight = headers.indexOf("height");
+        iHeight = infile.columnIndex("height");
         height_conversion = 1.; // in meter
     }
-    int iSpecies = headers.indexOf("species");
-    int iAge = headers.indexOf("age");
+    int iSpecies = infile.columnIndex("species");
+    int iAge = infile.columnIndex("age");
     if (iX==-1 || iY==-1 || iBhd==-1 || iSpecies==-1 || iHeight==-1)
-        throw IException(QString("Initfile %1 is not valid!\nObligatory columns are: x,y, bhdfrom or dbh, species, treeheight or height.").arg(fileName));
+        throw IException(QString("Initfile %1 is not valid!\nRequired columns are: x,y, bhdfrom or dbh, species, treeheight or height.").arg(fileName));
 
     double dbh;
     bool ok;
     int cnt=0;
     QString speciesid;
-    for (int i=1;i<lines.count();i++) {
-        QString &line = lines[i];
-        dbh = line.section(sep, iBhd, iBhd).toDouble();
-        if (dbh<5.)
-            continue;
+    for (int i=1;i<infile.rowCount();i++) {
+        dbh = infile.value(i, iBhd).toDouble();
+
+        //if (dbh<5.)
+        //    continue;
 
         QPointF f;
         if (iX>=0 && iY>=0) {
-           f.setX( line.section(sep, iX, iX).toDouble() );
-           f.setY( line.section(sep, iY, iY).toDouble() );
+           f.setX( infile.value(i, iX).toDouble() );
+           f.setY( infile.value(i, iY).toDouble() );
            f+=offset;
 
         }
@@ -314,12 +389,12 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
         Tree &tree = ru->newTree();
         tree.setPosition(f);
         if (iID>=0)
-            tree.setId(line.section(sep, iID, iID).toInt() );
+            tree.setId(infile.value(i, iID).toInt());
 
         tree.setDbh(dbh);
-        tree.setHeight(line.section(sep, iHeight, iHeight).toDouble()/height_conversion); // convert from Picus-cm to m if necessary
+        tree.setHeight(infile.value(i,iHeight).toDouble()/height_conversion); // convert from Picus-cm to m if necessary
 
-        speciesid = line.section(sep, iSpecies, iSpecies).trimmed();
+        speciesid = infile.value(i,iSpecies).toString();
         int picusid = speciesid.toInt(&ok);
         if (ok) {
             int idx = picusSpeciesIds.indexOf(picusid);
@@ -334,7 +409,7 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
 
         ok = true;
         if (iAge>=0)
-           tree.setAge(line.section(sep, iAge, iAge).toInt(&ok), tree.height()); // this is a *real* age
+           tree.setAge(infile.value(i, iAge).toInt(&ok), tree.height()); // this is a *real* age
         if (iAge<0 || !ok || tree.age()==0)
            tree.setAge(0, tree.height()); // no real tree age available
 
@@ -357,63 +432,11 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
   */
 int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, int stand_id, const QString &fileName)
 {
-    if (!ru)
-        ru = mModel->ru();
-    Q_ASSERT(ru!=0);
-    SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
-    Q_ASSERT(speciesSet!=0);
+    int total_count = parseInitFile(content, fileName, ru);
+    if (total_count==0)
+        return 0;
 
-    //DebugTimer t("StandLoader::loadiLandFile");
-    CSVFile infile;
-    infile.loadFromString(content);
 
-    int icount = infile.columnIndex("count");
-    int ispecies = infile.columnIndex("species");
-    int idbh_from = infile.columnIndex("dbh_from");
-    int idbh_to = infile.columnIndex("dbh_to");
-    int ihd = infile.columnIndex("hd");
-    int iage = infile.columnIndex("age");
-    int idensity = infile.columnIndex("density");
-    if (icount<0 || ispecies<0 || idbh_from<0 || idbh_to<0 || ihd<0 || iage<0)
-        throw IException(QString("load-ini-file: file '%1' containts not all required fields (count, species, dbh_from, dbh_to, hd, age).").arg(fileName));
-
-    mInitItems.clear();
-    InitFileItem item;
-    bool ok;
-    int total_count = 0;
-    for (int row=0;row<infile.rowCount();row++) {
-        item.count = infile.value(row, icount).toInt();
-        total_count += item.count;
-        item.dbh_from = infile.value(row, idbh_from).toDouble();
-        item.dbh_to = infile.value(row, idbh_to).toDouble();
-        item.hd = infile.value(row, ihd).toDouble();
-        if (item.hd==0. || item.dbh_from / 100. * item.hd < 4.)
-            qWarning() << QString("load init file: file '%1' tries to init trees below 4m height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) ;
-            //throw IException(QString("load init file: file '%1' tries to init trees below 4m height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) );
-        ok = true;
-        if (iage>=0)
-            item.age = infile.value(row, iage).toInt(&ok);
-        if (iage<0 || !ok)
-            item.age = 0;
-
-        item.species = speciesSet->species(infile.value(row, ispecies).toString());
-        if (idensity>=0)
-            item.density = infile.value(row, idensity).toDouble();
-        else
-            item.density = 0.;
-        if (item.density<-1 || item.density>1)
-            throw IException(QString("load-ini-file: invalid value for density. Allowed range is -1..1: '%1' in file '%2', line %3.")
-                             .arg(item.density)
-                             .arg(fileName)
-                             .arg(row));
-        if (!item.species) {
-            throw IException(QString("load-ini-file: unknown speices '%1' in file '%2', line %3.")
-                             .arg(infile.value(row, ispecies).toString())
-                             .arg(fileName)
-                             .arg(row));
-        }
-        mInitItems.push_back(item);
-    }
     // setup the random distribution
     QString density_func = GlobalSettings::instance()->settings().value("model.initialization.randomFunction", "1-x^2");
     if (logLevelInfo())  qDebug() << "density function:" << density_func;
@@ -434,6 +457,78 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
     return total_count;
 
 }
+
+int StandLoader::parseInitFile(const QString &content, const QString &fileName, ResourceUnit* ru)
+{
+    if (!ru)
+        ru = mModel->ru();
+    Q_ASSERT(ru!=0);
+    SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
+    Q_ASSERT(speciesSet!=0);
+
+    //DebugTimer t("StandLoader::loadiLandFile");
+    CSVFile infile;
+    infile.loadFromString(content);
+
+    int icount = infile.columnIndex("count");
+    int ispecies = infile.columnIndex("species");
+    int idbh_from = infile.columnIndex("dbh_from");
+    int idbh_to = infile.columnIndex("dbh_to");
+    int ihd = infile.columnIndex("hd");
+    int iage = infile.columnIndex("age");
+    int idensity = infile.columnIndex("density");
+    if (icount<0 || ispecies<0 || idbh_from<0 || idbh_to<0 || ihd<0 || iage<0)
+        throw IException(QString("load-ini-file: file '%1' containts not all required fields (count, species, dbh_from, dbh_to, hd, age).").arg(fileName));
+
+    int istandid = infile.columnIndex("stand_id");
+    mInitItems.clear();
+    mStandInitItems.clear();
+
+    InitFileItem item;
+    bool ok;
+    int total_count = 0;
+    for (int row=0;row<infile.rowCount();row++) {
+        item.count = infile.value(row, icount).toDouble();
+        total_count += item.count;
+        item.dbh_from = infile.value(row, idbh_from).toDouble();
+        item.dbh_to = infile.value(row, idbh_to).toDouble();
+        item.hd = infile.value(row, ihd).toDouble();
+        if (item.hd==0. || item.dbh_from / 100. * item.hd < 4.)
+            qWarning() << QString("load init file: file '%1' tries to init trees below 4m height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) ;
+            //throw IException(QString("load init file: file '%1' tries to init trees below 4m height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) );
+        ok = true;
+        if (iage>=0)
+            item.age = infile.value(row, iage).toInt(&ok);
+        if (iage<0 || !ok)
+            item.age = 0;
+
+        item.species = speciesSet->species(infile.value(row, ispecies).toString());
+        if (idensity>=0)
+            item.density = infile.value(row, idensity).toDouble();
+        else
+            item.density = 0.;
+        if (item.density<-1)
+            throw IException(QString("load-ini-file: invalid value for density. Allowed range is -1..1: '%1' in file '%2', line %3.")
+                             .arg(item.density)
+                             .arg(fileName)
+                             .arg(row));
+        if (!item.species) {
+            throw IException(QString("load-ini-file: unknown speices '%1' in file '%2', line %3.")
+                             .arg(infile.value(row, ispecies).toString())
+                             .arg(fileName)
+                             .arg(row));
+        }
+        if (istandid>=0) {
+            int standid = infile.value(row,istandid).toInt();
+            mStandInitItems[standid].push_back(item);
+        } else {
+            mInitItems.push_back(item);
+        }
+    }
+    return total_count;
+
+}
+
 
 int StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru, int stand_id)
 {
@@ -463,7 +558,8 @@ struct SInitPixel {
     QPoint pixelOffset; // location of the pixel
     ResourceUnit *resource_unit; // pointer to the resource unit the pixel belongs to
     double h_max; // predefined maximum height at given pixel (if available from LIDAR or so)
-    SInitPixel(): basal_area(0.), resource_unit(0), h_max(-1.) {}
+    bool locked; // pixel is dedicated to a single species
+    SInitPixel(): basal_area(0.), resource_unit(0), h_max(-1.), locked(false) {}
 };
 
 bool sortInitPixelLessThan(const SInitPixel &s1, const SInitPixel &s2)
@@ -471,6 +567,10 @@ bool sortInitPixelLessThan(const SInitPixel &s1, const SInitPixel &s2)
     return s1.basal_area < s2.basal_area;
 }
 
+bool sortInitPixelUnlocked(const SInitPixel &s1, const SInitPixel &s2)
+{
+    return !s1.locked && s2.locked;
+}
 
 /**
 */
@@ -582,11 +682,6 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
     }
 }
 
-// provide a hashing function for the QPoint type (needed from stand init function below)
-inline uint qHash(const QPoint &key)
- {
-     return qHash(key.x()) ^ qHash(key.y());
- }
 
 
 // Initialization routine based on a stand map.
@@ -597,6 +692,8 @@ void StandLoader::executeiLandInitStand(int stand_id)
 {
 
     const MapGrid *grid = GlobalSettings::instance()->model()->standGrid();
+    if (mCurrentMap)
+        grid = mCurrentMap;
 
     // get a list of positions of all pixels that belong to our stand
     QList<int> indices = grid->gridIndices(stand_id);
@@ -608,7 +705,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
     // key is the location of the 10x10m pixel
     QMultiHash<QPoint, int> tree_map;
     QList<SInitPixel> pixel_list; // working list of all 10m pixels
-    //TODO enable again(vsc test): pixel_list.reserve(indices.size());
+    pixel_list.reserve(indices.size());
 
     foreach (int i, indices) {
        SInitPixel p;
@@ -618,7 +715,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
            p.h_max = mInitHeightGrid->grid().constValueAtIndex(p.pixelOffset);
        pixel_list.append(p);
     }
-    double area_factor = grid->area(stand_id) / 10000.;
+    double area_factor = grid->area(stand_id) / cRUArea;
 
     int key=0;
     double rand_val, rand_fraction;
@@ -627,8 +724,29 @@ void StandLoader::executeiLandInitStand(int stand_id)
     int total_misses = 0;
     if (mInitHeightGrid && !mHeightGridResponse)
         throw IException("executeiLandInitStand: trying to initialize with height grid but without response function.");
+
+    Species *last_locked_species=0;
     foreach(const InitFileItem &item, mInitItems) {
-        rand_fraction = fabs(double(item.density));
+        if (item.density>1.) {
+            // special case with single-species-area
+            if (total_count==0) {
+                // randomize the pixels
+                for (QList<SInitPixel>::iterator it=pixel_list.begin();it!=pixel_list.end();++it)
+                    it->basal_area = drandom();
+                qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+                for (QList<SInitPixel>::iterator it=pixel_list.begin();it!=pixel_list.end();++it)
+                    it->basal_area = 0.;
+            }
+
+            if (item.species != last_locked_species) {
+                last_locked_species=item.species;
+                qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelUnlocked);
+            }
+        } else {
+            qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+            last_locked_species=0;
+        }
+        rand_fraction = item.density;
         int count = item.count * area_factor + 0.5; // round
         double init_max_height = item.dbh_to/100. * item.hd;
         for (int i=0;i<count;i++) {
@@ -637,10 +755,15 @@ void StandLoader::executeiLandInitStand(int stand_id)
             int tries = mHeightGridTries;
             while (!found &&--tries) {
                 // calculate random value. "density" is from 1..-1.
-                rand_val = mRandom->get();
-                if (item.density<0)
-                    rand_val = 1. - rand_val;
-                rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
+                if (item.density <= 1.) {
+                    rand_val = mRandom->get();
+                    if (item.density<0)
+                        rand_val = 1. - rand_val;
+                    rand_val = rand_val * rand_fraction + drandom()*(1.-rand_fraction);
+                } else {
+                    // limited area: limit potential area using the "density" input parameter
+                    rand_val = drandom() * qMin(item.density/100., 1.);
+                }
                 ++total_tries;
 
                 // key: rank of target pixel
@@ -654,6 +777,8 @@ void StandLoader::executeiLandInitStand(int stand_id)
                 } else {
                     found = true;
                 }
+                if (!last_locked_species && pixel_list[key].locked)
+                    found = false;
             }
             if (tries<0) ++total_misses;
 
@@ -675,15 +800,16 @@ void StandLoader::executeiLandInitStand(int stand_id)
             // store in the multiHash the position of the pixel and the tree_idx in the resepctive resource unit
             tree_map.insert(pixel_list[key].pixelOffset, tree_idx);
             pixel_list[key].basal_area+=tree.basalArea(); // aggregate the basal area for each 10m pixel
+            if (last_locked_species)
+                pixel_list[key].locked = true;
 
             // resort list
-            if ( (total_count < 20 && i%2==0)
+            if (last_locked_species==0 && ((total_count < 20 && i%2==0)
                 || (total_count<100 && i%10==0 )
-                || (i%30==0) ) {
+                || (i%30==0)) ) {
                 qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
             }
         }
-        qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
     }
     if (total_misses>0 || total_tries > total_count) {
         if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "treecount:" << total_count << ", tries:" << total_tries << ", misses:" << total_misses << ", %miss:" << qRound(total_misses*100 / (double)total_count);
@@ -726,7 +852,8 @@ void StandLoader::executeiLandInitStand(int stand_id)
                 qDebug() << "Standloader: invalid position!";
         }
     }
-    if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "with area" << "area (m2)" << grid->area(stand_id) << "count of 10m pixels:"  << indices.count() << "initialized trees:" << total_count;
+    if (logLevelInfo())
+        qDebug() << "init for stand" << stand_id << "with area" << "area (m2)" << grid->area(stand_id) << "count of 10m pixels:"  << indices.count() << "initialized trees:" << total_count;
 
 }
 
@@ -745,7 +872,7 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
         qDebug() << "stand" << stand_id << "not in project area. No init performed.";
         return -1;
     }
-    double area_factor = stand_grid->area(stand_id) / 10000.; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
+    double area_factor = stand_grid->area(stand_id) / cRUArea; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
 
     // parse the content of the init-file
     // species
@@ -762,7 +889,7 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
     double height, age;
     int total = 0;
     for (int row=0;row<init.rowCount();++row) {
-        int pxcount = init.value(row, icount).toDouble() * area_factor + 0.5; // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
+        int pxcount = qRound(init.value(row, icount).toDouble() * area_factor + 0.5); // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
         const Species *species = set->species(init.value(row, ispecies).toString());
         if (!species)
             throw IException(QString("Error while loading saplings: invalid species '%1'.").arg(init.value(row, ispecies).toString()));
@@ -772,19 +899,22 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
         int misses = 0;
         int hits = 0;
         while (hits < pxcount) {
-           int rnd_index = irandom(0, indices.count()-1);
+           int rnd_index = irandom(0, indices.count());
            QPoint offset=stand_grid->grid().indexOf(indices[rnd_index]);
-           ResourceUnit *ru = GlobalSettings::instance()->model()->ru(stand_grid->grid().cellCenterPoint(offset));
            //
            offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
-           int in_p = irandom(0, cPxPerHeight*cPxPerHeight-1); // index of lif-pixel
+           int in_p = irandom(0, cPxPerHeight*cPxPerHeight); // index of lif-pixel
            offset += QPoint(in_p / cPxPerHeight, in_p % cPxPerHeight);
-           if (ru->saplingHeightForInit(offset) > height) {
+           SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset);
+           if (sc && sc->max_height()>height) {
+           //if (!ru || ru->saplingHeightForInit(offset) > height) {
                misses++;
            } else {
                // ok
                hits++;
-               ru->resourceUnitSpecies(species).changeSapling().addSapling(offset);
+               if (sc)
+                   sc->addSapling(height, age, species->index());
+               //ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
            }
            if (misses > 3*pxcount) {
                qDebug() << "tried to add" << pxcount << "saplings at stand" << stand_id << "but failed in finding enough free positions. Added" << hits << "and stopped.";
@@ -794,5 +924,126 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
         total += hits;
 
     }
+    return total;
+}
+
+bool LIFValueHigher(const float *a, const float *b)
+{
+    return *a > *b;
+}
+
+int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_index, int high_index)
+{
+    const MapGrid *stand_grid;
+    if (mCurrentMap)
+        stand_grid = mCurrentMap; // if set
+    else
+        stand_grid = GlobalSettings::instance()->model()->standGrid(); // default
+
+    if (!stand_grid->isValid(stand_id))
+        return 0;
+
+    QList<int> indices = stand_grid->gridIndices(stand_id); // list of 10x10m pixels
+    if (indices.isEmpty()) {
+        qDebug() << "stand" << stand_id << "not in project area. No init performed.";
+        return 0;
+    }
+    // prepare space for LIF-pointers (2m Pixel)
+    QVector<float*> lif_ptrs;
+    lif_ptrs.reserve(indices.size() * cPxPerHeight * cPxPerHeight);
+    for (int l=0;l<indices.size();++l){
+        QPoint offset=stand_grid->grid().indexOf(indices[l]);
+        offset = offset * cPxPerHeight; // index of 10m patch -> to lif pixel coordinates
+        for (int y=0;y<cPxPerHeight;++y)
+            for(int x=0;x<cPxPerHeight;++x)
+                lif_ptrs.push_back( GlobalSettings::instance()->model()->grid()->ptr(offset.x()+x, offset.y()+y) );
+    }
+    // sort based on LIF-Value
+    std::sort(lif_ptrs.begin(), lif_ptrs.end(), LIFValueHigher); // higher: highest values first
+
+
+    double area_factor = stand_grid->area(stand_id) / cRUArea; // multiplier for grid (e.g. 2 if stand has area of 2 hectare)
+
+    // parse the content of the init-file
+    // species
+    int ispecies = init.columnIndex("species");
+    int icount = init.columnIndex("count");
+    int iheight = init.columnIndex("height");
+    int iheightfrom = init.columnIndex("height_from");
+    int iheightto = init.columnIndex("height_to");
+    int iage = init.columnIndex("age");
+    int itopage = init.columnIndex("age4m");
+    int iminlif = init.columnIndex("min_lif");
+    if ((iheightfrom==-1) ^ (iheightto==-1))
+        throw IException("Error while loading saplings: height not correctly provided. Use either 'height' or 'height_from' and 'height_to'.");
+    if (ispecies==-1 || icount==-1)
+        throw IException("Error while loading saplings: columns 'species' or 'count' are missing!!");
+
+    const SpeciesSet *set = GlobalSettings::instance()->model()->ru()->speciesSet();
+    double height, age;
+    int total = 0;
+    for (int row=low_index;row<=high_index;++row) {
+        double pxcount = init.value(row, icount).toDouble() * area_factor; // no. of pixels that should be filled (sapling grid is the same resolution as the lif-grid)
+        const Species *species = set->species(init.value(row, ispecies).toString());
+        if (!species)
+            throw IException(QString("Error while loading saplings: invalid species '%1'.").arg(init.value(row, ispecies).toString()));
+        height = iheight==-1?0.05: init.value(row, iheight).toDouble();
+        age = iage==-1?1:init.value(row,iage).toDouble();
+        double age4m = itopage==-1?10:init.value(row, itopage).toDouble();
+        double height_from = iheightfrom==-1?-1.: init.value(row, iheightfrom).toDouble();
+        double height_to = iheightto==-1?-1.: init.value(row, iheightto).toDouble();
+        double min_lif = iminlif==-1?1.: init.value(row, iminlif).toDouble();
+        // find LIF-level in the pixels
+        int min_lif_index = 0;
+        if (min_lif < 1.) {
+            for (QVector<float*>::ConstIterator it=lif_ptrs.constBegin(); it!=lif_ptrs.constEnd(); ++it, ++min_lif_index)
+                if (**it <= min_lif)
+                    break;
+            if (pxcount < min_lif_index) {
+                // not enough LIF pixels available
+                min_lif_index = static_cast<int>(pxcount); // try the brightest pixels (ie with the largest value for the LIF)
+            }
+        } else {
+            // No LIF threshold: the full range of pixels is valid
+            min_lif_index = lif_ptrs.size();
+        }
+
+
+
+        double hits = 0.;
+        while (hits < pxcount) {
+            int rnd_index = irandom(0, min_lif_index);
+            if (iheightfrom!=-1) {
+                height = limit(nrandom(height_from, height_to), 0.05,4.);
+                if (age<=1.)
+                    age = qMax(qRound(height/4. * age4m),1); // assume a linear relationship between height and age
+            }
+            QPoint offset = GlobalSettings::instance()->model()->grid()->indexOf(lif_ptrs[rnd_index]);
+            ResourceUnit *ru;
+            SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset, true, &ru);
+            if (sc) {
+                if (SaplingTree *st=sc->addSapling(static_cast<float>(height), static_cast<int>(age), species->index()))
+                    hits+=std::max(1., ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberH(st->height));
+                else
+                    hits++;
+            } else {
+                hits++; // avoid an infinite loop
+            }
+
+
+        }
+        total += pxcount;
+
+    }
+
+    // initialize grass cover
+    if (init.columnIndex("grass_cover")>-1) {
+        int grass_cover_value = init.value(low_index, "grass_cover").toInt();
+        if (grass_cover_value<0 || grass_cover_value>100)
+            throw IException(QString("The grass cover percentage (column 'grass_cover') for stand '%1' is '%2', which is invalid (expected: 0-100)").arg(stand_id).arg(grass_cover_value));
+        GlobalSettings::instance()->model()->grassCover()->setInitialValues(lif_ptrs, grass_cover_value);
+    }
+
+
     return total;
 }

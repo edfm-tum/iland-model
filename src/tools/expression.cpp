@@ -49,7 +49,7 @@
   AllTreeIterator at(GlobalSettings::instance()->model()); // iterator to iterate over all tree in the model
   double sum;
   while (Tree *tree = at.next()) {
-      at.setTree(tree); // set actual tree
+      wrapper.setTree(tree); // set actual tree
       sum += basalArea.execute(); // execute calculation
   }
   @endcode
@@ -78,13 +78,13 @@
 #define opAnd 7
 #define opOr  8
 
-QString mathFuncList=" sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg in round "; // a space at the end is important!
+static QString mathFuncList=" sin cos tan exp ln sqrt min max if incsum polygon mod sigmoid rnd rndg in round "; // a space at the end is important!
 const int  MaxArgCount[17]={1,1,1,1,  1, 1,   -1, -1, 3, 1,     -1,     2,  4,      2,  2,   -1, 1};
 #define    AGGFUNCCOUNT 6
-QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
+static QString AggFuncList[AGGFUNCCOUNT]={"sum", "avg", "max", "min", "stddev", "variance"};
 
 // space for constants
-QHash<QString, double> mConstants;
+static QHash<QString, double> mConstants;
 
 void Expression::addConstant(const QString const_name, const double const_value)
 {
@@ -165,6 +165,8 @@ Expression::ETokType  Expression::next_token()
                 return etLogical;
             } else {
                 m_state=etVariable;
+                if (m_token=="true") { m_state=etNumber; m_token="1"; return etNumber; }
+                if (m_token=="false") { m_state=etNumber; m_token="0"; return etNumber; }
                 return etVariable;
             }
         }
@@ -202,7 +204,11 @@ void Expression::setExpression(const QString& aExpression)
     if (m_expr)
         delete[] m_expr;
     m_expr=new char[ba.length()+1]; // reserve memory...
+#if defined(Q_CC_INTEL) || defined(Q_CC_GNU)
     strcpy(m_expr, ba.constData());
+#else
+    strcpy_s(m_expr, (size_t) ba.size()+1, ba.constData());
+#endif
 
     m_pos=m_expr;  // set starting point...
 
@@ -326,7 +332,7 @@ void  Expression::parse_level0()
     parse_level1();
 
     while (m_token=="+" || m_token=="-")  {
-        op=m_token.toAscii();
+        op=m_token.toLatin1();
         next_token();
         parse_level1();
         m_execList[m_execIndex].Type=etOperator;
@@ -344,7 +350,7 @@ void  Expression::parse_level1()
     //double temp=FResult;
     // alt:        if (m_token=="*" || m_token=="/") {
     while (m_token=="*" || m_token=="/") {
-        op=m_token.toAscii();
+        op=m_token.toLatin1();
         next_token();
         parse_level2();
         m_execList[m_execIndex].Type=etOperator;
@@ -523,8 +529,8 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
     ExtExecListItem *exec=m_execList;
     int i;
     double result=0.;
-    double Stack[20];
-    bool   LogicStack[20];
+    double Stack[200];
+    bool   LogicStack[200];
     bool   *lp=LogicStack;
     double *p=Stack;  // p=head pointer
     *lp++=true; // zumindest eins am anfang...
@@ -608,7 +614,7 @@ double Expression::execute(double *varlist, ExpressionWrapper *object) const
                 p-=(int) (exec->Value-1);
                 break;
             case 16: // round()
-                *p=round(*p); break;
+                *p= *p < 0.0 ? ceil(*p - 0.5) : floor(*p + 0.5); break; // std::round only available in C++11 [http://stackoverflow.com/questions/554204/where-is-round-in-c]
             }
             p++;
             break;

@@ -22,14 +22,20 @@
 #include "plugin_interface.h"
 
 #include "globalsettings.h"
-#include "helper.h"
+#include "debugtimer.h"
 #include "exception.h"
-#include <QPluginLoader>
+#include <QtPlugin>
 
 // include the static modules here in the code:
+#if QT_VERSION >= 0x050000
+Q_IMPORT_PLUGIN(FirePlugin)
+Q_IMPORT_PLUGIN(WindPlugin)
+Q_IMPORT_PLUGIN(BarkBeetlePlugin)
+#else
 Q_IMPORT_PLUGIN(iland_fire)
 Q_IMPORT_PLUGIN(iland_wind)
-
+Q_IMPORT_PLUGIN(iland_barkbeetle)
+#endif
 
 Modules::Modules()
 {
@@ -54,9 +60,22 @@ void Modules::init()
                 WaterInterface *wi = qobject_cast<WaterInterface *>(plugin);
                 if (wi)
                     mWater.append(wi);
+                TreeDeathInterface *td = qobject_cast<TreeDeathInterface*>(plugin);
+                if (td)
+                    mTreeDeath.append(td);
             }
         }
     }
+
+    // fix the order of modules: make sure that "barkbeetle" is after "wind"
+    DisturbanceInterface *wind = module(QStringLiteral("wind"));
+    DisturbanceInterface *bb = module(QStringLiteral("barkbeetle"));
+    if (wind && bb) {
+        int iw = mInterfaces.indexOf(wind), ib = mInterfaces.indexOf(bb);
+        if (ib<iw)
+            mInterfaces.swap(iw, ib);
+    }
+
 
 }
 
@@ -80,8 +99,8 @@ void Modules::setup()
     foreach(DisturbanceInterface *di, mInterfaces)
         di->setup();
 
-    // set up the scripting
-    QScriptEngine *engine = GlobalSettings::instance()->scriptEngine();
+    // set up the scripting (i.e., Javascript)
+    QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     foreach(DisturbanceInterface *di, mInterfaces)
         di->setupScripting(engine);
 }
@@ -93,28 +112,52 @@ void Modules::calculateWater(const ResourceUnit *resource_unit, const WaterCycle
         wi->calculateWater(resource_unit, water_data);
 }
 
+void Modules::treeDeath(const Tree *tree, int removal_type)
+{
+    if (mTreeDeath.isEmpty())
+        return;
+
+    for (QList<TreeDeathInterface*>::const_iterator it=mTreeDeath.constBegin(); it!=mTreeDeath.constEnd(); ++it)
+        (*it)->treeDeath(tree, removal_type);
+
+}
+
 void Modules::run()
 {
     DebugTimer t("modules");
-    QList<DisturbanceInterface*> run_list = mInterfaces;
 
-    // execute modules in random order
-    while (!run_list.isEmpty()) {
-        int idx = irandom(0, run_list.size()-1);
-        if (logLevelDebug())
-            qDebug() << "executing disturbance module: " << run_list[idx]->name();
-
+    // *** run in fixed order ***
+    foreach(DisturbanceInterface *di, mInterfaces) {
         try {
-            run_list[idx]->run();
+            di->run();
         } catch (const IException &e) {
-            qWarning() << "ERROR: uncaught exception in module '" << run_list[idx]->name() << "':";
+            qWarning() << "ERROR: uncaught exception in module '" << di->name() << "':";
             qWarning() << "ERROR:" << e.message();
             qWarning() << " **************************************** ";
         }
-
-        // remove from list
-        run_list.removeAt(idx);
     }
+
+
+    // *** run in random order ****
+    //    QList<DisturbanceInterface*> run_list = mInterfaces;
+
+    //    // execute modules in random order
+    //    while (!run_list.isEmpty()) {
+    //        int idx = irandom(0, run_list.size()-1);
+    //        if (logLevelDebug())
+    //            qDebug() << "executing disturbance module: " << run_list[idx]->name();
+
+    //        try {
+    //            run_list[idx]->run();
+    //        } catch (const IException &e) {
+    //            qWarning() << "ERROR: uncaught exception in module '" << run_list[idx]->name() << "':";
+    //            qWarning() << "ERROR:" << e.message();
+    //            qWarning() << " **************************************** ";
+    //        }
+
+    //        // remove from list
+    //        run_list.removeAt(idx);
+    //    }
 }
 
 void Modules::yearBegin()

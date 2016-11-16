@@ -30,8 +30,9 @@ public:
     Establishment(const Climate *climate, const ResourceUnitSpecies *rus);
     /// setup function that links to a climate and the resource unit / species
     void setup(const Climate *climate, const ResourceUnitSpecies *rus);
-    /// main function "calculate()": process the establishment routine
-    void calculate();
+    void clear();
+    void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
+    void writeDebugOutputs();
     // some informations after execution
     double avgSeedDensity() const { return mPxDensity;} ///< average seed density on the RU
     double abioticEnvironment() const {return mPAbiotic; } ///< integrated value of abiotic environment (i.e.: TACA-climate + total iLand environment)
@@ -42,15 +43,13 @@ public:
     bool TACAfrostFree() const { return mTACA_frostfree;} ///< TACA flag for number of frost free days
     int TACAfrostDaysAfterBudBirst() const { return mTACA_frostAfterBuds; } ///< number of frost days after bud birst
     double avgLIFValue() const { return mLIFcount>0?mSumLIFvalue/double(mLIFcount):0.; } ///< average LIF value of LIF pixels where establishment is tested
-
+    double waterLimitation() const { return mWaterLimitation; } ///< scalar value between 0 and 1 (1: no limitation, 0: no establishment)
 
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
-    inline bool establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value); ///< do the final check whether a seedling can establish at given location
-    void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
+    double calculateWaterLimitation(const int veg_period_start, const int veg_period_end); ///< calculate effect of water limitation on establishment, returns scalar [0..1]
     const Climate *mClimate; ///< link to the current climate
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species (links to production data and species respones)
-    double mRegenerationProbability; ///< prob. of regeneration in the current year
     // some statistics
     double mPxDensity;
     int mNumberEstablished; // number of established trees in the current year
@@ -61,6 +60,7 @@ private:
     bool mTACA_frostfree; // frost free days in vegetation period
     int mTACA_frostAfterBuds; // frost days after bud birst
     double mSumLIFvalue;
+    double mWaterLimitation; // scalar 0..1 signifying the drought limitation of establishment
     int mLIFcount;
 
 };

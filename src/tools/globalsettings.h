@@ -41,7 +41,7 @@ class Model;
 class OutputManager;
 class ModelController; // forward
 class SystemStatistics;
-class QScriptEngine; // forward
+class QJSEngine; // forward
 
 /// General settings and globally available data
 class GlobalSettings
@@ -64,7 +64,9 @@ public:
     /// access the global QScriptEngine used throughout the model
     /// for all Javascript related functionality.
     QString executeJavascript(const QString &command);
-    QScriptEngine *scriptEngine() const { return mScriptEngine; }
+    /// execute a javasript function in the global context
+    QString executeJSFunction(const QString function_name);
+    QJSEngine *scriptEngine() const { return mScriptEngine; }
     void resetScriptEngine(); ///< re-creates the script engine (when the Model is re-created)
 
     // system statistics
@@ -72,9 +74,9 @@ public:
 
     // debugging fain grained debug outputs
     enum DebugOutputs { dTreeNPP=1, dTreePartition=2, dTreeGrowth=4,
-                        dStandNPP=8, dWaterCycle=16, dDailyResponses=32,
-                        dEstablishment=64, dCarbonCycle=128,
-                        dPerformance=256}; ///< defines available debug output types.
+                        dStandGPP=8, dWaterCycle=16, dDailyResponses=32,
+                        dEstablishment=64, dSaplingGrowth=128, dCarbonCycle=256,
+                        dPerformance=512}; ///< defines available debug output types.
     void setDebugOutput(const int debug) { mDebugOutputs = GlobalSettings::DebugOutputs(debug); }
     void setDebugOutput(const DebugOutputs dbg, const bool enable=true); ///< enable/disable a specific output type.
     bool isDebugEnabled(const DebugOutputs dbg) {return int(dbg) & mDebugOutputs;} ///< returns true, if a specific debug outut type is enabled.
@@ -124,7 +126,7 @@ public:
 
     // path
     void setupDirectories(QDomElement pathNode, const QString &projectFilePath);
-    void printDirecories() const;
+    void printDirectories() const;
 
 
 private:
@@ -133,7 +135,7 @@ private:
     Model *mModel;
     ModelController *mModelController;
     OutputManager *mOutputManager;
-    QScriptEngine *mScriptEngine;
+    QJSEngine *mScriptEngine;
     int mRunYear;
     SystemStatistics *mSystemStatistics;
 
@@ -154,6 +156,8 @@ private:
 // Resource-Unit: 100x100m
 const int cPxSize = 2; // size of light grid (m)
 const int cRUSize = 100; // size of resource unit (m)
+const double cRUArea = 10000.; // area of a resource unit (m2)
+const int cHeightSize = 10; // size of a height grid pixel (m)
 const int cPxPerHeight = 5; // 10 / 2 LIF pixels per height pixel
 const int cPxPerRU = 50; // 100/2
 const int cHeightPerRU = 10; // 100/10 height pixels per resource unit
@@ -167,4 +171,9 @@ const double cAutotrophicRespiration = 0.47;
 /// shortcut to the GlobalSettings Singleton object.
 #define Globals (GlobalSettings::instance())
 
+// provide a hashing function for the QPoint type (needed from stand init functions, ABE, ...)
+inline uint qHash(const QPoint &key)
+{
+    return qHash(key.x()) ^ qHash(key.y());
+}
 #endif // GLOBALSETTINGS_H

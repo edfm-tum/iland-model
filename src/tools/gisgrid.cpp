@@ -33,7 +33,7 @@
   */
 
 // global transformation record:
-SCoordTrans GISCoordTrans;
+static SCoordTrans GISCoordTrans;
 
 // setup of global GIS transformation
 // not a good place to put that code here.... please relocate!
@@ -80,7 +80,7 @@ bool GisGrid::loadFromFile(const QString &fileName)
     max_value = -1000000000;
 
     // loads from a ESRI-Grid [RasterToFile] File.
-    QByteArray file_content = Helper::loadTextFile(fileName).toAscii();
+    QByteArray file_content = Helper::loadTextFile(fileName).toLatin1();
     if (file_content.isEmpty()) {
         qDebug() << "GISGrid: file" << fileName << "not present or empty.";
         return false;
@@ -183,12 +183,27 @@ QList<double> GisGrid::distinctValues()
     return temp_map.keys();
 }
 
+QPointF GisGrid::modelToWorld(QPointF model_coordinates)
+{
+    Vector3D to;
+    ::modelToWorld(Vector3D(model_coordinates.x(), model_coordinates.y(), 0.), to);
+    return QPointF(to.x(), to.y());
+}
+
+QPointF GisGrid::worldToModel(QPointF world_coordinates)
+{
+    Vector3D to;
+    ::worldToModel(Vector3D(world_coordinates.x(), world_coordinates.y(), 0.), to);
+    return QPointF(to.x(), to.y());
+
+}
+
 /*
 void GISGrid::GetDistinctValues(TStringList *ResultList, double x_m, double y_m)
 {
    // alle "distinct" values in einem rechteck (picus-koordinaten)
    // herauslesen. geht nur mit integers.
-    double stepsize=CellSize/2; //  default stepsize, die hälfte der Cellsize, damit sollten alle pixel überstrichen werden.
+    double stepsize=CellSize/2; //  default stepsize, die haelfte der Cellsize, damit sollten alle pixel ueberstrichen werden.
     double x=0, y=0;
     int v;
     TList *List=new TList;
@@ -217,6 +232,14 @@ double GisGrid::value(const int indexx, const int indexy) const
     return -1.;  // out of scope
 }
 
+/// get value of grid at index positions
+double GisGrid::value(const int Index) const
+{
+    if (Index>=0 && Index<mDataSize)
+        return mData[Index];
+    return -1.;  // out of scope
+}
+
 double GisGrid::value(const double X, const double Y) const
 {
 
@@ -225,7 +248,8 @@ double GisGrid::value(const double X, const double Y) const
     model.setY(Y);
     model.setZ(0.);
     Vector3D world;
-    modelToWorld(model, world);
+    ::modelToWorld(model, world);
+
 
     world.setX(world.x() - mOrigin.x());
     world.setY(world.y() - mOrigin.y());
@@ -234,6 +258,8 @@ double GisGrid::value(const double X, const double Y) const
     // get value out of grid.
     // double rx = Origin.x + X * xAxis.x + Y * yAxis.x;
     // double ry = Origin.y + X * xAxis.y + Y * yAxis.y;
+    if (world.x()<0. || world.y()<0.)
+        return -1.;
     int ix = world.x() / mCellSize;
     int iy = world.y() / mCellSize;
     if (ix>=0 && ix<mNCols && iy>=0 && iy<mNRows) {
@@ -241,7 +267,7 @@ double GisGrid::value(const double X, const double Y) const
         if (value!=mNODATAValue)
             return value;
     }
-    return -1; // the ultimate NODATA- or ErrorValue
+    return -1.; // the ultimate NODATA- or ErrorValue
 }
 
 Vector3D GisGrid::coord(const int indexx, const int indexy) const
@@ -250,7 +276,7 @@ Vector3D GisGrid::coord(const int indexx, const int indexy) const
                     (indexy+0.5)*mCellSize + mOrigin.y(),
                     0.);
     Vector3D model;
-    worldToModel(world, model);
+    ::worldToModel(world, model);
     return model;
 }
 
@@ -260,7 +286,7 @@ QRectF GisGrid::rectangle(const int indexx, const int indexy) const
                     indexy*mCellSize + mOrigin.y(),
                     0.);
     Vector3D model;
-    worldToModel(world, model);
+    ::worldToModel(world, model);
     QRectF rect(model.x(), // left
                 model.y(), // top
                 mCellSize, // width
@@ -283,9 +309,9 @@ Vector3D GisGrid::coord(const int Index) const
 
 void GISGrid::CountOccurence(int intID, int & Count, int & left, int & upper, int &right, int &lower, QRectF *OuterBox)
 {
-        // zählt, wie of intID im Grid vorkommt,
+        // zaehlt, wie of intID im Grid vorkommt,
         // ausserdem das rectangle, in dem es vorkommt.
-        // rectangle ist durch indices [z.b. 0..NRows-1] und nicht längen definiert!
+        // rectangle ist durch indices [z.b. 0..NRows-1] und nicht laengen definiert!
         int ix,iy;
         Count=0;
         left=100000;
@@ -301,7 +327,7 @@ void GISGrid::CountOccurence(int intID, int & Count, int & left, int & upper, in
                     if (OuterBox) {
                        akoord = koord(iy*mNCols + ix);
                        if (akoord.x<OuterBox->x1 || akoord.x>OuterBox->x2 || akoord.y<OuterBox->y1 || akoord.y>OuterBox->y2)
-                           continue; // nicht zählen, falls punkt ausserhalb rect.
+                           continue; // nicht zaehlen, falls punkt ausserhalb rect.
                     }
                     Count++;
                     left=ix<left?ix:left;
@@ -327,7 +353,7 @@ QVector3D GISGrid::GetNthOccurence(int ID, int N, int left, int upper, int right
                if (mData[iy*mNCols+ix]==ID) {
                    Counter++;
                    if (Counter==N) {  // N-tes vorkommen gefunden!!!
-                       // Picus-Koordinaten zurückgeben.
+                       // Picus-Koordinaten zurueckgeben.
                        return koord(iy*mNCols + ix);
                    }
                }
@@ -340,7 +366,7 @@ bool GISGrid::GetBoundingBox(int LookFor, QRectF &Result, double x_m, double y_m
 {
      // alle "distinct" values in einem rechteck (picus-koordinaten)
      // herauslesen. geht nur mit integers.
-      double stepsize=CellSize/2; //  default stepsize, die hälfte der Cellsize, damit sollten alle pixel überstrichen werden.
+      double stepsize=CellSize/2; //  default stepsize, die haelfte der Cellsize, damit sollten alle pixel ueberstrichen werden.
       double x=0, y=0;
       int v;
       Result.x1 = 1000000; Result.x2 = -10000000;
@@ -368,7 +394,7 @@ bool GISGrid::GetBoundingBox(int LookFor, QRectF &Result, double x_m, double y_m
 void GisGrid::clip(const QRectF & box)
 {
     // auf das angegebene Rechteck zuschneiden, alle
-    // werte draußen auf -1 setzen.
+    // werte draussen auf -1 setzen.
     int ix,iy;
     Vector3D akoord;
     for (ix=0;ix<mNCols;ix++)

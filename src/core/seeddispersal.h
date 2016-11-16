@@ -37,30 +37,55 @@ public:
     const Grid<float> &seedMap() const { return mSeedMap; } ///< access to the seedMap
     const Species *species() const {return mSpecies; }
     /// setMatureTree is called by individual (mature) trees. This actually fills the initial state of the seed map.
-    void setMatureTree(const QPoint &lip_index) { mSeedMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor)=1.f; }
+    void setMatureTree(const QPoint &lip_index, double leaf_area) {
+        if (mProbMode)
+            mSeedMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor)=1.f;
+        else
+            mSourceMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor) += leaf_area;
+    }
+    /// extra seed rain of serotinous species at 'position_index'
+    void seedProductionSerotiny(const QPoint &position_index);
+
     // operations
     void clear(); ///< clears the grid
     void execute(); ///< execute the seed dispersal
-    bool edgeDetection(); ///< phase 1: detect edges in the image; returns false if *no* pixel is 'lit'
-    void distribute(); ///< phase 2: distribute seeds
+    bool edgeDetection(Grid<float> *seed_map = 0); ///< phase 1: detect edges in the image; returns false if *no* pixel is 'lit'
+    void distribute(Grid<float> *seed_map = 0); ///< phase 2: distribute seeds
+    // functions for non-probability mode
+    void distributeSeeds(Grid<float> *seed_map=0);
     // debug and helpers
     void loadFromImage(const QString &fileName); ///< debug function...
+    void dumpMapNextYear(QString file_name) { mDumpNextYearFileName = file_name; }
 private:
-    void createKernel(Grid<float> &kernel, const float max_seed); ///< initializes / creates the kernel
+    void createKernel(Grid<float> &kernel, const double max_seed, const double scale_area); ///< initializes / creates the kernel
+    double setupLDD(); ///< initialize long distance seed dispersal
     double treemig(const double &distance);
+    // numerical integration of the treemig function up to a radius 'max_distance'
+    double treemig_centercell(const double &max_distance);
     double treemig_distanceTo(const double value);
+    bool mProbMode; ///< if 'true', seed dispersal uses probabilities to distribute (old version)
     double mTM_as1, mTM_as2, mTM_ks; ///< seed dispersal paramaters (treemig)
     double mTM_fecundity_cell; ///< maximum seeds per source cell
     double mTM_occupancy; ///< seeds required per destination regeneration pixel
     double mNonSeedYearFraction; ///< fraction of the seed production in non-seed-years
+    double mKernelThresholdArea, mKernelThresholdLDD; ///< value of the kernel function that is the threhold for full coverage and LDD, respectively
     int mIndexFactor; ///< multiplier between light-pixel-size and seed-pixel-size
     Grid<float> mSeedMap; ///< (large) seedmap. Is filled by individual trees and then processed
+    Grid<float> mSourceMap; ///< (large) seedmap used to denote the sources
     Grid<float> mKernelSeedYear; ///< species specific "seed kernel" (small) for seed years
     Grid<float> mKernelNonSeedYear; ///< species specific "seed kernel" (small) for non-seed-years
+    Grid<float> mKernelSerotiny; ///< seed kernel for extra seed rain
+    Grid<float> mSeedMapSerotiny; ///< seed map that keeps track of serotiny events
+    QVector<double> mLDDDistance; ///< long distance dispersal distances (e.g. the "rings")
+    QVector<double> mLDDDensity;  ///< long distance dispersal # of cells that should be affected in each "ring"
+    int mLDDRings; ///< # of rings (with equal probability) for LDD
+    float mLDDSeedlings; ///< each LDD pixel has this probability
+    bool mHasPendingSerotiny; ///< true if active (unprocessed) pixels are on the extra-serotiny map
     bool mSetup;
     Species *mSpecies;
     bool mDumpSeedMaps; ///< if true, seedmaps are stored as images
     bool mHasExternalSeedInput; ///< if true, external seeds are modelled for the species
+    QString mDumpNextYearFileName; ///< debug output - dump of the content of the grid to a file during the next execution
     int mExternalSeedDirection; ///< direction of external seeds
     int mExternalSeedBuffer; ///< how many 20m pixels away from the simulation area should the seeding start?
     double mExternalSeedBackgroundInput; ///< background propability for this species; if set, then a certain seed availability is provided for the full area

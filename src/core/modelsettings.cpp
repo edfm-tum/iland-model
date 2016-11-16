@@ -42,6 +42,7 @@ void ModelSettings::loadModelSettings()
     usePARFractionBelowGroundAllocation = xml.valueBool("usePARFractionBelowGroundAllocation", true);
     //useDynamicAvailableNitrogen = xml.valueBool("model.settings.soil.useDynamicAvailableNitrogen", false); // TODO: there is a bug in using a xml helper that whose top-node is set
     useDynamicAvailableNitrogen = GlobalSettings::instance()->settings().valueBool("model.settings.soil.useDynamicAvailableNitrogen", false);
+    torusMode = GlobalSettings::instance()->settings().paramValueBool("torus", false);
 }
 
 void ModelSettings::print()

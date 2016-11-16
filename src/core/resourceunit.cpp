@@ -54,8 +54,12 @@ ResourceUnit::~ResourceUnit()
 
     qDeleteAll(mRUSpecies);
 
+    if (mSaplings)
+        delete[] mSaplings;
+
     mSnag = 0;
     mSoil = 0;
+    mSaplings = 0;
 }
 
 ResourceUnit::ResourceUnit(const int index)
@@ -66,12 +70,19 @@ ResourceUnit::ResourceUnit(const int index)
     mPixelCount=0;
     mStockedArea = 0;
     mStockedPixelCount = 0;
+    mStockableArea = 0;
+    mAggregatedWLA = 0.;
+    mAggregatedLA = 0.;
+    mAggregatedLR = 0.;
+    mEffectiveArea = 0.;
+    mLRI_modification = 0.;
     mIndex = index;
     mSaplingHeightMap = 0;
     mEffectiveArea_perWLA = 0.;
     mWater = new WaterCycle();
     mSnag = 0;
     mSoil = 0;
+    mSaplings = 0;
     mID = 0;
 }
 
@@ -101,14 +112,20 @@ void ResourceUnit::setup()
                                CNPair(xml.valueDouble("model.site.somC", -1), xml.valueDouble("model.site.somN", -1)));
     }
 
+    if (mSaplings)
+        delete mSaplings;
+    if (Model::settings().regenerationEnabled) {
+        mSaplings = new SaplingCell[cPxPerHectare];
+    }
+
     // setup variables
     mUnitVariables.nitrogenAvailable = GlobalSettings::instance()->settings().valueDouble("model.site.availableNitrogen", 40);
 
-    // if dynamic coupling of soil nitrogen is enabled, the calculate a starting value for available n.
+    // if dynamic coupling of soil nitrogen is enabled, a starting value for available N is calculated
     if (mSoil && Model::settings().useDynamicAvailableNitrogen && Model::settings().carbonCycleEnabled) {
         mSoil->setClimateFactor(1.);
         mSoil->calculateYear();
-        mUnitVariables.nitrogenAvailable = mSoil->availableNitrogen();
+        mUnitVariables.nitrogenAvailable = soil()->availableNitrogen();
     }
     mHasDeadTrees = false;
     mAverageAging = 0.;
@@ -117,7 +134,18 @@ void ResourceUnit::setup()
 void ResourceUnit::setBoundingBox(const QRectF &bb)
 {
     mBoundingBox = bb;
-    mCornerCoord = GlobalSettings::instance()->model()->grid()->indexAt(bb.topLeft());
+    mCornerOffset = GlobalSettings::instance()->model()->grid()->indexAt(bb.topLeft());
+}
+
+/// return the sapling cell at given LIF-coordinates
+SaplingCell *ResourceUnit::saplingCell(const QPoint &lifCoords) const
+{
+    // LIF-Coordinates are global, we here need (RU-)local coordinates
+    int ix = lifCoords.x() % cPxPerRU;
+    int iy = lifCoords.y() % cPxPerRU;
+    int i = iy*cPxPerRU+ix;
+    Q_ASSERT(i>=0 && i<cPxPerHectare);
+    return &mSaplings[i];
 }
 
 /// set species and setup the species-per-RU-data
@@ -146,6 +174,11 @@ void ResourceUnit::setSpeciesSet(SpeciesSet *set)
 ResourceUnitSpecies &ResourceUnit::resourceUnitSpecies(const Species *species)
 {
     return *mRUSpecies[species->index()];
+}
+
+const ResourceUnitSpecies *ResourceUnit::constResourceUnitSpecies(const Species *species) const
+{
+    return mRUSpecies[species->index()];
 }
 
 Tree &ResourceUnit::newTree()
@@ -223,7 +256,6 @@ void ResourceUnit::newYear()
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         (*i)->statisticsDead().clear();
         (*i)->statisticsMgmt().clear();
-        (*i)->changeSapling().newYear();
     }
 
 }
@@ -237,13 +269,36 @@ void ResourceUnit::newYear()
 void ResourceUnit::production()
 {
 
-    if (mAggregatedWLA==0 || mPixelCount==0) {
-        // nothing to do...
+    if (mAggregatedWLA==0. || mPixelCount==0) {
+        // clear statistics of resourceunitspecies
+        for ( QList<ResourceUnitSpecies*>::const_iterator i=mRUSpecies.constBegin(); i!=mRUSpecies.constEnd(); ++i)
+            (*i)->statistics().clear();
+        mEffectiveArea = 0.;
+        mStockedArea = 0.;
         return;
     }
 
     // the pixel counters are filled during the height-grid-calculations
-    mStockedArea = 100. * mStockedPixelCount; // m2 (1 height grid pixel = 10x10m)
+    mStockedArea = cHeightPerRU*cHeightPerRU * mStockedPixelCount; // m2 (1 height grid pixel = 10x10m)
+    if (leafAreaIndex()<3.) {
+        // estimate stocked area based on crown projections
+        double crown_area = 0.;
+        for (int i=0;i<mTrees.count();++i)
+            crown_area += mTrees.at(i).isDead() ? 0. : mTrees.at(i).stamp()->reader()->crownArea();
+
+        if (logLevelDebug())
+            qDebug() << "crown area: lai" << leafAreaIndex() << "stocked area (pixels)" << mStockedArea << " area (crown)" << crown_area;
+        if (leafAreaIndex()<1.) {
+            mStockedArea = std::min(crown_area, mStockedArea);
+        } else {
+            // for LAI between 1 and 3:
+            // interpolate between sum of crown area of trees (at LAI=1) and the pixel-based value (at LAI=3 and above)
+            double px_frac = (leafAreaIndex()-1.)/2.; // 0 at LAI=1, 1 at LAI=3
+            mStockedArea = mStockedArea * px_frac + std::min(crown_area, mStockedArea) * (1. - px_frac);
+        }
+        if (mStockedArea==0.)
+            return;
+    }
 
     // calculate the leaf area index (LAI)
     double LAI = mAggregatedLA / mStockedArea;
@@ -275,10 +330,13 @@ void ResourceUnit::production()
     // note: LAIFactors are only 1 if sum of LAI is > 1. (see WaterCycle)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         double lai_factor = (*i)->statistics().leafAreaIndex() / ru_lai;
-        DBGMODE(
-        if (lai_factor > 1.)
-            qDebug() << "LAI factor > 1";
-        );
+
+        //DBGMODE(
+        if (lai_factor > 1.) {
+                        const ResourceUnitSpecies* rus=*i;
+                        qDebug() << "LAI factor > 1: species ru-index:" << rus->species()->name() << rus->ru()->index();
+                    }
+        //);
         (*i)->setLAIfactor( lai_factor );
     }
 
@@ -289,12 +347,21 @@ void ResourceUnit::production()
 
     // invoke species specific calculation (3PG)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
+        //DBGMODE(
+        if ((*i)->LAIfactor() > 1.) {
+                    const ResourceUnitSpecies* rus=*i;
+                    qDebug() << "LAI factor > 1: species ru-index value:" << rus->species()->name() << rus->ru()->index() << rus->LAIfactor();
+                    }
+        //);
         (*i)->calculate(); // CALCULATE 3PG
-        if (logLevelInfo() &&  (*i)->LAIfactor()>0)
-            qDebug() << "ru" << mIndex << "species" << (*i)->species()->id() << "LAIfraction" << (*i)->LAIfactor() << "raw_gpp_m2"
-                     << (*i)->prod3PG().GPPperArea() << "area:" << productiveArea() << "gpp:"
-                     << productiveArea()*(*i)->prod3PG().GPPperArea()
-                     << "aging(lastyear):" << averageAging() << "f_env,yr:" << (*i)->prod3PG().fEnvYear();
+
+        // debug output related to production
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandGPP) && (*i)->LAIfactor()>0.) {
+            DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dStandGPP);
+            out << (*i)->species()->id() << index() << id();
+            out << (*i)->LAIfactor() << (*i)->prod3PG().GPPperArea() << productiveArea()*(*i)->LAIfactor()*(*i)->prod3PG().GPPperArea() << averageAging() << (*i)->prod3PG().fEnvYear() ;
+
+        }
     }
 }
 
@@ -338,6 +405,29 @@ void ResourceUnit::yearEnd()
     }
     mStatistics.calculate(); // aggreagte on stand level
 
+    // update carbon flows
+    if (soil() && GlobalSettings::instance()->model()->settings().carbonCycleEnabled) {
+        double area_factor = stockableArea() / cRUArea; //conversion factor
+        mUnitVariables.carbonUptake = statistics().npp() * biomassCFraction;
+        mUnitVariables.carbonUptake += statistics().nppSaplings() * biomassCFraction;
+
+        double to_atm = snag()->fluxToAtmosphere().C / area_factor; // from snags, kgC/ha
+        to_atm += soil()->fluxToAtmosphere().C *cRUArea/10.; // soil: t/ha -> t/m2 -> kg/ha
+        mUnitVariables.carbonToAtm = to_atm;
+
+        double to_dist = snag()->fluxToDisturbance().C / area_factor;
+        to_dist += soil()->fluxToDisturbance().C * cRUArea/10.;
+        double to_harvest = snag()->fluxToExtern().C / area_factor;
+
+        mUnitVariables.NEP = mUnitVariables.carbonUptake - to_atm - to_dist - to_harvest; // kgC/ha
+
+        // incremental values....
+        mUnitVariables.cumCarbonUptake += mUnitVariables.carbonUptake;
+        mUnitVariables.cumCarbonToAtm += mUnitVariables.carbonToAtm;
+        mUnitVariables.cumNEP += mUnitVariables.NEP;
+
+    }
+
 }
 
 void ResourceUnit::addTreeAgingForAllTrees()
@@ -360,6 +450,7 @@ void ResourceUnit::createStandStatistics()
         mRUSpecies[i]->statistics().clear();
         mRUSpecies[i]->statisticsDead().clear();
         mRUSpecies[i]->statisticsMgmt().clear();
+        mRUSpecies[i]->saplingStat().clearStatistics();
     }
 
     // add all trees to the statistics objects of the species
@@ -367,8 +458,13 @@ void ResourceUnit::createStandStatistics()
         if (!t.isDead())
             resourceUnitSpecies(t.species()).statistics().add(&t, 0);
     }
+    // summarise sapling stats
+    GlobalSettings::instance()->model()->saplings()->calculateInitialStatistics(this);
+
     // summarize statistics for the whole resource unit
     for (int i=0;i<mRUSpecies.count();i++) {
+        mRUSpecies[i]->saplingStat().calculate(mRUSpecies[i]->species(), this);
+        mRUSpecies[i]->statistics().add(&mRUSpecies[i]->saplingStat());
         mRUSpecies[i]->statistics().calculate();
         mStatistics.add(mRUSpecies[i]->statistics());
     }
@@ -376,58 +472,38 @@ void ResourceUnit::createStandStatistics()
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*stockableArea()):0.;
     if (mAverageAging<0. || mAverageAging>1.)
         qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
+
 }
 
 /** recreate statistics. This is necessary after events that changed the structure
     of the stand *after* the growth of trees (where stand statistics are updated).
     An example is after disturbances.  */
-void ResourceUnit::recreateStandStatistics()
+void ResourceUnit::recreateStandStatistics(bool recalculate_stats)
 {
+    // when called after disturbances (recalculate_stats=false), we
+    // clear only the tree-specific variables in the stats (i.e. we keep NPP, and regen carbon),
+    // and then re-add all trees (since TreeGrowthData is NULL no NPP is available).
+    // The statistics are not summarised here, because this happens for all resource units
+    // in the yearEnd function of RU.
     for (int i=0;i<mRUSpecies.count();i++) {
-        mRUSpecies[i]->statistics().clear();
+        if (recalculate_stats)
+            mRUSpecies[i]->statistics().clear();
+        else
+            mRUSpecies[i]->statistics().clearOnlyTrees();
     }
     foreach(const Tree &t, mTrees) {
         resourceUnitSpecies(t.species()).statistics().add(&t, 0);
     }
 
-}
-
-void ResourceUnit::setMaxSaplingHeightAt(const QPoint &position, const float height)
-{
-    Q_ASSERT(mSaplingHeightMap);
-    int pixel_index = cPxPerRU*(position.x()-mCornerCoord.x())+(position.y()-mCornerCoord.y());
-    if (pixel_index<0 || pixel_index>=cPxPerRU*cPxPerRU) {
-        qDebug() << "setSaplingHeightAt-Error for position" << position << "for RU at" << boundingBox() << "with corner" << mCornerCoord;
-    } else {
-        if (mSaplingHeightMap[pixel_index]<height)
-            mSaplingHeightMap[pixel_index]=height;
+    if (recalculate_stats) {
+        for (int i=0;i<mRUSpecies.count();i++) {
+            mRUSpecies[i]->statistics().calculate();
+        }
     }
 }
 
-/// clear all saplings of all species on a given position (after recruitment)
-void ResourceUnit::clearSaplings(const QPoint &position)
-{
-    foreach(ResourceUnitSpecies* rus, mRUSpecies)
-        rus->clearSaplings(position);
 
-}
 
-/// kill all saplings within a given rect
-void ResourceUnit::clearSaplings(const QRectF pixel_rect, const bool remove_from_soil)
-{
-    foreach(ResourceUnitSpecies* rus, mRUSpecies) {
-        rus->changeSapling().clearSaplings(pixel_rect, remove_from_soil);
-    }
-
-}
-
-float ResourceUnit::saplingHeightForInit(const QPoint &position) const
-{
-    double maxh = 0.;
-    foreach(ResourceUnitSpecies* rus, mRUSpecies)
-        maxh = qMax(maxh, rus->sapling().heightAt(position));
-    return maxh;
-}
 
 void ResourceUnit::calculateCarbonCycle()
 {

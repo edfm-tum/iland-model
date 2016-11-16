@@ -66,6 +66,8 @@ private:
     // variables
     double mRE; ///< climate factor 're' (see Snag::calculateClimateFactors())
     double mAvailableNitrogen; ///< plant available nitrogen (kg/ha)
+    double mAvailableNitrogenFromLabile; ///< plant available nitrogen from labile pool (kg/ha)
+    double mAvailableNitrogenFromRefractory; ///< plant available nitrogen from refractory pool (kg/ha)
     double mKyl; ///< litter decomposition rate
     double mKyr; ///< downed woody debris (dwd) decomposition rate
     double mKo; ///< decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
@@ -81,6 +83,7 @@ private:
     CNPair mTotalToDisturbance; ///< book-keeping pool for heterotrophic respiration (kg/*ha)
     CNPair mTotalToAtmosphere; ///< book-keeping disturbance envents (fire) (kg/ha)
 
+    static double mNitrogenDeposition; ///< annual nitrogen deposition (kg N/ha*yr)
     friend class Snapshot;
 };
 

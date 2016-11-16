@@ -26,6 +26,7 @@
 class Model;
 class MainWindow;
 class MapGrid;
+class Species;
 
 class ModelController: public QObject
 {
@@ -34,6 +35,7 @@ public:
     ModelController();
     ~ModelController();
     void setMainWindow(MainWindow *mw) { mViewerWindow = mw; }
+    MainWindow *mainWindow() { return mViewerWindow; }
     void connectSignals(); // connect signal/slots to the main window if available
     Model *model() const { return mModel; }
     // bool checkers...
@@ -55,14 +57,20 @@ public:
     void setupDynamicOutput(QString fieldList);
     QString dynamicOutput();
     // some informational services
-    QHash<QString, QString> availableSpecies();
+    QList<const Species *> availableSpecies();
+    void setLoadedJavascriptFile(QString filename) { mLastLoadedJSFile = filename; }
+    QString loadedJavascriptFile() const { return mLastLoadedJSFile; }
+
 
     void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
     void addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value);
     void paintMap(MapGrid *map, double min_value, double max_value);
 
     void addLayers(const LayeredGridBase *layers, const QString &name);
+    void removeLayers(const LayeredGridBase *layers);
     void setViewport(QPointF center_point, double scale_px_per_m);
+
+    void setUIShortcuts(QVariantMap shortcuts);
 signals:
     void finished(QString errorMessage); ///< model has finished run (errorMessage is empty in case of success)
     void year(int year); ///< signal indicating a year of the simulation has been processed
@@ -84,6 +92,7 @@ private:
     bool internalRun(); ///< runs the main loop
     void internalStop(); ///< save outputs, stop the model execution
     void fetchDynamicOutput(); ///< execute the dynamic output and fetch data
+    void saveDebugOutputs(); ///< save debug outputs to file
     MainWindow *mViewerWindow;
     Model *mModel;
     bool mPaused;
@@ -97,6 +106,7 @@ private:
     bool mDynamicOutputEnabled;
     QStringList mDynFieldList;
     QStringList mDynData;
+    QString mLastLoadedJSFile;
 
 };
 

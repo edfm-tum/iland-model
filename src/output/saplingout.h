@@ -20,6 +20,7 @@
 #ifndef SAPLINGOUT_H
 #define SAPLINGOUT_H
 #include "output.h"
+#include "expression.h"
 
 class SaplingOut : public Output
 {
@@ -27,6 +28,25 @@ public:
     SaplingOut();
     virtual void exec();
     virtual void setup();
+private:
+    Expression mCondition;
+    double *mVarRu;
+    double *mVarYear;
+
+};
+
+class SaplingDetailsOut : public Output
+{
+public:
+    SaplingDetailsOut();
+    virtual void exec();
+    virtual void setup();
+private:
+    Expression mCondition;
+    double *mVarRu;
+    double *mVarYear;
+    double mMinDbh;
+
 };
 
 #endif // SAPLINGOUT_H

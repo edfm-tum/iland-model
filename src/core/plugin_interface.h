@@ -28,7 +28,7 @@
     * General information: used to identify plugins
 
 */
-class QScriptEngine; // forward
+class QJSEngine; // forward
 class ResourceUnit; // forward
 
 class DisturbanceInterface
@@ -45,7 +45,7 @@ public:
     virtual void setup()=0; ///< setup after general iLand model frame is created.
     virtual void yearBegin()=0; ///< function executes at the beginning of a year (e.g., cleanup)
     virtual void run()=0; ///< main function that once a year (after growth)
-    virtual void setupScripting(QScriptEngine *engine)=0; ///< allow module specific javascript functions/classes
+    virtual void setupScripting(QJSEngine *engine)=0; ///< allow module specific javascript functions/classes
 };
 
 class SetupResourceUnitInterface
@@ -71,10 +71,24 @@ public:
     virtual void calculateWater(const ResourceUnit *resource_unit, const WaterCycleData *water_data)=0;
 };
 
+/**
+
+    */
+class Tree; // forward
+//class Tree::TreeRemovalType;
+class TreeDeathInterface
+{
+public:
+    virtual ~TreeDeathInterface() {}
+    virtual void treeDeath(const Tree *tree, const int removal_type)=0;
+};
+
 Q_DECLARE_INTERFACE(DisturbanceInterface, "at.ac.boku.iland.DisturbanceInterface/1.0")
 
 Q_DECLARE_INTERFACE(WaterInterface, "at.ac.boku.iland.WaterInterface/1.0")
 
 Q_DECLARE_INTERFACE(SetupResourceUnitInterface, "at.ac.boku.iland.SetupResourceUnitInterface/1.0")
+
+Q_DECLARE_INTERFACE(TreeDeathInterface, "at.ac.boku.iland.TreeDeathInterface/1.0")
 
 #endif // PLUGIN_INTERFACE_H

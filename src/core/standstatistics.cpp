@@ -32,7 +32,8 @@
 #include "tree.h"
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
-#include "sapling.h"
+//#include "sapling.h"
+#include "saplings.h"
 #include "species.h"
 
 void StandStatistics::clear()
@@ -43,12 +44,31 @@ void StandStatistics::clear()
     mSumBasalArea = mSumVolume = mGWL = 0.;
     mLeafAreaIndex = 0.;
     mNPP = mNPPabove = 0.;
+    mNPPsaplings = 0.;
     mCohortCount = mSaplingCount = 0;
     mAverageSaplingAge = 0.;
     mSumSaplingAge = 0.;
     mCStem=0., mCFoliage=0., mCBranch=0., mCCoarseRoot=0., mCFineRoot=0.;
     mNStem=0., mNFoliage=0., mNBranch=0., mNCoarseRoot=0., mNFineRoot=0.;
     mCRegeneration=0., mNRegeneration=0.;
+
+}
+
+void StandStatistics::clearOnlyTrees()
+{
+    // reset only those values that are directly accumulated from trees
+    mCount = 0;
+    mSumDbh=mSumHeight = mAverageDbh=mAverageHeight =0.;
+    mSumBasalArea = mSumVolume = mGWL = 0.;
+    mLeafAreaIndex = 0.;
+    /*mNPP = mNPPabove = 0.;
+    mNPPsaplings = 0.;
+    mCohortCount = mSaplingCount = 0;
+    mAverageSaplingAge = 0.;
+    mSumSaplingAge = 0.;*/
+    mCStem=0., mCFoliage=0., mCBranch=0., mCCoarseRoot=0., mCFineRoot=0.;
+    mNStem=0., mNFoliage=0., mNBranch=0., mNCoarseRoot=0., mNFineRoot=0.;
+    /*mCRegeneration=0., mNRegeneration=0.;*/
 
 }
 
@@ -81,10 +101,9 @@ void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
 // note: mRUS = 0 for aggregated statistics
 void StandStatistics::calculate()
 {
-    double dcount = (double) mCount;
-    if (mCount) {
-        mAverageDbh = mSumDbh / dcount;
-        mAverageHeight = mSumHeight / dcount;
+    if (mCount>0.) {
+        mAverageDbh = mSumDbh / mCount;
+        mAverageHeight = mSumHeight / mCount;
         if (mRUS && mRUS->ru()->stockableArea()>0.)
             mLeafAreaIndex /= mRUS->ru()->stockableArea(); // convert from leafarea to LAI
     }
@@ -92,20 +111,32 @@ void StandStatistics::calculate()
         mAverageSaplingAge = mSumSaplingAge / double(mCohortCount);
 
     // scale values to per hectare if resource unit <> 1ha
-    // note: no scaling for carbon/nitrogen pools
+    // note: do this only on species-level (avoid double scaling)
     if (mRUS) {
-        mGWL = mSumVolume + mRUS->removedVolume();
-        double area_factor =  10000. / mRUS->ru()->area();
+        double area_factor =  cRUArea / mRUS->ru()->stockableArea();
         if (area_factor!=1.) {
             mCount = mCount * area_factor;
             mSumBasalArea *= area_factor;
             mSumVolume *= area_factor;
+            mSumDbh *= area_factor;
             mNPP *= area_factor;
             mNPPabove *= area_factor;
-            mGWL *= area_factor;
+            mNPPsaplings *= area_factor;
+            //mGWL *= area_factor;
             mCohortCount *= area_factor;
             mSaplingCount *= area_factor;
+            //double mCStem, mCFoliage, mCBranch, mCCoarseRoot, mCFineRoot;
+            //double mNStem, mNFoliage, mNBranch, mNCoarseRoot, mNFineRoot;
+            //double mCRegeneration, mNRegeneration;
+            mCStem *= area_factor; mNStem *= area_factor;
+            mCFoliage *= area_factor; mNFoliage *= area_factor;
+            mCBranch *= area_factor; mNBranch *= area_factor;
+            mCCoarseRoot *= area_factor; mNCoarseRoot *= area_factor;
+            mCFineRoot *= area_factor; mNFineRoot *= area_factor;
+            mCRegeneration *= area_factor; mNRegeneration *= area_factor;
+
         }
+        mGWL = mSumVolume + mRUS->removedVolume(); // removedVolume: per ha, SumVolume now too
     }
 }
 
@@ -119,6 +150,7 @@ void StandStatistics::add(const StandStatistics &stat)
     mLeafAreaIndex += stat.mLeafAreaIndex;
     mNPP += stat.mNPP;
     mNPPabove += stat.mNPPabove;
+    mNPPsaplings += stat.mNPPsaplings;
     mGWL+=stat.mGWL;
     // regeneration
     mCohortCount += stat.mCohortCount;
@@ -136,17 +168,21 @@ void StandStatistics::add(const StandStatistics &stat)
 
 void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double weight)
 {
+    // aggregates that are not scaled to hectares
     mCount+=stat.mCount * weight;
     mSumBasalArea+=stat.mSumBasalArea * weight;
     mSumDbh+=stat.mSumDbh * weight;
     mSumHeight+=stat.mSumHeight * weight;
     mSumVolume+=stat.mSumVolume * weight;
+    // averages that are scaled to per hectare need to be scaled
     mAverageDbh+=stat.mAverageDbh * weight;
     mAverageHeight+=stat.mAverageHeight * weight;
     mAverageSaplingAge+=stat.mAverageSaplingAge * weight;
     mLeafAreaIndex += stat.mLeafAreaIndex * weight;
+
     mNPP += stat.mNPP * weight;
     mNPPabove += stat.mNPPabove * weight;
+    mNPPsaplings += stat.mNPPsaplings * weight;
     mGWL+=stat.mGWL * weight;
     // regeneration
     mCohortCount += stat.mCohortCount * weight;
@@ -162,17 +198,20 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
 
 }
 
-/// call for regeneration layer of a species in resource unit
-void StandStatistics::add(const Sapling *sapling)
-{
-    mCohortCount = sapling->livingSaplings();
-    mSaplingCount = sapling->livingSaplings(); // TODO to change!!! Reineke!
 
-    mSumSaplingAge = sapling->averageAge() * sapling->livingSaplings();
-    mAverageSaplingAge = sapling->averageAge();
+
+void StandStatistics::add(const SaplingStat *sapling)
+{
+    mCohortCount += sapling->livingCohorts();
+    mSaplingCount += sapling->livingSaplings(); // saplings with height >1.3m
+
+    mSumSaplingAge += sapling->averageAge() * sapling->livingCohorts();
 
     mCRegeneration += sapling->carbonLiving().C;
     mNRegeneration += sapling->carbonLiving().N;
+
+    mNPPsaplings += sapling->carbonGain().C / biomassCFraction;
+
 }
 
 void SystemStatistics::writeOutput()
@@ -181,7 +220,7 @@ void SystemStatistics::writeOutput()
         DebugList &out = GlobalSettings::instance()->debugList(0, GlobalSettings::dPerformance);
         out << treeCount << saplingCount << newSaplings << tManagement
             << tApplyPattern << tReadPattern << tTreeGrowth
-            << tSeedDistribution  << tSaplingAndEstablishment
+            << tSeedDistribution  << tEstablishment << tSapling
             << tCarbonCycle << tWriteOutput << tTotalYear;
     }
 }

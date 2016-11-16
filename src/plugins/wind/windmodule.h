@@ -33,21 +33,24 @@ class ResourceUnit; // forward
 */
 class WindCell {
 public:
-    WindCell() { topex = 0; clear(); }
-    void clear() {height = edge = 0.f; n_trees=0; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
+    WindCell() { topex = 0; n_affected=0; sum_volume_killed=0.; edge_age=0; clear(); }
+    void clear() {height = edge = 0.f; n_trees=0.f; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
     bool isValid() const { return height<9999.f; } ///< returns true if the pixel is on the valid project area
     float topex; ///< topographic modifier for wind speed (-)
     float height; ///< top height (m).
-    int n_trees; ///< number of trees on pixel
+    float n_trees; ///< number of trees on pixel
     const Tree *tree; ///< pointer to the tallest tree on the pixel (if already populated)
     float edge; ///< maximum difference to neighboring cells (m)
     // statistics
     int n_iteration; ///< number of iteration this pixel is processed (and trees are killed)
     int n_killed; ///< number of trees killed on the pixel
-    double basal_area_killed; ///< basal area of trees that died (m2)
+    int edge_age; ///< age of an edge (consecutive number of years of being an edge)
+    double basal_area_killed; ///< basal area of trees that died (m2) (during an event)
     double cws_uproot; ///< critital wind speed for uprooting (m/s)
     double cws_break; ///< critical wind speed for tree breakage (m/s)
     double crown_windspeed; ///< wind speed (m/s) on the cecll
+    int n_affected; ///< number of storm that killed trees on that pixel.
+    double sum_volume_killed; ///< running sum of killed tree volume on that pixel (m3)
 };
 // data structure for a resource unit
 class WindRUCell {
@@ -58,16 +61,17 @@ public:
 };
 
 /** Helper class manage and visualize data layers related to fire.
-  @ingroup firemodule
+  @ingroup windmodule
 */
 class WindLayers: public LayeredGrid<WindCell> {
   public:
     void setGrid(const Grid<WindCell> &grid) { mGrid = &grid; }
     double value(const WindCell& data, const int index) const;
-    const QStringList names() const;
+    const QVector<LayerElement> &names();
     // specifics for wind layers
     void setRUGrid(const Grid<WindRUCell> *grid) { mRUGrid = grid; }
 private:
+    QVector<LayerElement> mNames;
     double ruValueAt(const WindCell *cell, const int what) const; // get resource-unit level factor at cell "cell"
     const Grid<WindRUCell> *mRUGrid;
 };
@@ -95,6 +99,7 @@ public:
     /// the general setup routine after starting iland
     void setup();
     void setupResourceUnit(const ResourceUnit* ru);
+    WindLayers &layers() { return mWindLayers; }
 
     /// main function of the disturbance module
     void run(const int iteration=-1, const bool execute_from_script=false);
@@ -102,6 +107,7 @@ public:
     // test functions
     void setWindProperties(const double direction_rad, const double speed_ms) { mWindDirection = direction_rad; mWindSpeed = speed_ms; }
     void setSimulationMode(const bool mode) { mSimulationMode = mode; }
+    bool simulationMode() const { return mSimulationMode; }
     void setMaximumIterations(const double maxit) { mMaxIteration = maxit; }
 
     void testFetch(double degree_direction);
@@ -110,7 +116,7 @@ private:
     // main functions
     bool eventTriggered(); ///< determine details of this years' wind event (and return false if no event happens)
     void initWindGrid(); ///< load state from iland main module
-    void detectEdges(); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
+    void detectEdges(bool at_startup=false); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
     void calculateFetch(); ///< calculate maximum gap sizes in upwind direction
     int calculateWindImpact(); ///< do one round of wind effect calculations
 
@@ -120,14 +126,17 @@ private:
     /// perform the wind effect calculations for a given grid cell
     bool windImpactOnPixel(const QPoint position, WindCell *cell);
     ///
-    double calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10);
+    double calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double n_trees, const double wind_speed_10);
     double calculateCrititalWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double gap_length, double &rCWS_uproot, double &rCWS_break);
     /// check if the soil on current resource unit is frozen or not
     bool isSoilFrozen(const ResourceUnit *ru, const int day_of_year) const;
+
     // helping functions
     void scanResourceUnitTrees(const QPoint &position);
     void loadSpeciesParameter(const QString &table_name);
     const WindSpeciesParameters &speciesParameter(const Species *s);
+    void initializeEdgeAge(const int years);
+    void incrementEdgeAge();
 
     // variables
     bool mTopexFromGrid; ///< indicates if topex grid is a real grid or by ressource unit
@@ -144,10 +153,14 @@ private:
     double mCurrentGustFactor; ///< gustfactor of the current year (multiplier)
     enum ETopexFactorModificationType {gfMultiply, gfAdd} mTopexFactorModificationType; ///< determines if topo-modifier is added multiplicatively or additively.
     double mIterationsPerMinute; ///< number of iterations per minute of the events' duration
+    int mEdgeAgeBaseValue; ///< initial value for the age of edges in the initial state of the forest
+    Expression mEdgeProbability; ///< function that determines the probability that an edge is calculated (old edges are less likely to being tested)
+    double mEdgeBackgroundProbability; ///< probability that a 10x10m pixel is marked as edge during a wind event (randomly)
     // some statistics
     int mPixelAffected; ///< total number of pixels that are impacted
     int mTreesKilled; ///< total number of killed trees
     double mTotalKilledBasalArea; ///< total basal area of killed trees
+    double mTotalKilledVolume; ///< total tree volume (m3) killed
     enum ESoilFreezeMode {esfFrozen, esfNotFrozen, esfAuto, esfInvalid} mSoilFreezeMode; ///< if "esfAuto", soil-freeze-state is derived from climate
     Grid<WindCell> mGrid; ///< wind grid (10x10m)
     Grid<WindRUCell> mRUGrid; ///< grid for resource unit data
@@ -157,7 +170,12 @@ private:
     /// formula for the transfer function LRI
     Expression mLRITransferFunction;
 
+    QString mAfterExecEvent;
+
     friend class WindScript;
+    friend class WindOut;
+    friend void nc_calculateFetch(WindCell *begin, WindCell *end);
+    friend void nc_calculateWindImpact(ResourceUnit *unit);
 
 };
 

@@ -140,6 +140,19 @@ void Snag::setup( const ResourceUnit *ru)
         mOtherWood[i] = other;
 }
 
+void Snag::scaleInitialState()
+{
+    double area_factor = mRU->stockableArea() / cRUArea; // fraction stockable area
+    // avoid huge snag pools on very small resource units (see also soil.cpp)
+    // area_factor = std::max(area_factor, 0.1);
+    mSWD[1] *= area_factor;
+    mNumberOfSnags[1] *= area_factor;
+    for (int i=0;i<5;i++)
+        mOtherWood[i]*= area_factor;
+    mTotalSnagCarbon *= area_factor;
+
+}
+
 // debug outputs
 QList<QVariant> Snag::debugList()
 {
@@ -225,20 +238,24 @@ double Snag::calculateClimateFactors()
 void Snag::calculateYear()
 {
     mSWDtoSoil.clear();
+
+    // calculate anyway, because also the soil module needs it (and currently one can have Snag and Soil only as a couple)
+    calculateClimateFactors();
+    const double climate_factor_re = mClimateFactor;
+
     if (isEmpty()) // nothing to do
         return;
 
-    const double climate_factor_re = calculateClimateFactors(); // calculate anyway, because also the soil module needs it (and currently one can have Snag and Soil only as a couple)
-
     // process branches: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mOtherWood[mBranchCounter];
-
     mOtherWood[mBranchCounter].clear();
     mBranchCounter= (mBranchCounter+1) % 5; // increase index, roll over to 0.
+
     // decay of branches/coarse roots
     for (int i=0;i<5;i++) {
         if (mOtherWood[i].C>0.) {
             double survive_rate = exp(- climate_factor_re * mOtherWood[i].parameter() ); // parameter: the "kyr" value...
+            mTotalToAtm.C += mOtherWood[i].C * (1. - survive_rate); // flux to atmosphere (decayed carbon)
             mOtherWood[i].C *= survive_rate;
         }
     }
@@ -323,11 +340,20 @@ void Snag::addTurnoverLitter(const Species *species, const double litter_foliage
 {
     mLabileFlux.addBiomass(litter_foliage, species->cnFoliage(), species->snagKyl());
     mLabileFlux.addBiomass(litter_fineroot, species->cnFineroot(), species->snagKyl());
+    DBGMODE(
+    if (isnan(mLabileFlux.C))
+        qDebug("Snag::addTurnoverLitter: NaN");
+                );
 }
 
 void Snag::addTurnoverWood(const Species *species, const double woody_biomass)
 {
     mRefractoryFlux.addBiomass(woody_biomass, species->cnWood(), species->snagKyr());
+    DBGMODE(
+    if (isnan(mRefractoryFlux.C))
+        qDebug("Snag::addTurnoverWood: NaN");
+                );
+
 }
 
 
@@ -450,7 +476,7 @@ void Snag::addMortality(const Tree *tree)
 }
 
 /// add residual biomass of 'tree' after harvesting.
-/// remove_{stem, branch, foliage}_fraction: percentage of biomass compartment that is *removed* by the harvest operation (i.e.: not to stay in the system)
+/// remove_{stem, branch, foliage}_fraction: percentage of biomass compartment that is *removed* by the harvest operation [0..1] (i.e.: not to stay in the system)
 /// records on harvested biomass is collected (mTotalToExtern-pool).
 void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const double remove_branch_fraction, const double remove_foliage_fraction )
 {
@@ -486,6 +512,10 @@ void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNP
 {
     mLabileFlux.add(litter_pool, species->snagKyl());
     mRefractoryFlux.add(woody_pool, species->snagKyr());
+    DBGMODE(
+    if (isnan(mLabileFlux.C) || isnan(mRefractoryFlux.C))
+        qDebug("Snag::addToSoil: NaN in C Pool");
+    );
 }
 
 /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
@@ -516,9 +546,10 @@ void Snag::management(const double factor)
     // swd pools
     for (int i=0;i<3;i++) {
         mSWDtoSoil += mSWD[i] * factor;
+        mRefractoryFlux += mSWD[i] * factor;
         mSWD[i] *= (1. - factor);
-        mSWDtoSoil += mToSWD[i] * factor;
-        mToSWD[i] *= (1. - factor);
+        //mSWDtoSoil += mToSWD[i] * factor;
+        //mToSWD[i] *= (1. - factor);
     }
     // what to do with the branches: now move also all wood to soil (note: this is note
     // very good w.r.t the coarse roots...

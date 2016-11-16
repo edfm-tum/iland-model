@@ -20,6 +20,7 @@
 #ifndef CARBONFLOWOUT_H
 #define CARBONFLOWOUT_H
 #include "output.h"
+#include "expression.h"
 
 class CarbonFlowOut : public Output
 {
@@ -27,6 +28,9 @@ public:
     CarbonFlowOut();
     virtual void exec();
     virtual void setup();
+private:
+    Expression mCondition; // condition for landscape-level output
+    Expression mConditionDetails; // condition for resource-unit-level output
 
 };
 

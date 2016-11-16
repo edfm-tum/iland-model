@@ -1,4 +1,21 @@
-#include <QtGui>
+/********************************************************************************************
+**    iLand - an individual based forest landscape and disturbance model
+**    http://iland.boku.ac.at
+**    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************************/
 #include "grid.h"
 #include "exception.h"
 #include "global.h"
@@ -19,6 +36,8 @@ QString gridToString(const FloatGrid &grid, const QChar sep, const int newline_a
     }
     return res;
 }
+#ifdef ILAND_GUI
+#include <QImage>
 
 QImage gridToImage(const FloatGrid &grid,
                    bool black_white,
@@ -67,3 +86,17 @@ bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid)
         }
     return true;
 }
+#else
+//QImage gridToImage(const FloatGrid &grid,
+//                   bool black_white,
+//                   double min_value, double max_value,
+//                   bool reverse)
+//{
+//}
+
+bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid) {
+    Q_UNUSED(fileName); Q_UNUSED(rGrid);
+    return false;
+}
+#endif
+

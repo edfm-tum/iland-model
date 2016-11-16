@@ -109,7 +109,7 @@ void Stamp::load(QDataStream &in)
 void Stamp::save(QDataStream &out)
 {
     // see StampContainer doc for file stamp binary format
-   out << (qint32) m_offset;
+   out << static_cast<qint32>( m_offset );
    for (int i=0;i<count(); i++) {
        out << m_data[i];
    }

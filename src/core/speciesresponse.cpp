@@ -40,7 +40,7 @@
 #include "climate.h"
 #include "model.h"
 #include "watercycle.h"
-#include "helper.h"
+#include "debugtimer.h"
 
 SpeciesResponse::SpeciesResponse()
 {

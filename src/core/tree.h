@@ -22,6 +22,12 @@
 #include <QPointF>
 
 #include "grid.h"
+
+
+// mortality workshop 2015 / COST Action with H. Bugmann
+//#define ALT_TREE_MORTALITY
+
+
 // forwards
 class Species;
 class Stamp;
@@ -29,17 +35,19 @@ class ResourceUnit;
 struct HeightGridValue;
 struct TreeGrowthData;
 class TreeOut;
+class TreeRemovedOut;
+class LandscapeRemovedOut;
 
 class Tree
 {
 public:
     // lifecycle
     Tree();
-    void setup();
+    void setup(); ///< calculates initial values for biomass pools etc. after dimensions are set.
 
     // access to properties
-    int id() const { return mId; }
-    int age() const { return mAge; }
+    int id() const { return mId; } ///< numerical unique ID of the tree
+    int age() const { return mAge; } ///< the tree age (years)
     /// @property position The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
     const QPointF position() const { Q_ASSERT(mGrid!=0); return mGrid->cellCenterPoint(mPositionIndex); }
     const QPoint positionIndex() const { return mPositionIndex; }
@@ -62,8 +70,10 @@ public:
     float biomassCoarseRoot() const { return mCoarseRootMass; } ///< mass (kg) of coarse roots
     float biomassStem() const { return mWoodyMass; } ///< mass (kg) of stem
     double barkThickness() const; ///< thickness of the bark (cm)
+    float stressIndex() const { return mStressIndex; } ///< the scalar stress rating (0..1)
 
     // actions
+    enum TreeRemovalType { TreeDeath=0, TreeHarvest=1, TreeDisturbance=2, TreeSalavaged=3, TreeKilled=4, TreeCutDown=5};
     /// the tree dies (is killed)
     void die(TreeGrowthData *d=0);
     /// remove the tree (management). removalFractions for tree compartments: if 0: all biomass stays in the system, 1: all is "removed"
@@ -83,7 +93,7 @@ public:
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
     /// removes fractions (0..1) for foliage, branches, stem from a tree, e.g. due to a fire.
     /// values of "0" remove nothing, "1" removes the full compartent.
-    void removeBiomass(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction);
+    void removeBiomassOfTree(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction);
 
     // setters for initialization
     void setNewId() { mId = m_nextId++; } ///< force a new id for this object (after copying trees)
@@ -91,10 +101,32 @@ public:
     void setPosition(const QPointF pos) { Q_ASSERT(mGrid!=0); mPositionIndex = mGrid->indexAt(pos); }
     void setPosition(const QPoint posIndex) { mPositionIndex = posIndex; }
     void setDbh(const float dbh) { mDbh=dbh; }
-    void setHeight(const float height) { mHeight=height; }
+    void setHeight(const float height);
     void setSpecies(Species *ts) { mSpecies=ts; }
     void setRU(ResourceUnit *ru) { mRU = ru; }
     void setAge(const int age, const float treeheight);
+
+    // management flags (used by ABE management system)
+    void markForHarvest(bool do_mark) { setFlag(Tree::MarkForHarvest, do_mark);}
+    bool isMarkedForHarvest() const { return flag(Tree::MarkForHarvest);}
+    void markForCut(bool do_mark) { setFlag(Tree::MarkForCut, do_mark);}
+    bool isMarkedForCut() const { return flag(Tree::MarkForCut);}
+    void markCropTree(bool do_mark) { setFlag(Tree::MarkCropTree, do_mark);}
+    bool isMarkedAsCropTree() const { return flag(Tree::MarkCropTree);}
+    void markCropCompetitor(bool do_mark) { setFlag(Tree::MarkCropCompetitor, do_mark);}
+    bool isMarkedAsCropCompetitor() const { return flag(Tree::MarkCropCompetitor);}
+    // death reasons
+    void setDeathReasonWind()  { setFlag(Tree::TreeDeadWind, true); }
+    void setDeathReasonBarkBeetle()  { setFlag(Tree::TreeDeadBarkBeetle, true); }
+    void setDeathReasonFire()  { setFlag(Tree::TreeDeadFire, true); }
+    void setDeathCutdown()  { setFlag(Tree::TreeDeadKillAndDrop, true); }
+    void setIsHarvested()  { setFlag(Tree::TreeHarvested, true); }
+
+    bool isDeadWind() const { return flag(Tree::TreeDeadWind);}
+    bool isDeadBarkBeetle() const { return flag(Tree::TreeDeadBarkBeetle);}
+    bool isDeadFire() const { return flag(Tree::TreeDeadFire);}
+    bool isCutdown() const { return flag(Tree::TreeDeadKillAndDrop);}
+    bool isHarvested() const { return flag(Tree::TreeHarvested);}
 
     // grid based light-concurrency functions
     void applyLIP(); ///< apply LightInfluencePattern onto the global grid
@@ -115,6 +147,9 @@ public:
     static void resetStatistics();
     static int statPrints() { return m_statPrint; }
     static int statCreated() { return m_statCreated; }
+#ifdef ALT_TREE_MORTALITY
+    static void mortalityParams(double dbh_inc_threshold, int stress_years, double stress_mort_prob);
+#endif
 
     QString dump();
     void dumpList(QList<QVariant> &rTargetList);
@@ -126,6 +161,10 @@ private:
     double relative_height_growth(); ///< estimate height growth based on light status.
     void grow_diameter(TreeGrowthData &d); ///< actual growth of the tree's stem.
     void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
+#ifdef ALT_TREE_MORTALITY
+    void altMortality(TreeGrowthData &d); ///< alternative version of the mortality sub module
+#endif
+    void notifyTreeRemoved(TreeRemovalType reason); ///< record the removed volume in the height grid
 
     // state variables
     int mId; ///< unique ID of tree
@@ -136,12 +175,12 @@ private:
     // biomass compartements
     float mLeafArea; ///< m2 leaf area
     float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)
-    float mFoliageMass; // kg of foliage (dry)
-    float mWoodyMass; // kg biomass of aboveground stem biomass
-    float mFineRootMass; // kg biomass of fine roots (linked to foliage mass)
-    float mCoarseRootMass; // kg biomass of coarse roots (allometric equation)
+    float mFoliageMass; ///< kg of foliage (dry)
+    float mWoodyMass; ///< kg biomass of aboveground stem biomass
+    float mFineRootMass; ///< kg biomass of fine roots (linked to foliage mass)
+    float mCoarseRootMass; ///< kg biomass of coarse roots (allometric equation)
     // production relevant
-    float mNPPReserve; // kg
+    float mNPPReserve; ///< NPP reserve pool [kg] - stores a part of assimilates for use in less favorable years
     float mLRI; ///< resulting lightResourceIndex
     float mLightResponse; ///< light response used for distribution of biomass on RU level
     // auxiliary
@@ -155,8 +194,19 @@ private:
 
     // various flags
     int mFlags;
-    enum Flags { TreeDead=1, TreeDebugging=2 }; ///< (binary coded) tree flags
+    /// (binary coded) tree flags
+    enum Flags { TreeDead=1, TreeDebugging=2,
+                 TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256,
+                 MarkForCut=512, // mark tree for being cut down
+                 MarkForHarvest=1024, // mark tree for being harvested
+                 MarkCropTree=2048, // mark as crop tree
+                 MarkCropCompetitor=4096 // mark as competitor for a crop tree
+               };
+    /// set a Flag 'flag' to the value 'value'.
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
+    /// set a number of flags (need to be constructed by or'ing flags together) at the same time to the Boolean value 'value'.
+    void setFlag(const int flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
+    /// retrieve the value of the flag 'flag'.
     bool flag(const Tree::Flags flag) const { return mFlags & flag; }
 
     // special functions
@@ -165,6 +215,10 @@ private:
     // static data
     static FloatGrid *mGrid;
     static Grid<HeightGridValue> *mHeightGrid;
+    static TreeRemovedOut *mRemovalOutput;
+    static void setTreeRemovalOutput(TreeRemovedOut *rout) { mRemovalOutput=rout; }
+    static LandscapeRemovedOut *mLSRemovalOutput;
+    static void setLandscapeRemovalOutput(LandscapeRemovedOut *rout) { mLSRemovalOutput=rout; }
 
     // statistics
     static int m_statPrint;
@@ -176,6 +230,8 @@ private:
     friend class TreeWrapper;
     friend class StandStatistics;
     friend class TreeOut;
+    friend class TreeRemovedOut;
+    friend class LandscapeRemovedOut;
     friend class Snapshot;
 };
 

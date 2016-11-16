@@ -23,7 +23,7 @@
 /* TODO: this is purely WINDOWS - provide a version for other BS, change the build-system
    to only use this on Win.
 */
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include <windows.h>
 
 class TTickTack
@@ -53,16 +53,16 @@ _LARGE_INTEGER getCount()
     }
 };
 #else
-// LINUX implementation using standard Qt timer
-#include <QTime>
+// non windows implementation
+#include <QElapsedTimer>
 class TTickTack
 {
 public:
-    TTickTack() { qt_timer.start();}
-    void reset() { qt_timer.start(); }
-    double elapsed() { return qt_timer.elapsed()/1000.; } // return seconds
+    TTickTack() { reset(); }
+    void reset() { t.start(); }
+    double elapsed() { return t.elapsed()/1000.; }
 private:
-    QTime qt_timer;
+    QElapsedTimer t;
 };
 #endif
 

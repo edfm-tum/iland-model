@@ -20,14 +20,18 @@
 
 #include "globalsettings.h"
 #include "model.h"
+#include "tree.h"
+#include "stamp.h"
 #include "helper.h"
+#include "resourceunit.h"
+#include "scriptgrid.h"
 
-#include <QtScript/QScriptEngine>
-#include <QtScript/QScriptValue>
+#include <QJSEngine>
+#include <QJSValue>
 void SpatialAnalysis::addToScriptEngine()
 {
     SpatialAnalysis *spati = new SpatialAnalysis;
-    QScriptValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati, QScriptEngine::ScriptOwnership);
+    QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
     GlobalSettings::instance()->scriptEngine()->globalObject().setProperty("SpatialAnalysis", v);
 }
 
@@ -45,13 +49,174 @@ double SpatialAnalysis::rumpleIndexFullArea()
     return rum;
 }
 
+/// extract patches (clumps) from the grid 'src'.
+/// Patches are defined as adjacent pixels (8-neighborhood)
+/// Return: vector with number of pixels per patch (first element: patch 1, second element: patch 2, ...)
+QList<int> SpatialAnalysis::extractPatches(Grid<double> &src, int min_size, QString fileName)
+{
+    mClumpGrid.setup(src.metricRect(), src.cellsize());
+    mClumpGrid.wipe();
+
+    // now loop over all pixels and run a floodfill algorithm
+    QPoint start;
+    QQueue<QPoint> pqueue; // for the flood fill algorithm
+    QList<int> counts;
+    int patch_index = 0;
+    int total_size = 0;
+    int patches_skipped = 0;
+    for (int i=0;i<src.count();++i) {
+        if (src[i]>0. && mClumpGrid[i]==0) {
+            start = src.indexOf(i);
+            pqueue.clear();
+            patch_index++;
+
+            // quick and dirty implementation of the flood fill algroithm.
+            // based on: http://en.wikipedia.org/wiki/Flood_fill
+            // returns the number of pixels colored
+
+            pqueue.enqueue(start);
+            int found = 0;
+            while (!pqueue.isEmpty()) {
+                QPoint p = pqueue.dequeue();
+                if (!src.isIndexValid(p))
+                    continue;
+                if (src.valueAtIndex(p)>0. && mClumpGrid.valueAtIndex(p) == 0) {
+                    mClumpGrid.valueAtIndex(p) = patch_index;
+                    pqueue.enqueue(p+QPoint(-1,0));
+                    pqueue.enqueue(p+QPoint(1,0));
+                    pqueue.enqueue(p+QPoint(0,-1));
+                    pqueue.enqueue(p+QPoint(0,1));
+                    pqueue.enqueue(p+QPoint(1,1));
+                    pqueue.enqueue(p+QPoint(-1,1));
+                    pqueue.enqueue(p+QPoint(-1,-1));
+                    pqueue.enqueue(p+QPoint(1,-1));
+                    ++found;
+                }
+            }
+            if (found<min_size) {
+                // delete the patch again
+                pqueue.enqueue(start);
+                while (!pqueue.isEmpty()) {
+                    QPoint p = pqueue.dequeue();
+                    if (!src.isIndexValid(p))
+                        continue;
+                    if (mClumpGrid.valueAtIndex(p) == patch_index) {
+                        mClumpGrid.valueAtIndex(p) = -1;
+                        pqueue.enqueue(p+QPoint(-1,0));
+                        pqueue.enqueue(p+QPoint(1,0));
+                        pqueue.enqueue(p+QPoint(0,-1));
+                        pqueue.enqueue(p+QPoint(0,1));
+                        pqueue.enqueue(p+QPoint(1,1));
+                        pqueue.enqueue(p+QPoint(-1,1));
+                        pqueue.enqueue(p+QPoint(-1,-1));
+                        pqueue.enqueue(p+QPoint(1,-1));
+                    }
+                }
+                --patch_index;
+                patches_skipped++;
+
+            } else {
+                // save the patch in the result
+                counts.push_back(found);
+                total_size+=found;
+            }
+        }
+    }
+    // remove the -1 again...
+    mClumpGrid.limit(0,999999);
+
+    qDebug() << "extractPatches: found" << patch_index << "patches, total valid pixels:" << total_size << "skipped" << patches_skipped;
+    if (!fileName.isEmpty()) {
+        qDebug() << "extractPatches: save to file:" << GlobalSettings::instance()->path(fileName);
+        Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mClumpGrid) );
+    }
+    return counts;
+
+}
+
 void SpatialAnalysis::saveRumpleGrid(QString fileName)
 {
     if (!mRumple)
         mRumple = new RumpleIndex;
 
-    Helper::saveToTextFile(fileName, gridToESRIRaster(mRumple->rumpleGrid()) );
+    Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mRumple->rumpleGrid()) );
 
+}
+
+void SpatialAnalysis::saveCrownCoverGrid(QString fileName)
+{
+    calculateCrownCover();
+    Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mCrownCoverGrid) );
+
+}
+
+QJSValue SpatialAnalysis::patches(QJSValue grid, int min_size)
+{
+    ScriptGrid *sg = qobject_cast<ScriptGrid*>(grid.toQObject());
+    if (sg) {
+        // extract patches (keep patches with a size >= min_size
+        mLastPatches = extractPatches(*sg->grid(), min_size, QString());
+        // create a (double) copy of the internal clump grid, and return this grid
+        // as a JS value
+        QJSValue v = ScriptGrid::createGrid(mClumpGrid.toDouble(),"patch");
+        return v;
+    }
+    return QJSValue();
+}
+
+void SpatialAnalysis::calculateCrownCover()
+{
+    mCrownCoverGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
+                          GlobalSettings::instance()->model()->RUgrid().cellsize());
+
+    // calculate the crown cover per resource unit. We use the "reader"-stamps of the individual trees
+    // as they represent the crown (size). We also simply hijack the LIF grid for our calculations.
+    FloatGrid *grid = GlobalSettings::instance()->model()->grid();
+    grid->initialize(0.f);
+    // we simply iterate over all trees of all resource units (not bothering about multithreading here)
+    int x,y;
+    AllTreeIterator ati(GlobalSettings::instance()->model());
+    while (Tree *t = ati.nextLiving()) {
+        // apply the reader-stamp
+        const Stamp *reader = t->stamp()->reader();
+        QPoint pos_reader = t->positionIndex(); // tree position
+        pos_reader-=QPoint(reader->offset(), reader->offset());
+        int reader_size = reader->size();
+        int rx = pos_reader.x();
+        int ry = pos_reader.y();
+        // the reader stamps are stored such as to have a sum of 1.0 over all pixels
+        // (i.e.: they express the percentage for each cell contributing to the full crown).
+        // we thus calculate a the factor to "blow up" cell values; a fully covered cell has then a value of 1,
+        // and values between 0-1 are cells that are partially covered by the crown.
+        double crown_factor = reader->crownArea()/double(cPxSize*cPxSize);
+
+        // add the reader-stamp values: multiple (partial) crowns can add up to being fully covered
+        for (y=0;y<reader_size; ++y) {
+            for (x=0;x<reader_size;++x) {
+                 grid->valueAtIndex(rx+x, ry+y) += (*reader)(x,y)*crown_factor;
+            }
+        }
+    }
+    // now aggregate values for each resource unit
+    Model *model = GlobalSettings::instance()->model();
+    for (float *rg = mCrownCoverGrid.begin(); rg!=mCrownCoverGrid.end();++rg) {
+        ResourceUnit *ru =  model->RUgrid().constValueAtIndex(mCrownCoverGrid.indexOf(rg));
+        if (!ru) {
+            *rg=0.f;
+            continue;
+        }
+        float cc_sum = 0.f;
+        GridRunner<float> runner(grid, mCrownCoverGrid.cellRect(mCrownCoverGrid.indexOf(rg)));
+        while (float *gv = runner.next()) {
+            if (model->heightGridValue(runner.currentIndex().x(), runner.currentIndex().y()).isValid())
+                if (*gv >= 0.5f) // 0.5: half of a 2m cell is covered by a tree crown; is a bit pragmatic but seems reasonable (and works)
+                    cc_sum++;
+        }
+        if (ru->stockableArea()>0.) {
+            double value = cPxSize*cPxSize*cc_sum/ru->stockableArea();
+            *rg = limit(value, 0., 1.);
+        }
+    }
 }
 
 
@@ -204,6 +369,7 @@ void SpatialLayeredGrid::setup()
 
 void SpatialLayeredGrid::createGrid(const int grid_index)
 {
+    Q_UNUSED(grid_index); // TODO: what should happen here?
 }
 
 

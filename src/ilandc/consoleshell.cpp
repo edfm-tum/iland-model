@@ -20,7 +20,8 @@
 #include "consoleshell.h"
 
 #include <QtCore>
-#include <QKeyEvent>
+#include <QtDebug>
+//#include <QKeyEvent>
 
 #include "global.h"
 #include "model.h"
@@ -28,6 +29,7 @@
 #include "version.h"
 
 QTextStream *ConsoleShell::mLogStream = 0;
+bool ConsoleShell::mFlushLog = false;
 
 // a try to really get keyboard strokes in console mode...
 // did not work.
@@ -67,6 +69,7 @@ void ConsoleShell::run()
     int years = QCoreApplication::arguments().at(2).toInt(&ok);
     if (years<0 || !ok) {
         qDebug() << QCoreApplication::arguments().at(2) << "is an invalid number of years to run!";
+        QCoreApplication::quit();
         return;
     }
 
@@ -78,6 +81,7 @@ void ConsoleShell::run()
     try {
 
         ModelController iland_model;
+        GlobalSettings::instance()->setModelController( &iland_model );
         QObject::connect(&iland_model, SIGNAL(year(int)),SLOT(runYear(int)));
         iland_model.setFileName(xml_name);
         if (iland_model.hasError()) {
@@ -88,24 +92,24 @@ void ConsoleShell::run()
             return;
         }
 
-        setupLogging();
         mParams.clear();
         if (QCoreApplication::arguments().count()>3) {
             qWarning() << "set command line values:";
             for (int i=3;i<QCoreApplication::arguments().count();++i) {
                 QString line = QCoreApplication::arguments().at(i);
+                line = line.remove(QChar('"')); // drop quotes
                 mParams.append(line);
+                //qDebug() << qPrintable(line);
                 QString key = line.left(line.indexOf('='));
                 QString value = line.mid(line.indexOf('=')+1);
-                qWarning() << "set" << key << "to value:" << value;
                 const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, value);
+                qWarning() << QString("set '%1' to value '%2'. result: '%3'").arg(key).arg(value).arg(GlobalSettings::instance()->settings().value(key));
             }
         }
+        setupLogging();
+
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
-        qDebug() << "**************************************************";
-        qDebug() << "started at: " << QDateTime::currentDateTime().toString(Qt::ISODate);
-        qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
         qDebug() << "**************************************************";
 
         qWarning() << "*** creating model...";
@@ -136,7 +140,6 @@ void ConsoleShell::run()
 
         qWarning() << "**************************************************";
         qWarning() << "*** model run finished.";
-        qWarning() << "*** " << QDateTime::currentDateTime();
         qWarning() << "**************************************************";
 
     } catch (const IException &e) {
@@ -154,31 +157,47 @@ void ConsoleShell::run()
 
 void ConsoleShell::runYear(int year)
 {
-    printf("simulating year %d ...\n", year-1);
+    printf("%s: simulating year %d ...\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), year-1);
 }
 
-QMutex qdebug_mutex;
-void myMessageOutput(QtMsgType type, const char *msg)
+static QMutex qdebug_mutex;
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
-
+    Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
-    switch (type) {
-     case QtDebugMsg:
-        *ConsoleShell::logStream() << msg << endl;
-         break;
-     case QtWarningMsg:
-        *ConsoleShell::logStream() << msg << endl;
-        printf("Warning: %s\n", msg);
 
-         break;
-     case QtCriticalMsg:
+    switch (type) {
+    case QtDebugMsg:
         *ConsoleShell::logStream() << msg << endl;
-        printf("Critical: %s\n", msg);
-         break;
-     case QtFatalMsg:
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();
+        break;
+    case QtWarningMsg:
         *ConsoleShell::logStream() << msg << endl;
-        printf("Fatal: %s\n", msg);
-     }
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();
+        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
+        break;
+// available from qt5.5
+//    case QtInfoMsg:
+//        *ConsoleShell::logStream() << msg << endl;
+//        if (ConsoleShell::flush())
+//            ConsoleShell::logStream()->flush();
+//        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
+
+//        break;
+    case QtCriticalMsg:
+        *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();
+        printf("Critical: %s\n", msg.toLocal8Bit().data());
+        break;
+    case QtFatalMsg:
+        *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();
+        printf("Fatal: %s\n", msg.toLocal8Bit().data());
+    }
  }
 
 
@@ -192,6 +211,7 @@ void ConsoleShell::setupLogging()
     }
 
     QString fname = GlobalSettings::instance()->settings().value("system.logging.logFile", "logfile.txt");
+    mFlushLog = GlobalSettings::instance()->settings().valueBool("system.logging.flush");
     QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
     fname.replace("$date$", timestamp);
     fname = GlobalSettings::instance()->path(fname, "log");
@@ -203,7 +223,7 @@ void ConsoleShell::setupLogging()
         qDebug() << "Log output is redirected to logfile" << fname;
         mLogStream = new QTextStream(file);
     }
-    qInstallMsgHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
 
 
 }

@@ -27,8 +27,10 @@
 
 Production3PG::Production3PG()
 {
+    clear();
     mResponse=0;
     mEnvYear = 0.;
+
 }
 
 /**
@@ -37,7 +39,7 @@ Production3PG::Production3PG()
   The resulting radiation is MJ/m2       */
 inline double Production3PG::calculateUtilizablePAR(const int month) const
 {
-    // calculate the available radiation. This is done at SpeciesResponse-Level
+    // calculate the available radiation. This is done at SpeciesResponse-Level (SpeciesResponse::calculate())
     // see Equation (3)
     // multiplicative approach: responses are averaged one by one and multiplied on a monthly basis
 //    double response = mResponse->absorbedRadiation()[month] *
@@ -67,6 +69,8 @@ inline double Production3PG::abovegroundFraction() const
 {
     double utilized_frac = 1.;
     if (Model::settings().usePARFractionBelowGroundAllocation) {
+        // the Landsberg & Waring formulation takes into account the fraction of utilizeable to total radiation (but more complicated)
+        // we originally used only nitrogen and added the U_utilized/U_radiation
         utilized_frac = mResponse->totalUtilizeableRadiation() / mResponse->yearlyRadiation();
     }
     double harsh =  1 - 0.8/(1 + 2.5 * mResponse->nitrogenResponse() * utilized_frac);
@@ -79,6 +83,8 @@ void Production3PG::clear()
         mGPP[i] = 0.; mUPAR[i]=0.;
     }
     mEnvYear = 0.;
+    mGPPperArea = 0.;
+    mRootFraction = 0.;
 }
 
 /** calculate the stand-level NPP
@@ -123,7 +129,7 @@ double Production3PG::calculate()
 
     // global value set?
     double dbg = GlobalSettings::instance()->settings().paramValue("gpp_per_year",0);
-    if (dbg) {
+    if (dbg>0.) {
         year_raw_gpp = dbg;
         mRootFraction = 0.4;
     }

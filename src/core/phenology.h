@@ -51,14 +51,14 @@ private:
     double mMaxVpd; ///< maximum vpd [kPa]
     double mMinDayLength; ///< minimum daylength [hours]
     double mMaxDayLength; ///< maximum daylength [hours]
-    double mMinTemp; ///< minimum temperature [°]
-    double mMaxTemp; ///< maximum temperature [°]
+    double mMinTemp; ///< minimum temperature [deg]
+    double mMaxTemp; ///< maximum temperature [deg]
     double mPhenoFraction[12]; ///< fraction [0..1] of month i [0..11] to are inside the vegetation period, i.e. have leafs
     int mDayStart; ///< start of vegetation period (in day of year)
     int mDayEnd; ///< end of vegetation period (in days of year, 1.1. = 0)
     // some special calculations used for establishment
     void calculateChillDays(const int end_of_season=-1);
-    int mChillDaysBefore, mChillDaysAfter; ///< number of days that meet chilling requirements (>-5°, <+5°C) before and after the vegetation period in this yeaer
+    int mChillDaysBefore, mChillDaysAfter; ///< number of days that meet chilling requirements (>-5 deg C, <+5 deg C) before and after the vegetation period in this yeaer
     int mChillDaysAfterLastYear; ///< chilling days of the last years autumn/winter
 };
 
