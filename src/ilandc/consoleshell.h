@@ -1,4 +1,4 @@
-﻿/********************************************************************************************
+/********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
 **    http://iland.boku.ac.at
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
@@ -32,11 +32,13 @@ class ConsoleShell: public QObject
 public:
     ConsoleShell();
     static QTextStream* logStream() {return mLogStream; }
+    static bool flush() { return mFlushLog; }
 public slots:
     void run(); // execute the iLand model
     void runYear(int year); // slot called every year
 private:
     QStringList mParams;
+    static bool mFlushLog; // immediately flush output to the logfile
     void setupLogging();
     void runJavascript(const QString key);
     static QTextStream *mLogStream;

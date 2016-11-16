@@ -18,7 +18,7 @@
 ********************************************************************************************/
 
 #include "productionout.h"
-#include "helper.h"
+#include "debugtimer.h"
 #include "model.h"
 #include "resourceunit.h"
 #include "species.h"

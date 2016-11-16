@@ -21,6 +21,8 @@
 #define STANDLOADER_H
 #include <QtCore/QString>
 
+#include "csvfile.h"
+
 class Model;
 class ResourceUnit;
 class RandomCustomPDF;
@@ -41,6 +43,8 @@ public:
     /// main function of stand initialization
     /// the function loads - depending on the XML project file - inits for a single resource unit, for polygons or a snapshot from a database.
     void processInit();
+    /// this function is called *after* the init and after  initial LIF-calculations.
+     void processAfterInit();
 
     /// load a single tree file (picus or iland style). return number of trees loaded.
     int loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL);
@@ -53,11 +57,13 @@ public:
     int loadDistributionList(const QString &content, ResourceUnit *ru = NULL, int stand_id=0, const QString &fileName="");
     // load regeneration in stands
     int loadSaplings(const QString &content, int stand_id, const QString &fileName=QString());
+    // load regen in stand but consider also the light conditions on the ground
+    int loadSaplingsLIF(int stand_id, const CSVFile &init, int low_index, int high_index);
 private:
     struct InitFileItem
     {
         Species *species;
-        int count;
+        double count;
         double dbh_from, dbh_to;
         double hd;
         int age;
@@ -69,9 +75,11 @@ private:
     void executeiLandInitStand(int stand_id); ///< shuffle tree positions
     void copyTrees(); ///< helper function to quickly fill up the landscape by copying trees
     void evaluateDebugTrees(); ///< set debug-flag for trees by evaluating the param-value expression "debug_tree"
+    int parseInitFile(const QString &content, const QString &fileName, ResourceUnit *ru=0); ///< creates a list of InitFileItems from the init files' content
     Model *mModel;
     RandomCustomPDF *mRandom;
     QVector<InitFileItem> mInitItems;
+    QHash<int, QVector<InitFileItem> > mStandInitItems;
     const MapGrid *mCurrentMap;
     const MapGrid *mInitHeightGrid; ///< grid with tree heights
     Expression *mHeightGridResponse; ///< response function to calculate fitting of pixels with pre-determined height

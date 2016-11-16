@@ -23,7 +23,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "model.h"
-#include "helper.h"
+#include "debugtimer.h"
 #include "modules.h"
 
 /** @class WaterCycle
@@ -82,6 +82,9 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mCanopy.mNeedleFactor = xml.valueDouble("model.settings.interceptionStorageNeedle", 4.);
     mCanopy.mDecidousFactor = xml.valueDouble("model.settings.interceptionStorageBroadleaf", 2.);
     mSnowPack.mSnowTemperature = xml.valueDouble("model.settings.snowMeltTemperature", 0.);
+
+    mTotalET = mTotalExcess = mSnowRad = 0.;
+    mSnowDays = 0;
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
@@ -225,7 +228,10 @@ void WaterCycle::run()
     const ClimateDay *day = climate->begin();
     const ClimateDay *end = climate->end();
     int doy=0;
-    double total_excess = 0.;
+    mTotalExcess = 0.;
+    mTotalET = 0.;
+    mSnowRad = 0.;
+    mSnowDays = 0;
     for (; day<end; ++day, ++doy) {
         // (1) precipitation of the day
         prec_mm = day->preciptitation;
@@ -236,6 +242,11 @@ void WaterCycle::run()
         // save extra data (used by e.g. fire module)
         add_data.water_to_ground[doy] = prec_to_soil;
         add_data.snow_cover[doy] = mSnowPack.snowPack();
+        if (mSnowPack.snowPack()>0.) {
+            mSnowRad += day->radiation;
+            mSnowDays++;
+        }
+
         // (4) add rest to soil
         mContent += prec_to_soil;
 
@@ -243,7 +254,7 @@ void WaterCycle::run()
         if (mContent>mFieldCapacity) {
             // excess water runoff
             excess = mContent - mFieldCapacity;
-            total_excess += excess;
+            mTotalExcess += excess;
             mContent = mFieldCapacity;
         }
 
@@ -269,6 +280,7 @@ void WaterCycle::run()
             mContent = mPermanentWiltingPoint;
         }
 
+        mTotalET += et;
 
         //DBGMODE(
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
@@ -309,7 +321,7 @@ double SnowPack::flow(const double &preciptitation_mm, const double &temperature
             return preciptitation_mm; // no change
         else {
             // snow melts
-            const double melting_coefficient = 0.7; // mm/°C
+            const double melting_coefficient = 0.7; // mm/C
             double melt = qMin( (temperature-mSnowTemperature) * melting_coefficient, mSnowPack);
             mSnowPack -=melt;
             return preciptitation_mm + melt;
@@ -325,11 +337,11 @@ double SnowPack::flow(const double &preciptitation_mm, const double &temperature
 
 inline double SnowPack::add(const double &preciptitation_mm, const double &temperature)
 {
-    // do nothing for temps > 0°
+    // do nothing for temps > 0 C
     if (temperature>mSnowTemperature)
         return preciptitation_mm;
 
-    // temps < 0°: add to snow
+    // temps < 0 C: add to snow
     mSnowPack += preciptitation_mm;
     return 0.;
 }
@@ -349,31 +361,34 @@ double Canopy::flow(const double &preciptitation_mm)
     if (!preciptitation_mm)
         return 0.;
     double max_interception_mm=0.; // maximum interception based on the current foliage
-    double max_storage_mm=0.; // maximum storage in canopy
+    double max_storage_mm=0.; // maximum storage in canopy (current LAI)
+    double max_storage_potentital = 0.; // storage capacity at very high LAI
 
     if (mLAINeedle>0.) {
         // (1) calculate maximum fraction of thru-flow the crown (based on precipitation)
         double max_flow_needle = 0.9 * sqrt(1.03 - exp(-0.055*preciptitation_mm));
         max_interception_mm += preciptitation_mm *  (1. - max_flow_needle * mLAINeedle/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
-        double max_storage_needle = mNeedleFactor * (1. - exp(-0.55*mLAINeedle) );
-        max_storage_mm += max_storage_needle;
+        //     by weighing the needle/decidious storage capacity
+        max_storage_potentital += mNeedleFactor * mLAINeedle/mLAI;
     }
 
     if (mLAIBroadleaved>0.) {
         // (1) calculate maximum fraction of thru-flow the crown (based on precipitation)
         double max_flow_broad = 0.9 * pow(1.22 - exp(-0.055*preciptitation_mm), 0.35);
-        max_interception_mm += preciptitation_mm *  (1. - max_flow_broad * mLAIBroadleaved/mLAI);
+        max_interception_mm += preciptitation_mm *  (1. - max_flow_broad) * mLAIBroadleaved/mLAI;
         // (2) calculate maximum storage potential based on the current LAI
-        double max_storage_broad = mDecidousFactor * (1. - exp(-0.5*mLAIBroadleaved) );
-        max_storage_mm += max_storage_broad;
+        max_storage_potentital += mDecidousFactor * mLAIBroadleaved/mLAI;
     }
+
+    // the extent to which the maximum stoarge capacity is exploited, depends on LAI:
+    max_storage_mm = max_storage_potentital * (1. - exp(-0.5 * mLAI));
 
     // (3) calculate actual interception and store for evaporation calculation
     mInterception = qMin( max_storage_mm, max_interception_mm );
 
     // (4) limit interception with amount of precipitation
-    mInterception = qMin( mInterception, preciptitation_mm);
+    mInterception = qMin( mInterception, preciptitation_mm );
 
     // (5) reduce preciptitaion by the amount that is intercepted by the canopy
     return preciptitation_mm - mInterception;
@@ -406,7 +421,7 @@ void Canopy::setStandParameters(const double LAIneedle, const double LAIbroadlea
 double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double daylength_h, const double combined_response)
 {
     double vpd_mbar = climate->vpd * 10.; // convert from kPa to mbar
-    double temperature = climate->temperature; // average temperature of the day (°C)
+    double temperature = climate->temperature; // average temperature of the day (degree C)
     double daylength = daylength_h * 3600.; // daylength in seconds (convert from length in hours)
     double rad = climate->radiation / daylength * 1000000; //convert from MJ/m2 (day sum) to average radiation flow W/m2 [MJ=MWs -> /s * 1,000,000
 
@@ -416,7 +431,7 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
     double net_rad = qa + qb*rad;
 
     //: Landsberg original: const double e20 = 2.2;  //rate of change of saturated VP with T at 20C
-    const double VPDconv = 0.000622; //convert VPD to saturation deficit = 18/29/1000
+    const double VPDconv = 0.000622; //convert VPD to saturation deficit = 18/29/1000 = molecular weight of H2O/molecular weight of air
     const double latent_heat = 2460000.; // Latent heat of vaporization. Energy required per unit mass of water vaporized [J kg-1]
 
     double gBL  = Model::settings().boundaryLayerConductance; // boundary layer conductance

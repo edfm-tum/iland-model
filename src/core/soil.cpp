@@ -24,11 +24,12 @@
 #include "resourceunit.h"
 /** @class Soil provides an implementation of the ICBM/2N soil carbon and nitrogen dynamics model.
   @ingroup core
-  The ICBM/2N model was developed by Kätterer and Andren (2001) and used by others (e.g. Xenakis et al, 2008).
+  The ICBM/2N model was developed by Kaetterer and Andren (2001) and used by others (e.g. Xenakis et al, 2008).
   See http://iland.boku.ac.at/soil+C+and+N+cycling for a model overview and the rationale of the model choice.
 
   */
 
+double Soil::mNitrogenDeposition = 0.;
 
 // site-specific parameters
 // i.e. parameters that need to be specified in the environment file
@@ -36,7 +37,7 @@
 // (proportional to its mineralization in the mineral soil horizon) is leached
 // see separate wiki-page (http://iland.boku.ac.at/soil+parametrization+and+initialization)
 // and R-script on parameter estimation and initialization
-struct SoilParams {
+static struct SoilParams {
     // ICBM/2N parameters
     SoilParams(): qb(5.), qh(25.), leaching(0.15), el(0.0577), er(0.073), is_setup(false) {}
     double qb; ///< C/N ratio of soil microbes
@@ -64,6 +65,8 @@ void Soil::fetchParameters()
     mParams->er = xml.valueDouble("er", 0.073);
 
     mParams->is_setup = true;
+
+    mNitrogenDeposition = xml.valueDouble("nitrogenDeposition",0.);
 }
 
 
@@ -112,12 +115,18 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     // stockable area:
     // if the stockable area is < 1ha, then
     // scale the soil inputs to a full hectare
-    double area_ha = mRU?mRU->stockableArea() / 10000.:1.;
+    double area_ha = mRU?mRU->stockableArea() / cRUArea:1.;
+
     if (area_ha==0.) {
         qDebug() << "Soil::setSoilInput: stockable area is 0!";
         return;
         //throw IException("Soil::setSoilInput: stockable area is 0!");
     }
+    // for the carbon input flow from snags/trees we assume a minimum size of the "stand" of 0.1ha
+    // this reduces rapid input pulses (e.g. if one large tree dies).
+    // Put differently: for resource units with stockable area < 0.1ha, we add a "blank" area.
+    // the soil module always calculates per ha values, so nothing else needs to be done here.
+    // area_ha = std::max(area_ha, 0.1);
 
     mInputLab = labile_input_kg_ha * (0.001 / area_ha); // transfer from kg/ha -> tons/ha and scale to 1 ha
     mInputRef = refractory_input_kg_ha * (0.001 / area_ha);
@@ -136,8 +145,8 @@ void Soil::calculateYear()
 {
     SoilParams &sp = *mParams;
     // checks
-    if (mRE==0) {
-        throw IException("Soil::calculateYear(): Invalid value for 're' (0.)");
+    if (mRE==0.) {
+        throw IException("Soil::calculateYear(): Invalid value for 're' (=0) for RU(index): " + QString::number(mRU->index()));
     }
     const double t = 1.; // timestep (annual)
     // auxiliary calculations
@@ -195,15 +204,24 @@ void Soil::calculateYear()
 
 
     // calculate plant available nitrogen
-    double nav = mKyl*mRE*(1.-mH)/(1.-sp.el) * (mYL.N - sp.el*mYL.C/sp.qb); // N from labile...
-    nav += mKyr*mRE*(1-mH)/(1.-sp.er)* (mYR.N - sp.er*mYR.C/sp.qb); // + N from refractory...
-    nav += mKo*mRE*mSOM.N*(1.-sp.leaching); // + N from SOM pool (reduced by leaching (leaching modeled only from slow SOM Pool))
-    mAvailableNitrogen = nav * 1000.; // from t/ha -> kg/ha
+    mAvailableNitrogenFromLabile = mKyl*mRE*(1.-mH)/(1.-sp.el) * (mYL.N - sp.el*mYL.C/sp.qb);  // N from labile...
+    mAvailableNitrogenFromRefractory = mKyr*mRE*(1-mH)/(1.-sp.er)* (mYR.N - sp.er*mYR.C/sp.qb); // + N from refractory...
+    double nav_from_som = mKo*mRE*mSOM.N*(1.-sp.leaching); // + N from SOM pool (reduced by leaching (leaching modeled only from slow SOM Pool))
+
+    mAvailableNitrogenFromLabile *= 1000.; // t/ha -> kg/ha
+    mAvailableNitrogenFromRefractory *= 1000.; // t/ha -> kg/ha
+    nav_from_som *= 1000.; // t/ha -> kg/ha
+
+    mAvailableNitrogen = mAvailableNitrogenFromLabile + mAvailableNitrogenFromRefractory + nav_from_som;
 
     if (mAvailableNitrogen<0.)
         mAvailableNitrogen = 0.;
     if (isnan(mAvailableNitrogen) || isnan(mYR.C))
         qDebug() << "Available Nitrogen is NAN.";
+
+    // add nitrogen deposition
+    mAvailableNitrogen += mNitrogenDeposition;
+
     // stedy state for n-available
     //    double navss = mKyl*mRE*(1.-mH)/(1.-sp.el)*(ynlss-sp.el*ylss/sp.qb); // available nitrogen (steady state)
     //    navss += mKyr*mRE*(1.-mH)/(1.-sp.er)*(ynrss - sp.er*yrss/sp.qb);
@@ -219,7 +237,7 @@ QList<QVariant> Soil::debugList()
     // (2) states
     list << mKyl << mKyr << mYL.C << mYL.N << mYR.C << mYR.N << mSOM.C << mSOM.N;
     // (3) nav
-    list << mAvailableNitrogen;
+    list << mAvailableNitrogen << mAvailableNitrogenFromLabile << mAvailableNitrogenFromRefractory << (mAvailableNitrogen-mAvailableNitrogenFromLabile-mAvailableNitrogenFromRefractory);
     return list;
 }
 

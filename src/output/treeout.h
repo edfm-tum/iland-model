@@ -23,6 +23,7 @@
 #include "output.h"
 
 class Expression;
+class Tree;
 class TreeOut: public Output
 {
 public:
@@ -33,4 +34,14 @@ private:
     Expression mFilter;
 };
 
+class TreeRemovedOut: public Output
+{
+public:
+    TreeRemovedOut();
+    void execRemovedTree(const Tree *t, int reason);
+    virtual void exec();
+    virtual void setup();
+private:
+    Expression mFilter;
+};
 #endif // TREEOUT_H

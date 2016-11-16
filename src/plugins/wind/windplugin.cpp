@@ -16,21 +16,28 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
-#include <QtScript>
+#include <QJSValue>
+#include <QJSEngine>
+
 #include "global.h"
 #include "resourceunit.h"
 
 #include "windplugin.h"
 #include "windmodule.h"
 #include "windscript.h"
+#include "windout.h"
+#include "outputmanager.h"
 
+#if QT_VERSION < 0x050000
 Q_EXPORT_PLUGIN2(iland_wind, WindPlugin)
+#endif
 
 WindPlugin::WindPlugin()
 {
     qDebug() << "Wind plugin created";
     DBGMODE( qDebug("(Wind plugin in debug mode)"););
     mWind = 0;
+    mWindOut = 0;
 }
 
 WindPlugin::~WindPlugin()
@@ -54,13 +61,21 @@ QString WindPlugin::version()
 QString WindPlugin::description()
 {
     return "Wind disturbance module for iLand. " \
-            "Designed and written by by Rupert Seidl/Werner Rammer.";
+            "Designed and written by Rupert Seidl/Werner Rammer.";
 }
 
 void WindPlugin::setup()
 {
-    mWind = new WindModule;
+    if (!mWind)
+        mWind = new WindModule;
+
     mWind->setup();
+
+    mWindOut = new WindOut();
+    mWindOut->setWindModule(mWind);
+    GlobalSettings::instance()->outputManager()->removeOutput(mWindOut->tableName());
+    GlobalSettings::instance()->outputManager()->addOutput(mWindOut);
+
 }
 
 void WindPlugin::setupResourceUnit(const ResourceUnit *ru)
@@ -68,11 +83,11 @@ void WindPlugin::setupResourceUnit(const ResourceUnit *ru)
     mWind->setupResourceUnit(ru);
 }
 
-void WindPlugin::setupScripting(QScriptEngine *engine)
+void WindPlugin::setupScripting(QJSEngine *engine)
 {
     WindScript *wind_script = new WindScript();
     wind_script->setModule(mWind);
-    QScriptValue obj = engine->newQObject(wind_script, QScriptEngine::AutoOwnership);
+    QJSValue obj = engine->newQObject(wind_script);
     engine->globalObject().setProperty("Wind", obj);
 
     qDebug() << "setup scripting for windmodule called...";

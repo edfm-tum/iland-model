@@ -34,6 +34,7 @@
   */
 
 double Sapling::mRecruitmentVariation = 0.1; // +/- 10%
+double Sapling::mBrowsingPressure = 0.;
 
 Sapling::Sapling()
 {
@@ -53,6 +54,14 @@ void Sapling::clearStatistics()
     mAvgDeltaHPot=mAvgHRealized=0.;
 }
 
+void Sapling::updateBrowsingPressure()
+{
+    if (GlobalSettings::instance()->settings().valueBool("model.settings.browsing.enabled"))
+        Sapling::mBrowsingPressure = GlobalSettings::instance()->settings().valueDouble("model.settings.browsing.browsingPressure");
+    else
+        Sapling::mBrowsingPressure = 0.;
+}
+
 /// get the *represented* (Reineke's Law) number of trees (N/ha)
 double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const
 {
@@ -61,7 +70,7 @@ double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rA
     double h_sum = 0.;
     double age_sum = 0.;
     const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
-    for (QVector<SaplingTree>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
+    for (QVector<SaplingTreeOld>::const_iterator it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         float dbh = it->height / p.hdSapling * 100.f;
         if (dbh<1.) // minimum size: 1cm
             continue;
@@ -82,11 +91,19 @@ double Sapling::livingStemNumber(double &rAvgDbh, double &rAvgHeight, double &rA
     return total;
 }
 
+double Sapling::representedStemNumber(float height) const
+{
+    const SaplingGrowthParameters &p = mRUS->species()->saplingGrowthParameters();
+    float dbh = height / p.hdSapling * 100.f;
+    double n = p.representedStemNumber(dbh);
+    return n;
+}
+
 /// maintenance function to clear dead/recruited saplings from storage
 void Sapling::cleanupStorage()
 {
-    QVector<SaplingTree>::iterator forw=mSaplingTrees.begin();
-    QVector<SaplingTree>::iterator back;
+    QVector<SaplingTreeOld>::iterator forw=mSaplingTrees.begin();
+    QVector<SaplingTreeOld>::iterator back;
 
     // seek last valid
     for (back=mSaplingTrees.end()-1; back>=mSaplingTrees.begin(); --back)
@@ -142,7 +159,7 @@ double Sapling::heightAt(const QPoint &position) const
     if (!hasSapling(position))
         return 0.;
     // ok, we'll have to search through all saplings
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     float *lif_ptr = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         if (it->isValid() && it->pixel == lif_ptr)
@@ -153,58 +170,63 @@ double Sapling::heightAt(const QPoint &position) const
 }
 
 
-void Sapling::setBit(const QPoint &pos_index)
+void Sapling::setBit(const QPoint &pos_index, bool value)
 {
     int index = (pos_index.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(pos_index.y() - mRUS->ru()->cornerPointOffset().y());
-    mSapBitset.set(index,true); // set bit: now there is a sapling there
+    mSapBitset.set(index,value); // set bit: now there is a sapling there
 }
 
-/// a a sapling at given position (index on the LIF grid, i.e. 2x2m)
-void Sapling::addSapling(const QPoint &pos_lif)
+/// add a sapling at the given position (index on the LIF grid, i.e. 2x2m)
+int Sapling::addSapling(const QPoint &pos_lif, const float height, const int age)
 {
     // adds a sapling...
-    mSaplingTrees.push_back(SaplingTree());
-    SaplingTree &t = mSaplingTrees.back();
-    t.height = 0.05; // start with 5cm height
+    mSaplingTrees.push_back(SaplingTreeOld());
+    SaplingTreeOld &t = mSaplingTrees.back();
+    t.height = height; // default is 5cm height
+    t.age.age = age;
     Grid<float> &lif_map = *GlobalSettings::instance()->model()->grid();
     t.pixel = lif_map.ptr(pos_lif.x(), pos_lif.y());
-    setBit(pos_lif);
+    setBit(pos_lif, true);
     mAdded++;
+    return mSaplingTrees.count()-1; // index of the newly added tree.
 }
 
 /// clear  saplings on a given position (after recruitment)
 void Sapling::clearSaplings(const QPoint &position)
 {
     float *target = GlobalSettings::instance()->model()->grid()->ptr(position.x(), position.y());
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
         if (it->pixel==target) {
             // trick: use a const iterator to avoid a deep copy of the vector; then do an ugly const_cast to actually write the data
             //const SaplingTree &t = *it;
             //const_cast<SaplingTree&>(t).pixel=0;
-            clearSapling(const_cast<SaplingTree&>(*it), false); // kill sapling and move carbon to soil
+            clearSapling(const_cast<SaplingTreeOld&>(*it), false); // kill sapling and move carbon to soil
         }
     }
-    int index = (position.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(position.y() - mRUS->ru()->cornerPointOffset().y());
-    mSapBitset.set(index,false); // clear bit: now there is no sapling on this position
+    setBit(position, false); // clear bit: now there is no sapling on this position
+    //int index = (position.x() - mRUS->ru()->cornerPointOffset().x()) * cPxPerRU +(position.y() - mRUS->ru()->cornerPointOffset().y());
+    //mSapBitset.set(index,false); // clear bit: now there is no sapling on this position
 
 }
 
 /// clear  saplings within a given rectangle
 void Sapling::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
 {
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     FloatGrid *grid = GlobalSettings::instance()->model()->grid();
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
-        if (rectangle.contains(grid->cellCenterPoint(grid->indexOf(it->pixel)))) {
-            clearSapling(const_cast<SaplingTree&>(*it), remove_biomass);
+        if (rectangle.contains(grid->cellCenterPoint(it->coords()))) {
+            clearSapling(const_cast<SaplingTreeOld&>(*it), remove_biomass);
         }
     }
 }
 
-void Sapling::clearSapling(SaplingTree &tree, const bool remove)
+void Sapling::clearSapling(SaplingTreeOld &tree, const bool remove)
 {
+    QPoint p=tree.coords();
     tree.pixel=0;
+    setBit(p, false); // no tree left
     if (!remove) {
         // killing of saplings:
         // if remove=false, then remember dbh/number of trees (used later in calculateGrowth() to estimate carbon flow)
@@ -214,12 +236,20 @@ void Sapling::clearSapling(SaplingTree &tree, const bool remove)
 
 }
 
+//
+void Sapling::clearSapling(int index, const bool remove)
+{
+    Q_ASSERT(index < mSaplingTrees.count());
+    clearSapling(mSaplingTrees[index], remove);
+}
+
 /// growth function for an indivudal sapling.
 /// returns true, if sapling survives, false if sapling dies or is recruited to iLand.
 /// see also http://iland.boku.ac.at/recruitment
-bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* species)
+bool Sapling::growSapling(SaplingTreeOld &tree, const double f_env_yr, Species* species)
 {
     QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
+    //GlobalSettings::instance()->model()->heightGrid()[Grid::index5(tree.pixel-GlobalSettings::instance()->model()->grid()->begin())];
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height); // TODO check if this can be source of crashes (race condition)
@@ -228,7 +258,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
     // (2) reduce height growth potential with species growth response f_env_yr and with light state (i.e. LIF-value) of home-pixel.
     double lif_value = *tree.pixel;
     double h_height_grid = GlobalSettings::instance()->model()->heightGrid()->valueAtIndex(p.x()/cPxPerHeight, p.y()/cPxPerHeight).height;
-    if (h_height_grid==0)
+    if (h_height_grid==0.)
         throw IException(QString("growSapling: height grid at %1/%2 has value 0").arg(p.x()).arg(p.y()));
 
     double rel_height = tree.height / h_height_grid;
@@ -241,6 +271,17 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
 
     if (h_pot<0. || delta_h_pot<0. || lif_corrected<0. || lif_corrected>1. || delta_h_factor<0. || delta_h_factor>1. )
         qDebug() << "invalid values in Sapling::growSapling";
+
+    // check browsing
+    if (mBrowsingPressure>0. && tree.height<=2.f) {
+        double p = mRUS->species()->saplingGrowthParameters().browsingProbability;
+        // calculate modifed annual browsing probability via odds-ratios
+        // odds = p/(1-p) -> odds_mod = odds * browsingPressure -> p_mod = odds_mod /( 1 + odds_mod) === p*pressure/(1-p+p*pressure)
+        double p_browse = p*mBrowsingPressure / (1. - p + p*mBrowsingPressure);
+        if (drandom() < p_browse) {
+            delta_h_factor = 0.;
+        }
+    }
 
     // check mortality of saplings
     if (delta_h_factor < species->saplingGrowthParameters().stressThreshold) {
@@ -290,7 +331,7 @@ bool Sapling::growSapling(SaplingTree &tree, const double f_env_yr, Species* spe
         }
         // clear all regeneration from this pixel (including this tree)
         clearSapling(tree, true); // remove this tree (but do not move biomass to soil)
-        ru->clearSaplings(p); // remove all other saplings on the same pixel
+//        ru->clearSaplings(p); // remove all other saplings on the same pixel
 
         return false;
     }
@@ -322,18 +363,17 @@ void Sapling::calculateGrowth()
     double f_env_yr = mRUS->prod3PG().fEnvYear();
 
     mLiving=0;
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     for (it = mSaplingTrees.constBegin(); it!=mSaplingTrees.constEnd(); ++it) {
-        const SaplingTree &tree = *it;
+        const SaplingTreeOld &tree = *it;
         if (tree.height<0)
             qDebug() << "Sapling::calculateGrowth(): h<0";
         // if sapling is still living check execute growth routine
         if (tree.isValid()) {
             // growing (increases mLiving if tree did not die, mDied otherwise)
-            if (growSapling(const_cast<SaplingTree&>(tree), f_env_yr, species)) {
+            if (growSapling(const_cast<SaplingTreeOld&>(tree), f_env_yr, species)) {
                 // set the sapling height to the maximum value on the current pixel
-                QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(tree.pixel);
-                ru->setMaxSaplingHeightAt(p,tree.height);
+//                ru->setMaxSaplingHeightAt(tree.coords(),tree.height);
             }
         }
     }
@@ -350,7 +390,7 @@ void Sapling::calculateGrowth()
     CNPair dead_wood, dead_fine; // pools for mortality
     // average dbh
     if (mLiving) {
-        // calculate the avg dbh number of stems
+        // calculate the avg dbh and number of stems
         double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
         double n = mLiving * species->saplingGrowthParameters().representedStemNumber( avg_dbh );
         // woody parts: stem, branchse and coarse roots
@@ -404,7 +444,7 @@ void Sapling::calculateGrowth()
     if (mSaplingTrees.count() > mLiving*1.3)
         cleanupStorage();
 
-    mRUS->statistics().add(this);
+//    mRUS->statistics().add(this);
     GlobalSettings::instance()->systemStatistics()->saplingCount+=mLiving;
     GlobalSettings::instance()->systemStatistics()->newSaplings+=mAdded;
     mAdded = 0; // reset
@@ -416,10 +456,10 @@ void Sapling::calculateGrowth()
 /// this function is used for visualization only
 void Sapling::fillMaxHeightGrid(Grid<float> &grid) const
 {
-    QVector<SaplingTree>::const_iterator it;
+    QVector<SaplingTreeOld>::const_iterator it;
     for (it = mSaplingTrees.begin(); it!=mSaplingTrees.end(); ++it) {
         if (it->isValid()) {
-             QPoint p=GlobalSettings::instance()->model()->grid()->indexOf(it->pixel);
+             QPoint p=it->coords();
              if (grid.valueAtIndex(p)<it->height)
                  grid.valueAtIndex(p) = it->height;
         }

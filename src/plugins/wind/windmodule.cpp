@@ -18,6 +18,7 @@
 ********************************************************************************************/
 #include "windmodule.h"
 #include "globalsettings.h"
+#include "debugtimer.h"
 #include "model.h"
 #include "modelcontroller.h"
 #include "helper.h"
@@ -27,6 +28,7 @@
 #include "resourceunit.h"
 #include "climate.h"
 #include "gisgrid.h"
+#include "outputmanager.h"
 
 /** @defgroup windmodule iLand windmodule
   The wind module is a disturbance module within the iLand framework.
@@ -57,21 +59,40 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 1: return data.edge; // maximum difference to neighboring cells
     case 2: return data.cws_uproot; // critical wind speed for uprooting
     case 3: return data.cws_break; // critical wind speed for stem breakage
-    case 4: return (double) data.n_killed; // trees killed on pixel
+    case 4: return data.n_killed; // trees killed on pixel
     case 5: return data.basal_area_killed; // basal area killed on pixel
     case 6: return data.n_iteration; // iteration in processing that the current pixel is processed (and trees are killed)
     case 7: return data.crown_windspeed; // effective wind speed in the crown (m/s)
     case 8: return data.topex; // topo modifier of the current pixel
     case 9: return ruValueAt(&data, 0); // 1 if soil is frozen on the current pixel
+    case 10: return data.n_affected; // number of storm events affecting the pixel
+    case 11: return data.sum_volume_killed; // sum of killed volume
+    case 12: return data.edge_age; // # of years that a cell is an edge
+    case 13: return data.n_trees; // # of trees
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
 
 
-const QStringList WindLayers::names() const
+const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
 {
-    return QStringList() <<  "height" << "edge" << "cwsUproot" << "cwsBreak" << "nKilled" << "basalAreaKilled" << "iteration" << "windSpeedCrown" << "topo" << "isFrozen";
-
+    if (mNames.isEmpty())
+        mNames= QVector<LayeredGridBase::LayerElement>()
+                << LayeredGridBase::LayerElement(QLatin1Literal("height"), QLatin1Literal("max height at pixel (m)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("edge"), QLatin1Literal("result of edge detection"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("cwsUproot"), QLatin1Literal("critical wind speed uprooting (m/s)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("cwsBreak"), QLatin1Literal("critical wind speed stem breakage (m/s)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("treesKilled"), QLatin1Literal("trees killed on pixel"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("basalAreaKilled"), QLatin1Literal("killed basal area"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("iteration"), QLatin1Literal("iteration # of the spread algorithm"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("windSpeedCrown"), QLatin1Literal("wind speed at tree crown height (m/s)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("topo"), QLatin1Literal("the topography modifier for wind speeds"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("isFrozen"), QLatin1Literal("soil (resource unit) is frozen?"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
+                << LayeredGridBase::LayerElement(QLatin1Literal("sumVolume"), QLatin1Literal("running sum of damaged tree volume on the pixel."), GridViewReds)
+                << LayeredGridBase::LayerElement(QLatin1Literal("edgeAge"), QLatin1Literal("age of an edge (consecutive number of years that a cell is an edge)."), GridViewBlues)
+                << LayeredGridBase::LayerElement(QLatin1Literal("basalArea"), QLatin1Literal("sum of basal area (trees>4m) on the cel.l"), GridViewRainbow);
+    return mNames;
 }
 
 // helper function (avoid a special ru-level grid and use the 10m cell resolution instead)
@@ -106,7 +127,8 @@ void WindModule::setup()
     // setup the grid (using the size/resolution)
     mRUGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
                   GlobalSettings::instance()->model()->RUgrid().cellsize());
-    // setup the fire spread grid
+    // setup the wind grid
+    mGrid.clear(); // force a recreate (incl. c'tor)
     mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellsize());
     //mFireId = 0;
 
@@ -124,8 +146,13 @@ void WindModule::setup()
         mTopexFactorModificationType = gfAdd;
 
     mIterationsPerMinute = 1. / xml.valueDouble(".durationPerIteration", 10.); // default: 10mins/iteration is 60m/h
-    mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
+    mWindDayOfYear = xml.valueInt(".dayOfYear", 100.);
     mLRITransferFunction.setAndParse(xml.value(".LRITransferFunction", "max(min(3.733-6.467*LRI,3.41),0.5)"));
+
+    // edge age
+    mEdgeProbability.setAndParse(xml.value(".edgeProbability", "1")); // default value: all pixels are tested always
+    mEdgeAgeBaseValue = xml.valueInt(".edgeAgeBaseValue", 10);
+    mEdgeBackgroundProbability = xml.valueDouble(".edgeBackgroundProbability", 0.);
     // topographic topex modifier
     mTopexFromGrid = false;
     QString topex_grid_file = xml.value(".topoGridFile");
@@ -135,7 +162,7 @@ void WindModule::setup()
         topex_grid_file = GlobalSettings::instance()->path(topex_grid_file);
         if (topex_grid.loadFromFile(topex_grid_file)) {
             for (int i=0;i<mGrid.count();i++) {
-                mGrid.valueAtIndex(i).topex = topex_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i)));
+                mGrid.valueAtIndex(i).topex = static_cast<float>( topex_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i))) );
             }
             mTopexFromGrid = true;
         }
@@ -154,6 +181,7 @@ void WindModule::setup()
     mWindLayers.setRUGrid(&mRUGrid);
     GlobalSettings::instance()->controller()->addLayers(&mWindLayers, "wind");
 
+    mAfterExecEvent = xml.value(".onAfterWind");
 
     // setup the species parameters that are specific to the wind module
     QString parameter_table_name = xml.value(".speciesParameter", "wind");
@@ -165,7 +193,7 @@ void WindModule::setup()
 void WindModule::setupResourceUnit(const ResourceUnit *ru)
 {
     if (!mTopexFromGrid) {
-        float topo_value =  GlobalSettings::instance()->settings().valueDouble("modules.wind.topoModifier", 1.);
+        float topo_value =  static_cast<float>( GlobalSettings::instance()->settings().valueDouble("modules.wind.topoModifier", 1.) );
         GridRunner<WindCell> runner(mGrid, ru->boundingBox());
         while (WindCell *p=runner.next()) {
             p->topex = topo_value;
@@ -216,19 +244,79 @@ const WindSpeciesParameters &WindModule::speciesParameter(const Species *s)
     return mSpeciesParameters[s];
 }
 
-/// the run() function executes the fire events
+void WindModule::initializeEdgeAge(const int years)
+{
+    detectEdges(true); // in startup-mode
+    int val = qMax(years,0);
+    int n=0;
+    for (WindCell *p=mGrid.begin(); p!=mGrid.end(); ++p) {
+        if (p->edge_age>=0 && p->edge==1.f) {
+            // skip out-of-project area
+            p->edge_age = val;
+            ++n;
+        }
+    }
+    qDebug() << "Wind:initializeEdgeAge: set" << n << "edges to" << years << "years.";
+}
+
+void WindModule::incrementEdgeAge()
+{
+    int n_background=0;
+    int n_disabled=0;
+    for (WindCell *p=mGrid.begin(); p!=mGrid.end(); ++p) {
+        if (p->edge_age>0) {
+            if (!p->tree || p->height<10.f) {
+                p->edge_age = 0;
+            } else {
+
+                if (mEdgeBackgroundProbability>0.)
+                    if (drandom() < mEdgeBackgroundProbability) {
+                        p->edge = 10.f; //10m is the minium upwind gap size for edges activated by background probability
+                        ++n_background;
+                    }
+                if (p->edge<=1.f) {
+                    // calculate probability that the pixel is disabled for the event
+                    // (only if this pixel is not a random-edge)
+                    double p_edge = mEdgeProbability.calculate(static_cast<double>(p->edge_age));
+                    if (drandom() < p_edge) {
+                        p->edge = -2.f; // the edge is disabled for this event
+                        ++n_disabled;
+                    }
+                }
+                p->edge_age++;
+            }
+        }
+    }
+    qDebug() << "Wind:incrementEdgeAge: background activation of" << n_background << "potential start edges (with trees), protection not active for" << n_disabled << "px.";
+
+}
+
+/// the run() function executes the wind events
 void WindModule::run(const int iteration, const bool execute_from_script)
 {
     // initialize things in the first iteration
     if (iteration<=0) {
+
+        if (!execute_from_script) {
+            setSimulationMode(false);
+            initWindGrid();
+            if (GlobalSettings::instance()->currentYear() == 1) {
+                initializeEdgeAge(mEdgeAgeBaseValue - 1);
+            } else {
+                detectEdges(); //  needed for the increment
+            }
+            // edges get one year older (even if no wind event is triggered this year)
+            incrementEdgeAge();
+        }
+
         if (!execute_from_script) {
             // check if we have a wind event this year
             if (!eventTriggered())
                 return;
         }
-        // setup the wind data
-        initWindGrid();
+
     }
+
 
     bool finished = false;
     mCurrentIteration = 1;
@@ -239,6 +327,7 @@ void WindModule::run(const int iteration, const bool execute_from_script)
         DebugTimer titeration("wind:Cycle");
         // detect current edges in the forest
         detectEdges();
+
         // calculate the gap sizes/fetch for the current structure
         calculateFetch();
         // wind speed of the current iteration
@@ -258,13 +347,25 @@ void WindModule::run(const int iteration, const bool execute_from_script)
                  << "gustfactor:" << mCurrentGustFactor;
     }
     qDebug() << "iterations: " << mCurrentIteration << "total pixels affected:" << mPixelAffected << "totals: killed trees:" << mTreesKilled << "basal-area:" << mTotalKilledBasalArea;
+
+    GlobalSettings::instance()->outputManager()->execute("wind");
+    GlobalSettings::instance()->outputManager()->save();
+
+    // execute the after wind event
+    if (!mAfterExecEvent.isEmpty()) {
+        // evaluate the javascript function...
+        GlobalSettings::instance()->executeJavascript(mAfterExecEvent);
+    }
+
 }
 
 void WindModule::initWindGrid()
 {
     DebugTimer t("wind:init");
+    mWindDayOfYear = GlobalSettings::instance()->settings().valueDouble("modules.wind.dayOfYear");
     // reset some statistics
     mTotalKilledBasalArea = 0.;
+    mTotalKilledVolume = 0.;
     mTreesKilled = 0;
     mPixelAffected = 0;
     // as long as we have 10m -> easy!
@@ -274,13 +375,17 @@ void WindModule::initWindGrid()
             p->clear();
             if (hgv->isValid()) {
                 // p->height = hgv->height;
-                p->n_trees = hgv->count();
+                //p->n_trees = hgv->count();
+
             } else {
                 // the "height" of pixels not in the project area depends on a flag provided with the "stand map"
-                if (hgv->isForestOutside())
+                if (hgv->isForestOutside()) {
                     p->height = 9999.f;
-                else
+                    p->edge_age = -1;
+                } else {
                     p->height = 0.f;
+                    p->edge_age = -1;
+                }
             }
         }
         // reset resource unit grid...
@@ -293,59 +398,140 @@ void WindModule::initWindGrid()
     throw IException("WindModule::initWindGrid: not 10m of windpixels...");
 }
 
-/** mark all pixels that are at stand edges, i.e. pixels that are much larger (treeheight) than their neighbors.
+/** mark all pixels that are at stand edges, i.e. pixels with trees that are much taller (treeheight) than their neighbors.
   */
-void WindModule::detectEdges()
+void WindModule::detectEdges(bool at_startup)
 {
     DebugTimer t("wind:edges");
     WindCell *p_above, *p, *p_below;
     int dy = mGrid.sizeY();
     int dx = mGrid.sizeX();
     int x,y;
-    const float threshold = mEdgeDetectionThreshold;
+
+    const float threshold = static_cast<float>( mEdgeDetectionThreshold );
     for (y=1;y<dy-1;++y){
         p = mGrid.ptr(1,y);
         p_above = p - dx; // one line above
         p_below = p + dx; // one line below
         for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
-            p->edge = 0.f; // no edge
-            if (p->isValid()) {
-                float max_h = p->height - threshold; // max_h: if a surrounding pixel is higher than this value, then there is no edge here
-                if (max_h > 0) {
+            if (at_startup)
+                p->edge=0.f;
+            if (p->n_trees>0) {
+                float min_h = p->height - threshold; // max_h: if no surrounding pixel is lower than this value, then there is no edge here
+                // edges are only detected if trees are >10m high
+                if (p->height>10.f && min_h > 0) {
                     // check 8-neighborhood. if one of those pixels exceed the threshold, then the current
                     // pixel is not an "edge".
-                    if (((p_above-1)->height < max_h) ||
-                            ((p_above)->height < max_h) ||
-                            ((p_above+1)->height < max_h) ||
-                            ((p-1)->height < max_h)  ||
-                            ((p+1)->height < max_h) ||
-                            ((p_below-1)->height < max_h) ||
-                            ((p_below)->height < max_h) ||
-                            ((p_below+1)->height < max_h) ) {
-                        // edge found:
-                        p->edge = 1.f;
+                    int edge = ((p_above-1)->height < min_h) +
+                            ((p_above)->height < min_h) +
+                            ((p_above+1)->height < min_h) +
+                            ((p-1)->height < min_h)  +
+                            ((p+1)->height < min_h) +
+                            ((p_below-1)->height < min_h)+
+                            ((p_below)->height < min_h) +
+                            ((p_below+1)->height < min_h) ;
+
+                    if (edge>2) {
+                        // set flag for gap size determination (randomly activated edges are overwritten here,
+                        // but edges disabled due to the age of the edge not (=-2)
+                        if (at_startup) {
+                            p->edge = 1.f;
+                        } else {
+                            // we exclude age-protected pixels only in the first iteration
+                            //if (mCurrentIteration!=1 || p->edge>-1.f)
+                            if (p->edge>-1.f)
+                                p->edge = qMax(p->edge, 1.f);
+                            // start couting the edge age for new edges
+                            if (!mSimulationMode && p->edge_age==0)
+                                p->edge_age=1;
+                        }
                     }
                 }
             }
+            // reset age counter
+            if (!mSimulationMode && p->edge_age>0.f && p->edge==0.f)
+                p->edge_age = 0;
         }
     }
+}
+
+static QMutex wind_mt_counter;
+static WindModule *wind_module=0;
+static int impact_c;
+
+// multithreading enabled main function for fetch calculationg
+void nc_calculateFetch(WindCell *begin, WindCell *end)
+{
+    int calculated = 0;
+    double current_direction;
+    for (WindCell *p=begin; p!=end; ++p) {
+        if (p->edge >= 1.f) {
+            QPoint pt=wind_module->mGrid.indexOf(p);
+            current_direction = wind_module->mWindDirection + (wind_module->mWindDirectionVariation>0.?nrandom(-wind_module->mWindDirectionVariation, wind_module->mWindDirectionVariation):0);
+            float old_edge = p->edge;
+            wind_module->checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - wind_module->mEdgeDetectionThreshold);
+            ++calculated;
+            // only simulate edges with gapsize > 20m
+            // this skips small gaps (e.g. areas marked as "stones")
+            if (old_edge>1.f) {
+                // for random starts only increase the distance
+                p->edge = qMax(p->edge, old_edge);
+            } else if (p->edge < 10.f) {
+                // minimum fetch distance for edges
+                p->edge = 0.f;
+            }
+        }
+    }
+    QMutexLocker lock(&wind_mt_counter);
+    impact_c += calculated;
+
 }
 
 void WindModule::calculateFetch()
 {
     DebugTimer t("wind:fetch");
-    int calculated = 0;
-    double current_direction;
-    WindCell *end = mGrid.end();
-    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
-        if (p->edge == 1.f) {
-            QPoint pt=mGrid.indexOf(p);
-            current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
-            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
+    wind_module = this;
+    impact_c=0;
+    GlobalSettings::instance()->model()->threadExec().runGrid(nc_calculateFetch, mGrid.begin(), mGrid.end());
+    qDebug() << "calculated fetch for" << impact_c << "pixels";
+    return;
+//    int calculated = 0;
+//    double current_direction;
+//    WindCell *end = mGrid.end();
+//    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
+//        if (p->edge == 1.f) {
+//            QPoint pt=mGrid.indexOf(p);
+//            current_direction = mWindDirection + (mWindDirectionVariation>0.?nrandom(-mWindDirectionVariation, mWindDirectionVariation):0);
+//            checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - mEdgeDetectionThreshold);
+//            ++calculated;
+//            // only simulate edges with gapsize > 20m
+//            // this skips small gaps (e.g. areas marked as "stones")
+//            if (p->edge < 20.f) {
+//                p->edge = 0.f;
+//            }
+//        }
+//   }
+//    qDebug() << "calculated fetch for" << calculated << "pixels";
+}
+
+static int effective_c;
+void nc_calculateWindImpact(ResourceUnit *unit)
+{
+    GridRunner<WindCell> runner(wind_module->mGrid, unit->boundingBox());
+    int calculated=0;
+    int effective=0;
+    while (WindCell *p = runner.next()) {
+        if (p->edge >= 1.f) {
+            QPoint pt=wind_module->mGrid.indexOf(p);
+            if (wind_module->windImpactOnPixel(pt, p))
+                ++effective;
             ++calculated;
         }
-   }
-    qDebug() << "calculated fetch for" << calculated << "pixels";
+    }
+    QMutexLocker lock(&wind_mt_counter);
+
+    impact_c += calculated;
+    effective_c+=effective;
 }
 
 /** calculate for each pixel the impact of wind
@@ -354,19 +540,24 @@ void WindModule::calculateFetch()
 int WindModule::calculateWindImpact()
 {
     DebugTimer t("wind:impact");
-    int calculated = 0;
-    int effective = 0;
-    WindCell *end = mGrid.end();
-    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
-        if (p->edge >= 1.f) {
-            QPoint pt=mGrid.indexOf(p);
-            if (windImpactOnPixel(pt, p))
-                ++effective;
-            ++calculated;
-        }
-    }
-    qDebug() << "calculated impact for" << calculated << "pixels";
-    return effective;
+    wind_module = this;
+    impact_c=0; effective_c=0;
+    GlobalSettings::instance()->model()->executePerResourceUnit(nc_calculateWindImpact);
+    qDebug() << "calculated impact for" << impact_c << "pixels, affected" << effective_c;
+    return effective_c;
+//    int calculated = 0;
+//    int effective = 0;
+//    WindCell *end = mGrid.end();
+//    for (WindCell *p=mGrid.begin(); p!=end; ++p) {
+//        if (p->edge >= 1.f) {
+//            QPoint pt=mGrid.indexOf(p);
+//            if (windImpactOnPixel(pt, p))
+//                ++effective;
+//            ++calculated;
+//        }
+//    }
+//    qDebug() << "calculated impact for" << calculated << "pixels";
+//    return effective;
 }
 
 
@@ -431,7 +622,7 @@ bool WindModule::eventTriggered()
     mWindDayOfYear = xml.valueDouble(".dayOfYear", 100.);
 
 
-    qDebug() << "Wind: start event. Speed:" << mWindSpeed << "m/s, Duration (iterations):" << mMaxIteration << ", direction (°):" << mWindDirection/M_PI*180.;
+    qDebug() << "Wind: start event. Speed:" << mWindSpeed << "m/s, Duration (iterations):" << mMaxIteration << ", direction (deg):" << mWindDirection/M_PI*180.;
     return true;
 }
 
@@ -505,7 +696,7 @@ function line(x0, y0, x1, y1)
 }
 
 
-
+static QMutex tree_kill_lock;
 
 /** Main function of the wind module
   @param position the integer index (x/y) of the grid cell for which the wind effect should be calculated
@@ -546,7 +737,10 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     else
         wind_speed_10 =( mWindSpeed + topo_mod) * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy, topo modifier calculated additively
 
-    double u_crown = calculateCrownWindSpeed(cell->tree, params, cell->n_trees, wind_speed_10);
+    // cell->n_trees: sum of basal area of all trees on the pixel
+    double n_trees = cell->n_trees / cell->tree->basalArea(); // number of trees with the dimension of the focal tree
+
+    double u_crown = calculateCrownWindSpeed(cell->tree, params, n_trees, wind_speed_10);
 
     // now calculate the critical wind speed for the tallest tree on the pixel (i.e. the speed at which stem breakage/uprooting occurs)
     double cws_uproot, cws_break;
@@ -568,13 +762,15 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
         do_break = cws_break < cws_uproot; // either break or uproot depending on the critical wind speeds
     }
 
+    QMutexLocker locker(&tree_kill_lock); // make sure that the following code is not run in parallel
 
     // *****************************************************************************
     // Kill the trees that are thrown/uprooted by the wind
     // *****************************************************************************
     if (!do_break) {
         // regeneration is killed in case of uprooting
-        ru->clearSaplings(pixel_rect, true);
+        if (GlobalSettings::instance()->model()->saplings())
+            GlobalSettings::instance()->model()->saplings()->clearSaplings(pixel_rect, true);
     }
     QVector<Tree>::const_iterator tend = ru->trees().constEnd();
     for (QVector<Tree>::const_iterator  t=ru->trees().constBegin(); t!=tend; ++t) {
@@ -584,6 +780,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
             if (!mSimulationMode) {
                 // all trees > 4m are killed on the cell
                 Tree *tree = const_cast<Tree*>(&(*t));
+                tree->setDeathReasonWind();
                 if (do_break) {
                     // the tree is breaking
                     // half of the stem as well as foliage/branches are moved to the soil. The other half
@@ -602,8 +799,10 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
             }
             // statistics
             cell->basal_area_killed += t->basalArea();
+            cell->sum_volume_killed += t->volume();
             cell->n_killed ++;
             mTotalKilledBasalArea += t->basalArea();
+            mTotalKilledVolume += t->volume();
             mTreesKilled ++;
 
         }
@@ -614,6 +813,10 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     cell->edge = 0.f;
     cell->n_iteration = mCurrentIteration;
     cell->tree = 0;
+    cell->n_trees = 0.f; // no more trees on the pixel
+    if (!mSimulationMode)
+        cell->edge_age = 0; // ... and no edge
+    cell->n_affected++; // pixel has been cleared this time...
     return true;
 }
 
@@ -623,7 +826,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
   @param n_trees number of trees that are on the 10x10m cell
   @param wind_speed_10 wind speed in 10m above canopy (m/s)
   */
-double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const int n_trees, const double wind_speed_10)
+double WindModule::calculateCrownWindSpeed(const Tree *tree, const WindSpeciesParameters &params, const double n_trees, const double wind_speed_10)
 {
      // frontal area index
     const double porosity = 0.5;
@@ -680,7 +883,7 @@ double WindModule::calculateCrititalWindSpeed(const Tree *tree, const WindSpecie
     double c_hegyi;
     c_hegyi = mLRITransferFunction.calculate(tree->lightResourceIndex());
     // the turning moment coefficient incorporating the competition state
-    double tc = 4.42+122.1*(tree->dbh()*tree->dbh()/10000.)*tree->height()-0.141*c_hegyi-14.6*(tree->dbh()*tree->dbh()/10000.)*tree->height()*c_hegyi;
+    double tc = 4.42+122.1*(tree->dbh()*tree->dbh()/cRUArea)*tree->height()-0.141*c_hegyi-14.6*(tree->dbh()*tree->dbh()/cRUArea)*tree->height()*c_hegyi;
     // now derive the critital wind speeds for uprooting and breakage
     const double f_knot = 1.; // a reduction factor accounting for the presence of knots, currenty no reduction.
     // a factor to scale average wind speeds to gust, which transport much more energy. Orignially, the factor depends on the distance from the edge;
@@ -744,25 +947,29 @@ void WindModule::scanResourceUnitTrees(const QPoint &position)
 
     ResourceUnit *ru = GlobalSettings::instance()->model()->ru(p_m);
 
-    QVector<Tree>::const_iterator tend = ru->trees().constEnd();
-    for (QVector<Tree>::const_iterator t = ru->trees().constBegin(); t!=tend; ++t) {
-        if (!t->isDead()) {
-            const QPoint &tp = t->positionIndex();
-            QPoint pwind(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
-            WindCell &wind=mGrid.valueAtIndex(pwind);
-            if (!wind.tree || t->height()>wind.tree->height()) {
-                wind.height = t->height();
-                wind.tree = &(*t);
+    if (ru) {
+        QVector<Tree>::const_iterator tend = ru->trees().constEnd();
+        for (QVector<Tree>::const_iterator t = ru->trees().constBegin(); t!=tend; ++t) {
+            if (!t->isDead()) {
+                const QPoint &tp = t->positionIndex();
+                QPoint pwind(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
+                WindCell &wind=mGrid.valueAtIndex(pwind);
+                wind.n_trees += t->basalArea();
+                if (!wind.tree || t->height()>wind.tree->height()) {
+                    wind.height = t->height();
+                    wind.tree = &(*t);
+                }
             }
         }
+        // check if the soil on the resource unit is frozen
+        switch(mSoilFreezeMode){
+        case esfAuto: mRUGrid.valueAt(p_m).soilIsFrozen = isSoilFrozen(ru, mWindDayOfYear); break;
+        case esfFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = true; break;
+        case esfNotFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = false; break;
+        default: break;
+        }
     }
-    // check if the soil on the resource unit is frozen
-    switch(mSoilFreezeMode){
-    case esfAuto: mRUGrid.valueAt(p_m).soilIsFrozen = isSoilFrozen(ru, mWindDayOfYear); break;
-    case esfFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = true; break;
-    case esfNotFrozen: mRUGrid.valueAt(p_m).soilIsFrozen = false; break;
-    default: break;
-    }
+
     // set the "processed" flag
     mRUGrid.valueAt(p_m).flag = 1;
 }

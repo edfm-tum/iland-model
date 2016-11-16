@@ -25,7 +25,10 @@
 #include "resourceunitspecies.h"
 #include "seeddispersal.h"
 #include "model.h"
+#include "grasscover.h"
 #include "helper.h"
+#include "debugtimer.h"
+#include "watercycle.h"
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
@@ -38,7 +41,6 @@
   */
 Establishment::Establishment()
 {
-    mRegenerationProbability = 0.;
     mPAbiotic = 0.;
 }
 
@@ -51,153 +53,75 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
 {
     mClimate = climate;
     mRUS = rus;
-    mRegenerationProbability = 0.;
     mPAbiotic = 0.;
     mPxDensity = 0.;
     mNumberEstablished = 0;
-    if (climate==0 || rus==0 || rus->species()==0 || rus->ru()==0)
-        throw IException("Establishment::setup: important variable is null.");
+    if (climate==0)
+        throw IException("Establishment::setup: no valid climate for a resource unit.");
+    if (rus==0 || rus->species()==0 || rus->ru()==0)
+        throw IException("Establishment::setup: important variable is null (are the species properly set up?).");
 }
 
-inline bool Establishment::establishTree(const QPoint &pos_lif, const float lif_value, const float seed_value)
-{
 
-    // check window of opportunity...if regeneration (of any species) on the current pixel is above breast height (1.3m), then
-    // no establishment is possible
-    if (mRUS->ru()->saplingHeightAt(pos_lif) > 1.3f)
-        return false;
 
-    // check if sapling of the current tree species is already established -> if so, no establishment.
-    if (mRUS->hasSaplingAt(pos_lif))
-        return false;
-
-    const HeightGridValue &hgv = GlobalSettings::instance()->model()->heightGrid()->constValueAtIndex(pos_lif.x()/cPxPerHeight, pos_lif.y()/cPxPerHeight);
-    // no establishment if pixel is not in project area
-    if (!hgv.isValid())
-        return false;
-
-    double h_height_grid = hgv.height;
-    if (h_height_grid==0)
-        throw IException(QString("establishTree: height grid at %1/%2 has value 0").arg(pos_lif.x()).arg(pos_lif.y()));
-    double rel_height = 4. / h_height_grid;
-
-     double lif_corrected = mRUS->species()->speciesSet()->LRIcorrection(lif_value, rel_height);
-     float p_est = lif_corrected * seed_value;
-     // orig: with *mPAbiotic ::: now moved to one level above
-     // float p_est = mPAbiotic * lif_corrected * seed_value;
-     // 2011-11-09: it is important to use a *new* random number: this is then mathematically the same as
-     // multiplying probabilties.
-     // statistics
-     mLIFcount++;
-     mSumLIFvalue+=lif_value;
-     // draw a random number and check against the combined establishment probability
-     double p_rand = drandom();
-     if (p_rand < p_est) {
-         const_cast<ResourceUnitSpecies*>(mRUS)->addSapling(pos_lif);
-         return true; // establishment
-     }
-     return false; // no establishment
-}
-
-// see http://iland.boku.ac.at/establishment
-void Establishment::calculate()
+void Establishment::clear()
 {
     mPAbiotic = 0.;
     mNumberEstablished = 0;
     mPxDensity = 0.;
-    mTACA_chill=mTACA_frostfree=mTACA_gdd=mTACA_gdd=mTACA_min_temp=false;
+    mTACA_min_temp=mTACA_chill=mTACA_gdd=mTACA_frostfree=false;
     mTACA_frostAfterBuds=0;
     mSumLIFvalue = 0.;
     mLIFcount = 0;
+    mWaterLimitation = 0.;
 
-    // Step 1: determine, whether there are seeds in the current resource unit
-    const Grid<float> &seed_map = mRUS->species()->seedDispersal()->seedMap();
-    const QRectF &ru_rect = mRUS->ru()->boundingBox();
-    GridRunner<float> runner(seed_map, ru_rect);
-    // check every pixel inside the bounding box of the resource unit
-    int with_seeds = 0, total=0;
-    while (float *p = runner.next()) {
-        if (*p>0.f) {
-            with_seeds++;
+}
+
+
+double Establishment::calculateWaterLimitation(const int veg_period_start, const int veg_period_end)
+{
+    // return 1 if effect is disabled
+    if (mRUS->species()->establishmentParameters().psi_min >= 0.)
+        return 1.;
+
+    double psi_min = mRUS->species()->establishmentParameters().psi_min;
+    const WaterCycle *water = mRUS->ru()->waterCycle();
+    int days = mRUS->ru()->climate()->daysOfYear();
+
+    // two week (14 days) running average of actual psi-values on the resource unit
+    static const int nwindow = 14;
+    double psi_buffer[nwindow];
+    for (int i=0;i<nwindow;++i)
+        psi_buffer[i] = 0.;
+    double current_sum = 0.;
+
+    int i_buffer = 0;
+    double min_average = 9999999.;
+    double current_avg = 0.;
+    for (int day=0;day<days;++day) {
+        // running average: remove oldest item, add new item in a ringbuffer
+        current_sum -= psi_buffer[i_buffer];
+        psi_buffer[i_buffer] = water->psi_kPa(day);
+        current_sum += psi_buffer[i_buffer];
+
+        if (day>=veg_period_start && day<=veg_period_end) {
+            current_avg = day>0? current_sum / std::min(day, nwindow) : current_sum;
+            min_average = std::min(min_average, current_avg);
         }
-        mPxDensity += *p;
-        total++;
+
+        // move to next value in the buffer
+        i_buffer = ++i_buffer % nwindow;
     }
-    if (total==0)
-        throw IException("Establishment: number of seed map pixels on resource unit " + QString::number(mRUS->ru()->index()) + " is 0.");
-    mPxDensity /= double(total);
-    if (with_seeds==0)
-        return;
 
-    //{  DebugTimer casdg("esablishment:abiotic+prod");
-    // 2nd step: environmental drivers
-    calculateAbioticEnvironment();
-    if (mPAbiotic == 0.)
-        return;
+    if (min_average > 1000.)
+        return 1.; // invalid vegetation period?
 
-    // the effect of water, nitrogen, co2, .... is a bulk factor: f_env,yr
-    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module (only if that is not already done)
-    double f_env_yr = mRUS->prod3PG().fEnvYear();
-    mPAbiotic *= f_env_yr;
-    if (mPAbiotic == 0.)
-        return;
+    // calculate the response of the species to this value of psi (see also Species::soilwaterResponse())
+    const double psi_mpa = min_average / 1000.; // convert to MPa
+    double result = limit( (psi_mpa - psi_min) / (-0.015 -  psi_min) , 0., 1.);
 
-    //} // for debug timer
-    int n_established = 0;
+    return result;
 
-    // performance hack:
-    // pre-multiply with probability
-//    double p_ru = drandom(mRUS->ru()->randomGenerator());
-//    if (p_ru > mPAbiotic) {
-//        return;
-//    }
-
-    //DebugTimer estasd("establish:from_search");
-    // 3rd step: check actual pixels in the LIF grid
-//    if (with_seeds/double(total) > 0.4 ) {
-//        // a large part has available seeds. simply scan the pixels...
-//        QPoint lif_index;
-//        Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
-//        GridRunner<float> lif_runner(lif_map, ru_rect);
-//        while (float *lif_px = lif_runner.next()) {
-//            lif_index = lif_map->indexOf(lif_px);
-//            DBGMODE(
-//            if (!ru_rect.contains(lif_map->cellCenterPoint(lif_index)))
-//                qDebug() << "(a) establish problem:" << lif_index << "point: " << lif_map->cellCenterPoint(lif_index) << "not in" << ru_rect;
-//            );
-//            // value of the seed map: seed_map.valueAt( lif_map.cellCenterPoint(lif_map.indexOf(lif_px)) );
-//            if (establishTree(lif_index, *lif_px, seed_map.constValueAt( lif_map->cellCenterPoint(lif_index) )))
-//                n_established++;
-//        }
-
-//    } else {
-        // relatively few seed-pixels are filled. So examine seed pixels first, and check light only on "filled" pixels
-        GridRunner<float> seed_runner(seed_map, ru_rect);
-        Grid<float> *lif_map = GlobalSettings::instance()->model()->grid();
-        // check every pixel inside the bounding box of the pixel with
-        while (float *p = seed_runner.next()) {
-            if (*p>0.f) {
-                //double p_establish = drandom(mRUS->ru()->randomGenerator());
-                //if (p_establish > mPAbiotic)
-                //    continue;
-                // pixel with seeds: now really iterate over lif pixels
-                GridRunner<float> lif_runner(lif_map, seed_map.cellRect(seed_map.indexOf(p)));
-                while (float *lif_px = lif_runner.next()) {
-                    DBGMODE(
-                    if (!ru_rect.contains(lif_map->cellCenterPoint(lif_map->indexOf(lif_px))))
-                        qDebug() << "(b) establish problem:" << lif_map->indexOf(lif_px) << "point: " << lif_map->cellCenterPoint(lif_map->indexOf(lif_px)) << "not in" << ru_rect;
-                    );
-                    double p_establish = drandom();
-                    if (p_establish < mPAbiotic) {
-                        if (establishTree(lif_map->indexOf(lif_px), *lif_px ,*p))
-                            n_established++;
-                    }
-                }
-            }
-        }
-//    }
-    // finished!!!
-    mNumberEstablished = n_established;
 }
 
 
@@ -210,6 +134,10 @@ void Establishment::calculate()
  */
 void Establishment::calculateAbioticEnvironment()
 {
+    //DebugTimer t("est_abiotic"); t.setSilent();
+    // make sure that required calculations (e.g. watercycle are already performed)
+    const_cast<ResourceUnitSpecies*>(mRUS)->calculate(true); // calculate the 3pg module and run the water cycle (this is done only if that did not happen up to now); true: call comes from regeneration
+
     const EstablishmentParameters &p = mRUS->species()->establishmentParameters();
     const Phenology &pheno = mClimate->phenology(mRUS->species()->phenologyClass());
 
@@ -284,9 +212,39 @@ void Establishment::calculateAbioticEnvironment()
         double frost_effect = 1.;
         if (mTACA_frostAfterBuds>0)
             frost_effect = pow(p.frost_tolerance, sqrt(double(mTACA_frostAfterBuds)));
-        mPAbiotic = frost_effect;
+        // negative effect due to water limitation on establishment [1: no effect]
+        mWaterLimitation = calculateWaterLimitation(pheno.vegetationPeriodStart(), pheno.vegetationPeriodLength());
+        // combine drought and frost effect multiplicatively
+        mPAbiotic = frost_effect * mWaterLimitation;
     } else {
         mPAbiotic = 0.; // if any of the requirements is not met
     }
 
 }
+
+void Establishment::writeDebugOutputs()
+{
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment)) {
+        DebugList &out = GlobalSettings::instance()->debugList(mRUS->ru()->index(), GlobalSettings::dEstablishment);
+        // establishment details
+        out << mRUS->species()->id() << mRUS->ru()->index() << mRUS->ru()->id();
+        out << avgSeedDensity();
+        out << TACAminTemp() << TACAchill() << TACAfrostFree() << TACgdd();
+        out << TACAfrostDaysAfterBudBirst() << waterLimitation() << abioticEnvironment();
+        out << mRUS->prod3PG().fEnvYear() << mRUS->constSaplingStat().newSaplings();
+
+        //out << mSaplingStat.livingSaplings() << mSaplingStat.averageHeight() << mSaplingStat.averageAge() << mSaplingStat.averageDeltaHPot() << mSaplingStat.averageDeltaHRealized();
+        //out << mSaplingStat.newSaplings() << mSaplingStat.diedSaplings() << mSaplingStat.recruitedSaplings() << mSpecies->saplingGrowthParameters().referenceRatio;
+    }
+    //); // DBGMODE()
+
+
+    if ( logLevelDebug() )
+        qDebug() << "establishment of RU" << mRUS->ru()->index() << "species" << mRUS->species()->id()
+                 << "seeds density:" << avgSeedDensity()
+                 << "abiotic environment:" << abioticEnvironment()
+                 << "f_env,yr:" << mRUS->prod3PG().fEnvYear()
+                 << "N(established):" << numberEstablished();
+
+}
+

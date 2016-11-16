@@ -42,10 +42,10 @@ public:
     DEM(const QString &fileName) { loadFromFile(fileName); }
     bool loadFromFile(const QString &fileName);
     // create and fill grids for aspect/slope
-    void createSlopeGrid();
-    const FloatGrid *aspectGrid() { createSlopeGrid(); return &aspect_grid; }
-    const FloatGrid *slopeGrid() { createSlopeGrid(); return &slope_grid; }
-    const FloatGrid *viewGrid() { createSlopeGrid(); return &view_grid; }
+    void createSlopeGrid() const;
+    const FloatGrid *aspectGrid() const { createSlopeGrid(); return &aspect_grid; }
+    const FloatGrid *slopeGrid() const { createSlopeGrid(); return &slope_grid; }
+    const FloatGrid *viewGrid() const { createSlopeGrid(); return &view_grid; }
     // special functions for DEM
     /// get the elevation (m) at point (x/y)
     float elevation(const float x, const float y) const { return constValueAt(x,y); }
@@ -55,15 +55,15 @@ public:
     float direction(const float x, const float y);
     float slope(const float x, const float y);
     /// get orientation at specific point (x,y) and height
-    float orientation(const QPointF &point, float &rslope_angle, float &rslope_aspect);
+    float orientation(const QPointF &point, float &rslope_angle, float &rslope_aspect) const;
     float orientation(const float x, const float y, float &rslope_angle, float &rslope_aspect)
                         { return orientation(QPointF(x,y), rslope_angle, rslope_aspect); }
 
 
 private:
-    FloatGrid aspect_grid;
-    FloatGrid slope_grid;
-    FloatGrid view_grid;
+    mutable FloatGrid aspect_grid;
+    mutable FloatGrid slope_grid;
+    mutable FloatGrid view_grid;
 };
 
 #endif // DEM_H

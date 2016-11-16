@@ -19,12 +19,14 @@
 
 #include "global.h"
 #include "environment.h"
+#include "debugtimer.h"
 #include "helper.h"
 #include "csvfile.h"
 #include "gisgrid.h"
 
 #include "climate.h"
 #include "speciesset.h"
+
 
 /** Represents the input of various variables with regard to climate, soil properties and more.
   @ingroup tools
@@ -76,6 +78,7 @@ bool Environment::loadFromString(const QString &source)
         mClimate.clear();
         mRowCoordinates.clear();
         mCreatedObjects.clear();
+        mCurrentID = 0;
 
         int index;
         if (mGridMode) {
@@ -133,16 +136,15 @@ bool Environment::loadFromString(const QString &source)
             DebugTimer t("environment:load climate");
             QStringList climateNames = mInfile->column(index);
             climateNames.removeDuplicates();
-            qDebug() << "creating climatae: " << climateNames;
+            if (logLevelDebug())
+                qDebug() << "creating climatae: " << climateNames;
+            qDebug() << "Environment: climate: # of climates in environment file:" << climateNames.count();
             foreach (QString name, climateNames) {
+                // create an entry in the list of created objects, but
+                // really create the climate only if required (see setPosition() )
+                mCreatedObjects[name]=(void*)0;
                 xml.setNodeValue(climateKey,name); // set xml value
-                // create climate sets
-                Climate *climate = new Climate();
-                mClimate.push_back(climate);
-                mCreatedObjects[name]=(void*)climate;
-                climate->setup();
             }
-            qDebug() << mClimate.count() << "climates created";
         } else {
             // no climate defined - setup default climate
             Climate *c = new Climate();
@@ -190,6 +192,8 @@ void Environment::setPosition(const QPointF position)
         // access data in the matrix by resource unit indices
         ix = int(position.x() / 100.); // suppose size of 1 ha for each coordinate
         iy = int(position.y() / 100.);
+        mCurrentID++; // to have Ids for each resource unit
+
         key=QString("%1_%2").arg(ix).arg(iy);
     }
 
@@ -199,7 +203,11 @@ void Environment::setPosition(const QPointF position)
         QString value;
         if (logLevelInfo()) qDebug() << "settting up point" << position << "with row" << row;
         for (int col=0;col<mInfile->colCount(); col++) {
-            if (mKeys[col]=="x" || mKeys[col]=="y" || mKeys[col]=="id") // ignore "x" and "y" keys
+            if (mKeys[col]=="id") {
+                mCurrentID = mInfile->value(row, col).toInt();
+                continue;
+            }
+            if (mKeys[col]=="x" || mKeys[col]=="y") // ignore "x" and "y" keys
                 continue;
             value = mInfile->value(row,col).toString();
             if (logLevelInfo()) qDebug() << "set" << mKeys[col] << "to" << value;
@@ -207,8 +215,19 @@ void Environment::setPosition(const QPointF position)
             // special handling for constructed objects:
             if (mKeys[col]==speciesKey)
                 mCurrentSpeciesSet = (SpeciesSet*)mCreatedObjects[value];
-            if (mKeys[col]==climateKey)
+            if (mKeys[col]==climateKey) {
                 mCurrentClimate = (Climate*)mCreatedObjects[value];
+                if (mCurrentClimate==0) {
+                    // create only those climate sets that are really used in the current landscape
+                    Climate *climate = new Climate();
+                    mClimate.push_back(climate);
+                    mCreatedObjects[value]=(void*)climate;
+                    climate->setup();
+                    mCurrentClimate = climate;
+
+                }
+            }
+
 
         }
 

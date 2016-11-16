@@ -58,7 +58,7 @@ protected:
 class CNPool: public CNPair
 {
 public:
-    CNPool(): CNPair::CNPair(), mParameter(0.) {}
+    CNPool(): CNPair(), mParameter(0.) {}
     CNPool(const double c, const double n, const double param_value) {C=c; N=n; mParameter=param_value; }
     double parameter() const { return mParameter; } ///< get weighting parameter
     double parameter(const CNPool &s) const; ///< 'simulate' weighting (get weighted param value of 's' with the current content)
@@ -81,6 +81,7 @@ public:
     Snag();
     static void setupThresholds(const double lower, const double upper); ///< setup class thresholds, needs to be called only once... (static)
     void setup( const ResourceUnit *ru); ///< initial setup routine.
+    void scaleInitialState(); ///< used to scale the input to the actual area of the resource unit
     void newYear(); ///< to be executed at the beginning of a simulation year. This cleans up the transfer pools.
     void calculateYear(); ///< to be called at the end of the year (after tree growth, harvesting). Calculates flow to the soil.
     // access

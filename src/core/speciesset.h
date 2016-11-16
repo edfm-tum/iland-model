@@ -39,6 +39,8 @@ public:
     const StampContainer &readerStamps() { return mReaderStamp; }
     QVariant var(const QString& varName);
     int count() const { return mSpecies.count(); }
+    /// return 2 iterators. The range between 'rBegin' and 'rEnd' are indices of the current species set (all species are included, order is random).
+    void randomSpeciesOrder(QVector<int>::const_iterator &rBegin, QVector<int>::const_iterator &rEnd);
     // calculations
     double nitrogenResponse(const double availableNitrogen, const double &responseClass) const;
     double co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const;
@@ -54,8 +56,11 @@ public:
 private:
     QString mName;
     double nitrogenResponse(const double &availableNitrogen, const double &NA, const double &NB) const;
+    void createRandomSpeciesOrder();
     QList<Species*> mActiveSpecies; ///< list of species that are "active" (flag active in database)
     QMap<QString, Species*> mSpecies;
+    static const int mNRandomSets = 20;
+    QVector<int> mRandomSpeciesOrder;
     QSqlQuery *mSetupQuery;
     StampContainer mReaderStamp;
     // nitrogen response classes

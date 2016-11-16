@@ -23,6 +23,8 @@
 #include "layeredgrid.h"
 
 #include <QObject>
+#include <QJSValue>
+
 class RumpleIndex; // forward
 class SpatialLayeredGrid; // forward
 /**
@@ -34,6 +36,7 @@ class SpatialAnalysis: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(double rumpleIndex READ rumpleIndexFullArea)
+    Q_PROPERTY(QList<int> patchsizes READ patchsizes)
 
 public:
     SpatialAnalysis(QObject *parent=0): QObject(parent), mRumple(0) {}
@@ -41,13 +44,23 @@ public:
     static void addToScriptEngine();
 
     double rumpleIndexFullArea(); ///< retrieve the rumple index for the full landscape (one value)
+    /// extract patches ('clumps') and save the resulting grid to 'fileName' (if not empty). Returns a vector with
+    /// the number of pixels for each patch-id
+    QList<int> extractPatches(Grid<double> &src, int min_size, QString fileName);
+    QList<int> patchsizes() const { return mLastPatches; }
 public slots:
     // API for Javascript
     void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
+    void saveCrownCoverGrid(QString fileName); ///< save a grid if crown cover percentages (RU level) to a ESRI grid file (ascii)
+    QJSValue patches(QJSValue grid, int min_size);
 
 private:
+    void calculateCrownCover();
     RumpleIndex *mRumple;
     SpatialLayeredGrid *mLayers;
+    FloatGrid mCrownCoverGrid;
+    Grid<int> mClumpGrid;
+    QList<int> mLastPatches;
     friend class SpatialLayeredGrid;
 
 };
@@ -55,7 +68,7 @@ private:
 /** The RumpleIndex is a spatial index relating surface area to ground area.
  *  In forestry, it is a indicator of vertical heterogeneity. In iLand, the Rumple Index is
  *  the variability of the maximum tree height on 10m level (i.e. the "Height"-Grid).
- *  The Rumple§Index is calculated for each resource unit and also for the full project area.
+ *  The RumpleIndex is calculated for each resource unit and also for the full project area.
  **/
 class RumpleIndex
 {
@@ -82,7 +95,7 @@ public:
     SpatialLayeredGrid() { setup(); }
     void setup(); ///< initial setup of the grid
     int addGrid(const QString name, FloatGrid *grid); ///< adds a 'grid' named 'name'. returns index of the newly added grid.
-    const QStringList names() { return mGridNames; }
+    const QStringList &gridNames() { return mGridNames; }
 
     double value(const float x, const float y, const int index) const { checkGrid(index); return mGrids[index]->constValueAt(x,y); }
     double value(const QPointF &world_coord, const int index) const { checkGrid(index); return mGrids[index]->constValueAt(world_coord); }

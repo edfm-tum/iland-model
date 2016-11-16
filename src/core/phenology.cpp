@@ -87,8 +87,12 @@ void Phenology::calculate()
     }
     day_start -= 10; // three-week-floating average: subtract 10 days
     day_stop -= 10;
-    if (day_start < -1 || day_stop<-1)
-        throw IException(QString("Phenology::calculation(): was not able to determine the length of the vegetation period for group %1." ).arg(id()));
+    if (day_start < -1 || day_stop<-1) {
+        //throw IException(QString("Phenology::calculation(): was not able to determine the length of the vegetation period for group %1. climate table: '%2'." ).arg(id()).arg(mClimate->name()));
+        qDebug() << "Phenology::calculation(): vegetation period is 0 for group" << id() << ", climate table: " << mClimate->name();
+        day_start = mClimate->daysOfYear()-1; // last day of the year, never reached
+        day_stop = day_start; // never reached
+    }
     if (logLevelDebug())
         qDebug() << "Jolly-phenology. start" << mClimate->dayOfYear(day_start)->toString() << "stop" << mClimate->dayOfYear(day_stop)->toString();
     iday = 0;

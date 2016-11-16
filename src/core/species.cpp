@@ -35,12 +35,14 @@
 #include "stampcontainer.h"
 #include "exception.h"
 #include "seeddispersal.h"
+#include "tree.h"
 
 
 Species::~Species()
 {
     if (mSeedDispersal)
         delete mSeedDispersal;
+    mSeedDispersal = 0;
 }
 
 /** main setup routine for tree species.
@@ -53,8 +55,12 @@ void Species::setup()
     // setup general information
     mId = stringVar("shortName");
     mName = stringVar("name");
+#ifdef ILAND_GUI
     QString col_name = '#' + stringVar("displayColor");
     mDisplayColor.setNamedColor(col_name);
+#else
+    mDisplayColor = 0;
+#endif
     QString stampFile = stringVar("LIPFile");
     // load stamps
     mLIPs.load( GlobalSettings::instance()->path(stampFile, "lip") );
@@ -89,6 +95,10 @@ void Species::setup()
     mCNFoliage = doubleVar("cnFoliage");
     mCNFineroot = doubleVar("cnFineRoot");
     mCNWood = doubleVar("cnWood");
+    if (mCNFineroot*mCNFoliage*mCNWood == 0.) {
+        throw IException( QString("Error setting up species %1: CN ratio is 0.").arg(id()));
+    }
+
 
     // turnover rates
     mTurnoverLeaf = doubleVar("turnoverLeaf");
@@ -120,7 +130,7 @@ void Species::setup()
     mMaximumHeight = doubleVar("maximumHeight");
     mAging.setAndParse(stringVar("aging"));
     mAging.linearize(0.,1.); // input is harmonic mean of relative age and relative height
-    if (mMaximumAge*mMaximumHeight==0)
+    if (mMaximumAge*mMaximumHeight==0.)
         throw IException( QString("Error setting up species %1:invalid aging parameters.").arg(id()));
 
     // mortality
@@ -149,7 +159,7 @@ void Species::setup()
     if (mRespNitrogenClass<1 || mRespNitrogenClass>3) throw IException( QString("nitrogen class invalid (must be >=1 and <=3) for species").arg(id()));
 
     // phenology
-    mPhenologyClass = (int)doubleVar("phenologyClass");
+    mPhenologyClass = intVar("phenologyClass");
 
     // water
     mMaxCanopyConductance = doubleVar("maxCanopyConductance");
@@ -164,13 +174,16 @@ void Species::setup()
     int seed_year_interval = intVar("seedYearInterval");
     if (seed_year_interval==0)
         throw IException(QString("seedYearInterval = 0 for %1").arg(id()));
-    mSeedYearProbability = 1 / (double)seed_year_interval;
+    mSeedYearProbability = 1 / static_cast<double>(seed_year_interval);
     mMaturityYears = intVar("maturityYears");
     mTM_as1 = doubleVar("seedKernel_as1");
     mTM_as2 = doubleVar("seedKernel_as2");
     mTM_ks = doubleVar("seedKernel_ks0");
     mFecundity_m2 = doubleVar("fecundity_m2");
     mNonSeedYearFraction = doubleVar("nonSeedYearFraction");
+    // special case for serotinous trees (US)
+    mSerotiny.setExpression(stringVar("serotinyFormula"));
+    mSerotinyFecundity = doubleVar("serotinyFecundity");
 
     // establishment parameters
     mEstablishmentParams.min_temp = doubleVar("estMinTemp");
@@ -181,16 +194,22 @@ void Species::setup()
     mEstablishmentParams.bud_birst = intVar("estBudBirstGDD");
     mEstablishmentParams.frost_free = intVar("estFrostFreeDays");
     mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
+    mEstablishmentParams.psi_min = -fabs(doubleVar("estPsiMin")); // force negative value
 
     // sapling and sapling growth parameters
     mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));
-    mSaplingGrowthParams.heightGrowthPotential.linearize(0., 1.);
-    mSaplingGrowthParams.hdSapling = doubleVar("sapHDSapling");
+    mSaplingGrowthParams.heightGrowthPotential.linearize(0., 4.);
+    mSaplingGrowthParams.hdSapling = static_cast<float>( doubleVar("sapHDSapling") );
     mSaplingGrowthParams.stressThreshold = doubleVar("sapStressThreshold");
     mSaplingGrowthParams.maxStressYears = intVar("sapMaxStressYears");
     mSaplingGrowthParams.referenceRatio = doubleVar("sapReferenceRatio");
     mSaplingGrowthParams.ReinekesR = doubleVar("sapReinekesR");
-
+    mSaplingGrowthParams.browsingProbability = doubleVar("browsingProbability");
+    mSaplingGrowthParams.sproutGrowth = doubleVar("sapSproutGrowth");
+    if (mSaplingGrowthParams.sproutGrowth>0.)
+        if (mSaplingGrowthParams.sproutGrowth<1. || mSaplingGrowthParams.sproutGrowth>10)
+            qDebug() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ")";
+    mSaplingGrowthParams.setupReinekeLookup();
 }
 
 
@@ -232,14 +251,32 @@ int Species::estimateAge(const float height) const
    This function produces seeds if the tree is older than a species-specific age ("maturity")
    If seeds are produced, this information is stored in a "SeedMap"
   */
-void Species::seedProduction(const int age, const float height, const QPoint &position_index)
+void Species::seedProduction(const Tree *tree)
 {
     if (!mSeedDispersal)
         return; // regeneration is disabled
+
+    // if the tree is considered as serotinous (i.e. seeds need external trigger such as fire)
+    if (isTreeSerotinous(tree->age()))
+        return;
+
     // no seed production if maturity age is not reached (species parameter) or if tree height is below 4m.
-    if (age > mMaturityYears && height > 4.f) {
-        mSeedDispersal->setMatureTree(position_index);
+    if (tree->age() > mMaturityYears && tree->height() > 4.f) {
+        mSeedDispersal->setMatureTree(tree->positionIndex(), tree->leafArea());
     }
+}
+
+
+bool Species::isTreeSerotinous(const int age) const
+{
+    if (mSerotiny.isEmpty())
+        return false;
+    // the function result (e.g. from a logistic regression model, e.g. Schoennagel 2013) is interpreted as probability
+    double p_serotinous = mSerotiny.calculate(age);
+    if (drandom()<p_serotinous)
+        return true;
+    else
+        return false;
 }
 
 
@@ -251,9 +288,20 @@ void Species::newYear()
     if (seedDispersal()) {
         // decide whether current year is a seed year
         mIsSeedYear = (drandom() < mSeedYearProbability);
-        if (mIsSeedYear)
+        if (mIsSeedYear && logLevelDebug())
             qDebug() << "species" << id() << "has a seed year.";
         // clear seed map
         seedDispersal()->clear();
+    }
+}
+
+
+void SaplingGrowthParameters::setupReinekeLookup()
+{
+    mRepresentedClasses.clear();
+    for (int i=0;i<41;i++) {
+        double h = i/10. + 0.05; // 0.05, 0.15, 0.25, ... 4.05
+        double dbh = h / hdSapling  * 100.;
+        mRepresentedClasses.push_back(representedStemNumber(dbh));
     }
 }

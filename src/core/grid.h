@@ -45,7 +45,8 @@ class Grid {
 public:
 
     Grid();
-    Grid(int cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
+    Grid(float cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
+    /// create from a metric rect
     Grid(const QRectF rect_metric, const float cellsize) { mData=0; setup(rect_metric,cellsize); }
     // copy ctor
     Grid(const Grid<T>& toCopy);
@@ -54,19 +55,28 @@ public:
 
     bool setup(const float cellsize, const int sizex, const int sizey);
     bool setup(const QRectF& rect, const double cellsize);
-    bool setup(Grid<T>& source) {     mData = 0;  mRect = source.mRect; return setup(source.cellsize(), source.sizeX(), source.sizeY()); }
+    bool setup(const Grid<T>& source) { clear();  mRect = source.mRect; return setup(source.mRect, source.mCellsize); }
     void initialize(const T& value) {for( T *p = begin();p!=end(); ++p) *p=value; }
     void wipe(); ///< write 0-bytes with memcpy to the whole area
     void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int" ERRORNOUS!!!
     /// copies the content of the source grid to this grid.
     /// no operation, if the grids are not of the same size.
     void copy(const Grid<T> source) { if (source.count()==count()) memcpy(mData, source.mData, count()*sizeof(T)); }
+    /// create a double grid (same size as this grid) and convert this grid to double values.
+    /// NOTE: caller is responsible for freeing memory!
+    Grid<double> *toDouble() const;
 
+    // get the number of cells in x and y direction
     int sizeX() const { return mSizeX; }
     int sizeY() const { return mSizeY; }
+    // get the size of the grid in metric coordinates (x and y direction)
     float metricSizeX() const { return mSizeX*mCellsize; }
     float metricSizeY() const { return mSizeY*mCellsize; }
+    /// get the metric rectangle of the grid
     QRectF metricRect() const { return mRect; }
+    /// get the rectangle of the grid in terms of indices
+    QRect rectangle() const { return QRect(QPoint(0,0), QPoint(sizeX(), sizeY())); }
+    /// get the length of one pixel of the grid
     float cellsize() const { return mCellsize; }
     int count() const { return mCount; } ///< returns the number of elements of the grid
     bool isEmpty() const { return mData==NULL; } ///< returns false if the grid was not setup
@@ -76,12 +86,18 @@ public:
     inline const T& operator()(const int ix, const int iy) const { return constValueAtIndex(ix, iy); }
     /// access (const) using metric variables. use float.
     inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
-    inline const T& operator[] (const QPointF &p) const { return constValueAt(p); }
+    /// access value of grid with a QPoint
+    inline const T& operator[](const QPoint &p) const { return constValueAtIndex(p); }
+    /// use the square brackets to access by index
+    inline T& operator[](const int idx) const { return mData[idx]; }
+    /// use the square bracket to access by QPointF
+    inline T& operator[] (const QPointF &p) { return valueAt(p); }
 
     inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
     T& valueAtIndex(const int ix, const int iy) { return mData[iy*mSizeX + ix];  } ///< const value at position defined by indices (x,y)
     T& valueAtIndex(const int index) {return mData[index]; } ///< get a ref ot value at (one-dimensional) index 'index'.
-
+    inline int index(const int ix, const int iy) { return iy*mSizeX + ix; } ///< get the 0-based index of the cell with indices ix and iy.
+    inline int index(const QPoint &pos) { return pos.y()*mSizeX + pos.x(); } ///< get the 0-based index of the cell at 'pos'.
     /// value at position defined by a (integer) QPoint
     inline const T& constValueAtIndex(const QPoint& pos) const {return constValueAtIndex(pos.x(), pos.y()); }
     /// value at position defined by a pair of integer coordinates
@@ -95,6 +111,7 @@ public:
     T& valueAt(const float x, const float y); ///< value at position defined by metric coordinates (x,y)
     const T& constValueAt(const float x, const float y) const; ///< value at position defined by metric coordinates (x,y)
 
+
     bool coordValid(const float x, const float y) const { return x>=mRect.left() && x<mRect.right()  && y>=mRect.top() && y<mRect.bottom(); }
     bool coordValid(const QPointF &pos) const { return coordValid(pos.x(), pos.y()); }
 
@@ -103,10 +120,20 @@ public:
     QPoint indexOf(const int index) const {return QPoint(index % mSizeX,  index / mSizeX); }
     bool isIndexValid(const QPoint& pos) const { return (pos.x()>=0 && pos.x()<mSizeX && pos.y()>=0 && pos.y()<mSizeY); } ///< return true, if position is within the grid
     bool isIndexValid(const int x, const int y) const {return (x>=0 && x<mSizeX && y>=0 && y<mSizeY); } ///< return true, if index is within the grid
+
+    /// returns the index of an aligned grid (with the same size and matching origin) with the double cell size (e.g. to scale from a 10m grid to a 20m grid)
+    int index2(int idx) const {return ((idx/mSizeX)/2)*(mSizeX/2) + (idx%mSizeX)/2; }
+    /// returns the index of an aligned grid (the same size) with the 5 times bigger cells (e.g. to scale from a 2m grid to a 10m grid)
+    int index5(int idx) const {return ((idx/mSizeX)/5)*(mSizeX/5) + (idx%mSizeX)/5; }
+    /// returns the index of an aligned grid (the same size) with the 10 times bigger cells (e.g. to scale from a 2m grid to a 20m grid)
+    int index10(int idx) const {return ((idx/mSizeX)/10)*(mSizeX/10) + (idx%mSizeX)/10; }
+
     /// force @param pos to contain valid indices with respect to this grid.
     void validate(QPoint &pos) const{ pos.setX( qMax(qMin(pos.x(), mSizeX-1), 0) );  pos.setY( qMax(qMin(pos.y(), mSizeY-1), 0) );} ///< ensure that "pos" is a valid key. if out of range, pos is set to minimum/maximum values.
     /// get the (metric) centerpoint of cell with index @p pos
     QPointF cellCenterPoint(const QPoint &pos) const { return QPointF( (pos.x()+0.5)*mCellsize+mRect.left(), (pos.y()+0.5)*mCellsize + mRect.top());} ///< get metric coordinates of the cells center
+    /// get the metric cell center point of the cell given by index 'index'
+    QPointF cellCenterPoint(const int &index) const { QPoint pos=indexOf(index); return QPointF( (pos.x()+0.5)*mCellsize+mRect.left(), (pos.y()+0.5)*mCellsize + mRect.top());}
     /// get the metric rectangle of the cell with index @pos
     QRectF cellRect(const QPoint &pos) const { QRectF r( QPointF(mRect.left() + mCellsize*pos.x(), mRect.top() + pos.y()*mCellsize),
                                                    QSizeF(mCellsize, mCellsize)); return r; } ///< return coordinates of rect given by @param pos.
@@ -121,6 +148,9 @@ public:
     // modifying operations
     void add(const T& summand);
     void multiply(const T& factor);
+    /// limit each cell value to (including) min_value and (including) max_value
+    void limit(const T min_value, const T max_value);
+
     /// creates a grid with lower resolution and averaged cell values.
     /// @param factor factor by which grid size is reduced (e.g. 3 -> 3x3=9 pixels are averaged to 1 result pixel)
     /// @param offsetx, offsety: start averaging with an offset from 0/0 (e.g.: x=1, y=2, factor=3: -> 1/2-3/4 -> 0/0)
@@ -129,7 +159,7 @@ public:
     /// normalized returns a normalized grid, in a way that the sum()  = @param targetvalue.
     /// if the grid is empty or the sum is 0, no modifications are performed.
     Grid<T> normalized(const T targetvalue) const;
-    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); } ///< get a pointer to the element denoted by "x" and "y"
+    T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); } ///< get a pointer to the element indexed by "x" and "y"
     inline double distance(const QPoint &p1, const QPoint &p2); ///< distance (metric) between p1 and p2
     const QPoint randomPosition() const; ///< returns a (valid) random position within the grid
 private:
@@ -143,9 +173,12 @@ private:
     int mCount; ///< total number of cells in the grid
 };
 
+
 typedef Grid<float> FloatGrid;
 
-enum GridViewType { GridViewRainbow, GridViewRainbowReverse, GridViewGray, GridViewGrayReverse };
+enum GridViewType { GridViewRainbow=0, GridViewRainbowReverse=1, GridViewGray=2, GridViewGrayReverse=3, GridViewHeat=4,
+                    GridViewGreens=5, GridViewReds=6, GridViewBlues=7,
+                    GridViewBrewerDiv=10, GridViewBrewerQual=11, GridViewTerrain=12, GridViewCustom=14  };
 
 /** @class GridRunner is a helper class to iterate over a rectangular fraction of a grid
 */
@@ -160,9 +193,23 @@ public:
     GridRunner(Grid<T> &target_grid, const QRect &rectangle) {setup(&target_grid, rectangle);}
     GridRunner(const Grid<T> &target_grid, const QRect &rectangle) {setup(&target_grid, rectangle);}
     GridRunner(Grid<T> *target_grid, const QRect &rectangle) {setup(target_grid, rectangle);}
+    GridRunner(Grid<T> *target_grid) {setup(target_grid, target_grid->rectangle()); }
     T* next(); ///< to to next element, return NULL if finished
+    /// return the current element, or NULL
     T* current() const { return mCurrent; }
+    /// return the first element
+    T* first() const { return mFirst; }
+    /// return the last element (not one element behind the last element!)
+    T* last() const { return mLast; }
+    /// checks if the state of the GridRunner is valid, returns false if out of scope
+    bool isValid() const {return mCurrent>=mFirst && mCurrent<=mLast; }
+    /// return the (index) - coordinates of the current position in the grid
+    QPoint currentIndex() const { return mGrid->indexOf(mCurrent); }
+    /// return the coordinates of the cell center point of the current position in the grid.
+    QPointF currentCoord() const {return mGrid->cellCenterPoint(mGrid->indexOf(mCurrent));}
     void reset() { mCurrent = mFirst-1; mCurrentCol = -1; }
+    /// set the internal pointer to the pixel at index 'new_index'. The index is relative to the base grid!
+    void setPosition(QPoint new_index) { if (mGrid->isIndexValid(new_index)) mCurrent = const_cast<Grid<T> *>(mGrid)->ptr(new_index.x(), new_index.y()); else mCurrent=0; }
     // helpers
     /// fill array with pointers to neighbors (north, east, west, south)
     /// or Null-pointers if out of range.
@@ -172,12 +219,13 @@ public:
 private:
     void setup(const Grid<T> *target_grid, const QRectF &rectangle);
     void setup(const Grid<T> *target_grid, const QRect &rectangle);
+    const Grid<T> *mGrid;
     T* mFirst; // points to the first element of the grid
     T* mLast; // points to the last element of the grid
     T* mCurrent;
     size_t mLineLength;
     size_t mCols;
-    size_t mCurrentCol;
+    int mCurrentCol;
 };
 
 /** @class Vector3D is a simple 3d vector.
@@ -207,7 +255,8 @@ Grid<T>::Grid(const Grid<T>& toCopy)
 {
     mData = 0;
     mRect = toCopy.mRect;
-    setup(toCopy.cellsize(), toCopy.sizeX(), toCopy.sizeY());
+    setup(toCopy.metricRect(), toCopy.cellsize());
+    //setup(toCopy.cellsize(), toCopy.sizeX(), toCopy.sizeY());
     const T* end = toCopy.end();
     T* ptr = begin();
     for (T* i= toCopy.begin(); i!=end; ++i, ++ptr)
@@ -281,22 +330,31 @@ Grid<T>::Grid()
 {
     mData = 0; mCellsize=0.f;
     mEnd = 0;
+    mSizeX=0; mSizeY=0; mCount=0;
 }
 
 template <class T>
 bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
 {
-    mSizeX=sizex; mSizeY=sizey; mCellsize=cellsize;
-    if (mRect.isNull()) // only set rect if not set before
+    mSizeX=sizex; mSizeY=sizey;
+    if (mRect.isNull()) // only set rect if not set before (e.g. by call to setup(QRectF, double))
         mRect.setCoords(0., 0., cellsize*sizex, cellsize*sizey);
-    mCount = mSizeX*mSizeY;
+
     if (mData) {
-         delete[] mData; mData=NULL;
-     }
-   if (mCount>0)
+        // test if we can re-use the allocated memory.
+        if (mSizeX*mSizeY > mCount || mCellsize != cellsize) {
+            // we cannot re-use the memory - create new data
+            delete[] mData; mData=NULL;
+        }
+    }
+    mCellsize=cellsize;
+    mCount = mSizeX*mSizeY;
+    if (mCount==0)
+        return false;
+    if (mData==NULL)
         mData = new T[mCount];
-   mEnd = &(mData[mCount]);
-   return true;
+    mEnd = &(mData[mCount]);
+    return true;
 }
 
 template <class T>
@@ -373,7 +431,15 @@ void Grid<T>::multiply(const T& factor)
 {
     T* pend = end();
     for (T *p=begin(); p!=pend;*p*=factor,++p)
-       ;
+        ;
+}
+
+template <class T>
+void Grid<T>::limit(const T min_value, const T max_value)
+{
+    T* pend = end();
+    for (T *p=begin(); p!=pend;++p)
+        *p = *p < min_value ? min_value : (*p>max_value? max_value : *p);
 }
 
 
@@ -397,6 +463,19 @@ void  Grid<T>::wipe(const T value)
 }
 
 template <class T>
+Grid<double> *Grid<T>::toDouble() const
+{
+    Grid<double> *g = new Grid<double>();
+    g->setup(metricRect(), cellsize());
+    if (g->isEmpty())
+        return g;
+    double *dp = g->begin();
+    for (T *p=begin(); p!=end(); ++p, ++dp)
+        *dp = *p;
+    return g;
+}
+
+template <class T>
 double Grid<T>::distance(const QPoint &p1, const QPoint &p2)
 {
     QPointF fp1=cellCenterPoint(p1);
@@ -408,7 +487,7 @@ double Grid<T>::distance(const QPoint &p1, const QPoint &p2)
 template <class T>
 const QPoint Grid<T>::randomPosition() const
 {
-    return QPoint(irandom(0,mSizeX-1), irandom(0, mSizeY-1));
+    return QPoint(irandom(0,mSizeX), irandom(0, mSizeY));
 }
 
 ////////////////////////////////////////////////////////////
@@ -427,6 +506,7 @@ void GridRunner<T>::setup(const Grid<T> *target_grid, const QRect &rectangle)
     mCols = lower_right.x() - upper_left.x(); //
     mLineLength =  target_grid->sizeX() - mCols;
     mCurrentCol = -1;
+    mGrid = target_grid;
 //    qDebug() << "GridRunner: rectangle:" << rectangle
 //             << "upper_left:" << target_grid.cellCenterPoint(target_grid.indexOf(mCurrent))
 //             << "lower_right:" << target_grid.cellCenterPoint(target_grid.indexOf(mLast));
@@ -448,7 +528,7 @@ T* GridRunner<T>::next()
     mCurrent++;
     mCurrentCol++;
 
-    if (mCurrentCol >= mCols) {
+    if (mCurrentCol >= int(mCols)) {
         mCurrent += mLineLength; // skip to next line
         mCurrentCol = 0;
     }
@@ -460,7 +540,8 @@ T* GridRunner<T>::next()
 
 template <class T>
 /// get pointers the the 4-neighborhood
-/// north, east, south, west
+/// north, east, west, south
+/// 0-pointers are returned for edge pixels.
 void GridRunner<T>::neighbors4(T** rArray)
 {
     // north:
@@ -468,12 +549,13 @@ void GridRunner<T>::neighbors4(T** rArray)
     // south:
     rArray[3] = mCurrent - (mCols + mLineLength) < mFirst?0: mCurrent -  (mCols + mLineLength);
     // east / west
-    rArray[1] = mCurrentCol<mCols? mCurrent + 1 : 0;
+    rArray[1] = mCurrentCol+1<int(mCols)? mCurrent + 1 : 0;
     rArray[2] = mCurrentCol>0? mCurrent-1 : 0;
 }
 
 /// get pointers to the 8-neighbor-hood
 /// north/east/west/south/NE/NW/SE/SW
+/// 0-pointers are returned for edge pixels.
 template <class T>
 void GridRunner<T>::neighbors8(T** rArray)
 {

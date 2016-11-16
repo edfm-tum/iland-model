@@ -18,8 +18,11 @@
 ********************************************************************************************/
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 #include <QtXml>
+#include <QQuickView>
+#include <QQmlEngine>
+#include <QQmlContext>
 
 #include <signal.h>
 
@@ -35,8 +38,15 @@
 #include "speciesset.h"
 #include "tree.h"
 #include "species.h"
+#include "seeddispersal.h"
+#include "saplings.h"
+#include "climate.h"
 
 #include "exception.h"
+#include "helper.h"
+#include "colors.h"
+#include "debugtimer.h"
+#include "statdata.h"
 
 #include "paintarea.h"
 
@@ -48,10 +58,13 @@
 #include "tests.h"
 #include "mapgrid.h"
 #include "layeredgrid.h"
+#include "dem.h"
+
+#include "forestmanagementengine.h" // ABE
 
 // global settings
-QDomDocument xmldoc;
-QDomNode xmlparams;
+static QDomDocument xmldoc;
+static QDomNode xmlparams;
 
 /** @class MainWindow
    @ingroup GUI
@@ -72,10 +85,10 @@ double nrandom(const float& p1, const float& p2)
     return p1 + (p2-p1)*(rand()/float(RAND_MAX));
 }
 
-bool showDebugMessages=true;
-QStringList bufferedMessages;
-bool doBufferMessages = false;
-bool doLogToWindow = false;
+static bool showDebugMessages=true;
+static QStringList bufferedMessages;
+static bool doBufferMessages = false;
+static bool doLogToWindow = false;
 void logToWindow(bool mode)
 {
    doLogToWindow = mode;
@@ -88,49 +101,57 @@ public:
 };
 
 
-QMutex qdebug_mutex;
+static QMutex qdebug_mutex;
 void dumpMessages();
-void myMessageOutput(QtMsgType type, const char *msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
 
+    Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
+     //QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
-     case QtDebugMsg:
+    case QtDebugMsg:
         if (showDebugMessages) {
-            bufferedMessages.append(QString(msg));
+            if (qstrcmp(context.category, "default")!=0)
+                bufferedMessages.append(QString("%1: %2").arg(context.category).arg(msg));
+            else
+                bufferedMessages.append(QString(msg));
         }
 
-         break;
-     case QtWarningMsg:
-         //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
-         //MainWindow::logSpace()->ensureCursorVisible();
-          bufferedMessages.append(QString(msg));
-         break;
-     case QtCriticalMsg:
-         fprintf(stderr, "Critical: %s\n", msg);
-         break;
-     case QtFatalMsg:
-         fprintf(stderr, "Fatal: %s\n", msg);
-         bufferedMessages.append(QString(msg));
+        break;
+    case QtWarningMsg:
+    //case QtInfoMsg:
+        //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
+        //MainWindow::logSpace()->ensureCursorVisible();
+        bufferedMessages.append(msg);
+        break;
+    case QtCriticalMsg: {
+        QByteArray localMsg = msg.toLocal8Bit();
+        fprintf(stderr, "Critical: %s\n", localMsg.constData());
+        break; }
+    case QtFatalMsg: {
+        QByteArray localMsg = msg.toLocal8Bit();
+        fprintf(stderr, "Fatal: %s\n", localMsg.constData());
+        bufferedMessages.append(msg);
 
-         QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
-         Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
-         dumpMessages();
-         Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
-
-     }
+        QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
+        Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
+        dumpMessages();
+        Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
+    }
+    }
      if (!doBufferMessages || bufferedMessages.count()>5000)
              dumpMessages();
  }
 
-QMutex dump_message_mutex;
+static QMutex dump_message_mutex;
 void dumpMessages()
 {
     QMutexLocker m(&dump_message_mutex); // serialize access
     // 2011-03-08: encountered "strange" crashes
     // when a warning within Qt lead to a infinite loop/deadlock (also caused by mutex locking)
     // now we prevent this by installing temporarily a 0-handler
-    qInstallMsgHandler(0);
+    qInstallMessageHandler(0);
 
     if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
@@ -150,7 +171,7 @@ void dumpMessages()
     }
 
     bufferedMessages.clear();
-    qInstallMsgHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
 }
 
 
@@ -228,8 +249,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->pbResults->setMenu(ui->menuOutput_menu);
 
     mLogSpace = ui->logOutput;
-    mLogSpace->setMaximumBlockCount(10000); // set a maximum for the in-GUI size of messages.
-    qInstallMsgHandler(myMessageOutput);
+    mLogSpace->setMaximumBlockCount(1000000); // set a maximum for the in-GUI size of messages. // removed in Qt5 (because it works ;) )
+    qInstallMessageHandler(myMessageOutput);
     // install signal handler
     signal( SIGSEGV, handle_signal );
 
@@ -257,7 +278,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (!xmldoc.setContent(xmlFile, &errMsg, &errLine, &errCol)) {
             QMessageBox::information(this, "title text", QString("Cannot set content of XML file %1. \nat line %2 col %3: %4 ")
                                      .arg(ui->initFileName->text()).arg(errLine).arg(errCol).arg(errMsg));
-            return;
+            //return;
         }
     }
 
@@ -304,11 +325,34 @@ MainWindow::MainWindow(QWidget *parent)
         QTimer::singleShot(3000, this, SLOT(automaticRun()));
     }
 
+    // to silence some warnings during startup - maybe not required (anymore):
+    qRegisterMetaType<QTextBlock>("QTextBlock");
+    qRegisterMetaType<QTextCursor>("QTextCursor");
+
+    ui->iniEdit->setVisible(false);
+    ui->editStack->setTabEnabled(3,false); // the "other" tab
+    // qml setup
+    QQuickView *view = new QQuickView();
+    mRuler = view;
+    QWidget *container = QWidget::createWindowContainer(view, this);
+    mRulerColors = new Colors();
+    view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
+    view->setResizeMode(QQuickView::SizeRootObjectToView);
+    ui->pbReloadQml->setVisible(false); // enable for debug...
+    //view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
+    view->setSource(QUrl("qrc:/qml/ruler.qml"));
+    //view->show();
+    ui->qmlRulerLayout->addWidget(container);
+    ui->qmlRulerLayout->addWidget(container);
+//    QDir d(":/qml");
+//    qDebug() << d.entryList();
+
 }
 
 
 MainWindow::~MainWindow()
 {
+    mRemoteControl.destroy(); // delete model and free resources.
     delete ui;
 }
 
@@ -343,8 +387,6 @@ void MainWindow::automaticRun()
     // "1" means in Globals.year that we are in the 1st year.
     // the simulation stops when reaching the count+1 year.
     mRemoteControl.run(count + 1);
-    // process debug outputs...
-    saveDebugOutputs();
 
     // see the finsished() slot
 }
@@ -361,9 +403,9 @@ void MainWindow::checkModelState()
 {
     ui->actionModelCreate->setEnabled(mRemoteControl.canCreate()&& !mRemoteControl.isRunning());
     ui->actionModelDestroy->setEnabled(mRemoteControl.canDestroy() && !mRemoteControl.isRunning());
-    ui->actionModelRun->setEnabled(mRemoteControl.canRun( )&& !mRemoteControl.isPaused() && !mRemoteControl.isRunning());
+    ui->actionModelRun->setEnabled(mRemoteControl.canRun() && !mRemoteControl.isPaused() && !mRemoteControl.isRunning());
     ui->actionRun_one_year->setEnabled(mRemoteControl.canRun() && !mRemoteControl.isPaused()&& !mRemoteControl.isRunning());
-    ui->actionReload->setEnabled(mRemoteControl.canDestroy()&& !mRemoteControl.isRunning());
+    ui->actionReload->setEnabled(mRemoteControl.canDestroy() && !mRemoteControl.isRunning());
     ui->actionStop->setEnabled(mRemoteControl.isRunning());
     ui->actionPause->setEnabled(mRemoteControl.isRunning());
     ui->actionPause->setText(mRemoteControl.isPaused()?"Continue":"Pause");
@@ -371,13 +413,6 @@ void MainWindow::checkModelState()
 }
 
 
-void MainWindow::on_saveFile_clicked()
-{
-    QString content = ui->iniEdit->toPlainText();
-    if (!content.isEmpty())
-         Helper::saveToTextFile(ui->initFileName->text(), content);
-
-}
 
 
 void MainWindow::readwriteCycle()
@@ -421,7 +456,7 @@ void MainWindow::updatePaintGridList()
 {
     ui->paintGridBox->clear();
     ui->paintGridBox->addItem("<none>", "");
-    QHash<QString, PaintObject>::const_iterator i = mPaintList.begin();
+    QMap<QString, PaintObject>::const_iterator i = mPaintList.begin();
     while (i!=mPaintList.constEnd()) {
         ui->paintGridBox->addItem(i.key(),i.key());
         ++i;
@@ -430,18 +465,35 @@ void MainWindow::updatePaintGridList()
 
 void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
 {
-    const QStringList names = layer->names();
+    const QVector<LayeredGridBase::LayerElement> &names = const_cast<LayeredGridBase*>(layer)->names();
     int layer_id = 0;
-    foreach (const QString &layername, names) {
-        QString comb_name = QString("%1 - %2").arg(name, layername);
+    QString current_layer = mPaintNext.name;
+    foreach (const LayeredGridBase::LayerElement &layername, names) {
+        QString comb_name = QString("%1 - %2").arg(name, layername.name);
         PaintObject po;
         po.what = PaintObject::PaintLayers;
+        po.view_type = layername.view_type;
         po.layered = layer;
         po.layer_id = layer_id++;
+        po.name = layername.name;
         po.auto_range = true;
         mPaintList[comb_name] = po;
+        if (current_layer == po.name)
+            mPaintNext.what = PaintObject::PaintHeightGrid;
     }
     updatePaintGridList();
+}
+
+void MainWindow::removeLayers(const LayeredGridBase *layer)
+{
+    QMap<QString, PaintObject>::iterator it=mPaintList.begin();
+    while(it!=mPaintList.end())
+        if (it->layered == layer)
+            it = mPaintList.erase(it);
+        else
+            ++it;
+    if (mPaintNext.layered == layer)
+        mPaintNext.what = PaintObject::PaintHeightGrid;
 }
 
 
@@ -481,6 +533,7 @@ void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
     mPaintNext.max_value=max_val;
     mPaintNext.float_grid = grid;
     mPaintNext.view_type = view_type;
+    mPaintNext.name = name;
     if (!name.isEmpty()) {
         mPaintList[name] = mPaintNext;
         updatePaintGridList();
@@ -510,6 +563,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool species_color = ui->visSpeciesColor->isChecked();
     bool show_ru = ui->visResourceUnits->isChecked();
     bool show_regeneration = ui->visRegeneration->isChecked();
+    bool show_seedmaps = ui->visSeeds->isChecked();
     bool other_grid = ui->visOtherGrid->isChecked();
 
     if (other_grid) {
@@ -521,11 +575,15 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
 
         if (mPaintNext.what != PaintObject::PaintNothing) {
-            if (mPaintNext.what == PaintObject::PaintMapGrid)
+            if (mPaintNext.what == PaintObject::PaintMapGrid) {
+                mRulerColors->setCaption(mPaintNext.name);
                 paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+            }
 
-            if (mPaintNext.what == PaintObject::PaintFloatGrid)
+            if (mPaintNext.what == PaintObject::PaintFloatGrid) {
+                mRulerColors->setCaption(mPaintNext.name);
                 paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+            }
 
             if (mPaintNext.what == PaintObject::PaintLayers)
                 paintGrid(painter, mPaintNext);
@@ -540,13 +598,14 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     // draw rectangle around the grid
     QRectF r = grid->metricRect();
     QRect rs = vp.toScreen(r);
-    painter.setPen(Qt::black);
+    painter.setPen(Qt::darkGray);
     painter.drawRect(rs);
-    // qDebug() << rs;
+    //qDebug() << rs;
 
     // what to paint??
 
     float maxval=1.f; // default maximum
+    float minval=0.f;
     if (!auto_scale_color)
         maxval =grid->max();
     if (maxval==0.)
@@ -562,6 +621,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     if (show_fon ) {
 
         // start from each pixel and query value in grid for the pixel
+        mRulerColors->setCaption("Light Influence Field", "value of the LIF at 2m resolution.");
+        mRulerColors->setPalette(GridViewRainbowReverse,0., maxval); // ruler
+        if (!mRulerColors->autoScale()) {
+            maxval = static_cast<float>( mRulerColors->maxValue());
+            minval = static_cast<float>( mRulerColors->minValue() );
+        }
         int x,y;
         int sizex = rect.width();
         int sizey = rect.height();
@@ -573,7 +638,35 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 world = vp.toWorld(QPoint(x,y));
                 if (grid->coordValid(world)) {
                     value = grid->valueAt(world);
-                    col = Helper::colorFromValue(value, 0., maxval, true).rgb();
+                    col = Colors::colorFromValue(value, minval, maxval,true).rgb();
+                    img.setPixel(x,y,col);
+                }
+            }
+
+    }
+
+    if (show_seedmaps) {
+        if (species.isEmpty()) {
+            qDebug() << "Please select a species!";
+            return;
+        }
+        int x,y;
+        mRulerColors->setCaption("Seed availability", QString("seed availability of species %1").arg(species));
+        mRulerColors->setPalette(GridViewRainbow,0., 1.); // ruler
+        int sizex = rect.width();
+        int sizey = rect.height();
+        QPointF world;
+        QRgb col;
+        QImage &img = ui->PaintWidget->drawImage();
+        const Grid<float> &grid = GlobalSettings::instance()->model()->speciesSet()->species(species)->seedDispersal()->seedMap();
+        QRgb gray_bg = QColor(100,100,100).rgb();
+
+        for (x=0;x<sizex;x++)
+            for (y=0;y<sizey;y++) {
+                world = vp.toWorld(QPoint(x,y));
+                if (grid.coordValid(world)) {
+                    value = grid.constValueAt(world);
+                    col = value>0.f ? Colors::colorFromValue(value, 0., 1., false).rgb() : gray_bg;
                     img.setPixel(x,y,col);
                 }
             }
@@ -584,34 +677,64 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         if (mRegenerationGrid.isEmpty())
             mRegenerationGrid.setup(*model->grid()); // copy
+        if (!GlobalSettings::instance()->model()->saplings())
+            return;
         static int last_year=0;
         static QString last_species="";
-        if (last_year!=GlobalSettings::instance()->currentYear() || species!=last_species) {
+        static bool last_regen_mode=false;
+        if (last_year!=GlobalSettings::instance()->currentYear() || species!=last_species || ui->visRegenNew->isChecked()!=last_regen_mode) {
             last_year=GlobalSettings::instance()->currentYear();
             last_species=species;
+            bool draw_established = ui->visRegenNew->isChecked();
+            last_regen_mode = draw_established;
             // fill grid...
             DebugTimer t("create regeneration map...");
             mRegenerationGrid.wipe(0.f);
-            foreach(const ResourceUnit *ru, model->ruList()) {
-                foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
-                    if (species.isEmpty() || rus->species()->id() == species)
-                        rus->visualGrid(mRegenerationGrid);
+            if (species.isEmpty()) {
+                // hmax of all species
+                for (float *rg=mRegenerationGrid.begin();rg!=mRegenerationGrid.end(); ++rg) {
+                    SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(mRegenerationGrid.indexOf(rg));
+                    if (sc) {
+                        if (draw_established)
+                            *rg = sc->has_new_saplings() ? 1.f : 0.f;
+                        else
+                            *rg = sc->max_height();
+                    }
+
+                }
+            } else {
+                // filter a specific species
+                int sidx = GlobalSettings::instance()->model()->speciesSet()->species(species)->index();
+                for (float *rg=mRegenerationGrid.begin(); rg!=mRegenerationGrid.end(); ++rg) {
+                    SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(mRegenerationGrid.indexOf(rg));
+                    if (sc) {
+                        SaplingTree *st=sc->sapling(sidx);
+                        if (st) {
+                            if (draw_established)
+                                *rg = st->is_occupied() && st->age<2 ? 1.f : 0.f;
+                            else
+                                *rg = st ? st->height : 0.f;
+                        }
+                    }
                 }
             }
         }
         // start from each pixel and query value in grid for the pixel
         int x,y;
+        mRulerColors->setCaption("Regeneration Layer", "max. tree height of regeneration layer (blue=0m, red=4m)");
+        mRulerColors->setPalette(GridViewRainbow,0., 4.); // ruler
         int sizex = rect.width();
         int sizey = rect.height();
         QPointF world;
         QRgb col;
         QImage &img = ui->PaintWidget->drawImage();
+
         for (x=0;x<sizex;x++)
             for (y=0;y<sizey;y++) {
                 world = vp.toWorld(QPoint(x,y));
                 if (mRegenerationGrid.coordValid(world)) {
                     value = mRegenerationGrid.valueAt(world);
-                    col = Helper::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
+                    col = Colors::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
                     img.setPixel(x,y,col);
                 }
             }
@@ -619,11 +742,18 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     if (show_dom) {
         // paint the lower-res-grid;
-        float max_val = 50.;
+        float max_val = 50.f;
+        float min_val = 0.f;
         if (auto_scale_color) {
             max_val = 0.;
             for (HeightGridValue *v = domGrid->begin(); v!=domGrid->end(); ++v)
                 max_val = qMax(max_val, v->height);
+        }
+        mRulerColors->setCaption("Dominant height (m)", "dominant tree height on 10m pixel.");
+        mRulerColors->setPalette(GridViewRainbow,0., max_val); // ruler
+        if (!mRulerColors->autoScale()) {
+            min_val = static_cast<float>( mRulerColors->minValue() );
+            max_val = static_cast<float>( mRulerColors->maxValue() );
         }
         for (iy=0;iy<domGrid->sizeY();iy++) {
             for (ix=0;ix<domGrid->sizeX();ix++) {
@@ -632,16 +762,16 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 if (hgv.isValid()) {
                     value = domGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(domGrid->cellRect(p));
-                    fill_color = Helper::colorFromValue(value, 0., max_val); // 0..50m
+                    fill_color = Colors::colorFromValue(value, 0., max_val); // 0..50m
                     painter.fillRect(r, fill_color);
                 }
                 // areas "outside" are drawn as gray.
                 if (hgv.isForestOutside()) {
                     QRect r = vp.toScreen(domGrid->cellRect(p));
                     if (hgv.isRadiating())
-                        painter.fillRect(r, Qt::darkGray);
-                    else
                         painter.fillRect(r, Qt::gray);
+                    else
+                        painter.fillRect(r, QColor(240,240,240));
 
                 }
             }
@@ -657,28 +787,97 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
         Expression ru_value(ru_expr, &ru_wrapper);
         ru_value.setCatchExceptions(); // silent catching...
+
+        species_color = ui->visRUSpeciesColor->isChecked();
+        const Species *drawspecies=0;
+        GridViewType view_type = GridViewRainbow;
+        if (species_color) {
+            drawspecies = model->speciesSet()->species(species);
+            view_type = GridViewGreens;
+        }
+
         double min_value = 0.;
         double max_value = 1.; // defaults
         double value;
-        if (auto_scale_color) {
+        if (!mRulerColors->autoScale()) {
+            max_value = mRulerColors->maxValue();
+            min_value = mRulerColors->minValue();
+
+        } else if (auto_scale_color) {
             min_value = 9999999999999999999.;
             max_value = -999999999999999999.;
             foreach (const ResourceUnit *ru, model->ruList()) {
-                ru_wrapper.setResourceUnit(ru);
-                value = ru_value.execute();
+                if (species_color && drawspecies) {
+                    value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
+                } else {
+                    ru_wrapper.setResourceUnit(ru);
+                    value = ru_value.execute();
+                }
                 min_value = qMin(min_value, value);
                 max_value = qMax(max_value, value);
             }
             qDebug() << "scale colors: min" << min_value << "max:" << max_value;
         }
 
+        if (species_color) {
+            if (drawspecies) {
+                drawspecies = model->speciesSet()->species(species);
+                mRulerColors->setCaption("Species share", QString("Species: '%1'").arg(species));
+                mRulerColors->setPalette(GridViewGreens, static_cast<float>(min_value), static_cast<float>(max_value)); // ruler
+            } else {
+                mRulerColors->setCaption("Dominant species on resource unit", "The color indicates the species with the biggest share of basal area. \nDashed fill, if the basal area of the max-species is <50%.");
+                QList<const Species*> specieslist=mRemoteControl.availableSpecies();
+                QStringList colors; QStringList speciesnames;
+                for (int i=0; i<specieslist.count();++i) {
+                    colors.append(specieslist[i]->displayColor().name());
+                    speciesnames.append(specieslist[i]->name());
+                }
+                mRulerColors->setFactorColors(colors);
+                mRulerColors->setFactorLabels(speciesnames);
+                mRulerColors->setPalette(GridViewCustom, 0., 1.);
+            }
+        } else {
+            mRulerColors->setCaption("Resource Units", QString("Result of expression: '%1'").arg(ru_expr));
+            mRulerColors->setPalette(GridViewRainbow, static_cast<float>(min_value), static_cast<float>(max_value)); // ruler
+        }
+
         // paint resource units
+        painter.setPen(Qt::black);
         foreach (const ResourceUnit *ru, model->ruList()) {
-            ru_wrapper.setResourceUnit(ru);
+            bool stroke = false;
+            if (species_color) {
+                if (drawspecies) {
+                    value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
+                    fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
+                } else {
+                    const Species *max_sp=0; double max_ba = 0.; double total_ba=0.;
+                    foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
+                        total_ba += rus->constStatistics().basalArea();
+                        if (rus->constStatistics().basalArea()>max_ba) {
+                            max_ba = rus->constStatistics().basalArea();
+                            max_sp=rus->species();
+                        }
+                    }
+                    if (max_sp) {
+                        fill_color = max_sp->displayColor();
+                        if (max_ba < total_ba*0.5) {
+                            stroke = true;
+                        }
+                    } else
+                        fill_color = Qt::white;
+                }
+            } else {
+                ru_wrapper.setResourceUnit(ru);
+                value = ru_value.execute();
+                fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
+            }
             QRect r = vp.toScreen(ru->boundingBox());
-            value = ru_value.execute();
-            fill_color = Helper::colorFromValue(value, min_value, max_value);
-            painter.fillRect(r, fill_color);
+            //fill_color = Colors::colorFromValue(value, min_value, max_value);
+            //fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
+            if (stroke)
+                painter.fillRect(r, QBrush(fill_color, Qt::Dense3Pattern));
+            else
+                painter.fillRect(r, fill_color);
         }
         if (!ru_value.lastError().isEmpty())
             qDebug() << "Expression error while painting: " << ru_value.lastError();
@@ -705,6 +904,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         AllTreeIterator treelist(model);
         Tree *tree;
         painter.setPen(Qt::gray);
+        double max_val=1., min_val=0.;
+        if (!mRulerColors->autoScale()) {
+            max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
+        }
+
         while ((tree = treelist.next())) {
             if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
                 continue;
@@ -733,22 +937,39 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             } else {
                 // calculate expression
                 tw.setTree(tree);
-                value = tree_value.execute();
-                fill_color = Helper::colorFromValue(value, 0., 1., false);
+                value = static_cast<float>(tree_value.execute());
+                fill_color = Colors::colorFromValue(value, static_cast<float>(min_val), static_cast<float>(max_val), false);
             }
             if (draw_transparent)
-                fill_color.setAlpha(50); // 50%
+                fill_color.setAlpha(80); // 50%
             painter.setBrush(fill_color);
             int diameter = qMax(1,vp.meterToPixel( tree->crownRadius()));
             painter.drawEllipse(p, diameter, diameter);
         }
         if (!tree_value.lastError().isEmpty())
             qDebug() << "Expression error while painting: " << tree_value.lastError();
+        // ruler
+        if (species_color) {
+            mRulerColors->setCaption("Single trees", "species specific colors.");
+            QList<const Species*> specieslist=mRemoteControl.availableSpecies();
+            QStringList colors; QStringList speciesnames;
+            for (int i=0; i<specieslist.count();++i) {
+                colors.append(specieslist[i]->displayColor().name());
+                speciesnames.append(specieslist[i]->name());
+            }
+            mRulerColors->setFactorColors(colors);
+            mRulerColors->setFactorLabels(speciesnames);
+            mRulerColors->setPalette(GridViewCustom, 0., 1.);
+        } else {
+            mRulerColors->setCaption("Single trees", QString("result of expression: '%1'").arg(single_tree_expr));
+            mRulerColors->setPalette(GridViewRainbow, 0., 1.);
+
+        }
 
     } // if (show_trees)
 
     // highlight selected tree
-    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
+    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
     if (t) {
         QPointF pos = t->position();
         painter.setPen(Qt::black);
@@ -761,6 +982,10 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
 {
     painter.fillRect(ui->PaintWidget->rect(), object.background_color);
     bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
+    bool shading = ui->visShading->isChecked();
+    if (!mRemoteControl.model() || !mRemoteControl.model()->dem())
+         shading=false;
+
 
     int sx=0, sy=0;
     QRect total_rect;
@@ -771,11 +996,13 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
         sx = object.map_grid->grid().sizeX();
         sy = object.map_grid->grid().sizeY();
         total_rect = vp.toScreen(object.map_grid->grid().metricRect());
+        mRulerColors->setCaption("Map grid");
         break;
     case PaintObject::PaintFloatGrid:
         sx = object.float_grid->sizeX();
         sy = object.float_grid->sizeY();
         total_rect = vp.toScreen(object.float_grid->metricRect());
+        mRulerColors->setCaption("Floating point grid");
         break;
     case PaintObject::PaintLayers:
         sx = object.layered->sizeX();
@@ -784,9 +1011,17 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
         if (object.auto_range) {
             object.layered->range( object.cur_min_value, object.cur_max_value, object.layer_id );
         }
+        mRulerColors->setCaption(const_cast<LayeredGridBase*>(object.layered)->names()[object.layer_id].name,
+                const_cast<LayeredGridBase*>(object.layered)->names()[object.layer_id].description);
         break;
     case PaintObject::PaintNothing:
+        mRulerColors->setCaption("-");
         return;
+    default: return;
+    }
+    if (!mRulerColors->autoScale()) {
+        object.cur_max_value = mRulerColors->maxValue();
+        object.cur_min_value = mRulerColors->minValue();
     }
 
 
@@ -794,13 +1029,12 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     painter.setPen(Qt::black);
     painter.drawRect(total_rect);
 
-    bool reverse = object.view_type == GridViewRainbowReverse || object.view_type == GridViewGrayReverse;
-    bool black_white = object.view_type == GridViewGray || object.view_type == GridViewGrayReverse;
 
     int ix,iy;
     double value=0.;
     QRect r;
     QColor fill_color;
+    double max_value = -1.;
     QPointF pmetric;
     for (iy=0;iy<sy;iy++) {
         for (ix=0;ix<sx;ix++) {
@@ -820,6 +1054,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
             case PaintObject::PaintLayers:
                 value = object.layered->value(ix, iy, object.layer_id);
                 pmetric = object.layered->cellRect(p).center();
+                max_value = qMax(max_value, value);
                 r = vp.toScreen(object.layered->cellRect(p));
                 break;
             default: ;
@@ -827,11 +1062,21 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
             if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(pmetric).isValid()) {
                 fill_color = Qt::white;
             } else {
-                fill_color = Helper::colorFromValue(value, object.cur_min_value, object.cur_max_value, reverse,black_white);
+                fill_color = Colors::colorFromValue(value, object.view_type, object.cur_min_value, object.cur_max_value);
+                if (shading)
+                    fill_color = Colors::shadeColor(fill_color, pmetric, mRemoteControl.model()->dem());
             }
             painter.fillRect(r, fill_color);
         }
     }
+    // update ruler
+    if (object.view_type>=10) {
+        QStringList labels;
+        for (int i=0;i<max_value;++i)
+            labels.append(object.layered->labelvalue(i,object.layer_id));
+        mRulerColors->setFactorLabels(labels);
+    }
+    mRulerColors->setPalette(object.view_type, object.cur_min_value, object.cur_max_value); // ruler
 
 }
 
@@ -869,6 +1114,12 @@ void MainWindow::paintMapGrid(QPainter &painter,
     double value;
     QRect r;
     QColor fill_color;
+
+    if (view_type<10)
+        mRulerColors->setPalette(view_type,min_val, max_val); // ruler
+    else
+        mRulerColors->setPalette(view_type, 0, max_val); // ruler
+
     bool reverse = view_type == GridViewRainbowReverse || view_type == GridViewGrayReverse;
     bool black_white = view_type == GridViewGray || view_type == GridViewGrayReverse;
     for (iy=0;iy<sy;iy++) {
@@ -881,7 +1132,7 @@ void MainWindow::paintMapGrid(QPainter &painter,
                 value = float_grid->constValueAtIndex(p);
                 r = vp.toScreen(float_grid->cellRect(p));
             }
-            fill_color = Helper::colorFromValue(value, min_val, max_val, reverse,black_white);
+            fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
             painter.fillRect(r, fill_color);
         }
     }
@@ -893,6 +1144,7 @@ void MainWindow::repaintArea(QPainter &painter)
      paintFON(painter, ui->PaintWidget->rect());
     // fix viewpoint
     vp.setScreenRect(ui->PaintWidget->rect());
+    mRulerColors->setScale(vp.pixelToMeter(1));
 }
 
 
@@ -902,6 +1154,9 @@ void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
 bool wantDrag=false;
 void MainWindow::mouseClick(const QPoint& pos)
 {
+    if (!mRemoteControl.canRun())
+        return;
+
     QPointF coord=vp.toWorld(pos);
     //qDebug() << "to world:" << coord;
     wantDrag = false;
@@ -909,17 +1164,23 @@ void MainWindow::mouseClick(const QPoint& pos)
     Model *model = mRemoteControl.model();
     ResourceUnit *ru = model->ru(coord);
     // find adjactent tree
-    if (!mRemoteControl.canRun())
-        return;
 
+    // test ressource units...
     if (ui->visResourceUnits->isChecked()) {
         if (!ru) return;
         showResourceUnitDetails(ru);
         return;
     }
-    // test ressource units...
 
+    // test for ABE grid
+    if (ui->visOtherGrid->isChecked()) {
+        if (showABEDetails(coord))
+            return;
+    }
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
+    if (!ru)
+        return;
+
     ui->treeChange->setProperty("tree",0);
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
@@ -938,7 +1199,7 @@ void MainWindow::mouseClick(const QPoint& pos)
             //qDebug() <<p->dump();
             showTreeDetails(p);
 
-            ui->treeChange->setProperty("tree", (int)p);
+            ui->treeChange->setProperty("tree", qVariantFromValue((void*)p));
             ui->treeDbh->setValue(p->dbh());
             ui->treeHeight->setValue(p->height());
             ui->treePosX->setValue(p->position().x());
@@ -961,6 +1222,10 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
     foreach(QString name, names) {
         items.append(new QTreeWidgetItem(QStringList()<<name<<QString::number(ruw.valueByName(name)) ));
     }
+    // add special values (strings)
+    if (ru->climate())
+        items.append(new QTreeWidgetItem(QStringList()<<"climate"<<ru->climate()->name() ));
+
     QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(-ru->index()); // hack: use negative values for resource units
 
     QList<QPair<QString, QVariant> >::const_iterator i = dbgdata.constBegin();
@@ -972,6 +1237,38 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
         ++i;
      }
     ui->dataTree->addTopLevelItems(items);
+}
+
+bool MainWindow::showABEDetails(const QPointF &coord)
+{
+    if (!mRemoteControl.canRun()) return false;
+    if (mPaintNext.layered) {
+        if (mPaintNext.layered->onClick(coord))
+            return true;
+    }
+    if (!mPaintNext.layered || !mRemoteControl.model()->ABEngine()) return false;
+    QString grid_name = mPaintNext.name;
+    QStringList list = mRemoteControl.model()->ABEngine()->evaluateClick(coord, grid_name);
+
+    ui->dataTree->clear();
+    QList<QTreeWidgetItem *> items;
+    QStack<QTreeWidgetItem*> stack;
+    stack.push(0);
+    foreach (QString s, list) {
+        QStringList elem = s.split(":");
+        if (s=="-")
+            stack.push(items.back());
+        else if (s=="/-")
+            stack.pop();
+        else  {
+            items.append( new QTreeWidgetItem(stack.last(), elem) );
+        }
+    }
+    ui->dataTree->addTopLevelItems(items);
+    return true; // handled
+
+
+
 }
 
 
@@ -1004,7 +1301,7 @@ void MainWindow::showTreeDetails(Tree *tree)
 void MainWindow::mouseMove(const QPoint& pos)
 {
 
-    if (!mRemoteControl.canRun())
+    if (!mRemoteControl.canRun() )
         return;
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);
@@ -1022,6 +1319,12 @@ void MainWindow::mouseMove(const QPoint& pos)
                 break;
             case PaintObject::PaintLayers:
                 value = mPaintNext.layered->value(p, mPaintNext.layer_id);
+                if (mPaintNext.view_type>=10) {// classes
+                   location += QString("\n %1").arg(mPaintNext.layered->labelvalue(value, mPaintNext.layer_id));
+                   ui->fonValue->setText(location);
+                   return;
+                }
+
                 break;
             default: has_value = false;
             }
@@ -1042,6 +1345,11 @@ void MainWindow::mouseMove(const QPoint& pos)
             location += QString("\n %1").arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height);
         if( ui->visRegeneration->isChecked() && !mRegenerationGrid.isEmpty())
             location += QString("\n %1").arg(mRegenerationGrid.valueAt(p));
+        if (ui->visSeeds->isChecked() && ui->speciesFilterBox->currentIndex()>-1) {
+            Species *s=GlobalSettings::instance()->model()->speciesSet()->species(ui->speciesFilterBox->itemData(ui->speciesFilterBox->currentIndex()).toString());
+            if (s && s->seedDispersal())
+              location += QString("\n %1").arg(s->seedDispersal()->seedMap().constValueAt(p));
+        }
 
         ui->fonValue->setText(location);
     }
@@ -1066,7 +1374,7 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
     }
     wantDrag = false;
     qDebug() << "drag from" << from << "to" << to;
-    Tree *t = (Tree*) ui->treeChange->property("tree").toInt();
+    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
     if (!t)
         return;
     QPointF pos = vp.toWorld(to);
@@ -1091,19 +1399,28 @@ void MainWindow::yearSimulated(int year)
     checkModelState();
     ui->modelRunProgress->setValue(year);
     labelMessage(QString("Running.... year %1 of %2.").arg(year).arg(mRemoteControl.totalYears()));
+    ui->treeChange->setProperty("tree",0);
     ui->PaintWidget->update();
     QApplication::processEvents();
 }
 
 void MainWindow::modelFinished(QString errorMessage)
 {
-    qDebug() << "Finished!";
-    labelMessage("Finished!!");
+    if (!errorMessage.isEmpty()) {
+        Helper::msg(errorMessage);
+        labelMessage("Error!");
+        qDebug() << "Error:" << errorMessage;
+    } else {
+        qDebug() << "Finished!";
+        labelMessage("Finished!!");
+    }
 
     checkModelState();
     if (windowTitle().contains("batch")) {
         // we are in automatic batch mode.
         // we should therefore close down the application.
+        if (!errorMessage.isEmpty())
+            batchLog(QString("error: %1").arg(errorMessage));
         batchLog(QString("%1 Finished!!! shutting down...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
 
         qDebug() << "****************************";
@@ -1118,6 +1435,9 @@ void MainWindow::modelFinished(QString errorMessage)
 /// creates the iLand model
 void MainWindow::setupModel()
 {
+    //recent file menu
+    recentFileMenu();
+
     // load project xml file to global xml settings structure
     mRemoteControl.setFileName(ui->initFileName->text());
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
@@ -1152,35 +1472,34 @@ void MainWindow::setupModel()
     // populate the tree species filter list
     ui->speciesFilterBox->clear();
     ui->speciesFilterBox->addItem("<all species>", "");
-    QHash<QString, QString> list = mRemoteControl.availableSpecies();
-    QHash<QString, QString>::const_iterator i = list.begin();
-    while (i!=list.constEnd()) {
-        ui->speciesFilterBox->addItem(i.value(), i.key());
-        ++i;
-    }
+    QList<const Species*> list = mRemoteControl.availableSpecies();
+    for (int i=0;i<list.size();++i)
+        ui->speciesFilterBox->addItem(list[i]->name(), list[i]->id());
 
     // retrieve the active management script file
     if (mRemoteControl.model()->management())
-        ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(mRemoteControl.model()->management()->scriptFile()));
+        ui->scriptActiveScriptFile->setText(QString("%1").arg(mRemoteControl.model()->management()->scriptFile()));
+    if (!mRemoteControl.loadedJavascriptFile().isEmpty())
+        ui->scriptActiveScriptFile->setText(QString("%1").arg(mRemoteControl.loadedJavascriptFile()));
     labelMessage("Model created. Ready to run.");
     checkModelState();
+
 }
 
 
 
 void MainWindow::on_pbSetAsDebug_clicked()
 {
-    int pt = ui->treeChange->property("tree").toInt();
-    if (!pt)
+    Tree *t = reinterpret_cast<Tree *>( ui->treeChange->property("tree").toLongLong() );
+    if (!t)
         return;
-    Tree *t = (Tree*)pt;
     t->enableDebugging();
 
 }
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml");
+    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml",this);
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);
@@ -1213,7 +1532,9 @@ void MainWindow::on_actionModelCreate_triggered()
 
 void MainWindow::on_actionModelDestroy_triggered()
 {
+    mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
+    mRegenerationGrid.clear();
     checkModelState();
 }
 
@@ -1228,10 +1549,10 @@ void MainWindow::on_actionModelRun_triggered()
    if (!ok)
        return;
    count = count + mRemoteControl.currentYear();
+   ui->treeChange->setProperty("tree",0);
    ui->modelRunProgress->setMaximum(count-1);
    mRemoteControl.run(count);
-   // process debug outputs...
-   saveDebugOutputs();
+   GlobalSettings::instance()->executeJSFunction("onAfterRun");
 
 }
 
@@ -1239,6 +1560,7 @@ void MainWindow::on_actionRun_one_year_triggered()
 {
    if (!mRemoteControl.canRun())
         return;
+   ui->treeChange->setProperty("tree",0);
    mRemoteControl.runYear();
    GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
    labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
@@ -1251,7 +1573,9 @@ void MainWindow::on_actionReload_triggered()
 {
     if (!mRemoteControl.canDestroy())
         return;
+    mPaintNext.what = PaintObject::PaintNothing;
     mRemoteControl.destroy();
+    mRegenerationGrid.clear();
     setupModel();
 }
 
@@ -1278,6 +1602,14 @@ void MainWindow::on_actionTree_Partition_triggered()
     QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";");
     QApplication::clipboard()->setText(result.join("\n"));
     qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+}
+
+void MainWindow::on_action_debugSapling_triggered()
+{
+    QStringList result = GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";");
+    QApplication::clipboard()->setText(result.join("\n"));
+    qDebug() << "copied" <<  result.count() << "lines of debug data to clipboard.";
+
 }
 
 void MainWindow::on_actionTree_Growth_triggered()
@@ -1340,7 +1672,10 @@ QImage MainWindow::screenshot()
 /// pixel/m scaling.
 void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
 {
-    vp.setViewPoint(center_point, scale_px_per_m);
+    if (scale_px_per_m>0.)
+        vp.setViewPoint(center_point, scale_px_per_m);
+    else
+        vp.zoomToAll();
 
 //    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
 //    if (current_px==0)
@@ -1355,6 +1690,25 @@ void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
     QCoreApplication::processEvents();
 }
 
+void MainWindow::setUIshortcuts(QVariantMap shortcuts)
+{
+    if (shortcuts.isEmpty()) {
+        ui->lJSShortcuts->setText("(no shortcuts defined)");
+        return;
+    }
+    QString msg = "<html><head/><body><p>Javascript shortcuts<br>";
+    QVariantMap::const_iterator i;
+    for (i = shortcuts.constBegin(); i != shortcuts.constEnd(); ++i) {
+        QString line = QString("<a href =\"%1\"><span style=\" text-decoration: underline; color:#0000ff;\">%1</span></a>: %2<br>").arg(i.key(), i.value().toString());
+        msg += line;
+    }
+    msg += "</body></html>";
+    //qDebug() << msg;
+
+    ui->lJSShortcuts->setText(msg);
+    ui->lJSShortcuts->setTextInteractionFlags(Qt::TextBrowserInteraction);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     writeSettings();
@@ -1363,32 +1717,18 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::on_actionImageToClipboard_triggered()
 {
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setImage( screenshot() );
-    qDebug() << "copied image to clipboard.";
+    //QClipboard *clipboard = QApplication::clipboard();
+    QImage my_img = screenshot();
+    my_img.convertToFormat(QImage::Format_RGB32);
+    //clipboard->setImage( my_img, QClipboard::Clipboard );
+    QString pth = GlobalSettings::instance()->path("screenshot.png", "temp");
+    screenshot().save(pth);
+    qDebug() << "copied image to clipboard. save also to: " << pth;
+    my_img.load(pth);
+    QApplication::clipboard()->setImage(my_img);
+
 }
 
-void MainWindow::saveDebugOutputs()
-{
-    // save to files if switch is true
-    if (!GlobalSettings::instance()->settings().valueBool("system.settings.debugOutputAutoSave"))
-        return;
-
-    QString p = GlobalSettings::instance()->path("debug_", "temp");
-
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandNPP, ";", p + "stand_npp.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
-    Helper::saveToTextFile(p+"dynamic.csv", mRemoteControl.dynamicOutput());
-
-    qDebug() << "saved debug outputs to" << p;
-}
 
 void MainWindow::on_actionSelect_Data_Types_triggered()
 {
@@ -1398,12 +1738,13 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "1 ... Tree NPP\n" \
                                         "2 ... Tree partition\n" \
                                         "4 ... Tree growth (dbh,h)\n" \
-                                        "8 ... Standlevel NPP\n" \
+                                        "8 ... Standlevel GPP\n" \
                                         "16...Water Cycle\n" \
                                         "32...Daily responses\n" \
                                         "64...Establishment\n" \
-                                        "128...Carbon cycle\n" \
-                                        "256...Performance\n"
+                                        "128...Sapling growth\n" \
+                                        "256...Carbon cycle\n" \
+                                        "512...Performance\n"
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
      GlobalSettings::instance()->setDebugOutput(newvalue);
 }
@@ -1417,49 +1758,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
     QString expr_text=ui->expressionText->text();
     QString expr_filter=ui->expressionFilter->text();
     if (expr_text == "test") {
-        Tests t(this);
-        int which = QInputDialog::getInt(this, "Which test",
-                                        "which test?\n0: expression speed\n1: tree clear\n" \
-                                        "2:kill trees\n3: climate\n4: multiple light automation\n" \
-                                        "5: species response\n" \
-                                        "6: watercycle\n" \
-                                        "7: CSV File\n" \
-                                        "8: Xml setters\n" \
-                                        "9: random functions\n" \
-                                        "10: seed dispersal.\n" \
-                                        "11: multiple thread expression\n" \
-                                        "12: linearized expressions\n" \
-                                        "13: establishment\n" \
-                                        "14: GridRunner\n" \
-                                         "15: Soil (ICBM/2N)\n" \
-                                         "16: load Map \n" \
-                                         "17: test DEM \n" \
-                                         "18: test fire module \n" \
-                                         "19: test wind module\n" \
-                                         "20: test rumple index",-1);
-        switch (which) {
-        case 0: t.speedOfExpression();break;
-        case 1: t.clearTrees(); break;
-        case 2: t.killTrees(); break;
-        case 3: t.climate(); break;
-        case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
-        case 5: t.climateResponse(); break;
-        case 6: t.testWater(); break;
-        case 7: t.testCSVFile(); break;
-        case 8: t.testXml(); break;
-        case 9: t.testRandom(); break;
-        case 10: t.testSeedDispersal(); break;
-        case 11: t.testMultithreadExecute(); break;
-        case 12: t.testLinearExpressions(); break;
-        case 13: t.testEstablishment(); break;
-        case 14: t.testGridRunner(); break;
-        case 15: t.testSoil(); break;
-        case 16: t.testMap(); break;
-        case 17: t.testDEM(); break;
-        case 18: t.testFire(); break;
-        case 19: t.testWind(); break;
-        case 20: t.testRumple(); break;
-        }
+        on_actionTest_triggered();
         return;
     }
     if (expr_filter.isEmpty())
@@ -1518,13 +1817,8 @@ void MainWindow::on_reloadJavaScript_clicked()
 {
     if (!GlobalSettings::instance()->model())
         MSGRETURN("no model available.");
-    Management *mgmt = GlobalSettings::instance()->model()->management();
-    if (!mgmt)
-        MSGRETURN("Error: no valid Management object available! (no model created).");
-    if (mgmt->scriptFile().isEmpty())
-        Helper::msg("no mangement script file specified");
-    mgmt->loadScript(mgmt->scriptFile());
-    qDebug() << "reloaded" << mgmt->scriptFile();
+
+    ScriptGlobal::loadScript(ui->scriptActiveScriptFile->text());
     ScriptGlobal::scriptOutput = ui->scriptResult;
 }
 
@@ -1537,7 +1831,7 @@ void MainWindow::on_selectJavaScript_clicked()
         return;
     ScriptGlobal::loadScript(fileName);
 
-    ui->scriptActiveScriptFile->setText(QString("loaded: %1").arg(fileName));
+    ui->scriptActiveScriptFile->setText(QString("%1").arg(fileName));
     qDebug() << "loaded Javascript file" << fileName;
     ScriptGlobal::scriptOutput = ui->scriptResult;
 
@@ -1697,6 +1991,12 @@ void MainWindow::writeSettings()
     settings.beginGroup("project");
     settings.setValue("lastxmlfile", ui->initFileName->text());
     settings.endGroup();
+    //recent files menu qsettings registry save
+    settings.beginGroup("recent_files");
+    for(int i = 0;i < mRecentFileList.size();i++){
+        settings.setValue(QString("file-%1").arg(i),mRecentFileList[i]);
+    }
+    settings.endGroup();
 }
 void MainWindow::readSettings()
 {
@@ -1718,7 +2018,22 @@ void MainWindow::readSettings()
         ui->scriptCommandHistory->addItem(settings.value("item").toString());
     }
     settings.endArray();
-
+    //recent files menu qsettings registry load
+    settings.beginGroup("recent_files");
+    for(int i = 0;i < settings.childKeys().size();i++){
+       //resize(settings.value("size", QSize(400, 400)).toSize());
+        mRecentFileList.append(settings.value(QString("file-%1").arg(i)).toString());
+    }
+    for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
+        if(i < mRecentFileList.size()){
+            ui->menuRecent_Files->actions()[i]->setText(mRecentFileList[i]);
+            connect(ui->menuRecent_Files->actions()[i],SIGNAL(triggered()),this,SLOT(menuRecent_Files()));
+            ui->menuRecent_Files->actions()[i]->setVisible(true);
+        }else{
+            ui->menuRecent_Files->actions()[i]->setVisible(false);
+        }
+     }
+    settings.endGroup();
 }
 
 
@@ -1727,3 +2042,137 @@ void MainWindow::on_paintGridBox_currentIndexChanged(int index)
     Q_UNUSED(index);
     ui->visOtherGrid->setChecked(true);
 }
+
+void MainWindow::on_actionTest_triggered()
+{
+    Tests t(this);
+    int which = QInputDialog::getInt(this, "Which test",
+                                    "which test?\n0: expression speed\n1: tree clear\n" \
+                                    "2:kill trees\n3: climate\n4: multiple light automation\n" \
+                                    "5: species response\n" \
+                                    "6: watercycle\n" \
+                                    "7: CSV File\n" \
+                                    "8: Xml setters\n" \
+                                    "9: random functions\n" \
+                                    "10: seed dispersal.\n" \
+                                    "11: multiple thread expression\n" \
+                                    "12: linearized expressions\n" \
+                                    "13: establishment\n" \
+                                    "14: GridRunner\n" \
+                                     "15: Soil (ICBM/2N)\n" \
+                                     "16: load Map \n" \
+                                     "17: test DEM \n" \
+                                     "18: test fire module \n" \
+                                     "19: test wind module\n" \
+                                     "20: test rumple index\n" \
+                                     "21: test FOME setup\n" \
+                                     "22: test FOME step\n" \
+                                     "23: test debug establishment\n" \
+                                     "24: test grid special index hack",-1);
+    switch (which) {
+    case 0: t.speedOfExpression();break;
+    case 1: t.clearTrees(); break;
+    case 2: t.killTrees(); break;
+    case 3: t.climate(); break;
+    case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
+    case 5: t.climateResponse(); break;
+    case 6: t.testWater(); break;
+    case 7: t.testCSVFile(); break;
+    case 8: t.testXml(); break;
+    case 9: t.testRandom(); break;
+    case 10: t.testSeedDispersal(); break;
+    case 11: t.testMultithreadExecute(); break;
+    case 12: t.testLinearExpressions(); break;
+    case 13: t.testEstablishment(); break;
+    case 14: t.testGridRunner(); break;
+    case 15: t.testSoil(); break;
+    case 16: t.testMap(); break;
+    case 17: t.testDEM(); break;
+    case 18: t.testFire(); break;
+    case 19: t.testWind(); break;
+    case 20: t.testRumple(); break;
+    case 21: t.testFOMEsetup(); break;
+    case 22: t.testFOMEstep(); break;
+    case 23: t.testDbgEstablishment(); break;
+    case 24: t.testGridIndexHack(); break;
+    }
+
+}
+
+void MainWindow::on_pbReloadQml_clicked()
+{
+//engine()->clearComponentCache();
+    //setSource(source());
+    if (!mRuler)
+        return;
+    mRuler->engine()->clearComponentCache();
+    mRuler->setSource(mRuler->source());
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    if (Helper::question("Do you really want to quit?"))
+        close();
+}
+
+void MainWindow::on_actionOpen_triggered()
+{
+    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml");
+    if (fileName.isEmpty())
+        return;
+    ui->initFileName->setText(fileName);
+    QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
+    ui->iniEdit->setPlainText(xmlFile);
+    checkModelState();
+
+}
+
+void MainWindow::menuRecent_Files()
+{
+        QAction* action = dynamic_cast<QAction*>(sender());
+        if (action)
+            ui->initFileName->setText(action->text());
+}
+
+void MainWindow::recentFileMenu(){
+    if(mRecentFileList.size() > 9){
+        mRecentFileList.removeAt(9);
+    }
+    if(mRecentFileList.contains(ui->initFileName->text())){
+        mRecentFileList.removeAt(mRecentFileList.indexOf(ui->initFileName->text()));
+     }
+    mRecentFileList.prepend(ui->initFileName->text());
+
+    for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
+        if(i < mRecentFileList.size()){
+            ui->menuRecent_Files->actions()[i]->setText(mRecentFileList[i]);
+            connect(ui->menuRecent_Files->actions()[i],SIGNAL(triggered()),this,SLOT(menuRecent_Files()));
+            ui->menuRecent_Files->actions()[i]->setVisible(true);
+        }else{
+            ui->menuRecent_Files->actions()[i]->setVisible(false);
+        }
+     }
+}
+
+void MainWindow::on_saveFile_clicked()
+{
+    ui->iniEdit->setVisible(!ui->iniEdit->isVisible());
+}
+
+void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
+{
+    qDebug() << "executing: " << link;
+    try {
+
+        qDebug() << ScriptGlobal::executeScript(link);
+
+    } catch(const IException &e) {
+        Helper::msg(e.message());
+    }
+
+}
+
+
+
+
+

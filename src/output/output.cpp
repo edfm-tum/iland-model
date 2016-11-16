@@ -215,7 +215,10 @@ void Output::saveDatabase()
         mInserter.bindValue(i,mRow[i]);
     mInserter.exec();
     if (mInserter.lastError().isValid()){
-        throw IException(QString("Error during saving of output tables: %1").arg( mInserter.lastError().text()) );
+        throw IException(QString("Error during saving of output tables: '%1'' (native code: '%2', driver: '%3')")
+                         .arg( mInserter.lastError().text())
+                         .arg(mInserter.lastError().nativeErrorCode())
+                         .arg(mInserter.lastError().driverText()) );
     }
 
     newRow();

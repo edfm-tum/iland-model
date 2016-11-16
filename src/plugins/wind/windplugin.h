@@ -23,8 +23,9 @@
 
 #include "plugin_interface.h"
 class ResourceUnit; // forward
-class QScriptEngine;
+class QJSEngine;
 class WindModule;// forward
+class WindOut;
 
 /** a iLand plugin for wind disturbances.
   */
@@ -34,6 +35,9 @@ class WindPlugin: public QObject,
 {
     Q_OBJECT
     Q_INTERFACES(DisturbanceInterface SetupResourceUnitInterface)
+    #if QT_VERSION >= 0x050000
+    Q_PLUGIN_METADATA(IID "at.ac.boku.iland.windplugin" FILE  "windplugin.json")
+    #endif
 
 public:
     WindPlugin();
@@ -49,7 +53,7 @@ public:
     /// setup resource unit specific parameters
     void setupResourceUnit(const ResourceUnit *ru);
     /// setup additional javascript related features
-    void setupScripting(QScriptEngine *engine);
+    void setupScripting(QJSEngine *engine);
 
 
     // calculations
@@ -60,6 +64,7 @@ public:
 
 private:
     WindModule *mWind;
+    WindOut *mWindOut;
 };
 
 

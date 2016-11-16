@@ -24,7 +24,7 @@
 
 #include "global.h"
 #include "outputmanager.h"
-#include "helper.h"
+#include "debugtimer.h"
 #include <QtCore>
 
 // tree outputs
@@ -38,6 +38,7 @@
 #include "saplingout.h"
 #include "carbonout.h"
 #include "carbonflowout.h"
+#include "waterout.h"
 
 
 // on creation of the output manager
@@ -48,20 +49,33 @@ OutputManager::OutputManager()
     mTransactionOpen = false;
     // add all the outputs
     mOutputs.append(new TreeOut);
+    mOutputs.append(new TreeRemovedOut);
     mOutputs.append(new StandOut);
     mOutputs.append(new LandscapeOut);
+    mOutputs.append(new LandscapeRemovedOut);
     mOutputs.append(new DynamicStandOut);
     mOutputs.append(new ProductionOut);
     mOutputs.append(new StandDeadOut);
     mOutputs.append(new ManagementOut);
     mOutputs.append(new SaplingOut);
+    mOutputs.append(new SaplingDetailsOut);
     mOutputs.append(new CarbonOut);
     mOutputs.append(new CarbonFlowOut);
+    mOutputs.append(new WaterOut);
 }
 
 void OutputManager::addOutput(Output *output)
 {
     mOutputs.append(output);
+}
+
+void OutputManager::removeOutput(const QString &tableName)
+{
+    Output *o = find(tableName);
+    if (o) {
+        mOutputs.removeAt(mOutputs.indexOf(o));
+        delete o;
+    }
 }
 
 

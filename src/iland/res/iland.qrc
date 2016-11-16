@@ -16,5 +16,6 @@
         <file>Backup Green Button.png</file>
         <file>document-save.png</file>
         <file>document-open.png</file>
+        <file>iland_splash.png</file>
     </qresource>
 </RCC>

@@ -26,8 +26,11 @@
 #include "global.h"
 #include "climate.h"
 #include "model.h"
+#include "timeevents.h"
 
 double ClimateDay::co2 = 350.; // base value of ambient CO2-concentration (ppm)
+QVector<int> sampled_years; // list of sampled years to use
+
 
 
 void Sun::setup(double latitude_rad)
@@ -52,7 +55,14 @@ void Sun::setup(double latitude_rad)
             mDayWith10_5hrs = day;
             break;
         }
-   }
+    }
+    mDayWith14_5hrs = 0;
+    for (int day=mDayWithMaxLength;day<366;day++) {
+        if (mDaylength_h[day]<14.5) {
+            mDayWith14_5hrs = day;
+            break;
+        }
+    }
 }
 
 QString Sun::dump()
@@ -112,6 +122,8 @@ void Climate::setup()
     XmlHelper xml(g->settings().node("model.climate"));
     QString tableName =xml.value("tableName");
     mName = tableName;
+    QString filter = xml.value("filter");
+
     mLoadYears = (int) qMax(xml.valueDouble("batchYears", 1.),1.);
     mDoRandomSampling = xml.valueBool("randomSamplingEnabled", false);
     mRandomYearList.clear();
@@ -125,13 +137,13 @@ void Climate::setup()
             // check for validity
             foreach(int year, mRandomYearList)
                 if (year < 0 || year>=mLoadYears)
-                    throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1!!!");
+                    throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!!");
         }
 
         if (mRandomYearList.count()>0)
-            qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << " of years. ";
+            qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << "of years. climate:" << name();
         else
-            qDebug() << "Climate: Random sampling enabled (without a fixed list).";
+            qDebug() << "Climate: Random sampling enabled (without a fixed list). climate:" << name();
     }
     mTemperatureShift = xml.valueDouble("temperatureShift", 0.);
     mPrecipitationShift = xml.valueDouble("precipitationShift", 1.);
@@ -143,7 +155,13 @@ void Climate::setup()
     mMinYear = 0;
     mMaxYear = 0;
 
-    QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
+    // add a where-clause
+    if (!filter.isEmpty()) {
+        filter = QString("where %1").arg(filter);
+        qDebug() << "adding climate table where-clause:" << filter;
+    }
+
+    QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from %1 %2 order by year, month, day").arg(tableName).arg(filter);
     // here add more options...
     mClimateQuery = QSqlQuery(g->dbclimate());
     mClimateQuery.exec(query);
@@ -164,6 +182,7 @@ void Climate::setup()
     // setup sun
     mSun.setup(Model::settings().latitude);
     mCurrentYear--; // go to "-1" -> the first call to next year will go to year 0.
+    sampled_years.clear();
     mIsSetup = true;
 }
 
@@ -184,6 +203,23 @@ void Climate::load()
     int yeardays;
     for (int i=0;i<mLoadYears;i++) {
         yeardays = 0;
+        if (GlobalSettings::instance()->model()->timeEvents()) {
+            QVariant val_temp = GlobalSettings::instance()->model()->timeEvents()->value(GlobalSettings::instance()->currentYear() + i, "model.climate.temperatureShift");
+            QVariant val_prec = GlobalSettings::instance()->model()->timeEvents()->value(GlobalSettings::instance()->currentYear() + i, "model.climate.precipitationShift");
+            if (val_temp.isValid())
+                mTemperatureShift = val_temp.toDouble();
+            if (val_prec.isValid())
+                mPrecipitationShift = val_prec.toDouble();
+
+            if (mTemperatureShift!=0. || mPrecipitationShift!=1.) {
+                qDebug() << "Climate modification: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
+                if (mDoRandomSampling) {
+                    qWarning() << "WARNING - Climate: using a randomSamplingList and temperatureShift/precipitationShift at the same time. The same offset is applied for *every instance* of a year!!";
+                    //throw IException("Climate: cannot use a randomSamplingList and temperatureShift/precipitationShift at the same time. Sorry.");
+                }
+            }
+        }
+
         //qDebug() << "loading year" << lastyear+1;
         while(1==1) {
             if(!mClimateQuery.next()) {
@@ -268,17 +304,24 @@ void Climate::nextYear()
 
     if (!mDoRandomSampling) {
         // default behaviour: simply advance to next year, call load() if end reached
-        if (mCurrentYear >= mLoadYears-1) // overload
+        if (mCurrentYear >= mLoadYears-1) // need to load more data
             load();
         else
             mCurrentYear++;
     } else {
         // random sampling
         if (mRandomYearList.isEmpty()) {
-            // random without list (note: irandom may return the upper bound)
-            mCurrentYear = irandom(0,mLoadYears-1);
+            // random without list
+            // make sure that the sequence of years is the same for the full landscape
+            if (sampled_years.size()<GlobalSettings::instance()->currentYear()) {
+                while (sampled_years.size()-1 < GlobalSettings::instance()->currentYear())
+                    sampled_years.append(irandom(0,mLoadYears));
+            }
+
+            mCurrentYear = sampled_years[GlobalSettings::instance()->currentYear()];
+
         } else {
-            // random with list
+            // random with fixed list
             mRandomListIndex++;
             if (mRandomListIndex>=mRandomYearList.count())
                 mRandomListIndex=0;
@@ -332,7 +375,7 @@ void Climate::climateCalculations(const ClimateDay &lastDay)
         c->temp_delayed = c->temperature;
     c++;
     while (c->isValid()) {
-        // first order dynamic delayed model (Mäkela 2008)
+        // first order dynamic delayed model (Maekela 2008)
         c->temp_delayed=(c-1)->temp_delayed + 1./tau * (c->temperature - (c-1)->temp_delayed);
         ++c;
     }

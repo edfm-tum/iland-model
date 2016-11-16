@@ -20,20 +20,28 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#if QT_VERSION < 0x050000
 #include <QtGui>
+#else
+#include <QtWidgets>
+#endif
 #include <vector>
 
 #include "grid.h"
 #include "tree.h"
-#include "helper.h"
 
 #include "modelcontroller.h"
 #include "paintarea.h"
+#include "viewport.h"
+
+class QQuickView;
 class Model;
 class Tree;
 class ResourceUnit;
 class MapGrid;
 class LayeredGridBase;
+class Colors;
+
 
 namespace Ui
 {
@@ -50,6 +58,8 @@ public:
     static QPlainTextEdit* logSpace() { return mLogSpace; }
     static QTextStream* logStream() { return mLogStream;}
     ~MainWindow();
+    Ui::MainWindowClass *uiclass() {return ui; }
+    Colors *ruler() { return mRulerColors; }
 public slots:
     void repaint(); ///< force a repaint of the main drawing area
     void yearSimulated(int year);
@@ -66,7 +76,9 @@ public slots:
                    const GridViewType view_type=GridViewRainbow,
                    double min_val=0., double max_val=1.);
     void addLayers(const LayeredGridBase *layer, const QString &name);
+    void removeLayers(const LayeredGridBase *layer);
     void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
+    void setUIshortcuts(QVariantMap shortcuts);
 
 protected:
      void closeEvent(QCloseEvent *event);
@@ -75,6 +87,8 @@ private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
     QLabel *mStatusLabel;
+    QQuickView *mRuler;
+    Colors *mRulerColors;
     // setup
     void labelMessage(const QString message) { if (mStatusLabel) mStatusLabel->setText(message);}
     void setupModel();
@@ -83,7 +97,7 @@ private:
     void updatePaintGridList();
     /// PaintObject stores what kind of object to paint during next repaint
     PaintObject mPaintNext;
-    QHash<QString, PaintObject> mPaintList;
+    QMap<QString, PaintObject> mPaintList;
     void paintGrid(QPainter &painter, PaintObject &object);
 
     static QPlainTextEdit *mLogSpace;
@@ -98,14 +112,18 @@ private:
 
     void showTreeDetails(Tree* tree);
     void showResourceUnitDetails(const ResourceUnit *ru);
+    bool showABEDetails(const QPointF &coord);
+
     void readSettings();
     void writeSettings();
-    // debug data and outputs
-    void saveDebugOutputs();
+    // logging and outputs
     void setupFileLogging(const bool do_start);
     void batchLog(const QString s); ///< logging function for batch mode
     // visualization helper grid
     Grid<float> mRegenerationGrid;
+    //recent file menu
+    void recentFileMenu();
+    QList<QString> mRecentFileList;
 
 private slots:
     void automaticRun(); ///< automatically start a simulation...
@@ -142,6 +160,7 @@ private slots:
     void on_actionSelect_Data_Types_triggered();
     void on_actionTree_Growth_triggered();
     void on_actionTree_Partition_triggered();
+    void on_action_debugSapling_triggered();
     void on_actionModelRun_triggered();
     void on_actionModelDestroy_triggered();
     void on_actionModelCreate_triggered();
@@ -154,7 +173,6 @@ private slots:
 
     void on_actionEdit_XML_settings_triggered();
 
-    void on_saveFile_clicked();
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
     void mouseMove(const QPoint& pos);
@@ -164,9 +182,21 @@ private slots:
     void on_visDomGrid_toggled();
     void on_visImpact_toggled();
     void on_visImpact_clicked() { on_visFon_toggled(); } // force repeaint
+    void on_visSeeds_clicked() { on_visFon_toggled(); } // force repeaint
+    void on_visRegeneration_clicked() { on_visFon_toggled(); } // force repeaint
+    void on_visRegenNew_clicked()    { on_visFon_toggled();    }
     void on_actionPerformance_triggered();
     void on_scriptCommandHistory_currentIndexChanged(int index);
     void on_paintGridBox_currentIndexChanged(int index);
+    void on_actionTest_triggered();
+    void on_pbReloadQml_clicked();
+    void on_actionExit_triggered();
+    void on_actionOpen_triggered();
+    //recent file menu
+    void menuRecent_Files();
+    void on_saveFile_clicked();
+    void on_lJSShortcuts_linkActivated(const QString &link);
+
 };
 
 #endif // MAINWINDOW_H

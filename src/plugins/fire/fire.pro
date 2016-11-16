@@ -1,5 +1,6 @@
+# iLand project file for the fire module. See iland.boku.ac.at
 QT += xml
-QT += script
+QT += qml
 QT += sql
 
 
@@ -12,8 +13,8 @@ INCLUDEPATH  += ../.. \
 
 # to enable debug symbols in release code:
 # uncomment then next two lines to enable debug information in release-mode executable
-QMAKE_CXXFLAGS_RELEASE += -g
-QMAKE_LFLAGS_RELEASE -= -Wl,-s
+#QMAKE_CXXFLAGS_RELEASE += -g
+#QMAKE_LFLAGS_RELEASE -= -Wl,-s
 
 CONFIG += exceptions
 HEADERS       = \
@@ -27,8 +28,9 @@ SOURCES       = \
     fireout.cpp \
     firescript.cpp
 TARGET        = $$qtLibraryTarget(iland_fire)
-DESTDIR       = ../
+DESTDIR       = ../../plugins
 
+DEFINES += NO_DEBUG_MSGS
 
 
 

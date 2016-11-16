@@ -26,8 +26,8 @@
 #include "scriptglobal.h"
 
 class Tree;
-class QScriptEngine;
-class Management : public QObject, protected QScriptable
+class QJSEngine;
+class Management : public QObject //, protected QScriptable
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count)
@@ -67,25 +67,28 @@ public slots:
      *  in the percentile interval "from" - "to".
      *  remove all if "number" is higher than the count.
      *  return the number of removed trees. */
-    int kill(int pctfrom, int pctto, int number);
-    int kill(); ///< kill all trees in the list
+    int killPct(int pctfrom, int pctto, int number);
+    int killAll(); ///< kill all trees in the list
+    int disturbanceKill(); ///< kill all trees (disturbance related)
     /** kill 'fraction' of all trees with 'filter'=true */
-    int kill(QString filter, double fraction = 1.);
+    int kill(QString filter, double fraction);
     // management
     /** kill "number" of stems
      *  in the percentile interval "from" - "to".
      *  remove all if "number" is higher than the count.
      * Use the removal fractions set by the removeStem, removeBranch and removeFoliage properties.
      *  return the number of removed trees. */
-    int manage(int pctfrom, int pctto, int number);
-    int manage(); ///< manage all trees in the list
+    int managePct(int pctfrom, int pctto, int number);
+    int manageAll(); ///< manage all trees in the list
     /** manage 'fraction' of all trees with 'filter'=true */
-    int manage(QString filter, double fraction = 1.);
+    int manage(QString filter, double fraction);
+    /// kill trees, cut down to the ground
+    void cutAndDrop();
 
     double percentile(int pct); ///< get value for the pct th percentile (1..100)
-    int load() { return load(QString()); } ///< load all trees, return number of trees
+    int loadAll() { return load(QString()); } ///< load all trees, return number of trees
     int load(QString filter); ///< load all trees passing the filter in a list, return number of trees
-    int load(int ruindex); ///< load all trees of a resource index
+    int loadResourceUnit(int ruindex); ///< load all trees of a resource index
     void loadFromTreeList(QList<Tree*>tree_list); ///< load a previously present tree list
     void loadFromMap(const MapGrid *map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
     void loadFromMap(MapGridWrapper *wrap, int key); ///< load all trees that are on the area denoted by 'key' of the given grid (script access)
@@ -106,12 +109,13 @@ private:
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
+    void throwError(const QString &errormessage);
 
     // removal fractions
     double mRemoveFoliage, mRemoveBranch, mRemoveStem;
     QString mScriptFile;
     QList<QPair<Tree*, double> > mTrees;
-    QScriptEngine *mEngine;
+    QJSEngine *mEngine;
     int mRemoved;
 };
 

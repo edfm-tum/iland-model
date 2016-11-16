@@ -31,6 +31,8 @@ public:
     bool loadFromFile(const QString &fileName);
     // excecute
     void run(); ///< execute all settings
+    /// read value for key 'key' and year 'year' from the list of items. Return QVariant() if not found.
+    QVariant value(int year, const QString &key) const;
 
 private:
     QMultiMap<int, QPair<QString, QVariant> > mData;
