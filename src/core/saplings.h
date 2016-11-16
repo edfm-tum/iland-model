@@ -205,6 +205,7 @@ class SaplingCellRunner
 {
 public:
     SaplingCellRunner(const int stand_id, const MapGrid *stand_grid=0);
+    ~SaplingCellRunner();
     SaplingCell *next();
     ResourceUnit *ru() const { return mRU; }
     QPointF currentCoord() const;
