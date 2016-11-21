@@ -438,6 +438,19 @@ void Management::killSaplings(MapGridWrapper *wrap, int key)
     }
 }
 
+void Management::killSaplingsResourceUnit(int ruindex)
+{
+    ResourceUnit *ru = GlobalSettings::instance()->model()->ru(ruindex);
+    if (ru) {
+        GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), ru->boundingBox());
+        while (runner.next()) {
+            SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(),true);
+            if (sc)
+                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,true);
+        }
+    }
+}
+
 /// specify removal fractions
 /// @param SWDFrac 0: no change, 1: remove all of standing woody debris
 /// @param DWDfrac 0: no change, 1: remove all of downled woody debris
