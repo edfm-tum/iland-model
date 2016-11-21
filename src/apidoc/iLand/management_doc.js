@@ -356,6 +356,13 @@ Kill all saplings (i.e. trees <4m) which are located on grid pixels with the val
 */
 
 /**
+Kill all saplings (i.e. trees <4m) which are located on the resource unit identified by `ruindex`.
+
+@method killSaplingsResourceUnit
+@param {integer} ruindex the index of the resource unit to process.
+*/
+
+/**
 (Hacky) function to modify the carbon content of the snag/soil pools of resource units covered by pixels with `standID` on the `map`.
 If the resource unit is only partially covered, the factors are scaled accordingly.
 The parameters are remove-fractions, i.e. values of 0 mean no change, values of 1 mean removal of 100% of the carbon of the respective pool.
