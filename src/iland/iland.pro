@@ -198,7 +198,8 @@ SOURCES += main.cpp \
     ../core/grasscover.cpp \
     ../tools/scriptgrid.cpp \
     ../core/saplings.cpp \
-    ../output/waterout.cpp
+    ../output/waterout.cpp \
+    ../core/dbhdistribution.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -299,7 +300,8 @@ HEADERS += mainwindow.h \
     ../core/grasscover.h \
     ../tools/scriptgrid.h \
     ../core/saplings.h \
-    ../output/waterout.h
+    ../output/waterout.h \
+    ../core/dbhdistribution.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

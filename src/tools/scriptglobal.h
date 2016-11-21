@@ -188,6 +188,7 @@ public slots:
     QJSValue newCSVFile(QString filename); ///< create a new instance of CSVFile and return it
     QJSValue newClimateConverter(); ///< create new instance of ClimateConverter and return it
     QJSValue newMap(); ///< create new instance of Map and return it
+    QJSValue newDBHDistribution(); ///< create new instance of DBHDistribution and return it
     int stats() {return mObjCreated;} ///< return the number of created objects
 private:
     int mObjCreated;
