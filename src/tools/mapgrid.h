@@ -57,7 +57,7 @@ public:
     /// return a list of all living trees on the area 'id'
     QList<Tree*> trees(const int id) const;
     /// load trees and store in list 'rList'. If 'filter'<>"", then the filter criterion is applied
-    int loadTrees(const int id,  QVector<QPair<Tree *, double> > &rList, const QString filter, int n_estimate=0) const;
+    int loadTrees(const int id,  QVector<QPair<Tree *, double> > &rList, const QString filter=QString(), int n_estimate=0) const;
     /// free locks for a given stand
     static void freeLocksForStand(const int id);
     /// return a list of grid-indices of a given stand-id

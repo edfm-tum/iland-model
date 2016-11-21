@@ -92,7 +92,10 @@ public slots:
     void loadFromTreeList(QList<Tree*>tree_list); ///< load a previously present tree list
     void loadFromMap(const MapGrid *map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
     void loadFromMap(MapGridWrapper *wrap, int key); ///< load all trees that are on the area denoted by 'key' of the given grid (script access)
-    void killSaplings(MapGridWrapper *wrap, int key); ///< kill all saplings that are on the area denoted by 'key' of the given grid (script access)
+    /// kill all saplings that are on the area denoted by 'key' of the given grid (script access)
+    void killSaplings(MapGridWrapper *wrap, int key);
+    /// kill all saplings that are on a given resource unit (given by 'ruindex')
+    void killSaplingsResourceUnit(int ruindex);
     /** hacky access function to resource units covered by a polygon.
      the parameters are "remove-fractions": i.e. value=0: no change, value=1: set to zero. */
     void removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac);

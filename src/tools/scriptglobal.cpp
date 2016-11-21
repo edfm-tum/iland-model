@@ -45,6 +45,7 @@
 #include "climateconverter.h"
 #include "csvfile.h"
 #include "spatialanalysis.h"
+#include "dbhdistribution.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -1004,6 +1005,14 @@ QJSValue ScriptObjectFactory::newMap()
     mObjCreated++;
     return obj;
 
+}
+
+QJSValue ScriptObjectFactory::newDBHDistribution()
+{
+    DBHDistribution *dbh = new DBHDistribution();
+    QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(dbh);
+    mObjCreated++;
+    return obj;
 }
 
 
