@@ -665,7 +665,8 @@ void SeedDispersal::execute()
         qDebug() << "saved seed map for " << species()->id() << "to" << GlobalSettings::instance()->path(mDumpNextYearFileName);
         mDumpNextYearFileName = QString();
     }
-    qDebug() << "LDD-count:" << _debug_ldd;
+    if (logLevelDebug())
+        qDebug() << "LDD-count:" << _debug_ldd;
 
 #endif
 }
