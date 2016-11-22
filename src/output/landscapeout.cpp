@@ -64,7 +64,9 @@ void LandscapeOut::exec()
         i.value().clear();
 
     // extract total stockable area
-    double total_area = m->totalStockableArea();
+    double total_area = 0.;
+    foreach(const ResourceUnit *ru, m->ruList())
+        total_area += ru->stockableArea();
 
     if (total_area==0.)
         return;
