@@ -605,7 +605,7 @@ void SeedDispersal::execute()
         qDebug() << "saving of seedmaps only supported in the iLand GUI.";
 #endif
     if (mProbMode) {
-
+        // old version (<2016) of the seed dispersal routines [switch is hardcoded]
         DebugTimer t("seed dispersal", true);
 
         // (1) detect edges
@@ -620,6 +620,8 @@ void SeedDispersal::execute()
             // (2) distribute seed probabilites from edges
             distribute();
         }
+    } else {
+        // current version (>=2016)
 
         // special case serotiny
         if (mHasPendingSerotiny) {
@@ -647,7 +649,7 @@ void SeedDispersal::execute()
             qDebug() << "serotiny event: extra seed input" << total << "(total sum of seed probability over all pixels of the serotiny seed map) of species" << mSpecies->name();
         }
 
-    } else {
+
         // distribute actual values
         DebugTimer t("seed dispersal", true);
         // fill seed map from source map

@@ -955,7 +955,11 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
 
 /// remove the tree due to an special event (disturbance)
 /// this is +- the same as die().
-void Tree::removeDisturbance(const double stem_to_soil_fraction, const double stem_to_snag_fraction, const double branch_to_soil_fraction, const double branch_to_snag_fraction, const double foliage_to_soil_fraction)
+void Tree::removeDisturbance(const double stem_to_soil_fraction,
+                             const double stem_to_snag_fraction,
+                             const double branch_to_soil_fraction,
+                             const double branch_to_snag_fraction,
+                             const double foliage_to_soil_fraction)
 {
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     mRU->treeDied();
