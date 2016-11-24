@@ -25,6 +25,8 @@
 #include "tree.h"
 #include "expressionwrapper.h"
 #include "soil.h"
+#include "species.h"
+#include "seeddispersal.h"
 
 //#include "climateconverter.h"
 //#include "csvfile.h"
@@ -99,11 +101,22 @@ int Management::killAll()
     return c;
 }
 
-int Management::disturbanceKill()
+int Management::disturbanceKill(double stem_to_soil_fraction, double  stem_to_snag_fraction,
+                                double branch_to_soil_fraction, double branch_to_snag_fraction,
+                                QString agent)
 {
+    bool is_fire = agent==QStringLiteral("fire");
     int c = mTrees.count();
-    for (int i=0;i<mTrees.count();i++)
-        mTrees[i].first->removeDisturbance(0.1, 0.1, 0.1, 0.1, 1.);
+    for (int i=0;i<mTrees.count();i++) {
+        Tree *t= mTrees[i].first;
+        t->removeDisturbance(stem_to_soil_fraction, stem_to_snag_fraction, branch_to_soil_fraction, branch_to_snag_fraction, 1.);
+        if (is_fire) {
+            if (t->species()->seedDispersal() && t->species()->isTreeSerotinous(t->age()) ) {
+                //SeedDispersal *sd = t->species()->seedDispersal();
+                t->species()->seedDispersal()->seedProductionSerotiny(t->positionIndex());
+            }
+        }
+    }
     mTrees.clear();
     return c;
 }

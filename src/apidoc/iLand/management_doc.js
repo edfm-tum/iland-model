@@ -280,10 +280,20 @@ See also: {{#crossLink "Management/kill:method"}}{{/crossLink}}, {{#crossLink "M
 */
 /**
 Remove all selected trees with with the _disturbance_ flag set. Disturbed trees are treated
-differently with regard to carbon flows and {{#crossLinkModule "ABE"}}{{/crossLinkModule}}
+differently with regard to carbon flows and {{#crossLinkModule "ABE"}}{{/crossLinkModule}}. Biomass of the stem and
+the branches is routed to the soil and snag pools as indicated by the parameters of the function. The rest of the biomass
+is removed from the system (e.g., consumed by fire). For example, if `stem_to_soil_fraction`=0.2, `stem_to_snag_fraction`=0.3, then
+50% of the biomass leaves the system, 20% are added to the soil, 30% to the snag pools.
+
+If the `agent` parameter is `fire`, then serotinous trees produce extra seeds.
 
 See also: {{#crossLink "Management/killAll:method"}}{{/crossLink}}, {{#crossLink "Management/manageAll:method"}}{{/crossLink}}
 @method disturbanceKill
+@param {double} stem_to_soil_fraction (0..1) of stem biomass that is routed to the soil
+@param {double} stem_to_snag_fraction (0..1) of the stem biomass continues as standing dead
+@param {double} branch_to_soil_fraction (0..1) of branch biomass that is routed to the soil
+@param {double} branch_to_snag_fraction (0..1) of the branch biomass continues as standing dead
+@param {string} agent the disturbance agent that is mimicked ('fire' 'wind', 'bb', ...)
 @return {integer} the number of killed trees.
 */
 /**

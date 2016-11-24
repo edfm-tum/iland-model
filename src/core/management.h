@@ -69,7 +69,14 @@ public slots:
      *  return the number of removed trees. */
     int killPct(int pctfrom, int pctto, int number);
     int killAll(); ///< kill all trees in the list
-    int disturbanceKill(); ///< kill all trees (disturbance related)
+    /// kill all trees (disturbance related)
+    /// @param stem_to_soil_fraction (0..1) of stem biomass that is routed to the soil
+    /// @param stem_to_snag_fraction (0..1) of the stem biomass continues as standing dead
+    /// @param branch_to_soil_fraction (0..1) of branch biomass that is routed to the soil
+    /// @param branch_to_snag_fraction (0..1) of the branch biomass continues as standing dead
+    /// @param foliage_to_soil_fraciton (0..1) fraction of biomass that goes directly to the soil. The rest (1.-fraction) is removed.
+    /// @param agent (string): disturbance agent ('fire' 'wind', 'bb', ...)
+    int disturbanceKill(double stem_to_soil_fraction, double stem_to_snag_fraction, double branch_to_soil_fraction, double branch_to_snag_fraction, QString agent);
     /** kill 'fraction' of all trees with 'filter'=true */
     int kill(QString filter, double fraction);
     // management

@@ -57,21 +57,21 @@ variables.
 When `simulate` is true, harvest operations are not actually executed, but affected trees are marked as either for harvest or killing. Calling `removeMarkedTrees()` then
 executes the harvest operation.
 Note: tree variables `markharvest`, `markcut`, `markcrop` are available for use in `filter()` or for visualization in iLand.
-@propery simulate
+@property simulate
 @type Boolean
 @default true
 */
 
 /**
 the ID of the currently active stand (or -1).
-@propery stand
+@property stand
 @type Integer
 @readonly
 */
 
 /**
 the number of trees that are currently loaded in the list.
-@propery count
+@property count
 @type Integer
 @readonly
 */
