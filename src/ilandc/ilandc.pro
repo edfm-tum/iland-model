@@ -207,7 +207,8 @@ SOURCES += main.cpp \
     ../abe/actthinning.cpp \
     ../core/grasscover.cpp \
     ../tools/scriptgrid.cpp \
-    ../output/waterout.cpp
+    ../output/waterout.cpp \
+    ../core/dbhdistribution.cpp
 
 
 HEADERS += \
@@ -307,7 +308,8 @@ HEADERS += \
     ../abe/actthinning.h \
     ../core/grasscover.h \
     ../tools/scriptgrid.h \
-    ../output/waterout.h
+    ../output/waterout.h \
+    ../core/dbhdistribution.h
 
 
 

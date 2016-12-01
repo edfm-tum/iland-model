@@ -19,8 +19,8 @@
 
 
 #include <QString>
-static const char *version = "1.0";
-static const char *svn_revision = "1220";
+static const char *version = "1.01";
+static const char *svn_revision = "1230";
 const char *currentVersion(){ return version;}
 const char *svnRevision(){ return svn_revision;}
 
