@@ -130,7 +130,6 @@ public:
     SSpeciesStand &speciesData(const Species *species); ///< species-specific meta data by Species pointer
 
 
-    void setAbsoluteAge(const double age);
     // actions
     /// main function
     bool execute(); ///< execute the current activity
@@ -154,6 +153,10 @@ public:
 
     /// calculate mean annual increment (m3/ha) and return total MAI.
     double calculateMAI();
+
+    /// set the absolute age of the stand
+    void setAbsoluteAge(const double age);
+
 
     // return stand-specific flags
     ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
