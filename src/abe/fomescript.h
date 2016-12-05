@@ -43,6 +43,7 @@ class FomeScript : public QObject
     Q_OBJECT
     Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
     Q_PROPERTY(int standId READ standId WRITE setStandId)
+    Q_PROPERTY(QString standVisualization READ standVisualization WRITE setStandVisualization)
 public:
     explicit FomeScript(QObject *parent = 0);
     ~FomeScript();
@@ -114,6 +115,8 @@ public slots:
 public:
     static int levelIndex(const QString &level_label);
     static const QString levelLabel(const int level_index);
+    QString standVisualization() const { return mStandVisualization; }
+    void setStandVisualization(QString vis) { mStandVisualization = vis; }
 
 private:
     static QString mInvalidContext;
@@ -126,6 +129,7 @@ private:
     SchedulerObj *mSchedulerObj;
     STPObj *mSTPObj;
     QString mLastErrorMessage;
+    QString mStandVisualization;
 
 };
 

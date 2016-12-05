@@ -38,7 +38,7 @@ class Agent; // forward
 class AgentType; // forward
 class FomeScript; // forward
 
-/// the FOrestManagementEngine is the container for the agent based forest management engine.
+/// the ForestManagementEngine is the container for the agent based forest management engine.
 class ForestManagementEngine
 {
 public:

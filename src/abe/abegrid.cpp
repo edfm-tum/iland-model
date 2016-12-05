@@ -25,6 +25,8 @@
 #include "scheduler.h"
 #include "agent.h"
 #include "fmstp.h"
+#include "forestmanagementengine.h"
+#include "fomescript.h"
 
 
 /** @class ABELayers
@@ -68,6 +70,8 @@ double ABELayers::value(const FMStandPtr &data, const int index) const
     case 12: if (!mSTPIndex.contains(data->stp()->name())) // stand treatment program
                 mSTPIndex[data->stp()->name()] = mSTPIndex.count();
              return mSTPIndex[data->stp()->name()];
+    case 13: return
+                data->property(ABE::ForestManagementEngine::instance()->scriptBridge()->standVisualization()).toNumber();
 
     default: throw IException("ABELayers:value(): Invalid index");
     }
@@ -89,7 +93,8 @@ const QVector<LayeredGridBase::LayerElement> &ABELayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("next evaluation"), QStringLiteral("year of the last execution"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QStringLiteral("last update"), QStringLiteral("year of the last update of the forest state."), GridViewRainbowReverse)
                 << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QStringLiteral("stp"), QStringLiteral("Stand treatment program currently active"), GridViewBrewerDiv);
+                << LayeredGridBase::LayerElement(QStringLiteral("stp"), QStringLiteral("Stand treatment program currently active"), GridViewBrewerDiv)
+                << LayeredGridBase::LayerElement(QStringLiteral("user"), QStringLiteral("stand property (fmengine.visualizationProperty)"), GridViewRainbow);
     return mNames;
 }
 
