@@ -50,7 +50,7 @@ public:
     /// defaultFlags() is used to initalized the flags for indiv. forest stands
     QVector<ActivityFlags> defaultFlags() {return mActivityStand; }
     Events &events() { return mEvents; }
-    QJSValue JSoptions() { return mOptions; }
+    QJSValue *JSoptions() { return &mOptions; }
 
     /// rotation length (years)
     int rotationLengthOfType(const int type) { if (type>0 && type<4) return mRotationLength[type-1]; return 0;}

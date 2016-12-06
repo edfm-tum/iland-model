@@ -224,6 +224,14 @@ bool FomeScript::updateManagement(QJSValue program, QString name)
             return false;
         }
         stp->setup(program, name);
+        // update associated stands (fix stand flags)
+        QMapIterator<FMUnit*, FMStand*> i(ForestManagementEngine::instance()->stands());
+        while (i.hasNext()) {
+            i.next();
+            if (i.value()->stp() == stp)
+                i.value()->initialize();
+        }
+
         return true;
     } catch (const IException &e) {
         qCWarning(abe) << e.message();
@@ -246,7 +254,7 @@ bool FomeScript::addManagementToAgentType(QString name, QString agentname)
         return false;
     }
     at->addSTP(name);
-
+    return true;
 
 }
 
@@ -714,7 +722,7 @@ void STPObj::setSTP(FMStand *stand)
         mSTP = stand->stp();
         mOptions = mSTP->JSoptions();
     } else {
-        mOptions = QJSValue();
+        mOptions = 0;
         mSTP = 0;
     }
 }

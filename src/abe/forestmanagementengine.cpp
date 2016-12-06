@@ -86,6 +86,7 @@ ForestManagementEngine::ForestManagementEngine()
     singleton_fome_engine = this;
     mCancel = false;
     setupOutputs(); // add ABE output definitions
+    FMStand::clearAllProperties();
 }
 
 ForestManagementEngine::~ForestManagementEngine()
