@@ -168,7 +168,7 @@ public:
     /// get a pointer to the last executed activity; returns 0 if no activity has been executed before.
     Activity *lastExecutedActivity() const { return mLastExecutedIndex>-1?mStandFlags[mLastExecutedIndex].activity():0; }
 
-    int lastExecutionAge() const { return absoluteAge()>0 ? absoluteAge() : mLastRotationAge; }
+    int lastExecutionAge() const { return absoluteAge()>0 ? static_cast<int>(absoluteAge()) : mLastRotationAge; }
 
     // custom property storage
     static void clearAllProperties() { mStandPropertyStorage.clear(); }

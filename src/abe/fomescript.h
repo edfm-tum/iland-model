@@ -285,11 +285,11 @@ class STPObj: public QObject
 public:
     void setSTP(FMStand *stand);
     explicit STPObj(QObject *parent = 0): QObject(parent) { mSTP = 0;}
-    QJSValue options() { return mOptions; }
+    QJSValue options() { if (mOptions) return *mOptions;  else return QJSValue(); }
     QString name();
 private:
     FMSTP *mSTP;
-    QJSValue mOptions; ///< options of the current STP
+    QJSValue *mOptions; ///< options of the current STP
 
 
 };
