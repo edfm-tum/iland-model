@@ -93,6 +93,8 @@ const QStringList TreeWrapper::getVariablesList()
 double TreeWrapper::value(const int variableIndex)
 {
     Q_ASSERT(mTree!=0);
+    if (!mTree)
+        return 0.;
 
     switch (variableIndex - baseVarListCount) {
     case 0: return double(mTree->id()); // id
@@ -147,6 +149,8 @@ const QStringList RUWrapper::getVariablesList()
 double RUWrapper::value(const int variableIndex)
 {
     Q_ASSERT(mRU!=0);
+    if (!mRU)
+        return 0.;
 
     switch (variableIndex - baseVarListCount) {
     case 0: return mRU->id(); // id from grid

@@ -171,6 +171,8 @@ void GlobalSettings::resetScriptEngine()
         delete mScriptEngine;
 
     mScriptEngine = new QJSEngine();
+    // add "console" extension (enabling the Console API)
+    mScriptEngine->installExtensions(QJSEngine::ConsoleExtension);
     // globals object: instatiate here, but ownership goes to script engine
     ScriptGlobal *global = new ScriptGlobal();
     QJSValue glb = mScriptEngine->newQObject(global);

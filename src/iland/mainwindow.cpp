@@ -240,6 +240,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
             this, SLOT(mouseWheel(const QPoint&, int)));
 
+    // javascript console
+    connect(ui->scriptCode, SIGNAL(executeJS(QString)),
+            this, SLOT(executeJS(QString)) );
+
     // dock windows
     ui->menuView->addAction( ui->dockEditor->toggleViewAction() );
     ui->menuView->addAction( ui->dockLogviewer->toggleViewAction() );
@@ -346,6 +350,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->qmlRulerLayout->addWidget(container);
 //    QDir d(":/qml");
 //    qDebug() << d.entryList();
+    QFont font;
+    font.setFamily("Courier");
+    font.setFixedPitch(true);
+    font.setPointSize(10);
+    ui->scriptResult->setFont(font);
+    ScriptGlobal::scriptOutput = ui->scriptResult;
 
 }
 
@@ -1360,6 +1370,22 @@ void MainWindow::mouseWheel(const QPoint& pos, int steps)
     //qDebug() << "mouse-wheel" << steps;
     vp.zoomTo(pos, qMax(1-(2*steps/10.),0.2));
     ui->PaintWidget->update();
+}
+
+void MainWindow::executeJS(QString code)
+{
+    // execute Javascript code
+    try {
+
+        QString result = ScriptGlobal::executeScript(code);
+        if (!result.isEmpty()) {
+            ui->scriptResult->append(result);
+            qDebug() << result;
+        }
+    } catch(const IException &e) {
+        Helper::msg(e.message());
+    }
+
 }
 
 void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton button)

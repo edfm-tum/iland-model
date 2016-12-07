@@ -194,6 +194,8 @@ void SpeciesSet::newYear()
 QVariant SpeciesSet::var(const QString& varName)
 {
     Q_ASSERT(mSetupQuery!=0);
+    if (!mSetupQuery)
+        throw IException("SpeciesSet: query is not active!");
 
     int idx = mSetupQuery->record().indexOf(varName);
     if (idx>=0)

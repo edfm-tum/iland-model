@@ -297,11 +297,9 @@ void Model::setupSpace()
 
             }
             qDebug() << "Setup of climates: #loaded:" << mClimates.count() << "tables:" << climate_file_list;
-
-
+            qDebug() << "setup of" << mEnvironment->climateList().size() << "climates performed.";
         }
 
-        qDebug() << "setup of" << mEnvironment->climateList().size() << "climates performed.";
 
         if (mStandGrid && mStandGrid->isValid())
             mStandGrid->createIndex();
