@@ -400,7 +400,8 @@ void ForestManagementEngine::setup()
             }
             mUnits.append(unit);
             unit_codes.append(unit_id);
-            ag->addUnit(unit); // add the unit to the list of managed units of the agent
+            if (ag)
+                ag->addUnit(unit); // add the unit to the list of managed units of the agent
         } else {
             // get unit by id ... in this case we have the same order of appending values
             unit = mUnits[unit_codes.indexOf(unit_id)];

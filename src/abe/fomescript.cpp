@@ -465,7 +465,7 @@ bool StandObj::trace() const
 
 void StandObj::setTrace(bool do_trace)
 {
-    if (!mStand) { throwError("trace"); }
+    if (!mStand) { throwError("trace"); return; }
     mStand->setProperty("trace", QJSValue(do_trace));
 }
 

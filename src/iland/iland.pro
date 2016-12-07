@@ -199,7 +199,8 @@ SOURCES += main.cpp \
     ../tools/scriptgrid.cpp \
     ../core/saplings.cpp \
     ../output/waterout.cpp \
-    ../core/dbhdistribution.cpp
+    ../core/dbhdistribution.cpp \
+    jstextarea.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -301,7 +302,8 @@ HEADERS += mainwindow.h \
     ../tools/scriptgrid.h \
     ../core/saplings.h \
     ../output/waterout.h \
-    ../core/dbhdistribution.h
+    ../core/dbhdistribution.h \
+    jstextarea.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

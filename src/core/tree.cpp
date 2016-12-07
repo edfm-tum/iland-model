@@ -89,6 +89,7 @@ Tree::Tree()
 float Tree::crownRadius() const
 {
     Q_ASSERT(mStamp!=0);
+    if (!mStamp) return 0.f;
     return mStamp->crownRadius();
 }
 

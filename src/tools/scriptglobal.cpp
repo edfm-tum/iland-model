@@ -162,6 +162,7 @@ int ScriptGlobal::year() const
 int ScriptGlobal::resourceUnitCount() const
 {
     Q_ASSERT(mModel!=0);
+    if (!mModel) return 0;
     return mModel->ruList().count();
 }
 
@@ -933,7 +934,7 @@ void ScriptGlobal::setupGlobalScripting()
 //    engine->globalObject().setProperty("alert", alert);
 
     // check if update necessary
-    if (engine->globalObject().property("print").isCallable())
+    if (engine->globalObject().property("include").isCallable())
         return;
 
     // wrapper functions for (former) stand-alone javascript functions
@@ -942,11 +943,11 @@ void ScriptGlobal::setupGlobalScripting()
                      "function include(x) { Globals.include(x); } \n" \
                      "function alert(x) { Globals.alert(x); } \n");
     // add a (fake) console.log / console.print
-    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
-                     "                print: function(x) { for(var propertyName in x)  " \
-                     "                                       console.log(propertyName + ': ' + x[propertyName]); " \
-                     "                                   } " \
-                     "              }");
+//    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
+//                     "                print: function(x) { for(var propertyName in x)  " \
+//                     "                                       console.log(propertyName + ': ' + x[propertyName]); " \
+//                     "                                   } " \
+//                     "              }");
 
 
     ScriptObjectFactory *factory = new ScriptObjectFactory;

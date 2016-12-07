@@ -365,13 +365,23 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
          </item>
          <item>
           <widget class="QLabel" name="label_5">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Below is a minimalistic Javascript Editor.&lt;/p&gt;&lt;p&gt;Use Ctrl+Enter to execute the current line of code, or a selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
-            <string>Enter command:</string>
+            <string>Enter Javascript:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="scriptCommand"/>
+          <widget class="JSTextArea" name="scriptCode"/>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="scriptCommand">
+           <property name="placeholderText">
+            <string>... enter javascript and press Enter</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_9">
@@ -1280,6 +1290,11 @@ QProgressBar::chunk {
    <extends>QWidget</extends>
    <header location="global">paintarea.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>JSTextArea</class>
+   <extends>QTextEdit</extends>
+   <header location="global">jstextarea.h</header>
   </customwidget>
  </customwidgets>
  <resources>

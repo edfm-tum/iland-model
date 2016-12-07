@@ -178,6 +178,7 @@ private slots:
     void mouseMove(const QPoint& pos);
     void mouseDrag(const QPoint& from, const QPoint &to, const Qt::MouseButton button);
     void mouseWheel(const QPoint& pos, int steps);
+    void executeJS(QString code);
     void on_visFon_toggled();
     void on_visDomGrid_toggled();
     void on_visImpact_toggled();
