@@ -1060,7 +1060,7 @@ void Model::calculateStockableArea()
                 ru->setID(-1);
             }
             if (valid>0 && ru->id()==-1) {
-                qDebug() << "Warning: a resource unit has id=-1 but stockable area (id was set to 0)!!! ru: " << ru->boundingBox() << "with index" << ru->index();
+                qDebug() << "Warning: a resource unit is marked as invalid (id=-1), but has stockable area (id was set to 0)!!! ru: " << ru->boundingBox() << "with index" << ru->index();
                 ru->setID(0);
                 // test-code
                 //GridRunner<HeightGridValue> runner(*mHeightGrid, ru->boundingBox());

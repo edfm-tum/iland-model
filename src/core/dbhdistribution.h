@@ -19,6 +19,7 @@
 #include <QObject>
 #include <QString>
 #include <QHash>
+#include <QVector>
 #ifndef DBHDISTRIBUTION_H
 #define DBHDISTRIBUTION_H
 

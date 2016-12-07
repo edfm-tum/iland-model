@@ -171,7 +171,12 @@ void StandLoader::processInit()
 
     // standgrid mode: load one large init file
     if (copy_mode=="standgrid") {
+        if (fileName.isEmpty()) {
+            qDebug() << "Stand initialization: no file specifed, starting with bare ground.";
+            return;
+        }
         fileName = GlobalSettings::instance()->path(fileName, "init");
+
         if (!QFile::exists(fileName))
             throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
         QString content = Helper::loadTextFile(fileName);
