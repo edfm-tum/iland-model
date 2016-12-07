@@ -369,7 +369,7 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Below is a minimalistic Javascript Editor.&lt;/p&gt;&lt;p&gt;Use Ctrl+Enter to execute the current line of code, or a selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Enter Javascript:</string>
+            <string>Enter Javascript (Ctrl+Enter to execute):</string>
            </property>
           </widget>
          </item>
@@ -402,16 +402,6 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
             <enum>Qt::RichText</enum>
            </property>
           </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Script Output</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTextEdit" name="scriptResult"/>
          </item>
         </layout>
        </widget>
