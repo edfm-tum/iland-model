@@ -354,8 +354,7 @@ MainWindow::MainWindow(QWidget *parent)
     font.setFamily("Courier");
     font.setFixedPitch(true);
     font.setPointSize(10);
-    ui->scriptResult->setFont(font);
-    ScriptGlobal::scriptOutput = ui->scriptResult;
+    ui->logOutput->setFont(font);
 
 }
 
@@ -1375,11 +1374,11 @@ void MainWindow::mouseWheel(const QPoint& pos, int steps)
 void MainWindow::executeJS(QString code)
 {
     // execute Javascript code
+    LogToWindow l; // force UI logging
     try {
 
         QString result = ScriptGlobal::executeScript(code);
         if (!result.isEmpty()) {
-            ui->scriptResult->append(result);
             qDebug() << result;
         }
     } catch(const IException &e) {
@@ -1845,7 +1844,6 @@ void MainWindow::on_reloadJavaScript_clicked()
         MSGRETURN("no model available.");
 
     ScriptGlobal::loadScript(ui->scriptActiveScriptFile->text());
-    ScriptGlobal::scriptOutput = ui->scriptResult;
 }
 
 void MainWindow::on_selectJavaScript_clicked()
@@ -1859,12 +1857,12 @@ void MainWindow::on_selectJavaScript_clicked()
 
     ui->scriptActiveScriptFile->setText(QString("%1").arg(fileName));
     qDebug() << "loaded Javascript file" << fileName;
-    ScriptGlobal::scriptOutput = ui->scriptResult;
 
 }
 
 void MainWindow::on_scriptCommand_returnPressed()
 {
+    LogToWindow l; // force UI logging
     QString command = ui->scriptCommand->text();
     if (ui->scriptCommandHistory->currentText() != command) {
         ui->scriptCommandHistory->insertItem(0, command);
@@ -1876,7 +1874,6 @@ void MainWindow::on_scriptCommand_returnPressed()
 
         QString result = ScriptGlobal::executeScript(command);
         if (!result.isEmpty()) {
-            ui->scriptResult->append(result);
             qDebug() << result;
         }
     } catch(const IException &e) {
