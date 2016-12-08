@@ -50,7 +50,7 @@ Map = {
     @param {string} file_name
     */
     /**
-    Retrieves the area of the polygon `stand_id` in square meters (m2). Returns -1, if `stand_id` is invalid.
+    Retrieves the area of the polygon `stand_id` in square meters (m2). Returns -1, if the map is not valid, and 0 if no pixels with the stand `stand_id` are on the map.
 
     @method area
     @param {integer} stand_id ID of the polygon for which to return the area.
