@@ -88,7 +88,13 @@ void Scheduler::run()
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
 
-        double p_sched = item->flags->activity()->scheduleProbability(item->stand);
+         double p_sched=0.;
+        if (!item->flags->activity()) {
+            qDebug() << "Invalid activity in Scheduler. Stand" << item->stand->id();
+        } else {
+          p_sched = item->flags->activity()->scheduleProbability(item->stand);
+        }
+
         item->scheduleScore = p_sched;
         item->calculate();
         if (item->stand->trace())

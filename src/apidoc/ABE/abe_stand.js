@@ -96,7 +96,7 @@ var stand = {
         // print the species id and the basal area for each available species.
         // note that the species are ordered by the basal area share.
         for (var i=0;i<stand.nspecies;++i)
-            log(stand.speciesId(i) + ": " + stand.basalArea(i));
+            log(stand.speciesId(i) + ": " + stand.speciesBasalArea(i));
 
   @property nspecies
   @type int
@@ -119,7 +119,7 @@ var stand = {
 /**
   Retrieve the basal area of the species at position `index`.
 
-  @method basalArea
+  @method speciesBasalArea
   @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
   @return {double} The basal area (m2/ha) of the species.*/
 
@@ -127,14 +127,14 @@ var stand = {
   Retrieve the basal area of the species with the species code 'speciescode'.
   Note that only trees with height > 4m are included.
 
-  @method basalAreaOf
+  @method speciesBasalAreaOf
   @param {string} speciescode The code of the species (e.g., 'piab').
   @return {double} The basal area (m2/ha) of the species, or 0 if the species is not present.*/
 
  /**
   Retrieve the relative basal area of the species 'speciescode'.
 
-  @method relBasalAreaOf
+  @method relSpeciesBasalAreaOf
   @param {string} speciescode The code of the species (e.g., 'piab').
   @return {double} The basal area (m2/ha) of the species, or 0 if the species is not present.*/
 
@@ -142,9 +142,9 @@ var stand = {
 *  Retrieve the basal area share (0..1) of the species at position `index`.
 *
 *      // get the share of the dominant species:
-*      log( stand.relBasalArea(0) * 100 + "%");
+*      log( stand.relSpeciesBasalArea(0) * 100 + "%");
 *
-*  @method basalAreaRel
+*  @method relSpeciesBasalArea
 *  @param {integer} index The index of the species (valid between 0 and `nspecies`-1).
 *  @return {double} The basal area share (0..1) of the species.*/
 

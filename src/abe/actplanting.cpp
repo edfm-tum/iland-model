@@ -220,6 +220,11 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             if (sgrid->standIDFromLIFCoord(runner.currentIndex()) != stand->id())
                 continue;
             //
+            if (clear) {
+                ResourceUnit *ru;
+                SaplingCell *sc=model->saplings()->cell(runner.currentIndex(),true, &ru);
+                model->saplings()->clearSaplings(sc,ru,true);
+            }
             if (drandom() < fraction) {
                 ResourceUnit *ru = model->ru(runner.currentCoord());
                 ru->saplingCell(runner.currentIndex())->addSapling(height, age, species->index());

@@ -90,7 +90,7 @@ void SpeciesResponse::calculate()
     int veg_end = pheno.vegetationPeriodEnd();
 
     // yearly response
-    const double nitrogen = mRu->resouceUnitVariables().nitrogenAvailable;
+    const double nitrogen = mRu->resouceUnitVariables().nitrogenAvailable + mRu->resouceUnitVariables().nitrogenAvailableDelta;
     // Nitrogen response: a yearly value based on available nitrogen
     mNitrogenResponse = mSpecies->nitrogenResponse( nitrogen );
     const double ambient_co2 = mRu->climate()->begin()->co2; // CO2 level of first day of year (co2 is static)

@@ -2020,6 +2020,7 @@ void MainWindow::writeSettings()
         settings.setValue(QString("file-%1").arg(i),mRecentFileList[i]);
     }
     settings.endGroup();
+    settings.setValue("javascript", ui->scriptCode->toPlainText());
 }
 void MainWindow::readSettings()
 {
@@ -2057,6 +2058,7 @@ void MainWindow::readSettings()
         }
      }
     settings.endGroup();
+    ui->scriptCode->setPlainText(settings.value("javascript").toString());
 }
 
 
