@@ -40,6 +40,7 @@ public slots:
     void addStand(const int standId);
 
     void saveToTextFile(QString filename);
+    void saveStandInfo(QString filename);
 
 public:
     DBHDistribution(QObject *parent=0);
@@ -50,7 +51,7 @@ public:
     void addResourceUnit(const ResourceUnit *ru);
     /// add/replace the DBH distribution for a stand denoted by `standId`. Use the trees
     /// in `tree_list`.
-    void addStand(const int standId, QVector<Tree *> &tree_list);
+    void addStand(const int standId, const double area, QVector<Tree *> &tree_list);
 
     /// get trees/ha of species `speciesID` in class in which `dbh` falls into
     double dbhClass(const QString &speciesId, const float dbh) const;
@@ -69,11 +70,12 @@ public:
     double totalArea() const { return mTotalArea; }
 private:
     struct SStandInfo {
-        SStandInfo(): standId(0), area(0.), volume(0.), basalarea(0.) {}
+        SStandInfo(): standId(0), area(0.), volume(0.), basalarea(0.), stems(0) {}
         int standId;
         double area;
         double volume;
         double basalarea;
+        int stems;
     };
 
     double mTotalArea; ///< landscape area in ha, used to scale tree density

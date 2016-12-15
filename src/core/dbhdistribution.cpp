@@ -68,11 +68,12 @@ void DBHDistribution::addStand(const int standId)
     QVector<QPair<Tree *, double> > trees;
     // load all trees for the stand
     mg->loadTrees(standId, trees);
+    double area = mg->area(standId);
     QVector<Tree*> tree_list;
     tree_list.reserve(trees.size());
     for (int i=0;i<trees.size();++i)
         tree_list.push_back( trees[i].first );
-    addStand(standId, tree_list);
+    addStand(standId, area, tree_list);
 }
 
 void DBHDistribution::addResourceUnit(const ResourceUnit *ru)
@@ -82,7 +83,7 @@ void DBHDistribution::addResourceUnit(const ResourceUnit *ru)
     }
 }
 
-void DBHDistribution::addStand(const int standId, QVector<Tree *> &tree_list)
+void DBHDistribution::addStand(const int standId, const double area, QVector<Tree *> &tree_list)
 {
     QVector<double*> &vec = mStands[standId];
     if (vec.size() == 0) {
@@ -100,10 +101,12 @@ void DBHDistribution::addStand(const int standId, QVector<Tree *> &tree_list)
     // add all trees of the stand
     SStandInfo info;
     info.standId = standId;
+    info.area = area;
     foreach(Tree* t, tree_list) {
         addTree(t, vec);
         info.volume += t->volume();
         info.basalarea += t->basalArea();
+        info.stems++;
     }
     mStandInfo[standId] = info; // store data
 
@@ -127,6 +130,24 @@ void DBHDistribution::saveToTextFile(QString filename)
     }
     Helper::saveToTextFile(path, content.join(QChar('\n')));
     qDebug() << "saved dbh distribution to text file" << path;
+}
+
+void DBHDistribution::saveStandInfo(QString filename)
+{
+    QString path = GlobalSettings::instance()->path(filename);
+    QStringList content;
+    content << "standId;area;basalArea;volume;stems";
+    QHash<int, SStandInfo >::const_iterator i = mStandInfo.constBegin();
+    while(i != mStandInfo.constEnd()) {
+        content << QString("%1;%2;%3;%4;%5").arg(i.value().standId)
+                   .arg(i.value().area)
+                   .arg(i.value().basalarea)
+                   .arg(i.value().volume)
+                   .arg(i.value().stems);
+        ++i;
+    }
+    Helper::saveToTextFile(path, content.join(QChar('\n')));
+    qDebug() << "saved stand information to text file" << path;
 }
 
 DBHDistribution::DBHDistribution(QObject *)

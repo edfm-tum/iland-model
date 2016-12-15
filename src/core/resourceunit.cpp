@@ -42,6 +42,8 @@
 #include "soil.h"
 #include "helper.h"
 
+double ResourceUnitVariables::nitrogenAvailableDelta = 0;
+
 ResourceUnit::~ResourceUnit()
 {
     if (mWater)
@@ -246,6 +248,13 @@ void ResourceUnit::newYear()
     mAggregatedLR = 0.;
     mEffectiveArea = 0.;
     mPixelCount = mStockedPixelCount = 0;
+
+    if (GlobalSettings::instance()->model()->ruList().first()==this && GlobalSettings::instance()->settings().hasNode("model.site.deltaAvailableNitrogen")) {
+        mUnitVariables.nitrogenAvailableDelta = GlobalSettings::instance()->settings().valueDouble("model.site.deltaAvailableNitrogen",0.);
+        if (mUnitVariables.nitrogenAvailableDelta != 0.)
+            qDebug() << "applying a global delta to available Nitrogen:" << mUnitVariables.nitrogenAvailableDelta << "kg N/ha/yr";
+    }
+
     snagNewYear();
     if (mSoil)
         mSoil->newYear();
