@@ -187,7 +187,7 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
     fraction = FMSTP::valueFromJs(value, "fraction", "0").toNumber();
     height = FMSTP::valueFromJs(value, "height", "0.05").toNumber();
     age = FMSTP::valueFromJs(value, "age", "1").toInt();
-    clear = FMSTP::valueFromJs(value, "clear", "false").toBool();
+    clear = FMSTP::boolValueFromJs(value, "clear", false);
 
     // pattern
     QString group = FMSTP::valueFromJs(value, "pattern", "").toString();
