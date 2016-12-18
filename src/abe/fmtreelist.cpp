@@ -144,9 +144,9 @@ int FMTreeList::removeMarkedTrees()
     return n_removed;
 }
 
-int FMTreeList::kill(QString filter)
+int FMTreeList::kill(QString filter, double fraction)
 {
-    return remove_trees(filter, 1., false);
+    return remove_trees(filter, fraction, false);
 }
 
 int FMTreeList::harvest(QString filter, double fraction)
