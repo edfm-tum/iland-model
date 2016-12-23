@@ -556,8 +556,13 @@ void SeedDispersal::clear()
         return;
     }
     // clear the map
-    float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
-    seed_map->initialize(background_value);
+    if (mProbMode) {
+        float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
+        seed_map->initialize(background_value);
+    } else {
+        // version >2016: background seeds are applied *after* distribution
+        seed_map->initialize(0.f);
+    }
     if (mHasExternalSeedInput) {
         // if external seed input is enabled, the buffer area of the seed maps is
         // "turned on", i.e. set to 1.
@@ -655,6 +660,13 @@ void SeedDispersal::execute()
         // fill seed map from source map
         distributeSeeds();
 
+        float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
+        if (background_value>0.f) {
+            // add a constant number of seeds on the map
+            mSeedMap.add(background_value);
+            mSeedMap.limit(0.f, 1.f);
+        }
+
     }
 #ifdef ILAND_GUI
     if (mDumpSeedMaps) {
@@ -675,6 +687,7 @@ void SeedDispersal::execute()
 
 /** scans the seed image and detects "edges".
     edges are then subsequently marked (set to -1). This is pass 1 of the seed distribution process.
+    ** version prior 2016 **
 */
 bool SeedDispersal::edgeDetection(Grid<float> *seed_map)
 {
@@ -737,6 +750,7 @@ bool SeedDispersal::edgeDetection(Grid<float> *seed_map)
 
 /** do the seed probability distribution.
     This is phase 2. Apply the seed kernel for each "edge" point identified in phase 1.
+    ** version prior 2016 **
 */
 void SeedDispersal::distribute(Grid<float> *seed_map)
 {
@@ -795,6 +809,9 @@ void SeedDispersal::distribute(Grid<float> *seed_map)
 // that always returns positive numbers: http://www.lemoda.net/c/modulo-operator/
 #define MOD(a,b) ((((a)%(b))+(b))%(b))
 
+/// main seed distribution function
+/// distributes seeds using distribution kernels and long distance dispersal from source cells
+/// see http://iland.boku.ac.at/seed+kernel+and+seed+distribution
 void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 {
     Grid<float> &sourcemap = seed_map ? *seed_map : mSourceMap; // switch to extra seed map if provided
@@ -808,8 +825,9 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
         fec *= mNonSeedYearFraction;
     for (float *p=sourcemap.begin(); p!=sourcemap.end(); ++p){
         if (*p) {
-            // if LAI  >3, then full potential is assumed, below LAI=3 a linear ramp is used
-            *p = std::min(*p / (sourcemap.cellsize()*sourcemap.cellsize()) /3.f, 3.f);
+            // if LAI  >3, then full potential is assumed, below LAI=3 a linear ramp is used;
+            // the value of *p is the sum(LA) of seed producing trees on the cell
+            *p = std::min(*p / (sourcemap.cellsize()*sourcemap.cellsize()) /3.f, 1.f);
         }
     }
 
@@ -937,7 +955,7 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
     // now the seed sources (0..1) are spatially distributed by the kernel (and LDD) without altering the magnitude;
     // now we include the fecundity (=seedling potential per m2 crown area), and convert to the establishment probability p_seed.
     // The number of (potential) seedlings per m2 on each cell is: cell * fecundity[m2]
-    // We assume that the availability of 10 potential seedlings/m2 is enough for unconstrained establishment;
+    // We assume that the availability of 100 potential seedlings/m2 is enough for unconstrained establishment;
     const float n_unlimited = 100.f;
     for (float *p=mSeedMap.begin(); p!=mSeedMap.end(); ++p){
         if (*p>0.f) {
