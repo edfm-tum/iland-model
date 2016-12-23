@@ -89,6 +89,8 @@ void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
 
 }
 
+/// establishment of saplings from seeds
+/// see http://iland.boku.ac.at/seed+kernel+and+seed+distribution and http://iland.boku.ac.at/establishment
 void Saplings::establishment(const ResourceUnit *ru)
 {
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
