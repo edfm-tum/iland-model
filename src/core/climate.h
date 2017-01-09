@@ -124,6 +124,7 @@ private:
     double mPrecipitationMonth[12]; ///< this years preciptitation sum (mm) per month
     double mTemperatureMonth[12]; ///< this years average temperature per month
     double mMeanAnnualTemperature; ///< mean temperature of the current year
+    static QVector<int> sampled_years; ///< list of sampled years to use
 };
 
 #endif // CLIMATE_H

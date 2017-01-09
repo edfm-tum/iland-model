@@ -29,7 +29,7 @@
 #include "timeevents.h"
 
 double ClimateDay::co2 = 350.; // base value of ambient CO2-concentration (ppm)
-QVector<int> sampled_years; // list of sampled years to use
+QVector<int> Climate::sampled_years; // list of sampled years to use
 
 
 
@@ -313,7 +313,7 @@ void Climate::nextYear()
         if (mRandomYearList.isEmpty()) {
             // random without list
             // make sure that the sequence of years is the same for the full landscape
-            if (sampled_years.size()<GlobalSettings::instance()->currentYear()) {
+            if (sampled_years.size()-1<GlobalSettings::instance()->currentYear()) {
                 while (sampled_years.size()-1 < GlobalSettings::instance()->currentYear())
                     sampled_years.append(irandom(0,mLoadYears));
             }
