@@ -713,12 +713,19 @@ void StandLoader::executeiLandInitStand(int stand_id)
     pixel_list.reserve(indices.size());
 
     foreach (int i, indices) {
-       SInitPixel p;
-       p.pixelOffset = grid->grid().indexOf(i); // index in the 10m grid
-       p.resource_unit = GlobalSettings::instance()->model()->ru( grid->grid().cellCenterPoint(p.pixelOffset));
-       if (mInitHeightGrid)
-           p.h_max = mInitHeightGrid->grid().constValueAtIndex(p.pixelOffset);
-       pixel_list.append(p);
+        SInitPixel p;
+        p.pixelOffset = grid->grid().indexOf(i); // index in the 10m grid
+        p.resource_unit = GlobalSettings::instance()->model()->ru( grid->grid().cellCenterPoint(p.pixelOffset));
+        if (mInitHeightGrid)
+            p.h_max = mInitHeightGrid->grid().constValueAtIndex(p.pixelOffset);
+        if (p.resource_unit)
+            pixel_list.append(p);
+        else
+            qDebug() << "Init: no valid resource unit at" << grid->grid().cellCenterPoint(p.pixelOffset) << "for stand" << stand_id << GlobalSettings::instance()->model()->ru( grid->grid().cellCenterPoint(p.pixelOffset));
+    }
+    if (pixel_list.isEmpty()) {
+        qDebug() << "Init: skipping stand" << stand_id << ", no valid pixels.";
+        return;
     }
     double area_factor = grid->area(stand_id) / cRUArea;
 

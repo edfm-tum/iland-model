@@ -1747,8 +1747,10 @@ void MainWindow::on_actionImageToClipboard_triggered()
     my_img.convertToFormat(QImage::Format_RGB32);
     //clipboard->setImage( my_img, QClipboard::Clipboard );
     QString pth = GlobalSettings::instance()->path("screenshot.png", "temp");
+    if (!QDir(pth).exists())
+        pth= GlobalSettings::instance()->path("screenshot.png");
     screenshot().save(pth);
-    qDebug() << "copied image to clipboard. save also to: " << pth;
+    qDebug() << "copied image to clipboard. Saved the image also to: " << pth;
     my_img.load(pth);
     QApplication::clipboard()->setImage(my_img);
 
