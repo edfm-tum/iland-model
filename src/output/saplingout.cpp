@@ -53,6 +53,9 @@ void SaplingOut::setup()
 void SaplingOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
+    if (!GlobalSettings::instance()->model()->saplings())
+        return;
+
 
     double n, avg_dbh, avg_height, avg_age;
     foreach(ResourceUnit *ru, m->ruList()) {
@@ -104,6 +107,8 @@ SaplingDetailsOut::SaplingDetailsOut()
 void SaplingDetailsOut::exec()
 {
     Model *m = GlobalSettings::instance()->model();
+    if (!GlobalSettings::instance()->model()->saplings())
+        return;
 
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)

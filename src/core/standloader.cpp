@@ -955,6 +955,10 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
     if (!stand_grid->isValid(stand_id))
         return 0;
 
+    if (!GlobalSettings::instance()->model()->saplings()) {
+        return 0;
+    }
+
     QList<int> indices = stand_grid->gridIndices(stand_id); // list of 10x10m pixels
     if (indices.isEmpty()) {
         qDebug() << "stand" << stand_id << "not in project area. No init performed.";
