@@ -74,8 +74,6 @@ private:
     Expression mLightResponseIntolerant; ///< light response function for the the most shade tolerant species
     Expression mLightResponseTolerant; ///< light response function for the most shade intolerant species
     Expression mLRICorrection; ///< function to modfiy LRI during read
-    /// container holding the seed maps
-    QList<SeedDispersal*> mSeedDispersal;
 
 };
 

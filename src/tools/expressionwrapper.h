@@ -66,5 +66,20 @@ private:
     const ResourceUnit *mRU;
 };
 
+/** SaplingWrapper encapsualates a sapling cohort (on a 2x2m pixel)
+  */
+struct SaplingTree;
+class SaplingWrapper: public ExpressionWrapper
+{
+public:
+    SaplingWrapper() : mSapling(0) {}
+    SaplingWrapper(const SaplingTree* saplingTree) : mSapling(saplingTree) {}
+    void setSaplingTree(const SaplingTree* saplingTree) { mSapling = saplingTree; }
+    virtual const QStringList getVariablesList();
+    virtual double value(const int variableIndex);
+
+private:
+    const SaplingTree *mSapling;
+};
 
 #endif // EXPRESSIONWRAPPER_H

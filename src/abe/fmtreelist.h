@@ -80,7 +80,7 @@ public slots:
 //    int managePct(int pctfrom, int pctto, int number);
 //    int manageAll(); ///< manage all trees in the list
     /// kill (i.e., cut down and do not remove from the forest) the trees in the list, filtered with 'filter'.
-    int kill(QString filter, double fraction=1.);
+    int kill(QString filter);
 
     /** manage 'fraction' of all trees [0..1] with 'filter'. Return number of removed trees. */
     int harvest(QString filter=QString(), double fraction=1.);
@@ -113,6 +113,9 @@ public slots:
     void prepareStandGrid(QString type, QString custom_expression=QString());
     void exportStandGrid(QString file_name);
     FloatGrid &standGrid() {return mStandGrid; }
+
+    /// modify sapling
+    int killSaplings(QString expression);
 
 
 private:

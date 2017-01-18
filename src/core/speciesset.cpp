@@ -48,7 +48,6 @@ SpeciesSet::~SpeciesSet()
 void SpeciesSet::clear()
 {
     qDeleteAll(mSpecies.values());
-    qDeleteAll(mSeedDispersal);
     mSpecies.clear();
     mActiveSpecies.clear();
 }
