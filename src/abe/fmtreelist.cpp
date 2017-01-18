@@ -30,6 +30,7 @@
 #include "helper.h"
 #include "fmstand.h"
 #include "fomescript.h"
+#include "saplings.h"
 
 namespace ABE {
 
@@ -144,9 +145,9 @@ int FMTreeList::removeMarkedTrees()
     return n_removed;
 }
 
-int FMTreeList::kill(QString filter, double fraction)
+int FMTreeList::kill(QString filter)
 {
-    return remove_trees(filter, fraction, false);
+    return remove_trees(filter, 1. /* all trees, 100%*/, false);
 }
 
 int FMTreeList::harvest(QString filter, double fraction)
@@ -517,6 +518,31 @@ void FMTreeList::exportStandGrid(QString file_name)
     file_name = GlobalSettings::instance()->path(file_name);
     Helper::saveToTextFile(file_name, gridToESRIRaster(mStandGrid) );
     qCDebug(abe) << "saved grid to file" << file_name;
+}
+
+int FMTreeList::killSaplings(QString expression)
+{
+    int nsap_removed=0;
+
+    SaplingWrapper sw;
+    Expression expr(expression.isEmpty() ? "true" : expression, &sw);
+
+    SaplingCellRunner scr(mStandId, GlobalSettings::instance()->model()->ABEngine()->standGrid());
+    while (SaplingCell *sc = scr.next()) {
+        if (sc){
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+                    sw.setSaplingTree(&sc->saplings[i]);
+                    if (expr.execute()) {
+                        sc->saplings[i].clear();
+                        nsap_removed++;
+                    }
+                }
+            }
+            sc->checkState();
+        }
+    }
+    return nsap_removed;
 }
 
 void FMTreeList::check_locks()

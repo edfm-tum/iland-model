@@ -38,6 +38,7 @@
 #include "standstatistics.h"
 #include "soil.h"
 #include "climate.h"
+#include "saplings.h"
 
 #include <QtCore>
 
@@ -183,6 +184,31 @@ double RUWrapper::value(const int variableIndex)
         return psum; }
     case 23: return mRU->climate()->totalRadiation();
 
+    }
+    return ExpressionWrapper::value(variableIndex);
+}
+
+
+////////////////////////////////////////////////
+//// SaplingTree Wrapper
+////////////////////////////////////////////////
+
+QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age";
+
+const QStringList SaplingWrapper::getVariablesList()
+{
+    return saplingVarList;
+}
+
+double SaplingWrapper::value(const int variableIndex)
+{
+    Q_ASSERT(mSapling!=0);
+    if (!mSapling)
+        return 0.;
+    switch (variableIndex - baseVarListCount) {
+    case 0: return mSapling->species_index;
+    case 1: return mSapling->height;
+    case 2: return mSapling->age;
     }
     return ExpressionWrapper::value(variableIndex);
 }

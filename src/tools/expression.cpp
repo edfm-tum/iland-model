@@ -728,7 +728,7 @@ inline double Expression::getModelVar(const int varIdx, ExpressionWrapper *objec
     if (model_object)
         return model_object->value(idx);
     // hier evtl. verschiedene objekte unterscheiden (Zahlenraum???)
-    throw IException("Expression::getModelVar: invalid modell variable!");
+    throw IException("Expression::getModelVar: invalid model variable!");
 }
 
 void Expression::setExternalVarSpace(const QStringList& ExternSpaceNames, double* ExternSpace)

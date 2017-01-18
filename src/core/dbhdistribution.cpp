@@ -25,8 +25,8 @@
 #include "helper.h"
 #include "mapgrid.h"
 
-// classes: 0..5, 5..10, 10..15, 15..20, ...., 95..100, >100 = 21 classes
-int DBHDistribution::mNClasses = 21;
+// classes: 0..5, 5..10, 10..15, 15..20, ...., 95..100, >100 = 21 classes, + 2 classes for total basal area / volume
+int DBHDistribution::mNClasses = 21 + 2;
 
 
 DBHDistribution::~DBHDistribution()
@@ -162,9 +162,13 @@ inline int DBHDistribution::classIndex(const float dbh) const
 
 QString DBHDistribution::classLabel(const int class_index)
 {
-    if (class_index==nClasses()-1) return QString(">=100");
+
     if (class_index==0) return QString("<5");
-    if (class_index>0 && class_index< nClasses())
+    if (class_index==nClasses()-1) return QString("volume");
+    if (class_index==nClasses()-2) return QString("basalArea");
+    if (class_index==nClasses()-3) return QString(">=100");
+
+    if (class_index>0 && class_index< nClasses()-2)
         return QString(">=%1 <%2").arg(class_index*5).arg((class_index+1)*5);
     return QString("out_of_bound");
 }
@@ -189,6 +193,8 @@ void DBHDistribution::internalSetup()
 void DBHDistribution::addTree(const Tree *t, QVector<double *> &distribution)
 {
      distribution[ t->species()->index() ][classIndex(t->dbh())] += 1. / mTotalArea;
+     distribution[ t->species()->index() ][nClasses()-2] += t->basalArea() / mTotalArea;
+     distribution[ t->species()->index() ][nClasses()-1] += t->volume() / mTotalArea;
 }
 
 void DBHDistribution::clear(QVector<double *> &distribution)

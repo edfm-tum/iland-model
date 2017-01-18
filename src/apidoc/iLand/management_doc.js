@@ -386,16 +386,7 @@ The parameters are remove-fractions, i.e. values of 0 mean no change, values of 
 @param {double} soilFrac fraction of SOM to remove..
 */
 
-/**
-Function to 'manage' snags, i.e. to cut down and move biomass to the soil pools.
-The spatial approach is as described for {{#crossLink "Management/removeSoilCarbon:method"}}{{/crossLink}}.
-The parameter `slash_fraction` describes (from 0..1) the fraction of biomass that should be transferred to the soil
-(0: nothing, 1: 100%). Currently, the standing woody debris pool (SWD) and the 'other wood' pools are treated equally.
 
-@method killSaplings
-@param {Map} map A Map object with a stand grid.
-@param {integer} standID the ID of the stand to process.
-*/
 
 
 
