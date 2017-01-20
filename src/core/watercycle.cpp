@@ -215,6 +215,8 @@ void WaterCycle::run()
         return;
     DebugTimer tw("water:run");
     WaterCycleData add_data;
+    //if (mRU->id()==20)
+    //    qDebug() << "ru 112";
 
     // preparations (once a year)
     getStandValues(); // fetch canopy characteristics from iLand (including weighted average for mCanopyConductance)

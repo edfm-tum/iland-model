@@ -280,8 +280,10 @@ void ResourceUnit::production()
 
     if (mAggregatedWLA==0. || mPixelCount==0) {
         // clear statistics of resourceunitspecies
-        for ( QList<ResourceUnitSpecies*>::const_iterator i=mRUSpecies.constBegin(); i!=mRUSpecies.constEnd(); ++i)
+        for ( QList<ResourceUnitSpecies*>::const_iterator i=mRUSpecies.constBegin(); i!=mRUSpecies.constEnd(); ++i) {
             (*i)->statistics().clear();
+            (*i)->setLAIfactor(0.);
+        }
         mEffectiveArea = 0.;
         mStockedArea = 0.;
         return;
