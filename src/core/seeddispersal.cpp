@@ -341,12 +341,32 @@ void SeedDispersal::finalizeExternalSeeds()
     mExternalSeedBaseMap = 0;
 }
 
-void SeedDispersal::seedProductionSerotiny(const QPoint &position_index)
+/// is called from the fire module (or from a JS script)
+void SeedDispersal::seedProductionSerotiny(const Tree* tree)
 {
     if (mSeedMapSerotiny.isEmpty())
         throw IException("Invalid use seedProductionSerotiny(): tried to set a seed source for a non-serotinous species!");
+
+    // if the tree is not considered as serotinous (i.e. seeds need external trigger such as fire), then do nothing
+    if (isTreeSerotinous(tree->age())==false)
+        return;
+
+    // no seed production if maturity age is not reached (species parameter) or if tree height is below 4m.
+    if (tree->age() > mMaturityYears && tree->height() > 4.f) {
+        // mSeedMapSerotiny.valueAtIndex(position_index.x()/mIndexFactor, position_index.y()/mIndexFactor)=1.f;
+        // todo:  (see setMatureTree): new way uses a "sourceMap" and writes not directly on seed map??
+        mSeedMapSerotiny.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor) += leaf_area;
+    }
+
+
     mSeedMapSerotiny.valueAtIndex(position_index.x()/mIndexFactor, position_index.y()/mIndexFactor)=1.f;
     mHasPendingSerotiny = true;
+
+
+
+
+
+
 }
 
 // ************ Kernel **************
@@ -636,8 +656,9 @@ void SeedDispersal::execute()
                 gridToImage(mSeedMapSerotiny, true, 0., 1.).save(QString("%1/seed_serotiny_before_%2_%3.png").arg(path).arg(mSpecies->id()).arg(year));
             }
 #endif
-            if (edgeDetection(&mSeedMapSerotiny))
-                distribute(&mSeedMapSerotiny);
+            //if (edgeDetection(&mSeedMapSerotiny))
+            //    distribute(&mSeedMapSerotiny);
+            distributeSeeds(&mSeedMapSerotiny);
             // copy back data
             float *sero=mSeedMapSerotiny.begin();
             for (float* p=mSeedMap.begin();p!=mSeedMap.end();++p, ++sero)
@@ -815,7 +836,7 @@ void SeedDispersal::distribute(Grid<float> *seed_map)
 void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 {
     Grid<float> &sourcemap = seed_map ? *seed_map : mSourceMap; // switch to extra seed map if provided
-    Grid<float> &kernel = mKernelSeedYear;
+    Grid<float> &kernel = (seed_map==&mSeedMapSerotiny ? mKernelSerotiny :  mKernelSeedYear); // if extra seed map is due to serotiny, than switch to serotinous kernel
 
     // *** estimate seed production (based on leaf area) ***
     // calculate number of seeds; the source map holds now m2 leaf area on 20x20m pixels
