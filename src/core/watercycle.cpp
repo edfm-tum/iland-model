@@ -153,13 +153,13 @@ void WaterCycle::getStandValues()
 inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
 {
     // constant parameters used for ground vegetation:
-    const double mPsiMin = 1.5; // MPa
+    const double mPsiMin = -1.5; // MPa
     const double mRespVpdExponent = -0.6;
     // see SpeciesResponse::soilAtmosphereResponses()
     double water_resp;
     // see Species::soilwaterResponse:
     const double psi_mpa = psi_kpa / 1000.; // convert to MPa
-    water_resp = limit( 1. - psi_mpa / mPsiMin, 0., 1.);
+    water_resp = limit( (psi_mpa - mPsiMin) / (-0.015 -  mPsiMin) , 0., 1.);
     // see species::vpdResponse
 
     double vpd_resp;
