@@ -783,7 +783,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
             if (t->species()->seedDispersal() && t->species()->isTreeSerotinous(t->age()) ) {
                 //SeedDispersal *sd = t->species()->seedDispersal();
-                t->species()->seedDispersal()->seedProductionSerotiny(t->positionIndex());
+                t->species()->seedDispersal()->seedProductionSerotiny(t);
             }
 
             if (!mOnlyFireSimulation) {

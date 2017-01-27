@@ -307,6 +307,18 @@ void Saplings::clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove
 
 }
 
+void Saplings::clearAllSaplings()
+{
+    GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), GlobalSettings::instance()->model()->grid()->metricRect());
+    ResourceUnit *ru;
+    while (runner.next()) {
+        SaplingCell *s = cell(runner.currentIndex(), true, &ru);
+        if (s) {
+            clearSaplings(s, ru, true);
+        }
+    }
+}
+
 int Saplings::addSprout(const Tree *t)
 {
     if (t->species()->saplingGrowthParameters().sproutGrowth==0.)

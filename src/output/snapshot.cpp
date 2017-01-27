@@ -65,7 +65,7 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
                "branch1C real, branch1N real, branch2C real, branch2N real, branch3C real, branch3N real, branch4C real, branch4N real, branch5C real, branch5N real, branchIndex integer)");
         // saplings/regeneration
         q.exec("drop table saplings");
-        q.exec("create table saplings (RUindex integer, species text, posx integer, posy integer, age integer, height float, stress_years integer)");
+        q.exec("create table saplings (RUindex integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
         qDebug() << "Snapshot - tables created. Database" << file_name;
     }
     return true;
@@ -127,6 +127,7 @@ bool Snapshot::loadSnapshot(const QString &file_name)
 
     if (!grid.loadFromFile(grid_file)) {
         qDebug() << "loading of snapshot: not a valid grid file (containing resource unit inidices) expected at:" << grid_file;
+        qDebug() << "assuming the same size of the project area as for the saved snapshot.";
         for (ResourceUnit **ru = GlobalSettings::instance()->model()->RUgrid().begin(); ru!=GlobalSettings::instance()->model()->RUgrid().end();++ru) {
             if (*ru)
                 mRUHash[ (*ru)->index() ] = *ru;
@@ -378,6 +379,7 @@ void Snapshot::saveTrees()
     int n = 0;
     db.transaction();
     while (Tree *t = at.next()) {
+        // loop over all trees; the AllTreeIterator returns all trees of the first RU, then all of the next, etc.
         q.addBindValue(t->id());
         q.addBindValue(t->ru()->index());
         q.addBindValue(t->mPositionIndex.x());
@@ -708,39 +710,53 @@ void Snapshot::saveSaplings()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    if (!q.prepare(QString("insert into saplings (RUindex, species, posx, posy, age, height, stress_years) " \
+    if (!q.prepare(QString("insert into saplings (RUindex, species_index, posx, posy, age, height, stress_years) " \
                            "values (?,?,?,?,?,?,?)")))
         throw IException(QString("Snapshot::saveSaplings: prepare:") + q.lastError().text());
 
     int n = 0;
     db.transaction();
-    throw IException("Snapshot::saveSaplings() not implemented");
-//    foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-//        foreach (const ResourceUnitSpecies *rus, ru->ruSpecies()) {
-//            const Sapling &sap = rus->sapling();
-//            if (sap.saplings().isEmpty())
-//                continue;
-//            foreach (const SaplingTreeOld &t, sap.saplings()) {
-//                if (!t.pixel)
-//                    continue;
-//                q.addBindValue(ru->index());
-//                q.addBindValue(rus->species()->id());
-//                QPoint p=t.coords();
-//                q.addBindValue(p.x());
-//                q.addBindValue(p.y());
-//                q.addBindValue(t.age.age);
-//                q.addBindValue(t.height);
-//                q.addBindValue(t.age.stress_years);
-//                if (!q.exec()) {
-//                    throw IException(QString("Snapshot::saveSaplings: execute:") + q.lastError().text());
-//                }
-//                if (++n % 10000 == 0) {
-//                    qDebug() << n << "saplings saved...";
-//                    QCoreApplication::processEvents();
-//                }
-//            }
-//        }
-//    }
+
+    if (!q.prepare(QString("insert into saplings (RUIndex, posx, posy, species_index, age, height, stress_years, flags) " \
+                           "values (?,?,?,?,?,?,?,?)")))
+        throw IException(QString("Snapshot::saveSaplings: prepare:") + q.lastError().text());
+
+
+    Saplings *saplings = GlobalSettings::instance()->model()->saplings();
+
+    FloatGrid &lif_grid= *GlobalSettings::instance()->model()->grid();
+    ResourceUnit *RU;
+    for (int y=0; y<lif_grid.sizeY();++y) {
+        for (int x=0;x<lif_grid.sizeX(); ++x) {
+            SaplingCell *sc=saplings->cell(QPoint(x,y), true, &RU);
+            if (sc){
+                for (int i=0;i<NSAPCELLS;++i) {
+                    if (sc->saplings[i].is_occupied()) {
+                        q.addBindValue(RU->index());
+                        q.addBindValue(x);
+                        q.addBindValue(y);
+                        q.addBindValue(sc->saplings[i].species_index);
+                        q.addBindValue(sc->saplings[i].age);
+                        q.addBindValue(sc->saplings[i].height);
+                        q.addBindValue(sc->saplings[i].stress_years);
+                        q.addBindValue(sc->saplings[i].flags);
+                        if (!q.exec()) {
+                            throw IException(QString("Snapshot::saveStandSnapshot, saplings: execute:") + q.lastError().text());
+                        }
+                        ++n;
+                        if (n<10000000 && ++n % 10000 == 0) {
+                           qDebug() << n << "saplings loaded...";
+                           QCoreApplication::processEvents();
+                       }
+                       if (n>=10000000 && ++n % 1000000 == 0) {
+                           qDebug() << n << "saplings loaded...";
+                           QCoreApplication::processEvents();
+                       }
+                    }
+                }
+            }
+        }
+    }
     db.commit();
     qDebug() << "Snapshot: finished saplings. N=" << n;
 }
@@ -750,19 +766,12 @@ void Snapshot::loadSaplings()
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
     q.setForwardOnly(true); // avoid huge memory usage in query component
-    if (!q.exec("select RUindex, species, posx, posy, age, height, stress_years from saplings")) {
+    if (!q.exec("select RUindex, posx, posy, species_index, age, height, stress_years, flags from saplings")) {
         qDebug() << "Error when loading from saplings table...." << q.lastError().text();
         return;
     }
     int ru_index = -1;
 
-    // clear all saplings in the whole project area: added for testing/debugging
-//    foreach( ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-//        foreach (ResourceUnitSpecies *rus, ru->ruSpecies()) {
-//            rus->changeSapling().clear();
-//            rus->changeSapling().clearStatistics();
-//        }
-//    }
 
     ResourceUnit *ru = 0;
     int n=0, ntotal=0;
@@ -771,15 +780,16 @@ void Snapshot::loadSaplings()
     int offsetx=0, offsety=0;
     Saplings *saplings = GlobalSettings::instance()->model()->saplings();
 
+    // clear all saplings in the model
+    saplings->clearAllSaplings();
+
+
     while (q.next()) {
         ci = 0;
         ru_index = q.value(ci++).toInt();
         ru = mRUHash[ru_index];
         if (!ru)
             continue;
-        Species *species = ru->speciesSet()->species(q.value(ci++).toString());
-        if (!species)
-            throw IException("Snapshot::loadSaplings: Invalid species");
 
         offsetx = ru->cornerPointOffset().x();
         offsety = ru->cornerPointOffset().y();
@@ -787,19 +797,22 @@ void Snapshot::loadSaplings()
         posx = offsetx + q.value(ci++).toInt() % cPxPerRU;
         posy = offsety + q.value(ci++).toInt() % cPxPerRU;
 
+        int species_index = q.value(ci++).toInt();
+
         SaplingCell *sc = saplings->cell(QPoint(posx, posy));
         if (!sc)
             continue;
 
         int age=q.value(ci++).toInt();
-        SaplingTree *st = sc->addSapling(q.value(ci++).toFloat(), age, species->index());
+        SaplingTree *st = sc->addSapling(q.value(ci++).toFloat(), age, species_index);
         if (!st)
             continue;
         st->stress_years = static_cast<unsigned char> (q.value(ci++).toInt());
+        st->flags = static_cast<unsigned char> (q.value(ci++).toInt());
         ++ntotal;
 
 
-         if (n<10000000 && ++n % 10000 == 0) {
+        if (n<10000000 && ++n % 10000 == 0) {
             qDebug() << n << "saplings loaded...";
             QCoreApplication::processEvents();
         }

@@ -24,6 +24,7 @@
 #include "debugtimer.h"
 #include "helper.h"
 #include "species.h"
+#include "tree.h"
 #ifdef ILAND_GUI
 #include <QtGui/QImage>
 #endif
@@ -112,7 +113,7 @@ void SeedDispersal::setup()
         mSeedMapSerotiny.initialize(0.);
 
         // set up the special seed kernel for post fire seed rain
-        createKernel(mKernelSerotiny, mTM_fecundity_cell * mSpecies->fecunditySerotiny(),1.);
+        createKernel(mKernelSerotiny, mTM_fecundity_cell,1.);
         qDebug() << "created extra seed map and serotiny seed kernel for species" << mSpecies->name() << "with fecundity factor" << mSpecies->fecunditySerotiny();
     }
     mHasPendingSerotiny = false;
@@ -348,18 +349,18 @@ void SeedDispersal::seedProductionSerotiny(const Tree* tree)
         throw IException("Invalid use seedProductionSerotiny(): tried to set a seed source for a non-serotinous species!");
 
     // if the tree is not considered as serotinous (i.e. seeds need external trigger such as fire), then do nothing
-    if (isTreeSerotinous(tree->age())==false)
+    if (tree->species()->isTreeSerotinous(tree->age())==false)
         return;
 
     // no seed production if maturity age is not reached (species parameter) or if tree height is below 4m.
-    if (tree->age() > mMaturityYears && tree->height() > 4.f) {
+    if (tree->age() > tree->species()->maturityAge() && tree->height() > 4.f) {
         // mSeedMapSerotiny.valueAtIndex(position_index.x()/mIndexFactor, position_index.y()/mIndexFactor)=1.f;
         // todo:  (see setMatureTree): new way uses a "sourceMap" and writes not directly on seed map??
-        mSeedMapSerotiny.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor) += leaf_area;
+        mSeedMapSerotiny.valueAtIndex(tree->positionIndex().x()/mIndexFactor, tree->positionIndex().y()/mIndexFactor) += tree->leafArea();
     }
 
 
-    mSeedMapSerotiny.valueAtIndex(position_index.x()/mIndexFactor, position_index.y()/mIndexFactor)=1.f;
+    //mSeedMapSerotiny.valueAtIndex(position_index.x()/mIndexFactor, position_index.y()/mIndexFactor)=1.f;
     mHasPendingSerotiny = true;
 
 
@@ -836,14 +837,23 @@ void SeedDispersal::distribute(Grid<float> *seed_map)
 void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 {
     Grid<float> &sourcemap = seed_map ? *seed_map : mSourceMap; // switch to extra seed map if provided
-    Grid<float> &kernel = (seed_map==&mSeedMapSerotiny ? mKernelSerotiny :  mKernelSeedYear); // if extra seed map is due to serotiny, than switch to serotinous kernel
+    bool serotiny = seed_map==&mSeedMapSerotiny;
+    Grid<float> &kernel = (serotiny ? mKernelSerotiny :  mKernelSeedYear); // if extra seed map is due to serotiny, than switch to serotinous kernel
 
-    // *** estimate seed production (based on leaf area) ***
-    // calculate number of seeds; the source map holds now m2 leaf area on 20x20m pixels
-    // after this step, each source cell has a value between 0 (no source) and 1 (fully covered cell)
-    float fec = species()->fecundity_m2();
-    if (!species()->isSeedYear())
-        fec *= mNonSeedYearFraction;
+    float fec=0.f;
+    if (serotiny) {
+        // special case serotiny
+        fec = species()->fecunditySerotiny();
+    } else {
+        // *** estimate seed production (based on leaf area) ***
+        // calculate number of seeds; the source map holds now m2 leaf area on 20x20m pixels
+        // after this step, each source cell has a value between 0 (no source) and 1 (fully covered cell)
+        fec = species()->fecundity_m2();
+        if (!species()->isSeedYear())
+            fec *= mNonSeedYearFraction;
+
+    }
+
     for (float *p=sourcemap.begin(); p!=sourcemap.end(); ++p){
         if (*p) {
             // if LAI  >3, then full potential is assumed, below LAI=3 a linear ramp is used;
@@ -852,28 +862,6 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
         }
     }
 
-    // sink mode
-
-    //    // now look for each pixel in the targetmap and sum up seeds*kernel
-    //    int idx=0;
-    //    int offset = kernel.sizeX() / 2; // offset is the index of the center pixel
-    //    //const Grid<ResourceUnit*> &ru_map = GlobalSettings::instance()->model()->RUgrid();
-    //    DebugTimer tsink("seed_sink"); {
-    //    for (float *t=mSeedMap.begin(); t!=mSeedMap.end(); ++t, ++idx) {
-    //        // skip out-of-project areas
-    //        //if (!ru_map.constValueAtIndex(mSeedMap.index5(idx)))
-    //        //    continue;
-    //        // apply the kernel
-    //        QPoint sm=mSeedMap.indexOf(t)-QPoint(offset, offset);
-    //        for (int iy=0;iy<kernel.sizeY();++iy) {
-    //            for (int ix=0;ix<kernel.sizeX();++ix) {
-    //                if (sourcemap.isIndexValid(sm.x()+ix, sm.y()+iy))
-    //                    *t+=sourcemap(sm.x()+ix, sm.y()+iy) * kernel(ix, iy);
-    //            }
-    //        }
-    //    }
-    //    } // debugtimer
-    //    mSeedMap.initialize(0.f); // just for debugging...
 
     int offset = kernel.sizeX() / 2; // offset is the index of the center pixel
     // source mode
@@ -892,7 +880,7 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
                     }
                 }
                 // long distance dispersal
-                if (!mLDDDensity.isEmpty()) {
+                if (!serotiny && !mLDDDensity.isEmpty()) {
                     QPoint pt=sourcemap.indexOf(src);
 
                     for (int r=0;r<mLDDDensity.size(); ++r) {
@@ -942,7 +930,7 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
                     }
                 }
                 // long distance dispersal
-                if (!mLDDDensity.isEmpty()) {
+                if (!serotiny && !mLDDDensity.isEmpty()) {
 
                     for (int r=0;r<mLDDDensity.size(); ++r) {
                         float ldd_val = mLDDSeedlings / fec; // pixels will have this probability [note: fecundity will be multiplied below]

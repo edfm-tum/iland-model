@@ -113,7 +113,7 @@ int Management::disturbanceKill(double stem_to_soil_fraction, double  stem_to_sn
         if (is_fire) {
             if (t->species()->seedDispersal() && t->species()->isTreeSerotinous(t->age()) ) {
                 //SeedDispersal *sd = t->species()->seedDispersal();
-                t->species()->seedDispersal()->seedProductionSerotiny(t->positionIndex());
+                t->species()->seedDispersal()->seedProductionSerotiny(t);
             }
         }
     }

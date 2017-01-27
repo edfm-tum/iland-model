@@ -143,6 +143,7 @@ public:
     double lightResponse(const double lightResourceIndex) const {return mSet->lightResponse(lightResourceIndex, mLightResponseClass); }
     double psiMin() const { return mPsiMin; }
     // parameters for seed dispersal
+    int maturityAge() const { return mMaturityYears; }
     void treeMigKernel(double &ras1, double &ras2, double &ks) const { ras1=mTM_as1; ras2=mTM_as2; ks=mTM_ks; }
     double fecundity_m2() const { return mFecundity_m2; }
     double nonSeedYearFraction() const { return mNonSeedYearFraction; }

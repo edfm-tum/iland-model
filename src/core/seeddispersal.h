@@ -22,6 +22,7 @@
 #include <QHash>
 #include "grid.h"
 class Species;
+class Tree;
 
 class SeedDispersal
 {
@@ -44,7 +45,7 @@ public:
             mSourceMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor) += leaf_area;
     }
     /// extra seed rain of serotinous species at 'position_index'
-    void seedProductionSerotiny(const QPoint &position_index);
+    void seedProductionSerotiny(const Tree *tree);
 
     // operations
     void clear(); ///< clears the grid
