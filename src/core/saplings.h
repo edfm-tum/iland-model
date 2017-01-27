@@ -182,6 +182,8 @@ public:
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass);
     /// clear all saplings on a given cell 's' (if 'remove_biomass' is true: biomass removed from system (e.g. burnt))
     void clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass);
+    /// clear all saplings, biomass is removed (not routed to the soil layer)
+    void clearAllSaplings();
 
     /// generate vegetative offspring from 't' (sprouts)
     int addSprout(const Tree *t);
