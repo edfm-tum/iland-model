@@ -406,7 +406,7 @@ void SeedDispersal::createKernel(Grid<float> &kernel, const double max_seed, con
      kernel.multiply(scale_area/sum);
 
 
-    if (mProbMode) {
+    if (mProbMode) { // old version
         // probabilities are derived in multiplying by seed number, and dividing by occupancy criterion
         float fecundity_factor = static_cast<float>( max_seed / occupation);
         kernel.multiply( fecundity_factor );
@@ -609,6 +609,12 @@ void SeedDispersal::clear()
                             seed_map->valueAtIndex(ix,iy)=value;
                         }
                     }
+            if (!mProbMode) {
+               // scale external seed values to have pixels with LAI=3
+                for (float *p=seed_map->begin(); p!=seed_map->end(); ++p)
+                   *p *= 3.f * seed_map->cellsize()*seed_map->cellsize();
+            }
+
         } else {
             qDebug() << "external seed input: Error: invalid buffer size???";
         }

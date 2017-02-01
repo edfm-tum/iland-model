@@ -233,6 +233,7 @@ private:
     friend class TreeRemovedOut;
     friend class LandscapeRemovedOut;
     friend class Snapshot;
+    friend class SnapshotItem;
 };
 
 /// internal data structure which is passed between function and to statistics
