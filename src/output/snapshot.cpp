@@ -35,7 +35,75 @@
 
 #include <QString>
 #include <QtSql>
+#include <QDataStream>
 //#include <QVector3D>
+
+
+class SnapshotItem {
+public:
+    void setTree(const Tree *tree, QPointF &offset)
+    {
+        id = tree->id();
+        x = tree->position().x() + offset.x();
+        y = tree->position().y() + offset.y();
+        species = tree->species()->id();
+        age = tree->age();
+        height = tree->height();
+        dbh = tree->dbh();
+        leaf_area = tree->leafArea();
+        opacity = tree->mOpacity;
+        bmFoliage = tree->biomassFoliage();
+        bmStem = tree->biomassStem();
+        bmFineRoot = tree->biomassFineRoot();
+        bmCoarseRoot = tree->biomassCoarseRoot();
+        npp_reserve = tree->mNPPReserve;
+        stress_index = tree->mStressIndex;
+
+    }
+    void setSapling(const SaplingTree &sap, QPointF &location) {
+        x = location.x();
+        y = location.y();
+        species_index = sap.species_index;
+        sap_age = sap.age;
+        height = sap.height;
+        sap_stress = sap.stress_years;
+        sap_flags = sap.flags;
+    }
+
+    void insertTreeToDataStream( QDataStream& dataStream ) const
+    {
+        dataStream << id << x << y << species << age << height << dbh;
+        dataStream << leaf_area << opacity << bmFoliage << bmStem << bmFineRoot << bmCoarseRoot;
+        dataStream << npp_reserve << stress_index;
+    }
+    void extractTreeFromDataStream( QDataStream& dataStream ) {
+        dataStream >> id >> x >> y >> species >> age >> height >> dbh;
+        dataStream >> leaf_area >> opacity >> bmFoliage >> bmStem >> bmFineRoot >> bmCoarseRoot;
+        dataStream >> npp_reserve >> stress_index;
+    }
+    void insertSaplingToDataStream( QDataStream& dataStream ) const
+    {
+        dataStream << x << y << species_index << sap_age << height << sap_stress << sap_flags;
+    }
+    void extractSaplingFromDataStream( QDataStream& dataStream ) {
+        dataStream >> x >> y >> species_index >> sap_age >> height >> sap_stress >> sap_flags;
+    }
+
+// variables
+int id;
+double x,y;
+QString species;
+int age;
+float height, dbh;
+float leaf_area;
+float opacity;
+float bmFoliage, bmStem, bmFineRoot, bmCoarseRoot;
+float npp_reserve, stress_index;
+// for saplings
+int species_index;
+unsigned short sap_age;
+unsigned char sap_stress, sap_flags;
+};
 
 
 Snapshot::Snapshot()
@@ -186,6 +254,7 @@ bool Snapshot::loadSnapshot(const QString &file_name)
 
 bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, const QString &file_name)
 {
+    DebugTimer t("saveStandSnapshot");
     // Check database
     QSqlDatabase db=QSqlDatabase::database("snapshotstand");
     if (!db.isOpen()) {
@@ -197,10 +266,14 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
             QSqlQuery q(db);
             // trees
             q.exec("drop table trees_stand");
-            q.exec("create table trees_stand (standID integer, ID integer, posX integer, posY integer, species text,  age integer, height real, dbh real, leafArea real, opacity real, foliageMass real, woodyMass real, fineRootMass real, coarseRootMass real, NPPReserve real, stressIndex real)");
+            //q.exec("create table trees_stand (standID integer, ID integer, posX integer, posY integer, species text,  age integer, height real, dbh real, leafArea real, opacity real, foliageMass real, woodyMass real, fineRootMass real, coarseRootMass real, NPPReserve real, stressIndex real)");
+            //q.exec("create index on trees_stand (standID)");
+            q.exec("create table trees_stand (standID integer, trees BLOB)");
             // saplings/regeneration
             q.exec("drop table saplings_stand");
-            q.exec("create table saplings_stand (standID integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
+            //q.exec("create table saplings_stand (standID integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
+            //q.exec("create index on saplings_stand (standID)");
+            q.exec("create table saplings_stand (standID integer, saplings BLOB)");
 
         }
     }
@@ -208,65 +281,61 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
     QSqlQuery q(db);
     q.exec(QString("delete from trees_stand where standID=%1").arg(stand_id));
 
-    if (!q.prepare(QString("insert into trees_stand (standID, ID, posX, posY, species,  age, height, dbh, leafArea, opacity, foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex) " \
-                      "values (:standid, :id, :x, :y, :spec, :age, :h, :d, :la, :opa, :mfol, :mwood, :mfr, :mcr, :npp, :si)")))
+    if (!q.prepare(QString("insert into trees_stand (standID, trees) " \
+                           "values (:standid, :blob)")))
         throw IException(QString("Snapshot::saveTrees: prepare:") + q.lastError().text());
 
     db.transaction();
+    q.addBindValue(stand_id);
+
+    SnapshotItem tsn;
+    QByteArray tree_container;
+    QDataStream tree_writer(&tree_container, QIODevice::WriteOnly);
+    tree_writer << (quint32)0xFFEEEEDD; // good old feed... the magic phrase
+
     QPointF offset = GisGrid::modelToWorld(QPointF(0.,0.));
     QList<Tree*> tree_list = stand_grid->trees(stand_id);
     QList<Tree*>::const_iterator it;
-    for (it = tree_list.constBegin(); it!= tree_list.constEnd(); ++it)
-    {
+    for (it = tree_list.constBegin(); it!= tree_list.constEnd(); ++it) {
         Tree *t = *it;
-        q.addBindValue(stand_id);
-        q.addBindValue(t->id());
-        q.addBindValue(t->position().x() + offset.x());
-        q.addBindValue(t->position().y() + offset.y());
-        q.addBindValue(t->species()->id());
-        q.addBindValue(t->age());
-        q.addBindValue(t->height());
-        q.addBindValue(t->dbh());
-        q.addBindValue(t->leafArea());
-        q.addBindValue(t->mOpacity);
-        q.addBindValue(t->biomassFoliage());
-        q.addBindValue(t->biomassStem());
-        q.addBindValue(t->biomassFineRoot());
-        q.addBindValue(t->biomassCoarseRoot());
-        q.addBindValue(t->mNPPReserve);
-        q.addBindValue(t->mStressIndex);
-        if (!q.exec()) {
-            throw IException(QString("Snapshot::saveStandSnapshot, Trees: execute:") + q.lastError().text());
-        }
-
+        tsn.setTree(t, offset);
+        tsn.insertTreeToDataStream(tree_writer); // stream tree information to the buffer
     }
+
+    // store all trees as a blob
+    q.addBindValue(tree_container);
+
+    if (!q.exec()) {
+        throw IException(QString("Snapshot::saveStandSnapshot, Trees: execute:") + q.lastError().text());
+    }
+
     // save saplings
     // loop over all pixels, only when regeneration is enabled
     if (GlobalSettings::instance()->model()->settings().regenerationEnabled) {
         q.exec(QString("delete from saplings_stand where standID=%1").arg(stand_id));
 
-        if (!q.prepare(QString("insert into saplings_stand (standID, posx, posy, species_index, age, height, stress_years, flags) " \
-                               "values (?,?,?,?,?,?,?,?)")))
+        if (!q.prepare(QString("insert into saplings_stand (standID, saplings) " \
+                               "values (?,?)")))
             throw IException(QString("Snapshot::saveSaplings: prepare:") + q.lastError().text());
 
+        QByteArray sap_container;
+        QDataStream sap_writer(&sap_container, QIODevice::WriteOnly);
+        sap_writer << (quint32)0xFFEEEEDD; // good old feed... the magic phrase
+
+        q.addBindValue(stand_id);
 
         SaplingCellRunner scr(stand_id, stand_grid);
         while (SaplingCell *sc = scr.next()) {
             for (int i=0;i<NSAPCELLS;++i)
                 if (sc->saplings[i].is_occupied()) {
-                    q.addBindValue(stand_id);
-                    QPointF t = scr.currentCoord();
-                    q.addBindValue(t.x() + offset.x());
-                    q.addBindValue(t.y() + offset.y());
-                    q.addBindValue(sc->saplings[i].species_index);
-                    q.addBindValue(sc->saplings[i].age);
-                    q.addBindValue(sc->saplings[i].height);
-                    q.addBindValue(sc->saplings[i].stress_years);
-                    q.addBindValue(sc->saplings[i].flags);
-                    if (!q.exec()) {
-                        throw IException(QString("Snapshot::saveStandSnapshot, saplings: execute:") + q.lastError().text());
-                    }
+                    QPointF t = scr.currentCoord() + offset;
+                    tsn.setSapling(sc->saplings[i], t);
+                    tsn.insertSaplingToDataStream(sap_writer);
                 }
+        }
+        q.addBindValue(sap_container);
+        if (!q.exec()) {
+            throw IException(QString("Snapshot::saveStandSnapshot, saplings: execute:") + q.lastError().text());
         }
     }
 
@@ -294,39 +363,51 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
     // load from database
     QSqlQuery q(db);
     q.setForwardOnly(true);
-    q.exec(QString("select standID, ID, posX, posY, species,  age, height, dbh, leafArea, opacity, "
-                   "foliageMass, woodyMass, fineRootMass, coarseRootMass, NPPReserve, stressIndex "
+    q.exec(QString("select trees "
                    "from trees_stand where standID=%1").arg(stand_id));
     QRectF extent = GlobalSettings::instance()->model()->extent();
     int n=0, sap_n=0, n_sap_removed=0;
-    while (q.next()) {
-        QPointF coord(GisGrid::worldToModel(QPointF(q.value(2).toInt(), q.value(3).toInt())));
-        if (!extent.contains(coord))
-            continue;
-        ResourceUnit *ru = GlobalSettings::instance()->model()->ru(coord);
-        if (!ru)
-            continue;
-        Tree &t = ru->newTree();
-        t.setRU(ru);
-        t.mId = q.value(1).toInt();
-        t.setPosition(coord);
-        Species *s = GlobalSettings::instance()->model()->speciesSet()->species(q.value(4).toString());
-        if (!s)
-            throw IException("Snapshot::loadTrees: Invalid species");
-        t.setSpecies(s);
-        t.mAge = q.value(5).toInt();
-        t.mHeight = q.value(6).toFloat();
-        t.mDbh = q.value(7).toFloat();
-        t.mLeafArea = q.value(8).toFloat();
-        t.mOpacity = q.value(9).toFloat();
-        t.mFoliageMass = q.value(10).toFloat();
-        t.mWoodyMass = q.value(11).toFloat();
-        t.mFineRootMass = q.value(12).toFloat();
-        t.mCoarseRootMass = q.value(13).toFloat();
-        t.mNPPReserve = q.value(14).toFloat();
-        t.mStressIndex = q.value(15).toFloat();
-        t.mStamp = s->stamp(t.mDbh, t.mHeight);
-        n++;
+    if (q.next()) {
+        QByteArray data = q.value(0).toByteArray();
+        QDataStream st(data);
+        quint32 magic;
+        st >> magic;
+        if (magic!=0xFFEEEEDD)
+            throw IException(QString("loadStandSnapshot: invalid data for trees of stand").arg(stand_id));
+        SnapshotItem item;
+        while (!st.atEnd()) {
+           // load
+            item.extractTreeFromDataStream(st);
+
+           QPointF coord(GisGrid::worldToModel(QPointF(item.x, item.y)));
+           if (!extent.contains(coord))
+               continue;
+           ResourceUnit *ru = GlobalSettings::instance()->model()->ru(coord);
+           if (!ru)
+               continue;
+           Tree &t = ru->newTree();
+           t.setRU(ru);
+           t.mId = item.id;
+           t.setPosition(coord);
+           Species *s = GlobalSettings::instance()->model()->speciesSet()->species(item.species);
+           if (!s)
+               throw IException("Snapshot::loadTrees: Invalid species");
+           t.setSpecies(s);
+           t.mAge = item.age;
+           t.mHeight = item.height;
+           t.mDbh = item.dbh;
+           t.mLeafArea = item.leaf_area;
+           t.mOpacity = item.opacity;
+           t.mFoliageMass = item.bmFoliage;
+           t.mWoodyMass = item.bmStem;
+           t.mFineRootMass = item.bmFineRoot;
+           t.mCoarseRootMass = item.bmCoarseRoot;
+           t.mNPPReserve = item.npp_reserve;
+           t.mStressIndex = item.stress_index;
+           t.mStamp = s->stamp(t.mDbh, t.mHeight);
+           n++;
+
+        }
     }
 
     // now the saplings
@@ -339,26 +420,36 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         }
 
         // (2) load saplings from database
-        q.exec(QString("select posx, posy, species_index, age, height, stress_years, flags "
+        q.exec(QString("select saplings "
                        "from saplings_stand where standID=%1").arg(stand_id));
-        while (q.next()) {
-            QPointF coord(GisGrid::worldToModel(QPointF(q.value(0).toInt(), q.value(1).toInt())));
-            if (!extent.contains(coord))
-                continue;
-            SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(GlobalSettings::instance()->model()->grid()->indexAt(coord));
-            if (!sc)
-                continue;
-            if (SaplingTree *st = sc->addSapling(q.value(4).toFloat(),
-                                                 q.value(3).toInt(),
-                                                 q.value(2).toInt())) {
-                st->stress_years = static_cast<unsigned char>(q.value(5).toChar().toLatin1());
-                st->flags = static_cast<unsigned char>(q.value(6).toChar().toLatin1());
+        if (q.next()) {
+            QByteArray data = q.value(0).toByteArray();
+            QDataStream st(data);
+            quint32 magic;
+            st >> magic;
+            if (magic!=0xFFEEEEDD)
+                throw IException(QString("loadStandSnapshot: invalid data for saplings of stand").arg(stand_id));
+            SnapshotItem item;
+            while (!st.atEnd()) {
+                item.extractSaplingFromDataStream(st);
+
+                QPointF coord(GisGrid::worldToModel(QPointF(item.x, item.y)));
+                if (!extent.contains(coord))
+                    continue;
+                SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(GlobalSettings::instance()->model()->grid()->indexAt(coord));
+                if (!sc)
+                    continue;
+                if (SaplingTree *st = sc->addSapling(item.height,
+                                                     item.sap_age,
+                                                     item.species_index)) {
+                    st->stress_years = item.sap_stress;
+                    st->flags = item.sap_flags;
+                }
+                sap_n++;
             }
-            sap_n++;
-
         }
-
     }
+
     // clean up
     GlobalSettings::instance()->model()->cleanTreeLists(true);
 
