@@ -37,6 +37,7 @@ public:
     void clear(); ///< call before trees are aggregated
     void clearOnlyTrees(); ///< clear the statistics only for tree biomass (keep NPP, regen, ...)
     void calculate(); ///< call after all trees are processed (postprocessing)
+    void calculateAreaWeighted(); ///< call after a series of addAreaWeighted
     // getters
     double count() const { return mCount; }
     double dbh_avg() const { return mAverageDbh; } ///< average dbh (cm)

@@ -140,6 +140,22 @@ void StandStatistics::calculate()
     }
 }
 
+void StandStatistics::calculateAreaWeighted()
+{
+    // let a= area ru / total area: (see addAreaWeighted())
+    // mAverageDbh = sum( count_ha * average_dbh * a )
+    // mCount = sum( count_ha * a )
+
+    // calculate averages
+    if (mCount>0.){
+        mAverageDbh=mSumDbh / mCount;
+        mAverageHeight=mSumHeight / mCount;
+    }
+    if (mSaplingCount>0.) {
+        mAverageSaplingAge=mSumSaplingAge / mSaplingCount;
+    }
+}
+
 void StandStatistics::add(const StandStatistics &stat)
 {
     mCount+=stat.mCount;
@@ -171,13 +187,14 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
     // aggregates that are not scaled to hectares
     mCount+=stat.mCount * weight;
     mSumBasalArea+=stat.mSumBasalArea * weight;
-    mSumDbh+=stat.mSumDbh * weight;
-    mSumHeight+=stat.mSumHeight * weight;
+    mSumDbh+=stat.mAverageDbh * stat.mCount * weight;
+    mSumHeight+=stat.mAverageHeight * stat.mCount * weight;
+    mSumSaplingAge+=stat.mAverageSaplingAge * stat.mSaplingCount * weight;
     mSumVolume+=stat.mSumVolume * weight;
     // averages that are scaled to per hectare need to be scaled
-    mAverageDbh+=stat.mAverageDbh * weight;
-    mAverageHeight+=stat.mAverageHeight * weight;
-    mAverageSaplingAge+=stat.mAverageSaplingAge * weight;
+    //mAverageDbh+=stat.mAverageDbh * weight;
+    //mAverageHeight+=stat.mAverageHeight * weight;
+    //mAverageSaplingAge+=stat.mAverageSaplingAge * weight;
     mLeafAreaIndex += stat.mLeafAreaIndex * weight;
 
     mNPP += stat.mNPP * weight;
@@ -187,7 +204,7 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
     // regeneration
     mCohortCount += stat.mCohortCount * weight;
     mSaplingCount += stat.mSaplingCount * weight;
-    mSumSaplingAge += stat.mSumSaplingAge * weight;
+
     // carbon/nitrogen pools
     mCStem += stat.mCStem * weight; mNStem += stat.mNStem * weight;
     mCBranch += stat.mCBranch * weight; mNBranch += stat.mNBranch * weight;
