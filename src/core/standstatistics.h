@@ -84,8 +84,8 @@ private:
     double mNPPabove;
     double mNPPsaplings; // carbon gain of saplings
     // regeneration layer
-    int mCohortCount; ///< number of cohrots
-    int mSaplingCount; ///< number of sapling (Reinekes Law)
+    double mCohortCount; ///< number of cohrots
+    double mSaplingCount; ///< number of sapling (Reinekes Law)
     double mSumSaplingAge;
     double mAverageSaplingAge;
     // carbon and nitrogen pools

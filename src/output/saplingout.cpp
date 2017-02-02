@@ -73,7 +73,7 @@ void SaplingOut::exec()
             const StandStatistics &stat = rus->constStatistics();
             const SaplingStat &sap = const_cast<ResourceUnitSpecies*>(rus)->saplingStat();
 
-            if (stat.saplingCount()==0)
+            if (stat.cohortCount()==0)
                 continue;
             *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
 
