@@ -249,7 +249,7 @@ void SeedDispersal::setupExternalSeeds()
     // right to left
     for (int y=0;y<mExternalSeedBaseMap->sizeY();y++) {
         for (int x=mExternalSeedBaseMap->sizeX();x>=0;--x) {
-            if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.)
+            if (mExternalSeedBaseMap->valueAtIndex(x, y)!=1.f)
                 continue;
             int look_forward = std::max(x - seedbelt_width, 0);
             if (mExternalSeedBaseMap->valueAtIndex(look_forward, y)==-1.f) {

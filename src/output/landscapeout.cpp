@@ -83,9 +83,11 @@ void LandscapeOut::exec()
         }
     }
     // now add to output stream
-    QMap<QString, StandStatistics>::const_iterator i = mLandscapeStats.constBegin();
-    while (i != mLandscapeStats.constEnd()) {
-        const StandStatistics &stat = i.value();
+    QMap<QString, StandStatistics>::iterator i = mLandscapeStats.begin();
+    while (i != mLandscapeStats.end()) {
+        StandStatistics &stat = i.value();
+        stat.calculateAreaWeighted(); // calculate average dbh, height
+
         *this << currentYear() << i.key(); // keys: year, species
         *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                               << stat.volume() << stat.totalCarbon() << stat.gwl() << stat.basalArea()
