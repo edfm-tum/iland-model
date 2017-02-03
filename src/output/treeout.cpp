@@ -110,6 +110,7 @@ TreeRemovedOut::TreeRemovedOut()
 
 }
 
+QMutex protect_output;
 void TreeRemovedOut::execRemovedTree(const Tree *t, int reason)
 {
     if (!mFilter.isEmpty()) { // skip trees if filter is present
@@ -119,6 +120,7 @@ void TreeRemovedOut::execRemovedTree(const Tree *t, int reason)
         if (!mFilter.execute())
             return;
     }
+    QMutexLocker protector(&protect_output); // output creation can come from many threads
 
     *this << currentYear() << t->ru()->index() << t->ru()->id() << t->species()->id();
     *this << t->id()  << reason;
