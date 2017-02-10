@@ -82,6 +82,7 @@ public:
     ResourceUnit *ru() { return mRU.front(); }
     ResourceUnit *ru(QPointF coord); ///< ressource unit at given coordinates
     ResourceUnit *ru(int index) { return (index>=0&&index<mRU.count())? mRU[index] : NULL; } ///< get resource unit by index
+    ResourceUnit *ruById(int id) const; ///< find the resource unit with Id 'id' or return NULL
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }
     ABE::ForestManagementEngine *ABEngine() const { return mABEManagement; }
