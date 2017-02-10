@@ -21,12 +21,16 @@
 
 #include <QString>
 #include <QHash>
+#include <QSqlQuery>
 /** @class Snapshot provides a way to save/load the current state of the model to a database.
  *  A snapshot contains trees, saplings, snags and soil (carbon/nitrogen pools), i.e. a
  *   snapshot allows to replicate all state variables of a landscape system.
   */
 class ResourceUnit; // forward
 class MapGrid; // forward
+class Snag; // forward
+class Soil; // forward
+
 class Snapshot
 {
 public:
@@ -38,12 +42,18 @@ public:
     bool saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, const QString &file_name);
     /// load the trees/saplings from a single stand (given by 'stand_id' and 'stand_grid' from a database in 'file_name'
     bool loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, const QString &file_name);
+    /// save the carbon/snag pools of a set of resource units
+    bool saveStandCarbon(const int stand_id, QList<int> ru_ids);
 private:
     bool openDatabase(const QString &file_name, const bool read);
     bool openStandDatabase(const QString &file_name, bool read);
     void saveTrees();
     void saveSoil();
+    void saveSoilRU(QList<int> stand_ids);
+    void saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q);
     void saveSnags();
+    void saveSnagRU(QList<int> stand_ids);
+    void saveSnagCore(Snag *s, QSqlQuery &q);
     void saveSaplings();
     void loadTrees();
     void loadSoil();

@@ -569,6 +569,14 @@ ResourceUnit *Model::ru(QPointF coord)
         return 0; // in this case, no valid coords were provided
 }
 
+ResourceUnit *Model::ruById(int id) const
+{
+    for (int i=0;i<mRU.size();++i)
+        if (mRU[i]->id()==id)
+            return mRU[i];
+    return 0;
+}
+
 void Model::initOutputDatabase()
 {
     GlobalSettings *g = GlobalSettings::instance();
