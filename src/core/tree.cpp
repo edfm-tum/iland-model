@@ -656,8 +656,7 @@ void Tree::grow()
         }
     //); // DBGMODE()
     if (Globals->model()->settings().growthEnabled) {
-        if (d.NPP>0.)
-            partitioning(d); // split npp to compartments and grow (diameter, height)
+            partitioning(d); // split npp to compartments and grow (diameter, height), but also calculate stress index of the tree.
     }
 
     // mortality
