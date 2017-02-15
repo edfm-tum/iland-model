@@ -44,6 +44,8 @@ public:
     bool loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, const QString &file_name);
     /// save the carbon/snag pools of a set of resource units
     bool saveStandCarbon(const int stand_id, QList<int> ru_ids);
+    /// load the carbon/snags pools from the current (stand) snapshot
+    bool loadStandCarbon();
 private:
     bool openDatabase(const QString &file_name, const bool read);
     bool openStandDatabase(const QString &file_name, bool read);
@@ -56,8 +58,8 @@ private:
     void saveSnagCore(Snag *s, QSqlQuery &q);
     void saveSaplings();
     void loadTrees();
-    void loadSoil();
-    void loadSnags();
+    void loadSoil(QSqlDatabase db=QSqlDatabase());
+    void loadSnags(QSqlDatabase db=QSqlDatabase());
     void loadSaplings();
     void loadSaplingsOld();
     QHash<int, ResourceUnit* > mRUHash;

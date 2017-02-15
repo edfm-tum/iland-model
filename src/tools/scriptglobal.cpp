@@ -719,6 +719,18 @@ bool ScriptGlobal::saveStandCarbon(int stand_id, QList<int> ru_ids)
     return false;
 }
 
+bool ScriptGlobal::loadStandCarbon()
+{
+    try {
+        Snapshot shot;
+        return shot.loadStandCarbon();
+    } catch (const IException &e) {
+        throwError(e.message());
+    }
+    return false;
+
+}
+
 void ScriptGlobal::reloadABE()
 {
     qDebug() << "attempting to reload ABE";

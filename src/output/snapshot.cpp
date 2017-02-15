@@ -289,6 +289,10 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
 
         }
     }
+    // do nothing for negative standIds
+    if (stand_id<0)
+        return true;
+
     // save trees
     QSqlQuery q(db);
     q.exec(QString("delete from trees_stand where standID=%1").arg(stand_id));
@@ -482,6 +486,28 @@ bool Snapshot::saveStandCarbon(const int stand_id,  QList<int> ru_ids)
     return true;
 }
 
+bool Snapshot::loadStandCarbon()
+{
+    QSqlDatabase db=QSqlDatabase::database("snapshotstand");
+    if (!db.isOpen()) {
+        throw IException("Snapshot::loadStandCarbon: stand snapshot data base is not open. Please use 'saveStandSnapshot' to set up the data base connection.");
+    }
+    qDebug() << "loading snags/carbon pools from the stand snapshot...";
+
+    mRUHash.clear();
+    for (ResourceUnit **ru = GlobalSettings::instance()->model()->RUgrid().begin(); ru!=GlobalSettings::instance()->model()->RUgrid().end();++ru) {
+        if (*ru)
+            mRUHash[ (*ru)->index() ] = *ru;
+    }
+
+    // now load soil carbon and snags from the standsnapshot databse
+    loadSoil(db);
+    loadSnags(db);
+    qDebug() << "finished loading stand carbon...";
+    return true;
+
+}
+
 void Snapshot::saveTrees()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
@@ -672,9 +698,12 @@ void Snapshot::saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q)
 
 }
 
-void Snapshot::loadSoil()
+void Snapshot::loadSoil(QSqlDatabase db)
 {
-    QSqlDatabase db=QSqlDatabase::database("snapshot");
+    // if 'db' is not a valid data base, take the 'snapshot' database
+    if (!db.isValid())
+        db=QSqlDatabase::database("snapshot");
+
     QSqlQuery q(db);
     q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN, WaterContent, SnowPack from soil");
     int ru_index = -1;
@@ -831,9 +860,12 @@ void Snapshot::saveSnagCore(Snag *s, QSqlQuery &q)
 
 }
 
-void Snapshot::loadSnags()
+void Snapshot::loadSnags(QSqlDatabase db)
 {
-    QSqlDatabase db=QSqlDatabase::database("snapshot");
+    // if 'db' is not a valid data base, take the 'snapshot' database
+    if (!db.isValid())
+        db=QSqlDatabase::database("snapshot");
+
     QSqlQuery q(db);
     q.exec("select RUIndex, climateFactor, SWD1C, SWD1N, SWD2C, SWD2N, SWD3C, SWD3N, totalSWDC, totalSWDN, NSnags1, NSnags2, NSnags3, dbh1, dbh2, dbh3, height1, height2, height3, volume1, volume2, volume3, tsd1, tsd2, tsd3, ksw1, ksw2, ksw3, halflife1, halflife2, halflife3, branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex from snag");
     int ru_index = -1;
@@ -933,11 +965,11 @@ void Snapshot::saveSaplings()
                         }
                         ++n;
                         if (n<10000000 && ++n % 10000 == 0) {
-                           qDebug() << n << "saplings loaded...";
+                           qDebug() << n << "saplings saved...";
                            QCoreApplication::processEvents();
                        }
                        if (n>=10000000 && ++n % 1000000 == 0) {
-                           qDebug() << n << "saplings loaded...";
+                           qDebug() << n << "saplings saved...";
                            QCoreApplication::processEvents();
                        }
                     }
