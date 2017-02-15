@@ -163,6 +163,7 @@ public slots:
     bool saveStandSnapshot(int stand_id, QString file_name);
     bool loadStandSnapshot(int stand_id, QString file_name);
     bool saveStandCarbon(int stand_id, QList<int> ru_ids);
+    bool loadStandCarbon();
     // agent-based-model of forest management
     void reloadABE();
 
