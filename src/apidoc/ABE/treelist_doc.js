@@ -108,6 +108,22 @@ See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}
 
 
 /**
+Apply a filter on the list. Only trees for which the filter condition `filter` is true, remain in the list.
+
+See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}
+
+@method filter
+@param {String} filter A valid filter Expression.
+@return {Integer} the number of trees that remain in the list.
+@Example
+    trees.loadAll();
+    trees.filter('dbh>10'); // only trees with dbh>10 remain in the list
+    trees.filter('incsum(volume)<100'); // keep trees with a total of 100m3 in the list
+
+
+**/
+
+/**
 Remove the `fraction` of all trees [0..1] for which `filter` evalulates to `true`. Return number of removed trees.
 When trees are harvested, the biomass is removed from the system (compare kill/cut).
 When `harvest()` is called without parameters, then all trees that are currently in the list are removed (see also `load()`).

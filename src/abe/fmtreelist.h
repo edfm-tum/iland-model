@@ -60,6 +60,10 @@ public slots:
     /// load all trees passing the filter, return number of trees (load only living trees)
     int load(const QString &filter);
 
+    /// apply a filter on the current tree list. Only trees for which 'filter' returns true remain in the list.
+    /// returns the number of tree that remain in the list.
+    int filter(QString filter);
+
     /// load all trees of the stand and either kill or harvest trees that are marked for that operation.
     int removeMarkedTrees();
 

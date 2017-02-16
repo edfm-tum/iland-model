@@ -125,6 +125,27 @@ int FMTreeList::load(const QString &filter)
     }
 }
 
+int FMTreeList::filter(QString filter)
+{
+    if (filter.isEmpty())
+        return mTrees.size();
+
+    TreeWrapper tw;
+    Expression expression(filter, &tw);
+    expression.enableIncSum();
+    QPair<Tree*, double> empty_tree(0,0.);
+
+    for (int i=0;i<mTrees.size();++i) {
+        tw.setTree(mTrees[i].first);
+        if (mTrees[i].first->isDead() || !expression.execute())
+            mTrees[i] = empty_tree; // mark for removal
+    }
+    int n_rem = mTrees.removeAll(empty_tree);
+    if (logLevelDebug())
+        qDebug() << "apply filter" << filter << ", removed" << n_rem;
+    return mTrees.size();
+}
+
 int FMTreeList::removeMarkedTrees()
 {
     loadAll();
