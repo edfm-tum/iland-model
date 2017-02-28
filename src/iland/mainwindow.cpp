@@ -1577,7 +1577,7 @@ void MainWindow::on_actionModelRun_triggered()
    ui->treeChange->setProperty("tree",0);
    ui->modelRunProgress->setMaximum(count-1);
    mRemoteControl.run(count);
-   GlobalSettings::instance()->executeJSFunction("onAfterRun");
+   GlobalSettings::instance()->executeJSFunction("onFinish");
 
 }
 
