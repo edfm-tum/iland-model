@@ -816,7 +816,7 @@ void Model::runYear()
     // create outputs
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree"); // single tree output
-    om->execute("treeremoval"); // single removed tree output
+    om->execute("treeremoved"); // single removed tree output
     om->execute("stand"); //resource unit level x species
     om->execute("landscape"); //landscape x species
     om->execute("landscape_removed"); //removed trees on landscape x species
