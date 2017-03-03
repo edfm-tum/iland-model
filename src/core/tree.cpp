@@ -916,7 +916,7 @@ inline double Tree::relative_height_growth()
     // scale according to LRI: if receiving much light (LRI=1), the result is hd_low (for open grown trees)
     // use the corrected LRI (see tracker#11)
     double lri = limit(mLRI * mRU->LRImodifier(),0.,1.);
-    double hd_ratio = hd_high - (hd_high-hd_low)*lri;
+    double hd_ratio = hd_high - (hd_high-hd_low)*lri; // hd_high - lri*hd_high + lri*hd_low=(1-lri)*hd_high + lri*hdlow
     return hd_ratio;
 }
 
