@@ -336,9 +336,10 @@ void ResourceUnit::production()
     QList<ResourceUnitSpecies*>::const_iterator i;
     QList<ResourceUnitSpecies*>::const_iterator iend = mRUSpecies.constEnd();
     double ru_lai = leafAreaIndex();
-    if (ru_lai < 1.)
-        ru_lai = 1.;
-    // note: LAIFactors are only 1 if sum of LAI is > 1. (see WaterCycle)
+    // avoid a division by 0
+    if (ru_lai < 0.00001)
+        ru_lai = 0.00001;
+
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
         double lai_factor = (*i)->statistics().leafAreaIndex() / ru_lai;
 

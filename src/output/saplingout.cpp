@@ -28,7 +28,7 @@ SaplingOut::SaplingOut()
 
     setName("Sapling Output", "sapling");
     setDescription("Output of the establishment/sapling layer per resource unit and species.\n" \
-                   "The output covers trees between a dbh of 1cm and the recruitment threshold (i.e. a height of 4m)." \
+                   "The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m)." \
                    "Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.\n\n" \
                    "You can specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year)");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
@@ -36,7 +36,8 @@ SaplingOut::SaplingOut()
                << OutputColumn("count_small_ha", "number of represented individuals per ha (with height <=1.3m).", OutInteger)
             << OutputColumn("cohort_count_ha", "number of cohorts per ha.", OutInteger)
             << OutputColumn("height_avg_m", "arithmetic average height of the cohorts (m) ", OutDouble)
-            << OutputColumn("age_avg", "arithmetic average age of the sapling cohorts (years)", OutDouble);
+            << OutputColumn("age_avg", "arithmetic average age of the sapling cohorts (years)", OutDouble)
+            << OutputColumn("LAI", "leaf area index of the regeneration layer (m2/m2)", OutDouble);
  }
 
 void SaplingOut::setup()
@@ -83,7 +84,8 @@ void SaplingOut::exec()
                   << sap.livingSaplingsSmall()
                   << sap.livingCohorts()
                   << sap.averageHeight()
-                  << sap.averageAge();
+                  << sap.averageAge()
+                  << sap.leafArea() / std::max(ru->stockableArea(), 1.); // calculate LAI from leaf area
             writeRow();
         }
     }

@@ -121,7 +121,7 @@ public:
     /// calculate statistics (and carbon flows) for the saplings of species 'species' on 'ru'.
     void calculate(const Species *species, ResourceUnit *ru);
     // actions
-    void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh;  }
+    void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=static_cast<double>(dbh);  }
 
     // access to statistics
     int newSaplings() const { return mAdded; }
@@ -137,6 +137,7 @@ public:
     double averageAge() const { return mAvgAge; }
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
+    double leafArea() const { return mLeafArea; }
     // carbon and nitrogen
     const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
@@ -153,6 +154,8 @@ private:
     double mAvgAge; ///< average age of saplings (years)
     double mAvgDeltaHPot; ///< average height increment potential (m)
     double mAvgHRealized; ///< average realized height increment
+    double mLeafArea; ///< total leaf area (on all pixels of the resource unit)
+    double mLeafAreaLastYear; ///< store last years leaf area
     CNPair mCarbonLiving; ///< kg Carbon (kg/ru) of saplings
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
 

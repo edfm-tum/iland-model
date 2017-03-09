@@ -134,6 +134,9 @@ private:
     double mLAINeedle;
     double mLAIBroadleaved;
     double mCanopyConductance; ///< m/s
+    // ground vegetation
+    double mGroundVegetationLAI; /// LAI of the ground vegetation
+    double mGroundVegetationPsiMin; /// Psi Min (MPa) that is assumed for ground vegetation
     // annual sums
     double mTotalET; ///< annual sum of evapotranspiration (mm)
     double mTotalExcess; ///< annual sum of water loss due to lateral outflow/groundwater flow (mm)
