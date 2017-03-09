@@ -128,7 +128,7 @@ void Saplings::establishment(const ResourceUnit *ru)
         if (seeds==0.f)
             continue;
 
-        // calculate the abiotic environment (TACA)
+        // calculate the abiotic environment (TACA) (this could also trigger the execution of the water cycle)
         rus->establishment().calculateAbioticEnvironment();
         double abiotic_env = rus->establishment().abioticEnvironment();
         if (abiotic_env==0.) {
@@ -490,6 +490,7 @@ void SaplingStat::clearStatistics()
     mAvgAge=0.;
     mAvgDeltaHPot=mAvgHRealized=0.;
     mAdded=0;
+    mLeafArea=0.;
 
 }
 
@@ -514,12 +515,13 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         // calculate the avg dbh and number of stems
         double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
         // the number of "real" stems is given by the Reineke formula
-        double n = mLivingSaplings; // total number of saplings (>0.05m)
+        double n = mLivingSaplings; // total number of saplings (>1.3m)
 
         // woody parts: stem, branchse and coarse roots
         double woody_bm = species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
         double foliage = species->biomassFoliage(avg_dbh);
         double fineroot = foliage*species->finerootFoliageRatio();
+        mLeafArea = foliage * n;
 
         mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );
         mCarbonLiving.addBiomass( foliage*n, species->cnFoliage()  );

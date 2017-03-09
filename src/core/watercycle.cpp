@@ -83,6 +83,11 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mCanopy.mDecidousFactor = xml.valueDouble("model.settings.interceptionStorageBroadleaf", 2.);
     mSnowPack.mSnowTemperature = xml.valueDouble("model.settings.snowMeltTemperature", 0.);
 
+    // ground vegetation: variable LAI and Psi_min
+    mGroundVegetationLAI = xml.valueDouble("model.settings.groundVegetationLAI", 1.);
+    mGroundVegetationPsiMin = xml.valueDouble("model.settings.groundVegetationPsiMin", -1.5);
+    mGroundVegetationPsiMin = -fabs(mGroundVegetationPsiMin); // make sure it is negative
+
     mTotalET = mTotalExcess = mSnowRad = 0.;
     mSnowDays = 0;
 }
@@ -153,13 +158,12 @@ void WaterCycle::getStandValues()
 inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
 {
     // constant parameters used for ground vegetation:
-    const double mPsiMin = -1.5; // MPa
     const double mRespVpdExponent = -0.6;
     // see SpeciesResponse::soilAtmosphereResponses()
     double water_resp;
     // see Species::soilwaterResponse:
     const double psi_mpa = psi_kpa / 1000.; // convert to MPa
-    water_resp = limit( (psi_mpa - mPsiMin) / (-0.015 -  mPsiMin) , 0., 1.);
+    water_resp = limit( (psi_mpa - mGroundVegetationPsiMin) / (-0.015 -  mGroundVegetationPsiMin) , 0., 1.);
     // see species::vpdResponse
 
     double vpd_resp;
@@ -182,17 +186,20 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, 
             total_lai_factor += rus->LAIfactor();
         }
     }
+    double total_lai = mRU->leafAreaIndex();
 
-    if (total_lai_factor<1.) {
-        // the LAI is below 1: the rest is considered as "ground vegetation"
-        total_response += calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa) * (1. - total_lai_factor);
+    if (total_lai<mGroundVegetationLAI) {
+        // the LAI is below the threshold (default=1): the rest is considered as "ground vegetation"
+        total_response += calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa) * (mGroundVegetationLAI - total_lai);
     }
 
     // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
     // conceptually: response = min(vpd_response, water_response)*aging
-    if (total_lai_factor==1.)
+
+    // Model::settings().laiThresholdForClosedStands
+    if (total_lai >= mGroundVegetationLAI)
         total_response *= mRU->averageAging(); // no ground cover: use aging value for all LA
-    else if (total_lai_factor>0. && mRU->averageAging()>0.)
+    else if (total_lai_factor>0. && mRU->averageAging()>0.) // todo!!
         total_response *= (1.-total_lai_factor)*1. + (total_lai_factor * mRU->averageAging()); // between 0..1: a part of the LAI is "ground cover" (aging=1)
 
     DBGMODE(
