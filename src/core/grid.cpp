@@ -96,6 +96,7 @@ bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid)
 
 bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid) {
     Q_UNUSED(fileName); Q_UNUSED(rGrid);
+    throw IException("Error: trying to load a grid from an image in the console version (GUI version only!)");
     return false;
 }
 #endif

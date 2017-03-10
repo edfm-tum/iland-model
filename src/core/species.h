@@ -142,6 +142,7 @@ public:
     inline double soilwaterResponse(const double &psi_kPa) const; ///< input: matrix potential (kPa) (e.g. -15)
     double lightResponse(const double lightResourceIndex) const {return mSet->lightResponse(lightResourceIndex, mLightResponseClass); }
     double psiMin() const { return mPsiMin; }
+    double vpdResponseExponent() const { return mRespVpdExponent; }
     // parameters for seed dispersal
     int maturityAge() const { return mMaturityYears; }
     void treeMigKernel(double &ras1, double &ras2, double &ks) const { ras1=mTM_as1; ras2=mTM_as2; ks=mTM_ks; }
@@ -204,7 +205,7 @@ private:
     double mMaximumHeight; ///< maximum height of species (m) for aging
     Expression mAging;
     // environmental responses
-    double mRespVpdExponent; ///< exponent in vpd response calculation (Mkela 2008)
+    double mRespVpdExponent; ///< exponent in vpd response calculation (Maekela 2008)
     double mRespTempMin; ///< temperature response calculation offset
     double mRespTempMax; ///< temperature response calculation: saturation point for temp. response
     double mRespNitrogenClass; ///< nitrogen response class (1..3). fractional values (e.g. 1.2) are interpolated.
