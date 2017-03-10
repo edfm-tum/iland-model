@@ -98,8 +98,11 @@ void Saplings::establishment(const ResourceUnit *ru)
     QPoint imap = ru->cornerPointOffset(); // offset on LIF/saplings grid
     QPoint iseedmap = QPoint(imap.x()/10, imap.y()/10); // seed-map has 20m resolution, LIF 2m -> factor 10
 
-    for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i)
+    for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i) {
+        double la = (*i)->saplingStat().leafArea();
         (*i)->saplingStat().clearStatistics();
+        (*i)->saplingStat().setLeafArea(la); // retain the leaf area just in case the water cycle is executed during regeneration
+    }
 
     double lif_corr[cPxPerHectare];
     for (int i=0;i<cPxPerHectare;++i)
@@ -521,7 +524,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double woody_bm = species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
         double foliage = species->biomassFoliage(avg_dbh);
         double fineroot = foliage*species->finerootFoliageRatio();
-        mLeafArea = foliage * n;
+        mLeafArea = foliage * n * species->specificLeafArea(); // calculate leaf area on n saplings using the species specific SLA
 
         mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );
         mCarbonLiving.addBiomass( foliage*n, species->cnFoliage()  );
@@ -554,7 +557,10 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
             }
         }
 
+    } else {
+        mLeafArea = 0.; // leaf area is not cleared at the beginning of the regen loop (for the water cycle)
     }
+
     if (mDied) {
         double avg_dbh_dead = mSumDbhDied / double(mDied);
         double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead );

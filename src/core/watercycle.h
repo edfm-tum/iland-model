@@ -117,7 +117,7 @@ private:
     int mLastYear; ///< last year of execution
     inline double psiFromHeight(const double mm) const; // kPa for water height "mm"
     inline double heightFromPsi(const double psi_kpa) const; // water height (mm) at water potential psi (kilopascal)
-    inline double calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa); ///< calculate response for ground vegetation
+    inline double calculateBaseSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa, const double psi_min, const double vpd_exp); ///< calculate response for ground vegetation
     double mPsi_koeff_b; ///< see psiFromHeight()
     double mPsi_sat; ///< see psiFromHeight(), kPa
     double mTheta_sat; ///< see psiFromHeight(), [-], m3/m3
@@ -135,8 +135,11 @@ private:
     double mLAIBroadleaved;
     double mCanopyConductance; ///< m/s
     // ground vegetation
-    double mGroundVegetationLAI; /// LAI of the ground vegetation
-    double mGroundVegetationPsiMin; /// Psi Min (MPa) that is assumed for ground vegetation
+    double mGroundVegetationLAI; ///< LAI of the ground vegetation (parameter)
+    double mGroundVegetationPsiMin; ///< Psi Min (MPa) that is assumed for ground vegetation (parameter)
+    double mSaplingPsiMin; ///< calculated psi min of the saplings
+    double mSaplingVpdExp; ///< calculated mean vpd response exponent
+    double mSaplingLAI; ///< LAI of the saplings
     // annual sums
     double mTotalET; ///< annual sum of evapotranspiration (mm)
     double mTotalExcess; ///< annual sum of water loss due to lateral outflow/groundwater flow (mm)

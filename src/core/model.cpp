@@ -324,10 +324,11 @@ void Model::setupSpace()
             // setup a grid with the same size as the height grid...
             FloatGrid tempgrid((int)mHeightGrid->cellsize(), mHeightGrid->sizeX(), mHeightGrid->sizeY());
             QString fileName = GlobalSettings::instance()->path(xml.value("areaMask.imageFile"));
+            qDebug() << "loading project area mask from" << fileName << "...";
             loadGridFromImage(fileName, tempgrid); // fetch from image
             for (int i=0;i<tempgrid.count(); i++)
                 mHeightGrid->valueAtIndex(i).setValid( tempgrid.valueAtIndex(i)>0.99 );
-            qDebug() << "loaded project area mask from" << fileName;
+
         }
 
         // list of "valid" resource units

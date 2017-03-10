@@ -138,6 +138,7 @@ public:
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
     double leafArea() const { return mLeafArea; }
+    void setLeafArea(double leaf_area){ mLeafArea = leaf_area; }
     // carbon and nitrogen
     const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
@@ -155,7 +156,6 @@ private:
     double mAvgDeltaHPot; ///< average height increment potential (m)
     double mAvgHRealized; ///< average realized height increment
     double mLeafArea; ///< total leaf area (on all pixels of the resource unit)
-    double mLeafAreaLastYear; ///< store last years leaf area
     CNPair mCarbonLiving; ///< kg Carbon (kg/ru) of saplings
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
 
