@@ -518,7 +518,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         // calculate the avg dbh and number of stems
         double avg_dbh = mAvgHeight / species->saplingGrowthParameters().hdSapling * 100.;
         // the number of "real" stems is given by the Reineke formula
-        double n = mLivingSaplings; // total number of saplings (>1.3m)
+        double n = mLivingSaplings; // total number of saplings (>1.3m) (=represented stems, result of the Reineke equation)
 
         // woody parts: stem, branchse and coarse roots
         double woody_bm = species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
