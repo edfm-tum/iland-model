@@ -110,10 +110,21 @@ public:
     double currentContent() const { return mContent; } ///< current water content in mm
     double currentSnowPack() const { return mSnowPack.snowPack(); } ///< current water stored as snow (mm water)
     double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
+    double effectiveLAI() const { return mEffectiveLAI; } ///< effective LAI (including saplings and ground vegetation)
     /// monthly values for PET (mm sum)
     const double *referenceEvapotranspiration() const { return mCanopy.referenceEvapotranspiration(); }
 
 private:
+    struct RUSpeciesShares {
+        /// stores intermediate data: LAI shares of species (including saplings)
+        /// fraction of ground vegetation
+        RUSpeciesShares(const int n_species):ground_vegetation_share(0.), adult_trees_share(0.) { lai_share.resize(n_species); }
+        QVector<double> lai_share; // for each species a share [0..1]
+        double ground_vegetation_share; // the share of ground vegetation; sum(lai_share)+ground_vegetation_share = 1
+        double adult_trees_share; // share of adult trees (>4m) on total LAI (relevant for aging)
+        double total_lai; // total effective LAI
+    };
+
     int mLastYear; ///< last year of execution
     inline double psiFromHeight(const double mm) const; // kPa for water height "mm"
     inline double heightFromPsi(const double psi_kpa) const; // water height (mm) at water potential psi (kilopascal)
@@ -129,17 +140,15 @@ private:
     double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
     double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -4MPa) (mm)
     double mPsi[366]; ///< soil water potential for each day in kPa
-    void getStandValues(); ///< helper function to retrieve LAI per species group
-    inline double calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa);
+    void getStandValues(RUSpeciesShares &species_shares); ///< helper function to retrieve LAI per species group
+    inline double calculateSoilAtmosphereResponse(RUSpeciesShares &species_share, const double psi_kpa, const double vpd_kpa);
     double mLAINeedle;
     double mLAIBroadleaved;
     double mCanopyConductance; ///< m/s
+    double mEffectiveLAI; ///< effective LAI for transpiration: includes ground vegetation, saplings and adult trees
     // ground vegetation
     double mGroundVegetationLAI; ///< LAI of the ground vegetation (parameter)
     double mGroundVegetationPsiMin; ///< Psi Min (MPa) that is assumed for ground vegetation (parameter)
-    double mSaplingPsiMin; ///< calculated psi min of the saplings
-    double mSaplingVpdExp; ///< calculated mean vpd response exponent
-    double mSaplingLAI; ///< LAI of the saplings
     // annual sums
     double mTotalET; ///< annual sum of evapotranspiration (mm)
     double mTotalExcess; ///< annual sum of water loss due to lateral outflow/groundwater flow (mm)

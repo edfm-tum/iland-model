@@ -282,7 +282,6 @@ void ResourceUnit::production()
         // clear statistics of resourceunitspecies
         for ( QList<ResourceUnitSpecies*>::const_iterator i=mRUSpecies.constBegin(); i!=mRUSpecies.constEnd(); ++i) {
             (*i)->statistics().clear();
-            (*i)->setLAIfactor(0.);
         }
         mEffectiveArea = 0.;
         mStockedArea = 0.;
@@ -335,43 +334,20 @@ void ResourceUnit::production()
     // calculate LAI fractions
     QList<ResourceUnitSpecies*>::const_iterator i;
     QList<ResourceUnitSpecies*>::const_iterator iend = mRUSpecies.constEnd();
-    double ru_lai = leafAreaIndex();
-    // avoid a division by 0
-    if (ru_lai < 0.00001)
-        ru_lai = 0.00001;
-
-    for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
-        double lai_factor = (*i)->statistics().leafAreaIndex() / ru_lai;
-
-        //DBGMODE(
-        if (lai_factor > 1.) {
-                        const ResourceUnitSpecies* rus=*i;
-                        qDebug() << "LAI factor > 1: species ru-index:" << rus->species()->name() << rus->ru()->index();
-                    }
-        //);
-        (*i)->setLAIfactor( lai_factor );
-    }
 
     // soil water model - this determines soil water contents needed for response calculations
-    {
     mWater->run();
-    }
 
     // invoke species specific calculation (3PG)
     for (i=mRUSpecies.constBegin(); i!=iend; ++i) {
-        //DBGMODE(
-        if ((*i)->LAIfactor() > 1.) {
-                    const ResourceUnitSpecies* rus=*i;
-                    qDebug() << "LAI factor > 1: species ru-index value:" << rus->species()->name() << rus->ru()->index() << rus->LAIfactor();
-                    }
-        //);
+
         (*i)->calculate(); // CALCULATE 3PG
 
         // debug output related to production
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandGPP) && (*i)->LAIfactor()>0.) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandGPP) && (*i)->leafAreaIndex()>0.) {
             DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dStandGPP);
             out << (*i)->species()->id() << index() << id();
-            out << (*i)->LAIfactor() << (*i)->prod3PG().GPPperArea() << productiveArea()*(*i)->LAIfactor()*(*i)->prod3PG().GPPperArea() << averageAging() << (*i)->prod3PG().fEnvYear() ;
+            out << (*i)->leafAreaIndex() << (*i)->prod3PG().GPPperArea() << productiveArea()*(*i)->leafAreaIndex()/(leafAreaIndex()==0.?1.:leafAreaIndex()) *(*i)->prod3PG().GPPperArea() << averageAging() << (*i)->prod3PG().fEnvYear() ;
 
         }
     }

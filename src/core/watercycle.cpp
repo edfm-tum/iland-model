@@ -116,55 +116,31 @@ inline double WaterCycle::heightFromPsi(const double psi_kpa) const
 
 /// get canopy characteristics of the resource unit.
 /// It is important, that species-statistics are valid when this function is called (LAI)!
-void WaterCycle::getStandValues()
+void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
 {
     mLAINeedle=mLAIBroadleaved=0.;
     mCanopyConductance=0.;
     const double ground_vegetationCC = 0.02;
     double lai;
     QList<ResourceUnitSpecies*>::const_iterator rus;
-    for (rus=mRU->ruSpecies().constBegin();rus!=mRU->ruSpecies().constEnd();++rus) {
-        lai = (*rus)->constStatistics().leafAreaIndex();
-        if ((*rus)->species()->isConiferous())
-            mLAINeedle+=lai;
-        else
-            mLAIBroadleaved+=lai;
-        mCanopyConductance += (*rus)->species()->canopyConductance() * lai; // weigh with LAI
+    int i=0;
+    for (rus=mRU->ruSpecies().constBegin();rus!=mRU->ruSpecies().constEnd();++rus, ++i) {
+        lai = (*rus)->leafAreaIndex();
+        double lai_sap = (*rus)->leafAreaIndexSaplings();
+        // add leaf area from saplings
+        lai += lai_sap;
+        species_shares.lai_share[i] = lai; // store LAI for now
+        if (lai>0.) {
+            if ((*rus)->species()->isConiferous())
+                mLAINeedle+=lai;
+            else
+                mLAIBroadleaved+=lai;
+            mCanopyConductance += (*rus)->species()->canopyConductance() * lai; // weigh with LAI
+        }
     }
     double total_lai = mLAIBroadleaved+mLAINeedle;
 
 
-    /* if LAI<3, then also take into account the sapling layer
-     * calculate leaf area weighted values for canopy conductance and psi_min
-    */
-    mSaplingPsiMin = 0.; mSaplingLAI=0.; mSaplingVpdExp = -0.6;
-    if (total_lai <  Model::settings().laiThresholdForClosedStands) {
-        double lai_sap=0.;
-        double cc_sap=0.; // canopy conductance of saplings
-        double psi_min_sap=0.; // psi min of saplings
-        double vpd_exp_sap=0.; // exponent of the VPD response
-        for (rus=mRU->ruSpecies().constBegin();rus!=mRU->ruSpecies().constEnd();++rus) {
-            double la_sap = (*rus)->saplingStat().leafArea();
-            if (la_sap > 0.) {
-                lai_sap += la_sap; // m2
-                cc_sap += (*rus)->species()->canopyConductance() * la_sap;
-                vpd_exp_sap += (*rus)->species()->vpdResponseExponent() * la_sap;
-                psi_min_sap += (*rus)->species()->psiMin() * la_sap;
-            }
-        }
-        if (lai_sap>0.) {
-            psi_min_sap /= lai_sap;
-            vpd_exp_sap /= lai_sap;
-            cc_sap /= lai_sap;
-            lai_sap /= mRU->stockableArea(); // convert LAI
-            // update the canopy conductance with the weighted sapling canopy conductance
-            mCanopyConductance += cc_sap*lai_sap;
-            total_lai += lai_sap; // add LAI of saplings to the total LAI that needs to be considered
-            mSaplingPsiMin = psi_min_sap; // weighted mean of the psi mins
-            mSaplingVpdExp = vpd_exp_sap; // weighted mean
-            mSaplingLAI = lai_sap;
-        }
-    }
 
     // handle cases with LAI < 1 (use generic "ground cover characteristics" instead)
     /* The LAI used here is derived from the "stockable" area (and not the stocked area).
@@ -174,10 +150,18 @@ void WaterCycle::getStandValues()
     */
     if (total_lai<mGroundVegetationLAI) {
         mCanopyConductance+=(ground_vegetationCC)*(mGroundVegetationLAI - total_lai);
+        species_shares.ground_vegetation_share = (mGroundVegetationLAI - total_lai)/mGroundVegetationLAI;
         total_lai = mGroundVegetationLAI;
     }
 
-    mCanopyConductance /= total_lai;
+    mEffectiveLAI = total_lai;
+    species_shares.total_lai = total_lai;
+    if (total_lai>0.) {
+        mCanopyConductance /= total_lai;
+        species_shares.adult_trees_share = mRU->leafAreaIndex() / total_lai; // trees >4m
+        for (int i=0;i<species_shares.lai_share.count();++i)
+            species_shares.lai_share[i] /= total_lai;
+    }
 
     if (total_lai < Model::settings().laiThresholdForClosedStands) {
         // following Landsberg and Waring: when LAI is < 3 (default for laiThresholdForClosedStands), a linear "ramp" from 0 to 3 is assumed
@@ -205,47 +189,36 @@ inline double WaterCycle::calculateBaseSoilAtmosphereResponse(const double psi_k
 
 /// calculate combined VPD and soilwaterresponse for all species
 /// on the RU. This is used for the calc. of the transpiration.
-inline double WaterCycle::calculateSoilAtmosphereResponse(const double psi_kpa, const double vpd_kpa)
+inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &species_share, const double psi_kpa, const double vpd_kpa)
 {
-    double min_response;
-    double total_response = 0; // LAI weighted minimum response for all speices on the RU
-    double total_lai_factor = 0.;
+    // the species_share has pre-calculated shares for the species (and ground-veg) on the total LAI
+    // that effectively evapotranspirates water.
+    // sum( species_share.lai_share ) + species_share.ground_vegetation_share = 1
+
+    double total_response = 0.;
+    double species_response;
+    QVector<double>::const_iterator it = species_share.lai_share.constBegin();
     QList<ResourceUnitSpecies*>::const_iterator rus;
-    for (rus=mRU->ruSpecies().constBegin();rus!=mRU->ruSpecies().constEnd();++rus) {
-        if ((*rus)->LAIfactor()>0.) {
-            // retrieve the minimum of VPD / soil water response for that species
-            (*rus)->speciesResponse()->soilAtmosphereResponses(psi_kpa, vpd_kpa, min_response);
-            total_response += min_response * (*rus)->LAIfactor();
-            total_lai_factor += (*rus)->LAIfactor();
+    for (rus=mRU->ruSpecies().constBegin();rus!=mRU->ruSpecies().constEnd();++rus, ++it) {
+        if (*it > 0.) {
+           (*rus)->speciesResponse()->soilAtmosphereResponses(psi_kpa, vpd_kpa, species_response);
+           total_response += species_response * (*it); // response * species fraction
+
         }
     }
-    double total_lai = mRU->leafAreaIndex();
-    double adult_lai = total_lai;
 
-    if (total_lai < Model::settings().laiThresholdForClosedStands && mSaplingLAI>0.) {
-        // include the sapling layer
-        double sap_resp = calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa, mSaplingPsiMin, mSaplingVpdExp );
-        // update total response: weighted mean with LAI
-        total_response = (total_response * total_lai + sap_resp*mSaplingLAI) / (total_lai + mSaplingLAI);
-        total_lai += mSaplingLAI;
-
-    }
-
-    if (total_lai<mGroundVegetationLAI && mGroundVegetationLAI>0.) {
+    // add ground vegetation (only effective if the total LAI is below a threshold)
+    if (species_share.ground_vegetation_share>0.) {
         // the LAI is below the threshold (default=1): the rest is considered as "ground vegetation": VPD-exponent is a constant
         double ground_response = calculateBaseSoilAtmosphereResponse(psi_kpa, vpd_kpa, mGroundVegetationPsiMin, -0.6 );
-        // weighted mean based on LAI
-        total_response = (total_response*total_lai + ground_response * (mGroundVegetationLAI - total_lai))/mGroundVegetationLAI;
-        total_lai = mGroundVegetationLAI;
+        total_response += ground_response * species_share.ground_vegetation_share;
     }
 
     // add an aging factor to the total response (averageAging: leaf area weighted mean aging value):
     // conceptually: response = min(vpd_response, water_response)*aging
     // apply the aging only for the part of the LAI from adult trees; assume no aging (=1) for saplings/ground vegetation
-
-    if (total_lai>0.) {
-        // total_lai = adult_lai + sapling_lai + groundcover_lai
-        double aging_factor = (mRU->averageAging()*adult_lai + 1*(total_lai-adult_lai)) / total_lai;
+    if (species_share.adult_trees_share>0.) {
+        double aging_factor = mRU->averageAging() * species_share.adult_trees_share + 1.*(1.-species_share.adult_trees_share);
         total_response *= aging_factor;
     }
 
@@ -270,11 +243,10 @@ void WaterCycle::run()
         return;
     DebugTimer tw("water:run");
     WaterCycleData add_data;
-    //if (mRU->id()==20)
-    //    qDebug() << "ru 112";
 
     // preparations (once a year)
-    getStandValues(); // fetch canopy characteristics from iLand (including weighted average for mCanopyConductance)
+    RUSpeciesShares species_share(mRU->ruSpecies().count());
+    getStandValues( species_share ); // fetch canopy characteristics from iLand (including weighted average for mCanopyConductance)
     mCanopy.setStandParameters(mLAINeedle,
                                mLAIBroadleaved,
                                mCanopyConductance);
@@ -321,7 +293,7 @@ void WaterCycle::run()
         // (5) transpiration of the vegetation (and of water intercepted in canopy)
         // calculate the LAI-weighted response values for soil water and vpd:
         double interception_before_transpiration = mCanopy.interception();
-        double combined_response = calculateSoilAtmosphereResponse( current_psi, day->vpd);
+        double combined_response = calculateSoilAtmosphereResponse(species_share, current_psi, day->vpd);
         et = mCanopy.evapotranspiration3PG(day, climate->daylength_h(doy), combined_response);
         // if there is some flow from intercepted water to the ground -> add to "water_to_the_ground"
         if (mCanopy.interception() < interception_before_transpiration)
@@ -350,7 +322,7 @@ void WaterCycle::run()
                         << mContent << mPsi[doy] << excess;
                 // other states
                 out << mSnowPack.snowPack();
-                out << mSaplingLAI;
+                out << mEffectiveLAI; // total LAI
                 //special sanity check:
                 if (prec_to_soil>0. && mCanopy.interception()>0.)
                     if (mSnowPack.snowPack()==0. && day->preciptitation==0)

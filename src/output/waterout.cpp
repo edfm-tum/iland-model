@@ -41,7 +41,8 @@ WaterOut::WaterOut()
               << OutputColumn("excess_mm", "annual sum of water loss due to lateral outflow/groundwater flow (mm)", OutDouble)
               << OutputColumn("snowcover_days", "days with snowcover >0mm", OutInteger)
               << OutputColumn("total_radiation", "total incoming radiation over the year (MJ/m2), sum of data in climate input)", OutDouble)
-              << OutputColumn("radiation_snowcover", "sum of radiation input (MJ/m2) for days with snow cover", OutInteger);
+              << OutputColumn("radiation_snowcover", "sum of radiation input (MJ/m2) for days with snow cover", OutInteger)
+              << OutputColumn("effective_lai", "effective LAI (m2/m2) including LAI of adult trees, saplings, and ground cover", OutDouble);
 
 
 }
@@ -63,7 +64,7 @@ void WaterOut::exec()
     double ru_count = 0.;
     int snow_days = 0;
     double et=0., excess=0., rad=0., snow_rad=0., p=0.;
-    double stockable=0., stocked=0.;
+    double stockable=0., stocked=0., lai_effective=0.;
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
@@ -76,6 +77,7 @@ void WaterOut::exec()
             *this << wc->mTotalET << wc->mTotalExcess;
             *this << wc->mSnowDays;
             *this << ru->climate()->totalRadiation() << wc->mSnowRad;
+            *this << wc->effectiveLAI();
             writeRow();
         }
         ++ru_count;
@@ -84,6 +86,8 @@ void WaterOut::exec()
         et+=wc->mTotalET; excess+=wc->mTotalExcess; snow_days+=wc->mSnowDays;
         rad+=ru->climate()->totalRadiation();
         snow_rad+=wc->mSnowRad;
+        lai_effective+=wc->effectiveLAI();
+
 
     }
     // write landscape sums
@@ -96,6 +100,7 @@ void WaterOut::exec()
     *this << excess / ru_count;
     *this << snow_days / ru_count;
     *this << rad / ru_count << snow_rad / ru_count;
+    *this << lai_effective / ru_count;
     writeRow();
 
 

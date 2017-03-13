@@ -33,7 +33,7 @@ class ResourceUnit;
 class ResourceUnitSpecies
 {
 public:
-    ResourceUnitSpecies() : mLAIfactor(0.), mSpecies(0), mRU(0) {}
+    ResourceUnitSpecies() : mSpecies(0), mRU(0) {}
     ~ResourceUnitSpecies();
     void setup(Species *species, ResourceUnit *ru);
 
@@ -57,20 +57,18 @@ public:
    // actions
     void updateGWL();
     double removedVolume() const { return mRemovedGrowth; } ///< sum of volume with was remvoved because of death/management (m3/ha)
-    /// relative fraction of LAI of this species (0..1) (the sum of all LAIfactors of all species = 1)
-    double LAIfactor() const { return mLAIfactor; }
-    void setLAIfactor(const double newLAIfraction) { mLAIfactor=newLAIfraction;
-                                                     if (mLAIfactor<0 || mLAIfactor>1.00001)
-                                                           qDebug() << "invalid LAIfactor"<<mLAIfactor; }
+
     // properties
-    double leafArea() const; ///< total leaf area of the species on the RU (m2).
+    /// leaf area index (m2/m2) of the species (trees>4m)
+    const double leafAreaIndex() const { return constStatistics().leafAreaIndex(); }
+    /// leaf area (m2) of the saplings on the resource unit
+    const double leafAreaIndexSaplings() const;
     // action
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
 
 private:
     ResourceUnitSpecies(const ResourceUnitSpecies &); // no copy
     ResourceUnitSpecies &operator=(const ResourceUnitSpecies &); // no copy
-    double mLAIfactor; ///< relative amount of this species' LAI on this resource unit (0..1). Is calculated once a year.
     double mRemovedGrowth; ///< m3 volume of trees removed/managed (to calculate GWL) (m3/ha)
     StandStatistics mStatistics; ///< statistics of a species on this resource unit
     StandStatistics mStatisticsDead; ///< statistics of died trees (this year) of a species on this resource unit
