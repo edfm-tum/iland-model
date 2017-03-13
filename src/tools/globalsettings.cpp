@@ -279,11 +279,11 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                                               << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
                                               << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
 
-    case dStandGPP: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid" << "lai_factor" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
+    case dStandGPP: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid" << "lai" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
 
     case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
                                            << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
-                                           << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_saplings";
+                                           << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_effective";
 
     case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
                                                << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";

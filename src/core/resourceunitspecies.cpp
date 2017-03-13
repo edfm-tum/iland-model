@@ -42,12 +42,7 @@ ResourceUnitSpecies::~ResourceUnitSpecies()
 {
 }
 
-double ResourceUnitSpecies::leafArea() const
-{
-    // Leaf area of the species:
-    // total leaf area on the RU * fraction of leafarea
-    return mLAIfactor * ru()->leafAreaIndex();
-}
+
 
 void ResourceUnitSpecies::setup(Species *species, ResourceUnit *ru)
 {
@@ -74,6 +69,7 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
 {
 
     // if *not* called from establishment, clear the species-level-stats
+    bool has_leaf_area = statistics().leafAreaIndex() > 0.;
     if (!fromEstablishment)
         statistics().clear();
 
@@ -81,7 +77,7 @@ void ResourceUnitSpecies::calculate(const bool fromEstablishment)
     if (mLastYear == GlobalSettings::instance()->currentYear())
         return;
 
-    if (mLAIfactor>0. || fromEstablishment==true) {
+    if (has_leaf_area || fromEstablishment==true) {
         // execute the water calculation...
         if (fromEstablishment)
             const_cast<WaterCycle*>(mRU->waterCycle())->run(); // run the water sub model (only if this has not be done already)
@@ -103,6 +99,10 @@ void ResourceUnitSpecies::updateGWL()
     // tree volume. the current "GWL" therefore is current volume (standing) + mRemovedGrowth.
     // important: statisticsDead() and statisticsMgmt() need to calculate() before -> volume() is already scaled to ha
     mRemovedGrowth+=statisticsDead().volume() + statisticsMgmt().volume();
+}
+
+const double ResourceUnitSpecies::leafAreaIndexSaplings() const {
+    return mRU->stockableArea()>0.? constSaplingStat().leafArea() /mRU->stockableArea() : 0.;
 }
 
 
