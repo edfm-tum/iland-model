@@ -318,6 +318,15 @@ void ForestManagementEngine::setup()
     CSVFile data_file(data_file_name);
     if (data_file.isEmpty())
         throw IException(QString("Stand-Initialization: the standDataFile file %1 is empty or missing!").arg(data_file_name));
+    QStringList forbiddenExtraColums=QStringList() << "id" << "unit" << "agent" << "agentType" << "stp" << "speciesComposition" << "thinningIntensity" << "U" << "MAI" << "harvestMode";
+    QStringList extraColumns;
+    for (int i=0;i<data_file.colCount();++i) {
+        if ( !forbiddenExtraColums.contains(data_file.columnName(i)) )
+            extraColumns.push_back(data_file.columnName(i));
+    }
+    if (extraColumns.length()>0)
+        qCDebug(abeSetup) << "Input file contains extra properties which will be stored as stand-properties: " << extraColumns;
+
     int ikey = data_file.columnIndex("id");
     int iunit = data_file.columnIndex("unit");
     int iagent = data_file.columnIndex("agent");
@@ -409,6 +418,11 @@ void ForestManagementEngine::setup()
 
         // create stand
         FMStand *stand = new FMStand(unit,stand_id);
+        // set properties
+        for (int p=0;p<extraColumns.size();++p)
+            stand->setProperty(extraColumns[p], data_file.jsValue(i, extraColumns[p]));
+
+
         if (istp>-1) {
             QString stp = data_file.value(i, istp).toString();
             initial_stps[stand] = stp;
