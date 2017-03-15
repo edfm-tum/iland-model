@@ -100,7 +100,7 @@ CSVFile = {
     @return {integer} the index of the given column, or -1 if the column is not available.
     */
     /**
-    Retrieve the value of the column `colName`and the row with the index `row`..
+    Retrieve the value of the column `colName`and the row with the index `row`.
 
     @method value
     @param {integer} row  row index of the value to retrieve (0<=row<rowCount).
@@ -110,12 +110,30 @@ CSVFile = {
     /**
     Retrieve the value of the column with the index `col`and the row with the index `row`. The return value is a string value. The javascript built-in function `Number` can be used to force a conversion to a numerical value.
 
-    See also: {{#crossLink "CSVFile/columnIndex:method"}}{{/crossLink}}
+    See also: {{#crossLink "CSVFile/columnIndex:method"}}{{/crossLink}},{{#crossLink "CSVFile/jsValue:method"}}{{/crossLink}}
 
     @method value
     @param {integer} row  row index of the value to retrieve (0<=row<rowCount).
     @param {integer} col column index of the requested value (0<=col<colCount).
     @return {string} the value (use Javascript's `Number()` to convert to a number)
+    */
+    /**
+    Retrieve the value of the column `colName`and the row with the index `row`.
+
+    @method jsValue
+    @param {integer} row  row index of the value to retrieve (0<=row<rowCount).
+    @param {string} colName  a column name
+    @return {value} the value (either int, double, or string converted from the input)
+    */
+    /**
+    Retrieve the value of the column with the index `col`and the row with the index `row`. The return value is a string value. The javascript built-in function `Number` can be used to force a conversion to a numerical value.
+
+    See also: {{#crossLink "CSVFile/columnIndex:method"}}{{/crossLink}},{{#crossLink "CSVFile/value:method"}}{{/crossLink}}
+
+    @method jsValue
+    @param {integer} row  row index of the value to retrieve (0<=row<rowCount).
+    @param {integer} col column index of the requested value (0<=col<colCount).
+    @return {value} the value as a Javascript value (int, double, or string)
     */
 
     /**

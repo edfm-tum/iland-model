@@ -24,7 +24,6 @@
 #include <QtCore/QRect>
 #include <QtCore/QString>
 #include <limits>
-#include <limits>
 #define QUIETDEBUG(x) if (!Helper::quiet()) { qDebug() << x; }
 
 /** Helper contains a bunch of (static) helper functions.

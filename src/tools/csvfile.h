@@ -60,8 +60,11 @@ public slots:
     // value function with a column name
     QVariant value(const int row, const QString column_name) const { return value(row, columnIndex(column_name)); }
 
-    QVariant value(const int row, const int col) const; ///< get value of cell denoted by @p row and @p cell. Not available in streaming mode.
-    QVariant row(const int row); ///< retrieve content of the full row @p row as a Variant
+    /// get value of cell denoted by @p row and @p cell. Not available in streaming mode.
+    QVariant value(const int row, const int col) const;
+    QVariant row(const int row); ///< retrieve content of the full row @p row as a QJSValue
+    QJSValue jsValue(const int row, const int col) const;
+    QJSValue jsValue(const int row, const QString column_name) const { return jsValue(row, columnIndex(column_name)); }
 
     void setValue(const int row, const int col, QVariant value); ///< set the value of the column
     void saveFile(const QString &fileName); ///< save the current content to a file

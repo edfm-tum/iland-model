@@ -264,6 +264,17 @@ QVariant CSVFile::row(const int row)
     return result;
 }
 
+QJSValue CSVFile::jsValue(const int row, const int col) const
+{
+    QVariant val = value(row, col);
+    bool ok;
+    int ival = val.toInt(&ok);
+    if(ok) return QJSValue(ival);
+    double dval = val.toDouble(&ok);
+    if (ok) return QJSValue(dval);
+    return QJSValue(val.toString());
+}
+
 bool CSVFile::openFile(const QString &fileName)
 {
     (void)fileName; // silence compiler warning; the function makes no sense, nonetheless.
