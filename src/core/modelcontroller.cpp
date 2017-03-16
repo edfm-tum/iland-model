@@ -273,7 +273,7 @@ void ModelController::internalStop()
     if (mRunning) {
         GlobalSettings::instance()->outputManager()->save();
         DebugTimer::printAllTimers();
-        saveDebugOutputs();
+        saveDebugOutputs(true);
         //if (GlobalSettings::instance()->dbout().isOpen())
         //    GlobalSettings::instance()->dbout().close();
 
@@ -316,8 +316,6 @@ bool ModelController::runYear()
     DebugTimer t("ModelController:runYear");
     qDebug() << QDateTime::currentDateTime().toString("hh:mm:ss:") << "ModelController: run year" << currentYear();
 
-    if (GlobalSettings::instance()->settings().paramValueBool("debug_clear"))
-        GlobalSettings::instance()->clearDebugLists();  // clear debug data
     bool err=false;
     try {
         emit bufferLogs(true);
@@ -325,6 +323,7 @@ bool ModelController::runYear()
         mModel->runYear();
 
         fetchDynamicOutput();
+        saveDebugOutputs(false);
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
@@ -499,29 +498,39 @@ void ModelController::fetchDynamicOutput()
     mDynData.append(line.join(";"));
 }
 
-void ModelController::saveDebugOutputs()
+void ModelController::saveDebugOutputs(bool is_final)
 {
     // save to files if switch is true
     if (!GlobalSettings::instance()->settings().valueBool("system.settings.debugOutputAutoSave"))
         return;
 
+    bool clear_data = GlobalSettings::instance()->settings().paramValueBool("debug_clear");
+    bool do_append=false;
+    if (clear_data && currentYear()>2) // >2: is called after incrementing the year counter
+        do_append = true;
     QString p = GlobalSettings::instance()->path("debug_", "temp");
 
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandGPP, ";", p + "stand_gpp.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv");
-    GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv");
-    Helper::saveToTextFile(p+"dynamic.csv", dynamicOutput());
-    Helper::saveToTextFile(p+ "version.txt", verboseVersion());
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dStandGPP, ";", p + "stand_gpp.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dWaterCycle, ";", p + "water_cycle.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dDailyResponses, ";", p + "daily_responses.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dEstablishment, ";", p + "establishment.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv", do_append);
+    GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv", do_append);
+    if (is_final) {
+        Helper::saveToTextFile(p+"dynamic.csv", dynamicOutput());
+        Helper::saveToTextFile(p+ "version.txt", verboseVersion());
+    }
 
 
     qDebug() << "saved debug outputs to" << p;
+
+    if (clear_data)
+        GlobalSettings::instance()->clearDebugLists();  // clear debug data
+
 
 }
 

@@ -312,7 +312,10 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
     return QStringList() << "invalid debug output!";
 }
 
-QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, const QString separator, const QString fileName)
+QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type,
+                                           const QString separator,
+                                           const QString fileName,
+                                           const bool do_append)
 {
 
     GlobalSettings *g = GlobalSettings::instance();
@@ -325,11 +328,17 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
     QFile out_file(fileName);
     QTextStream ts;
     if (!fileName.isEmpty()) {
-        if (out_file.open(QFile::WriteOnly)) {
-            ts.setDevice(&out_file);
-            ts << g->debugListCaptions(type).join(separator) << endl;
+        if (do_append) {
+            if (out_file.open(QFile::Append)) {
+                ts.setDevice(&out_file);
+            }
         } else {
-            qDebug() << "Cannot open debug output file" << fileName;
+            if (out_file.open(QFile::WriteOnly)) {
+                ts.setDevice(&out_file);
+                ts << g->debugListCaptions(type).join(separator) << endl;
+            } else {
+                qDebug() << "Cannot open debug output file" << fileName;
+            }
         }
 
     }
@@ -342,6 +351,7 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type, co
                 line+=separator;
             line += value.toString();
         }
+        // save data to the file, or to the
         if (out_file.isOpen())
             ts << line << endl;
         else
