@@ -92,7 +92,7 @@ private:
     bool internalRun(); ///< runs the main loop
     void internalStop(); ///< save outputs, stop the model execution
     void fetchDynamicOutput(); ///< execute the dynamic output and fetch data
-    void saveDebugOutputs(); ///< save debug outputs to file
+    void saveDebugOutputs(bool is_final); ///< save debug outputs to file, is_final is true when the model stops
     MainWindow *mViewerWindow;
     Model *mModel;
     bool mPaused;

@@ -87,8 +87,10 @@ public:
     const QList<const DebugList*> debugLists(const int ID, const DebugOutputs dbg); ///< return a list of debug outputs
     QStringList debugListCaptions(const DebugOutputs dbg); ///< returns stringlist of captions for a specific output type
     QList<QPair<QString, QVariant> > debugValues(const int ID); ///< all debug values for object with given ID
-    void clearDebugLists(); ///< clear all debug data
-    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator, const QString fileName=QString()); ///< output for all available items (trees, ...) in table form
+    /// clear all debug data
+    void clearDebugLists();
+    /// output for all available items (trees, ...) in table form or write to a file
+    QStringList debugDataTable(GlobalSettings::DebugOutputs type, const QString separator, const QString fileName=QString(), const bool do_append=false);
 
     // database access functions
     QSqlDatabase dbin() { return QSqlDatabase::database("in"); }
