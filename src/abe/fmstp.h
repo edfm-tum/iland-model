@@ -73,6 +73,8 @@ public:
     static bool boolValueFromJs(const QJSValue &js_value, const QString &key, const bool default_bool_value, const QString &errorMessage=QString());
 
     static bool checkObjectProperties(const QJSValue &js_value, const QStringList &allowed_properties, const QString &errorMessage=QString());
+    ///
+    static QJSValue evaluateJS(QJSValue value);
 
 private:
     void internalSetup(const QJSValue &js_value, int level=0);

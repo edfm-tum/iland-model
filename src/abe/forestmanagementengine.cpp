@@ -369,7 +369,7 @@ void ForestManagementEngine::setup()
             // search for a specific agent
             ag = agent(agent_code);
             if (!ag)
-                throw IException(QString("Agent '%1' is not set up (row '%2')! Use the 'newAgent()' JS function of agent-types to add agent definitions.").arg(agent_code).arg(i));
+                throw IException(QString("Agent '%1' is not set up (row '%2')! Use the 'newAgent()' JS function of agent-types to add agent definitions.\nYou might have a Javascript error - check the logfile.").arg(agent_code).arg(i));
             at = ag->type();
 
         } else {

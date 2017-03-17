@@ -112,6 +112,9 @@ public slots:
     QJSValue activity(QString stp_name, QString activity_name);
 
     void runPlanting(int stand_id, QJSValue planting_item);
+
+    // just for testing
+    QJSValue test(QJSValue val);
 public:
     static int levelIndex(const QString &level_label);
     static const QString levelLabel(const int level_index);
