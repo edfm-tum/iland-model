@@ -258,4 +258,19 @@ bool FMSTP::checkObjectProperties(const QJSValue &js_value, const QStringList &a
     return !found_issues;
 }
 
+QJSValue FMSTP::evaluateJS(QJSValue value)
+{
+    // call function ?
+    if (value.isCallable()) {
+        QJSValue result = value.call();
+        if (result.isError()) {
+            throw IException(QString("Erron in evaluating Javascript expression: %1").
+                             arg(result.toString()));
+        }
+        return result;
+    }
+
+    return value;
+}
+
 } // namespace

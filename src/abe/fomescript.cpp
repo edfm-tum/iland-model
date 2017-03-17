@@ -398,6 +398,14 @@ void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
 
 }
 
+QJSValue FomeScript::test(QJSValue val)
+{
+    qDebug() << "value:"<<  val.toString();
+    if (val.isNumber())
+        qDebug() << "numeric: " << val.toNumber();
+    return QJSValue();
+}
+
 int FomeScript::levelIndex(const QString &level_label)
 {
     if (level_label=="low") return 1;

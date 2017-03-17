@@ -150,12 +150,12 @@ QStringList ActPlanting::info()
     foreach(const SPlantingItem &item, mItems) {
         lines << "-";
         lines << QString("species: %1").arg(item.species->id());
-        lines << QString("fraction: %1").arg(item.fraction);
+        lines << QString("fraction: %1").arg(item.fraction.toInt());
         lines << QString("clear: %1").arg(item.clear);
         lines << QString("pattern: %1").arg(item.group_type>-1?planting_pattern_names[item.group_type]:"");
-        lines << QString("spacing: %1").arg(item.spacing);
+        lines << QString("spacing: %1").arg(item.spacing.toInt());
         lines << QString("offset: %1").arg(item.offset);
-        lines << QString("random: %1").arg(item.group_random_count>0);
+        lines << QString("random: %1").arg(item.random);
         lines << "/-";
     }
     return lines;
@@ -184,7 +184,7 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
     species = GlobalSettings::instance()->model()->speciesSet()->species(species_id);
     if (!species)
         throw IException(QString("'%1' is not a valid species id for setting up a planting item.").arg(species_id));
-    fraction = FMSTP::valueFromJs(value, "fraction", "0").toNumber();
+    fraction = FMSTP::valueFromJs(value, "fraction", "0"); // save the JSValue
     height = FMSTP::valueFromJs(value, "height", "0.05").toNumber();
     age = FMSTP::valueFromJs(value, "age", "1").toInt();
     clear = FMSTP::boolValueFromJs(value, "clear", false);
@@ -194,14 +194,11 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
     group_type = planting_pattern_names.indexOf(group);
     if (!group.isEmpty() && group!="undefined" && group_type==-1)
         throw IException(QString("Planting-activity: the pattern '%1' is not valid!").arg(group));
-    spacing = FMSTP::valueFromJs(value, "spacing", "0").toInt();
+    spacing = FMSTP::valueFromJs(value, "spacing", "0"); // save JS
     offset = FMSTP::valueFromJs(value, "offset", "0").toInt();
 
-    bool random = FMSTP::boolValueFromJs(value, "random", false);
-    if (random)
-        group_random_count = FMSTP::valueFromJs(value, "n", "0").toInt();
-    else
-        group_random_count = 0;
+    random = FMSTP::boolValueFromJs(value, "random", false);
+    n =  FMSTP::valueFromJs(value, "n", "0"); // save JS
 
     grouped = group_type >= 0;
     return true;
@@ -216,6 +213,10 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
     if (!grouped) {
         // distribute saplings randomly.
         // this adds saplings to SaplingCell (only if enough slots are available)
+        double fraction_val = FMSTP::evaluateJS(fraction).toNumber();
+        if (!clear && fraction_val==0.)
+            return;
+
         while (runner.next()) {
             if (sgrid->standIDFromLIFCoord(runner.currentIndex()) != stand->id())
                 continue;
@@ -225,7 +226,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                 SaplingCell *sc=model->saplings()->cell(runner.currentIndex(),true, &ru);
                 model->saplings()->clearSaplings(sc,ru,true);
             }
-            if (drandom() < fraction) {
+            if (drandom() < fraction_val) {
                 ResourceUnit *ru = model->ru(runner.currentCoord());
                 ru->saplingCell(runner.currentIndex())->addSapling(height, age, species->index());
             }
@@ -233,9 +234,10 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
     } else {
         // grouped saplings
         const QString &pp = planting_patterns[group_type].first;
-        int n = planting_patterns[group_type].second;
+        int npx = planting_patterns[group_type].second;
 
-        if (spacing==0 && group_random_count == 0) {
+        int spacing_val=FMSTP::evaluateJS(spacing).toInt();
+        if (spacing_val==0 && random==false) {
             // pattern based planting (filled)
             runner.reset();
             while (runner.next()) {
@@ -243,7 +245,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                 if (sgrid->standIDFromLIFCoord(qp) != stand->id())
                     continue;
                 // check location in the pre-defined planting patterns
-                int idx = (qp.x()+offset)%n + n*((qp.y()+offset)%n);
+                int idx = (qp.x()+offset)%npx + npx*((qp.y()+offset)%npx);
                 if (pp[idx]=='1') {
                     ResourceUnit *ru = model->ru(runner.currentCoord());
                     SaplingCell *sc = ru->saplingCell(qp);
@@ -257,15 +259,18 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             }
         } else {
             // pattern based (with spacing / offset, random...)
-            int ispacing = spacing / cPxSize;
+            int ispacing = spacing_val / cPxSize;
             QPoint p = model->grid()->indexAt(box.topLeft())-QPoint(offset, offset);
             QPoint pstart = p;
             QPoint p_end = model->grid()->indexAt(box.bottomRight());
             QPoint po;
             p.setX(qMax(p.x(),0)); p.setY(qMax(p.y(),0));
 
-            int n_ha = group_random_count * box.width()*box.height()/10000.;
-            bool do_random = group_random_count>0;
+            int n_ha = FMSTP::evaluateJS(n).toNumber();
+            n_ha *= box.width()*box.height()/10000.;
+            bool do_random = random;
+            if (n_ha==0)
+                return;
 
             while( p.x() < p_end.x() && p.y() < p_end.y()) {
                 if (do_random) {
@@ -277,8 +282,8 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                 }
 
                 // apply the pattern....
-                for (int y=0;y<n;++y) {
-                    for (int x=0;x<n;++x) {
+                for (int y=0;y<npx;++y) {
+                    for (int x=0;x<npx;++x) {
                         po=p + QPoint(x,y);
                         if (sgrid->standIDFromLIFCoord(po) != stand->id())
                             continue;
