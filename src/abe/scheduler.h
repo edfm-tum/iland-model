@@ -64,6 +64,10 @@ public:
     /// @param prob_execute the probability for executing the activity (based on the constraints of the activity)
     void addTicket(FMStand *stand, ActivityFlags *flags, double prob_schedule, double prob_execute);
 
+    /// clear all items from the scheduler from a given stand
+    /// returns the number of cleared items.
+    int clearItemsOfStand(const FMStand *stand);
+
     /// executes the scheduler for the planning unit.
     /// scheduled operations are executed.
     void run();

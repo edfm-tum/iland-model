@@ -67,6 +67,21 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     mItems.push_back(item);
 }
 
+int Scheduler::clearItemsOfStand(const FMStand *stand)
+{
+    // drop items from currently active stands
+    int n=0;
+    QList<SchedulerItem*>::iterator it = mItems.begin();
+    while (it!=mItems.end()) {
+        if ((*it)->stand == stand) {
+            it = mItems.erase(it);
+            ++n;
+        }
+        ++it;
+    }
+    return n;
+}
+
 
 void Scheduler::run()
 {

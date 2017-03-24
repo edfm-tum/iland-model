@@ -103,14 +103,24 @@ void FMStand::initialize()
         mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age();
     // when a stand is initialized, we assume that 20% of the standing volume
     // have been removed already.
-    mRemovedVolumeTotal = volume() * 0.2;
-    if (absoluteAge()>0)
-        mMAItotal = volume() * 1.2 / absoluteAge();
-    else
-        mMAItotal = 0.;
+    if (mRemovedVolumeTotal==0.) {
 
-    mMAIdecade = mMAItotal;
-    mLastMAIVolume = volume();
+        if (absoluteAge()>0) {
+            double factor = 0.;
+            if (absoluteAge()>=20 && absoluteAge()<100)
+                factor =  0.35*(absoluteAge()-20.)/80.; // linear ramp to 35% at age 100, spruce yield table 7
+            if (absoluteAge()>=100)
+                factor = 0.35 + 0.1*std::min((absoluteAge()-100.)/100., 1.); // linear from 35% to 45% (age 200), then linear onwards
+
+            mRemovedVolumeTotal = volume() * factor;
+            mMAItotal = volume() * (1. + factor) / absoluteAge();
+       } else {
+            mMAItotal = 0.;
+        }
+
+        mMAIdecade = mMAItotal;
+        mLastMAIVolume = volume();
+    }
 
     // find out the first activity...
     int min_years_to_wait = 100000;
@@ -125,12 +135,12 @@ void FMStand::initialize()
             continue;
         // set active to false which have already passed
         if (!mStandFlags[i].activity()->isRepeatingActivity()) {
-            if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(U()) < age()) {
+            if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(U()) < absoluteAge()) {
                 mStandFlags[i].setActive(false);
             } else {
-                int delta = mStandFlags[i].activity()->earlistSchedule(U()) - age();
+                int delta = mStandFlags[i].activity()->earlistSchedule(U()) - absoluteAge();
                 if (mStandFlags[i].activity()->schedule().absolute)
-                    delta += age(); // absolute timing: starting from 0
+                    delta += absoluteAge(); // absolute timing: starting from 0
 
                 if (delta<min_years_to_wait) {
                     min_years_to_wait = qMax(delta,0); // limit to 0 years
@@ -471,6 +481,9 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
                 mFinalHarvested += removed_volume;
                 tree->setIsHarvested(); // set the flag that the tree is removed from the forest
+                // the last executed activity is the salvage activity...
+                mLastExecutedIndex = mSTP->salvageActivity()->index();
+                mLastExecution = ForestManagementEngine::instance()->currentYear();
             }
         }
 
@@ -608,7 +621,9 @@ QStringList FMStand::info()
     }
 
     // scheduler info
+    lines  << "Scheduler" << "-";
     lines << unit()->constScheduler()->info(id());
+    lines << "/-";
 
     return lines;
 }

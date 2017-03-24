@@ -22,6 +22,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QVariantList>
 
 #include "fmstand.h"
 #include "fmunit.h"
@@ -44,6 +45,7 @@ class FomeScript : public QObject
     Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
     Q_PROPERTY(int standId READ standId WRITE setStandId)
     Q_PROPERTY(QString standVisualization READ standVisualization WRITE setStandVisualization)
+    Q_PROPERTY(QVariantList standIds READ standIds)
 public:
     explicit FomeScript(QObject *parent = 0);
     ~FomeScript();
@@ -79,6 +81,9 @@ public:
     int standId() const;
     void setStandId(int new_stand_id);
 
+    /// a list of all stand-ids that are currently in the landscape
+    QVariantList standIds();
+
 signals:
 
 public slots:
@@ -108,7 +113,7 @@ public slots:
     bool runAgent(int stand_id, QString function);
     // special functions
     bool isValidStand(int stand_id);
-    QStringList standIds();
+
     QJSValue activity(QString stp_name, QString activity_name);
 
     void runPlanting(int stand_id, QJSValue planting_item);
@@ -157,6 +162,8 @@ class StandObj: public QObject
     Q_PROPERTY (double U READ rotationLength)
     Q_PROPERTY(QString speciesComposition READ speciesComposition )
     Q_PROPERTY(QString thinningIntensity READ thinningIntensity )
+
+    Q_PROPERTY(QString stp READ stp WRITE setStp)
 
 
 /*    basalArea: 0, // total basal area/ha of the stand
@@ -209,6 +216,8 @@ public:
     double rotationLength() const;
     QString speciesComposition() const;
     QString thinningIntensity() const;
+    QString stp() const;
+    void setStp(QString stp_name);
 
 
 
