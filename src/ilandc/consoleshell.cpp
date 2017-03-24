@@ -106,7 +106,13 @@ void ConsoleShell::run()
                 qWarning() << QString("set '%1' to value '%2'. result: '%3'").arg(key).arg(value).arg(GlobalSettings::instance()->settings().value(key));
             }
         }
-        setupLogging();
+        if (!setupLogging()) {
+            qWarning() << "**************************************************";
+            qWarning() << "********* Error in setup of logging **************";
+            qWarning() << "**************************************************";
+            QCoreApplication::quit();
+            return;
+        }
 
         qDebug() << "**************************************************";
         qDebug() << "***********     iLand console session     ********";
@@ -201,7 +207,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
  }
 
 
-void ConsoleShell::setupLogging()
+bool ConsoleShell::setupLogging()
 {
     if (mLogStream) {
         if (mLogStream->device())
@@ -219,11 +225,14 @@ void ConsoleShell::setupLogging()
 
     if (!file->open(QIODevice::WriteOnly)) {
         qDebug() << "cannot open logfile" << fname;
+        return false;
     } else {
         qDebug() << "Log output is redirected to logfile" << fname;
         mLogStream = new QTextStream(file);
+        qInstallMessageHandler(myMessageOutput);
+        return true;
     }
-    qInstallMessageHandler(myMessageOutput);
+
 
 
 }

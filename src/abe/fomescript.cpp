@@ -188,6 +188,8 @@ void FomeScript::setStandId(int new_stand_id)
     setExecutionContext(stand);
 }
 
+
+
 void FomeScript::log(QJSValue value)
 {
     QString msg = JStoString(value);
@@ -358,7 +360,7 @@ bool FomeScript::isValidStand(int stand_id)
     return false;
 }
 
-QStringList FomeScript::standIds()
+QVariantList FomeScript::standIds()
 {
     return ForestManagementEngine::instance()->standIds();
 }
@@ -512,6 +514,35 @@ QString StandObj::thinningIntensity() const
     int t = mStand->thinningIntensity();
     return FomeScript::levelLabel(t);
 
+}
+
+QString StandObj::stp() const
+{
+    if (mStand->stp())
+        return mStand->stp()->name();
+    return QString();
+}
+
+void StandObj::setStp(QString stp_name)
+{
+    if (mStand && mStand->unit() && mStand->unit()->agent() && mStand->unit()->agent()->type()) {
+        QString old_stp = mStand->stp()->name();
+        FMSTP *stp = mStand->unit()->agent()->type()->stpByName(stp_name);
+        if (!stp) {
+            throwError(QString("The stp '%1' is not valid, and cannot be set for stand %2.").arg(stp_name).arg(mStand->id()));
+            return;
+        }
+        int u = stp->rotationLengthOfType(mStand->thinningIntensity());
+        if (u>0)
+            mStand->setU( u );
+        if (mStand->unit()->constScheduler())
+            const_cast<FMUnit*>(mStand->unit())->scheduler()->clearItemsOfStand(mStand);
+        mStand->setSTP(stp);
+        mStand->initialize();
+        qCDebug(abe) << mStand->context() << "switched STP from" << old_stp << "to" << stp_name;
+        return;
+    }
+    throwError(QString("The stp cannot be set, because the agent for stand %1 is not properly defined.").arg(mStand->id()));
 }
 
 void StandObj::throwError(QString msg) const

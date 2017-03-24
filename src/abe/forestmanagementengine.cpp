@@ -422,6 +422,8 @@ void ForestManagementEngine::setup()
         for (int p=0;p<extraColumns.size();++p)
             stand->setProperty(extraColumns[p], data_file.jsValue(i, extraColumns[p]));
 
+        if (irotation>-1)
+            stand->setU( data_file.value(i, irotation).toDouble() );
 
         if (istp>-1) {
             QString stp = data_file.value(i, istp).toString();
@@ -476,7 +478,8 @@ void ForestManagementEngine::initialize()
     foreach (FMStand* stand, mStands) {
         if (stand->stp()) {
 
-            stand->setU( stand->unit()->U() );
+            if (stand->U()==0.)
+                stand->setU( stand->unit()->U() );
             stand->setThinningIntensity( stand->unit()->thinningIntensity() );
             stand->setTargetSpeciesIndex( stand->unit()->targetSpeciesIndex() );
 
@@ -551,6 +554,7 @@ void ForestManagementEngine::run(int debug_year)
     } else {
         mCurrentYear = GlobalSettings::instance()->currentYear();
     }
+    mCancel=false; // reset
     // now re-evaluate stands
     if (FMSTP::verbose()) qCDebug(abe) << "ForestManagementEngine: run year" << mCurrentYear;
 
@@ -684,11 +688,11 @@ FMStand *ForestManagementEngine::stand(int stand_id) const
     return 0;
 }
 
-QStringList ForestManagementEngine::standIds() const
+QVariantList ForestManagementEngine::standIds() const
 {
-    QStringList standids;
+    QVariantList standids;
     foreach(FMStand *s, mStands)
-        standids.push_back(QString::number(s->id()));
+        standids.push_back(s->id());
     return standids;
 }
 

@@ -132,7 +132,8 @@ void ActPlanting::setup(QJSValue value)
 
 bool ActPlanting::execute(FMStand *stand)
 {
-    qCDebug(abe) << stand->context() << "execute of planting activity....";
+    if (stand->trace())
+        qCDebug(abe) << stand->context() << "execute of planting activity....";
     DebugTimer time("ABE:ActPlanting:execute");
 
     for (int s=0;s<mItems.count();++s) {
@@ -217,6 +218,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
         if (!clear && fraction_val==0.)
             return;
 
+        int n=0, nplanted=0;
         while (runner.next()) {
             if (sgrid->standIDFromLIFCoord(runner.currentIndex()) != stand->id())
                 continue;
@@ -228,9 +230,14 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             }
             if (drandom() < fraction_val) {
                 ResourceUnit *ru = model->ru(runner.currentCoord());
-                ru->saplingCell(runner.currentIndex())->addSapling(height, age, species->index());
+                if (ru->saplingCell(runner.currentIndex())->addSapling(height, age, species->index()))
+                    nplanted++;
             }
+            n++;
         }
+        if (stand->trace())
+            qCDebug(abe) << stand->context() << "wall2wall planting: planted" << nplanted << "of" << n << "px with species" << species->id();
+
     } else {
         // grouped saplings
         const QString &pp = planting_patterns[group_type].first;
@@ -271,6 +278,8 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             bool do_random = random;
             if (n_ha==0)
                 return;
+            if (stand->trace())
+                qCDebug(abe) << stand->context() << "pattern planting: planted" << n_ha << "pattern/ha for species" << species->id();
 
             while( p.x() < p_end.x() && p.y() < p_end.y()) {
                 if (do_random) {
