@@ -39,7 +39,7 @@ public slots:
 private:
     QStringList mParams;
     static bool mFlushLog; // immediately flush output to the logfile
-    void setupLogging();
+    bool setupLogging();
     void runJavascript(const QString key);
     static QTextStream *mLogStream;
 };

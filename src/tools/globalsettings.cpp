@@ -470,6 +470,9 @@ bool GlobalSettings::setupDatabaseConnection(const QString& dbname, const QStrin
         if (!QFile::exists(fileName))
             throw IException("Error setting up database connection: file " + fileName + " does not exist!");
     db.setDatabaseName(fileName);
+    if (fileMustExist)
+        db.setConnectOptions("QSQLITE_OPEN_READONLY"); // connect as read only
+
     if (!db.open()) {
         throw IException(QString("Error in setting up the database connection <%2> connection to file %1.\n").arg(fileName, dbname));
     }

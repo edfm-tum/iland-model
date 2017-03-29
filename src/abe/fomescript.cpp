@@ -532,6 +532,7 @@ void StandObj::setStp(QString stp_name)
             throwError(QString("The stp '%1' is not valid, and cannot be set for stand %2.").arg(stp_name).arg(mStand->id()));
             return;
         }
+        try {
         int u = stp->rotationLengthOfType(mStand->thinningIntensity());
         if (u>0)
             mStand->setU( u );
@@ -540,7 +541,11 @@ void StandObj::setStp(QString stp_name)
         mStand->setSTP(stp);
         mStand->initialize();
         qCDebug(abe) << mStand->context() << "switched STP from" << old_stp << "to" << stp_name;
+        } catch(const IException &e) {
+            throwError(QString("Error in setting stp to '%1' for stand '%2': \n %3").arg(stp_name).arg(mStand->id()).arg(e.message()));
+        }
         return;
+
     }
     throwError(QString("The stp cannot be set, because the agent for stand %1 is not properly defined.").arg(mStand->id()));
 }
@@ -753,6 +758,38 @@ void SchedulerObj::setMaxHarvestLevel(double new_harvest_level)
         return;
     SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
     opt.maxHarvestLevel = new_harvest_level;
+}
+
+double SchedulerObj::minScheduleHarvest()
+{
+    if (!mStand) return false;
+    const SchedulerOptions &opt = mStand->unit()->agent()->schedulerOptions();
+    return opt.minScheduleHarvest;
+
+}
+
+double SchedulerObj::maxScheduleHarvest()
+{
+    if (!mStand) return false;
+    const SchedulerOptions &opt = mStand->unit()->agent()->schedulerOptions();
+    return opt.maxScheduleHarvest;
+
+}
+
+void SchedulerObj::setMinScheduleHarvest(double new_level)
+{
+    if (!mStand)
+        return;
+    SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
+    opt.minScheduleHarvest = new_level;
+}
+
+void SchedulerObj::setMaxScheduleHarvest(double new_level)
+{
+    if (!mStand)
+        return;
+    SchedulerOptions &opt = const_cast<SchedulerOptions &>(mStand->unit()->agent()->schedulerOptions());
+    opt.maxScheduleHarvest = new_level;
 }
 
 void STPObj::setSTP(FMStand *stand)

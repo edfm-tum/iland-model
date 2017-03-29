@@ -582,17 +582,18 @@ void Model::initOutputDatabase()
 {
     GlobalSettings *g = GlobalSettings::instance();
     QString dbPath = g->path(g->settings().value("system.database.out"), "output");
-    // create run-metadata
-    int maxid = SqlHelper::queryValue("select max(id) from runs", g->dbin()).toInt();
-
-    maxid++;
-    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-    SqlHelper::executeSql(QString("insert into runs (id, timestamp) values (%1, '%2')").arg(maxid).arg(timestamp), g->dbin());
     // replace path information
-    dbPath.replace("$id$", QString::number(maxid));
+    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
     dbPath.replace("$date$", timestamp);
     // setup final path
    g->setupDatabaseConnection("out", dbPath, false);
+
+   // create table for run meta data
+   QSqlQuery creator(g->dbout());
+   QString drop=QString("drop table if exists runinfo");
+   creator.exec(drop); // drop table (if exists)
+   creator.exec("create table runinfo (timestamp, version)");
+   SqlHelper::executeSql(QString("insert into runinfo (timestamp, version) values ('%1', '%2')").arg(timestamp).arg(verboseVersion()), g->dbout());
 
 }
 

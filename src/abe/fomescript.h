@@ -362,6 +362,8 @@ class SchedulerObj : public QObject
     Q_PROPERTY(double harvestIntensity READ harvestIntensity WRITE setHarvestIntensity)
     Q_PROPERTY(double useSustainableHarvest READ useSustainableHarvest WRITE setUseSustainableHarvest)
     Q_PROPERTY(double maxHarvestLevel READ maxHarvestLevel WRITE setMaxHarvestLevel)
+    Q_PROPERTY(double minScheduleHarvest READ minScheduleHarvest WRITE setMinScheduleHarvest)
+    Q_PROPERTY(double maxScheduleHarvest READ maxScheduleHarvest WRITE setMaxScheduleHarvest)
 public slots:
     void dump() const; ///< write log to console
 public:
@@ -376,6 +378,10 @@ public:
     void setUseSustainableHarvest(double new_level);
     double maxHarvestLevel();
     void setMaxHarvestLevel(double new_harvest_level);
+    double minScheduleHarvest();
+    double maxScheduleHarvest();
+    void setMinScheduleHarvest(double new_level);
+    void setMaxScheduleHarvest(double new_level);
 
 private:
     FMStand *mStand; // link to the forest stand
