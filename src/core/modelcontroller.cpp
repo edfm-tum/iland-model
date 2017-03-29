@@ -522,7 +522,7 @@ void ModelController::saveDebugOutputs(bool is_final)
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv", do_append);
     if (is_final) {
         Helper::saveToTextFile(p+"dynamic.csv", dynamicOutput());
-        Helper::saveToTextFile(p+ "version.txt", verboseVersion());
+        //Helper::saveToTextFile(p+ "version.txt", verboseVersion());
     }
 
 
