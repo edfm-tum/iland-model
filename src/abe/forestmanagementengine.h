@@ -63,6 +63,8 @@ public:
 
     // properties
     int currentYear() { return mCurrentYear; }
+    bool enabled() const { return mEnabled; }
+    void setEnabled(bool enable) {mEnabled=enable; }
     /// access to the "global" Javascript engine
     static QJSEngine *scriptEngine();
     FomeScript *scriptBridge() const {return mScriptBridge; }
@@ -135,6 +137,7 @@ private:
     ABELayers mStandLayers;
 
     bool mCancel;
+    bool mEnabled; ///< active or paused
     bool mStandLayoutChanged;
     QString mLastErrorMessage;
 
