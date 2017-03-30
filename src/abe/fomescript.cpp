@@ -188,7 +188,15 @@ void FomeScript::setStandId(int new_stand_id)
     setExecutionContext(stand);
 }
 
+bool FomeScript::enabled() const
+{
+    return ForestManagementEngine::instance()->enabled();
+}
 
+void FomeScript::setEnabled(bool enable)
+{
+    ForestManagementEngine::instance()->setEnabled(enable);
+}
 
 void FomeScript::log(QJSValue value)
 {

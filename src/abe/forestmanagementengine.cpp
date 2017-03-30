@@ -85,6 +85,7 @@ ForestManagementEngine::ForestManagementEngine()
     mScriptBridge = 0;
     singleton_fome_engine = this;
     mCancel = false;
+    mEnabled = true;
     setupOutputs(); // add ABE output definitions
     FMStand::clearAllProperties();
 }
@@ -549,6 +550,9 @@ void ForestManagementEngine::runOnInit(bool before_init)
 /// the function is called every year.
 void ForestManagementEngine::run(int debug_year)
 {
+    if (!enabled())
+        return;
+
     if (debug_year>-1) {
         mCurrentYear++;
     } else {

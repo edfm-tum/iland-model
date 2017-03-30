@@ -81,6 +81,10 @@ public:
     int standId() const;
     void setStandId(int new_stand_id);
 
+    bool enabled() const;
+    void setEnabled(bool enable);
+
+
     /// a list of all stand-ids that are currently in the landscape
     QVariantList standIds();
 

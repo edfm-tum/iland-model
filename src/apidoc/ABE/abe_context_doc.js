@@ -136,6 +136,29 @@ var fmengine= {
   @default false
   */
     verbose: false,
+/**
+  The `enabled` property can be used to enable/disable ABE. When `false` then all management activties are paused.
+
+        // switch management off at a certain simulation year
+        function run() {
+           // run is called by ABE every year
+           if (Globals.year==10)
+              fmengine.enabled = false;
+        }
+        // run() is called from ABE (only if ABE is running). In order to enable ABE use e.g.:
+        function onNewYear() {
+            // is called by iLand at the beginning of every simulation year
+            if (Globals.year==30)
+                fmengine.enabled = true;
+        }
+
+
+
+  @property enabled
+  @type boolean
+  @default true
+  */
+    enabled: true,
 
 /**
   `standId` is the numeric Id of the stand that is set as the current execution context, i.e. the `stand`, `site`, etc. variables
