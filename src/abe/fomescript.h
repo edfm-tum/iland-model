@@ -43,6 +43,7 @@ class FomeScript : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(int standId READ standId WRITE setStandId)
     Q_PROPERTY(QString standVisualization READ standVisualization WRITE setStandVisualization)
     Q_PROPERTY(QVariantList standIds READ standIds)

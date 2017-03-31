@@ -550,8 +550,10 @@ void ForestManagementEngine::runOnInit(bool before_init)
 /// the function is called every year.
 void ForestManagementEngine::run(int debug_year)
 {
-    if (!enabled())
+    if (!enabled()) {
+        qCDebug(abe) << "ForestManagementEngine: ABE is currently disabled.";
         return;
+    }
 
     if (debug_year>-1) {
         mCurrentYear++;
