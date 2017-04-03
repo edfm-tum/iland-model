@@ -65,6 +65,10 @@ public:
     /// update decadal management objectives for the planning unit.
     void managementPlanUpdate();
 
+    /// tell the unit to update management plan next year
+    void setForceUpdateManagementPlan() { mForceUpdateManagementPlan = true; }
+    bool forceUpdateManagementPlan() const { return mForceUpdateManagementPlan; }
+
     /// run the agent main function
     void runAgent();
 
@@ -102,6 +106,7 @@ private:
     QString mHarvestMode; ///< type of applicable harvesting technique (e.g. skidder, cablecrane)
 
     double mAverageMAI; ///< reference value for mean annual increment
+    bool mForceUpdateManagementPlan; ///<
 
 
     friend class UnitOut;

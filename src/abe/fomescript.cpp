@@ -626,6 +626,12 @@ bool UnitObj::agentUpdate(QString what, QString how, QString when)
     return true;
 }
 
+void UnitObj::updateManagementPlan()
+{
+    if (mStand && mStand->unit())
+        const_cast<FMUnit*>(mStand->unit())->setForceUpdateManagementPlan();
+}
+
 QString UnitObj::harvestMode() const
 {
     return mStand->unit()->harvestMode();
