@@ -103,6 +103,7 @@ FMUnit::FMUnit(const Agent *agent)
     mNumberOfStands = 0;
     mU = 100, mThinningIntensityClass = 2, mSpeciesCompositionIndex = 0;
     mAverageMAI = 0.;
+    mForceUpdateManagementPlan=false;
 
 
     //if (agent->type()->schedulerOptions().useScheduler)
@@ -139,6 +140,7 @@ void FMUnit::managementPlanUpdate()
 
     mRealizedHarvest = 0.; // reset
     mRealizedHarvestLastYear = 0.;
+    mForceUpdateManagementPlan = false;
 
 
     // preparations:

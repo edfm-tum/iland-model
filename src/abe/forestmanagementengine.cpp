@@ -273,7 +273,7 @@ FMUnit *nc_plan_update_unit(FMUnit *unit)
     if (ForestManagementEngine::instance()->isCancel())
         return unit;
 
-    if (ForestManagementEngine::instance()->currentYear() % 10 == 0) {
+    if (ForestManagementEngine::instance()->currentYear() % 10 == 0 || unit->forceUpdateManagementPlan()) {
         qCDebug(abe) << "*** execute decadal plan update ***";
         unit->managementPlanUpdate();
         unit->runAgent();
@@ -704,6 +704,8 @@ QVariantList ForestManagementEngine::standIds() const
 
 void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
 {
+    if (!enabled())
+        return;
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
     FMStand *stand = mFMStandGrid[tree->position()];
@@ -715,6 +717,9 @@ void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
 
 bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, const double generations, int n_infested_px)
 {
+    if (!enabled())
+        return false;
+
     // find out which stands are within the resource unit
     GridRunner<FMStand*> gr(mFMStandGrid, ru->boundingBox());
     QHash<FMStand*, bool> processed_items;

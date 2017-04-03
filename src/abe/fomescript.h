@@ -254,6 +254,8 @@ class UnitObj: public QObject
 public slots:
     /// main function to provide agent decisions to the engine
     bool agentUpdate(QString what, QString how, QString when);
+    /// force an out-of-schedule update of the management plan
+    void updateManagementPlan();
 public:
     explicit UnitObj(QObject *parent = 0): QObject(parent) {}
     void setStand(const FMStand* stand) { mStand = stand; }
