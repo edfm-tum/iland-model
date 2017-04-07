@@ -102,7 +102,7 @@ void ResourceUnitSpecies::updateGWL()
     mRemovedGrowth+=statisticsDead().volume() + statisticsMgmt().volume();
 }
 
-const double ResourceUnitSpecies::leafAreaIndexSaplings() const {
+double ResourceUnitSpecies::leafAreaIndexSaplings() const {
     return mRU->stockableArea()>0.? constSaplingStat().leafArea() /mRU->stockableArea() : 0.;
 }
 

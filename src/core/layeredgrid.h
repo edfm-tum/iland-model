@@ -40,6 +40,7 @@ public:
         QString description;
         GridViewType view_type;
     };
+    virtual ~LayeredGridBase() {}
 
     // access to properties
     virtual int sizeX() const=0;

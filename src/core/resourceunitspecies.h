@@ -60,9 +60,9 @@ public:
 
     // properties
     /// leaf area index (m2/m2) of the species (trees>4m)
-    const double leafAreaIndex() const { return constStatistics().leafAreaIndex(); }
+    double leafAreaIndex() const { return constStatistics().leafAreaIndex(); }
     /// leaf area (m2) of the saplings on the resource unit
-    const double leafAreaIndexSaplings() const;
+    double leafAreaIndexSaplings() const;
     // action
     void calculate(const bool fromEstablishment=false); ///< calculate response for species, calculate actual 3PG production
 

@@ -58,7 +58,7 @@ void SaplingOut::exec()
         return;
 
 
-    double n, avg_dbh, avg_height, avg_age;
+    double avg_dbh, avg_height, avg_age;
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
@@ -79,7 +79,7 @@ void SaplingOut::exec()
             *this << currentYear() << ru->index() << ru->id() << rus->species()->id(); // keys
 
             // calculate statistics based on the number of represented trees per cohort
-            n = sap.livingStemNumber(rus->species(), avg_dbh, avg_height, avg_age);
+            sap.livingStemNumber(rus->species(), avg_dbh, avg_height, avg_age);
             *this << sap.livingSaplings()
                   << sap.livingSaplingsSmall()
                   << sap.livingCohorts()

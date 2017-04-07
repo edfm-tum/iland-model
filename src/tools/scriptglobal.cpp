@@ -939,7 +939,9 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
     }
 
 
-
+#else
+    Q_UNUSED(opts)
+    qDebug() << "Globals.setViewOptions() not supported in ilandc";
 
 #endif
 
@@ -966,11 +968,11 @@ void ScriptGlobal::setupGlobalScripting()
                      "function include(x) { Globals.include(x); } \n" \
                      "function alert(x) { Globals.alert(x); } \n");
     // add a (fake) console.log / console.print
-//    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
+/*/    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
 //                     "                print: function(x) { for(var propertyName in x)  " \
 //                     "                                       console.log(propertyName + ': ' + x[propertyName]); " \
 //                     "                                   } " \
-//                     "              }");
+//                     "              }"); */
 
 
     ScriptObjectFactory *factory = new ScriptObjectFactory;
