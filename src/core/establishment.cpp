@@ -110,7 +110,7 @@ double Establishment::calculateWaterLimitation(const int veg_period_start, const
         }
 
         // move to next value in the buffer
-        i_buffer = ++i_buffer % nwindow;
+        i_buffer = (i_buffer + 1) % nwindow;
     }
 
     if (min_average > 1000.)

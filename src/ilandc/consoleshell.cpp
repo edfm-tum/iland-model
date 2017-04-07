@@ -185,13 +185,13 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
         break;
 // available from qt5.5
-//    case QtInfoMsg:
-//        *ConsoleShell::logStream() << msg << endl;
-//        if (ConsoleShell::flush())
-//            ConsoleShell::logStream()->flush();
-//        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
+    case QtInfoMsg:
+        *ConsoleShell::logStream() << msg << endl;
+        if (ConsoleShell::flush())
+            ConsoleShell::logStream()->flush();
+        printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
 
-//        break;
+        break;
     case QtCriticalMsg:
         *ConsoleShell::logStream() << msg << endl;
         if (ConsoleShell::flush())

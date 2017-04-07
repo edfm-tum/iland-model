@@ -120,14 +120,15 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
         break;
     case QtWarningMsg:
-    //case QtInfoMsg:
-        //MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
-        //MainWindow::logSpace()->ensureCursorVisible();
+    case QtInfoMsg: {
+        QByteArray localMsg = msg.toLocal8Bit();
+        fprintf(stderr, "Info: %s\n", localMsg.constData());
         bufferedMessages.append(msg);
-        break;
+        break; }
     case QtCriticalMsg: {
         QByteArray localMsg = msg.toLocal8Bit();
         fprintf(stderr, "Critical: %s\n", localMsg.constData());
+        bufferedMessages.append(msg);
         break; }
     case QtFatalMsg: {
         QByteArray localMsg = msg.toLocal8Bit();
@@ -752,7 +753,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     if (show_dom) {
         // paint the lower-res-grid;
         float max_val = 50.f;
-        float min_val = 0.f;
         if (auto_scale_color) {
             max_val = 0.;
             for (HeightGridValue *v = domGrid->begin(); v!=domGrid->end(); ++v)
@@ -761,7 +761,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         mRulerColors->setCaption("Dominant height (m)", "dominant tree height on 10m pixel.");
         mRulerColors->setPalette(GridViewRainbow,0., max_val); // ruler
         if (!mRulerColors->autoScale()) {
-            min_val = static_cast<float>( mRulerColors->minValue() );
+            // min_val = static_cast<float>( mRulerColors->minValue() );
             max_val = static_cast<float>( mRulerColors->maxValue() );
         }
         for (iy=0;iy<domGrid->sizeY();iy++) {

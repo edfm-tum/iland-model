@@ -25,7 +25,7 @@ namespace ABE {
 
 void Thinning::setup(QJSValue value)
 {
-
+    Q_UNUSED(value)
 }
 
 
