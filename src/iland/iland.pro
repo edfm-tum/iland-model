@@ -200,7 +200,8 @@ SOURCES += main.cpp \
     ../core/saplings.cpp \
     ../output/waterout.cpp \
     ../core/dbhdistribution.cpp \
-    jstextarea.cpp
+    jstextarea.cpp \
+    ../output/svdout.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -303,7 +304,8 @@ HEADERS += mainwindow.h \
     ../core/saplings.h \
     ../output/waterout.h \
     ../core/dbhdistribution.h \
-    jstextarea.h
+    jstextarea.h \
+    ../output/svdout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

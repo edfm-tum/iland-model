@@ -39,6 +39,7 @@
 #include "carbonout.h"
 #include "carbonflowout.h"
 #include "waterout.h"
+#include "svdout.h"
 
 
 // on creation of the output manager
@@ -62,6 +63,7 @@ OutputManager::OutputManager()
     mOutputs.append(new CarbonOut);
     mOutputs.append(new CarbonFlowOut);
     mOutputs.append(new WaterOut);
+    mOutputs.append(new SVDGPPOut);
 }
 
 void OutputManager::addOutput(Output *output)
