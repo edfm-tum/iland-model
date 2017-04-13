@@ -322,10 +322,15 @@ void SeedDispersal::setupExternalSeeds()
             // we assume pairs of name and fraction
             QStringList species_list = text.split(" ");
             for (int i=0;i<species_list.count();++i) {
+                if (!GlobalSettings::instance()->model()->speciesSet()->species(species_list[i]))
+                    throw IException(QString("Setup of external seeds: species '%1' is not a valid species!").arg(species_list[i]));
                 QVector<double> &space = mExtSeedData[species_list[i]];
                 if (space.isEmpty())
                     space.resize(sectors_x*sectors_y); // are initialized to 0s
-                double fraction = species_list[++i].toDouble();
+                bool ok;
+                double fraction = species_list[++i].toDouble(&ok);
+                if (!ok)
+                    throw IException(QString("Setup of external seeds: the given fraction '%1' is not a valid number (for species '%2')!").arg(species_list[i], species_list[i-1]));
                 space[index] = fraction;
             }
         }

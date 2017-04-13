@@ -91,6 +91,8 @@ public:
     double annualPrecipitation() const { double r=0.; for (int i=0;i<12;++i) r+=mPrecipitationMonth[i]; return r;}
     /// get a array with mean temperatures per month (deg C)
     const double *temperatureMonth() const { return mTemperatureMonth; }
+    /// retrieve the year provided in the climate table
+    int climateDataYear() const { return mBegin->year; }
     // access to other subsystems
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
     const Sun &sun() const { return mSun; } ///< solar radiation class

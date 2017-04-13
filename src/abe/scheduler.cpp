@@ -137,7 +137,7 @@ void Scheduler::run()
     if (mUnit->agent()->schedulerOptions().useScheduler)
         updateCurrentPlan();
 
-    // sort the probabilities, highest probs go first....
+    // sort the probabilities (sort by scheduled year, then by score)
     //qSort(mItems);
     //qSort(mItems.begin(), mItems.end(), )
     std::sort(mItems.begin(), mItems.end(), ItemComparator());
@@ -148,45 +148,61 @@ void Scheduler::run()
     double harvest_scheduled = 0.;
     // now execute the activities with the highest ranking...
 
+    int max_skip_items = 5;
     it = mItems.begin();
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
         // ignore stands that are currently banned (only for final harvests)
         if (item->forbiddenTo > current_year && item->flags->isFinalHarvest()) {
             ++it;
+            if (FMSTP::verbose())
+                qCDebug(abe) << "Skipping execution, not allowed to harvest.";
             continue;
         }
 
-        if (item->scheduledYear > current_year)
+        if (item->scheduledYear > current_year) {
+            if (FMSTP::verbose())
+                qCDebug(abe) << "Stopping execution: all scheduled activities executed.";
+
             break; // finished! TODO: check if this works ok ;)
+        }
 
         bool remove = false;
         bool final_harvest = item->flags->isFinalHarvest();
         //
         double rel_harvest;
-        if (final_harvest)
-            rel_harvest = total_final_harvested / mUnit->area() / mFinalCutTarget;
-        else
-            rel_harvest = total_thinning_harvested/mUnit->area() / mThinningTarget;
-
 
         double min_exec_probability = 0; // calculateMinProbability( rel_harvest );
         rel_harvest = (total_final_harvested+total_thinning_harvested)/ mUnit->area() / (mFinalCutTarget+mThinningTarget);
-        if (rel_harvest > mUnit->agent()->schedulerOptions().maxHarvestLevel)
+        if (rel_harvest > mUnit->agent()->schedulerOptions().maxHarvestLevel) {
+            if (FMSTP::verbose())
+                qCDebug(abe) << "Stopping execution: (relative) harvest level" << rel_harvest << "greater than maxHarvestLevel. Final Harv:" << total_final_harvested << ", Thinning:" << total_thinning_harvested;
             break;
+        }
 
         if (rel_harvest + item->harvest/mUnit->area()/(mFinalCutTarget+mThinningTarget) > mUnit->agent()->schedulerOptions().maxHarvestLevel) {
-            // including the *current* harvest, the threshold would be exceeded -> draw a random number
-            if (drandom() <0.5)
+            if (--max_skip_items>=0) {
+                if (FMSTP::verbose())
+                    qCDebug(abe) << "skipping item, because relative harvest level would be too high:" << rel_harvest + item->harvest/mUnit->area();
+                ++it;
+                continue;
+            } else {
+                // including the *current* harvest, the threshold would be exceeded -> draw a random number
+                if (FMSTP::verbose())
+                    qCDebug(abe) << "Stopping execution (after skipping 5 items): (relative) harvest level" << rel_harvest << "(plus harvest of item " << item->harvest << "m3) greater than maxHarvestLevel (" <<  mUnit->agent()->schedulerOptions().maxHarvestLevel <<").";
                 break;
+            }
         }
 
 
         if (item->score >= min_exec_probability) {
 
             // execute activity:
-            if (item->stand->trace())
-                qCDebug(abe) << item->stand->context() << "execute activity" << item->flags->activity()->name() << "score" << item->score << "planned harvest:" << item->harvest;
+            if (item->stand->trace() || FMSTP::verbose())
+                qCDebug(abe) << item->stand->context() << "scheduler #" << no_executed << ": execute activity"
+                             << item->flags->activity()->name() << "score" << item->score
+                             << "planned harvest:" << item->harvest
+                             << "cum.realized total:" << total_final_harvested+total_thinning_harvested;
             harvest_scheduled += item->harvest;
 
             bool executed = item->flags->activity()->execute(item->stand);
@@ -230,7 +246,11 @@ void Scheduler::run()
         }
     }
     if (FMSTP::verbose() && no_executed>0)
-        qCDebug(abe) << "scheduler finished for" << mUnit->id() << ". # of items executed (n/volume):" << no_executed << "(" << harvest_scheduled << "m3), total:" << mItems.size() << "(" << harvest_in_queue << "m3)";
+        qCDebug(abe) << "scheduler finished for" << mUnit->id() << ". # of items executed (n/volume):" << no_executed
+                     << "(" << harvest_scheduled << "m3), total:" << mItems.size() << "(" << harvest_in_queue << "m3)" <<
+                        "planned harvest (final+thinning):" << (mFinalCutTarget+mThinningTarget)*mUnit->area() <<
+                        "Realized Final:" << total_final_harvested << ", realized thinning:" << total_thinning_harvested <<
+                        "Total realized:" << total_final_harvested+total_thinning_harvested;
 
 }
 
@@ -322,11 +342,16 @@ void Scheduler::updateCurrentPlan()
     double total_plan = mExtraHarvest;
     for (QList<SchedulerItem*>::const_iterator it=mItems.begin(); it!=mItems.end(); ++it) {
         SchedulerItem *item = *it;
-        mSchedule.insert(qMax(item->optimalYear, current_year), item);
-        total_plan += item->harvest;
-        int year_index = qMin(qMax(0, item->optimalYear-current_year),MAX_YEARS-1);
-        scheduled_harvest[ year_index ] += item->harvest;
-        max_year = qMax(max_year, year_index);
+        // determine optimal year - if a stand is locked take that into account
+        int pyear = qMax(qMax(item->optimalYear, current_year), item->forbiddenTo);
+        mSchedule.insert(pyear, item);
+
+        if (pyear-current_year<MAX_YEARS) {
+            total_plan += item->harvest;
+            int year_index = qMin(qMax(0,pyear-current_year),MAX_YEARS-1);
+            scheduled_harvest[ year_index ] += item->harvest;
+            max_year = qMax(max_year, year_index);
+        }
     }
 
     double mean_harvest = total_plan / (max_year + 1.);
@@ -419,8 +444,15 @@ void Scheduler::updateCurrentPlan()
     for (QMultiHash<int, SchedulerItem*>::iterator it=mSchedule.begin(); it!=mSchedule.end(); ++it)
         it.value()->scheduledYear = it.key();
 
-    if (FMSTP::verbose())
-        dump();
+    if (FMSTP::verbose()) {
+        QString dump_string = "ABE Final Plan:";
+        for (int i=0;i<MAX_YEARS;++i)
+            dump_string += QString(" %1").arg(scheduled_harvest[i]);
+        qCDebug(abe) << dump_string;
+    }
+
+    //if (FMSTP::verbose())
+    //    dump();
 }
 
 
@@ -429,14 +461,19 @@ void Scheduler::dump() const
     if(mItems.isEmpty())
         return;
     qCDebug(abe)<< "***** Scheduler items **** Unit:" << mUnit->id();
-    qCDebug(abe)<< "stand.id, scheduled.year, score, opt.year, act.name, planned.harvest";
+    qCDebug(abe)<< "nr, stand.id, scheduled.year, score, opt.year, act.name, planned.harvest, locked_until";
     QList<SchedulerItem*>::const_iterator it = mItems.begin();
+    int i=0;
     while (it!=mItems.end()) {
         SchedulerItem *item = *it;
-        qCDebug(abe) << QString("%1, %2, %3, %4, %5, %6").arg(item->stand->id()).arg(item->scheduledYear).arg(item->score).arg(item->optimalYear)
+        qCDebug(abe) << QString("%8, %1, %2, %3, %4, %5, %6, %7").arg(item->stand->id()).arg(item->scheduledYear).arg(item->score).arg(item->optimalYear)
                         .arg(item->flags->activity()->name())
-                        .arg(item->harvest);
+                        .arg(item->harvest).arg(item->forbiddenTo).arg(i++);
         ++it;
+        if (i>100) {
+            qCDebug(abe) << "...stopped dump after 100 items.";
+            break;
+        }
     }
 }
 
@@ -513,10 +550,16 @@ void SchedulerOptions::setup(QJSValue jsvalue)
 
 bool Scheduler::ItemComparator::operator()(const Scheduler::SchedulerItem *lx, const Scheduler::SchedulerItem *rx) const
 {
-    if (lx->scheduledYear==rx->scheduledYear)
+    if (lx->scheduledYear==rx->scheduledYear) {
+        //if (lx->score > 0.8 && rx->score>0.8)
+        //    // if both items have a high score, then put large stands in front
+        //    return lx->harvest > rx->harvest;
+        //else
         return lx->score > rx->score;
-    else
+    } else {
+        // earlier years first
         return lx->scheduledYear < rx->scheduledYear;
+    }
 
 }
 
