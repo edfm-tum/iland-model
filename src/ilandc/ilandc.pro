@@ -208,7 +208,8 @@ SOURCES += main.cpp \
     ../core/grasscover.cpp \
     ../tools/scriptgrid.cpp \
     ../output/waterout.cpp \
-    ../core/dbhdistribution.cpp
+    ../core/dbhdistribution.cpp \
+    ../output/svdout.cpp
 
 
 HEADERS += \
@@ -309,7 +310,8 @@ HEADERS += \
     ../core/grasscover.h \
     ../tools/scriptgrid.h \
     ../output/waterout.h \
-    ../core/dbhdistribution.h
+    ../core/dbhdistribution.h \
+    ../output/svdout.h
 
 
 
