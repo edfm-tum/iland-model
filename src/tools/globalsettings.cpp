@@ -275,9 +275,10 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
     case dTreeGrowth: return QStringList() << "id" << "type" << "year" <<  treeCaps
                                            << "netNPPStem" << "massStemOld" << "hd_growth" << "factor_diameter" << "delta_d_estimate" << "d_increment";
 
-    case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps
+    case dTreePartition: return QStringList() << "id" << "type" << "year" << treeCaps << "mFineroot" << "mBranch"
                                               << "npp_kg" << "apct_foliage" << "apct_wood" << "apct_root"
-                                              << "delta_foliage" << "delta_woody" << "delta_root" << "mNPPReserve" << "netStemInc" << "stress_index";
+                                              << "delta_foliage" << "delta_woody" << "delta_root" << "biomass_loss"
+                                              << "mNPPReserve" << "netStemInc" << "stress_index";
 
     case dStandGPP: return QStringList() << "id" << "type" << "year" << "species" << "RU_index" << "rid" << "lai" << "gpp_kg_m2" << "gpp_kg" << "avg_aging" << "f_env_yr";
 

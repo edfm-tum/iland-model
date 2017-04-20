@@ -871,8 +871,9 @@ void Snapshot::loadSnags(QSqlDatabase db)
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
-    int ci=0;
+
     while (q.next()) {
+        int ci=0;
         ru_index = q.value(ci++).toInt();
         ru = mRUHash[ru_index];
         if (!ru)

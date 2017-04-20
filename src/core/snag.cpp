@@ -322,6 +322,7 @@ void Snag::calculateYear()
                 mCurrentKSW[i] = 0.;
                 mHalfLife[i] = 0.;
                 mTimeSinceDeath[i] = 0.;
+                mNumberOfSnags[i] = 0.;
             }
 
         }
