@@ -218,7 +218,10 @@ void Species::setup()
     the ratio for stem is 1 minus the ratio of twigs to total woody increment at current "dbh". */
 double Species::allometricFractionStem(const double dbh) const
 {
-    double fraction_stem = 1. - (mBranch_a*mBranch_b*pow(dbh, mBranch_b-1.)) / (mWoody_a*mWoody_b*pow(dbh, mWoody_b-1));
+    double inc_branch_per_d = (mBranch_a*mBranch_b*pow(dbh, mBranch_b-1.));
+    double inc_woody_per_d = (mWoody_a*mWoody_b*pow(dbh, mWoody_b-1));
+    //double fraction_stem = 1. - inc_branch_per_d / inc_woody_per_d; // old
+    double fraction_stem = inc_woody_per_d / (inc_branch_per_d + inc_woody_per_d);
     return fraction_stem;
 }
 

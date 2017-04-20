@@ -723,6 +723,8 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // Change of biomass compartments
     double sen_root = mFineRootMass * to_root;
     double sen_foliage = mFoliageMass * to_fol;
+    // track the biomass that leaves the tree
+    double mass_lost = sen_root + sen_foliage;
     if (ru()->snag())
         ru()->snag()->addTurnoverLitter(this->species(), sen_foliage, sen_root);
 
@@ -737,17 +739,23 @@ inline void Tree::partitioning(TreeGrowthData &d)
         mFineRootMass += delta_fineroot;
         delta_root -= delta_fineroot;
     }
+    double net_root_inc = mFineRootMass - sen_root;
     // 2nd, the rest of NPP allocated to roots go to coarse roots
     double max_coarse_root = species()->biomassRoot(mDbh);
+    double old_coarse_root = mCoarseRootMass;
     mCoarseRootMass += delta_root;
+
     if (mCoarseRootMass > max_coarse_root) {
         // if the coarse root pool exceeds the value given by the allometry, then the
         // surplus is accounted as turnover
+        double surplus = mCoarseRootMass-max_coarse_root;
+        mass_lost += surplus;
         if (ru()->snag())
-            ru()->snag()->addTurnoverWood(species(), mCoarseRootMass-max_coarse_root);
+            ru()->snag()->addTurnoverWood(species(), surplus);
 
         mCoarseRootMass = static_cast<float>( max_coarse_root );
     }
+    net_root_inc += mCoarseRootMass - old_coarse_root;
 
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;
@@ -776,20 +784,23 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     if (net_woody > 0.) {
         // (2) calculate part of increment that is dedicated to the stem (which is a function of diameter)
+        //     substract the branches as they are not explicitly modeled
         net_stem = net_woody * species()->allometricFractionStem(mDbh);
         d.NPP_stem = net_stem;
-        mWoodyMass += net_woody;
+        // mWoodyMass += net_woody;
+        // woodyMass is the stem biomass, the difference (=branches) is not accounted explicitely
+        mWoodyMass += net_stem;
         //  (3) growth of diameter and height baseed on net stem increment
         grow_diameter(d);
     }
 
     //DBGMODE(
      if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition)
-         && isDebugging() ) {
+         /*&& isDebugging()*/ ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreePartition);
             dumpList(out); // add tree headers
-            out << npp << apct_foliage << apct_wood << apct_root
-                    << delta_foliage << net_woody << delta_root << mNPPReserve << net_stem << d.stress_index;
+            out << mFineRootMass << biomassBranch() << d.NPP << apct_foliage << apct_wood << apct_root
+                    << delta_foliage << net_woody << net_root_inc << mass_lost << mNPPReserve << net_stem << d.stress_index;
      }
 
     //); // DBGMODE()
@@ -811,7 +822,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
 
 /** Determination of diamter and height growth based on increment of the stem mass (@p net_stem_npp).
-    Refer to XXX for equations and variables.
+    Refer to http://iland.boku.ac.at/stem+growth for equations and variables.
     This function updates the dbh and height of the tree.
     The equations are based on dbh in meters! */
 inline void Tree::grow_diameter(TreeGrowthData &d)
@@ -840,7 +851,7 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     double res_final  = 0.;
     if (fabs(stem_residual) > std::min(1.,stem_mass)) {
 
-        // calculate final residual in stem
+        // calculate final residual in stem (using the deduced d_increment)
         res_final = mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp));
         if (fabs(res_final)>std::min(1.,stem_mass)) {
             // for large errors in stem biomass due to errors in diameter increment (> 1kg or >stem mass), we solve the increment iteratively.
@@ -880,7 +891,7 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
         DBG_IF_X( (res_final==0.?fabs(mass_factor * (d_m + d_increment)*(d_m + d_increment)*(mHeight + d_increment*hd_growth)-((stem_mass + net_stem_npp))):res_final) > 1, "Tree::grow_diameter", "final residual stem estimate > 1kg", dump());
         DBG_IF_X(d_increment > 10. || d_increment*hd_growth >10., "Tree::grow_diameter", "growth out of bound:",QString("d-increment %1 h-increment %2 ").arg(d_increment).arg(d_increment*hd_growth/100.) + dump());
 
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) && isDebugging() ) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreeGrowth) /*&& isDebugging()*/ ) {
             DebugList &out = GlobalSettings::instance()->debugList(mId, GlobalSettings::dTreeGrowth);
             dumpList(out); // add tree headers
             out << net_stem_npp << stem_mass << hd_growth << factor_diameter << delta_d_estimate*100 << d_increment*100;
