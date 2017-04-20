@@ -561,10 +561,7 @@ void ForestManagementEngine::runOnInit(bool before_init)
 /// the function is called every year.
 void ForestManagementEngine::run(int debug_year)
 {
-    if (!enabled()) {
-        qCDebug(abe) << "ForestManagementEngine: ABE is currently disabled.";
-        return;
-    }
+
 
     if (debug_year>-1) {
         mCurrentYear++;
@@ -581,23 +578,33 @@ void ForestManagementEngine::run(int debug_year)
     // execute an event handler before invoking the ABE core
     runJavascript(false);
 
-    {
-    // launch the planning unit level update (annual and thorough analysis every ten years)
-    DebugTimer plu("ABE:planUpdate");
-    GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits, true);
+    if (enabled()) {
+        {
+        // launch the planning unit level update (annual and thorough analysis every ten years)
+        DebugTimer plu("ABE:planUpdate");
+        GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits, true);
+        }
+
+        // run the actual forest management (incl. scheduler)
+        GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits, true); // force single thread operation for now
+        if (isCancel()) {
+            throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
+        }
+
+    } else {
+        qCDebug(abe) << "ForestManagementEngine: ABE is currently disabled.";
     }
 
-    GlobalSettings::instance()->model()->threadExec().run(nc_execute_unit, mUnits, true); // force single thread operation for now
-    if (isCancel()) {
-        throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
-    }
 
     // create outputs
     {
     DebugTimer plu("ABE:outputs");
-    GlobalSettings::instance()->outputManager()->execute("abeUnit");
+    if (enabled()) {
+        GlobalSettings::instance()->outputManager()->execute("abeUnit");
+        GlobalSettings::instance()->outputManager()->execute("abeStandDetail");
+    }
+    // run ABEStand and StandRemoval in any case.
     GlobalSettings::instance()->outputManager()->execute("abeStand");
-    GlobalSettings::instance()->outputManager()->execute("abeStandDetail");
     GlobalSettings::instance()->outputManager()->execute("abeStandRemoval");
     }
 
@@ -718,8 +725,8 @@ QVariantList ForestManagementEngine::standIds() const
 
 void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)
 {
-    if (!enabled())
-        return;
+    //if (!enabled())
+    //    return;
     // we use an 'int' instead of Tree:TreeRemovalType because it does not work
     // with forward declaration (and I dont want to include the tree.h header in this class header).
     FMStand *stand = mFMStandGrid[tree->position()];
