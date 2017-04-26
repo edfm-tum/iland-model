@@ -415,7 +415,7 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
            t.mLeafArea = item.leaf_area;
            t.mOpacity = item.opacity;
            t.mFoliageMass = item.bmFoliage;
-           t.mWoodyMass = item.bmStem;
+           t.mStemMass = item.bmStem;
            t.mFineRootMass = item.bmFineRoot;
            t.mCoarseRootMass = item.bmCoarseRoot;
            t.mNPPReserve = item.npp_reserve;
@@ -599,7 +599,7 @@ void Snapshot::loadTrees()
             t.mLeafArea = q.value(8).toFloat();
             t.mOpacity = q.value(9).toFloat();
             t.mFoliageMass = q.value(10).toFloat();
-            t.mWoodyMass = q.value(11).toFloat();
+            t.mStemMass = q.value(11).toFloat();
             t.mFineRootMass = q.value(12).toFloat();
             t.mCoarseRootMass = q.value(13).toFloat();
             t.mNPPReserve = q.value(14).toFloat();

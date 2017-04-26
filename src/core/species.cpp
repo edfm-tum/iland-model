@@ -77,8 +77,8 @@ void Species::setup()
     mFoliage_a = doubleVar("bmFoliage_a");
     mFoliage_b = doubleVar("bmFoliage_b");
 
-    mWoody_a = doubleVar("bmWoody_a");
-    mWoody_b = doubleVar("bmWoody_b");
+    mStem_a = doubleVar("bmWoody_a");
+    mStem_b = doubleVar("bmWoody_b");
 
     mRoot_a = doubleVar("bmRoot_a");
     mRoot_b = doubleVar("bmRoot_b");
@@ -122,7 +122,7 @@ void Species::setup()
     mSnagKYL = doubleVar("snagKYL"); // decay rate labile
     mSnagKYR = doubleVar("snagKYR"); // decay rate refractory matter
 
-    if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mWoody_a*mWoody_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea*mFinerootFoliageRatio == 0.) {
+    if (mFoliage_a*mFoliage_b*mRoot_a*mRoot_b*mStem_a*mStem_b*mBranch_a*mBranch_b*mWoodDensity*mFormFactor*mSpecificLeafArea*mFinerootFoliageRatio == 0.) {
         throw IException( QString("Error setting up species %1: one value is NULL in database.").arg(id()));
     }
     // Aging
@@ -219,7 +219,7 @@ void Species::setup()
 double Species::allometricFractionStem(const double dbh) const
 {
     double inc_branch_per_d = (mBranch_a*mBranch_b*pow(dbh, mBranch_b-1.));
-    double inc_woody_per_d = (mWoody_a*mWoody_b*pow(dbh, mWoody_b-1));
+    double inc_woody_per_d = (mStem_a*mStem_b*pow(dbh, mStem_b-1));
     //double fraction_stem = 1. - inc_branch_per_d / inc_woody_per_d; // old
     double fraction_stem = inc_woody_per_d / (inc_branch_per_d + inc_woody_per_d);
     return fraction_stem;

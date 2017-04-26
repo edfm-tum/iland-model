@@ -96,12 +96,12 @@ public:
     bool isSeedYear() const { return mIsSeedYear; }
 
 
-    // calculations: allometries
+    // calculations: allometries for the tree compartments (stem, branches, foliage, fineroots, coarse roots)
     inline double biomassFoliage(const double dbh) const { return mFoliage_a * pow(dbh, mFoliage_b); }
-    inline double biomassWoody(const double dbh) const { return mWoody_a * pow(dbh, mWoody_b); }
+    inline double biomassStem(const double dbh) const { return mStem_a * pow(dbh, mStem_b); }
     inline double biomassRoot(const double dbh) const { return mRoot_a * pow(dbh, mRoot_b); }
     inline double biomassBranch(const double dbh) const { return mBranch_a * pow(dbh, mBranch_b); }
-    inline double allometricRatio_wf() const { return mWoody_b / mFoliage_b; }
+    inline double allometricRatio_wf() const { return mStem_b / mFoliage_b; }
     double allometricFractionStem(const double dbh) const;
     double finerootFoliageRatio() const { return mFinerootFoliageRatio; } ///< ratio of fineroot mass (kg) to foliage mass (kg)
     double barkThickness(const double dbh) const { return dbh * mBarkThicknessFactor; }
@@ -173,7 +173,7 @@ private:
     bool mEvergreen; ///< true if evergreen species
     // biomass allometries:
     double mFoliage_a, mFoliage_b;  ///< allometry (biomass = a * dbh^b) for foliage
-    double mWoody_a, mWoody_b; ///< allometry (biomass = a * dbh^b) for woody compartments aboveground
+    double mStem_a, mStem_b; ///< allometry (biomass = a * dbh^b) for stem aboveground
     double mRoot_a, mRoot_b; ///< allometry (biomass = a * dbh^b) for roots (compound, fine and coarse roots as one pool)
     double mBranch_a, mBranch_b; ///< allometry (biomass = a * dbh^b) for branches
     // cn-ratios

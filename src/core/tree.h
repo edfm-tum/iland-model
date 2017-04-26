@@ -68,7 +68,7 @@ public:
     float biomassBranch() const;  ///< mass (kg) of branches
     float biomassFineRoot() const { return mFineRootMass; } ///< mass (kg) of fine roots
     float biomassCoarseRoot() const { return mCoarseRootMass; } ///< mass (kg) of coarse roots
-    float biomassStem() const { return mWoodyMass; } ///< mass (kg) of stem
+    float biomassStem() const { return mStemMass; } ///< mass (kg) of stem
     double barkThickness() const; ///< thickness of the bark (cm)
     float stressIndex() const { return mStressIndex; } ///< the scalar stress rating (0..1)
 
@@ -176,7 +176,8 @@ private:
     float mLeafArea; ///< m2 leaf area
     float mOpacity; ///< multiplier on LIP weights, depending on leaf area status (opacity of the crown)
     float mFoliageMass; ///< kg of foliage (dry)
-    float mWoodyMass; ///< kg biomass of aboveground stem biomass
+    float mStemMass; ///< kg biomass of aboveground stem biomass
+    float mBranchMass; ///< kg biomass of branches
     float mFineRootMass; ///< kg biomass of fine roots (linked to foliage mass)
     float mCoarseRootMass; ///< kg biomass of coarse roots (allometric equation)
     // production relevant
