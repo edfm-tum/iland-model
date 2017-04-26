@@ -98,6 +98,14 @@ void StandStatistics::add(const Tree *tree, const TreeGrowthData *tgd)
     addBiomass(tree->biomassCoarseRoot(), tree->species()->cnWood(), &mCCoarseRoot, &mNCoarseRoot);
 }
 
+void StandStatistics::addNPP(const TreeGrowthData *tgd)
+{
+    // add NPP of trees that died due to mortality
+    mNPP += tgd->NPP;
+    mNPPabove += tgd->NPP_above;
+
+}
+
 // note: mRUS = 0 for aggregated statistics
 void StandStatistics::calculate()
 {

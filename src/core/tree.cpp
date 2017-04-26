@@ -669,11 +669,14 @@ void Tree::grow()
     mStressIndex = d.stress_index;
 #endif
 
-    if (!isDead())
+    if (!isDead()) {
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
-
-    // regeneration
-    mSpecies->seedProduction(this);
+        // regeneration
+        mSpecies->seedProduction(this);
+    } else {
+        // we include the NPP of trees that died in the current year (closed carbon balance)
+        mRU->resourceUnitSpecies(species()).statistics().addNPP(&d);
+    }
 
 }
 
