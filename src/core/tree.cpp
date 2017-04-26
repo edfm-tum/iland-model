@@ -78,7 +78,7 @@ Tree::Tree()
     mDbh = mHeight = 0;
     mRU = 0; mSpecies = 0;
     mFlags = mAge = 0;
-    mOpacity=mFoliageMass=mWoodyMass=mCoarseRootMass=mFineRootMass=mLeafArea=0.;
+    mOpacity=mFoliageMass=mStemMass=mCoarseRootMass=mFineRootMass=mBranchMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
     mLightResponse = 0.;
     mStamp=0;
@@ -122,7 +122,7 @@ QString Tree::dump()
 void Tree::dumpList(DebugList &rTargetList)
 {
     rTargetList << mId << species()->id() << mDbh << mHeight  << position().x() << position().y()   << mRU->index() << mLRI
-                << mWoodyMass << mCoarseRootMass << mFoliageMass << mLeafArea;
+                << mStemMass << mCoarseRootMass << mFoliageMass << mLeafArea;
 }
 
 void Tree::setup()
@@ -140,7 +140,8 @@ void Tree::setup()
     mFoliageMass = static_cast<float>( species()->biomassFoliage(mDbh) );
     mCoarseRootMass = static_cast<float>( species()->biomassRoot(mDbh) ); // coarse root (allometry)
     mFineRootMass = static_cast<float>( mFoliageMass * species()->finerootFoliageRatio() ); //  fine root (size defined  by finerootFoliageRatio)
-    mWoodyMass = static_cast<float>( species()->biomassWoody(mDbh) );
+    mStemMass = static_cast<float>( species()->biomassStem(mDbh) );
+    mBranchMass = static_cast<float>( species()->biomassBranch(mDbh) );
 
     // LeafArea[m2] = LeafMass[kg] * specificLeafArea[m2/kg]
     mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() );
@@ -699,14 +700,14 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // the turnover rate of wood depends on the size of the reserve pool:
 
 
-    double to_wood = refill_reserve / (mWoodyMass + refill_reserve);
+    double to_wood = refill_reserve / (mStemMass + refill_reserve);
 
     apct_root = rus.prod3PG().rootFraction();
     d.NPP_above = d.NPP * (1. - apct_root); // aboveground: total NPP - fraction to roots
     double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents (b_woody / b_foliage)
 
     // Duursma 2007, Eq. (20)
-    apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mWoodyMass + b_wf );
+    apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mStemMass + b_wf );
 
     apct_wood = limit(apct_wood, 0., 1.-apct_root);
 
@@ -789,7 +790,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
         d.NPP_stem = net_stem;
         // mWoodyMass += net_woody;
         // woodyMass is the stem biomass, the difference (=branches) is not accounted explicitely
-        mWoodyMass += net_stem;
+        mStemMass += net_stem;
         //  (3) growth of diameter and height baseed on net stem increment
         grow_diameter(d);
     }
@@ -805,7 +806,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     //); // DBGMODE()
     DBGMODE(
-      if (mWoodyMass<0. || mWoodyMass>50000 || mFoliageMass<0. || mFoliageMass>2000. || mCoarseRootMass<0. || mCoarseRootMass>30000
+      if (mStemMass<0. || mStemMass>50000 || mFoliageMass<0. || mFoliageMass>2000. || mCoarseRootMass<0. || mCoarseRootMass>30000
          || mNPPReserve>4000.) {
          qDebug() << "Tree:partitioning: invalid or unlikely pools.";
          qDebug() << GlobalSettings::instance()->debugListCaptions(GlobalSettings::DebugOutputs(0));
@@ -994,7 +995,7 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction,
 void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
 {
     mFoliageMass *= 1. - removeFoliageFraction;
-    mWoodyMass *= (1. - removeStemFraction);
+    mStemMass *= (1. - removeStemFraction);
     // we have a problem with the branches: this currently cannot be done properly!
     (void) removeBranchFraction; // silence warning
 }

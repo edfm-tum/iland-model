@@ -521,7 +521,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double n = mLivingSaplings; // total number of saplings (>1.3m) (=represented stems, result of the Reineke equation)
 
         // woody parts: stem, branchse and coarse roots
-        double woody_bm = species->biomassWoody(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
+        double woody_bm = species->biomassStem(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
         double foliage = species->biomassFoliage(avg_dbh);
         double fineroot = foliage*species->finerootFoliageRatio();
         mLeafArea = foliage * n * species->specificLeafArea(); // calculate leaf area on n saplings using the species specific SLA
@@ -566,7 +566,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead );
         // woody parts: stem, branchse and coarse roots
 
-        dead_wood.addBiomass( ( species->biomassWoody(avg_dbh_dead) + species->biomassBranch(avg_dbh_dead) + species->biomassRoot(avg_dbh_dead)) * n, species->cnWood()  );
+        dead_wood.addBiomass( ( species->biomassStem(avg_dbh_dead) + species->biomassBranch(avg_dbh_dead) + species->biomassRoot(avg_dbh_dead)) * n, species->cnWood()  );
         double foliage = species->biomassFoliage(avg_dbh_dead)*n;
 
         dead_fine.addBiomass( foliage, species->cnFoliage()  );
