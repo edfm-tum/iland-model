@@ -93,10 +93,7 @@ float Tree::crownRadius() const
     return mStamp->crownRadius();
 }
 
-float Tree::biomassBranch() const
-{
-    return static_cast<float>( mSpecies->biomassBranch(mDbh) );
-}
+
 
 void Tree::setGrid(FloatGrid* gridToStamp, Grid<HeightGridValue> *dominanceGrid)
 {
@@ -700,11 +697,14 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // the turnover rate of wood depends on the size of the reserve pool:
 
 
-    double to_wood = refill_reserve / (mStemMass + refill_reserve);
+    double to_wood = refill_reserve / (mStemMass+mBranchMass + refill_reserve);
 
     apct_root = rus.prod3PG().rootFraction();
     d.NPP_above = d.NPP * (1. - apct_root); // aboveground: total NPP - fraction to roots
-    double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents (b_woody / b_foliage)
+    // ratio of allometric exponents (b_woody / b_foliage)
+    // !! TODO: this is now b_stem / b_foliage: not entirely sure how much of an error this introduces; but since exponents of
+    // branch and stems are usually similar (e.g. spruce: stem: 2.1, branch: 2.3) this might be almost nothing
+    double b_wf = species()->allometricRatio_wf();
 
     // Duursma 2007, Eq. (20)
     apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mStemMass + b_wf );
@@ -742,7 +742,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     }
     double net_root_inc = mFineRootMass - sen_root;
     // 2nd, the rest of NPP allocated to roots go to coarse roots
-    double max_coarse_root = species()->biomassRoot(mDbh);
+    double max_coarse_root = species()->biomassRoot(mDbh) * 1.2; // allometry plus 20% is to upper bound
     double old_coarse_root = mCoarseRootMass;
     mCoarseRootMass += delta_root;
 
@@ -777,6 +777,9 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // (1) transfer to reserve pool
     double gross_woody = apct_wood * npp;
     double to_reserve = qMin(reserve_size, gross_woody);
+    // the 'reserve' is part of the stem: calculate the change in stem biomass due to the change of the reserve pool
+    double delta_reserve = to_reserve - mNPPReserve;
+    mStemMass += delta_reserve; // note that stem mass can decrease here!
     mNPPReserve = static_cast<float>( to_reserve );
     double net_woody = gross_woody - to_reserve;
     double net_stem = 0.;
@@ -787,12 +790,23 @@ inline void Tree::partitioning(TreeGrowthData &d)
         // (2) calculate part of increment that is dedicated to the stem (which is a function of diameter)
         //     substract the branches as they are not explicitly modeled
         net_stem = net_woody * species()->allometricFractionStem(mDbh);
+        double net_branches = net_woody - net_stem;
         d.NPP_stem = net_stem;
-        // mWoodyMass += net_woody;
-        // woodyMass is the stem biomass, the difference (=branches) is not accounted explicitely
         mStemMass += net_stem;
+        mBranchMass += net_branches;
+
         //  (3) growth of diameter and height baseed on net stem increment
         grow_diameter(d);
+
+        // finalize branch pool
+        float max_branch = static_cast<float>( species()->biomassBranch(mDbh) ) * 1.2; // limit is 20% above the allometry (*new* dbh)
+        if (mBranchMass > max_branch) {
+            float surplus = mBranchMass - max_branch;
+            mass_lost+=surplus;
+            if (ru()->snag())
+                ru()->snag()->addTurnoverWood(species(), surplus);
+            mBranchMass = max_branch;
+        }
     }
 
     //DBGMODE(

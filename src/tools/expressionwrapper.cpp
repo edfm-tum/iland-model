@@ -79,11 +79,11 @@ double ExpressionWrapper::valueByName(const QString &variableName)
 
 QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << "height" << "ruindex" // 0..3
                         << "x" << "y" << "volume" << "lri" <<  "leafarea" << "lightresponse" // 4-9
-                        << "woodymass" << "rootmass" << "foliagemass" << "age" << "opacity" // 10-14
+                        << "stemmass" << "rootmass" << "foliagemass" << "age" << "opacity" // 10-14
                         << "dead" << "stress" << "deltad" //15-17
                         << "afoliagemass" << "species" // 18, 19
                         << "basalarea" << "crownarea" // 20, 21
-                        << "markharvest" << "markcut" << "markcrop" << "markcompetitor"; // 22-25
+                        << "markharvest" << "markcut" << "markcrop" << "markcompetitor" << "branchmass"; // 22-25
 
 const QStringList TreeWrapper::getVariablesList()
 {
@@ -124,6 +124,7 @@ double TreeWrapper::value(const int variableIndex)
     case 23: return mTree->isMarkedForCut()?1:0; // markcut
     case 24: return mTree->isMarkedAsCropTree()?1:0; // markcrop
     case 25: return mTree->isMarkedAsCropCompetitor()?1:0; // markcompetitor
+    case 26: return mTree->mBranchMass;
     }
     return ExpressionWrapper::value(variableIndex);
 }
