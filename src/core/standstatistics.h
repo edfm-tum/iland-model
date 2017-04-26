@@ -33,6 +33,8 @@ public:
     void add(const StandStatistics &stat); ///< add aggregates of @p stat to own aggregates
     void addAreaWeighted(const StandStatistics &stat, const double weight); ///< add aggregates of @p stat to this aggregate and scale using the weight (e.g. stockable area)
     void add(const Tree *tree, const TreeGrowthData *tgd); ///< call for each tree within the domain
+    void addNPP(const TreeGrowthData *tgd); ///< add only the NPP
+
     void add(const SaplingStat *sapling); ///< call for regeneration layer of a species in resource unit
     void clear(); ///< call before trees are aggregated
     void clearOnlyTrees(); ///< clear the statistics only for tree biomass (keep NPP, regen, ...)
