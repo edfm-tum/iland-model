@@ -65,7 +65,7 @@ public:
     float crownRadius() const; ///< fetch crown radius (m) from the attached stamp
     // biomass properties
     float biomassFoliage() const { return mFoliageMass; } ///< mass (kg) of foliage
-    float biomassBranch() const;  ///< mass (kg) of branches
+    float biomassBranch() const { return mBranchMass; }  ///< mass (kg) of branches
     float biomassFineRoot() const { return mFineRootMass; } ///< mass (kg) of fine roots
     float biomassCoarseRoot() const { return mCoarseRootMass; } ///< mass (kg) of coarse roots
     float biomassStem() const { return mStemMass; } ///< mass (kg) of stem

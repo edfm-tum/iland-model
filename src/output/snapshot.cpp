@@ -600,6 +600,7 @@ void Snapshot::loadTrees()
             t.mOpacity = q.value(9).toFloat();
             t.mFoliageMass = q.value(10).toFloat();
             t.mStemMass = q.value(11).toFloat();
+            t.mBranchMass = static_cast<float>(s->biomassBranch(t.dbh())); // TODO: include branch also in snapshot
             t.mFineRootMass = q.value(12).toFloat();
             t.mCoarseRootMass = q.value(13).toFloat();
             t.mNPPReserve = q.value(14).toFloat();
