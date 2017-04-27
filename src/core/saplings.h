@@ -149,6 +149,7 @@ private:
     int mDied; ///< number of tree cohorts died
     double mSumDbhDied; ///< running sum of dbh of died trees (used to calculate detritus)
     int mLiving; ///< number of trees (cohorts!!!) currently in the regeneration layer
+    int mCohortsWithDbh; ///< number of cohorts that are >1.3m
     double mLivingSaplings; ///< number of individual trees in the regen layer (using Reinekes R), with h>1.3m
     double mLivingSmallSaplings; ///< number of individual trees of cohorts < 1.3m height
     double mAvgHeight; ///< average height of saplings (m)
@@ -158,6 +159,7 @@ private:
     double mLeafArea; ///< total leaf area (on all pixels of the resource unit)
     CNPair mCarbonLiving; ///< kg Carbon (kg/ru) of saplings
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
+    double mCarbonOfRecruitedTrees; ///< carbon that is added when trees >4m are created
 
     friend class Saplings;
 
