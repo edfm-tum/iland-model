@@ -248,6 +248,8 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
                 << (*it)->saplingStat().averageDeltaHPot() << (*it)->saplingStat().averageDeltaHRealized();
             out << (*it)->saplingStat().newSaplings() << (*it)->saplingStat().diedSaplings()
                 << (*it)->saplingStat().recruitedSaplings() <<(*it)->species()->saplingGrowthParameters().referenceRatio;
+            out << (*it)->saplingStat().carbonLiving().C << (*it)->saplingStat().carbonGain().C;
+
         }
     }
 
@@ -429,6 +431,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     tree.age++; // increase age of sapling by 1
 
     // recruitment?
+    double total_carbon_added=0.;
     if (tree.height > 4.f) {
         rus->saplingStat().mRecruited++;
 
@@ -456,8 +459,16 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
             bigtree.setup();
             const Tree *t = &bigtree;
             const_cast<ResourceUnitSpecies*>(rus)->statistics().add(t, 0); // count the newly created trees already in the stats
+            // account for the carbon that is *added* by the new trees
+            total_carbon_added += (bigtree.biomassStem()+bigtree.biomassBranch()+bigtree.biomassFoliage()+bigtree.biomassCoarseRoot()+bigtree.biomassFineRoot())*biomassCFraction;
         }
         // clear all regeneration from this pixel (including this tree)
+        double woody_bm = species->biomassStem(dbh) + species->biomassBranch(dbh) + species->biomassRoot(dbh);
+        double foliage = species->biomassFoliage(dbh);
+        double fineroot = foliage*species->finerootFoliageRatio();
+        // the 'gap' between sapling and trees is: sum(C recruited trees) - C sapling
+        total_carbon_added -= total_carbon_added - (woody_bm + foliage + fineroot)*biomassCFraction;
+
         tree.clear(); // clear this tree (no carbon flow to the ground)
         for (int i=0;i<NSAPCELLS;++i) {
             if (scell.saplings[i].is_occupied()) {
@@ -467,14 +478,16 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
                 scell.saplings[i].clear();
             }
         }
+        rus->saplingStat().mCarbonOfRecruitedTrees += total_carbon_added;
         return true; // need cleanup
     }
     // book keeping (only for survivors) for the sapling of the resource unit / species
     SaplingStat &ss = rus->saplingStat();
     double n_repr = species->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px);
-    if (tree.height>1.3f)
+    if (tree.height>1.3f) {
         ss.mLivingSaplings += n_repr;
-    else
+        ss.mCohortsWithDbh++;
+    } else
         ss.mLivingSmallSaplings += n_repr;
     ss.mLiving++;
     ss.mAvgHeight+=tree.height;
@@ -486,7 +499,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
 
 void SaplingStat::clearStatistics()
 {
-    mRecruited=mDied=mLiving=0;
+    mRecruited=mDied=mLiving=mCohortsWithDbh=0;
     mLivingSaplings=0.; mLivingSmallSaplings=0.;
     mSumDbhDied=0.;
     mAvgHeight=0.;
@@ -494,6 +507,7 @@ void SaplingStat::clearStatistics()
     mAvgDeltaHPot=mAvgHRealized=0.;
     mAdded=0;
     mLeafArea=0.;
+    mCarbonOfRecruitedTrees=0.;
 
 }
 
@@ -513,6 +527,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     mCarbonLiving.clear();
 
     CNPair dead_wood, dead_fine; // pools for mortality
+    double c_turnover = 0.;
     // average dbh
     if (mLiving>0) {
         // calculate the avg dbh and number of stems
@@ -526,9 +541,11 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double fineroot = foliage*species->finerootFoliageRatio();
         mLeafArea = foliage * n * species->specificLeafArea(); // calculate leaf area on n saplings using the species specific SLA
 
+        // get living carbon.
         mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );
-        mCarbonLiving.addBiomass( foliage*n, species->cnFoliage()  );
-        mCarbonLiving.addBiomass( fineroot*n, species->cnFineroot()  );
+        mCarbonLiving.addBiomass( foliage* n , species->cnFoliage()  );
+        mCarbonLiving.addBiomass( fineroot* n, species->cnFineroot()  );
+        c_turnover = (foliage*species->turnoverRoot() + fineroot*species->turnoverRoot())* n * biomassCFraction;
 
         DBGMODE(
         if (isnan(mCarbonLiving.C))
@@ -537,14 +554,15 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
 
         // turnover
         if (ru->snag())
-            ru->snag()->addTurnoverLitter(species, foliage*species->turnoverLeaf(), fineroot*species->turnoverRoot());
+            ru->snag()->addTurnoverLitter(species, n*foliage*species->turnoverLeaf(), n*fineroot*species->turnoverRoot());
 
         // calculate the "mortality from competition", i.e. carbon that stems from reduction of stem numbers
         // from Reinekes formula.
         //
         if (avg_dbh>1.) {
+            // compare only with cohorts >1.3m
             double avg_dbh_before = (mAvgHeight - mAvgHRealized) / species->saplingGrowthParameters().hdSapling * 100.;
-            double n_before = mLiving * species->saplingGrowthParameters().representedStemNumber( qMax(1.,avg_dbh_before) );
+            double n_before = mCohortsWithDbh * species->saplingGrowthParameters().representedStemNumber( qMax(1.,avg_dbh_before) );
             if (n<n_before) {
                 dead_wood.addBiomass( woody_bm * (n_before-n), species->cnWood() );
                 dead_fine.addBiomass( foliage * (n_before-n), species->cnFoliage()  );
@@ -584,6 +602,8 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     // calculate net growth:
     // delta of stocks
     mCarbonGain = mCarbonLiving + dead_fine + dead_wood - old_state;
+    mCarbonGain.C += c_turnover;
+    mCarbonGain.C += mCarbonOfRecruitedTrees; // correction for newly created trees
     if (mCarbonGain.C < 0)
         mCarbonGain.clear();
 

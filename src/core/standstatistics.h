@@ -84,7 +84,7 @@ private:
     double mLeafAreaIndex;
     double mNPP;
     double mNPPabove;
-    double mNPPsaplings; // carbon gain of saplings
+    double mNPPsaplings; // carbon gain of saplings (kg Biomass)
     // regeneration layer
     double mCohortCount; ///< number of cohrots
     double mSaplingCount; ///< number of sapling (Reinekes Law)
