@@ -284,6 +284,8 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             if (stand->trace())
                 qCDebug(abe) << stand->context() << "pattern planting: planted" << n_ha << "pattern/ha for species" << species->id();
 
+            DebugTimer dbgplant;
+
             while( p.x() < p_end.x() && p.y() < p_end.y()) {
                 if (do_random) {
                     // random position!
@@ -291,6 +293,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                         break;
                     // select a random position (2m grid index)
                     p = model->grid()->indexAt(QPointF( nrandom(box.left(), box.right()), nrandom(box.top(), box.bottom()) ));
+                    qDebug() << n_ha << dbgplant.elapsed() << box;
                 }
 
                 // apply the pattern....
