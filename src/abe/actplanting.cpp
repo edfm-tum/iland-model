@@ -139,7 +139,7 @@ bool ActPlanting::execute(FMStand *stand)
     for (int s=0;s<mItems.count();++s) {
         mItems[s].run(stand);
         if (time.elapsed()>1000.) {
-            qDebug() << "ActPlanting >1sec: stand species #" << stand->id() << mItems[s].species << s;
+            qDebug() << "ActPlanting >1sec: stand species #" << stand->id() << mItems[s].species << s << "elapsed (ms):" << time.elapsed();
         }
     }
 
