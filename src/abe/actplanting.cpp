@@ -279,16 +279,15 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             double n_per_ha = FMSTP::evaluateJS(n).toNumber();
             int n_ha = n_per_ha * box.width()*box.height()/10000.;
             if (n_ha< -100000) {
-                qCDebug(abe) << "Actplanting: numeric overflow: n_per_ha:" << n_per_ha << ", per area:" << n_ha;
+                qCDebug(abe) << stand->context() << "Actplanting: numeric overflow: n_per_ha:" << n_per_ha << ", per area:" << n_ha;
                 n_ha=0;
             }
             bool do_random = random;
             if (n_ha<=0)
                 return;
-            //if (stand->trace())
+            if (stand->trace())
                 qCDebug(abe) << stand->context() << "pattern planting: planted" << n_ha << "pattern/ha for species" << species->id();
 
-            DebugTimer dbgplant;
 
             while( p.x() < p_end.x() && p.y() < p_end.y()) {
                 if (do_random) {
@@ -297,7 +296,6 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                         break;
                     // select a random position (2m grid index)
                     p = model->grid()->indexAt(QPointF( nrandom(box.left(), box.right()), nrandom(box.top(), box.bottom()) ));
-                    qCDebug(abe) << n_ha << dbgplant.elapsed() << box;
                 }
 
                 // apply the pattern....
