@@ -89,6 +89,10 @@ public:
     double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
     const double &LRImodifier() const { return mLRI_modification; }
     double averageAging() const { return mAverageAging; } ///< leaf area weighted average aging
+    int svdStateId() const { return mSVDState.stateId; }
+    int svdPreviousStateId() const { return mSVDState.previousStateId; }
+    int svdStateTime() const {return mSVDState.time; }
+    int svdPreviousTime() const {return mSVDState.previousTime; }
 
     // actions
     Tree &newTree();  ///< returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
@@ -144,6 +148,14 @@ private:
     double mLRI_modification;
     double mAverageAging; ///< leaf-area weighted average aging f this species on this RU.
     float *mSaplingHeightMap; ///< pointer to array that holds max-height for each 2x2m pixel. Note: this information is not persistent
+    struct RUSVDState {
+        qint16 stateId; ///< the Id of the state the resource unit is in
+        qint16 previousStateId; ///< the Id of the state the resource unit was previously in
+        qint16 time; ///< the number of years the RU is in state 'stateId'
+        qint16 previousTime; ///< the number of years that the RU was in the previous state
+        void clear() { stateId=previousStateId=time=previousTime=0; }
+    } mSVDState;
+
 
     int mPixelCount; ///< count of (Heightgrid) pixels thare are inside the RU
     int mStockedPixelCount;  ///< count of pixels that are stocked with trees

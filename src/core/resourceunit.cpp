@@ -41,6 +41,7 @@
 #include "snag.h"
 #include "soil.h"
 #include "helper.h"
+#include "svdstate.h"
 
 double ResourceUnitVariables::nitrogenAvailableDelta = 0;
 
@@ -86,6 +87,7 @@ ResourceUnit::ResourceUnit(const int index)
     mSoil = 0;
     mSaplings = 0;
     mID = 0;
+    mSVDState.clear();
 }
 
 void ResourceUnit::setup()
@@ -415,6 +417,20 @@ void ResourceUnit::yearEnd()
         mUnitVariables.cumNEP += mUnitVariables.NEP;
 
     }
+    // SVD States: update state
+    if (GlobalSettings::instance()->model()->svdStates()){
+        int stateId=GlobalSettings::instance()->model()->svdStates()->evaluateState(this);
+        if (mSVDState.stateId==stateId)
+            mSVDState.time++;
+        else {
+            mSVDState.previousTime = mSVDState.time;
+            mSVDState.previousStateId = mSVDState.stateId;
+            mSVDState.stateId=stateId;
+            mSVDState.time=1;
+        }
+
+    }
+
 
 }
 
@@ -460,6 +476,7 @@ void ResourceUnit::createStandStatistics()
     mAverageAging = mStatistics.leafAreaIndex()>0.?mAverageAging / (mStatistics.leafAreaIndex()*stockableArea()):0.;
     if (mAverageAging<0. || mAverageAging>1.)
         qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
+
 
 }
 
