@@ -5,6 +5,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "climate.h"
+#include "svdstate.h"
 
 SVDGPPOut::SVDGPPOut()
 {
@@ -59,6 +60,60 @@ void SVDGPPOut::exec()
 }
 
 void SVDGPPOut::setup()
+{
+
+}
+
+/*  ***********************************************************************  */
+/*  **********************  SVD State output ******************************  */
+/*  ***********************************************************************  */
+
+SVDStateOut::SVDStateOut()
+{
+    setName("Forest states", "svdstate");
+    setDescription("Forest state (for SVD)");
+    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
+              << OutputColumn("stateId", "unique state Id within one iLand simulation", OutInteger)
+              << OutputColumn("composition", "species composition state", OutString)
+              << OutputColumn("structure", "dominant height class", OutDouble)
+              << OutputColumn("function", "leaf area index", OutDouble)
+              << OutputColumn("previousStateId", "unique state Id that the RU was before the current state", OutInteger)
+              << OutputColumn("previousTime", "number of years that the resource unit was in the previous state", OutInteger);
+
+}
+
+void SVDStateOut::exec()
+{
+    if (!GlobalSettings::instance()->model()->svdStates())
+        return;
+
+    SVDStates *svd = GlobalSettings::instance()->model()->svdStates();
+
+    QList<ResourceUnit*>::const_iterator it;
+    Model *m = GlobalSettings::instance()->model();
+    bool all_states = currentYear()==1;
+    for (it=m->ruList().constBegin(); it!=m->ruList().constEnd(); ++it) {
+        if ((*it)->id()==-1)
+            continue; // do not include if out of project area
+
+        const SVDState &s = svd->state((*it)->svdStateId());
+        if (all_states || (*it)->svdStateTime()==1) {
+            // write output only at the beginning or when states change
+            *this << currentYear() << (*it)->index() << (*it)->id();
+            *this << s.Id;
+            *this << s.compositionString();
+            *this << s.structure;
+            *this << s.function;
+            *this << (*it)->svdPreviousStateId();
+            *this << (*it)->svdPreviousTime();
+
+            writeRow();
+        }
+
+    }
+}
+
+void SVDStateOut::setup()
 {
 
 }

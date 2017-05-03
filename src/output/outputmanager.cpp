@@ -64,6 +64,7 @@ OutputManager::OutputManager()
     mOutputs.append(new CarbonFlowOut);
     mOutputs.append(new WaterOut);
     mOutputs.append(new SVDGPPOut);
+    mOutputs.append(new SVDStateOut);
 }
 
 void OutputManager::addOutput(Output *output)

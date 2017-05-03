@@ -14,4 +14,13 @@ private:
     int mSpeciesIndex[10];
 };
 
+class SVDStateOut: public Output
+{
+public:
+    SVDStateOut();
+    virtual void exec();
+    virtual void setup();
+private:
+
+};
 #endif // SVDOUT_H

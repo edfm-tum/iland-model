@@ -50,6 +50,7 @@
 #include "modules.h"
 #include "dem.h"
 #include "grasscover.h"
+#include "svdstate.h"
 
 #include "outputmanager.h"
 
@@ -149,6 +150,7 @@ void Model::initialize()
    mDEM = 0;
    mGrassCover = 0;
    mSaplings=0;
+   mSVDStates=0;
 }
 
 /** sets up the simulation space.
@@ -432,6 +434,8 @@ void Model::clear()
         delete mGrassCover;
     if (mABEManagement)
         delete mABEManagement;
+    if (mSVDStates)
+        delete mSVDStates;
 
     mGrid = 0;
     mHeightGrid = 0;
@@ -443,6 +447,7 @@ void Model::clear()
     mDEM = 0;
     mGrassCover = 0;
     mABEManagement = 0;
+    mSVDStates = 0;
 
     GlobalSettings::instance()->outputManager()->close();
 
@@ -539,6 +544,12 @@ void Model::loadProject()
         qDebug() << "setup management using script" << path;
     }
 
+    // SVD States
+    if (mSVDStates) {
+        delete mSVDStates; mSVDStates=0;
+    }
+    if (xml.valueBool("model.settings.svdStates.enabled", false))
+        mSVDStates=new SVDStates();
 
 
 }
@@ -832,6 +843,7 @@ void Model::runYear()
     om->execute("carbonflow"); // resource unit level, GPP, NPP and total carbon flows (atmosphere, harvest, ...)
     om->execute("water"); // resource unit/landscape level water output (ET, rad, snow cover, ...)
     om->execute("svdgpp"); // pot. gpp per m2 and for a number of species (SVD related)
+    om->execute("svdstate"); // forest state information (SVD related)
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t.elapsed();

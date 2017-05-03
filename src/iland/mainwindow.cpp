@@ -59,6 +59,7 @@
 #include "mapgrid.h"
 #include "layeredgrid.h"
 #include "dem.h"
+#include "svdstate.h"
 
 #include "forestmanagementengine.h" // ABE
 
@@ -1234,6 +1235,9 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
     // add special values (strings)
     if (ru->climate())
         items.append(new QTreeWidgetItem(QStringList()<<"climate"<<ru->climate()->name() ));
+    // add species value: SVD state
+    if (GlobalSettings::instance()->model()->svdStates())
+        items.append(new QTreeWidgetItem(QStringList()<<"state"<<GlobalSettings::instance()->model()->svdStates()->stateLabel(ru->svdStateId()) ));
 
     QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(-ru->index()); // hack: use negative values for resource units
 

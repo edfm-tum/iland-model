@@ -44,6 +44,7 @@ class MapGrid;
 class Modules;
 class DEM;
 class GrassCover;
+class SVDStates;
 
 struct HeightGridValue
 {
@@ -94,6 +95,7 @@ public:
     GrassCover *grassCover() const { return mGrassCover; }
     SpeciesSet *speciesSet() const { if (mSpeciesSets.count()==1) return mSpeciesSets.first(); return NULL; }
     const QList<Climate*> climates() const { return mClimates; }
+    SVDStates *svdStates() const { return mSVDStates; }
 
     // global grids
     FloatGrid *grid() { return mGrid; } ///< this is the global 'LIF'-grid (light patterns) (currently 2x2m)
@@ -165,6 +167,8 @@ private:
     // Digital elevation model
     DEM *mDEM; ///< digital elevation model
     GrassCover *mGrassCover; ///< cover of the ground with grass / herbs
+    // SVD States
+    SVDStates *mSVDStates;
 };
 
 class Tree;
