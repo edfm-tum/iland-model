@@ -89,6 +89,8 @@ public:
     double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
     const double &LRImodifier() const { return mLRI_modification; }
     double averageAging() const { return mAverageAging; } ///< leaf area weighted average aging
+    /// calculate the top tree height (as 90th percentile of the top heights on the 10m pixels)
+    double topHeight() const;
     int svdStateId() const { return mSVDState.stateId; }
     int svdPreviousStateId() const { return mSVDState.previousStateId; }
     int svdStateTime() const {return mSVDState.time; }

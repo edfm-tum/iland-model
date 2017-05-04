@@ -42,6 +42,7 @@
 #include "soil.h"
 #include "helper.h"
 #include "svdstate.h"
+#include "statdata.h"
 
 double ResourceUnitVariables::nitrogenAvailableDelta = 0;
 
@@ -183,6 +184,24 @@ ResourceUnitSpecies &ResourceUnit::resourceUnitSpecies(const Species *species)
 const ResourceUnitSpecies *ResourceUnit::constResourceUnitSpecies(const Species *species) const
 {
     return mRUSpecies[species->index()];
+}
+
+double ResourceUnit::topHeight() const
+{
+    GridRunner<HeightGridValue> runner(GlobalSettings::instance()->model()->heightGrid(), boundingBox());
+    int valid=0, total=0;
+    QVector<double> px_heights;
+    px_heights.reserve(cHeightPerRU*cHeightPerRU);
+    while (runner.next()) {
+        if ( runner.current()->isValid() ) {
+            valid++;
+            px_heights.push_back(runner.current()->height);
+        }
+        total++;
+    }
+    StatData hstat(px_heights);
+    double h_top = hstat.percentile(90);
+    return h_top;
 }
 
 Tree &ResourceUnit::newTree()
