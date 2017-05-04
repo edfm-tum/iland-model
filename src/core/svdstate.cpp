@@ -22,12 +22,12 @@ int SVDStates::evaluateState(ResourceUnit *ru)
 {
     SVDState s;
 
-    double h = ru->statistics().height_avg();
+    double h = ru->topHeight();
     int hcls = limit( int(h/4), 0, 20);
     s.structure = hcls;
     double lai = ru->statistics().leafAreaIndex();
-    if (lai>3.) s.function=1;
-    if (lai>6.) s.function=2;
+    if (lai>2.) s.function=1;
+    if (lai>4.) s.function=2;
 
     // species
     int other_i = 0;
