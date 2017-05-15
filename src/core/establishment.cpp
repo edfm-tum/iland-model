@@ -146,6 +146,7 @@ void Establishment::calculateAbioticEnvironment()
     mTACA_gdd = false;   // gdd-thresholds
     mTACA_frostfree = false; // frost free days in vegetation period
     mTACA_frostAfterBuds = 0; // frost days after bud birst
+    mGDD = 0;
 
 
     const ClimateDay *day = mClimate->begin();
@@ -199,6 +200,7 @@ void Establishment::calculateAbioticEnvironment()
         mTACA_chill = true;
 
     // GDD requirements
+    mGDD = static_cast<int>(GDD);
     if (GDD>p.GDD_min && GDD<p.GDD_max)
         mTACA_gdd = true;
 
@@ -230,7 +232,7 @@ void Establishment::writeDebugOutputs()
         out << mRUS->species()->id() << mRUS->ru()->index() << mRUS->ru()->id();
         out << avgSeedDensity();
         out << TACAminTemp() << TACAchill() << TACAfrostFree() << TACgdd();
-        out << TACAfrostDaysAfterBudBirst() << waterLimitation() << abioticEnvironment();
+        out << TACAfrostDaysAfterBudBirst() << waterLimitation() << growingDegreeDays()  << abioticEnvironment();
         out << mRUS->prod3PG().fEnvYear() << mRUS->constSaplingStat().newSaplings();
 
         //out << mSaplingStat.livingSaplings() << mSaplingStat.averageHeight() << mSaplingStat.averageAge() << mSaplingStat.averageDeltaHPot() << mSaplingStat.averageDeltaHRealized();

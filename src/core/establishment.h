@@ -40,6 +40,7 @@ public:
     bool TACAminTemp() const { return mTACA_min_temp;} ///< TACA flag for minimum temperature
     bool TACAchill() const { return mTACA_chill;} ///< TACA flag chilling requirement
     bool TACgdd() const { return mTACA_gdd;} ///< TACA flag for growing degree days
+    int growingDegreeDays() const { return mGDD; } ///< the groing degree days (species specific)
     bool TACAfrostFree() const { return mTACA_frostfree;} ///< TACA flag for number of frost free days
     int TACAfrostDaysAfterBudBirst() const { return mTACA_frostAfterBuds; } ///< number of frost days after bud birst
     double avgLIFValue() const { return mLIFcount>0?mSumLIFvalue/double(mLIFcount):0.; } ///< average LIF value of LIF pixels where establishment is tested
@@ -57,6 +58,7 @@ private:
     bool mTACA_min_temp; // minimum temperature threshold
     bool mTACA_chill;  // (total) chilling requirement
     bool mTACA_gdd;   // gdd-thresholds
+    int mGDD; // growing degree days
     bool mTACA_frostfree; // frost free days in vegetation period
     int mTACA_frostAfterBuds; // frost days after bud birst
     double mSumLIFvalue;
