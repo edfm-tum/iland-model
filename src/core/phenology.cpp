@@ -62,13 +62,15 @@ void Phenology::calculate()
     FloatingAverage floater(21); // a three-week floating average
     for (const ClimateDay *day = mClimate->begin(); day!=end; ++day, ++iday) {
 
-        if (day_wait_for>=0 && iday<day_wait_for)
-            continue;
         vpd = 1. - ramp(day->vpd, mMinVpd, mMaxVpd); // high value for low vpd
         temp = ramp(day->min_temperature, mMinTemp, mMaxTemp);
         daylength = ramp( mClimate->sun().daylength(iday), mMinDayLength, mMaxDayLength);
         gsi = vpd * temp * daylength;
         gsi = floater.add(gsi);
+
+        if (day_wait_for>=0 && iday<day_wait_for)
+            continue;
+
         if (!inside_period && gsi>0.5) {
             // switch from winter -> summer
             inside_period = true;
