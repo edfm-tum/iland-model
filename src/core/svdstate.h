@@ -1,6 +1,8 @@
 #ifndef SVDSTATE_H
 #define SVDSTATE_H
 #include <QHash>
+#include <QVector>
+
 class SVDStates;
 struct SVDState
 {

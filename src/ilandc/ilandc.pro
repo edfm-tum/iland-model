@@ -209,7 +209,8 @@ SOURCES += main.cpp \
     ../tools/scriptgrid.cpp \
     ../output/waterout.cpp \
     ../core/dbhdistribution.cpp \
-    ../output/svdout.cpp
+    ../output/svdout.cpp \
+    ../core/svdstate.cpp
 
 
 HEADERS += \
@@ -311,7 +312,8 @@ HEADERS += \
     ../tools/scriptgrid.h \
     ../output/waterout.h \
     ../core/dbhdistribution.h \
-    ../output/svdout.h
+    ../output/svdout.h \
+    ../core/svdstate.h
 
 
 
