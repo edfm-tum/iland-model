@@ -279,7 +279,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             double n_per_ha = FMSTP::evaluateJS(n).toNumber();
             int n_ha = n_per_ha * box.width()*box.height()/10000.;
             if (n_ha< -100000) {
-                qCDebug(abe) << stand->context() << "Actplanting: numeric overflow: n_per_ha:" << n_per_ha << ", per area:" << n_ha;
+                qCDebug(abe) << stand->context() << "Actplanting: numeric overflow: n_per_ha:" << n_per_ha << ", per area:" << n_ha << "js-n:" << n.toString();
                 n_ha=0;
             }
             bool do_random = random;
