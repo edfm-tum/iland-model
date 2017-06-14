@@ -50,7 +50,7 @@ QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
                        "11111"\
                        "11111"\
                        "11111"\
-                       "11111", 5)
+                       "11111", 5) // rect5
 << QPair<QString, int>("1111111111"\
                        "1111111111"\
                        "1111111111"\
@@ -60,12 +60,33 @@ QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
                        "1111111111"\
                        "1111111111"\
                        "1111111111"\
-                       "1111111111", 10)
+                       "1111111111", 10) // rect10
+<< QPair<QString, int>("11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "11111111111111111111", 20) // rect20
+
 << QPair<QString, int>("00110"\
                        "11110"\
                        "11111"\
                        "01111"\
-                       "00110", 5)
+                       "00110", 5) // circle5
 << QPair<QString, int>("0000110000"\
                        "0011111100"\
                        "0111111110"\
@@ -75,8 +96,28 @@ QVector<QPair<QString, int> > planting_patterns =QVector<QPair<QString, int> >()
                        "0111111110"\
                        "0011111110"\
                        "0011111100"\
-                       "0000110000", 10);
-QStringList planting_pattern_names = QStringList() << "rect2" << "rect10" << "rect20" << "circle5" << "circle10";
+                       "0000110000", 10) // circle10
+<< QPair<QString, int>("00000000111100000000"\
+                       "00000011111111000000"\
+                       "00001111111111110000"\
+                       "00011111111111111000"\
+                       "00011111111111111000"\
+                       "00111111111111111100"\
+                       "00111111111111111100"\
+                       "01111111111111111110"\
+                       "01111111111111111110"\
+                       "11111111111111111111"\
+                       "11111111111111111111"\
+                       "01111111111111111110"\
+                       "01111111111111111110"\
+                       "00111111111111111100"\
+                       "00111111111111111100"\
+                       "00011111111111111000"\
+                       "00011111111111111000"\
+                       "00001111111111110000"\
+                       "00000011111111000000"\
+                       "00000000111100000000", 20); // circle20
+QStringList planting_pattern_names = QStringList() << "rect2" << "rect5" << "rect10" << "rect20" << "circle5" << "circle10" << "circle20";
 
 QStringList ActPlanting::mAllowedProperties;
 
@@ -289,7 +330,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                 qCDebug(abe) << stand->context() << "pattern planting: planted" << n_ha << "pattern/ha for species" << species->id();
 
 
-            while( p.x() < p_end.x() && p.y() < p_end.y()) {
+            while(do_random || (p.x() < p_end.x() && p.y() < p_end.y())) {
                 if (do_random) {
                     // random position!
                     if (n_ha--<=0)
@@ -301,6 +342,8 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                 // apply the pattern....
                 for (int y=0;y<npx;++y) {
                     for (int x=0;x<npx;++x) {
+                        if (pp[y*npx+x]!='1')
+                            continue;
                         po=p + QPoint(x,y);
                         if (sgrid->standIDFromLIFCoord(po) != stand->id())
                             continue;

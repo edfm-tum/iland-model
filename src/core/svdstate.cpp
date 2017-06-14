@@ -85,8 +85,12 @@ QString SVDStates::createCompositionString(const SVDState &s)
     for (int i=0;i<5;++i)
         if (s.admixed_species_index[i]>=0)
             label += GlobalSettings::instance()->model()->speciesSet()->species(s.admixed_species_index[i])->id().toLower() + " ";
-    if (label.isEmpty())
-        return QStringLiteral("unforested");
+    if (label.isEmpty()) {
+        if (s.structure>0)
+            return QStringLiteral("mix");
+        else
+            return QStringLiteral("unforested");
+    }
     return label;
 }
 
