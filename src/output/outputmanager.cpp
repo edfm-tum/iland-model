@@ -38,6 +38,7 @@
 #include "saplingout.h"
 #include "carbonout.h"
 #include "carbonflowout.h"
+#include "soilinputout.h"
 #include "waterout.h"
 #include "svdout.h"
 
@@ -62,6 +63,7 @@ OutputManager::OutputManager()
     mOutputs.append(new SaplingDetailsOut);
     mOutputs.append(new CarbonOut);
     mOutputs.append(new CarbonFlowOut);
+    mOutputs.append(new SoilInputOut);
     mOutputs.append(new WaterOut);
     mOutputs.append(new SVDGPPOut);
     mOutputs.append(new SVDStateOut);

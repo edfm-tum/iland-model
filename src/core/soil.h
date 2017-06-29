@@ -23,6 +23,7 @@
 #include "snag.h"
 struct SoilParams; // forward
 class ResourceUnit; // forward
+class SoilInputOut; // forward
 
 class Soil
 {
@@ -85,6 +86,7 @@ private:
 
     static double mNitrogenDeposition; ///< annual nitrogen deposition (kg N/ha*yr)
     friend class Snapshot;
+    friend class SoilInputOut;
 };
 
 #endif // SOIL_H
