@@ -202,7 +202,8 @@ SOURCES += main.cpp \
     ../core/dbhdistribution.cpp \
     jstextarea.cpp \
     ../output/svdout.cpp \
-    ../core/svdstate.cpp
+    ../core/svdstate.cpp \
+    ../output/soilinputout.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -307,7 +308,8 @@ HEADERS += mainwindow.h \
     ../core/dbhdistribution.h \
     jstextarea.h \
     ../output/svdout.h \
-    ../core/svdstate.h
+    ../core/svdstate.h \
+    ../output/soilinputout.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \
