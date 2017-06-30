@@ -210,7 +210,8 @@ SOURCES += main.cpp \
     ../output/waterout.cpp \
     ../core/dbhdistribution.cpp \
     ../output/svdout.cpp \
-    ../core/svdstate.cpp
+    ../core/svdstate.cpp \
+    ../output/soilinputout.cpp
 
 
 HEADERS += \
@@ -313,7 +314,8 @@ HEADERS += \
     ../output/waterout.h \
     ../core/dbhdistribution.h \
     ../output/svdout.h \
-    ../core/svdstate.h
+    ../core/svdstate.h \
+    ../output/soilinputout.h
 
 
 
