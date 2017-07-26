@@ -87,7 +87,7 @@ protected:
     int currentYear() const { return gl->currentYear(); }
     const XmlHelper &settings() const { return gl->settings(); } ///< access XML settings (see class description)
     // add data
-    void writeRow(); ///< saves the current row/line of data to database/file. Must be called f
+    void writeRow(); ///< saves the current row/line of data to database/file. Must be called for each row.
 
     inline void add(const double &value);
     void add(const double &value1, const double &value2) { add(value1); add(value2); }
@@ -96,6 +96,8 @@ protected:
     void add(const double &value1, const double &value2, const double &value3, const double &value4, const double value5) { add(value1, value2); add(value3, value4, value5); }
     inline void add(const int intValue);
     inline void add(const QString &stringValue);
+    /// delete all columns after the column 'find_name'. Return true if columns were removed.
+    bool clearColumnsAfter(QString find_name);
 
 private:
     static const GlobalSettings *gl; ///< pointer to globalsettings object

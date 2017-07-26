@@ -7,6 +7,7 @@
 #include "climate.h"
 #include "svdstate.h"
 #include "debugtimer.h"
+#include "soil.h"
 
 SVDGPPOut::SVDGPPOut()
 {
@@ -72,12 +73,16 @@ void SVDGPPOut::setup()
 SVDStateOut::SVDStateOut()
 {
     setName("Forest states", "svdstate");
-    setDescription("Forest state (for SVD)");
+    setDescription("Forest state (for SVD). The output contains fixed columns (see below) " \
+                   "and adds two extra columns for every active tree species. Those species columns " \
+                   "hold the species share [0..1] for the local and the mid-range-neighborhood. Former have " \
+                   "'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but " \
+                   "can be lower than 1.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("stateId", "unique state Id within one iLand simulation", OutInteger)
               << OutputColumn("composition", "species composition state", OutString)
-              << OutputColumn("structure", "dominant height class", OutDouble)
-              << OutputColumn("function", "leaf area index", OutDouble)
+              << OutputColumn("structure", "dominant height class", OutInteger)
+              << OutputColumn("function", "leaf area index", OutInteger)
               << OutputColumn("previousStateId", "unique state Id that the RU was before the current state", OutInteger)
               << OutputColumn("previousTime", "number of years that the resource unit was in the previous state", OutInteger);
 
@@ -150,6 +155,9 @@ void SVDStateOut::exec()
 
 void SVDStateOut::setup()
 {
+    // clear extra columns: everything after previousTime
+    clearColumnsAfter("previousTime");
+
     // add columns for all active species:
     int n=0;
     for (QList<Species*>::const_iterator i = GlobalSettings::instance()->model()->speciesSet()->activeSpecies().constBegin();
@@ -160,3 +168,122 @@ void SVDStateOut::setup()
     }
     qDebug() << "SVDStateOutput: added extra columns for" << n << "species to the output dynamically.";
 }
+
+
+
+/*  ***********************************************************************  */
+/*  *********************  SVD Indicator output ***************************  */
+/*  ***********************************************************************  */
+
+// list of available indicators:
+QStringList svd_indicators = QStringList() << "shannonIndex" << "abovegroundCarbon" << "totalCarbon" << "volume" << "crownCover";
+
+
+SVDIndicatorOut::SVDIndicatorOut()
+{
+    setName("SVD forest indicator data", "svdindicator");
+    setDescription("Indicator data per resource unit as used by SVD.\n " \
+                   "The selection of indicators is triggered by keys in the project file (sub section 'indicators'). " \
+                   "The following columns are supported:\n\n" \
+                   "||__key__|__description__\n" \
+                   "shannonIndex|shannon index (exponential) on the RU (based on basal area of trees >4m)\n" \
+                   "abovegroundCarbon|living aboveground carbon (tC/ha) on the RU (trees + regen)\n" \
+                   "totalCarbon|all C on the RU (tC/ha), including soil, lying and standing deadwood\n" \
+                   "volume|tree volume (trees>4m) m3/ha\n" \
+                   "crownCover|fraction of crown cover (0..1) (see saveCrownCoverGrid() in SpatialAnalysis - not yet implemented)||\n\n" \
+                   "An example for the project file node:\n" \
+                   "<indicators>\n<shannonIndex>true</shannonIndex>\n<abovegroundCarbon></abovegroundCarbon> ... \n</indicators>"
+                   );
+    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id();
+
+
+}
+
+void SVDIndicatorOut::setup()
+{
+    if (!GlobalSettings::instance()->model()->svdStates())
+        throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
+
+    // clear extra columns:
+    clearColumnsAfter("rid");
+
+    // use a condition for to control execuation for the current year
+    XmlHelper indicators(settings().node(".indicators"));
+    for (int i=0;i<svd_indicators.size();++i) {
+        if (indicators.valueBool(QString(".%1").arg(svd_indicators[i]))) {
+            // set active
+            mIndicators[i] = true;
+            // add to output table
+            columns() << OutputColumn(svd_indicators[i], QString(), OutDouble);
+        }
+    }
+    qDebug() << "SVDIndicatorOut: setup indicators: " << mIndicators.count() << "active. Details: " <<  QString::fromStdString(mIndicators.to_string());
+
+}
+
+double SVDIndicatorOut::calcShannonIndex(const ResourceUnit *ru)
+{
+    // calculate shannon index from the given data [I did this already for PICUS...]:
+    // see also ARANGE project D2.2, 4.2.2
+    double total_ba = ru->statistics().basalArea();
+    if (total_ba==0.)
+        return 0.;
+
+    // loop over each species:
+    double shannon = 0.;
+    for (QList<ResourceUnitSpecies*>::const_iterator it=ru->ruSpecies().constBegin(); it!=ru->ruSpecies().constEnd();++it){
+        double ba = (*it)->statistics().basalArea();
+        if (ba>0.)
+            shannon += ba/total_ba * log(ba/total_ba);
+    }
+
+    // 'true diversity' is the exponent of the shannon index:
+    double exp_shannon = exp( -shannon );
+    return exp_shannon;
+
+}
+
+double SVDIndicatorOut::calcCrownCover(const ResourceUnit *ru)
+{
+    return 0.; // TODO: implement
+}
+
+double SVDIndicatorOut::calcTotalCarbon(const ResourceUnit *ru)
+{
+    double total_carbon = ru->statistics().totalCarbon() / 1000.; // aboveground, kg C/ha -> tC/ha
+    double area_factor = ru->stockableArea() / cRUArea; // conversion factor from real area to per ha values
+    total_carbon +=  ru->snag()->totalCarbon() / 1000. / area_factor; // kgC/RU -> tC/ha
+    total_carbon += ru->soil()->totalCarbon(); // t/ha
+    return total_carbon;
+}
+
+void SVDIndicatorOut::exec()
+{
+    QList<ResourceUnit*>::const_iterator it;
+    Model *m = GlobalSettings::instance()->model();
+    for (it=m->ruList().constBegin(); it!=m->ruList().constEnd(); ++it) {
+        if ((*it)->id()==-1)
+            continue; // do not include if out of project area
+
+         *this << currentYear() << (*it)->index() << (*it)->id();
+
+        // process indicators:
+        // Note: sequence important: see string list svd_indicators !
+        if (mIndicators.test(EshannonIndex))
+            *this << calcShannonIndex(*it);
+        if (mIndicators.test(EabovegroundCarbon))
+            *this << (*it)->statistics().totalCarbon() / 1000.; // trees + regen, t C/ha
+        if (mIndicators.test(EtotalCarbon))
+            *this << calcTotalCarbon(*it); //
+        if (mIndicators.test(Evolume))
+            *this << (*it)->statistics().volume();
+        if (mIndicators.test(EcrownCover))
+            *this << calcCrownCover(*it);
+
+        writeRow();
+    }
+
+
+}
+
+

@@ -286,6 +286,12 @@ void Soil::disturbanceBiomass(double DWD_kg_ha, double litter_kg_ha, double soil
     disturbance(frac_dwd, frac_litter, frac_som);
 }
 
+double Soil::totalCarbon() const
+{
+    // total carbon content: yR + yL + SOM in t/ha
+    return youngRefractory().C + youngLabile().C + oldOrganicMatter().C;
+}
+
 
 
 

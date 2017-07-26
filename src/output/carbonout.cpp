@@ -30,7 +30,7 @@ CarbonOut::CarbonOut()
                    "On resource unit level, the outputs contain aggregated above ground pools (kg/ha) " \
                    "and below ground pools (kg/ha). \n " \
                    "For landscape level outputs, all variables are scaled to kg/ha stockable area. "\
-                   "The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value. \n " \
+                   "The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground. \n " \
                    "You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output).\n" \
                    "The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 " \
                    "(leaving 'conditionRU' blank enables details per default).");
@@ -111,7 +111,7 @@ void CarbonOut::exec()
             // biomass from regeneration
             *this << s.cRegeneration() << s.nRegeneration();
 
-            // biomass from standing dead wood
+            // biomass from standing dead wood: this is not scaled to ha-values!
             *this << ru->snag()->totalSWD().C / area_factor << ru->snag()->totalSWD().N / area_factor   // snags
                                               << ru->snag()->totalOtherWood().C/area_factor << ru->snag()->totalOtherWood().N / area_factor;   // snags, other (branch + coarse root)
 

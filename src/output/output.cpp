@@ -172,6 +172,24 @@ void Output::writeRow()
     }
 
 }
+
+/// delete columns that were added after the column 'find_name'
+bool Output::clearColumnsAfter(QString find_name)
+{
+    if (mColumns.isEmpty() || mColumns.last().name() == find_name)
+        return false; // nothing to do
+
+    QList<OutputColumn>::iterator i=mColumns.begin();
+    while (i!=mColumns.end()) {
+        if (i->name()==find_name)
+            break;
+        ++i;
+    }
+    mColumns.erase(++i, mColumns.end());
+    mCount = mColumns.size();
+    return true;
+}
+
 void Output::open()
 {
     if (isOpen())
