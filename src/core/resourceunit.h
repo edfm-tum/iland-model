@@ -25,12 +25,14 @@
 #include "standstatistics.h"
 #include <QtCore/QVector>
 #include <QtCore/QRectF>
+// forward declarations
 class SpeciesSet;
 class Climate;
 class WaterCycle;
 class Snag;
 class Soil;
 struct SaplingCell;
+class SVDStates; class SVDStateOut;
 
 struct ResourceUnitVariables
 {
@@ -89,11 +91,15 @@ public:
     double interceptedArea(const double LA, const double LightResponse) { return mEffectiveArea_perWLA * LA * LightResponse; }
     const double &LRImodifier() const { return mLRI_modification; }
     double averageAging() const { return mAverageAging; } ///< leaf area weighted average aging
-    /// calculate the top tree height (as 90th percentile of the top heights on the 10m pixels)
-    double topHeight() const;
+    /// calculate the top tree height (as 90th percentile of the top heights on the 10m pixels), 'rIrregular' is set to true when 50% of the area < 50% of topheight
+    double topHeight(bool rIrregular) const;
+    /// the Id of the state the resource unit is in
     int svdStateId() const { return mSVDState.stateId; }
+    /// the Id of the state the resource unit was previously in
     int svdPreviousStateId() const { return mSVDState.previousStateId; }
+    /// the number of years the RU is already in the current state svdStateId()
     int svdStateTime() const {return mSVDState.time; }
+    /// the number of years that the RU was in the previous state svdPreviousStateId()
     int svdPreviousTime() const {return mSVDState.previousTime; }
 
     // actions
@@ -151,10 +157,15 @@ private:
     double mAverageAging; ///< leaf-area weighted average aging f this species on this RU.
     float *mSaplingHeightMap; ///< pointer to array that holds max-height for each 2x2m pixel. Note: this information is not persistent
     struct RUSVDState {
+        RUSVDState(): localComposition(0), midDistanceComposition(0) {}
+        ~RUSVDState() { if (localComposition) {delete localComposition; delete midDistanceComposition; } }
         qint16 stateId; ///< the Id of the state the resource unit is in
         qint16 previousStateId; ///< the Id of the state the resource unit was previously in
         qint16 time; ///< the number of years the RU is in state 'stateId'
         qint16 previousTime; ///< the number of years that the RU was in the previous state
+        QVector<float> *localComposition; ///< save for each species the relative share in the moore-neighborhood
+        QVector<float> *midDistanceComposition; ///< save for each species the relative share in a regional neighborhood (200-300m)
+
         void clear() { stateId=previousStateId=time=previousTime=0; }
     } mSVDState;
 
@@ -167,6 +178,8 @@ private:
     ResourceUnitVariables mUnitVariables;
 
     friend class RUWrapper;
+    friend class SVDStates;
+    friend class SVDStateOut;
 };
 
 

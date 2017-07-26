@@ -186,7 +186,7 @@ const ResourceUnitSpecies *ResourceUnit::constResourceUnitSpecies(const Species 
     return mRUSpecies[species->index()];
 }
 
-double ResourceUnit::topHeight() const
+double ResourceUnit::topHeight(bool rIrregular) const
 {
     GridRunner<HeightGridValue> runner(GlobalSettings::instance()->model()->heightGrid(), boundingBox());
     int valid=0, total=0;
@@ -201,6 +201,12 @@ double ResourceUnit::topHeight() const
     }
     StatData hstat(px_heights);
     double h_top = hstat.percentile(90);
+    double h_median = hstat.median();
+    // irregular: 50% of the area < 50% topheight: median=50% of the area
+    if (h_median < h_top*0.5)
+        rIrregular = true;
+    else
+        rIrregular = false;
     return h_top;
 }
 
@@ -438,6 +444,12 @@ void ResourceUnit::yearEnd()
     }
     // SVD States: update state
     if (GlobalSettings::instance()->model()->svdStates()){
+        if (!mSVDState.localComposition) {
+            // create vectors on the heap only when really needed
+            int nspecies = GlobalSettings::instance()->model()->speciesSet()->activeSpecies().size();
+            mSVDState.localComposition = new QVector<float>(nspecies, 0.f);
+            mSVDState.midDistanceComposition = new QVector<float>(nspecies, 0.f);
+        }
         int stateId=GlobalSettings::instance()->model()->svdStates()->evaluateState(this);
         if (mSVDState.stateId==stateId)
             mSVDState.time++;
