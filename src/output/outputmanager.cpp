@@ -67,6 +67,7 @@ OutputManager::OutputManager()
     mOutputs.append(new WaterOut);
     mOutputs.append(new SVDGPPOut);
     mOutputs.append(new SVDStateOut);
+    mOutputs.append(new SVDIndicatorOut);
 }
 
 void OutputManager::addOutput(Output *output)

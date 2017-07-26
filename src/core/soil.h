@@ -55,6 +55,7 @@ public:
     const CNPool &youngRefractory() const { return mYR;} ///< young refractory matter (t/ha)
     const CNPair &oldOrganicMatter() const { return mSOM;} ///< old matter (SOM) (t/ha)
     double availableNitrogen() const { return mAvailableNitrogen; } ///< return available Nitrogen (kg/ha*yr)
+    double totalCarbon() const; ///< total soil carbon t/ha (result is per ha, not the real area)
 
     const CNPair &fluxToAtmosphere() const { return mTotalToAtmosphere; } ///< total flux due to heterotrophic respiration kg/ha
     const CNPair &fluxToDisturbance() const { return mTotalToDisturbance; } ///< total flux due to disturbance events (e.g. fire) kg/ha
