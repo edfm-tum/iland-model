@@ -3,11 +3,13 @@
 #include <QHash>
 #include <QVector>
 
+#include "grid.h"
+
 class SVDStates;
 struct SVDState
 {
     SVDState(): composition(0), structure(0), function(0), dominant_species_index(-1), Id(0) { for (int i=0;i<5;++i) admixed_species_index[i]=-1; }
-    int composition;
+    int composition; // a kind of hash number combining all species (can be negative)
     int structure;
     int function;
     int dominant_species_index;
@@ -19,6 +21,8 @@ struct SVDState
     QString compositionString() const;
     /// a human readable string describing the state
     QString stateLabel() const;
+    /// calculate neighborhood population, return total weight added to the vector of species
+    float neighborhoodAnalysis(QVector<float> &v);
     /// link to the SVD container class
     static SVDStates *svd;
 };
@@ -48,7 +52,14 @@ public:
     /// calculate and returns the Id ofthe state that
     /// the resource unit is currently in
     int evaluateState(ResourceUnit *ru);
-    const SVDState state(int index) { return mStates[index]; }
+    /// access the state with the id 'index'
+    const SVDState &state(int index) const { return mStates[index]; }
+    /// return true if 'state' is a valid state Id
+    bool isStateValid(int state) const { return state>=0 && state<mStates.size(); }
+
+    /// evaluate the species composition in the neighborhood of the cell
+    /// this is executed in parallel.
+    void evalulateNeighborhood(ResourceUnit *ru);
 
     /// get a string with the main species on the resource unit
     /// dominant species is uppercase, all other lowercase
@@ -58,6 +69,7 @@ public:
     QString stateLabel(int index);
 
 private:
+    inline void executeNeighborhood(QVector<float> &vec, QPoint center_point, QVector<QPoint> &list, const Grid<ResourceUnit*> &grid);
     QString createCompositionString(const SVDState &s);
     QVector<SVDState> mStates;
     QVector<QString> mCompositionString;

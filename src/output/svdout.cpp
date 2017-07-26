@@ -6,6 +6,7 @@
 #include "species.h"
 #include "climate.h"
 #include "svdstate.h"
+#include "debugtimer.h"
 
 SVDGPPOut::SVDGPPOut()
 {
@@ -82,30 +83,64 @@ SVDStateOut::SVDStateOut()
 
 }
 
+
+// neighborhood analysis per resource unit
+static int svd_evals=0;
+void nc_calculateSVDNeighbors(ResourceUnit *unit)
+{
+    // evaluate immediately after state change (which sets the time to 1),
+    // and at least every 10 yrs.
+    if (unit->svdStateTime() % 10 == 1)  {
+        GlobalSettings::instance()->model()->svdStates()->evalulateNeighborhood(unit);
+        svd_evals++;
+    }
+}
+
+
+
 void SVDStateOut::exec()
 {
     if (!GlobalSettings::instance()->model()->svdStates())
         return;
 
     SVDStates *svd = GlobalSettings::instance()->model()->svdStates();
+    // run the analysis of species composition in the neighborhood in parallel
+    { DebugTimer dt("SVDStateNeighbors");
+    int old_val=svd_evals;
+    GlobalSettings::instance()->model()->executePerResourceUnit(nc_calculateSVDNeighbors);
+    qDebug() << "SVDStateOut: evaluate neighbors. total count:" << svd_evals-old_val;
+    }
+
 
     QList<ResourceUnit*>::const_iterator it;
     Model *m = GlobalSettings::instance()->model();
-    bool all_states = currentYear()==1;
     for (it=m->ruList().constBegin(); it!=m->ruList().constEnd(); ++it) {
         if ((*it)->id()==-1)
             continue; // do not include if out of project area
 
         const SVDState &s = svd->state((*it)->svdStateId());
-        if (all_states || (*it)->svdStateTime()==1) {
+        if ( (*it)->svdStateTime() % 10==1) {
             // write output only at the beginning or when states change
             *this << currentYear() << (*it)->index() << (*it)->id();
             *this << s.Id;
             *this << s.compositionString();
             *this << s.structure;
             *this << s.function;
-            *this << (*it)->svdPreviousStateId();
-            *this << (*it)->svdPreviousTime();
+            if ((*it)->svdStateTime()==1) {
+                // a state change!
+                *this << (*it)->svdPreviousStateId();
+                *this << (*it)->svdPreviousTime();
+            } else {
+                // stay in the state:
+                *this << s.Id; // use the current id as 'previous state id'
+                *this << (*it)->svdStateTime(); // use the current residence time
+            }
+            // the values for the neighborhood(s): pairs for local/mid-range neighbors:
+            QVector<float> &local = *(*it)->mSVDState.localComposition;
+            QVector<float> &mid = *(*it)->mSVDState.midDistanceComposition;
+            for (int s=0;s<local.count();++s) {
+                *this << local[s] << mid[s];
+            }
 
             writeRow();
         }
@@ -115,5 +150,13 @@ void SVDStateOut::exec()
 
 void SVDStateOut::setup()
 {
-
+    // add columns for all active species:
+    int n=0;
+    for (QList<Species*>::const_iterator i = GlobalSettings::instance()->model()->speciesSet()->activeSpecies().constBegin();
+         i!= GlobalSettings::instance()->model()->speciesSet()->activeSpecies().constEnd(); ++i) {
+        columns() << OutputColumn(QString("l_%1").arg((*i)->id()), QString(), OutDouble);
+        columns() << OutputColumn(QString("m_%1").arg((*i)->id()), QString(), OutDouble);
+        n++;
+    }
+    qDebug() << "SVDStateOutput: added extra columns for" << n << "species to the output dynamically.";
 }
