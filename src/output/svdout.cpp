@@ -194,7 +194,9 @@ SVDIndicatorOut::SVDIndicatorOut()
                    "An example for the project file node:\n" \
                    "<indicators>\n<shannonIndex>true</shannonIndex>\n<abovegroundCarbon></abovegroundCarbon> ... \n</indicators>"
                    );
-    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id();
+    columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
+              << OutputColumn("stateId", "current state of the resource unit (see 'svdstate' output)", OutInteger)
+              << OutputColumn("time", "number of years the resource unit is already in the state 'stateId' (see 'svdstate' output)", OutInteger);
 
 
 }
@@ -205,7 +207,7 @@ void SVDIndicatorOut::setup()
         throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
 
     // clear extra columns:
-    clearColumnsAfter("rid");
+    clearColumnsAfter("time");
 
     // use a condition for to control execuation for the current year
     XmlHelper indicators(settings().node(".indicators"));
@@ -265,7 +267,9 @@ void SVDIndicatorOut::exec()
         if ((*it)->id()==-1)
             continue; // do not include if out of project area
 
-         *this << currentYear() << (*it)->index() << (*it)->id();
+        *this << currentYear() << (*it)->index() << (*it)->id();
+        *this << (*it)->mSVDState.stateId
+              << (*it)->mSVDState.time;
 
         // process indicators:
         // Note: sequence important: see string list svd_indicators !
