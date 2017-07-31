@@ -180,6 +180,7 @@ private:
     friend class RUWrapper;
     friend class SVDStates;
     friend class SVDStateOut;
+    friend class SVDIndicatorOut;
 };
 
 
