@@ -41,6 +41,9 @@ public:
     int count() const { return mSpecies.count(); }
     /// return 2 iterators. The range between 'rBegin' and 'rEnd' are indices of the current species set (all species are included, order is random).
     void randomSpeciesOrder(QVector<int>::const_iterator &rBegin, QVector<int>::const_iterator &rEnd);
+    // properties
+    /// annual chance of creating a sprouting sapling cell from an adult tree of resprouting species
+    double sproutProbability() const { return mSproutProbability; }
     // calculations
     double nitrogenResponse(const double availableNitrogen, const double &responseClass) const;
     double co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const;
@@ -74,6 +77,8 @@ private:
     Expression mLightResponseIntolerant; ///< light response function for the the most shade tolerant species
     Expression mLightResponseTolerant; ///< light response function for the most shade intolerant species
     Expression mLRICorrection; ///< function to modfiy LRI during read
+    // Sprouting probability
+    double mSproutProbability; ///< prob for (resprouting species) to sprout into neighboring sapling-cells
 
 };
 

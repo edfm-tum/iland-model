@@ -38,6 +38,7 @@ FloatGrid *Tree::mGrid = 0;
 HeightGrid *Tree::mHeightGrid = 0;
 TreeRemovedOut *Tree::mRemovalOutput = 0;
 LandscapeRemovedOut *Tree::mLSRemovalOutput = 0;
+Saplings *Tree::saps = 0;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
@@ -84,6 +85,8 @@ Tree::Tree()
     mStamp=0;
     mId = m_nextId++;
     m_statCreated++;
+    saps = GlobalSettings::instance()->model()->saplings(); // save link to saplings to static variable
+
 }
 
 float Tree::crownRadius() const
@@ -673,6 +676,8 @@ void Tree::grow()
         mRU->resourceUnitSpecies(species()).statistics().add(this, &d);
         // regeneration
         mSpecies->seedProduction(this);
+        if (saps)
+            saps->addSprout(this, false); // check for random sprouts
     } else {
         // we include the NPP of trees that died in the current year (closed carbon balance)
         mRU->resourceUnitSpecies(species()).statistics().addNPP(&d);
@@ -975,8 +980,8 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
     else
         notifyTreeRemoved(TreeHarvest);
 
-    if (GlobalSettings::instance()->model()->saplings())
-        GlobalSettings::instance()->model()->saplings()->addSprout(this);
+    if (saps)
+        saps->addSprout(this, true);
 
     if (ru()->snag())
         ru()->snag()->addHarvest(this, removeStem, removeBranch, removeFoliage);
@@ -996,8 +1001,8 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction,
     rus.statisticsDead().add(this, 0);
     notifyTreeRemoved(TreeDisturbance);
 
-    if (GlobalSettings::instance()->model()->saplings())
-        GlobalSettings::instance()->model()->saplings()->addSprout(this);
+    if (saps)
+        saps->addSprout(this, true);
 
     if (ru()->snag()) {
         if (isHarvested()) { // if the tree is harvested, do the same as in normal tree harvest (but with default values)

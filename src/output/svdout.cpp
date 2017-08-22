@@ -204,7 +204,8 @@ SVDIndicatorOut::SVDIndicatorOut()
 void SVDIndicatorOut::setup()
 {
     if (!GlobalSettings::instance()->model()->svdStates())
-        throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
+        return;
+        //throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
 
     // clear extra columns:
     clearColumnsAfter("time");
