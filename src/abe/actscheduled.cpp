@@ -47,7 +47,7 @@ void ActScheduled::setup(QJSValue value)
     events().setup(value, QStringList() << "onEvaluate");
 
     if (!events().hasEvent(QStringLiteral("onEvaluate")))
-        throw IException("activity %1 (of type 'scheduled') requires to have the 'onSchedule' event.");
+        throw IException("activity %1 (of type 'scheduled') requires to have the 'onEvaluate' event.");
 
 }
 

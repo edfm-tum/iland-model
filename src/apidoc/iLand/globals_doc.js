@@ -357,7 +357,7 @@ force a repaint of the GUI main visualization area.
 /**
 Creates a [ESRI style](http://en.wikipedia.org/wiki/Esri_grid) grid file from an iLand grid.
 Specify the target file name with `file_name` and the type of the source grid with the string `grid_type`.
-Allowed grids are: 'height' and 'lif', being the 10m dominant heights and the 2m LIF pixels.
+See {{#crossLink "Globals/grid:method"}}{{/crossLink}} for the avaialble grids (e.g., 'height' and 'lif)..
 
 See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 
@@ -403,11 +403,10 @@ The available grid types are:
 + `forestoutside`: 1 if a pixel is out of project area and is considered to be forested (see [wiki page](http://iland.boku.ac.at/landscape+setup))
 
 
-See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
+See also: {{#crossLink "Globals/gridToFile:method"}}{{/crossLink}}
 
 @method grid
 @param {string} type select the type of grid to return
-@param {string} file_name target file path (relative to the home directory)
 @return {Grid} a Javascript object encapsulating the {{#crossLink "Grid"}}{{/crossLink}}
 
 */

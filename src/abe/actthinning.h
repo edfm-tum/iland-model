@@ -45,13 +45,13 @@ private:
         bool usePercentiles; ///< if true, classes relate to percentiles, if 'false' classes relate to relative dbh classes
         bool removal; ///< if true, classes define removals, if false trees should *stay* in the class
         bool relative; ///< if true, values are per cents, if false, values are absolute values per hectare
-        double targetValue; ///< the number (per ha) that should be removed, see targetVariable
+        QJSValue targetValue; ///< the number (per ha) that should be removed, see targetVariable
         bool targetRelative; ///< if true, the target variable is relative to the stock, if false it is absolute
         QString targetVariable; ///< target variable ('volume', 'basalArea', 'stems') / ha
         QVector<double> classValues; ///< class values (the number of values defines the number of classes)
         QVector<int> classPercentiles; ///< percentiles [0..100] for the classes (count = count(classValues) + 1
-        double minDbh; ///< only trees with dbh > minDbh are considered (default: 0)
-        int remainingStems; ///< minimum remaining stems/ha (>minDbh)
+        QJSValue minDbh; ///< only trees with dbh > minDbh are considered (default: 0)
+        QJSValue remainingStems; ///< minimum remaining stems/ha (>minDbh)
     };
     struct SSelectiveThinning {
         int N; // stems pro ha target

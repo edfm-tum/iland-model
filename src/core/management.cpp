@@ -422,13 +422,14 @@ void Management::loadFromTreeList(QList<Tree*>tree_list)
 }
 
 // loadFromMap: script access
-void Management::loadFromMap(MapGridWrapper *wrap, int key)
+int Management::loadFromMap(MapGridWrapper *wrap, int key)
 {
     if (!wrap) {
         throwError("loadFromMap called with invalid map object!");
-        return;
+        return 0;
     }
     loadFromMap(wrap->map(), key);
+    return count();
 }
 
 void Management::killSaplings(MapGridWrapper *wrap, int key)

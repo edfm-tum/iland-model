@@ -98,7 +98,7 @@ public slots:
     int loadResourceUnit(int ruindex); ///< load all trees of a resource index
     void loadFromTreeList(QList<Tree*>tree_list); ///< load a previously present tree list
     void loadFromMap(const MapGrid *map_grid, int key); ///< load all trees that are on the area denoted by 'key' of the given grid
-    void loadFromMap(MapGridWrapper *wrap, int key); ///< load all trees that are on the area denoted by 'key' of the given grid (script access)
+    int loadFromMap(MapGridWrapper *wrap, int key); ///< load all trees that are on the area denoted by 'key' of the given grid (script access)
     /// kill all saplings that are on the area denoted by 'key' of the given grid (script access)
     void killSaplings(MapGridWrapper *wrap, int key);
     /// kill all saplings that are on a given resource unit (given by 'ruindex')
