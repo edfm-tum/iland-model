@@ -158,8 +158,8 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
     custom.usePercentiles = FMSTP::boolValueFromJs(value, "percentile", true);
     custom.removal = FMSTP::boolValueFromJs(value, "removal", true);
     custom.relative = FMSTP::boolValueFromJs(value, "relative", true);
-    custom.remainingStems = FMSTP::valueFromJs(value, "remainingStems", "0").toInt();
-    custom.minDbh = FMSTP::valueFromJs(value, "minDbh", "0").toNumber();
+    custom.remainingStems = FMSTP::valueFromJs(value, "remainingStems", "0");
+    custom.minDbh = FMSTP::valueFromJs(value, "minDbh", "0");
     QJSValue filter = FMSTP::valueFromJs(value, "filter", "");
     if (filter.isString())
         custom.filter = filter.toString();
@@ -172,9 +172,7 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
         throw IException(QString("setup of custom Activity: invalid targetVariable: %1").arg(custom.targetVariable));
 
     custom.targetRelative = FMSTP::boolValueFromJs(value, "targetRelative", true);
-    custom.targetValue = FMSTP::valueFromJs(value, "targetValue", "30").toNumber();
-    if (custom.targetRelative && (custom.targetValue>100. || custom.targetValue<0.))
-        throw IException(QString("setup of custom Activity: invalid relative targetValue (0-100): %1").arg(custom.targetValue));
+    custom.targetValue = FMSTP::valueFromJs(value, "targetValue", "30");
 
     QJSValue values = FMSTP::valueFromJs(value, "classes",  "", "setup custom acitvity");
     if (!values.isArray())
@@ -230,14 +228,21 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
         }
         species_selective = true;
     }
+    // process the dynamic variables
+    double target_value = FMSTP::evaluateJS(custom.targetValue).toNumber(); // evaluate dynamically at runtime
+    double min_dbh = FMSTP::evaluateJS(custom.minDbh).toNumber();
+    double remaining_stems = FMSTP::evaluateJS(custom.remainingStems).toNumber();
+
+    if (custom.targetRelative && (target_value>100. || target_value<0.))
+        throw IException(QString("Thinning activity: invalid relative targetValue (0-100): %1").arg(target_value));
 
 
     FMTreeList trees(stand);
     QString filter = custom.filter;
-    if (custom.minDbh>0.) {
+    if (min_dbh>0.) {
         if (!filter.isEmpty())
             filter += " and ";
-        filter += QString("dbh>%1").arg(custom.minDbh);
+        filter += QString("dbh>%1").arg(min_dbh);
     }
 
     if (!filter.isEmpty())
@@ -245,7 +250,7 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     else
         trees.loadAll();
 
-    if (custom.remainingStems>0 && custom.remainingStems>=trees.trees().size())
+    if (remaining_stems>0 && remaining_stems>=trees.trees().size())
         return false;
 
     if (trees.trees().size()==0)
@@ -287,11 +292,11 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     while (++class_index<percentiles.size())
         percentiles[class_index]=n+1;
 
-    double target_value=0.;
+    double calc_target_value=0.;
     if (custom.targetRelative)
-        target_value = custom.targetValue * total_value / 100.;
+        calc_target_value = target_value * total_value / 100.;
     else
-        target_value = custom.targetValue * stand->area();
+        calc_target_value = target_value * stand->area();
 
     if (!custom.relative) {
         // TODO: does not work now!!! redo!!
@@ -344,8 +349,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
             // stop harvesting, when the target size is reached: if the current tree would surpass the limit,
             // a random number decides whether the tree should be included or not.
             double tree_value = target_dbh?1.:trees.trees()[tree_idx].second;
-            if (custom.targetValue>0.) {
-                if (removed_value + tree_value > target_value) {
+            if (target_value>0.) {
+                if (removed_value + tree_value > calc_target_value) {
                     if (drandom()>0.5 || target_value_reached)
                         break;
                     else
@@ -365,16 +370,16 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
                 finished=true;
         }
         // stop harvesting, when the minimum remaining number of stems is reached
-        if (trees.trees().size()-removed_trees <= custom.remainingStems*stand->area())
+        if (trees.trees().size()-removed_trees <= remaining_stems*stand->area())
             finished = true;
 
-        if (custom.targetValue>0. && removed_value > target_value)
+        if (target_value>0. && removed_value > calc_target_value)
             finished = true;
 
     } while (!finished);
 
     if (stand->trace()) {
-        qCDebug(abe) << stand->context() << "custom-thinning: removed" << removed_trees << ". Reached cumulative 'value' of:" << removed_value << "(planned value:" << target_value << "). #of no trees found:" << no_tree_found << "; stand-area:" << stand->area();
+        qCDebug(abe) << stand->context() << "custom-thinning: removed" << removed_trees << ". Reached cumulative 'value' of:" << removed_value << "(planned value:" << calc_target_value << "). #of no trees found:" << no_tree_found << "; stand-area:" << stand->area();
         for (int i=0;i<values.count();++i)
             qCDebug(abe) << stand->context() << "class" << i << ": removed" << values[i] << "of" << percentiles[i+1]-percentiles[i];
     }
