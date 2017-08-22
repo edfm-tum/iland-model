@@ -141,6 +141,9 @@ int SpeciesSet::setup()
     // x: LRI, y: relative heigth
     mLRICorrection.linearize2d(0., 1., 0., 1.);
 
+    // setup sprout probability
+    mSproutProbability = xml.valueDouble("model.species.sprouting.adultSproutProbability", 0.);
+
     createRandomSpeciesOrder();
     return mSpecies.count();
 

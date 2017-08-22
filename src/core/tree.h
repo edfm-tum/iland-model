@@ -37,6 +37,7 @@ struct TreeGrowthData;
 class TreeOut;
 class TreeRemovedOut;
 class LandscapeRemovedOut;
+class Saplings;
 
 class Tree
 {
@@ -220,6 +221,7 @@ private:
     static void setTreeRemovalOutput(TreeRemovedOut *rout) { mRemovalOutput=rout; }
     static LandscapeRemovedOut *mLSRemovalOutput;
     static void setLandscapeRemovalOutput(LandscapeRemovedOut *rout) { mLSRemovalOutput=rout; }
+    static Saplings *saps;
 
     // statistics
     static int m_statPrint;

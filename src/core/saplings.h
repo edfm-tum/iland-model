@@ -191,7 +191,7 @@ public:
     void clearAllSaplings();
 
     /// generate vegetative offspring from 't' (sprouts)
-    int addSprout(const Tree *t);
+    int addSprout(const Tree *t, bool tree_is_removed);
 
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
     static void updateBrowsingPressure();

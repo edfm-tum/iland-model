@@ -324,38 +324,66 @@ void Saplings::clearAllSaplings()
     }
 }
 
-int Saplings::addSprout(const Tree *t)
+int Saplings::addSprout(const Tree *t, bool tree_is_removed)
 {
     if (t->species()->saplingGrowthParameters().sproutGrowth==0.)
         return 0;
     SaplingCell *sc = cell(t->positionIndex());
     if (!sc)
         return 0;
-    clearSaplings(sc, const_cast<ResourceUnit*>(t->ru()), false );
-    SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
-    if (st)
-        st->set_sprout(true);
 
-    // neighboring cells
-    double crown_area = t->crownRadius()*t->crownRadius() * M_PI; //m2
-    // calculate how many cells on the ground are covered by the crown (this is a rather rough estimate)
-    // n_cells: in addition to the original cell
-    int n_cells = static_cast<int>(round( crown_area / static_cast<double>(cPxSize*cPxSize) - 1.));
-    if (n_cells>0) {
-        ResourceUnit *ru;
-        static const int offsets_x[8] = {1,1,0,-1,-1,-1,0,1};
-        static const int offsets_y[8] = {0,1,1,1,0,-1,-1,-1};
-        int s=irandom(0,8);
-        while(n_cells) {
-            sc = cell(t->positionIndex()+QPoint(offsets_x[s], offsets_y[s]),true,&ru);
-            if (sc) {
-                clearSaplings(sc, ru, false );
-                SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
-                if (st)
-                    st->set_sprout(true);
+    static const int offsets_x[8] = {1,1,0,-1,-1,-1,0,1};
+    static const int offsets_y[8] = {0,1,1,1,0,-1,-1,-1};
+
+    if (tree_is_removed) {
+        // if the host tree is removed (disturbance, harvest), a resprout is happening on the current pixel ( and pixels that are
+        // (partially) covered by the tree crown
+        clearSaplings(sc, const_cast<ResourceUnit*>(t->ru()), false );
+        SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
+        if (st)
+            st->set_sprout(true);
+
+/*
+ *      // neighboring cells
+        double crown_area = t->crownRadius()*t->crownRadius() * M_PI; //m2
+        // calculate how many cells on the ground are covered by the crown (this is a rather rough estimate)
+        // n_cells: in addition to the original cell
+        int n_cells = static_cast<int>(round( crown_area / static_cast<double>(cPxSize*cPxSize) - 1.));
+        if (n_cells>0) {
+            ResourceUnit *ru;
+            int s=irandom(0,8);
+            while(n_cells) {
+                sc = cell(t->positionIndex()+QPoint(offsets_x[s], offsets_y[s]),true,&ru);
+                if (sc && !sc->sapling(t->species()->index())) {
+                    // add sapling only if cell not already occupied by a sapling of the species
+                    SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
+                    if (st)
+                        st->set_sprout(true);
+                }
+
+                s = (s+1)%8; --n_cells;
             }
+        } */
+    } else {
+        // sprouts spread from a living tree with
+        // a low probability in adjacent cells
+        const double p_resprout = t->species()->speciesSet()->sproutProbability();
+        if (drandom() < p_resprout) {
+            // select a neighbor randomly
+            int s=irandom(0,8);
+            ResourceUnit *ru;
+            sc = cell(t->positionIndex()+QPoint(offsets_x[s], offsets_y[s]),true,&ru);
+            for (int i=0;i<8;++i) {
+                if (sc && !sc->sapling(t->species()->index())) {
+                    // the species is not yet on the cell, so let us spread there....
+                    SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
+                    if (st)
+                        st->set_sprout(true);
+                    break;  // stop searching when one sprout was added
 
-            s = (s+1)%8; --n_cells;
+                }
+                s = (s+1)%8; // move on...
+            }
         }
     }
     return 1;
