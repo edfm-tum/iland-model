@@ -64,6 +64,10 @@ public slots:
     /// returns the number of tree that remain in the list.
     int filter(QString filter);
 
+    /// spatial filter *within* the stand
+    /// trees are kept in the list if the expession 'filter' returns true for the location of the tree
+    int spatialFilter(QJSValue grid, QString filter);
+
     /// load all trees of the stand and either kill or harvest trees that are marked for that operation.
     int removeMarkedTrees();
 

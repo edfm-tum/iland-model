@@ -74,6 +74,8 @@ public:
     float metricSizeY() const { return mSizeY*mCellsize; }
     /// get the metric rectangle of the grid
     QRectF metricRect() const { return mRect; }
+    /// set the metric rectangle. Use with care! No further checks are executed!
+    void setMetricRect(QRectF rect) { mRect = rect; }
     /// get the rectangle of the grid in terms of indices
     QRect rectangle() const { return QRect(QPoint(0,0), QPoint(sizeX(), sizeY())); }
     /// get the length of one pixel of the grid

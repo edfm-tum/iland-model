@@ -8,24 +8,26 @@ of a TreeList is linked automatically to the forest stand that is currently mana
 
 ## Overview
 ### initializing the list
-The main function for loading (i.e. making available for manipulation) trees of a forest stand is `load()`. `load()` can be used to load either
-all trees, or a subset of trees (based on filter criteria).
+The main function for loading (i.e. making available for manipulation) trees of a forest stand is `loadAll()` or `load()`. `loadAll()` can be used to load either
+all trees, and `load()` to load only a subset of trees (based on filter criteria).
 ### manipulating the content of the list
 The trees in a list (loaded by `load()`) may be manipulated using functions such as `filter()` or `sort()`. There are functions helping to get aggregate values
 (`mean()`, `sum()`), or to get the value of a given `percentile()`.
 ### manipulationg trees
 Trees present in the tree list may be harvested or simply cut down. Main functions are `kill()`, `harvest()`. If `simulate` is true, harvested/killed trees
 are only marked for removal. At a later point in time, all marked trees can be removed using `removeMarkedTrees()`.
-### extra features
-something here...
+### general notes
+The tree list heavily used the expression engine of iLand http://iland.boku.ac.at/Expression. Expressions are provided as strings to the
+respective Javascript functions (e.g.,`filter`) and evaluated by iLand. Note that tree species names are treated as a special case (http://iland.boku.ac.at/Expression#Constants).
+
 
 ## Examples
     // 'trees' variable is always available.
     // this loads *all* trees of the current forest stand (i.e. trees>4m)
-    trees.load();
+    trees.loadAll();
     trees.simulate = true; // enable simulation mode (this is the default)
     // keep only spruce trees with a dbh>20cm in the list:
-    trees.filter("species = piab and dbh>20");
+    trees.filter("species = piab and dbh>20"); // note: piab is a constant and not a string
     // now harvest all trees (since simulate=true, the trees are only marked for harvesting)
     trees.harvest();
     ...
@@ -141,3 +143,106 @@ See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}, {{#crossLin
     trees.harvest('dbh>30'); // harvest all trees with dbh>30cm
 **/
 
+/**
+Return the `perc` th percentile (0..100) value from the list of trees. The function requires that a {{#crossLink "TreeList/sort:method"}}{{/crossLink}} operation
+has been executed before this function is called. The `sort()` function assigns to each tree in the list a value (e.g., the `dbh`). The `percentile` function
+accesses those value. Without a call to `sort` the function returns 0 for all values. The percentile 100 returns the maximum value within the list (i.e., the value last
+attached to the last tree in the list).
+
+See also:{{#crossLink "TreeList/sort:method"}}{{/crossLink}}
+
+@method percentile
+@param {int} perc a number between 0 and 100 that should be returned.
+@return {double} the value at the given percentile (see details)
+@Example
+    trees.loadAll();
+    trees.sort('dbh'); // smallest trees in front of the list
+    console.log("IQR: " + trees.percentile(75) - trees.percentile(25) );
+    console.log("min: " + trees.percentile(0) + ", median: " + trees.percentile(50) + ", max: " + trees.percentile(100) );
+**/
+
+/**
+`sort()` sorts the tree list according to the numeric value of the expression `sort_expr`. The sort order is ascending, i.e., after sorting the tree with the smallest
+value is at the beginning of the list. Descending order can be achieved by inverting the sign of the expression. A sorted list is useful
+for extracting {{#crossLink "TreeList/percentile:method"}}{{/crossLink}} values or for using the `incsum` function of expressions [iland.boku.ac.at/Expression].
+
+See also: {{#crossLink "TreeList/percentile:method"}}{{/crossLink}}
+
+@method sort
+@param {string} sort_expr a valid expression used for sorting
+@Example
+    trees.loadAll();
+    trees.sort('volume'); // small trees in front of the list
+    trees.filter('incsum(volume) < 100'); // keep 100m3 of the trees with the lowest volume
+    trees.loadAll();
+    trees.sort('-x'); // x-coordinate, descending, trees start from the 'right'
+    trees.filter('incsum(1)<=100'); // filter 100 trees on the right edge of the area
+**/
+
+/**
+Randomly shuffles the list of trees. Trees in a newly refreshed list (e.g., `loadAll()`) have a non-random spatial pattern. When
+randomness is wanted (e.g., to select randomly N trees), then `randomize` should be used.
+
+Note: `randomize` overwrites the values of a {{#crossLink "TreeList/sort:method"}}{{/crossLink}} call.
+
+See also: {{#crossLink "TreeList/loadAll:method"}}{{/crossLink}}
+
+@method randomize
+@Example
+    trees.loadAll();
+    trees.sort('dbh');
+    trees.filter('dbh<' + trees.percentile(50) ); // only the population with dbh < median(dbh) remains
+    // to randomly select from this population:
+    trees.randomize();
+    trees.filter('incsum(1) < 100'); // select 100 trees from the population
+**/
+
+/**
+Calculates the mean value of a given `expr` that can contain any of the available tree variables. The optional `filter` is another expression
+that filters the trees that are processed.
+Return the mean value.
+
+See also:{{#crossLink "TreeList/sum:method"}}{{/crossLink}}
+
+@method mean
+@param {string} expr a valid expression that should be processed
+@param {string} filter only trees that pass the filter are processed
+@return {double} the mean value of the population
+@Example
+    trees.loadAll();
+    console.log('mean dbh: ' + trees.mean('dbh') );
+    var tdbh = trees.mean('height', 'dbh>=30'); // mean height of all trees >30cm
+    var ldbh = trees.mean('height', 'dbh<30'); // mean height of all belwo 30cm - note that the list is not altered
+**/
+
+/**
+Calculates the sum of a given `expr` that can contain any of the available tree variables. The optional `filter` is another expression
+that filters the trees that are processed. Returns the sum of `expr`.
+
+Note: counting trees that fulfill the `filter` expression can be expressed as: `sum('1', '<filter-expr>')`.
+
+See also:{{#crossLink "TreeList/mean:method"}}{{/crossLink}}
+
+@method sum
+@param {string} expr a valid expression that should be processed
+@param {string} filter only trees that pass the filter are processed
+@return {double} the sum over the value of `expr`of the population
+@Example
+    trees.loadAll();
+    console.log('total basal area: ' + trees.sum('basalarea') );
+    console.log('N trees >30cm: ' + trees.sum('1', 'dbh>30') ); // note that '1' is a string (and parsed by the expression engine)
+**/
+
+/**
+`killSaplings()` provides an access to the cohorts of the sapling layer in iLand http://iland.boku.ac.at/sapling+growth+and+competition .
+http://iland.boku.ac.at/sapling+variables provides a list of available variables.
+The function removes all sapling cohorts for which `expr` returns `true`.
+
+Note: The interface to saplings currrently much simpler compared to the interface for trees >4m.
+
+@method killSaplings
+@param {string} filter a filter expression to select the saplings that should be removed
+@return {int} the number of sapling cohorts that have been removed.
+@Example
+    trees.killSaplings('species=piab and age<5'); // kill spruce saplings younger than 5yrs
+**/

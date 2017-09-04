@@ -55,6 +55,28 @@ QJSValue ScriptGrid::createGrid(Grid<double> *grid, QString name)
     return jsgrid;
 }
 
+bool ScriptGrid::create(int awidth, int aheight, int acellsize, double coordx, double coordy)
+{
+    if (mGrid)
+        delete mGrid;
+    QRectF rect;
+    rect.setLeft(coordx); rect.setBottom(coordy);
+    rect.setWidth(acellsize * awidth);
+    rect.setHeight(acellsize * aheight);
+    mGrid = new Grid<double>(rect, acellsize);
+    mGrid->wipe();
+    return true;
+}
+
+void ScriptGrid::setOrigin(double x, double y)
+{
+    if (!mGrid)
+        return;
+    QRectF rect = mGrid->metricRect();
+    rect.moveTo(x,y);
+    mGrid->setMetricRect( rect );
+}
+
 QJSValue ScriptGrid::copy()
 {
     if (!mGrid)

@@ -191,6 +191,7 @@ public slots:
     QJSValue newClimateConverter(); ///< create new instance of ClimateConverter and return it
     QJSValue newMap(); ///< create new instance of Map and return it
     QJSValue newDBHDistribution(); ///< create new instance of DBHDistribution and return it
+    QJSValue newGrid(); ///< creates a new grid object and return it
     int stats() {return mObjCreated;} ///< return the number of created objects
 private:
     int mObjCreated;

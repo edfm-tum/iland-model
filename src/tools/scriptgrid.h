@@ -53,7 +53,14 @@ public:
 signals:
 
 public slots:
+    /// creates a grid with cellsize / width / height
+    /// the offset of the grid (lower left corner) is given by coordx/coordy
+    bool create(int awidth, int aheight, int acellsize, double coordx, double coordy);
+
     void setName(QString arg) { mVariableName = arg; }
+    /// set the origin of the grid (iLand coordiantes).
+    /// the width/height of the grid are not altered, the grid is just moved to the new coordiantes.
+    void setOrigin(double x, double y);
     /// create a copy of the current grid and return a new script object
     QJSValue copy();
     /// fill the grid with 0-values
