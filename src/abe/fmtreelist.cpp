@@ -31,6 +31,7 @@
 #include "fmstand.h"
 #include "fomescript.h"
 #include "saplings.h"
+#include "scriptgrid.h"
 
 namespace ABE {
 
@@ -144,6 +145,42 @@ int FMTreeList::filter(QString filter)
     if (logLevelDebug())
         qDebug() << "apply filter" << filter << ", removed" << n_rem;
     return mTrees.size();
+}
+
+int FMTreeList::spatialFilter(QJSValue grid, QString filter)
+{
+    QObject *o = grid.toQObject();
+    ScriptGrid *sg = qobject_cast<ScriptGrid*>(o);
+    if (!o) {
+       qDebug() << "ERROR: Invalid grid in call to treelist::spatialFilter()!";
+       return -1;
+    }
+    Expression expr;
+    double *var = expr.addVar( sg->name() );
+    try {
+        expr.setExpression(filter);
+        expr.parse();
+    } catch(const IException &e) {
+        qDebug() << "JS - treelist::spatialFilter(): expression ERROR: " << e.message();
+        return -1;
+    }
+
+    QPair<Tree*, double> empty_tree(0,0.);
+    QPointF tc;
+    for (int i=0;i<mTrees.size();++i) {
+        tc = mTrees[i].first->position();
+        if (sg->grid()->coordValid(tc)) {
+            // set variable of expression
+            *var = sg->grid()->valueAt(tc);
+            if (mTrees[i].first->isDead() || !expr.execute())
+                mTrees[i] = empty_tree; // mark
+        }
+    }
+    int n_rem = mTrees.removeAll(empty_tree);
+    if (logLevelDebug())
+        qDebug() << "apply spatial filter" << filter << ", removed" << n_rem;
+    return mTrees.size();
+
 }
 
 int FMTreeList::removeMarkedTrees()
@@ -397,6 +434,8 @@ double FMTreeList::percentile(int pct)
     if (mTrees.count()==0)
         return -1.;
     int idx = int( (pct/100.) * mTrees.count());
+    if (idx == mTrees.count())
+        return mTrees.at(idx-1).second; // special case pct=100 -> last entry
     if (idx>=0 && idx<mTrees.count())
         return mTrees.at(idx).second;
     else

@@ -1041,4 +1041,10 @@ QJSValue ScriptObjectFactory::newDBHDistribution()
     return obj;
 }
 
+QJSValue ScriptObjectFactory::newGrid()
+{
+    QJSValue result = ScriptGrid::createGrid(0); // create with an empty grid
+    return result;
+}
+
 
