@@ -140,6 +140,30 @@ Grid = {
       */
 
     /**
+    Creates a numeric grid (floating point) with the dimensions `width` and `height` with the cell size `cellsize` and fills the grid with 0. The grid is
+    located at the origin of the project area (i.e., at coordiantes (0,0)). No clipping is applied.
+
+    Note that the grid object must already exist! Use {{#crossLink "Factory/newGrid:method"}}{{/crossLink}} to create a new grid from scratch, or other functions
+    that return grids (e.g., {{#crossLink "Grid/copy:method"}}{{/crossLink}}, {{#crossLink "Globals/grid:method"}}{{/crossLink}} ).
+
+    See also: {{#crossLink "Grid/load:method"}}{{/crossLink}}, {{#crossLink "Grid/setOrigin:method"}}{{/crossLink}}, {{#crossLink "Factory/newGrid:method"}}{{/crossLink}}
+
+    @method create
+    @param {int} width the number of cells in x-direction
+    @param {int} height the number of cells in y-direction
+    @param {int} cellsize the cellsize (m)
+    @return { boolean } true on success.
+
+    @Example
+        var g = Factory.newGrid(); // create a grid
+        g.create(10,20,5); // populate with an empty grid with 50x100m
+        g.setValue(4,5,-1); // modify the grid
+        g.setOrigin(1000, 1000); // move the grid (the lower left corner) to the given coordinates
+        g.save("test.txt"); // save as ESRI raster file
+
+      */
+
+    /**
     Apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
     The function is given as a string representing an [Expression](http://iland.boku.ac.at/Expression) and is evaluated for each cell of the grid.
     In the expression, the current value of the grid cell can be accessed using the {{#crossLink "Grid/name:property"}}{{/crossLink}} property.

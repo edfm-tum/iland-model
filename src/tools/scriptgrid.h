@@ -55,7 +55,7 @@ signals:
 public slots:
     /// creates a grid with cellsize / width / height
     /// the offset of the grid (lower left corner) is given by coordx/coordy
-    bool create(int awidth, int aheight, int acellsize, double coordx, double coordy);
+    bool create(int awidth, int aheight, int acellsize);
 
     void setName(QString arg) { mVariableName = arg; }
     /// set the origin of the grid (iLand coordiantes).

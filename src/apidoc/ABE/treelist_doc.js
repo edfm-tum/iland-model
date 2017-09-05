@@ -202,7 +202,7 @@ Calculates the mean value of a given `expr` that can contain any of the availabl
 that filters the trees that are processed.
 Return the mean value.
 
-See also:{{#crossLink "TreeList/sum:method"}}{{/crossLink}}
+See also: {{#crossLink "TreeList/sum:method"}}{{/crossLink}}
 
 @method mean
 @param {string} expr a valid expression that should be processed
@@ -245,4 +245,32 @@ Note: The interface to saplings currrently much simpler compared to the interfac
 @return {int} the number of sapling cohorts that have been removed.
 @Example
     trees.killSaplings('species=piab and age<5'); // kill spruce saplings younger than 5yrs
+**/
+
+
+/**
+`spatialFilter()` filters the tree that are currently in the list based on their spatial location and the content
+of the `grid`. The function checks for every tree the corresponding pixel of `grid` and evaluates the `filter` function. If the
+function returns true, the tree is kept (if the tree is outside of the `grid` the tree is removed).
+
+Note that when not otherwise altered, the default name of a grid is simply 'x', so filtering for a certain value could be achieved
+by using 'x=1' as a `filter`.
+
+See also: {{#crossLink "Grid/create:method"}}{{/crossLink}}, {{#crossLink "Grid/setOrigin:method"}}{{/crossLink}}
+
+@method spatialFilter
+@param {Grid} grid a {{#crossLink "Grid"}}{{/crossLink}}Grid object
+@param {string} filter A expression that is evaluated for every pixel of the `grid`.
+@return {int}  the number of trees still remaining in the list, or -1 if an error occurs.
+@Example
+    // create a grid
+    var g = Factory.newGrid();
+    g.create(10,10,5); // 50x50m, default name is 'x'
+    g.setOrigin(30,20); // set lower left corner to 30/20
+    // in the context of ABE:
+    trees.loadAll(); // load all trees
+    // filter so, that only trees that are located on a pixel in g with the value 1 remain:
+    trees.spatialFilter(g, 'x=1');
+    // do something, e.g.,
+    trees.harvest();
 **/
