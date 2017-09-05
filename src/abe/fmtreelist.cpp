@@ -174,6 +174,8 @@ int FMTreeList::spatialFilter(QJSValue grid, QString filter)
             *var = sg->grid()->valueAt(tc);
             if (mTrees[i].first->isDead() || !expr.execute())
                 mTrees[i] = empty_tree; // mark
+        } else {
+            mTrees[i] = empty_tree;
         }
     }
     int n_rem = mTrees.removeAll(empty_tree);

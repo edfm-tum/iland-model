@@ -30,6 +30,12 @@ Factory = {
     */
 
     /**
+    Create an instance of a Grid. Initially, the grid is empty.
+
+    @method newGrid
+    @return {object} A Javascript {{#crossLink "Grid"}}{{/crossLink}} object
+    */
+    /**
     Create an instance of a ClimateConverter (see http://iland.boku.ac.at/Object+ClimateConverter).
 
     @method newClimateConverter
