@@ -22,6 +22,7 @@
 #include "expression.h"
 #include "modelcontroller.h"
 #include "mapgrid.h"
+#include "gisgrid.h"
 
 
 #include <QJSEngine>
@@ -120,15 +121,28 @@ bool ScriptGrid::load(QString fileName)
 {
     fileName = GlobalSettings::instance()->path(fileName);
     // load the grid from file
-    MapGrid mg(fileName, false);
-    if (!mg.isValid()) {
-        qDebug() << "ScriptGrid::load(): load not successful of file:" << fileName;
+//    MapGrid mg(fileName, false);
+//    if (!mg.isValid()) {
+//        qDebug() << "ScriptGrid::load(): load not successful of file:" << fileName;
+//        return false;
+//    }
+//    GisGrid gisgrid;
+//    if (!gisgrid.loadFromFile(fileName))
+//        return false;
+//    if (mGrid) {
+//        delete mGrid;
+//    }
+
+    mGrid = new Grid<double>();
+    if (!mGrid->loadGridFromFile(fileName))
         return false;
-    }
-    if (mGrid) {
-        delete mGrid;
-    }
-    mGrid = mg.grid().toDouble(); // create a copy of the mapgrid-grid
+    QRectF rect = mGrid->metricRect();
+    double wx = GlobalSettings::instance()->settings().valueDouble("model.world.location.x");
+    double wy = GlobalSettings::instance()->settings().valueDouble("model.world.location.y");
+    // move the grid to match the origin (0/0) of the model
+    rect.moveTo( rect.left() - wx, rect.top() - wy );
+    mGrid->setMetricRect(rect);
+    //mGrid = mg.grid().toDouble(); // create a copy of the mapgrid-grid
     mVariableName = QFileInfo(fileName).baseName();
     return !mGrid->isEmpty();
 

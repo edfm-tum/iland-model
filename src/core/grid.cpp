@@ -101,3 +101,5 @@ bool loadGridFromImage(const QString &fileName, FloatGrid &rGrid) {
 }
 #endif
 
+
+

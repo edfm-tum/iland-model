@@ -10,7 +10,8 @@ cell size depend on the respective functions, but usually cover the whole landsc
 Use {{#crossLink "Grid/apply:method"}}{{/crossLink}} for updating a single grid, and {{#crossLink "Grid/combine:method"}}{{/crossLink}} for
 calculating grid values based on combining multiple grid sources.
 
-Javacsript based access to grid values is possible via {{#crossLink "Grid/value:method"}}{{/crossLink}} and {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods.
+Javacsript based access to grid values is possible via {{#crossLink "Grid/value:method"}}{{/crossLink}} and {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods (
+{{#crossLink "Grid/valueAt:method"}}{{/crossLink}} and {{#crossLink "Grid/setValueAt:method"}}{{/crossLink}} for access by coordinates).
 
 Memory management
 -----------------
@@ -18,6 +19,14 @@ Methods such as {{#crossLink "Globals/grid:method"}}Globals.grid{{/crossLink}} r
 {{#crossLink "Grid/apply:method"}}{{/crossLink}} or {{#crossLink "Grid/combine:method"}}{{/crossLink}} __alter__ the underlying data; you can use the
 {{#crossLink "Grid/copy:method"}}{{/crossLink}} method create a duplicate grid (if the underlying data should not change). Memory of grids is
 freed automatically by the Javascript engine (garbage collection) when they are no longer referenced.
+
+Coordinate system
+-----------------
+Grids use the local coordiante system of iLand, i.e. the point (0,0) is the lower left corner of the project area. When grids are loaded
+from disk, the coordinates are transformed to that system (relative to the `world.location.x` and `world.location.y` settings in the iLand
+project file). For example, consider a iLand local system with an origin of (12650, 4500). Now, consider loading a grid with the origin (14000,5000) (i.e,
+`xllcorner`, `yllcorner`) and a cellsize of 100m. The iLand coordiantes (0/0) would then be invalid, and the lower left pixel of the grid
+can be accessed with, e.g., `value(1420, 550)`.
 
 Examples
 --------
@@ -231,9 +240,24 @@ Grid = {
     @return { double } value of the grid at position (`x`, `y`)
 
       */
+
+    /**
+    Access individual cell values of the grid at the given metric coordinates. If the grid is empty, or the the
+    given position is invalid, -1 is returned. The coordiantes are relative to the origin of the iLand project area.
+
+    See also: {{#crossLink "Grid/setValue:method"}}{{/crossLink}}
+
+    @method valueAt
+    @param {double} x coordinate (m)
+    @param {double} y coordinate (m)
+    @return { double } value of the grid at position (`x`, `y`)
+
+      */
+
     /**
     Set the value at position (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
     {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods is much slower than using functions such as {{#crossLink "Grid/apply:method"}}{{/crossLink}}.
+
 
 
     See also: {{#crossLink "Grid/value:method"}}{{/crossLink}}
@@ -258,4 +282,72 @@ Grid = {
         console.log("apply(): " + (Globals.msec - ela) + "ms"); // 17ms
 
       */
+
+    /**
+    Set the value at the coordinates (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
+    {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods is much slower than using functions such as {{#crossLink "Grid/apply:method"}}{{/crossLink}}.
+
+    The coordinates are relative to the iLand project area.
+
+
+    See also: {{#crossLink "Grid/value:method"}}{{/crossLink}}
+
+    @method setValueAt
+    @param {double} x index in x direction (between 0 and grid.width-1)
+    @param {double} y index in y direction (between 0 and grid.height-1)
+    @param {double} value value to set
+    @Example
+        // using javascript access functions can be 100x times slower:
+        var g = Globals.grid('height');
+        var ela=Globals.msec; // for measuring time, see also the 'msec' doc
+
+        for (var i=0;i<g.width;++i) {
+            for (var j=0;j<g.height;++j) {
+                g.setValue(i,j, g.value(i,j)*2);
+            }
+        }
+        console.log("javascript: " + (Globals.msec - ela) + "ms"); // 1650ms
+        ela = Globals.msec;
+        g.apply('height*2');
+        console.log("apply(): " + (Globals.msec - ela) + "ms"); // 17ms
+
+      */
+
+    /**
+    `setOrigin` updates the origin of the grid, effectively moving the grid to a new position relative to the origin of the project area.
+
+    Note, that no additional checks are performed - use with care.
+
+
+    See also: {{#crossLink "Grid/create:method"}}{{/crossLink}}, {{#crossLink "Grid/load:method"}}{{/crossLink}}
+
+    @method setOrigin
+    @param {double} x new value for the x-coordinate of the origin
+    @param {double} y new value for the y-coordinate of the origin
+    @Example
+        var g = Factory.newGrid(); // create a grid
+        g.create(10,20,5); // populate with an empty grid with 50x100m
+        g.setValue(4,5,-1); // modify the grid
+        g.setOrigin(1000, 1000); // move the grid (the lower left corner) to the given coordinates
+        g.save("test.txt"); // save as ESRI raster file
+
+      */
+
+    /**
+    `load` loads a grid in ESRI ASCII format. The grid internally uses floating point precision. Furthermore, the grid is aligned to the iLand project area,
+    but not clipped and the `cellsize` is retained (contrary to the {{#crossLink "MapGrid"}}{{/crossLink}}, which clips the grid to the project area and
+    resamples the content of the grid to a cellsize of 10m).
+
+    See also: {{#crossLink "Grid/create:method"}}{{/crossLink}}, {{#crossLink "Grid/setOrigin:method"}}{{/crossLink}}
+
+    @method load
+    @param {string} fileName the filename of the grid; paths are relatve to the root folder of the project.
+    @return {boolean} returns true on success
+    @Example
+        var g = Factory.newGrid(); // create a grid
+        g.load('gis/biggrid.asc'); // load the raster file
+
+      */
+
+
 }
