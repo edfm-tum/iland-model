@@ -60,7 +60,7 @@ public slots:
     /// The rectangle will be blitted to the new coordinates destx/desty (moved from x1/y1).
     /// id_in: the id of the polygon to copy, id: the id of the pixels in the target
     /// return the size (ha) of the valid thing
-    double copyPolygonFromRect(MapGridWrapper *source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2);
+    double copyPolygonFromRect(QJSValue source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2);
 
     void createMapIndex(); ///< call after creating stands with copyPolygonFromRect
 

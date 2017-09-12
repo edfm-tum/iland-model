@@ -368,9 +368,20 @@ void MapGridWrapper::createStand(int stand_id, QString paint_function, bool wrap
     mMap->createIndex();
 }
 
-double MapGridWrapper::copyPolygonFromRect(MapGridWrapper *source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2)
+double MapGridWrapper::copyPolygonFromRect(QJSValue source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2)
 {
-    const Grid<int> &src = source->map()->grid();
+    Grid<double> *dsrc=0;
+    const Grid<int> *isrc=0;
+    QObject *o = source.toQObject();
+    if (o && qobject_cast<ScriptGrid*>(o)) {
+        dsrc = qobject_cast<ScriptGrid*>(o)->grid();
+    } else  if (o && qobject_cast<MapGridWrapper*>(o)) {
+        isrc = & (qobject_cast<MapGridWrapper*>(o)->map()->grid());
+    } else {
+        qDebug() << "MapGridWrapper: copyPolygonFromRect: invalid source (neither Grid, nor MapGrid)!";
+        return 0.;
+    }
+
     Grid<int> &dest = const_cast<Grid<int> &>( mMap->grid() );
     QRect r = dest.rectangle().intersected(QRect(dest.indexAt(QPointF(destx, desty)),dest.indexAt(QPointF(destx+(x2-x1),desty+(y2-y1)))) );
     QPoint dest_coord = dest.indexAt(QPointF(destx, desty));
@@ -380,17 +391,34 @@ double MapGridWrapper::copyPolygonFromRect(MapGridWrapper *source, int id_in, in
         return 0.;
 
     GridRunner<int> gr(dest, r);
+
     int i=0, j=0;
-    while (gr.next()) {
-        //if (gr.current()>=0) {
+    if (isrc) {
+        while (gr.next()) {
             QPoint dp=gr.currentIndex()+offset;
             i++;
-            if (src.isIndexValid(dp) && src.constValueAtIndex(dp)==id_in && *gr.current()>=0) {
+            // with another map grid, the size is identical
+            if (isrc->isIndexValid(dp) && isrc->constValueAtIndex(dp)==id_in && *gr.current()>=0) {
                 *gr.current() = id;
                 //if (j<100) qDebug() << dp << gr.currentIndex() << src.constValueAtIndex(dp) << *gr.current();
                 ++j;
             }
-        //}
+        }
+    } else {
+        double dbl_id = static_cast<double>(id_in);
+        QPointF cc, tc;
+        QPointF delta(x1-destx,y1-desty); // the offset of the source rectangle of the first point of the target rectangle (m)
+        while (gr.next()) {
+            cc = gr.currentCoord(); // coords on the destination map (m)
+            tc = cc + delta;
+            i++;
+            // use the coordinates in the case of a general grid
+            if (dsrc->coordValid(tc) && dsrc->valueAt(tc)==dbl_id && *gr.current()>=0) {
+                *gr.current() = id;
+                ++j;
+            }
+        }
+
     }
     //qDebug() << "copyPolygonFromRect: copied" << j << "from" << i;
 

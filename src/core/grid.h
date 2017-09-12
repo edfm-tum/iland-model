@@ -48,6 +48,9 @@ public:
     Grid(float cellsize, int sizex, int sizey) { mData=0; setup(cellsize, sizex, sizey); }
     /// create from a metric rect
     Grid(const QRectF rect_metric, const float cellsize) { mData=0; setup(rect_metric,cellsize); }
+    /// load a grid from an ASCII grid file
+    /// the coordinates and cell size remain as in the grid file.
+    bool loadGridFromFile(const QString &fileName);
     // copy ctor
     Grid(const Grid<T>& toCopy);
     ~Grid() { clear(); }
@@ -677,5 +680,108 @@ template <class T>
             QString line = gridToString(grid, QChar(' ')); // for normal grids (e.g. float)
             return result + line;
 }
+
+
+template <class T>
+        bool Grid<T>::loadGridFromFile(const QString &fileName)
+        {
+            double min_value = 1000000000;
+            double max_value = -1000000000;
+
+            // loads from a ESRI-Grid [RasterToFile] File.
+            QByteArray file_content = Helper::loadTextFile(fileName).toLatin1();
+            if (file_content.isEmpty()) {
+                qDebug() << "GISGrid: file" << fileName << "not present or empty.";
+                return false;
+            }
+            QList<QByteArray> lines = file_content.split('\n');
+
+            // processing of header-data
+            bool header=true;
+            int pos=0;
+            QString line;
+            QString key;
+            double value;
+            int ncol=0, nrow=0;
+            double cellsize=0;
+            double ox=0., oy=0.;
+            double no_data_val=0.;
+            do {
+                if (pos>lines.count())
+                    throw IException("Grid load from ASCII file: unexpected end of file. File: " + fileName);
+                line=lines[pos].simplified();
+                if (line.length()==0 || line.at(0)=='#') {
+                    pos++; // skip comments
+                    continue;
+                }
+                key=line.left(line.indexOf(' ')).toLower();
+                if (key.length()>0 && (key.at(0).isNumber() || key.at(0)=='-')) {
+                    header=false;
+                } else {
+                    value = line.mid(line.indexOf(' ')).toDouble();
+                    if (key=="ncols")
+                        ncol=(int)value;
+                    else if (key=="nrows")
+                        nrow=int(value);
+                    else if (key=="xllcorner")
+                        ox = value;
+                    else if (key=="yllcorner")
+                       oy = value;
+                    else if (key=="cellsize")
+                        cellsize = value;
+                    else if (key=="nodata_value")
+                        no_data_val=value;
+                    else
+                        throw IException( QString("GISGrid: invalid key %1.").arg(key));
+                    pos++;
+                }
+            } while (header);
+
+            // create the grid
+            QRectF rect(ox, oy, ncol*cellsize, nrow*cellsize);
+            setup( rect, cellsize );
+
+
+            // loop thru datalines
+            int i,j;
+            char *p=0;
+            char *p2;
+            pos--;
+            for (i=nrow-1;i>=0;i--)
+                for (j=0;j<ncol;j++) {
+                // copy next value to buffer, change "," to "."
+                if (!p || *p==0) {
+                    pos++;
+                    if (pos>=lines.count())
+                        throw std::logic_error("GISGrid: Unexpected End of File!");
+                    p=lines[pos].data();
+                    // replace chars
+                    p2=p;
+                    while (*p2) {
+                        if (*p2==',')
+                            *p2='.';
+                        p2++;
+                    }
+                }
+                // skip spaces
+                while (*p && strchr(" \r\n\t", *p))
+                    p++;
+                if (*p) {
+                    value = atof(p);
+                    if (value!=no_data_val) {
+                        min_value=std::min(min_value, value);
+                        max_value=std::max(max_value, value);
+                    }
+                    valueAtIndex(j,i) = value;
+                    // skip text...
+                    while (*p && !strchr(" \r\n\t", *p))
+                        p++;
+                } else
+                    j--;
+            }
+
+            return true;
+        }
+
 
 #endif // GRID_H
