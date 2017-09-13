@@ -689,7 +689,16 @@ template <class T>
             double max_value = -1000000000;
 
             // loads from a ESRI-Grid [RasterToFile] File.
-            QByteArray file_content = Helper::loadTextFile(fileName).toLatin1();
+            QFile file(fileName);
+
+            if (!file.open(QIODevice::ReadOnly)) {
+                qDebug() << "Grid::loadGridFromFile: " << fileName << "does not exist!";
+                return false;
+            }
+            QTextStream s(&file);
+            //s.setCodec("UTF-8");
+            QByteArray file_content=s.readAll().toLatin1();
+
             if (file_content.isEmpty()) {
                 qDebug() << "GISGrid: file" << fileName << "not present or empty.";
                 return false;

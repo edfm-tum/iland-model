@@ -94,7 +94,9 @@ public slots:
     /// write values to the grid
     void setValue(int x, int y, double value) const { if(isValid() && mGrid->isIndexValid(x,y)) mGrid->valueAtIndex(x,y)=value;}
 
+    /// access value of the grid in metric coordinates
     double valueAt(double x, double y) const { return (isValid() && mGrid->coordValid(x,y)) ? mGrid->valueAt(x,y) : -1; }
+    /// write values to the grid at metric coordinates x and y.
     void setValueAt(double x, double y, double value) const { if (isValid() && mGrid->coordValid(x,y))  mGrid->valueAt(x,y)=value; }
 
 
