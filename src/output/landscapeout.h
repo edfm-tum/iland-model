@@ -52,9 +52,10 @@ private:
     Expression mCondition;
     struct LROdata {
         LROdata() { clear(); }
-        void clear() { volume=0.; basal_area=0.; n=0.; }
+        void clear() { volume=0.; basal_area=0.; carbon=0.; n=0.; }
         double volume;
         double basal_area;
+        double carbon;
         double n;
     };
 

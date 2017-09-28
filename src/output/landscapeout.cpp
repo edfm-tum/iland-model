@@ -112,7 +112,8 @@ LandscapeRemovedOut::LandscapeRemovedOut()
               << OutputColumn("reason", "Resaon for tree death: 'N': Natural mortality, 'H': Harvest (removed from the forest), 'D': Disturbance (not salvage-harvested), 'S': Salvage harvesting (i.e. disturbed trees which are harvested), 'C': killed/cut down by management", OutString)
               << OutputColumn("count", "number of died trees (living, >4m height) ", OutInteger)
               << OutputColumn("volume_m3", "sum of volume (geomery, taper factor) in m3", OutDouble)
-              << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble);
+              << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble)
+              << OutputColumn("total_carbon", "total carbon (sum of stem, branch, foliage, coarse and fine roots) (kg C)", OutDouble);
 
 }
 
@@ -128,6 +129,7 @@ void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
     LROdata &d = mLandscapeRemoval[key];
     d.basal_area += t->basalArea();
     d.volume += t->volume();
+    d.carbon += (t->biomassBranch()+t->biomassCoarseRoot()+t->biomassFineRoot()+t->biomassFoliage()+t->biomassStem())*biomassCFraction;
     d.n++;
 
 
@@ -147,7 +149,7 @@ void LandscapeRemovedOut::exec()
             if (rem_type==Tree::TreeDisturbance) *this << QStringLiteral("D");
             if (rem_type==Tree::TreeSalavaged) *this << QStringLiteral("S");
             if (rem_type==Tree::TreeCutDown) *this << QStringLiteral("C");
-            *this << i.value().n << i.value().volume<< i.value().basal_area;
+            *this << i.value().n << i.value().volume<< i.value().basal_area << i.value().carbon;
             writeRow();
         }
         ++i;

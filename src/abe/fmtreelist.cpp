@@ -205,6 +205,20 @@ int FMTreeList::removeMarkedTrees()
     return n_removed;
 }
 
+int FMTreeList::resetMarks()
+{
+    int n=0;
+    for (QVector<QPair<Tree*, double> >::const_iterator it = mTrees.constBegin(); it!=mTrees.constEnd(); ++it) {
+        Tree *t = const_cast<Tree*>((*it).first);
+        t->markCropCompetitor(false);
+        t->markCropTree(false);
+        t->markForCut(false);
+        t->markForHarvest(false);
+        ++n;
+    }
+    return n;
+}
+
 int FMTreeList::kill(QString filter)
 {
     return remove_trees(filter, 1. /* all trees, 100%*/, false);

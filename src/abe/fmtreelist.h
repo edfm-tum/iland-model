@@ -71,6 +71,9 @@ public slots:
     /// load all trees of the stand and either kill or harvest trees that are marked for that operation.
     int removeMarkedTrees();
 
+    /// reset all marks of currently loaded trees to zero
+    int resetMarks();
+
     /** kill "number" of stems
      *  in the percentile interval "from" - "to".
      *  remove all if "number" is higher than the count.
