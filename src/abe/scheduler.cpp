@@ -50,7 +50,7 @@ void Scheduler::addTicket(FMStand *stand, ActivityFlags *flags, double prob_sche
     item->stand = stand;
     item->flags = flags;
     item->enterYear = ForestManagementEngine::instance()->currentYear();
-    item->optimalYear = item->enterYear + flags->activity()->optimalSchedule(stand->U())- stand->absoluteAge();
+    item->optimalYear = item->enterYear + std::max(flags->activity()->optimalSchedule(stand->U())- stand->absoluteAge(), 0.);
     item->scheduledYear = item->optimalYear;
     // estimate growth from now to the optimal time - we assume that growth of the last decade continues
     int t = item->optimalYear - item->enterYear; // in t years harvest is optimal

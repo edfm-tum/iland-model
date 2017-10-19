@@ -562,7 +562,7 @@ void Tree::readLIF_torus()
             //if (_isnan(value))
             //    qDebug() << "isnan" << id();
             if (value * (*reader)(x,y)>1.)
-                qDebug() << "LIFTorus: value>1.";
+                qDebug() << "LIFTorus: value>1: " << value * (*reader)(x,y) << " Tree: " << species()->id() << ", dbh: " << dbh();
             sum += value * (*reader)(x,y);
 
             //} // isIndexValid
@@ -903,7 +903,7 @@ inline void Tree::grow_diameter(TreeGrowthData &d)
     }
 
     if (d_increment<0.f)
-        qDebug() << "Tree::grow_diameter: d_inc < 0.";
+        qDebug() << "Tree::grow_diameter: d_inc < 0.: " << d_increment << " Tree: " << species()->id() << ", dbh: " << dbh();
     DBG_IF_X(d_increment<0. || d_increment>0.1, "Tree::grow_dimater", "increment out of range.", dump()
              + QString("\nhdz %1 factor_diameter %2 stem_residual %3 delta_d_estimate %4 d_increment %5 final residual(kg) %6")
                .arg(hd_growth).arg(factor_diameter).arg(stem_residual).arg(delta_d_estimate).arg(d_increment)
