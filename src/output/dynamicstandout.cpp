@@ -42,7 +42,7 @@ DynamicStandOut::DynamicStandOut()
                    "The ''condition'' filter is (when present) evaluated and the output is only executed when ''condition'' is true (variable='year') This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year.\n" \
                    "!!!Specifying data columns\n"
                    "Each field is defined as: ''field.aggregatio''n (separated by a dot). A ''field'' is a valid [Expression]. ''Aggregation'' is one of the following:  " \
-                   "mean, sum, min, max, p25, p50, p75, p5, 10, p90, p95 (pXX=XXth percentile), sd (std.dev.).\n" \
+                   "mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.).\n" \
                    "Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50)");
     columns() << OutputColumn::year() << OutputColumn::ru()  << OutputColumn::id() << OutputColumn::species();
     // other colums are added during setup...
