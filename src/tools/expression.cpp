@@ -762,10 +762,10 @@ double  Expression::udfPolygon(double Value, double* Stack, int ArgCount) const
     // Achtung: *Stack zeigt auf das letzte Argument! (ist das letzte y).
     // Stack bereinigen tut der Aufrufer.
     if (ArgCount%2!=1)
-        throw IException("Expression::polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
+        throw IException(QString("Expression::polygon: wrong number of parameters (got '%1'). polygon(<val>; x0; y0; x1; y1; ....). In: %2").arg(ArgCount).arg(m_expression));
     int PointCnt = (ArgCount-1) / 2;
     if (PointCnt<2)
-        throw IException("Expression::polygon: falsche zahl parameter. polygon(<val>; x0; y0; x1; y1; ....)");
+        throw IException(QString("Expression::polygon: wrong number of parameters (params: %1, coord.pairs: %2). polygon(<val>; x0; y0; x1; y1; ....). In: %3").arg(ArgCount).arg(PointCnt).arg(m_expression));
     double x,y, xold, yold;
     y=*Stack--;   // 1. Argument: ganz rechts.
     x=*Stack--;

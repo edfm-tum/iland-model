@@ -145,8 +145,43 @@ void SpatialAnalysis::saveRumpleGrid(QString fileName)
 
 void SpatialAnalysis::saveCrownCoverGrid(QString fileName)
 {
-    calculateCrownCover();
+    calculateCrownCoverRU();
     Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(mCrownCoverGrid) );
+
+}
+
+void SpatialAnalysis::saveCrownCoverGrid(QString fileName, QJSValue grid)
+{
+    ScriptGrid *sg = qobject_cast<ScriptGrid*>(grid.toQObject());
+    if (!sg) {
+        qDebug() << "ERROR: saveCrownCoverGrid got invalid reference grid!";
+        return;
+    }
+    // make a copy of the underlying grid
+    Grid<double> gr;
+    gr.setup( *sg->grid() );
+
+    // calculate crown cover by looping over all trees and mis-use the LIF grid
+    prepareCrownCover();
+
+
+    FloatGrid *lifgrid = GlobalSettings::instance()->model()->grid();
+    Model *model = GlobalSettings::instance()->model();
+    double cell_area = gr.cellsize() * gr.cellsize();
+
+    for (double *rg = gr.begin(); rg!=gr.end();++rg) {
+
+        float cc_sum = 0.f;
+        GridRunner<float> runner(lifgrid, gr.cellRect(gr.indexOf(rg)));
+        while (float *gv = runner.next()) {
+            if (model->heightGridValue(runner.currentIndex().x(), runner.currentIndex().y()).isValid())
+                if (*gv >= 0.5f) // 0.5: half of a 2m cell is covered by a tree crown; is a bit pragmatic but seems reasonable (and works)
+                    cc_sum++;
+        }
+        double value = cc_sum * cPxSize*cPxSize / cell_area;
+        *rg = limit(value, 0., 1.);
+    }
+     Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), gridToESRIRaster(gr) );
 
 }
 
@@ -164,11 +199,39 @@ QJSValue SpatialAnalysis::patches(QJSValue grid, int min_size)
     return QJSValue();
 }
 
-void SpatialAnalysis::calculateCrownCover()
+void SpatialAnalysis::calculateCrownCoverRU()
 {
     mCrownCoverGrid.setup(GlobalSettings::instance()->model()->RUgrid().metricRect(),
                           GlobalSettings::instance()->model()->RUgrid().cellsize());
 
+    // calculate crown cover by looping over all trees and mis-use the LIF grid
+    prepareCrownCover();
+
+    FloatGrid *grid = GlobalSettings::instance()->model()->grid();
+    // now aggregate values for each resource unit
+    Model *model = GlobalSettings::instance()->model();
+    for (float *rg = mCrownCoverGrid.begin(); rg!=mCrownCoverGrid.end();++rg) {
+        ResourceUnit *ru =  model->RUgrid().constValueAtIndex(mCrownCoverGrid.indexOf(rg));
+        if (!ru) {
+            *rg=0.f;
+            continue;
+        }
+        float cc_sum = 0.f;
+        GridRunner<float> runner(grid, mCrownCoverGrid.cellRect(mCrownCoverGrid.indexOf(rg)));
+        while (float *gv = runner.next()) {
+            if (model->heightGridValue(runner.currentIndex().x(), runner.currentIndex().y()).isValid())
+                if (*gv >= 0.5f) // 0.5: half of a 2m cell is covered by a tree crown; is a bit pragmatic but seems reasonable (and works)
+                    cc_sum++;
+        }
+        if (ru->stockableArea()>0.) {
+            double value = cPxSize*cPxSize*cc_sum/ru->stockableArea();
+            *rg = limit(value, 0., 1.);
+        }
+    }
+}
+
+void SpatialAnalysis::prepareCrownCover()
+{
     // calculate the crown cover per resource unit. We use the "reader"-stamps of the individual trees
     // as they represent the crown (size). We also simply hijack the LIF grid for our calculations.
     FloatGrid *grid = GlobalSettings::instance()->model()->grid();
@@ -197,26 +260,7 @@ void SpatialAnalysis::calculateCrownCover()
             }
         }
     }
-    // now aggregate values for each resource unit
-    Model *model = GlobalSettings::instance()->model();
-    for (float *rg = mCrownCoverGrid.begin(); rg!=mCrownCoverGrid.end();++rg) {
-        ResourceUnit *ru =  model->RUgrid().constValueAtIndex(mCrownCoverGrid.indexOf(rg));
-        if (!ru) {
-            *rg=0.f;
-            continue;
-        }
-        float cc_sum = 0.f;
-        GridRunner<float> runner(grid, mCrownCoverGrid.cellRect(mCrownCoverGrid.indexOf(rg)));
-        while (float *gv = runner.next()) {
-            if (model->heightGridValue(runner.currentIndex().x(), runner.currentIndex().y()).isValid())
-                if (*gv >= 0.5f) // 0.5: half of a 2m cell is covered by a tree crown; is a bit pragmatic but seems reasonable (and works)
-                    cc_sum++;
-        }
-        if (ru->stockableArea()>0.) {
-            double value = cPxSize*cPxSize*cc_sum/ru->stockableArea();
-            *rg = limit(value, 0., 1.);
-        }
-    }
+
 }
 
 

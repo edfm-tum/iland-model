@@ -919,6 +919,11 @@ void Snapshot::loadSnags(QSqlDatabase db)
         s->mOtherWood[4].C = q.value(ci++).toDouble(); s->mOtherWood[4].N = q.value(ci++).toDouble();
         s->mBranchCounter = q.value(ci++).toInt();
 
+        // these values are not stored in DB but updated here
+        s->mTotalOther = s->mOtherWood[0] + s->mOtherWood[1] + s->mOtherWood[2] + s->mOtherWood[3] + s->mOtherWood[4];
+        s->mTotalSnagCarbon = s->mSWD[0].C + s->mSWD[1].C + s->mSWD[2].C + s->mTotalOther.C;
+
+
         if (++n % 1000 == 0) {
             qDebug() << n << "snags loaded...";
             QCoreApplication::processEvents();

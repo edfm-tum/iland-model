@@ -291,6 +291,9 @@ void DynamicStandOut::extractByResourceUnit(const bool by_species)
                 case 9: value = stat.percentile(90); break;
                 case 10: value = stat.percentile(95); break;
                 case 11: value = stat.standardDev(); break;
+                case 12: value = stat.percentile(80); break;
+                case 13: value = stat.percentile(85); break;
+
 
                 default: value = 0.; break;
                 }

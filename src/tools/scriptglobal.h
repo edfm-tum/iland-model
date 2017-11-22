@@ -192,6 +192,7 @@ public slots:
     QJSValue newMap(); ///< create new instance of Map and return it
     QJSValue newDBHDistribution(); ///< create new instance of DBHDistribution and return it
     QJSValue newGrid(); ///< creates a new grid object and return it
+    QJSValue newSpatialAnalysis(); ///< creates a new SpatialAnalysis object and returns it
     int stats() {return mObjCreated;} ///< return the number of created objects
 private:
     int mObjCreated;

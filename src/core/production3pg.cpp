@@ -73,7 +73,7 @@ inline double Production3PG::abovegroundFraction() const
         // we originally used only nitrogen and added the U_utilized/U_radiation
         utilized_frac = mResponse->totalUtilizeableRadiation() / mResponse->yearlyRadiation();
     }
-    double harsh =  1 - 0.8/(1 + 2.5 * mResponse->nitrogenResponse() * utilized_frac);
+    double harsh =  1. - 0.8/(1. + 2.5 * mResponse->nitrogenResponse() * utilized_frac);
     return harsh;
 }
 

@@ -23,6 +23,9 @@
 #include "modelcontroller.h"
 #include "mapgrid.h"
 #include "gisgrid.h"
+#include "expressionwrapper.h"
+#include "model.h"
+#include "tree.h"
 
 
 #include <QJSEngine>
@@ -240,5 +243,48 @@ double ScriptGrid::sum(QString expression)
         sum += expr.execute();
     }
     return sum;
+}
+
+void ScriptGrid::sumTrees(QString expression, QString filter)
+{
+    if (!mGrid || mGrid->isEmpty())
+        return;
+
+    mGrid->wipe();
+
+    try {
+
+        TreeWrapper tw;
+        Expression custom_expr;
+        custom_expr.setExpression(expression);
+        custom_expr.setModelObject(&tw);
+
+        Expression filterexpr;
+        bool do_filter = !filter.isEmpty();
+        filterexpr.setExpression(filter);
+        filterexpr.setModelObject(&tw);
+
+        AllTreeIterator ati(GlobalSettings::instance()->model());
+        while (Tree *t = ati.next()) {
+
+            // only trees on the grid area:
+            if (!mGrid->coordValid(t->position()))
+                continue;
+
+            // apply filter
+            tw.setTree(t);
+            if (do_filter && !filterexpr.execute())
+                continue;
+
+            // calculate
+            double val=custom_expr.execute();
+            mGrid->valueAt(t->position()) += val;
+        }
+
+    } catch(const IException &e) {
+        qDebug() << "ScriptGrid::sumTrees: an error occured." << e.message();
+    }
+
+
 }
 
