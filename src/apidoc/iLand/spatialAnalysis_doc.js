@@ -28,10 +28,31 @@ Generate a map of the crown cover ( at 2m resolution), and save an average (100m
 For each tree, the tree crown (as defined by the ['reader' stamp](http://iland.boku.ac.at/Lightroom), which defines for 2m pixels the share
 of pixels that are covered by the crown) is additively plotted on a 2m grid.
 If that sum is larger then 0.5 (i.e. 50%), a pixel is consiedered as 'covered'.
-The resulting grid provides for each 100m cell a fraction of 'covered' pixels.
+The resulting grid provides for each 100m cell a fraction of 'covered' pixels. Note that 2m cells that are out of the project area
+are not counted (i.e., the resulting crown cover refers only to the stockable area of the resource unit).
 
 @method saveCrownCoverGrid
 @param {string} filename target filename (relative to project folder)
+*/
+
+/**
+Generate a map of the crown cover ( at 2m resolution), and save an average to `filename` (ESRI ASCII format).
+For each tree, the tree crown (as defined by the ['reader' stamp](http://iland.boku.ac.at/Lightroom), which defines for 2m pixels the share
+of pixels that are covered by the crown) is additively plotted on a 2m grid.
+If that sum is larger then 0.5 (i.e. 50%), a pixel is consiedered as 'covered'.
+The `grid` is used as a mask: the resulting grid uses the cell size of `grid` and also the spatial extent.
+The resulting grid provides for each 100m cell a fraction of 'covered' pixels.
+
+
+@method saveCrownCoverGrid
+@param {string} filename target filename (relative to project folder)
+@param {Grid} mask (a {{#crossLink "Grid"}}{{/crossLink}}
+@Example
+    // create a grid:
+    var mask = Factory.newGrid();
+    mask.create(100, 60, 10); // cell-size 10m, 100 x 60 cells
+    mask.setOrigin(100,1020); // define the origin, the grid covers (100/1020)-(1100/1620)
+    SpatialAnalysis.saveCrownCoverGrid('temp/test.asc', mask); // save the crown cover grid
 */
 
 /**

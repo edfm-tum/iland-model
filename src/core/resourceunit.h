@@ -65,6 +65,8 @@ public:
     Soil *soil() const { return mSoil; } ///< access the soil model
     SaplingCell *saplingCellArray() const { return mSaplings; } ///< access the array of sapling-cells
     SaplingCell *saplingCell(const QPoint &lifCoords) const; ///< return a pointer to the 2x2m SaplingCell located at 'lif'
+    /// return the area (m2) which is covered by saplings (cells >0 saplings)
+    double saplingCoveredArea() const;
 
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
     const ResourceUnitSpecies *constResourceUnitSpecies(const Species *species) const; ///< get RU-Species-container of @p species from the RU

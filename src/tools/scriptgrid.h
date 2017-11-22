@@ -89,6 +89,9 @@ public slots:
     /// apply the expression "expression" on all pixels of the grid and return the sum of the values
     double sum(QString expression);
 
+    /// loop over all trees and create a sum of 'expression' for each cell. Filter trees with 'filter'
+    void sumTrees(QString expression, QString filter);
+
     /// access values of the grid
     double value(int x, int y) const {return (isValid() && mGrid->isIndexValid(x,y)) ? mGrid->valueAtIndex(x,y) : -1.;}
     /// write values to the grid

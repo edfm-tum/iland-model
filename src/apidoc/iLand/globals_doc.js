@@ -394,13 +394,16 @@ Seed maps are only saved once, i.e. if a time series of seed maps is needed, `se
 extract a grid of type `type` from iLand. The extracted grid is a floating point grid (double precision) and
 a copy of the current state in iLand (memory is freed automatically during Javascript garbage collection).
 
-The grid is has a 10m cell size and covers the full extent of the model.
+The grid has a cell size of 10m or 100m (depending on the type) and covers the full extent of the model.
 
-The available grid types are:
+The available grid types with 10m resolution are:
 + `height`: dominant tree height (m)
 + `count`: number of living trees (>4m height) on each pixel
 + `valid`: pixels inside the project area get a value of 1, pixels non within the project area 0 (see [wiki page](http://iland.boku.ac.at/landscape+setup))
 + `forestoutside`: 1 if a pixel is out of project area and is considered to be forested (see [wiki page](http://iland.boku.ac.at/landscape+setup))
+
+The available grid types with 100m resolution are:
++ `saplingcover`: the fraction of the area which is covered by saplings (no size threshold) (0..1). (Note: RUs with non-stockable area have always a value <1).
 
 
 See also: {{#crossLink "Globals/gridToFile:method"}}{{/crossLink}}

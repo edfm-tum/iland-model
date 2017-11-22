@@ -153,6 +153,17 @@ SaplingCell *ResourceUnit::saplingCell(const QPoint &lifCoords) const
     return &mSaplings[i];
 }
 
+double ResourceUnit::saplingCoveredArea() const
+{
+    Q_ASSERT(mSaplings != 0);
+    int n_covered = 0;
+    for (int i=0;i<cPxPerHectare;++i) {
+        if (mSaplings[i].n_occupied()>0)
+            ++n_covered;
+    }
+    return static_cast<double>(n_covered * cPxSize*cPxSize);
+}
+
 /// set species and setup the species-per-RU-data
 void ResourceUnit::setSpeciesSet(SpeciesSet *set)
 {

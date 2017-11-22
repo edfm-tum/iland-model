@@ -46,6 +46,7 @@
 #include "csvfile.h"
 #include "spatialanalysis.h"
 #include "dbhdistribution.h"
+#include "spatialanalysis.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -558,29 +559,47 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
 QJSValue ScriptGlobal::grid(QString type)
 {
     int index = -1;
+    // height grid options
     if (type=="height") index = 0;
     if (type=="valid") index = 1;
     if (type=="count") index = 2;
     if (type=="forestoutside") index=3;
+    // resource unit level
+    if (type=="saplingcover") index=10;
     if (index<0) {
         qDebug()<< "ScriptGlobal::grid(): error: invalid grid specified:" << type << ". valid options: 'height', 'valid', 'count', 'forestoutside'.";
+        return QJSValue();
     }
 
-    HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
-    Grid<double> *dgrid = new Grid<double>(h->cellsize(), h->sizeX(), h->sizeY());
-    // fetch data from height grid
-    double *p=dgrid->begin();
-    for (HeightGridValue *hgv=h->begin(); hgv!=h->end(); ++hgv, ++p) {
-        switch (index) {
-        case 0: *p = hgv->height; break;
-        case 1: *p = hgv->isValid()?1. : 0.; break;
-        case 2: *p = hgv->count(); break;
-        case 3: *p = hgv->isForestOutside()?1. : 0.; break;
+    if (index < 10) {
+        HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
+        Grid<double> *dgrid = new Grid<double>(h->cellsize(), h->sizeX(), h->sizeY());
+        // fetch data from height grid
+        double *p=dgrid->begin();
+        for (HeightGridValue *hgv=h->begin(); hgv!=h->end(); ++hgv, ++p) {
+            switch (index) {
+            case 0: *p = hgv->height; break;
+            case 1: *p = hgv->isValid()?1. : 0.; break;
+            case 2: *p = hgv->count(); break;
+            case 3: *p = hgv->isForestOutside()?1. : 0.; break;
+            }
         }
-    }
 
-    QJSValue g = ScriptGrid::createGrid(dgrid, type);
-    return g;
+        QJSValue g = ScriptGrid::createGrid(dgrid, type);
+        return g;
+    } else {
+        // resource unit level
+        const Grid<ResourceUnit*> &rg = GlobalSettings::instance()->model()->RUgrid();
+        Grid<double> *dgrid=new Grid<double>(rg.cellsize(), rg.sizeX(), rg.sizeY());
+        double *p = dgrid->begin();
+        for (ResourceUnit **ru = rg.begin(); ru!=rg.end(); ++ru, ++p) {
+            switch( index ) {
+            case 10: *p = *ru ? (*ru)->saplingCoveredArea() / cRUArea : 0.;
+            }
+        }
+        QJSValue g = ScriptGrid::createGrid(dgrid, type);
+        return g;
+    }
 
 }
 
@@ -1073,6 +1092,15 @@ QJSValue ScriptObjectFactory::newGrid()
 {
     QJSValue result = ScriptGrid::createGrid(0); // create with an empty grid
     return result;
+}
+
+QJSValue ScriptObjectFactory::newSpatialAnalysis()
+{
+    SpatialAnalysis *spati = new SpatialAnalysis;
+    QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
+    mObjCreated++;
+    return v;
+
 }
 
 

@@ -52,10 +52,13 @@ public slots:
     // API for Javascript
     void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
     void saveCrownCoverGrid(QString fileName); ///< save a grid if crown cover percentages (RU level) to a ESRI grid file (ascii)
+    void saveCrownCoverGrid(QString fileName, QJSValue grid); ///< save a grid of crown cover with the extent/resolution given by 'grid'
+
     QJSValue patches(QJSValue grid, int min_size);
 
 private:
-    void calculateCrownCover();
+    void calculateCrownCoverRU(); ///< calculate resource-unit level crown cover
+    void prepareCrownCover(); ///< internal function that prepares crown cover for the whole landscape
     RumpleIndex *mRumple;
     SpatialLayeredGrid *mLayers;
     FloatGrid mCrownCoverGrid;
