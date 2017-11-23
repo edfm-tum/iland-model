@@ -43,7 +43,7 @@ public:
     /// load the trees/saplings from a single stand (given by 'stand_id' and 'stand_grid' from a database in 'file_name'
     bool loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, const QString &file_name);
     /// save the carbon/snag pools of a set of resource units
-    bool saveStandCarbon(const int stand_id, QList<int> ru_ids);
+    bool saveStandCarbon(const int stand_id, QList<int> ru_ids, bool rid_mode);
     /// load the carbon/snags pools from the current (stand) snapshot
     bool loadStandCarbon();
 private:
@@ -51,10 +51,10 @@ private:
     bool openStandDatabase(const QString &file_name, bool read);
     void saveTrees();
     void saveSoil();
-    void saveSoilRU(QList<int> stand_ids);
+    void saveSoilRU(QList<int> stand_ids, bool ridmode);
     void saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q);
     void saveSnags();
-    void saveSnagRU(QList<int> stand_ids);
+    void saveSnagRU(QList<int> stand_ids, bool ridmode);
     void saveSnagCore(Snag *s, QSqlQuery &q);
     void saveSaplings();
     void loadTrees();

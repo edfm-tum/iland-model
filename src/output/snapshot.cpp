@@ -474,15 +474,15 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
     return true;
 }
 
-bool Snapshot::saveStandCarbon(const int stand_id,  QList<int> ru_ids)
+bool Snapshot::saveStandCarbon(const int stand_id,  QList<int> ru_ids, bool rid_mode)
 {
     QSqlDatabase db=QSqlDatabase::database("snapshotstand");
     if (!db.isOpen()) {
         throw IException("Snapshot::saveStandCarbon: stand snapshot data base is not open. Please use 'saveStandSnapshot' to set up the data base connection.");
     }
-    qDebug() << "Trying to save snags and soil pools for" << ru_ids.size() << "resource units. stand_id:" << stand_id;
-    saveSoilRU(ru_ids);
-    saveSnagRU(ru_ids);
+    qDebug() << "Trying to save snags and soil pools for" << ru_ids.size() << "resource units. stand_id:" << stand_id << "using:" << (rid_mode ? "RID":"ruindex");
+    saveSoilRU(ru_ids, rid_mode);
+    saveSnagRU(ru_ids, rid_mode);
     return true;
 }
 
@@ -650,7 +650,7 @@ void Snapshot::saveSoil()
     qDebug() << "Snapshot: finished Soil. N=" << n;
 }
 
-void Snapshot::saveSoilRU(QList<int> stand_ids)
+void Snapshot::saveSoilRU(QList<int> stand_ids, bool ridmode)
 {
     QSqlDatabase db=QSqlDatabase::database("snapshotstand");
     QSqlQuery q(db);
@@ -660,7 +660,8 @@ void Snapshot::saveSoilRU(QList<int> stand_ids)
 
     int n = 0;
     for (int i=0;i<stand_ids.size();++i) {
-        ResourceUnit *ru = GlobalSettings::instance()->model()->ruById(stand_ids[i]);
+        // ridmode = true: numbers are Ids, false: numbers are ruindex
+        ResourceUnit *ru = ridmode ? GlobalSettings::instance()->model()->ruById(stand_ids[i]) : GlobalSettings::instance()->model()->ru(stand_ids[i]);
         if (ru)
             if (ru->soil()) {
                 // save .....
@@ -780,7 +781,7 @@ void Snapshot::saveSnags()
     qDebug() << "Snapshot: finished Snags. N=" << n;
 }
 
-void Snapshot::saveSnagRU(QList<int> stand_ids)
+void Snapshot::saveSnagRU(QList<int> stand_ids, bool ridmode)
 {
     QSqlDatabase db=QSqlDatabase::database("snapshotstand");
     QSqlQuery q(db);
@@ -795,7 +796,8 @@ void Snapshot::saveSnagRU(QList<int> stand_ids)
         throw IException(QString("Snapshot::saveSnag: prepare:") + q.lastError().text());
     int n = 0;
     for (int i=0;i<stand_ids.size(); ++i) {
-        ResourceUnit *ru = GlobalSettings::instance()->model()->ruById(stand_ids[i]);
+        // ridmode = true: numbers are Ids, false: numbers are ruindex
+        ResourceUnit *ru = ridmode ? GlobalSettings::instance()->model()->ruById(stand_ids[i]) : GlobalSettings::instance()->model()->ru(stand_ids[i]);
         if (ru) {
             Snag *s = ru->snag();
             if (s) {

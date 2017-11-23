@@ -755,11 +755,11 @@ bool ScriptGlobal::loadStandSnapshot(int stand_id, QString file_name)
     return false;
 }
 
-bool ScriptGlobal::saveStandCarbon(int stand_id, QList<int> ru_ids)
+bool ScriptGlobal::saveStandCarbon(int stand_id, QList<int> ru_ids, bool rid_mode)
 {
     try {
         Snapshot shot;
-        return shot.saveStandCarbon(stand_id, ru_ids);
+        return shot.saveStandCarbon(stand_id, ru_ids, rid_mode);
     } catch (const IException &e) {
         throwError(e.message());
     }
