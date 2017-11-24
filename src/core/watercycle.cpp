@@ -90,6 +90,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
 
     mTotalET = mTotalExcess = mSnowRad = 0.;
     mSnowDays = 0;
+    mMeanGrowingSeasonSWC = mMeanSoilWaterContent = 0.;
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
@@ -261,6 +262,8 @@ void WaterCycle::run()
     mTotalET = 0.;
     mSnowRad = 0.;
     mSnowDays = 0;
+    int growing_season_days = 0;
+    mMeanGrowingSeasonSWC = mMeanSoilWaterContent = 0.;
     for (; day<end; ++day, ++doy) {
         // (1) precipitation of the day
         prec_mm = day->preciptitation;
@@ -310,6 +313,11 @@ void WaterCycle::run()
         }
 
         mTotalET += et;
+        if (day->month>3 && day->month<10) {
+            mMeanGrowingSeasonSWC += mContent;
+            growing_season_days++;
+        }
+        mMeanSoilWaterContent += mContent;
 
         //DBGMODE(
             if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
@@ -332,6 +340,9 @@ void WaterCycle::run()
         //); // DBGMODE()
 
     }
+    mMeanSoilWaterContent /= static_cast<double>(climate->daysOfYear());
+    mMeanGrowingSeasonSWC /= static_cast<double>(growing_season_days);
+
     // call external modules
     GlobalSettings::instance()->model()->modules()->calculateWater(mRU, &add_data);
     mLastYear = GlobalSettings::instance()->currentYear();

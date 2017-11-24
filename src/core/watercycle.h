@@ -111,6 +111,8 @@ public:
     double currentSnowPack() const { return mSnowPack.snowPack(); } ///< current water stored as snow (mm water)
     double canopyConductance() const { return mCanopyConductance; } ///< current canopy conductance (LAI weighted CC of available tree species) (m/s)
     double effectiveLAI() const { return mEffectiveLAI; } ///< effective LAI (including saplings and ground vegetation)
+    double meanSoilWaterContent() const {return mMeanSoilWaterContent; } ///< mean of annual soil water content (mm)
+    double meanGrowingSeasonSWC() const { return mMeanGrowingSeasonSWC; } ///< mean soil water content (mm) during the growing season (fixed: april - september)
     /// monthly values for PET (mm sum)
     const double *referenceEvapotranspiration() const { return mCanopy.referenceEvapotranspiration(); }
 
@@ -136,7 +138,7 @@ private:
     Water::Canopy mCanopy; ///< object representing the forest canopy (interception, evaporation)
     Water::SnowPack mSnowPack; ///< object representing the snow cover (aggregation, melting)
     double mSoilDepth; ///< depth of the soil (without rocks) in mm
-    double mContent; ///< current water content in mm water column of the soil.
+    double mContent; ///< current water content in mm water column of the soil (mm)
     double mFieldCapacity; ///< bucket height of field-capacity (eq. -15kPa) (mm)
     double mPermanentWiltingPoint; ///< bucket "height" of PWP (is fixed to -4MPa) (mm)
     double mPsi[366]; ///< soil water potential for each day in kPa
@@ -154,6 +156,8 @@ private:
     double mTotalExcess; ///< annual sum of water loss due to lateral outflow/groundwater flow (mm)
     double mSnowRad; ///< sum of radiation input (MJ/m2) for days with snow cover (used in albedo calculations)
     double mSnowDays; ///< # of days with snowcover >0
+    double mMeanSoilWaterContent; ///< mean of annual soil water content (mm)
+    double mMeanGrowingSeasonSWC; ///< mean soil water content (mm) during the growing season (fixed: april - september)
     friend class ::WaterOut;
 };
 
