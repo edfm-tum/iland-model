@@ -42,7 +42,9 @@ WaterOut::WaterOut()
               << OutputColumn("snowcover_days", "days with snowcover >0mm", OutInteger)
               << OutputColumn("total_radiation", "total incoming radiation over the year (MJ/m2), sum of data in climate input)", OutDouble)
               << OutputColumn("radiation_snowcover", "sum of radiation input (MJ/m2) for days with snow cover", OutInteger)
-              << OutputColumn("effective_lai", "effective LAI (m2/m2) including LAI of adult trees, saplings, and ground cover", OutDouble);
+              << OutputColumn("effective_lai", "effective LAI (m2/m2) including LAI of adult trees, saplings, and ground cover", OutDouble)
+              << OutputColumn("mean_swc_mm", "mean soil water content of the year (mm)", OutDouble)
+              << OutputColumn("mean_swc_gs_mm", "mean soil water content in the growing season (fixed: April - September) (mm)", OutDouble);
 
 
 }
@@ -78,6 +80,7 @@ void WaterOut::exec()
             *this << wc->mSnowDays;
             *this << ru->climate()->totalRadiation() << wc->mSnowRad;
             *this << wc->effectiveLAI();
+            *this << wc->meanSoilWaterContent() << wc->meanGrowingSeasonSWC();
             writeRow();
         }
         ++ru_count;
