@@ -46,22 +46,30 @@ struct SaplingTree {
 };
 #define NSAPCELLS 5
 struct SaplingCell {
-    enum ECellState { CellInvalid=0, CellFree=1, CellFull=2};
+    enum ECellState { CellInvalid=0, ///< not stockable (outside project area)
+                      CellEmpty=1,   ///< the cell has no slots occupied (no saplings on the cell)
+                      CellGrass=2,   ///< the cell is empty and has grass cover (see grass module)
+                      CellFree=3,    ///< seedlings may establish on the cell (at least one slot occupied)
+                      CellFull=4};   ///< cell is full (no establishment) (either all slots used or one slot > 1.3m)
     SaplingCell() {
         state=CellInvalid;
     }
     ECellState state;
     SaplingTree saplings[NSAPCELLS];
+    /// returns true if establishment is allowed for the cell
+    bool hasFreeSlots() const {return state>CellInvalid && state<CellFull; }
     void checkState() { if (state==CellInvalid) return;
                         bool free = false;
+                        bool occupied=false;
                         for (int i=0;i<NSAPCELLS;++i) {
                             // locked for all species, if a sapling of one species >1.3m
                             if (saplings[i].height>1.3f) {state = CellFull; return; }
+                            occupied |= saplings[i].is_occupied();
                             // locked, if all slots are occupied.
                             if (!saplings[i].is_occupied())
                                 free=true;
                         }
-                        state = free? CellFree : CellFull;
+                        state = free? (occupied? CellEmpty: CellFree) : CellFull;
                       }
     /// get an index to an open slot in the cell, or -1 if all slots are occupied
     int free_index() {
@@ -176,6 +184,9 @@ public:
     // main functions
     void establishment(const ResourceUnit *ru);
     void saplingGrowth(const ResourceUnit *ru);
+
+    /// run the simplified grass cover for a RU
+    void simplifiedGrassCover(const ResourceUnit *ru);
 
     // access
     /// return the SaplingCell (i.e. container for the ind. saplings) for the given 2x2m coordinates

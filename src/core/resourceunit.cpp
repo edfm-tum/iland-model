@@ -153,14 +153,29 @@ SaplingCell *ResourceUnit::saplingCell(const QPoint &lifCoords) const
     return &mSaplings[i];
 }
 
-double ResourceUnit::saplingCoveredArea() const
+double ResourceUnit::saplingCoveredArea(bool below130cm) const
 {
     Q_ASSERT(mSaplings != 0);
     int n_covered = 0;
-    for (int i=0;i<cPxPerHectare;++i) {
-        if (mSaplings[i].n_occupied()>0)
-            ++n_covered;
+    if (below130cm) {
+        for (int i=0;i<cPxPerHectare;++i) {
+            // either grass *OR* hmax<1.3m
+            if (mSaplings[i].state == SaplingCell::CellGrass) {
+                ++n_covered;
+            } else {
+                float hmx = mSaplings[i].max_height();
+                if (hmx>0.f && hmx<=1.3f)
+                    ++n_covered;
+            }
+        }
+    } else {
+        // only px that have saplings > 1.3m
+        for (int i=0;i<cPxPerHectare;++i) {
+            if (mSaplings[i].max_height()>1.3f)
+                ++n_covered;
+        }
     }
+
     return static_cast<double>(n_covered * cPxSize*cPxSize);
 }
 

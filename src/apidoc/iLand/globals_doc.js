@@ -403,7 +403,10 @@ The available grid types with 10m resolution are:
 + `forestoutside`: 1 if a pixel is out of project area and is considered to be forested (see [wiki page](http://iland.boku.ac.at/landscape+setup))
 
 The available grid types with 100m resolution are:
-+ `saplingcover`: the fraction of the area which is covered by saplings (no size threshold) (0..1). (Note: RUs with non-stockable area have always a value <1).
++ `smallsaplingcover`: the fraction of the area which is covered by small saplings (<=1.3m) OR grass cover (0..1). (Note: RUs with non-stockable area have always a value <1).
++ `saplingcover`: the fraction of the area which is covered by saplings (with a height >1.3m) (0..1). (Note: RUs with non-stockable area have always a value <1).
++ `swc`: mean annual water content (mm) over the full year
++ `swc_gs`: mean annual water content (mm) during the growing season (fixed month April - September)
 
 
 See also: {{#crossLink "Globals/gridToFile:method"}}{{/crossLink}}

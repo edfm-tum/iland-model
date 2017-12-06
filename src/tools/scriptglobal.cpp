@@ -39,7 +39,7 @@
 #include "seeddispersal.h"
 #include "scriptgrid.h"
 #include "expressionwrapper.h"
-
+#include "watercycle.h"
 
 // for accessing script publishing functions
 #include "climateconverter.h"
@@ -47,6 +47,7 @@
 #include "spatialanalysis.h"
 #include "dbhdistribution.h"
 #include "spatialanalysis.h"
+
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -565,7 +566,10 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="count") index = 2;
     if (type=="forestoutside") index=3;
     // resource unit level
-    if (type=="saplingcover") index=10;
+    if (type=="smallsaplingcover") index=10;
+    if (type=="saplingcover") index=11;
+    if (type=="swc") index=12;
+    if (type=="swc_gs") index=13;
     if (index<0) {
         qDebug()<< "ScriptGlobal::grid(): error: invalid grid specified:" << type << ". valid options: 'height', 'valid', 'count', 'forestoutside'.";
         return QJSValue();
@@ -594,7 +598,10 @@ QJSValue ScriptGlobal::grid(QString type)
         double *p = dgrid->begin();
         for (ResourceUnit **ru = rg.begin(); ru!=rg.end(); ++ru, ++p) {
             switch( index ) {
-            case 10: *p = *ru ? (*ru)->saplingCoveredArea() / cRUArea : 0.;
+            case 10: *p = *ru ? (*ru)->saplingCoveredArea(true) / cRUArea : 0.; break; // either grass or saplings <1.3m
+            case 11: *p = *ru ? (*ru)->saplingCoveredArea(false) / cRUArea : 0.; break; // saplings > 1.3m
+            case 12: *p = *ru && (*ru)->waterCycle() ? (*ru)->waterCycle()->meanSoilWaterContent() : 0.; break;
+            case 13: *p = *ru && (*ru)->waterCycle() ? (*ru)->waterCycle()->meanGrowingSeasonSWC() : 0.; break;
             }
         }
         QJSValue g = ScriptGrid::createGrid(dgrid, type);
