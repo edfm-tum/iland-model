@@ -57,7 +57,7 @@ void ThreadRunner::setup(const QList<ResourceUnit*> &resourceUnitList)
 }
 
 /// run a given function for each ressource unit either multithreaded or not.
-void ThreadRunner::run(void (*funcptr)(ResourceUnit *), const bool forceSingleThreaded )
+void ThreadRunner::run(void (*funcptr)(ResourceUnit *), const bool forceSingleThreaded ) const
 {
     if (mMultithreaded && mMap1.count() > 3 && forceSingleThreaded==false) {
         // execute using QtConcurrent for larger amounts of ressource units...
@@ -76,7 +76,7 @@ void ThreadRunner::run(void (*funcptr)(ResourceUnit *), const bool forceSingleTh
 }
 
 /// run a given function for each species
-void ThreadRunner::run(void (*funcptr)(Species *), const bool forceSingleThreaded )
+void ThreadRunner::run(void (*funcptr)(Species *), const bool forceSingleThreaded ) const
 {
     if (mMultithreaded && mSpeciesMap.count() > 3 && forceSingleThreaded==false) {
         QtConcurrent::blockingMap(mSpeciesMap, funcptr);

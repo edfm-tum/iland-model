@@ -459,7 +459,7 @@ static QMutex wind_mt_counter;
 static WindModule *wind_module=0;
 static int impact_c;
 
-// multithreading enabled main function for fetch calculationg
+// multithreading enabled main function for fetch calculations
 void nc_calculateFetch(WindCell *begin, WindCell *end)
 {
     int calculated = 0;

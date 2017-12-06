@@ -802,6 +802,8 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tSapling+=t.elapsed();
         }
 
+        mGrassCover->executeAfterRegeneration(); // evaluste ground vegetation
+
         // Establishment::debugInfo(); // debug test
 
     }

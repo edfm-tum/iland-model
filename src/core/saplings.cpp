@@ -27,6 +27,7 @@
 #include "species.h"
 #include "seeddispersal.h"
 #include "mapgrid.h"
+#include "grasscover.h"
 
 double Saplings::mRecruitmentVariation = 0.1; // +/- 10%
 double Saplings::mBrowsingPressure = 0.;
@@ -49,7 +50,7 @@ void Saplings::setup()
             if (!hg->valueAtIndex(lif_grid->index5(i)).isValid())
                 s->state = SaplingCell::CellInvalid;
             else
-                s->state = SaplingCell::CellFree;
+                s->state = SaplingCell::CellEmpty;
         }
 
     }
@@ -148,7 +149,7 @@ void Saplings::establishment(const ResourceUnit *ru)
             isc = lif_grid->index(imap.x(), imap.y()+iy);
 
             for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
-                if (s->state == SaplingCell::CellFree) {
+                if (s->hasFreeSlots()) {
                     // is a sapling of the current species already on the pixel?
                     // * test for sapling height already in cell state
                     // * test for grass-cover already in cell state
@@ -253,6 +254,29 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
         }
     }
 
+}
+
+void Saplings::simplifiedGrassCover(const ResourceUnit *ru)
+{
+    if (!ru)
+        return;
+
+    float threshold = GlobalSettings::instance()->model()->grassCover()->lifThreshold();
+    FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
+
+    QPoint imap = ru->cornerPointOffset();
+    SaplingCell *sap_cells = ru->saplingCellArray();
+
+    for (int iy=0; iy<cPxPerRU; ++iy) {
+        SaplingCell *s = &sap_cells[iy*cPxPerRU]; // ptr to row
+        int isc = lif_grid->index(imap.x(), imap.y()+iy);
+
+        for (int ix=0;ix<cPxPerRU; ++ix, ++s, ++isc) {
+            if (s->state == SaplingCell::CellEmpty || s->state== SaplingCell::CellGrass) {
+                s->state =  (*lif_grid)[isc] > threshold ? SaplingCell::CellGrass : SaplingCell::CellEmpty;
+            }
+        }
+    }
 }
 
 SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **rRUPtr)

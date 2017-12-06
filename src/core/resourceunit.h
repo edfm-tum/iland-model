@@ -66,7 +66,9 @@ public:
     SaplingCell *saplingCellArray() const { return mSaplings; } ///< access the array of sapling-cells
     SaplingCell *saplingCell(const QPoint &lifCoords) const; ///< return a pointer to the 2x2m SaplingCell located at 'lif'
     /// return the area (m2) which is covered by saplings (cells >0 saplings)
-    double saplingCoveredArea() const;
+    /// if  `below130cm` is false, then only pixels with saplings >1.3m are counted; otherwise
+    /// pixel are counted when saplings < 1.3m are present or when grass cover is present
+    double saplingCoveredArea(bool below130cm) const;
 
     ResourceUnitSpecies &resourceUnitSpecies(const Species *species); ///< get RU-Species-container of @p species from the RU
     const ResourceUnitSpecies *constResourceUnitSpecies(const Species *species) const; ///< get RU-Species-container of @p species from the RU

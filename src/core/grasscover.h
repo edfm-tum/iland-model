@@ -49,13 +49,23 @@ public:
 
     /// main function (growth/die-off of grass cover)
     void execute();
+    /// function called after the regeneration module
+    void executeAfterRegeneration();
 
     // access
     /// returns 'true' if the module is enabled
     bool enabled() const { return mEnabled; }
-    ///
+
+    /// used algorithm
+    enum GrassAlgorithmType { Invalid, Continuous, Pixel, Simplified };
+    GrassAlgorithmType mode() const { return mType; }
+
+
+    float lifThreshold() const { return mGrassLIFThreshold; }
+    // access values of the underlying grid (for visualization)
     double effect(grass_grid_type level) const { return mEffect[level]; }
     double cover(const grass_grid_type &data) const  {return mType == Pixel? data : data/double(GRASSCOVERSTEPS-1);  }
+    // access value for simplified mode
 
 
     /// main function
@@ -72,7 +82,7 @@ public:
     /// retrieve the grid of current grass cover
     const Grid<grass_grid_type> &grid() { return mGrid; }
 private:
-    enum GrassAlgorithmType { Invalid, Continuous, Pixel };
+
     GrassAlgorithmType mType;
     bool mEnabled; ///< is module enabled?
     Expression mGrassPotential; ///< function defining max. grass cover [0..1] as function of the LIF pixel value
