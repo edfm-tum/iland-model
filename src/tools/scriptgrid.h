@@ -85,6 +85,11 @@ public slots:
     /// combine multiple grids, and calculate the result of 'expression'
     void combine(QString expression, QJSValue grid_object);
 
+    /// resamples the grid to the extent/cellsize given by the grid 'grid_object'
+    /// Resampling is "brute-force", every cell of the new grid gets the cell value of the cell center
+    /// returns the object itself.
+    QJSValue resample(QJSValue grid_object);
+
 
     /// apply the expression "expression" on all pixels of the grid and return the sum of the values
     double sum(QString expression);
