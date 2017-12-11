@@ -99,6 +99,7 @@ void ScriptGrid::clear()
 
 void ScriptGrid::paint(double min_val, double max_val)
 {
+    // TODO: implement
     //if (GlobalSettings::instance()->controller())
     //    GlobalSettings::instance()->controller()->addGrid(mGrid, mVariableName, GridViewRainbow, min_val, max_val);
 }
@@ -219,6 +220,42 @@ void ScriptGrid::combine(QString expression, QJSValue grid_object)
         double result = expr.execute();
         mGrid->valueAtIndex(i) = result; // write back value
     }
+}
+
+QJSValue ScriptGrid::resample(QJSValue grid_object)
+{
+    if (!mGrid) {
+        qDebug() << "ERROR in ScriptGrid::crop(): not a valid grid!";
+        return QJSValue();
+    }
+    // crop the grid to the extent given by the grid 'grid_object'
+    QObject *o = grid_object.toQObject();
+    if (o && qobject_cast<ScriptGrid*>(o)) {
+        Grid<double> *src = qobject_cast<ScriptGrid*>(o)->grid();
+        Grid<double> *new_grid = new Grid<double>(src->metricRect(), src->cellsize());
+        // now copy content for all cells of the new grid:
+        QPointF p;
+        for (int i=0;i<new_grid->count();++i) {
+            p=new_grid->cellCenterPoint(i);
+            if (mGrid->coordValid(p))
+                (*new_grid)[i] = (*mGrid)[p];
+            else
+                (*new_grid)[i] = 0.; // should be NA
+        }
+        // free the original grid...
+        delete mGrid;
+        mGrid = new_grid;
+
+
+    } else {
+        qDebug() << "ERROR in ScriptGrid::crop(): grid_object is not a valid grid!";
+        return QJSValue();
+    }
+
+    QJSValue jsgrid = GlobalSettings::instance()->scriptEngine()->newQObject(this);
+    return jsgrid;
+
+
 }
 
 double ScriptGrid::sum(QString expression)

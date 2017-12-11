@@ -72,6 +72,8 @@ void GrassCover::setup()
     if (mType == Simplified) {
         mGrassLIFThreshold = static_cast<float>( xml.valueDouble("model.settings.grass.LIFThreshold", 0.2) );
         mEnabled = true;
+        // this does not work with the simplified mode, as there is no explicit grass cover grid!!
+        // GlobalSettings::instance()->controller()->addLayers(mLayers, QStringLiteral("grass cover"));
         return;
     }
 
@@ -241,7 +243,7 @@ double GrassCoverLayers::value(const grass_grid_type &data, const int index) con
     if (mGrassCover->mode() == GrassCover::Simplified) {
         switch(index) {
         case 0: return 0.; // effect -> no effect in simplified
-        case 1: 1.; // cover
+        case 1: return 1.; // cover
         }
 
     } else {
@@ -252,6 +254,7 @@ double GrassCoverLayers::value(const grass_grid_type &data, const int index) con
         default: throw IException(QString("invalid variable index for a GrassCoverLayers: %1").arg(index));
         }
     }
+    return 0.;
 }
 
 const QVector<LayeredGridBase::LayerElement> &GrassCoverLayers::names()
