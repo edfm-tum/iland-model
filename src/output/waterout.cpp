@@ -67,6 +67,7 @@ void WaterOut::exec()
     int snow_days = 0;
     double et=0., excess=0., rad=0., snow_rad=0., p=0.;
     double stockable=0., stocked=0., lai_effective=0.;
+    double swc_mean=0., swc_gs_mean=0.;
     foreach(ResourceUnit *ru, m->ruList()) {
         if (ru->id()==-1)
             continue; // do not include if out of project area
@@ -90,6 +91,7 @@ void WaterOut::exec()
         rad+=ru->climate()->totalRadiation();
         snow_rad+=wc->mSnowRad;
         lai_effective+=wc->effectiveLAI();
+        swc_mean+=wc->meanSoilWaterContent(); swc_gs_mean+=wc->meanGrowingSeasonSWC();
 
 
     }
@@ -104,6 +106,7 @@ void WaterOut::exec()
     *this << snow_days / ru_count;
     *this << rad / ru_count << snow_rad / ru_count;
     *this << lai_effective / ru_count;
+    *this << swc_mean / ru_count << swc_gs_mean / ru_count;
     writeRow();
 
 
