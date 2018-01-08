@@ -570,6 +570,7 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="saplingcover") index=11;
     if (type=="swc") index=12;
     if (type=="swc_gs") index=13;
+    if (type=="swc_pot") index=14;
     if (index<0) {
         qDebug()<< "ScriptGlobal::grid(): error: invalid grid specified:" << type << ". valid options: 'height', 'valid', 'count', 'forestoutside'.";
         return QJSValue();
@@ -602,6 +603,7 @@ QJSValue ScriptGlobal::grid(QString type)
             case 11: *p = *ru ? (*ru)->saplingCoveredArea(false) / cRUArea : 0.; break; // saplings > 1.3m
             case 12: *p = *ru && (*ru)->waterCycle() ? (*ru)->waterCycle()->meanSoilWaterContent() : 0.; break;
             case 13: *p = *ru && (*ru)->waterCycle() ? (*ru)->waterCycle()->meanGrowingSeasonSWC() : 0.; break;
+            case 14: *p = *ru && (*ru)->waterCycle() ? (*ru)->waterCycle()->fieldCapacity() : 0.; break;
             }
         }
         QJSValue g = ScriptGrid::createGrid(dgrid, type);
