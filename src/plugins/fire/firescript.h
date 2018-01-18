@@ -20,13 +20,17 @@
 #define FIRESCRIPT_H
 
 #include <QObject>
+#include <QJSValue>
 class FireModule; // forward
+class FireRUData; // forward
+
 class FireScript : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int id READ id)
     Q_PROPERTY(int x READ x)
     Q_PROPERTY(int y READ y)
+    Q_PROPERTY(QJSValue onIgnitionRU READ onIgnitionRU WRITE setOnIgnitionRU)
 
 public:
     explicit FireScript(QObject *parent = 0);
@@ -35,6 +39,14 @@ public:
     double x() const; ///< the x-coordinate of the last ignition
     double y() const; ///< the x-coordinate of the last ignition
     static QString fireRUValueType; // for the exporter
+    QJSValue onIgnitionRU() const
+    {
+        return mOnIgnitionRU;
+    }
+    bool hasIgnitionRUHandler() { return mOnIgnitionRU.isCallable(); }
+
+    double calcDyanmicManagementEffect(FireRUData *data);
+
 signals:
 
 public slots:
@@ -42,14 +54,21 @@ public slots:
     x_meter, y_meter: metric coordinates of the ignition point in the landscape
     firesize: provide a fire size (m2). The fire size will be drawn from the fire size distribution if firesize=-1 or omitted.
     windspeed: wind speed (m/s), drawn randomly if omitted or -1.
-    winddirection: wind direction (0°=N..180°=S..270=W°), drawn randomly if omitted or set to -1.
+    winddirection: wind direction (0 deg =N..180deg=S..270=Wdeg), drawn randomly if omitted or set to -1.
     Returns the burnt area */
     double ignite(double x, double y, double firesize=-1, double windspeed=-1, double winddirection=-1);
     bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
 
+    void setOnIgnitionRU(QJSValue onIgnitionRU)
+    {
+        mOnIgnitionRU = onIgnitionRU;
+    }
+
 private:
     FireModule *mFire;
 
+    // event handler
+    QJSValue mOnIgnitionRU;
 };
 
 #endif // FIRESCRIPT_H
