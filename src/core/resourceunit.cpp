@@ -114,7 +114,9 @@ void ResourceUnit::setup()
                                CNPool(xml.valueDouble("model.site.youngRefractoryC", -1),
                                       xml.valueDouble("model.site.youngRefractoryN", -1),
                                       xml.valueDouble("model.site.youngRefractoryDecompRate", -1)),
-                               CNPair(xml.valueDouble("model.site.somC", -1), xml.valueDouble("model.site.somN", -1)));
+                               CNPair(xml.valueDouble("model.site.somC", -1), xml.valueDouble("model.site.somN", -1)),
+                               xml.valueDouble("model.site.youngLabileAbovegroundFraction"),
+                               xml.valueDouble("model.site.youngRefractoryAbovegroundFraction"));
     }
 
     if (mSaplings)
@@ -576,8 +578,12 @@ void ResourceUnit::calculateCarbonCycle()
     // because all carbon/nitrogen-flows from trees to the soil are routed through the snag-layer,
     // all soil inputs (litter + deadwood) are collected in the Snag-object.
     snag()->calculateYear();
+
     soil()->setClimateFactor( snag()->climateFactor() ); // the climate factor is only calculated once
-    soil()->setSoilInput( snag()->labileFlux(), snag()->refractoryFlux());
+
+    soil()->setSoilInput( snag()->labileFlux(), snag()->refractoryFlux(),
+                          snag()->labileFluxAbovegroundCarbon(), snag()->refractoryFluxAbovegroundCarbon());
+
     soil()->calculateYear(); // update the ICBM/2N model
     // use available nitrogen?
     if (Model::settings().useDynamicAvailableNitrogen)

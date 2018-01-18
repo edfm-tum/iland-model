@@ -579,6 +579,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     mCarbonLiving.clear();
 
     CNPair dead_wood, dead_fine; // pools for mortality
+    double dead_wood_ag = 0., dead_fine_ag=0.; // carbon aboveground
     double c_turnover = 0.;
     // average dbh
     if (mLiving>0) {
@@ -636,11 +637,15 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double n = mDied * species->saplingGrowthParameters().representedStemNumber( avg_dbh_dead );
         // woody parts: stem, branchse and coarse roots
 
-        dead_wood.addBiomass( ( species->biomassStem(avg_dbh_dead) + species->biomassBranch(avg_dbh_dead) + species->biomassRoot(avg_dbh_dead)) * n, species->cnWood()  );
+        double bm_above = (species->biomassStem(avg_dbh_dead) + species->biomassBranch(avg_dbh_dead) ) * n;
+        dead_wood.addBiomass(  species->biomassRoot(avg_dbh_dead) * n + bm_above, species->cnWood()  );
+        dead_wood_ag += bm_above * biomassCFraction;
+
         double foliage = species->biomassFoliage(avg_dbh_dead)*n;
 
         dead_fine.addBiomass( foliage, species->cnFoliage()  );
         dead_fine.addBiomass( foliage*species->finerootFoliageRatio(), species->cnFineroot()  );
+        dead_fine_ag += foliage * biomassCFraction;
         DBGMODE(
         if (isnan(dead_fine.C))
             qDebug("carbon NaN in SaplingStat::calculate (died trees).");
@@ -649,7 +654,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     }
     if (!dead_wood.isEmpty() || !dead_fine.isEmpty())
         if (ru->snag())
-            ru->snag()->addToSoil(species, dead_wood, dead_fine);
+            ru->snag()->addToSoil(species, dead_wood, dead_fine, dead_wood_ag, dead_fine_ag);
 
     // calculate net growth:
     // delta of stocks

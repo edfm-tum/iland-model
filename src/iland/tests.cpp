@@ -855,7 +855,7 @@ void Tests::testSoil()
     // values from RS R script script_snagsoil_v5.r
     soil.setInitialState(CNPool(33000., 450., 0.15), // young lab
                          CNPool(247000., 990., 0.0807), // young ref
-                         CNPair(375000., 15000.)); // SOM
+                         CNPair(375000., 15000.), 0.5, 0.5); // SOM
     CNPool in_l(3040, 3040/75., 0.15);
     CNPool in_r(11970, 11970./250., 0.0807);
     double re = 1.1;
@@ -867,11 +867,11 @@ void Tests::testSoil()
         // run the soil model
         soil.setClimateFactor(re);
         if (i==1) {
-           soil.setSoilInput(in_l*5., in_r*5.); // pulse in year 2
+           soil.setSoilInput(in_l*5., in_r*5., 0.5, 0.5); // pulse in year 2
         } else if (i>1 && i<10) {
-            soil.setSoilInput(CNPool(), CNPool()); // no input for years 3..10
+            soil.setSoilInput(CNPool(), CNPool(), 0.5, 0.5); // no input for years 3..10
         } else{
-            soil.setSoilInput(in_l, in_r); // normal input
+            soil.setSoilInput(in_l, in_r, 0.5, 0.5); // normal input
         }
 
         soil.calculateYear();
@@ -910,7 +910,7 @@ void Tests::testSoil()
                                 dbg_iland.value(0, dbg_iland.columnIndex("yrN")).toDouble()*1000.,
                                 dbg_iland.value(0, dbg_iland.columnIndex("kyr")).toDouble()), // young ref
                          CNPair(dbg_iland.value(0, dbg_iland.columnIndex("somC")).toDouble()*1000.,
-                                dbg_iland.value(0, dbg_iland.columnIndex("somN")).toDouble()*1000.)); // SOM
+                                dbg_iland.value(0, dbg_iland.columnIndex("somN")).toDouble()*1000.), 0.5, 0.5); // SOM
 
     for (int i=1;i<dbg_iland.rowCount();i++) {
         // run the soil model
@@ -920,7 +920,7 @@ void Tests::testSoil()
                                  dbg_iland.value(i, dbg_iland.columnIndex("iKyl")).toDouble()),
                           CNPool(dbg_iland.value(i, dbg_iland.columnIndex("iRefC")).toDouble()*1000.,
                                  dbg_iland.value(i, dbg_iland.columnIndex("iRefN")).toDouble()*1000.,
-                                 dbg_iland.value(i, dbg_iland.columnIndex("iKyr")).toDouble()));
+                                 dbg_iland.value(i, dbg_iland.columnIndex("iKyr")).toDouble()), 0.5, 0.5);
         model_soil->calculateYear();
         QList<QVariant> list = model_soil->debugList();
         QString line=QString::number(i)+";";

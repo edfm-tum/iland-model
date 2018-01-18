@@ -79,6 +79,7 @@ Soil::Soil(ResourceUnit *ru)
     mKyr = 0.;
     mH = 0.;
     mKo = 0.;
+    mYLaboveground_frac = mYRaboveground_frac = 0.;
     fetchParameters();
 }
 
@@ -90,7 +91,11 @@ void Soil::newYear()
 }
 
 /// setup initial content of the soil pool (call before model start)
-void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young_refractory_kg_ha, const CNPair &SOM_kg_ha)
+void Soil::setInitialState(const CNPool &young_labile_kg_ha,
+                           const CNPool &young_refractory_kg_ha,
+                           const CNPair &SOM_kg_ha,
+                           double young_labile_aboveground_frac,
+                           double young_refractory_aboveground_frac)
 {
     mYL = young_labile_kg_ha*0.001; // pool sizes are stored in t/ha
     mYR = young_refractory_kg_ha*0.001;
@@ -107,10 +112,17 @@ void Soil::setInitialState(const CNPool &young_labile_kg_ha, const CNPool &young
         throw IException(QString("setup of Soil: yr-pool invalid: c: %1 n: %2").arg(mYR.C).arg(mYR.N));
     if (!mYL.isValid())
         throw IException(QString("setup of Soil: som-pool invalid: c: %1 n: %2").arg(mSOM.C).arg(mSOM.N));
+
+    mYLaboveground_frac = young_labile_aboveground_frac;
+    mYRaboveground_frac = young_refractory_aboveground_frac;
 }
 
 /// set soil inputs of current year (litter and deadwood)
-void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha)
+/// @param labile_input_kg_ha The input to the labile pool (kg/ha); this comprises of leaves, fine roots
+/// @param refractory_input_kg_ha The input to the refr. pool (kg/ha); branches, stems, coarse roots
+/// @param labile_aboveground_C Carbon in the labile input from aboveground sources (kg/ha)
+/// @param refr_aboveground_C Carbon in the woody input from aboveground sources (kg/ha)
+void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refractory_input_kg_ha, double labile_aboveground_C, double refractory_aboveground_C)
 {
     // stockable area:
     // if the stockable area is < 1ha, then
@@ -135,6 +147,11 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     mKyr = mYR.parameter(mInputRef);
     if (isnan(mKyr) || isnan(mYR.C))
         qDebug() << "mKyr is NAN";
+
+    // update the aboveground fraction
+    // conceptually this is a weighted mean of the AG fraction of the content with the input
+    mYLaboveground_frac = (mYL.C * mYLaboveground_frac + labile_aboveground_C * (0.001 / area_ha)) / (mYL.C + mInputLab.C);
+    mYRaboveground_frac = (mYR.C * mYRaboveground_frac + refractory_aboveground_C * (0.001 / area_ha)) / (mYR.C + mInputRef.C);
 
 }
 

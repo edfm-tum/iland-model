@@ -124,13 +124,13 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         q.exec("create table trees (ID integer, RUindex integer, posX integer, posY integer, species text,  age integer, height real, dbh real, leafArea real, opacity real, foliageMass real, woodyMass real, fineRootMass real, coarseRootMass real, NPPReserve real, stressIndex real)");
         // soil
         q.exec("drop table soil");
-        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLP real, YRC real, YRN real, YRP real, SOMC real, SOMN real, WaterContent, SnowPack real)");
+        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLAGFrac real, YLP real, YRC real, YRN real, YRAGFrac real, YRP real, SOMC real, SOMN real, WaterContent, SnowPack real)");
         // snag
         q.exec("drop table snag");
         q.exec("create table snag(RUIndex integer, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
                "totalSWDC real, totalSWDN real, NSnags1 real, NSnags2 real, NSnags3 real, dbh1 real, dbh2 real, dbh3 real, height1 real, height2 real, height3 real, " \
                "volume1 real, volume2 real, volume3 real, tsd1 real, tsd2 real, tsd3 real, ksw1 real, ksw2 real, ksw3 real, halflife1 real, halflife2 real, halflife3 real, " \
-               "branch1C real, branch1N real, branch2C real, branch2N real, branch3C real, branch3N real, branch4C real, branch4N real, branch5C real, branch5N real, branchIndex integer)");
+               "branch1C real, branch1N real, branch2C real, branch2N real, branch3C real, branch3N real, branch4C real, branch4N real, branch5C real, branch5N real, branchIndex integer, branchAGFraction real)");
         // saplings/regeneration
         q.exec("drop table saplings");
         q.exec("create table saplings (RUindex integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
@@ -627,8 +627,8 @@ void Snapshot::saveSoil()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN, WaterContent, SnowPack) " \
-                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylp, :yrc, :yrn, :yrp, :somc, :somn, :wc, :snowpack)")))
+    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack) " \
+                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylag, :ylp, :yrc, :yrn, :yrag, :yrp, :somc, :somn, :wc, :snowpack)")))
         throw IException(QString("Snapshot::saveSoil: prepare:") + q.lastError().text());
 
     int n = 0;
@@ -654,8 +654,8 @@ void Snapshot::saveSoilRU(QList<int> stand_ids, bool ridmode)
 {
     QSqlDatabase db=QSqlDatabase::database("snapshotstand");
     QSqlQuery q(db);
-    if (!q.prepare(QString("insert or replace into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN, WaterContent, SnowPack) " \
-                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylp, :yrc, :yrn, :yrp, :somc, :somn, :wc, :snowpack)")))
+    if (!q.prepare(QString("insert or replace into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack) " \
+                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylag, :ylp, :yrc, :yrn, :yrag, :yrp, :somc, :somn, :wc, :snowpack)")))
         throw IException(QString("Snapshot::saveSoil: prepare:") + q.lastError().text());
 
     int n = 0;
@@ -686,9 +686,11 @@ void Snapshot::saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q)
     q.addBindValue(s->mInputRef.parameter());
     q.addBindValue(s->mYL.C);
     q.addBindValue(s->mYL.N);
+    q.addBindValue(s->mYLaboveground_frac);
     q.addBindValue(s->mYL.parameter());
     q.addBindValue(s->mYR.C);
     q.addBindValue(s->mYR.N);
+    q.addBindValue(s->mYRaboveground_frac);
     q.addBindValue(s->mYR.parameter());
     q.addBindValue(s->mSOM.C);
     q.addBindValue(s->mSOM.N);
@@ -707,7 +709,7 @@ void Snapshot::loadSoil(QSqlDatabase db)
         db=QSqlDatabase::database("snapshot");
 
     QSqlQuery q(db);
-    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLP, YRC, YRN, YRP, SOMC, SOMN, WaterContent, SnowPack from soil");
+    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack from soil");
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
@@ -730,13 +732,15 @@ void Snapshot::loadSoil(QSqlDatabase db)
         s->mInputRef.setParameter( q.value(8).toDouble());
         s->mYL.C = q.value(9).toDouble();
         s->mYL.N = q.value(10).toDouble();
-        s->mYL.setParameter( q.value(11).toDouble());
-        s->mYR.C = q.value(12).toDouble();
-        s->mYR.N = q.value(13).toDouble();
-        s->mYR.setParameter( q.value(14).toDouble());
-        s->mSOM.C = q.value(15).toDouble();
-        s->mSOM.N = q.value(16).toDouble();
-        const_cast<WaterCycle*>(ru->waterCycle())->setContent(q.value(17).toDouble(), q.value(18).toDouble());
+        s->mYLaboveground_frac = q.value(11).toDouble();
+        s->mYL.setParameter( q.value(12).toDouble());
+        s->mYR.C = q.value(13).toDouble();
+        s->mYR.N = q.value(14).toDouble();
+        s->mYRaboveground_frac = q.value(15).toDouble();
+        s->mYR.setParameter( q.value(16).toDouble());
+        s->mSOM.C = q.value(17).toDouble();
+        s->mSOM.N = q.value(18).toDouble();
+        const_cast<WaterCycle*>(ru->waterCycle())->setContent(q.value(19).toDouble(), q.value(20).toDouble());
 
         if (++n % 1000 == 0) {
             qDebug() << n << "soil units loaded...";
@@ -755,11 +759,11 @@ void Snapshot::saveSnags()
     if (!q.prepare(QString("insert into snag(RUIndex, climateFactor, SWD1C, SWD1N, SWD2C, SWD2N, SWD3C, SWD3N, " \
                            "totalSWDC, totalSWDN, NSnags1, NSnags2, NSnags3, dbh1, dbh2, dbh3, height1, height2, height3, " \
                            "volume1, volume2, volume3, tsd1, tsd2, tsd3, ksw1, ksw2, ksw3, halflife1, halflife2, halflife3, " \
-                           "branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex) " \
+                           "branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex, branchAGFraction) " \
                            "values (?,?,?,?,?,?,?,?, " \
                            "?,?,?,?,?,?,?,?,?,?,?," \
                            "?,?,?,?,?,?,?,?,?,?,?,?," \
-                           "?,?,?,?,?,?,?,?,?,?,?)")))
+                           "?,?,?,?,?,?,?,?,?,?,?,?)")))
         throw IException(QString("Snapshot::saveSnag: prepare:") + q.lastError().text());
 
     int n = 0;
@@ -788,11 +792,11 @@ void Snapshot::saveSnagRU(QList<int> stand_ids, bool ridmode)
     if (!q.prepare(QString("insert or replace into snag(RUIndex, climateFactor, SWD1C, SWD1N, SWD2C, SWD2N, SWD3C, SWD3N, " \
                            "totalSWDC, totalSWDN, NSnags1, NSnags2, NSnags3, dbh1, dbh2, dbh3, height1, height2, height3, " \
                            "volume1, volume2, volume3, tsd1, tsd2, tsd3, ksw1, ksw2, ksw3, halflife1, halflife2, halflife3, " \
-                           "branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex) " \
+                           "branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex, branchAGFraction) " \
                            "values (?,?,?,?,?,?,?,?, " \
                            "?,?,?,?,?,?,?,?,?,?,?," \
                            "?,?,?,?,?,?,?,?,?,?,?,?," \
-                           "?,?,?,?,?,?,?,?,?,?,?)")))
+                           "?,?,?,?,?,?,?,?,?,?,?,?)")))
         throw IException(QString("Snapshot::saveSnag: prepare:") + q.lastError().text());
     int n = 0;
     for (int i=0;i<stand_ids.size(); ++i) {
@@ -856,6 +860,7 @@ void Snapshot::saveSnagCore(Snag *s, QSqlQuery &q)
     q.addBindValue(s->mOtherWood[3].C); q.addBindValue(s->mOtherWood[3].N);
     q.addBindValue(s->mOtherWood[4].C); q.addBindValue(s->mOtherWood[4].N);
     q.addBindValue(s->mBranchCounter);
+    q.addBindValue(s->mOtherWoodAbovegroundFrac);
 
     if (!q.exec()) {
         throw IException(QString("Snapshot::saveSnag: execute:") + q.lastError().text());
@@ -870,7 +875,7 @@ void Snapshot::loadSnags(QSqlDatabase db)
         db=QSqlDatabase::database("snapshot");
 
     QSqlQuery q(db);
-    q.exec("select RUIndex, climateFactor, SWD1C, SWD1N, SWD2C, SWD2N, SWD3C, SWD3N, totalSWDC, totalSWDN, NSnags1, NSnags2, NSnags3, dbh1, dbh2, dbh3, height1, height2, height3, volume1, volume2, volume3, tsd1, tsd2, tsd3, ksw1, ksw2, ksw3, halflife1, halflife2, halflife3, branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex from snag");
+    q.exec("select RUIndex, climateFactor, SWD1C, SWD1N, SWD2C, SWD2N, SWD3C, SWD3N, totalSWDC, totalSWDN, NSnags1, NSnags2, NSnags3, dbh1, dbh2, dbh3, height1, height2, height3, volume1, volume2, volume3, tsd1, tsd2, tsd3, ksw1, ksw2, ksw3, halflife1, halflife2, halflife3, branch1C, branch1N, branch2C, branch2N, branch3C, branch3N, branch4C, branch4N, branch5C, branch5N, branchIndex, branchAGFraction from snag");
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
@@ -920,6 +925,7 @@ void Snapshot::loadSnags(QSqlDatabase db)
         s->mOtherWood[3].C = q.value(ci++).toDouble(); s->mOtherWood[3].N = q.value(ci++).toDouble();
         s->mOtherWood[4].C = q.value(ci++).toDouble(); s->mOtherWood[4].N = q.value(ci++).toDouble();
         s->mBranchCounter = q.value(ci++).toInt();
+        s->mOtherWoodAbovegroundFrac = q.value(ci++).toDouble();
 
         // these values are not stored in DB but updated here
         s->mTotalOther = s->mOtherWood[0] + s->mOtherWood[1] + s->mOtherWood[2] + s->mOtherWood[3] + s->mOtherWood[4];
