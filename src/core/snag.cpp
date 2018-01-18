@@ -132,7 +132,7 @@ void Snag::setup( const ResourceUnit *ru)
     mHalfLife[1] = xml.valueDouble(".swdHalfLife");
     // and for the Branch/coarse root pools: split the init value into five chunks
     CNPool other(xml.valueDouble(".otherC"), xml.valueDouble(".otherC")/xml.valueDouble(".otherCN", 50.), kyr );
-
+    mOtherWoodAbovegroundFrac = xml.valueDouble(".otherAbovegroundFraction", 0.5);
     mTotalSnagCarbon = other.C + mSWD[1].C;
 
     other *= 0.2;
@@ -175,11 +175,6 @@ QList<QVariant> Snag::debugList()
     for (int i=0;i<5;i++) {
         list << mOtherWood[i].C << mOtherWood[i].N;
     }
-//    list << mOtherWood[mBranchCounter].C << mOtherWood[mBranchCounter].N
-//            << mOtherWood[(mBranchCounter+1)%5].C << mOtherWood[(mBranchCounter+1)%5].N
-//            << mOtherWood[(mBranchCounter+2)%5].C << mOtherWood[(mBranchCounter+2)%5].N
-//            << mOtherWood[(mBranchCounter+3)%5].C << mOtherWood[(mBranchCounter+3)%5].N
-//            << mOtherWood[(mBranchCounter+4)%5].C << mOtherWood[(mBranchCounter+4)%5].N;
     return list;
 }
 
@@ -197,6 +192,8 @@ void Snag::newYear()
     mTotalToDisturbance.clear();
     mTotalIn.clear();
     mSWDtoSoil.clear();
+    mLabileFluxAbovegroundCarbon = mRefrFluxAbovegroundCarbon = 0.;
+
 }
 
 /// calculate the dynamic climate modifier for decomposition 're'
@@ -246,8 +243,9 @@ void Snag::calculateYear()
     if (isEmpty()) // nothing to do
         return;
 
-    // process branches: every year one of the five baskets is emptied and transfered to the refractory soil pool
+    // process branches and coarse roots: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mOtherWood[mBranchCounter];
+    mRefrFluxAbovegroundCarbon += mOtherWood[mBranchCounter].C * mOtherWoodAbovegroundFrac; // cotent * aboveground_fraction
     mOtherWood[mBranchCounter].clear();
     mBranchCounter= (mBranchCounter+1) % 5; // increase index, roll over to 0.
 
@@ -302,6 +300,8 @@ void Snag::calculateYear()
             // calculate flow to soil pool...
             mSWDtoSoil += mSWD[i] * transfer;
             mRefractoryFlux += mSWD[i] * transfer;
+            mRefrFluxAbovegroundCarbon += mSWD[i].C * transfer; // all snag biomass is aboveground
+
             mSWD[i] *= (1.-transfer); // reduce pool
             // calculate the stem number of remaining snags
             mNumberOfSnags[i] = mNumberOfSnags[i] * (1. - transfer);
@@ -313,6 +313,7 @@ void Snag::calculateYear()
             if (mNumberOfSnags[i] < 0.5 || mSWD[i].C / mNumberOfSnags[i] < mCarbonThreshold[i]) {
                 // clear the pool: add the rest to the soil, clear statistics of the pool
                 mRefractoryFlux += mSWD[i];
+                mRefrFluxAbovegroundCarbon += mSWD[i].C;
                 mSWDtoSoil += mSWD[i];
                 mSWD[i].clear();
                 mAvgDbh[i] = 0.;
@@ -340,6 +341,7 @@ void Snag::calculateYear()
 void Snag::addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot)
 {
     mLabileFlux.addBiomass(litter_foliage, species->cnFoliage(), species->snagKyl());
+    mLabileFluxAbovegroundCarbon += litter_foliage*biomassCFraction;
     mLabileFlux.addBiomass(litter_fineroot, species->cnFineroot(), species->snagKyl());
     DBGMODE(
     if (isnan(mLabileFlux.C))
@@ -349,6 +351,7 @@ void Snag::addTurnoverLitter(const Species *species, const double litter_foliage
 
 void Snag::addTurnoverWood(const Species *species, const double woody_biomass)
 {
+    // NOTE: currently, woody_biomass is *only* coarse root, therefore no split in aboveground/belowground flux here
     mRefractoryFlux.addBiomass(woody_biomass, species->cnWood(), species->snagKyr());
     DBGMODE(
     if (isnan(mRefractoryFlux.C))
@@ -381,6 +384,11 @@ void Snag::addBiomassPools(const Tree *tree,
 
     // a part of the foliage goes to the soil
     mLabileFlux.addBiomass(tree->biomassFoliage() * foliage_to_soil, species->cnFoliage(), species->snagKyl());
+    mLabileFluxAbovegroundCarbon += tree->biomassFoliage() * foliage_to_soil * biomassCFraction;
+
+    // aboveground fraction of the "other" pool: aboveground_current + ag_new / (total_c)
+    if (mTotalOther.C + branch_to_snag*branch_biomass + tree->biomassCoarseRoot()>0.)
+        mOtherWoodAbovegroundFrac =  (mTotalOther.C * mOtherWoodAbovegroundFrac + branch_to_snag*branch_biomass) / (mTotalOther.C + branch_to_snag*branch_biomass + tree->biomassCoarseRoot());
 
     //coarse roots and a part of branches are equally distributed over five years:
     double biomass_rest = (tree->biomassCoarseRoot() + branch_to_snag*branch_biomass) * 0.2;
@@ -389,8 +397,11 @@ void Snag::addBiomassPools(const Tree *tree,
 
     // the other part of the branches goes directly to the soil
     mRefractoryFlux.addBiomass(branch_biomass*branch_to_soil, species->cnWood(), species->snagKyr() );
+    mRefrFluxAbovegroundCarbon += branch_biomass*branch_to_soil*biomassCFraction;
+
     // a part of the stem wood goes directly to the soil
     mRefractoryFlux.addBiomass(tree->biomassStem()*stem_to_soil, species->cnWood(), species->snagKyr() );
+    mRefrFluxAbovegroundCarbon += tree->biomassStem()*stem_to_soil*biomassCFraction;
 
     // just for book-keeping: keep track of all inputs of branches / roots / swd into the "snag" pools
     mTotalIn.addBiomass(tree->biomassBranch()*branch_to_snag + tree->biomassCoarseRoot() + tree->biomassStem()*stem_to_snag, species->cnWood());
@@ -509,10 +520,12 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
 }
 
 // add flow from regeneration layer (dead trees) to soil
-void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool)
+void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool, double woody_aboveground_C, double fine_aboveground_C)
 {
     mLabileFlux.add(litter_pool, species->snagKyl());
+    mLabileFluxAbovegroundCarbon += woody_aboveground_C;
     mRefractoryFlux.add(woody_pool, species->snagKyr());
+    mRefrFluxAbovegroundCarbon += fine_aboveground_C;
     DBGMODE(
     if (isnan(mLabileFlux.C) || isnan(mRefractoryFlux.C))
         qDebug("Snag::addToSoil: NaN in C Pool");
@@ -548,15 +561,19 @@ void Snag::management(const double factor)
     for (int i=0;i<3;i++) {
         mSWDtoSoil += mSWD[i] * factor;
         mRefractoryFlux += mSWD[i] * factor;
+        mRefrFluxAbovegroundCarbon += mSWD[i].C * factor;
         mSWD[i] *= (1. - factor);
         //mSWDtoSoil += mToSWD[i] * factor;
         //mToSWD[i] *= (1. - factor);
     }
-    // what to do with the branches: now move also all wood to soil (note: this is note
-    // very good w.r.t the coarse roots...
+    // for branches, we move only the fraction of aboveground carbon to the ground
     for (int i=0;i<5;i++) {
-        mRefractoryFlux+=mOtherWood[i]*factor;
-        mOtherWood[i]*=(1. - factor);
+        double ag_factor = mOtherWoodAbovegroundFrac * factor; // we move only aboveground carbon to the soil
+        mRefractoryFlux+=mOtherWood[i]*ag_factor;
+        mRefrFluxAbovegroundCarbon+=mOtherWood[i].C * ag_factor;
+        mOtherWood[i]*=(1. - ag_factor);
+        if (ag_factor < 1.)
+            mOtherWoodAbovegroundFrac = (mOtherWoodAbovegroundFrac - ag_factor) / (1. - ag_factor); // the fraction of aboveground carbon
     }
 
 }

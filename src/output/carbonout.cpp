@@ -52,10 +52,13 @@ CarbonOut::CarbonOut()
               << OutputColumn("snags_n", "standing dead wood nitrogen kg/ha", OutDouble)
               << OutputColumn("snagsOther_c", "branches and coarse roots of standing dead trees, carbon kg/ha", OutDouble)
               << OutputColumn("snagsOther_n", "branches and coarse roots of standing dead trees, nitrogen kg/ha", OutDouble)
-              << OutputColumn("downedWood_c", "downed woody debris (yR), carbon kg/ha", OutDouble)
+              << OutputColumn("snagsOther_c_ag", "branches of standing dead trees (also included in snagsOther_c), carbon kg/ha", OutDouble)
+              << OutputColumn("downedWood_c", "downed woody debris (yR, branches, stems, coarse roots), carbon kg/ha", OutDouble)
               << OutputColumn("downedWood_n", "downed woody debris (yR), nitrogen kg/ga", OutDouble)
-              << OutputColumn("litter_c", "soil litter (yl), carbon kg/ha", OutDouble)
+              << OutputColumn("downedWood_c_ag", "downed woody debris aboveground (yR, stems, branches, also included in downedWood_c), nitrogen kg/ga", OutDouble)
+              << OutputColumn("litter_c", "soil litter (yl, foliage and fine roots) carbon kg/ha", OutDouble)
               << OutputColumn("litter_n", "soil litter (yl), nitrogen kg/ha", OutDouble)
+              << OutputColumn("litter_c_ag", "soil litter aboveground (yl, foliage, part of litter_c) carbon kg/ha", OutDouble)
               << OutputColumn("soil_c", "soil organic matter (som), carbon kg/ha", OutDouble)
               << OutputColumn("soil_n", "soil organic matter (som), nitrogen kg/ha", OutDouble);
 
@@ -88,7 +91,7 @@ void CarbonOut::exec()
         ru_level = false;
 
 
-    QVector<double> v(23, 0.); // 8 data values
+    QVector<double> v(26, 0.); // 8 data values
     QVector<double>::iterator vit;
 
     foreach(ResourceUnit *ru, m->ruList()) {
@@ -112,13 +115,21 @@ void CarbonOut::exec()
             *this << s.cRegeneration() << s.nRegeneration();
 
             // biomass from standing dead wood: this is not scaled to ha-values!
-            *this << ru->snag()->totalSWD().C / area_factor << ru->snag()->totalSWD().N / area_factor   // snags
-                                              << ru->snag()->totalOtherWood().C/area_factor << ru->snag()->totalOtherWood().N / area_factor;   // snags, other (branch + coarse root)
+            *this << ru->snag()->totalSWD().C / area_factor
+                    << ru->snag()->totalSWD().N / area_factor   // snags
+                    << ru->snag()->totalOtherWood().C/area_factor
+                    << ru->snag()->totalOtherWood().N / area_factor
+                    << ru->snag()->totalOtherWood().C/ area_factor * ru->snag()->otherWoodAbovegroundFraction();   // snags, other (branch + coarse root)
 
             // biomass from soil (convert from t/ha -> kg/ha)
-            *this << ru->soil()->youngRefractory().C*1000. << ru->soil()->youngRefractory().N*1000.   // wood
-                                                           << ru->soil()->youngLabile().C*1000. << ru->soil()->youngLabile().N*1000.   // litter
-                                                           << ru->soil()->oldOrganicMatter().C*1000. << ru->soil()->oldOrganicMatter().N*1000.;   // soil
+            *this << ru->soil()->youngRefractory().C*1000.
+                    << ru->soil()->youngRefractory().N*1000.   // wood
+                    << ru->soil()->youngRefractory().C*1000. * ru->soil()->youngRefractoryAbovegroundFraction() // aboveground fraction
+                    << ru->soil()->youngLabile().C*1000.
+                    << ru->soil()->youngLabile().N*1000.   // litter
+                    << ru->soil()->youngLabile().C*1000. * ru->soil()->youngLabileAbovegroundFraction() // aboveground fraction
+                    << ru->soil()->oldOrganicMatter().C*1000.
+                    << ru->soil()->oldOrganicMatter().N*1000.;   // soil
 
             writeRow();
         }
@@ -137,11 +148,11 @@ void CarbonOut::exec()
         *vit++ += s.cRegeneration(); *vit++ += s.nRegeneration();
         // standing dead wood
         *vit++ += ru->snag()->totalSWD().C ; *vit++ += ru->snag()->totalSWD().N ;
-        *vit++ += ru->snag()->totalOtherWood().C ; *vit++ += ru->snag()->totalOtherWood().N ;
+        *vit++ += ru->snag()->totalOtherWood().C ; *vit++ += ru->snag()->totalOtherWood().N ; *vit++ += ru->snag()->totalOtherWood().C * ru->snag()->otherWoodAbovegroundFraction();
         // biomass from soil (converstion to kg/ha), and scale with fraction of stockable area
-        *vit++ += ru->soil()->youngRefractory().C*area_factor * 1000.; *vit++ += ru->soil()->youngRefractory().N*area_factor  * 1000.;
-        *vit++ += ru->soil()->youngLabile().C*area_factor * 1000.; *vit++ += ru->soil()->youngLabile().N*area_factor  * 1000.;
-        *vit++ += ru->soil()->oldOrganicMatter().C*area_factor  * 1000.; *vit++ += ru->soil()->oldOrganicMatter().N*area_factor  * 1000.;
+        *vit++ += ru->soil()->youngRefractory().C*area_factor * 1000.; *vit++ += ru->soil()->youngRefractory().N*area_factor * 1000.; *vit++ += ru->soil()->youngRefractory().C*area_factor * 1000. * ru->soil()->youngRefractoryAbovegroundFraction();
+        *vit++ += ru->soil()->youngLabile().C*area_factor * 1000.; *vit++ += ru->soil()->youngLabile().N*area_factor * 1000.; *vit++ += ru->soil()->youngLabile().C*area_factor * 1000. * ru->soil()->youngLabileAbovegroundFraction();
+        *vit++ += ru->soil()->oldOrganicMatter().C*area_factor * 1000.; *vit++ += ru->soil()->oldOrganicMatter().N*area_factor * 1000.;
 
     }
     // write landscape sums
