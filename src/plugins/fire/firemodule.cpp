@@ -18,6 +18,7 @@
 ********************************************************************************************/
 
 #include "firemodule.h"
+#include "firescript.h"
 
 #include "grid.h"
 #include "model.h"
@@ -114,6 +115,7 @@ FireModule::FireModule()
     mWindSpeedMin=10.;mWindSpeedMax=10.;
     mWindDirection=45.;
     mFireId = 0;
+    mFireScript = 0;
 }
 
 // access data element
@@ -229,7 +231,7 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
 
         tmax = day->max_temperature;
         // drying is only simulated, if:
-        // * the temperature > 10�
+        // * the temperature > 10 degrees Celsius
         // * there is no snow cover
         if (tmax > 10. && water_data->snow_cover[iday]==0.) {
             // calculate drying: (kbdi already includes current wetting!)
@@ -255,6 +257,7 @@ double FireModule::ignition(bool only_ignite)
 {
 
     int cells_per_ru = (cRUSize / cellsize()) * (cRUSize / cellsize()); // number of fire cells per resource unit
+    bool has_handler = mFireScript->hasIgnitionRUHandler();
 
     for (FireRUData *fd = mRUGrid.begin(); fd!=mRUGrid.end(); ++fd)
         if (fd->enabled() && fd->kbdi()>0.) {
@@ -262,7 +265,10 @@ double FireModule::ignition(bool only_ignite)
             // the climate factor is the current drought index relative to the reference drought index
             double odds_base = fd->mBaseIgnitionProb / (1. - fd->mBaseIgnitionProb);
             double r_climate = fd->mKBDI / fd->mKBDIref;
-            double odds = odds_base * r_climate / fd->mRefMgmt;
+            double management_effect = fd->mRefMgmt;
+            if (has_handler)
+                management_effect = mFireScript->calcDyanmicManagementEffect(fd);
+            double odds = odds_base * r_climate / management_effect;
             // p_cell is the ignition probability for one 20x20m cell
             double p_cell = odds / (1. + odds);
             // p_cell is the probability of ignition for a "fire"-pixel. We scale that to RU-level by multiplying with the number of pixels per RU.
@@ -733,8 +739,8 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     // DWD: downed woody debris (t/ha) = yL pool
 
     // fuel per ha (kg biomass): derive available fuel using the KBDI as estimate for humidity.
-    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * 1000. : 1000.);
-    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * 1000. : 1000. );
+    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * ru->soil()->youngLabileAbovegroundFraction() * 1000. : 1000.);
+    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 1000. );
     // calculate fuel (kg biomass / ha)
     double fuel = (fuel_ff + fuel_dwd);
 

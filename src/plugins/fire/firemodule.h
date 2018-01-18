@@ -28,6 +28,7 @@ class WaterCycleData;
 class ResourceUnit;
 class FireModule;
 class FireOut;
+class FireScript;
 
 /** FireRUData contains data items for resource units.
     @ingroup firemodule
@@ -44,6 +45,7 @@ public:
     void reset() { mKBDI = 0.; }
     double kbdi() const { return mKBDI; }
     double baseIgnitionProbability() const { return mBaseIgnitionProb; }
+    double managementSupression() const { return mRefMgmt; }
     // access data
     struct {
         int fire_id;
@@ -128,6 +130,8 @@ public:
     /// this should be called when the main model is already created.
     void setup(); ///< general setup
     void setup(const ResourceUnit *ru); ///< setup for a specific resource unit
+    void setScriptObj(FireScript *sm) {mFireScript = sm; }
+
     static double cellsize() { return 20.; }
 
     // actions
@@ -209,6 +213,8 @@ private:
     Grid<FireRUData> mRUGrid; ///< grid with data values per resource unit
     Grid<float> mGrid; ///< fire grid (20x20m)
     FireLayers mFireLayers;
+    FireScript *mFireScript;
+
     // functions
     FireRUData &data(const ResourceUnit *ru); ///< get ref to data element (FireData)
 

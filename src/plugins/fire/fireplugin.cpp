@@ -78,6 +78,7 @@ void FirePlugin::setupScripting(QJSEngine *engine)
     fire_script->setFireModule(&mFire);
     QJSValue obj = engine->newQObject(fire_script);
     engine->globalObject().setProperty("Fire", obj);
+    mFire.setScriptObj(fire_script);
 
     qDebug() << "setup scripting called...";
 }
