@@ -97,9 +97,9 @@ double FireScript::y() const
 double FireScript::calcDyanmicManagementEffect(FireRUData *data)
 {
     // call the event handler and return the dynamic management value
-    QJSValue result = mOnIgnitionRU.call(QJSValueList() << data->kbdi() << data->managementSupression());
+    QJSValue result = mOnIgnitionRU.call(QJSValueList() << data->kbdi() << data->managementSuppression());
     if (result.isUndefined())
-        return data->managementSupression();
+        return data->managementSuppression();
     else
         return result.toNumber();
 }

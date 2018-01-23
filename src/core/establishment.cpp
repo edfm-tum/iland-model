@@ -172,7 +172,7 @@ void Establishment::calculateAbioticEnvironment()
             frost_free++;
 
         // chilling requirement, GDD, bud birst
-        if (day->temperature>=-5. && day->temperature<5.)
+        if (day->temperature>=-5. && day->temperature<5. && doy<=veg_period_end)
             chill_days++;
         if (chill_days>p.chill_requirement)
             chill_ok=true;

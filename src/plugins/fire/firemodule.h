@@ -45,7 +45,7 @@ public:
     void reset() { mKBDI = 0.; }
     double kbdi() const { return mKBDI; }
     double baseIgnitionProbability() const { return mBaseIgnitionProb; }
-    double managementSupression() const { return mRefMgmt; }
+    double managementSuppression() const { return mRefMgmt; }
     // access data
     struct {
         int fire_id;
