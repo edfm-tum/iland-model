@@ -162,8 +162,8 @@ void Model::setupSpace()
     double width = xml.value("width", "100").toDouble();
     double height = xml.value("height", "100").toDouble();
     double buffer = xml.value("buffer", "60").toDouble();
-    if (fmod(width, 100.)!=0. || fmod(height, 100.)!=0. || fmod(buffer, 20.)!=0. ) {
-        throw IException("setup of the world: 'width' and 'height' need to be multiple of 100, 'buffer' a multiple of 20.");
+    if (fmod(width, 100.)!=0. || fmod(height, 100.)!=0. || fmod(buffer, 20.)!=0. || buffer<=0.) {
+        throw IException("setup of the world: 'width' and 'height' need to be multiple of 100, 'buffer' a multiple of 20 (>0).");
     }
     mModelRect = QRectF(0., 0., width, height);
 
