@@ -576,6 +576,10 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_regeneration = ui->visRegeneration->isChecked();
     bool show_seedmaps = ui->visSeeds->isChecked();
     bool other_grid = ui->visOtherGrid->isChecked();
+    bool shading = ui->visShading->isChecked();
+    if (!mRemoteControl.model() || !mRemoteControl.model()->dem())
+         shading=false;
+
 
     if (other_grid) {
         // return; // TODO TEST
@@ -593,7 +597,15 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
             if (mPaintNext.what == PaintObject::PaintFloatGrid) {
                 mRulerColors->setCaption(mPaintNext.name);
-                paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+                if (!mRulerColors->autoScale()) {
+                    mPaintNext.cur_max_value = mRulerColors->maxValue();
+                    mPaintNext.cur_min_value = mRulerColors->minValue();
+                } else {
+                    mPaintNext.cur_max_value = mPaintNext.max_value;
+                    mPaintNext.cur_min_value = mPaintNext.min_value;
+
+                }
+                paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
             }
 
             if (mPaintNext.what == PaintObject::PaintLayers)
@@ -678,6 +690,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 if (grid.coordValid(world)) {
                     value = grid.constValueAt(world);
                     col = value>0.f ? Colors::colorFromValue(value, 0., 1., false).rgb() : gray_bg;
+                    if (shading)
+                        col = Colors::shadeColor(col, world, mRemoteControl.model()->dem()).rgb();
+
                     img.setPixel(x,y,col);
                 }
             }
@@ -746,6 +761,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 if (mRegenerationGrid.coordValid(world)) {
                     value = mRegenerationGrid.valueAt(world);
                     col = Colors::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
+                    if (shading)
+                        col = Colors::shadeColor(col, world, mRemoteControl.model()->dem()).rgb();
+
                     img.setPixel(x,y,col);
                 }
             }
@@ -773,6 +791,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     value = domGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(domGrid->cellRect(p));
                     fill_color = Colors::colorFromValue(value, 0., max_val); // 0..50m
+                    if (shading)
+                        fill_color = Colors::shadeColor(fill_color, domGrid->cellCenterPoint(p), mRemoteControl.model()->dem());
+
                     painter.fillRect(r, fill_color);
                 }
                 // areas "outside" are drawn as gray.
@@ -884,6 +905,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             QRect r = vp.toScreen(ru->boundingBox());
             //fill_color = Colors::colorFromValue(value, min_value, max_value);
             //fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
+            if (shading)
+                fill_color = Colors::shadeColor(fill_color, ru->boundingBox().center(), mRemoteControl.model()->dem());
+
             if (stroke)
                 painter.fillRect(r, QBrush(fill_color, Qt::Dense3Pattern));
             else
@@ -1296,7 +1320,7 @@ void MainWindow::showTreeDetails(Tree *tree)
         if (name=="species")
             items.append(new QTreeWidgetItem(QStringList() << name << mRemoteControl.model()->speciesSet()->species(tw.valueByName(name))->id() ));
         else
-            items.append(new QTreeWidgetItem(QStringList() << name << QString::number(tw.valueByName(name)) ));
+            items.append(new QTreeWidgetItem(QStringList() << name << QString::number(tw.valueByName(name), 'f') ));
     }
     QList<QPair<QString, QVariant> > dbgdata = GlobalSettings::instance()->debugValues(tree->id());
 
@@ -1314,7 +1338,7 @@ void MainWindow::showTreeDetails(Tree *tree)
 void MainWindow::mouseMove(const QPoint& pos)
 {
 
-    if (!mRemoteControl.canRun() )
+    if (!mRemoteControl.canRun() || mPaintNext.what == PaintObject::PaintNothing)
         return;
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);
@@ -1744,6 +1768,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
+
 void MainWindow::on_actionImageToClipboard_triggered()
 {
     //QClipboard *clipboard = QApplication::clipboard();
@@ -2070,8 +2095,8 @@ void MainWindow::readSettings()
 
 void MainWindow::on_paintGridBox_currentIndexChanged(int index)
 {
-    Q_UNUSED(index);
-    ui->visOtherGrid->setChecked(true);
+    if (index>-1)
+        ui->visOtherGrid->setChecked(true);
 }
 
 void MainWindow::on_actionTest_triggered()
@@ -2207,3 +2232,14 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
 
 
 
+
+void MainWindow::on_actionShow_full_extent_triggered()
+{
+    vp.zoomToAll();
+    ui->PaintWidget->update();
+}
+
+void MainWindow::on_actionRepaint_triggered()
+{
+    ui->PaintWidget->update();
+}
