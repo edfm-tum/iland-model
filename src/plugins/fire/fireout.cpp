@@ -44,7 +44,7 @@ FireOut::FireOut()
               << OutputColumn("psme_died", "fraction of doug fir that died (based on basal area of psme trees on burning pixels)", OutDouble)
               << OutputColumn("avgFuel_kg_ha", "average total fuel (dry) (forest floor + dwd) of burning cells (kg biomass/ha)", OutDouble)
               << OutputColumn("windSpeed", "current wind speed during the event (m/s)", OutDouble)
-              << OutputColumn("windDirection", "current wind direction during the event (°)", OutDouble) ;
+              << OutputColumn("windDirection", "current wind direction during the event (degree)", OutDouble) ;
 
 
 

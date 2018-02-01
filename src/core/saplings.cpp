@@ -366,6 +366,7 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
         SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
         if (st)
             st->set_sprout(true);
+        sc->checkState();
 
 /*
  *      // neighboring cells
@@ -401,6 +402,7 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
                 if (sc && !sc->sapling(t->species()->index())) {
                     // the species is not yet on the cell, so let us spread there....
                     SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
+                    sc->checkState();
                     if (st)
                         st->set_sprout(true);
                     break;  // stop searching when one sprout was added

@@ -39,7 +39,7 @@ class FireScript;
 class FireRUData
 {
 public:
-    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.) { fireRUStats.clear(); }
+    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.) { fireRUStats.clear(); fireRUStats.n_cum_fire=0; fireRUStats.year_last_fire=0; }
     void setup();
     bool enabled() const { return mRefMgmt>0.; }
     void reset() { mKBDI = 0.; }
@@ -53,6 +53,8 @@ public:
         int n_trees_died; ///< number of trees that are killed
         int n_trees; ///< number of trees that are on burning cells
         int n_cells; ///< number of burning cells
+        int n_cum_fire; ///< number of fire events affecting the resource unit
+        int year_last_fire; ///< the year of the last fire event on the RU
         double died_basal_area; ///< basal area (m2) of died trees
         double basal_area; ///< basal area (m2) of all trees on burning pixels
         double fuel_ff; ///< average fuel fine material (kg/ha)
@@ -69,7 +71,7 @@ public:
             }
         }
         // call once after fire is finished
-        void calculate(const int this_fire_id) {
+        void calculate(const int this_fire_id, int current_year) {
             if (fire_id==this_fire_id) {
                 // calculate averages
                 if (n_cells>0) {
@@ -77,10 +79,12 @@ public:
                     fuel_ff /= double(n_cells);
                     fuel_dwd /= double(n_cells);
                     avg_dbh /= double(n_cells);
+                    n_cum_fire++;
+                    year_last_fire = current_year;
                 }
             }
         }
-        void clear() { fire_id=-1; enter(0);}
+        void clear() { fire_id=-1;  enter(0);}
     } fireRUStats;
 private:
     // parameters
@@ -106,11 +110,12 @@ private:
 */
 class FireLayers: public LayeredGrid<FireRUData> {
   public:
-    void setGrid(const Grid<FireRUData> &grid) { mGrid = &grid; }
+    void setData(const Grid<FireRUData> &grid, FireModule *module) { mGrid = &grid; mFireModule=module; }
     double value(const FireRUData& data, const int index) const;
     const QVector<LayeredGridBase::LayerElement> &names();
 private:
     QVector<LayeredGridBase::LayerElement> mNames;
+    FireModule *mFireModule;
 };
 /** FireModule is the main class of the fire sub module.
     @ingroup firemodule
@@ -180,6 +185,10 @@ private:
     /// calculate statistics, burn snags, soil of the resource units
     void afterFire();
 
+    /// calculate combustible fuel
+    /// returns the total combustible fuel (kg/ha), and sets the reference variables for forest floor and deadwood
+    double calcCombustibleFuel(const FireRUData &ru_data, double &rForestFloor_kg_ha, double &rDWD_kg_ha);
+
     int mFireId; ///< running id of a fire event
     // parameters
     double mFireSizeSigma; ///< parameter of the log-normal distribution to derive fire size
@@ -229,6 +238,7 @@ private:
     } fireStats;
     friend class FireOut;
     friend class FireScript;
+    friend class FireLayers;
 
 };
 

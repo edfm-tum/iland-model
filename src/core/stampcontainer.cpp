@@ -216,7 +216,7 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
     // look for a stamp if the HD-ratio is out of range
     if (cls_dbh<cBHDclassCount && cls_dbh>=0) {
         if (logLevelDebug())
-            qDebug() << "HD for stamp out of range dbh " << bhd_cm << "and h="<< height_m << "(using smallest/largeset HD)";
+            qDebug() << "HD for stamp out of range dbh=" << bhd_cm << "and h="<< height_m << "(using smallest/largest HD)";
         if (cls_hd>=cHDclassCount)
             return m_lookup(cls_dbh, cHDclassCount-1); // highest
         return m_lookup(cls_dbh, 0); // smallest
@@ -251,14 +251,21 @@ const Stamp* StampContainer::stamp(const float bhd_cm, const float height_m) con
 void StampContainer::attachReaderStamps(const StampContainer &source)
 {
     int found=0, total=0;
+    bool has_error=false;
     foreach (const StampItem &si, m_stamps) {
         const Stamp *s = source.readerStamp(si.crown_radius);
         si.stamp->setReader(const_cast<Stamp*>(s));
         if (s) found++;
         total++;
         //si.crown_radius
+        if (s->size() > si.stamp->size()) {
+            qDebug() << "reader stamp larger than stamp: reader-size:" << s->size() << "stamp-size:" << si.stamp->size() << "#" << total << "[try a new file for reader stamps]";
+            has_error = true;
+        }
     }
     if (logLevelInfo()) qDebug() << "attachReaderStamps: found" << found << "stamps of" << total;
+    if (has_error)
+        throw IException("Error in setting up the reader stamps! Check the log.");
 }
 
 void StampContainer::invert()
@@ -369,9 +376,9 @@ QString StampContainer::dump()
     QString line;
     int x,y;
     int maxidx;
-    res = QString("****** Dump of StampContainer %1 **********\r\n").arg(m_fileName);
+    res = QString("****** Dump of StampContainer %1 **********\n").arg(m_fileName);
     foreach (StampItem si, m_stamps) {
-        line = QString("%5 -> size: %1 offset: %2 dbh: %3 hd-ratio: %4\r\n")
+        line = QString("%5 -> size: %1 offset: %2 dbh: %3 hd-ratio: %4\n")
                .arg(sqrt((double)si.stamp->count())).arg(si.stamp->offset())
                .arg(si.dbh).arg(si.hd).arg((ptrdiff_t)si.stamp, 0, 16);
         // add data....
@@ -380,16 +387,16 @@ QString StampContainer::dump()
             for (x=0;x<maxidx;++x)  {
                 line+= QString::number(*si.stamp->data(x,y)) + " ";
             }
-            line+="\r\n";
+            line+="\n";
         }
-        line+="==============================================\r\n";
+        line+="==============================================\n";
         res+=line;
     }
-    res+= "Dump of lookup map\r\n=====================\r\n";
+    res+= "Dump of lookup map\r\n=====================\n";
     for (Stamp **s = m_lookup.begin(); s!=m_lookup.end(); ++s) {
         if (*s)
-         res += QString("P: x/y: %1/%2 addr %3\r\n").arg( m_lookup.indexOf(s).x()).arg(m_lookup.indexOf(s).y()).arg((ptrdiff_t)*s, 0, 16);
+         res += QString("P: x/y: %1/%2 addr %3\n").arg( m_lookup.indexOf(s).x()).arg(m_lookup.indexOf(s).y()).arg((ptrdiff_t)*s, 0, 16);
     }
-    res+="\r\n" + gridToString(m_lookup);
+    res+="\n" + gridToString(m_lookup);
     return res;
 }
