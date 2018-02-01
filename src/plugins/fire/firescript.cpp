@@ -19,6 +19,7 @@
 #include "firescript.h"
 #include "firemodule.h"
 #include "helper.h"
+#include "scriptgrid.h"
 
 /** @class FireScript
     @ingroup firemodule
@@ -81,6 +82,20 @@ bool FireScript::gridToFile(QString grid_type, QString file_name)
     }
     qDebug() << "could not save gridToFile because" << grid_type << "is not a valid grid.";
     return false;
+
+}
+
+QJSValue FireScript::grid(QString type)
+{
+    int idx = mFire->mFireLayers.indexOf(type);
+    if (idx<0)
+        qDebug() << "ERROR: FireScript:grid(): invalid grid" << type << "valid:" << mFire->mFireLayers.layerNames();
+
+    // this is a copy!
+    Grid<double> *damage_grid =  mFire->mFireLayers.copyGrid(idx);
+
+    QJSValue g = ScriptGrid::createGrid(damage_grid, type);
+    return g;
 
 }
 
