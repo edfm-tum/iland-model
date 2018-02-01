@@ -185,7 +185,10 @@ private slots:
     void on_visImpact_clicked() { on_visFon_toggled(); } // force repeaint
     void on_visSeeds_clicked() { on_visFon_toggled(); } // force repeaint
     void on_visRegeneration_clicked() { on_visFon_toggled(); } // force repeaint
-    void on_visRegenNew_clicked()    { on_visFon_toggled();    }
+    void on_visRegenNew_clicked()    { on_visFon_toggled();    } // force repaint
+    void on_visResourceUnits_clicked()  { on_visFon_toggled();    } // force repaint
+    void on_visOtherGrid_clicked()  { on_visFon_toggled();    } // force repaint
+    void on_visShading_clicked() {on_visFon_toggled();   }
     void on_actionPerformance_triggered();
     void on_scriptCommandHistory_currentIndexChanged(int index);
     void on_paintGridBox_currentIndexChanged(int index);
@@ -198,6 +201,8 @@ private slots:
     void on_saveFile_clicked();
     void on_lJSShortcuts_linkActivated(const QString &link);
 
+    void on_actionShow_full_extent_triggered();
+    void on_actionRepaint_triggered();
 };
 
 #endif // MAINWINDOW_H

@@ -23,14 +23,14 @@
 /** DEM is a digital elevation model class.
   @ingroup tools
    It uses a float grid internally.
-   slope is calculated in "%", i.e. a value of 1 is 45° (90° -> inf)
+   slope is calculated in "%", i.e. a value of 1 is 45deg (90deg -> inf)
 
-   The aspect angles are defined as follows (like ArcGIS):
-          0°
+   The aspect angles are defined as follows (like ArcGIS, values in degrees):
+          0
           N
-   270° W x E 90°
+   270 W x E 90
           S
-         180°
+         180
 
    Values for height of -1 indicate "out of scope", "invalid" values
 

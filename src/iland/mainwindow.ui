@@ -87,6 +87,9 @@
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="actionRepaint"/>
+    <addaction name="actionShow_full_extent"/>
+    <addaction name="separator"/>
     <addaction name="actionShow_Debug_Messages"/>
    </widget>
    <widget class="QMenu" name="menuDebug_Data">
@@ -751,6 +754,9 @@ QProgressBar::chunk {
         </item>
         <item row="6" column="0">
          <widget class="QRadioButton" name="visResourceUnits">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show resource units (100m). Click on a unit to view details in the &amp;quot;Data&amp;quot; pane. You can visualize variables on resource unit level using expressions below.&lt;/p&gt;&lt;p&gt;If &amp;quot;species share&amp;quot; is checked, then either the dominant species (based on basal area) is drawn, or - when a species is selected - the basal area of the respective species is displayed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>resource units</string>
           </property>
@@ -775,6 +781,9 @@ QProgressBar::chunk {
         </item>
         <item row="0" column="0" colspan="3">
          <widget class="QRadioButton" name="visFon">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the value of the light influence grid at 2m resolution. Drawn is actually 1-LFI, with blue indicating high and red low light availability.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Light influence field</string>
           </property>
@@ -788,6 +797,9 @@ QProgressBar::chunk {
         </item>
         <item row="9" column="0">
          <widget class="QCheckBox" name="visClipStandGrid">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;if checked, (some) visualizations are clipped to the stands of the project area.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>clip to stands</string>
           </property>
@@ -795,6 +807,9 @@ QProgressBar::chunk {
         </item>
         <item row="8" column="0" colspan="3">
          <widget class="QRadioButton" name="visOtherGrid">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display additional data layers.&lt;/p&gt;&lt;p&gt;Which layers are available depends on model settings (e.g. availability of a DEM, enabled disturbance modules).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>other grid</string>
           </property>
@@ -812,6 +827,9 @@ QProgressBar::chunk {
         </item>
         <item row="10" column="0">
          <widget class="QCheckBox" name="visAutoScale">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;if checked, then some visualizations based on resource units (and 'other grids') are scaled automatically to the value range in the data. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Autoscale colors</string>
           </property>
@@ -822,6 +840,9 @@ QProgressBar::chunk {
         </item>
         <item row="6" column="1">
          <widget class="QCheckBox" name="visRUSpeciesColor">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, species domiance on resource unit level is shown. If a species is selected in the dropdown box below, then basal aera of the selected species is drawn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>species shares</string>
           </property>
@@ -829,6 +850,9 @@ QProgressBar::chunk {
         </item>
         <item row="10" column="1">
          <widget class="QCheckBox" name="visShading">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked and if a DEM is loaded, then some of the visualizations add a &amp;quot;shading&amp;quot; effect based on the DEM.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Shading</string>
           </property>
@@ -843,7 +867,7 @@ QProgressBar::chunk {
            </size>
           </property>
           <property name="toolTip">
-           <string>Execute expression for each tree and draw trees accordingly.</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Execute expression for each tree or resource unit (depending on the current view) and draw trees accordingly.&lt;/p&gt;&lt;p&gt;Note: &amp;quot;Autoscale colors&amp;quot; does not work for trees, however, appropriate scaling can be added to the expression itself (e.g. use 'dbh/50' to show the tree diameter from 0cm (blue) to &amp;gt;=50cm (red).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="icon">
            <iconset resource="res/iland.qrc">
@@ -912,6 +936,9 @@ QProgressBar::chunk {
         </item>
         <item row="2" column="0">
          <widget class="QRadioButton" name="visSeeds">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Seed availability per species on 20m resolution. Please select a species in the dropdown box below. The color indicate the amount of seeds on a cell (blue few, red many seeds).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>seed availability</string>
           </property>
@@ -1270,6 +1297,22 @@ QProgressBar::chunk {
   <action name="action_debugSapling">
    <property name="text">
     <string>Sapling growth</string>
+   </property>
+  </action>
+  <action name="actionShow_full_extent">
+   <property name="text">
+    <string>Show full extent</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+  <action name="actionRepaint">
+   <property name="text">
+    <string>Repaint</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
  </widget>
