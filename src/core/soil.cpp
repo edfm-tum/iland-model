@@ -300,6 +300,9 @@ void Soil::disturbanceBiomass(double DWD_kg_ha, double litter_kg_ha, double soil
     if (!mSOM.isEmpty())
         frac_som = soil_kg_ha / 1000. / mSOM.biomass();
 
+    if (frac_litter<0. || frac_litter>1.) {
+        qDebug() << "disturbanceBiomass: frac_litter " << frac_litter << " mYL: " << mYL.biomass() << "abovegroundfrac YR:" << youngRefractoryAbovegroundFraction() << "agfrac lab:" << youngLabileAbovegroundFraction();
+    }
     disturbance(frac_dwd, frac_litter, frac_som);
 }
 
