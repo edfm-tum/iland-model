@@ -64,6 +64,10 @@ public slots:
         mOnIgnitionRU = onIgnitionRU;
     }
 
+    /// returns a ScriptGrid with the requested type
+    QJSValue grid(QString type);
+
+
 private:
     FireModule *mFire;
 

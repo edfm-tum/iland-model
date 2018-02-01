@@ -608,9 +608,11 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
             }
         }
 
-        //cells_to_burn = (sum_fire_size/(double)cells_burned) / (cellsize() * cellsize());
-        //if (cells_to_burn <= cells_burned)
-        //    break;
+        // update the cells to burn by factoring in different fire sizes within the fire-perimeter
+        // see http://iland.boku.ac.at/wildfire+spread
+        cells_to_burn = (sum_fire_size/(double)cells_burned) / (cellsize() * cellsize());
+        if (cells_to_burn <= cells_burned)
+            break;
 
         // now determine the maximum extent with burning pixels...
         runner.reset();
@@ -747,18 +749,20 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
         avg_dbh = sum_dbh / static_cast<double>( trees.size() );
 
     // (1) calculate fuel
-    const double kfc1 = mFuelkFC1;
-    const double kfc2 = mFuelkFC2;
-    const double kfc3 = mFuelkFC3;
-    // retrieve values for fuel.
-    // forest_floor: sum of leaves and twigs (t/ha) = yR pool
-    // DWD: downed woody debris (t/ha) = yL pool
+    double fuel_ff, fuel_dwd;
+    double fuel = calcCombustibleFuel(ru_data, fuel_ff, fuel_dwd);
+//    const double kfc1 = mFuelkFC1;
+//    const double kfc2 = mFuelkFC2;
+//    const double kfc3 = mFuelkFC3;
+//    // retrieve values for fuel.
+//    // forest_floor: sum of leaves and twigs (t/ha) = yR pool
+//    // DWD: downed woody debris (t/ha) = yL pool
 
-    // fuel per ha (kg biomass): derive available fuel using the KBDI as estimate for humidity.
-    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * ru->soil()->youngLabileAbovegroundFraction() * 1000. : 1000.);
-    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 1000. );
-    // calculate fuel (kg biomass / ha)
-    double fuel = (fuel_ff + fuel_dwd);
+//    // fuel per ha (kg biomass): derive available fuel using the KBDI as estimate for humidity.
+//    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * ru->soil()->youngLabileAbovegroundFraction() * 1000. : 1000.);
+//    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 1000. );
+//    // calculate fuel (kg biomass / ha)
+//    double fuel = (fuel_ff + fuel_dwd);
 
 
     // if fuel level is below 0.05kg BM/m2 (=500kg/ha), then no burning happens!
