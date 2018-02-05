@@ -607,11 +607,14 @@ void Snapshot::loadTrees()
             t.mStressIndex = q.value(15).toFloat();
             t.mStamp = s->stamp(t.mDbh, t.mHeight);
 
-
-            if (n<10000000 && ++n % 10000 == 0) {
-                qDebug() << n << "trees loaded...";
-                QCoreApplication::processEvents();
-            }
+            ++n;
+            if (n % 10000 == 0 )
+                if ( (n<100000 ) ||   // until 100,000 every 10k
+                     (n<1000000 && n % 100000 == 0) ||   // until 1M every 100k
+                     ( n % 1000000 == 0) ) {             // then every M
+                    qDebug() << n << "trees loaded...";
+                    QCoreApplication::processEvents();
+                }
 
         }
     } catch (const std::bad_alloc &) {
@@ -1046,15 +1049,14 @@ void Snapshot::loadSaplings()
         st->flags = static_cast<unsigned char> (q.value(ci++).toInt());
         ++ntotal;
 
-
-        if (n<10000000 && ++n % 10000 == 0) {
-            qDebug() << n << "saplings loaded...";
-            QCoreApplication::processEvents();
-        }
-        if (n>=10000000 && ++n % 1000000 == 0) {
-            qDebug() << n << "saplings loaded...";
-            QCoreApplication::processEvents();
-        }
+        ++n;
+        if (n % 10000 == 0 )
+            if ( (n<100000 ) ||   // until 100,000 every 10k
+                 (n<1000000 && n % 100000 == 0) ||   // until 1M every 100k
+                 (n % 1000000 == 0) ) {             // then every M
+                qDebug() << n << "saplings loaded...";
+                QCoreApplication::processEvents();
+            }
 
 
     }

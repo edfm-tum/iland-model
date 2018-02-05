@@ -339,6 +339,9 @@ double FireModule::ignition(bool only_ignite)
 */
 void FireModule::spread(const QPoint &start_point, const bool prescribed)
 {
+    if (!mGrid.isIndexValid(start_point))
+        return;
+
     qDebug() << "fire event starting at position" << start_point;
 
     mGrid.initialize(0.f);
