@@ -25,6 +25,7 @@
 #include "grid.h"
 #include "resourceunit.h"
 #include "expressionwrapper.h"
+#include "debugtimer.h"
 /** MapGrid encapsulates maps that classify the area in 10m resolution (e.g. for stand-types, management-plans, ...)
   @ingroup tools
   The grid is (currently) loaded from disk in a ESRI style text file format. See also the "location" keys and GisTransformation classes for
@@ -172,32 +173,61 @@ void MapGrid::createIndex()
     mRectIndex.clear();
     mRUIndex.clear();
     // create new
+    DebugTimer t1("MapGrid::createIndex: rectangles");
     for (int *p = mGrid.begin(); p!=mGrid.end(); ++p) {
         if (*p==-1)
             continue;
         QPair<QRectF,double> &data = mRectIndex[*p];
         data.first = data.first.united(mGrid.cellRect(mGrid.indexOf(p)));
         data.second += cPxSize*cPxPerHeight*cPxSize*cPxPerHeight; // 100m2
-
-        ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
-        if (!ru)
-            continue;
-        // find all entries for the current grid id
-        QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
-
-        // look for the resource unit 'ru'
-        bool found = false;
-        while (pos!=mRUIndex.end() && pos.key() == *p) {
-            if (pos.value().first == ru) {
-                pos.value().second+= 0.01; // 1 pixel = 1% of the area
-                found=true;
-                break;
-            }
-            ++pos;
-        }
-        if (!found)
-            mRUIndex.insertMulti(*p, QPair<ResourceUnit*, double>(ru, 0.01));
     }
+//    DebugTimer t2("MapGrid::createIndex: RU areas");
+//    for (int *p = mGrid.begin(); p!=mGrid.end(); ++p) {
+//        if (*p==-1)
+//            continue;
+
+//        ResourceUnit *ru = GlobalSettings::instance()->model()->ru(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+//        if (!ru)
+//            continue;
+//        // find all entries for the current grid id
+//        QMultiHash<int, QPair<ResourceUnit*, double> >::iterator pos = mRUIndex.find(*p);
+
+//        // look for the resource unit 'ru'
+//        bool found = false;
+//        while (pos!=mRUIndex.end() && pos.key() == *p) {
+//            if (pos.value().first == ru) {
+//                pos.value().second+= 0.01; // 1 pixel = 1% of the area
+//                found=true;
+//                break;
+//            }
+//            ++pos;
+//        }
+//        if (!found)
+//            mRUIndex.insertMulti(*p, QPair<ResourceUnit*, double>(ru, 0.01));
+//    }
+
+    DebugTimer t3("MapGrid::createIndex: RU areas (alternative)");
+    // alternative approach
+    QHash<int, double> px_per_ru;
+    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        px_per_ru.clear();
+        // loop over each resource unit and count the stand Ids
+        GridRunner<int> runner(mGrid, ru->boundingBox());
+        while (runner.next()) {
+            // the [] default constructs a value (0.) if not already in the hash
+            if (*runner.current()>=0)
+                px_per_ru[*runner.current()] += 0.01;
+        }
+        // save to the index
+        QHash<int, double>::const_iterator i = px_per_ru.constBegin();
+          while (i != px_per_ru.constEnd()) {
+              // each resource-unit / standId combination is unique;
+              // in mRUIndex a standId is the key for multiple entries
+              mRUIndex.insertMulti(i.key(), QPair<ResourceUnit*, double>(ru, i.value()));
+              ++i;
+          }
+    }
+
 
 }
 
