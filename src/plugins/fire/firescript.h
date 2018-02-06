@@ -31,6 +31,7 @@ class FireScript : public QObject
     Q_PROPERTY(int x READ x)
     Q_PROPERTY(int y READ y)
     Q_PROPERTY(QJSValue onIgnitionRU READ onIgnitionRU WRITE setOnIgnitionRU)
+    Q_PROPERTY(QJSValue onCalculateFireSize READ onCalculateFireSize WRITE setOnCalculateFireSize )
 
 public:
     explicit FireScript(QObject *parent = 0);
@@ -39,13 +40,23 @@ public:
     double x() const; ///< the x-coordinate of the last ignition
     double y() const; ///< the x-coordinate of the last ignition
     static QString fireRUValueType; // for the exporter
+
+    // event handlers
     QJSValue onIgnitionRU() const
     {
         return mOnIgnitionRU;
     }
     bool hasIgnitionRUHandler() { return mOnIgnitionRU.isCallable(); }
 
+    // run the handler
     double calcDyanmicManagementEffect(FireRUData *data);
+
+    bool hasCalculateFireSizeHandler() { return mCalcFireSize.isCallable(); }
+    double calculateFireSize(const FireRUData *data, double distribution_value);
+    QJSValue onCalculateFireSize() const
+    {
+        return mCalcFireSize;
+    }
 
 signals:
 
@@ -58,21 +69,26 @@ public slots:
     Returns the burnt area */
     double ignite(double x, double y, double firesize=-1, double windspeed=-1, double winddirection=-1);
     bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
+    /// returns a ScriptGrid with the requested type
+    QJSValue grid(QString type);
 
+    // setters
     void setOnIgnitionRU(QJSValue onIgnitionRU)
     {
         mOnIgnitionRU = onIgnitionRU;
     }
 
-    /// returns a ScriptGrid with the requested type
-    QJSValue grid(QString type);
-
+    void setOnCalculateFireSize(QJSValue onCalculateFireSize)
+    {
+        mCalcFireSize = onCalculateFireSize;
+    }
 
 private:
     FireModule *mFire;
 
     // event handler
     QJSValue mOnIgnitionRU;
+    QJSValue mCalcFireSize;
 };
 
 #endif // FIRESCRIPT_H

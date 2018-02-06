@@ -44,6 +44,7 @@ public:
     bool enabled() const { return mRefMgmt>0.; }
     void reset() { mKBDI = 0.; }
     double kbdi() const { return mKBDI; }
+    double kbdiRef() const { return mKBDIref; }
     double baseIgnitionProbability() const { return mBaseIgnitionProb; }
     double managementSuppression() const { return mRefMgmt; }
     // access data

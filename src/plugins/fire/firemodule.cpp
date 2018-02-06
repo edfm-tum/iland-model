@@ -369,6 +369,11 @@ double FireModule::calculateFireSize(const FireRUData *data)
     double size = -log(drandom()) * data->mAverageFireSize;
     size = qMin(size, data->mMaxFireSize);
     size = qMax(size, data->mMinFireSize);
+    if (mFireScript->hasCalculateFireSizeHandler()) {
+        double script_size = mFireScript->calculateFireSize(data, size);
+        qDebug() << "Calculated fire size in 'onCalculateFireSize()' handler. Old value:" << size << ", new value (from JS):" << script_size;
+        return script_size;
+    }
     return size;
 
     // old code: uses a log normal distribution -- currently not used:

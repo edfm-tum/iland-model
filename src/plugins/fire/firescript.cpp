@@ -119,6 +119,17 @@ double FireScript::calcDyanmicManagementEffect(FireRUData *data)
         return result.toNumber();
 }
 
+double FireScript::calculateFireSize(const FireRUData *data, double distribution_value)
+{
+    // call the event handler and return the dynamic management value
+    QJSValue result = mCalcFireSize.call(QJSValueList() << data->kbdi()/data->kbdiRef() << distribution_value );
+    if (result.isUndefined())
+        return distribution_value;
+    else
+        return result.toNumber();
+
+}
+
 int FireScript::id() const
 {
     if (!mFire) return -1;
