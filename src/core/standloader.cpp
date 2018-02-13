@@ -212,6 +212,7 @@ void StandLoader::processInit()
     }
     if (copy_mode=="snapshot") {
         // load a snapshot from a file
+        GlobalSettings::instance()->model()->setCurrentTask("loading snapshot database");
         Snapshot shot;
 
         QString input_db = GlobalSettings::instance()->path(fileName);

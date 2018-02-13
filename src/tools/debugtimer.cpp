@@ -21,7 +21,8 @@
 
 // static members
 QHash<QString, double> DebugTimer::mTimingList;
-
+ bool DebugTimer::m_responsive_mode = false;
+ qint64 DebugTimer::ms_since_epoch = 0;
 /*
 double DebugTimer::m_tick_p_s=0.;
 
@@ -45,6 +46,18 @@ void DebugTimer::sampleClock(int ms)
 }*/
 DebugTimer::~DebugTimer()
 {
+    --m_count;
+    if (responsiveMode()) {
+        qint64 diff = QDateTime::currentMSecsSinceEpoch() - ms_since_epoch;
+        if (diff > 100) {
+            ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
+            qDebug() << "DebugTimer:: process events after 100ms - now" << ms_since_epoch;
+            // process events only if we are currently in the main thread (GUI)
+            if (QThread::currentThread() == QCoreApplication::instance()->thread())
+                QCoreApplication::processEvents();
+        }
+    }
+
     double t = elapsed();
     mTimingList[m_caption]+=t;
     // show message if timer is not set to silent, and if time > 100ms (if timer is set to hideShort (which is the default))
@@ -55,6 +68,12 @@ DebugTimer::~DebugTimer()
 QMutex timer_mutex;
 DebugTimer::DebugTimer(const QString &caption, bool silent)
 {
+    ++m_count;
+    if (responsiveMode() && m_count==1) {
+        // store time of the first call (start of the year)
+        ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
+    }
+
     m_caption = caption;
     m_silent=silent;
     m_hideShort=true;
@@ -64,6 +83,7 @@ DebugTimer::DebugTimer(const QString &caption, bool silent)
             mTimingList[caption]=0.;
     }
     start();
+
 }
 
 void DebugTimer::clearAllTimers()

@@ -19,6 +19,7 @@
 #ifndef DEBUGTIMER_H
 #define DEBUGTIMER_H
 #include "ticktack.h"
+#include <QAtomicInt>
 
 /** Timer class that writes timings to the Debug-Output-Channel
 
@@ -48,7 +49,7 @@ The class writes the elapsed time to qDebug() when either destructed, or when ex
 class DebugTimer
 {
 public:
-    DebugTimer() { m_hideShort=false; m_silent=false; start(); }
+    DebugTimer() { m_hideShort=false; m_silent=false; start();  ++m_count; }
     DebugTimer(const QString &caption, bool silent=false);
     void setSilent() { m_silent=true; }
     void setHideShort(bool hide_short_messages) { m_hideShort = hide_short_messages; }
@@ -60,13 +61,18 @@ public:
     static void clearAllTimers();
     static void printAllTimers();
     static QString timeStr(double value_ms);
+    static void setResponsiveMode(bool mode) { m_responsive_mode = mode; }
+    static bool responsiveMode()  { return m_responsive_mode; }
 private:
     static QHash<QString, double> mTimingList;
+    static bool m_responsive_mode;
+    static qint64 ms_since_epoch; // milliseconds since epoch for the first call
     TickTack t;
     bool m_hideShort; // if true, hide messages for short operations (except an explicit call to showElapsed())
     bool m_shown;
     bool m_silent;
     QString m_caption;
+    QAtomicInt m_count; // counts how many DebugTimer are currently alive
 };
 
 #endif // DEBUGTIMER_H

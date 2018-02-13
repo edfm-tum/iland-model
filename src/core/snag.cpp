@@ -268,9 +268,13 @@ void Snag::calculateYear()
             mKSW[i] = mKSW[i]*(mSWD[i].C/(mSWD[i].C+mToSWD[i].C)) + mCurrentKSW[i]*(mToSWD[i].C/(mSWD[i].C+mToSWD[i].C));
             //move content to the SWD pool
             mSWD[i] += mToSWD[i];
+//            if (mSWD[i].C < 0.)
+//                qDebug() << "Snag:calculateYear: C < 0.";
         }
+//        if (mSWD[i].C < 0.)
+//            qDebug() << "Snag:calculateYear: C < 0.";
 
-        if (mSWD[i].C > 0) {
+        if (mSWD[i].C > 0.) {
             // reduce the Carbon (note: the N stays, thus the CN ratio changes)
             // use the decay rate that is derived as a weighted average of all standing woody debris
             double survive_rate = exp(-mKSW[i] *climate_factor_re * 1. ); // 1: timestep
@@ -333,6 +337,12 @@ void Snag::calculateYear()
     // standing woody debris pools + the branches
     mTotalSnagCarbon = mSWD[0].C + mSWD[1].C + mSWD[2].C +
                        mOtherWood[0].C + mOtherWood[1].C + mOtherWood[2].C + mOtherWood[3].C + mOtherWood[4].C;
+    if (mTotalSnagCarbon < 0.) {
+        qDebug() << "SnagCarbon < 0: " << debugList();
+    }
+    if (isnan(mRefractoryFlux.C))
+        qDebug() << "Snag:calculateYear: refr.flux is NAN";
+
     mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2];
     mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
 }
@@ -403,6 +413,9 @@ void Snag::addBiomassPools(const Tree *tree,
     mRefractoryFlux.addBiomass(tree->biomassStem()*stem_to_soil, species->cnWood(), species->snagKyr() );
     mRefrFluxAbovegroundCarbon += tree->biomassStem()*stem_to_soil*biomassCFraction;
 
+    if (isnan(mRefractoryFlux.C))
+        qDebug() << "addBiomassPools: NAN in refractory pool!";
+
     // just for book-keeping: keep track of all inputs of branches / roots / swd into the "snag" pools
     mTotalIn.addBiomass(tree->biomassBranch()*branch_to_snag + tree->biomassCoarseRoot() + tree->biomassStem()*stem_to_snag, species->cnWood());
     // stem biomass is transferred to the standing woody debris pool (SWD), increase stem number of pool
@@ -421,15 +434,21 @@ void Snag::addBiomassPools(const Tree *tree,
 
         // average the decay rate (ksw); this is done based on the carbon content
         // aggregate all trees that die in the current year (and save weighted decay rates to CurrentKSW)
-        p_old = mToSWD[pi].C / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
-        p_new =tree->biomassStem()* biomassCFraction / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
-        mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + species->snagKsw() * p_new;
+        if (tree->biomassStem()>0.) {
+            p_old = mToSWD[pi].C / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
+            p_new =tree->biomassStem()* biomassCFraction / (mToSWD[pi].C + tree->biomassStem()* biomassCFraction);
+            mCurrentKSW[pi] = mCurrentKSW[pi]*p_old + species->snagKsw() * p_new;
+        }
         mNumberOfSnags[pi]++;
     }
 
     // finally add the biomass of the stem to the standing snag pool
     CNPool &to_swd = mToSWD[pi];
+    if (to_swd.C < 0.)
+        qDebug() << "Snag:addBiomassPool: swd<0";
     to_swd.addBiomass(tree->biomassStem()*stem_to_snag, species->cnWood(), species->snagKyr());
+    if (to_swd.C < 0.)
+        qDebug() << "Snag:addBiomassPool: swd<0";
 
     // the biomass that is not routed to snags or directly to the soil
     // is removed from the system (to atmosphere or harvested)
@@ -523,9 +542,9 @@ void Snag::addHarvest(const Tree* tree, const double remove_stem_fraction, const
 void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool, double woody_aboveground_C, double fine_aboveground_C)
 {
     mLabileFlux.add(litter_pool, species->snagKyl());
-    mLabileFluxAbovegroundCarbon += woody_aboveground_C;
+    mLabileFluxAbovegroundCarbon += fine_aboveground_C;
     mRefractoryFlux.add(woody_pool, species->snagKyr());
-    mRefrFluxAbovegroundCarbon += fine_aboveground_C;
+    mRefrFluxAbovegroundCarbon += woody_aboveground_C;
     DBGMODE(
     if (isnan(mLabileFlux.C) || isnan(mRefractoryFlux.C))
         qDebug("Snag::addToSoil: NaN in C Pool");
@@ -536,6 +555,9 @@ void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNP
 /// biomass removed by this function goes to the atmosphere
 void Snag::removeCarbon(const double factor)
 {
+    if (factor < 0. || factor > 1.) {
+        qDebug() << "Snag:removeCarbon: invalid factor (allowed: [0-1]):" << factor;
+    }
     // reduce pools of currently standing dead wood and also of pools that are added
     // during (previous) management operations of the current year
     for (int i=0;i<3;i++) {
@@ -556,7 +578,7 @@ void Snag::removeCarbon(const double factor)
 void Snag::management(const double factor)
 {
     if (factor<0. || factor>1.)
-        throw IException(QString("Invalid factor in Snag::management: '%1'").arg(factor));
+        throw IException(QString("Invalid factor in Snag::management (valid: [0,1]: '%1'").arg(factor));
     // swd pools
     for (int i=0;i<3;i++) {
         mSWDtoSoil += mSWD[i] * factor;

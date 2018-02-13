@@ -226,7 +226,7 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &speci
 
     DBGMODE(
           if (mRU->averageAging()>1. || mRU->averageAging()<0. || total_response<0 || total_response>1.)
-             qDebug() << "water cycle: average aging invalid. aging:" << mRU->averageAging() << "total response" << total_response << "total lai factor:" << total_lai_factor;
+             qDebug() << "water cycle: average aging invalid. aging:" << mRU->averageAging() << "total response" << total_response ;
     );
 
     //DBG_IF(mRU->averageAging()>1. || mRU->averageAging()<0.,"water cycle", "average aging invalid!" );

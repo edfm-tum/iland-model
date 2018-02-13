@@ -153,6 +153,13 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     mYLaboveground_frac = (mYL.C * mYLaboveground_frac + labile_aboveground_C * (0.001 / area_ha)) / (mYL.C + mInputLab.C);
     mYRaboveground_frac = (mYR.C * mYRaboveground_frac + refractory_aboveground_C * (0.001 / area_ha)) / (mYR.C + mInputRef.C);
 
+    if (mYLaboveground_frac<0. || mYLaboveground_frac>1. || mYL.C<0. || mInputLab.C<0.) {
+        qDebug() << "Soil:setSoilInput: invalid input: InputLabC:" << mInputLab.C << "YLC:" << mYL.C << "YLabovegroundFrac:" << mYLaboveground_frac << "Ru-index:" << mRU->index();
+    }
+    if (mYRaboveground_frac<0. || mYRaboveground_frac>1. || mYR.C<0. || mInputRef.C<0.) {
+        qDebug() << "Soil:setSoilInput: invalid input: InputRefC:" << mInputRef.C << "YRC:" << mYR.C << "YRabovegroundFrac:" << mYRaboveground_frac << "Ru-index:" << mRU->index();
+    }
+
 }
 
 
@@ -301,7 +308,7 @@ void Soil::disturbanceBiomass(double DWD_kg_ha, double litter_kg_ha, double soil
         frac_som = soil_kg_ha / 1000. / mSOM.biomass();
 
     if (frac_litter<0. || frac_litter>1.) {
-        qDebug() << "disturbanceBiomass: frac_litter " << frac_litter << " mYL: " << mYL.biomass() << "abovegroundfrac YR:" << youngRefractoryAbovegroundFraction() << "agfrac lab:" << youngLabileAbovegroundFraction();
+        qDebug() << "disturbanceBiomass: frac_litter " << frac_litter << " mYL: " << mYL.biomass() << "abovegroundfrac YR:" << youngRefractoryAbovegroundFraction() << "agfrac lab:" << youngLabileAbovegroundFraction() << "RU-index:" << mRU->index();
     }
     disturbance(frac_dwd, frac_litter, frac_som);
 }

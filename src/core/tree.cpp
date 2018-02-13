@@ -817,6 +817,9 @@ inline void Tree::partitioning(TreeGrowthData &d)
         }
     }
 
+    mStemMass = qMax(mStemMass, 0.f); // make sure that we don't have negative values.
+
+
     //DBGMODE(
      if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dTreePartition)
          /*&& isDebugging()*/ ) {

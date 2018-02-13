@@ -157,6 +157,7 @@ void Model::initialize()
 */
 void Model::setupSpace()
 {
+    setCurrentTask("setup landscape");
     XmlHelper xml(GlobalSettings::instance()->settings().node("model.world"));
     double cellSize = xml.value("cellSize", "2").toDouble();
     double width = xml.value("width", "100").toDouble();
@@ -195,7 +196,7 @@ void Model::setupSpace()
         setupGISTransformation(0., 0., 0., 0.);
     }
 
-    // load environment (multiple climates, speciesSets, ...
+    // load environment (multiple climates, speciesSets, ... )
     if (mEnvironment)
         delete mEnvironment;
     mEnvironment = new Environment();
@@ -460,6 +461,7 @@ void Model::clear()
 void Model::loadProject()
 {
     DebugTimer dt("load project");
+    setCurrentTask("Loading project area....");
     GlobalSettings *g = GlobalSettings::instance();
     g->printDirectories();
     const XmlHelper &xml = g->settings();
@@ -476,6 +478,9 @@ void Model::loadProject()
 
     mSettings.loadModelSettings();
     mSettings.print();
+
+    DebugTimer::setResponsiveMode(xml.valueBool("system.settings.responsive"));
+
     // random seed: if stored value is <> 0, use this as the random seed (and produce hence always an equal sequence of random numbers)
     uint seed = xml.value("system.settings.randomSeed","0").toUInt();
     RandomGenerator::setup(RandomGenerator::ergMersenneTwister, seed); // use the MersenneTwister as default
@@ -662,6 +667,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->clearDebugLists();
 
     // initialize stands
+    setCurrentTask("loading initialization");
     StandLoader loader(this);
     {
     DebugTimer loadtrees("load trees");
@@ -674,6 +680,7 @@ void Model::beforeRun()
     }
 
     // load climate
+    setCurrentTask("loading climate");
     {
         if (logLevelDebug()) qDebug() << "attempting to load climate..." ;
         DebugTimer loadclim("load climate");
@@ -687,7 +694,7 @@ void Model::beforeRun()
 
     }
 
-
+    setCurrentTask("loading initialization (finalize)");
     { DebugTimer loadinit("load standstatistics");
     if (logLevelDebug()) qDebug() << "attempting to calculate initial stand statistics (incl. apply and read pattern)..." ;
     Tree::setGrid(mGrid, mHeightGrid);
@@ -706,7 +713,7 @@ void Model::beforeRun()
         mABEManagement->runOnInit(false);
     }
 
-
+    setCurrentTask("outputs during startup");
     // outputs to create with inital state (without any growth) are called here:
     GlobalSettings::instance()->setCurrentYear(0); // set clock to "0" (for outputs with initial state)
 
@@ -760,6 +767,7 @@ void Model::runYear()
         set->newYear();
     // management classic
     if (mManagement) {
+        setCurrentTask("Management");
         DebugTimer t("management");
         mManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
@@ -767,6 +775,7 @@ void Model::runYear()
     // ... or ABE (the agent based variant)
     if (mABEManagement) {
         DebugTimer t("ABE:run");
+        setCurrentTask("ABE");
         mABEManagement->run();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }
@@ -776,14 +785,18 @@ void Model::runYear()
     cleanTreeLists(true); // recalculate statistics (LAIs per species needed later in production)
 
     // process a cycle of individual growth
+    setCurrentTask("apply LIP");
     applyPattern(); // create Light Influence Patterns
+    setCurrentTask("read LIP");
     readPattern(); // readout light state of individual trees
+    setCurrentTask("tree growth");
     grow(); // let the trees grow (growth on stand-level, tree-level, mortality)
     mGrassCover->execute(); // evaluate the grass / herb cover (and its effect on regeneration)
 
     // regeneration
     if (settings().regenerationEnabled) {
         // seed dispersal
+        setCurrentTask("Seed dispersal");
         DebugTimer tseed("Seed dispersal, establishment, sapling growth");
         foreach(SpeciesSet *set, mSpeciesSets)
             set->regeneration(); // parallel execution for each species set
@@ -794,10 +807,12 @@ void Model::runYear()
 
 
         { DebugTimer t("establishment");
+        setCurrentTask("Establishment");
         executePerResourceUnit( nc_establishment, false /* true: force single threaded operation */);
         GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
         }
         { DebugTimer t("sapling growth");
+          setCurrentTask("sapling growth");
         executePerResourceUnit( nc_sapling_growth, false /* true: force single threaded operation */);
         GlobalSettings::instance()->systemStatistics()->tSapling+=t.elapsed();
         }
@@ -809,6 +824,7 @@ void Model::runYear()
     }
 
     // external modules/disturbances
+    setCurrentTask("Disturbance modules");
     mModules->run();
     // cleanup of tree lists if external modules removed trees.
     cleanTreeLists(false); // do not recalculate statistics - this is done in ru->yearEnd()
@@ -817,6 +833,7 @@ void Model::runYear()
     // calculate soil / snag dynamics
     if (settings().carbonCycleEnabled) {
         DebugTimer ccycle("carbon cylce");
+        setCurrentTask("carbon cycle");
         executePerResourceUnit( nc_carbonCycle, false /* true: force single threaded operation */);
         GlobalSettings::instance()->systemStatistics()->tCarbonCycle+=ccycle.elapsed();
 
@@ -829,6 +846,7 @@ void Model::runYear()
         ru->yearEnd();
 
     // create outputs
+    setCurrentTask("Write outputs");
     OutputManager *om = GlobalSettings::instance()->outputManager();
     om->execute("tree"); // single tree output
     om->execute("treeremoved"); // single removed tree output

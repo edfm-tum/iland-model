@@ -47,14 +47,21 @@ void PaintArea::resizeEvent(QResizeEvent *event)
     m_bitmap = QImage(this->size(), QImage::Format_ARGB32_Premultiplied);
     //qDebug() << "paintarea resize" << this->size();
 }
+
+QMutex _paint_mtx;
 void PaintArea::paintEvent(QPaintEvent *)
 {
+    QMutexLocker lock(&_paint_mtx);
+
+    if (QThread::currentThread() != QCoreApplication::instance()->thread())
+        qDebug() << "Paint in wrong thread???";
+
+    QPainter pxpainter(&m_bitmap);
+    emit needsPainting(pxpainter); // code draws on m_bitmap
+
 
     QPainter painter(this);
-    QPainter pxpainter(&m_bitmap);
-
-     emit needsPainting(pxpainter);
-     painter.drawImage(rect(), m_bitmap);
+    painter.drawImage(rect(), m_bitmap);
 }
 
 void PaintArea::mousePressEvent ( QMouseEvent * event )

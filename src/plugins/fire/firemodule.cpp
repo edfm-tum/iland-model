@@ -33,6 +33,7 @@
 #include "outputmanager.h"
 #include "species.h"
 #include "3rdparty/SimpleRNG.h"
+#include "debugtimer.h"
 
 /** @defgroup firemodule iLand firemodule
   The fire module is a disturbance module within the iLand framework.
@@ -263,7 +264,7 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
 */
 double FireModule::ignition(bool only_ignite)
 {
-
+    DebugTimer t("Fire:ignition");
     int cells_per_ru = (cRUSize / cellsize()) * (cRUSize / cellsize()); // number of fire cells per resource unit
     bool has_handler = mFireScript->hasIgnitionRUHandler();
 
@@ -709,7 +710,7 @@ double FireModule::prescribedIgnition(const double x_m, const double y_m, const 
         mCurrentWindSpeed = windspeed;
         mCurrentWindDirection = winddirection;
     }
-
+    DebugTimer t("Fire:prescribedIgnition");
     spread( pt, true );
 
     afterFire();
@@ -759,19 +760,6 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     // (1) calculate fuel
     double fuel_ff, fuel_dwd;
     double fuel = calcCombustibleFuel(ru_data, fuel_ff, fuel_dwd);
-//    const double kfc1 = mFuelkFC1;
-//    const double kfc2 = mFuelkFC2;
-//    const double kfc3 = mFuelkFC3;
-//    // retrieve values for fuel.
-//    // forest_floor: sum of leaves and twigs (t/ha) = yR pool
-//    // DWD: downed woody debris (t/ha) = yL pool
-
-//    // fuel per ha (kg biomass): derive available fuel using the KBDI as estimate for humidity.
-//    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * ru->soil()->youngLabileAbovegroundFraction() * 1000. : 1000.);
-//    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 1000. );
-//    // calculate fuel (kg biomass / ha)
-//    double fuel = (fuel_ff + fuel_dwd);
-
 
     // if fuel level is below 0.05kg BM/m2 (=500kg/ha), then no burning happens!
     // note, that it is not necessary that trees are on the pixel, as long as there is enough fuel on the ground.
@@ -786,7 +774,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
     //qDebug() << "Pos:" << pos << "RU-index:" << ru->index() << "ff:" << ru_data.fireRUStats.fuel_ff << "adding:"<< fuel_ff << "total fuel:" << fuel << "#trees:" << trees.count();
     if (ru_data.fireRUStats.fuel_ff > ru->soil()->youngLabile().biomass()*1000.)
-        qDebug() << "!!!burnPixel: invalid fuel. now: " << ru_data.fireRUStats.fuel_ff <<  ", this px: " << fuel_ff << "labile: " << ru->soil()->youngLabile().biomass() << ", RU-index: " << ru->index();
+        qDebug() << "!!!burnPixel: invalid fuel. now: " << ru_data.fireRUStats.fuel_ff <<  ", this px: " << fuel_ff*cell_fraction << "labile: " << ru->soil()->youngLabile().biomass()*1000. << ", RU-index: " << ru->index();
 
     ru_data.fireRUStats.fuel_dwd += fuel_dwd * cell_fraction; // fuel in kg/cell Biomass
     ru_data.fireRUStats.n_trees += trees.size();
@@ -867,6 +855,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 /// biomass of living trees is consumed in the burnPixel() routine.
 void FireModule::afterFire()
 {
+    DebugTimer t("Fire:afterFire");
     const double pixel_fraction = cellsize()*cellsize() / cRUArea; // fraction of one pixel, default: 0.04 (20x20 / 100x100)
 
     int ru_idx=0;
