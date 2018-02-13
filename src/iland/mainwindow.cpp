@@ -402,11 +402,20 @@ void MainWindow::automaticRun()
     // see the finsished() slot
 }
 
+void MainWindow::updateLabel()
+{
+    if (mRemoteControl.isRunning()) {
+        labelMessage(QString("Running.... year %1 of %2 [%3]").arg(mRemoteControl.currentYear()).arg(mRemoteControl.totalYears()).arg(mRemoteControl.model()->currentTask()));
+    } else if (mRemoteControl.isStartingUp()) {
+        labelMessage(QString("Creating model - %3").arg(mRemoteControl.model()->currentTask()));
+    }
+}
+
 // simply command an update of the painting area
 void MainWindow::repaint()
 {
     ui->PaintWidget->update();
-    QCoreApplication::processEvents();
+    //QCoreApplication::processEvents();
 }
 
 // control GUI actions
@@ -525,8 +534,12 @@ void MainWindow::paintGrid(MapGrid *map_grid, const QString &name,
         updatePaintGridList();
         mPaintList[name] = mPaintNext;
     }
-    ui->visOtherGrid->setChecked(true);
-    repaint();
+    if (mRemoteControl.canRun()) {
+        ui->visOtherGrid->setChecked(true);
+        repaint();
+    } else {
+        mPaintNext.what = PaintObject::PaintHeightGrid;
+    }
 }
 
 void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
@@ -549,14 +562,20 @@ void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
         mPaintList[name] = mPaintNext;
         updatePaintGridList();
     }
-    ui->visOtherGrid->setChecked(true);
-    repaint();
+    if (mRemoteControl.canRun()) {
+        ui->visOtherGrid->setChecked(true);
+        repaint();
+    } else {
+        mPaintNext.what = PaintObject::PaintHeightGrid;
+    }
 }
 
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
     drawtimer.setSilent();
+    // debug redraw counter
+    ui->lRedraws->setText( QString::number( ui->lRedraws->text().toInt() + 1 )  );
 
     if (!mRemoteControl.canRun())
         return;
@@ -1175,10 +1194,14 @@ void MainWindow::paintMapGrid(QPainter &painter,
 
 void MainWindow::repaintArea(QPainter &painter)
 {
-     paintFON(painter, ui->PaintWidget->rect());
-    // fix viewpoint
-    vp.setScreenRect(ui->PaintWidget->rect());
-    mRulerColors->setScale(vp.pixelToMeter(1));
+    if (!mRemoteControl.isBusy())  {
+        paintFON(painter, ui->PaintWidget->rect());
+        // fix viewpoint
+        vp.setScreenRect(ui->PaintWidget->rect());
+        mRulerColors->setScale(vp.pixelToMeter(1));
+    } else {
+        qDebug() << "mainwindow::repaint: skipped (busy)" << QDateTime::currentMSecsSinceEpoch();
+    }
 }
 
 
@@ -1454,7 +1477,7 @@ void MainWindow::yearSimulated(int year)
     labelMessage(QString("Running.... year %1 of %2.").arg(year).arg(mRemoteControl.totalYears()));
     ui->treeChange->setProperty("tree",0);
     ui->PaintWidget->update();
-    QApplication::processEvents();
+    //QApplication::processEvents();
 }
 
 void MainWindow::modelFinished(QString errorMessage)
@@ -1499,6 +1522,11 @@ void MainWindow::setupModel()
     // setup logging
     setupFileLogging(true);
 
+    QTimer update_label;
+    connect(&update_label, SIGNAL(timeout()), this, SLOT(updateLabel()));
+    update_label.start(100);
+
+
     // create the model
     mRemoteControl.create();
     if (!mRemoteControl.canRun())
@@ -1508,7 +1536,9 @@ void MainWindow::setupModel()
     if (model && model->isSetup()) {
         // set viewport of paintwidget
         vp = Viewport(model->grid()->metricRect(), ui->PaintWidget->rect());
-        ui->PaintWidget->update();
+        // dominance grid is the default view after model start
+        ui->visDomGrid->setChecked(true);
+        //ui->PaintWidget->update();
     }
     ui->treeChange->setProperty("tree",0);
 
@@ -1601,6 +1631,10 @@ void MainWindow::on_actionModelRun_triggered()
                                         msg, 10, 0, 10000, 1, &ok);
    if (!ok)
        return;
+   QTimer update_label;
+   connect(&update_label, SIGNAL(timeout()), this, SLOT(updateLabel()));
+   update_label.start(100);
+
    count = count + mRemoteControl.currentYear();
    ui->treeChange->setProperty("tree",0);
    ui->modelRunProgress->setMaximum(count-1);
@@ -2095,7 +2129,7 @@ void MainWindow::readSettings()
 
 void MainWindow::on_paintGridBox_currentIndexChanged(int index)
 {
-    if (index>-1)
+    if (index>-1 && mRemoteControl.canRun())
         ui->visOtherGrid->setChecked(true);
 }
 
@@ -2236,10 +2270,12 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
 void MainWindow::on_actionShow_full_extent_triggered()
 {
     vp.zoomToAll();
-    ui->PaintWidget->update();
+    repaint();
+    //ui->PaintWidget->update();
 }
 
 void MainWindow::on_actionRepaint_triggered()
 {
-    ui->PaintWidget->update();
+    repaint();
+    // ui->PaintWidget->update();
 }

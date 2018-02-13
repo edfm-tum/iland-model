@@ -127,6 +127,7 @@ private:
 
 private slots:
     void automaticRun(); ///< automatically start a simulation...
+    void updateLabel(); ///< update UI labels during run
 
     void on_actionWarning_triggered() { on_actionDebug_triggered(); }
     void on_actionError_triggered() { on_actionDebug_triggered(); }

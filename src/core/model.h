@@ -114,6 +114,8 @@ public:
     static ModelSettings &changeSettings() {return mSettings;} ///< write access to global model settings.
     void onlyApplyLightPattern() { applyPattern(); readPattern(); }
     void reloadABE(); ///< force a recreate of the agent based forest management engine
+    QString currentTask() const { return mCurrentTask; }
+    void setCurrentTask(QString what) { mCurrentTask = what; }
 
     // actions
     /// build stand statistics (i.e. stats based on resource units)
@@ -141,6 +143,7 @@ private:
     bool multithreading() const { return threadRunner.multithreading(); }
     ThreadRunner threadRunner;
     static ModelSettings mSettings;
+    QString mCurrentTask;
     bool mSetup;
     /// container holding all ressource units
     QList<ResourceUnit*> mRU;

@@ -50,6 +50,8 @@ ModelController::ModelController()
     mPaused = false;
     mRunning = false;
     mHasError = false;
+    mIsStartingUp = false;
+    mIsBusy = false;
     mYearsToRun = 0;
     mViewerWindow = 0;
     mDynamicOutputEnabled = false;
@@ -144,6 +146,8 @@ void ModelController::create()
     if (!canCreate())
         return;
     emit bufferLogs(true);
+    mIsStartingUp = true;
+    mIsBusy = true;
     qDebug() << "**************************************************";
     qDebug() << "project-file:" << mInitFile;
     qDebug() << "started at: " << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
@@ -158,6 +162,8 @@ void ModelController::create()
         mModel->loadProject();
         if (!mModel->isSetup()) {
             mHasError = true;
+            mIsStartingUp = false;
+            mIsBusy = false;
             mLastError = "An error occured during the loading of the project. Please check the logs.";
             return;
         }
@@ -172,11 +178,14 @@ void ModelController::create()
         Helper::msg(error_msg);
         mLastError = error_msg;
         mHasError = true;
+        mIsStartingUp = false;
         qDebug() << error_msg;
     }
     emit bufferLogs(false);
 
     qDebug() << "Model created.";
+    mIsStartingUp = false;
+    mIsBusy = false;
 }
 
 void ModelController::destroy()
@@ -210,7 +219,9 @@ void ModelController::runloop()
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
         emit bufferLogs(true);
 
+        mIsBusy = true;
         mHasError = runYear(); // do the work!
+        mIsBusy = false;
 
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
@@ -319,8 +330,10 @@ bool ModelController::runYear()
     bool err=false;
     try {
         emit bufferLogs(true);
+        mIsBusy = true;
         GlobalSettings::instance()->executeJSFunction("onYearBegin");
         mModel->runYear();
+        mIsBusy = false;
 
         fetchDynamicOutput();
         saveDebugOutputs(false);

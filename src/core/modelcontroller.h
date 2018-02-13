@@ -43,8 +43,10 @@ public:
     bool canDestroy(); ///< model may be destroyed
     bool canRun(); ///< model may be run
     bool isRunning(); ///< model is running
+    bool isStartingUp() { return mIsStartingUp; } ///< model is in the creation phase
     bool isFinished(); ///< returns true if there is a valid model state, but the run is finished
     bool isPaused(); ///< returns true if the model is currently paused
+    bool isBusy() { return mIsBusy; } ///< model is running an operation (startup or simulation)
     bool hasError() { return mHasError; } ///< returns true if an error occured during the last operation
     QString lastError() { return mLastError; } ///< error message of the last received error
     // simulation length
@@ -100,6 +102,8 @@ private:
     bool mFinished;
     bool mCanceled;
     bool mHasError;
+    bool mIsStartingUp;
+    bool mIsBusy;
     QString mLastError;
     int mYearsToRun;
     QString mInitFile;
