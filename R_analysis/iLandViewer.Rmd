@@ -1,0 +1,73 @@
+---
+title: "iLand Viewer"
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: scroll
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+
+#iland.output.path <- "e:/Daten/iLand/projects/RESIN/tatra/tatra_v2/output/output.sqlite"
+iland.output.path <- "e:/Daten/iLand/projects/Cent/Cent_manage/output/cent_manage.sqlite"
+cols.species <- c("piab"="#228B22","abal"="#2F1BE0","lade"="#1BD3E0","pisy"="#F7430C","fasy"="#1BE06D","quro"="#E08E1B","acps"="#E01BD9",
+                  "frex"="#871BE0","cabe"="#1B32E0","bepe"="#1B91E0","alin"="#1BE0AF","qupe"="#22E01B","psme"="#D6F288","algl"="#F2D288",
+                  "casa"="#F29488","pini"="#F288A6","acca"="#DB88F2","acpl"="#9988F2","qupu"="#88C6F2","pice"="#88F2D4","soau"="#86E38C",
+                  "soar"="#E3D586","coav"="#E3BB86","alvi"="#E39C86","potr"="#02B4FA","poni"="#8C70B5","tico"="#02E9FA", "tipl"="#02FA6E",
+                  "ulgl"="#82FA02","saca"="#FAFA02","rops"="#FA8602")
+
+
+# shiny inputs defined here
+library(shiny)
+#library(rbokeh)
+library(ggplot2)
+library(RSQLite)
+
+source("ilandViewer.r")
+
+```
+iLand Viewer
+===================================== 
+
+### About
+The current path:
+
+
+```{r}
+ 
+
+  span(textInput("ilandOutputPath", "iLand output database", iland.output.path, width="80%"),
+       actionButton("updatepath", icon("refresh")),
+        verbatimTextOutput("currentOutputPath") )
+  
+observeEvent(input$updatepath, { iland.output.path <<- input$ilandOutputPath
+output$currentOutputPath <- renderText({ iland.output.path })
+cat('***event***') })
+
+#output$currentOutputPath <- renderText({ paste(input$ilandOutputPath,  iland.output.path) })
+
+```
+
+Landscape {data-orientation=rows}
+===================================== 
+
+Row 1 {data-height=150 data-orientation=cols}
+-------------------------------------
+### Select variable
+
+```{r}
+LandscapeUI("landscape")
+#runSelectUI("oewi_productivity", "oewi_productivity", "orig")
+#runSelectUI("oewi_productivity", "oewi_productivity", "cmp")
+```
+
+Row 2 {data-height=700}
+-------------------------------------
+### Result
+
+```{r}
+#oewiProductivityUI("oewi_productivity")
+landscapePlotUI("landscape")
+callModule(Landscape, "landscape")
+
+```
