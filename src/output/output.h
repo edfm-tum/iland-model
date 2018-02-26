@@ -98,6 +98,8 @@ protected:
     inline void add(const QString &stringValue);
     /// delete all columns after the column 'find_name'. Return true if columns were removed.
     bool clearColumnsAfter(QString find_name);
+    /// delete all data from the table
+    void truncateTable();
 
 private:
     static const GlobalSettings *gl; ///< pointer to globalsettings object

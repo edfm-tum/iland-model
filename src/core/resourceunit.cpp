@@ -214,7 +214,7 @@ const ResourceUnitSpecies *ResourceUnit::constResourceUnitSpecies(const Species 
     return mRUSpecies[species->index()];
 }
 
-double ResourceUnit::topHeight(bool rIrregular) const
+double ResourceUnit::topHeight(bool &rIrregular) const
 {
     GridRunner<HeightGridValue> runner(GlobalSettings::instance()->model()->heightGrid(), boundingBox());
     int valid=0, total=0;

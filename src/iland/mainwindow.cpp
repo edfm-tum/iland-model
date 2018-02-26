@@ -1361,7 +1361,7 @@ void MainWindow::showTreeDetails(Tree *tree)
 void MainWindow::mouseMove(const QPoint& pos)
 {
 
-    if (!mRemoteControl.canRun() || mPaintNext.what == PaintObject::PaintNothing)
+    if (!mRemoteControl.canRun() ) // || mPaintNext.what == PaintObject::PaintNothing
         return;
     FloatGrid *grid = mRemoteControl.model()->grid();
     QPointF p = vp.toWorld(pos);

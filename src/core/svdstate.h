@@ -49,6 +49,11 @@ class SVDStates
 {
 public:
     SVDStates();
+    enum EStructureClassification { Structure4m, // 0-4, 4-8, 8-12, ... + irregular
+                                    Structure2m }; // 0-2, 2-4, 4-6, .... + irregular
+    enum EFunctioningClassification { Functioning3Classes, // LAI 0-2, 2-4, >4
+                                   Functioning5Classes}; // LAI 0-1, 1-2, 2-3, 3-4, >4
+
     /// calculate and returns the Id ofthe state that
     /// the resource unit is currently in
     int evaluateState(ResourceUnit *ru);
@@ -56,10 +61,12 @@ public:
     const SVDState &state(int index) const { return mStates[index]; }
     /// return true if 'state' is a valid state Id
     bool isStateValid(int state) const { return state>=0 && state<mStates.size(); }
+    /// return the number of states
+    int count() const { return mStates.size(); }
 
     /// evaluate the species composition in the neighborhood of the cell
     /// this is executed in parallel.
-    void evalulateNeighborhood(ResourceUnit *ru);
+    void evaluateNeighborhood(ResourceUnit *ru);
 
     /// get a string with the main species on the resource unit
     /// dominant species is uppercase, all other lowercase
@@ -69,6 +76,9 @@ public:
     QString stateLabel(int index);
 
 private:
+    EStructureClassification mStructureClassification;
+    EFunctioningClassification mFunctioningClassification;
+
     inline void executeNeighborhood(QVector<float> &vec, QPoint center_point, QVector<QPoint> &list, const Grid<ResourceUnit*> &grid);
     QString createCompositionString(const SVDState &s);
     QVector<SVDState> mStates;

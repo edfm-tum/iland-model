@@ -279,6 +279,21 @@ void Saplings::simplifiedGrassCover(const ResourceUnit *ru)
     }
 }
 
+double Saplings::topHeight(const ResourceUnit *ru) const
+{
+    // top height
+    SaplingCell *sap_cell = ru->saplingCellArray();
+    //int n_cells = ru->stockableArea() / (cPxSize*cPxSize);
+    float h_max = 0.f;
+    for (int iy=0; iy<cPxPerRU; ++iy, ++sap_cell) {
+        if (sap_cell->state!=SaplingCell::CellInvalid) {
+            h_max = qMax(sap_cell->max_height(), h_max);
+        }
+    }
+    return static_cast<double>(h_max);
+
+}
+
 SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **rRUPtr)
 {
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
@@ -560,7 +575,7 @@ void SaplingStat::clearStatistics()
     mAvgAge=0.;
     mAvgDeltaHPot=mAvgHRealized=0.;
     mAdded=0;
-    mLeafArea=0.;
+    mLeafArea=0.; mLeafAreaIndex=0.;
     mCarbonOfRecruitedTrees=0.;
 
 }
@@ -595,6 +610,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double foliage = species->biomassFoliage(avg_dbh);
         double fineroot = foliage*species->finerootFoliageRatio();
         mLeafArea = foliage * n * species->specificLeafArea(); // calculate leaf area on n saplings using the species specific SLA
+        mLeafAreaIndex = ru->stockableArea()>0. ? mLeafArea / ru->stockableArea() : 0.;
 
         // get living carbon.
         mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );

@@ -1,6 +1,7 @@
 #ifndef SVDOUT_H
 #define SVDOUT_H
 #include "output.h"
+#include "expression.h"
 #include <bitset>
 
 class ResourceUnit; // forward
@@ -29,6 +30,19 @@ public:
     virtual void exec();
     virtual void setup();
 private:
+
+};
+
+/// SVDUniqueStateOut saves the list of unique states.
+/// This should be done at the end of the simulation
+class SVDUniqueStateOut: public Output
+{
+public:
+    SVDUniqueStateOut();
+    virtual void exec();
+    virtual void setup();
+private:
+    Expression mCondition;
 
 };
 
