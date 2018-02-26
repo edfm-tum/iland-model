@@ -14,6 +14,24 @@ SVDStates::SVDStates()
     mCompositionString.push_back( createCompositionString(s) );
     mStateLookup[mStates[0]]=0;
     s.svd = this;
+    const XmlHelper &xml = GlobalSettings::instance()->settings();
+
+    QString cls = xml.value("model.settings.svdStates.structure", "4m");
+    if (cls=="4m")
+        mStructureClassification = Structure4m;
+    else if (cls == "2m")
+        mStructureClassification = Structure2m;
+    else
+        throw IException(QString("Setup of SVD States: invalid value for 'structure': '%1', allowed values are '2m', '4m'.").arg(cls) );
+
+    cls = xml.value("model.settings.svdStates.functioning", "3");
+    if (cls=="3")
+        mFunctioningClassification = Functioning3Classes;
+    else if (cls == "5")
+        mFunctioningClassification = Functioning5Classes;
+    else
+        throw IException(QString("Setup of SVD States: invalid value for 'functioning': '%1', allowed values are '3', '5'.").arg(cls) );
+
 
     qDebug() << "setup of SVDStates completed.";
 }
@@ -23,19 +41,57 @@ int SVDStates::evaluateState(ResourceUnit *ru)
     SVDState s;
     bool rIrregular=false;
     double h = ru->topHeight(rIrregular);
-    // normal height classes: 4m classes
-    int hcls = limit( int(h/4), 0, 20);
 
-    if (rIrregular) {
-        // irregular height classes: 12m steps:
-        // 21: <12m, 22: 12-24m, 23: 24-36m, 24: 38-48m, 25: 48-60m, 26: >60m
-        // irregular: >50% of the area < 50% of top height (which is 90th percentile of 10m pixels)
-        hcls = 21 + limit(int(h/12), 0, 5);
+    switch (mStructureClassification) {
+        case Structure4m: {
+            // normal height classes: 4m classes
+            int hcls = limit( int(h/4), 0, 20); // 21 classes (0..20)
+            if (h==4.)
+                hcls = 0; // <4m: heightgrid height==4m
+
+            if (rIrregular) {
+                // irregular height classes: 12m steps:
+                // 21: <12m, 22: 12-24m, 23: 24-36m, 24: 38-48m, 25: 48-60m, 26: >60m
+                // irregular: >50% of the area < 50% of top height (which is 90th percentile of 10m pixels)
+                hcls = 21 + limit(int(h/12), 0, 5);
+            }
+            s.structure = hcls;
+            break;
+        }
+        case Structure2m: {
+            // normal height classes: 2m classes
+            int hcls = limit( int(h/2), 0, 30); // 31 classes (0..30)
+            if (h==4.) {
+                // 0-4m: differentiate: if saplings >2m exist, then class 1, otherwise class 0.
+                if (GlobalSettings::instance()->model()->saplings()->topHeight(ru)>2.)
+                    hcls=1;
+                else
+                    hcls=0;
+            }
+            if (rIrregular) {
+                // irregular classes: 8m steps, max 56m: 31: <8m, 32: 8-16m, ... 37: 48-56m, 38: >=56m
+                hcls = 31 + limit(int(h/8), 0, 7);
+            }
+            s.structure = hcls;
+
+        }
     }
-    s.structure = hcls;
+
+
     double lai = ru->statistics().leafAreaIndex();
-    if (lai>2.) s.function=1;
-    if (lai>4.) s.function=2;
+    lai+= ru->statistics().leafAreaIndexSaplings();
+
+    switch (mFunctioningClassification) {
+    case Functioning3Classes:
+        s.function=0;
+        if (lai>2.) s.function=1;
+        if (lai>4.) s.function=2;
+        break;
+    case Functioning5Classes:
+        s.function= limit(int(lai), 0, 4); //
+        break;
+    }
+
 
     // species
     int other_i = 0;
@@ -84,7 +140,7 @@ static QVector<QPoint> close_points =  QVector<QPoint>() << QPoint(-1,-1) << QPo
                                                          << QPoint(-1,0) << QPoint(1,0)
                                                          << QPoint(-1,1) << QPoint(0,1) << QPoint(1,1);
 
-void SVDStates::evalulateNeighborhood(ResourceUnit *ru)
+void SVDStates::evaluateNeighborhood(ResourceUnit *ru)
 {
     QVector<float> &local = *ru->mSVDState.localComposition;
     QVector<float> &midrange = *ru->mSVDState.midDistanceComposition;
@@ -114,12 +170,33 @@ QString SVDStates::stateLabel(int index)
             label += GlobalSettings::instance()->model()->speciesSet()->species(s.admixed_species_index[i])->id().toLower() + " ";
 
     QString hlabel;
-    if (s.structure<21)
-        hlabel = QString("%1m-%2m").arg(s.structure*4).arg(s.structure*4+4);
-    else
-        hlabel = QString("Irr: %1m-%2m").arg(s.structure*12).arg( (s.structure+1)*12);
+    switch (mStructureClassification) {
+    case Structure4m:
+        if (s.structure<21)
+            hlabel = QString("%1m-%2m").arg(s.structure*4).arg(s.structure*4+4);
+        else
+            hlabel = QString("Irr: %1m-%2m").arg((s.structure-21)*12).arg( (s.structure-21+1)*12);
+        break;
+    case Structure2m:
+        if (s.structure<31)
+            hlabel = QString("%1m-%2m").arg(s.structure*2).arg(s.structure*2+2);
+        else
+            hlabel = QString("Irr: %1m-%2m").arg((s.structure-31)*8).arg( (s.structure-31+1)*8);
+        break;
+
+    }
     QString flabel;
-    flabel =  s.function==0 ? QLatin1Literal("<2") : (s.function==1 ? QLatin1Literal("2-4") : QLatin1Literal(">4"));
+    switch (mFunctioningClassification) {
+    case Functioning3Classes:
+        flabel =  s.function==0 ? QLatin1Literal("<2") : (s.function==1 ? QLatin1Literal("2-4") : QLatin1Literal(">4"));
+        break;
+    case Functioning5Classes:
+        if (s.function == 0) flabel = "<1";
+        else if (s.function==4) flabel = ">=4";
+        else flabel = QString("%1-%2").arg(s.function).arg(s.function+1);
+        break;
+    }
+
 
     label += QString("%1 (LAI %2)").arg( hlabel ).arg(flabel);
     return label;

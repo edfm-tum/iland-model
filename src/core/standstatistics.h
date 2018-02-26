@@ -47,7 +47,8 @@ public:
     double volume() const { return mSumVolume; } ///< sum of tree volume (m3/ha)
     double gwl() const { return mGWL;} ///< total increment (m3/ha)
     double basalArea() const { return mSumBasalArea; } ///< sum of basal area of all trees (m2/ha)
-    double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]/ha stocked area.
+    double leafAreaIndex() const { return mLeafAreaIndex; } ///< [m2/m2]/ha stocked area (trees > 4m)
+    double leafAreaIndexSaplings() const { return mLAISaplings; } ///< m2/m2 LAI of sapling layer
     double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground, trees >4m)/ha
     double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)/ha
     double nppSaplings() const { return mNPPsaplings; } ///< carbon gain of saplings (kg Biomass increment)/ha
@@ -90,6 +91,7 @@ private:
     double mSaplingCount; ///< number of sapling (Reinekes Law)
     double mSumSaplingAge;
     double mAverageSaplingAge;
+    double mLAISaplings; ///< LAI (m2/m2) of sapling layer
     // carbon and nitrogen pools
     double mCStem, mCFoliage, mCBranch, mCCoarseRoot, mCFineRoot;
     double mNStem, mNFoliage, mNBranch, mNCoarseRoot, mNFineRoot;

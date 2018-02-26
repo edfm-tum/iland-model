@@ -85,7 +85,7 @@ void SaplingOut::exec()
                   << sap.livingCohorts()
                   << sap.averageHeight()
                   << sap.averageAge()
-                  << sap.leafArea() / std::max(ru->stockableArea(), 1.); // calculate LAI from leaf area
+                  << sap.leafAreaIndex();
             writeRow();
         }
     }

@@ -866,6 +866,7 @@ void Model::runYear()
     om->execute("svdgpp"); // pot. gpp per m2 and for a number of species (SVD related)
     om->execute("svdstate"); // forest state information (SVD related)
     om->execute("svdindicator"); // forest indicators on RU level (SVD related)
+    om->execute("svduniquestate"); // list of forest vegetation states (SVD related)
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t.elapsed();

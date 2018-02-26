@@ -72,17 +72,14 @@ void SVDGPPOut::setup()
 
 SVDStateOut::SVDStateOut()
 {
-    setName("Forest states", "svdstate");
+    setName("Forest state transitions", "svdstate");
     setDescription("Forest state (for SVD). The output contains fixed columns (see below) " \
                    "and adds two extra columns for every active tree species. Those species columns " \
                    "hold the species share [0..1] for the local and the mid-range-neighborhood. Former have " \
                    "'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but " \
-                   "can be lower than 1.");
+                   "can be lower than 1. See also the 'svduniquestate' output.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("stateId", "unique state Id within one iLand simulation", OutInteger)
-              << OutputColumn("composition", "species composition state", OutString)
-              << OutputColumn("structure", "dominant height class", OutInteger)
-              << OutputColumn("function", "leaf area index", OutInteger)
               << OutputColumn("previousStateId", "unique state Id that the RU was before the current state", OutInteger)
               << OutputColumn("previousTime", "number of years that the resource unit was in the previous state", OutInteger);
 
@@ -96,7 +93,7 @@ void nc_calculateSVDNeighbors(ResourceUnit *unit)
     // evaluate immediately after state change (which sets the time to 1),
     // and at least every 10 yrs.
     if (unit->svdStateTime() % 10 == 1)  {
-        GlobalSettings::instance()->model()->svdStates()->evalulateNeighborhood(unit);
+        GlobalSettings::instance()->model()->svdStates()->evaluateNeighborhood(unit);
         svd_evals++;
     }
 }
@@ -128,9 +125,6 @@ void SVDStateOut::exec()
             // write output only at the beginning or when states change
             *this << currentYear() << (*it)->index() << (*it)->id();
             *this << s.Id;
-            *this << s.compositionString();
-            *this << s.structure;
-            *this << s.function;
             if ((*it)->svdStateTime()==1) {
                 // a state change!
                 *this << (*it)->svdPreviousStateId();
@@ -169,6 +163,58 @@ void SVDStateOut::setup()
     qDebug() << "SVDStateOutput: added extra columns for" << n << "species to the output dynamically.";
 }
 
+
+/*  ***********************************************************************  */
+/*  ******************  SVD Unique indicator output ***********************  */
+/*  ***********************************************************************  */
+
+SVDUniqueStateOut::SVDUniqueStateOut()
+{
+    setName("Unique forest states", "svduniquestate");
+    setDescription("List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') " \
+                   "which is used as a key in the 'svdstate' output. " );
+    columns() << OutputColumn("stateId", "unique state Id within one iLand simulation", OutInteger)
+              << OutputColumn("composition", "species composition state", OutString)
+              << OutputColumn("structure", "dominant height class (class index) ", OutInteger)
+              << OutputColumn("functioning", "leaf area index (class index)", OutInteger)
+              << OutputColumn("description", "Verbose description of the state", OutString);
+
+}
+
+void SVDUniqueStateOut::exec()
+{
+
+    if (!GlobalSettings::instance()->model()->svdStates())
+        return;
+
+    if (!mCondition.isEmpty())
+        if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
+            return;
+
+    // clear the table before writing
+    truncateTable();
+
+    SVDStates *svd = GlobalSettings::instance()->model()->svdStates();
+    for (int i=0;i<svd->count();++i) {
+
+        const SVDState &s = svd->state(i);
+        *this << s.Id;
+        *this << s.compositionString();
+        *this << s.structure;
+        *this << s.function;
+        *this << s.stateLabel();
+        writeRow();
+    }
+
+}
+
+void SVDUniqueStateOut::setup()
+{
+    // use a condition for to control execuation for the current year
+    QString condition = settings().value(".condition", "");
+    mCondition.setExpression(condition);
+
+}
 
 
 /*  ***********************************************************************  */
@@ -290,5 +336,6 @@ void SVDIndicatorOut::exec()
 
 
 }
+
 
 

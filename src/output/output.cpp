@@ -190,6 +190,16 @@ bool Output::clearColumnsAfter(QString find_name)
     return true;
 }
 
+void Output::truncateTable()
+{
+    QSqlDatabase db = GlobalSettings::instance()->dbout();
+    QSqlQuery query(db);
+    QString stmt=QString("delete from %1").arg(tableName());
+    query.exec(stmt); //
+    qDebug() << "truncated table" << tableName() << "(=delete all records from output database)";
+
+}
+
 void Output::open()
 {
     if (isOpen())

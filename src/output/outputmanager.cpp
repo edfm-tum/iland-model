@@ -68,6 +68,7 @@ OutputManager::OutputManager()
     mOutputs.append(new SVDGPPOut);
     mOutputs.append(new SVDStateOut);
     mOutputs.append(new SVDIndicatorOut);
+    mOutputs.append(new SVDUniqueStateOut);
 }
 
 void OutputManager::addOutput(Output *output)

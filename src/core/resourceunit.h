@@ -96,7 +96,7 @@ public:
     const double &LRImodifier() const { return mLRI_modification; }
     double averageAging() const { return mAverageAging; } ///< leaf area weighted average aging
     /// calculate the top tree height (as 90th percentile of the top heights on the 10m pixels), 'rIrregular' is set to true when 50% of the area < 50% of topheight
-    double topHeight(bool rIrregular) const;
+    double topHeight(bool &rIrregular) const;
     /// the Id of the state the resource unit is in
     int svdStateId() const { return mSVDState.stateId; }
     /// the Id of the state the resource unit was previously in

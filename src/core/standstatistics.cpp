@@ -48,6 +48,7 @@ void StandStatistics::clear()
     mCohortCount = mSaplingCount = 0;
     mAverageSaplingAge = 0.;
     mSumSaplingAge = 0.;
+    mLAISaplings = 0.;
     mCStem=0., mCFoliage=0., mCBranch=0., mCCoarseRoot=0., mCFineRoot=0.;
     mNStem=0., mNFoliage=0., mNBranch=0., mNCoarseRoot=0., mNFineRoot=0.;
     mCRegeneration=0., mNRegeneration=0.;
@@ -180,6 +181,7 @@ void StandStatistics::add(const StandStatistics &stat)
     mCohortCount += stat.mCohortCount;
     mSaplingCount += stat.mSaplingCount;
     mSumSaplingAge += stat.mSumSaplingAge;
+    mLAISaplings += stat.mLAISaplings;
     // carbon/nitrogen pools
     mCStem += stat.mCStem; mNStem += stat.mNStem;
     mCBranch += stat.mCBranch; mNBranch += stat.mNBranch;
@@ -204,6 +206,7 @@ void StandStatistics::addAreaWeighted(const StandStatistics &stat, const double 
     //mAverageHeight+=stat.mAverageHeight * weight;
     //mAverageSaplingAge+=stat.mAverageSaplingAge * weight;
     mLeafAreaIndex += stat.mLeafAreaIndex * weight;
+    mLAISaplings += stat.mLAISaplings * weight;
 
     mNPP += stat.mNPP * weight;
     mNPPabove += stat.mNPPabove * weight;
@@ -236,6 +239,7 @@ void StandStatistics::add(const SaplingStat *sapling)
     mNRegeneration += sapling->carbonLiving().N;
 
     mNPPsaplings += sapling->carbonGain().C / biomassCFraction;
+    mLAISaplings += sapling->leafAreaIndex();
 
 }
 
