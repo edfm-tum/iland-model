@@ -199,6 +199,7 @@ private:
     double mCurrentWindSpeed;
     double mCurrentWindDirection;
     double mPrescribedFiresize; // fire size from javascript
+    double mMinimumFuel; ///< minimum fuel for fire (kg biomass/ha)
     // fuel parameters
     double mFuelkFC1; ///< params (Schumacher 2006) to calculate amount of fuel
     double mFuelkFC2;

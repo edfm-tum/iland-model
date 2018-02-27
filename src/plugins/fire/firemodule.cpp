@@ -149,6 +149,8 @@ void FireModule::setup()
     mWindSpeedMax = xml.valueDouble(".wind.speedMax", 10.);
     mWindDirection = xml.valueDouble(".wind.direction", 270.); // defaults to "west"
     mFireSizeSigma = xml.valueDouble(".fireSizeSigma", 0.25);
+    mMinimumFuel = xml.valueDouble(".minimumFuel", 0.05); // minimum fuel in kgBM/m2
+    mMinimumFuel = mMinimumFuel * 10000.; // convert to kgBM/ha
 
     mOnlyFireSimulation = xml.valueBool(".onlySimulation", false);
 
@@ -759,11 +761,11 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
     // (1) calculate fuel
     double fuel_ff, fuel_dwd;
-    double fuel = calcCombustibleFuel(ru_data, fuel_ff, fuel_dwd);
+    double fuel = calcCombustibleFuel(ru_data, fuel_ff, fuel_dwd); // kg BM/ha
 
     // if fuel level is below 0.05kg BM/m2 (=500kg/ha), then no burning happens!
     // note, that it is not necessary that trees are on the pixel, as long as there is enough fuel on the ground.
-    if (fuel < 500.)
+    if (fuel < mMinimumFuel)
         return false;
 
     const double cell_fraction = cellsize()*cellsize() / cRUArea;
