@@ -770,7 +770,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     if (!do_break) {
         // regeneration is killed in case of uprooting
         if (GlobalSettings::instance()->model()->saplings())
-            GlobalSettings::instance()->model()->saplings()->clearSaplings(pixel_rect, true);
+            GlobalSettings::instance()->model()->saplings()->clearSaplings(pixel_rect, false, true);
     }
     QVector<Tree>::const_iterator tend = ru->trees().constEnd();
     for (QVector<Tree>::const_iterator  t=ru->trees().constBegin(); t!=tend; ++t) {

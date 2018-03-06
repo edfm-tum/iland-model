@@ -317,33 +317,47 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **r
     return 0;
 }
 
-void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass)
+void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout)
 {
     GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), rectangle);
     ResourceUnit *ru;
     while (runner.next()) {
         SaplingCell *s = cell(runner.currentIndex(), true, &ru);
         if (s) {
-            clearSaplings(s, ru, remove_biomass);
+            clearSaplings(s, ru, remove_biomass, resprout);
         }
 
     }
 }
 
-void Saplings::clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass)
+void Saplings::clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass, bool resprout)
 {
     if (s) {
         for (int i=0;i<NSAPCELLS;++i)
             if (s->saplings[i].is_occupied()) {
+                ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                 if (!remove_biomass) {
-                    ResourceUnitSpecies *rus = s->saplings[i].resourceUnitSpecies(ru);
                     if (!rus && !rus->species()) {
                         qDebug() << "Saplings::clearSaplings(): invalid resource unit!!!";
                         return;
                     }
                     rus->saplingStat().addCarbonOfDeadSapling( s->saplings[i].height / rus->species()->saplingGrowthParameters().hdSapling * 100.f );
                 }
-                s->saplings[i].clear();
+
+                // check for resprout (e.g. after being killed by fire)
+                bool do_clear = true;
+                if (resprout) {
+                    if (rus && rus->species() && rus->species()->saplingGrowthParameters().sproutGrowth > 0. && s->saplings[i].height>1.) {
+                        s->saplings[i].clear();
+                        do_clear=false;
+                        SaplingTree *st=s->addSapling(0.05f, 0, rus->species()->index());
+                        if (st)
+                            st->set_sprout(true);
+                    }
+                }
+                if (do_clear)
+                    s->saplings[i].clear();
+
             }
         s->checkState();
 
@@ -358,7 +372,7 @@ void Saplings::clearAllSaplings()
     while (runner.next()) {
         SaplingCell *s = cell(runner.currentIndex(), true, &ru);
         if (s) {
-            clearSaplings(s, ru, true);
+            clearSaplings(s, ru, true, false);
         }
     }
 }
@@ -367,7 +381,8 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
 {
     if (t->species()->saplingGrowthParameters().sproutGrowth==0.)
         return 0;
-    SaplingCell *sc = cell(t->positionIndex());
+    ResourceUnit *ru;
+    SaplingCell *sc = cell(t->positionIndex(), true, &ru);
     if (!sc)
         return 0;
 
@@ -377,7 +392,7 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
     if (tree_is_removed) {
         // if the host tree is removed (disturbance, harvest), a resprout is happening on the current pixel ( and pixels that are
         // (partially) covered by the tree crown
-        clearSaplings(sc, const_cast<ResourceUnit*>(t->ru()), false );
+        clearSaplings(sc, const_cast<ResourceUnit*>(t->ru()), false, false );
         SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
         if (st)
             st->set_sprout(true);
@@ -411,13 +426,21 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
         if (drandom() < p_resprout) {
             // select a neighbor randomly
             int s=irandom(0,8);
-            ResourceUnit *ru;
-            sc = cell(t->positionIndex()+QPoint(offsets_x[s], offsets_y[s]),true,&ru);
+            ResourceUnit *ru_new;
+
             for (int i=0;i<8;++i) {
-                if (sc && !sc->sapling(t->species()->index())) {
+                SaplingCell *sc_new = cell(t->positionIndex()+QPoint(offsets_x[s], offsets_y[s]), true, &ru_new);
+                if (sc_new && !sc_new->sapling(t->species()->index())) {
+                    if (GlobalSettings::instance()->model()->settings().torusMode) {
+                        // in torus mode we make sure not to grow saplings in an adjacent resource unit
+                        if (ru != ru_new) {
+                            s = (s+1)%8; // move on...
+                            continue;
+                        }
+                    }
                     // the species is not yet on the cell, so let us spread there....
-                    SaplingTree *st=sc->addSapling(0.05f, 0, t->species()->index());
-                    sc->checkState();
+                    SaplingTree *st=sc_new->addSapling(0.05f, 0, t->species()->index());
+                    sc_new->checkState();
                     if (st)
                         st->set_sprout(true);
                     break;  // stop searching when one sprout was added
@@ -493,7 +516,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     } else {
         tree.stress_years=0; // reset stress counter
     }
-    DBG_IF(delta_h_pot*delta_h_factor < 0.f || (!tree.is_sprout() && delta_h_pot*delta_h_factor > 2.), "Sapling::growSapling", "inplausible height growth.");
+    DBG_IF(delta_h_pot*delta_h_factor < 0.f || (!tree.is_sprout() && delta_h_pot*delta_h_factor > 2.), "Sapling::growSapling",
+           QString("inplausible height growth: species: %1, h: %2, deltaH: %3").arg( species->id()).arg(tree.height).arg(delta_h_pot*delta_h_factor).toLocal8Bit() );
 
     // grow
     tree.height += delta_h_pot * delta_h_factor;

@@ -432,7 +432,7 @@ bool Snapshot::loadStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
         SaplingCellRunner scr(stand_id, stand_grid);
         while (SaplingCell *sc = scr.next()) {
             n_sap_removed += sc->n_occupied();
-            GlobalSettings::instance()->model()->saplings()->clearSaplings(sc, scr.ru(),true);
+            GlobalSettings::instance()->model()->saplings()->clearSaplings(sc, scr.ru(),true, false);
         }
 
         // (2) load saplings from database

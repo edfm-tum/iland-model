@@ -447,7 +447,7 @@ void Management::killSaplings(MapGridWrapper *wrap, int key)
         if (wrap->map()->standIDFromLIFCoord(runner.currentIndex()) == key) {
             SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(),true, &ru);
             if (sc)
-                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,true);
+                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,false, true);
         }
     }
 }
@@ -460,7 +460,7 @@ void Management::killSaplingsResourceUnit(int ruindex)
         while (runner.next()) {
             SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(),true);
             if (sc)
-                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,true);
+                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,false, true);
         }
     }
 }

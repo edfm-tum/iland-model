@@ -37,10 +37,15 @@
   See http://iland.boku.ac.at/water+cycle
   */
 
+// static
+QHash<int, double> WaterCycle::mEstPsi;
+
 WaterCycle::WaterCycle()
 {
     mSoilDepth = 0;
     mLastYear = -1;
+    for (int i=0;i<366;++i)
+        mPsi[i] = 0.;
 }
 
 void WaterCycle::setup(const ResourceUnit *ru)
@@ -346,6 +351,78 @@ void WaterCycle::run()
     // call external modules
     GlobalSettings::instance()->model()->modules()->calculateWater(mRU, &add_data);
     mLastYear = GlobalSettings::instance()->currentYear();
+
+}
+
+void WaterCycle::resetPsiMin()
+{
+    for (QHash<int, double>::iterator i=mEstPsi.begin(); i!=mEstPsi.end();++i)
+        i.value() = 0.;
+}
+
+QMutex _mutex_psi;
+double WaterCycle::estPsiMin(int phenologyGroup) const
+{
+    // query the container and run the calculation for the current RU if value is
+    // not yet calculated
+    int key = mRU->index()*100 + phenologyGroup;
+
+    if (mEstPsi.contains(key) && mEstPsi[key]< 0.) {
+        return mEstPsi[key];
+    } else {
+        // note: currently no Mutex required for parallel execution (for RUs),
+        // but for updating the hash.
+        QMutexLocker locker(&_mutex_psi);
+        calculatePsiMin();
+        return mEstPsi[key];
+    }
+}
+
+void WaterCycle::calculatePsiMin() const
+{
+    int days = mRU->climate()->daysOfYear();
+
+    // two week (14 days) running average of actual psi-values on the resource unit
+    static const int nwindow = 14;
+    double psi_buffer[nwindow];
+
+    for (int pg=0;pg<mRU->climate()->phenologyGroupCount(); ++pg) {
+        double psi_min = 0.;
+        const Phenology &pheno = mRU->climate()->phenology(pg);
+        int veg_period_start = pheno.vegetationPeriodStart();
+        int veg_period_end = pheno.vegetationPeriodEnd();
+
+        for (int i=0;i<nwindow;++i)
+            psi_buffer[i] = 0.;
+        double current_sum = 0.;
+
+        int i_buffer = 0;
+        double min_average = 9999999.;
+        double current_avg = 0.;
+        for (int day=0;day<days;++day) {
+            // running average: remove oldest item, add new item in a ringbuffer
+            current_sum -= psi_buffer[i_buffer];
+            psi_buffer[i_buffer] = psi_kPa(day);
+            current_sum += psi_buffer[i_buffer];
+
+            if (day>=veg_period_start && day<=veg_period_end) {
+                current_avg = day>0? current_sum / std::min(day, nwindow) : current_sum;
+                min_average = std::min(min_average, current_avg);
+            }
+
+            // move to next value in the buffer
+            i_buffer = (i_buffer + 1) % nwindow;
+        }
+
+        if (min_average > 1000.)
+            psi_min = 0.;
+        else {
+            psi_min = min_average / 1000.; // MPa
+        }
+        int key = mRU->index()*100 + pg;
+        mEstPsi[key] = psi_min;
+
+    }
 
 }
 

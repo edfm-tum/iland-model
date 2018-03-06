@@ -38,6 +38,7 @@
 #include "helper.h"
 #include "resourceunit.h"
 #include "climate.h"
+#include "watercycle.h"
 #include "speciesset.h"
 #include "standloader.h"
 #include "tree.h"
@@ -758,6 +759,7 @@ void Model::runYear()
         foreach(Climate *c, mClimates)
             c->nextYear();
     }
+    WaterCycle::resetPsiMin();
 
     // reset statistics
     foreach(ResourceUnit *ru, mRU)
