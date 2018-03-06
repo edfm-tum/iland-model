@@ -19,6 +19,8 @@
 
 #ifndef WATERCYCLE_H
 #define WATERCYCLE_H
+#include <QHash>
+
 class ResourceUnit;
 struct ClimateDay;
 class WaterCycle; // forward
@@ -103,6 +105,7 @@ public:
     void setContent(double content, double snow_mm) { mContent = content; mSnowPack.setSnow(snow_mm); }
     // actions
     void run(); ///< run the current year
+    static void resetPsiMin(); ///< reset/clear the psi-min values for establishment
     // properties
     double fieldCapacity() const { return mFieldCapacity; } ///< field capacity (mm)
     const double &psi_kPa(const int doy) const { return mPsi[doy]; } ///< soil water potential for the day 'doy' (0-index) in kPa
@@ -115,6 +118,8 @@ public:
     double meanGrowingSeasonSWC() const { return mMeanGrowingSeasonSWC; } ///< mean soil water content (mm) during the growing season (fixed: april - september)
     /// monthly values for PET (mm sum)
     const double *referenceEvapotranspiration() const { return mCanopy.referenceEvapotranspiration(); }
+    /// psi min values for establishment for a phenology type
+    double estPsiMin(int phenologyGroup) const;
 
 private:
     struct RUSpeciesShares {
@@ -126,6 +131,9 @@ private:
         double adult_trees_share; // share of adult trees (>4m) on total LAI (relevant for aging)
         double total_lai; // total effective LAI
     };
+    /// calculate the psi min over the vegetation period for all
+    /// phenology types for the current resource unit (and store in a container)
+    void calculatePsiMin() const;
 
     int mLastYear; ///< last year of execution
     inline double psiFromHeight(const double mm) const; // kPa for water height "mm"
@@ -158,6 +166,11 @@ private:
     double mSnowDays; ///< # of days with snowcover >0
     double mMeanSoilWaterContent; ///< mean of annual soil water content (mm)
     double mMeanGrowingSeasonSWC; ///< mean soil water content (mm) during the growing season (fixed: april - september)
+
+    /// container for storing min-psi values per resource unit + phenology class
+    /// key: RU + phenoGroup, value: psiMin (2week minimum) MPa
+    static QHash<int, double> mEstPsi;
+
     friend class ::WaterOut;
 };
 

@@ -48,7 +48,7 @@ public:
 
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
-    double calculateWaterLimitation(const int veg_period_start, const int veg_period_end); ///< calculate effect of water limitation on establishment, returns scalar [0..1]
+    double calculateWaterLimitation(); ///< calculate effect of water limitation on establishment, returns scalar [0..1]
     const Climate *mClimate; ///< link to the current climate
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species (links to production data and species respones)
     // some statistics

@@ -207,6 +207,7 @@ void Soil::calculateYear()
     mYL.C = ylss + (yl.C-ylss)*lfactor;
     mYL.N = ynlss + (yl.N-ynlss-cl/(sp.el-mH)*(yl.C-ylss))*exp(-mKyl*mRE*(1.-mH)*t/(1.-sp.el))+cl/(sp.el-mH)*(yl.C-ylss)*lfactor;
     mYL.setParameter( mKyl ); // update decomposition rate
+
     // young ref. pool
     CNPair yr=mYR;
     mYR.C = yrss + (yr.C-yrss)*rfactor;
@@ -216,6 +217,10 @@ void Soil::calculateYear()
     CNPair o = mSOM;
     mSOM.C = oss + (o.C -oss - al - ar)*exp(-mKo*mRE*t) + al*lfactor + ar*rfactor;
     mSOM.N = onss + (o.N - onss -(al+ar)/sp.qh)*exp(-mKo*mRE*t) + al/sp.qh * lfactor + ar/sp.qh * rfactor;
+
+    if (!mYL.isValid() || !mYR.isValid() || !mSOM.isValid()) {
+        qDebug() << "Soil::calculateYear: invalid soil pools in yL, yR, or SOM";
+    }
 
     // calculate delta (i.e. flux to atmosphere)
     CNPair total_after = mYL + mYR + mSOM;
@@ -277,15 +282,22 @@ void Soil::disturbance(double DWDfrac, double litterFrac, double soilFrac)
         qDebug() << "warning: Soil:disturbance: litter-fraction invalid" << litterFrac;
     if (soilFrac<0. || soilFrac>1.)
         qDebug() << "warning: Soil:disturbance: soil-fraction invalid" << soilFrac;
+    // force to 0-1
+    DWDfrac = limit(DWDfrac, 0., 1.);
+    litterFrac = limit(litterFrac, 0., 1.);
+    soilFrac = limit(soilFrac, 0., 1.);
+
     // dwd
-    mTotalToDisturbance += mYR*limit(DWDfrac, 0., 1.);
+    mTotalToDisturbance += mYR*DWDfrac;
     mYR *= (1. - DWDfrac);
     // litter
-    mTotalToDisturbance += mYL*limit(litterFrac, 0., 1.);
+    mTotalToDisturbance += mYL*litterFrac;
     mYL *= (1. - litterFrac);
     // old soil organic matter
-    mTotalToDisturbance += mSOM*limit(soilFrac, 0., 1.);
+    mTotalToDisturbance += mSOM*soilFrac;
     mSOM *= (1. - soilFrac);
+    if (!mYL.isValid() || !mYR.isValid() || !mSOM.isValid())
+        qDebug() << "Soil::disturbance: invalid pool (yL, yR, or SOM)";
     if (isnan(mAvailableNitrogen) || isnan(mYR.C))
         qDebug() << "Available Nitrogen is NAN.";
 

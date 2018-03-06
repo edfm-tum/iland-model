@@ -785,9 +785,9 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     if (!mOnlyFireSimulation) {
         //  effect of forest fire on saplings: all saplings are killed.
         //  As regeneration happens before the fire routine, any newly regenarated saplings are killed as well.
-        //  Note: re-sprouting after fire happens after killing the regeneration
+        //  Note: re-sprouting after fire from adult trees happens after killing the regeneration
         if (GlobalSettings::instance()->model()->saplings())
-            GlobalSettings::instance()->model()->saplings()->clearSaplings(pixel_rect, true);
+            GlobalSettings::instance()->model()->saplings()->clearSaplings(pixel_rect, true, true);
         //ru->clearSaplings(pixel_rect, true); [old version]
     }
 
@@ -913,8 +913,8 @@ double FireModule::calcCombustibleFuel(const FireRUData &ru_data, double &rFores
     // DWD: downed woody debris (t/ha) = yL pool
 
     // fuel per ha (kg biomass): derive available fuel using the KBDI as estimate for humidity.
-    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * ru->soil()->youngLabileAbovegroundFraction() * 1000. : 1000.);
-    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 1000. );
+    double fuel_ff = (kfc1 + kfc2*ru_data.kbdi()) * (ru->soil()? ru->soil()->youngLabile().biomass() * ru->soil()->youngLabileAbovegroundFraction() * 1000. : 0.);
+    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 0. );
     // calculate fuel (kg biomass / ha)
     double fuel = (fuel_ff + fuel_dwd);
 

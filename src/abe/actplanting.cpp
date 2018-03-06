@@ -270,7 +270,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             if (clear) {
                 ResourceUnit *ru;
                 SaplingCell *sc=model->saplings()->cell(runner.currentIndex(),true, &ru);
-                model->saplings()->clearSaplings(sc,ru,true);
+                model->saplings()->clearSaplings(sc,ru,true, false);
             }
             if (drandom() < fraction_val) {
                 ResourceUnit *ru = model->ru(runner.currentCoord());
@@ -303,7 +303,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
 
                     if (clear) {
                         // clear all sapling trees on the cell
-                        model->saplings()->clearSaplings(sc,ru,true);
+                        model->saplings()->clearSaplings(sc,ru,true, false);
                     }
                     sc->addSapling(height,age,species->index());
                 }
@@ -352,7 +352,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
 
                         if (clear) {
                             // clear all sapling trees
-                            model->saplings()->clearSaplings(sc,ru,true);
+                            model->saplings()->clearSaplings(sc,ru,true, false);
                         }
                         sc->addSapling(height,age,species->index());
                     }

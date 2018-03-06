@@ -200,9 +200,9 @@ public:
     SaplingCell *cell(QPoint lif_coords, bool only_valid=true, ResourceUnit **rRUPtr=0);
     /// clear/kill all saplings within the rectangle given by 'rectangle'.
     /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt), otherwise they are moved to soil
-    void clearSaplings(const QRectF &rectangle, const bool remove_biomass);
+    void clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout);
     /// clear all saplings on a given cell 's' (if 'remove_biomass' is true: biomass removed from system (e.g. burnt))
-    void clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass);
+    void clearSaplings(SaplingCell *s, ResourceUnit *ru, const bool remove_biomass, bool resprout);
     /// clear all saplings, biomass is removed (not routed to the soil layer)
     void clearAllSaplings();
 

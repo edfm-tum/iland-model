@@ -78,12 +78,23 @@ void Establishment::clear()
 }
 
 
-double Establishment::calculateWaterLimitation(const int veg_period_start, const int veg_period_end)
+double Establishment::calculateWaterLimitation()
 {
     // return 1 if effect is disabled
     if (mRUS->species()->establishmentParameters().psi_min >= 0.)
         return 1.;
 
+    double psi_min = mRUS->species()->establishmentParameters().psi_min;
+    // get the psi min of the current year
+    double psi_mpa = mRUS->ru()->waterCycle()->estPsiMin( mRUS->species()->phenologyClass() );
+
+    // calculate the response of the species to this value of psi (see also Species::soilwaterResponse())
+    double result = limit( (psi_mpa - psi_min) / (-0.015 -  psi_min) , 0., 1.);
+
+    return result;
+
+
+/*
     double psi_min = mRUS->species()->establishmentParameters().psi_min;
     const WaterCycle *water = mRUS->ru()->waterCycle();
     int days = mRUS->ru()->climate()->daysOfYear();
@@ -121,7 +132,7 @@ double Establishment::calculateWaterLimitation(const int veg_period_start, const
     double result = limit( (psi_mpa - psi_min) / (-0.015 -  psi_min) , 0., 1.);
 
     return result;
-
+*/
 }
 
 
@@ -215,7 +226,7 @@ void Establishment::calculateAbioticEnvironment()
         if (mTACA_frostAfterBuds>0)
             frost_effect = pow(p.frost_tolerance, sqrt(double(mTACA_frostAfterBuds)));
         // negative effect due to water limitation on establishment [1: no effect]
-        mWaterLimitation = calculateWaterLimitation(pheno.vegetationPeriodStart(), pheno.vegetationPeriodLength());
+        mWaterLimitation = calculateWaterLimitation();
         // combine drought and frost effect multiplicatively
         mPAbiotic = frost_effect * mWaterLimitation;
     } else {

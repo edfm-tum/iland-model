@@ -268,11 +268,11 @@ void Snag::calculateYear()
             mKSW[i] = mKSW[i]*(mSWD[i].C/(mSWD[i].C+mToSWD[i].C)) + mCurrentKSW[i]*(mToSWD[i].C/(mSWD[i].C+mToSWD[i].C));
             //move content to the SWD pool
             mSWD[i] += mToSWD[i];
-//            if (mSWD[i].C < 0.)
-//                qDebug() << "Snag:calculateYear: C < 0.";
+            if (mSWD[i].C < 0.)
+                qDebug() << "Snag:calculateYear: C < 0.";
         }
-//        if (mSWD[i].C < 0.)
-//            qDebug() << "Snag:calculateYear: C < 0.";
+        if (mSWD[i].C < 0.)
+            qDebug() << "Snag:calculateYear: C < 0.";
 
         if (mSWD[i].C > 0.) {
             // reduce the Carbon (note: the N stays, thus the CN ratio changes)
@@ -300,6 +300,8 @@ void Snag::calculateYear()
                 rate*=2.;
 
             double transfer = 1. - exp(rate);
+            if (transfer<0. || transfer>1.)
+                qDebug() << "transfer alarm!";
 
             // calculate flow to soil pool...
             mSWDtoSoil += mSWD[i] * transfer;

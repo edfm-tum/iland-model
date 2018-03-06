@@ -633,6 +633,10 @@ void Tree::grow()
 {
     TreeGrowthData d;
     mAge++; // increase age
+
+    if (mFoliageMass>500.)
+        qDebug() << "high foliage mass - debug";
+
     // step 1: get "interception area" of the tree individual [m2]
     // the sum of all area of all trees of a unit equal the total stocked area * interception_factor(Beer-Lambert)
     double effective_area = mRU->interceptedArea(mLeafArea, mLightResponse);
@@ -796,7 +800,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     if (net_woody > 0.) {
         // (2) calculate part of increment that is dedicated to the stem (which is a function of diameter)
-        //     substract the branches as they are not explicitly modeled
+
         net_stem = net_woody * species()->allometricFractionStem(mDbh);
         double net_branches = net_woody - net_stem;
         d.NPP_stem = net_stem;
@@ -817,6 +821,9 @@ inline void Tree::partitioning(TreeGrowthData &d)
         }
     }
 
+    if (mStemMass < 0) {
+        qDebug() << "do somethin!";
+    }
     mStemMass = qMax(mStemMass, 0.f); // make sure that we don't have negative values.
 
 
@@ -1034,8 +1041,10 @@ void Tree::setHeight(const float height)
 
 void Tree::mortality(TreeGrowthData &d)
 {
-    // death if leaf area is 0
+    // death if leaf area is 0 or if stem biomass is 0
     if (mFoliageMass<0.00001)
+        die();
+    if (mStemMass == 0.)
         die();
 
     double p_death,  p_stress, p_intrinsic;

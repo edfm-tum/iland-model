@@ -94,6 +94,7 @@ public:
     /// retrieve the year provided in the climate table
     int climateDataYear() const { return mBegin->year; }
     // access to other subsystems
+    int phenologyGroupCount() const { return mPhenology.count(); }
     const Phenology &phenology(const int phenologyGroup) const; ///< phenology class of given type
     const Sun &sun() const { return mSun; } ///< solar radiation class
     double daylength_h(const int doy) const { return sun().daylength(doy); } ///< length of the day in hours
