@@ -46,6 +46,7 @@ WaterCycle::WaterCycle()
     mLastYear = -1;
     for (int i=0;i<366;++i)
         mPsi[i] = 0.;
+    mEstPsi.clear();
 }
 
 void WaterCycle::setup(const ResourceUnit *ru)
@@ -356,24 +357,34 @@ void WaterCycle::run()
 
 void WaterCycle::resetPsiMin()
 {
-    for (QHash<int, double>::iterator i=mEstPsi.begin(); i!=mEstPsi.end();++i)
-        i.value() = 0.;
+    if (mEstPsi.isEmpty()) {
+        // insert all possible values (RU-indices x phenology groups)
+        foreach (const ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+            for (int pg=0;pg<ru->climate()->phenologyGroupCount();++pg) {
+                int key = ru->index()*100 + pg;
+                mEstPsi[key] = 0;
+            }
+        }
+    } else {
+        // clear values if already populated
+        for (QHash<int, double>::iterator i=mEstPsi.begin(); i!=mEstPsi.end();++i)
+            i.value() = 0.;
+    }
 }
 
 QMutex _mutex_psi;
 double WaterCycle::estPsiMin(int phenologyGroup) const
 {
+    //QMutexLocker locker(&_mutex_psi);
     // query the container and run the calculation for the current RU if value is
     // not yet calculated
     int key = mRU->index()*100 + phenologyGroup;
 
-    if (mEstPsi.contains(key) && mEstPsi[key]< 0.) {
+    if (mEstPsi[key]< 0.) {
         return mEstPsi[key];
     } else {
-        // note: currently no Mutex required for parallel execution (for RUs),
-        // but for updating the hash.
-        QMutexLocker locker(&_mutex_psi);
-        calculatePsiMin();
+        // note: currently no Mutex required for parallel execution (for RUs)
+        calculatePsiMin(); // calculate once per RU
         return mEstPsi[key];
     }
 }

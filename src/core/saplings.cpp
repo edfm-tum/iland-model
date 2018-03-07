@@ -517,7 +517,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
         tree.stress_years=0; // reset stress counter
     }
     DBG_IF(delta_h_pot*delta_h_factor < 0.f || (!tree.is_sprout() && delta_h_pot*delta_h_factor > 2.), "Sapling::growSapling",
-           QString("inplausible height growth: species: %1, h: %2, deltaH: %3").arg( species->id()).arg(tree.height).arg(delta_h_pot*delta_h_factor).toLocal8Bit() );
+           QString("implausible height growth: species: %1, h: %2, deltaH: %3").arg( species->id()).arg(tree.height).arg(delta_h_pot*delta_h_factor).toLocal8Bit() );
 
     // grow
     tree.height += delta_h_pot * delta_h_factor;

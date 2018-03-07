@@ -69,7 +69,8 @@ public:
     float biomassBranch() const { return mBranchMass; }  ///< mass (kg) of branches
     float biomassFineRoot() const { return mFineRootMass; } ///< mass (kg) of fine roots
     float biomassCoarseRoot() const { return mCoarseRootMass; } ///< mass (kg) of coarse roots
-    float biomassStem() const { return mStemMass; } ///< mass (kg) of stem
+    float biomassStem() const { return mStemMass + mNPPReserve; } ///< mass (kg) of stem, conceputally stem biomass + reserve pool
+    float biomassReserve() const { return mNPPReserve; } /// mass (kg) of the reserve pool
     double barkThickness() const; ///< thickness of the bark (cm)
     float stressIndex() const { return mStressIndex; } ///< the scalar stress rating (0..1)
 

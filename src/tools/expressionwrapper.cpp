@@ -108,7 +108,7 @@ double TreeWrapper::value(const int variableIndex)
     case 7: return mTree->lightResourceIndex(); // lri
     case 8: return mTree->mLeafArea;
     case 9: return mTree->mLightResponse;
-    case 10: return mTree->mStemMass;
+    case 10: return mTree->biomassStem();
     case 11: return mTree->mCoarseRootMass + mTree->mFineRootMass; // sum of coarse and fine roots
     case 12: return mTree->mFoliageMass;
     case 13: return mTree->age();
