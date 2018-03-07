@@ -634,8 +634,8 @@ void Tree::grow()
     TreeGrowthData d;
     mAge++; // increase age
 
-    if (mFoliageMass>500.)
-        qDebug() << "high foliage mass - debug";
+    if (mFoliageMass>100.)
+        qDebug() << "high foliage mass (>1000kg):" << mSpecies->id() << ", dbh:" << mDbh;
 
     // step 1: get "interception area" of the tree individual [m2]
     // the sum of all area of all trees of a unit equal the total stocked area * interception_factor(Beer-Lambert)
@@ -713,16 +713,29 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     apct_root = rus.prod3PG().rootFraction();
     d.NPP_above = d.NPP * (1. - apct_root); // aboveground: total NPP - fraction to roots
-    // ratio of allometric exponents (b_woody / b_foliage)
-    // !! TODO: this is now b_stem / b_foliage: not entirely sure how much of an error this introduces; but since exponents of
-    // branch and stems are usually similar (e.g. spruce: stem: 2.1, branch: 2.3) this might be almost nothing
-    double b_wf = species()->allometricRatio_wf();
 
-    // Duursma 2007, Eq. (20)
-    apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mStemMass + b_wf );
+    // Calculate the share of NPP that goes to wood (stem + branches).
+    // This is based on Duursma 2007 (Eq. 20), but modified to include both stem and branch pools.
+    // see "branches_in_allocation.Rmd"
 
+    // eta_w <- (Wf*bf*gamma_w*(Ws+Wb) - (Ws*bs+Wb*bb)*(Wf*gamma_f - NPP*(1-eta_r)) ) / (NPP*(Wf*bf+Ws*bs+Wb*bb))
+    double bs = species()->allometricExponentStem();
+    double bb = species()->allometricExponentBranch();
+    double bf = species()->allometricExponentFoliage();
+    double Ws = mStemMass;
+    double Wb = mBranchMass;
+
+    apct_wood = (foliage_mass_allo*bf*to_wood*(Ws+Wb) - (Ws*bs + Wb*bb)*(foliage_mass_allo*to_fol - npp*(1.-apct_root))) / (npp*(foliage_mass_allo*bf+Ws*bs+Wb*bb));
     apct_wood = limit(apct_wood, 0., 1.-apct_root);
 
+    /* Original code (<201803):
+    // Duursma 2007, Eq. (20)
+    double b_wf = species()->allometricRatio_wf(); // ratio of allometric exponents (b_woody / b_foliage)
+    apct_wood = (foliage_mass_allo*to_wood/npp + b_wf*(1.-apct_root) - b_wf*foliage_mass_allo*to_fol/npp) / ( foliage_mass_allo/mStemMass + b_wf );
+    apct_wood = limit(apct_wood, 0., 1.-apct_root);
+     */
+
+    // transfer to foliage is the rest:
     apct_foliage = 1. - apct_root - apct_wood;
 
 
@@ -788,10 +801,10 @@ inline void Tree::partitioning(TreeGrowthData &d)
     // see also: http://iland.boku.ac.at/allocation#reserve_and_allocation_to_stem_growth
     // (1) transfer to reserve pool
     double gross_woody = apct_wood * npp;
-    double to_reserve = qMin(reserve_size, gross_woody);
-    // the 'reserve' is part of the stem: calculate the change in stem biomass due to the change of the reserve pool
-    double delta_reserve = to_reserve - mNPPReserve;
-    mStemMass += delta_reserve; // note that stem mass can decrease here!
+    double to_reserve = qMax(qMin(reserve_size, gross_woody), 0.);
+    // the 'reserve' is part of the stem (and is part of the stem biomass in stand outputs),
+    // and is added to the stem biomass there (biomassStem()).
+
     mNPPReserve = static_cast<float>( to_reserve );
     double net_woody = gross_woody - to_reserve;
     double net_stem = 0.;

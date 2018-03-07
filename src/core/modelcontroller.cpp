@@ -539,7 +539,8 @@ void ModelController::saveDebugOutputs(bool is_final)
     }
 
 
-    qDebug() << "saved debug outputs to" << p;
+    if (logLevelDebug())
+        qDebug() << "saved debug outputs to" << p;
 
     if (clear_data)
         GlobalSettings::instance()->clearDebugLists();  // clear debug data

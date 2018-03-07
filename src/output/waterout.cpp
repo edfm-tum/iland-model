@@ -28,7 +28,8 @@ WaterOut::WaterOut()
     setName("Water output", "water");
     setDescription("Annual water cycle output on resource unit/landscape unit.\n" \
                    "The output includes annual averages of precipitation, evapotranspiration, water excess, " \
-                   "snow cover, and radiation input. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). " \
+                   "snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. " \
+                   " The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). " \
                    "Landscape level averages are indicated by -1 for the 'ru' and 'index' columns.\n\n" \
                    "You can specify a 'condition' to limit output execution to specific years (variable 'year'). " \
                    "The 'conditionRU' can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 " \

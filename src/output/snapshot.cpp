@@ -53,10 +53,10 @@ public:
         leaf_area = tree->leafArea();
         opacity = tree->mOpacity;
         bmFoliage = tree->biomassFoliage();
-        bmStem = tree->biomassStem();
+        bmStem = tree->biomassStem() - tree->biomassReserve();
         bmFineRoot = tree->biomassFineRoot();
         bmCoarseRoot = tree->biomassCoarseRoot();
-        npp_reserve = tree->mNPPReserve;
+        npp_reserve = tree->biomassReserve();
         stress_index = tree->mStressIndex;
 
     }
@@ -532,7 +532,7 @@ void Snapshot::saveTrees()
         q.addBindValue(t->leafArea());
         q.addBindValue(t->mOpacity);
         q.addBindValue(t->biomassFoliage());
-        q.addBindValue(t->biomassStem());
+        q.addBindValue(t->biomassStem()-t->biomassReserve());
         q.addBindValue(t->biomassFineRoot());
         q.addBindValue(t->biomassCoarseRoot());
         q.addBindValue(t->mNPPReserve);

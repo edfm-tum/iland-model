@@ -101,7 +101,10 @@ public:
     inline double biomassStem(const double dbh) const { return mStem_a * pow(dbh, mStem_b); }
     inline double biomassRoot(const double dbh) const { return mRoot_a * pow(dbh, mRoot_b); }
     inline double biomassBranch(const double dbh) const { return mBranch_a * pow(dbh, mBranch_b); }
-    inline double allometricRatio_wf() const { return mStem_b / mFoliage_b; }
+    // inline double allometricRatio_wf() const { return mStem_b / mFoliage_b; }
+    inline double allometricExponentStem() const { return mStem_b; }
+    inline double allometricExponentBranch() const { return mBranch_b; }
+    inline double allometricExponentFoliage() const { return mFoliage_b; }
     double allometricFractionStem(const double dbh) const;
     double finerootFoliageRatio() const { return mFinerootFoliageRatio; } ///< ratio of fineroot mass (kg) to foliage mass (kg)
     double barkThickness(const double dbh) const { return dbh * mBarkThicknessFactor; }
