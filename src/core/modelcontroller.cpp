@@ -127,6 +127,19 @@ int ModelController::currentYear() const
     return GlobalSettings::instance()->currentYear();
 }
 
+QString ModelController::timeString() const
+{
+    int elapsed = mStartTime.msecsTo(QTime::currentTime());
+    QString time_str = DebugTimer::timeStr(elapsed, false);
+    double frac_done = totalYears()>0 ? currentYear() / double(totalYears()) : 0;
+    QString todo_str="-";
+    if (frac_done>0.){
+        int todo = (1. / frac_done - 1.) * elapsed;
+        todo_str = DebugTimer::timeStr(todo, false);
+    }
+    return QString("%1 (%2 remaining)").arg(time_str, todo_str);
+}
+
 void ModelController::setFileName(QString initFileName)
 {
     mInitFile = initFileName;
@@ -202,7 +215,7 @@ void ModelController::destroy()
 
 void ModelController::runloop()
 {
-    static QTime sLastTime = QTime::currentTime();
+    static QTime sStartTime = QTime::currentTime();
 #ifdef ILAND_GUI
  //   QApplication::processEvents();
 #else
@@ -213,7 +226,7 @@ void ModelController::runloop()
     bool doStop = false;
     mHasError = false;
     if (GlobalSettings::instance()->currentYear()<=1) {
-        sLastTime = QTime::currentTime(); // reset clock at the beginning of the simulation
+        mStartTime = QTime::currentTime(); // reset clock at the beginning of the simulation
     }
 
     if (!mCanceled && GlobalSettings::instance()->currentYear() < mYearsToRun) {
@@ -226,7 +239,7 @@ void ModelController::runloop()
         mRunning = true;
         emit year(GlobalSettings::instance()->currentYear());
         if (!mHasError) {
-            int elapsed = sLastTime.msecsTo(QTime::currentTime());
+            int elapsed = sStartTime.msecsTo(QTime::currentTime());
             int time=0;
             if (currentYear()%50==0 && elapsed>10000)
                 time = 100; // a 100ms pause...
@@ -234,7 +247,7 @@ void ModelController::runloop()
                 time = 500; // a 500ms pause...
             }
             if (time>0) {
-                sLastTime = QTime::currentTime(); // reset clock
+                sStartTime = QTime::currentTime(); // reset clock
                 qDebug() << "--- little break ---- (after " << elapsed << "ms).";
                 //QTimer::singleShot(time,this, SLOT(runloop()));
             }

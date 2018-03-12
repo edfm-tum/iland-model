@@ -52,6 +52,7 @@ public:
     // simulation length
     int currentYear() const; ///< return current year of the model
     int totalYears() const { return mYearsToRun; } ///< returns total number of years to simulate
+    QString timeString() const; ///< return a string with elapsed time and estimated remaining time
     // error handling
     void throwError(const QString msg);
     // dynamic outputs (variable fields)
@@ -111,6 +112,7 @@ private:
     QStringList mDynFieldList;
     QStringList mDynData;
     QString mLastLoadedJSFile;
+    QTime mStartTime;
 
 };
 

@@ -60,7 +60,7 @@ public:
     void interval(const QString &text);
     static void clearAllTimers();
     static void printAllTimers();
-    static QString timeStr(double value_ms);
+    static QString timeStr(double value_ms, bool exact=true);
     static void setResponsiveMode(bool mode) { m_responsive_mode = mode; }
     static bool responsiveMode()  { return m_responsive_mode; }
 private:
