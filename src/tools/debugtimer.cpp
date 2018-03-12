@@ -109,18 +109,31 @@ void DebugTimer::printAllTimers()
 }
 
 // pretty formatting of timing information
-QString DebugTimer::timeStr(double value_ms)
+QString DebugTimer::timeStr(double value_ms, bool exact)
 {
-    if (value_ms<10000)
-        return QString("%1ms").arg(value_ms);
-    if (value_ms<60000)
-        return QString("%1s").arg(value_ms/1000);
-    if (value_ms<60000*60)
-        return QString("%1m %2s").arg(floor(value_ms/60000)).arg(fmod(value_ms,60000)/1000);
+    if (exact) {
+        if (value_ms<10000)
+            return QString("%1ms").arg(value_ms);
+        if (value_ms<60000)
+            return QString("%1s").arg(value_ms/1000);
+        if (value_ms<60000*60)
+            return QString("%1m %2s").arg(floor(value_ms/60000)).arg(fmod(value_ms,60000)/1000);
 
-    return QString("%1h %2m %3s").arg(floor(value_ms/3600000)) //h
-            .arg(floor(fmod(value_ms,3600000)/60000)) //m
-            .arg(qRound(fmod(value_ms,60000)/1000));    //s
+        return QString("%1h %2m %3s").arg(floor(value_ms/3600000)) //h
+                .arg(floor(fmod(value_ms,3600000)/60000)) //m
+                .arg(qRound(fmod(value_ms,60000)/1000));    //s
+    } else {
+        if (value_ms<60000)
+            return QString("%1s").arg(qRound(value_ms/1000.));
+        if (value_ms<60000*60)
+            return QString("%1:%2").arg(floor(value_ms/60000), 2, 'f', 0, QLatin1Char('0'))
+                    .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));
+
+        return QString("%1:%2:%3").arg(floor(value_ms/3600000)) //h
+                .arg(floor(fmod(value_ms,3600000)/60000), 2, 'f', 0,  QLatin1Char('0')) //m
+                .arg(floor(fmod(value_ms,60000)/1000.), 2, 'f', 0, QLatin1Char('0'));    //s
+
+    }
 }
 
 void DebugTimer::interval(const QString &text)

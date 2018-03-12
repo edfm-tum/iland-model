@@ -405,7 +405,7 @@ void MainWindow::automaticRun()
 void MainWindow::updateLabel()
 {
     if (mRemoteControl.isRunning()) {
-        labelMessage(QString("Running.... year %1 of %2 [%3]").arg(mRemoteControl.currentYear()).arg(mRemoteControl.totalYears()).arg(mRemoteControl.model()->currentTask()));
+        labelMessage(QString("Running.... year %1 of %2 [%3] %4").arg(mRemoteControl.currentYear()).arg(mRemoteControl.totalYears()).arg(mRemoteControl.model()->currentTask(), mRemoteControl.timeString()));
     } else if (mRemoteControl.isStartingUp()) {
         labelMessage(QString("Creating model - %3").arg(mRemoteControl.model()->currentTask()));
     }
@@ -1474,7 +1474,7 @@ void MainWindow::yearSimulated(int year)
     QMutexLocker mutex_locker(&mutex_yearSimulated);
     checkModelState();
     ui->modelRunProgress->setValue(year);
-    labelMessage(QString("Running.... year %1 of %2.").arg(year).arg(mRemoteControl.totalYears()));
+    labelMessage(QString("Running.... year %1 of %2. %3").arg(year).arg(mRemoteControl.totalYears()).arg(mRemoteControl.timeString()));
     ui->treeChange->setProperty("tree",0);
     ui->PaintWidget->update();
     //QApplication::processEvents();

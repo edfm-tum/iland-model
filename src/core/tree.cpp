@@ -634,7 +634,7 @@ void Tree::grow()
     TreeGrowthData d;
     mAge++; // increase age
 
-    if (mFoliageMass>100.)
+    if (mFoliageMass>1000.)
         qDebug() << "high foliage mass (>1000kg):" << mSpecies->id() << ", dbh:" << mDbh;
 
     // step 1: get "interception area" of the tree individual [m2]
