@@ -211,7 +211,8 @@ SOURCES += main.cpp \
     ../core/dbhdistribution.cpp \
     ../output/svdout.cpp \
     ../core/svdstate.cpp \
-    ../output/soilinputout.cpp
+    ../output/soilinputout.cpp \
+    ../tools/scripttree.cpp
 
 
 HEADERS += \
@@ -315,7 +316,8 @@ HEADERS += \
     ../core/dbhdistribution.h \
     ../output/svdout.h \
     ../core/svdstate.h \
-    ../output/soilinputout.h
+    ../output/soilinputout.h \
+    ../tools/scripttree.h
 
 
 
