@@ -63,6 +63,7 @@ FMTreeList::FMTreeList(FMStand *stand, QObject *parent):
     mStand = 0;
     setStand(stand);
     mResourceUnitsLocked = false;
+    mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(&mTree);
 }
 
 FMTreeList::~FMTreeList()
@@ -217,6 +218,29 @@ int FMTreeList::resetMarks()
         ++n;
     }
     return n;
+}
+
+QJSValue FMTreeList::tree(int index)
+{
+    if (index<0 || index>=count())
+        mTree.clear();
+    else
+        mTree.setTree( mTrees[index].first );
+    return mTreeValue;
+
+}
+
+QJSValue FMTreeList::treeObject(int index)
+{
+    Tree *tree = nullptr;
+    if (index>=0 && index<count())
+        tree = mTrees[index].first;
+
+    ScriptTree *tobj = new ScriptTree();
+    tobj->setTree(tree);
+    QJSValue val = ForestManagementEngine::instance()->scriptEngine()->newQObject(tobj);
+    return val;
+
 }
 
 int FMTreeList::kill(QString filter)

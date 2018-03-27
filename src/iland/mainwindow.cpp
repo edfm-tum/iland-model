@@ -596,6 +596,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool show_seedmaps = ui->visSeeds->isChecked();
     bool other_grid = ui->visOtherGrid->isChecked();
     bool shading = ui->visShading->isChecked();
+    bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
     if (!mRemoteControl.model() || !mRemoteControl.model()->dem())
          shading=false;
 
@@ -637,12 +638,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
-    // draw rectangle around the grid
-    QRectF r = grid->metricRect();
-    QRect rs = vp.toScreen(r);
-    painter.setPen(Qt::darkGray);
-    painter.drawRect(rs);
-    //qDebug() << rs;
 
     // what to paint??
 
@@ -782,6 +777,8 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     col = Colors::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
                     if (shading)
                         col = Colors::shadeColor(col, world, mRemoteControl.model()->dem()).rgb();
+                    if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(world).isValid())
+                        col = Qt::white;
 
                     img.setPixel(x,y,col);
                 }
@@ -1029,6 +1026,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         QPoint p = vp.toScreen(pos);
         painter.drawRect( p.x()-1, p.y()-1, 3,3);
     }
+    // draw rectangle around the grid
+    QRectF r = grid->metricRect();
+    QRect rs = vp.toScreen(r);
+    painter.setPen(Qt::lightGray);
+    painter.drawRect(rs);
+
 }
 
 void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
@@ -1079,10 +1082,6 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
 
 
 
-    painter.setPen(Qt::black);
-    painter.drawRect(total_rect);
-
-
     int ix,iy;
     double value=0.;
     QRect r;
@@ -1122,6 +1121,9 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
             painter.fillRect(r, fill_color);
         }
     }
+    painter.setPen(Qt::lightGray);
+    painter.drawRect(total_rect);
+
     // update ruler
     if (object.view_type>=10) {
         QStringList labels;
@@ -1159,9 +1161,6 @@ void MainWindow::paintMapGrid(QPainter &painter,
         total_rect = vp.toScreen(float_grid->metricRect());
     }
 
-    // draw rectangle around the grid
-    painter.setPen(Qt::black);
-    painter.drawRect(total_rect);
     // paint the lower-res-grid;
     int ix,iy;
     double value;
@@ -1189,6 +1188,11 @@ void MainWindow::paintMapGrid(QPainter &painter,
             painter.fillRect(r, fill_color);
         }
     }
+
+    // draw rectangle around the grid
+    painter.setPen(Qt::lightGray);
+    painter.drawRect(total_rect);
+
 
 }
 

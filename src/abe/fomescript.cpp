@@ -57,6 +57,7 @@ FomeScript::FomeScript(QObject *parent) :
     mSchedulerObj = 0;
     mTrees = 0;
     mStand = 0;
+    mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(&mTree);
 }
 
 FomeScript::~FomeScript()
@@ -157,6 +158,13 @@ QString FomeScript::JStoString(QJSValue value)
         return result.toString();
     } else
         return value.toString();
+
+}
+
+QJSValue FomeScript::treeRef(Tree *tree)
+{
+    mTree.setTree(tree);
+    return mTreeValue;
 
 }
 

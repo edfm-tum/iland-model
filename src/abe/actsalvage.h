@@ -21,6 +21,7 @@
 
 #include "activity.h"
 #include "grid.h"
+
 class Expression; // forward
 class Tree; // forward
 namespace ABE {
@@ -53,7 +54,8 @@ private:
     double mThresholdMinimal; ///< lower threshold (below no action is taken) in m3/ha
     double mThresholdSplit; ///<threshold (relative damage, 0..1) when a split of the stand should be initiated
     double mThresholdClear; ///<threshold (relative damage, 0..1) when a stand should be completely cleared
-
+    bool mJSCondition; ///< true if the check for salvaging of a tree is done in JS
+    QJSValue mJSConditionFunc; ///< JS function to call
 
 };
 

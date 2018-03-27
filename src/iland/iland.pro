@@ -203,7 +203,8 @@ SOURCES += main.cpp \
     jstextarea.cpp \
     ../output/svdout.cpp \
     ../core/svdstate.cpp \
-    ../output/soilinputout.cpp
+    ../output/soilinputout.cpp \
+    ../tools/scripttree.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -309,7 +310,8 @@ HEADERS += mainwindow.h \
     jstextarea.h \
     ../output/svdout.h \
     ../core/svdstate.h \
-    ../output/soilinputout.h
+    ../output/soilinputout.h \
+    ../tools/scripttree.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

@@ -26,6 +26,8 @@
 
 #include "fmstand.h"
 #include "fmunit.h"
+#include "scripttree.h"
+
 namespace ABE {
 
 class StandObj;
@@ -73,6 +75,8 @@ public:
     UnitObj *siteObj() const { return mUnitObj; }
     FMTreeList *treesObj() const { return mTrees; }
     ActivityObj *activityObj() const { return mActivityObj; }
+    /// get a JS-Object referencing a single tree
+    QJSValue treeRef(Tree *tree);
 
     // Properties
     /// verbose: when true, the logging intensity is increased significantly.
@@ -143,6 +147,9 @@ private:
     STPObj *mSTPObj;
     QString mLastErrorMessage;
     QString mStandVisualization;
+    QJSValue mTreeValue;
+    ScriptTree mTree;
+
 
 };
 

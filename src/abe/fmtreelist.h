@@ -22,6 +22,8 @@
 #include <QObject>
 #include "scriptglobal.h"
 #include "grid.h"
+#include "scripttree.h"
+
 class Tree; // forward
 class Expression;
 
@@ -73,6 +75,12 @@ public slots:
 
     /// reset all marks of currently loaded trees to zero
     int resetMarks();
+
+    /// access to single trees (returns a reference)
+    QJSValue tree(int index);
+    /// return a copy of a tree
+    QJSValue treeObject(int index);
+
 
     /** kill "number" of stems
      *  in the percentile interval "from" - "to".
@@ -159,6 +167,10 @@ private:
     Expression *mRunGridCustom;
     double *mRunGridCustomCell;
     friend void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *list);
+
+    QJSValue mTreeValue;
+    ScriptTree mTree;
+
 
     friend class ActThinning;
 };

@@ -163,8 +163,7 @@ void ConsoleShell::run()
 
 void ConsoleShell::runYear(int year)
 {
-    printf("\r                                                                "); // clear line
-    printf("\r%s: simulating year %d %s", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), year-1, GlobalSettings::instance()->controller()->timeString().toLocal8Bit().data());
+    printf("\r%s: simulating year %d %s          ", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), year-1, GlobalSettings::instance()->controller()->timeString().toLocal8Bit().data());
 }
 
 static QMutex qdebug_mutex;

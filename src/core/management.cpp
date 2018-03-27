@@ -65,6 +65,8 @@ Management::Management()
     mRemoveBranch = 0.;
     mRemoveStem = 1.;
 
+    mTreeValue = mEngine->newQObject(&mTree);
+
 }
 
 Management::~Management()
@@ -323,6 +325,27 @@ void Management::loadScript(const QString &fileName)
 {
     mScriptFile = fileName;
     ScriptGlobal::loadScript(fileName);
+}
+
+QJSValue Management::tree(int index)
+{
+    if (index<0 || index>=count())
+        mTree.clear();
+    else
+        mTree.setTree( mTrees[index].first );
+    return mTreeValue;
+}
+
+QJSValue Management::treeObject(int index)
+{
+    Tree *tree = nullptr;
+    if (index>=0 && index<count())
+        tree = mTrees[index].first;
+
+    ScriptTree *tobj = new ScriptTree();
+    tobj->setTree(tree);
+    QJSValue val = mEngine->newQObject(tobj);
+    return val;
 }
 
 int Management::filterIdList(QVariantList idList)
