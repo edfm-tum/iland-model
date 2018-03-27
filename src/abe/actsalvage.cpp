@@ -72,6 +72,9 @@ void ActSalvage::setup(QJSValue value)
     mThresholdMinimal = FMSTP::valueFromJs(value, "thresholdIgnoreDamage", "5").toNumber();
     mDebugSplit = FMSTP::boolValueFromJs(value, "debugSplit", false);
 
+    mJSConditionFunc = FMSTP::valueFromJs(value, "onDisturbanceCondition", "");
+    mJSCondition = mJSConditionFunc.isCallable();
+
 }
 
 bool ActSalvage::execute(FMStand *stand)
@@ -119,10 +122,18 @@ QStringList ActSalvage::info()
 
 bool ActSalvage::evaluateRemove(Tree *tree) const
 {
-    if (!mCondition)
-        return true; // default: remove all trees
-    TreeWrapper tw(tree);
-    bool result = static_cast<bool>( mCondition->execute(0, &tw) );
+    bool result = true; // remove all trees is the default
+    if (mCondition) {
+        TreeWrapper tw(tree);
+        result = static_cast<bool>( mCondition->execute(0, &tw) );
+    }
+    if (result && mJSCondition) {
+        // a second test based on JS
+        QJSValue t = ForestManagementEngine::instance()->scriptBridge()->treeRef(tree);
+        QJSValue func = mJSConditionFunc;
+        result = func.call(QJSValueList() << t).toBool();
+
+    }
     return result;
 }
 

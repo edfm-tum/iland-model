@@ -24,6 +24,7 @@
 #include <QList>
 #include <QtCore/QVariantList>
 #include "scriptglobal.h"
+#include "scripttree.h"
 
 class Tree;
 class QJSEngine;
@@ -56,6 +57,11 @@ public:
     int count() const {return mTrees.count();} ///< return number of trees currently in list
 
 public slots:
+    /// access to single trees (returns a reference)
+    QJSValue tree(int index);
+    /// return a copy of a tree
+    QJSValue treeObject(int index);
+
     /// calculate the mean value for all trees in the internal list for 'expression' (filtered by the filter criterion)
     double mean(QString expression, QString filter=QString()) { return aggregate_function( expression, filter, "mean"); }
     /// calculate the sum for all trees in the internal list for the 'expression' (filtered by the filter criterion)
@@ -127,6 +133,8 @@ private:
     QList<QPair<Tree*, double> > mTrees;
     QJSEngine *mEngine;
     int mRemoved;
+    QJSValue mTreeValue;
+    ScriptTree mTree;
 };
 
 #endif // MANAGEMENT_H
