@@ -1030,6 +1030,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     QRectF r = grid->metricRect();
     QRect rs = vp.toScreen(r);
     painter.setPen(Qt::lightGray);
+    painter.setBrush(Qt::NoBrush);
     painter.drawRect(rs);
 
 }

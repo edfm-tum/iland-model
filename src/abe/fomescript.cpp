@@ -57,6 +57,7 @@ FomeScript::FomeScript(QObject *parent) :
     mSchedulerObj = 0;
     mTrees = 0;
     mStand = 0;
+    mTree.setParent(this); // avoid JavaScriptOwnership
     mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(&mTree);
 }
 
