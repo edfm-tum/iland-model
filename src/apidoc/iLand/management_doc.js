@@ -285,7 +285,8 @@ the branches is routed to the soil and snag pools as indicated by the parameters
 is removed from the system (e.g., consumed by fire). For example, if `stem_to_soil_fraction`=0.2, `stem_to_snag_fraction`=0.3, then
 50% of the biomass leaves the system, 20% are added to the soil, 30% to the snag pools.
 
-If the `agent` parameter is `fire`, then serotinous trees produce extra seeds.
+The `agent` parameter is the reason of death (i.e. the process that should be mimicked). Recognized values are 'fire', 'wind', 'barkbeetle', and 'cutdown'. For instance,
+tree that are removed with the `agent` set to 'wind' act as a breeding material for bark beetles. If the `agent` parameter is `'fire'`, then serotinous trees produce extra seeds.
 
 See also: {{#crossLink "Management/killAll:method"}}{{/crossLink}}, {{#crossLink "Management/manageAll:method"}}{{/crossLink}}
 @method disturbanceKill
@@ -293,7 +294,7 @@ See also: {{#crossLink "Management/killAll:method"}}{{/crossLink}}, {{#crossLink
 @param {double} stem_to_snag_fraction (0..1) of the stem biomass continues as standing dead
 @param {double} branch_to_soil_fraction (0..1) of branch biomass that is routed to the soil
 @param {double} branch_to_snag_fraction (0..1) of the branch biomass continues as standing dead
-@param {string} agent the disturbance agent that is mimicked ('fire' 'wind', 'bb', ...)
+@param {string} agent the disturbance agent that is mimicked ('fire' 'wind', 'barkbeetle', 'cutdown' ...)
 @return {integer} the number of killed trees.
 */
 /**

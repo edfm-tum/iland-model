@@ -1041,8 +1041,7 @@ void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double 
 {
     mFoliageMass *= 1. - removeFoliageFraction;
     mStemMass *= (1. - removeStemFraction);
-    // we have a problem with the branches: this currently cannot be done properly!
-    (void) removeBranchFraction; // silence warning
+    mBranchMass *= (1. - removeBranchFraction);
 }
 
 void Tree::setHeight(const float height)
