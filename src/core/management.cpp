@@ -499,7 +499,7 @@ void Management::killSaplingsResourceUnit(int ruindex)
 
 /// specify removal fractions
 /// @param SWDFrac 0: no change, 1: remove all of standing woody debris
-/// @param DWDfrac 0: no change, 1: remove all of downled woody debris
+/// @param DWDfrac 0: no change, 1: remove all of downed woody debris
 /// @param litterFrac 0: no change, 1: remove all of soil litter
 /// @param soilFrac 0: no change, 1: remove all of soil organic matter
 void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
