@@ -86,10 +86,10 @@ void Snag::setupThresholds(const double lower, const double upper)
     mCarbonThreshold[1] = lower + (upper - lower)/2.;
     mCarbonThreshold[2] = upper + (upper - lower)/2.;
     //# threshold levels for emptying out the dbh-snag-classes
-    //# derived from Psme woody allometry, converted to C, with a threshold level set to 10%
+    //# derived from Psme woody allometry, converted to C, with a threshold level set to 1%
     //# values in kg!
     for (int i=0;i<3;i++)
-        mCarbonThreshold[i] = 0.10568*pow(mCarbonThreshold[i],2.4247)*0.5*0.1;
+        mCarbonThreshold[i] = 0.10568*pow(mCarbonThreshold[i],2.4247)*0.5*0.01;
 }
 
 
