@@ -278,13 +278,13 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
             // * add a primary key for RUindex, and then use INSERT OR REPLACE statements
             // * to overwrite the rows on subsequent saves.
             q.exec("drop table soil");
-            q.exec("create table soil (RUindex integer primary key, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLP real, YRC real, YRN real, YRP real, SOMC real, SOMN real, WaterContent, SnowPack real)");
+            q.exec("create table soil (RUindex integer primary key, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLAGFrac real, YLP real, YRC real, YRN real, YRAGFrac real, YRP real, SOMC real, SOMN real, WaterContent, SnowPack real)");
             // snag
             q.exec("drop table snag");
             q.exec("create table snag(RUIndex integer primary key, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
                    "totalSWDC real, totalSWDN real, NSnags1 real, NSnags2 real, NSnags3 real, dbh1 real, dbh2 real, dbh3 real, height1 real, height2 real, height3 real, " \
                    "volume1 real, volume2 real, volume3 real, tsd1 real, tsd2 real, tsd3 real, ksw1 real, ksw2 real, ksw3 real, halflife1 real, halflife2 real, halflife3 real, " \
-                   "branch1C real, branch1N real, branch2C real, branch2N real, branch3C real, branch3N real, branch4C real, branch4N real, branch5C real, branch5N real, branchIndex integer)");
+                   "branch1C real, branch1N real, branch2C real, branch2N real, branch3C real, branch3N real, branch4C real, branch4N real, branch5C real, branch5N real, branchIndex integer, branchAGFraction real)");
 
 
         }
