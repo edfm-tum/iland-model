@@ -95,7 +95,7 @@ bool GisGrid::loadFromFile(const QString &fileName)
     double value;
     do {
         if (pos>lines.count())
-            throw std::logic_error("GISGrid: unexpected end of file ");
+            throw IException("GISGrid: unexpected end of file ");
         line=lines[pos].simplified();
         if (line.length()==0 || line.at(0)=='#') {
             pos++; // skip comments
@@ -142,7 +142,7 @@ bool GisGrid::loadFromFile(const QString &fileName)
         if (!p || *p==0) {
             pos++;
             if (pos>=lines.count())
-                throw std::logic_error("GISGrid: Unexpected End of File!");
+                throw IException("GISGrid: Unexpected End of File!");
             p=lines[pos].data();
             // replace chars
             p2=p;
@@ -297,7 +297,7 @@ QRectF GisGrid::rectangle(const int indexx, const int indexy) const
 Vector3D GisGrid::coord(const int Index) const
 {
     if (Index<0 || Index>=mDataSize)
-        throw std::logic_error("gisgrid:coord: invalid index.");
+        throw IException("gisgrid:coord: invalid index.");
     int ix = Index%mNCols;
     int iy = Index / mNCols;
     return coord(ix,iy);

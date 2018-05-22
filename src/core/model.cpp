@@ -281,11 +281,11 @@ void Model::setupSpace()
                 mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
                 // create resource units for valid positions only
                 new_ru = new ResourceUnit(ru_index++); // create resource unit
+                new_ru->setBoundingBox(r);
+                new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
                 new_ru->setClimate( mEnvironment->climate() );
                 new_ru->setSpeciesSet( mEnvironment->speciesSet() );
                 new_ru->setup();
-                new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
-                new_ru->setBoundingBox(r);
                 mRU.append(new_ru);
                 *p = new_ru; // save in the RUmap grid
             }
