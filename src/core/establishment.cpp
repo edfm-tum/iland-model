@@ -57,7 +57,8 @@ void Establishment::setup(const Climate *climate, const ResourceUnitSpecies *rus
     mPxDensity = 0.;
     mNumberEstablished = 0;
     if (climate==0)
-        throw IException("Establishment::setup: no valid climate for a resource unit.");
+        throw IException(QString("Establishment::setup: no valid climate for a resource unit: RU-Index: %1, RU-ID: %2, coords: (%3/%4) ").arg(rus->ru()->index()).arg(rus->ru()->id()).
+                         arg(rus->ru()->boundingBox().center().x()).arg(rus->ru()->boundingBox().center().y()) );
     if (rus==0 || rus->species()==0 || rus->ru()==0)
         throw IException("Establishment::setup: important variable is null (are the species properly set up?).");
 }
