@@ -102,7 +102,7 @@ Grid = {
     //void clear();
 
     /**
-    Create a copy of the current grid and return a new grid object. The `name` of the copied grid is _x_.
+    Create a copy of the current grid and return a new grid object. The `name` of the copied grid is _x_. Memory management is automatic (garbage collection), i.e. you don't have to worry about freeing the memory.
 
     @method copy
     @return {grid} a copy of the grid
@@ -175,7 +175,7 @@ Grid = {
     /**
     Apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
     The function is given as a string representing an [Expression](http://iland.boku.ac.at/Expression) and is evaluated for each cell of the grid.
-    In the expression, the current value of the grid cell can be accessed using the {{#crossLink "Grid/name:property"}}{{/crossLink}} property.
+    In the expression, the current value of the grid cell can be accessed using the {{#crossLink "Grid/name:property"}}{{/crossLink}}.
 
     See also: {{#crossLink "Grid/copy:method"}}{{/crossLink}}, {{#crossLink "Grid/combine:method"}}{{/crossLink}}
 
@@ -204,14 +204,14 @@ Grid = {
 
     @method combine
     @param {string} expression expression that is applied to each cell of the grid
-    @param {object} grid_objects object including the source grids
+    @param {object} grid_objects object including the source grids; the individual grids are provided as name-value pairs and the provided names are the variable names in the expression (see example).
     @Example
         var g = Globals.grid('height'); // name of g is 'height'
         var j = Globals.grid('count');
         var k = g.copy();
         k.apply('if(height>30,1,0)');
         // update 'k' by combining g,j, and k
-        k.combine('height*count * filter', { height: g, filter: k, count: j } );
+        k.combine('height*count * filter', { height: g, filter: k, count: j } ); // access grid 'g' as 'height', grid 'k' as 'filter', grid 'j' as count in the expression
       */
 
     /**
@@ -253,6 +253,17 @@ Grid = {
     @return { double } value of the grid at position (`x`, `y`)
 
       */
+    /**
+    Resamples the content of the current grid to the extent/cellsize given by the grid `target_grid`. If `target_grid` is larger than the current grid 0-values are inserted, otherwise
+    the grid is cropped to `target_grid`.
+
+    Resampling is "brute-force", every cell of the new grid is set to the value that the current grid has at the new cell's center (i.e. no interpolation takes place).
+    Resampling alters the current grid.
+
+
+    @method resample
+    @param {object} target_grid Grid with target extent and resolution
+    */
 
     /**
     Set the value at position (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
