@@ -135,6 +135,11 @@ public slots:
 
     /// modify sapling
     int killSaplings(QString expression);
+    /// calculate the mean value for all trees in the internal list for 'expression' (filtered by the filter criterion)
+    double meanSaplings(QString expression, QString filter=QString()) { return aggregate_function_sapling(expression, filter, "mean"); }
+    /// calculate the sum for all trees in the internal list for the 'expression' (filtered by the filter criterion)
+    double sumSaplings(QString expression, QString filter=QString()) { return aggregate_function_sapling(expression, filter, "sum"); }
+
 
 
 private:
@@ -143,6 +148,7 @@ private:
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
+    double aggregate_function_sapling(QString expression, QString filter, QString type);
     bool remove_single_tree(int index, bool harvest=true);
     void check_locks();
 

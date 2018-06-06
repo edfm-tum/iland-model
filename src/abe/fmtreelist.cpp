@@ -429,6 +429,40 @@ double FMTreeList::aggregate_function(QString expression, QString filter, QStrin
 
 }
 
+double FMTreeList::aggregate_function_sapling(QString expression, QString filter, QString type)
+{
+    SaplingWrapper sw;
+    Expression filter_expr(filter.isEmpty() ? "true" : filter, &sw);
+    Expression expr(expression,&sw);
+
+    SaplingCellRunner scr(mStandId, GlobalSettings::instance()->model()->ABEngine()->standGrid());
+    double sum = 0.;
+    int n=0;
+    try{
+    while (SaplingCell *sc = scr.next()) {
+        if (sc){
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+                    sw.setSaplingTree(&sc->saplings[i]);
+                    if (filter_expr.execute()) {
+                        sum += expr.calculate();
+                        ++n;
+                    }
+                }
+            }
+        }
+    }
+    } catch(const IException &e) {
+        qCWarning(abe) << "Treelist: aggregate function for saplings: expression:" << expression << ", filter:" << filter << ", msg:" <<e.message();
+    }
+    if (type=="sum")
+        return sum;
+    if (type=="mean")
+        return n>0?sum/double(n):0.;
+    qCWarning(abe) << "invalid aggregate function for saplings (allowed: 'mean', 'sum'): " << type;
+    return 0.;
+}
+
 bool FMTreeList::remove_single_tree(int index, bool harvest)
 {
     if (!mStand || index<0 || index>=mTrees.size())

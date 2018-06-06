@@ -53,7 +53,7 @@ ActThinning::ActThinning(FMSTP *parent): Activity(parent)
                                        << "percentile" << "removal" << "thinning"
                                        << "relative" << "remainingStems" << "minDbh"
                                        << "filter" << "targetVariable" << "targetRelative"
-                                       << "targetValue" << "classes" << "onEvaluate";
+                                       << "targetValue" << "classes" << "onEvaluate" << "onExecute";
 }
 
 QString ActThinning::type() const
