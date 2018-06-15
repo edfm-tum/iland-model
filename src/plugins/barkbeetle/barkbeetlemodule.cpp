@@ -264,6 +264,9 @@ void BarkBeetleModule::treeDeath(const Tree *tree)
     if ( !(tree->isDeadWind() || tree->isCutdown()))
         return;
 
+    // if the tree is harvested (due to salvaging) nothing happens.
+    if (tree->isHarvested())
+        return;
 
     // ignore the death of trees that are too small or are not Norway spruce
     if (tree->dbh()<params.minDbh || tree->species()->id()!=QStringLiteral("piab"))
