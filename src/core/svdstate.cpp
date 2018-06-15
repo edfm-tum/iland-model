@@ -285,7 +285,7 @@ float SVDState::neighborhoodAnalysis(QVector<float> &v)
         for (int i=0;i<5;++i)
             if (admixed_species_index[i]>-1) ++n_s;
 
-        float f;
+        float f=0.;
         switch (n_s) {
         case 0: return 0.f; // (f)
         case 1: f=0.5f; break;

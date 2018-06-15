@@ -99,7 +99,7 @@ void OutputManager::setup()
     foreach(Output *o, mOutputs) {
         nodepath = QString("output.%1").arg(o->tableName());
         xml.setCurrentNode(nodepath);
-        qDebug() << "setup of output" << o->name();
+        qDebug() << "setup of output" << o->name() << "(" << o->tableName() << ")";
         o->setup();
         bool enabled = xml.valueBool(".enabled", false);
         o->setEnabled(enabled);
