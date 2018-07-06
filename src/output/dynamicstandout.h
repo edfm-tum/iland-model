@@ -34,6 +34,7 @@ private:
     Expression mRUFilter;
     Expression mTreeFilter;
     Expression mCondition;
+    Expression mConditionRU;
     struct SDynamicField {
         int agg_index;
         int var_index;

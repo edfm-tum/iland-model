@@ -36,6 +36,8 @@ DynamicStandOut::DynamicStandOut()
                    "The ''by_species'' and ''by_ru'' option allow to define the aggregation level. When ''by_species'' is set to ''true'', " \
                    "a row for each species will be created, otherwise all trees of all species are aggregated to one row. " \
                    "Similarly, ''by_ru''=''true'' means outputs for each resource unit, while a value of ''false'' aggregates over the full project area.\n" \
+                   "Even if ''by_ru'' is false, the calculation of RU level outputs can be triggered by the ''conditionRU'' switch (variable='year'). Note  " \
+                   " that in this case landscape level outputs are generated always, RU-level outputs only for certain years.\n" \
                    "!!!Specifying filters\n" \
                    "You can use the 'rufilter' and 'treefilter' XML settings to reduce the limit the output to a subset of resource units / trees. " \
                    "Both filters are valid expressions (for resource unit level and tree level, respectively). For example, a ''treefilter'' of 'speciesindex=0' reduces the output to just one species.\n" \
@@ -56,11 +58,14 @@ void DynamicStandOut::setup()
     QString tree_filter = settings().value(".treefilter","");
     QString fieldList = settings().value(".columns", "");
     QString condition = settings().value(".condition", "");
+    QString conditionRU = settings().value(".conditionRU", "");
+
     if (fieldList.isEmpty())
         return;
     mRUFilter.setExpression(filter);
     mTreeFilter.setExpression(tree_filter);
     mCondition.setExpression(condition);
+    mConditionRU.setExpression(conditionRU);
     // clear columns
     columns().erase(columns().begin()+4, columns().end());
     mFieldList.clear();
@@ -112,11 +117,20 @@ void DynamicStandOut::exec()
 
     bool per_species = GlobalSettings::instance()->settings().valueBool("output.dynamicstand.by_species", true);
     bool per_ru = GlobalSettings::instance()->settings().valueBool("output.dynamicstand.by_ru", true);
+    bool per_ru_cond=false;
+
+    if (!mConditionRU.isEmpty() && mConditionRU.calculate(GlobalSettings::instance()->currentYear()))
+        per_ru_cond = true;
+
 
     if (per_ru) {
         // when looping over resource units, do it differently (old way)
         extractByResourceUnit(per_species);
         return;
+    }
+    if (per_ru_cond) {
+        // in this case the RU level outputs are *in addition* to the landscape means
+        extractByResourceUnit(per_species);
     }
 
     Model *m = GlobalSettings::instance()->model();
