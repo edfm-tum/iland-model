@@ -118,7 +118,7 @@ double Production3PG::calculate()
     // f_env,yr=(uapar*epsilon_eff) / (APAR * epsilon_0 * fref)
     mEnvYear = f_sum / (Model::settings().epsilon * mResponse->yearlyRadiation() * perf_factor);
     if (mEnvYear > 1.) {
-        if (mEnvYear>1.5) // warning for large deviations
+        if (logLevelDebug() &&  mEnvYear>1.5) // warning for large deviations
             qDebug() << "WARNING: fEnvYear > 1 for " << mResponse->species()->id() << mEnvYear << "f_sum, epsilon, yearlyRad, refRatio" <<  f_sum << Model::settings().epsilon <<  mResponse->yearlyRadiation() << perf_factor
                      << "check calibration of the sapReferenceRatio (fref) for this species!";
         mEnvYear = 1.;
