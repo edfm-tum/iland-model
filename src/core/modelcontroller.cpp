@@ -172,6 +172,7 @@ void ModelController::create()
         mHasError = false;
         DebugTimer::clearAllTimers();
         mModel = new Model();
+        GlobalSettings::instance()->executeJSFunction("onBeforeCreate");
         mModel->loadProject();
         if (!mModel->isSetup()) {
             mHasError = true;
