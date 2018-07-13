@@ -467,6 +467,17 @@ void Model::loadProject()
     g->printDirectories();
     const XmlHelper &xml = g->settings();
 
+    // load javascript code into the engine
+    QString script_file = xml.value("system.javascript.fileName");
+    if (!script_file.isEmpty()) {
+        script_file = g->path(script_file, "script");
+        ScriptGlobal::loadScript(script_file);
+        g->controller()->setLoadedJavascriptFile(script_file);
+        // call the global event very early in the process of creating the model
+        GlobalSettings::instance()->executeJSFunction("onBeforeCreate");
+    }
+
+
     g->clearDatabaseConnections();
     // database connections: reset
     GlobalSettings::instance()->clearDatabaseConnections();
@@ -518,13 +529,6 @@ void Model::loadProject()
         throw IException("Setup of Model: no resource units present!");
 
     // (3) additional issues
-    // (3.1) load javascript code into the engine
-    QString script_file = xml.value("system.javascript.fileName");
-    if (!script_file.isEmpty()) {
-        script_file = g->path(script_file, "script");
-        ScriptGlobal::loadScript(script_file);
-        g->controller()->setLoadedJavascriptFile(script_file);
-    }
 
     // (3.2) setup of regeneration
     if (settings().regenerationEnabled) {
