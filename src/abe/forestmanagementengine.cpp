@@ -330,7 +330,7 @@ void ForestManagementEngine::setup()
     CSVFile data_file(data_file_name);
     if (data_file.isEmpty())
         throw IException(QString("Stand-Initialization: the standDataFile file %1 is empty or missing!").arg(data_file_name));
-    QStringList forbiddenExtraColums=QStringList() << "id" << "unit" << "agent" << "agentType" << "stp" << "speciesComposition" << "thinningIntensity" << "U" << "MAI" << "harvestMode";
+    QStringList forbiddenExtraColums=QStringList() << "id" << "unit" << "agent" << "agentType" << "stp" << "speciesComposition" << "thinningIntensity" << "U" << "MAI" << "harvestMode" << "age";
     QStringList extraColumns;
     for (int i=0;i<data_file.colCount();++i) {
         if ( !forbiddenExtraColums.contains(data_file.columnName(i)) )
@@ -348,6 +348,7 @@ void ForestManagementEngine::setup()
     int ispeciescomp = data_file.columnIndex("speciesComposition");
     int ithinning = data_file.columnIndex("thinningIntensity");
     int irotation = data_file.columnIndex("U");
+    int iage = data_file.columnIndex("age");
     int iMAI = data_file.columnIndex("MAI");
     int iharvest_mode = data_file.columnIndex("harvestMode");
 
@@ -441,6 +442,10 @@ void ForestManagementEngine::setup()
             QString stp = data_file.value(i, istp).toString();
             initial_stps[stand] = stp;
         }
+
+        if (iage>-1)
+            stand->setAbsoluteAge(data_file.value(i, iage).toDouble());
+
         mMaxStandId = qMax(mMaxStandId, stand_id);
 
         mUnitStandMap.insertMulti(unit,stand);
