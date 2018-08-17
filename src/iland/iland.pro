@@ -344,7 +344,8 @@ DISTFILES += \
     ../apidoc/iLand/iLand_doc.js \
     ../apidoc/ABE/abe_stand.js \
     ../apidoc/iLand/csvfie_doc.js \
-    ../apidoc/iLand/tree_doc.js
+    ../apidoc/iLand/tree_doc.js \
+    ../apidoc/iLand/treeexpr_doc.js
 
 
 

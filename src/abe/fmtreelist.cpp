@@ -54,6 +54,7 @@ FMTreeList::FMTreeList(QObject *parent) :
     mStand = 0;
     setStand(0); // clear stand link
     mResourceUnitsLocked = false;
+    mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(&mTree);
 
 }
 

@@ -388,6 +388,38 @@ The parameters are remove-fractions, i.e. values of 0 mean no change, values of 
 */
 
 
+/**
+`tree(index)` returns the tree with index `index` (index is 0-based) from the current list. The returned Javascript object
+is a reference to the represented tree in iLand. See {{#crossLink "Tree"}}{{/crossLink}} for more details.
+
+See also: {{#crossLink "TreeList/treeObject:method"}}{{/crossLink}}
+
+@method tree
+@return {Tree}  a reference to the tree with index `index` (see above). If the index is out of range, the `valid` property of the returned object is `false`.
+@Example
+    management.loadAll(); // fill the tree list
+    // loop over all trees
+    for (var i=0;i<management.count;++i)
+       console.log( management.tree(i).dbh );
+
+**/
+
+/**
+`treeObject(index)` returns the tree with index `index` (index is 0-based) from the current list. A new Javascript object
+is created for the tree. See {{#crossLink "Tree"}}{{/crossLink}} for more details.
+
+See also: {{#crossLink "TreeList/tree:method"}}{{/crossLink}}
+
+@method treeObject
+@return {Tree}  a object representing the tree with index `index` (see above), or an invalid Tree object (if index is out of range).
+@Example
+    management.loadAll(); // fill the tree list
+    var x = management.treeObject(7); // 8th tree in the list
+    // access the tree
+    if (x.valid == true)
+       console.log(x.dbh);
+
+**/
 
 
 

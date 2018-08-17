@@ -55,12 +55,7 @@ The dbh (diamter at breast height), in cm.
 @property dbh
 @type double
 */
-/**
-The dbh (diamter at breast height), in cm.
 
-@property dbh
-@type double
-*/
 /**
 The x-coordinate of the tree, in m.
 
@@ -74,9 +69,31 @@ The y-coordinate of the tree, in m.
 @type double
 */
 /**
+`false` if the tree object is not valid, `true` otherwise.
+
+@property valid
+@type bool
+*/
+
+/**
 A string with memory address, Id, dbh, height, and coordinates of the tree.
 
 @method info
 @return {string} A human-readable string with key characteristics of the tree.
+*/
+
+/**
+`expr()` can be used to retrieve the value of an iLand expression iland.boku.ac.at/Expression. All tree variables can be accessed via the expression. Note that
+the `expression` is a string and can contain mathematical operations and a set of pre-defined functions.
+
+See also: {{#crossLink "TreeExpr"}}{{/crossLink}}
+
+
+@method expr
+@param {string} expression iLand tree expression
+@return {double} value of the `expression` for the tree.
+@Example
+    var tree = trees.tree(0); // trees is a TreeList
+    console.log( tree.expr("dbh*dbh") ); // print the squared dbh
 */
 }

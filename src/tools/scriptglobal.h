@@ -185,7 +185,7 @@ class ScriptObjectFactory: public QObject
 {
     Q_OBJECT
 public:
-    ScriptObjectFactory(QObject *parent=0);
+    ScriptObjectFactory(QObject *parent=nullptr);
 public slots:
     QJSValue newCSVFile(QString filename); ///< create a new instance of CSVFile and return it
     QJSValue newClimateConverter(); ///< create new instance of ClimateConverter and return it
