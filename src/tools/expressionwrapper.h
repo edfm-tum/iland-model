@@ -27,6 +27,7 @@ class ExpressionWrapper
 {
 public:
     ExpressionWrapper();
+    virtual ~ExpressionWrapper() {}
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
     virtual double valueByName(const QString &variableName);
@@ -40,7 +41,7 @@ class Tree;
 class TreeWrapper: public ExpressionWrapper
 {
 public:
-    TreeWrapper() : mTree(0) {}
+    TreeWrapper() : mTree(nullptr) {}
     TreeWrapper(const Tree* tree) : mTree(tree) {}
     void setTree(const Tree* tree) { mTree = tree; }
     virtual const QStringList getVariablesList();
@@ -56,7 +57,7 @@ class ResourceUnit;
 class RUWrapper: public ExpressionWrapper
 {
 public:
-    RUWrapper() : mRU(0) {}
+    RUWrapper() : mRU(nullptr) {}
     RUWrapper(const ResourceUnit* resourceUnit) : mRU(resourceUnit) {}
     void setResourceUnit(const ResourceUnit* resourceUnit) { mRU = resourceUnit; }
     virtual const QStringList getVariablesList();
@@ -72,7 +73,7 @@ struct SaplingTree;
 class SaplingWrapper: public ExpressionWrapper
 {
 public:
-    SaplingWrapper() : mSapling(0) {}
+    SaplingWrapper() : mSapling(nullptr) {}
     SaplingWrapper(const SaplingTree* saplingTree) : mSapling(saplingTree) {}
     void setSaplingTree(const SaplingTree* saplingTree) { mSapling = saplingTree; }
     virtual const QStringList getVariablesList();

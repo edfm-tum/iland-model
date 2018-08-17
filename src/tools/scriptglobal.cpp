@@ -47,6 +47,7 @@
 #include "spatialanalysis.h"
 #include "dbhdistribution.h"
 #include "spatialanalysis.h"
+#include "scripttree.h"
 
 
 #ifdef ILAND_GUI
@@ -1035,11 +1036,13 @@ void ScriptGlobal::setupGlobalScripting()
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(factory);
     engine->globalObject().setProperty("Factory", obj);
 
+
     // other object types
     ClimateConverter::addToScriptEngine(*engine);
     CSVFile::addToScriptEngine(*engine);
     MapGridWrapper::addToScriptEngine(*engine);
     SpatialAnalysis::addToScriptEngine();
+    ScriptTreeExpr::addToScriptEngine(*engine);
 
 }
 
