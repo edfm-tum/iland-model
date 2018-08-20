@@ -117,6 +117,8 @@ LandscapeRemovedOut::LandscapeRemovedOut()
 
 }
 
+static QMutex protect_output;
+
 void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
 {
     Tree::TreeRemovalType rem_type = static_cast<Tree::TreeRemovalType>(reason);
@@ -124,6 +126,8 @@ void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
         return;
     if ((rem_type==Tree::TreeHarvest || rem_type==Tree::TreeSalavaged || rem_type==Tree::TreeCutDown) && !mIncludeHarvestTrees)
         return;
+
+    QMutexLocker protector(&protect_output); // output creation can come from many threads
 
     int key = reason*10000 + t->species()->index();
     LROdata &d = mLandscapeRemoval[key];
@@ -134,6 +138,7 @@ void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
 
 
 }
+
 
 void LandscapeRemovedOut::exec()
 {

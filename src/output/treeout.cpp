@@ -113,7 +113,7 @@ TreeRemovedOut::TreeRemovedOut()
 
 }
 
-QMutex protect_output;
+static QMutex protect_output;
 void TreeRemovedOut::execRemovedTree(const Tree *t, int reason)
 {
     if (!mFilter.isEmpty()) { // skip trees if filter is present
