@@ -82,7 +82,7 @@ Tree *AllTreeIterator::next()
         }
             // finished if all RU processed
         if (mRUIterator == mModel->ruList().constEnd())
-            return NULL;
+            return nullptr;
         mTreeEnd = &((*mRUIterator)->trees().back()) + 1; // let end point to "1 after end" (STL-style)
         mCurrent = &((*mRUIterator)->trees().front());
     }
@@ -95,8 +95,8 @@ Tree *AllTreeIterator::next()
             ++mRUIterator;
         }
         if (mRUIterator == mModel->ruList().constEnd()) {
-            mCurrent = NULL;
-            return NULL; // finished!!
+            mCurrent = nullptr;
+            return nullptr; // finished!!
         }else {
             mTreeEnd = &((*mRUIterator)->trees().back()) + 1;
             mCurrent = &((*mRUIterator)->trees().front());
@@ -109,11 +109,11 @@ Tree *AllTreeIterator::nextLiving()
 {
     while (Tree *t = next())
         if (!t->isDead()) return t;
-    return NULL;
+    return nullptr;
 }
 Tree *AllTreeIterator::current() const
 {
-    return mCurrent?mCurrent-1:NULL;
+    return mCurrent?mCurrent-1:nullptr;
 }
 
 
@@ -131,7 +131,7 @@ Model::Model()
 Model::~Model()
 {
     clear();
-    GlobalSettings::instance()->setModel(NULL);
+    GlobalSettings::instance()->setModel(nullptr);
 }
 
 /** Initial setup of the Model.
@@ -140,18 +140,18 @@ void Model::initialize()
 {
    mSetup = false;
    GlobalSettings::instance()->setCurrentYear(0);
-   mGrid = 0;
-   mHeightGrid = 0;
-   mManagement = 0;
-   mABEManagement = 0;
-   mEnvironment = 0;
-   mTimeEvents = 0;
-   mStandGrid = 0;
-   mModules = 0;
-   mDEM = 0;
-   mGrassCover = 0;
-   mSaplings=0;
-   mSVDStates=0;
+   mGrid = nullptr;
+   mHeightGrid = nullptr;
+   mManagement = nullptr;
+   mABEManagement = nullptr;
+   mEnvironment = nullptr;
+   mTimeEvents = nullptr;
+   mStandGrid = nullptr;
+   mModules = nullptr;
+   mDEM = nullptr;
+   mGrassCover = nullptr;
+   mSaplings=nullptr;
+   mSVDStates=nullptr;
 }
 
 /** sets up the simulation space.
@@ -176,11 +176,11 @@ void Model::setupSpace()
 
     if (mGrid)
         delete mGrid;
-    mGrid = new FloatGrid(total_grid, cellSize);
+    mGrid = new FloatGrid(total_grid, static_cast<float>(cellSize));
     mGrid->initialize(1.f);
     if (mHeightGrid)
         delete mHeightGrid;
-    mHeightGrid = new HeightGrid(total_grid, cellSize*cPxPerHeight);
+    mHeightGrid = new HeightGrid(total_grid, static_cast<float>(cellSize)*cPxPerHeight);
     mHeightGrid->wipe(); // set all to zero
     Tree::setGrid(mGrid, mHeightGrid);
 
@@ -277,7 +277,7 @@ void Model::setupSpace()
         int ru_index = 0;
         for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
             QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
-            if (!mStandGrid || !mStandGrid->isValid() || *p>NULL) {
+            if (!mStandGrid || !mStandGrid->isValid() || *p!=nullptr) {
                 mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
                 // create resource units for valid positions only
                 new_ru = new ResourceUnit(ru_index++); // create resource unit
@@ -308,8 +308,10 @@ void Model::setupSpace()
         }
 
 
-        if (mStandGrid && mStandGrid->isValid())
+        if (mStandGrid && mStandGrid->isValid()) {
             mStandGrid->createIndex();
+            qDebug() << "Loaded stand grid from " << mStandGrid->name() << ", #stands: " << mStandGrid->count();
+        }
         // now store the pointers in the grid.
         // Important: This has to be done after the mRU-QList is complete - otherwise pointers would
         // point to invalid memory when QList's memory is reorganized (expanding)
@@ -326,12 +328,12 @@ void Model::setupSpace()
         if (!mask_is_setup && xml.valueBool("areaMask.enabled", false) && xml.hasNode("areaMask.imageFile")) {
             // to be extended!!! e.g. to load ESRI-style text files....
             // setup a grid with the same size as the height grid...
-            FloatGrid tempgrid((int)mHeightGrid->cellsize(), mHeightGrid->sizeX(), mHeightGrid->sizeY());
+            FloatGrid tempgrid(static_cast<int>(mHeightGrid->cellsize()), mHeightGrid->sizeX(), mHeightGrid->sizeY());
             QString fileName = GlobalSettings::instance()->path(xml.value("areaMask.imageFile"));
             qDebug() << "loading project area mask from" << fileName << "...";
             loadGridFromImage(fileName, tempgrid); // fetch from image
             for (int i=0;i<tempgrid.count(); i++)
-                mHeightGrid->valueAtIndex(i).setValid( tempgrid.valueAtIndex(i)>0.99 );
+                mHeightGrid->valueAtIndex(i).setValid( tempgrid.valueAtIndex(i)>0.99f );
 
         }
 
@@ -355,7 +357,7 @@ void Model::setupSpace()
 
         // setup of saplings
         if (mSaplings) {
-            delete mSaplings; mSaplings=0;
+            delete mSaplings; mSaplings=nullptr;
         }
         if (settings().regenerationEnabled) {
             mSaplings = new Saplings();
@@ -439,17 +441,17 @@ void Model::clear()
     if (mSVDStates)
         delete mSVDStates;
 
-    mGrid = 0;
-    mHeightGrid = 0;
-    mManagement = 0;
-    mEnvironment = 0;
-    mTimeEvents = 0;
-    mStandGrid  = 0;
-    mModules = 0;
-    mDEM = 0;
-    mGrassCover = 0;
-    mABEManagement = 0;
-    mSVDStates = 0;
+    mGrid = nullptr;
+    mHeightGrid = nullptr;
+    mManagement = nullptr;
+    mEnvironment = nullptr;
+    mTimeEvents = nullptr;
+    mStandGrid  = nullptr;
+    mModules = nullptr;
+    mDEM = nullptr;
+    mGrassCover = nullptr;
+    mABEManagement = nullptr;
+    mSVDStates = nullptr;
 
     GlobalSettings::instance()->outputManager()->close();
 
@@ -556,7 +558,7 @@ void Model::loadProject()
 
     // SVD States
     if (mSVDStates) {
-        delete mSVDStates; mSVDStates=0;
+        delete mSVDStates; mSVDStates=nullptr;
     }
     if (xml.valueBool("model.settings.svdStates.enabled", false))
         mSVDStates=new SVDStates();
@@ -588,7 +590,7 @@ ResourceUnit *Model::ru(QPointF coord)
     if (mRUmap.isEmpty())
         return ru(); // default RU if there is only one
     else
-        return 0; // in this case, no valid coords were provided
+        return nullptr; // in this case, no valid coords were provided
 }
 
 ResourceUnit *Model::ruById(int id) const
@@ -596,7 +598,7 @@ ResourceUnit *Model::ruById(int id) const
     for (int i=0;i<mRU.size();++i)
         if (mRU[i]->id()==id)
             return mRU[i];
-    return 0;
+    return nullptr;
 }
 
 void Model::initOutputDatabase()
@@ -988,7 +990,7 @@ void Model::test()
     int count = 0;
     float *end = averaged.end();
     for (float *p=averaged.begin(); p!=end; ++p)
-        if (*p > 0.9)
+        if (*p > 0.9f)
             count++;
     qDebug() << count << "LIF>0.9 of " << averaged.count();
 }
@@ -999,8 +1001,8 @@ void Model::debugCheckAllTrees()
     bool has_errors = false; double dummy=0.;
     while (Tree *t = at.next()) {
         // plausibility
-        if (t->dbh()<0 || t->dbh()>10000. || t->biomassFoliage()<0. || t->height()>1000. || t->height() < 0.
-                || t->biomassFoliage() <0.)
+        if (t->dbh()<0 || t->dbh()>10000.f || t->biomassFoliage()<0.f || t->height()>1000.f || t->height() < 0.f
+                || t->biomassFoliage() <0.f)
             has_errors = true;
         // check for objects....
         dummy = t->stamp()->offset() + t->ru()->ruSpecies()[1]->statistics().count();
@@ -1158,7 +1160,7 @@ void Model::initializeGrid()
     int ix_min, ix_max, iy_min, iy_max, ix_center, iy_center;
     const int px_offset = cPxPerHeight / 2; // for 5 px per height grid cell, the offset is 2
     const int max_radiate_distance = 7;
-    const float step_width = 1.f / (float)max_radiate_distance;
+    const float step_width = 1.f / static_cast<float>(max_radiate_distance);
     int c_rad = 0;
     for (HeightGridValue *hgv=mHeightGrid->begin(); hgv!=mHeightGrid->end(); ++hgv) {
         if (hgv->isRadiating()) {

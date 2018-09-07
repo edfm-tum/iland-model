@@ -48,7 +48,7 @@
 #include "dbhdistribution.h"
 #include "spatialanalysis.h"
 #include "scripttree.h"
-
+#include "scriptresourceunit.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -77,7 +77,7 @@ class ResourceUnit;
   More text.
 */
 
-QObject *ScriptGlobal::scriptOutput = 0;
+QObject *ScriptGlobal::scriptOutput = nullptr;
 
 ScriptGlobal::ScriptGlobal(QObject *)
 {
@@ -85,6 +85,10 @@ ScriptGlobal::ScriptGlobal(QObject *)
     // current directory
     if (mModel)
         mCurrentDir = GlobalSettings::instance()->path(QString(), "script") + QDir::separator();
+
+    mSRU = new ScriptResourceUnit();
+    mRUValue = GlobalSettings::instance()->scriptEngine()->newQObject(mSRU);
+
 }
 
 
@@ -655,6 +659,19 @@ QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
 
 }
 
+QJSValue ScriptGlobal::resourceUnit(int index)
+{
+    if (!mSRU)
+        return QJSValue();
+    mSRU->clear();
+    if (!GlobalSettings::instance()->model())
+        return mRUValue;
+
+    mSRU->setRU(GlobalSettings::instance()->model()->ru(index));
+    return mRUValue;
+
+}
+
 
 bool ScriptGlobal::seedMapToFile(QString species, QString file_name)
 {
@@ -1035,6 +1052,7 @@ void ScriptGlobal::setupGlobalScripting()
     ScriptObjectFactory *factory = new ScriptObjectFactory;
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(factory);
     engine->globalObject().setProperty("Factory", obj);
+
 
 
     // other object types

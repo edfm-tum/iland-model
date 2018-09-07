@@ -204,7 +204,8 @@ SOURCES += main.cpp \
     ../output/svdout.cpp \
     ../core/svdstate.cpp \
     ../output/soilinputout.cpp \
-    ../tools/scripttree.cpp
+    ../tools/scripttree.cpp \
+    ../tools/scriptresourceunit.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -311,7 +312,8 @@ HEADERS += mainwindow.h \
     ../output/svdout.h \
     ../core/svdstate.h \
     ../output/soilinputout.h \
-    ../tools/scripttree.h
+    ../tools/scripttree.h \
+    ../tools/scriptresourceunit.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

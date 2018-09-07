@@ -24,6 +24,7 @@
 #include <QVariant>
 #include <QJSValue>
 
+
 // Scripting Interface for MapGrid
 class MapGrid; // forward
 class MapGridWrapper: public QObject
@@ -32,7 +33,7 @@ class MapGridWrapper: public QObject
     Q_PROPERTY(int valid READ isValid)
     Q_PROPERTY(QString name READ name)
 public:
-    MapGridWrapper(QObject *parent=0);
+    MapGridWrapper(QObject *parent=nullptr);
     ~MapGridWrapper();
     static void addToScriptEngine(QJSEngine &engine);
     MapGrid *map() const { return mMap; } ///< acccess for C++ classes
@@ -74,6 +75,7 @@ private:
   functions and properties that are accessible by JavaScript.
   */
 class Model;
+class ScriptResourceUnit; // forward
 class ScriptGlobal : public QObject
 {
     Q_OBJECT
@@ -89,7 +91,7 @@ class ScriptGlobal : public QObject
 
 
 public:
-    ScriptGlobal(QObject *parent=0);
+    ScriptGlobal(QObject *parent=nullptr);
     static void setupGlobalScripting();
     // properties accesible by scripts
     bool qt5() const {return true; } ///< is this the qt5-model? (changes in script object creation)
@@ -154,6 +156,10 @@ public slots:
     /// return a grid (level of resource units) with the result of an expression evaluated in the context of the resource unit.
     QJSValue resourceUnitGrid(QString expression);
 
+    /// access to single resource unit (returns a reference)
+    QJSValue resourceUnit(int index);
+
+
     // DOES NOT FULLY WORK
     bool seedMapToFile(QString species, QString file_name); ///< save the "seedmap" (i.e. a grid showing the seed distribution) as ESRI rastser file
     void wait(int milliseconds); ///< wait for 'milliseconds' or (if ms=-1 until a key is pressed)
@@ -175,6 +181,8 @@ private:
     void throwError(const QString &errormessage);
     QString mCurrentDir;
     Model *mModel;
+    QJSValue mRUValue;
+    ScriptResourceUnit *mSRU;
 };
 
 /** The ScriptObjectFactory can instantiate objects of other C++ (QObject-based) types.

@@ -135,7 +135,7 @@ public:
     int newSaplings() const { return mAdded; }
     int diedSaplings() const { return mDied; }
     int livingCohorts() const { return mLiving; } ///< get the number of cohorts
-    double livingSaplings() const { return mLivingSaplings; }
+    double livingSaplings() const { return mLivingSaplings; } ///< number of individual trees in the regen layer (using Reinekes R), with h>1.3m
     double livingSaplingsSmall() const { return mLivingSmallSaplings; }
     int recruitedSaplings() const { return mRecruited; }
     ///  returns the *represented* (Reineke's Law) number of trees (N/ha) and the mean dbh/height (cm/m)

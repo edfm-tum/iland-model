@@ -65,7 +65,7 @@ BarkBeetleModule::~BarkBeetleModule()
 
 void BarkBeetleModule::setup()
 {
-    // setup the wind grid
+    // setup the bark beetle grid (10m default size)
     mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(), cellsize());
     BarkBeetleCell cell;
     mGrid.initialize(cell);

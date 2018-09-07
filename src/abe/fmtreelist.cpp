@@ -51,20 +51,22 @@ double removeBranch()  {return 0.;}
 FMTreeList::FMTreeList(QObject *parent) :
     QObject(parent)
 {
-    mStand = 0;
-    setStand(0); // clear stand link
+    mStand = nullptr;
+    setStand(nullptr); // clear stand link
     mResourceUnitsLocked = false;
-    mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(&mTree);
+    mTree = new ScriptTree;
+    mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(mTree);
 
 }
 
 FMTreeList::FMTreeList(FMStand *stand, QObject *parent):
     QObject(parent)
 {
-    mStand = 0;
+    mStand = nullptr;
     setStand(stand);
     mResourceUnitsLocked = false;
-    mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(&mTree);
+    mTree = new ScriptTree;
+    mTreeValue = ForestManagementEngine::scriptEngine()->newQObject(mTree);
 }
 
 FMTreeList::~FMTreeList()
@@ -224,9 +226,9 @@ int FMTreeList::resetMarks()
 QJSValue FMTreeList::tree(int index)
 {
     if (index<0 || index>=count())
-        mTree.clear();
+        mTree->clear();
     else
-        mTree.setTree( mTrees[index].first );
+        mTree->setTree( mTrees[index].first );
     return mTreeValue;
 
 }

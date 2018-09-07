@@ -44,6 +44,8 @@ public:
     const QString &name() const { return mName; }
     bool isValid() const { return !mGrid.isEmpty(); }
     const Grid<int> &grid() const { return mGrid; }
+    /// number of stands stored in the index
+    int count() const { return mRectIndex.size(); }
     // access
     /// returns true, if 'id' is a valid id in the grid, false otherwise.
     bool isValid(const int id) const { return mRectIndex.contains(id); }
