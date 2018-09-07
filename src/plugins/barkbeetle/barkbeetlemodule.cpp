@@ -150,7 +150,7 @@ void BarkBeetleModule::loadParameters()
     if (mRefClimateAverages.count()!=8)
         throw IException("Barkbeetle Setup: Error: invalid values for seasonalPrecipSum or seasonalTemperatureAverage (4 ','-separated values expected).");
 
-    mRefClimate = 0;
+    mRefClimate = nullptr;
     foreach(const Climate *clim, GlobalSettings::instance()->model()->climates())
         if (clim->name()==ref_table_name) {
             mRefClimate = clim; break;
@@ -422,7 +422,8 @@ void BarkBeetleModule::startSpread()
                 }
             } else if (b->backgroundInfestationProbability>0.f) {
                 // calculate probability for an outbreak
-                double odds_base = b->backgroundInfestationProbability / (1. - b->backgroundInfestationProbability);
+                double p = static_cast<double>(b->backgroundInfestationProbability);
+                double odds_base = p / (1. - p);
                 double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
                 if (drandom() < p_mod) {
                     // background activation: 10 px
@@ -596,7 +597,7 @@ void BarkBeetleModule::barkbeetleSpread()
                     if (drandom() < params.deadTreeSelectivity)
                         continue;
 
-                BarkBeetleCell *target=0;
+                BarkBeetleCell *target=nullptr;
                 if (targeter.current()->isPotentialHost()) {
                     // found a potential host at the immediate target pixel
                     target = targeter.current();
@@ -704,7 +705,7 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
 {
     switch(param_index){
     case 0: return data.n; // grid value on pixel
-    case 1: return data.dbh; // diameter of host
+    case 1: return static_cast<double>(data.dbh); // diameter of host
     case 2: return data.infested?1.:0.; // infested yes/no
     case 3: return data.killed?1.:0.; // pixel has been killed in the (last) year
     case 4: if (data.isHost()) { // dead
@@ -714,12 +715,12 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
                     return data.killedYear; // iteration when killed
             }
             return -1; // no host
-    case 5: return data.p_colonize; // probability of kill
+    case 5: return static_cast<double>(data.p_colonize); // probability of kill
     case 6: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
-    case 7: return data.backgroundInfestationProbability;
+    case 7: return static_cast<double>(data.backgroundInfestationProbability);
     case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
     case 9: return data.n_events; // number of events on a specific pixel
-    case 10: return data.sum_volume_killed; // total sum of trees killed for a pixel
+    case 10: return static_cast<double>(data.sum_volume_killed); // total sum of trees killed for a pixel
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
