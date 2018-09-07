@@ -143,7 +143,7 @@ public:
     void clearGrids(); ///< reset the state of the internal grids (used for javascript based tests)
     void loadAllVegetation(); ///< scan the state of the vegetation of the full landscape
 
-    /// main function to execute the bark beetle module
+    /// main function to execute the bark beetle module (iteration can be non-0 when called from Javascript)
     void run(int iteration=0);
 
     /// function that is called whenever a tree dies somewhere in iLand
