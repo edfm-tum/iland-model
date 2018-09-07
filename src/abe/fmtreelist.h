@@ -175,7 +175,7 @@ private:
     friend void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *list);
 
     QJSValue mTreeValue;
-    ScriptTree mTree;
+    ScriptTree *mTree;
 
 
     friend class ActThinning;

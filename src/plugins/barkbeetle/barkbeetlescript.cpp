@@ -216,6 +216,46 @@ bool BarkBeetleScript::setInfested(int x, int y)
     return true;
 }
 
+int BarkBeetleScript::setInfestedFromMap(MapGridWrapper *grid, int key, double probability)
+{
+    if (!grid) {
+        qDebug() << "invalid map for BarkBeetleScropt::setInfestedMap: Map expected!";
+        return -1;
+    }
+    if (grid->isValid()) {
+        QRectF bounding_box = grid->map()->boundingBox(key);
+        GridRunner<BarkBeetleCell> runner(mBeetle->mGrid, bounding_box);
+        int n_infested = 0;
+        int not_infested = 0;
+        while (runner.next()) {
+            // map grid is aligned to the 10m bark beetle grid
+            if ( grid->map()->grid().constValueAtIndex( runner.currentIndex() ) == key ) {
+                // set as infested
+                if (runner.current()->isHost()) {
+                    if (probability==1. || drandom() < probability ) {
+                        runner.current()->setInfested(true);
+                        runner.current()->outbreakYear = mBeetle->internalYear() - irandom(0,4);
+                        ++n_infested;
+                    } else {
+                        ++not_infested; // due to prob
+                    }
+                } else {
+                    ++not_infested; // is not a host cell
+                }
+            }
+
+        }
+        qDebug() << "BarkBeetle.setInfestedFromMap: for stand" << key << ": 10m px infested/not-infested:" << n_infested << "/" << not_infested;
+        return n_infested;
+
+
+    } else {
+        qDebug() << "BarkBeetle.setInfestedFromMap: grid is not valid.";
+        return -1;
+    }
+
+}
+
 bool BarkBeetleScript::simulate()
 {
     return mBeetle->simulate();

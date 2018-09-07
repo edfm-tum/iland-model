@@ -52,7 +52,7 @@ public:
     double npp() const { return mNPP; } ///< sum. of NPP (kg Biomass increment, above+belowground, trees >4m)/ha
     double nppAbove() const { return mNPPabove; } ///< above ground NPP (kg Biomass increment)/ha
     double nppSaplings() const { return mNPPsaplings; } ///< carbon gain of saplings (kg Biomass increment)/ha
-    int cohortCount() const { return mCohortCount; } ///< number of cohorts of saplings / ha
+    int cohortCount() const { return static_cast<int>(mCohortCount); } ///< number of cohorts of saplings / ha
     int saplingCount() const { return static_cast<int>(mSaplingCount); } ///< number individuals in regeneration layer (represented by "cohortCount" cohorts) N/ha
     double saplingAge() const { return mAverageSaplingAge; } ///< average age of sapling (currenty not weighted with represented sapling numbers...)
     // carbon/nitrogen cycle

@@ -23,6 +23,8 @@
 #include <QObject>
 #include <QJSValue>
 
+#include "scriptglobal.h"
+
 class BarkBeetleModule; // forward
 
 class BarkBeetleScript : public QObject
@@ -74,6 +76,8 @@ public slots:
     /// initiate damage
     /// sets pixel at (x/y) (grid indices) as infested, return true if pixel was a potential host pixel
     bool setInfested(int x, int y);
+    /// set all pixels on stand 'key' on the map 'grid' (with probability 'probability') as infested
+    int setInfestedFromMap(MapGridWrapper *grid, int key, double probability);
 
 private:
 

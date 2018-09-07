@@ -212,7 +212,9 @@ SOURCES += main.cpp \
     ../output/svdout.cpp \
     ../core/svdstate.cpp \
     ../output/soilinputout.cpp \
-    ../tools/scripttree.cpp
+    ../tools/scripttree.cpp \
+    ../tools/scriptresourceunit.cpp
+
 
 
 HEADERS += \
@@ -317,7 +319,9 @@ HEADERS += \
     ../output/svdout.h \
     ../core/svdstate.h \
     ../output/soilinputout.h \
-    ../tools/scripttree.h
+    ../tools/scripttree.h \
+    ../tools/scriptresourceunit.h
+
 
 
 

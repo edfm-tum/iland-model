@@ -370,10 +370,8 @@ See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 */
 
 /**
-Creates a [ESRI style](http://en.wikipedia.org/wiki/Esri_grid) grid file from an iLand grid.
-Specify the target file name with `file_name` and the type of the source grid with the string `grid_type`.
-Allowed grids are: 'height' and 'lif', being the 10m dominant heights and the 2m LIF pixels.
-create a seed map for 'species' the next time seed dispersal is calculated. `species` is the species-id (e.g., 'piab', 'fasy'),
+Creates a [ESRI style](http://en.wikipedia.org/wiki/Esri_grid) grid file from the seed map for a given species.
+The functions causes the creation of a raster file for 'species' the next time seed dispersal is calculated. `species` is the species-id (e.g., 'piab', 'fasy'),
 and `file_name` the destination location of the grid file [ESRI ASCII raster](http://en.wikipedia.org/wiki/Esri_grid).
 The saved seed map contains the seed distribution on 20m resolution.
 Seed maps are only saved once, i.e. if a time series of seed maps is needed, `seedMapToFile()` need to be called periodically.

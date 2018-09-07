@@ -134,7 +134,7 @@ private:
     QJSEngine *mEngine;
     int mRemoved;
     QJSValue mTreeValue;
-    ScriptTree mTree;
+    ScriptTree *mTree;
 };
 
 #endif // MANAGEMENT_H
