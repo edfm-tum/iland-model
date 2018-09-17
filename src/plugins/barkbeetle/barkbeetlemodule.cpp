@@ -436,6 +436,7 @@ void BarkBeetleModule::startSpread()
         }
 
         b->n = 0;
+        b->n_total = 0;
         b->killed=false;
         b->killedYear = 0;
         b->packageOutbreakYear = 0.f;
@@ -618,6 +619,7 @@ void BarkBeetleModule::barkbeetleSpread()
                 // attack the target pixel if a target could be identified
                 if (target) {
                     target->n++;
+                    target->n_total++;
                     target->packageOutbreakYear += b->outbreakYear;
                 }
             }
@@ -709,18 +711,19 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 2: return data.infested?1.:0.; // infested yes/no
     case 3: return data.killed?1.:0.; // pixel has been killed in the (last) year
     case 4: if (data.isHost()) { // dead
-                if (data.infested)
-                    return data.max_iteration+1; // infested right now (will be dead soon next year)
-                else
-                    return data.killedYear; // iteration when killed
-            }
-            return -1; // no host
+            if (data.infested)
+                return data.max_iteration+1; // infested right now (will be dead soon next year)
+            else
+                return data.killedYear; // iteration when killed
+        }
+        return -1; // no host
     case 5: return static_cast<double>(data.p_colonize); // probability of kill
-    case 6: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
-    case 7: return static_cast<double>(data.backgroundInfestationProbability);
-    case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
-    case 9: return data.n_events; // number of events on a specific pixel
-    case 10: return static_cast<double>(data.sum_volume_killed); // total sum of trees killed for a pixel
+    case 6: return static_cast<double>(data.n_total); // # landed
+    case 7: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
+    case 8: return static_cast<double>(data.backgroundInfestationProbability);
+    case 9: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
+    case 10: return data.n_events; // number of events on a specific pixel
+    case 11: return static_cast<double>(data.sum_volume_killed); // total sum of trees killed for a pixel
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -736,6 +739,7 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("killed"), QLatin1Literal("1 for pixels that have been killed (0 otherwise) in the current year (last execution of the module)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). \nNewly infested pixels are included (max iteration + 1)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
+                << LayeredGridBase::LayerElement(QLatin1Literal("n_landed"), QLatin1Literal("number of cohorts that landed on a pixel (sum of all generations)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 10/8, 0: no dead trees"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
                 << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray)

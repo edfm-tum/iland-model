@@ -63,7 +63,7 @@ void UnitOut::exec()
         *this << unit->U() << unit->thinningIntensity();
         *this << unit->mTotalVolume/unit->area() << unit->mMAI;
         *this << unit->mAnnualHarvestTarget;
-        if (unit->scheduler()) {
+        if (unit->scheduler()->enabled()) {
             salvage_harvest = unit->scheduler()->mExtraHarvest / unit->area();
             annual_target = unit->scheduler()->mFinalCutTarget;
         } else {

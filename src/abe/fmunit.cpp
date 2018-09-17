@@ -93,7 +93,7 @@ double FMUnit::annualThinningHarvest() const
 FMUnit::FMUnit(const Agent *agent)
 {
     mAgent = agent;
-    mScheduler = 0;
+    mScheduler = nullptr;
     mAnnualHarvestTarget = -1.;
     mRealizedHarvest = 0.;
     mMAI = 0.; mHDZ = 0.; mMeanAge = 0.;
@@ -101,7 +101,7 @@ FMUnit::FMUnit(const Agent *agent)
     mTotalVolume = 0.;
     mAnnualHarvest = 0.;
     mNumberOfStands = 0;
-    mU = 100, mThinningIntensityClass = 2, mSpeciesCompositionIndex = 0;
+    mU = 100; mThinningIntensityClass = 2; mSpeciesCompositionIndex = 0;
     mAverageMAI = 0.;
     mForceUpdateManagementPlan=false;
 
@@ -109,6 +109,7 @@ FMUnit::FMUnit(const Agent *agent)
     //if (agent->type()->schedulerOptions().useScheduler)
     // explicit scheduler only for stands/units that include more than one stand
     mScheduler = new Scheduler(this);
+    mScheduler->setEnabled( agent->schedulerOptions().useScheduler );
 }
 
 FMUnit::~FMUnit()
@@ -124,7 +125,7 @@ void FMUnit::setId(const QString &id)
 
 void FMUnit::resetHarvestCounter()
 {
-    if (scheduler())
+    if (scheduler()->enabled())
         scheduler()->resetHarvestCounter();
 }
 
@@ -168,7 +169,7 @@ void FMUnit::managementPlanUpdate()
         ++it;
     }
     // reset
-    ForestManagementEngine::instance()->scriptBridge()->treesObj()->setStand(0);
+    ForestManagementEngine::instance()->scriptBridge()->treesObj()->setStand(nullptr);
     mTotalArea = total_area;
     if (total_area==0.)
         return;
@@ -210,11 +211,11 @@ void FMUnit::managementPlanUpdate()
     mAnnualThinningTarget = (plan_thinning / period_length) / total_area; // m3/ha*yr
 
 
-    if (scheduler())
+    if (scheduler()->enabled())
         scheduler()->setHarvestTarget(mAnnualHarvestTarget, mAnnualThinningTarget);
 }
 
-QMutex _protect_agent_exec;
+static QMutex _protect_agent_exec;
 void FMUnit::runAgent()
 {
     QMutexLocker m(&_protect_agent_exec); // avoid parallel execution of agent-code....
@@ -239,7 +240,7 @@ void FMUnit::runAgent()
 
 void FMUnit::updatePlanOfCurrentYear()
 {
-    if (!scheduler())
+    if (!scheduler()->enabled())
         return;
 
     if (mTotalArea==0.)
@@ -258,7 +259,7 @@ void FMUnit::updatePlanOfCurrentYear()
     mTotalPlanDeviation *= mAgent->schedulerOptions().deviationDecayRate;
 
     // relative deviation: >0: too many harvests
-    double rel_deviation = mAnnualHarvestTarget? mTotalPlanDeviation / mAnnualHarvestTarget : 0;
+    double rel_deviation = mAnnualHarvestTarget? mTotalPlanDeviation / mAnnualHarvestTarget : 0.;
 
     // the current deviation is reduced to 50% in rebounce_yrs years.
     double rebounce_yrs = mAgent->schedulerOptions().scheduleRebounceDuration;

@@ -163,10 +163,10 @@ public:
     /// flags of currently active Activity
     ActivityFlags &currentFlags()  { return flags(mCurrentIndex); }
     /// get a pointer to the current activity; returns 0 if no activity is set.
-    Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():0; }
+    Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():nullptr; }
 
     /// get a pointer to the last executed activity; returns 0 if no activity has been executed before.
-    Activity *lastExecutedActivity() const { return mLastExecutedIndex>-1?mStandFlags[mLastExecutedIndex].activity():0; }
+    Activity *lastExecutedActivity() const { return mLastExecutedIndex>-1?mStandFlags[mLastExecutedIndex].activity():nullptr; }
 
     int lastExecutionAge() const { return absoluteAge()>0 ? static_cast<int>(absoluteAge()) : mLastRotationAge; }
 

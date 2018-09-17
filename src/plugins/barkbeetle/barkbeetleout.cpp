@@ -28,7 +28,7 @@
 
 BarkBeetleOut::BarkBeetleOut()
 {
-    mBB = 0;
+    mBB = nullptr;
     setName("BarkBeetle module output", "barkbeetle");
     setDescription("Barkbeetle related outputs per year. "\
                    "The outputs are created after each year (or spread event) and contain information about bark beetle generations, spread and damage for the total landscape.\n " \

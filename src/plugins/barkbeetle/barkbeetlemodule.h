@@ -37,7 +37,7 @@ class BarkBeetleCell
 {
 public:
     BarkBeetleCell() { reset(); }
-    void clear() { n=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=NoDeadTrees; packageOutbreakYear=0.f; }
+    void clear() { n=0; n_total=0; killedYear=0; outbreakYear=0.f; infested=false;  p_colonize=0.f; deadtrees=NoDeadTrees; packageOutbreakYear=0.f; }
     /// full reset of the pixel
     void reset() {clear(); dbh=0.f; tree_stress=0.f; outbreakYear=0.f; n_events=0; sum_volume_killed=0.f; }
     bool isHost() const { return dbh>0.f; }
@@ -53,7 +53,8 @@ public:
     float dbh; // the dbh of the biggest spruce on the pixel
     float tree_stress; // the stress rating of this tree (SI)
     float p_colonize; // the highest probability (0..1) that a pixel is killed
-    int n; // number of cohorts that landed on the pixel
+    int n; // number of cohorts that landed on the pixel in each iteration
+    int n_total; // number of cohorts that landed on a pixel (total)
     int killedYear; // year (iteration) at which pixel was killed ??
     float outbreakYear; // year in which the outbreak started (this information is preserved by spreading beatles)
     float packageOutbreakYear; // outbreak year of packages landing on a cell
