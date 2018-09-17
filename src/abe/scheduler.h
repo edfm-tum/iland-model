@@ -54,8 +54,12 @@ struct SchedulerOptions {
 class Scheduler
 {
 public:
-    Scheduler(FMUnit* unit) { mUnit = unit; mExtraHarvest=0.; mFinalCutTarget=0.; }
+    Scheduler(FMUnit* unit) { mUnit = unit; mExtraHarvest=0.; mFinalCutTarget=0.; mEnabled=false; }
     enum HarvestType { Thinning, EndHarvest, Salvage};
+
+    void setEnabled(bool enabled) { mEnabled = enabled; }
+    bool enabled() const { return mEnabled; }
+
 
     /// add an planned activity for a given stand.
     /// @param stand the stand to add
@@ -104,7 +108,7 @@ private:
     void updateCurrentPlan();
     class SchedulerItem {
     public:
-        SchedulerItem(): stand(0), score(0.), scheduledYear(-1) {}
+        SchedulerItem(): stand(nullptr), score(0.), scheduledYear(-1) {}
         bool operator<(const SchedulerItem &item);
         void calculate(); ///< calculate the final score
         FMStand *stand; ///< the stand to be harvested
@@ -132,6 +136,7 @@ private:
     double mExtraHarvest; ///< extra harvests due to disturbances m3
     double mFinalCutTarget; ///< current harvest target for regeneration harvests (m3/ha)
     double mThinningTarget; ///< current harvest target for thinning/tending operations (m3/ha)
+    bool mEnabled; ///< true if the scheduler is active
 
     static const int MAX_YEARS = 20;
     friend class UnitOut;

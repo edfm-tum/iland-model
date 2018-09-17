@@ -78,11 +78,11 @@ namespace ABE {
  * @ingroup abe
 */
 
-ForestManagementEngine *ForestManagementEngine::singleton_fome_engine = 0;
+ForestManagementEngine *ForestManagementEngine::singleton_fome_engine = nullptr;
 int ForestManagementEngine::mMaxStandId = -1;
 ForestManagementEngine::ForestManagementEngine()
 {
-    mScriptBridge = 0;
+    mScriptBridge = nullptr;
     singleton_fome_engine = this;
     mCancel = false;
     mEnabled = true;
@@ -96,7 +96,7 @@ ForestManagementEngine::~ForestManagementEngine()
     // script bridge: script ownership?
     //if (mScriptBridge)
     //    delete mScriptBridge;
-    singleton_fome_engine = 0;
+    singleton_fome_engine = nullptr;
 }
 
 const MapGrid *ForestManagementEngine::standGrid()
@@ -156,7 +156,7 @@ void ForestManagementEngine::finalizeRun()
         // renew the internal stand grid
         FMStand **fm = mFMStandGrid.begin();
         for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
-            *fm = *p<0?0:mStandHash[*p];
+            *fm = *p<0?nullptr:mStandHash[*p];
         // renew neigborhood information in the stand grid
         const_cast<MapGrid*>(standGrid())->updateNeighborList();
         // renew the spatial indices
@@ -191,7 +191,7 @@ void ForestManagementEngine::runJavascript(bool after_processing)
     if (after_processing) {
         QJSValue handler = scriptEngine()->globalObject().property("runFinalize");
         if (handler.isCallable()) {
-            scriptBridge()->setExecutionContext(0, false);
+            scriptBridge()->setExecutionContext(nullptr, false);
             QJSValue result = handler.call(QJSValueList() << mCurrentYear);
             if (FMSTP::verbose())
                 qCDebug(abe) << "executing 'runFinalize' function for year" << mCurrentYear << ", result:" << result.toString();
@@ -201,7 +201,7 @@ void ForestManagementEngine::runJavascript(bool after_processing)
     }
     QJSValue handler = scriptEngine()->globalObject().property("run");
     if (handler.isCallable()) {
-        scriptBridge()->setExecutionContext(0, false);
+        scriptBridge()->setExecutionContext(nullptr, false);
         QJSValue result = handler.call(QJSValueList() << mCurrentYear);
         if (FMSTP::verbose())
             qCDebug(abe) << "executing 'run' function for year" << mCurrentYear << ", result:" << result.toString();
@@ -222,7 +222,7 @@ AgentType *ForestManagementEngine::agentType(const QString &name)
     for (int i=0;i<mAgentTypes.count();++i)
         if (mAgentTypes[i]->name()==name)
             return mAgentTypes[i];
-    return 0;
+    return nullptr;
 }
 
 Agent *ForestManagementEngine::agent(const QString &name)
@@ -230,7 +230,7 @@ Agent *ForestManagementEngine::agent(const QString &name)
     for (int i=0;i<mAgents.count();++i)
         if (mAgents[i]->name()==name)
             return mAgents[i];
-    return 0;
+    return nullptr;
 }
 
 
@@ -320,7 +320,7 @@ void ForestManagementEngine::setup()
     // (2) spatial data (stands, units, ...)
     const MapGrid *stand_grid = GlobalSettings::instance()->model()->standGrid();
 
-    if (stand_grid==NULL || stand_grid->isValid()==false)
+    if (stand_grid==nullptr || stand_grid->isValid()==false)
         throw IException("The ABE management model requires a valid stand grid.");
 
     const XmlHelper &xml = GlobalSettings::instance()->settings();
@@ -373,8 +373,8 @@ void ForestManagementEngine::setup()
         QString agent_type_code = iagent_type>-1 ? data_file.value(i, iagent_type).toString() : QString();
         QString unit_id = data_file.value(i, iunit).toString();
 
-        Agent *ag=0;
-        AgentType *at=0;
+        Agent *ag=nullptr;
+        AgentType *at=nullptr;
         if (agent_code.isEmpty() && agent_type_code.isEmpty())
             throw IException(QString("setup ABE agentDataFile row '%1': no code for columns 'agent' and 'agentType' available.").arg(i) );
 
@@ -400,7 +400,7 @@ void ForestManagementEngine::setup()
 
 
         // check units
-        FMUnit *unit = 0;
+        FMUnit *unit = nullptr;
         if (!unit_codes.contains(unit_id)) {
             // create the unit
             unit = new FMUnit(ag);
@@ -465,10 +465,10 @@ void ForestManagementEngine::setup()
     }
 
     mFMStandGrid.setup(standGrid()->grid().metricRect(), standGrid()->grid().cellsize());
-    mFMStandGrid.initialize(0);
+    mFMStandGrid.initialize(nullptr);
     FMStand **fm = mFMStandGrid.begin();
     for (int *p = standGrid()->grid().begin(); p!=standGrid()->grid().end(); ++p, ++fm)
-        *fm = *p<0?0:mStandHash[*p];
+        *fm = *p<0?nullptr:mStandHash[*p];
 
     mStandLayers.setGrid(mFMStandGrid);
     mStandLayers.clearClasses();
@@ -704,7 +704,7 @@ FMSTP *ForestManagementEngine::stp(QString stp_name) const
     for (QVector<FMSTP*>::const_iterator it = mSTP.constBegin(); it!=mSTP.constEnd(); ++it)
         if ( (*it)->name() == stp_name )
             return *it;
-    return 0;
+    return nullptr;
 }
 
 FMStand *ForestManagementEngine::stand(int stand_id) const
@@ -717,7 +717,7 @@ FMStand *ForestManagementEngine::stand(int stand_id) const
     for (QVector<FMStand*>::const_iterator it=mStands.constBegin(); it!=mStands.constEnd(); ++it)
         if ( (*it)->id() == stand_id)
             return *it;
-    return 0;
+    return nullptr;
 }
 
 QVariantList ForestManagementEngine::standIds() const
@@ -760,7 +760,7 @@ bool ForestManagementEngine::notifyBarkbeetleAttack(const ResourceUnit *ru, cons
     return forest_changed;
 }
 
-QMutex protect_split;
+static QMutex protect_split;
 FMStand *ForestManagementEngine::splitExistingStand(FMStand *stand)
 {
     // get a new stand-id

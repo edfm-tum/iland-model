@@ -42,7 +42,7 @@ namespace ABE {
 
 ActSalvage::ActSalvage(FMSTP *parent): Activity(parent)
 {
-    mCondition = 0;
+    mCondition = nullptr;
     mMaxPreponeActivity = 0;
 
     mBaseActivity.setIsSalvage(true);
@@ -125,7 +125,7 @@ bool ActSalvage::evaluateRemove(Tree *tree) const
     bool result = true; // remove all trees is the default
     if (mCondition) {
         TreeWrapper tw(tree);
-        result = static_cast<bool>( mCondition->execute(0, &tw) );
+        result = static_cast<bool>( mCondition->execute(nullptr, &tw) );
     }
     if (result && mJSCondition) {
         // a second test based on JS
@@ -203,7 +203,7 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
     float *neighbors[8];
     int n_empty=0;
     while (runner.next() && id_runner.next()) {
-        if (*runner.current()==-1.) {
+        if (*runner.current()==-1.f) {
             *id_runner.current() = -1;
             continue;
         }
