@@ -263,9 +263,9 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="saveFile">
+            <widget class="QPushButton" name="checkXMLFile">
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;View the XML project file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check the XML project file (results in log)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string/>

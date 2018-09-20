@@ -235,7 +235,8 @@ void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out)
     while (!ch.isNull()) {
         if (nChildren) {
             child_index++;
-            stack.push_back(QString("%1[%2]").arg(ch.nodeName()).arg(child_index));
+            // stack.push_back(QString("%1[%2]").arg(ch.nodeName()).arg(child_index)); // including child index
+            stack.push_back(QString("%1").arg(ch.nodeName()));
         } else
           stack.push_back(ch.nodeName());
         dump_rec(ch, stack, out);
@@ -249,7 +250,7 @@ void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out)
     out.push_back(self);
 }
 
-QString XmlHelper::dump(const QString &path, int levels)
+QStringList XmlHelper::dump(const QString &path, int levels)
 {
     Q_UNUSED(levels);
     QDomElement c = node(path);
@@ -258,5 +259,5 @@ QString XmlHelper::dump(const QString &path, int levels)
     stack.push_back(c.nodeName());
     QStringList result;
     dump_rec(c, stack, result);
-    return result.join("\n");
+    return result;
 }

@@ -17,5 +17,6 @@
         <file>document-save.png</file>
         <file>document-open.png</file>
         <file>iland_splash.png</file>
+        <file>project_file_metadata.txt</file>
     </qresource>
 </RCC>

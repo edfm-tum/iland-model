@@ -207,7 +207,7 @@ void Scheduler::run()
 
             bool executed = item->flags->activity()->execute(item->stand);
             if (final_harvest)
-                total_final_harvested += item->stand->totalHarvest();
+                total_final_harvested += item->stand->totalHarvest() + item->stand->salvagedTimber();
             else
                 total_thinning_harvested += item->stand->totalHarvest();
 

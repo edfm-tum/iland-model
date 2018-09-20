@@ -69,6 +69,7 @@ void Agent::setup()
     foreach (FMUnit *unit, mUnits) {
         QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
         unit->setU(stp->rotationLengthOfType(2)); // medium
+        unit->scheduler()->setEnabled(mSchedulerOptions.useScheduler);
         while (it!=stand_map.constEnd() && it.key()==unit) {
             FMStand *stand = it.value();
             // check if STP is already assigned. If not, do it now.

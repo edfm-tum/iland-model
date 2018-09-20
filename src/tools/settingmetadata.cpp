@@ -22,51 +22,70 @@
 */
 
 #include <QtCore>
+#include <QSettings>
+
 #include "settingmetadata.h"
 
-const QStringList SettingMetaData::mTypeNames = QStringList() << "invalid" <<  "species" << "model";
+#include "xmlhelper.h"
+#include "exception.h"
 
-SettingMetaData::Type SettingMetaData::typeFromName(const QString &settingName)
+void SettingMetaData::checkXMLFile(const QString fileName)
 {
-    Type retType = (Type) mTypeNames.indexOf(settingName);
-    if ( int(retType)<0)
-        retType = SettingInvalid;
-    return retType;
-}
+    XmlHelper xml; ///< xml-based hierarchical settings
+    try {
+    xml.loadFromFile(fileName);
+    } catch (const IException &e) {
+        qDebug() << "The file" << fileName << "does not exist or is not a valid XML file: " << e.message();
+        return;
+    }
 
-const QString SettingMetaData::typeName(const Type type) const
-{
-    return mTypeNames.value(int(type),mTypeNames[0]);
-}
+    QStringList exceptions = QStringList() << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user";
+    // load from resource file
+    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
+    QStringList existingKeys = set.allKeys();
 
-SettingMetaData::SettingMetaData()
-{
-    mType = SettingInvalid;
-}
 
-SettingMetaData::SettingMetaData(const Type type, const QString &name, const QString &description, const QString &url, const QVariant defaultValue)
-{
-    setValues(type, name, description, url, defaultValue);
-}
+    // Check for keys in XML - File
+    qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";
+    qDebug() << "=========================================================";
+    int n_not_found = 0;
+    for (int i=0;i<existingKeys.size();++i) {
+        bool has_key = xml.hasNode(existingKeys[i]);
+        if (!has_key) {
+            qDebug() << existingKeys[i] << ":" << set.value(existingKeys[i]).toString();
+            ++n_not_found;
+        }
+    }
+    qDebug() << "===============================================";
+    qDebug() << "Number of keys not found in XML: " << n_not_found;
+    qDebug() << "===============================================";
+    qDebug() << "";
 
-void SettingMetaData::setValues(const Type type, const QString &name, const QString &description, const QString &url, const QVariant defaultValue)
-{
-    mType = type;
-    mName = name;
-    mDescription = description;
-    mUrl = url;
-    mDefaultValue = defaultValue;
-}
+    qDebug() << "Invalid keys (keys in XML file, but not valid in iLand)";
+    qDebug() << "=======================================================";
 
-QString SettingMetaData::dump() const
-{
-    QString res = QString("Name: %1\nType: %2 *** Default Value: %5 *** Url: %3 *** Memory address: %6 \nDescription: %4").
-                  arg(mName,
-                      typeName(mType),
-                      mUrl,
-                      mDescription).
-                  arg(mDefaultValue.toString()).
-                  arg(ptrdiff_t(this), 0, 16);
-    return res;
-}
+    // check for keys in XML but not in the list of allowed keys
+    n_not_found = 0;
+    QStringList xmlkeys = xml.dump("");
+    for (QStringList::Iterator it=xmlkeys.begin(); it!=xmlkeys.end(); ++it) {
+        QString key = it->mid(8, it->indexOf(QChar(':'))-8); // skip 'project.' (8 char)
+        if (!existingKeys.contains(key) && key!=" ") {
+            // check for exceptions
+            bool is_exc = false;
+            for (QStringList::ConstIterator s=exceptions.constBegin(); s!=exceptions.constEnd(); ++s)
+                if (key.startsWith(*s))
+                    is_exc=true;
+            if (!is_exc) {
+                qDebug() << key;
+                ++n_not_found;
+            }
+        }
 
+    }
+    qDebug() << "===============================================";
+    qDebug() << "Number of invalid keys in XML: " << n_not_found;
+    qDebug() << "===============================================";
+
+
+
+}

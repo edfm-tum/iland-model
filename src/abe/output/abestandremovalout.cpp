@@ -39,7 +39,8 @@ ABEStandRemovalOut::ABEStandRemovalOut()
               << OutputColumn("activity", "name of the management activity that is executed", OutString)
               << OutputColumn("volumeAfter", "standing timber volume after the harvest operation (m3/ha)", OutDouble)
               << OutputColumn("volumeThinning", "removed timber volume due to thinning, m3/ha", OutDouble)
-              << OutputColumn("volumeFinal", "removed timber volume due to final harvests (regeneration cuts) and due to salvage operations, m3/ha", OutDouble)
+              << OutputColumn("volumeFinal", "removed timber volume due to final harvests (regeneration cuts), m3/ha", OutDouble)
+              << OutputColumn("volumeSalvaged", "removed timber volume due to salvaging (m3/ha)", OutDouble)
               << OutputColumn("volumeDisturbed", "disturbed trees on the stand, m3/ha. Note: all killed trees are recorded here,also those trees that are not salvaged (due to size and other constraints)", OutDouble);
 }
 
@@ -51,8 +52,9 @@ void ABEStandRemovalOut::exec()
             *this << stand->unit()->id() << stand->id() << stand->area() << stand->lastExecutionAge();
             *this << (stand->lastExecutedActivity()?stand->lastExecutedActivity()->name():QString());
             *this << qRound(stand->volume()*100.)/100. << stand->totalThinningHarvest() / stand->area() //  thinning alone
-                                     << (stand->totalHarvest() - stand->totalThinningHarvest() ) / stand->area() // final harvests (including salvage operations)
-                                     << stand->disturbedTimber() / stand->area();  // disturbed trees on the stand
+                                     << (stand->totalHarvest() - stand->totalThinningHarvest() - stand->salvagedTimber() ) / stand->area() // final harvests
+                                     << stand->salvagedTimber() / stand->area() // salvaged timber
+                                     << stand->disturbedTimber() / stand->area();  // disturbed trees on the stand (salvaged + not salvaged)
 
             writeRow();
         }

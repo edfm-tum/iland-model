@@ -109,7 +109,7 @@ FMUnit::FMUnit(const Agent *agent)
     //if (agent->type()->schedulerOptions().useScheduler)
     // explicit scheduler only for stands/units that include more than one stand
     mScheduler = new Scheduler(this);
-    mScheduler->setEnabled( agent->schedulerOptions().useScheduler );
+    //mScheduler->setEnabled( agent->schedulerOptions().useScheduler ); // enabled is switched on during agent init
 }
 
 FMUnit::~FMUnit()

@@ -97,7 +97,7 @@ void dbg_helper_ext(const char *where, const char *what,const char* file,int lin
     qDebug() << "Warning in " << where << ":"<< what << ". (file: " << file << "line:" << line << "more:" << s;
 }
 
-int _loglevel=0;
+static int _loglevel=0;
  // true, if detailed debug information is logged
 bool logLevelDebug()
 {
@@ -127,27 +127,25 @@ void setLogLevel(int loglevel)
     }
 }
 
-GlobalSettings *GlobalSettings::mInstance = 0;
+GlobalSettings *GlobalSettings::mInstance = nullptr;
 
 GlobalSettings::GlobalSettings()
 {
     mDebugOutputs = 0;
-    mModel = 0;
-    mModelController = 0;
+    mModel = nullptr;
+    mModelController = nullptr;
     mSystemStatistics = new SystemStatistics;
     // create output manager
     mOutputManager = new OutputManager();
-    mScriptEngine = 0;
+    mScriptEngine = nullptr;
 
 }
 
 
 GlobalSettings::~GlobalSettings()
 {
-    // meta data... really clear ressources...
-    qDeleteAll(mSettingMetaData.values());
     delete mSystemStatistics;
-    mInstance = NULL;
+    mInstance = nullptr;
     delete mOutputManager;
     // clear all databases
     clearDatabaseConnections();
@@ -185,7 +183,7 @@ void GlobalSettings::setDebugOutput(const GlobalSettings::DebugOutputs dbg, cons
     if (enable)
         mDebugOutputs |= int(dbg);
     else
-        mDebugOutputs &= int(dbg) ^ 0xffffffff;
+        mDebugOutputs &= static_cast<unsigned int>(dbg) ^ 0xffffffff;
 }
 
 // storing the names of debug outputs
@@ -219,7 +217,7 @@ void GlobalSettings::clearDebugLists()
     mDebugLists.clear();
 }
 
-QMutex debugListMutex;
+static QMutex debugListMutex;
 DebugList &GlobalSettings::debugList(const int ID, const DebugOutputs dbg)
 {
     QMutexLocker m(&debugListMutex); // serialize creation of debug outputs
@@ -386,29 +384,6 @@ QList<QPair<QString, QVariant> > GlobalSettings::debugValues(const int ID)
     return result;
 }
 
-/** retrieve a const pointer to a stored SettingMetaData object.
- if @p name is not found, NULL is returned.
- */
-const SettingMetaData *GlobalSettings::settingMetaData(const QString &name)
-{
-    if (mSettingMetaData.contains(name)) {
-        return mSettingMetaData[name];
-    }
-    return NULL;
-}
-
-QVariant GlobalSettings::settingDefaultValue(const QString &name)
-{
-    const SettingMetaData *smd = settingMetaData(name);
-    if (smd)
-        return smd->defaultValue();
-    return QVariant(0);
-}
-
-void GlobalSettings::loadSettingsMetaDataFromFile(const QString &fileName)
-{
-    QString metadata = Helper::loadTextFile(fileName);
-}
 
 QString childText(QDomElement &elem, const QString &name, const QString &def="") {
     QDomElement e = elem.firstChildElement(name);
@@ -418,41 +393,6 @@ QString childText(QDomElement &elem, const QString &name, const QString &def="")
         return e.text();
 }
 
-/** Load setting meta data from a piece of XML.
-    @p topNode is a XML node, that contains the "setting" nodes as childs:
-    @code
-    <topnode>
-    <setting>...</setting>
-    <setting>...</setting>
-    ...
-    </topnode>
-    @endcode
-  */
-void GlobalSettings::loadSettingsMetaDataFromXml(const QDomElement &topNode)
-{
-    mSettingMetaData.clear();
-    if (topNode.isNull())
-        WARNINGRETURN( "GlobalSettings::loadSettingsMetaDataFromXml():: no globalsettings section!");
-
-    QString settingName;
-    QDomElement elt = topNode.firstChildElement("setting");
-    for (; !elt.isNull(); elt = elt.nextSiblingElement("setting")) {
-        settingName = elt.attribute("name", "invalid");
-        if (mSettingMetaData.contains(settingName))
-            WARNINGRETURN( "GlobalSettings::loadSettingsMetaDataFromXml():: setting" << settingName << "already exists in the settings list!") ;
-
-        SettingMetaData *md = new SettingMetaData(SettingMetaData::typeFromName(elt.attribute("type", "invalid")), // type
-                      settingName, // name
-                      childText(elt,"description"), // description
-                      childText(elt, "url"), // url
-                      QVariant(childText(elt,"default")));
-        mSettingMetaData[settingName] = md;
-
-        qDebug() << md->dump();
-        //mSettingMetaData[settingName].dump();
-    }
-    qDebug() << "setup settingmetadata complete." << mSettingMetaData.count() << "items loaded.";
-}
 
 void GlobalSettings::clearDatabaseConnections()
 {
