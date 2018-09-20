@@ -101,7 +101,7 @@ bool ActSalvage::execute(FMStand *stand)
     if (stand->trace())
         qCDebug(abe) << "Salvage activity executed. Changed scheduled activites (preponed): " << preponed;
 
-    const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->totalHarvest(), Scheduler::Salvage);
+    const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->salvagedTimber(), Scheduler::Salvage);
     // check if we should re-assess the stand grid (after large disturbances)
     // as a preliminary check we only look closer, if we have more than  x m3/ha of damage.
     if (stand->disturbedTimber()/stand->area() > mThresholdMinimal)

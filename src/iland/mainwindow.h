@@ -199,11 +199,11 @@ private slots:
     void on_actionOpen_triggered();
     //recent file menu
     void menuRecent_Files();
-    void on_saveFile_clicked();
     void on_lJSShortcuts_linkActivated(const QString &link);
 
     void on_actionShow_full_extent_triggered();
     void on_actionRepaint_triggered();
+    void on_checkXMLFile_clicked();
 };
 
 #endif // MAINWINDOW_H

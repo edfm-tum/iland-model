@@ -396,7 +396,7 @@ void Climate::setupPhenology()
         i++;
         int id;
         id = n.attribute("id", "-1").toInt();
-        if (id<0) throw IException(QString("Error setting up phenology: id invalid\ndump: %1").arg(xml.dump("")));
+        if (id<0) throw IException(QString("Error setting up phenology: id invalid\ndump: %1").arg(xml.dump("").join(" - ")));
         xml.setCurrentNode(n);
         Phenology item( id,
                         this,

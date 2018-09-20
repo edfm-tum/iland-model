@@ -51,7 +51,7 @@ public:
    QString paramValueString(const QString &paramName, const QString &defaultValue="") const; ///< get value of special "parameter" space
    bool paramValueBool(const QString &paramName, const bool &defaultValue=true) const; ///< get value of special "parameter" space
     // helpers
-   QString dump(const QString &path, int levels=-1);
+   QStringList dump(const QString &path, int levels=-1);
 private:
    void dump_rec(QDomElement c, QStringList &stack, QStringList &out);
    QDomDocument mDoc;

@@ -59,10 +59,10 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mPhase = Activity::Tending;
     mStandType = 1; // just testing...
 
-    mU = 0, mSpeciesCompositionIndex = -1, mThinningIntensityClass = -1;
+    mU = 0; mSpeciesCompositionIndex = -1; mThinningIntensityClass = -1;
 
     newRotatation();
-    mSTP = 0;
+    mSTP = nullptr;
     mVolume = 0.;
     mAge = 0.;
     mTotalBasalArea = 0.;
@@ -73,6 +73,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mFinalHarvested = 0.;
     mThinningHarvest = 0.;
     mDisturbed = 0.;
+    mSalvaged = 0.;
     mRotationStartYear = 0;
     mLastUpdate = -1.;
     mLastExecution = -1.;
@@ -231,7 +232,7 @@ void FMStand::reload(bool force)
     int topheight_trees = 0;
     if (treelist.size()>0) {
         StatData s(dbhvalues);
-        topheight_threshhold= s.percentile( 100*(1- area()*100/treelist.size()) ); // sorted ascending -> thick trees at the end of the list
+        topheight_threshhold= s.percentile(static_cast<int>( 100.*(1.- area()*100./treelist.size()) ) ); // sorted ascending -> thick trees at the end of the list
     }
     for ( QVector<QPair<Tree*, double> >::const_iterator it=treelist.constBegin(); it!=treelist.constEnd(); ++it) {
         double ba = it->first->basalArea() * area_factor;
@@ -441,7 +442,7 @@ bool FMStand::afterExecution(bool cancel)
 
     mCurrentIndex = indexmin;
     if (mCurrentIndex>-1) {
-        int to_sleep = tmin - absoluteAge();
+        int to_sleep = tmin - static_cast<int>(absoluteAge());
         if (to_sleep>0)
             sleep(to_sleep);
     }
@@ -479,7 +480,7 @@ void FMStand::notifyTreeRemoval(Tree *tree, int reason)
         // check if we have an (active) salvage activity; both the activity flags and the stand flags need to be "enabled"
         if (mSTP->salvageActivity() && mSTP->salvageActivity()->standFlags().enabled() && mSTP->salvageActivity()->standFlags(this).enabled() ) {
             if (mSTP->salvageActivity()->evaluateRemove(tree)) {
-                mFinalHarvested += removed_volume;
+                mSalvaged += removed_volume;
                 tree->setIsHarvested(); // set the flag that the tree is removed from the forest
                 // the last executed activity is the salvage activity...
                 mLastExecutedIndex = mSTP->salvageActivity()->index();

@@ -106,12 +106,14 @@ public:
     double topHeight() const {return mTopHeight; }
     /// scheduled harvest (planned harvest by activities, m3)
     double scheduledHarvest() const {return mScheduledHarvest; }
-    /// total realized harvest (m3 on the full stand area) (note: salvage harvest ist part of final harvest)
-    double totalHarvest() const { return mFinalHarvested + mThinningHarvest; }
+    /// total realized harvest (m3 on the full stand area)
+    double totalHarvest() const { return mFinalHarvested + mThinningHarvest + mSalvaged; }
     /// total realized thinning/tending harvests (m3 on the full stand area)
     double totalThinningHarvest() const { return mThinningHarvest; }
     /// total disturbed timber volume, includes also disturbed trees *not* harvested, m3
     double disturbedTimber() const { return mDisturbed; }
+    /// total amount of timber removed by salvage operation
+    double salvagedTimber() const { return mSalvaged; }
 
     /// mean annual increment (MAI), m3 timber/ha for the last decade
     double meanAnnualIncrement() const { return mMAIdecade; }
@@ -144,7 +146,7 @@ public:
     bool notifyBarkBeetleAttack(double generations, int infested_px_per_ha);
 
     /// resets the harvest counters
-    void resetHarvestCounter() { mFinalHarvested = 0.; mDisturbed=0.; mThinningHarvest=0.; }
+    void resetHarvestCounter() { mFinalHarvested = 0.; mDisturbed=0.; mThinningHarvest=0.; mSalvaged=0.; }
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.
@@ -198,7 +200,8 @@ private:
     double mScheduledHarvest; ///< harvest (m3) that is scheduled by activities
     double mFinalHarvested; ///< m3 of timber volume that has been harvested (regeneration phase)
     double mThinningHarvest; ///< m3 of timber that was harvested for thinning/tending
-    double mDisturbed; ///< removed due to disturbance
+    double mDisturbed; ///< affected by disturbance (m3)
+    double mSalvaged; ///< m3 removed by salvage operation
 
     double mRemovedVolumeDecade; ///< removed volume of the decade (m3/ha)
     double mRemovedVolumeTotal; ///< removed volume of the rotation (m3/ha)

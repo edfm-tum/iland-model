@@ -30,6 +30,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
+#include "settingmetadata.h"
 
 #include "model.h"
 #include "standloader.h"
@@ -2249,10 +2250,6 @@ void MainWindow::recentFileMenu(){
      }
 }
 
-void MainWindow::on_saveFile_clicked()
-{
-    ui->iniEdit->setVisible(!ui->iniEdit->isVisible());
-}
 
 void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
 {
@@ -2283,4 +2280,10 @@ void MainWindow::on_actionRepaint_triggered()
 {
     repaint();
     // ui->PaintWidget->update();
+}
+
+void MainWindow::on_checkXMLFile_clicked()
+{
+    SettingMetaData sm;
+    sm.checkXMLFile(ui->initFileName->text());
 }

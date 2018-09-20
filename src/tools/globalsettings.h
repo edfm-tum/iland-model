@@ -97,13 +97,6 @@ public:
     QSqlDatabase dbout() { return QSqlDatabase::database("out"); }
     QSqlDatabase dbclimate() { return QSqlDatabase::database("climate"); }
 
-    // setting-meta-data
-    /// access an individual SettingMetaData named @p name.
-    const SettingMetaData *settingMetaData(const QString &name); // unused??
-    /// retrieve the default value of the setting @p name.
-    QVariant settingDefaultValue(const QString &name); // unused?
-    QList<QString> settingNames() { return mSettingMetaData.keys(); } ///< retrieve list of all names of settings.
-
     // path and directory
     QString path(const QString &fileName, const QString &type="home");
     bool fileExists(const QString &fileName, const QString &type="home");
@@ -115,10 +108,6 @@ public:
 
     // xml project settings
     void loadProjectFile(const QString &fileName);
-
-    // meta data of settings
-    void loadSettingsMetaDataFromFile(const QString &fileName);
-    void loadSettingsMetaDataFromXml(const QDomElement &topNode);
 
     // Database connections
     bool setupDatabaseConnection(const QString& dbname, const QString &fileName, bool fileMustExist);
@@ -145,7 +134,6 @@ private:
     QMultiHash<int, DebugList> mDebugLists;
     int mDebugOutputs; // "bitmap" of enabled debugoutputs.
 
-    SettingMetaDataList mSettingMetaData; ///< storage container (QHash) for settings.
     QHash<QString, QString> mFilePath; ///< storage for file paths
 
     XmlHelper mXml; ///< xml-based hierarchical settings
