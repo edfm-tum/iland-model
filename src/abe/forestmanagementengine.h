@@ -60,6 +60,9 @@ public:
 
     // main function
     void run(int debug_year=-1);
+    /// write outputs, finalize the current year
+    /// should be called at the end of the year (after all disturbances, ...)
+    void yearEnd();
 
     // properties
     int currentYear() { return mCurrentYear; }

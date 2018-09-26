@@ -73,7 +73,7 @@ QStringList FMUnit::info() const
                          << QString("HDZ: %1").arg(mHDZ)
                          << QString("average age: %1").arg(mMeanAge)
                          << QString("decadal plan: %1").arg(mAnnualHarvestTarget)
-                         << QString("current plan: %1").arg(constScheduler()!=0?constScheduler()->harvestTarget():0.);
+                         << QString("current plan: %1").arg(constScheduler()!=nullptr?constScheduler()->harvestTarget():0.);
 
 }
 
@@ -125,7 +125,7 @@ void FMUnit::setId(const QString &id)
 
 void FMUnit::resetHarvestCounter()
 {
-    if (scheduler()->enabled())
+    if (scheduler())
         scheduler()->resetHarvestCounter();
 }
 
@@ -240,8 +240,6 @@ void FMUnit::runAgent()
 
 void FMUnit::updatePlanOfCurrentYear()
 {
-    if (!scheduler()->enabled())
-        return;
 
     if (mTotalArea==0.)
         throw IException("FMUnit:updatePlan: unit area = 0???");
@@ -250,6 +248,10 @@ void FMUnit::updatePlanOfCurrentYear()
     double harvests = mRealizedHarvest - mRealizedHarvestLastYear;
     mRealizedHarvestLastYear = mRealizedHarvest;
     mAnnualHarvest = harvests;
+
+    // we are done here if the scheduler is disabled
+    if (!scheduler()->enabled())
+        return;
 
     // difference in m3/ha
     double delta = harvests/mTotalArea - mAnnualHarvestTarget;

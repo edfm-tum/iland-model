@@ -31,7 +31,7 @@ UnitOut::UnitOut()
     setDescription("The output provides planned and realized harvests on the level of planning units. " \
                    "Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. "\
                    "Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' "\
-                   "The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column");
+                   "The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column (note that salvageHarvest is not available when the scheduler is disabled).");
     columns() << OutputColumn::year()
               << OutputColumn("id", "unique identifier of the planning unit", OutString)
               << OutputColumn("area", "total area of the unit (ha)", OutDouble)
@@ -44,9 +44,9 @@ UnitOut::UnitOut()
               << OutputColumn("annualPlan", "updated annual plan for the year, m3/ha*yr", OutDouble)
               << OutputColumn("runningDelta", "current aggregated difference between planned and realied harvests; positive: more realized than planned harvests, m3/ha*yr", OutDouble)
               << OutputColumn("realizedHarvest", "total harvested timber volume, m3/ha*yr", OutDouble)
-              << OutputColumn("finalHarvest", "total harvested timber of planned final harvests (including salvage harvests), m3/ha*yr", OutDouble)
+              << OutputColumn("finalHarvest", "total harvested timber of planned final harvests, m3/ha*yr", OutDouble)
               << OutputColumn("thinningHarvest", "total harvested timber due to tending and thinning operations, m3/ha*yr", OutDouble)
-              << OutputColumn("salvageHarvest", "total harvested timber due to salvage operations (also included in final harvests), m3/ha*yr", OutDouble);
+              << OutputColumn("salvageHarvest", "total harvested timber due to salvage operations, m3/ha*yr", OutDouble);
 
 
 }
@@ -63,18 +63,19 @@ void UnitOut::exec()
         *this << unit->U() << unit->thinningIntensity();
         *this << unit->mTotalVolume/unit->area() << unit->mMAI;
         *this << unit->mAnnualHarvestTarget;
+
+        salvage_harvest = unit->scheduler()->mExtraHarvest / unit->area();
+
         if (unit->scheduler()->enabled()) {
-            salvage_harvest = unit->scheduler()->mExtraHarvest / unit->area();
             annual_target = unit->scheduler()->mFinalCutTarget;
         } else {
-            salvage_harvest = 0.;
             annual_target = 0.;
 
         }
         double thin_h = unit->annualThinningHarvest()/unit->area();
         *this << annual_target << unit->mTotalPlanDeviation
                                << unit->annualTotalHarvest()/unit->area() // total realized
-                               << unit->annualTotalHarvest()/unit->area() - thin_h  // final
+                               << unit->annualTotalHarvest()/unit->area() - thin_h - salvage_harvest  // final
                                << thin_h // thinning
                                << salvage_harvest; // salvaging
 

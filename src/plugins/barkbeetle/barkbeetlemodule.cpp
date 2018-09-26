@@ -100,7 +100,7 @@ void BarkBeetleModule::setup(const ResourceUnit *ru)
 
 }
 
-void BarkBeetleModule::loadParameters()
+void BarkBeetleModule::loadParameters(bool do_reset)
 {
     const XmlHelper xml = GlobalSettings::instance()->settings().node("modules.barkbeetle");
     params.cohortsPerGeneration = xml.valueInt(".cohortsPerGeneration", params.cohortsPerGeneration);
@@ -163,15 +163,20 @@ void BarkBeetleModule::loadParameters()
 
     mAfterExecEvent = xml.value(".onAfterBarkbeetle");
 
+    // reset also the backgroundInfestation probability on each resource unit
+    for (ResourceUnit **ru=GlobalSettings::instance()->model()->RUgrid().begin(); ru!=GlobalSettings::instance()->model()->RUgrid().end(); ++ru)
+        setup(*ru);
 
-    HeightGridValue *hgv = GlobalSettings::instance()->model()->heightGrid()->begin();
-    for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b, ++hgv) {
-        b->reset();
-        //scanResourceUnitTrees(mGrid.indexOf(b)); // scan all - not efficient
-//        if (hgv->isValid()) {
-//            b->dbh = drandom()<0.6 ? nrandom(20.,40.) : 0.; // random landscape
-//            b->tree_stress = nrandom(0., 0.4);
-//        }
+    if (do_reset) {
+        HeightGridValue *hgv = GlobalSettings::instance()->model()->heightGrid()->begin();
+        for (BarkBeetleCell *b=mGrid.begin();b!=mGrid.end();++b, ++hgv) {
+            b->reset();
+            //scanResourceUnitTrees(mGrid.indexOf(b)); // scan all - not efficient
+            //        if (hgv->isValid()) {
+            //            b->dbh = drandom()<0.6 ? nrandom(20.,40.) : 0.; // random landscape
+            //            b->tree_stress = nrandom(0., 0.4);
+            //        }
+        }
     }
 
 
