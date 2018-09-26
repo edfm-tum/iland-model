@@ -140,7 +140,7 @@ public:
 
     void setup(); ///< general setup
     void setup(const ResourceUnit *ru); ///< setup for a specific resource unit
-    void loadParameters(); ///< load params from XML
+    void loadParameters(bool do_reset=true); ///< load params from XML
     void clearGrids(); ///< reset the state of the internal grids (used for javascript based tests)
     void loadAllVegetation(); ///< scan the state of the vegetation of the full landscape
 

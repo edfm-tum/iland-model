@@ -146,10 +146,6 @@ void ForestManagementEngine::finalizeRun()
         stand->resetHarvestCounter();
     }
 
-    foreach (FMUnit *unit, mUnits) {
-        unit->resetHarvestCounter();
-    }
-
     //
     if (mStandLayoutChanged) {
         DebugTimer timer("ABE:stand_layout_update");
@@ -267,13 +263,6 @@ FMUnit *nc_execute_unit(FMUnit *unit)
 
     // now run the scheduler
     unit->scheduler()->run();
-
-    // collect the harvests
-    it = stand_map.constFind(unit);
-    while (it!=stand_map.constEnd() && it.key()==unit) {
-        unit->addRealizedHarvest(it.value()->totalHarvest());
-        ++it;
-    }
 
 
     return unit;
@@ -585,9 +574,9 @@ void ForestManagementEngine::run(int debug_year)
 
     if (enabled()) {
         {
-        // launch the planning unit level update (annual and thorough analysis every ten years)
-        DebugTimer plu("ABE:planUpdate");
-        GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits, true);
+            // launch the planning unit level update (annual and thorough analysis every ten years)
+            DebugTimer plu("ABE:planUpdate");
+            GlobalSettings::instance()->model()->threadExec().run(nc_plan_update_unit, mUnits, true);
         }
 
         // run the actual forest management (incl. scheduler)
@@ -595,14 +584,48 @@ void ForestManagementEngine::run(int debug_year)
         if (isCancel()) {
             throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
         }
+        // reset salvage  (from *last* year) of each stand (after all activites are processed)
+        // salvaged timber will be filled during disturbances, which run *after* run() and *before* yearEnd().
+        foreach (FMStand *stand, mStands) {
+            stand->resetSalvage();
+        }
+
 
     } else {
         qCDebug(abe) << "ForestManagementEngine: ABE is currently disabled.";
     }
 
 
+
+
+}
+
+void ForestManagementEngine::yearEnd()
+{
+    // reset the salvage harvest counter (salvage from *last* year) from the scheduler,
+    // and collect on unit level all harvests that happened during (a) the execution of ABE, and (b) the salvaging operations
+    const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
+
+    foreach (FMUnit *unit, mUnits) {
+        unit->resetHarvestCounter();
+        // collect the harvests
+        QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
+        while (it!=stand_map.constEnd() && it.key()==unit) {
+            unit->addRealizedHarvest(it.value()->totalHarvest());
+            ++it;
+        }
+    }
+
+    // sum up salvage occured during the *current* year (disturbances) -> salvage shows up in the unit outputs of the current year
+    // the scheduler will use the sum of the current year in the scheduling of operations next year
+    foreach (FMStand *stand, mStands) {
+        if (stand->salvagedTimber()>0.) {
+            const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->salvagedTimber(), Scheduler::Salvage);
+        }
+    }
+
     // create outputs
-    {
+
     DebugTimer plu("ABE:outputs");
     if (enabled()) {
         GlobalSettings::instance()->outputManager()->execute("abeUnit");
@@ -611,12 +634,11 @@ void ForestManagementEngine::run(int debug_year)
     // run ABEStand and StandRemoval in any case.
     GlobalSettings::instance()->outputManager()->execute("abeStand");
     GlobalSettings::instance()->outputManager()->execute("abeStandRemoval");
-    }
+
 
     finalizeRun();
     // execute an event handler after invoking the ABE core (runFinalize())
     runJavascript(true);
-
 
 }
 

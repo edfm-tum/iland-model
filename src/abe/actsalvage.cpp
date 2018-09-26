@@ -84,12 +84,13 @@ bool ActSalvage::execute(FMStand *stand)
     if (stand->property("_run_salvage").toBool()) {
         // 2nd phase: do the after disturbance cleanup of a stand.
         bool simu = stand->currentFlags().isDoSimulate();
+        bool is_final = stand->currentFlags().isFinalHarvest();
         stand->currentFlags().setDoSimulate(false);
         stand->currentFlags().setFinalHarvest(true); // this should be accounted as "final harvest"
         // execute the "onExecute" event
         bool result =  Activity::execute(stand);
         stand->currentFlags().setDoSimulate(simu);
-        stand->currentFlags().setFinalHarvest(false);
+        stand->currentFlags().setFinalHarvest(is_final);
         stand->setProperty("_run_salvage", false);
         return result;
     }
@@ -101,7 +102,7 @@ bool ActSalvage::execute(FMStand *stand)
     if (stand->trace())
         qCDebug(abe) << "Salvage activity executed. Changed scheduled activites (preponed): " << preponed;
 
-    const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->salvagedTimber(), Scheduler::Salvage);
+    // now in forestmanagementengine: const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->salvagedTimber(), Scheduler::Salvage);
     // check if we should re-assess the stand grid (after large disturbances)
     // as a preliminary check we only look closer, if we have more than  x m3/ha of damage.
     if (stand->disturbedTimber()/stand->area() > mThresholdMinimal)

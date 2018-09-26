@@ -101,7 +101,7 @@ double BarkBeetleScript::generations(int ix, int iy)
 
 void BarkBeetleScript::reloadSettings()
 {
-    mBeetle->loadParameters();
+    mBeetle->loadParameters(false); // false: do not reset
 }
 
 void BarkBeetleScript::newYear()
@@ -121,7 +121,7 @@ void BarkBeetleScript::clear()
 {
     qDebug() << "clear bark beetle module....";
     mBeetle->clearGrids();
-    mBeetle->loadParameters();
+    mBeetle->loadParameters(); // do_reset=true
     mBeetle->loadAllVegetation();
 }
 
@@ -216,7 +216,7 @@ bool BarkBeetleScript::setInfested(int x, int y)
     return true;
 }
 
-int BarkBeetleScript::setInfestedFromMap(MapGridWrapper *grid, int key, double probability)
+int BarkBeetleScript::setInfestedFromMap(MapGridWrapper *grid, int key, double probability, int agerange)
 {
     if (!grid) {
         qDebug() << "invalid map for BarkBeetleScropt::setInfestedMap: Map expected!";
@@ -234,7 +234,7 @@ int BarkBeetleScript::setInfestedFromMap(MapGridWrapper *grid, int key, double p
                 if (runner.current()->isHost()) {
                     if (probability==1. || drandom() < probability ) {
                         runner.current()->setInfested(true);
-                        runner.current()->outbreakYear = mBeetle->internalYear() - irandom(0,4);
+                        runner.current()->outbreakYear = mBeetle->internalYear() + 1 - irandom(0,agerange); // +1: is effective *next* year; 0: new in the current year
                         ++n_infested;
                     } else {
                         ++not_infested; // due to prob

@@ -29,9 +29,9 @@
 #include <QJSValue>
 #include <QJSEngine>
 
-#if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(iland_barkbeetle, BarkBeetlePlugin)
-#endif
+//#if QT_VERSION < 0x050000
+//Q_EXPORT_PLUGIN2(iland_barkbeetle, BarkBeetlePlugin)
+//#endif
 
 QString BarkBeetlePlugin::name()
 {

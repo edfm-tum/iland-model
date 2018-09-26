@@ -853,6 +853,13 @@ void Model::runYear()
     foreach(ResourceUnit *ru, mRU)
         ru->yearEnd();
 
+    if (mABEManagement) {
+        DebugTimer t("ABE:yearEnd");
+        setCurrentTask("ABE yearEnd");
+        mABEManagement->yearEnd();
+        GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
+    }
+
     // create outputs
     setCurrentTask("Write outputs");
     OutputManager *om = GlobalSettings::instance()->outputManager();
