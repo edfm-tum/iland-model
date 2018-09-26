@@ -259,6 +259,7 @@ void FMUnit::updatePlanOfCurrentYear()
 
     // apply decay function for deviation
     mTotalPlanDeviation *= mAgent->schedulerOptions().deviationDecayRate;
+    qDebug() << "ABE-plan-deviation: annual harvest:" << mAnnualHarvest << "target: " << mAnnualHarvestTarget << "delta:" << delta << "total deviation:" << mTotalPlanDeviation;
 
     // relative deviation: >0: too many harvests
     double rel_deviation = mAnnualHarvestTarget? mTotalPlanDeviation / mAnnualHarvestTarget : 0.;

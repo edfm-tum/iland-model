@@ -542,7 +542,7 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     scheduleRebounceDuration = scheduleRebounceDuration / log(2.);
     deviationDecayRate = FMSTP::valueFromJs(jsvalue, "deviationDecayRate","0").toNumber();
     if (deviationDecayRate==1.)
-        throw IException("Setup of scheduler-options: '0' is not a valid value for 'deviationDecayRate'!");
+        throw IException("Setup of scheduler-options: '1' is not a valid value for 'deviationDecayRate'!");
     deviationDecayRate = 1. - deviationDecayRate; // if eg value is 0.05 -> multiplier 0.95
     useScheduler = FMSTP::boolValueFromJs(jsvalue, "enabled", true);
 
