@@ -350,7 +350,7 @@ MainWindow::MainWindow(QWidget *parent)
     view->setSource(QUrl("qrc:/qml/ruler.qml"));
     //view->show();
     ui->qmlRulerLayout->addWidget(container);
-    ui->qmlRulerLayout->addWidget(container);
+    //ui->qmlRulerLayout->addWidget(container);
 //    QDir d(":/qml");
 //    qDebug() << d.entryList();
     QFont font;
