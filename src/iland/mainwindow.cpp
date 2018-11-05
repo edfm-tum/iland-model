@@ -2287,3 +2287,14 @@ void MainWindow::on_checkXMLFile_clicked()
     SettingMetaData sm;
     sm.checkXMLFile(ui->initFileName->text());
 }
+
+void MainWindow::on_actionSave_regeneration_grid_triggered()
+{
+    if (!mRegenerationGrid.isEmpty()) {
+        QString fileName = GlobalSettings::instance()->path("temp/regengrid.asc");
+        QString result = gridToESRIRaster(mRegenerationGrid);
+        Helper::saveToTextFile(fileName, result);
+        qDebug() << "saved regeneration grid (current content) to " << fileName;
+
+    }
+}

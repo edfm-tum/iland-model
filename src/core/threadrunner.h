@@ -40,6 +40,7 @@ public:
     void run( void (*funcptr)(Species*), const bool forceSingleThreaded=false ) const; ///< execute 'funcptr' for set of species in parallel
     // run over elements of a vector of type T
     template<class T> void run(T* (*funcptr)(T*), const QVector<T*> &container, const bool forceSingleThreaded=false) const;
+    template<class T> void run(void (*funcptr)(T&), QVector<T> &container, const bool forceSingleThreaded=false) const;
     // run over chunks of a larger array (or grid)
     template<class T> void runGrid(void (*funcptr)(T*, T*), T* begin, T* end, const bool forceSingleThreaded=false, int minsize=10000, int maxchunks=10000) const;
 private:
@@ -83,6 +84,22 @@ void ThreadRunner::run(T *(*funcptr)(T *), const QVector<T *> &container, const 
         T *element;
         foreach(element, container)
             (*funcptr)(element);
+    }
+
+}
+
+// multirunning function
+template<class T>
+void ThreadRunner::run(void (*funcptr)(T &), QVector<T> &container, const bool forceSingleThreaded) const
+{
+    if (mMultithreaded && container.count() > 3 && forceSingleThreaded==false) {
+        // execute using QtConcurrent for larger amounts of elements
+        QtConcurrent::blockingMap(container,funcptr);
+    } else {
+        // execute serialized in main thread
+        for (int i=0;i<container.size();++i)
+            (*funcptr)(container[i]);
+
     }
 
 }

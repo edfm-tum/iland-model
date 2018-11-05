@@ -47,6 +47,9 @@ public:
     void setSimulate(bool do_simulate) {mOnlySimulate = do_simulate; }
     int count() const { return mTrees.count(); }
 
+    /// load trees from a portion of a RU
+    int loadFromRect(ResourceUnit *ru, const QRectF &rect);
+
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
 
