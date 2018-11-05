@@ -27,6 +27,7 @@
 #include "mapgrid.h"
 #include "expressionwrapper.h"
 #include "model.h"
+#include "resourceunit.h"
 #include "helper.h"
 #include "fmstand.h"
 #include "fomescript.h"
@@ -89,6 +90,17 @@ void FMTreeList::setStand(FMStand *stand)
         mOnlySimulate = false;
     }
 
+}
+
+int FMTreeList::loadFromRect(ResourceUnit *ru, const QRectF &rect)
+{
+    mTrees.clear();
+    for (const Tree &t : ru->trees()) {
+        if (rect.contains(t.position())) {
+            mTrees.push_back(QPair<Tree*, double>(const_cast<Tree*>(&t), 0.));
+        }
+    }
+    return mTrees.size();
 }
 
 

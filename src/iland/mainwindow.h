@@ -204,6 +204,7 @@ private slots:
     void on_actionShow_full_extent_triggered();
     void on_actionRepaint_triggered();
     void on_checkXMLFile_clicked();
+    void on_actionSave_regeneration_grid_triggered();
 };
 
 #endif // MAINWINDOW_H

@@ -21,6 +21,7 @@ INCLUDEPATH += ../core \
     ../output \
     ../abe \
     ../abe/output \
+    ../bite \
     ../iland
 
 DEPENDPATH += plugins
@@ -205,7 +206,16 @@ SOURCES += main.cpp \
     ../core/svdstate.cpp \
     ../output/soilinputout.cpp \
     ../tools/scripttree.cpp \
-    ../tools/scriptresourceunit.cpp
+    ../tools/scriptresourceunit.cpp \
+    ../bite/bitescript.cpp \
+    ../bite/biteengine.cpp \
+    ../bite/biteagent.cpp \
+    ../bite/bitecell.cpp \
+    ../bite/biteitem.cpp \
+    ../bite/bitedispersal.cpp \
+    ../bite/bitecolonization.cpp \
+    ../bite/bitecellscript.cpp \
+    ../bite/bitewrapper.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -313,7 +323,17 @@ HEADERS += mainwindow.h \
     ../core/svdstate.h \
     ../output/soilinputout.h \
     ../tools/scripttree.h \
-    ../tools/scriptresourceunit.h
+    ../tools/scriptresourceunit.h \
+    ../bite/bitescript.h \
+    ../bite/biteengine.h \
+    ../bite/bite_global.h \
+    ../bite/biteagent.h \
+    ../bite/bitecell.h \
+    ../bite/biteitem.h \
+    ../bite/bitedispersal.h \
+    ../bite/bitecolonization.h \
+    ../bite/bitecellscript.h \
+    ../bite/bitewrapper.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

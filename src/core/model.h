@@ -45,6 +45,7 @@ class Modules;
 class DEM;
 class GrassCover;
 class SVDStates;
+namespace BITE { class BiteEngine; }
 
 struct HeightGridValue
 {
@@ -164,6 +165,7 @@ private:
     Saplings *mSaplings;
     Management *mManagement; ///< management sub-module (simple mode)
     ABE::ForestManagementEngine *mABEManagement; ///< management sub-module (agent based management engine)
+    BITE::BiteEngine *mBiteEngine; ///< biotic disturbance module BITE
     Environment *mEnvironment; ///< definition of paramter values on resource unit level (modify the settings tree)
     TimeEvents *mTimeEvents; ///< sub module to handle predefined events in time (modifies the settings tree in time)
     MapGrid *mStandGrid; ///< map of the stand map (10m resolution)

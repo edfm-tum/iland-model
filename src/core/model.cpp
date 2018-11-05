@@ -56,6 +56,7 @@
 #include "outputmanager.h"
 
 #include "forestmanagementengine.h"
+#include "biteengine.h"
 
 #include <QtCore>
 #include <QtXml>
@@ -144,6 +145,7 @@ void Model::initialize()
    mHeightGrid = nullptr;
    mManagement = nullptr;
    mABEManagement = nullptr;
+   mBiteEngine = nullptr;
    mEnvironment = nullptr;
    mTimeEvents = nullptr;
    mStandGrid = nullptr;
@@ -440,6 +442,8 @@ void Model::clear()
         delete mABEManagement;
     if (mSVDStates)
         delete mSVDStates;
+    if (mBiteEngine)
+        delete  mBiteEngine;
 
     mGrid = nullptr;
     mHeightGrid = nullptr;
@@ -451,6 +455,7 @@ void Model::clear()
     mDEM = nullptr;
     mGrassCover = nullptr;
     mABEManagement = nullptr;
+    mBiteEngine = nullptr;
     mSVDStates = nullptr;
 
     GlobalSettings::instance()->outputManager()->close();
@@ -545,7 +550,6 @@ void Model::loadProject()
         // use the agent based forest management engine
         mABEManagement = new ABE::ForestManagementEngine();
         // setup of ABE after loading of trees.
-
     }
     // use the standard management
     QString mgmtFile = xml.value("model.management.file");
@@ -562,6 +566,15 @@ void Model::loadProject()
     }
     if (xml.valueBool("model.settings.svdStates.enabled", false))
         mSVDStates=new SVDStates();
+
+    // biotic disturbance module BITE
+    if (mBiteEngine) {
+        delete mBiteEngine; mBiteEngine=nullptr;
+    }
+    if (xml.valueBool("modules.bite.enabled", false)) {
+        mBiteEngine = BITE::BiteEngine::instance();
+        mBiteEngine->setup();
+    }
 
 
 }

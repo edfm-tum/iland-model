@@ -36,8 +36,9 @@ class ScriptGrid : public QObject
     Q_PROPERTY(bool isValid READ isValid)
 public:
     explicit ScriptGrid(QObject *parent = 0);
-    explicit ScriptGrid(Grid<double> *grid) { mVariableName="x"; mGrid = grid; mCreated++; }
-    void setGrid(Grid<double> *grid) { mGrid = grid; }
+    explicit ScriptGrid(Grid<double> *grid) { mVariableName="x"; mGrid = grid; mCreated++; mOwner=true; }
+    void setGrid(Grid<double> *grid) { mGrid = grid; mOwner=true; }
+    void setOwnership(bool should_delete) { mOwner = should_delete; }
     ~ScriptGrid();
     static QJSValue createGrid(Grid<double> *grid, QString name=QString());
 
@@ -112,6 +113,7 @@ public slots:
 private:
     Grid<double> *mGrid;
     QString mVariableName;
+    bool mOwner; // true if grid should be deleted
     static int mCreated;
     static int mDeleted;
 };

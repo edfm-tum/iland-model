@@ -39,11 +39,12 @@ ScriptGrid::ScriptGrid(QObject *parent) : QObject(parent)
     mGrid = 0;
     mVariableName = "x"; // default name
     mCreated++;
+    mOwner = true;
 }
 
 ScriptGrid::~ScriptGrid()
 {
-    if (mGrid)
+    if (mGrid && mOwner)
         delete mGrid;
     mDeleted++;
     qDebug() << "ScriptGrid::balance: created:" << mCreated << "deleted:" << mDeleted;
