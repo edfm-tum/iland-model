@@ -17,12 +17,15 @@ class BiteItem : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(BiteAgent* agent READ agent)
 public:
     explicit BiteItem(QObject *parent = nullptr);
     Q_INVOKABLE BiteItem(QJSValue obj);
+    BiteAgent *agent() const { return mAgent; }
 
 
     virtual void setup(BiteAgent *agent);
+    virtual QString info();
 
     /// true if the item runs cell by cell
     bool runCells() const { return mRunCells; }
@@ -30,7 +33,7 @@ public:
     QString name() const {return mName; }
     void setName(QString name) { mName = name; }
 
-
+    QString description() const {return mDescription; }
 signals:
 
 public slots:
@@ -39,7 +42,7 @@ public slots:
     virtual void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
 
 protected:
-    BiteAgent *agent() const { return mAgent; }
+
     int cellSize() const;
     virtual QStringList allowedProperties();
     void checkProperties(QJSValue obj);

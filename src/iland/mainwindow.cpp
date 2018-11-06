@@ -23,6 +23,7 @@
 #include <QQuickView>
 #include <QQmlEngine>
 #include <QQmlContext>
+#include <QJSValueIterator>
 
 #include <signal.h>
 
@@ -2297,4 +2298,75 @@ void MainWindow::on_actionSave_regeneration_grid_triggered()
         qDebug() << "saved regeneration grid (current content) to " << fileName;
 
     }
+}
+
+void MainWindow::on_pbLoadTree_clicked()
+{
+    if (!mRemoteControl.canRun())
+        return;
+
+    QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
+    QStringList hideList = QStringList() << "Math" << "JSON" << "undefined" << "NaN" << "Infinity";
+
+    QJSValue start;
+    if (ui->lJSTree->text().isEmpty())
+        start = engine->globalObject();
+    else {
+        start = engine->evaluate(ui->lJSTree->text());
+        if (start.isError())
+            return;
+    }
+
+    ui->JSTree->clear();
+    QList<QTreeWidgetItem *> items;
+    QStack<QTreeWidgetItem*> stack;
+    QStack<QJSValueIterator*> iterators;
+    QStack<QJSValue> js_obj;
+
+    stack.push(nullptr);
+    QStringList element;
+
+    iterators.push_back(new QJSValueIterator(start));
+    js_obj.push_back(start);
+    int depth=0;
+    do {
+        QJSValueIterator *it = iterators.back();
+        if (it->hasNext()) {
+            it->next();
+            if (js_obj.top().hasOwnProperty(it->name())) {
+                bool hide=false;
+                if (depth == 0 && it->value().isCallable() )
+                    hide = true;
+                if (depth==0 && hideList.contains(it->name()))
+                    hide = true;
+                if (!hide) {
+                    element.clear();
+                    QString oname = it->value().toString();
+                    element << it->name() << oname;
+                    items.append( new QTreeWidgetItem(stack.last(), element) );
+
+                    if (it->value().isObject() && !it->value().isCallable() && depth<4) {
+                        stack.push_back(items.back());
+                        iterators.push_back(new QJSValueIterator(it->value()));
+                        js_obj.push_back(it->value());
+                        ++depth;
+                    }
+                }
+            }
+
+
+        } else {
+            stack.pop(); --depth;
+            QJSValueIterator *vi = iterators.pop();
+            delete vi;
+            js_obj.pop();
+            if (stack.size()==0)
+                break;
+        }
+
+    } while (true);
+
+
+    ui->JSTree->addTopLevelItems(items);
+
 }

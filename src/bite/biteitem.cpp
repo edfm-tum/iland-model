@@ -32,6 +32,11 @@ void BiteItem::setup(BiteAgent *agent)
     qCDebug(biteSetup) << "*** Setup of a item complete ***";
 }
 
+QString BiteItem::info()
+{
+    return QString("*** base class BiteItem ****");
+}
+
 void BiteItem::run()
 {
     qCDebug(bite) << " *** Execution of item: " << name();

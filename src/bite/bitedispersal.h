@@ -4,6 +4,7 @@
 #include "biteitem.h"
 #include "grid.h"
 #include "scriptgrid.h"
+#include "bitecellscript.h"
 
 
 namespace BITE {
@@ -18,6 +19,8 @@ public:
     Q_INVOKABLE BiteDispersal(QJSValue obj);
     void setup(BiteAgent *parent_agent);
     ScriptGrid *grid() { Q_ASSERT(mScriptGrid != nullptr); return mScriptGrid; }
+
+    QString info();
 
 public slots:
     // actions
@@ -34,6 +37,8 @@ private:
     int mKernelOffset;
     Grid<double> mGrid;
     ScriptGrid *mScriptGrid;
+    Events mEvents;
+    QJSValue mScript;
 
 };
 

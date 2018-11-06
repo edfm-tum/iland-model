@@ -41,6 +41,14 @@ void BiteDispersal::setup(BiteAgent *parent_agent)
         mScriptGrid = new ScriptGrid(&mGrid);
         mScriptGrid->setOwnership(false); // scriptgrid should not delete the grid
 
+        // setup events
+        mEvents.setup(mObj, QStringList() << "onBeforeSpread" << "onAfterSpread");
+
+        mScript = BiteEngine::instance()->scriptEngine()->newQObject(this);
+        BiteAgent::setCPPOwnership(this);
+
+        agent()->wrapper().registerGridVar(&mGrid, "dgrid");
+
 
     } catch (const IException &e) {
         QString error = QString("An error occured in the setup of BiteDispersal item '%1': %2").arg(name()).arg(e.message());
@@ -51,9 +59,20 @@ void BiteDispersal::setup(BiteAgent *parent_agent)
 
 }
 
+QString BiteDispersal::info()
+{
+    QString res = QString("Type: BiteDispersal\nDesc: %2\nKernel grid size: %1").arg(mKernel.sizeX()).arg(description());
+    return res;
+}
+
 void BiteDispersal::run()
 {
+    QJSValueList p;
+    p << mScript; // parameter: this instance
+    mEvents.run("onBeforeSpread", nullptr, &p);
     spreadKernel();
+    mEvents.run("onAfterSpread", nullptr, &p);
+    decide();
 }
 
 void BiteDispersal::decide()
@@ -123,6 +142,7 @@ void BiteDispersal::spreadKernel()
 {
     for (double *p = mGrid.begin(); p!=mGrid.end(); ++p) {
         if (*p == 1.) {
+            ++agent()->stats().nDispersal;
             QPoint cp=mGrid.indexOf(p);
             // the cell is a source, apply the kernel
             //int imin = std::max(0, cp.x()-mKernelOffset); int imax=std::min(mGrid.sizeX(), cp.x()+mKernelOffset);

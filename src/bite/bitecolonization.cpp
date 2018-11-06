@@ -8,9 +8,9 @@ BiteColonization::BiteColonization()
 
 }
 
-BiteColonization::BiteColonization(QJSValue obj)
+BiteColonization::BiteColonization(QJSValue obj): BiteItem(obj)
 {
-    mObj = obj;
+
 }
 
 void BiteColonization::setup(BiteAgent *parent_agent)
@@ -33,6 +33,7 @@ void BiteColonization::setup(BiteAgent *parent_agent)
             mTreeConstraints.setup(tree_filter, DynamicExpression::TreeWrap);
         }
 
+        mEvents.setup(mObj, QStringList() << "onCalculate");
 
     } catch (const IException &e) {
         QString error = QString("An error occured in the setup of BiteColonization item '%1': %2").arg(name()).arg(e.message());
@@ -49,6 +50,28 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     if (!cell->isActive())
         return;
     qCDebug(bite) << "BiteCol:runCell:" << cell->index() << "of agent" << cell->agent()->name();
+    ++agent()->stats().nColonizable;
+
+    double result = mCellConstraints.evaluate(cell);
+    if (result == 0.) {
+        cell->setActive(false);
+        return; // no colonization
+    }
+
+    result = mTreeConstraints.evaluate(treelist);
+    if (result == 0.) {
+        cell->setActive(false);
+        return;
+    }
+
+    QJSValue event_res = mEvents.run("onCalculate", cell);
+    if (event_res.isBool() && event_res.toBool()==false) {
+        cell->setActive(false);
+        return; // event returned false
+    }
+    // successfull colonized
+    ++agent()->stats().nColonized;
+
 }
 
 QStringList BiteColonization::allowedProperties()

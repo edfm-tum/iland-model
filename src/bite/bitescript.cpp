@@ -7,22 +7,30 @@
 #include "biteitem.h"
 #include "bitedispersal.h"
 #include "bitecolonization.h"
-
+#include "fmtreelist.h"
 namespace BITE {
 
 
-BiteScript::BiteScript()
+BiteScript::BiteScript(QObject *parent): QObject(parent)
 {
 
 }
 
-void BiteScript::setup()
+void BiteScript::setup(BiteEngine *biteengine)
 {
+    mEngine = biteengine;
     // setup links to JS Object
     QJSEngine *engine = BiteEngine::instance()->scriptEngine();
 
     if (engine->globalObject().hasOwnProperty("BiteAgent"))
         return; // already done
+
+    qRegisterMetaType<ABE::FMTreeList*>("ABE::FMTreeList*"); // register type, required to have that type as property
+    qRegisterMetaType<BiteItem*>("BiteItem*"); // register type, required to have that type as property
+    qRegisterMetaType<BiteCellScript*>("BiteCellScript*"); // register type, required to have that type as property
+    // create this object
+    QJSValue jsObj = engine->newQObject(this);
+    engine->globalObject().setProperty("Bite", jsObj);
 
     // createable objects: BiteAgent
 
@@ -43,6 +51,11 @@ void BiteScript::setup()
 
 }
 
+QStringList BiteScript::agents()
+{
+    return mEngine->agentNames();
+}
+
 
 QString BiteScript::JStoString(QJSValue value)
 {
@@ -52,6 +65,26 @@ QString BiteScript::JStoString(QJSValue value)
         return result.toString();
     } else
         return value.toString();
+
+}
+
+BiteAgent *BiteScript::agent(QString agent_name)
+{
+    BiteAgent *ag = mEngine->agentByName(agent_name);
+    if (!ag)
+        throw IException("There is no Bite Agent with name: " + agent_name);
+    return ag;
+}
+
+void BiteScript::log(QString msg)
+{
+    qCDebug(bite).noquote() << msg;
+}
+
+void BiteScript::log(QJSValue obj)
+{
+    QString msg = JStoString(obj);
+    qCDebug(bite).noquote() <<  msg;
 
 }
 
