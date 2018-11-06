@@ -205,6 +205,7 @@ private slots:
     void on_actionRepaint_triggered();
     void on_checkXMLFile_clicked();
     void on_actionSave_regeneration_grid_triggered();
+    void on_pbLoadTree_clicked();
 };
 
 #endif // MAINWINDOW_H

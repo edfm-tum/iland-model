@@ -15,10 +15,15 @@ namespace BITE {
 class BiteCellScript : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(ABE::FMTreeList *trees READ trees)
+    Q_PROPERTY(bool active READ active WRITE setActive)
+    Q_PROPERTY(ABE::FMTreeList* trees READ trees)
 public:
     explicit BiteCellScript(QObject *parent = nullptr);
     void setCell(BiteCell *c) { mCell = c; }
+    BiteCell *cell() const {return mCell; }
+
+    bool active() const { return mCell->isActive(); }
+    void setActive(bool a) { mCell->setActive(a); }
 
     ABE::FMTreeList *trees();
 
@@ -39,13 +44,15 @@ public:
     /// setup events from the javascript object
     void setup(QJSValue &js_value, QStringList event_names);
     /// execute javascript event /if registered) in the context of the forest stand 'stand'.
-    QJSValue run(const QString event, BiteCell *cell, QJSValueList *params=nullptr);
+    QJSValue run(const QString event, BiteCell *cell=nullptr, QJSValueList *params=nullptr);
     /// returns true, if the event 'event' is available.
     bool hasEvent(const QString &event) const;
     QString dump(); ///< prints some debug info
 private:
     QJSValue mInstance; ///< object holding the events
     QMap<QString, QJSValue> mEvents; ///< list of event names and javascript functions
+    BiteCellScript mCell;
+    QJSValue mScriptCell;
 };
 
 /** DynamicExpression encapsulates an "expression" that can be either a iLand expression, a constant or a javascript function.
@@ -56,7 +63,7 @@ struct DynamicExpression {
     ~DynamicExpression();
     void setup(const QJSValue &js_value, EWrapperType type);
     bool evaluate(BiteCell *cell) const;
-    bool evaluate(ABE::FMTreeList* treelist) const;
+    bool evaluate(Tree* tree) const;
     bool isValid() const { return filter_type!=ftInvalid;}
     QString dump() const;
 private:

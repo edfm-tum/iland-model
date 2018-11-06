@@ -48,7 +48,8 @@ void BiteAgent::setup(QJSValue obj)
                         bitem->setName(it.name());
                         bitem->setup(this);
                         // the object is managed from now on by C++
-                        QQmlEngine::setObjectOwnership(bitem, QQmlEngine::CppOwnership);
+                        setCPPOwnership(bitem);
+
                         mItems.push_back(bitem);
                         qCDebug(biteSetup) << "added item #" << mItems.count() << ", " << bitem->name();
                     }
@@ -56,6 +57,7 @@ void BiteAgent::setup(QJSValue obj)
             }
 
         }
+        BiteEngine::instance()->addAgent(this);
     } catch (const IException &e) {
         QString error = QString("An error occured in the setup of Bite agent '%1': %2").arg(mName).arg(e.message());
         qCDebug(biteSetup) << error;
@@ -64,6 +66,11 @@ void BiteAgent::setup(QJSValue obj)
     }
     qCDebug(biteSetup) << "*** Setup of a agent complete ***";
 
+}
+
+void BiteAgent::setCPPOwnership(QObject *obj)
+{
+QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
 }
 
 //void _run_cell(BiteCell &cell) {
@@ -80,9 +87,17 @@ void BiteAgent::run()
     }
 
     // step 2: run cell-by-cell functions parallel
-    GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells);
+    GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells, true); // TODO: disable force singlethreaded
 
     qCDebug(bite) << "Agent" << name() << "finished";
+    qCDebug(bite) << "NSpread:" << stats().nDispersal << "NColonizable:" << stats().nColonizable << "NColonized:" << stats().nColonized;
+}
+
+void BiteAgent::run(BiteCellScript *cell)
+{
+    BiteCell *c = cell->cell();
+    qCDebug(bite) << "execute run for cell" << c->index();
+    runCell(*c);
 }
 
 BiteItem *BiteAgent::item(QString name)
@@ -91,6 +106,26 @@ BiteItem *BiteAgent::item(QString name)
         if (mItems[i]->name() == name)
             return mItems[i];
     return nullptr;
+}
+
+QString BiteAgent::info()
+{
+    QString msg = QString("Agent: %1\nCell-size: %2\nDescription: %3\n").arg(name()).arg(cellSize()).arg(mDesc);
+    msg += "\n=========================\n";
+    for (int i=0;i<mItems.count();++i)
+        msg += "Item: " + mItems[i]->name() +
+                "\n=========================\n" + mItems[i]->info() + "\n";
+
+    msg += QString("Variables: %1").arg(wrapper().getVariablesList().join(","));
+    return msg;
+}
+
+double BiteAgent::evaluate(BiteCellScript *cell, QString expr)
+{
+    mWrapper.setCell(cell->cell());
+    Expression expression(expr, &mWrapper);
+    double value = expression.execute();
+    return value;
 }
 
 void BiteAgent::runCell(BiteCell &cell)
@@ -119,6 +154,16 @@ ABE::FMTreeList *BiteAgent::threadTreeList()
     mTreeLists[QThread::currentThread()] = new ABE::FMTreeList;
     return mTreeLists[QThread::currentThread()];
 
+}
+
+BiteCellScript *BiteAgent::cell(int x, int y)
+{
+    if (!isCellValid(x,y) || mGrid.valueAtIndex(x,y)==nullptr)
+        throw IException(QString("BiteAgent:cell: invalid position %1/%2 (agent %3)").arg(x).arg(y).arg(name()));
+    BiteCell *c=mGrid.valueAtIndex(x,y);
+    BiteCellScript *bcs = new BiteCellScript();
+    bcs->setCell(c);
+    return bcs;
 }
 
 void BiteAgent::createBaseGrid()

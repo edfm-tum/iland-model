@@ -41,7 +41,7 @@ void BiteEngine::setup()
     resetErrors();
 
     // setup scripting
-    mScript.setup();
+    mScript.setup(this);
 
 
     // now load the javascript and execute
@@ -75,6 +75,14 @@ BiteAgent *BiteEngine::agentByName(QString name)
         if (b->name() == name)
             return b;
     return nullptr;
+}
+
+QStringList BiteEngine::agentNames()
+{
+    QStringList names;
+    for (auto *b : mAgents)
+        names.push_back(b->name());
+    return names;
 }
 
 QJSEngine *BiteEngine::scriptEngine()

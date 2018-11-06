@@ -18,6 +18,7 @@ public:
     void addAgent(BiteAgent *new_agent) { mAgents.push_back(new_agent); }
     /// get agent by name
     BiteAgent *agentByName(QString name);
+    QStringList agentNames();
 
     // properties
     QJSEngine *scriptEngine();
