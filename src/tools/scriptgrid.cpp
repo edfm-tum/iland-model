@@ -36,7 +36,7 @@ int ScriptGrid::mCreated = 0;
 
 ScriptGrid::ScriptGrid(QObject *parent) : QObject(parent)
 {
-    mGrid = 0;
+    mGrid = nullptr;
     mVariableName = "x"; // default name
     mCreated++;
     mOwner = true;
@@ -58,6 +58,15 @@ QJSValue ScriptGrid::createGrid(Grid<double> *grid, QString name)
         g->setName(name);
     QJSValue jsgrid = GlobalSettings::instance()->scriptEngine()->newQObject(g);
     return jsgrid;
+}
+
+void ScriptGrid::addToScriptEngine(QJSEngine *engine)
+{
+    qRegisterMetaType<ScriptGrid*>("ScriptGrid*"); // register type, required to have that type as property
+    // allow for "new Grid"
+    QJSValue jsMetaObject = engine->newQMetaObject(&ScriptGrid::staticQtMetaObject);
+    engine->globalObject().setProperty("Grid", jsMetaObject);
+
 }
 
 bool ScriptGrid::create(int awidth, int aheight, int acellsize)

@@ -18,6 +18,12 @@ void BiteColonization::setup(BiteAgent *parent_agent)
     BiteItem::setup(parent_agent);
 
     try {
+
+        checkProperties(mObj);
+        QJSValue disp_filter = BiteEngine::valueFromJs(mObj, "dispersalFilter", "1");
+        mDispersalFilter.setup(disp_filter, DynamicExpression::CellWrap, parent_agent);
+
+
         QJSValue species_filter = BiteEngine::valueFromJs(mObj, "speciesFilter");
         if (!species_filter.isUndefined()) {
             qCDebug(biteSetup) << "species filter: " << species_filter.toString();
@@ -25,15 +31,21 @@ void BiteColonization::setup(BiteAgent *parent_agent)
         QJSValue cell_filter = BiteEngine::valueFromJs(mObj, "cellFilter");
         if (!cell_filter.isUndefined()) {
             qCDebug(biteSetup) << "cell filter: " << cell_filter.toString();
-            mCellConstraints.setup(cell_filter, DynamicExpression::CellWrap);
+            mCellConstraints.setup(cell_filter, DynamicExpression::CellWrap, parent_agent);
         }
         QJSValue tree_filter = BiteEngine::valueFromJs(mObj, "treeFilter");
         if (!tree_filter.isUndefined()) {
             qCDebug(biteSetup) << "tree filter: " << tree_filter.toString();
-            mTreeConstraints.setup(tree_filter, DynamicExpression::TreeWrap);
+            mTreeConstraints.setup(tree_filter, DynamicExpression::TreeWrap, parent_agent);
         }
 
-        mEvents.setup(mObj, QStringList() << "onCalculate");
+        mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
+        BiteAgent::setCPPOwnership(this);
+
+        mEvents.setup(mObj, QStringList() << "onCalculate" << "onSetup", agent());
+
+        QJSValueList eparam = QJSValueList() << thisJSObj();
+        mEvents.run("onSetup", nullptr, &eparam);
 
     } catch (const IException &e) {
         QString error = QString("An error occured in the setup of BiteColonization item '%1': %2").arg(name()).arg(e.message());
@@ -47,29 +59,39 @@ void BiteColonization::setup(BiteAgent *parent_agent)
 
 void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 {
-    if (!cell->isActive())
+    // no colonization if agent is already living on the cell
+    if (cell->isActive())
         return;
-    qCDebug(bite) << "BiteCol:runCell:" << cell->index() << "of agent" << cell->agent()->name();
+
+    if (mDispersalFilter.evaluateBool(cell)==false) {
+        return;
+    }
+
+    if (agent()->verbose())
+        qCDebug(bite) << "BiteCol:runCell:" << cell->index() << "of agent" << cell->agent()->name();
+
     ++agent()->stats().nColonizable;
 
     double result = mCellConstraints.evaluate(cell);
     if (result == 0.) {
-        cell->setActive(false);
         return; // no colonization
     }
 
+    // now we need to load the trees
+    cell->checkTreesLoaded(treelist);
+
     result = mTreeConstraints.evaluate(treelist);
     if (result == 0.) {
-        cell->setActive(false);
         return;
     }
 
     QJSValue event_res = mEvents.run("onCalculate", cell);
     if (event_res.isBool() && event_res.toBool()==false) {
-        cell->setActive(false);
         return; // event returned false
     }
-    // successfull colonized
+    // successfully colonized
+    cell->setActive(true);
+    agent()->notifyItems(cell, BiteCell::CellColonized);
     ++agent()->stats().nColonized;
 
 }

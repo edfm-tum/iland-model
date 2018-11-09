@@ -23,6 +23,10 @@ public:
     // properties
     QJSEngine *scriptEngine();
 
+    // the current simulation year
+    int currentYear() const {return mYear; }
+    void setYear(int year) {mYear = year; }
+
     // functions
     void run();
 
@@ -43,6 +47,7 @@ private:
     QStringList mErrorStack;
     bool mHasScriptError;
     QMutex mSerialize;
+    int mYear;
 };
 
 } // end namespaec

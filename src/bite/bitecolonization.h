@@ -25,6 +25,7 @@ protected:
 private:
     Constraints mCellConstraints;
     Constraints mTreeConstraints;
+    DynamicExpression mDispersalFilter;
     Events mEvents;
 
 };

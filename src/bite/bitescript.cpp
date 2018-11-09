@@ -7,6 +7,9 @@
 #include "biteitem.h"
 #include "bitedispersal.h"
 #include "bitecolonization.h"
+#include "bitebiomass.h"
+#include "bitelifecycle.h"
+
 #include "fmtreelist.h"
 namespace BITE {
 
@@ -28,6 +31,7 @@ void BiteScript::setup(BiteEngine *biteengine)
     qRegisterMetaType<ABE::FMTreeList*>("ABE::FMTreeList*"); // register type, required to have that type as property
     qRegisterMetaType<BiteItem*>("BiteItem*"); // register type, required to have that type as property
     qRegisterMetaType<BiteCellScript*>("BiteCellScript*"); // register type, required to have that type as property
+    qRegisterMetaType<BiteAgent*>("BiteAgent*");
     // create this object
     QJSValue jsObj = engine->newQObject(this);
     engine->globalObject().setProperty("Bite", jsObj);
@@ -48,6 +52,11 @@ void BiteScript::setup(BiteEngine *biteengine)
     jsMetaObject = engine->newQMetaObject(&BiteColonization::staticMetaObject);
     engine->globalObject().setProperty("BiteColonization", jsMetaObject);
 
+    jsMetaObject = engine->newQMetaObject(&BiteBiomass::staticMetaObject);
+    engine->globalObject().setProperty("BiteBiomass", jsMetaObject);
+
+    jsMetaObject = engine->newQMetaObject(&BiteLifeCycle::staticMetaObject);
+    engine->globalObject().setProperty("BiteLifeCycle", jsMetaObject);
 
 }
 
@@ -86,6 +95,12 @@ void BiteScript::log(QJSValue obj)
     QString msg = JStoString(obj);
     qCDebug(bite).noquote() <<  msg;
 
+}
+
+void BiteScript::run(int year)
+{
+    BiteEngine::instance()->setYear(year);
+    BiteEngine::instance()->run();
 }
 
 } // end namespace

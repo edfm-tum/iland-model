@@ -4,6 +4,8 @@
 #include "expression.h"
 #include "helper.h"
 
+#include "bitelifecycle.h"
+
 namespace BITE {
 
 BiteDispersal::BiteDispersal()
@@ -41,13 +43,18 @@ void BiteDispersal::setup(BiteAgent *parent_agent)
         mScriptGrid = new ScriptGrid(&mGrid);
         mScriptGrid->setOwnership(false); // scriptgrid should not delete the grid
 
-        // setup events
-        mEvents.setup(mObj, QStringList() << "onBeforeSpread" << "onAfterSpread");
-
-        mScript = BiteEngine::instance()->scriptEngine()->newQObject(this);
+        mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
 
-        agent()->wrapper().registerGridVar(&mGrid, "dgrid");
+
+        // setup events
+        mEvents.setup(mObj, QStringList() << "onBeforeSpread" << "onExit" << "onSetup", agent());
+
+        agent()->wrapper()->registerGridVar(&mGrid, "dispersalGrid");
+
+        QJSValueList eparam = QJSValueList() << thisJSObj();
+        mEvents.run("onSetup", nullptr, &eparam);
+
 
 
     } catch (const IException &e) {
@@ -68,11 +75,15 @@ QString BiteDispersal::info()
 void BiteDispersal::run()
 {
     QJSValueList p;
-    p << mScript; // parameter: this instance
+    p << thisJSObj(); // parameter: this instance
+
+    prepareGrid();
     mEvents.run("onBeforeSpread", nullptr, &p);
     spreadKernel();
-    mEvents.run("onAfterSpread", nullptr, &p);
-    decide();
+    mEvents.run("onExit", nullptr, &p);
+
+
+    // decide();
 }
 
 void BiteDispersal::decide()
@@ -140,9 +151,17 @@ void BiteDispersal::setupKernel(QString expr, double max_dist, QString dbg_file)
 
 void BiteDispersal::spreadKernel()
 {
-    for (double *p = mGrid.begin(); p!=mGrid.end(); ++p) {
+    BiteCell **cell = agent()->grid().begin();
+    bool die_after_disp = agent()->lifeCycle()->dieAfterDispersal();
+    for (double *p = mGrid.begin(); p!=mGrid.end(); ++p,++cell) {
         if (*p == 1.) {
             ++agent()->stats().nDispersal;
+            if ( (*cell)->isSpreading() ) {
+                if (die_after_disp) {
+                    (*cell)->die();
+                }
+            }
+            agent()->notifyItems(*cell, BiteCell::CellSpread);
             QPoint cp=mGrid.indexOf(p);
             // the cell is a source, apply the kernel
             //int imin = std::max(0, cp.x()-mKernelOffset); int imax=std::min(mGrid.sizeX(), cp.x()+mKernelOffset);
@@ -164,6 +183,18 @@ void BiteDispersal::spreadKernel()
             }
         }
     }
+}
+
+void BiteDispersal::prepareGrid()
+{
+    BiteCell **cell = agent()->grid().begin();
+    for (double *p = mGrid.begin(); p!=mGrid.end(); ++p, ++cell) {
+        if (*cell && (*cell)->isSpreading())
+            *p = 1.;
+        else
+            *p = 0.;
+    }
+
 }
 
 } // end namespace

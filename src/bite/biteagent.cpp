@@ -4,6 +4,8 @@
 
 #include "model.h"
 #include "fmtreelist.h"
+#include "scriptgrid.h"
+#include "bitelifecycle.h"
 
 #include <QQmlEngine>
 
@@ -18,6 +20,8 @@ BiteAgent::BiteAgent(QObject *parent): QObject(parent)
 
 BiteAgent::BiteAgent(QJSValue obj): QObject(nullptr)
 {
+    mVerbose = false;
+    mLC = nullptr;
     setup(obj);
 }
 
@@ -52,11 +56,25 @@ void BiteAgent::setup(QJSValue obj)
 
                         mItems.push_back(bitem);
                         qCDebug(biteSetup) << "added item #" << mItems.count() << ", " << bitem->name();
+
+                        if (qobject_cast<BiteLifeCycle*>(bitem) )
+                            mLC=qobject_cast<BiteLifeCycle*>(bitem);
                     }
                 }
             }
 
         }
+
+        mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
+        BiteAgent::setCPPOwnership(this);
+
+        mEvents.setup(obj, QStringList() << "onSetup" << "onYearBegin" << "onYearEnd", this);
+        QJSValueList eparam = QJSValueList() << mThis;
+        mEvents.run("onSetup", nullptr, &eparam);
+
+
+        if (mLC==nullptr)
+            throw IException("A 'BiteLifeCycle' object is mandatory!");
         BiteEngine::instance()->addAgent(this);
     } catch (const IException &e) {
         QString error = QString("An error occured in the setup of Bite agent '%1': %2").arg(mName).arg(e.message());
@@ -70,7 +88,16 @@ void BiteAgent::setup(QJSValue obj)
 
 void BiteAgent::setCPPOwnership(QObject *obj)
 {
-QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
+}
+
+void BiteAgent::notifyItems(BiteCell *cell, BiteCell::ENotification what)
+{
+    cell->notify(what);
+    for (auto item : mItems) {
+        item->notify(cell, what);
+    }
+
 }
 
 //void _run_cell(BiteCell &cell) {
@@ -80,6 +107,11 @@ QQmlEngine::setObjectOwnership(obj, QQmlEngine::CppOwnership);
 void BiteAgent::run()
 {
     // main function
+    QJSValueList eparam = QJSValueList() << mThis;
+    mEvents.run("onYearBegin", nullptr, &eparam);
+
+
+
     // step 1: run all phase-level items (e.g. dispersal)
     for (auto item : mItems) {
         if (item->runCells() == false)
@@ -88,6 +120,8 @@ void BiteAgent::run()
 
     // step 2: run cell-by-cell functions parallel
     GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells, true); // TODO: disable force singlethreaded
+
+    mEvents.run("onYearEnd", nullptr, &eparam);
 
     qCDebug(bite) << "Agent" << name() << "finished";
     qCDebug(bite) << "NSpread:" << stats().nDispersal << "NColonizable:" << stats().nColonizable << "NColonized:" << stats().nColonized;
@@ -116,33 +150,51 @@ QString BiteAgent::info()
         msg += "Item: " + mItems[i]->name() +
                 "\n=========================\n" + mItems[i]->info() + "\n";
 
-    msg += QString("Variables: %1").arg(wrapper().getVariablesList().join(","));
+    msg += QString("Variables: %1").arg(wrapper()->getVariablesList().join(","));
     return msg;
 }
 
 double BiteAgent::evaluate(BiteCellScript *cell, QString expr)
 {
-    mWrapper.setCell(cell->cell());
-    Expression expression(expr, &mWrapper);
+    BiteWrapper bw(&mWrapperCore, cell->cell());
+    Expression expression(expr, &bw);
     double value = expression.execute();
     return value;
 }
 
+void BiteAgent::addGridVariable(ScriptGrid *grid, QString var_name)
+{
+    wrapper()->registerGridVar(grid->grid(), var_name);
+    grid->setName(var_name);
+    grid->setOwnership(false); // the grid is now managed by BITE (and freed from the wrapper)
+    qCDebug(biteSetup) << "added a grid (" << grid->name() << ") to the agent" << name();
+}
+
+void BiteAgent::updateDrawGrid(QString expression)
+{
+    BiteWrapper wrap(wrapper());
+    Expression expr(expression, &wrap);
+    BiteCell **cell = mGrid.begin();
+    for (double *p = mBaseDrawGrid.begin(); p!=mBaseDrawGrid.end(); ++p, ++cell)
+        if (*cell) {
+            wrap.setCell(*cell);
+            *p = expr.execute();
+        }
+}
+
 void BiteAgent::runCell(BiteCell &cell)
 {
-    // cells have to be active!
-    if (!cell.isActive())
-        return;
 
     // main function: loop over all items and call runCell
     ABE::FMTreeList *tree_list = threadTreeList();
 
     // fetch trees for the cell
-    cell.loadTrees(tree_list);
+    cell.setTreesLoaded(false);
     for (const auto &p : cell.agent()->mItems)
         if (p->runCells()) {
             p->runCell(&cell, tree_list);
     }
+    cell.finalize(); // some cleanup and stats
 }
 
 static QMutex _thread_treelist;
@@ -194,6 +246,13 @@ void BiteAgent::createBaseGrid()
     }
 
     qCDebug(biteSetup) << "Agent: " << name() << ": setup of base grid (cellSize:" << cellSize() << "), " << mCells.size() << "cells created";
+
+    mBaseDrawGrid.setup(mGrid.metricRect(), mGrid.cellsize());
+    mBaseDrawGrid.initialize(0.);
+
+    mDrawGrid = new ScriptGrid(&mBaseDrawGrid);
+    mDrawGrid->setOwnership(false); // scriptgrid should not delete the grid
+
 
 }
 

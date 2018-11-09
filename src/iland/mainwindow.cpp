@@ -338,7 +338,7 @@ MainWindow::MainWindow(QWidget *parent)
     qRegisterMetaType<QTextCursor>("QTextCursor");
 
     ui->iniEdit->setVisible(false);
-    ui->editStack->setTabEnabled(3,false); // the "other" tab
+    ui->editStack->setTabEnabled(4,false); // the "other" tab
     // qml setup
     QQuickView *view = new QQuickView();
     mRuler = view;

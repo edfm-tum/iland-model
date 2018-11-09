@@ -12,7 +12,6 @@ BiteItem::BiteItem(QJSValue obj) : QObject(nullptr), mAgent(nullptr)
 {
     mObj = obj;
 
-
 }
 
 void BiteItem::setup(BiteAgent *agent)
@@ -37,6 +36,12 @@ QString BiteItem::info()
     return QString("*** base class BiteItem ****");
 }
 
+void BiteItem::notify(BiteCell *cell, BiteCell::ENotification what)
+{
+    Q_UNUSED(cell)
+    Q_UNUSED(what)
+}
+
 void BiteItem::run()
 {
     qCDebug(bite) << " *** Execution of item: " << name();
@@ -45,6 +50,8 @@ void BiteItem::run()
 void BiteItem::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 {
     // do nothing
+    Q_UNUSED(cell)
+    Q_UNUSED(treelist)
 }
 
 int BiteItem::cellSize() const
@@ -67,12 +74,19 @@ void BiteItem::checkProperties(QJSValue obj)
         QJSValueIterator it(obj);
         while (it.hasNext()) {
             it.next();
-            if (!allowed.contains(it.name())) {
+            if (!it.name().startsWith("on") &&  !it.name().startsWith("user") && !allowed.contains(it.name())) {
                 qCDebug(biteSetup) << it.name() << "is not a valid property! Allowed are: " << allowed;
             }
         }
     }
 }
+
+bool BiteItem::verbose()
+{
+    Q_ASSERT(mAgent!=nullptr);
+    return mAgent->verbose();
+}
+
 
 
 }
