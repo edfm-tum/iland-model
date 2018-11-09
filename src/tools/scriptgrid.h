@@ -35,8 +35,11 @@ class ScriptGrid : public QObject
     Q_PROPERTY(int cellsize READ cellsize)
     Q_PROPERTY(bool isValid READ isValid)
 public:
-    explicit ScriptGrid(QObject *parent = 0);
+    Q_INVOKABLE ScriptGrid(QObject *parent = nullptr);
+    Q_INVOKABLE ScriptGrid(QString fileName): ScriptGrid() {  load(fileName); }
+
     explicit ScriptGrid(Grid<double> *grid) { mVariableName="x"; mGrid = grid; mCreated++; mOwner=true; }
+
     void setGrid(Grid<double> *grid) { mGrid = grid; mOwner=true; }
     void setOwnership(bool should_delete) { mOwner = should_delete; }
     ~ScriptGrid();
@@ -51,6 +54,7 @@ public:
     int cellsize() const { return mGrid?mGrid->cellsize():-1; }
     bool isValid() const { return mGrid?!mGrid->isEmpty():false; }
 
+    static void addToScriptEngine(QJSEngine *engine);
 signals:
 
 public slots:

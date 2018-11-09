@@ -13,6 +13,7 @@
 namespace ABE {
 class FMTreeList; // forward
 }
+class ScriptGrid;
 
 namespace BITE {
 
@@ -24,6 +25,7 @@ struct BAgentStats {
     int nColonized; ///< number of cells that are colonized (successfully)
 };
 
+class BiteLifeCycle;
 
 class BiteAgent : public QObject
 {
@@ -33,15 +35,24 @@ class BiteAgent : public QObject
     Q_PROPERTY(int cellSize READ cellSize)
     Q_PROPERTY(int width READ width)
     Q_PROPERTY(int height READ height)
+    Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
+    Q_PROPERTY(ScriptGrid* drawGrid READ drawGrid)
+
 public:
     BiteAgent(QObject *parent = nullptr);
     Q_INVOKABLE BiteAgent(QJSValue obj);
+
+    ScriptGrid *drawGrid() { Q_ASSERT(mDrawGrid != nullptr); return mDrawGrid; }
+
 
     /// setup of the agent with a data structure (provided via JS)
     void setup(QJSValue obj);
     /// helper function to set C++ ownership for 'obj'
     static void setCPPOwnership(QObject *obj);
-    BiteWrapper &wrapper() { return mWrapper; }
+    BiteWrapperCore *wrapper() { return &mWrapperCore; }
+
+    void notifyItems(BiteCell *cell, BiteCell::ENotification what);
+
 
     /// (short) name of the agent
     QString name() const {return mName; }
@@ -52,10 +63,13 @@ public:
     int width() const {return grid().sizeX(); }
     int height() const {return grid().sizeY(); }
 
+    bool verbose() const { return mVerbose; }
+    void setVerbose(bool v) { mVerbose = v; }
+
     const Grid<BiteCell*> &grid() const { return mGrid; }
     static ABE::FMTreeList* threadTreeList();
     BAgentStats &stats()  { return mStats; }
-
+    BiteLifeCycle *lifeCycle() const { return mLC; }
 
 
 public slots:
@@ -69,25 +83,37 @@ public slots:
     QString info();
 
     double evaluate(BiteCellScript *cell, QString expr);
+    void addGridVariable(ScriptGrid *grid, QString var_name);
+    void updateDrawGrid(QString expression);
 private:
     static void runCell(BiteCell &cell);
     static QHash<QThread*, ABE::FMTreeList* > mTreeLists;
 
-    BiteWrapper mWrapper;
+    BiteWrapperCore mWrapperCore;
 
     BAgentStats mStats;
 
-    // grid
+    // grids
     void createBaseGrid();
     Grid<BiteCell*> mGrid;
     QVector<BiteCell> mCells;
 
+    // grid for drawing
+    Grid<double> mBaseDrawGrid;
+    ScriptGrid *mDrawGrid;
+
+    Events mEvents;
+    QJSValue mThis;
+
     // elements (i.e. processes)
     QVector<BiteItem*> mItems;
+
+    BiteLifeCycle *mLC;
 
     QString mName;
     QString mDesc;
     int mCellSize;
+    bool mVerbose;
 
 };
 

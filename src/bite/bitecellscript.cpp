@@ -23,6 +23,35 @@ ABE::FMTreeList *BiteCellScript::trees()
     return BiteAgent::threadTreeList();
 }
 
+bool BiteCellScript::hasValue(QString variable_name)
+{
+    Q_ASSERT(mAgent!=nullptr);
+    return agent()->wrapper()->variableIndex(variable_name) >= 0;
+}
+
+double BiteCellScript::value(QString variable_name)
+{
+    Q_ASSERT(mAgent!=nullptr && mCell!=nullptr);
+    BiteWrapper wrap(agent()->wrapper(), mCell);
+    int var_idx = wrap.variableIndex(variable_name);
+    if (var_idx < 0)
+        throw IException(QString("Invalid variable '%1' for accessing cell variables (cell: %2, agent: %3).").arg(variable_name).arg(cell()->index()).arg(agent()->name()));
+    return wrap.value(var_idx);
+
+}
+
+void BiteCellScript::setValue(QString var_name, double value)
+{
+    Q_ASSERT(mAgent!=nullptr && mCell!=nullptr);
+    BiteWrapper wrap(agent()->wrapper(), mCell);
+    int var_idx = wrap.variableIndex(var_name);
+    if (var_idx < 0)
+        throw IException(QString("Invalid variable '%1' for accessing cell variables (cell: %2, agent: %3).").arg(var_name).arg(cell()->index()).arg(agent()->name()));
+
+    wrap.setValue(var_idx, value);
+
+}
+
 void BiteCellScript::reloadTrees()
 {
     int n = mCell->loadTrees(trees());
@@ -34,18 +63,40 @@ void BiteCellScript::reloadTrees()
 // ***********************************************************
 
 
+DynamicExpression::DynamicExpression(const DynamicExpression &src)
+{
+    wrapper_type = src.wrapper_type;
+    if (src.expr)
+        expr = new Expression(src.expr->expression());
+    else
+        expr = nullptr;
+
+    qCDebug(bite) << "dynamicexpression: copy ctor...";
+}
+
 DynamicExpression::~DynamicExpression()
 {
     if (expr)
         delete expr;
+    if (mTree)
+        delete mTree;
 }
 
-void DynamicExpression::setup(const QJSValue &js_value, EWrapperType type)
+void DynamicExpression::setup(const QJSValue &js_value, EWrapperType type, BiteAgent *agent)
 {
+    mAgent = agent;
     filter_type = ftInvalid;
     wrapper_type = type;
     if (expr) delete expr;
     expr=nullptr;
+    if (js_value.isString() && js_value.toString().isEmpty())
+        return; // keep invalid
+
+    mScriptCell = BiteEngine::instance()->scriptEngine()->newQObject(&mCell);
+    BiteAgent::setCPPOwnership(&mCell);
+    mTree = new ScriptTree;
+    mTreeValue = BiteEngine::instance()->scriptEngine()->newQObject(mTree);
+
 
     if (js_value.isCallable()) {
         func = js_value;
@@ -68,18 +119,24 @@ void DynamicExpression::setup(const QJSValue &js_value, EWrapperType type)
         return;
 
     }
+    if (js_value.isNumber()) {
+        filter_type = ftConstant;
+        mConstValue = js_value.toNumber();
+        return;
+    }
+    throw IException(QString("Invalid input to a dynamic expression: '%1' is not a Javascript function, nor a expression or a number.").arg(js_value.toString()));
 }
 
-bool DynamicExpression::evaluate(BiteCell *cell) const
+double DynamicExpression::evaluate(BiteCell *cell) const
 {
     switch (filter_type) {
     case ftInvalid: return true; // message?
+    case ftConstant: return mConstValue;
     case ftExpression: {
-        BiteWrapper bitewrap(cell);
+        BiteWrapper bitewrap(mAgent->wrapper(), cell);
         double result;
         try {
             result = expr->execute(nullptr, &bitewrap); // using execute, we're in strict mode, i.e. wrong variables are reported.
-            //result = expr->calculate(wrapper);
         } catch (IException &e) {
             // throw a nicely formatted error message
             e.add(QString("in filter (expr: '%2') for cell %1.").
@@ -90,37 +147,39 @@ bool DynamicExpression::evaluate(BiteCell *cell) const
 
         //            if (FMSTP::verbose())
         //                qCDebug(abe) << cell->context() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << cell->id() << ":" << result;
-        return result > 0.;
+        return result;
 
     }
     case ftJavascript: {
-        // call javascript function
-        // provide the execution context
-        // FomeScript::setExecutionContext(cell);
-        QJSValue result = const_cast<QJSValue&>(func).call();
+        // call javascript function with parameter
+        const_cast<BiteCellScript&>(mCell).setCell(cell);
+        const_cast<BiteCellScript&>(mCell).setAgent(mAgent);
+
+        QJSValue result = const_cast<QJSValue&>(func).call(QJSValueList() << mScriptCell);
         if (result.isError()) {
             throw IException(QString("Erron in evaluating constraint  (JS) for cell %1: %2").
                              arg(cell->index()).
                              arg(result.toString()));
         }
-        //        if (FMSTP::verbose())
-        //            qCDebug(abe) << "evaluate constraint (JS) for stand" << cell->id() << ":" << result.toString();
+        if (mAgent->verbose())
+            qCDebug(bite) << "evaluate dynamic expression (JS) for cell" << cell->index() << ":" << result.toString();
+
         // convert boolean result to 1 - 0
-        return result.toBool();
-        //        if (result.isBool())
-        //            return result.toBool()==true?1.:0;
-        //        else
-        //            return result.toNumber();
+        if (result.isBool())
+            return result.toBool()==true?1.:0;
+        else
+            return result.toNumber();
     }
 
     }
     return true;
 }
 
-bool DynamicExpression::evaluate(Tree *tree) const
+double DynamicExpression::evaluate(Tree *tree) const
 {
     switch (filter_type) {
     case ftInvalid: return true; // message?
+    case ftConstant: return mConstValue;
     case ftExpression: {
         TreeWrapper treewrap(tree);
         double result;
@@ -137,7 +196,7 @@ bool DynamicExpression::evaluate(Tree *tree) const
 
         //            if (FMSTP::verbose())
         //                qCDebug(abe) << cell->context() << "evaluate constraint (expr:" << expr->expression() << ") for stand" << cell->id() << ":" << result;
-        return result > 0.;
+        return result;
 
     }
     case ftJavascript: {
@@ -145,8 +204,9 @@ bool DynamicExpression::evaluate(Tree *tree) const
         // provide the execution context
         // FomeScript::setExecutionContext(cell);
         QMutexLocker lock(BiteEngine::instance()->serializeJS());
+        mTree->setTree(tree);
 
-        QJSValue result = const_cast<QJSValue&>(func).call();
+        QJSValue result = const_cast<QJSValue&>(func).call(QJSValueList() << mScriptCell);
         if (result.isError()) {
             throw IException(QString("Erron in evaluating constraint  (JS) for tree (N=%1): %2").
                              arg(tree->id()).
@@ -155,11 +215,11 @@ bool DynamicExpression::evaluate(Tree *tree) const
         //        if (FMSTP::verbose())
         //            qCDebug(abe) << "evaluate constraint (JS) for stand" << cell->id() << ":" << result.toString();
         // convert boolean result to 1 - 0
-        return result.toBool();
-        //        if (result.isBool())
-        //            return result.toBool()==true?1.:0;
-        //        else
-        //            return result.toNumber();
+
+        if (result.isBool())
+            return result.toBool()==true?1.:0;
+        else
+            return result.toNumber();
     }
 
     }
@@ -174,7 +234,8 @@ QString DynamicExpression::dump() const
     case ftInvalid: return "Invalid";
     case ftExpression: return expr->expression();
     case ftJavascript: return func.toString();
-    default: return "invalid filter type!";
+    case ftConstant: return QString::number(mConstValue);
+    //default: return "invalid filter type!";
     }
 }
 
@@ -183,8 +244,9 @@ QString DynamicExpression::dump() const
 /*************************  Constraints  ***********************************/
 /***************************************************************************/
 
-void Constraints::setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap)
+void Constraints::setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap, BiteAgent *agent)
 {
+    mAgent = agent;
     mConstraints.clear();
     if ((js_value.isArray() || js_value.isObject()) && !js_value.isCallable()) {
         QJSValueIterator it(js_value);
@@ -194,12 +256,12 @@ void Constraints::setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap
                 continue;
             mConstraints.append(DynamicExpression());
             DynamicExpression &item = mConstraints.last();
-            item.setup(it.value(), wrap);
+            item.setup(it.value(), wrap, agent);
         }
     } else {
         mConstraints.append(DynamicExpression());
         DynamicExpression &item = mConstraints.last();
-        item.setup(js_value, wrap);
+        item.setup(js_value, wrap, agent);
 
     }
 }
@@ -211,7 +273,7 @@ double Constraints::evaluate(BiteCell *cell)
     double p;
     double p_min = 1;
     for (int i=0;i<mConstraints.count();++i) {
-        p = mConstraints.at(i).evaluate(cell);
+        p = mConstraints.at(i).evaluateBool(cell);
         if (p == 0.) {
             //            if (cell->trace())
             //                qCDebug(abe) << cell->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
@@ -235,7 +297,7 @@ double Constraints::evaluate(ABE::FMTreeList *treelist)
         Tree *tree = t.first;
         p_min = 1.;
         for (int i=0;i<mConstraints.count();++i) {
-            p = mConstraints.at(i).evaluate(tree);
+            p = mConstraints.at(i).evaluateBool(tree);
             if (p == 0.) {
                 //            if (cell->trace())
                 //                qCDebug(abe) << cell->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
@@ -278,9 +340,10 @@ void Events::clear()
     mEvents.clear();
 }
 
-void Events::setup(QJSValue &js_value, QStringList event_names)
+void Events::setup(QJSValue &js_value, QStringList event_names, BiteAgent *agent)
 {
     mInstance = js_value; // save the object that contains the events
+    mAgent = agent;
     foreach (QString event, event_names) {
         QJSValue val = BiteEngine::valueFromJs(js_value, event);
         if (val.isCallable()) {
@@ -309,6 +372,7 @@ QJSValue Events::run(const QString event, BiteCell *cell, QJSValueList *params)
                 if (cell) {
                     // default parameter: the cell
                     mCell.setCell(cell);
+                    mCell.setAgent(mAgent);
                     result = func.callWithInstance(mInstance, QJSValueList() << mScriptCell);
                 } else {
                     result = func.callWithInstance(mInstance);

@@ -2,6 +2,7 @@
 #define BITEITEM_H
 
 #include "bite_global.h"
+#include "bitecell.h"
 #include <QObject>
 
 namespace ABE {
@@ -34,6 +35,9 @@ public:
     void setName(QString name) { mName = name; }
 
     QString description() const {return mDescription; }
+
+
+    virtual void notify(BiteCell *cell, BiteCell::ENotification what);
 signals:
 
 public slots:
@@ -46,8 +50,11 @@ protected:
     int cellSize() const;
     virtual QStringList allowedProperties();
     void checkProperties(QJSValue obj);
-    QJSValue mObj;
+    QJSValue thisJSObj() { return mThis; }
+    QJSValue mObj; ///< the JS value used to setup the item
+    QJSValue mThis; ///< the JS representation of the item
     void setRunCells(bool rc) { mRunCells = rc; }
+    bool verbose();
 private:
     BiteAgent *mAgent;
     QString mName;

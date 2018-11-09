@@ -519,6 +519,12 @@ double StandObj::rotationLength() const
     return -1.;
 }
 
+void StandObj::setRotationLength(int new_length)
+{
+    if (mStand)
+        mStand->setU(new_length);
+}
+
 QString StandObj::speciesComposition() const
 {
     int index = mStand->targetSpeciesIndex();

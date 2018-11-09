@@ -33,12 +33,13 @@ private:
     void setupKernel(QString expr, double max_dist, QString dbg_file);
     /// apply the spread kernel (probabilistically)
     void spreadKernel();
+    /// prepare the grid
+    void prepareGrid();
     Grid<double>  mKernel;
     int mKernelOffset;
     Grid<double> mGrid;
     ScriptGrid *mScriptGrid;
     Events mEvents;
-    QJSValue mScript;
 
 };
 

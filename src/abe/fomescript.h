@@ -171,7 +171,7 @@ class StandObj: public QObject
     Q_PROPERTY (int elapsed READ timeSinceLastExecution)
     Q_PROPERTY (QString lastActivity READ lastActivity)
 
-    Q_PROPERTY (double U READ rotationLength)
+    Q_PROPERTY (double U READ rotationLength WRITE setRotationLength)
     Q_PROPERTY(QString speciesComposition READ speciesComposition )
     Q_PROPERTY(QString thinningIntensity READ thinningIntensity )
 
@@ -226,6 +226,7 @@ public:
     int timeSinceLastExecution() const;
     QString lastActivity() const;
     double rotationLength() const;
+    void setRotationLength(int new_length);
     QString speciesComposition() const;
     QString thinningIntensity() const;
     QString stp() const;

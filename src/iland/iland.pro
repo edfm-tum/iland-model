@@ -215,7 +215,9 @@ SOURCES += main.cpp \
     ../bite/bitedispersal.cpp \
     ../bite/bitecolonization.cpp \
     ../bite/bitecellscript.cpp \
-    ../bite/bitewrapper.cpp
+    ../bite/bitewrapper.cpp \
+    ../bite/bitebiomass.cpp \
+    ../bite/bitelifecycle.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -333,7 +335,9 @@ HEADERS += mainwindow.h \
     ../bite/bitedispersal.h \
     ../bite/bitecolonization.h \
     ../bite/bitecellscript.h \
-    ../bite/bitewrapper.h
+    ../bite/bitewrapper.h \
+    ../bite/bitebiomass.h \
+    ../bite/bitelifecycle.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

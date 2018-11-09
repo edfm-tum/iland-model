@@ -27,6 +27,8 @@ public slots:
     void log(QString msg);
     void log(QJSValue obj);
 
+    void run(int year);
+
 private:
 
     BiteEngine *mEngine;
