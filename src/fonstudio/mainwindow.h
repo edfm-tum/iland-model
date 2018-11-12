@@ -1,7 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui>
+#include <QMainWindow>
+#include <QPlainTextEdit>
+#include <QWidget>
 #include <vector>
 
 #include "grid.h"
@@ -34,7 +36,7 @@ private:
     void loadPicusIniFile(const QString &fileName);
     // painter functions
 
-    Viewport vp;
+    //Viewport vp;
 
 
 private slots:

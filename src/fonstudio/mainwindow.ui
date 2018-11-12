@@ -14,12 +14,21 @@
    <string>FON Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="res/fonstudio.qrc">
     <normaloff>:/phone-icon.png</normaloff>:/phone-icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout" rowstretch="0,5,2">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>3</number>
+    </property>
+    <property name="topMargin">
+     <number>3</number>
+    </property>
+    <property name="rightMargin">
+     <number>3</number>
+    </property>
+    <property name="bottomMargin">
      <number>3</number>
     </property>
     <property name="spacing">
@@ -157,7 +166,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>20</y>
+          <y>30</y>
           <width>171</width>
           <height>23</height>
          </rect>
@@ -367,7 +376,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>80</y>
+          <y>90</y>
           <width>141</width>
           <height>23</height>
          </rect>
@@ -393,7 +402,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>110</y>
+          <y>120</y>
           <width>141</width>
           <height>23</height>
          </rect>
@@ -406,7 +415,7 @@ color: rgb(85, 0, 0);</string>
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>50</y>
+          <y>60</y>
           <width>141</width>
           <height>23</height>
          </rect>
@@ -461,7 +470,7 @@ color: rgb(85, 0, 0);</string>
      <x>0</x>
      <y>0</y>
      <width>869</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -495,7 +504,7 @@ color: rgb(85, 0, 0);</string>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLightroom">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
    </property>
    <property name="text">
@@ -507,7 +516,7 @@ color: rgb(85, 0, 0);</string>
   </action>
   <action name="actionEdit_XML_settings">
    <property name="icon">
-    <iconset>
+    <iconset resource="res/fonstudio.qrc">
      <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
    </property>
    <property name="text">
@@ -530,7 +539,7 @@ color: rgb(85, 0, 0);</string>
   <customwidget>
    <class>PaintArea</class>
    <extends>QWidget</extends>
-   <header>paintarea.h</header>
+   <header location="global">paintarea.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -549,7 +558,9 @@ color: rgb(85, 0, 0);</string>
   <tabstop>lrCalcFullGrid</tabstop>
   <tabstop>lrLightGrid</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="res/fonstudio.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>lrSliderX</sender>

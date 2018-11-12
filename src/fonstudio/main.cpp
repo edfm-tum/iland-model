@@ -1,7 +1,8 @@
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "mainwindow.h"
 #include "../3rdparty/MersenneTwister.h"
 #include "globalsettings.h"
+#include "debugtimer.h"
 MTRand _mtrand;
 MTRand &mtRand()
 {
