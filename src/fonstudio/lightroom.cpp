@@ -1,5 +1,6 @@
 #include "lightroom.h"
 #include "../tools/helper.h"
+#include "debugtimer.h"
 
 #include <QtCore>
 

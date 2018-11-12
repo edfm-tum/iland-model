@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QtXml>
+#include <QMessageBox>
 #include <imagestamp.h>
 #include "lightroom.h"
 #include "stampcontainer.h"
@@ -11,6 +12,7 @@
 #include "paintarea.h"
 #include  "globalsettings.h"
 //GlobalSettings *GlobalSettings::mInstance = 0;
+#include "debugtimer.h"
 
 // global settings
 QDomDocument xmldoc;
@@ -21,6 +23,9 @@ LightRoom *lightroom = 0;
 StampContainer *stamp_container=0;
 StampContainer *reader_stamp_container=0;
 QList<Species*> tree_species;
+
+
+
 
 double distance(const QPointF &a, const QPointF &b)
 {
@@ -41,23 +46,23 @@ double nrandom(const float& p1, const float& p2)
     return p1 + (p2-p1)*(rand()/float(RAND_MAX));
 }
 
-void myMessageOutput(QtMsgType type, const char *msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
  {
      switch (type) {
      case QtDebugMsg:
-         MainWindow::logSpace()->appendPlainText(QString(msg));
+         MainWindow::logSpace()->appendPlainText(msg);
          MainWindow::logSpace()->ensureCursorVisible();
          break;
      case QtWarningMsg:
          MainWindow::logSpace()->appendPlainText(QString("WARNING: %1").arg(msg));
          MainWindow::logSpace()->ensureCursorVisible();
-         fprintf(stderr, "WARNING: %s\n", msg);
+         fprintf(stderr, "WARNING: %s\n", msg.toLocal8Bit().data());
          break;
      case QtCriticalMsg:
-         fprintf(stderr, "Critical: %s\n", msg);
+         fprintf(stderr, "Critical: %s\n", msg.toLocal8Bit().data());
          break;
      case QtFatalMsg:
-         fprintf(stderr, "Fatal: %s\n", msg);
+         fprintf(stderr, "Fatal: %s\n", msg.toLocal8Bit().data());
          abort();
      }
 
@@ -81,7 +86,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     mLogSpace = ui->logOutput;
-    qInstallMsgHandler(myMessageOutput);
+
+    qInstallMessageHandler(myMessageOutput);
+
     // load xml file
     xmldoc.clear();
     QString argText = QApplication::arguments().last();
@@ -150,7 +157,7 @@ void MainWindow::repaintArea(QPainter &)
         default: break; // no painting
     }
     // fix viewpoint
-    vp.setScreenRect(ui->PaintWidget->rect());
+    //vp.setScreenRect(ui->PaintWidget->rect());
 }
 
 void MainWindow::on_actionLightroom_triggered()
@@ -180,6 +187,8 @@ void MainWindow::on_actionFON_action_triggered()
 
 void MainWindow::on_pbCreateLightroom_clicked()
 {
+
+
     if (xmldoc.isNull()) {
         Helper::msg("!!XML not loaded!!");
         return;

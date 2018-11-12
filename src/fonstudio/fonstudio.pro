@@ -4,6 +4,8 @@
 QT += xml
 QT += script
 QT += sql
+QT += widgets
+QT += concurrent
 TARGET = fonstudio
 TEMPLATE = app
 
@@ -33,7 +35,8 @@ SOURCES += main.cpp \
     ../tools/xmlhelper.cpp \
     ../core/threadrunner.cpp \
     version.cpp \
-    ../tools/randomgenerator.cpp
+    ../tools/randomgenerator.cpp \
+    ../tools/debugtimer.cpp
 
 
 HEADERS += mainwindow.h \
@@ -57,7 +60,8 @@ HEADERS += mainwindow.h \
     ../core/threadrunner.h \
     ../3rdparty/MersenneTwister.h \
     version.h \
-    ../tools/randomgenerator.h
+    ../tools/randomgenerator.h \
+    ../tools/debugtimer.h
 
 FORMS += mainwindow.ui
 RESOURCES += res/fonstudio.qrc
