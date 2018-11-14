@@ -99,7 +99,7 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 QStringList BiteColonization::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "speciesFilter" << "cellFilter" << "treeFilter";
+    l << "speciesFilter" << "cellFilter" << "treeFilter" << "dispersalFilter";
     return l;
 
 }

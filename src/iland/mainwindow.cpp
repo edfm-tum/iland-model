@@ -483,6 +483,32 @@ void MainWindow::updatePaintGridList()
         ui->paintGridBox->addItem(i.key(),i.key());
         ++i;
     }
+
+
+    ui->otherGridTree->clear();
+    QList<QTreeWidgetItem *> items;
+    QStack<QTreeWidgetItem*> stack;
+    stack.push(nullptr);
+    i = mPaintList.begin();
+    QString group=QString();
+    while (i!=mPaintList.constEnd()) {
+        QStringList elem = i.key().split("-");
+        if (elem.size()>1 && elem[0] != group) {
+            if (stack.size()>1)
+                stack.pop();
+            items.append(new QTreeWidgetItem(stack.last(), QStringList() << elem[0]));
+            stack.push(items.back());
+            group = elem[0];
+        }
+
+        items.append( new QTreeWidgetItem(stack.last(),  QStringList() << elem[1]) );
+        items.back()->setToolTip(0, i.value().description);
+        items.back()->setData(0, Qt::UserRole+0, i.key());
+        ++i;
+    }
+    ui->otherGridTree->addTopLevelItems(items);
+
+
 }
 
 void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
@@ -504,6 +530,37 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
             mPaintNext.what = PaintObject::PaintHeightGrid;
     }
     updatePaintGridList();
+}
+
+void MainWindow::addPaintLayers(QObject *handler, const QStringList names)
+{
+    for (int i=0;i<names.count();++i) {
+        if (mPaintList.contains(names[i]))
+            throw IException("The name" + names[i] + "is already in the list of paint items!");
+        QMap<QString, PaintObject>::iterator po = mPaintList.insert(names[i], PaintObject());
+        po.value().handler = handler;
+        po.value().what = PaintObject::PaintHandledObject;
+        po.value().expression = names[i];
+        po.value().auto_range = true;
+        po.value().view_type = GridViewRainbow;
+        po.value().name = names[i];
+    }
+    updatePaintGridList();
+}
+
+void MainWindow::removePaintLayers(QObject *handler)
+{
+    // remove all layers that have the given handler
+     QMutableMapIterator<QString, PaintObject> i(mPaintList);
+     while (i.hasNext()) {
+         i.next();
+         if (i.value().handler == handler)
+             i.remove();
+     }
+     if (mPaintNext.handler == handler)
+         mPaintNext.what = PaintObject::PaintNothing;
+
+     updatePaintGridList();
 }
 
 void MainWindow::removeLayers(const LayeredGridBase *layer)
@@ -614,7 +671,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (mPaintNext.what != PaintObject::PaintNothing) {
             if (mPaintNext.what == PaintObject::PaintMapGrid) {
                 mRulerColors->setCaption(mPaintNext.name);
-                paintMapGrid(painter, mPaintNext.map_grid, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+                paintMapGrid(painter, mPaintNext.map_grid, 0, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
             }
 
             if (mPaintNext.what == PaintObject::PaintFloatGrid) {
@@ -625,14 +682,31 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 } else {
                     mPaintNext.cur_max_value = mPaintNext.max_value;
                     mPaintNext.cur_min_value = mPaintNext.min_value;
-
                 }
-                paintMapGrid(painter, 0, mPaintNext.float_grid, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
+                paintMapGrid(painter, 0, mPaintNext.float_grid, 0, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
             }
 
             if (mPaintNext.what == PaintObject::PaintLayers)
                 paintGrid(painter, mPaintNext);
 
+            if (mPaintNext.what == PaintObject::PaintHandledObject) {
+                mRulerColors->setCaption(mPaintNext.name);
+                // prepare grid via the handler
+                mPaintNext.dbl_grid = mRemoteControl.preparePaintGrid(mPaintNext.handler, mPaintNext.expression);
+                if (!mPaintNext.dbl_grid)
+                    return; // no painting
+                if (!mRulerColors->autoScale()) {
+                    mPaintNext.cur_max_value = mRulerColors->maxValue();
+                    mPaintNext.cur_min_value = mRulerColors->minValue();
+                } else {
+                    mPaintNext.max_value = mPaintNext.dbl_grid->max();
+                    mPaintNext.min_value = mPaintNext.dbl_grid->min();
+                    mPaintNext.cur_max_value = mPaintNext.max_value;
+                    mPaintNext.cur_min_value = mPaintNext.min_value;
+                }
+                paintMapGrid(painter, nullptr, nullptr, mPaintNext.dbl_grid, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
+
+            }
             return;
         }
     }
@@ -1140,7 +1214,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
 
 // paint the values of the MapGrid
 void MainWindow::paintMapGrid(QPainter &painter,
-                              MapGrid *map_grid, const FloatGrid *float_grid,
+                              MapGrid *map_grid, const FloatGrid *float_grid, const Grid<double> *double_grid,
                               const GridViewType view_type,
                               double min_val, double max_val)
 {
@@ -1157,11 +1231,19 @@ void MainWindow::paintMapGrid(QPainter &painter,
         sy = int_grid->sizeY();
         total_rect = vp.toScreen(int_grid->metricRect());
     } else {
-        if (!float_grid)
+
+        if (!float_grid && !double_grid)
             return;
-        sx = float_grid->sizeX();
-        sy = float_grid->sizeY();
-        total_rect = vp.toScreen(float_grid->metricRect());
+        if (float_grid) {
+            sx = float_grid->sizeX();
+            sy = float_grid->sizeY();
+            total_rect = vp.toScreen(float_grid->metricRect());
+        } else {
+            sx = double_grid->sizeX();
+            sy = double_grid->sizeY();
+            total_rect = vp.toScreen(double_grid->metricRect());
+
+        }
     }
 
     // paint the lower-res-grid;
@@ -1183,9 +1265,12 @@ void MainWindow::paintMapGrid(QPainter &painter,
             if (int_grid){
                 value = int_grid->constValueAtIndex(p);
                 r = vp.toScreen(int_grid->cellRect(p));
-            } else {
+            } else if (float_grid) {
                 value = float_grid->constValueAtIndex(p);
                 r = vp.toScreen(float_grid->cellRect(p));
+            } else {
+                value = double_grid->constValueAtIndex(p);
+                r = vp.toScreen(double_grid->cellRect(p));
             }
             fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
             painter.fillRect(r, fill_color);
@@ -2369,4 +2454,21 @@ void MainWindow::on_pbLoadTree_clicked()
 
     ui->JSTree->addTopLevelItems(items);
 
+}
+
+void MainWindow::on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+{
+    if (!mRemoteControl.canRun())
+        return;
+    if (!current || current->data(0, Qt::UserRole+0).isNull())
+        return;
+    QString key = current->data(0, Qt::UserRole+0).toString();
+    if (!mPaintList.contains(key))
+        return;
+    PaintObject &po = mPaintList[key];
+    qDebug() << "clicked:" << key;
+
+    mPaintNext = po;
+    ui->visOtherGrid->setChecked(true); // to enable the right category
+    repaint();
 }

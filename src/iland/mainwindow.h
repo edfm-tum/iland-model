@@ -66,7 +66,7 @@ public slots:
     void modelFinished(QString errorMessage);
     void checkModelState();
     void bufferedLog(bool bufferLog);
-    QImage screenshot(); ///< craete a screenshot of the main painting area
+    QImage screenshot(); ///< create a screenshot of the main painting area
     void paintGrid(MapGrid *map_grid,
                    const QString &name=QString(),
                    const GridViewType view_type=GridViewRainbow,
@@ -76,6 +76,10 @@ public slots:
                    const GridViewType view_type=GridViewRainbow,
                    double min_val=0., double max_val=1.);
     void addLayers(const LayeredGridBase *layer, const QString &name);
+
+    void addPaintLayers(QObject *handler, const QStringList names);
+    void removePaintLayers(QObject *handler);
+
     void removeLayers(const LayeredGridBase *layer);
     void setViewport(QPointF center_point, double scale_px_per_m); /// set the viewport (like interactive with mouse)
     void setUIshortcuts(QVariantMap shortcuts);
@@ -105,7 +109,7 @@ private:
     void loadPicusIniFile(const QString &fileName);
     // painter functions
     void paintFON(QPainter &painter, QRect rect); ///< general paint function (GUI driven)
-    void paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatGrid *float_grid, const GridViewType view_type, double min_val=0., double max_val=1.); ///< paint a map grid (controller driver)
+    void paintMapGrid(QPainter &painter, MapGrid *map_grid, const FloatGrid *float_grid, const Grid<double> *double_grid, const GridViewType view_type, double min_val=0., double max_val=1.); ///< paint a map grid (controller driver)
     Viewport vp;
     QString dumpTreelist();
     void applyCycles(int cycle_count=1);
@@ -206,6 +210,7 @@ private slots:
     void on_checkXMLFile_clicked();
     void on_actionSave_regeneration_grid_triggered();
     void on_pbLoadTree_clicked();
+    void on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 };
 
 #endif // MAINWINDOW_H

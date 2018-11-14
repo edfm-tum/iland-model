@@ -8,10 +8,10 @@
 
 namespace BITE {
 
-BiteDispersal::BiteDispersal()
-{
-    throw IException("Bite dispersal setup without JS object!");
-}
+//BiteDispersal::BiteDispersal()
+//{
+//    throw IException("Bite dispersal setup without JS object!");
+//}
 
 
 BiteDispersal::BiteDispersal(QJSValue obj): BiteItem(obj)
@@ -195,6 +195,80 @@ void BiteDispersal::prepareGrid()
             *p = 0.;
     }
 
+}
+
+
+// ********************************************************************************************************************
+// *******************************************   BiteDistribution *****************************************************
+// ********************************************************************************************************************
+
+
+BiteDistribution::BiteDistribution(QJSValue obj): BiteItem(obj)
+{
+    mScriptGrid=nullptr;
+}
+
+void BiteDistribution::setup(BiteAgent *parent_agent)
+{
+    BiteItem::setup(parent_agent);
+    setRunCells(false);
+
+    try {
+        checkProperties(mObj);
+
+        // setup of the dispersal grid
+        mGrid.setup(agent()->grid().metricRect(), agent()->grid().cellsize());
+        mGrid.initialize(1.); // default: everywhere allowed...
+
+        agent()->wrapper()->registerGridVar(&mGrid, "dispersalGrid");
+
+        mEvents.setup(mObj, QStringList() << "onCalculate" << "onSetup", agent());
+
+        QJSValue map_file = BiteEngine::valueFromJs(mObj, "map");
+        if (map_file.isString()) {
+            QString map_filename = GlobalSettings::instance()->path(map_file.toString());
+            mGrid.loadGridFromFile(map_filename);
+            qCDebug(biteSetup) << "Loaded input file" << map_filename << "for the BiteDistribution" << name();
+        }
+
+        mScriptGrid = new ScriptGrid(&mGrid);
+        mScriptGrid->setOwnership(false); // scriptgrid should not delete the grid
+
+        // run the setup event
+        QJSValueList eparam = QJSValueList() << thisJSObj();
+        mEvents.run("onSetup", nullptr, &eparam);
+
+        mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
+        BiteAgent::setCPPOwnership(this);
+
+
+
+
+    } catch (const IException &e) {
+        QString error = QString("An error occured in the setup of BiteDistribution item '%1': %2").arg(name()).arg(e.message());
+        qCInfo(biteSetup) << error;
+        BiteEngine::instance()->error(error);
+    }
+
+}
+
+QString BiteDistribution::info()
+{
+    QString res = QString("Type: BiteDistribution\nDesc: %1").arg(description());
+    return res;
+
+}
+
+void BiteDistribution::run()
+{
+    QJSValueList eparam = QJSValueList() << thisJSObj();
+    mEvents.run("onCalculate", nullptr, &eparam);
+}
+
+QStringList BiteDistribution::allowedProperties()
+{
+    QStringList res = QStringList() << "map";
+    return res;
 }
 
 } // end namespace

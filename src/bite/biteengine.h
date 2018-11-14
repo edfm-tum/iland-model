@@ -15,7 +15,7 @@ public:
     ~BiteEngine();
 
     void setup();
-    void addAgent(BiteAgent *new_agent) { mAgents.push_back(new_agent); }
+    void addAgent(BiteAgent *new_agent);
     /// get agent by name
     BiteAgent *agentByName(QString name);
     QStringList agentNames();
@@ -26,6 +26,8 @@ public:
     // the current simulation year
     int currentYear() const {return mYear; }
     void setYear(int year) {mYear = year; }
+
+    Grid<double>* preparePaintGrid(QObject *handler, QString name);
 
     // functions
     void run();
@@ -48,6 +50,7 @@ private:
     bool mHasScriptError;
     QMutex mSerialize;
     int mYear;
+    bool mRunning;
 };
 
 } // end namespaec

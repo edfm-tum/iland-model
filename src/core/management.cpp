@@ -465,22 +465,38 @@ int Management::loadFromMap(MapGridWrapper *wrap, int key)
     return count();
 }
 
-void Management::killSaplings(MapGridWrapper *wrap, int key)
+void Management::killSaplings(MapGridWrapper *wrap, int key, QString filter)
 {
-    //MapGridWrapper *wrap = qobject_cast<MapGridWrapper*>(map_grid_object.toQObject());
-    //if (!wrap) {
-    //    context()->throwError("loadFromMap called with invalid map object!");
-    //    return;
-    //}
-    //loadFromMap(wrap->map(), key);
+
     QRectF box = wrap->map()->boundingBox(key);
     GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), box);
     ResourceUnit *ru;
+
+    SaplingWrapper sw;
+    Expression expr(filter.isEmpty() ? "true" : filter, &sw);
+
+    int nsap_removed=0;
     while (runner.next()) {
         if (wrap->map()->standIDFromLIFCoord(runner.currentIndex()) == key) {
             SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(),true, &ru);
-            if (sc)
-                GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,false, true);
+            if (sc) {
+                if (filter.isEmpty()) {
+                    // clear all saplings on the cell
+                    GlobalSettings::instance()->model()->saplings()->clearSaplings(sc,ru,false, true);
+
+                } else {
+                    for (int i=0;i<NSAPCELLS;++i) {
+                        if (sc->saplings[i].is_occupied()) {
+                            sw.setSaplingTree(&sc->saplings[i]);
+                            if (expr.execute()) {
+                                sc->saplings[i].clear();
+                                nsap_removed++;
+                            }
+                        }
+                    }
+                    sc->checkState();
+                }
+            }
         }
     }
 }

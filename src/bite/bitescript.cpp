@@ -9,6 +9,7 @@
 #include "bitecolonization.h"
 #include "bitebiomass.h"
 #include "bitelifecycle.h"
+#include "biteimpact.h"
 
 #include "fmtreelist.h"
 namespace BITE {
@@ -49,6 +50,9 @@ void BiteScript::setup(BiteEngine *biteengine)
     jsMetaObject = engine->newQMetaObject(&BiteDispersal::staticMetaObject);
     engine->globalObject().setProperty("BiteDispersal", jsMetaObject);
 
+    jsMetaObject = engine->newQMetaObject(&BiteDistribution::staticMetaObject);
+    engine->globalObject().setProperty("BiteDistribution", jsMetaObject);
+
     jsMetaObject = engine->newQMetaObject(&BiteColonization::staticMetaObject);
     engine->globalObject().setProperty("BiteColonization", jsMetaObject);
 
@@ -57,6 +61,9 @@ void BiteScript::setup(BiteEngine *biteengine)
 
     jsMetaObject = engine->newQMetaObject(&BiteLifeCycle::staticMetaObject);
     engine->globalObject().setProperty("BiteLifeCycle", jsMetaObject);
+
+    jsMetaObject = engine->newQMetaObject(&BiteImpact::staticMetaObject);
+    engine->globalObject().setProperty("BiteImpact", jsMetaObject);
 
 }
 

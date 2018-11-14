@@ -156,8 +156,8 @@ double DynamicExpression::evaluate(BiteCell *cell) const
         const_cast<BiteCellScript&>(mCell).setAgent(mAgent);
 
         QJSValue result = const_cast<QJSValue&>(func).call(QJSValueList() << mScriptCell);
-        if (result.isError()) {
-            throw IException(QString("Erron in evaluating constraint  (JS) for cell %1: %2").
+        if (result.isError() || result.isUndefined()) {
+            throw IException(QString("Error in evaluating constraint (or no return value) (JS) for cell %1: %2").
                              arg(cell->index()).
                              arg(result.toString()));
         }
@@ -207,8 +207,8 @@ double DynamicExpression::evaluate(Tree *tree) const
         mTree->setTree(tree);
 
         QJSValue result = const_cast<QJSValue&>(func).call(QJSValueList() << mScriptCell);
-        if (result.isError()) {
-            throw IException(QString("Erron in evaluating constraint  (JS) for tree (N=%1): %2").
+        if (result.isError() || result.isUndefined()) {
+            throw IException(QString("Error in evaluating constraint  (or undefined return value) (JS) for tree (N=%1): %2").
                              arg(tree->id()).
                              arg(result.toString()));
         }
@@ -237,6 +237,7 @@ QString DynamicExpression::dump() const
     case ftConstant: return QString::number(mConstValue);
     //default: return "invalid filter type!";
     }
+    return QLatin1Literal("unknown");
 }
 
 
@@ -290,35 +291,22 @@ double Constraints::evaluate(ABE::FMTreeList *treelist)
 {
     if (mConstraints.isEmpty())
         return 1.; // no constraints to evaluate
-    double p;
-    double p_min = 1.;
+
+
     bool found = false;
     for (auto t : treelist->trees()) {
         Tree *tree = t.first;
-        p_min = 1.;
+
         for (int i=0;i<mConstraints.count();++i) {
-            p = mConstraints.at(i).evaluateBool(tree);
-            if (p == 0.) {
-                //            if (cell->trace())
-                //                qCDebug(abe) << cell->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
-                p_min = 0.;
-                break; // one constraint failed
-            } else {
-                // save the lowest value...
-                p_min = std::min(p, p_min);
+            if (mConstraints.at(i).evaluateBool(tree)) {
+                found = true;
+                return 1.; // done! at least one tree passes one constraint
             }
         }
-        if (p_min>0.){
-            found = true; // there is at least 1 tree that passes through all filters
-            return p_min; // stop here
-        }
     }
-    if (found)
-        return 1.;
-    else
-        return 0.;
 
-
+    // no tree meets any of the constraints
+    return 0.;
 }
 
 QStringList Constraints::dump()

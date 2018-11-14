@@ -9,10 +9,10 @@ namespace BITE {
 
 BiteWrapperCore::~BiteWrapperCore()
 {
-    for (auto &s : mVarObj) {
-        if (s.first == VarDoubleGrid)
-            delete static_cast<Grid<double>* >(s.second);
-    }
+    //for (auto &s : mVarObj) {
+    //    if (s.first == VarDoubleGrid)
+    //        delete static_cast<Grid<double>* >(s.second);
+    //}
     mVarObj.clear();
 }
 

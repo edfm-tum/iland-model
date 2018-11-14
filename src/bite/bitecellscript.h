@@ -48,6 +48,8 @@ public slots:
     double value(QString variable_name);
     void setValue(QString var_name, double value);
 
+    void die() { mCell->die(); }
+
     void reloadTrees();
 private:
     BiteCell *mCell;
