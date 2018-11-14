@@ -839,10 +839,109 @@ QProgressBar::chunk {
         <string>Visualization Options</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="18" column="0" colspan="3">
+        <item row="20" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
            <string>(value)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="15" column="0" colspan="3">
+         <widget class="QComboBox" name="paintGridBox"/>
+        </item>
+        <item row="19" column="2">
+         <widget class="QPushButton" name="pbExecExpression">
+          <property name="maximumSize">
+           <size>
+            <width>25</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Execute expression for each tree or resource unit (depending on the current view) and draw trees accordingly.&lt;/p&gt;&lt;p&gt;Note: &amp;quot;Autoscale colors&amp;quot; does not work for trees, however, appropriate scaling can be added to the expression itself (e.g. use 'dbh/50' to show the tree diameter from 0cm (blue) to &amp;gt;=50cm (red).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="icon">
+           <iconset resource="res/iland.qrc">
+            <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QCheckBox" name="visSpeciesColor">
+          <property name="text">
+           <string>color by species</string>
+          </property>
+         </widget>
+        </item>
+        <item row="18" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>12</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Expression</string>
+          </property>
+         </widget>
+        </item>
+        <item row="19" column="0" colspan="2">
+         <widget class="QLineEdit" name="lTreeExpr"/>
+        </item>
+        <item row="13" column="0" colspan="3">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>other grids</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="3">
+         <widget class="QRadioButton" name="visFon">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the value of the light influence grid at 2m resolution. Drawn is actually 1-LFI, with blue indicating high and red low light availability.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Light influence field</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
+         <widget class="QCheckBox" name="visAutoScale">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;if checked, then some visualizations based on resource units (and 'other grids') are scaled automatically to the value range in the data. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Autoscale colors</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QCheckBox" name="visRUSpeciesColor">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, species domiance on resource unit level is shown. If a species is selected in the dropdown box below, then basal aera of the selected species is drawn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>species shares</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <widget class="QCheckBox" name="visShading">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked and if a DEM is loaded, then some of the visualizations add a &amp;quot;shading&amp;quot; effect based on the DEM.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Shading</string>
           </property>
          </widget>
         </item>
@@ -866,27 +965,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="13" column="0" colspan="3">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>other grids</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="3">
-         <widget class="QRadioButton" name="visFon">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show the value of the light influence grid at 2m resolution. Drawn is actually 1-LFI, with blue indicating high and red low light availability.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Light influence field</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="19" column="0" colspan="3">
+        <item row="21" column="0" colspan="3">
          <widget class="QComboBox" name="speciesFilterBox"/>
         </item>
         <item row="9" column="0">
@@ -918,85 +997,6 @@ QProgressBar::chunk {
            <string>Regeneration</string>
           </property>
          </widget>
-        </item>
-        <item row="10" column="0">
-         <widget class="QCheckBox" name="visAutoScale">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;if checked, then some visualizations based on resource units (and 'other grids') are scaled automatically to the value range in the data. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Autoscale colors</string>
-          </property>
-         </widget>
-        </item>
-        <item row="15" column="0" colspan="3">
-         <widget class="QComboBox" name="paintGridBox"/>
-        </item>
-        <item row="6" column="1">
-         <widget class="QCheckBox" name="visRUSpeciesColor">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, species domiance on resource unit level is shown. If a species is selected in the dropdown box below, then basal aera of the selected species is drawn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>species shares</string>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="1">
-         <widget class="QCheckBox" name="visShading">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked and if a DEM is loaded, then some of the visualizations add a &amp;quot;shading&amp;quot; effect based on the DEM.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Shading</string>
-          </property>
-         </widget>
-        </item>
-        <item row="17" column="2">
-         <widget class="QPushButton" name="pbExecExpression">
-          <property name="maximumSize">
-           <size>
-            <width>25</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Execute expression for each tree or resource unit (depending on the current view) and draw trees accordingly.&lt;/p&gt;&lt;p&gt;Note: &amp;quot;Autoscale colors&amp;quot; does not work for trees, however, appropriate scaling can be added to the expression itself (e.g. use 'dbh/50' to show the tree diameter from 0cm (blue) to &amp;gt;=50cm (red).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="icon">
-           <iconset resource="res/iland.qrc">
-            <normaloff>:/Play.png</normaloff>:/Play.png</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>16</width>
-            <height>16</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
-         <widget class="QCheckBox" name="visSpeciesColor">
-          <property name="text">
-           <string>color by species</string>
-          </property>
-         </widget>
-        </item>
-        <item row="16" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>12</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Expression</string>
-          </property>
-         </widget>
-        </item>
-        <item row="17" column="0" colspan="2">
-         <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
         <item row="1" column="0">
          <widget class="QRadioButton" name="visDomGrid">
@@ -1036,6 +1036,21 @@ QProgressBar::chunk {
           <property name="text">
            <string>seed availability</string>
           </property>
+         </widget>
+        </item>
+        <item row="17" column="0" colspan="3">
+         <widget class="QTreeWidget" name="otherGridTree">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Grid</string>
+           </property>
+          </column>
          </widget>
         </item>
        </layout>
@@ -1445,7 +1460,7 @@ QProgressBar::chunk {
      <y>265</y>
     </hint>
     <hint type="destinationlabel">
-     <x>874</x>
+     <x>864</x>
      <y>242</y>
     </hint>
    </hints>
@@ -1457,11 +1472,11 @@ QProgressBar::chunk {
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>874</x>
+     <x>864</x>
      <y>265</y>
     </hint>
     <hint type="destinationlabel">
-     <x>874</x>
+     <x>864</x>
      <y>242</y>
     </hint>
    </hints>

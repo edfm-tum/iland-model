@@ -15,7 +15,7 @@ class BiteDispersal: public BiteItem
     Q_PROPERTY(ScriptGrid* grid READ grid)
 
 public:
-    BiteDispersal();
+    //BiteDispersal();
     Q_INVOKABLE BiteDispersal(QJSValue obj);
     void setup(BiteAgent *parent_agent);
     ScriptGrid *grid() { Q_ASSERT(mScriptGrid != nullptr); return mScriptGrid; }
@@ -39,6 +39,31 @@ private:
     int mKernelOffset;
     Grid<double> mGrid;
     ScriptGrid *mScriptGrid;
+    Events mEvents;
+
+};
+
+class BiteDistribution : public BiteItem
+{
+    Q_OBJECT
+    Q_PROPERTY(ScriptGrid* grid READ grid)
+
+public:
+    Q_INVOKABLE BiteDistribution(QJSValue obj);
+    void setup(BiteAgent *parent_agent);
+    ScriptGrid *grid() { Q_ASSERT(mScriptGrid != nullptr); return mScriptGrid; }
+    QString info();
+
+
+public slots:
+    void run();
+protected:
+    QStringList allowedProperties();
+private:
+    Grid<double> mGrid;
+    ScriptGrid *mScriptGrid;
+
+
     Events mEvents;
 
 };

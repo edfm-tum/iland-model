@@ -39,7 +39,7 @@ public:
     // actions
     void die();
     void finalize();
-    enum ENotification { CellDied, CellColonized, CellSpread };
+    enum ENotification { CellDied, CellColonized, CellSpread, CellImpacted };
     void notify(ENotification what);
 
     int loadTrees(ABE::FMTreeList *treelist);

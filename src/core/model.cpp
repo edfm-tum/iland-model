@@ -768,6 +768,8 @@ void Model::runYear()
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
     mModules->yearBegin();
+    if (mBiteEngine)
+        mBiteEngine->run();
 
     // execute scheduled events for the current year
     if (mTimeEvents)

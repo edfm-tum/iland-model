@@ -24,7 +24,7 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
         if ( (has_cc_cell && has_cc_tree) || (!has_cc_cell && !has_cc_tree))
             throw IException("specify either 'carryingCapacityTree' OR 'carryingCapacityCell'! ");
         if (has_cc_cell) {
-            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "carryingCapacity");
+            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "carryingCapacityCell");
             mCalcCCCell.setup(calc_cc, DynamicExpression::CellWrap, parent_agent);
         }
         if (has_cc_tree) {
@@ -48,7 +48,7 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
 
-        mEvents.setup(mObj, QStringList() << "onCalculate" << "onEnter" << "onExit" << "onSetup", agent());
+        mEvents.setup(mObj, QStringList() << "onCalculate" << "onEnter" << "onExit" << "onSetup" << "onMortality", agent());
 
         QJSValueList eparam = QJSValueList() << thisJSObj();
         mEvents.run("onSetup", nullptr, &eparam);
@@ -92,6 +92,8 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
         return;
 
     // (1) apply the host tree filter on the tree list
+    cell->checkTreesLoaded(treelist); // load trees (if this has not happened before)
+
     int before = treelist->count();
     int after = treelist->filter(mHostTreeFilter);
     if (verbose()) {
@@ -101,6 +103,8 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     // (2) calculate carrying capacity
     if (mCalcCCCell.isValid()) {
         double carrying_cap = mCalcCCCell.evaluate(cell);
+        if (isnan(carrying_cap))
+            throw IException("BiteBiomass: carrying capacity is NaN! Expr:" + mCalcCCCell.dump());
         mCarryingCapacity[cell->index()] = carrying_cap;
         if (agent()->verbose())
             qCDebug(bite) << "carrying capacity (cell):" << carrying_cap;
@@ -111,6 +115,9 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
         for (int i=0;i<treelist->count(); ++i)
             carrying_cap += mCalcCCTree.evaluate(treelist->trees()[i].first);
 
+        if (isnan(carrying_cap))
+            throw IException("BiteBiomass: carrying capacity is NaN! Expr:" + mCalcCCTree.dump());
+
         mCarryingCapacity[cell->index()] = carrying_cap;
         if (agent()->verbose())
             qCDebug(bite) << "carrying capacity (" << treelist->count() << "trees):" << carrying_cap;
@@ -120,6 +127,9 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     double biomass_before = mAgentBiomass[cell->index()];
     if (mEvents.hasEvent("onCalculate")) {
         double bm = mEvents.run("onCalculate", cell).toNumber();
+        if (isnan(bm))
+            throw IException("BiteBiomass: biomass (return of onCalculate) is NaN!");
+
         mAgentBiomass[cell->index()] = bm;
     } else {
         qCDebug(bite) << "no action... TODO...";
@@ -133,6 +143,7 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     double p_mort = mMortality.evaluate(cell);
     if (drandom() < p_mort) {
         cell->die();
+        mEvents.run("onMortality", cell);
         if (agent()->verbose())
             qCDebug(bite) << "cell died due to mortality: index" << cell->index();
     }
@@ -143,7 +154,7 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 QStringList BiteBiomass::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "hostTrees" << "carryingCapacity" << "growthFunction";
+    l << "hostTrees" << "carryingCapacityCell" << "carryingCapacityTree" << "mortality" << "growthFunction";
     return l;
 
 }

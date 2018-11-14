@@ -148,6 +148,7 @@ public:
     inline QPoint indexOf(const T* element) const; ///< retrieve index (x/y) of the pointer element. returns -1/-1 if element is not valid.
     // special queries
     T max() const; ///< retrieve the maximum value of a grid
+    T min() const; ///< retrieve the minimum value of a grid
     T sum() const; ///< retrieve the sum of the grid
     T avg() const; ///< retrieve the average value of a grid
     // modifying operations
@@ -402,6 +403,17 @@ T  Grid<T>::max() const
     T* pend = end();
     for (p=begin(); p!=pend;++p)
        maxv = std::max(maxv, *p);
+    return maxv;
+}
+
+template <class T>
+T  Grid<T>::min() const
+{
+    T maxv = std::numeric_limits<T>::max();
+    T* p;
+    T* pend = end();
+    for (p=begin(); p!=pend;++p)
+       maxv = std::min(maxv, *p);
     return maxv;
 }
 

@@ -25,6 +25,15 @@ BiteAgent::BiteAgent(QJSValue obj): QObject(nullptr)
     setup(obj);
 }
 
+BiteAgent::~BiteAgent()
+{
+    // delete all the items
+    for (auto *p : mItems)
+        delete p;
+
+
+}
+
 void BiteAgent::setup(QJSValue obj)
 {
     qCDebug(biteSetup) << "*** BITE: Setup of a new agent ***";
@@ -229,19 +238,21 @@ void BiteAgent::createBaseGrid()
     mCells.clear();
 
     int index = 0;
+    BiteCell *null_cell = nullptr;
     for (auto *bc = mGrid.begin(); bc!=mGrid.end(); ++bc, ++index) {
         QPointF pos = mGrid.cellCenterPoint(index);
         if (hg->constValueAt(pos).isValid()) {
-            *bc = (BiteCell*)(mCells.size()); // for now, just store the position
             mCells.push_back(BiteCell());
             mCells.back().setup(index, pos, this);
+            BiteCell *bcp = null_cell + static_cast<size_t>(mCells.size()); //  just to avoid compiler warnings...
+            *bc = bcp;
         }
     }
 
     //
     for (auto *bc = mGrid.begin(); bc!=mGrid.end(); ++bc) {
-        if (bc) {
-            *bc = &mCells[ (size_t)(*bc)  ]; // store the real pointer to the mCells array
+        if (*bc) {
+            *bc = &mCells[ (static_cast<int>((*bc) - null_cell)) - 1 ]; // store the real pointer to the mCells array
         }
     }
 

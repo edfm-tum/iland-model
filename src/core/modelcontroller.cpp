@@ -40,6 +40,9 @@
 #include "mapgrid.h"
 #include "statdata.h"
 
+
+#include "biteengine.h"
+
 #ifdef ILAND_GUI
 #include "mainwindow.h" // for the debug message buffering
 #endif
@@ -618,6 +621,35 @@ void ModelController::removeLayers(const LayeredGridBase *layers)
 #else
     Q_UNUSED(layers);
 #endif
+}
+
+void ModelController::addPaintLayers(QObject *handler, const QStringList names)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow)
+        mViewerWindow->addPaintLayers(handler, names);
+
+#else
+    Q_UNUSED(handler) Q_UNUSED(names)
+#endif
+}
+
+void ModelController::removePaintLayers(QObject *handler)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow)
+        mViewerWindow->removePaintLayers(handler);
+#else
+    Q_UNUSED(handler)
+#endif
+}
+
+Grid<double> *ModelController::preparePaintGrid(QObject *handler, QString name)
+{
+    Grid<double> *grid = BITE::BiteEngine::instance()->preparePaintGrid(handler, name);
+    if (grid)
+        return grid;
+    return nullptr;
 }
 
 void ModelController::setViewport(QPointF center_point, double scale_px_per_m)

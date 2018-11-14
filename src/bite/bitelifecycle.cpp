@@ -75,19 +75,25 @@ bool BiteLifeCycle::shouldSpread(BiteCell *cell)
     if (!cell->isActive())
         return false;
 
-    if (mSpreadDelay > cell->yearsLiving())
+    if (mSpreadDelay > cell->yearsLiving()) {
+        if (agent()->verbose()) qCDebug(bite) << "Not spreading (initial delay)";
         return false;
+    }
 
     if (mSpreadFilter.isValid()) {
         double res = mSpreadFilter.evaluate(cell);
         // the result of the filter is interpreted probabilistically
-        if (drandom() < res)
+        if (drandom() < res) {
+            if (agent()->verbose()) qCDebug(bite) << "Spreading, p:" << res;
             return true;
+        }
     }
 
     double val = mSpreadInterval.evaluate(cell);
-    if (BiteEngine::instance()->currentYear() - cell->yearLastSpread() > val)
+    if (BiteEngine::instance()->currentYear() - cell->yearLastSpread() > val) {
+        if (agent()->verbose()) qCDebug(bite) << "Spreading (Interval)";
         return true;
+    }
 
     return false;
 
@@ -96,7 +102,7 @@ bool BiteLifeCycle::shouldSpread(BiteCell *cell)
 QStringList BiteLifeCycle::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "dieAfterDispersal" << "spreadFilter" << "spreadInititalDelay" << "spreadFrequency" << "voltinism";
+    l << "dieAfterDispersal" << "spreadFilter" << "spreadDelay" << "spreadInterval" << "voltinism";
     return l;
 }
 

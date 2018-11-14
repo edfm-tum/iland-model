@@ -41,8 +41,10 @@ class BiteAgent : public QObject
 public:
     BiteAgent(QObject *parent = nullptr);
     Q_INVOKABLE BiteAgent(QJSValue obj);
+    ~BiteAgent();
 
     ScriptGrid *drawGrid() { Q_ASSERT(mDrawGrid != nullptr); return mDrawGrid; }
+    Grid<double> *baseDrawGrid() { return &mBaseDrawGrid; }
 
 
     /// setup of the agent with a data structure (provided via JS)
