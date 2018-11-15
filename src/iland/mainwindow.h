@@ -196,7 +196,6 @@ private slots:
     void on_visShading_clicked() {on_visFon_toggled();   }
     void on_actionPerformance_triggered();
     void on_scriptCommandHistory_currentIndexChanged(int index);
-    void on_paintGridBox_currentIndexChanged(int index);
     void on_actionTest_triggered();
     void on_pbReloadQml_clicked();
     void on_actionExit_triggered();

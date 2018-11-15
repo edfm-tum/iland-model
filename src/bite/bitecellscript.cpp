@@ -151,6 +151,9 @@ double DynamicExpression::evaluate(BiteCell *cell) const
 
     }
     case ftJavascript: {
+
+        QMutexLocker lock(BiteEngine::instance()->serializeJS());
+
         // call javascript function with parameter
         const_cast<BiteCellScript&>(mCell).setCell(cell);
         const_cast<BiteCellScript&>(mCell).setAgent(mAgent);
@@ -202,7 +205,7 @@ double DynamicExpression::evaluate(Tree *tree) const
     case ftJavascript: {
         // call javascript function
         // provide the execution context
-        // FomeScript::setExecutionContext(cell);
+
         QMutexLocker lock(BiteEngine::instance()->serializeJS());
         mTree->setTree(tree);
 
