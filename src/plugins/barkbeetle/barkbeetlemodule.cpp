@@ -74,8 +74,8 @@ void BarkBeetleModule::setup()
     BarkBeetleRUCell ru_cell;
     mRUGrid.initialize(ru_cell);
 
-    GlobalSettings::instance()->controller()->addLayers(&mLayers, "bb");
-    GlobalSettings::instance()->controller()->addLayers(&mRULayers, "bbru");
+    GlobalSettings::instance()->controller()->addLayers(&mLayers, "bark beetle");
+    GlobalSettings::instance()->controller()->addLayers(&mRULayers, "bark beetle");
 
     // load settings from the XML file
     loadParameters();

@@ -30,7 +30,11 @@ BiteEngine::BiteEngine()
 
 BiteEngine::~BiteEngine()
 {
-
+    // delete all agents
+    for (auto *a : mAgents) {
+        GlobalSettings::instance()->controller()->removePaintLayers(a);
+        delete a;
+    }
     mInstance=nullptr;
 }
 

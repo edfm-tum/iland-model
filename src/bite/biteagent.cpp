@@ -128,7 +128,7 @@ void BiteAgent::run()
     }
 
     // step 2: run cell-by-cell functions parallel
-    GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells, true); // TODO: disable force singlethreaded
+    GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells); // TODO: disable force singlethreaded
 
     mEvents.run("onYearEnd", nullptr, &eparam);
 

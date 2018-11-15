@@ -1000,8 +1000,10 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
     if (opts.property("grid").isString()) {
         QString grid=opts.property("grid").toString();
         ui->visOtherGrid->setChecked(true);
-        int idx = ui->paintGridBox->findData(grid);
-        ui->paintGridBox->setCurrentIndex(idx);
+        throw IException("todo: fix with the new grid...");
+        //ui->otherGridTree->find()
+        //int idx = ui->paintGridBox->findData(grid);
+        //ui->paintGridBox->setCurrentIndex(idx);
     }
 
     if (opts.hasProperty("expression"))

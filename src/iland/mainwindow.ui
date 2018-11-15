@@ -839,17 +839,14 @@ QProgressBar::chunk {
         <string>Visualization Options</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="20" column="0" colspan="3">
+        <item row="19" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
            <string>(value)</string>
           </property>
          </widget>
         </item>
-        <item row="15" column="0" colspan="3">
-         <widget class="QComboBox" name="paintGridBox"/>
-        </item>
-        <item row="19" column="2">
+        <item row="18" column="2">
          <widget class="QPushButton" name="pbExecExpression">
           <property name="maximumSize">
            <size>
@@ -879,7 +876,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="18" column="0">
+        <item row="17" column="0">
          <widget class="QLabel" name="label_4">
           <property name="maximumSize">
            <size>
@@ -892,7 +889,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="19" column="0" colspan="2">
+        <item row="18" column="0" colspan="2">
          <widget class="QLineEdit" name="lTreeExpr"/>
         </item>
         <item row="13" column="0" colspan="3">
@@ -965,7 +962,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="21" column="0" colspan="3">
+        <item row="20" column="0" colspan="3">
          <widget class="QComboBox" name="speciesFilterBox"/>
         </item>
         <item row="9" column="0">
@@ -1038,7 +1035,7 @@ QProgressBar::chunk {
           </property>
          </widget>
         </item>
-        <item row="17" column="0" colspan="3">
+        <item row="16" column="0" colspan="3">
          <widget class="QTreeWidget" name="otherGridTree">
           <property name="alternatingRowColors">
            <bool>true</bool>

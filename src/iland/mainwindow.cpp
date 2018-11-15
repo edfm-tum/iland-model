@@ -320,7 +320,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // species filter
     connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
-    connect( ui->paintGridBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
     updatePaintGridList();
 
     // model controller
@@ -476,20 +475,12 @@ QString MainWindow::dumpTreelist()
 
 void MainWindow::updatePaintGridList()
 {
-    ui->paintGridBox->clear();
-    ui->paintGridBox->addItem("<none>", "");
-    QMap<QString, PaintObject>::const_iterator i = mPaintList.begin();
-    while (i!=mPaintList.constEnd()) {
-        ui->paintGridBox->addItem(i.key(),i.key());
-        ++i;
-    }
-
 
     ui->otherGridTree->clear();
     QList<QTreeWidgetItem *> items;
     QStack<QTreeWidgetItem*> stack;
     stack.push(nullptr);
-    i = mPaintList.begin();
+    QMap<QString, PaintObject>::const_iterator i = mPaintList.begin();
     QString group=QString();
     while (i!=mPaintList.constEnd()) {
         QStringList elem = i.key().split("-");
@@ -661,12 +652,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
 
     if (other_grid) {
-        // return; // TODO TEST
-        if (ui->paintGridBox->currentIndex()>-1) {
-            QString name = ui->paintGridBox->itemData(ui->paintGridBox->currentIndex()).toString();
-            if (!name.isEmpty())
-                mPaintNext = mPaintList[name];
-        }
 
         if (mPaintNext.what != PaintObject::PaintNothing) {
             if (mPaintNext.what == PaintObject::PaintMapGrid) {
@@ -2219,11 +2204,6 @@ void MainWindow::readSettings()
 }
 
 
-void MainWindow::on_paintGridBox_currentIndexChanged(int index)
-{
-    if (index>-1 && mRemoteControl.canRun())
-        ui->visOtherGrid->setChecked(true);
-}
 
 void MainWindow::on_actionTest_triggered()
 {
@@ -2458,6 +2438,7 @@ void MainWindow::on_pbLoadTree_clicked()
 
 void MainWindow::on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {
+    Q_UNUSED(previous)
     if (!mRemoteControl.canRun())
         return;
     if (!current || current->data(0, Qt::UserRole+0).isNull())
