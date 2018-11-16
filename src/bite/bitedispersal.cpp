@@ -28,7 +28,6 @@ void BiteDispersal::setup(BiteAgent *parent_agent)
         qCDebug(biteSetup) << "Bite Dispersal constructor";
         checkProperties(mObj);
 
-        QJSValue kernel = BiteEngine::valueFromJs(mObj, "kernel");
         double kernel_size = BiteEngine::valueFromJs(mObj, "maxDistance", "",  "'maxDistance' is a required property!").toNumber();
         QString expr = BiteEngine::valueFromJs(mObj, "kernel", "",  "'kernel' is a required property!").toString();
 
@@ -48,7 +47,7 @@ void BiteDispersal::setup(BiteAgent *parent_agent)
 
 
         // setup events
-        mEvents.setup(mObj, QStringList() << "onBeforeSpread" << "onExit" << "onSetup", agent());
+        mEvents.setup(mObj, QStringList() << "onBeforeSpread" << "onAfterSpread" << "onSetup", agent());
 
         agent()->wrapper()->registerGridVar(&mGrid, "dispersalGrid");
 
@@ -80,7 +79,7 @@ void BiteDispersal::run()
     prepareGrid();
     mEvents.run("onBeforeSpread", nullptr, &p);
     spreadKernel();
-    mEvents.run("onExit", nullptr, &p);
+    mEvents.run("onAfterSpread", nullptr, &p);
 
 
     // decide();

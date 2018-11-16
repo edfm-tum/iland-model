@@ -65,7 +65,7 @@ public:
     /// setup events from the javascript object
     void setup(QJSValue &js_value, QStringList event_names, BiteAgent *agent);
     /// execute javascript event /if registered) in the context of the forest stand 'stand'.
-    QJSValue run(const QString event, BiteCell *cell=nullptr, QJSValueList *params=nullptr);
+    QString run(const QString event, BiteCell *cell=nullptr, QJSValueList *params=nullptr);
     /// returns true, if the event 'event' is available.
     bool hasEvent(const QString &event) const;
     QString dump(); ///< prints some debug info

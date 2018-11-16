@@ -37,6 +37,7 @@ class BiteAgent : public QObject
     Q_PROPERTY(int height READ height)
     Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
     Q_PROPERTY(ScriptGrid* drawGrid READ drawGrid)
+    Q_PROPERTY(QStringList variables READ variables)
 
 public:
     BiteAgent(QObject *parent = nullptr);
@@ -65,6 +66,9 @@ public:
     int width() const {return grid().sizeX(); }
     int height() const {return grid().sizeY(); }
 
+    // return a list of all currently available cell variables
+    QStringList variables();
+
     bool verbose() const { return mVerbose; }
     void setVerbose(bool v) { mVerbose = v; }
 
@@ -85,7 +89,7 @@ public slots:
     QString info();
 
     double evaluate(BiteCellScript *cell, QString expr);
-    void addGridVariable(ScriptGrid *grid, QString var_name);
+    void addVariable(ScriptGrid *grid, QString var_name);
     void updateDrawGrid(QString expression);
 private:
     static void runCell(BiteCell &cell);
