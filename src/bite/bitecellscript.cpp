@@ -274,20 +274,12 @@ double Constraints::evaluate(BiteCell *cell)
 {
     if (mConstraints.isEmpty())
         return 1.; // no constraints to evaluate
-    double p;
-    double p_min = 1;
+
     for (int i=0;i<mConstraints.count();++i) {
-        p = mConstraints.at(i).evaluateBool(cell);
-        if (p == 0.) {
-            //            if (cell->trace())
-            //                qCDebug(abe) << cell->context() << "constraint" << mConstraints.at(i).dump() << "did not pass.";
-            return 0.; // one constraint failed
-        } else {
-            // save the lowest value...
-            p_min = std::min(p, p_min);
-        }
+        if (mConstraints.at(i).evaluateBool(cell) == false)
+            return 0.;
     }
-    return p_min; // all constraints passed, return the lowest returned value...
+    return 1.; // all constraints passed, return the lowest returned value...
 }
 
 double Constraints::evaluate(ABE::FMTreeList *treelist)
@@ -345,7 +337,7 @@ void Events::setup(QJSValue &js_value, QStringList event_names, BiteAgent *agent
     BiteAgent::setCPPOwnership(&mCell);
 }
 
-QJSValue Events::run(const QString event, BiteCell *cell, QJSValueList *params)
+QString Events::run(const QString event, BiteCell *cell, QJSValueList *params)
 {
     if (mEvents.contains(event)) {
         //        if (cell)
@@ -373,10 +365,13 @@ QJSValue Events::run(const QString event, BiteCell *cell, QJSValueList *params)
             if (result.isError()) {
                 throw IException(QString("%3 Javascript error in event %1: %2").arg(event).arg(result.toString()).arg(cell?cell->index():-1));
             }
-            return result;
+            if (result.isUndefined())
+                return QString();
+
+            return result.toString(); // return a copy of the value (test if this limits crash)
         }
     }
-    return QJSValue();
+    return QString();
 }
 
 bool Events::hasEvent(const QString &event) const

@@ -90,7 +90,7 @@ bool BiteLifeCycle::shouldSpread(BiteCell *cell)
     }
 
     double val = mSpreadInterval.evaluate(cell);
-    if (BiteEngine::instance()->currentYear() - cell->yearLastSpread() > val) {
+    if (BiteEngine::instance()->currentYear() - cell->yearLastSpread() >= val) {
         if (agent()->verbose()) qCDebug(bite) << "Spreading (Interval)";
         return true;
     }

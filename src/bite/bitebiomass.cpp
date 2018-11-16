@@ -126,7 +126,7 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     // (3) calculate biomass
     double biomass_before = mAgentBiomass[cell->index()];
     if (mEvents.hasEvent("onCalculate")) {
-        double bm = mEvents.run("onCalculate", cell).toNumber();
+        double bm = mEvents.run("onCalculate", cell).toFloat();
         if (isnan(bm))
             throw IException("BiteBiomass: biomass (return of onCalculate) is NaN!");
 
