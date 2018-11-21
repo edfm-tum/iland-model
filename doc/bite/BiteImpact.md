@@ -23,6 +23,9 @@ should return a boolean value.
 * ### `killAllHostTrees` (boolean)
 If `true` the impact is simply to kill all trees (>4m)
 
+* ### `simulate` (boolean)
+If `true` no trees are harmed.
+
 ## Properties
 
 *no properties*
