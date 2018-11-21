@@ -20,6 +20,7 @@ void BiteImpact::setup(BiteAgent *parent_agent)
         if (!filter.isUndefined())
             mHostTreeFilter = filter.toString();
         mKillAllHostTrees = BiteEngine::valueFromJs(mObj, "killAllHostTrees", "false").toBool();
+        mSimulate = BiteEngine::valueFromJs(mObj, "simulate", "false").toBool();
 
         filter = BiteEngine::valueFromJs(mObj, "impactFilter");
         mImpactFilter.setup(filter, DynamicExpression::CellWrap, parent_agent);
@@ -67,7 +68,12 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 
     // now either kill all or run a function
     if (mKillAllHostTrees) {
-        int killed = treelist->kill(QString());
+        int killed;
+        if (mSimulate)
+            killed = treelist->count(); // simulation mode
+        else
+            killed = treelist->kill(QString()); // real impact
+
         if (verbose())
             qCDebug(bite) << "Impact: killed all host trees (n=" << killed << ")";
 
