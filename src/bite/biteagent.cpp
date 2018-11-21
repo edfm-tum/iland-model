@@ -109,6 +109,11 @@ void BiteAgent::notifyItems(BiteCell *cell, BiteCell::ENotification what)
 
 }
 
+QStringList BiteAgent::variables()
+{
+ return wrapper()->getVariablesList();
+}
+
 //void _run_cell(BiteCell &cell) {
 //    cell.agent()->runCell(cell);
 //}
@@ -171,7 +176,7 @@ double BiteAgent::evaluate(BiteCellScript *cell, QString expr)
     return value;
 }
 
-void BiteAgent::addGridVariable(ScriptGrid *grid, QString var_name)
+void BiteAgent::addVariable(ScriptGrid *grid, QString var_name)
 {
     wrapper()->registerGridVar(grid->grid(), var_name);
     grid->setName(var_name);
