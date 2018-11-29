@@ -20,7 +20,7 @@ void BiteColonization::setup(BiteAgent *parent_agent)
     try {
 
         checkProperties(mObj);
-        QJSValue disp_filter = BiteEngine::valueFromJs(mObj, "dispersalFilter", "1");
+        QJSValue disp_filter = BiteEngine::valueFromJs(mObj, "dispersalFilter", "1", "required property.");
         mDispersalFilter.setup(disp_filter, DynamicExpression::CellWrap, parent_agent);
 
 

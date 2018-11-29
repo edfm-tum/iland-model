@@ -5,6 +5,7 @@ class ResourceUnit;
 class Tree;
 #include <QPointF>
 
+#include "biteclimate.h"
 
 namespace ABE {
 class FMTreeList; // forward
@@ -35,7 +36,8 @@ public:
     int yearsLiving() const { return mYearsLiving; }
     int yearLastSpread() const { return mLastSpread; }
 
-
+    // climate vars
+    double climateVar(int var_index) const;
     // actions
     void die();
     void finalize();

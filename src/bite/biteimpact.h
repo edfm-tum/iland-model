@@ -26,6 +26,7 @@ private:
     DynamicExpression mImpactFilter;
     QString mHostTreeFilter;
     bool mKillAllHostTrees;
+    bool mSimulate;
     Events mEvents;
 
 };

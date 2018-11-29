@@ -9,6 +9,7 @@
 #include "biteitem.h"
 #include "bitecellscript.h"
 #include "bitewrapper.h"
+#include "biteclimate.h"
 
 namespace ABE {
 class FMTreeList; // forward
@@ -53,6 +54,7 @@ public:
     /// helper function to set C++ ownership for 'obj'
     static void setCPPOwnership(QObject *obj);
     BiteWrapperCore *wrapper() { return &mWrapperCore; }
+    const BiteClimate &biteClimate() const { return mClimateProvider; }
 
     void notifyItems(BiteCell *cell, BiteCell::ENotification what);
 
@@ -96,6 +98,7 @@ private:
     static QHash<QThread*, ABE::FMTreeList* > mTreeLists;
 
     BiteWrapperCore mWrapperCore;
+    BiteClimate mClimateProvider;
 
     BAgentStats mStats;
 

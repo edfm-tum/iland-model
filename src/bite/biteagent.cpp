@@ -41,9 +41,16 @@ void BiteAgent::setup(QJSValue obj)
         mName = BiteEngine::valueFromJs(obj, "name", "",  "'name' is a required property!").toString();
         mDesc = BiteEngine::valueFromJs(obj, "description", "",  "'description' is a required property!").toString();
         mCellSize = BiteEngine::valueFromJs(obj, "cellSize", "",  "'cellSize' is a required property!").toInt();
+
         if ( !(mCellSize == 10 || mCellSize==20 || mCellSize==50 || mCellSize==100) )
             throw IException("Invalid value for cell size! Allowed sized are 10,20,50, and 100m.");
 
+        // setup climate variables
+        QJSValue clim_vars = BiteEngine::valueFromJs(obj, "climateVariables", "");
+        if (clim_vars.isArray())
+            mClimateProvider.setup(clim_vars, mWrapperCore);
+
+        // setup the base grid for the agent
         createBaseGrid();
 
         // extract properties from the input object
@@ -229,6 +236,7 @@ BiteCellScript *BiteAgent::cell(int x, int y)
     BiteCell *c=mGrid.valueAtIndex(x,y);
     BiteCellScript *bcs = new BiteCellScript();
     bcs->setCell(c);
+    bcs->setAgent(this);
     return bcs;
 }
 
