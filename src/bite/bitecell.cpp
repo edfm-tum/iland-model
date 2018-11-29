@@ -7,6 +7,7 @@
 #include "fmtreelist.h"
 #include "biteengine.h"
 #include "bitelifecycle.h"
+#include "biteclimate.h"
 
 namespace BITE {
 
@@ -24,6 +25,12 @@ void BiteCell::checkTreesLoaded(ABE::FMTreeList *treelist)
         mTreesLoaded = true;
     }
 
+}
+
+double BiteCell::climateVar(int var_index) const
+{
+    // calculate the climate variable with 'var_index' - use the BiteClimate of the agent
+    return mAgent->biteClimate().value(var_index, mRU);
 }
 
 void BiteCell::die()

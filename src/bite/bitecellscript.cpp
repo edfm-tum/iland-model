@@ -13,7 +13,8 @@
 namespace BITE {
 BiteCellScript::BiteCellScript(QObject *parent) : QObject(parent)
 {
-
+    mAgent=nullptr;
+    mCell=nullptr;
 }
 
 ABE::FMTreeList *BiteCellScript::trees()

@@ -17,13 +17,14 @@ public:
 
     void registerVariable();
     void registerGridVar(Grid<double> *grid, QString var_name);
+    void registerClimateVar(int var_index, QString var_name);
 
     virtual const QStringList getVariablesList();
     double valueCell(const int variableIndex, const BiteCell* cell);
     void setValueCell(const int variableIndex, const BiteCell* cell, double new_value);
 
 private:
-    enum EVarType { VarDoubleGrid, VarNone };
+    enum EVarType { VarDoubleGrid, VarNone, VarClimate };
     void buildVarList();
     double valueActivity(const int variableIndex);
     double valueStand(const int variableIndex);

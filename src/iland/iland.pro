@@ -218,7 +218,8 @@ SOURCES += main.cpp \
     ../bite/bitewrapper.cpp \
     ../bite/bitebiomass.cpp \
     ../bite/bitelifecycle.cpp \
-    ../bite/biteimpact.cpp
+    ../bite/biteimpact.cpp \
+    ../bite/biteclimate.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -339,7 +340,8 @@ HEADERS += mainwindow.h \
     ../bite/bitewrapper.h \
     ../bite/bitebiomass.h \
     ../bite/bitelifecycle.h \
-    ../bite/biteimpact.h
+    ../bite/biteimpact.h \
+    ../bite/biteclimate.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

@@ -25,6 +25,15 @@ void BiteWrapperCore::registerGridVar(Grid<double> *grid, QString var_name)
     mVarObj.push_back( QPair<EVarType, void*> (VarDoubleGrid, static_cast<void*>(grid)) );
 }
 
+void BiteWrapperCore::registerClimateVar(int var_index, QString var_name)
+{
+    if (mVariables.contains(var_name))
+        throw IException(QString("Variable '%1' (for a climate variables) already in the list of BiteCell variables!").arg(var_name));
+    mVariables.push_back(var_name);
+    mVarObj.push_back( QPair<EVarType, void*>(VarClimate, static_cast<void*>(this+var_index))); // trick to store a int in a void*
+
+}
+
 const QStringList BiteWrapperCore::getVariablesList()
 {
     return mVariables;
@@ -46,6 +55,10 @@ double BiteWrapperCore::valueCell(const int variableIndex, const BiteCell *cell)
         case 3: return cell->yearsLiving();
         default: throw IException("Invalid variable index");
         }
+    case VarClimate: {
+        int var_idx  = static_cast<int>( static_cast<BiteWrapperCore*>(mVarObj[variableIndex].second) - this ); // get the int back
+        return cell->climateVar(var_idx);
+    }
 
     }
     return 0.;
