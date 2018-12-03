@@ -48,6 +48,7 @@ void BiteCell::finalize()
 
     // should the cell be active in the next iteration?
     setSpreading( agent()->lifeCycle()->shouldSpread(this) );
+    agent()->stats().nActive++;
 }
 
 void BiteCell::notify(ENotification what)

@@ -42,6 +42,7 @@ signals:
 
 public slots:
     // actions
+    virtual void beforeRun(); ///< for initializations
     virtual void run();
     virtual void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
 

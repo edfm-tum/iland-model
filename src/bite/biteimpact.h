@@ -23,9 +23,10 @@ public slots:
 protected:
     QStringList allowedProperties();
 private:
+    enum ImpactMode {KillAll, Foliage, Invalid};
+    ImpactMode mImpactMode;
     DynamicExpression mImpactFilter;
     QString mHostTreeFilter;
-    bool mKillAllHostTrees;
     bool mSimulate;
     Events mEvents;
 

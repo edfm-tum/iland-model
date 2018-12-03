@@ -42,6 +42,11 @@ void BiteItem::notify(BiteCell *cell, BiteCell::ENotification what)
     Q_UNUSED(what)
 }
 
+void BiteItem::beforeRun()
+{
+    // nothing in base class
+}
+
 void BiteItem::run()
 {
     qCDebug(bite) << " *** Execution of item: " << name();

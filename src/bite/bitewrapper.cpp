@@ -86,6 +86,8 @@ void BiteWrapperCore::setValueCell(const int variableIndex, const BiteCell *cell
         }
         return;
     }
+    case VarClimate:
+        throw IException("setValueCell: attempting to update a climate variable: climate variables are read only!");
     }
 
     qDebug() << "setValueCell called";

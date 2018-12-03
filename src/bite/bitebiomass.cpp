@@ -18,32 +18,51 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
 
         mHostTreeFilter = BiteEngine::valueFromJs(mObj, "hostTrees").toString();
 
-        bool has_cc_tree = mObj.hasOwnProperty("carryingCapacityTree");
-        bool has_cc_cell = mObj.hasOwnProperty("carryingCapacityCell");
+        bool has_cc_tree = mObj.hasOwnProperty("hostBiomassTree");
+        bool has_cc_cell = mObj.hasOwnProperty("hostBiomassCell");
 
         if ( (has_cc_cell && has_cc_tree) || (!has_cc_cell && !has_cc_tree))
-            throw IException("specify either 'carryingCapacityTree' OR 'carryingCapacityCell'! ");
+            throw IException("specify either 'hostBiomassTree' OR 'hostBiomassCell'! ");
         if (has_cc_cell) {
-            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "carryingCapacityCell");
-            mCalcCCCell.setup(calc_cc, DynamicExpression::CellWrap, parent_agent);
+            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "hostBiomassCell");
+            mCalcHBMCell.setup(calc_cc, DynamicExpression::CellWrap, parent_agent);
         }
         if (has_cc_tree) {
-            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "carryingCapacityTree");
-            mCalcCCTree.setup(calc_cc, DynamicExpression::TreeWrap, parent_agent);
+            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "hostBiomassTree");
+            mCalcHBMTree.setup(calc_cc, DynamicExpression::TreeWrap, parent_agent);
         }
 
+        QJSValue grfun = BiteEngine::valueFromJs(mObj, "growthFunction");
+        if (!grfun.isUndefined()) {
+            mGrowthFunction.addVar("M");
+            mGrowthFunction.addVar("K");
+            mGrowthFunction.addVar("r");
+            mGrowthFunction.addVar("t");
+            mGrowthFunction.setExpression(grfun.toString());
+            mGrowthRateFunction.setExpression(BiteEngine::valueFromJs(mObj, "growthRateFunction", "", "'growthRateFunction' is mandatory if 'growthFunction' is used!").toString());
+            mGrowthIterations = BiteEngine::valueFromJs(mObj, "growthIterations", "1", "'growthIterations' is mandatory if 'growthFunction' is used!").toInt();
+            if (mGrowthIterations<1)
+                throw IException("Invalid value: growthIterations < 1!");
+            mGrowthConsumption = BiteEngine::valueFromJs(mObj, "consumption", "1", "'consumption' is mandatory if 'growthFunction' is used!").toNumber();
+            if (mGrowthConsumption==0.)
+                throw IException("0 is not a valid 'consumption'.");
+        }
         QJSValue mort = BiteEngine::valueFromJs(mObj, "mortality", "", "'mortality' is a required property");
         mMortality.setup(mort, DynamicExpression::CellWrap, parent_agent);
+        mVerbose = BiteEngine::valueFromJs(mObj, "verbose", "false").toBool();
 
         // setup the variables / grids
 
-        mCarryingCapacity.setup(agent()->grid().metricRect(), agent()->grid().cellsize());
-        mCarryingCapacity.initialize(0.);
+        mHostBiomass.setup(agent()->grid().metricRect(), agent()->grid().cellsize());
+        mHostBiomass.initialize(0.);
         mAgentBiomass.setup(agent()->grid().metricRect(), agent()->grid().cellsize());
         mAgentBiomass.initialize(0.);
+        mImpact.setup(agent()->grid().metricRect(), agent()->grid().cellsize());
+        mImpact.initialize(0.);
 
-        agent()->wrapper()->registerGridVar(&mCarryingCapacity, "carryingCapacity");
+        agent()->wrapper()->registerGridVar(&mHostBiomass, "hostBiomass");
         agent()->wrapper()->registerGridVar(&mAgentBiomass, "agentBiomass");
+        agent()->wrapper()->registerGridVar(&mImpact, "agentImpact");
 
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
@@ -76,7 +95,7 @@ void BiteBiomass::notify(BiteCell *cell, BiteCell::ENotification what)
     switch (what) {
     case BiteCell::CellDied:
         // clear biomass
-        mCarryingCapacity[cell->index()] = 0.;
+        mHostBiomass[cell->index()] = 0.;
         mAgentBiomass[cell->index()] = 0.;
         break;
 
@@ -100,44 +119,48 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
         qCDebug(bite) << "Biomass: filter trees with" << mHostTreeFilter << "N before:" << before << ", after: " << after;
     }
 
-    // (2) calculate carrying capacity
-    if (mCalcCCCell.isValid()) {
-        double carrying_cap = mCalcCCCell.evaluate(cell);
-        if (isnan(carrying_cap))
-            throw IException("BiteBiomass: carrying capacity is NaN! Expr:" + mCalcCCCell.dump());
-        mCarryingCapacity[cell->index()] = carrying_cap;
+    // (2) calculate host biomass
+    if (mCalcHBMCell.isValid()) {
+        double host_biomass= mCalcHBMCell.evaluate(cell);
+        if (isnan(host_biomass))
+            throw IException("BiteBiomass: host biomass is NaN! Expr:" + mCalcHBMCell.dump());
+        mHostBiomass[cell->index()] = host_biomass;
         if (agent()->verbose())
-            qCDebug(bite) << "carrying capacity (cell):" << carrying_cap;
+            qCDebug(bite) << "host biomass (cell):" << host_biomass;
 
     }
-    if (mCalcCCTree.isValid()) {
-        double carrying_cap = 0.;
+    if (mCalcHBMTree.isValid()) {
+        double host_biomass = 0.;
         for (int i=0;i<treelist->count(); ++i)
-            carrying_cap += mCalcCCTree.evaluate(treelist->trees()[i].first);
+            host_biomass  += mCalcHBMTree.evaluate(treelist->trees()[i].first);
 
-        if (isnan(carrying_cap))
-            throw IException("BiteBiomass: carrying capacity is NaN! Expr:" + mCalcCCTree.dump());
+        if (isnan(host_biomass ))
+            throw IException("BiteBiomass: host biomass is NaN! Expr:" + mCalcHBMTree.dump());
 
-        mCarryingCapacity[cell->index()] = carrying_cap;
+        mHostBiomass[cell->index()] = host_biomass ;
         if (agent()->verbose())
-            qCDebug(bite) << "carrying capacity (" << treelist->count() << "trees):" << carrying_cap;
+            qCDebug(bite) << "host biomass (" << treelist->count() << "trees):" << host_biomass ;
     }
 
     // (3) calculate biomass
-    double biomass_before = mAgentBiomass[cell->index()];
-    if (mEvents.hasEvent("onCalculate")) {
-        double bm = mEvents.run("onCalculate", cell).toFloat();
-        if (isnan(bm))
-            throw IException("BiteBiomass: biomass (return of onCalculate) is NaN!");
-
-        mAgentBiomass[cell->index()] = bm;
+    if (!mGrowthFunction.isEmpty()) {
+        // growth calculation using expressions (logistic type)
+        calculateLogisticGrowth(cell);
     } else {
-        qCDebug(bite) << "no action... TODO...";
-    }
-    double biomass_after = mAgentBiomass[cell->index()];
-    if (agent()->verbose())
-        qCDebug(bite) << "biomass before:" << biomass_before << ", new biomass:" << biomass_after;
+        double biomass_before = mAgentBiomass[cell->index()];
+        if (mEvents.hasEvent("onCalculate")) {
+            double bm = mEvents.run("onCalculate", cell).toFloat();
+            if (isnan(bm))
+                throw IException("BiteBiomass: agent biomass (return of onCalculate) is NaN!");
 
+            mAgentBiomass[cell->index()] = bm;
+        } else {
+            qCDebug(bite) << "no action... TODO...";
+        }
+        double biomass_after = mAgentBiomass[cell->index()];
+        if (agent()->verbose())
+            qCDebug(bite) << "biomass before:" << biomass_before << ", new biomass:" << biomass_after;
+    }
 
     // (4) Mortality
     double p_mort = mMortality.evaluate(cell);
@@ -148,14 +171,92 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
             qCDebug(bite) << "cell died due to mortality: index" << cell->index();
     }
 
+    agent()->stats().agentBiomass += mAgentBiomass[cell->index()];
+
     mEvents.run("onExit", cell);
+}
+
+void BiteBiomass::beforeRun()
+{
+    // clear impact
+    mImpact.initialize(0.);
 }
 
 QStringList BiteBiomass::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "hostTrees" << "carryingCapacityCell" << "carryingCapacityTree" << "mortality" << "growthFunction";
+    l << "hostTrees" << "hostBiomassCell" << "hostBiomassTree" << "mortality"
+      << "growthFunction" << "growthRateFunction" << "growthIterations" << "verbose" << "consumption";
     return l;
+
+}
+
+void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
+{
+    // Variables: M: current agent biomass
+    // r: growth rate for the year
+    // t: running time variable
+
+    // Step 1: calculate growth rate
+    if (mVerbose)
+        qCDebug(bite) << "** calcuate biomass growth for" << agent()->name() << ", cell: " << cell->index();
+    BiteWrapper bitewrap(agent()->wrapper(), cell);
+    double growth_rate = mGrowthRateFunction.execute(nullptr, &bitewrap);
+    if (mVerbose)
+        qCDebug(bite) << "growth-rate:" << growth_rate;
+    double agent_biomass = mAgentBiomass[cell->index()]; // initial biomass
+    double host_biomass = mHostBiomass[cell->index()]; // host biomass
+
+    if (host_biomass==0.) {
+        if (mVerbose)
+            qCDebug(bite) << "host biomass is 0. Setting agentBiomass to 0.";
+        mAgentBiomass[cell->index()] = 0.;
+        return;
+    }
+
+    // when Expressions are executed concurrently it is important  to use local variables
+    double local_var_space[4];
+    double *biomassptr = &local_var_space[0]; // M: current agent biomass
+    double *agentcc = &local_var_space[1]; // K: agent max biomass
+    double *rptr = &local_var_space[2]; // r: growth rate
+    double *tptr = &local_var_space[3]; // t: time step
+
+    *tptr = 1. / static_cast<double>(mGrowthIterations); // each step is 1/N_steps
+    *agentcc = host_biomass / mGrowthConsumption; // initial value for 'K'
+
+    for (int i=0;i<mGrowthIterations;++i) {
+        if (mVerbose)
+            qCDebug(bite) << "Iteration" << i << "/" << mGrowthIterations << ": host biomass:" << host_biomass << "agent biomass (before):" << agent_biomass;
+
+        *biomassptr = agent_biomass; // 'M'
+        *rptr = growth_rate; // 'r'
+
+        agent_biomass = mGrowthFunction.execute(local_var_space, &bitewrap);
+        if (agent_biomass == 0.) {
+            if (mVerbose)
+                qCDebug(bite) << "updated agent biomass is 0. Stopping.";
+            break;
+        }
+
+        // consumption during time step: agent(kg) * consumption(kgHost/kgAgent*yr) * time (e.g. 1/10)
+        host_biomass = host_biomass - mGrowthConsumption * agent_biomass * *tptr;
+        if (host_biomass<0.) {
+            host_biomass = 0.; // nothing is left
+            agent_biomass = 0.; // no host, no agent
+            if (mVerbose)
+                qCDebug(bite) << "updated host biomass is 0. Stopping.";
+            break;
+
+
+        }
+        *agentcc = host_biomass / mGrowthConsumption; // update max agent biomass
+    }
+    if (mVerbose || agent()->verbose()) {
+        qCDebug(bite) << "Updated agentBiomass for " <<  agent()->name() << ", cell: " << cell->index() << ":" << agent_biomass;
+    }
+    // write back
+    mAgentBiomass[cell->index()] = agent_biomass;
+    mImpact[cell->index()] = mHostBiomass[cell->index()] - host_biomass; // the impact
 
 }
 

@@ -20,10 +20,15 @@ namespace BITE {
 
 struct BAgentStats {
     BAgentStats() { clear(); }
-    void clear() { nDispersal=nColonizable=nColonized = 0;}
+    void clear() { nDispersal=nColonizable=nActive=nNewlyColonized=treesKilled = 0; agentBiomass=m3Killed=totalImpact=0.; }
     int nDispersal; ///< number of cells that are active source of dispersal
     int nColonizable; ///< number of cells that are tested for colonization
-    int nColonized; ///< number of cells that are colonized (successfully)
+    int nActive; ///< number of cells that are active at the end of the year
+    int nNewlyColonized; ///< number of cells that are colonized (successfully)
+    double agentBiomass; ///< total agent biomass in all active cells
+    int treesKilled; ///< number of all killed trees
+    double m3Killed; ///< volume of all killed trees
+    double totalImpact; /// impact on tree compartments (depending on the mode)
 };
 
 class BiteLifeCycle;
