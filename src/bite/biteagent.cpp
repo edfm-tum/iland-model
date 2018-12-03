@@ -127,11 +127,15 @@ QStringList BiteAgent::variables()
 
 void BiteAgent::run()
 {
+    stats().clear(); // reset stats
+
     // main function
     QJSValueList eparam = QJSValueList() << mThis;
     mEvents.run("onYearBegin", nullptr, &eparam);
 
-
+    for (auto item : mItems) {
+        item->beforeRun();
+    }
 
     // step 1: run all phase-level items (e.g. dispersal)
     for (auto item : mItems) {
@@ -140,12 +144,17 @@ void BiteAgent::run()
     }
 
     // step 2: run cell-by-cell functions parallel
-    GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells); // TODO: disable force singlethreaded
+    try {
+        GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells); // TODO: disable force singlethreaded
+    } catch (const IException &e) {
+        qCWarning(bite) << "An error occured while running the agent" << name() << ":" << e.what();
+        throw IException(QString("Bite: Error while running agent: %1: %2").arg(name()).arg(e.what()));
+    }
 
     mEvents.run("onYearEnd", nullptr, &eparam);
 
     qCDebug(bite) << "Agent" << name() << "finished";
-    qCDebug(bite) << "NSpread:" << stats().nDispersal << "NColonizable:" << stats().nColonizable << "NColonized:" << stats().nColonized;
+    qCDebug(bite) << "NSpread:" << stats().nDispersal << "NColonizable:" << stats().nColonizable << "NColonized:" << stats().nNewlyColonized;
 }
 
 void BiteAgent::run(BiteCellScript *cell)

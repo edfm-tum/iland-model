@@ -19,11 +19,18 @@ void BiteImpact::setup(BiteAgent *parent_agent)
         QJSValue filter =  BiteEngine::valueFromJs(mObj, "hostTrees", "");
         if (!filter.isUndefined())
             mHostTreeFilter = filter.toString();
-        mKillAllHostTrees = BiteEngine::valueFromJs(mObj, "killAllHostTrees", "false").toBool();
         mSimulate = BiteEngine::valueFromJs(mObj, "simulate", "false").toBool();
 
         filter = BiteEngine::valueFromJs(mObj, "impactFilter");
         mImpactFilter.setup(filter, DynamicExpression::CellWrap, parent_agent);
+
+
+        mImpactMode = Invalid;
+        QString impact_mode = BiteEngine::valueFromJs(mObj, "impactMode").toString();
+        if (impact_mode=="foliage") mImpactMode=Foliage;
+        if (impact_mode=="killAll") mImpactMode=KillAll;
+        if (mImpactMode == Invalid)
+            throw IException("Invalid impact mode: " + impact_mode);
 
         mEvents.setup(mObj, QStringList() << "onImpact" << "onAfterImpact" << "onExit" , agent());
 
@@ -67,8 +74,11 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     }
 
     // now either kill all or run a function
-    if (mKillAllHostTrees) {
+    if (mImpactMode == KillAll) {
         int killed;
+        double killed_m3 = 0.;
+        for (int i=0;i<treelist->count();++i)
+            killed_m3+=treelist->trees()[i].first->volume();
         if (mSimulate)
             killed = treelist->count(); // simulation mode
         else
@@ -78,8 +88,21 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
             qCDebug(bite) << "Impact: killed all host trees (n=" << killed << ")";
 
         agent()->notifyItems(cell, BiteCell::CellImpacted);
+        agent()->stats().treesKilled += killed;
+        agent()->stats().m3Killed += killed_m3;
+
         mEvents.run("onAfterImpact", cell);
         return;
+    }
+
+    if (mImpactMode == Foliage) {
+        BiteWrapper bitewrap(agent()->wrapper(), cell);
+
+        int ivar = bitewrap.variableIndex("agentImpact");
+        if (ivar < 0)
+            throw IException("variable 'agentImpact' not available in BiteImpact");
+        double to_remove = bitewrap.value(ivar);
+        qCDebug(bite) << "Impact: remove" << to_remove << "of foliage from cell" << cell->index() << " (not impl!)";
     }
 
     int killed = mEvents.run("onImpact", cell).toInt();
@@ -90,12 +113,13 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
         agent()->notifyItems(cell, BiteCell::CellImpacted);
     }
 
+
 }
 
 QStringList BiteImpact::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "impactFilter" << "hostTrees" << "killAllHostTrees";
+    l << "impactFilter" << "hostTrees" << "killAllHostTrees" << "impactMode" << "isSpreading";
     return l;
 
 }

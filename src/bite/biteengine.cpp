@@ -5,12 +5,14 @@
 // BITE
 #include "biteagent.h"
 #include "bitescript.h"
+#include "biteoutput.h"
 
 // iLand specific
 #include "globalsettings.h"
 #include "helper.h"
 #include "modelcontroller.h"
 #include "debugtimer.h"
+#include "outputmanager.h"
 
 Q_LOGGING_CATEGORY(bite, "bite")
 
@@ -44,6 +46,11 @@ void BiteEngine::setup()
                                      "bite.setup.debug=true"); // enable *all*
 
     resetErrors();
+
+    if (GlobalSettings::instance()->outputManager()->find("bite"))
+        return; // already set up
+    GlobalSettings::instance()->outputManager()->addOutput(new BiteOutput);
+
 
     // setup scripting
     mScript.setup(this);
@@ -154,6 +161,8 @@ void BiteEngine::run()
             throw IException("BITE-Error (check also the log): \n" + mErrorStack.join("\n"));
         }
     }
+    // execute bite related outputs
+    GlobalSettings::instance()->outputManager()->execute("bite");
 }
 
 void BiteEngine::error(QString error_msg)

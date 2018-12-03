@@ -5,6 +5,7 @@
 
 #include "bitewrapper.h"
 class ResourceUnit; // forward
+class Climate; // forward
 namespace BITE {
 
 
@@ -17,6 +18,7 @@ public:
     /// retrieve the climate variable with the given index (raise an exception if invalid)
     double value(int var_index, const ResourceUnit *ru) const;
 private:
+    double calculateGDD(const Climate *clim, double threshold_temp) const;
     static QStringList mClimateVars;
 
 };

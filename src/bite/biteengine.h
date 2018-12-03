@@ -7,6 +7,7 @@
 
 namespace BITE {
 
+class BiteOutput; // forward
 class BiteEngine
 {
 public:
@@ -51,6 +52,8 @@ private:
     QMutex mSerialize;
     int mYear;
     bool mRunning;
+
+    friend class BiteOutput;
 };
 
 } // end namespaec

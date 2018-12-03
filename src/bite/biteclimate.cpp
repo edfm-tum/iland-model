@@ -5,7 +5,7 @@
 #include "resourceunit.h"
 namespace BITE {
 
-QStringList BiteClimate::mClimateVars = QStringList() << "MAT" << "MAP"
+QStringList BiteClimate::mClimateVars = QStringList() << "MAT" << "MAP" << "GDD"
                                                       << "TMonth1" << "TMonth2" << "TMonth3"
                                                       << "TMonth4" << "TMonth5" << "TMonth6"
                                                       << "TMonth7" << "TMonth8" << "TMonth9"
@@ -42,11 +42,20 @@ double BiteClimate::value(int var_index, const ResourceUnit *ru) const
     switch (var_index) {
     case 0: return c->meanAnnualTemperature();  // mean annual temp
     case 1: return c->annualPrecipitation(); // MAP
+    case 2: return calculateGDD(c, 5.); // GDD(with base temp 5 degrees)
     }
-    if (var_index<2+12) {
-        return c->temperatureMonth()[var_index - 2];
+    if (var_index<3+12) {
+        return c->temperatureMonth()[var_index - 3];
     }
     return 0.;
+}
+
+double BiteClimate::calculateGDD(const Climate *clim, double threshold_temp) const
+{
+    double gdd=0.;
+    for (const ClimateDay *d = clim->begin(); d!=clim->end(); ++d)
+        gdd += qMax(d->mean_temp()-threshold_temp, 0.);
+    return gdd;
 }
 
 

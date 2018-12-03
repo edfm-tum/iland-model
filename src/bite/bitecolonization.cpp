@@ -39,6 +39,8 @@ void BiteColonization::setup(BiteAgent *parent_agent)
             mTreeConstraints.setup(tree_filter, DynamicExpression::TreeWrap, parent_agent);
         }
 
+        mInitialAgentBiomass = BiteEngine::valueFromJs(mObj, "initialAgentBiomass").toNumber();
+
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
 
@@ -91,8 +93,14 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     }
     // successfully colonized
     cell->setActive(true);
+    if (mInitialAgentBiomass>0.) {
+        BiteWrapper bitewrap(agent()->wrapper(), cell);
+        int iabm = bitewrap.variableIndex("agentBiomass");
+        if (iabm<0) throw IException("variable 'agentBiomass' required.");
+        bitewrap.setValue(iabm, mInitialAgentBiomass);
+    }
     agent()->notifyItems(cell, BiteCell::CellColonized);
-    ++agent()->stats().nColonized;
+    ++agent()->stats().nNewlyColonized;
 
 }
 
