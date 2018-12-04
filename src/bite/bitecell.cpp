@@ -18,6 +18,11 @@ void BiteCell::setup(int cellidx, QPointF pos, BiteAgent *agent)
     mAgent = agent;
 }
 
+QString BiteCell::info()
+{
+    return QString("[%1 - %2]").arg(index()).arg(agent()->name());
+}
+
 void BiteCell::checkTreesLoaded(ABE::FMTreeList *treelist)
 {
     if (!mTreesLoaded) {
@@ -43,12 +48,13 @@ void BiteCell::die()
 
 void BiteCell::finalize()
 {
-    if (isActive())
+    if (isActive()) {
+        agent()->stats().nActive++;
         mYearsLiving++;
 
-    // should the cell be active in the next iteration?
-    setSpreading( agent()->lifeCycle()->shouldSpread(this) );
-    agent()->stats().nActive++;
+        // should the cell be active in the next iteration?
+        setSpreading( agent()->lifeCycle()->shouldSpread(this) );
+    }
 }
 
 void BiteCell::notify(ENotification what)

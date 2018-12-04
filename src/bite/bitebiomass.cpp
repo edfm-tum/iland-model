@@ -49,7 +49,7 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
         }
         QJSValue mort = BiteEngine::valueFromJs(mObj, "mortality", "", "'mortality' is a required property");
         mMortality.setup(mort, DynamicExpression::CellWrap, parent_agent);
-        mVerbose = BiteEngine::valueFromJs(mObj, "verbose", "false").toBool();
+        mVerbose = BiteEngine::valueFromJs(mObj, "verbose").toBool();
 
         // setup the variables / grids
 
@@ -168,7 +168,7 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
         cell->die();
         mEvents.run("onMortality", cell);
         if (agent()->verbose())
-            qCDebug(bite) << "cell died due to mortality: index" << cell->index();
+            qCDebug(bite) << "cell died due to mortality: index" << cell->info();
     }
 
     agent()->stats().agentBiomass += mAgentBiomass[cell->index()];
@@ -180,6 +180,11 @@ void BiteBiomass::beforeRun()
 {
     // clear impact
     mImpact.initialize(0.);
+}
+
+void BiteBiomass::afterSetup()
+{
+
 }
 
 QStringList BiteBiomass::allowedProperties()
@@ -199,13 +204,14 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
 
     // Step 1: calculate growth rate
     if (mVerbose)
-        qCDebug(bite) << "** calcuate biomass growth for" << agent()->name() << ", cell: " << cell->index();
+        qCDebug(bite) << "** calcuate biomass growth for: " << cell->info();
     BiteWrapper bitewrap(agent()->wrapper(), cell);
     double growth_rate = mGrowthRateFunction.execute(nullptr, &bitewrap);
     if (mVerbose)
         qCDebug(bite) << "growth-rate:" << growth_rate;
     double agent_biomass = mAgentBiomass[cell->index()]; // initial biomass
     double host_biomass = mHostBiomass[cell->index()]; // host biomass
+    double start_host = host_biomass;
 
     if (host_biomass==0.) {
         if (mVerbose)
@@ -226,7 +232,7 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
 
     for (int i=0;i<mGrowthIterations;++i) {
         if (mVerbose)
-            qCDebug(bite) << "Iteration" << i << "/" << mGrowthIterations << ": host biomass:" << host_biomass << "agent biomass (before):" << agent_biomass;
+            qCDebug(bite) << cell->info() << "Iteration" << i << "/" << mGrowthIterations << ": host biomass:" << host_biomass << "agent biomass (before):" << agent_biomass;
 
         *biomassptr = agent_biomass; // 'M'
         *rptr = growth_rate; // 'r'
@@ -234,12 +240,12 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
         agent_biomass = mGrowthFunction.execute(local_var_space, &bitewrap);
         if (agent_biomass == 0.) {
             if (mVerbose)
-                qCDebug(bite) << "updated agent biomass is 0. Stopping.";
+                qCDebug(bite) << cell->info() << "updated agent biomass is 0. Stopping.";
             break;
         }
 
         // consumption during time step: agent(kg) * consumption(kgHost/kgAgent*yr) * time (e.g. 1/10)
-        host_biomass = host_biomass - mGrowthConsumption * agent_biomass * *tptr;
+        host_biomass = host_biomass - mGrowthConsumption * (agent_biomass+*biomassptr)/2. * *tptr;
         if (host_biomass<0.) {
             host_biomass = 0.; // nothing is left
             agent_biomass = 0.; // no host, no agent
@@ -252,11 +258,11 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
         *agentcc = host_biomass / mGrowthConsumption; // update max agent biomass
     }
     if (mVerbose || agent()->verbose()) {
-        qCDebug(bite) << "Updated agentBiomass for " <<  agent()->name() << ", cell: " << cell->index() << ":" << agent_biomass;
+        qCDebug(bite) << "Updated agentBiomass for: "  << cell->info() << ":" << agent_biomass << "consumption:" << start_host-host_biomass;
     }
     // write back
     mAgentBiomass[cell->index()] = agent_biomass;
-    mImpact[cell->index()] = mHostBiomass[cell->index()] - host_biomass; // the impact
+    mImpact[cell->index()] = start_host - host_biomass; // the impact
 
 }
 

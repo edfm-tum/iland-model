@@ -23,6 +23,7 @@ public:
     /// index within the agent grid
     int index() const {return mIndex;}
     BiteAgent *agent() const { return mAgent; }
+    QString info();
 
     bool isActive() const {return mIsActive; }
     void setActive(bool activate) { mIsActive = activate; }

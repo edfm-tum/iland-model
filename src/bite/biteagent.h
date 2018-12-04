@@ -98,6 +98,7 @@ public slots:
     double evaluate(BiteCellScript *cell, QString expr);
     void addVariable(ScriptGrid *grid, QString var_name);
     void updateDrawGrid(QString expression);
+    void saveGrid(QString expression, QString file_name);
 private:
     static void runCell(BiteCell &cell);
     static QHash<QThread*, ABE::FMTreeList* > mTreeLists;

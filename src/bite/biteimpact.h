@@ -18,17 +18,24 @@ public:
     // void notify(BiteCell *cell, BiteCell::ENotification what);
 
 public slots:
+    void afterSetup();
     void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
 
 protected:
     QStringList allowedProperties();
 private:
-    enum ImpactMode {KillAll, Foliage, Invalid};
+    void doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *treelist);
+    enum ImpactTarget {KillAll, Foliage, Invalid};
+    enum ImpactMode {Relative, RemoveAll, RemovePart};
+    ImpactTarget mImpactTarget;
     ImpactMode mImpactMode;
     DynamicExpression mImpactFilter;
     QString mHostTreeFilter;
     bool mSimulate;
     Events mEvents;
+    int iAgentImpact;
+    QString mImportOrder;
+    bool mVerbose;
 
 };
 
