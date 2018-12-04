@@ -59,6 +59,13 @@ void BiteColonization::setup(BiteAgent *parent_agent)
 
 }
 
+void BiteColonization::afterSetup()
+{
+    iAgentBiomass = BiteWrapper(agent()->wrapper()).variableIndex("agentBiomass");
+    if (mInitialAgentBiomass>0. && iAgentBiomass<0)
+        throw IException("BiteColonization: initial agent biomass requires that the 'agentBiomass' variable is available");
+}
+
 void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 {
     // no colonization if agent is already living on the cell
@@ -70,7 +77,7 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     }
 
     if (agent()->verbose())
-        qCDebug(bite) << "BiteCol:runCell:" << cell->index() << "of agent" << cell->agent()->name();
+        qCDebug(bite) << "BiteCol:runCell:" << cell->info();
 
     ++agent()->stats().nColonizable;
 
@@ -95,9 +102,7 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     cell->setActive(true);
     if (mInitialAgentBiomass>0.) {
         BiteWrapper bitewrap(agent()->wrapper(), cell);
-        int iabm = bitewrap.variableIndex("agentBiomass");
-        if (iabm<0) throw IException("variable 'agentBiomass' required.");
-        bitewrap.setValue(iabm, mInitialAgentBiomass);
+        bitewrap.setValue(iAgentBiomass, mInitialAgentBiomass);
     }
     agent()->notifyItems(cell, BiteCell::CellColonized);
     ++agent()->stats().nNewlyColonized;

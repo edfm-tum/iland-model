@@ -146,6 +146,7 @@ void BiteEngine::run()
     DebugTimer t("Bite:run");
     resetErrors();
 
+    qCDebug(bite) << "Run year" << GlobalSettings::instance()->currentYear();
     for (auto *b : mAgents) {
         try {
             mRunning = true;

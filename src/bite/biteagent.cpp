@@ -84,6 +84,10 @@ void BiteAgent::setup(QJSValue obj)
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
 
+        // additional set up routines after all items are there
+        for (int i=0;i<mItems.size();++i)
+            mItems[i]->afterSetup();
+
         mEvents.setup(obj, QStringList() << "onSetup" << "onYearBegin" << "onYearEnd", this);
         QJSValueList eparam = QJSValueList() << mThis;
         mEvents.run("onSetup", nullptr, &eparam);
@@ -145,7 +149,7 @@ void BiteAgent::run()
 
     // step 2: run cell-by-cell functions parallel
     try {
-        GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells); // TODO: disable force singlethreaded
+        GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells);
     } catch (const IException &e) {
         qCWarning(bite) << "An error occured while running the agent" << name() << ":" << e.what();
         throw IException(QString("Bite: Error while running agent: %1: %2").arg(name()).arg(e.what()));
@@ -160,7 +164,7 @@ void BiteAgent::run()
 void BiteAgent::run(BiteCellScript *cell)
 {
     BiteCell *c = cell->cell();
-    qCDebug(bite) << "execute run for cell" << c->index();
+    qCDebug(bite) << "execute run for cell" << c->info();
     runCell(*c);
 }
 
@@ -210,6 +214,13 @@ void BiteAgent::updateDrawGrid(QString expression)
             wrap.setCell(*cell);
             *p = expr.execute();
         }
+}
+
+void BiteAgent::saveGrid(QString expression, QString file_name)
+{
+    updateDrawGrid(expression);
+    drawGrid()->save(file_name);
+    qCDebug(bite) << "Saved grid of agent" << name() << ":" << expression << "to" << file_name;
 }
 
 void BiteAgent::runCell(BiteCell &cell)

@@ -17,6 +17,7 @@ public:
     BiteColonization();
     Q_INVOKABLE BiteColonization(QJSValue obj);
     void setup(BiteAgent *parent_agent);
+    void afterSetup();
 
     void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
 protected:
@@ -28,6 +29,7 @@ private:
     DynamicExpression mDispersalFilter;
     Events mEvents;
     double mInitialAgentBiomass;
+    int iAgentBiomass;
 
 };
 

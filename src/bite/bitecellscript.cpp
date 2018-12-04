@@ -166,7 +166,7 @@ double DynamicExpression::evaluate(BiteCell *cell) const
                              arg(result.toString()));
         }
         if (mAgent->verbose())
-            qCDebug(bite) << "evaluate dynamic expression (JS) for cell" << cell->index() << ":" << result.toString();
+            qCDebug(bite) << "evaluate dynamic expression (JS) for cell" << cell->info() << ":" << result.toString();
 
         // convert boolean result to 1 - 0
         if (result.isBool())

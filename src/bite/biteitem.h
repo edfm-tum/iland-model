@@ -42,7 +42,8 @@ signals:
 
 public slots:
     // actions
-    virtual void beforeRun(); ///< for initializations
+    virtual void afterSetup(); ///< called once after the full agent is set up
+    virtual void beforeRun(); ///< for initializations, called every year
     virtual void run();
     virtual void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
 

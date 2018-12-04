@@ -768,8 +768,6 @@ void Model::runYear()
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
     mModules->yearBegin();
-    if (mBiteEngine)
-        mBiteEngine->run();
 
     // execute scheduled events for the current year
     if (mTimeEvents)
@@ -847,6 +845,10 @@ void Model::runYear()
     }
 
     // external modules/disturbances
+    setCurrentTask("BITE");
+    if (mBiteEngine)
+        mBiteEngine->run();
+
     setCurrentTask("Disturbance modules");
     mModules->run();
     // cleanup of tree lists if external modules removed trees.
