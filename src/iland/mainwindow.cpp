@@ -94,7 +94,7 @@ static bool doBufferMessages = false;
 static bool doLogToWindow = false;
 void logToWindow(bool mode)
 {
-   doLogToWindow = mode;
+    doLogToWindow = mode;
 }
 class LogToWindow
 {
@@ -107,11 +107,11 @@ public:
 static QMutex qdebug_mutex;
 void dumpMessages();
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
- {
+{
 
     Q_UNUSED(context);
     QMutexLocker m(&qdebug_mutex);
-     //QByteArray localMsg = msg.toLocal8Bit();
+    //QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
     case QtDebugMsg:
         if (showDebugMessages) {
@@ -144,9 +144,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
     }
     }
-     if (!doBufferMessages || bufferedMessages.count()>5000)
-             dumpMessages();
- }
+    if (!doBufferMessages || bufferedMessages.count()>5000)
+        dumpMessages();
+}
 
 static QMutex dump_message_mutex;
 void dumpMessages()
@@ -351,8 +351,8 @@ MainWindow::MainWindow(QWidget *parent)
     //view->show();
     ui->qmlRulerLayout->addWidget(container);
     //ui->qmlRulerLayout->addWidget(container);
-//    QDir d(":/qml");
-//    qDebug() << d.entryList();
+    //    QDir d(":/qml");
+    //    qDebug() << d.entryList();
     QFont font;
     font.setFamily("Courier");
     font.setFixedPitch(true);
@@ -384,7 +384,7 @@ void MainWindow::automaticRun()
     setWindowTitle("iLand viewer --- batch mode");
     batchLog("*** iland batch mode ***");
     batchLog(QString("%1 Loading project %2").arg(QDateTime::currentDateTime().toString(Qt::ISODate),
-           ui->initFileName->text()));
+                                                  ui->initFileName->text()));
     batchLog(QString("%1 Loading the model...").arg(QDateTime::currentDateTime().toString(Qt::ISODate)));
     setupModel();
 
@@ -534,6 +534,7 @@ void MainWindow::addPaintLayers(QObject *handler, const QStringList names)
         po.value().expression = names[i];
         po.value().auto_range = true;
         po.value().view_type = GridViewRainbow;
+        po.value().layer_id = i;
         po.value().name = names[i];
     }
     updatePaintGridList();
@@ -542,16 +543,16 @@ void MainWindow::addPaintLayers(QObject *handler, const QStringList names)
 void MainWindow::removePaintLayers(QObject *handler)
 {
     // remove all layers that have the given handler
-     QMutableMapIterator<QString, PaintObject> i(mPaintList);
-     while (i.hasNext()) {
-         i.next();
-         if (i.value().handler == handler)
-             i.remove();
-     }
-     if (mPaintNext.handler == handler)
-         mPaintNext.what = PaintObject::PaintNothing;
+    QMutableMapIterator<QString, PaintObject> i(mPaintList);
+    while (i.hasNext()) {
+        i.next();
+        if (i.value().handler == handler)
+            i.remove();
+    }
+    if (mPaintNext.handler == handler)
+        mPaintNext.what = PaintObject::PaintNothing;
 
-     updatePaintGridList();
+    updatePaintGridList();
 }
 
 void MainWindow::removeLayers(const LayeredGridBase *layer)
@@ -568,8 +569,8 @@ void MainWindow::removeLayers(const LayeredGridBase *layer)
 
 
 void MainWindow::paintGrid(MapGrid *map_grid, const QString &name,
-               const GridViewType view_type,
-               double min_val, double max_val)
+                           const GridViewType view_type,
+                           double min_val, double max_val)
 {
     if (map_grid==0 && !name.isEmpty()) {
         // remove the grid from the list
@@ -648,7 +649,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
     bool shading = ui->visShading->isChecked();
     bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
     if (!mRemoteControl.model() || !mRemoteControl.model()->dem())
-         shading=false;
+        shading=false;
 
 
     if (other_grid) {
@@ -1102,7 +1103,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
     bool shading = ui->visShading->isChecked();
     if (!mRemoteControl.model() || !mRemoteControl.model()->dem())
-         shading=false;
+        shading=false;
 
 
     int sx=0, sy=0;
@@ -1328,20 +1329,20 @@ void MainWindow::mouseClick(const QPoint& pos)
         }
     }
     if (min_distance<5 && closestTree) {
-            Tree *p = closestTree;
-            //qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
-            //qDebug() <<p->dump();
-            showTreeDetails(p);
+        Tree *p = closestTree;
+        //qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
+        //qDebug() <<p->dump();
+        showTreeDetails(p);
 
-            ui->treeChange->setProperty("tree", qVariantFromValue((void*)p));
-            ui->treeDbh->setValue(p->dbh());
-            ui->treeHeight->setValue(p->height());
-            ui->treePosX->setValue(p->position().x());
-            ui->treePosY->setValue(p->position().y());
-            ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightResourceIndex(),5));
-            wantDrag=true;
-            ui->PaintWidget->setCursor(Qt::SizeAllCursor);
-            ui->PaintWidget->update();
+        ui->treeChange->setProperty("tree", qVariantFromValue((void*)p));
+        ui->treeDbh->setValue(p->dbh());
+        ui->treeHeight->setValue(p->height());
+        ui->treePosX->setValue(p->position().x());
+        ui->treePosY->setValue(p->position().y());
+        ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightResourceIndex(),5));
+        wantDrag=true;
+        ui->PaintWidget->setCursor(Qt::SizeAllCursor);
+        ui->PaintWidget->update();
     }
 
 }
@@ -1367,12 +1368,12 @@ void MainWindow::showResourceUnitDetails(const ResourceUnit *ru)
 
     QList<QPair<QString, QVariant> >::const_iterator i = dbgdata.constBegin();
     while (i != dbgdata.constEnd()) {
-     //cout << i.key() << ": " << i.value() << endl;
+        //cout << i.key() << ": " << i.value() << endl;
         items.append(new QTreeWidgetItem(QStringList()
                                          << (*i).first
                                          << (*i).second.toString()) );
         ++i;
-     }
+    }
     ui->dataTree->addTopLevelItems(items);
 }
 
@@ -1383,9 +1384,15 @@ bool MainWindow::showABEDetails(const QPointF &coord)
         if (mPaintNext.layered->onClick(coord))
             return true;
     }
-    if (!mPaintNext.layered || !mRemoteControl.model()->ABEngine()) return false;
-    QString grid_name = mPaintNext.name;
-    QStringList list = mRemoteControl.model()->ABEngine()->evaluateClick(coord, grid_name);
+    QStringList list;
+
+    if (mPaintNext.what == PaintObject::PaintHandledObject && mPaintNext.handler!=nullptr) {
+        list = mRemoteControl.evaluateClick(mPaintNext.handler, coord, mPaintNext.name);
+    } else {
+        if (!mPaintNext.layered || !mRemoteControl.model()->ABEngine()) return false;
+        QString grid_name = mPaintNext.name;
+        list = mRemoteControl.model()->ABEngine()->evaluateClick(coord, grid_name);
+    }
 
     ui->dataTree->clear();
     QList<QTreeWidgetItem *> items;
@@ -1426,12 +1433,12 @@ void MainWindow::showTreeDetails(Tree *tree)
 
     QList<QPair<QString, QVariant> >::const_iterator i = dbgdata.constBegin();
     while (i != dbgdata.constEnd()) {
-     //cout << i.key() << ": " << i.value() << endl;
+        //cout << i.key() << ": " << i.value() << endl;
         items.append(new QTreeWidgetItem(QStringList()
                                          << (*i).first
                                          << (*i).second.toString()) );
         ++i;
-     }
+    }
     ui->dataTree->addTopLevelItems(items);
 }
 
@@ -1457,12 +1464,16 @@ void MainWindow::mouseMove(const QPoint& pos)
             case PaintObject::PaintLayers:
                 value = mPaintNext.layered->value(p, mPaintNext.layer_id);
                 if (mPaintNext.view_type>=10) {// classes
-                   location += QString("\n %1").arg(mPaintNext.layered->labelvalue(value, mPaintNext.layer_id));
-                   ui->fonValue->setText(location);
-                   return;
+                    location += QString("\n %1").arg(mPaintNext.layered->labelvalue(value, mPaintNext.layer_id));
+                    ui->fonValue->setText(location);
+                    return;
                 }
 
                 break;
+            case PaintObject::PaintHandledObject:
+                value = mRemoteControl.valueAtHandledGrid(mPaintNext.handler, p, mPaintNext.layer_id);
+                break;
+
             default: has_value = false;
             }
             if (has_value) {
@@ -1485,7 +1496,7 @@ void MainWindow::mouseMove(const QPoint& pos)
         if (ui->visSeeds->isChecked() && ui->speciesFilterBox->currentIndex()>-1) {
             Species *s=GlobalSettings::instance()->model()->speciesSet()->species(ui->speciesFilterBox->itemData(ui->speciesFilterBox->currentIndex()).toString());
             if (s && s->seedDispersal())
-              location += QString("\n %1").arg(s->seedDispersal()->seedMap().constValueAt(p));
+                location += QString("\n %1").arg(s->seedDispersal()->seedMap().constValueAt(p));
         }
 
         ui->fonValue->setText(location);
@@ -1700,37 +1711,37 @@ void MainWindow::on_actionModelDestroy_triggered()
 
 void MainWindow::on_actionModelRun_triggered()
 {
-   if (!mRemoteControl.canRun())
+    if (!mRemoteControl.canRun())
         return;
-   QString msg = QString("How many years to run?\nCurrent year: %1.").arg(mRemoteControl.currentYear());
-   bool ok;
-   int count = QInputDialog::getInt(this, "input value",
-                                        msg, 10, 0, 100000, 10, &ok);
-   if (!ok)
-       return;
-   QTimer update_label;
-   connect(&update_label, SIGNAL(timeout()), this, SLOT(updateLabel()));
-   update_label.start(100);
+    QString msg = QString("How many years to run?\nCurrent year: %1.").arg(mRemoteControl.currentYear());
+    bool ok;
+    int count = QInputDialog::getInt(this, "input value",
+                                     msg, 10, 0, 100000, 10, &ok);
+    if (!ok)
+        return;
+    QTimer update_label;
+    connect(&update_label, SIGNAL(timeout()), this, SLOT(updateLabel()));
+    update_label.start(100);
 
-   count = count + mRemoteControl.currentYear();
-   ui->treeChange->setProperty("tree",0);
-   ui->modelRunProgress->setMaximum(count-1);
-   mRemoteControl.run(count);
-   GlobalSettings::instance()->executeJSFunction("onFinish");
+    count = count + mRemoteControl.currentYear();
+    ui->treeChange->setProperty("tree",0);
+    ui->modelRunProgress->setMaximum(count-1);
+    mRemoteControl.run(count);
+    GlobalSettings::instance()->executeJSFunction("onFinish");
 
 }
 
 void MainWindow::on_actionRun_one_year_triggered()
 {
-   if (!mRemoteControl.canRun())
+    if (!mRemoteControl.canRun())
         return;
-   ui->treeChange->setProperty("tree",0);
-   mRemoteControl.runYear();
-   GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
-   labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
+    ui->treeChange->setProperty("tree",0);
+    mRemoteControl.runYear();
+    GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
+    labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
 
-   ui->PaintWidget->update();
-   checkModelState();
+    ui->PaintWidget->update();
+    checkModelState();
 }
 
 void MainWindow::on_actionReload_triggered()
@@ -1841,15 +1852,15 @@ void MainWindow::setViewport(QPointF center_point, double scale_px_per_m)
     else
         vp.zoomToAll();
 
-//    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
-//    if (current_px==0)
-//        return;
+    //    double current_px = vp.pixelToMeter(1); // number of meters covered by one pixel
+    //    if (current_px==0)
+    //        return;
 
-//    vp.setCenterPoint(center_point);
-//    QPoint screen = vp.toScreen(center_point); // screen coordinates of the target point
-//    double target_scale = scale_px_per_m / current_px;
+    //    vp.setCenterPoint(center_point);
+    //    QPoint screen = vp.toScreen(center_point); // screen coordinates of the target point
+    //    double target_scale = scale_px_per_m / current_px;
 
-//    vp.zoomTo(screen, target_scale);
+    //    vp.zoomTo(screen, target_scale);
     ui->PaintWidget->update();
     QCoreApplication::processEvents();
 }
@@ -1913,7 +1924,7 @@ void MainWindow::on_actionSelect_Data_Types_triggered()
                                         "256...Carbon cycle\n" \
                                         "512...Performance\n"
                                         "(e.g.: 5 = NPP + tree growth) or 0 for no debug outputs.", value);
-     GlobalSettings::instance()->setDebugOutput(newvalue);
+    GlobalSettings::instance()->setDebugOutput(newvalue);
 }
 
 
@@ -2187,7 +2198,7 @@ void MainWindow::readSettings()
     //recent files menu qsettings registry load
     settings.beginGroup("recent_files");
     for(int i = 0;i < settings.childKeys().size();i++){
-       //resize(settings.value("size", QSize(400, 400)).toSize());
+        //resize(settings.value("size", QSize(400, 400)).toSize());
         mRecentFileList.append(settings.value(QString("file-%1").arg(i)).toString());
     }
     for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
@@ -2198,7 +2209,7 @@ void MainWindow::readSettings()
         }else{
             ui->menuRecent_Files->actions()[i]->setVisible(false);
         }
-     }
+    }
     settings.endGroup();
     ui->scriptCode->setPlainText(settings.value("javascript").toString());
 }
@@ -2209,18 +2220,18 @@ void MainWindow::on_actionTest_triggered()
 {
     Tests t(this);
     int which = QInputDialog::getInt(this, "Which test",
-                                    "which test?\n0: expression speed\n1: tree clear\n" \
-                                    "2:kill trees\n3: climate\n4: multiple light automation\n" \
-                                    "5: species response\n" \
-                                    "6: watercycle\n" \
-                                    "7: CSV File\n" \
-                                    "8: Xml setters\n" \
-                                    "9: random functions\n" \
-                                    "10: seed dispersal.\n" \
-                                    "11: multiple thread expression\n" \
-                                    "12: linearized expressions\n" \
-                                    "13: establishment\n" \
-                                    "14: GridRunner\n" \
+                                     "which test?\n0: expression speed\n1: tree clear\n" \
+                                     "2:kill trees\n3: climate\n4: multiple light automation\n" \
+                                     "5: species response\n" \
+                                     "6: watercycle\n" \
+                                     "7: CSV File\n" \
+                                     "8: Xml setters\n" \
+                                     "9: random functions\n" \
+                                     "10: seed dispersal.\n" \
+                                     "11: multiple thread expression\n" \
+                                     "12: linearized expressions\n" \
+                                     "13: establishment\n" \
+                                     "14: GridRunner\n" \
                                      "15: Soil (ICBM/2N)\n" \
                                      "16: load Map \n" \
                                      "17: test DEM \n" \
@@ -2263,7 +2274,7 @@ void MainWindow::on_actionTest_triggered()
 
 void MainWindow::on_pbReloadQml_clicked()
 {
-//engine()->clearComponentCache();
+    //engine()->clearComponentCache();
     //setSource(source());
     if (!mRuler)
         return;
@@ -2291,9 +2302,9 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::menuRecent_Files()
 {
-        QAction* action = dynamic_cast<QAction*>(sender());
-        if (action)
-            ui->initFileName->setText(action->text());
+    QAction* action = dynamic_cast<QAction*>(sender());
+    if (action)
+        ui->initFileName->setText(action->text());
 }
 
 void MainWindow::recentFileMenu(){
@@ -2302,7 +2313,7 @@ void MainWindow::recentFileMenu(){
     }
     if(mRecentFileList.contains(ui->initFileName->text())){
         mRecentFileList.removeAt(mRecentFileList.indexOf(ui->initFileName->text()));
-     }
+    }
     mRecentFileList.prepend(ui->initFileName->text());
 
     for(int i = 0;i < ui->menuRecent_Files->actions().size();i++){
@@ -2313,7 +2324,7 @@ void MainWindow::recentFileMenu(){
         }else{
             ui->menuRecent_Files->actions()[i]->setVisible(false);
         }
-     }
+    }
 }
 
 

@@ -47,9 +47,9 @@ void BiteEngine::setup()
 
     resetErrors();
 
-    if (GlobalSettings::instance()->outputManager()->find("bite"))
-        return; // already set up
-    GlobalSettings::instance()->outputManager()->addOutput(new BiteOutput);
+    if (!GlobalSettings::instance()->outputManager()->find("bite")) {
+        GlobalSettings::instance()->outputManager()->addOutput(new BiteOutput);
+    }
 
 
     // setup scripting
@@ -137,6 +137,36 @@ Grid<double> *BiteEngine::preparePaintGrid(QObject *handler, QString name)
         return nullptr;
     ba->updateDrawGrid(l[1]);
     return ba->baseDrawGrid();
+}
+
+QStringList BiteEngine::evaluateClick(QObject *handler, const QPointF coord, const QString &grid_name)
+{
+    Q_UNUSED(grid_name)
+    BiteAgent *ba = qobject_cast<BiteAgent*>(handler);
+    if (!ba)
+        return QStringList();
+    BiteCell *cell = ba->grid().constValueAt(coord);
+    if (!cell)
+        return QStringList();
+    BiteWrapper wrap(ba->wrapper(), cell);
+    QStringList result;
+    for (int i=0;i<ba->variables().count();++i)
+        result.push_back(QString("%1: %2").arg(ba->variables()[i]).arg( wrap.value(i) ));
+    return result;
+}
+
+double BiteEngine::variableValueAt(QObject *handler, const QPointF coord, const int layer_id)
+{
+    BiteAgent *ba = qobject_cast<BiteAgent*>(handler);
+    if (!ba)
+        return 0.;
+    if (!ba->grid().coordValid(coord))
+        return 0.;
+    BiteCell *cell = ba->grid().constValueAt(coord);
+    if (!cell)
+        return 0.;
+    return BiteWrapper(ba->wrapper(), cell).value(layer_id);
+
 }
 
 

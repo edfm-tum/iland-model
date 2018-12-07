@@ -18,19 +18,8 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
 
         mHostTreeFilter = BiteEngine::valueFromJs(mObj, "hostTrees").toString();
 
-        bool has_cc_tree = mObj.hasOwnProperty("hostBiomassTree");
-        bool has_cc_cell = mObj.hasOwnProperty("hostBiomassCell");
-
-        if ( (has_cc_cell && has_cc_tree) || (!has_cc_cell && !has_cc_tree))
-            throw IException("specify either 'hostBiomassTree' OR 'hostBiomassCell'! ");
-        if (has_cc_cell) {
-            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "hostBiomassCell");
-            mCalcHBMCell.setup(calc_cc, DynamicExpression::CellWrap, parent_agent);
-        }
-        if (has_cc_tree) {
-            QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "hostBiomassTree");
-            mCalcHBMTree.setup(calc_cc, DynamicExpression::TreeWrap, parent_agent);
-        }
+        QJSValue calc_cc = BiteEngine::valueFromJs(mObj, "hostBiomass", "", "'hostBiomass' is a required property");
+        mCalcHostBiomass.setup(calc_cc, DynamicExpression::TreeWrap, parent_agent);
 
         QJSValue grfun = BiteEngine::valueFromJs(mObj, "growthFunction");
         if (!grfun.isUndefined()) {
@@ -120,27 +109,20 @@ void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     }
 
     // (2) calculate host biomass
-    if (mCalcHBMCell.isValid()) {
-        double host_biomass= mCalcHBMCell.evaluate(cell);
-        if (isnan(host_biomass))
-            throw IException("BiteBiomass: host biomass is NaN! Expr:" + mCalcHBMCell.dump());
-        mHostBiomass[cell->index()] = host_biomass;
-        if (agent()->verbose())
-            qCDebug(bite) << "host biomass (cell):" << host_biomass;
-
-    }
-    if (mCalcHBMTree.isValid()) {
-        double host_biomass = 0.;
+    double host_biomass = 0.;
+    if (mCalcHostBiomass.type() == DynamicExpression::ftExpression) {
         for (int i=0;i<treelist->count(); ++i)
-            host_biomass  += mCalcHBMTree.evaluate(treelist->trees()[i].first);
-
-        if (isnan(host_biomass ))
-            throw IException("BiteBiomass: host biomass is NaN! Expr:" + mCalcHBMTree.dump());
-
-        mHostBiomass[cell->index()] = host_biomass ;
-        if (agent()->verbose())
-            qCDebug(bite) << "host biomass (" << treelist->count() << "trees):" << host_biomass ;
+            host_biomass  += mCalcHostBiomass.evaluate(treelist->trees()[i].first);
+    } else {
+        host_biomass  = mCalcHostBiomass.evaluate(cell);
     }
+    if (isnan(host_biomass))
+        throw IException("BiteBiomass: host biomass is NaN! Expr:" + mCalcHostBiomass.dump());
+
+    if (agent()->verbose())
+        qCDebug(bite) << "host biomass (cell):" << host_biomass;
+    mHostBiomass[cell->index()] = host_biomass;
+
 
     // (3) calculate biomass
     if (!mGrowthFunction.isEmpty()) {
@@ -190,7 +172,7 @@ void BiteBiomass::afterSetup()
 QStringList BiteBiomass::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "hostTrees" << "hostBiomassCell" << "hostBiomassTree" << "mortality"
+    l << "hostTrees" << "hostBiomass" << "mortality"
       << "growthFunction" << "growthRateFunction" << "growthIterations" << "verbose" << "consumption";
     return l;
 

@@ -33,8 +33,7 @@ private:
     Grid<double> mAgentBiomass;
     Grid<double> mImpact;
     QString mHostTreeFilter;
-    DynamicExpression mCalcHBMTree; // calculate host biomass based on trees
-    DynamicExpression mCalcHBMCell; // calc. HBM based on cell variables
+    DynamicExpression mCalcHostBiomass; // calculate host biomass based on trees / cells
     DynamicExpression mMortality;
     Expression mGrowthFunction; // (logistic) growth function
     Expression mGrowthRateFunction; // function to calculate the growth rate 'r'

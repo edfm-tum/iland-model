@@ -18,7 +18,7 @@ class BiteAgent;
 class BiteCell
 {
 public:
-    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1), mTreesLoaded(false), mYearsLiving(0) {}
+    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1), mTreesLoaded(false), mYearsLiving(0), mCumYearsLiving(0) {}
     void setup(int cellidx, QPointF pos, BiteAgent *agent);
     /// index within the agent grid
     int index() const {return mIndex;}
@@ -36,6 +36,7 @@ public:
 
     int yearsLiving() const { return mYearsLiving; }
     int yearLastSpread() const { return mLastSpread; }
+    int cumYearsLiving() const { return mCumYearsLiving; }
 
     // climate vars
     double climateVar(int var_index) const;
@@ -55,6 +56,7 @@ private:
     bool mTreesLoaded; ///< is the tree list already fetched from iLand
     int mYearsLiving; ///< years a cell is already active/living
     int mLastSpread; ///< year of last spread
+    int mCumYearsLiving; ///< cumulative number of years a cell is active
 };
 
 } // end namespace

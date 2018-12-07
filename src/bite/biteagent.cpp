@@ -260,6 +260,8 @@ BiteCellScript *BiteAgent::cell(int x, int y)
     return bcs;
 }
 
+
+
 void BiteAgent::createBaseGrid()
 {
     // setup the internal grid

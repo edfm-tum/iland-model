@@ -51,6 +51,7 @@ void BiteCell::finalize()
     if (isActive()) {
         agent()->stats().nActive++;
         mYearsLiving++;
+        mCumYearsLiving++;
 
         // should the cell be active in the next iteration?
         setSpreading( agent()->lifeCycle()->shouldSpread(this) );

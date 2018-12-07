@@ -14,7 +14,8 @@ BiteOutput::BiteOutput()
               << OutputColumn("NNewlyColonized", "Number of cells that were newly colonized in this year", OutInteger)
               << OutputColumn("agentBiomass", "total biomass of the agent (on all active cells, if applicable)", OutDouble)
               << OutputColumn("treesKilled", "number of host trees killed in the current year", OutInteger)
-              << OutputColumn("volumeKilled", "total volume (m3) of trees killed by the agent in the current year", OutDouble);
+              << OutputColumn("volumeKilled", "total volume (m3) of trees killed by the agent in the current year", OutDouble)
+              << OutputColumn("totalImpact", "total impact (e.g. for defoliatores foliage mass consumed)", OutDouble);
 
 }
 
@@ -27,6 +28,7 @@ void BiteOutput::exec()
         *this << a->name();
         *this << a->stats().nActive << a->stats().nDispersal << a->stats().nNewlyColonized;
         *this << a->stats().agentBiomass << a->stats().treesKilled << a->stats().m3Killed;
+        *this << a->stats().totalImpact;
         writeRow();
     }
 }

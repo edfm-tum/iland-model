@@ -634,6 +634,9 @@ void Tree::grow()
     TreeGrowthData d;
     mAge++; // increase age
 
+//    if (mId==m_statAboveZ)
+//        qDebug() << "debug id hit!";
+
     if (mFoliageMass>1000.)
         qDebug() << "high foliage mass (>1000kg):" << mSpecies->id() << ", dbh:" << mDbh;
 
@@ -759,7 +762,8 @@ inline void Tree::partitioning(TreeGrowthData &d)
     mFineRootMass -= sen_root; // reduce only fine root pool
     double delta_root = apct_root * npp;
     // 1st, refill the fine root pool
-    double fineroot_miss = mFoliageMass * mSpecies->finerootFoliageRatio() - mFineRootMass;
+    // for very small amounts of foliage biomass (e.g. defoliation), use the newly distributed foliage (apct_foliage*npp-sen_foliage)
+    double fineroot_miss = qMax(mFoliageMass * mSpecies->finerootFoliageRatio(), apct_foliage * npp - sen_foliage) - mFineRootMass;
     if (fineroot_miss>0.){
         double delta_fineroot = qMin(fineroot_miss, delta_root);
         mFineRootMass += delta_fineroot;
@@ -1042,6 +1046,13 @@ void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double 
     mFoliageMass *= 1. - removeFoliageFraction;
     mStemMass *= (1. - removeStemFraction);
     mBranchMass *= (1. - removeBranchFraction);
+    if (removeFoliageFraction>0.) {
+        // update related leaf area
+        mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() ); // update leaf area
+        mOpacity = static_cast<float>( 1. - exp(-Model::settings().lightExtinctionCoefficientOpacity * mLeafArea / mStamp->crownArea()) );
+        //if (removeFoliageFraction==1.)
+        //    m_statAboveZ = mId; // temp
+    }
 }
 
 void Tree::setHeight(const float height)

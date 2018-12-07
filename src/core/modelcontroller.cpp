@@ -652,6 +652,16 @@ Grid<double> *ModelController::preparePaintGrid(QObject *handler, QString name)
     return nullptr;
 }
 
+QStringList ModelController::evaluateClick(QObject *handler, const QPointF coord, const QString &grid_name)
+{
+    return BITE::BiteEngine::instance()->evaluateClick(handler, coord, grid_name);
+}
+
+double ModelController::valueAtHandledGrid(QObject *handler, const QPointF coord, const int layer_id)
+{
+    return BITE::BiteEngine::instance()->variableValueAt(handler, coord, layer_id);
+}
+
 void ModelController::setViewport(QPointF center_point, double scale_px_per_m)
 {
 #ifdef ILAND_GUI

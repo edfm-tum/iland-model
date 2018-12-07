@@ -29,6 +29,8 @@ public:
     void setYear(int year) {mYear = year; }
 
     Grid<double>* preparePaintGrid(QObject *handler, QString name);
+    QStringList evaluateClick(QObject *handler, const QPointF coord, const QString &grid_name);
+    double variableValueAt(QObject *handler, const QPointF coord, const int layer_id);
 
     // functions
     void run();

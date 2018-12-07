@@ -1,6 +1,8 @@
 #include "bitecolonization.h"
 #include "biteengine.h"
 #include "bitecell.h"
+#include "fmtreelist.h"
+
 namespace BITE {
 
 BiteColonization::BiteColonization()
@@ -39,7 +41,8 @@ void BiteColonization::setup(BiteAgent *parent_agent)
             mTreeConstraints.setup(tree_filter, DynamicExpression::TreeWrap, parent_agent);
         }
 
-        mInitialAgentBiomass = BiteEngine::valueFromJs(mObj, "initialAgentBiomass").toNumber();
+        QJSValue init_biomass = BiteEngine::valueFromJs(mObj, "initialAgentBiomass");
+        mInitialAgentBiomass.setup(init_biomass, DynamicExpression::TreeWrap, parent_agent);
 
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
@@ -62,7 +65,7 @@ void BiteColonization::setup(BiteAgent *parent_agent)
 void BiteColonization::afterSetup()
 {
     iAgentBiomass = BiteWrapper(agent()->wrapper()).variableIndex("agentBiomass");
-    if (mInitialAgentBiomass>0. && iAgentBiomass<0)
+    if (mInitialAgentBiomass.isValid() && iAgentBiomass<0)
         throw IException("BiteColonization: initial agent biomass requires that the 'agentBiomass' variable is available");
 }
 
@@ -100,9 +103,17 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
     }
     // successfully colonized
     cell->setActive(true);
-    if (mInitialAgentBiomass>0.) {
+    if (mInitialAgentBiomass.isValid()) {
         BiteWrapper bitewrap(agent()->wrapper(), cell);
-        bitewrap.setValue(iAgentBiomass, mInitialAgentBiomass);
+        double init_value = 0.;
+        if (mInitialAgentBiomass.type() == DynamicExpression::ftExpression) {
+        for (int i=0;i<treelist->count(); ++i)
+            init_value  += mInitialAgentBiomass.evaluate(treelist->trees()[i].first);
+        } else {
+            init_value = mInitialAgentBiomass.evaluate(cell);
+        }
+
+        bitewrap.setValue(iAgentBiomass, init_value);
     }
     agent()->notifyItems(cell, BiteCell::CellColonized);
     ++agent()->stats().nNewlyColonized;
