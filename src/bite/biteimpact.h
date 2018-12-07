@@ -24,7 +24,7 @@ public slots:
 protected:
     QStringList allowedProperties();
 private:
-    void doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *treelist);
+    double doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *treelist);
     enum ImpactTarget {KillAll, Foliage, Invalid};
     enum ImpactMode {Relative, RemoveAll, RemovePart};
     ImpactTarget mImpactTarget;

@@ -20,6 +20,7 @@ class BiteCellScript : public QObject
     Q_PROPERTY(bool active READ active WRITE setActive)
     Q_PROPERTY(bool spreading READ spreading WRITE setSpreading)
     Q_PROPERTY(int yearsLiving READ yearsLiving)
+    Q_PROPERTY(int cumYearsLiving READ cumYearsLiving)
     Q_PROPERTY(ABE::FMTreeList* trees READ trees)
     Q_PROPERTY(BiteAgent* agent READ agent)
 public:
@@ -37,6 +38,7 @@ public:
     void setSpreading(bool a) { mCell->setSpreading(a); }
 
     int yearsLiving() const { return mCell->yearsLiving(); }
+    int cumYearsLiving() const { return mCell->cumYearsLiving(); }
 
     ABE::FMTreeList *trees();
 
@@ -81,10 +83,12 @@ private:
 */
 struct DynamicExpression {
     enum EWrapperType { CellWrap, TreeWrap } ;
+    enum EFilterType { ftInvalid, ftExpression, ftJavascript, ftConstant};
     DynamicExpression(): wrapper_type(CellWrap), filter_type(ftInvalid), expr(nullptr), mAgent(nullptr), mTree(nullptr) {}
     DynamicExpression(const DynamicExpression &src);
     ~DynamicExpression();
     void setup(const QJSValue &js_value, EWrapperType type, BiteAgent *agent);
+    EFilterType type() const {return filter_type; }
     double evaluate(BiteCell *cell) const;
     double evaluate(Tree* tree) const;
 
@@ -95,7 +99,7 @@ struct DynamicExpression {
     QString dump() const;
 private:
     EWrapperType wrapper_type;
-    enum { ftInvalid, ftExpression, ftJavascript, ftConstant} filter_type;
+    EFilterType filter_type;
     Expression *expr;
     QJSValue func;
     BiteAgent *mAgent;

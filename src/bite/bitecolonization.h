@@ -28,7 +28,7 @@ private:
     Constraints mTreeConstraints;
     DynamicExpression mDispersalFilter;
     Events mEvents;
-    double mInitialAgentBiomass;
+    DynamicExpression mInitialAgentBiomass;
     int iAgentBiomass;
 
 };

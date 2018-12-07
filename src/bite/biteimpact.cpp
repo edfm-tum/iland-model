@@ -122,7 +122,8 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 
         double to_remove = bitewrap.value(iAgentImpact);
 
-        doImpact(to_remove, cell, treelist);
+        double realized_impact = doImpact(to_remove, cell, treelist);
+        agent()->stats().totalImpact += realized_impact;
 
     }
 
@@ -145,11 +146,11 @@ QStringList BiteImpact::allowedProperties()
 
 }
 
-void BiteImpact::doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *treelist)
+double BiteImpact::doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *treelist)
 {
     double remove_per_tree = to_remove;
     if (treelist->count()==0)
-        return;
+        return 0.;
 
     if (mImpactMode == Relative) {
         // calculate amount of removal for each tree
@@ -162,7 +163,7 @@ void BiteImpact::doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *tre
         }
         if (total_biomass==0.) {
             qCWarning(bite) << "BiteImpact: no actual biomass to remove. Cell:" << cell->info();
-            return;
+            return 0.;
         }
         remove_per_tree = to_remove / total_biomass;
     }
@@ -211,6 +212,8 @@ void BiteImpact::doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *tre
     }
     if (agent()->verbose() || mVerbose)
         qCDebug(bite) << "Impact: removed" << applied_impact << "from" << n_affected+1 <<"trees (Ntrees: " << treelist->count() << ") (target:" << to_remove << "). cell" << cell->info();
+
+    return applied_impact;
 }
 
 

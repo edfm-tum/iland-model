@@ -74,6 +74,8 @@ public:
     void addPaintLayers(QObject *handler, const QStringList names);
     void removePaintLayers(QObject *handler);
     Grid<double> *preparePaintGrid(QObject *handler, QString name);
+    QStringList evaluateClick(QObject *handler, const QPointF coord, const QString &grid_name);
+    double valueAtHandledGrid(QObject *handler, const QPointF coord, const int layer_id);
     void setViewport(QPointF center_point, double scale_px_per_m);
 
     void setUIShortcuts(QVariantMap shortcuts);
