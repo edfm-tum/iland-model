@@ -267,6 +267,11 @@ QString DynamicExpression::dump() const
 /*************************  Constraints  ***********************************/
 /***************************************************************************/
 
+Constraints::~Constraints()
+{
+    qDeleteAll(mConstraints);
+}
+
 void Constraints::setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap, BiteAgent *agent)
 {
     mAgent = agent;
@@ -277,14 +282,14 @@ void Constraints::setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap
             it.next();
             if (it.name()==QStringLiteral("length"))
                 continue;
-            mConstraints.append(DynamicExpression());
-            DynamicExpression &item = mConstraints.last();
-            item.setup(it.value(), wrap, agent);
+            mConstraints.append(new DynamicExpression());
+            DynamicExpression *item = mConstraints.last();
+            item->setup(it.value(), wrap, agent);
         }
     } else {
-        mConstraints.append(DynamicExpression());
-        DynamicExpression &item = mConstraints.last();
-        item.setup(js_value, wrap, agent);
+        mConstraints.append(new DynamicExpression());
+        DynamicExpression *item = mConstraints.last();
+        item->setup(js_value, wrap, agent);
 
     }
 }
@@ -295,7 +300,7 @@ double Constraints::evaluate(BiteCell *cell)
         return 1.; // no constraints to evaluate
 
     for (int i=0;i<mConstraints.count();++i) {
-        if (mConstraints.at(i).evaluateBool(cell) == false)
+        if (mConstraints.at(i)->evaluateBool(cell) == false)
             return 0.;
     }
     return 1.; // all constraints passed, return the lowest returned value...
@@ -312,7 +317,7 @@ double Constraints::evaluate(ABE::FMTreeList *treelist)
         Tree *tree = t.first;
 
         for (int i=0;i<mConstraints.count();++i) {
-            if (mConstraints.at(i).evaluateBool(tree)) {
+            if (mConstraints.at(i)->evaluateBool(tree)) {
                 found = true;
                 return 1.; // done! at least one tree passes one constraint
             }
@@ -327,7 +332,7 @@ QStringList Constraints::dump()
 {
     QStringList info;
     for (int i=0;i<mConstraints.count();++i){
-        info << QString("constraint: %1").arg(mConstraints[i].dump());
+        info << QString("constraint: %1").arg(mConstraints[i]->dump());
     }
     return info;
 }
