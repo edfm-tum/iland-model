@@ -1895,7 +1895,7 @@ void MainWindow::on_actionImageToClipboard_triggered()
 {
     //QClipboard *clipboard = QApplication::clipboard();
     QImage my_img = screenshot();
-    my_img.convertToFormat(QImage::Format_RGB32);
+    // my_img.convertToFormat(QImage::Format_RGB32);
     //clipboard->setImage( my_img, QClipboard::Clipboard );
     QString pth = GlobalSettings::instance()->path("screenshot.png", "temp");
     if (!QDir(pth).exists())
