@@ -137,12 +137,13 @@ private:
 class Constraints {
 public:
     Constraints() {}
+    ~Constraints();
     void setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap, BiteAgent *agent); ///< setup from javascript
     double evaluate(BiteCell *cell); ///< run the constraints
     double evaluate(ABE::FMTreeList *treelist); ///< run for trees
     QStringList dump(); ///< prints some debug info
 private:
-    QList<DynamicExpression> mConstraints;
+    QList<DynamicExpression*> mConstraints;
     BiteAgent *mAgent;
 };
 
