@@ -561,6 +561,9 @@ void Snapshot::loadTrees()
     int new_ru;
     int offsetx=0, offsety=0;
     ResourceUnit *ru = 0;
+    HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
+    FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
+
     int n=0, ntotal=0;
     try {
         // clear all trees on the landscape
@@ -581,14 +584,18 @@ void Snapshot::loadTrees()
             }
             if (!ru)
                 continue;
+            QPoint tree_idx(offsetx + q.value(2).toInt() % cPxPerRU, offsety + q.value(3).toInt() % cPxPerRU);
+            // check if pixel is valid in the height grid
+            if (!hg->valueAtIndex(lif_grid->index5(lif_grid->index(tree_idx))).isValid())
+                continue;
+
             // add a new tree to the tree list
-            //ru->trees().append(Tree());
-            //Tree &t = ru->trees().back();
             Tree &t = ru->newTree();
             t.setRU(ru);
             t.mId = q.value(0).toInt();
-            t.mPositionIndex.setX(offsetx + q.value(2).toInt() % cPxPerRU);
-            t.mPositionIndex.setY(offsety + q.value(3).toInt() % cPxPerRU);
+            t.mPositionIndex = tree_idx;
+            //t.mPositionIndex.setX(offsetx + q.value(2).toInt() % cPxPerRU);
+            //t.mPositionIndex.setY(offsety + q.value(3).toInt() % cPxPerRU);
             Species *s = GlobalSettings::instance()->model()->speciesSet()->species(q.value(4).toString());
             if (!s)
                 throw IException("Snapshot::loadTrees: Invalid species");
