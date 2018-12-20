@@ -225,7 +225,10 @@ SOURCES += main.cpp \
     ../bite/bitecellscript.cpp \
     ../bite/bitewrapper.cpp \
     ../bite/bitebiomass.cpp \
-    ../bite/bitelifecycle.cpp
+    ../bite/bitelifecycle.cpp \
+    ../bite/biteimpact.cpp \
+    ../bite/biteclimate.cpp \
+    ../bite/biteoutput.cpp
 
 
 
@@ -346,7 +349,11 @@ HEADERS += \
     ../bite/bitecellscript.h \
     ../bite/bitewrapper.h \
     ../bite/bitebiomass.h \
-    ../bite/bitelifecycle.h
+    ../bite/bitelifecycle.h \
+    ../bite/biteimpact.h \
+    ../bite/biteclimate.h \
+    ../bite/biteoutput.h
+
 
 
 

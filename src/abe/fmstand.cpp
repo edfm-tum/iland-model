@@ -139,7 +139,7 @@ void FMStand::initialize()
             if (!mStandFlags[i].activity()->schedule().absolute && mStandFlags[i].activity()->latestSchedule(U()) < absoluteAge()) {
                 mStandFlags[i].setActive(false);
             } else {
-                int delta = mStandFlags[i].activity()->earlistSchedule(U()) - absoluteAge();
+                int delta = mStandFlags[i].activity()->earliestSchedule(U()) - absoluteAge();
                 if (mStandFlags[i].activity()->schedule().absolute)
                     delta += absoluteAge(); // absolute timing: starting from 0
 
@@ -296,7 +296,7 @@ bool FMStand::execute()
         return false;
     }
     if (trace())
-        qCDebug(abe) << context() << "*** start evaulate activity:" << currentActivity()->name();
+        qCDebug(abe) << context() << "*** start evaluate activity:" << currentActivity()->name();
 
     // do nothing if there is already an activity in the scheduler
     if (currentFlags().isPending()) {
@@ -419,8 +419,8 @@ bool FMStand::afterExecution(bool cancel)
         // look for the next (enabled) activity.
         for (int i=0;i<mStandFlags.count(); ++i) {
             if ( mStandFlags[i].enabled() && mStandFlags[i].active() && !mStandFlags[i].isRepeating())
-                if (mStandFlags[i].activity()->earlistSchedule() < tmin) {
-                    tmin =  mStandFlags[i].activity()->earlistSchedule();
+                if (mStandFlags[i].activity()->earliestSchedule(U()) < tmin) {
+                    tmin =  mStandFlags[i].activity()->earliestSchedule(U());
                     indexmin = i;
                 }
         }
@@ -442,7 +442,7 @@ bool FMStand::afterExecution(bool cancel)
 
     mCurrentIndex = indexmin;
     if (mCurrentIndex>-1) {
-        int to_sleep = tmin - static_cast<int>(absoluteAge());
+        int to_sleep = tmin - static_cast<int>(absoluteAge()) - 1;
         if (to_sleep>0)
             sleep(to_sleep);
     }

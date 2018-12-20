@@ -62,7 +62,7 @@ Activity *FMSTP::activity(const QString &name) const
 
 bool activityScheduledEarlier(const Activity *a, const Activity *b)
 {
-    return a->earlistSchedule() < b->earlistSchedule();
+    return a->earliestSchedule() < b->earliestSchedule();
 }
 
 void FMSTP::setup(QJSValue &js_value, const QString name)
