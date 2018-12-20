@@ -972,7 +972,7 @@ inline double Tree::relative_height_growth()
     mSpecies->hdRange(mDbh, hd_low, hd_high);
 
     DBG_IF_X(hd_low>hd_high, "Tree::relative_height_growth", "hd low higher dann hd_high for ", dump());
-    DBG_IF_X(hd_low < 10 || hd_high>250, "Tree::relative_height_growth", "hd out of range ", dump() + QString(" hd-low: %1 hd-high: %2").arg(hd_low).arg(hd_high));
+    DBG_IF_X(hd_low < 5 || hd_high>250, "Tree::relative_height_growth", "hd out of range ", dump() + QString(" hd-low: %1 hd-high: %2").arg(hd_low).arg(hd_high));
 
     // scale according to LRI: if receiving much light (LRI=1), the result is hd_low (for open grown trees)
     // use the corrected LRI (see tracker#11)

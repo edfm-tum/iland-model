@@ -173,7 +173,7 @@ public:
     QString name() const {return mName; } ///< name of the activity as provided by JS
     int index() const { return mIndex; } ///< index of the activity within the STP
     /// get earlist possible scheduled year (relative to rotation begin)
-    int earlistSchedule(const double U=100.) const {return mSchedule.minValue(U); }
+    int earliestSchedule(const double U=100.) const {return mSchedule.minValue(U); }
     /// get latest possible scheduled year (relative to rotation begin)
     int latestSchedule(const double U=100.) const { return mSchedule.maxValue(U); }
     /// get optimal scheduled year (relative to rotation begin)
