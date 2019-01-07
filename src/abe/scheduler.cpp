@@ -167,31 +167,37 @@ void Scheduler::run()
             break; // finished! TODO: check if this works ok ;)
         }
 
+        double min_exec_probability = 0; // calculateMinProbability( rel_harvest );
         bool remove = false;
         bool final_harvest = item->flags->isFinalHarvest();
-        //
-        double rel_harvest;
 
-        double min_exec_probability = 0; // calculateMinProbability( rel_harvest );
-        rel_harvest = (total_final_harvested+total_thinning_harvested)/ mUnit->area() / (mFinalCutTarget+mThinningTarget);
-        if (rel_harvest > mUnit->agent()->schedulerOptions().maxHarvestLevel) {
-            if (FMSTP::verbose())
-                qCDebug(abe) << "Stopping execution: (relative) harvest level" << rel_harvest << "greater than maxHarvestLevel. Final Harv:" << total_final_harvested << ", Thinning:" << total_thinning_harvested;
-            break;
-        }
+        if (mUnit->agent()->schedulerOptions().useScheduler) {
+            // only test against the target if the scheduler is enabled
+            double rel_harvest;
 
-        if (rel_harvest + item->harvest/mUnit->area()/(mFinalCutTarget+mThinningTarget) > mUnit->agent()->schedulerOptions().maxHarvestLevel) {
-            if (--max_skip_items>=0) {
+            rel_harvest = (total_final_harvested+total_thinning_harvested)/ mUnit->area() / (mFinalCutTarget+mThinningTarget);
+            if (rel_harvest > mUnit->agent()->schedulerOptions().maxHarvestLevel) {
                 if (FMSTP::verbose())
-                    qCDebug(abe) << "skipping item, because relative harvest level would be too high:" << rel_harvest + item->harvest/mUnit->area();
-                ++it;
-                continue;
-            } else {
-                // including the *current* harvest, the threshold would be exceeded -> draw a random number
-                if (FMSTP::verbose())
-                    qCDebug(abe) << "Stopping execution (after skipping 5 items): (relative) harvest level" << rel_harvest << "(plus harvest of item " << item->harvest << "m3) greater than maxHarvestLevel (" <<  mUnit->agent()->schedulerOptions().maxHarvestLevel <<").";
+                    qCDebug(abe) << "Stopping execution: (relative) harvest level" << rel_harvest << "greater than maxHarvestLevel. Final Harv:" << total_final_harvested << ", Thinning:" << total_thinning_harvested;
                 break;
             }
+
+            if (rel_harvest + item->harvest/mUnit->area()/(mFinalCutTarget+mThinningTarget) > mUnit->agent()->schedulerOptions().maxHarvestLevel) {
+                if (--max_skip_items>=0) {
+                    if (FMSTP::verbose())
+                        qCDebug(abe) << "skipping item, because relative harvest level would be too high:" << rel_harvest + item->harvest/mUnit->area();
+                    ++it;
+                    continue;
+                } else {
+                    // including the *current* harvest, the threshold would be exceeded -> draw a random number
+                    if (FMSTP::verbose())
+                        qCDebug(abe) << "Stopping execution (after skipping 5 items): (relative) harvest level" << rel_harvest << "(plus harvest of item " << item->harvest << "m3) greater than maxHarvestLevel (" <<  mUnit->agent()->schedulerOptions().maxHarvestLevel <<").";
+                    break;
+                }
+            }
+        } else {
+            // scheduler is not active:
+            min_exec_probability = 0.9; // only execute items that are close to the optimal point in time
         }
 
 
