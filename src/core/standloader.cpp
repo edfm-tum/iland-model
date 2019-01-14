@@ -637,7 +637,8 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
         qSort(tcount.begin(), tcount.end(), sortPairLessThan);
     }
 
-    int bits, index, pos;
+    unsigned int bits;
+    int index, pos;
     int c;
     QList<int> trees;
     QPoint tree_pos;
@@ -828,7 +829,8 @@ void StandLoader::executeiLandInitStand(int stand_id)
         if (logLevelInfo()) qDebug() << "init for stand" << stand_id << "treecount:" << total_count << ", tries:" << total_tries << ", misses:" << total_misses << ", %miss:" << qRound(total_misses*100 / (double)total_count);
     }
 
-    int bits, index, pos;
+    unsigned int bits;
+    int index, pos;
     int c;
     QList<int> trees;
     QPoint tree_pos;

@@ -87,14 +87,14 @@ inline int limit(const int value, const int lower, const int upper)
 {
     return qMax(qMin(value, upper), lower);
 }
-inline void setBit(int &rTarget, const int bit, const bool value)
+inline void setBit(unsigned int &rTarget, const int bit, const bool value)
 {
     if (value)
         rTarget |= (1 << bit);  // set bit
     else
         rTarget &= ( (1 << bit) ^ 0xffffff ); // clear bit
 }
-inline bool isBitSet(const int value, const int bit)
+inline bool isBitSet(const unsigned int value, const int bit)
 {
     return value & (1 << bit);
 }

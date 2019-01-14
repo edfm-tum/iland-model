@@ -21,6 +21,7 @@
 
 #include "grid.h"
 #include "snag.h"
+#include "model.h"
 #include <QRectF>
 class ResourceUnitSpecies; // forward
 class ResourceUnit; // forward
@@ -148,6 +149,7 @@ public:
     double leafArea() const { return mLeafArea; }
     void setLeafArea(double leaf_area){ mLeafArea = leaf_area; }
     double leafAreaIndex() const {return mLeafAreaIndex; }
+    double basalArea() const { return mBasalArea; }
     // carbon and nitrogen
     const CNPair &carbonLiving() const { return mCarbonLiving; } ///< state of the living
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
@@ -167,6 +169,7 @@ private:
     double mAvgHRealized; ///< average realized height increment
     double mLeafArea; ///< total leaf area (on all pixels of the resource unit)
     double mLeafAreaIndex; ///< leaf area index (m2/m2)
+    double mBasalArea; ///< basal area (m2) of saplings
     CNPair mCarbonLiving; ///< kg Carbon (kg/ru) of saplings
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
     double mCarbonOfRecruitedTrees; ///< carbon that is added when trees >4m are created
@@ -213,7 +216,7 @@ public:
     static void updateBrowsingPressure();
 
 private:
-    bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value, int cohorts_on_px);
+    bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, HeightGridValue &hgv, float lif_value, int cohorts_on_px);
     //Grid<SaplingCell> mGrid;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;

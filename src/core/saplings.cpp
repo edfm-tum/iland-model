@@ -216,10 +216,10 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
                 for (int i=0;i<NSAPCELLS;++i) {
                     if (s->saplings[i].is_occupied()) {
                         // growth of this sapling tree
-                        const HeightGridValue &hgv = (*height_grid)[height_grid->index5(isc)];
+                        HeightGridValue &hgv = height_grid->valueAtIndex(lif_grid->index5(isc));
                         float lif_value = (*lif_grid)[isc];
 
-                        need_check |= growSapling(ru, *s, s->saplings[i], isc, hgv.height, lif_value, n_on_px);
+                        need_check |= growSapling(ru, *s, s->saplings[i], isc, hgv, lif_value, n_on_px);
                     }
                 }
                 if (need_check)
@@ -461,7 +461,7 @@ void Saplings::updateBrowsingPressure()
         Saplings::mBrowsingPressure = 0.;
 }
 
-bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, float dom_height, float lif_value, int cohorts_on_px)
+bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, HeightGridValue &hgv, float lif_value, int cohorts_on_px)
 {
     ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
 
@@ -472,10 +472,10 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     double delta_h_pot = h_pot - tree.height;
 
     // (2) reduce height growth potential with species growth response f_env_yr and with light state (i.e. LIF-value) of home-pixel.
-    if (dom_height==0.f)
+    if (hgv.height==0.f)
         throw IException(QString("growSapling: height grid at %1/%2 has value 0").arg(isc));
 
-    double rel_height = tree.height / dom_height;
+    double rel_height = tree.height / hgv.height;
 
     double lif_corrected = species->speciesSet()->LRIcorrection(lif_value, rel_height); // correction based on height
 
@@ -587,6 +587,13 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     ss.mAvgAge+=tree.age;
     ss.mAvgDeltaHPot+=delta_h_pot;
     ss.mAvgHRealized += delta_h_pot * delta_h_factor;
+    // update stem height
+    //float sh_before = hgv.stemHeight();
+    if (tree.height > hgv.stemHeight()) {
+        hgv.setStemHeight(tree.height);
+        //qDebug()<< "sapheihgt:updated at:"<<GlobalSettings::instance()->model()->heightGrid()->cellCenterPoint(GlobalSettings::instance()->model()->heightGrid()->indexOf(&hgv));
+    }
+    //qDebug() << "sapheight:" << tree.height << "hgv:before:" << sh_before << "after:"  << hgv.stemHeight() << "hgv:" << &hgv;
     return false;
 }
 
@@ -600,6 +607,7 @@ void SaplingStat::clearStatistics()
     mAvgDeltaHPot=mAvgHRealized=0.;
     mAdded=0;
     mLeafArea=0.; mLeafAreaIndex=0.;
+    mBasalArea = 0.;
     mCarbonOfRecruitedTrees=0.;
 
 }
@@ -612,8 +620,6 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         mAvgDeltaHPot /= double(mLiving);
         mAvgHRealized /= double(mLiving);
     }
-    if (GlobalSettings::instance()->currentYear()==0)
-        return; // no need for carbon flows in initial run
 
     // calculate carbon balance
     CNPair old_state = mCarbonLiving;
@@ -635,6 +641,7 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double fineroot = foliage*species->finerootFoliageRatio();
         mLeafArea = foliage * n * species->specificLeafArea(); // calculate leaf area on n saplings using the species specific SLA
         mLeafAreaIndex = ru->stockableArea()>0. ? mLeafArea / ru->stockableArea() : 0.;
+        mBasalArea = (avg_dbh / 200.)*(avg_dbh/200.)*M_PI * n;
 
         // get living carbon.
         mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );
@@ -673,6 +680,10 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
     } else {
         mLeafArea = 0.; // leaf area is not cleared at the beginning of the regen loop (for the water cycle)
     }
+
+    if (GlobalSettings::instance()->currentYear()==0)
+        return; // no need for carbon flows in initial run
+
 
     if (mDied) {
         double avg_dbh_dead = mSumDbhDied / double(mDied);

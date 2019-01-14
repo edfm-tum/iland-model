@@ -849,11 +849,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     if (show_dom) {
         // paint the lower-res-grid;
+        bool stem_height = ui->visDomHeightStem->isChecked();
         float max_val = 50.f;
         if (auto_scale_color) {
             max_val = 0.;
             for (HeightGridValue *v = domGrid->begin(); v!=domGrid->end(); ++v)
-                max_val = qMax(max_val, v->height);
+                max_val = qMax(max_val, stem_height ? v->stemHeight() : v->height);
         }
         mRulerColors->setCaption("Dominant height (m)", "dominant tree height on 10m pixel.");
         mRulerColors->setPalette(GridViewRainbow,0., max_val); // ruler
@@ -866,7 +867,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 QPoint p(ix,iy);
                 const HeightGridValue &hgv = domGrid->valueAtIndex(p);
                 if (hgv.isValid()) {
-                    value = domGrid->valueAtIndex(p).height;
+                    value = stem_height ? domGrid->valueAtIndex(p).stemHeight() : domGrid->valueAtIndex(p).height;
                     QRect r = vp.toScreen(domGrid->cellRect(p));
                     fill_color = Colors::colorFromValue(value, 0., max_val); // 0..50m
                     if (shading)
@@ -1489,8 +1490,11 @@ void MainWindow::mouseMove(const QPoint& pos)
             else
                 location += QString("\n %1").arg((*grid).valueAt(p));
         }
-        if( ui->visDomGrid->isChecked())
-            location += QString("\n %1").arg((*mRemoteControl.model()->heightGrid()).valueAt(p).height);
+        if( ui->visDomGrid->isChecked()) {
+            HeightGridValue &hgv = (*mRemoteControl.model()->heightGrid()).valueAt(p);
+            float value = ui->visDomHeightStem->isChecked() ? hgv.stemHeight() : hgv.height;
+            location += QString("\n %1m (N=%2)").arg(value).arg(hgv.count());
+        }
         if( ui->visRegeneration->isChecked() && !mRegenerationGrid.isEmpty())
             location += QString("\n %1").arg(mRegenerationGrid.valueAt(p));
         if (ui->visSeeds->isChecked() && ui->speciesFilterBox->currentIndex()>-1) {

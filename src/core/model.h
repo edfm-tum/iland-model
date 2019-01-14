@@ -59,10 +59,26 @@ struct HeightGridValue
     bool isForestOutside() const {return isBitSet(mCount, 17); }
     void setIsRadiating() { setBit(mCount, 18, true); } ///< bit 18: if set, the pixel is actively radiating influence on the LIF (such pixels are on the edge of "forestOutside")
     bool isRadiating() const { return isBitSet(mCount, 18); }
-    void init(const float aheight, const int acount) { height=aheight;mCount=acount; }
+    /// get the (coarse, 1m classes) local height (only trees with the stem on the cell are counted here)
+    float stemHeight() const { return static_cast<float> (mCount >> 20 & 0xff);}
+    /// reset the stem height
+    void clearStemHeight() { mCount &= 0xF00FFFFF; }
+    /// set the height of the tree *local* (i.e. the stem of the tree is on the pixel); compare to the 'height': here also crowns can spread to neighboring cells.
+    void setStemHeight(float h) {    unsigned int hval = static_cast<unsigned int>(h + 0.5f); // round: +0.5 + truncate
+                                      unsigned int w = mCount;
+                                      w &= 0xF00FFFFF;
+                                      w |= hval << 20;
+                                      mCount = w; }
+    /// set values for height and count (this overwrites all the flags!)
+    void init(const float aheight, const int acount) { height=aheight;mCount=static_cast<unsigned int>(acount); }
 private:
-
-    int mCount; // the lower 16 bits are to count, the heigher for flags. bit 16: valid (0=valid, 1=outside of project area)
+    ///
+    /// the lower 16 bits are to count, the heigher for flags.
+    /// bit 16: valid (0=valid, 1=outside of project area)
+    /// bit 17: is the pixel considered as forested (only for out of project area pixels)
+    /// bit 18: pixel is "radiating" a LIF influence into the landscape
+    /// bits 20-28 (8 bits): local height (1m resolution, 256m is max)
+    quint32 mCount;  // 32 bit unsigned int (even on 64bit platforms)
 
 };
 typedef Grid<HeightGridValue> HeightGrid;

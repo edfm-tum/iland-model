@@ -139,6 +139,7 @@ public:
     void yearEnd(); ///< called at the end of a year (after regeneration??)
 
 private:
+    void updateSVDState(); ///< (if enabled) update the state of the RU
     int mIndex; ///< internal index
     int mID; ///< ID provided by external stand grid
     bool mHasDeadTrees; ///< flag that indicates if currently dead trees are in the tree list

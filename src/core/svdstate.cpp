@@ -96,11 +96,11 @@ int SVDStates::evaluateState(ResourceUnit *ru)
     // species
     int other_i = 0;
 
-    double total_ba = ru->statistics().basalArea();
+    double total_ba = ru->statistics().basalArea() + ru->statistics().saplingBasalArea();
     if (total_ba>0.) {
         QList<ResourceUnitSpecies*>::const_iterator it=ru->ruSpecies().constBegin();
         for (; it!=ru->ruSpecies().constEnd(); ++it) {
-            double rel_ba = (*it)->statistics().basalArea() / total_ba;
+            double rel_ba = ((*it)->statistics().basalArea() + (*it)->statistics().saplingBasalArea()) / total_ba;
             if (rel_ba>0.66)
                 s.dominant_species_index = (*it)->species()->index();
             else if (rel_ba>0.2)
@@ -142,8 +142,16 @@ static QVector<QPoint> close_points =  QVector<QPoint>() << QPoint(-1,-1) << QPo
 
 void SVDStates::evaluateNeighborhood(ResourceUnit *ru)
 {
+    if (!ru->mSVDState.localComposition) {
+        // create vectors on the heap only when really needed
+        int nspecies = GlobalSettings::instance()->model()->speciesSet()->activeSpecies().size();
+        ru->mSVDState.localComposition = new QVector<float>(nspecies, 0.f);
+        ru->mSVDState.midDistanceComposition = new QVector<float>(nspecies, 0.f);
+    }
+
     QVector<float> &local = *ru->mSVDState.localComposition;
     QVector<float> &midrange = *ru->mSVDState.midDistanceComposition;
+
     // clear the vectors
     local.fill(0.f);
     midrange.fill(0.f);

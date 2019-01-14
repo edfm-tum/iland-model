@@ -282,9 +282,17 @@ void Tree::heightGrid()
     QPoint p = QPoint(mPositionIndex.x()/cPxPerHeight, mPositionIndex.y()/cPxPerHeight); // pos of tree on height grid
 
     // count trees that are on height-grid cells (used for stockable area)
-    mHeightGrid->valueAtIndex(p).increaseCount();
-    if (mHeight > mHeightGrid->valueAtIndex(p).height)
-        mHeightGrid->valueAtIndex(p).height=mHeight;
+    HeightGridValue &hgv = mHeightGrid->valueAtIndex(p);
+    hgv.increaseCount();
+    if (mHeight > hgv.height) {
+        hgv.height=mHeight;
+    }
+    if (mHeight > hgv.stemHeight())
+        hgv.setStemHeight(mHeight);
+
+    // if the crown of a tree continues to a neighboring 10m height grid cell, then
+    // the neighboring cell is updated too; therefore the value of the height grid can be *higher* than the
+    // highest tree on the 10m cell!
 
     int r = mStamp->reader()->offset(); // distance between edge and the center pixel. e.g.: if r = 2 -> stamp=5x5
     int index_eastwest = mPositionIndex.x() % cPxPerHeight; // 4: very west, 0 east edge
@@ -367,6 +375,9 @@ void Tree::heightGrid_torus()
                                                    torusIndex(p.y(),10,bufferOffset,ru_offset.y()));
     v.increaseCount();
     v.height = qMax(v.height, mHeight);
+    if (mHeight > v.stemHeight())
+        v.setStemHeight(mHeight);
+
 
 
     int r = mStamp->reader()->offset(); // distance between edge and the center pixel. e.g.: if r = 2 -> stamp=5x5
