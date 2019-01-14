@@ -55,6 +55,7 @@ public:
     int cohortCount() const { return static_cast<int>(mCohortCount); } ///< number of cohorts of saplings / ha
     int saplingCount() const { return static_cast<int>(mSaplingCount); } ///< number individuals in regeneration layer (represented by "cohortCount" cohorts) N/ha
     double saplingAge() const { return mAverageSaplingAge; } ///< average age of sapling (currenty not weighted with represented sapling numbers...)
+    double saplingBasalArea() const { return mBasalAreaSaplings; } ///< total basal area (m2) of saplings (>1.3m)
     // carbon/nitrogen cycle
     double cStem() const { return mCStem; }
     double nStem() const { return mNStem; }
@@ -92,6 +93,7 @@ private:
     double mSumSaplingAge;
     double mAverageSaplingAge;
     double mLAISaplings; ///< LAI (m2/m2) of sapling layer
+    double mBasalAreaSaplings; ///< basal area (m2) in sapling layer
     // carbon and nitrogen pools
     double mCStem, mCFoliage, mCBranch, mCCoarseRoot, mCFineRoot;
     double mNStem, mNFoliage, mNBranch, mNCoarseRoot, mNFineRoot;

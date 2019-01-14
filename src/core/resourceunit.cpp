@@ -223,7 +223,7 @@ double ResourceUnit::topHeight(bool &rIrregular) const
     while (runner.next()) {
         if ( runner.current()->isValid() ) {
             valid++;
-            px_heights.push_back(runner.current()->height);
+            px_heights.push_back(runner.current()->stemHeight());
         }
         total++;
     }
@@ -470,7 +470,15 @@ void ResourceUnit::yearEnd()
         mUnitVariables.cumNEP += mUnitVariables.NEP;
 
     }
+
     // SVD States: update state
+    updateSVDState();
+
+
+}
+
+void ResourceUnit::updateSVDState()
+{
     if (GlobalSettings::instance()->model()->svdStates()){
         if (!mSVDState.localComposition) {
             // create vectors on the heap only when really needed
@@ -489,7 +497,6 @@ void ResourceUnit::yearEnd()
         }
 
     }
-
 
 }
 
@@ -536,7 +543,7 @@ void ResourceUnit::createStandStatistics()
     if (mAverageAging<0. || mAverageAging>1.)
         qDebug() << "Average aging invalid: (RU, LAI):" << index() << mStatistics.leafAreaIndex();
 
-
+    updateSVDState(); // initial state (if SVD enabled)
 }
 
 /** recreate statistics. This is necessary after events that changed the structure

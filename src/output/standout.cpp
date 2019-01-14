@@ -32,7 +32,7 @@ StandOut::StandOut()
                    "The output is created after the growth of the year, " \
                    "i.e. output with year=2000 means effectively the state of at the end of the " \
                    "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'. " \
-                   "You can use the 'condition' to control if the output should be created for the current year(see dynamic stand output)");
+                   "You can use the 'condition' to control if the output should be created for the current year (see dynamic stand output)");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("area_ha", "stockable forest area on the resource unit (in ha).", OutDouble)
                //<< OutputColumn("x_m", "x-coord", OutInteger) <<  OutputColumn("y_m", "y-coord", OutInteger) // temp
@@ -45,8 +45,9 @@ StandOut::StandOut()
               << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble)
               << OutputColumn("NPP_kg", "sum of NPP (aboveground + belowground) kg Biomass/ha", OutDouble)
               << OutputColumn("NPPabove_kg", "sum of NPP (abovegroundground) kg Biomass/ha", OutDouble)
-              << OutputColumn("LAI", "Leafareaindex (m2/m2)", OutDouble)
-              << OutputColumn("cohort_count_ha", "number of cohorts in the regeneration layer (<4m) /ha", OutInteger);
+              << OutputColumn("LAI", "Leaf Area Index (m2/m2) (trees >4m)", OutDouble)
+              << OutputColumn("cohort_count_ha", "number of cohorts in the regeneration layer (<4m) /ha", OutInteger)
+              << OutputColumn("cohort_basal_area", "basal area (m2) of saplings (>1.3m and <4m)", OutDouble);
 
  }
 
@@ -76,7 +77,7 @@ void StandOut::exec()
             // *this << ru->boundingBox().center().x() << ru->boundingBox().center().y();  // temp
             *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                     << stat.volume() << stat.totalCarbon() << stat.gwl() << stat.basalArea()
-                    << stat.npp() << stat.nppAbove() << stat.leafAreaIndex() << stat.cohortCount();
+                    << stat.npp() << stat.nppAbove() << stat.leafAreaIndex() << stat.cohortCount() << stat.saplingBasalArea();
             writeRow();
         }
     }

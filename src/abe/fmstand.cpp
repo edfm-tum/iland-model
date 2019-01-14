@@ -411,7 +411,8 @@ bool FMStand::afterExecution(bool cancel)
         if (currentFlags().isFinalHarvest()) {
             // we have reached the last activity
             for (int i=0;i<mStandFlags.count(); ++i)
-                mStandFlags[i].setActive(true);
+                if (mStandFlags[i].enabled())
+                    mStandFlags[i].setActive(true); // set all activities as active which are enabled
             newRotatation();
             reload();
         }

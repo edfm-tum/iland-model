@@ -92,7 +92,7 @@ void nc_calculateSVDNeighbors(ResourceUnit *unit)
 {
     // evaluate immediately after state change (which sets the time to 1),
     // and at least every 10 yrs.
-    if (unit->svdStateTime() % 10 == 1)  {
+    if (GlobalSettings::instance()->currentYear()==0 ||  unit->svdStateTime() % 10 == 1)  {
         GlobalSettings::instance()->model()->svdStates()->evaluateNeighborhood(unit);
         svd_evals++;
     }
@@ -113,6 +113,7 @@ void SVDStateOut::exec()
     qDebug() << "SVDStateOut: evaluate neighbors. total count:" << svd_evals-old_val;
     }
 
+    bool start_year = GlobalSettings::instance()->currentYear() == 0;
 
     QList<ResourceUnit*>::const_iterator it;
     Model *m = GlobalSettings::instance()->model();
@@ -121,7 +122,7 @@ void SVDStateOut::exec()
             continue; // do not include if out of project area
 
         const SVDState &s = svd->state((*it)->svdStateId());
-        if ( (*it)->svdStateTime() % 10==1) {
+        if ( (*it)->svdStateTime() % 10==1 || start_year) {
             // write output only at the beginning or when states change
             *this << currentYear() << (*it)->index() << (*it)->id();
             *this << s.Id;

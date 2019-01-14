@@ -743,6 +743,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("saplingdetail"); // year=0
     GlobalSettings::instance()->outputManager()->execute("tree"); // year=0
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("svdstate"); // year=0
 
     GlobalSettings::instance()->setCurrentYear(1); // set to first year
 
@@ -932,8 +933,9 @@ void nc_applyPattern(ResourceUnit *unit)
         // light concurrence influence
         if (!GlobalSettings::instance()->model()->settings().torusMode) {
             // height dominance grid
-            for (tit=unit->trees().begin(); tit!=tend; ++tit)
+            for (tit=unit->trees().begin(); tit!=tend; ++tit) {
                 (*tit).heightGrid(); // just do it ;)
+            }
 
             for (tit=unit->trees().begin(); tit!=tend; ++tit)
                 (*tit).applyLIP(); // just do it ;)
@@ -1046,6 +1048,7 @@ void Model::applyPattern()
     for (HeightGridValue *h=mHeightGrid->begin();h!=mHeightGrid->end();++h) {
         h->resetCount(); // set count = 0, but do not touch the flags
         h->height = 4.f;
+        h->clearStemHeight();
     }
 
     threadRunner.run(nc_applyPattern);
@@ -1235,5 +1238,4 @@ void Model::cleanTreeLists(bool recalculate_stats)
         }
     }
 }
-
 

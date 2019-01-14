@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1030</width>
-    <height>741</height>
+    <height>782</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1048,6 +1048,16 @@ QProgressBar::chunk {
             <string>Grid</string>
            </property>
           </column>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="visDomHeightStem">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show the top height based on tree stems (checked), or based on tree crowns (as used for light calculations) (if unchecked)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>based on stems</string>
+          </property>
          </widget>
         </item>
        </layout>

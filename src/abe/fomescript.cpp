@@ -593,6 +593,12 @@ QString ActivityObj::name() const
 void ActivityObj::setEnabled(bool do_enable)
 {
     flags().setEnabled(do_enable);
+    if (!do_enable && mStand && mActivity==mStand->currentActivity()) {
+        // when the current activity is disabled, we need to look for the next possible activity
+        QString old_activity = mStand->currentActivity()->name();
+        mStand->afterExecution(true); // cancel=true
+        qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activty:" << mStand->currentActivity()->name();
+    }
 }
 
 ActivityFlags &ActivityObj::flags() const
