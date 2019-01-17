@@ -42,6 +42,7 @@ private:
     mutable QHash<QString, int> mUnitIndex;
     mutable QHash<int, int> mStandIndex;
     mutable QHash<QString, int> mSTPIndex;
+    mutable QHash<QString, int> mActivityIndex;
 };
 
 
