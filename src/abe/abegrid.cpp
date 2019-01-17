@@ -72,6 +72,9 @@ double ABELayers::value(const FMStandPtr &data, const int index) const
              return mSTPIndex[data->stp()->name()];
     case 13: return
                 data->property(ABE::ForestManagementEngine::instance()->scriptBridge()->standVisualization()).toNumber();
+    case 14: if (!mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QLatin1Literal("invalid")])
+                mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QLatin1Literal("invalid")] = mActivityIndex.count();
+            return mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QLatin1Literal("invalid")];
 
     default: throw IException("ABELayers:value(): Invalid index");
     }
@@ -94,7 +97,8 @@ const QVector<LayeredGridBase::LayerElement> &ABELayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("last update"), QStringLiteral("year of the last update of the forest state."), GridViewRainbowReverse)
                 << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QStringLiteral("stp"), QStringLiteral("Stand treatment program currently active"), GridViewBrewerDiv)
-                << LayeredGridBase::LayerElement(QStringLiteral("user"), QStringLiteral("stand property (fmengine.visualizationProperty)"), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QStringLiteral("user"), QStringLiteral("stand property (fmengine.visualizationProperty)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("activty"), QStringLiteral("Currently active activity for the stand"), GridViewBrewerDiv);
     return mNames;
 }
 
@@ -109,6 +113,8 @@ const QString ABELayers::labelvalue(const int value, const int index) const
         return mAgentIndex.key(value)->name();
     case 12: // stp
         return mSTPIndex.key(value);
+    case 14:
+        return mActivityIndex.key(value);
     default: return QString::number(value);
     }
 }

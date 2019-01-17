@@ -597,7 +597,13 @@ void ActivityObj::setEnabled(bool do_enable)
         // when the current activity is disabled, we need to look for the next possible activity
         QString old_activity = mStand->currentActivity()->name();
         mStand->afterExecution(true); // cancel=true
-        qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activty:" << mStand->currentActivity()->name();
+        if (!mStand->currentActivity()) {
+            // disabling of the current activity lead to a situation when no activity is active anymore (e.g. older than then age of clearcut)
+            // a "hacky" solution is to force the execution of the latest activity with force=true (usually a final harvest)
+            mStand->setToLatestForcedActivity();
+            qCDebug(abe) << mStand->context() << "No valid activity found - forced execution of the latest activity with force=true.";
+        }
+        qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activty:" << (mStand->currentActivity() ? mStand->currentActivity()->name() : QLatin1Literal("*** no activity ***"));
     }
 }
 

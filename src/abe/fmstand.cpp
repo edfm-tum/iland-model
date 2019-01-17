@@ -153,11 +153,7 @@ void FMStand::initialize()
     if (mCurrentIndex==-1) {
         // the stand is "outside" the time frames provided by the activities.
         // set the last activity with "force" = true as the active
-        for (int i=mStandFlags.count()-1;i>=0; --i)
-            if (mStandFlags[i].enabled() && mStandFlags[i].activity()->schedule().force_execution==true) {
-                mCurrentIndex = i;
-                break;
-            }
+        setToLatestForcedActivity();
 
     }
 
@@ -446,6 +442,10 @@ bool FMStand::afterExecution(bool cancel)
         int to_sleep = tmin - static_cast<int>(absoluteAge()) - 1;
         if (to_sleep>0)
             sleep(to_sleep);
+    } else {
+        // no next activity found...
+        if (FMSTP::verbose())
+            qCDebug(abe) << context() << "no activity found to execute next!";
     }
     mScheduledHarvest = 0.; // reset
 
@@ -542,6 +542,22 @@ void FMStand::setAbsoluteAge(const double age)
 {
     mRotationStartYear = ForestManagementEngine::instance()->currentYear() - age;
     mAge = age;
+}
+
+int FMStand::setToLatestForcedActivity()
+{
+    // the stand is "outside" the time frames provided by the activities.
+    // set the last activity with "force" = true as the active
+    int i;
+    for (i=mStandFlags.count()-1;i>=0; --i)
+        if (mStandFlags[i].enabled() && mStandFlags[i].activity()->schedule().force_execution==true) {
+            mCurrentIndex = i;
+            break;
+        }
+    if (mCurrentIndex<0)
+        qCDebug(abe) << context() << "Warning: setToLatestForcedActivity(): no valid activity found!";
+    return i;
+
 }
 
 // storage for properties (static)

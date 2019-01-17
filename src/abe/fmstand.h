@@ -160,6 +160,10 @@ public:
     /// set the absolute age of the stand
     void setAbsoluteAge(const double age);
 
+    /// set active activity to the latest activity with forced=true
+    /// (if a stand is outside the timeframe of all other activities)
+    int setToLatestForcedActivity();
+
 
     // return stand-specific flags
     ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
