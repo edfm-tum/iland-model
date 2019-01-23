@@ -44,12 +44,15 @@ bool TimeEvents::loadFromString(const QString &source)
     int yearcol = infile.columnIndex("year");
     if (yearcol==-1)
         throw IException(QString("TimeEvents: input file '%1' has no 'year' column.").arg(lastLoadedFile));
+
     int year;
     QVariantList line;
     QPair<QString, QVariant> entry;
     for (int row=0;row<infile.rowCount();row++) {
         year = infile.value(row, yearcol).toInt();
         line = infile.values(row);
+        if (line.count()!=infile.colCount())
+            throw IException("TimeEvents: invalid file (number of data columns different than head columns)");
         for (int col=0;col<line.count();col++) {
              if (col!=yearcol) {
                  entry.first = captions[col];
