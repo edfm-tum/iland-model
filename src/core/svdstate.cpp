@@ -248,6 +248,7 @@ QString SVDStates::createCompositionString(const SVDState &s)
         else
             return QStringLiteral("unforested");
     }
+    label.chop(1); // remove the trailing space
     return label;
 }
 
