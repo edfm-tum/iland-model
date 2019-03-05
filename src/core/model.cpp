@@ -350,10 +350,10 @@ void Model::setupSpace()
         if (!dem_file.isEmpty()) {
             mDEM = new DEM(GlobalSettings::instance()->path(dem_file));
             // add them to the visuals...
-            GlobalSettings::instance()->controller()->addGrid(mDEM, "DEM height", GridViewRainbow, 0, 1000);
-            GlobalSettings::instance()->controller()->addGrid(mDEM->slopeGrid(), "DEM slope", GridViewRainbow, 0, 3);
-            GlobalSettings::instance()->controller()->addGrid(mDEM->aspectGrid(), "DEM aspect", GridViewRainbow, 0, 360);
-            GlobalSettings::instance()->controller()->addGrid(mDEM->viewGrid(), "DEM view", GridViewGray, 0, 1);
+            GlobalSettings::instance()->controller()->addGrid(mDEM, "DEM - height", GridViewRainbow, 0, 1000);
+            GlobalSettings::instance()->controller()->addGrid(mDEM->slopeGrid(), "DEM - slope", GridViewRainbow, 0, 3);
+            GlobalSettings::instance()->controller()->addGrid(mDEM->aspectGrid(), "DEM - aspect", GridViewRainbow, 0, 360);
+            GlobalSettings::instance()->controller()->addGrid(mDEM->viewGrid(), "DEM - view", GridViewGray, 0, 1);
 
         }
 
