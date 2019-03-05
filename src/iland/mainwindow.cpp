@@ -492,7 +492,7 @@ void MainWindow::updatePaintGridList()
             group = elem[0];
         }
 
-        items.append( new QTreeWidgetItem(stack.last(),  QStringList() << elem[1]) );
+        items.append( new QTreeWidgetItem(stack.last(),  QStringList() << (elem.size()>1 ? elem[1] : elem[0])) );
         items.back()->setToolTip(0, i.value().description);
         items.back()->setData(0, Qt::UserRole+0, i.key());
         ++i;
