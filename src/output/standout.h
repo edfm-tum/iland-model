@@ -31,6 +31,7 @@ public:
     virtual void setup();
 private:
     Expression mCondition;
+    Expression mRUFilter;
 };
 
 
