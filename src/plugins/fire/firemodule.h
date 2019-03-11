@@ -164,13 +164,16 @@ public:
     double fireY() const { return fireStats.startpoint.y(); } ///< coordinates of the ignition point
     void testSpread();
     double prescribedIgnition(const double x_m, const double y_m, const double firesize, const double windspeed, const double winddirection);
+    /// triggers a burn-in at 'x' and 'y' (iLand coordinate system) with a length (along the border) of 'length'. If 'simulate' is true, no fire spread happens
+    /// returns the realized fire (m2)
+    double burnInIgnition(const double x_m, const double y_m, const double length, double max_fire_size, bool simulate=false);
 
 private:
     /// estimate fire size from a distribution
     double calculateFireSize(const FireRUData *data);
 
     // functions for the cellular automata
-    void probabilisticSpread(const QPoint &start_point);
+    void probabilisticSpread(const QPoint &start_point, QRect burn_in=QRect(), int burn_in_cells=0);
     /// calculates the probabibilty of spreading the fire from \p pixel_from to \p pixel_to.
     /// the \p direction provides encodes the cardinal direction.
     void calculateSpreadProbability(const FireRUData &fire_data, const double height, const float *pixel_from, float *pixel_to, const int direction);
@@ -189,6 +192,9 @@ private:
     /// calculate combustible fuel
     /// returns the total combustible fuel (kg/ha), and sets the reference variables for forest floor and deadwood
     double calcCombustibleFuel(const FireRUData &ru_data, double &rForestFloor_kg_ha, double &rDWD_kg_ha);
+
+    /// prepare the necessary data grid to allow burn ins
+    void setupBorderGrid();
 
     int mFireId; ///< running id of a fire event
     // parameters
@@ -217,12 +223,14 @@ private:
     double mBurnFoliageFraction; ///< fraction of foliage biomass burned by fire (if a tree dies)
 
     bool mOnlyFireSimulation; ///< if true, trees/snags etc. are not really affected by fire
+    bool mAllowBurnIn; ///< true if burn ins at specific locations is enabled
     // event handler
     QString mAfterFireEvent; ///< javascript event after fire
 
     // data
     Grid<FireRUData> mRUGrid; ///< grid with data values per resource unit
     Grid<float> mGrid; ///< fire grid (20x20m)
+    Grid<char> mBorderGrid; ///< 20x20m grid where border pixels are flagged
     FireLayers mFireLayers;
     FireScript *mFireScript;
 

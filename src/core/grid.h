@@ -168,6 +168,10 @@ public:
     T* ptr(int x, int y) { return &(mData[y*mSizeX + x]); } ///< get a pointer to the element indexed by "x" and "y"
     inline double distance(const QPoint &p1, const QPoint &p2); ///< distance (metric) between p1 and p2
     const QPoint randomPosition() const; ///< returns a (valid) random position within the grid
+    /// applies a flood fill algorithm to the grid starting at 'start'
+    /// fills the contingent area with value 'old_color' with 'color' (or stops when 'max_fill' pixels have been filled)
+    /// returns the number of filled pixels
+    int floodFill(QPoint start, T old_color, T color, int max_fill=-1);
 private:
 
     T* mData;
@@ -505,6 +509,40 @@ template <class T>
 const QPoint Grid<T>::randomPosition() const
 {
     return QPoint(irandom(0,mSizeX), irandom(0, mSizeY));
+}
+
+
+// quick and dirty implementation of the flood fill algroithm.
+// based on: http://en.wikipedia.org/wiki/Flood_fill
+// returns the number of pixels colored
+template<class T>
+int Grid<T>::floodFill(QPoint start, T old_color, T color, int max_fill)
+{
+
+    QQueue<QPoint> pqueue;
+    pqueue.enqueue(start);
+    int found = 0;
+    while (!pqueue.isEmpty()) {
+        QPoint p = pqueue.dequeue();
+        if (!isIndexValid(p))
+            continue;
+        if (valueAtIndex(p)==old_color) {
+            valueAtIndex(p) = color;
+            pqueue.enqueue(p+QPoint(-1,0));
+            pqueue.enqueue(p+QPoint(1,0));
+            pqueue.enqueue(p+QPoint(0,-1));
+            pqueue.enqueue(p+QPoint(0,1));
+            pqueue.enqueue(p+QPoint(1,1));
+            pqueue.enqueue(p+QPoint(1,-1));
+            pqueue.enqueue(p+QPoint(-1,1));
+            pqueue.enqueue(p+QPoint(-1,-1));
+            ++found;
+            if (max_fill > 0 && found>=max_fill)
+                break;
+        }
+    }
+    return found;
+
 }
 
 ////////////////////////////////////////////////////////////

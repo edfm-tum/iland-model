@@ -107,6 +107,7 @@ const QVector<LayeredGridBase::LayerElement> &FireLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("nFire"), QLatin1Literal("cumulative count of fires"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("lastFireYear"), QLatin1Literal("sim. year of last burn"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("combustibleFuel"), QLatin1Literal("available combustible fuel (current KBDI, forest floor + dwd) kg/ha"), GridViewRainbow);
+
     return mNames;
 
 }
@@ -175,6 +176,14 @@ void FireModule::setup()
     mBurnFoliageFraction = xml.valueDouble(".burnFoliageFraction", 1.);
 
     mAfterFireEvent = xml.value(".onAfterFire");
+
+    mAllowBurnIn = xml.valueBool(".allowBurnIn", false);
+    if (mAllowBurnIn) {
+        // set up the grid of border flags
+        mBorderGrid.setup(mRUGrid.metricRect(), cellsize());
+        mBorderGrid.initialize(0);
+        setupBorderGrid();
+    }
 
     // setup of the visualization of the grid
     GlobalSettings::instance()->controller()->addLayers(&mFireLayers, "fire");
@@ -497,19 +506,22 @@ void FireModule::calculateSpreadProbability(const FireRUData &fire_data, const d
     // apply the r_land factor that accounts for different land types
     p_spread *= fire_data.mRefLand;
     // add probabilites
-    *pixel_to = 1. - (1. - *pixel_to)*(1. - p_spread);
+    *pixel_to = static_cast<float>(1. - (1. - *pixel_to)*(1. - p_spread));
 
 }
 
 /** a cellular automaton spread algorithm.
     @param start_point the starting point of the fire spread as index of the fire grid
 */
-void FireModule::probabilisticSpread(const QPoint &start_point)
+void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, int burn_in_cells)
 {
-    QRect max_spread = QRect(start_point, start_point+QPoint(1,1));
-    // grow the rectangle by one row/column but ensure validity
-    max_spread.setCoords(qMax(start_point.x()-1,0),qMax(start_point.y()-1,0),
-                         qMin(max_spread.right()+1,mGrid.sizeX()),qMin(max_spread.bottom()+1,mGrid.sizeY()) );
+    QRect max_spread = burn_in;
+    if (burn_in.isNull()) {
+        max_spread = QRect(start_point, start_point+QPoint(1,1));
+        // grow the rectangle by one row/column but ensure validity
+        max_spread.setCoords(qMax(start_point.x()-1,0),qMax(start_point.y()-1,0),
+                             qMin(max_spread.right()+1,mGrid.sizeX()),qMin(max_spread.bottom()+1,mGrid.sizeY()) );
+    }
 
     FireRUData *rudata = &mRUGrid.valueAt( mGrid.cellCenterPoint(start_point) );
     double fire_size_m2 = calculateFireSize(rudata);
@@ -518,7 +530,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     if (mPrescribedFiresize>=0)
         fire_size_m2 = mPrescribedFiresize;
 
-    fireStats.fire_size_plan_m2 = fire_size_m2;
+    fireStats.fire_size_plan_m2 = qRound(fire_size_m2);
     fireStats.iterations = 0;
     fireStats.fire_size_realized_m2 = 0;
     fireStats.fire_psme_died = 0.;
@@ -528,8 +540,11 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     // fire size of the ignition cell
     double fire_scale_factor = fire_size_m2 / rudata->mAverageFireSize;
 
-    int cells_to_burn = fire_size_m2 / (cellsize() * cellsize());
+    int cells_to_burn = static_cast<int>(fire_size_m2 / (cellsize() * cellsize()));
     int cells_burned = 1;
+    if (burn_in_cells>0)
+        cells_burned = burn_in_cells; // cells already burnt during start of burn in
+
     int last_round_burned = cells_burned;
     int iterations = 1;
     // main loop
@@ -537,8 +552,8 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
     float *p;
 
     rudata->fireRUStats.enter(mFireId);
-    if (!burnPixel(start_point, *rudata)) {
-        // no fuel / no trees on the starting pixel
+    if (burn_in.isNull() && !burnPixel(start_point, *rudata)) {
+        // no fuel / no trees on the starting pixel (don't run burn for burn ins)
         return;
     }
     while (cells_burned < cells_to_burn) {
@@ -621,7 +636,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point)
 
         // update the cells to burn by factoring in different fire sizes within the fire-perimeter
         // see http://iland.boku.ac.at/wildfire+spread
-        cells_to_burn = (sum_fire_size/(double)cells_burned) / (cellsize() * cellsize());
+        cells_to_burn = static_cast<int>( (sum_fire_size/static_cast<double>(cells_burned)) / (cellsize() * cellsize()) );
         if (cells_to_burn <= cells_burned)
             break;
 
@@ -716,12 +731,94 @@ double FireModule::prescribedIgnition(const double x_m, const double y_m, const 
     spread( pt, true );
 
     afterFire();
+    mPrescribedFiresize = -1; // reset
 
     // provide outputs: This calls the FireOut::exec() function
     GlobalSettings::instance()->outputManager()->execute("fire");
     GlobalSettings::instance()->outputManager()->save();
 
     return fireStats.fire_size_realized_m2;
+}
+
+double FireModule::burnInIgnition(const double x_m, const double y_m, const double length, double max_fire_size, bool simulate)
+{
+    // step 1: find the closest edge pixel to the given coordinates
+    if (!mBorderGrid.coordValid(static_cast<float>(x_m), static_cast<float>(y_m)))
+        throw IException(QString("FireModule:burnInIgnition: invalid coordinates! x=%1 y=%2").arg(x_m).arg(y_m));
+    QPoint pos = mBorderGrid.indexAt(QPointF(x_m, y_m));
+    QRectF search_rect = mBorderGrid.cellRect(pos);
+    search_rect.adjust(-100., -100., 100., 100.); // 220m rectangle
+    GridRunner<char> runner(mBorderGrid, search_rect);
+    QPoint closest;
+    bool found=false;
+    double min_dist=9999999.;
+    while (runner.next()) {
+        if (*runner.current() == 1) {
+            found = true;
+            QPointF cell = runner.currentCoord();
+            double dist = (cell.x() - x_m)*(cell.x() - x_m) + (cell.y() - y_m)*(cell.y() - y_m);
+            if (dist < min_dist) {
+                min_dist = dist;
+                closest = runner.currentIndex();
+            }
+        }
+    }
+    if (!found)
+        throw IException(QString("FireModule:burnInIgnition: no edge found close to: x=%1 y=%2").arg(x_m).arg(y_m));
+
+    // step 2: apply a flood fill algorithm to the border
+    int px_to_fill = qRound(length / cellsize());
+    int filled = mBorderGrid.floodFill(closest, 1, 2, px_to_fill);
+    qDebug() << "burnInIgnition: Starting point" << x_m << "/" << y_m << " closest cell" << closest << "to fill" << px_to_fill << "filled:" << filled;
+
+
+    // in simulation mode we are done here (and keep the updated border grid)
+    if (simulate)
+        return static_cast<double>(filled);
+
+    // step 3: start the fire
+    mFireId++;
+    mPrescribedFiresize = max_fire_size;
+
+    // determine bounding box and execute
+    // burn for all pixels of the burn-in fire front
+    mGrid.initialize(0.f);
+    for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds)
+        fds->fireRUStats.clear();
+    float *f = mGrid.begin();
+    int init_burned = 0;
+    int left = mGrid.sizeX(), right = 0, top = mGrid.sizeY(), bottom = 0;
+    for (char *c = mBorderGrid.begin(); c!=mBorderGrid.end(); ++c, ++f) {
+        if (*c == 2) {
+            *f = 1.f; // set as burning
+            QPoint pt = mGrid.indexOf(f);
+            FireRUData &fire_data = mRUGrid.valueAt(mGrid.cellCenterPoint(pt)); // get the RU
+            fire_data.fireRUStats.enter(mFireId);
+            bool really_burnt = burnPixel(pt, fire_data); // burn the px
+            if (really_burnt)
+                ++init_burned;
+            left = qMin(left, pt.x()-1);
+            right = qMax(right, pt.x()+2); // coord of right is never reached
+            top = qMin(top, pt.y()-1);
+            bottom = qMax(bottom, pt.y()+2); // coord bottom never reacher
+            *c = 1; // reset the border state
+        }
+    }
+    QRect burn_box;
+    burn_box.setCoords(qMax(left,0),
+                       qMax(top,0),
+                       qMin(right, mGrid.sizeX()),
+                       qMin(bottom, mGrid.sizeY()) );
+
+    qDebug() << "burn-in:" << init_burned << "of" << filled << "px could burn (enough veg/fuel)";
+
+    probabilisticSpread(closest, burn_box, init_burned);
+    afterFire();
+
+    mPrescribedFiresize = -1; // reset
+
+    return fireStats.fire_size_realized_m2;
+
 }
 
 /** burning of a single 20x20m pixel. see http://iland.boku.ac.at/wildfire.
@@ -921,6 +1018,30 @@ double FireModule::calcCombustibleFuel(const FireRUData &ru_data, double &rFores
     rForestFloor_kg_ha = fuel_ff;
     rDWD_kg_ha = fuel_dwd;
     return fuel;
+
+}
+
+void FireModule::setupBorderGrid()
+{
+    HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
+    GridRunner<HeightGridValue> runner(*hg, hg->metricRect());
+    HeightGridValue* neighbors[8];
+    while (runner.next()) {
+        if (runner.current()->isValid()) {
+            runner.neighbors8(neighbors);
+            for (int i=0;i<8;++i)
+                if (neighbors[i] &&  !neighbors[i]->isValid()) {
+                    //runner.current()->setIsRadiating();
+                    // this is a pixel at the edge to non-project area
+                    char &bgv = mBorderGrid.valueAt(runner.currentCoord());
+                    if (bgv == '\0') {
+                        bgv = 1; // mark cell as a border
+                    }
+
+                }
+
+        }
+    }
 
 }
 
