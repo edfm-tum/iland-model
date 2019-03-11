@@ -36,7 +36,7 @@ double FireScript::ignite(double x, double y, double firesize, double windspeed,
     double result=-1.;
     if (x>=0 && y>=0) {
         result = mFire->prescribedIgnition(x, y, firesize, windspeed, winddirection);
-        qDebug() << "FireeBvent triggered by javascript: " << x << y << firesize << windspeed << winddirection;
+        qDebug() << "FireEvent triggered by javascript: " << x << y << firesize << windspeed << winddirection;
     } else {
         //int idx, gen, refill;
         //RandomGenerator::debugState(idx, gen, refill);
@@ -51,6 +51,12 @@ double FireScript::ignite(double x, double y, double firesize, double windspeed,
     return result;
 }
 
+double FireScript::igniteBurnIn(double x, double y, double length, double max_fire_size, bool simulate)
+{
+    qDebug() << "fire event (burn in) triggered by Javascript at:" << x << "/" << y << "length:"<<  length << "max-fire-size (m2):" << max_fire_size;
+    return mFire->burnInIgnition(x,y,length, max_fire_size, simulate);
+}
+
 QString FireScript::fireRUValueType=QLatin1String("");
 
 QString fireRUValue(const FireRUData &data) {
@@ -61,6 +67,9 @@ QString fireRUValue(const FireRUData &data) {
     if (FireScript::fireRUValueType=="baseIgnition") return QString::number(data.baseIgnitionProbability());
     return "Error";
 }
+QString fireCharToStr(const char &c) {
+    return QString('0' + c ); // convert \0 to '0', \1 to '1', ...
+}
 
 bool FireScript::gridToFile(QString grid_type, QString file_name)
 {
@@ -69,6 +78,10 @@ bool FireScript::gridToFile(QString grid_type, QString file_name)
     QString result;
     if (grid_type == "spread") {
         result = gridToESRIRaster(mFire->mGrid);
+    } else if (grid_type == "border") {
+        if (mFire->mBorderGrid.isEmpty())
+            throw IException("Fire: 'border' grid not available!");
+        result = gridToESRIRaster(mFire->mBorderGrid, &fireCharToStr);
     } else {
         fireRUValueType = grid_type;
         result = gridToESRIRaster(mFire->mRUGrid, &fireRUValue); // use a specific value function (see above)

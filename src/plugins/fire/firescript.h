@@ -34,7 +34,7 @@ class FireScript : public QObject
     Q_PROPERTY(QJSValue onCalculateFireSize READ onCalculateFireSize WRITE setOnCalculateFireSize )
 
 public:
-    explicit FireScript(QObject *parent = 0);
+    explicit FireScript(QObject *parent = nullptr);
     void setFireModule(FireModule *module) { mFire = module; }
     int id() const; ///< the id of the last ignited fire during the simulation
     double x() const; ///< the x-coordinate of the last ignition
@@ -68,6 +68,7 @@ public slots:
     winddirection: wind direction (0 deg =N..180deg=S..270=Wdeg), drawn randomly if omitted or set to -1.
     Returns the burnt area */
     double ignite(double x, double y, double firesize=-1, double windspeed=-1, double winddirection=-1);
+    double igniteBurnIn(double x, double y, double length, double max_fire_size, bool simulate=false);
     bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
     /// returns a ScriptGrid with the requested type
     QJSValue grid(QString type);
