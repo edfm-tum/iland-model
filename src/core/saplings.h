@@ -28,7 +28,7 @@ class ResourceUnit; // forward
 
 struct SaplingTree {
     SaplingTree() { clear(); }
-    short unsigned int age;  // number of consectuive years the sapling suffers from dire conditions
+    short unsigned int age;  // age of the cohort in years
     short signed int species_index; // index of the species within the resource-unit-species container
     unsigned char stress_years; // number of consecutive years that a sapling suffers from stress
     unsigned char flags; // flags, e.g. whether sapling stems from sprouting
@@ -40,10 +40,14 @@ struct SaplingTree {
                                                                                  stress_years=0;
                                                                                  species_index=static_cast<short signed int>(species_idx); }
     // flags
+    // sprouting - bit 1
     bool is_sprout() const { return flags & 1; }
     void set_sprout(const bool sprout) {if (sprout) flags |= 1; else flags &= (1 ^ 0xffffff ); }
+    // browsing - bit 2
+    bool is_browsed() const { return flags & 2; }
+    void set_browsed(const bool browse) {if (browse) flags |= 2; else flags &= (2 ^ 0xffffff ); }
     // get resource unit species of the sapling tree
-    ResourceUnitSpecies *resourceUnitSpecies(const ResourceUnit *ru);
+    ResourceUnitSpecies *resourceUnitSpecies(const ResourceUnit *ru) const;
 };
 #define NSAPCELLS 5
 struct SaplingCell {
@@ -54,9 +58,11 @@ struct SaplingCell {
                       CellFull=4};   ///< cell is full (no establishment) (either all slots used or one slot > 1.3m)
     SaplingCell() {
         state=CellInvalid;
+        ru=nullptr;
     }
     ECellState state;
     SaplingTree saplings[NSAPCELLS];
+    ResourceUnit *ru;
     /// returns true if establishment is allowed for the cell
     bool hasFreeSlots() const {return state>CellInvalid && state<CellFull; }
     void checkState() { if (state==CellInvalid) return;
@@ -91,7 +97,7 @@ struct SaplingCell {
     SaplingTree *addSapling(const float h_m, const int age_yrs, const int species_idx) {
         int idx = free_index();
         if (idx==-1)
-            return 0;
+            return nullptr;
         saplings[idx].setSapling(h_m, age_yrs, species_idx);
         return &saplings[idx];
     }
@@ -110,11 +116,11 @@ struct SaplingCell {
     }
     /// return the sapling tree of the requested species, or 0
     SaplingTree *sapling(int species_index) {
-        if (state==CellInvalid) return 0;
+        if (state==CellInvalid) return nullptr;
         for (int i=0;i<NSAPCELLS;++i)
             if (saplings[i].species_index == species_index)
                 return &saplings[i];
-        return 0;
+        return nullptr;
     }
 };
 class ResourceUnit;
@@ -200,7 +206,7 @@ public:
     /// return the SaplingCell (i.e. container for the ind. saplings) for the given 2x2m coordinates
     /// if 'only_valid' is true, then 0 is returned if no living saplings are on the cell
     /// 'rRUPtr' is a pointer to a RU-ptr: if provided, a pointer to the resource unit is stored
-    SaplingCell *cell(QPoint lif_coords, bool only_valid=true, ResourceUnit **rRUPtr=0);
+    SaplingCell *cell(QPoint lif_coords, bool only_valid=true, ResourceUnit **rRUPtr=nullptr);
     /// clear/kill all saplings within the rectangle given by 'rectangle'.
     /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt), otherwise they are moved to soil
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout);
@@ -230,7 +236,7 @@ class MapGrid; // forward
 class SaplingCellRunner
 {
 public:
-    SaplingCellRunner(const int stand_id, const MapGrid *stand_grid=0);
+    SaplingCellRunner(const int stand_id, const MapGrid *stand_grid=nullptr);
     ~SaplingCellRunner();
     SaplingCell *next();
     ResourceUnit *ru() const { return mRU; }

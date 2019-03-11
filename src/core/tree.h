@@ -100,7 +100,7 @@ public:
     // setters for initialization
     void setNewId() { mId = m_nextId++; } ///< force a new id for this object (after copying trees)
     void setId(const int id) { mId = id; } ///< set a spcific ID (if provided in stand init file).
-    void setPosition(const QPointF pos) { Q_ASSERT(mGrid!=0); mPositionIndex = mGrid->indexAt(pos); }
+    void setPosition(const QPointF pos) { Q_ASSERT(mGrid!=nullptr); mPositionIndex = mGrid->indexAt(pos); }
     void setPosition(const QPoint posIndex) { mPositionIndex = posIndex; }
     void setDbh(const float dbh) { mDbh=dbh; }
     void setHeight(const float height);
@@ -122,11 +122,13 @@ public:
     void setDeathReasonBarkBeetle()  { setFlag(Tree::TreeDeadBarkBeetle, true); }
     void setDeathReasonFire()  { setFlag(Tree::TreeDeadFire, true); }
     void setDeathCutdown()  { setFlag(Tree::TreeDeadKillAndDrop, true); }
+    void setDeathBite() { setFlag(Tree::TreeDeadBite, true); }
     void setIsHarvested()  { setFlag(Tree::TreeHarvested, true); }
 
     bool isDeadWind() const { return flag(Tree::TreeDeadWind);}
     bool isDeadBarkBeetle() const { return flag(Tree::TreeDeadBarkBeetle);}
     bool isDeadFire() const { return flag(Tree::TreeDeadFire);}
+    bool isDeadBite() const { return flag(Tree::TreeDeadBite); }
     bool isCutdown() const { return flag(Tree::TreeDeadKillAndDrop);}
     bool isHarvested() const { return flag(Tree::TreeHarvested);}
 
@@ -203,7 +205,8 @@ private:
                  MarkForCut=512, // mark tree for being cut down
                  MarkForHarvest=1024, // mark tree for being harvested
                  MarkCropTree=2048, // mark as crop tree
-                 MarkCropCompetitor=4096 // mark as competitor for a crop tree
+                 MarkCropCompetitor=4096, // mark as competitor for a crop tree
+                 TreeDeadBite=8192 // killed by biotic disturbance module (BITE)
                };
     /// set a Flag 'flag' to the value 'value'.
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}

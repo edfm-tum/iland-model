@@ -96,7 +96,7 @@ int FMTreeList::loadFromRect(ResourceUnit *ru, const QRectF &rect)
 {
     mTrees.clear();
     for (const Tree &t : ru->trees()) {
-        if (rect.contains(t.position())) {
+        if (rect.contains(t.position()) && !t.isDead()) {
             mTrees.push_back(QPair<Tree*, double>(const_cast<Tree*>(&t), 0.));
         }
     }
@@ -458,7 +458,7 @@ double FMTreeList::aggregate_function_sapling(QString expression, QString filter
         if (sc){
             for (int i=0;i<NSAPCELLS;++i) {
                 if (sc->saplings[i].is_occupied()) {
-                    sw.setSaplingTree(&sc->saplings[i]);
+                    sw.setSaplingTree(&sc->saplings[i], sc->ru);
                     if (filter_expr.execute()) {
                         sum += expr.calculate();
                         ++n;
@@ -681,7 +681,7 @@ int FMTreeList::killSaplings(QString expression)
         if (sc){
             for (int i=0;i<NSAPCELLS;++i) {
                 if (sc->saplings[i].is_occupied()) {
-                    sw.setSaplingTree(&sc->saplings[i]);
+                    sw.setSaplingTree(&sc->saplings[i], sc->ru);
                     if (expr.execute()) {
                         sc->saplings[i].clear();
                         nsap_removed++;

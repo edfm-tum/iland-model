@@ -37,7 +37,7 @@ public:
 
 
 public slots:
-    void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
+    void runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist);
     void beforeRun();
     void afterSetup();
 

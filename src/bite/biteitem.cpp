@@ -75,11 +75,12 @@ void BiteItem::run()
     qCDebug(bite) << " *** Execution of item: " << name();
 }
 
-void BiteItem::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
+void BiteItem::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist)
 {
     // do nothing
     Q_UNUSED(cell)
     Q_UNUSED(treelist)
+    Q_UNUSED(saplist)
 }
 
 int BiteItem::cellSize() const

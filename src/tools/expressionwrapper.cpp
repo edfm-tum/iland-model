@@ -197,7 +197,7 @@ double RUWrapper::value(const int variableIndex)
 //// SaplingTree Wrapper
 ////////////////////////////////////////////////
 
-static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age";
+static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age" << "nrep" << "dbh" << "foliagemass";
 
 const QStringList SaplingWrapper::getVariablesList()
 {
@@ -213,6 +213,12 @@ double SaplingWrapper::value(const int variableIndex)
     case 0: return mSapling->species_index;
     case 1: return static_cast<double>(mSapling->height);
     case 2: return mSapling->age;
+    case 3: return mSapling->resourceUnitSpecies(mRU)->species()->saplingGrowthParameters().representedStemNumberH(mSapling->height);
+    case 4: return mSapling->height /  mSapling->resourceUnitSpecies(mRU)->species()->saplingGrowthParameters().hdSapling * 100.;
+    case 5: { const Species *sp = mSapling->resourceUnitSpecies(mRU)->species();
+              double dbh = mSapling->height / sp->saplingGrowthParameters().hdSapling * 100.;
+              return sp->biomassFoliage(dbh); }
     }
+
     return ExpressionWrapper::value(variableIndex);
 }

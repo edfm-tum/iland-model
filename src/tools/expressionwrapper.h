@@ -74,13 +74,14 @@ class SaplingWrapper: public ExpressionWrapper
 {
 public:
     SaplingWrapper() : mSapling(nullptr) {}
-    SaplingWrapper(const SaplingTree* saplingTree) : mSapling(saplingTree) {}
-    void setSaplingTree(const SaplingTree* saplingTree) { mSapling = saplingTree; }
+    SaplingWrapper(const SaplingTree* saplingTree, const ResourceUnit *ru) : mSapling(saplingTree), mRU(ru) {}
+    void setSaplingTree(const SaplingTree* saplingTree, const ResourceUnit *ru) { mSapling = saplingTree; mRU=ru; }
     virtual const QStringList getVariablesList();
     virtual double value(const int variableIndex);
 
 private:
     const SaplingTree *mSapling;
+    const ResourceUnit *mRU;
 };
 
 #endif // EXPRESSIONWRAPPER_H

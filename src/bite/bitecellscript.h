@@ -28,6 +28,7 @@
 
 namespace ABE {
 class FMTreeList;
+class FMSaplingList;
 }
 
 namespace BITE {
@@ -40,6 +41,7 @@ class BiteCellScript : public QObject
     Q_PROPERTY(int yearsLiving READ yearsLiving)
     Q_PROPERTY(int cumYearsLiving READ cumYearsLiving)
     Q_PROPERTY(ABE::FMTreeList* trees READ trees)
+    Q_PROPERTY(ABE::FMSaplingList* saplings READ saplings)
     Q_PROPERTY(BiteAgent* agent READ agent)
 public:
     explicit BiteCellScript(QObject *parent = nullptr);
@@ -59,10 +61,13 @@ public:
     int cumYearsLiving() const { return mCell->cumYearsLiving(); }
 
     ABE::FMTreeList *trees();
+    ABE::FMSaplingList *saplings();
+
 
 signals:
 
 public slots:
+    QString info();
     // access to variables of the cell
     bool hasValue(QString variable_name);
     double value(QString variable_name);
@@ -71,6 +76,7 @@ public slots:
     void die() { mCell->die(); }
 
     void reloadTrees();
+    void reloadSaplings();
 private:
     BiteCell *mCell;
     BiteAgent *mAgent;
@@ -100,7 +106,7 @@ private:
 /** DynamicExpression encapsulates an "expression" that can be either a iLand expression, a constant or a javascript function.
 */
 struct DynamicExpression {
-    enum EWrapperType { CellWrap, TreeWrap } ;
+    enum EWrapperType { CellWrap, TreeWrap, SaplingWrap } ;
     enum EFilterType { ftInvalid, ftExpression, ftJavascript, ftConstant};
     DynamicExpression(): wrapper_type(CellWrap), filter_type(ftInvalid), expr(nullptr), mAgent(nullptr), mTree(nullptr) {}
     DynamicExpression(const DynamicExpression &src);
@@ -109,11 +115,14 @@ struct DynamicExpression {
     EFilterType type() const {return filter_type; }
     double evaluate(BiteCell *cell) const;
     double evaluate(Tree* tree) const;
+    double evaluate(SaplingTree* sap, ResourceUnit *ru) const;
 
     bool evaluateBool(BiteCell *cell) const { return evaluate(cell) > 0.; }
     bool evaluateBool(Tree *tree) const { return evaluate(tree) > 0.; }
+    bool evaluateBool(SaplingTree *sap, ResourceUnit *ru) const { return evaluate(sap, ru) > 0.; }
 
     bool isValid() const { return filter_type!=ftInvalid;}
+    bool isConst() const { return filter_type == ftConstant; }
     QString dump() const;
 private:
     EWrapperType wrapper_type;
@@ -141,6 +150,8 @@ public:
     void setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap, BiteAgent *agent); ///< setup from javascript
     double evaluate(BiteCell *cell); ///< run the constraints
     double evaluate(ABE::FMTreeList *treelist); ///< run for trees
+    double evaluate(ABE::FMSaplingList *saplinglist); ///< run for saplings
+    bool isConst(); ///< return true if no dynamic evaluation happens
     QStringList dump(); ///< prints some debug info
 private:
     QList<DynamicExpression*> mConstraints;

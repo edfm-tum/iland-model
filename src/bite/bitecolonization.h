@@ -37,13 +37,14 @@ public:
     void setup(BiteAgent *parent_agent);
     void afterSetup();
 
-    void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
+    void runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist);
 protected:
     QStringList allowedProperties();
 
 private:
     Constraints mCellConstraints;
     Constraints mTreeConstraints;
+    Constraints mSaplingConstraints;
     DynamicExpression mDispersalFilter;
     Events mEvents;
     DynamicExpression mInitialAgentBiomass;

@@ -27,6 +27,7 @@ class Tree;
 
 namespace ABE {
 class FMTreeList; // forward
+class FMSaplingList; // forward
 }
 
 namespace BITE {
@@ -36,7 +37,7 @@ class BiteAgent;
 class BiteCell
 {
 public:
-    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1), mTreesLoaded(false), mYearsLiving(0), mCumYearsLiving(0) {}
+    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1), mYearsLiving(0), mCumYearsLiving(0), mTreesLoaded(false), mSaplingsLoaded(false) {}
     void setup(int cellidx, QPointF pos, BiteAgent *agent);
     /// index within the agent grid
     int index() const {return mIndex;}
@@ -50,7 +51,9 @@ public:
     void setSpreading(bool activate) { mIsSpreading = activate; }
 
     void setTreesLoaded(bool loaded) { mTreesLoaded = loaded; }
+    void setSaplingsLoaded(bool loaded) { mSaplingsLoaded = loaded; }
     void checkTreesLoaded(ABE::FMTreeList *treelist);
+    void checkSaplingsLoaded(ABE::FMSaplingList *saplist);
 
     int yearsLiving() const { return mYearsLiving; }
     int yearLastSpread() const { return mLastSpread; }
@@ -65,16 +68,19 @@ public:
     void notify(ENotification what);
 
     int loadTrees(ABE::FMTreeList *treelist);
+    int loadSaplings(ABE::FMSaplingList *saplinglist);
 private:
     ResourceUnit *mRU; ///< ptr to resource unit of the cell
     BiteAgent *mAgent; ///< link to the agent
     bool mIsActive; ///< active: true if the agent "lives" on the cell
     bool mIsSpreading; ///< true: the agent spreads from the cell
     int mIndex; ///< index within the grid
-    bool mTreesLoaded; ///< is the tree list already fetched from iLand
     int mYearsLiving; ///< years a cell is already active/living
     int mLastSpread; ///< year of last spread
     int mCumYearsLiving; ///< cumulative number of years a cell is active
+
+    bool mTreesLoaded; ///< is the tree list already fetched from iLand
+    bool mSaplingsLoaded; ///< is the tree list already fetched from iLand
 };
 
 } // end namespace

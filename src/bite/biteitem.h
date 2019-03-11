@@ -25,6 +25,7 @@
 
 namespace ABE {
 class FMTreeList; // forward
+class FMSaplingList; // forward
 }
 
 namespace BITE {
@@ -63,7 +64,7 @@ public slots:
     virtual void afterSetup(); ///< called once after the full agent is set up
     virtual void beforeRun(); ///< for initializations, called every year
     virtual void run();
-    virtual void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
+    virtual void runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist);
 
 protected:
 

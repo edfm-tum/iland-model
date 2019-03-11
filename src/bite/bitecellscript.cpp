@@ -22,6 +22,7 @@
 #include "expressionwrapper.h"
 #include "biteengine.h"
 #include "fmtreelist.h"
+#include "fmsaplinglist.h"
 
 #include "debugtimer.h"
 
@@ -40,6 +41,17 @@ ABE::FMTreeList *BiteCellScript::trees()
     // now this is tricky:
     // let us return the tree list attached to the current thread:
     return BiteAgent::threadTreeList();
+}
+
+ABE::FMSaplingList *BiteCellScript::saplings()
+{
+    return BiteAgent::threadSaplingList();
+}
+
+QString BiteCellScript::info()
+{
+    Q_ASSERT(mCell!=nullptr);
+    return mCell->info();
 }
 
 bool BiteCellScript::hasValue(QString variable_name)
@@ -75,6 +87,13 @@ void BiteCellScript::reloadTrees()
 {
     int n = mCell->loadTrees(trees());
     qCDebug(bite) << "reloaded trees for cell" << mCell->index() << ", N=" << n << " (treelist: " << trees();
+}
+
+void BiteCellScript::reloadSaplings()
+{
+    int n = mCell->loadSaplings(saplings());
+    // qCDebug(bite) << "reloaded trees for cell" << mCell->index() << ", N=" << n << " (saplinglist: " << saplings();
+
 }
 
 // ***********************************************************
@@ -224,13 +243,11 @@ double DynamicExpression::evaluate(Tree *tree) const
     case ftJavascript: {
         // call javascript function
         // provide the execution context
-
         QMutexLocker lock(BiteEngine::instance()->serializeJS());
-        mTree->setTree(tree);
 
         QJSValue result = const_cast<QJSValue&>(func).call(QJSValueList() << mScriptCell);
         if (result.isError() || result.isUndefined()) {
-            throw IException(QString("Error in evaluating constraint  (or undefined return value) (JS) for tree (N=%1): %2").
+            throw IException(QString("Error in evaluating constraint  (or undefined return value) (JS) for tree (ID=%1): %2").
                              arg(tree->id()).
                              arg(result.toString()));
         }
@@ -247,6 +264,49 @@ double DynamicExpression::evaluate(Tree *tree) const
     }
     return true;
 
+
+}
+
+double DynamicExpression::evaluate(SaplingTree *sap, ResourceUnit *ru) const
+{
+    switch (filter_type) {
+    case ftInvalid: return true;
+    case ftConstant: return mConstValue;
+    case ftExpression: {
+        SaplingWrapper sw(sap, ru);
+        double result;
+        try {
+            result = expr->execute(nullptr, &sw);
+            return result;
+        } catch (IException &e) {
+            // throw a nicely formatted error message
+            e.add(QString("in filter (expr: '%2') for sapling.").arg(expr->expression()) );
+            throw;
+
+        }
+    }
+    case ftJavascript: {
+        // call javascript function
+        // provide the execution context
+        QMutexLocker lock(BiteEngine::instance()->serializeJS());
+
+        QJSValue result = const_cast<QJSValue&>(func).call(QJSValueList() << mScriptCell);
+        if (result.isError() || result.isUndefined()) {
+            throw IException(QString("Error in evaluating constraint  (or undefined return value) (JS) for sapling: %2").
+                                     arg(result.toString()));
+        }
+        //        if (FMSTP::verbose())
+        //            qCDebug(abe) << "evaluate constraint (JS) for stand" << cell->id() << ":" << result.toString();
+        // convert boolean result to 1 - 0
+
+        if (result.isBool())
+            return result.toBool()==true?1.:0;
+        else
+            return result.toNumber();
+    }
+
+    }
+    return 0.;
 
 }
 
@@ -326,6 +386,40 @@ double Constraints::evaluate(ABE::FMTreeList *treelist)
 
     // no tree meets any of the constraints
     return 0.;
+}
+
+double Constraints::evaluate(ABE::FMSaplingList *saplinglist)
+{
+    if (mConstraints.isEmpty())
+        return 1.; // no constraints to evaluate
+
+
+    bool found = false;
+    for (int t=0;t < saplinglist->saplings().length(); ++t) {
+        SaplingTree *sap= saplinglist->saplings()[t].first;
+        SaplingCell *sapcell= saplinglist->saplings()[t].second;
+
+        for (int i=0;i<mConstraints.count();++i) {
+            if (mConstraints.at(i)->evaluateBool(sap, sapcell->ru)) {
+                found = true;
+                return 1.; // done! at least one tree passes one constraint
+            }
+        }
+    }
+
+    // no tree meets any of the constraints
+    return 0.;
+
+}
+
+bool Constraints::isConst()
+{
+    if (mConstraints.isEmpty())
+        return true;
+    for (int i=0;i<mConstraints.count();++i)
+        if (!mConstraints[i]->isConst())
+            return false;
+    return true;
 }
 
 QStringList Constraints::dump()
