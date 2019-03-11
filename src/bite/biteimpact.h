@@ -37,16 +37,29 @@ public:
 
 public slots:
     void afterSetup();
-    void runCell(BiteCell *cell, ABE::FMTreeList *treelist);
+    void runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist);
 
 protected:
     QStringList allowedProperties();
 private:
-    double doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *treelist);
-    enum ImpactTarget {KillAll, Foliage, Invalid};
-    enum ImpactMode {Relative, RemoveAll, RemovePart};
-    ImpactTarget mImpactTarget;
-    ImpactMode mImpactMode;
+    struct BiteImpactItem {
+      void setup(QJSValue obj, int index, BiteAgent *parent_agent);
+      enum ImpactTarget {Tree, Foliage, Root, Sapling, Browsing, Invalid};
+      ImpactTarget target;
+      DynamicExpression fractionOfTrees;
+      DynamicExpression fractionPerTree;
+      DynamicExpression maxTrees;
+      DynamicExpression maxBiomass;
+      bool hasMaxTrees() const { return maxTrees.isValid(); }
+      bool hasMaxBiomass() const { return maxBiomass.isValid(); }
+      bool hasFractionOfTrees() const { return fractionOfTrees.isValid(); }
+      bool hasFractionPerTree() const { return fractionPerTree.isValid(); }
+      QString order;
+      int id;
+    };
+    void runImpact(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
+    void runImpactTrees(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
+
     DynamicExpression mImpactFilter;
     QString mHostTreeFilter;
     bool mSimulate;
@@ -54,6 +67,8 @@ private:
     int iAgentImpact;
     QString mImportOrder;
     bool mVerbose;
+
+    QVector<BiteImpactItem *> mItems;
 
 };
 

@@ -153,13 +153,13 @@ void Saplings::establishment(const ResourceUnit *ru)
                     // is a sapling of the current species already on the pixel?
                     // * test for sapling height already in cell state
                     // * test for grass-cover already in cell state
-                    SaplingTree *stree=0;
+                    SaplingTree *stree=nullptr;
                     SaplingTree *slot=s->saplings;
                     for (int i=0;i<NSAPCELLS;++i, ++slot) {
                         if (!stree && !slot->is_occupied())
                             stree=slot;
                         if (slot->species_index == species_idx) {
-                            stree=0;
+                            stree=nullptr;
                             break;
                         }
                     }
@@ -314,7 +314,7 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **r
         if (s && (!only_valid || s->state!=SaplingCell::CellInvalid))
             return s;
     }
-    return 0;
+    return nullptr;
 }
 
 void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout)
@@ -503,6 +503,11 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
             delta_h_factor = 0.;
         }
     }
+    // check browsing due to "management" or BITE
+    if (tree.is_browsed()) {
+        delta_h_factor = 0.;
+        tree.set_browsed(false);
+    }
 
     // check mortality of saplings
     if (delta_h_factor < species->saplingGrowthParameters().stressThreshold) {
@@ -520,7 +525,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
            QString("implausible height growth: species: %1, h: %2, deltaH: %3").arg( species->id()).arg(tree.height).arg(delta_h_pot*delta_h_factor).toLocal8Bit() );
 
     // grow
-    tree.height += delta_h_pot * delta_h_factor;
+    tree.height += static_cast<float>(delta_h_pot * delta_h_factor);
     tree.age++; // increase age of sapling by 1
 
     // recruitment?
@@ -551,7 +556,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
             bigtree.setRU(const_cast<ResourceUnit*>(ru));
             bigtree.setup();
             const Tree *t = &bigtree;
-            const_cast<ResourceUnitSpecies*>(rus)->statistics().add(t, 0); // count the newly created trees already in the stats
+            const_cast<ResourceUnitSpecies*>(rus)->statistics().add(t, nullptr); // count the newly created trees already in the stats
             // account for the carbon that is *added* by the new trees
             total_carbon_added += (bigtree.biomassStem()+bigtree.biomassBranch()+bigtree.biomassFoliage()+bigtree.biomassCoarseRoot()+bigtree.biomassFineRoot())*biomassCFraction;
         }
@@ -757,18 +762,18 @@ double SaplingStat::livingStemNumber(const Species *species, double &rAvgDbh, do
 //    return total;
 }
 
-ResourceUnitSpecies *SaplingTree::resourceUnitSpecies(const ResourceUnit *ru)
+ResourceUnitSpecies *SaplingTree::resourceUnitSpecies(const ResourceUnit *ru) const
 {
     if (!ru || !is_occupied())
-        return 0;
+        return nullptr;
     ResourceUnitSpecies *rus = ru->resourceUnitSpecies(species_index);
     return rus;
 }
 
 SaplingCellRunner::SaplingCellRunner(const int stand_id, const MapGrid *stand_grid)
 {
-    mRunner = 0;
-    mRU = 0;
+    mRunner = nullptr;
+    mRU = nullptr;
     mStandId = stand_id;
     mStandGrid = stand_grid ? stand_grid : GlobalSettings::instance()->model()->standGrid();
     QRectF box = mStandGrid->boundingBox(stand_id);
@@ -785,22 +790,22 @@ SaplingCellRunner::~SaplingCellRunner()
 SaplingCell *SaplingCellRunner::next()
 {
     if (!mRunner)
-        return 0;
+        return nullptr;
     while (float *n = mRunner->next()) {
         if (!n)
-            return 0; // end of the bounding box
+            return nullptr; // end of the bounding box
         if (mStandGrid->standIDFromLIFCoord(mRunner->currentIndex()) != mStandId)
             continue; // pixel does not belong to the target stand
         mRU = GlobalSettings::instance()->model()->ru(mRunner->currentCoord());
-        SaplingCell *sc=0;
+        SaplingCell *sc=nullptr;
         if (mRU)
             sc=mRU->saplingCell(mRunner->currentIndex());
         if (sc)
             return sc;
         qDebug() << "SaplingCellRunner::next(): unexected missing SaplingCell!";
-        return 0;
+        return nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 QPointF SaplingCellRunner::currentCoord() const

@@ -112,7 +112,7 @@ void BiteBiomass::notify(BiteCell *cell, BiteCell::ENotification what)
 
 
 
-void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
+void BiteBiomass::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist)
 {
     if (!cell->isActive())
         return;

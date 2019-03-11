@@ -58,6 +58,12 @@ void BiteColonization::setup(BiteAgent *parent_agent)
             qCDebug(biteSetup) << "tree filter: " << tree_filter.toString();
             mTreeConstraints.setup(tree_filter, DynamicExpression::TreeWrap, parent_agent);
         }
+        QJSValue sap_filter = BiteEngine::valueFromJs(mObj, "saplingFilter");
+        if (!sap_filter.isUndefined()) {
+            qCDebug(biteSetup) << "sapling filter: " << sap_filter.toString();
+            mSaplingConstraints.setup(sap_filter, DynamicExpression::SaplingWrap, parent_agent);
+        }
+
 
         QJSValue init_biomass = BiteEngine::valueFromJs(mObj, "initialAgentBiomass");
         mInitialAgentBiomass.setup(init_biomass, DynamicExpression::TreeWrap, parent_agent);
@@ -87,7 +93,7 @@ void BiteColonization::afterSetup()
         throw IException("BiteColonization: initial agent biomass requires that the 'agentBiomass' variable is available");
 }
 
-void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
+void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist)
 {
     // no colonization if agent is already living on the cell
     if (cell->isActive())
@@ -107,13 +113,34 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
         return; // no colonization
     }
 
-    // now we need to load the trees
-    cell->checkTreesLoaded(treelist);
-
-    result = mTreeConstraints.evaluate(treelist);
-    if (result == 0.) {
-        return;
+    // now we need to load the trees and saplings, and evaluate
+    bool check_tree = !mTreeConstraints.isConst();
+    bool check_sap = !mSaplingConstraints.isConst();
+    bool pass_tree = true, pass_sap = true;
+    if (check_tree) {
+        cell->checkTreesLoaded(treelist);
+        result = mTreeConstraints.evaluate(treelist);
+        if (result == 0.)
+            pass_tree = false; // constraint not met!
     }
+    if (check_sap) {
+        cell->checkSaplingsLoaded(saplist);
+        result = mSaplingConstraints.evaluate(saplist);
+        if (result==0.)
+            pass_sap = false; // constraint not met!
+    }
+
+    if ( check_tree && check_sap ) {
+        // if both constraints are checked, both must fail to stop
+        if (pass_sap == false && pass_tree == false)
+            return;
+    } else {
+        // if only one constraint is evaluted, we stop if it evaluates to false
+        if (pass_sap && pass_tree == false)
+            return;
+    }
+
+
 
     QJSValue event_res = mEvents.run("onCalculate", cell);
     if (event_res.isBool() && event_res.toBool()==false) {
@@ -141,7 +168,7 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
 QStringList BiteColonization::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "speciesFilter" << "cellFilter" << "treeFilter" << "dispersalFilter";
+    l << "speciesFilter" << "cellFilter" << "treeFilter" << "dispersalFilter" << "saplingFilter";
     return l;
 
 }

@@ -23,6 +23,7 @@
 #include "resourceunit.h"
 #include "biteagent.h"
 #include "fmtreelist.h"
+#include "fmsaplinglist.h"
 #include "biteengine.h"
 #include "bitelifecycle.h"
 #include "biteclimate.h"
@@ -48,6 +49,14 @@ void BiteCell::checkTreesLoaded(ABE::FMTreeList *treelist)
         mTreesLoaded = true;
     }
 
+}
+
+void BiteCell::checkSaplingsLoaded(ABE::FMSaplingList *saplist)
+{
+    if (!mSaplingsLoaded) {
+        loadSaplings(saplist);
+        mSaplingsLoaded=true;
+    }
 }
 
 double BiteCell::climateVar(int var_index) const
@@ -94,6 +103,14 @@ int BiteCell::loadTrees(ABE::FMTreeList *treelist)
     QRectF rect = agent()->grid().cellRect( agent()->grid().indexOf(index()) );
 
     int added = treelist->loadFromRect(mRU, rect);
+    return added;
+}
+
+int BiteCell::loadSaplings(ABE::FMSaplingList *saplinglist)
+{
+    Q_ASSERT(mRU != nullptr && mAgent != nullptr);
+    QRectF rect = agent()->grid().cellRect( agent()->grid().indexOf(index()) );
+    int added = saplinglist->loadFromRect(mRU, rect);
     return added;
 }
 

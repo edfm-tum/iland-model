@@ -39,15 +39,17 @@ namespace BITE {
 
 struct BAgentStats {
     BAgentStats() { clear(); }
-    void clear() { nDispersal=nColonizable=nActive=nNewlyColonized=treesKilled = 0; agentBiomass=m3Killed=totalImpact=0.; }
+    void clear() { nDispersal=nColonizable=nActive=nNewlyColonized=treesKilled = 0; agentBiomass=m3Killed=totalImpact=0.; saplingsKilled=saplingsImpact=0; }
     int nDispersal; ///< number of cells that are active source of dispersal
     int nColonizable; ///< number of cells that are tested for colonization
     int nActive; ///< number of cells that are active at the end of the year
     int nNewlyColonized; ///< number of cells that are colonized (successfully)
     double agentBiomass; ///< total agent biomass in all active cells
-    int treesKilled; ///< number of all killed trees
-    double m3Killed; ///< volume of all killed trees
-    double totalImpact; /// impact on tree compartments (depending on the mode)
+    int treesKilled; ///< number of all killed trees (>4m)
+    double m3Killed; ///< volume of all killed trees (>4m)
+    double totalImpact; ///< impact on tree compartments (depending on the mode)
+    int saplingsKilled; ///< number of saplings (cohorts) killed (<4m)
+    int saplingsImpact; ///< number of saplings affected (e.g. by browsing) (<4m)
 };
 
 class BiteLifeCycle;
@@ -100,6 +102,7 @@ public:
 
     const Grid<BiteCell*> &grid() const { return mGrid; }
     static ABE::FMTreeList* threadTreeList();
+    static ABE::FMSaplingList* threadSaplingList();
     BAgentStats &stats()  { return mStats; }
     BiteLifeCycle *lifeCycle() const { return mLC; }
 
@@ -117,10 +120,12 @@ public slots:
     double evaluate(BiteCellScript *cell, QString expr);
     void addVariable(ScriptGrid *grid, QString var_name);
     void updateDrawGrid(QString expression);
+    void updateDrawGrid(QJSValue func);
     void saveGrid(QString expression, QString file_name);
 private:
     static void runCell(BiteCell &cell);
     static QHash<QThread*, ABE::FMTreeList* > mTreeLists;
+    static QHash<QThread*, ABE::FMSaplingList* > mSaplingLists;
 
     BiteWrapperCore mWrapperCore;
     BiteClimate mClimateProvider;

@@ -38,29 +38,28 @@ void BiteImpact::setup(BiteAgent *parent_agent)
         if (!filter.isUndefined())
             mHostTreeFilter = filter.toString();
         mSimulate = BiteEngine::valueFromJs(mObj, "simulate").toBool(); // default false
+        mVerbose = BiteEngine::valueFromJs(mObj, "verbose").toBool();
+
+        QJSValue impacts = BiteEngine::valueFromJs(mObj, "impact", "", "The 'impact' is required!");
+        if (!impacts.isArray())
+            throw IException("The 'impact' is no array.");
+        QJSValueIterator it(impacts);
+        int index=0;
+        while (it.hasNext()) {
+            it.next();
+            if (it.name()==QStringLiteral("length"))
+                continue;
+
+            BiteImpactItem *bi = new BiteImpactItem();
+            bi->setup(it.value(), ++index, parent_agent);
+            mItems.push_back(bi);
+        }
 
         filter = BiteEngine::valueFromJs(mObj, "impactFilter");
-        mImpactFilter.setup(filter, DynamicExpression::CellWrap, parent_agent);
+        if (!filter.isUndefined())
+            mImpactFilter.setup(filter, DynamicExpression::CellWrap, parent_agent);
 
 
-        QString impact_target = BiteEngine::valueFromJs(mObj, "impactTarget").toString();
-        int idx = (QStringList() << "killAll" << "foliage").indexOf(impact_target);
-        if (idx<0)
-            throw IException("Invalid impactTarget: " + impact_target);
-        mImpactTarget = static_cast<ImpactTarget>(idx);
-
-
-        QString impact_mode = BiteEngine::valueFromJs(mObj, "impactMode").toString();
-        idx = (QStringList() << "relative" << "removeAll" << "removePart").indexOf(impact_mode);
-        if (idx<0)
-            throw IException("Invalid impactMode: " + impact_mode);
-        mImpactMode = static_cast<ImpactMode>(idx);
-
-        QString impact_order = BiteEngine::valueFromJs(mObj, "impactOrder").toString();
-        if (impact_order != "undefined")
-            mImportOrder = impact_order;
-
-        mVerbose = BiteEngine::valueFromJs(mObj, "verbose").toBool();
 
         mEvents.setup(mObj, QStringList() << "onImpact" << "onAfterImpact" << "onExit" , agent());
 
@@ -92,7 +91,7 @@ void BiteImpact::afterSetup()
 
 }
 
-void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
+void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist)
 {
     if (!cell->isActive())
         return;
@@ -110,40 +109,14 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist)
         int after = treelist->filter(mHostTreeFilter);
         if (verbose())
             qCDebug(bite) << "Impact: filter trees with" << mHostTreeFilter << "N before:" << before << ", after: " << after;
-
     }
 
-    // now either kill all or run a function
-    if (mImpactTarget == KillAll) {
-        int killed;
-        double killed_m3 = 0.;
-        for (int i=0;i<treelist->count();++i)
-            killed_m3+=treelist->trees()[i].first->volume();
-        if (mSimulate)
-            killed = treelist->count(); // simulation mode
-        else
-            killed = treelist->kill(QString()); // real impact
-
-        if (verbose())
-            qCDebug(bite) << "Impact: killed all host trees (n=" << killed << ")";
-
-        agent()->notifyItems(cell, BiteCell::CellImpacted);
-        agent()->stats().treesKilled += killed;
-        agent()->stats().m3Killed += killed_m3;
-
-        mEvents.run("onAfterImpact", cell);
-        return;
+    for (int i=0;i<mItems.length();++i) {
+        if (mVerbose)
+            qCDebug(bite) << "run impact item" << i+1 << ":";
+        runImpact(mItems[i], cell, treelist);
     }
 
-    if (mImpactTarget == Foliage) {
-        BiteWrapper bitewrap(agent()->wrapper(), cell);
-
-        double to_remove = bitewrap.value(iAgentImpact);
-
-        double realized_impact = doImpact(to_remove, cell, treelist);
-        agent()->stats().totalImpact += realized_impact;
-
-    }
 
     int killed = mEvents.run("onImpact", cell).toInt();
     if (verbose())
@@ -164,74 +137,171 @@ QStringList BiteImpact::allowedProperties()
 
 }
 
-double BiteImpact::doImpact(double to_remove, BiteCell *cell, ABE::FMTreeList *treelist)
+void BiteImpact::runImpact(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist)
 {
-    double remove_per_tree = to_remove;
-    if (treelist->count()==0)
-        return 0.;
+    bool saplings = item->target==BiteImpactItem::Sapling || item->target==BiteImpactItem::Browsing;
 
-    if (mImpactMode == Relative) {
-        // calculate amount of removal for each tree
-        double total_biomass = 0.;
-        for (int i=0;i<treelist->count();++i) {
-            switch (mImpactTarget) {
-            case Foliage: total_biomass+=treelist->trees()[i].first->biomassFoliage(); break;
+    if (saplings) {
+        qCDebug(bite) << "impact saplings not implemented...";
+    } else {
+        runImpactTrees(item, cell, treelist);
+    }
+
+}
+
+void BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist)
+{
+    BiteImpactItem::ImpactTarget target = item->target;
+    double total_biomass = 0.; // available biomass (in compartment)
+    bool select_random = false;
+    double random_fraction = 1.;
+    double fraction_per_tree = 1.;
+    int max_trees = std::numeric_limits<int>().max();
+    double max_biomass = std::numeric_limits<double>().max();
+    int n_trees=0; // number of living trees
+
+    for (int i=0;i<treelist->count();++i) {
+        Tree *t = treelist->trees()[i].first;
+        if (!t->isDead()) {
+            ++n_trees;
+            switch (target) {
+            case BiteImpactItem::Foliage: total_biomass+=t->biomassFoliage(); break;
             default: break;
             }
         }
-        if (total_biomass==0.) {
-            qCWarning(bite) << "BiteImpact: no actual biomass to remove. Cell:" << cell->info();
-            return 0.;
-        }
-        remove_per_tree = to_remove / total_biomass;
     }
-    if (mImpactMode == RemovePart)
-        remove_per_tree = to_remove / treelist->count();
 
-    // now apply sorting if present
-    if (!mImportOrder.isEmpty())
-        treelist->sort(mImportOrder);
+    if (item->hasMaxTrees())
+        max_trees = static_cast<int>(item->maxTrees.evaluate(cell));
 
-    // apply the impact
-    double applied_impact = 0.;
-    double frac_fol=0., frac_stem=0., frac_branch=0.;
-    int n_affected=0;
-    for (int i=0;i<treelist->count();++i, ++n_affected) {
-        Tree *tree = treelist->trees()[i].first;
-        // currently *only* foliage
-        double comp_rem;
-        double *pool=nullptr;
-        switch(mImpactTarget) {
-        case Foliage: comp_rem = tree->biomassFoliage(); pool = &frac_fol; break;
-        default: comp_rem = 0.;
-        }
-        if (comp_rem==0. || pool==nullptr) {
-            qCDebug(bite) << "Impact: tree:" << tree->dump() << "has no biomass to affect! cell:" << cell->info();
-            continue;
+    if (item->hasMaxBiomass())
+        max_biomass = item->maxBiomass.evaluate(cell);
+
+    if (item->hasFractionOfTrees()) {
+        random_fraction = item->fractionOfTrees.evaluate(cell);
+        if (random_fraction < 0. || random_fraction > 1.)
+            throw IException(QString("BiteImpact: invalid 'fractionOfTrees': %1 in item %2").arg(random_fraction).arg(item->id));
+        if (random_fraction<1.) {
+            max_trees = std::min(max_trees, static_cast<int>(random_fraction * n_trees + drandom())); // calc. number of trees + rounding (and truncating to int)
+            select_random = true;
         }
 
-        if (mImpactMode == Relative) {
-            applied_impact += comp_rem * remove_per_tree; // remove_per_tree: is a fraction
-            *pool = remove_per_tree;
-        } else {
-            // maximum removal: the total biomass of the tree OR the remaining impact
-            double rem_tree = qMin(qMin(comp_rem, remove_per_tree), to_remove-applied_impact); // remove_per_tree is biomass (kg)
-            applied_impact += rem_tree;
-            *pool = rem_tree / comp_rem;
-        }
+    }
+    if (item->hasFractionPerTree()) {
+        fraction_per_tree = item->fractionPerTree.evaluate(cell);
+    }
 
-        if (!mSimulate)
-            tree->removeBiomassOfTree(frac_fol, frac_stem, frac_branch);
 
+    // sort trees according to the given order criterion
+    if (!item->order.isEmpty()) {
+        treelist->sort(item->order);
+        select_random = false;
+    }
+
+    if (mVerbose) {
+        QString details = QString("Impact %1 (#%2): Trees: %3, Biomass: %4, fractionOfTrees: %5. Affect: %6, pick random: %7, maxBiomass: %8")
+                .arg(cell->info()).arg(item->id)
+                .arg(n_trees).arg(total_biomass).arg(random_fraction).arg(std::min(max_trees, n_trees)).arg(select_random ? "true" : "false").arg(max_biomass);
+        qCDebug(bite) << details;
+    }
+    if (max_trees==0) {
         if (mVerbose)
-            qCDebug(bite) << "Impact:"<<  cell->info() << ":" << tree->dump() << ": removed fol%:" << frac_fol*100. << "stem%:" << frac_stem*100. << "branch%:" << frac_branch*100.;
-        if (applied_impact>=to_remove)
-            break;
+            qCDebug(bite) << "no trees are affected.";
+        return; // nothing to do!
     }
-    if (agent()->verbose() || mVerbose)
-        qCDebug(bite) << "Impact: removed" << applied_impact << "from" << n_affected+1 <<"trees (Ntrees: " << treelist->count() << ") (target:" << to_remove << "). cell" << cell->info();
 
-    return applied_impact;
+    // Main loop
+    int n_affected = 0, n_killed=0;
+    double removed_biomass = 0.;
+    double killed_m3 = 0.;
+    for (int i=0;i<treelist->count();++i) {
+        Tree *t = treelist->trees()[i].first;
+        if (!t->isDead() && (!select_random || drandom() < random_fraction)) {
+            // affect tree
+            switch (target) {
+            case BiteImpactItem::Foliage: {
+                removed_biomass += t->biomassFoliage() * fraction_per_tree;
+                if (!mSimulate)
+                    t->removeBiomassOfTree(fraction_per_tree, 0., 0.);
+                break;
+            }
+            case BiteImpactItem::Tree: {
+                // kill the tree
+                killed_m3+=t->volume();
+                ++n_killed;
+                if (!mSimulate) {
+                    t->setDeathBite();
+                    t->remove();
+                }
+                break;
+            }
+            default: break;
+            }
+
+            ++n_affected;
+            if (n_affected >= max_trees || removed_biomass > max_biomass)
+                break;
+
+        }
+    }
+    if (mVerbose || agent()->verbose()) {
+        QString details = QString("Impact %1 (#%2): #affected: %3, rem.biomass: %4, killed: %5, killed.vol: %6")
+                .arg(cell->info()).arg(item->id)
+                .arg(n_affected).arg(removed_biomass).arg(n_killed).arg(killed_m3);
+        qCDebug(bite) << details;
+    }
+
+
+    agent()->notifyItems(cell, BiteCell::CellImpacted);
+    agent()->stats().treesKilled += n_killed;
+    agent()->stats().m3Killed += killed_m3;
+    agent()->stats().totalImpact += removed_biomass;
+
+}
+
+
+void BiteImpact::BiteImpactItem::setup(QJSValue obj, int index, BiteAgent *parent_agent)
+{
+    id = index;
+    // check allowed properties
+    QStringList allowed = QStringList() << "target" << "fractionOfTrees" << "fractionPerTree" << "maxTrees" << "maxBiomass" << "order";
+    if (obj.isObject()) {
+        QJSValueIterator it(obj);
+        while (it.hasNext()) {
+            it.next();
+            if (!it.name().startsWith("on") &&  !it.name().startsWith("user") && !allowed.contains(it.name())) {
+                qCDebug(biteSetup) << it.name() << "is not a valid property for ImpactItem " << index << "! Allowed are: " << allowed;
+            }
+        }
+    }
+
+    // setup the properties
+    QString target_str = BiteEngine::valueFromJs(obj, "target").toString();
+    int idx = (QStringList() << "tree"<< "foliage"<<"roots"<<"sapling"<<"browsing").indexOf(target_str);
+    if (idx<0)
+        throw IException("Invalid target: " + target_str);
+    target = static_cast<ImpactTarget>(idx);
+
+    QJSValue filter = BiteEngine::valueFromJs(obj, "fractionOfTrees");
+    if (!filter.isUndefined())
+        fractionOfTrees.setup(filter, DynamicExpression::CellWrap, parent_agent);
+
+    filter = BiteEngine::valueFromJs(obj, "fractionPerTree");
+    if (!filter.isUndefined())
+        fractionPerTree.setup(filter, DynamicExpression::CellWrap, parent_agent);
+
+    filter = BiteEngine::valueFromJs(obj, "maxTrees");
+    if (!filter.isUndefined())
+        maxTrees.setup(filter, DynamicExpression::CellWrap, parent_agent);
+
+    filter = BiteEngine::valueFromJs(obj, "maxBiomass");
+    if (!filter.isUndefined())
+        maxBiomass.setup(filter, DynamicExpression::CellWrap, parent_agent);
+
+    filter = BiteEngine::valueFromJs(obj, "order");
+    if (!filter.isUndefined())
+        order = BiteEngine::valueFromJs(obj, "order").toString();
+
 }
 
 

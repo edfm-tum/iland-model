@@ -22,6 +22,7 @@
 
 #include "model.h"
 #include "fmtreelist.h"
+#include "fmsaplinglist.h"
 #include "scriptgrid.h"
 #include "bitelifecycle.h"
 
@@ -30,6 +31,7 @@
 namespace BITE {
 
 QHash<QThread*, ABE::FMTreeList* > BiteAgent::mTreeLists;
+QHash<QThread*, ABE::FMSaplingList* > BiteAgent::mSaplingLists;
 
 BiteAgent::BiteAgent(QObject *parent): QObject(parent)
 {
@@ -234,6 +236,24 @@ void BiteAgent::updateDrawGrid(QString expression)
         }
 }
 
+void BiteAgent::updateDrawGrid(QJSValue func)
+{
+    if (!func.isCallable())
+        throw IException("BiteAgent::updateDrawGrid - no function provided!");
+    BiteCellScript bcs;
+    QJSValue js_scriptcell = BiteEngine::instance()->scriptEngine()->newQObject(&bcs);
+
+    BiteCell **cell = mGrid.begin();
+    for (double *p = mBaseDrawGrid.begin(); p!=mBaseDrawGrid.end(); ++p, ++cell)
+        if (*cell) {
+            bcs.setCell(*cell);
+            QJSValue result = func.call(QJSValueList() << js_scriptcell);
+            if (!result.isNumber())
+                throw IException("BiteAgent::updateDrawCell: return of Javascript function not numeric! Result:" + result.toString());
+            *p = result.toNumber();
+        }
+}
+
 void BiteAgent::saveGrid(QString expression, QString file_name)
 {
     updateDrawGrid(expression);
@@ -246,14 +266,22 @@ void BiteAgent::runCell(BiteCell &cell)
 
     // main function: loop over all items and call runCell
     ABE::FMTreeList *tree_list = threadTreeList();
+    ABE::FMSaplingList *sap_list = threadSaplingList();
+
+    try {
 
     // fetch trees for the cell
     cell.setTreesLoaded(false);
+    cell.setSaplingsLoaded(false);
     for (const auto &p : cell.agent()->mItems)
         if (p->runCells()) {
-            p->runCell(&cell, tree_list);
+            p->runCell(&cell, tree_list, sap_list);
     }
     cell.finalize(); // some cleanup and stats
+    } catch (const IException &e) {
+        // report error
+        BiteEngine::instance()->error( e.message() );
+    }
 }
 
 static QMutex _thread_treelist;
@@ -264,6 +292,16 @@ ABE::FMTreeList *BiteAgent::threadTreeList()
     QMutexLocker lock(&_thread_treelist);
     mTreeLists[QThread::currentThread()] = new ABE::FMTreeList;
     return mTreeLists[QThread::currentThread()];
+
+}
+
+ABE::FMSaplingList *BiteAgent::threadSaplingList()
+{
+    if (BiteAgent::mSaplingLists.contains(QThread::currentThread()))
+        return mSaplingLists[QThread::currentThread()];
+    QMutexLocker lock(&_thread_treelist);
+    mSaplingLists[QThread::currentThread()] = new ABE::FMSaplingList;
+    return mSaplingLists[QThread::currentThread()];
 
 }
 

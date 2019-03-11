@@ -220,7 +220,8 @@ SOURCES += main.cpp \
     ../bite/bitelifecycle.cpp \
     ../bite/biteimpact.cpp \
     ../bite/biteclimate.cpp \
-    ../bite/biteoutput.cpp
+    ../bite/biteoutput.cpp \
+    ../abe/fmsaplinglist.cpp
 
 HEADERS += mainwindow.h \
     stable.h \
@@ -343,7 +344,8 @@ HEADERS += mainwindow.h \
     ../bite/bitelifecycle.h \
     ../bite/biteimpact.h \
     ../bite/biteclimate.h \
-    ../bite/biteoutput.h
+    ../bite/biteoutput.h \
+    ../abe/fmsaplinglist.h
 FORMS += mainwindow.ui \
     aboutdialog.ui
 RESOURCES += ./res/iland.qrc \

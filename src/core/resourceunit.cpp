@@ -123,6 +123,8 @@ void ResourceUnit::setup()
         delete mSaplings;
     if (Model::settings().regenerationEnabled) {
         mSaplings = new SaplingCell[cPxPerHectare];
+        for (int i=0;i<cPxPerHectare;++i)
+            mSaplings[i].ru = this;
     }
 
     // setup variables
