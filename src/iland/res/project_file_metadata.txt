@@ -331,6 +331,7 @@ modules.fire.wind.speedMax = false
 modules.fire.wind.direction = false
 modules.fire.wind = false
 modules.fire = false
+modules.fire.allowBurnIn = false
 
 ; modules - wind
 modules.wind.enabled = false

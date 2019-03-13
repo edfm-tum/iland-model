@@ -64,7 +64,7 @@ void FireRUData::setup()
     // calculate the base ignition probabiility for a cell (eg 20x20m)
     mBaseIgnitionProb = p_base * FireModule::cellsize()*FireModule::cellsize() / mAverageFireSize;
     mFireExtinctionProb = xml.valueDouble(".fireExtinctionProbability", 0.);
-
+    mValid = true;
 
 }
 
@@ -124,7 +124,7 @@ FireModule::FireModule()
     mWindSpeedMin=10.;mWindSpeedMax=10.;
     mWindDirection=45.;
     mFireId = 0;
-    mFireScript = 0;
+    mFireScript = nullptr;
 }
 
 // access data element
@@ -219,6 +219,10 @@ void FireModule::run()
 {
     if (GlobalSettings::instance()->settings().valueBool("modules.fire.enabled") == false)
         return;
+    // run handler to call external / forced ignitions
+    if (mFireScript->onIgnition().isCallable()) {
+        mFireScript->onIgnition().call();
+    }
 
     // ignition() calculates ignition and calls 'spread()' if a new fire is created.
     ignition();
@@ -283,7 +287,7 @@ double FireModule::ignition(bool only_ignite)
     double total_area = 0.;
 
     for (FireRUData *fd = mRUGrid.begin(); fd!=mRUGrid.end(); ++fd)
-        if (fd->enabled() && fd->kbdi()>0.) {
+        if (fd->allowIgnition() && fd->kbdi()>0.) {
             // calculate the probability that a fire ignites within this resource unit
             // the climate factor is the current drought index relative to the reference drought index
             double odds_base = fd->mBaseIgnitionProb / (1. - fd->mBaseIgnitionProb);
@@ -535,17 +539,19 @@ void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, i
     fireStats.fire_size_realized_m2 = 0;
     fireStats.fire_psme_died = 0.;
     fireStats.fire_psme_total = 0.;
-    double sum_fire_size = fire_size_m2; // cumulative fire size
+
     // calculate a factor describing how much larger/smaller the selected fire is compared to the average
     // fire size of the ignition cell
     double fire_scale_factor = fire_size_m2 / rudata->mAverageFireSize;
 
-    int cells_to_burn = static_cast<int>(fire_size_m2 / (cellsize() * cellsize()));
+    int total_cells_to_burn = static_cast<int>(fire_size_m2 / (cellsize() * cellsize()));
     int cells_burned = 1;
     if (burn_in_cells>0)
         cells_burned = burn_in_cells; // cells already burnt during start of burn in
 
     int last_round_burned = cells_burned;
+    double cum_fire_size = fire_size_m2 * cells_burned; // running sum of fire size per cell
+    double fire_size_target = fire_size_m2; // running mean target fire size
     int iterations = 1;
     // main loop
     float *neighbor[8];
@@ -556,7 +562,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, i
         // no fuel / no trees on the starting pixel (don't run burn for burn ins)
         return;
     }
-    while (cells_burned < cells_to_burn) {
+    while (cells_burned < total_cells_to_burn) {
         // scan the current spread area
         // and calcuate for each pixel the probability of spread from a burning
         // pixel to a non-burning pixel
@@ -606,13 +612,18 @@ void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, i
                     // the fire spreads:
                     *p = 1.f;
                     FireRUData &fire_data = mRUGrid.valueAt(mGrid.cellCenterPoint(mGrid.indexOf(p)));
+                    if (!fire_data.valid()) {
+                        *p = 0.f; // reset
+                        continue;
+                    }
                     fire_data.fireRUStats.enter(mFireId);
                     cells_burned++;
                     // do the severity calculations:
                     // the function returns false if no trees are on the pixel
                     bool really_burnt = burnPixel(mGrid.indexOf(p), fire_data);
                     // update the fire size
-                    sum_fire_size += fire_data.mAverageFireSize * fire_scale_factor;
+                    cum_fire_size += fire_data.mAverageFireSize * fire_scale_factor;
+                    //qDebug() << runner.currentIndex() << "avgfiresize" << fire_data.mAverageFireSize << "cum(ha)" << cum_fire_size / 10000. << " cells:" << cells_burned << "target(ha)" << cum_fire_size / static_cast<double>(cells_burned) / 10000.;
                     // the fire stops
                     //    (*) if no trees were on the pixel, or
                     //    (*) if the fire extinguishes
@@ -636,8 +647,13 @@ void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, i
 
         // update the cells to burn by factoring in different fire sizes within the fire-perimeter
         // see http://iland.boku.ac.at/wildfire+spread
-        cells_to_burn = static_cast<int>( (sum_fire_size/static_cast<double>(cells_burned)) / (cellsize() * cellsize()) );
-        if (cells_to_burn <= cells_burned)
+
+        // weighted fire size = sum(fire_size_per_cell) / cells_burned
+        fire_size_target = cum_fire_size / static_cast<double>(cells_burned);
+
+        // total number of cells to burn for the fire (including the effects of changing mean fire size)
+        total_cells_to_burn = static_cast<int>( fire_size_target / (cellsize() * cellsize()) );
+        if (total_cells_to_burn <= cells_burned)
             break;
 
         // now determine the maximum extent with burning pixels...
@@ -657,7 +673,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, i
                              qMin(right, mGrid.sizeX()),
                              qMin(bottom, mGrid.sizeY()) );
 
-        qDebug() << "Iter: " << iterations << "cells burned:" << cells_burned << "(from " << cells_to_burn << "), spread-rect:" << max_spread;
+        qDebug() << "Iter: " << iterations << "cells burned:" << cells_burned << "(from " << total_cells_to_burn << "), spread-rect:" << max_spread;
         iterations++;
         if (last_round_burned == cells_burned) {
             qDebug() << "Firespread: a round without new burning cells - exiting!";
@@ -669,12 +685,12 @@ void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, i
             break;
         }
     }
-    qDebug() << "Fire:probabilstic spread: used " << iterations
-             << "iterations. Planned (m2/cells):" << fire_size_m2 << "/" << cells_to_burn
-             << "burned (m2/cells):" << cells_burned*cellsize()*cellsize() << "/" << cells_burned;
+    qDebug() << "Fire:probabilistic spread: used " << iterations
+             << "iterations. Planned (ha/cells):" << fire_size_target/10000. << "/" << total_cells_to_burn
+             << "burned (ha/cells):" << cells_burned*cellsize()*cellsize()/10000. << "/" << cells_burned;
 
     fireStats.iterations = iterations-1;
-    fireStats.fire_size_realized_m2 = cells_burned*cellsize()*cellsize();
+    fireStats.fire_size_realized_m2 = qRound(cells_burned*cellsize()*cellsize());
 
 }
 

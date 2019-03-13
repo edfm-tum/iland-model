@@ -111,10 +111,11 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
             qCDebug(bite) << "Impact: filter trees with" << mHostTreeFilter << "N before:" << before << ", after: " << after;
     }
 
+    bool had_impact = false;
     for (int i=0;i<mItems.length();++i) {
         if (mVerbose)
             qCDebug(bite) << "run impact item" << i+1 << ":";
-        runImpact(mItems[i], cell, treelist);
+        had_impact |= runImpact(mItems[i], cell, treelist);
     }
 
 
@@ -122,7 +123,7 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
     if (verbose())
         qCDebug(bite) << "Impact: called 'onImpact', #trees killed (=return value): " << killed;
 
-    if (killed>0) {
+    if (killed>0 || had_impact) {
         agent()->notifyItems(cell, BiteCell::CellImpacted);
     }
 
@@ -137,19 +138,20 @@ QStringList BiteImpact::allowedProperties()
 
 }
 
-void BiteImpact::runImpact(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist)
+bool BiteImpact::runImpact(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist)
 {
     bool saplings = item->target==BiteImpactItem::Sapling || item->target==BiteImpactItem::Browsing;
 
     if (saplings) {
         qCDebug(bite) << "impact saplings not implemented...";
+        return false;
     } else {
-        runImpactTrees(item, cell, treelist);
+        return runImpactTrees(item, cell, treelist);
     }
 
 }
 
-void BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist)
+bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist)
 {
     BiteImpactItem::ImpactTarget target = item->target;
     double total_biomass = 0.; // available biomass (in compartment)
@@ -207,7 +209,7 @@ void BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
     if (max_trees==0) {
         if (mVerbose)
             qCDebug(bite) << "no trees are affected.";
-        return; // nothing to do!
+        return false; // nothing to do!
     }
 
     // Main loop
@@ -252,10 +254,11 @@ void BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
     }
 
 
-    agent()->notifyItems(cell, BiteCell::CellImpacted);
+    //agent()->notifyItems(cell, BiteCell::CellImpacted);
     agent()->stats().treesKilled += n_killed;
     agent()->stats().m3Killed += killed_m3;
     agent()->stats().totalImpact += removed_biomass;
+    return n_killed>0 || removed_biomass>0.;
 
 }
 

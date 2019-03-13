@@ -39,9 +39,10 @@ class FireScript;
 class FireRUData
 {
 public:
-    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.) { fireRUStats.clear(); fireRUStats.n_cum_fire=0; fireRUStats.year_last_fire=0; }
+    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.), mValid(false) { fireRUStats.clear(); fireRUStats.n_cum_fire=0; fireRUStats.year_last_fire=0; }
     void setup();
-    bool enabled() const { return mRefMgmt>0.; }
+    bool valid() const { return mValid; } ///< returns false if the cell is not a valid resource unit (outside of project area)
+    bool allowIgnition() const { return mRefMgmt>0.; }
     void reset() { mKBDI = 0.; }
     double kbdi() const { return mKBDI; }
     double kbdiRef() const { return mKBDIref; }
@@ -101,6 +102,7 @@ private:
     double mFireExtinctionProb; ///< gives the probabilty that a fire extincts on a pixel without having a chance to spread further
     // variables
     double mKBDI; ///< Keetch Byram Drought Index (0..800, in 1/100 inch of water)
+    bool mValid; /// correctly set up?
 
     friend class FireModule; // allow access to member values
     friend class FireLayers;

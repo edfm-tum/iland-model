@@ -32,6 +32,7 @@ class FireScript : public QObject
     Q_PROPERTY(int y READ y)
     Q_PROPERTY(QJSValue onIgnitionRU READ onIgnitionRU WRITE setOnIgnitionRU)
     Q_PROPERTY(QJSValue onCalculateFireSize READ onCalculateFireSize WRITE setOnCalculateFireSize )
+    Q_PROPERTY(QJSValue onIgnition READ onIgnition WRITE setOnIgnition)
 
 public:
     explicit FireScript(QObject *parent = nullptr);
@@ -57,6 +58,8 @@ public:
     {
         return mCalcFireSize;
     }
+    QJSValue onIgnition() const {return mExternalIgnitions; }
+    void setOnIgnition(QJSValue handler) { mExternalIgnitions = handler; }
 
 signals:
 
@@ -84,12 +87,14 @@ public slots:
         mCalcFireSize = onCalculateFireSize;
     }
 
+
 private:
     FireModule *mFire;
 
     // event handler
     QJSValue mOnIgnitionRU;
     QJSValue mCalcFireSize;
+    QJSValue mExternalIgnitions;
 };
 
 #endif // FIRESCRIPT_H
