@@ -57,8 +57,8 @@ private:
       QString order;
       int id;
     };
-    void runImpact(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
-    void runImpactTrees(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
+    bool runImpact(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
+    bool runImpactTrees(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
 
     DynamicExpression mImpactFilter;
     QString mHostTreeFilter;
