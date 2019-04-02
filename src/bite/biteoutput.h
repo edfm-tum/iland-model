@@ -20,6 +20,7 @@
 #define BITEOUTPUT_H
 #include "output.h"
 
+class Expression; // forward
 namespace BITE {
 
 class BiteOutput: public Output
@@ -29,6 +30,22 @@ public:
     virtual void exec();
     virtual void setup();
 
+};
+
+
+class BiteCell;
+class BiteAgent;
+class BiteCellOutput: public Output
+{
+public:
+    BiteCellOutput();
+    virtual void exec();
+    virtual void setup();
+    void execCell(BiteCell *cell, BITE::BiteAgent *agent);
+    // bite output specific
+    void setupBite(QStringList &cols, QString tableName);
+private:
+    QVector<Expression*> mExpressions;
 };
 
 } // namespace

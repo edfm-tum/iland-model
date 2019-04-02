@@ -19,6 +19,9 @@
 #include "biteoutput.h"
 #include "biteagent.h"
 #include "biteengine.h"
+#include "bitecell.h"
+#include "expression.h"
+
 namespace BITE {
 
 BiteOutput::BiteOutput()
@@ -53,6 +56,59 @@ void BiteOutput::exec()
 
 void BiteOutput::setup()
 {
+
+}
+
+BiteCellOutput::BiteCellOutput()
+{
+
+}
+
+void BiteCellOutput::exec()
+{
+
+}
+
+void BiteCellOutput::setup()
+{
+setEnabled(true); // first call creates the table
+}
+
+static QMutex _runCellOut;
+void BiteCellOutput::execCell(BiteCell *cell, BiteAgent *agent)
+{
+    QMutexLocker l(&_runCellOut);
+
+
+    BiteWrapper bw(agent->wrapper(), cell);
+    *this << currentYear();
+    for (int i=0;i<mExpressions.size();++i) {
+        try {
+        double result = mExpressions[i]->execute(nullptr, &bw);
+        *this << result;
+        } catch (IException &e) {
+            // throw a nicely formatted error message
+            e.add(QString("BiteOutput: in expression '%2' for cell %1.").
+                  arg(cell->index()).
+                  arg(mExpressions[i]->expression()) );
+            throw;
+        }
+    }
+    writeRow();
+}
+
+void BiteCellOutput::setupBite(QStringList &cols, QString tableName)
+{
+    setName("Bite cell level output", tableName);
+    setDescription("Bite cell level output" );
+    columns() << OutputColumn::year();
+    for (int i=0;i<cols.size();++i) {
+        QString col=cols[i];
+        Expression *expr = new Expression(col);
+        mExpressions.push_back(expr);
+        if (col=="index") col="idx"; // avoid invalid name
+        columns() << OutputColumn(col, "", OutDouble);
+    }
 
 }
 

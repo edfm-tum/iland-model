@@ -171,7 +171,7 @@ void BiteDispersal::spreadKernel()
     BiteCell **cell = agent()->grid().begin();
     bool die_after_disp = agent()->lifeCycle()->dieAfterDispersal();
     for (double *p = mGrid.begin(); p!=mGrid.end(); ++p,++cell) {
-        if (*p == 1.) {
+        if (*cell && *p == 1.) {
             ++agent()->stats().nDispersal;
             if ( (*cell)->isSpreading() ) {
                 if (die_after_disp) {

@@ -66,7 +66,10 @@ void BiteColonization::setup(BiteAgent *parent_agent)
 
 
         QJSValue init_biomass = BiteEngine::valueFromJs(mObj, "initialAgentBiomass");
-        mInitialAgentBiomass.setup(init_biomass, DynamicExpression::TreeWrap, parent_agent);
+        if (!init_biomass.isUndefined()) {
+            qCDebug(biteSetup) << "initial agent biomass: " << init_biomass.toString();
+            mInitialAgentBiomass.setup(init_biomass, DynamicExpression::TreeWrap, parent_agent);
+        }
 
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
