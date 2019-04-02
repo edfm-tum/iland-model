@@ -85,10 +85,6 @@ void BiteImpact::afterSetup()
 {
     BiteWrapper bitewrap(agent()->wrapper());
 
-    iAgentImpact = bitewrap.variableIndex("agentImpact");
-    if (iAgentImpact < 0)
-        throw IException("variable 'agentImpact' not available in BiteImpact");
-
 }
 
 void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist)
@@ -133,7 +129,7 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
 QStringList BiteImpact::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "impactFilter" << "hostTrees" << "impactTarget"  << "impactOrder" <<  "impactMode" << "verbose" << "simulate";
+    l << "impactFilter" << "hostTrees" << "impactTarget"  << "impactOrder" <<  "impactMode" << "verbose" << "simulate" << "impact";
     return l;
 
 }

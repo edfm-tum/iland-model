@@ -114,7 +114,7 @@ Output *OutputManager::find(const QString& tableName)
     foreach(Output* p,mOutputs)
         if (p->tableName()==tableName)
             return p;
-    return NULL;
+    return nullptr;
 }
 
 void OutputManager::save()

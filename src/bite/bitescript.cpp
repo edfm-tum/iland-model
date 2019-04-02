@@ -28,6 +28,7 @@
 #include "bitebiomass.h"
 #include "bitelifecycle.h"
 #include "biteimpact.h"
+#include "biteoutputitem.h"
 
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
@@ -84,6 +85,9 @@ void BiteScript::setup(BiteEngine *biteengine)
 
     jsMetaObject = engine->newQMetaObject(&BiteImpact::staticMetaObject);
     engine->globalObject().setProperty("BiteImpact", jsMetaObject);
+
+    jsMetaObject = engine->newQMetaObject(&BiteOutputItem::staticMetaObject);
+    engine->globalObject().setProperty("BiteOutput", jsMetaObject);
 
 }
 

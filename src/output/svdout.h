@@ -2,7 +2,11 @@
 #define SVDOUT_H
 #include "output.h"
 #include "expression.h"
-#include <bitset>
+// #include <bitset>
+// Qt5.12 bug:
+// https://bugreports.qt.io/browse/QTBUG-72073
+// created an updated version of "bitset" including a lil fix
+#include "../3rdparty/bitset.h"
 
 class ResourceUnit; // forward
 
@@ -45,6 +49,8 @@ private:
     Expression mCondition;
 
 };
+
+
 
 
 /// SVDIndicatorOut saves (compressed) indicator data for SVD.

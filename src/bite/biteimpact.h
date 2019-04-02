@@ -64,7 +64,6 @@ private:
     QString mHostTreeFilter;
     bool mSimulate;
     Events mEvents;
-    int iAgentImpact;
     QString mImportOrder;
     bool mVerbose;
 
