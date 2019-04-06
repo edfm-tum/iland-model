@@ -48,6 +48,9 @@ void BiteOutputItem::setup(BiteAgent *parent_agent)
 
         mEvents.setup(mObj, QStringList() << "onOutput" , agent());
 
+        // the output require cell level stats
+        agent()->createStatsGrid();
+
 
     } catch (const IException &e) {
         QString error = QString("An error occured in the setup of BiteOutput item '%1': %2").arg(name()).arg(e.message());

@@ -255,6 +255,13 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
     agent()->stats().m3Killed += killed_m3;
     agent()->stats().totalImpact += removed_biomass;
     return n_killed>0 || removed_biomass>0.;
+    // cell level stats
+    BACellStat *stat = agent()->cellStat(cell);
+    if (stat) {
+        stat->m3Killed += killed_m3;
+        stat->totalImpact += removed_biomass;
+        stat->nKilled += n_killed;
+    }
 
 }
 

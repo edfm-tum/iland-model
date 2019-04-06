@@ -81,7 +81,14 @@ void BiteCellOutput::execCell(BiteCell *cell, BiteAgent *agent)
 
 
     BiteWrapper bw(agent->wrapper(), cell);
-    *this << currentYear();
+    BACellStat *bas = agent->cellStat(cell);
+    if (!bas)
+        throw IException("BiteCellOutput: stats grid not available!!");
+    *this << currentYear()
+            << bas->nKilled
+            << bas->m3Killed
+            << bas->totalImpact;
+
     for (int i=0;i<mExpressions.size();++i) {
         try {
         double result = mExpressions[i]->execute(nullptr, &bw);
@@ -101,7 +108,17 @@ void BiteCellOutput::setupBite(QStringList &cols, QString tableName)
 {
     setName("Bite cell level output", tableName);
     setDescription("Bite cell level output" );
-    columns() << OutputColumn::year();
+    columns() << OutputColumn::year()
+    << OutputColumn("treesKilled", "number of host trees killed (>4m) in the current year", OutInteger)
+    << OutputColumn("volumeKilled", "total volume (m3) of trees killed (>4m) by the agent in the current year", OutDouble)
+    << OutputColumn("totalImpact", "total impact (e.g. for defoliatores foliage mass consumed)", OutDouble);
+
+    //int nKilled; ///< number of trees (>4m) killed
+    //double m3Killed; ///< volume of all killed trees (>4m)
+    //double totalImpact; ///< impact on tree compartments (depending on the mode)
+    //int saplingsKilled; ///< number of saplings (cohorts) killed (<4m)
+    //int saplingsImpact; ///< number of saplings affected (e.g. by browsing) (<4m)
+
     for (int i=0;i<cols.size();++i) {
         QString col=cols[i];
         Expression *expr = new Expression(col);

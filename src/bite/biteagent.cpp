@@ -152,6 +152,11 @@ QStringList BiteAgent::variables()
 void BiteAgent::run()
 {
     stats().clear(); // reset stats
+    if (!mStatsGrid.isEmpty()) {
+        // reset cell level stats
+        for (BACellStat *p = mStatsGrid.begin(); p!=mStatsGrid.end(); ++p)
+            p->clear();
+    }
 
     // main function
     QJSValueList eparam = QJSValueList() << mThis;
@@ -303,6 +308,18 @@ ABE::FMSaplingList *BiteAgent::threadSaplingList()
     mSaplingLists[QThread::currentThread()] = new ABE::FMSaplingList;
     return mSaplingLists[QThread::currentThread()];
 
+}
+
+void BiteAgent::createStatsGrid()
+{
+    mStatsGrid.setup(mGrid.metricRect(), mGrid.cellsize());
+}
+
+BACellStat *BiteAgent::cellStat(const BiteCell *cell)
+{
+   if (mStatsGrid.isEmpty())
+       return nullptr;
+   return &mStatsGrid[cell->index()];
 }
 
 BiteCellScript *BiteAgent::cell(int x, int y)
