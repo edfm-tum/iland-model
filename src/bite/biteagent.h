@@ -52,6 +52,17 @@ struct BAgentStats {
     int saplingsImpact; ///< number of saplings affected (e.g. by browsing) (<4m)
 };
 
+struct BACellStat {
+    BACellStat() { clear(); }
+    void clear() { nKilled=0; m3Killed = 0.; totalImpact = 0.; saplingsKilled=0; saplingsImpact=0; }
+    int nKilled; ///< number of trees (>4m) killed
+    double m3Killed; ///< volume of all killed trees (>4m)
+    double totalImpact; ///< impact on tree compartments (depending on the mode)
+    int saplingsKilled; ///< number of saplings (cohorts) killed (<4m)
+    int saplingsImpact; ///< number of saplings affected (e.g. by browsing) (<4m)
+
+};
+
 class BiteLifeCycle;
 
 class BiteAgent : public QObject
@@ -105,6 +116,10 @@ public:
     static ABE::FMSaplingList* threadSaplingList();
     BAgentStats &stats()  { return mStats; }
     BiteLifeCycle *lifeCycle() const { return mLC; }
+    /// create stats grid (on demand)
+    void createStatsGrid();
+    /// return the cell statistics (if available) for the given 'cell'
+    BACellStat *cellStat(const BiteCell *cell);
 
 
 public slots:
@@ -136,6 +151,9 @@ private:
     void createBaseGrid();
     Grid<BiteCell*> mGrid;
     QVector<BiteCell> mCells;
+
+    // grids for stats
+    Grid<BACellStat> mStatsGrid;
 
     // grid for drawing
     Grid<double> mBaseDrawGrid;
