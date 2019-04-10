@@ -50,6 +50,7 @@ private:
       DynamicExpression fractionPerTree;
       DynamicExpression maxTrees;
       DynamicExpression maxBiomass;
+      Expression treeFilter;
       bool hasMaxTrees() const { return maxTrees.isValid(); }
       bool hasMaxBiomass() const { return maxBiomass.isValid(); }
       bool hasFractionOfTrees() const { return fractionOfTrees.isValid(); }
@@ -57,8 +58,9 @@ private:
       QString order;
       int id;
     };
-    bool runImpact(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
+    bool runImpact(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist);
     bool runImpactTrees(BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist);
+    bool runImpactSaplings(BiteImpactItem *item, BiteCell *cell, ABE::FMSaplingList *saplist);
 
     DynamicExpression mImpactFilter;
     QString mHostTreeFilter;

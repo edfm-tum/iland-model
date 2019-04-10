@@ -98,6 +98,7 @@ Expression::Expression()
     m_externVarSpace=0;
     m_expr = 0;
     m_execList = 0;
+    m_empty = true;
 }
 
 

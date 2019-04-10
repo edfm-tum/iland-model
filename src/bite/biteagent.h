@@ -54,8 +54,9 @@ struct BAgentStats {
 
 struct BACellStat {
     BACellStat() { clear(); }
-    void clear() { nKilled=0; m3Killed = 0.; totalImpact = 0.; saplingsKilled=0; saplingsImpact=0; }
+    void clear() { nKilled=0; nHostTrees=0; m3Killed = 0.; totalImpact = 0.; saplingsKilled=0; saplingsImpact=0; }
     int nKilled; ///< number of trees (>4m) killed
+    int nHostTrees; ///< number of trees (>4m) that are potential host trees (hostFilter)
     double m3Killed; ///< volume of all killed trees (>4m)
     double totalImpact; ///< impact on tree compartments (depending on the mode)
     int saplingsKilled; ///< number of saplings (cohorts) killed (<4m)

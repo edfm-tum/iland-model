@@ -1012,7 +1012,7 @@ void Tree::remove(double removeFoliage, double removeBranch, double removeStem )
     setIsHarvested();
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
-    rus.statisticsMgmt().add(this, 0);
+    rus.statisticsMgmt().add(this, nullptr);
     if (isCutdown())
         notifyTreeRemoved(TreeCutDown);
     else
@@ -1036,7 +1036,7 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction,
     setFlag(Tree::TreeDead, true); // set flag that tree is dead
     mRU->treeDied();
     ResourceUnitSpecies &rus = mRU->resourceUnitSpecies(species());
-    rus.statisticsDead().add(this, 0);
+    rus.statisticsDead().add(this, nullptr);
     notifyTreeRemoved(TreeDisturbance);
 
     if (saps)

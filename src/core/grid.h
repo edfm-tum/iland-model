@@ -97,7 +97,7 @@ public:
     inline T& operator[](const int idx) const { return mData[idx]; }
     /// use the square bracket to access by QPointF
     inline T& operator[] (const QPointF &p) { return valueAt(p); }
-    /// use the square bracket to access by QPointF
+    /// use the square bracket to access by QPoint
     inline T& operator[] (const QPoint &p) { return valueAtIndex(p); }
 
     inline T& valueAtIndex(const QPoint& pos) {return valueAtIndex(pos.x(), pos.y());}  ///< value at position defined by a QPoint defining the two indices (x,y)
@@ -805,7 +805,7 @@ template <class T>
 
             // loop thru datalines
             int i,j;
-            char *p=0;
+            char *p=nullptr;
             char *p2;
             pos--;
             for (i=nrow-1;i>=0;i--)

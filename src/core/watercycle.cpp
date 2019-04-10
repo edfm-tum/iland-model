@@ -108,7 +108,7 @@ inline double WaterCycle::psiFromHeight(const double mm) const
     if (mm<0.001)
         return -100000000;
     double psi_x = mPsi_sat * pow((mm / mSoilDepth / mTheta_sat),mPsi_koeff_b);
-    return psi_x; // pis
+    return psi_x; // Eq. 82
 }
 
 /// calculate the height of the water column for a given pressure
