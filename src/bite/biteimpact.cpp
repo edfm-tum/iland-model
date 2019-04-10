@@ -19,6 +19,7 @@
 #include "biteimpact.h"
 #include "biteengine.h"
 #include "fmtreelist.h"
+#include "fmsaplinglist.h"
 
 namespace BITE {
 
@@ -100,18 +101,29 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
 
     // filter host trees
     cell->checkTreesLoaded(treelist); // load trees (if this has not happened before)
+    BACellStat *stat = agent()->cellStat(cell);
     if (!mHostTreeFilter.isEmpty()) {
         int before = treelist->count();
         int after = treelist->filter(mHostTreeFilter);
         if (verbose())
             qCDebug(bite) << "Impact: filter trees with" << mHostTreeFilter << "N before:" << before << ", after: " << after;
+        // cell level stats
+        if (stat) {
+            stat->nHostTrees = after;
+        }
+
+    } else {
+        // no explicit filter, number of host trees is the number of all trees on the cell
+        if (stat) {
+            stat->nHostTrees = treelist->count();
+        }
     }
 
     bool had_impact = false;
     for (int i=0;i<mItems.length();++i) {
         if (mVerbose)
             qCDebug(bite) << "run impact item" << i+1 << ":";
-        had_impact |= runImpact(mItems[i], cell, treelist);
+        had_impact |= runImpact(mItems[i], cell, treelist, saplist);
     }
 
 
@@ -134,13 +146,12 @@ QStringList BiteImpact::allowedProperties()
 
 }
 
-bool BiteImpact::runImpact(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist)
+bool BiteImpact::runImpact(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSaplingList *saplist)
 {
     bool saplings = item->target==BiteImpactItem::Sapling || item->target==BiteImpactItem::Browsing;
 
     if (saplings) {
-        qCDebug(bite) << "impact saplings not implemented...";
-        return false;
+        return runImpactSaplings(item, cell, saplist);
     } else {
         return runImpactTrees(item, cell, treelist);
     }
@@ -158,9 +169,15 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
     double max_biomass = std::numeric_limits<double>().max();
     int n_trees=0; // number of living trees
 
+    TreeWrapper tw;
     for (int i=0;i<treelist->count();++i) {
         Tree *t = treelist->trees()[i].first;
         if (!t->isDead()) {
+            if (!item->treeFilter.isEmpty()) {
+                tw.setTree(t);
+                if (item->treeFilter.execute(nullptr, &tw)==0.)
+                    continue;
+            }
             ++n_trees;
             switch (target) {
             case BiteImpactItem::Foliage: total_biomass+=t->biomassFoliage(); break;
@@ -214,13 +231,24 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
     double killed_m3 = 0.;
     for (int i=0;i<treelist->count();++i) {
         Tree *t = treelist->trees()[i].first;
-        if (!t->isDead() && (!select_random || drandom() < random_fraction)) {
+        if (t->isDead())
+            continue;
+
+        if (!item->treeFilter.isEmpty()) {
+            tw.setTree(t);
+            if (item->treeFilter.execute(nullptr, &tw)==0.)
+                continue;
+        }
+
+        if (!select_random || drandom() < random_fraction) {
             // affect tree
             switch (target) {
             case BiteImpactItem::Foliage: {
                 removed_biomass += t->biomassFoliage() * fraction_per_tree;
-                if (!mSimulate)
+                if (!mSimulate) {
                     t->removeBiomassOfTree(fraction_per_tree, 0., 0.);
+                    t->setAffectedBite();
+                }
                 break;
             }
             case BiteImpactItem::Tree: {
@@ -228,8 +256,8 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
                 killed_m3+=t->volume();
                 ++n_killed;
                 if (!mSimulate) {
-                    t->setDeathBite();
-                    t->remove();
+                    t->setAffectedBite();
+                    t->die();
                 }
                 break;
             }
@@ -254,7 +282,7 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
     agent()->stats().treesKilled += n_killed;
     agent()->stats().m3Killed += killed_m3;
     agent()->stats().totalImpact += removed_biomass;
-    return n_killed>0 || removed_biomass>0.;
+
     // cell level stats
     BACellStat *stat = agent()->cellStat(cell);
     if (stat) {
@@ -263,6 +291,97 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
         stat->nKilled += n_killed;
     }
 
+    return n_killed>0 || removed_biomass>0.;
+
+}
+
+bool BiteImpact::runImpactSaplings(BiteImpact::BiteImpactItem *item, BiteCell *cell, ABE::FMSaplingList *saplist)
+{
+    cell->checkSaplingsLoaded(saplist);
+    bool select_random = false;
+    double random_fraction = 1.;
+    int max_trees = std::numeric_limits<int>().max();
+    int n_saplings = 0;
+
+    SaplingWrapper sw;
+    QVector<QPair<SaplingTree*, SaplingCell*> >::iterator it;
+
+    if (!item->treeFilter.isEmpty()) {
+        // count all sapling cohorts:
+        for (it = saplist->saplings().begin(); it!=saplist->saplings().end(); ++it) {
+            sw.setSaplingTree(it->first, it->second->ru);
+            if (item->treeFilter.execute(nullptr, &sw)==0.)
+                continue;
+            ++n_saplings;
+        }
+    } else {
+        n_saplings = saplist->length();
+    }
+
+    if (n_saplings==0)
+        return false; // nothing to do
+
+
+    // number of tree cohorts
+    if (item->hasMaxTrees())
+        max_trees = static_cast<int>(item->maxTrees.evaluate(cell));
+
+
+    if (item->hasFractionOfTrees()) {
+        random_fraction = item->fractionOfTrees.evaluate(cell);
+        if (random_fraction < 0. || random_fraction > 1.)
+            throw IException(QString("BiteImpact: invalid 'fractionOfTrees': %1 in item %2").arg(random_fraction).arg(item->id));
+        if (random_fraction<1.) {
+            max_trees = std::min(max_trees, static_cast<int>(random_fraction * n_saplings + drandom())); // calc. number of saplings + rounding (and truncating to int)
+            select_random = true;
+        }
+
+    }
+
+    int n_affected = 0;
+    for (it = saplist->saplings().begin(); it!=saplist->saplings().end(); ++it) {
+        SaplingTree *stree = it->first;
+        SaplingCell *sc = it->second;
+        // filtering?
+        if (!item->treeFilter.isEmpty()) {
+            sw.setSaplingTree(stree, sc->ru);
+            if (item->treeFilter.execute(nullptr, &sw)==0.)
+                continue;
+        }
+        if (!select_random || drandom() < random_fraction) {
+            if (item->target == BiteImpactItem::Browsing) {
+                stree->set_browsed(true);
+            } else {
+                stree->clear();
+                sc->checkState();
+            }
+            ++n_affected;
+        }
+
+    }
+
+    if (mVerbose || agent()->verbose()) {
+        QString details = QString("Impact %1 (#%2): #affected: %3 from %4 sapling cohorts")
+                .arg(cell->info()).arg(item->id)
+                .arg(n_affected).arg(n_saplings);
+        qCDebug(bite) << details;
+    }
+    if (item->target == BiteImpactItem::Browsing)
+        agent()->stats().saplingsImpact += n_affected;
+    else
+        agent()->stats().saplingsKilled += n_affected;
+
+
+    // cell level stats
+    BACellStat *stat = agent()->cellStat(cell);
+    if (stat) {
+        if (item->target == BiteImpactItem::Browsing)
+            stat->saplingsImpact += n_affected;
+        else
+            stat->saplingsKilled += n_affected;
+    }
+
+    return n_affected>0;
 }
 
 
@@ -270,7 +389,7 @@ void BiteImpact::BiteImpactItem::setup(QJSValue obj, int index, BiteAgent *paren
 {
     id = index;
     // check allowed properties
-    QStringList allowed = QStringList() << "target" << "fractionOfTrees" << "fractionPerTree" << "maxTrees" << "maxBiomass" << "order";
+    QStringList allowed = QStringList() << "target" << "fractionOfTrees" << "fractionPerTree" << "maxTrees" << "maxBiomass" << "order" << "treeFilter";
     if (obj.isObject()) {
         QJSValueIterator it(obj);
         while (it.hasNext()) {
@@ -307,6 +426,11 @@ void BiteImpact::BiteImpactItem::setup(QJSValue obj, int index, BiteAgent *paren
     filter = BiteEngine::valueFromJs(obj, "order");
     if (!filter.isUndefined())
         order = BiteEngine::valueFromJs(obj, "order").toString();
+
+    filter = BiteEngine::valueFromJs(obj, "treeFilter");
+    if (!filter.isUndefined())
+        treeFilter.setExpression(BiteEngine::valueFromJs(obj, "treeFilter").toString());
+
 
 }
 

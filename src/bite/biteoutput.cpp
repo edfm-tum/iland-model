@@ -36,7 +36,9 @@ BiteOutput::BiteOutput()
               << OutputColumn("agentBiomass", "total biomass of the agent (on all active cells, if applicable)", OutDouble)
               << OutputColumn("treesKilled", "number of host trees killed in the current year", OutInteger)
               << OutputColumn("volumeKilled", "total volume (m3) of trees killed by the agent in the current year", OutDouble)
-              << OutputColumn("totalImpact", "total impact (e.g. for defoliatores foliage mass consumed)", OutDouble);
+              << OutputColumn("totalImpact", "total impact (e.g. for defoliatores foliage mass consumed)", OutDouble)
+              << OutputColumn("saplingImpact", "number of sapling cohorts affected (browsing)", OutInteger)
+              << OutputColumn("saplingKilled", "number of sapling cohorts killed", OutInteger);
 
 }
 
@@ -50,6 +52,7 @@ void BiteOutput::exec()
         *this << a->stats().nActive << a->stats().nDispersal << a->stats().nNewlyColonized;
         *this << a->stats().agentBiomass << a->stats().treesKilled << a->stats().m3Killed;
         *this << a->stats().totalImpact;
+        *this << a->stats().saplingsImpact << a->stats().saplingsKilled;
         writeRow();
     }
 }
@@ -85,9 +88,13 @@ void BiteCellOutput::execCell(BiteCell *cell, BiteAgent *agent)
     if (!bas)
         throw IException("BiteCellOutput: stats grid not available!!");
     *this << currentYear()
+            << cell->index()
+            << bas->nHostTrees
             << bas->nKilled
             << bas->m3Killed
-            << bas->totalImpact;
+            << bas->totalImpact
+            << bas->saplingsImpact
+            << bas->saplingsKilled;
 
     for (int i=0;i<mExpressions.size();++i) {
         try {
@@ -109,9 +116,14 @@ void BiteCellOutput::setupBite(QStringList &cols, QString tableName)
     setName("Bite cell level output", tableName);
     setDescription("Bite cell level output" );
     columns() << OutputColumn::year()
-    << OutputColumn("treesKilled", "number of host trees killed (>4m) in the current year", OutInteger)
-    << OutputColumn("volumeKilled", "total volume (m3) of trees killed (>4m) by the agent in the current year", OutDouble)
-    << OutputColumn("totalImpact", "total impact (e.g. for defoliatores foliage mass consumed)", OutDouble);
+              << OutputColumn("idx", "cell index (cell Id) (see 'index' variable), useful for spatial analysis", OutInteger)
+              << OutputColumn("hostTrees", "number of host trees (>4m, passing the 'hostFilter') in the current year", OutInteger)
+              << OutputColumn("treesKilled", "number of host trees killed (>4m) in the current year", OutInteger)
+              << OutputColumn("volumeKilled", "total volume (m3) of trees killed (>4m) by the agent in the current year", OutDouble)
+              << OutputColumn("totalImpact", "total impact (e.g. for defoliatores foliage mass consumed)", OutDouble)
+              << OutputColumn("saplingImpact", "number of sapling cohorts affected (browsing)", OutInteger)
+              << OutputColumn("saplingKilled", "number of sapling cohorts killed", OutInteger);
+
 
     //int nKilled; ///< number of trees (>4m) killed
     //double m3Killed; ///< volume of all killed trees (>4m)

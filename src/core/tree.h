@@ -77,7 +77,7 @@ public:
     // actions
     enum TreeRemovalType { TreeDeath=0, TreeHarvest=1, TreeDisturbance=2, TreeSalavaged=3, TreeKilled=4, TreeCutDown=5};
     /// the tree dies (is killed)
-    void die(TreeGrowthData *d=0);
+    void die(TreeGrowthData *d=nullptr);
     /// remove the tree (management). removalFractions for tree compartments: if 0: all biomass stays in the system, 1: all is "removed"
     /// default values: all biomass remains in the forest (i.e.: kill()).
     void remove(double removeFoliage=0., double removeBranch=0., double removeStem=0. );
@@ -122,13 +122,13 @@ public:
     void setDeathReasonBarkBeetle()  { setFlag(Tree::TreeDeadBarkBeetle, true); }
     void setDeathReasonFire()  { setFlag(Tree::TreeDeadFire, true); }
     void setDeathCutdown()  { setFlag(Tree::TreeDeadKillAndDrop, true); }
-    void setDeathBite() { setFlag(Tree::TreeDeadBite, true); }
+    void setAffectedBite() { setFlag(Tree::TreeAffectedBite, true); }
     void setIsHarvested()  { setFlag(Tree::TreeHarvested, true); }
 
     bool isDeadWind() const { return flag(Tree::TreeDeadWind);}
     bool isDeadBarkBeetle() const { return flag(Tree::TreeDeadBarkBeetle);}
     bool isDeadFire() const { return flag(Tree::TreeDeadFire);}
-    bool isDeadBite() const { return flag(Tree::TreeDeadBite); }
+    bool isAffectedBite() const { return flag(Tree::TreeAffectedBite); }
     bool isCutdown() const { return flag(Tree::TreeDeadKillAndDrop);}
     bool isHarvested() const { return flag(Tree::TreeHarvested);}
 
@@ -206,7 +206,7 @@ private:
                  MarkForHarvest=1024, // mark tree for being harvested
                  MarkCropTree=2048, // mark as crop tree
                  MarkCropCompetitor=4096, // mark as competitor for a crop tree
-                 TreeDeadBite=8192 // killed by biotic disturbance module (BITE)
+                 TreeAffectedBite=8192 // affected or killed by biotic disturbance module (BITE)
                };
     /// set a Flag 'flag' to the value 'value'.
     void setFlag(const Tree::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
@@ -214,6 +214,8 @@ private:
     void setFlag(const int flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}
     /// retrieve the value of the flag 'flag'.
     bool flag(const Tree::Flags flag) const { return mFlags & flag; }
+    /// retrieve the flag value as a single integer
+    int flags() const {return mFlags; }
 
     // special functions
     bool isDebugging() { return flag(Tree::TreeDebugging); }
