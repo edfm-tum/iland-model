@@ -92,7 +92,7 @@ TreeRemovedOut::TreeRemovedOut()
     setDescription("Output of removed indivdual trees. Use the ''filter'' property to reduce amount of data (filter by resource-unit, year, species, ...).\n" \
                    "The output is triggered immediately when a tree is removed due to mortality or management.\n " \
                    "\n the column 'treeFlags' is a binary combination of the following values: \n\n" \
-                   "||__Flag__|__description__" \
+                   "||__Flag__|__description__\n" \
                    "TreeDead|1\n"\
                    "TreeDebugging|2\n"\
                    "TreeDeadBarkBeetle|16\nTreeDeadWind|32\n TreeDeadFire|64\n TreeDeadKillAndDrop|128\n TreeHarvested|256\n"\
@@ -120,7 +120,7 @@ TreeRemovedOut::TreeRemovedOut()
             << OutputColumn("lightResponse", "light response value (including species specific response to the light level)", OutDouble)
             << OutputColumn("stressIndex", "scalar (0..1) indicating the stress level (see [Mortality]).", OutDouble)
             << OutputColumn("reserve_kg", "NPP currently available in the reserve pool (kg Biomass)", OutDouble)
-            << OutputColumn("treeFlags", "tree flags (see above)", OutDouble);
+            << OutputColumn("treeFlags", "tree flags (see above)", OutInteger);
 
 }
 

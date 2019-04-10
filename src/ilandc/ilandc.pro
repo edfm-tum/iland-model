@@ -229,7 +229,8 @@ SOURCES += main.cpp \
     ../bite/biteimpact.cpp \
     ../bite/biteclimate.cpp \
     ../bite/biteoutput.cpp \
-    ../abe/fmsaplinglist.cpp
+    ../abe/fmsaplinglist.cpp \
+    ../bite/biteoutputitem.cpp
 
 
 
@@ -353,7 +354,8 @@ HEADERS += \
     ../bite/biteimpact.h \
     ../bite/biteclimate.h \
     ../bite/biteoutput.h \
-    ../abe/fmsaplinglist.h
+    ../abe/fmsaplinglist.h \
+    ../bite/biteoutputitem.h
 
 
 
