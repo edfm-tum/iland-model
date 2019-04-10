@@ -62,8 +62,18 @@ void WaterCycle::setup(const ResourceUnit *ru)
     if (fabs(100. - (pct_sand + pct_silt + pct_clay)) > 0.01)
         throw IException(QString("Setup Watercycle: soil composition percentages do not sum up to 100. Sand: %1, Silt: %2 Clay: %3").arg(pct_sand).arg(pct_silt).arg(pct_clay));
 
+    bool fix_mpa_kpa = xml.valueBool("model.settings.waterUseMPaFix",false);
     // calculate soil characteristics based on empirical functions (Schwalm & Ek, 2004)
     // note: the variables are percentages [0..100]
+    if (fix_mpa_kpa) {
+        // note: conversion of cm -> kPa (1cm = 9.8 Pa), therefore 0.0098 instead of 0.000098
+        // the log(10) from Schwalm&Ek cannot be found in Cosby (1984), but
+        // results look better with the log(10).
+        mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.0098; // Eq. 83
+    } else {
+        // old version
+        mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
+    }
     mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
     mPsi_koeff_b = -( 3.1 + 0.157*pct_clay - 0.003*pct_sand );  // Eq. 84
     mTheta_sat = 0.01 * (50.5 - 0.142*pct_sand - 0.037*pct_clay); // Eq. 78
