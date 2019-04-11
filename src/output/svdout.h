@@ -6,7 +6,11 @@
 // Qt5.12 bug:
 // https://bugreports.qt.io/browse/QTBUG-72073
 // created an updated version of "bitset" including a lil fix
+#ifdef Q_OS_WIN
 #include "../3rdparty/bitset.h"
+#else
+#include <bitset>
+#endif
 
 class ResourceUnit; // forward
 
