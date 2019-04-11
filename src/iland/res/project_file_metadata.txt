@@ -108,6 +108,7 @@ system.logging.logFile = false
 system.logging.flush = false
 system.logging = false
 system.settings.multithreading = false
+system.settings.threadCount = -1
 system.settings.debugOutput = false
 system.settings.debugOutputAutoSave = false
 system.settings.randomSeed = false

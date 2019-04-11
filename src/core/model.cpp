@@ -388,8 +388,18 @@ void Model::setupSpace()
         ScriptGlobal::setupGlobalScripting();
 
         // setup the helper that does the multithreading
+        bool do_multithreading =GlobalSettings::instance()->settings().valueBool("system.settings.multithreading");
+        int n_threads = GlobalSettings::instance()->settings().valueInt("system.settings.threadCount",-1);
+        if (do_multithreading) {
+            if (n_threads>0) {
+                QThreadPool::globalInstance()->setMaxThreadCount(n_threads);
+                qDebug() << "Multithreading: set max thread count to" << n_threads;
+            } else {
+                QThreadPool::globalInstance()->setMaxThreadCount(QThread::idealThreadCount()); // reset
+            }
+        }
         threadRunner.setup(valid_rus);
-        threadRunner.setMultithreading(GlobalSettings::instance()->settings().valueBool("system.settings.multithreading"));
+        threadRunner.setMultithreading(do_multithreading);
         threadRunner.print();
 
 
