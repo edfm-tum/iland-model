@@ -63,8 +63,10 @@ void WaterCycle::setup(const ResourceUnit *ru)
         throw IException(QString("Setup Watercycle: soil composition percentages do not sum up to 100. Sand: %1, Silt: %2 Clay: %3").arg(pct_sand).arg(pct_silt).arg(pct_clay));
 
     bool fix_mpa_kpa = true;
-    if (xml.hasNode("model.settings.waterUseLegacyCalculation"))
+    if (xml.hasNode("model.settings.waterUseLegacyCalculation")) {
       fix_mpa_kpa = !xml.valueBool("model.settings.waterUseLegacyCalculation");
+      qDebug() << "waterUseLegacyCalculation: " << (fix_mpa_kpa?"no (fixed)":"yes (buggy)");
+    }
 
     // calculate soil characteristics based on empirical functions (Schwalm & Ek, 2004)
     // note: the variables are percentages [0..100]
