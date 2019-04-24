@@ -88,6 +88,7 @@ protected:
     const XmlHelper &settings() const { return gl->settings(); } ///< access XML settings (see class description)
     // add data
     void writeRow(); ///< saves the current row/line of data to database/file. Must be called for each row.
+    void singleThreadedWriteRow(); ///< writeRow() protected by a mutex (if there is a chance that two outputs write at the same time)
 
     inline void add(const double &value);
     void add(const double &value1, const double &value2) { add(value1); add(value2); }

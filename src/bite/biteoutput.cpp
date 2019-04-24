@@ -108,7 +108,8 @@ void BiteCellOutput::execCell(BiteCell *cell, BiteAgent *agent)
             throw;
         }
     }
-    writeRow();
+    // bite outputs can happen concurrently, but output must not be written concurrently
+    singleThreadedWriteRow();
 }
 
 void BiteCellOutput::setupBite(QStringList &cols, QString tableName)

@@ -173,6 +173,13 @@ void Output::writeRow()
 
 }
 
+static QMutex __protectWriteRow;
+void Output::singleThreadedWriteRow()
+{
+    QMutexLocker l(&__protectWriteRow);
+    writeRow();
+}
+
 /// delete columns that were added after the column 'find_name'
 bool Output::clearColumnsAfter(QString find_name)
 {
