@@ -142,7 +142,8 @@ void TreeRemovedOut::execRemovedTree(const Tree *t, int reason)
     *this << t->leafArea() << t->mFoliageMass << t->mStemMass << t->mBranchMass <<  t->mFineRootMass << t->mCoarseRootMass;
     *this << t->lightResourceIndex() << t->mLightResponse << t->mStressIndex << t->mNPPReserve;
     *this << t->flags();
-    writeRow();
+    singleThreadedWriteRow(); // make sure that only one thread writes to the database
+
 
 }
 
