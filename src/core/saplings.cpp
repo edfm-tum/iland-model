@@ -422,8 +422,9 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
     } else {
         // sprouts spread from a living tree with
         // a low probability in adjacent cells
-        const double p_resprout = t->species()->speciesSet()->sproutProbability();
-        if (drandom() < p_resprout) {
+
+        const double p_resprout = t->species()->saplingGrowthParameters().adultSproutProbability;
+        if (p_resprout>0. && drandom() < p_resprout) {
             // select a neighbor randomly
             int s=irandom(0,8);
             ResourceUnit *ru_new;
