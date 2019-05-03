@@ -42,7 +42,7 @@ Species::~Species()
 {
     if (mSeedDispersal)
         delete mSeedDispersal;
-    mSeedDispersal = 0;
+    mSeedDispersal = nullptr;
 }
 
 /** main setup routine for tree species.
@@ -51,7 +51,7 @@ Species::~Species()
 */
 void Species::setup()
 {
-    Q_ASSERT(mSet != 0);
+    Q_ASSERT(mSet != nullptr);
     // setup general information
     mId = stringVar("shortName");
     mName = stringVar("name");
@@ -208,8 +208,24 @@ void Species::setup()
     mSaplingGrowthParams.sproutGrowth = doubleVar("sapSproutGrowth");
     if (mSaplingGrowthParams.sproutGrowth>0.)
         if (mSaplingGrowthParams.sproutGrowth<1. || mSaplingGrowthParams.sproutGrowth>10)
-            qDebug() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ")";
+            qDebug() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ", expected range: 1-10)";
     mSaplingGrowthParams.setupReinekeLookup();
+
+    mSaplingGrowthParams.adultSproutProbability = 0.;
+    QString adult_sprout = GlobalSettings::instance()->settings().value("model.species.sprouting.adultSproutProbability");
+    if (!adult_sprout.isEmpty()) {
+        QStringList sprout_prob_list = adult_sprout.split(QRegExp("([^\\.\\w]+)"));
+
+        if (sprout_prob_list.length() == 1)
+            mSaplingGrowthParams.adultSproutProbability = adult_sprout.toDouble();
+        if (sprout_prob_list.length() > 1) {
+            int index = sprout_prob_list.indexOf(id());
+            if (index>=0 && index+1 < sprout_prob_list.length()) {
+                mSaplingGrowthParams.adultSproutProbability = sprout_prob_list[index+1].toDouble();
+                qDebug() << "enabled species specific sprouting probability for" << id() << ": p=" << mSaplingGrowthParams.adultSproutProbability;
+            }
+        }
+    }
 }
 
 
