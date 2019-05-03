@@ -93,9 +93,11 @@ public:
                            const double foliage_to_soil_fraction);
 
     void enableDebugging(const bool enable=true) {setFlag(Tree::TreeDebugging, enable); }
-    /// removes fractions (0..1) for foliage, branches, stem from a tree, e.g. due to a fire.
+    /// removes fractions (0..1) for foliage, branches, stem, and roots from a tree, e.g. due to a fire.
     /// values of "0" remove nothing, "1" removes the full compartent.
     void removeBiomassOfTree(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction);
+    /// remove root biomass of trees (e.g. due to funghi)
+    void removeRootBiomass(const double removeFineRootFraction, const double removeCoarseRootFraction);
 
     // setters for initialization
     void setNewId() { mId = m_nextId++; } ///< force a new id for this object (after copying trees)
@@ -165,6 +167,7 @@ private:
     double relative_height_growth(); ///< estimate height growth based on light status.
     void grow_diameter(TreeGrowthData &d); ///< actual growth of the tree's stem.
     void mortality(TreeGrowthData &d); ///< main function that checks whether trees is to die
+
 #ifdef ALT_TREE_MORTALITY
     void altMortality(TreeGrowthData &d); ///< alternative version of the mortality sub module
 #endif

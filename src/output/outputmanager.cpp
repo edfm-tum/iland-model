@@ -102,6 +102,11 @@ void OutputManager::setup()
         qDebug() << "setup of output" << o->name() << "(" << o->tableName() << ")";
         o->setup();
         bool enabled = xml.valueBool(".enabled", false);
+        bool file_mode = false;
+        if (xml.hasNode(".mode"))
+            file_mode = xml.value(".mode") == "file";
+        if (file_mode)
+            o->setMode(OutFile);
         o->setEnabled(enabled);
         if (enabled)
             o->open();
@@ -133,6 +138,7 @@ void OutputManager::close()
     do nothing if transaction is already open. */
 void OutputManager::startTransaction()
 {
+    //return; // test without transactions
     if (!mTransactionOpen && GlobalSettings::instance()->dbout().isValid()) {
         if (GlobalSettings::instance()->dbout().transaction()) {
             qDebug() << "opening transaction";
@@ -142,6 +148,7 @@ void OutputManager::startTransaction()
 }
 void OutputManager::endTransaction()
 {
+    //return; // test without transactions
     if (mTransactionOpen && GlobalSettings::instance()->dbout().isValid()) {
         if (GlobalSettings::instance()->dbout().commit()) {
             mTransactionOpen = false;

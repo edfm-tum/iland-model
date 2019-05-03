@@ -50,6 +50,9 @@ public:
     /// load trees from a portion of a RU
     int loadFromRect(ResourceUnit *ru, const QRectF &rect);
 
+    /// load all trees from a RU
+    int loadFromRU(ResourceUnit *ru, bool append=false);
+
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
 

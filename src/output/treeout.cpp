@@ -30,7 +30,8 @@ TreeOut::TreeOut()
     setName("Tree Output", "tree");
     setDescription("Output of indivdual trees. Use the ''filter'' property to reduce amount of data (filter by resource-unit, year, species, ...).\n" \
                    "The output is triggered after the growth of the current season. " \
-                   "Initial values (without any growth) are output as 'startyear-1'.");
+                   "Initial values (without any growth) are output as 'startyear-1'.\n" \
+                   "The 'treeFlags' is a binary combination of individual flags; see the documentation of the treeremoved output for details.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
             << OutputColumn("id", "id of the tree", OutInteger)
             << OutputColumn("x", "position of the tree, x-direction (m)", OutDouble)
@@ -48,7 +49,8 @@ TreeOut::TreeOut()
             << OutputColumn("lri", "LightResourceIndex of the tree (raw light index from iLand, without applying resource-unit modifications)", OutDouble)
             << OutputColumn("lightResponse", "light response value (including species specific response to the light level)", OutDouble)
             << OutputColumn("stressIndex", "scalar (0..1) indicating the stress level (see [Mortality]).", OutDouble)
-            << OutputColumn("reserve_kg", "NPP currently available in the reserve pool (kg Biomass). The reserve is cenceptually part of the stem and included in the stem compartment for stand level outputs.", OutDouble);
+            << OutputColumn("reserve_kg", "NPP currently available in the reserve pool (kg Biomass). The reserve is cenceptually part of the stem and included in the stem compartment for stand level outputs.", OutDouble)
+            << OutputColumn("treeFlags", "tree flags (see above)", OutInteger);
 
 
  }
@@ -71,7 +73,7 @@ void TreeOut::exec()
     while (Tree *t=at.next()) {
         if (!mFilter.isEmpty()) { // skip fields
             tw.setTree(t);
-            if (!mFilter.execute())
+            if (!mFilter.executeBool())
                 continue;
         }
         *this << currentYear() << t->ru()->index() << t->ru()->id() << t->species()->id();
@@ -79,6 +81,7 @@ void TreeOut::exec()
         *this << t->leafArea() << t->mFoliageMass << t->mStemMass << t->biomassBranch()
                                <<  t->mFineRootMass << t->mCoarseRootMass;
         *this << t->lightResourceIndex() << t->mLightResponse << t->mStressIndex << t->mNPPReserve;
+        *this << t->flags();
         writeRow();
     }
 
@@ -131,7 +134,7 @@ void TreeRemovedOut::execRemovedTree(const Tree *t, int reason)
         TreeWrapper tw;
         mFilter.setModelObject(&tw);
         tw.setTree(t);
-        if (!mFilter.execute())
+        if (!mFilter.executeBool())
             return;
     }
     QMutexLocker protector(&protect_output); // output creation can come from many threads

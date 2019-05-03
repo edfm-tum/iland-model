@@ -118,6 +118,8 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
             stat->nHostTrees = treelist->count();
         }
     }
+    if (stat && cell->areSaplingsLoaded())
+        stat->nHostSaplings = saplist->saplings().size();
 
     bool had_impact = false;
     for (int i=0;i<mItems.length();++i) {
@@ -181,6 +183,7 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
             ++n_trees;
             switch (target) {
             case BiteImpactItem::Foliage: total_biomass+=t->biomassFoliage(); break;
+            case BiteImpactItem::Root: total_biomass+=t->biomassCoarseRoot() + t->biomassFineRoot(); break;
             default: break;
             }
         }
@@ -247,6 +250,15 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
                 removed_biomass += t->biomassFoliage() * fraction_per_tree;
                 if (!mSimulate) {
                     t->removeBiomassOfTree(fraction_per_tree, 0., 0.);
+                    t->setAffectedBite();
+                }
+                break;
+            }
+            case BiteImpactItem::Root: {
+                double fine_root_fraction = qMin(fraction_per_tree * item->fineRootMultiplier, 1.);
+                removed_biomass += t->biomassCoarseRoot() * fraction_per_tree + t->biomassFineRoot() * fine_root_fraction;
+                if (!mSimulate) {
+                    t->removeRootBiomass(fine_root_fraction, fraction_per_tree);
                     t->setAffectedBite();
                 }
                 break;
@@ -389,7 +401,7 @@ void BiteImpact::BiteImpactItem::setup(QJSValue obj, int index, BiteAgent *paren
 {
     id = index;
     // check allowed properties
-    QStringList allowed = QStringList() << "target" << "fractionOfTrees" << "fractionPerTree" << "maxTrees" << "maxBiomass" << "order" << "treeFilter";
+    QStringList allowed = QStringList() << "target" << "fractionOfTrees" << "fractionPerTree" << "maxTrees" << "maxBiomass" << "order" << "treeFilter" << "fineRootFactor";
     if (obj.isObject()) {
         QJSValueIterator it(obj);
         while (it.hasNext()) {
@@ -430,6 +442,8 @@ void BiteImpact::BiteImpactItem::setup(QJSValue obj, int index, BiteAgent *paren
     filter = BiteEngine::valueFromJs(obj, "treeFilter");
     if (!filter.isUndefined())
         treeFilter.setExpression(BiteEngine::valueFromJs(obj, "treeFilter").toString());
+
+    fineRootMultiplier = BiteEngine::valueFromJs(obj, "fineRootMultiplier", "1").toNumber();
 
 
 }

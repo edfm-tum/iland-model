@@ -93,6 +93,7 @@ void BiteCellOutput::execCell(BiteCell *cell, BiteAgent *agent)
             << bas->nKilled
             << bas->m3Killed
             << bas->totalImpact
+            << bas->nHostSaplings
             << bas->saplingsImpact
             << bas->saplingsKilled;
 
@@ -122,6 +123,7 @@ void BiteCellOutput::setupBite(QStringList &cols, QString tableName)
               << OutputColumn("treesKilled", "number of host trees killed (>4m) in the current year", OutInteger)
               << OutputColumn("volumeKilled", "total volume (m3) of trees killed (>4m) by the agent in the current year", OutDouble)
               << OutputColumn("totalImpact", "total impact (e.g. for defoliatores foliage mass consumed)", OutDouble)
+              << OutputColumn("hostSaplings", "number of sapling cohorts that are potential host in the current year (depending on the current filtering)", OutInteger)
               << OutputColumn("saplingImpact", "number of sapling cohorts affected (browsing)", OutInteger)
               << OutputColumn("saplingKilled", "number of sapling cohorts killed", OutInteger);
 

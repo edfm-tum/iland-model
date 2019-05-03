@@ -51,6 +51,7 @@ private:
       DynamicExpression maxTrees;
       DynamicExpression maxBiomass;
       Expression treeFilter;
+      double fineRootMultiplier;
       bool hasMaxTrees() const { return maxTrees.isValid(); }
       bool hasMaxBiomass() const { return maxBiomass.isValid(); }
       bool hasFractionOfTrees() const { return fractionOfTrees.isValid(); }

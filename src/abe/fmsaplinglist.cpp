@@ -29,6 +29,22 @@ int FMSaplingList::loadFromRect(ResourceUnit *ru, const QRectF &rect)
 
 }
 
+int FMSaplingList::loadFromRU(ResourceUnit *ru, bool append)
+{
+    if (!append)
+        mSaplings.clear();
+
+    SaplingCell *sapcell = ru->saplingCellArray();
+    for (int i=0;i<cPxPerHectare;++i, ++sapcell) {
+        for (int j=0;j<NSAPCELLS;++j) {
+            if (sapcell->saplings[j].is_occupied()) {
+                mSaplings.push_back(QPair<SaplingTree*, SaplingCell*>( &(sapcell->saplings[j]), sapcell));
+            }
+        }
+    }
+    return mSaplings.size();
+}
+
 int FMSaplingList::filter(QString filter)
 {
     if (filter.isEmpty())

@@ -30,14 +30,14 @@ class Expression
 public:
         ~Expression();
         Expression();
-        Expression(const QString &aExpression) { m_expr=0; m_execList=0; setExpression(aExpression); }
-        Expression(const QString &expression, ExpressionWrapper *wrapper) { m_expr=0; m_execList=0; setExpression(expression); mModelObject = wrapper;  }
+        Expression(const QString &aExpression) { m_expr=nullptr; m_execList=nullptr; setExpression(aExpression); }
+        Expression(const QString &expression, ExpressionWrapper *wrapper) { m_expr=nullptr; m_execList=nullptr; setExpression(expression); mModelObject = wrapper;  }
         // intialization
         void setExpression(const QString &aExpression); ///< set expression
         void setAndParse(const QString &expr); ///< set expression and parse instantly
         void setModelObject(ExpressionWrapper *wrapper) { mModelObject = wrapper; }
         const QString &expression() const { return m_expression; }
-        void  parse(ExpressionWrapper *wrapper=0); ///< force a parsing of the expression
+        void  parse(ExpressionWrapper *wrapper=nullptr); ///< force a parsing of the expression
 
         /// call linearize() to 'linarize' an expression, i.e. approximate the function by linear interpolation.
         void linearize(const double low_value, const double high_value, const int steps=1000);
@@ -47,7 +47,8 @@ public:
         /// global switch for linerization. If set to false, subsequent calls to linearize are ignored.
         static void setLinearizationEnabled(const bool enable) {mLinearizationAllowed = enable; }
         // calculations
-        double execute(double *varlist=0, ExpressionWrapper *object=0) const; ///< calculate formula and return result. variable values need to be set using "setVar()"
+        double execute(double *varlist=nullptr, ExpressionWrapper *object=nullptr) const; ///< calculate formula and return result. variable values need to be set using "setVar()"
+        bool executeBool(double *varlist=nullptr, ExpressionWrapper *object=nullptr) const { return execute(varlist, object) != 0.; }
         double executeLocked() { QMutexLocker m(&m_execMutex); return execute();  } ///< thread safe version
         /** calculate formula. the first two variables are assigned the values Val1 and Val2. This function is for convenience.
            the return is the result of the calculation.
@@ -124,7 +125,7 @@ private:
         void  parse_level4();
         int  getFuncIndex(const QString& functionName);
         int  getVarIndex(const QString& variableName);
-        inline double getModelVar(const int varIdx, ExpressionWrapper *object=0) const ;
+        inline double getModelVar(const int varIdx, ExpressionWrapper *object=nullptr) const ;
 
         // link to external model variable
         ExpressionWrapper *mModelObject;

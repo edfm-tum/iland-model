@@ -57,6 +57,7 @@ public:
     Output(); ///< ctor. Override in derived class to craete columns, etc.
     virtual ~Output();
     virtual void setup(); ///< setup() is called during project setup and can be ovveridden for specific setup
+    void setMode(OutputMode mode) { mMode = mode; }
 
     void open(); ///< open output connection (create actual db connection, ...)
     bool isOpen() const { return mOpen; } ///< returns true if output is open, i.e. has a open database connection
@@ -83,6 +84,7 @@ public:
 protected:
     void setName(const QString &name, const QString tableName) { mName = name; mTableName=tableName; }
     void setDescription(const QString &description) { mDescription=description; }
+
     QList<OutputColumn> &columns()  { return mColumns; }
     int currentYear() const { return gl->currentYear(); }
     const XmlHelper &settings() const { return gl->settings(); } ///< access XML settings (see class description)
@@ -106,7 +108,9 @@ private:
     static const GlobalSettings *gl; ///< pointer to globalsettings object
     void newRow(); ///< starts a new row (resets the internal counter)
     void openDatabase(); ///< database open, create output table and prepare insert statement
+    void openFile(); ///< open output file
     inline void saveDatabase(); ///< database save (exeute the "insert" statement)
+    inline void saveFile(); ///< write to file
     OutputMode mMode;
     bool mOpen;
     bool mEnabled;
@@ -116,6 +120,8 @@ private:
     QList<OutputColumn> mColumns; ///< list of columns of output
     QVector<QVariant> mRow; ///< current row
     QSqlQuery mInserter;
+    QFile mOutputFile;
+    QTextStream mFileStream; ///< for file based output
     int mCount;
     int mIndex;
 

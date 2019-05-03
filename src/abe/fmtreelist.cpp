@@ -103,6 +103,19 @@ int FMTreeList::loadFromRect(ResourceUnit *ru, const QRectF &rect)
     return mTrees.size();
 }
 
+int FMTreeList::loadFromRU(ResourceUnit *ru, bool append)
+{
+    if (!append)
+        mTrees.clear();
+    for (const Tree &t : ru->trees()) {
+        if (!t.isDead()) {
+            mTrees.push_back(QPair<Tree*, double>(const_cast<Tree*>(&t), 0.));
+        }
+    }
+    return mTrees.size();
+
+}
+
 
 
 int FMTreeList::load(const QString &filter)

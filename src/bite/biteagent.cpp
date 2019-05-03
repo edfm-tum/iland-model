@@ -62,8 +62,13 @@ void BiteAgent::setup(QJSValue obj)
         mDesc = BiteEngine::valueFromJs(obj, "description", "",  "'description' is a required property!").toString();
         mCellSize = BiteEngine::valueFromJs(obj, "cellSize", "",  "'cellSize' is a required property!").toInt();
 
-        if ( !(mCellSize == 10 || mCellSize==20 || mCellSize==50 || mCellSize==100) )
-            throw IException("Invalid value for cell size! Allowed sized are 10,20,50, and 100m.");
+        if (mCellSize <= cRUSize) {
+            if ( !(mCellSize == 10 || mCellSize==20 || mCellSize==50 || mCellSize==100) )
+                throw IException("Invalid value for cell size! For cell sizes <= 100m the allowed sized are 10,20,50,100m.");
+        } else {
+            if (mCellSize % cRUSize != 0)
+                throw IException("Invalid value for cell size! For cells >100m the cell size has to be a multiple of 100m.");
+        }
 
         // setup climate variables
         QJSValue clim_vars = BiteEngine::valueFromJs(obj, "climateVariables", "");
@@ -137,6 +142,14 @@ void BiteAgent::notifyItems(BiteCell *cell, BiteCell::ENotification what)
     for (auto item : mItems) {
         item->notify(cell, what);
     }
+
+}
+
+void BiteAgent::setLargeCellRuList(int cellindex, QVector<ResourceUnit *> &list)
+{
+    QVector<ResourceUnit *> &rulist = mRULookup[cellindex];
+    rulist.clear();
+    rulist.append(list);
 
 }
 
@@ -268,6 +281,8 @@ void BiteAgent::saveGrid(QString expression, QString file_name)
 
 void BiteAgent::runCell(BiteCell &cell)
 {
+    if (!cell.isValid())
+        return;
 
     // main function: loop over all items and call runCell
     ABE::FMTreeList *tree_list = threadTreeList();
@@ -275,7 +290,7 @@ void BiteAgent::runCell(BiteCell &cell)
 
     try {
 
-    // fetch trees for the cell
+    // reset the loaded flags
     cell.setTreesLoaded(false);
     cell.setSaplingsLoaded(false);
     for (const auto &p : cell.agent()->mItems)
@@ -347,9 +362,17 @@ void BiteAgent::createBaseGrid()
 
     int index = 0;
     BiteCell *null_cell = nullptr;
+    bool add_cell;
+    QPointF pos;
     for (auto *bc = mGrid.begin(); bc!=mGrid.end(); ++bc, ++index) {
-        QPointF pos = mGrid.cellCenterPoint(index);
-        if (hg->constValueAt(pos).isValid()) {
+        if (cellSize()>cRUSize) {
+            add_cell = true; // for now add every cell
+        } else {
+            pos = mGrid.cellCenterPoint(index);
+            add_cell = hg->constValueAt(pos).isValid();
+        }
+
+        if (add_cell) {
             mCells.push_back(BiteCell());
             mCells.back().setup(index, pos, this);
             BiteCell *bcp = null_cell + static_cast<size_t>(mCells.size()); //  just to avoid compiler warnings...
