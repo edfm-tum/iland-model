@@ -86,12 +86,14 @@ void BiteCellScript::setValue(QString var_name, double value)
 void BiteCellScript::reloadTrees()
 {
     int n = mCell->loadTrees(trees());
+    mCell->setTreesLoaded(true);
     qCDebug(bite) << "reloaded trees for cell" << mCell->index() << ", N=" << n << " (treelist: " << trees();
 }
 
 void BiteCellScript::reloadSaplings()
 {
     int n = mCell->loadSaplings(saplings());
+    mCell->setSaplingsLoaded(true);
     // qCDebug(bite) << "reloaded trees for cell" << mCell->index() << ", N=" << n << " (saplinglist: " << saplings();
 
 }

@@ -153,6 +153,28 @@ void Output::openDatabase()
     mOpen = true;
 }
 
+void Output::openFile()
+{
+    QString path = GlobalSettings::instance()->path(mTableName + ".csv", "output");
+    mOutputFile.setFileName(path);
+    if (!mOutputFile.open(QIODevice::WriteOnly | QIODevice::Text))
+          throw IException(QString("The file '%1' for output '%2' cannot be opened!").arg(path, name()) );
+
+    // create header
+    mFileStream.setDevice(&mOutputFile);
+    QString line; bool first=true;
+    foreach(const OutputColumn &col, columns()) {
+        if (first) {
+            line = col.name();
+            first = false;
+        }  else {
+            line += ";" + col.name();
+        }
+    }
+    mFileStream << line << endl;
+
+}
+
 void Output::newRow()
 {
     mIndex = 0;
@@ -168,6 +190,8 @@ void Output::writeRow()
     switch(mMode) {
         case OutDatabase:
             saveDatabase(); break;
+    case OutFile:
+            saveFile(); break;
         default: throw IException("Invalid output mode");
     }
 
@@ -218,6 +242,8 @@ void Output::open()
     newRow();
     // setup output
     switch(mMode) {
+        case OutFile:
+            openFile(); break;
         case OutDatabase:
             openDatabase(); break;
         default: throw IException("Invalid output mode");
@@ -237,6 +263,9 @@ void Output::close()
                 mInserter.finish();
             mInserter = QSqlQuery(); // clear inserter
          break;
+    case OutFile:
+        mOutputFile.close();
+        break;
         default:
          qWarning() << "Output::close with invalid mode";
     }
@@ -256,6 +285,17 @@ void Output::saveDatabase()
                          .arg(mInserter.lastError().driverText()) );
     }
 
+    newRow();
+}
+
+void Output::saveFile()
+{
+    for (int i=0;i<mCount;++i) {
+        mFileStream << mRow[i].toString();
+        if (i!=mCount-1)
+            mFileStream << ";";
+    }
+    mFileStream << endl;
     newRow();
 }
 

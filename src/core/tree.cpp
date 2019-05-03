@@ -34,11 +34,11 @@
 #include "landscapeout.h"
 
 // static varaibles
-FloatGrid *Tree::mGrid = 0;
-HeightGrid *Tree::mHeightGrid = 0;
-TreeRemovedOut *Tree::mRemovalOutput = 0;
-LandscapeRemovedOut *Tree::mLSRemovalOutput = 0;
-Saplings *Tree::saps = 0;
+FloatGrid *Tree::mGrid = nullptr;
+HeightGrid *Tree::mHeightGrid = nullptr;
+TreeRemovedOut *Tree::mRemovalOutput = nullptr;
+LandscapeRemovedOut *Tree::mLSRemovalOutput = nullptr;
+Saplings *Tree::saps = nullptr;
 int Tree::m_statPrint=0;
 int Tree::m_statAboveZ=0;
 int Tree::m_statCreated=0;
@@ -74,24 +74,28 @@ double dist_and_direction(const QPointF &PStart, const QPointF &PEnd, double &rA
 
 
 // lifecycle
+static QMutex _protectTreeId;
 Tree::Tree()
 {
     mDbh = mHeight = 0;
-    mRU = 0; mSpecies = 0;
+    mRU = nullptr; mSpecies = nullptr;
     mFlags = mAge = 0;
     mOpacity=mFoliageMass=mStemMass=mCoarseRootMass=mFineRootMass=mBranchMass=mLeafArea=0.;
     mDbhDelta=mNPPReserve=mLRI=mStressIndex=0.;
     mLightResponse = 0.;
-    mStamp=0;
-    mId = m_nextId++;
+    mStamp = nullptr;
+
     m_statCreated++;
     saps = GlobalSettings::instance()->model()->saplings(); // save link to saplings to static variable
+
+    QMutexLocker lock(&_protectTreeId); // make sure tree Ids are unique
+    mId = m_nextId++;
 
 }
 
 float Tree::crownRadius() const
 {
-    Q_ASSERT(mStamp!=0);
+    Q_ASSERT(mStamp!=nullptr);
     if (!mStamp) return 0.f;
     return mStamp->crownRadius();
 }
@@ -770,21 +774,21 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     // Roots
     // http://iland.boku.ac.at/allocation#belowground_NPP
-    mFineRootMass -= sen_root; // reduce only fine root pool
+    mFineRootMass -= static_cast<float>(sen_root); // reduce only fine root pool
     double delta_root = apct_root * npp;
     // 1st, refill the fine root pool
     // for very small amounts of foliage biomass (e.g. defoliation), use the newly distributed foliage (apct_foliage*npp-sen_foliage)
     double fineroot_miss = qMax(mFoliageMass * mSpecies->finerootFoliageRatio(), apct_foliage * npp - sen_foliage) - mFineRootMass;
     if (fineroot_miss>0.){
         double delta_fineroot = qMin(fineroot_miss, delta_root);
-        mFineRootMass += delta_fineroot;
+        mFineRootMass += static_cast<float>(delta_fineroot);
         delta_root -= delta_fineroot;
     }
     double net_root_inc = mFineRootMass - sen_root;
     // 2nd, the rest of NPP allocated to roots go to coarse roots
     double max_coarse_root = species()->biomassRoot(mDbh) * 1.2; // allometry plus 20% is to upper bound
     double old_coarse_root = mCoarseRootMass;
-    mCoarseRootMass += delta_root;
+    mCoarseRootMass += static_cast<float>(delta_root);
 
     if (mCoarseRootMass > max_coarse_root) {
         // if the coarse root pool exceeds the value given by the allometry, then the
@@ -800,7 +804,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
     // Foliage
     double delta_foliage = apct_foliage * npp - sen_foliage;
-    mFoliageMass += delta_foliage;
+    mFoliageMass += static_cast<float>(delta_foliage);
     if (isnan(mFoliageMass))
         qDebug() << "foliage mass invalid!";
     if (mFoliageMass<0.) mFoliageMass=0.; // limit to zero
@@ -832,14 +836,14 @@ inline void Tree::partitioning(TreeGrowthData &d)
         net_stem = net_woody * species()->allometricFractionStem(mDbh);
         double net_branches = net_woody - net_stem;
         d.NPP_stem = net_stem;
-        mStemMass += net_stem;
-        mBranchMass += net_branches;
+        mStemMass += static_cast<float>(net_stem);
+        mBranchMass += static_cast<float>(net_branches);
 
         //  (3) growth of diameter and height baseed on net stem increment
         grow_diameter(d);
 
         // finalize branch pool
-        float max_branch = static_cast<float>( species()->biomassBranch(mDbh) ) * 1.2; // limit is 20% above the allometry (*new* dbh)
+        float max_branch = static_cast<float>( species()->biomassBranch(mDbh) ) * 1.2f; // limit is 20% above the allometry (*new* dbh)
         if (mBranchMass > max_branch) {
             float surplus = mBranchMass - max_branch;
             mass_lost+=surplus;
@@ -1054,9 +1058,9 @@ void Tree::removeDisturbance(const double stem_to_soil_fraction,
 /// remove a part of the biomass of the tree, e.g. due to fire.
 void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double removeBranchFraction, const double removeStemFraction)
 {
-    mFoliageMass *= 1. - removeFoliageFraction;
-    mStemMass *= (1. - removeStemFraction);
-    mBranchMass *= (1. - removeBranchFraction);
+    mFoliageMass *= static_cast<float>(1. - removeFoliageFraction);
+    mStemMass *= static_cast<float>(1. - removeStemFraction);
+    mBranchMass *= static_cast<float>(1. - removeBranchFraction);
     if (removeFoliageFraction>0.) {
         // update related leaf area
         mLeafArea = static_cast<float>( mFoliageMass * species()->specificLeafArea() ); // update leaf area
@@ -1064,6 +1068,20 @@ void Tree::removeBiomassOfTree(const double removeFoliageFraction, const double 
         //if (removeFoliageFraction==1.)
         //    m_statAboveZ = mId; // temp
     }
+}
+
+void Tree::removeRootBiomass(const double removeFineRootFraction, const double removeCoarseRootFraction)
+{
+    float remove_fine_roots = mFineRootMass * static_cast<float>(removeFineRootFraction);
+    float remove_coarse_roots = mCoarseRootMass * static_cast<float>(removeCoarseRootFraction);
+    mFineRootMass -= remove_fine_roots;
+    mCoarseRootMass -= remove_coarse_roots;
+    // remove also the same amount as the fine root removal from the reserve pool
+    mNPPReserve = qMax(mNPPReserve - remove_fine_roots, 0.f);
+    if (ru()->snag())
+        ru()->snag()->addTurnoverWood(species(), remove_fine_roots + remove_coarse_roots);
+
+
 }
 
 void Tree::setHeight(const float height)

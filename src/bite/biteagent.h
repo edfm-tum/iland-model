@@ -54,11 +54,12 @@ struct BAgentStats {
 
 struct BACellStat {
     BACellStat() { clear(); }
-    void clear() { nKilled=0; nHostTrees=0; m3Killed = 0.; totalImpact = 0.; saplingsKilled=0; saplingsImpact=0; }
+    void clear() { nKilled=0; nHostTrees=0; m3Killed = 0.; totalImpact = 0.; nHostSaplings=0; saplingsKilled=0; saplingsImpact=0; }
     int nKilled; ///< number of trees (>4m) killed
     int nHostTrees; ///< number of trees (>4m) that are potential host trees (hostFilter)
     double m3Killed; ///< volume of all killed trees (>4m)
     double totalImpact; ///< impact on tree compartments (depending on the mode)
+    int nHostSaplings; ///< number of saplings (cohorts) that are potential hosts
     int saplingsKilled; ///< number of saplings (cohorts) killed (<4m)
     int saplingsImpact; ///< number of saplings affected (e.g. by browsing) (<4m)
 
@@ -95,7 +96,8 @@ public:
     const BiteClimate &biteClimate() const { return mClimateProvider; }
 
     void notifyItems(BiteCell *cell, BiteCell::ENotification what);
-
+    const QVector<ResourceUnit*> &largeCellRUs(int cellindex) { return mRULookup[cellindex]; }
+    void setLargeCellRuList(int cellindex, QVector<ResourceUnit*> &list);
 
     /// (short) name of the agent
     QString name() const {return mName; }
@@ -165,6 +167,9 @@ private:
 
     // elements (i.e. processes)
     QVector<BiteItem*> mItems;
+
+    // structure for looking up resource units covered by a cell (for large cells)
+    QHash<int, QVector<ResourceUnit*> > mRULookup;
 
     BiteLifeCycle *mLC;
 

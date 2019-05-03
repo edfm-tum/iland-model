@@ -37,12 +37,14 @@ class BiteAgent;
 class BiteCell
 {
 public:
-    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1), mYearsLiving(0), mCumYearsLiving(0), mTreesLoaded(false), mSaplingsLoaded(false) {}
+    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1), mYearsLiving(0), mCumYearsLiving(0), mTreesLoaded(false), mSaplingsLoaded(false), mArea(0.f) {}
     void setup(int cellidx, QPointF pos, BiteAgent *agent);
     /// index within the agent grid
     int index() const {return mIndex;}
     BiteAgent *agent() const { return mAgent; }
     QString info();
+
+    bool isValid() const { return mRU!=nullptr; }
 
     bool isActive() const {return mIsActive; }
     void setActive(bool activate) { mIsActive = activate; }
@@ -54,6 +56,8 @@ public:
     void setSaplingsLoaded(bool loaded) { mSaplingsLoaded = loaded; }
     void checkTreesLoaded(ABE::FMTreeList *treelist);
     void checkSaplingsLoaded(ABE::FMSaplingList *saplist);
+    bool areTreesLoaded() const { return mTreesLoaded; }
+    bool areSaplingsLoaded() const { return mSaplingsLoaded; }
 
     int yearsLiving() const { return mYearsLiving; }
     int yearLastSpread() const { return mLastSpread; }
@@ -70,6 +74,7 @@ public:
     int loadTrees(ABE::FMTreeList *treelist);
     int loadSaplings(ABE::FMSaplingList *saplinglist);
 private:
+    void largeCellSetup(QPointF pos);
     ResourceUnit *mRU; ///< ptr to resource unit of the cell
     BiteAgent *mAgent; ///< link to the agent
     bool mIsActive; ///< active: true if the agent "lives" on the cell
@@ -81,6 +86,8 @@ private:
 
     bool mTreesLoaded; ///< is the tree list already fetched from iLand
     bool mSaplingsLoaded; ///< is the tree list already fetched from iLand
+
+    float mArea; ///< iLand project area covered by the cell (in ha)
 };
 
 } // end namespace

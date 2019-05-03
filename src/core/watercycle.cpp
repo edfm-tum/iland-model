@@ -386,10 +386,8 @@ void WaterCycle::resetPsiMin()
     }
 }
 
-QMutex _mutex_psi;
 double WaterCycle::estPsiMin(int phenologyGroup) const
 {
-    //QMutexLocker locker(&_mutex_psi);
     // query the container and run the calculation for the current RU if value is
     // not yet calculated
     int key = mRU->index()*100 + phenologyGroup;

@@ -20,6 +20,8 @@ public:
 
     /// load saplings from a portion of a RU
     int loadFromRect(ResourceUnit *ru, const QRectF &rect);
+    /// load all saplings from RU
+    int loadFromRU(ResourceUnit *ru, bool append=false);
 
     // to load from a stand: see e.g. FMTreeList::aggregate_function_sapling(QString expression, QString filter, QString type) and SaplingCellRunner....
 
