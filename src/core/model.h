@@ -104,6 +104,8 @@ public:
     const QList<ResourceUnit*> &ruList() const {return mRU; }
     Management *management() const { return mManagement; }
     ABE::ForestManagementEngine *ABEngine() const { return mABEManagement; }
+    BITE::BiteEngine *biteEngine() const { return mBiteEngine; }
+
     Environment *environment() const {return mEnvironment; }
     Saplings *saplings() const {return mSaplings; }
     TimeEvents *timeEvents() const { return mTimeEvents; }

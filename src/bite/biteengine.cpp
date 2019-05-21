@@ -218,8 +218,23 @@ void BiteEngine::error(QString error_msg)
 {
     mErrorStack.push_back(error_msg);
     mHasScriptError = true;
-    if (!mRunning)
-        throw IException("Bite Error: " + error_msg);
+    if (!mRunning) {
+        GlobalSettings::instance()->scriptEngine()->throwError(error_msg);
+        //throw IException("Bite Error: " + error_msg);
+    }
+}
+
+void BiteEngine::notifyTreeRemoval(Tree *tree, int reason)
+{
+    QMultiHash<int, BiteAgent*>::iterator i = mTreeRemovalNotifiers.find(reason);
+    if (i == mTreeRemovalNotifiers.end())
+        return;
+    QJSValueList args;
+    while (i != mTreeRemovalNotifiers.end() && i.key() == reason) {
+        // cout << i.value() << endl;
+        i.value()->runOnTreeRemovedFilter(tree, reason);
+        ++i;
+    }
 }
 
 

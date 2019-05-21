@@ -59,6 +59,11 @@ public:
     /// safe guard calls to the JS engine (only 1 thread allowed)
     QMutex *serializeJS() { return &mSerialize; }
 
+    /// called by iLand for every tree that is removed/harvested/died due to disturbance.
+    void notifyTreeRemoval(Tree* tree, int reason);
+    void addTreeRemovalFunction(int reason, BiteAgent* agent) { mTreeRemovalNotifiers.insert(reason, agent); }
+
+
     // static functions
     static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QLatin1Literal(""), const QString &errorMessage=QLatin1Literal(""));
 private:
@@ -72,6 +77,7 @@ private:
     QMutex mSerialize;
     int mYear;
     bool mRunning;
+    QMultiHash<int, BiteAgent*> mTreeRemovalNotifiers;
 
     friend class BiteOutput;
 };

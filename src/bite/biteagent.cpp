@@ -24,6 +24,7 @@
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
 #include "scriptgrid.h"
+#include "scripttree.h"
 #include "bitelifecycle.h"
 
 #include <QQmlEngine>
@@ -42,6 +43,7 @@ BiteAgent::BiteAgent(QJSValue obj): QObject(nullptr)
 {
     mVerbose = false;
     mLC = nullptr;
+    mOnTreeRemovedFilter = 0;
     setup(obj);
 }
 
@@ -50,6 +52,8 @@ BiteAgent::~BiteAgent()
     // delete all the items
     for (auto *p : mItems)
         delete p;
+
+    qDeleteAll(mCreatedVarGrids);
 
 
 }
@@ -113,7 +117,9 @@ void BiteAgent::setup(QJSValue obj)
         for (int i=0;i<mItems.size();++i)
             mItems[i]->afterSetup();
 
-        mEvents.setup(obj, QStringList() << "onSetup" << "onYearBegin" << "onYearEnd", this);
+        setupScripting();
+
+        mEvents.setup(obj, QStringList() << "onSetup" << "onYearBegin" << "onYearEnd" << "onTreeRemoved", this);
         QJSValueList eparam = QJSValueList() << mThis;
         mEvents.run("onSetup", nullptr, &eparam);
 
@@ -155,7 +161,49 @@ void BiteAgent::setLargeCellRuList(int cellindex, QVector<ResourceUnit *> &list)
 
 QStringList BiteAgent::variables()
 {
- return wrapper()->getVariablesList();
+    return wrapper()->getVariablesList();
+}
+
+void BiteAgent::setOnTreeRemovedFilter(int value)
+{
+    //BiteEngine::instance()->re
+    if (!mEvents.hasEvent("onTreeRemoved"))
+        throw IException("set onTreeRemovedFilter: handler onTreeRemoved not available!");
+    QJSValue func = mEvents.eventFunction("onTreeRemoved");
+    if (!func.isCallable())
+        throw IException("set onTreeRemovedFilter: handler onTreeRemoved not available!");
+    BiteEngine *bite = BiteEngine::instance();
+    // the enum defined it ScriptTree:
+    // enum TreeRemovalType { RemovedDeath=1, RemovedHarvest=2, RemovedDisturbance=4, RemovedSalavaged=8, RemovedKilled=16, RemovedCutDown=32};
+    if (value & ScriptTree::RemovedDeath)
+        bite->addTreeRemovalFunction(0, this);
+    if (value & ScriptTree::RemovedHarvest)
+        bite->addTreeRemovalFunction(1, this);
+    if (value & ScriptTree::RemovedDisturbance)
+        bite->addTreeRemovalFunction(2, this);
+    if (value & ScriptTree::RemovedSalavaged)
+        bite->addTreeRemovalFunction(3, this);
+    if (value & ScriptTree::RemovedKilled)
+        bite->addTreeRemovalFunction(4, this);
+    if (value & ScriptTree::RemovedCutDown)
+        bite->addTreeRemovalFunction(5, this);
+
+    mOnTreeRemovedFilter = value;
+
+}
+
+void BiteAgent::runOnTreeRemovedFilter(Tree *tree, int reason)
+{
+    // the signature of the JS function:
+    // function(cell, tree, reason)
+    BiteCell *cell = mGrid[tree->position()];
+    mCell.setCell(cell);
+    mTree.setTree(tree);
+    // convert the enum to the values used in ScriptTree:
+    // 0->1, 1->2, 2->4, 3->8, ...
+    mTreeRemovedParams[2] = 1 << reason;
+
+    mEvents.run("onTreeRemoved", nullptr,  &mTreeRemovedParams);
 }
 
 //void _run_cell(BiteCell &cell) {
@@ -242,6 +290,71 @@ void BiteAgent::addVariable(ScriptGrid *grid, QString var_name)
     qCDebug(biteSetup) << "added a grid (" << grid->name() << ") to the agent" << name();
 }
 
+void BiteAgent::addVariable(QString var_name)
+{
+    Grid<double> *var_grid = new Grid<double>();
+    var_grid->setup(grid().metricRect(), grid().cellsize());
+    var_grid->initialize(0.);
+    wrapper()->registerGridVar(var_grid, var_name);
+    mCreatedVarGrids.push_back(var_grid); // to make sure that the grid is again deleted
+    qCDebug(biteSetup) << "added a grid variable (" << var_name << ") to the agent" << name();
+
+}
+
+void BiteAgent::updateVariable(QString var_name, double value)
+{
+    Grid<double> *grid = wrapper()->grid(var_name);
+    if (!grid) {
+        BiteEngine::instance()->error( "invalid variable: " + var_name );
+        return;
+    }
+    grid->initialize(value);
+}
+
+void BiteAgent::updateVariable(QString var_name, QString expression)
+{
+    Grid<double> *grid = wrapper()->grid(var_name);
+    if (!grid) {
+        BiteEngine::instance()->error( "invalid variable: " + var_name );
+        return;
+    }
+
+    BiteWrapper wrap(wrapper());
+    Expression expr(expression, &wrap);
+    BiteCell **cell = mGrid.begin();
+    for (double *p = grid->begin(); p!=grid->end(); ++p, ++cell)
+        if (*cell) {
+            wrap.setCell(*cell);
+            *p = expr.execute();
+        }
+
+}
+
+void BiteAgent::updateVariable(QString var_name, QJSValue func)
+{
+    Grid<double> *grid = wrapper()->grid(var_name);
+    if (!grid) {
+        BiteEngine::instance()->error( "invalid variable: " + var_name );
+        return;
+    }
+
+    if (!func.isCallable())
+        BiteEngine::instance()->error("BiteAgent::updateVariable - no function provided!");
+    BiteCellScript bcs;
+    QJSValue js_scriptcell = BiteEngine::instance()->scriptEngine()->newQObject(&bcs);
+    bcs.setAgent(this);
+
+    BiteCell **cell = mGrid.begin();
+    for (double *p = grid->begin(); p!=grid->end(); ++p, ++cell)
+        if (*cell) {
+            bcs.setCell(*cell);
+            QJSValue result = func.call(QJSValueList() << js_scriptcell);
+            if (!result.isNumber())
+                BiteEngine::instance()->error("BiteAgent::updateVariable: return of Javascript function not numeric! Result:" + result.toString());
+            *p = result.toNumber();
+        }
+}
+
 void BiteAgent::updateDrawGrid(QString expression)
 {
     BiteWrapper wrap(wrapper());
@@ -257,9 +370,10 @@ void BiteAgent::updateDrawGrid(QString expression)
 void BiteAgent::updateDrawGrid(QJSValue func)
 {
     if (!func.isCallable())
-        throw IException("BiteAgent::updateDrawGrid - no function provided!");
+        BiteEngine::instance()->error("BiteAgent::updateDrawGrid - no function provided!");
     BiteCellScript bcs;
     QJSValue js_scriptcell = BiteEngine::instance()->scriptEngine()->newQObject(&bcs);
+    bcs.setAgent(this);
 
     BiteCell **cell = mGrid.begin();
     for (double *p = mBaseDrawGrid.begin(); p!=mBaseDrawGrid.end(); ++p, ++cell)
@@ -302,6 +416,18 @@ void BiteAgent::runCell(BiteCell &cell)
         // report error
         BiteEngine::instance()->error( e.message() );
     }
+}
+
+void BiteAgent::setupScripting()
+{
+    mCell.setAgent(this);
+    mScriptCell = BiteEngine::instance()->scriptEngine()->newQObject(&mCell);
+    BiteAgent::setCPPOwnership(&mCell);
+    mTreeValue = BiteEngine::instance()->scriptEngine()->newQObject(&mTree);
+    BiteAgent::setCPPOwnership(&mTree);
+    mTreeRemovedParams.clear();
+    mTreeRemovedParams << mScriptCell << mTreeValue << 0;
+
 }
 
 static QMutex _thread_treelist;

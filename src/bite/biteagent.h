@@ -78,6 +78,7 @@ class BiteAgent : public QObject
     Q_PROPERTY(bool verbose READ verbose WRITE setVerbose)
     Q_PROPERTY(ScriptGrid* drawGrid READ drawGrid)
     Q_PROPERTY(QStringList variables READ variables)
+    Q_PROPERTY(int onTreeRemovedFilter READ onTreeRemovedFilter WRITE setOnTreeRemovedFilter)
 
 public:
     BiteAgent(QObject *parent = nullptr);
@@ -114,6 +115,11 @@ public:
     bool verbose() const { return mVerbose; }
     void setVerbose(bool v) { mVerbose = v; }
 
+    // property that controls the reasons when the onTreeRemoved event handler should be called
+    int onTreeRemovedFilter() const { return mOnTreeRemovedFilter; }
+    void setOnTreeRemovedFilter(int value);
+    void runOnTreeRemovedFilter(Tree *tree, int reason);
+
     const Grid<BiteCell*> &grid() const { return mGrid; }
     static ABE::FMTreeList* threadTreeList();
     static ABE::FMSaplingList* threadSaplingList();
@@ -136,14 +142,27 @@ public slots:
     QString info();
 
     double evaluate(BiteCellScript *cell, QString expr);
+    /// add an existing grid (e.g. from file) as an agent variable
     void addVariable(ScriptGrid *grid, QString var_name);
+    /// add a variable (=Grid<double>) with the name 'var_name'
+    void addVariable(QString var_name);
+    /// set the value of var_name to value for all cells
+    void updateVariable(QString var_name, double value);
+    /// set the value of var_name to the result of 'expression' for all cells
+    void updateVariable(QString var_name, QString expression);
+    /// set the value of var_name to the result of the javascript function func (evaluated with cell context)
+    void updateVariable(QString var_name, QJSValue func);
+    /// evaluate 'expression' for each cell and update the internal drawing grid
     void updateDrawGrid(QString expression);
     void updateDrawGrid(QJSValue func);
+    /// evaluate 'expression' for each cell, update the internal drawing grid, and save the content to 'file_name'
     void saveGrid(QString expression, QString file_name);
 private:
     static void runCell(BiteCell &cell);
     static QHash<QThread*, ABE::FMTreeList* > mTreeLists;
     static QHash<QThread*, ABE::FMSaplingList* > mSaplingLists;
+
+    void setupScripting();
 
     BiteWrapperCore mWrapperCore;
     BiteClimate mClimateProvider;
@@ -164,6 +183,7 @@ private:
 
     Events mEvents;
     QJSValue mThis;
+    QJSValueList mTreeRemovedParams;
 
     // elements (i.e. processes)
     QVector<BiteItem*> mItems;
@@ -177,6 +197,15 @@ private:
     QString mDesc;
     int mCellSize;
     bool mVerbose;
+    int mOnTreeRemovedFilter;
+
+    // JS helper
+    BiteCellScript mCell;
+    QJSValue mScriptCell;
+    QJSValue mTreeValue;
+    ScriptTree mTree;
+    QVector<Grid<double> *> mCreatedVarGrids;
+
 
 };
 

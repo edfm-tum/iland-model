@@ -1062,6 +1062,7 @@ void ScriptGlobal::setupGlobalScripting()
     CSVFile::addToScriptEngine(*engine);
     MapGridWrapper::addToScriptEngine(*engine);
     SpatialAnalysis::addToScriptEngine();
+    ScriptTree::addToScriptEngine(*engine);
     ScriptTreeExpr::addToScriptEngine(*engine);
     ScriptGrid::addToScriptEngine(engine);
 

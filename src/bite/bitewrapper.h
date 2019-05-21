@@ -41,6 +41,9 @@ public:
     double valueCell(const int variableIndex, const BiteCell* cell);
     void setValueCell(const int variableIndex, const BiteCell* cell, double new_value);
 
+    /// returns the grid for variable 'var_name' or nullptr
+    Grid<double> *grid(QString var_name);
+
 private:
     enum EVarType { VarDoubleGrid, VarNone, VarClimate };
     void buildVarList();

@@ -15,7 +15,19 @@ class ScriptTree : public QObject
     Q_PROPERTY(double dbh READ dbh)
     Q_PROPERTY(double height READ height)
     Q_PROPERTY(QString species READ species)
+    Q_PROPERTY(int flags READ flags)
 public:
+    enum TreeRemovalType { RemovedDeath=1, RemovedHarvest=2, RemovedDisturbance=4, RemovedSalavaged=8, RemovedKilled=16, RemovedCutDown=32}; // the same enum as in tree.h, but encoded binary
+    //enum TreeRemovalType { TreeDeath=0, TreeHarvest=1, TreeDisturbance=2, TreeSalavaged=3, TreeKilled=4, TreeCutDown=5}; // the  enum in tree.h
+    Q_ENUM(TreeRemovalType)
+    // selected tree flags from tree.h
+    enum Flags { TreeDead=1,
+                 TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256,
+                 TreeAffectedBite=8192 // affected or killed by biotic disturbance module (BITE)
+               };
+    Q_ENUM(Flags)
+    static void addToScriptEngine(QJSEngine &engine);
+
     explicit ScriptTree(QObject *parent = nullptr);
     void setTree(Tree *t) { mTree = t; }
     const Tree *tree() { return mTree; }
@@ -27,6 +39,7 @@ public:
     double dbh() const {  return mTree ? static_cast<double>(mTree->dbh()) : -1.;    }
     double height() const {  return mTree ? static_cast<double>(mTree->height()) : -1.;    }
     QString species() const { return mTree ? mTree->species()->id() : QStringLiteral("invalid"); }
+    int flags() const { return mTree ? mTree->flags() : 0; }
 
 signals:
 
