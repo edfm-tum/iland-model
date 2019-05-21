@@ -112,6 +112,18 @@ void BiteWrapperCore::setValueCell(const int variableIndex, const BiteCell *cell
     qDebug() << "setValueCell called";
 }
 
+Grid<double> *BiteWrapperCore::grid(QString var_name)
+{
+    int varidx = mVariables.indexOf(var_name);
+    if (varidx<0)
+        return nullptr;
+    if( mVarObj[varidx].first == VarDoubleGrid )
+        return static_cast<Grid<double>* >( mVarObj[varidx].second );
+    else
+        return nullptr;
+
+}
+
 void BiteWrapperCore::buildVarList()
 {
     // standard variables

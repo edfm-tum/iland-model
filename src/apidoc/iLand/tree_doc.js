@@ -76,6 +76,14 @@ The y-coordinate of the tree, in m.
 */
 
 /**
+`flags` is a binary encoded set of tree flags (see http://iland.boku.ac.at/outputs#Tree_Removed_Output for a list of all flags).
+
+@property flags
+@type int
+*/
+
+
+/**
 A string with memory address, Id, dbh, height, and coordinates of the tree.
 
 @method info

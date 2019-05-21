@@ -106,14 +106,20 @@ LandscapeRemovedOut::LandscapeRemovedOut()
     setDescription("Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape."\
                    "The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing). " \
                    "Set the setting in the XML project file 'includeNatural' to 'true' to include trees that died due to natural mortality, " \
-                   "the setting 'includeHarvest' controls whether to include ('true') or exclude ('false') harvested trees. ");
+                   "the setting 'includeHarvest' controls whether to include ('true') or exclude ('false') harvested trees.\n" \
+                   "To enable output per dbh class, set the 'dbhClasses' setting to a comma delimeted list of dbh thresholds (e.g., '10,20,30,40,50'). The value in the output column " \
+                   "'dbh_class' refers to the class (e.g.: 0: 0-10, 1: 10-20, 2: 20-30, 3: 30-40, 4: 40-50, 5: >=50). ");
     columns() << OutputColumn::year()
               << OutputColumn::species()
+              << OutputColumn("dbh_class", "dbh class (see above). 0 if dbh classes are off.", OutInteger)
               << OutputColumn("reason", "Resaon for tree death: 'N': Natural mortality, 'H': Harvest (removed from the forest), 'D': Disturbance (not salvage-harvested), 'S': Salvage harvesting (i.e. disturbed trees which are harvested), 'C': killed/cut down by management", OutString)
               << OutputColumn("count", "number of died trees (living, >4m height) ", OutInteger)
               << OutputColumn("volume_m3", "sum of volume (geomery, taper factor) in m3", OutDouble)
               << OutputColumn("basal_area_m2", "total basal area at breast height (m2)", OutDouble)
-              << OutputColumn("total_carbon", "total carbon (sum of stem, branch, foliage, coarse and fine roots) (kg C)", OutDouble);
+              << OutputColumn("total_carbon", "total carbon (sum of stem, branch, foliage, coarse and fine roots) (kg C)", OutDouble)
+              << OutputColumn("stem_c", "carbon in stems (kg C)", OutDouble)
+              << OutputColumn("branch_c", "carbon on branch compartment (kg C)", OutDouble)
+              << OutputColumn("foliage_c", "carbon in foliage (kg C)", OutDouble);
 
 }
 
@@ -129,11 +135,14 @@ void LandscapeRemovedOut::execRemovedTree(const Tree *t, int reason)
 
     QMutexLocker protector(&protect_output); // output creation can come from many threads
 
-    int key = reason*10000 + t->species()->index();
+    int key = dbhClass(t->dbh())*100000 +  reason*10000 + t->species()->index();
     LROdata &d = mLandscapeRemoval[key];
     d.basal_area += t->basalArea();
     d.volume += t->volume();
     d.carbon += (t->biomassBranch()+t->biomassCoarseRoot()+t->biomassFineRoot()+t->biomassFoliage()+t->biomassStem())*biomassCFraction;
+    d.cstem += t->biomassStem() * biomassCFraction;
+    d.cbranch += t->biomassBranch() * biomassCFraction;
+    d.cfoliage += t->biomassFoliage() * biomassCFraction;
     d.n++;
 
 
@@ -146,15 +155,16 @@ void LandscapeRemovedOut::exec()
 
     while (i != mLandscapeRemoval.end()) {
         if (i.value().n>0) {
-            Tree::TreeRemovalType rem_type = static_cast<Tree::TreeRemovalType>(i.key() / 10000);
+            Tree::TreeRemovalType rem_type = static_cast<Tree::TreeRemovalType>((i.key() % 100000) / 10000 );
             int species_index = i.key() % 10000;
-            *this << currentYear() << GlobalSettings::instance()->model()->speciesSet()->species(species_index)->id();
+            int dbh_class = i.key() / 100000;
+            *this << currentYear() << GlobalSettings::instance()->model()->speciesSet()->species(species_index)->id() << dbh_class;
             if (rem_type==Tree::TreeDeath) *this << QStringLiteral("N");
             if (rem_type==Tree::TreeHarvest) *this << QStringLiteral("H");
             if (rem_type==Tree::TreeDisturbance) *this << QStringLiteral("D");
             if (rem_type==Tree::TreeSalavaged) *this << QStringLiteral("S");
             if (rem_type==Tree::TreeCutDown) *this << QStringLiteral("C");
-            *this << i.value().n << i.value().volume<< i.value().basal_area << i.value().carbon;
+            *this << i.value().n << i.value().volume<< i.value().basal_area << i.value().carbon << i.value().cstem << i.value().cbranch << i.value().cfoliage;
             writeRow();
         }
         ++i;
@@ -172,6 +182,40 @@ void LandscapeRemovedOut::setup()
 {
     mIncludeHarvestTrees = settings().valueBool(".includeHarvest", true);
     mIncludeDeadTrees = settings().valueBool(".includeNatural", false);
+
+    mDBHThreshold.clear();
+    QString dbh_cls = settings().value(".dbhClasses");
+    if (!dbh_cls.isEmpty())
+        setupDbhClasses(dbh_cls);
     Tree::setLandscapeRemovalOutput(this);
 
+}
+
+int LandscapeRemovedOut::dbhClass(float dbh)
+{
+    if (mDBHThreshold.size() == 0)
+        return 0;
+    int idbh = static_cast<int>(dbh);
+    int cls = mDBHClass[ qMin(idbh, mMaxDbh) ];
+    return cls;
+}
+
+void LandscapeRemovedOut::setupDbhClasses(QString cls_string)
+{
+
+    QStringList cls_list = cls_string.split(',');
+    for (int i=0;i<cls_list.size();++i) {
+        mDBHThreshold.push_back( cls_list[i].toInt()  );
+    }
+    qDebug() << "landscaperemoved output: use dbh classes:" << mDBHThreshold;
+    mDBHThreshold.push_back(100000); // upper limit
+    int current_cls = 0;
+    mDBHClass.clear();
+    for (int i=0;i<=mMaxDbh;++i) {
+        if (i>=mDBHThreshold[current_cls])
+            current_cls++;
+
+        mDBHClass.push_back(current_cls);
+
+    }
 }

@@ -29,6 +29,7 @@
 
 #include "forestmanagementengine.h"
 #include "modules.h"
+#include "biteengine.h"
 
 #include "treeout.h"
 #include "landscapeout.h"
@@ -691,7 +692,7 @@ void Tree::grow()
     if (Model::settings().mortalityEnabled)
         mortality(d);
 
-    mStressIndex = d.stress_index;
+    mStressIndex = static_cast<float>(d.stress_index);
 #endif
 
     if (!isDead()) {
@@ -1141,6 +1142,10 @@ void Tree::notifyTreeRemoved(TreeRemovalType reason)
     ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
     if (abe)
         abe->notifyTreeRemoval(this, static_cast<int>(reason));
+
+    BITE::BiteEngine *bite = GlobalSettings::instance()->model()->biteEngine();
+    if (bite)
+        bite->notifyTreeRemoval(this, static_cast<int>(reason));
 
     // tell disturbance modules that a tree died
     GlobalSettings::instance()->model()->modules()->treeDeath(this, static_cast<int>(reason) );

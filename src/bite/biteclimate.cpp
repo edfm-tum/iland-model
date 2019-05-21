@@ -23,11 +23,16 @@
 #include "resourceunit.h"
 namespace BITE {
 
-QStringList BiteClimate::mClimateVars = QStringList() << "MAT" << "MAP" << "GDD"
-                                                      << "TMonth1" << "TMonth2" << "TMonth3"
+QStringList BiteClimate::mClimateVars = QStringList() << "MAT" << "MAP" << "GDD" // 0,1,2
+                                                      << "TMonth1" << "TMonth2" << "TMonth3" // 3-14: monthly temp
                                                       << "TMonth4" << "TMonth5" << "TMonth6"
                                                       << "TMonth7" << "TMonth8" << "TMonth9"
-                                                      << "TMonth10" << "TMonth11" << "TMonth12";
+                                                      << "TMonth10" << "TMonth11" << "TMonth12"
+                                                      << "PMonth1" << "PMonth2" << "PMonth3" // 15-26: monthly prec
+                                                      << "PMonth4" << "PMonth5" << "PMonth6"
+                                                      << "PMonth7" << "PMonth8" << "PMonth9"
+                                                      << "PMonth10" << "PMonth11" << "PMonth12"
+                                                      << "GDD10"; // 27
 
 BiteClimate::BiteClimate()
 {
@@ -61,10 +66,15 @@ double BiteClimate::value(int var_index, const ResourceUnit *ru) const
     case 0: return c->meanAnnualTemperature();  // mean annual temp
     case 1: return c->annualPrecipitation(); // MAP
     case 2: return calculateGDD(c, 5.); // GDD(with base temp 5 degrees)
+    case 27: return calculateGDD(c, 10.); // GDD(with base temp 10 degrees)
     }
     if (var_index<3+12) {
         return c->temperatureMonth()[var_index - 3];
     }
+    if (var_index<3+12+12) {
+        return c->precipitationMonth()[var_index - 3 - 12];
+    }
+
     return 0.;
 }
 

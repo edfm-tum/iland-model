@@ -94,6 +94,7 @@ public:
     QString run(const QString event, BiteCell *cell=nullptr, QJSValueList *params=nullptr);
     /// returns true, if the event 'event' is available.
     bool hasEvent(const QString &event) const;
+    QJSValue eventFunction(const QString &event) { return mEvents[event].property(event); }
     QString dump(); ///< prints some debug info
 private:
     QJSValue mInstance; ///< object holding the events

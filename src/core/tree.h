@@ -38,6 +38,7 @@ class TreeOut;
 class TreeRemovedOut;
 class LandscapeRemovedOut;
 class Saplings;
+class ScriptTree;
 
 class Tree
 {
@@ -246,6 +247,7 @@ private:
     friend class LandscapeRemovedOut;
     friend class Snapshot;
     friend class SnapshotItem;
+    friend class ScriptTree;
 };
 
 /// internal data structure which is passed between function and to statistics

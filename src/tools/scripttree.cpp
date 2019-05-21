@@ -5,6 +5,13 @@
 #include <QJSEngine>
 
 
+void ScriptTree::addToScriptEngine(QJSEngine &engine)
+{
+    QJSValue jsMetaObject = engine.newQMetaObject(&ScriptTree::staticMetaObject);
+    engine.globalObject().setProperty("Tree", jsMetaObject);
+
+}
+
 ScriptTree::ScriptTree(QObject *parent) : QObject(parent)
 {
     mTree = nullptr;
