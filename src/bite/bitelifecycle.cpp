@@ -47,6 +47,14 @@ void BiteLifeCycle::setup(BiteAgent *parent_agent)
         QJSValue spread_freq = BiteEngine::valueFromJs(mObj, "spreadInterval", "1", "'spreadInterval' is a required property");
         mSpreadInterval.setup(spread_freq, DynamicExpression::CellWrap, parent_agent);
 
+        QJSValue outbreak_duration = BiteEngine::valueFromJs(mObj, "outbreakDuration", "0");
+        mOutbreakDuration.setup(outbreak_duration, DynamicExpression::CellWrap, parent_agent);
+
+        QJSValue outbreak_start = BiteEngine::valueFromJs(mObj, "outbreakStart", "0");
+        mOutbreakStart.setup(outbreak_duration, DynamicExpression::CellWrap, parent_agent);
+
+        mOutbreakYears = 0; mNextOutbreakStart = 0; mThisOutbreakDuration = 0;
+
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
 
@@ -78,6 +86,23 @@ void BiteLifeCycle::notify(BiteCell *cell, BiteCell::ENotification what)
     switch (what) {
 
     default: break; // ignore other notifications
+    }
+}
+
+void BiteLifeCycle::run()
+{
+    // outbreak dynamics
+    if (mOutbreakYears>0) {
+        // we are currently in an outbreak, determine if we need to stop
+        if (mOutbreakYears >= mThisOutbreakDuration) {
+            mOutbreakYears = 0;
+            // determine now when the next outbreak should start
+            BiteCell *dummy = *agent()->grid().begin();
+            mNextOutbreakStart = static_cast<int>(mOutbreakStart.evaluate(dummy));
+        }
+
+    } else {
+
     }
 }
 
@@ -120,7 +145,8 @@ bool BiteLifeCycle::shouldSpread(BiteCell *cell)
 QStringList BiteLifeCycle::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "dieAfterDispersal" << "spreadFilter" << "spreadDelay" << "spreadInterval" << "voltinism";
+    l << "dieAfterDispersal" << "spreadFilter" << "spreadDelay" << "spreadInterval" << "voltinism"
+      << "outbreakDuration" << "outbreakStart";
     return l;
 }
 

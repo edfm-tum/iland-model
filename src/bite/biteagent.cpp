@@ -223,6 +223,9 @@ void BiteAgent::run()
     QJSValueList eparam = QJSValueList() << mThis;
     mEvents.run("onYearBegin", nullptr, &eparam);
 
+    // run the main function in life cycle first
+    mLC->run();
+
     for (auto item : mItems) {
         item->beforeRun();
     }

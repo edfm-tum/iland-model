@@ -34,6 +34,7 @@ public:
     void setup(BiteAgent *parent_agent);
     QString info();
     void notify(BiteCell *cell, BiteCell::ENotification what);
+    void run();
 
 
     bool dieAfterDispersal() const { return mDieAfterDispersal; }
@@ -44,6 +45,10 @@ public:
     /// should the cell be an active spreader in the next iteration?
     bool shouldSpread(BiteCell *cell);
 
+    /// number of years that an outbreak wave is currently active
+    /// the value is 0 for non-outbreak years
+    int outbreakYears() { return mOutbreakYears; }
+
 protected:
     QStringList allowedProperties();
 private:
@@ -52,6 +57,13 @@ private:
     DynamicExpression mSpreadInterval;
     int mSpreadDelay;
     bool mDieAfterDispersal;
+
+    // outbreak waves
+    DynamicExpression mOutbreakDuration;
+    DynamicExpression mOutbreakStart;
+    int mOutbreakYears; // number of years in an outbreak
+    int mThisOutbreakDuration;
+    int mNextOutbreakStart;
 
     Events mEvents;
 

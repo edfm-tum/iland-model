@@ -10,6 +10,7 @@ QT       -= gui ### we include the GUI library for QColor, QImage
 QT       += xml
 QT       += sql
 QT       += qml
+QT       += concurrent
 
 INCLUDEPATH += ../core \
     ../tools \
