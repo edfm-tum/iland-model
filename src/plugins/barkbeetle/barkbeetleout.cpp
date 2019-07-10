@@ -31,7 +31,7 @@ BarkBeetleOut::BarkBeetleOut()
     mBB = nullptr;
     setName("BarkBeetle module output", "barkbeetle");
     setDescription("Barkbeetle related outputs per year. "\
-                   "The outputs are created after each year (or spread event) and contain information about bark beetle generations, spread and damage for the total landscape.\n " \
+                   "The outputs are created after each year (or spread event) and contain information about spread and damage for the total landscape.\n " \
                    "For spatially explicit outputs, see also the script functions for extracting gridded data.");
     columns() << OutputColumn::year()
               << OutputColumn("initialInfestedArea_ha", "Area of infested pixels (ha) at the start of the iteration (i.e. before winter mortality or background activation happen).", OutDouble)

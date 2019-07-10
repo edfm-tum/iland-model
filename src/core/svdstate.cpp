@@ -4,7 +4,7 @@
 #include "species.h"
 #include "model.h"
 
-SVDStates *SVDState::svd = 0;
+SVDStates *SVDState::svd = nullptr;
 
 SVDStates::SVDStates()
 {

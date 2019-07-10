@@ -56,7 +56,7 @@ private:
     Expression mGrowthFunction; // (logistic) growth function
     Expression mGrowthRateFunction; // function to calculate the growth rate 'r'
     int mGrowthIterations;  // number of iterations during a time step (year) for updating agent/host biomass
-    double mGrowthConsumption;  // consumption rate: cons= kg host biomass / kg agent per year
+    DynamicExpression mGrowthConsumption;  // consumption rate: cons= kg host biomass / kg agent per year
     bool mVerbose;
 
 };

@@ -50,9 +50,10 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
             mGrowthIterations = BiteEngine::valueFromJs(mObj, "growthIterations", "1", "'growthIterations' is mandatory if 'growthFunction' is used!").toInt();
             if (mGrowthIterations<1)
                 throw IException("Invalid value: growthIterations < 1!");
-            mGrowthConsumption = BiteEngine::valueFromJs(mObj, "consumption", "1", "'consumption' is mandatory if 'growthFunction' is used!").toNumber();
-            if (mGrowthConsumption==0.)
-                throw IException("0 is not a valid 'consumption'.");
+            QJSValue growth_con = BiteEngine::valueFromJs(mObj, "consumption", "1", "'consumption' is mandatory if 'growthFunction' is used!");
+            mGrowthConsumption.setup(growth_con, DynamicExpression::CellWrap, parent_agent);
+            if (!mGrowthConsumption.isValid())
+                throw IException("'consumption' is not a valid expression!");
         }
         QJSValue mort = BiteEngine::valueFromJs(mObj, "mortality", "", "'mortality' is a required property");
         mMortality.setup(mort, DynamicExpression::CellWrap, parent_agent);
@@ -207,8 +208,6 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
         qCDebug(bite) << "** calcuate biomass growth for: " << cell->info();
     BiteWrapper bitewrap(agent()->wrapper(), cell);
     double growth_rate = mGrowthRateFunction.execute(nullptr, &bitewrap);
-    if (mVerbose)
-        qCDebug(bite) << "growth-rate:" << growth_rate;
     double agent_biomass = mAgentBiomass[cell->index()]; // initial biomass
     double host_biomass = mHostBiomass[cell->index()]; // host biomass
     double start_host = host_biomass;
@@ -220,6 +219,10 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
         return;
     }
 
+    double growth_con = mGrowthConsumption.evaluate(cell);
+    if (growth_con == 0.)
+        throw IException("a 'consumption' of 0 is not valid!");
+
     // when Expressions are executed concurrently it is important  to use local variables
     double local_var_space[4];
     double *biomassptr = &local_var_space[0]; // M: current agent biomass
@@ -228,11 +231,11 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
     double *tptr = &local_var_space[3]; // t: time step
 
     *tptr = 1. / static_cast<double>(mGrowthIterations); // each step is 1/N_steps
-    *agentcc = host_biomass / mGrowthConsumption; // initial value for 'K'
+    *agentcc = host_biomass / growth_con; // initial value for 'K'
 
     for (int i=0;i<mGrowthIterations;++i) {
         if (mVerbose)
-            qCDebug(bite) << cell->info() << "Iteration" << i << "/" << mGrowthIterations << ": host biomass:" << host_biomass << "agent biomass (before):" << agent_biomass;
+            qCDebug(bite) << cell->info() << "Iteration" << i << "/" << mGrowthIterations << ": host biomass:" << host_biomass << "agent biomass (before):" << agent_biomass << "consumption: " << growth_con;
 
         *biomassptr = agent_biomass; // 'M'
         *rptr = growth_rate; // 'r'
@@ -245,7 +248,7 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
         }
 
         // consumption during time step: agent(kg) * consumption(kgHost/kgAgent*yr) * time (e.g. 1/10)
-        host_biomass = host_biomass - mGrowthConsumption * (agent_biomass+*biomassptr)/2. * *tptr;
+        host_biomass = host_biomass - growth_con * (agent_biomass+*biomassptr)/2. * *tptr;
         if (host_biomass<0.) {
             host_biomass = 0.; // nothing is left
             agent_biomass = 0.; // no host, no agent
@@ -255,7 +258,7 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
 
 
         }
-        *agentcc = host_biomass / mGrowthConsumption; // update max agent biomass
+        *agentcc = host_biomass / growth_con; // update max agent biomass
     }
     if (mVerbose || agent()->verbose()) {
         qCDebug(bite) << "Updated agentBiomass for: "  << cell->info() << ":" << agent_biomass << "consumption:" << start_host-host_biomass;
