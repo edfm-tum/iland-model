@@ -19,6 +19,8 @@
 #include "bitewrapper.h"
 
 #include "bitecell.h"
+#include "biteagent.h"
+#include "bitelifecycle.h"
 
 #include <QStringList>
 
@@ -72,6 +74,7 @@ double BiteWrapperCore::valueCell(const int variableIndex, const BiteCell *cell)
         case 2: return cell->isSpreading() ? 1. : 0.;
         case 3: return cell->yearsLiving();
         case 4: return cell->cumYearsLiving();
+        case 5: return cell->agent()->lifeCycle()->outbreakYears();
         default: throw IException("Invalid variable index");
         }
     case VarClimate: {
@@ -136,6 +139,8 @@ void BiteWrapperCore::buildVarList()
     mVariables.push_back("yearsLiving"); // index 3
     mVarObj.push_back(QPair<EVarType, void*>(VarNone, nullptr));
     mVariables.push_back("cumYearsLiving"); // index 4
+    mVarObj.push_back(QPair<EVarType, void*>(VarNone, nullptr));
+    mVariables.push_back("outbreakYears"); // index 5
     mVarObj.push_back(QPair<EVarType, void*>(VarNone, nullptr));
 
 }
