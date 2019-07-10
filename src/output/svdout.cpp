@@ -102,8 +102,10 @@ void nc_calculateSVDNeighbors(ResourceUnit *unit)
 
 void SVDStateOut::exec()
 {
-    if (!GlobalSettings::instance()->model()->svdStates())
+    if (!GlobalSettings::instance()->model()->svdStates()) {
+        qWarning() << "'svdstate' output enabled, but not the SVD state subsystem ('model.settings.svdStates.enabled'). No output written.";
         return;
+    }
 
     SVDStates *svd = GlobalSettings::instance()->model()->svdStates();
     // run the analysis of species composition in the neighborhood in parallel
@@ -185,8 +187,10 @@ SVDUniqueStateOut::SVDUniqueStateOut()
 void SVDUniqueStateOut::exec()
 {
 
-    if (!GlobalSettings::instance()->model()->svdStates())
+    if (!GlobalSettings::instance()->model()->svdStates()) {
+        qWarning() << "'svduniquestate' output enabled, but not the SVD state subsystem ('model.settings.svdStates.enabled'). No output written.";
         return;
+    }
 
     if (!mCondition.isEmpty())
         if (!mCondition.calculate(GlobalSettings::instance()->currentYear()))
@@ -223,7 +227,7 @@ void SVDUniqueStateOut::setup()
 /*  ***********************************************************************  */
 
 // list of available indicators:
-QStringList svd_indicators = QStringList() << "shannonIndex" << "abovegroundCarbon" << "totalCarbon" << "volume" << "crownCover";
+static QStringList svd_indicators = QStringList() << "shannonIndex" << "abovegroundCarbon" << "totalCarbon" << "volume" << "crownCover";
 
 
 SVDIndicatorOut::SVDIndicatorOut()

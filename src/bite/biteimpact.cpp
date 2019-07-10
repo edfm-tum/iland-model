@@ -247,6 +247,11 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
             // affect tree
             switch (target) {
             case BiteImpactItem::Foliage: {
+                double remove_biomass = t->biomassFoliage() * fraction_per_tree;
+                if (removed_biomass + remove_biomass > max_biomass) {
+                    // cap with maximum biomass
+                    fraction_per_tree = (max_biomass - removed_biomass + 0.01) / t->biomassFoliage(); // 0.01: avoid rounding problems
+                }
                 removed_biomass += t->biomassFoliage() * fraction_per_tree;
                 if (!mSimulate) {
                     t->removeBiomassOfTree(fraction_per_tree, 0., 0.);
@@ -256,7 +261,15 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
             }
             case BiteImpactItem::Root: {
                 double fine_root_fraction = qMin(fraction_per_tree * item->fineRootMultiplier, 1.);
-                removed_biomass += t->biomassCoarseRoot() * fraction_per_tree + t->biomassFineRoot() * fine_root_fraction;
+                double remove_biomass = t->biomassCoarseRoot() * fraction_per_tree + t->biomassFineRoot() * fine_root_fraction;
+                if (removed_biomass + remove_biomass > max_biomass) {
+                    // scale removal: removal = coarse_root * frac + fine_root * frac * finerootmult -> frac = removal_new / (coarse_root + finerootmult*fine_root)
+                    fraction_per_tree = (max_biomass - removed_biomass) / (t->biomassCoarseRoot() + item->fineRootMultiplier*t->biomassFineRoot());
+                    fine_root_fraction = qMin(fraction_per_tree * item->fineRootMultiplier, 1.);
+                    remove_biomass = max_biomass;
+                } else {
+                    removed_biomass += remove_biomass;
+                }
                 if (!mSimulate) {
                     t->removeRootBiomass(fine_root_fraction, fraction_per_tree);
                     t->setAffectedBite();
@@ -277,7 +290,7 @@ bool BiteImpact::runImpactTrees(BiteImpact::BiteImpactItem *item, BiteCell *cell
             }
 
             ++n_affected;
-            if (n_affected >= max_trees || removed_biomass > max_biomass)
+            if (n_affected >= max_trees || removed_biomass >= max_biomass)
                 break;
 
         }

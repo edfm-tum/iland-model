@@ -163,7 +163,7 @@ int FMTreeList::filter(QString filter)
     TreeWrapper tw;
     Expression expression(filter, &tw);
     expression.enableIncSum();
-    QPair<Tree*, double> empty_tree(0,0.);
+    QPair<Tree*, double> empty_tree(nullptr,0.);
 
     for (int i=0;i<mTrees.size();++i) {
         tw.setTree(mTrees[i].first);
@@ -194,7 +194,7 @@ int FMTreeList::spatialFilter(QJSValue grid, QString filter)
         return -1;
     }
 
-    QPair<Tree*, double> empty_tree(0,0.);
+    QPair<Tree*, double> empty_tree(nullptr,0.);
     QPointF tc;
     for (int i=0;i<mTrees.size();++i) {
         tc = mTrees[i].first->position();

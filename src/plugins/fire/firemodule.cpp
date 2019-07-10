@@ -149,7 +149,6 @@ void FireModule::setup()
     mWindSpeedMin = xml.valueDouble(".wind.speedMin", 5.);
     mWindSpeedMax = xml.valueDouble(".wind.speedMax", 10.);
     mWindDirection = xml.valueDouble(".wind.direction", 270.); // defaults to "west"
-    mFireSizeSigma = xml.valueDouble(".fireSizeSigma", 0.25);
     mMinimumFuel = xml.valueDouble(".minimumFuel", 0.05); // minimum fuel in kgBM/m2
     mMinimumFuel = mMinimumFuel * 10000.; // convert to kgBM/ha
 
@@ -382,6 +381,8 @@ void FireModule::spread(const QPoint &start_point, const bool prescribed)
 double FireModule::calculateFireSize(const FireRUData *data)
 {
     // calculate fire size based on a negative exponential firesize distribution
+    // to sample from a distribution function, use the inverse function:
+    // https://en.wikipedia.org/wiki/Inverse_transform_sampling
     double size = -log(drandom()) * data->mAverageFireSize;
     size = qMin(size, data->mMaxFireSize);
     size = qMax(size, data->mMinFireSize);

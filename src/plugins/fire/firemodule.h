@@ -200,7 +200,6 @@ private:
 
     int mFireId; ///< running id of a fire event
     // parameters
-    double mFireSizeSigma; ///< parameter of the log-normal distribution to derive fire size
     double mWindSpeedMin;
     double mWindSpeedMax;
     double mWindDirection;
