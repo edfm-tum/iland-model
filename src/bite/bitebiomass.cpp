@@ -46,7 +46,9 @@ void BiteBiomass::setup(BiteAgent *parent_agent)
             mGrowthFunction.addVar("r");
             mGrowthFunction.addVar("t");
             mGrowthFunction.setExpression(grfun.toString());
-            mGrowthRateFunction.setExpression(BiteEngine::valueFromJs(mObj, "growthRateFunction", "", "'growthRateFunction' is mandatory if 'growthFunction' is used!").toString());
+            QJSValue growth_rate = BiteEngine::valueFromJs(mObj, "growthRateFunction", "", "'growthRateFunction' is mandatory if 'growthFunction' is used!");
+            mGrowthRateFunction.setup(growth_rate, DynamicExpression::CellWrap, parent_agent);
+            //mGrowthRateFunction.setExpression(BiteEngine::valueFromJs(mObj, "growthRateFunction", "", "'growthRateFunction' is mandatory if 'growthFunction' is used!").toString());
             mGrowthIterations = BiteEngine::valueFromJs(mObj, "growthIterations", "1", "'growthIterations' is mandatory if 'growthFunction' is used!").toInt();
             if (mGrowthIterations<1)
                 throw IException("Invalid value: growthIterations < 1!");
@@ -206,8 +208,9 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
     // Step 1: calculate growth rate
     if (mVerbose)
         qCDebug(bite) << "** calcuate biomass growth for: " << cell->info();
-    BiteWrapper bitewrap(agent()->wrapper(), cell);
-    double growth_rate = mGrowthRateFunction.execute(nullptr, &bitewrap);
+    double growth_rate = mGrowthRateFunction.evaluate(cell);
+
+    //double growth_rate = mGrowthRateFunction.execute(nullptr, &bitewrap);
     double agent_biomass = mAgentBiomass[cell->index()]; // initial biomass
     double host_biomass = mHostBiomass[cell->index()]; // host biomass
     double start_host = host_biomass;
@@ -232,6 +235,8 @@ void BiteBiomass::calculateLogisticGrowth(BiteCell *cell)
 
     *tptr = 1. / static_cast<double>(mGrowthIterations); // each step is 1/N_steps
     *agentcc = host_biomass / growth_con; // initial value for 'K'
+
+    BiteWrapper bitewrap(agent()->wrapper(), cell);
 
     for (int i=0;i<mGrowthIterations;++i) {
         if (mVerbose)

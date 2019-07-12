@@ -52,6 +52,7 @@ public:
 protected:
     QStringList allowedProperties();
 private:
+    void calcOutbreakWaves();
     DynamicExpression mSpreadFilter;
     DynamicExpression mVoltinism;
     DynamicExpression mSpreadInterval;

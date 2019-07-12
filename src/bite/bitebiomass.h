@@ -54,7 +54,7 @@ private:
     DynamicExpression mCalcHostBiomass; // calculate host biomass based on trees / cells
     DynamicExpression mMortality;
     Expression mGrowthFunction; // (logistic) growth function
-    Expression mGrowthRateFunction; // function to calculate the growth rate 'r'
+    DynamicExpression mGrowthRateFunction; // function to calculate the growth rate 'r'
     int mGrowthIterations;  // number of iterations during a time step (year) for updating agent/host biomass
     DynamicExpression mGrowthConsumption;  // consumption rate: cons= kg host biomass / kg agent per year
     bool mVerbose;
