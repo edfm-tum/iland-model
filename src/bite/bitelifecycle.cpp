@@ -50,10 +50,14 @@ void BiteLifeCycle::setup(BiteAgent *parent_agent)
         QJSValue outbreak_duration = BiteEngine::valueFromJs(mObj, "outbreakDuration", "0");
         mOutbreakDuration.setup(outbreak_duration, DynamicExpression::CellWrap, parent_agent);
 
-        QJSValue outbreak_start = BiteEngine::valueFromJs(mObj, "outbreakStart", "0");
-        mOutbreakStart.setup(outbreak_duration, DynamicExpression::CellWrap, parent_agent);
+        QJSValue outbreak_start = BiteEngine::valueFromJs(mObj, "outbreakStart", "-1");
+        mOutbreakStart.setup(outbreak_start, DynamicExpression::CellWrap, parent_agent);
 
         mOutbreakYears = 0; mNextOutbreakStart = 0; mThisOutbreakDuration = 0;
+        BiteCell *dummy = *agent()->grid().begin();
+        mNextOutbreakStart = static_cast<int>(mOutbreakStart.evaluate(dummy));
+        if (mNextOutbreakStart>0)
+            qCDebug(biteSetup) << "LifeCycle with active outbreak waves. First outbreak in" << mNextOutbreakStart << "years.";
 
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
@@ -92,18 +96,8 @@ void BiteLifeCycle::notify(BiteCell *cell, BiteCell::ENotification what)
 void BiteLifeCycle::run()
 {
     // outbreak dynamics
-    if (mOutbreakYears>0) {
-        // we are currently in an outbreak, determine if we need to stop
-        if (mOutbreakYears >= mThisOutbreakDuration) {
-            mOutbreakYears = 0;
-            // determine now when the next outbreak should start
-            BiteCell *dummy = *agent()->grid().begin();
-            mNextOutbreakStart = static_cast<int>(mOutbreakStart.evaluate(dummy));
-        }
+    calcOutbreakWaves();
 
-    } else {
-
-    }
 }
 
 int BiteLifeCycle::numberAnnualCycles(BiteCell *cell)
@@ -148,6 +142,39 @@ QStringList BiteLifeCycle::allowedProperties()
     l << "dieAfterDispersal" << "spreadFilter" << "spreadDelay" << "spreadInterval" << "voltinism"
       << "outbreakDuration" << "outbreakStart";
     return l;
+}
+
+void BiteLifeCycle::calcOutbreakWaves()
+{
+    if (mNextOutbreakStart < 0)
+        return; // disabled
+
+    BiteCell *dummy = *agent()->grid().begin();
+    if (mOutbreakYears>0) {
+
+        // we are currently in an outbreak, determine if we need to stop
+        if (mOutbreakYears >= mThisOutbreakDuration) {
+            mOutbreakYears = 0; // stop the outbreak
+            // determine now when the next outbreak should start
+            mNextOutbreakStart = static_cast<int>(mOutbreakStart.evaluate(dummy));
+            qCDebug(bite) << "end of outbreak wave: next wave in" << mNextOutbreakStart << "years";
+        } else {
+            ++mOutbreakYears;
+            qCDebug(bite) << "in outbreak wave: outbreakYears=" << mOutbreakYears;
+        }
+
+    } else {
+        if (--mNextOutbreakStart == 0) {
+            // start an outbreak
+            mThisOutbreakDuration = static_cast<int>( mOutbreakDuration.evaluate(dummy) );
+            if (mThisOutbreakDuration < 1)
+                throw IException(QString("BiteLifeCycle: invalid value for 'outbreakDuration': %1").arg(mThisOutbreakDuration));
+            mOutbreakYears = 1;
+            qCDebug(bite) << "Started the outbreak wave: outbreakYears=" << mOutbreakYears;
+        }
+
+    }
+
 }
 
 
