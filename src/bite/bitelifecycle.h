@@ -56,6 +56,7 @@ private:
     DynamicExpression mSpreadFilter;
     DynamicExpression mVoltinism;
     DynamicExpression mSpreadInterval;
+    DynamicExpression mMortality;
     int mSpreadDelay;
     bool mDieAfterDispersal;
 

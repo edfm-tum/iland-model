@@ -247,8 +247,15 @@ QJSValue BiteEngine::valueFromJs(const QJSValue &js_value, const QString &key, c
            throw IException(QString("Error: required key '%1' not found. In: %2 (JS: %3)").arg(key).arg(errorMessage).arg(BiteScript::JStoString(js_value)));
        else if (default_value.isEmpty())
            return QJSValue();
-       else
-           return default_value;
+       else {
+           // return a numeric or string as default value
+           bool ok;
+           double default_numeric = default_value.toDouble(&ok);
+           if (ok)
+               return default_numeric;
+           else
+               return default_value;
+       }
    }
    return js_value.property(key);
 }

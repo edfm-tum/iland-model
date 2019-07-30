@@ -59,6 +59,10 @@ void BiteLifeCycle::setup(BiteAgent *parent_agent)
         if (mNextOutbreakStart>0)
             qCDebug(biteSetup) << "LifeCycle with active outbreak waves. First outbreak in" << mNextOutbreakStart << "years.";
 
+
+        QJSValue mort = BiteEngine::valueFromJs(mObj, "mortality", "0");
+        mMortality.setup(mort, DynamicExpression::CellWrap, parent_agent);
+
         mThis = BiteEngine::instance()->scriptEngine()->newQObject(this);
         BiteAgent::setCPPOwnership(this);
 
@@ -97,6 +101,24 @@ void BiteLifeCycle::run()
 {
     // outbreak dynamics
     calcOutbreakWaves();
+
+    // mortality
+    if (mMortality.isConst())
+        return;
+
+    BiteCell **cell = agent()->grid().begin();
+    for (; cell !=agent()->grid().end(); ++cell) {
+        if (*cell && (*cell)->isActive()) {
+
+            if (mMortality.evaluateBool(*cell)) {
+                (*cell)->die();
+            }
+
+        }
+    }
+
+
+
 
 }
 
@@ -140,7 +162,7 @@ QStringList BiteLifeCycle::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
     l << "dieAfterDispersal" << "spreadFilter" << "spreadDelay" << "spreadInterval" << "voltinism"
-      << "outbreakDuration" << "outbreakStart";
+      << "outbreakDuration" << "outbreakStart" << "mortality";
     return l;
 }
 
