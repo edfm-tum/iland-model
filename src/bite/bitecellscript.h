@@ -40,6 +40,7 @@ class BiteCellScript : public QObject
     Q_PROPERTY(bool spreading READ spreading WRITE setSpreading)
     Q_PROPERTY(int yearsLiving READ yearsLiving)
     Q_PROPERTY(int cumYearsLiving READ cumYearsLiving)
+    Q_PROPERTY(int outbreakYears READ outbreakYears)
     Q_PROPERTY(ABE::FMTreeList* trees READ trees)
     Q_PROPERTY(ABE::FMSaplingList* saplings READ saplings)
     Q_PROPERTY(BiteAgent* agent READ agent)
@@ -59,6 +60,7 @@ public:
 
     int yearsLiving() const { return mCell->yearsLiving(); }
     int cumYearsLiving() const { return mCell->cumYearsLiving(); }
+    int outbreakYears() const;
 
     ABE::FMTreeList *trees();
     ABE::FMSaplingList *saplings();
