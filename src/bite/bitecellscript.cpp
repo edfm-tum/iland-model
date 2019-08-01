@@ -26,6 +26,7 @@
 
 #include "debugtimer.h"
 
+#include "bitelifecycle.h"
 
 
 
@@ -34,6 +35,11 @@ BiteCellScript::BiteCellScript(QObject *parent) : QObject(parent)
 {
     mAgent=nullptr;
     mCell=nullptr;
+}
+
+int BiteCellScript::outbreakYears() const
+{
+    return mCell->agent()->lifeCycle()->outbreakYears();
 }
 
 ABE::FMTreeList *BiteCellScript::trees()
