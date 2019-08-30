@@ -155,7 +155,7 @@ void dumpMessages()
     // 2011-03-08: encountered "strange" crashes
     // when a warning within Qt lead to a infinite loop/deadlock (also caused by mutex locking)
     // now we prevent this by installing temporarily a 0-handler
-    qInstallMessageHandler(0);
+    qInstallMessageHandler(nullptr);
 
     if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
@@ -182,9 +182,14 @@ void dumpMessages()
 // handle signal...
 // source: http://cplusplus.com/forum/unices/13455/
 void handle_signal( int signo ) {
-    Helper::msg(QString("Received Signal:\n%1").arg(signo));
-    qDebug() << "*** Received signal "<< signo << "****";
+    QString file_name = GlobalSettings::instance()->path("fatallog.txt","log");
+    //Helper::msg(QString("Fatal message encountered:\n%1\nFatal-Log-File: %2").arg(msg, file_name));
     dumpMessages();
+    Helper::saveToTextFile(file_name, MainWindow::logSpace()->toPlainText() + bufferedMessages.join("\n"));
+
+    qDebug() << "*** Received signal "<< signo << "****";
+    Helper::msg(QString("Received Signal:%1\nCheck 'fatallog.txt' in your iLand directory.").arg(signo));
+    //dumpMessages();
 
 }
 
@@ -201,7 +206,7 @@ void MainWindow::setupFileLogging(const bool do_start)
         if (mLogStream->device())
             delete mLogStream->device();
         delete mLogStream;
-        mLogStream = NULL;
+        mLogStream = nullptr;
     }
     if (!do_start)
         return;
@@ -224,8 +229,8 @@ void MainWindow::setupFileLogging(const bool do_start)
 }
 
 
-QPlainTextEdit *MainWindow::mLogSpace=NULL;
-QTextStream *MainWindow::mLogStream=NULL;
+QPlainTextEdit *MainWindow::mLogSpace=nullptr;
+QTextStream *MainWindow::mLogStream=nullptr;
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -338,18 +343,31 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->iniEdit->setVisible(false);
     ui->editStack->setTabEnabled(4,false); // the "other" tab
+
     // qml setup
-    QQuickView *view = new QQuickView();
-    mRuler = view;
-    QWidget *container = QWidget::createWindowContainer(view, this);
     mRulerColors = new Colors();
-    view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
-    view->setResizeMode(QQuickView::SizeRootObjectToView);
-    ui->pbReloadQml->setVisible(false); // enable for debug...
-    //view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
-    view->setSource(QUrl("qrc:/qml/ruler.qml"));
-    //view->show();
-    ui->qmlRulerLayout->addWidget(container);
+    mRuler = nullptr;
+    if (!QApplication::arguments().contains("noqml")) {
+
+        //qDebug() << "mainwindow init before qml";
+        QQuickView *view = new QQuickView();
+        mRuler = view;
+        //qDebug() << "createWindowContainer:";
+        QWidget *container = QWidget::createWindowContainer(view, this);
+
+        //qDebug() << "setContextProperty:";
+        view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
+        view->setResizeMode(QQuickView::SizeRootObjectToView);
+        ui->pbReloadQml->setVisible(false); // enable for debug...
+        //view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
+
+        //qDebug() << "setSource:";
+        view->setSource(QUrl("qrc:/qml/ruler.qml"));
+
+        //view->show();
+        //qDebug() << "addWidget:";
+        ui->qmlRulerLayout->addWidget(container);
+    }
     //ui->qmlRulerLayout->addWidget(container);
     //    QDir d(":/qml");
     //    qDebug() << d.entryList();
@@ -358,6 +376,7 @@ MainWindow::MainWindow(QWidget *parent)
     font.setFixedPitch(true);
     font.setPointSize(10);
     ui->logOutput->setFont(font);
+    //qDebug() << "mainwindow init done";
 
 }
 
@@ -572,7 +591,7 @@ void MainWindow::paintGrid(MapGrid *map_grid, const QString &name,
                            const GridViewType view_type,
                            double min_val, double max_val)
 {
-    if (map_grid==0 && !name.isEmpty()) {
+    if (map_grid==nullptr && !name.isEmpty()) {
         // remove the grid from the list
         mPaintList.remove(name);
         updatePaintGridList();
@@ -597,7 +616,7 @@ void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
                            const GridViewType view_type,
                            double min_val, double max_val)
 {
-    if (grid==0 && !name.isEmpty()) {
+    if (grid==nullptr && !name.isEmpty()) {
         // remove the grid from the list
         mPaintList.remove(name);
         updatePaintGridList();
@@ -657,7 +676,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (mPaintNext.what != PaintObject::PaintNothing) {
             if (mPaintNext.what == PaintObject::PaintMapGrid) {
                 mRulerColors->setCaption(mPaintNext.name);
-                paintMapGrid(painter, mPaintNext.map_grid, 0, 0, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+                paintMapGrid(painter, mPaintNext.map_grid, nullptr, nullptr, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
             }
 
             if (mPaintNext.what == PaintObject::PaintFloatGrid) {
@@ -669,7 +688,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     mPaintNext.cur_max_value = mPaintNext.max_value;
                     mPaintNext.cur_min_value = mPaintNext.min_value;
                 }
-                paintMapGrid(painter, 0, mPaintNext.float_grid, 0, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
+                paintMapGrid(painter, nullptr, mPaintNext.float_grid, nullptr, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
             }
 
             if (mPaintNext.what == PaintObject::PaintLayers)
@@ -899,7 +918,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         ru_value.setCatchExceptions(); // silent catching...
 
         species_color = ui->visRUSpeciesColor->isChecked();
-        const Species *drawspecies=0;
+        const Species *drawspecies=nullptr;
         GridViewType view_type = GridViewRainbow;
         if (species_color) {
             drawspecies = model->speciesSet()->species(species);
@@ -960,7 +979,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     value = ru->constResourceUnitSpecies(drawspecies)->constStatistics().basalArea();
                     fill_color = Colors::colorFromValue(static_cast<float>(value), view_type, static_cast<float>(min_value), static_cast<float>(max_value));
                 } else {
-                    const Species *max_sp=0; double max_ba = 0.; double total_ba=0.;
+                    const Species *max_sp=nullptr; double max_ba = 0.; double total_ba=0.;
                     foreach(const ResourceUnitSpecies *rus, ru->ruSpecies()) {
                         total_ba += rus->constStatistics().basalArea();
                         if (rus->constStatistics().basalArea()>max_ba) {
@@ -1207,7 +1226,7 @@ void MainWindow::paintMapGrid(QPainter &painter,
 {
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
-    const Grid<int> *int_grid = 0;
+    const Grid<int> *int_grid = nullptr;
 
     int sx, sy;
     QRect total_rect;
@@ -2251,7 +2270,7 @@ void MainWindow::on_actionTest_triggered()
     case 1: t.clearTrees(); break;
     case 2: t.killTrees(); break;
     case 3: t.climate(); break;
-    case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home"));
+    case 4: t.multipleLightRuns(GlobalSettings::instance()->path("automation.xml", "home")); break;
     case 5: t.climateResponse(); break;
     case 6: t.testWater(); break;
     case 7: t.testCSVFile(); break;
