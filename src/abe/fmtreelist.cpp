@@ -595,7 +595,7 @@ void FMTreeList::runGrid(void (*func)(float &, int &, const Tree *, const FMTree
     for (QVector<QPair<Tree*, double> >::const_iterator it=mTrees.constBegin(); it!=mTrees.constEnd(); ++it) {
         const Tree* tree = it->first;
         QPoint p = mStandGrid.indexAt(tree->position());
-        if (mStandGrid.isIndexValid(p))
+        if (mStandGrid.isIndexValid(p) && !tree->isDead())
             (*func)(mStandGrid.valueAtIndex(p), mTreeCountGrid.valueAtIndex(p), tree, this);
         else
             ++invalid_index;
@@ -605,7 +605,7 @@ void FMTreeList::runGrid(void (*func)(float &, int &, const Tree *, const FMTree
 
     // finalization: call again for each *cell*
     for (int i=0;i<mStandGrid.count();++i)
-        (*func)(mStandGrid.valueAtIndex(i), mTreeCountGrid.valueAtIndex(i), 0, this);
+        (*func)(mStandGrid.valueAtIndex(i), mTreeCountGrid.valueAtIndex(i), nullptr, this);
 
 }
 

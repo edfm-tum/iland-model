@@ -50,7 +50,7 @@ class FomeScript : public QObject
     Q_PROPERTY(QString standVisualization READ standVisualization WRITE setStandVisualization)
     Q_PROPERTY(QVariantList standIds READ standIds)
 public:
-    explicit FomeScript(QObject *parent = 0);
+    explicit FomeScript(QObject *parent = nullptr);
     ~FomeScript();
     // prepare scripting features
     void setupScriptEnvironment();
