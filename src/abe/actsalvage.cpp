@@ -172,22 +172,20 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
         r_low = 1.;
     } else {
         // check coverage of disturbed area.
-        for (float *p=grid.begin(); p!=grid.end(); ++p)
+        for (float *p=grid.begin(); p!=grid.end(); ++p) {
             if (*p>=0.f) {
                 if (*p < h_max*0.33)
                     ++h_lower;
                 else
                     ++h_higher;
             }
+        }
         if (h_lower==0 && h_higher==0)
             return;
+        // r_low is the fraction of 10m cells that are below 1/3rd of the stand top height
         r_low = h_lower / double(h_lower+h_higher);
     }
 
-    if (r_low < mThresholdSplit || (r_low<0.5 && h_lower<min_split_size)) {
-        // no big damage: return and do nothing
-        return;
-    }
 
     // restart if a large fraction is cleared, or if the remaining forest is <0.25ha
     if (r_low > mThresholdClear || (r_low>0.5 && h_higher<min_split_size)) {
@@ -197,6 +195,12 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
         stand->reset(stand->stp());
         return;
     }
+
+    if (r_low < mThresholdSplit || (r_low<0.5 && h_lower<min_split_size)) {
+        // no big damage: return and do nothing
+        return;
+    }
+
     // medium disturbance: check if need to split the stand area:
     Grid<int> my_map(grid.cellsize(), grid.sizeX(), grid.sizeY());
     GridRunner<float> runner(&grid);
@@ -261,7 +265,7 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
         max_size=std::max(max_size, stand_areas[i].second);
     if (max_size<min_split_size) {
         // total disturbance: restart rotation...
-        qCDebug(abe) << "ActSalvage: total damage for stand" << stand->id() << "(remaining patches too small). Restarting rotation.";
+        qCDebug(abe) << "ActSalvage: total damage for stand" << stand->id() << "(remaining patch too small). Restarting rotation.";
         stand->setProperty("_run_salvage", true);
         stand->reset(stand->stp());
         return;

@@ -146,8 +146,8 @@ public:
     bool notifyBarkBeetleAttack(double generations, int infested_px_per_ha);
 
     /// resets the harvest counters
-    void resetHarvestCounter() { mFinalHarvested = 0.; mDisturbed=0.; mThinningHarvest=0.;  }
-    void resetSalvage() { mSalvaged=0.;  }
+    void resetHarvestCounter() { mFinalHarvested = 0.;  mThinningHarvest=0.;  }
+    void resetDisturbanceSalvage() { mSalvaged=0.;  mDisturbed=0.; }
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.

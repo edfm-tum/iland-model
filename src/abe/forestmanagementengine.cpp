@@ -584,10 +584,10 @@ void ForestManagementEngine::run(int debug_year)
         if (isCancel()) {
             throw IException(QString("ABE-Error: %1").arg(mLastErrorMessage));
         }
-        // reset salvage  (from *last* year) of each stand (after all activites are processed)
+        // reset salvage and disturbance (from *last* year) of each stand (after all activites are processed)
         // salvaged timber will be filled during disturbances, which run *after* run() and *before* yearEnd().
         foreach (FMStand *stand, mStands) {
-            stand->resetSalvage();
+            stand->resetDisturbanceSalvage();
         }
 
 
