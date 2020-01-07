@@ -280,7 +280,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
             n++;
         }
         if (stand->trace())
-            qCDebug(abe) << stand->context() << "wall2wall planting: planted" << nplanted << "of" << n << "px with species" << species->id();
+            qCDebug(abe) << stand->context() << "wall2wall planting: planted" << nplanted << "of" << n << "px with species" << species->id() << "fraction=" << fraction_val;
 
     } else {
         // grouped saplings
