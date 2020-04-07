@@ -124,6 +124,8 @@ public:
     void createStandStatistics(); ///< helping function to create an initial state for stand statistics
     void recreateStandStatistics(bool recalculate_stats); ///< re-build stand statistics after some change happened to the resource unit
     void setStockableArea(const double area) { mStockableArea = area; } ///< set stockable area (m2)
+    void setCreateDebugOutput(const bool do_dbg) { mCreateDebugOutput = do_dbg; } ///< enable/disable output generation for RU
+    bool shouldCreateDebugOutput() const { return mCreateDebugOutput; } ///< is debug output enabled for the RU?
 
     // snag / snag dynamics
     // snag dynamics, soil carbon and nitrogen cycle
@@ -181,6 +183,7 @@ private:
     double mStockableArea; ///< area of stockable area (defined by project setup)
     StandStatistics mStatistics; ///< aggregate values on stand value
     ResourceUnitVariables mUnitVariables;
+    bool mCreateDebugOutput; ///< should debug output be created for the RU?
 
     friend class RUWrapper;
     friend class SVDStates;

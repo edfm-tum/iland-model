@@ -235,7 +235,7 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
 int ScriptGlobal::addTreesOnMap(const int standID, QString content)
 {
     StandLoader loader(mModel);
-    return loader.loadDistributionList(content, NULL, standID, "called_from_script");
+    return loader.loadDistributionList(content, nullptr, standID, "called_from_script");
 }
 
 /*
@@ -516,6 +516,30 @@ bool ScriptGlobal::stopOutput(QString table_name)
     return true;
 }
 
+void ScriptGlobal::debugOutputFilter(QList<int> ru_indices)
+{
+    // ru_indices.contains()
+    if (!GlobalSettings::instance()->model())
+        return;
+
+    const Grid<ResourceUnit*> &g = GlobalSettings::instance()->model()->RUgrid();
+    int n_enabled = 0;
+    for (ResourceUnit **ru = g.begin(); ru!=g.end(); ++ru)
+        if (*ru) {
+            bool do_dbg = ru_indices.isEmpty() || ru_indices.contains( (*ru)->index() );
+            (*ru)->setCreateDebugOutput(do_dbg);
+            n_enabled += do_dbg;
+        }
+    qDebug() << "debugOutputFilter: debug output enabled for" << n_enabled << "RUs";
+}
+
+bool ScriptGlobal::saveDebugOutputs(bool do_clear)
+{
+    GlobalSettings::instance()->controller()->saveDebugOutputJs(do_clear);
+    qDebug() << "saved debug outputs.... clear:" << do_clear;
+    return true;
+}
+
 bool ScriptGlobal::screenshot(QString file_name)
 {
     if (GlobalSettings::instance()->controller())
@@ -583,7 +607,8 @@ QJSValue ScriptGlobal::grid(QString type)
 
     if (index < 10) {
         HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
-        Grid<double> *dgrid = new Grid<double>(h->cellsize(), h->sizeX(), h->sizeY());
+        //Grid<double> *dgrid = new Grid<double>(h->cellsize(), h->sizeX(), h->sizeY());
+        Grid<double> *dgrid = new Grid<double>(h->metricRect(), h->cellsize());
         // fetch data from height grid
         double *p=dgrid->begin();
         for (HeightGridValue *hgv=h->begin(); hgv!=h->end(); ++hgv, ++p) {
@@ -709,7 +734,7 @@ void ScriptGlobal::wait(int milliseconds)
     QMutex dummy;
     dummy.lock();
     QWaitCondition waitCondition;
-    waitCondition.wait(&dummy, milliseconds);
+    waitCondition.wait(&dummy, static_cast<unsigned long>(milliseconds));
     dummy.unlock();
 }
 
@@ -826,7 +851,7 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
     Tree::mortalityParams(thresh, years, p_death );
 #else
     qDebug() << "test_tree_mortality() not enabled!!";
-    Q_UNUSED(thresh); Q_UNUSED(years); Q_UNUSED(p_death);
+    Q_UNUSED(thresh) Q_UNUSED(years) Q_UNUSED(p_death)
 #endif
 
 }
@@ -1097,7 +1122,7 @@ QJSValue ScriptObjectFactory::newCSVFile(QString filename)
 
 QJSValue ScriptObjectFactory::newClimateConverter()
 {
-    ClimateConverter *cc = new ClimateConverter(0);
+    ClimateConverter *cc = new ClimateConverter(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(cc);
     mObjCreated++;
     return obj;
@@ -1107,7 +1132,7 @@ QJSValue ScriptObjectFactory::newClimateConverter()
 
 QJSValue ScriptObjectFactory::newMap()
 {
-    MapGridWrapper *map = new MapGridWrapper(0);
+    MapGridWrapper *map = new MapGridWrapper(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(map);
     mObjCreated++;
     return obj;

@@ -88,6 +88,7 @@ ResourceUnit::ResourceUnit(const int index)
     mSoil = 0;
     mSaplings = 0;
     mID = 0;
+    mCreateDebugOutput = true;
     mSVDState.clear();
 }
 
@@ -401,7 +402,7 @@ void ResourceUnit::production()
         (*i)->calculate(); // CALCULATE 3PG
 
         // debug output related to production
-        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandGPP) && (*i)->leafAreaIndex()>0.) {
+        if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dStandGPP) && shouldCreateDebugOutput() && (*i)->leafAreaIndex()>0.) {
             DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dStandGPP);
             out << (*i)->species()->id() << index() << id();
             out << (*i)->leafAreaIndex() << (*i)->prod3PG().GPPperArea() << productiveArea()*(*i)->leafAreaIndex()/(leafAreaIndex()==0.?1.:leafAreaIndex()) *(*i)->prod3PG().GPPperArea() << averageAging() << (*i)->prod3PG().fEnvYear() ;
@@ -599,7 +600,7 @@ void ResourceUnit::calculateCarbonCycle()
         mUnitVariables.nitrogenAvailable = soil()->availableNitrogen();
 
     // debug output
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dCarbonCycle) && !snag()->isEmpty()) {
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dCarbonCycle) && shouldCreateDebugOutput() && !snag()->isEmpty()) {
         DebugList &out = GlobalSettings::instance()->debugList(index(), GlobalSettings::dCarbonCycle);
         out << index() << id(); // resource unit index and id
         out << snag()->debugList(); // snag debug outs

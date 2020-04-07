@@ -340,7 +340,7 @@ void WaterCycle::run()
         mMeanSoilWaterContent += mContent;
 
         //DBGMODE(
-            if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle)) {
+            if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dWaterCycle) && mRU->shouldCreateDebugOutput()) {
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dWaterCycle);
                 // climatic variables
                 out << day->id() << mRU->index() << mRU->id() << day->temperature << day->vpd << day->preciptitation << day->radiation;

@@ -540,6 +540,26 @@ void ModelController::saveDebugOutputs(bool is_final)
         do_append = true;
     QString p = GlobalSettings::instance()->path("debug_", "temp");
 
+    if (is_final) {
+        Helper::saveToTextFile(p+"dynamic.csv", dynamicOutput());
+        //Helper::saveToTextFile(p+ "version.txt", verboseVersion());
+    }
+
+
+    // write outputs
+    saveDebugOutputsCore(p, do_append);
+
+    if (logLevelDebug())
+        qDebug() << "saved debug outputs to" << p;
+
+    if (clear_data)
+        GlobalSettings::instance()->clearDebugLists();  // clear debug data
+
+
+}
+
+void ModelController::saveDebugOutputsCore(QString p, bool do_append)
+{
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreePartition, ";", p + "tree_partition.csv", do_append);
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeGrowth, ";", p + "tree_growth.csv", do_append);
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dTreeNPP, ";", p + "tree_npp.csv", do_append);
@@ -550,16 +570,17 @@ void ModelController::saveDebugOutputs(bool is_final)
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dSaplingGrowth, ";", p + "saplinggrowth.csv", do_append);
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dCarbonCycle, ";", p + "carboncycle.csv", do_append);
     GlobalSettings::instance()->debugDataTable(GlobalSettings::dPerformance, ";", p + "performance.csv", do_append);
-    if (is_final) {
-        Helper::saveToTextFile(p+"dynamic.csv", dynamicOutput());
-        //Helper::saveToTextFile(p+ "version.txt", verboseVersion());
-    }
 
+}
 
-    if (logLevelDebug())
-        qDebug() << "saved debug outputs to" << p;
+void ModelController::saveDebugOutputJs(bool do_clear)
+{
+    QString p = GlobalSettings::instance()->path("debug_", "temp");
 
-    if (clear_data)
+    // save the debug outputs, start new file(s):
+    saveDebugOutputsCore(p, false);
+
+    if (do_clear)
         GlobalSettings::instance()->clearDebugLists();  // clear debug data
 
 
@@ -689,6 +710,8 @@ void ModelController::repaint()
         mViewerWindow->repaint();
 #endif
 }
+
+
 
 
 

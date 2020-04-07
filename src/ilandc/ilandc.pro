@@ -25,7 +25,7 @@ DEPENDPATH += plugins
 CONFIG += exceptions
 CONFIG += rtti
 
-LIBS += -lQt5Concurrent
+# LIBS += -lQt5Concurrent
 
 CONFIG(debug, debug|release) {
 win32-msvc*:contains(QMAKE_TARGET.arch, x86_64):{

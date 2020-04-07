@@ -187,7 +187,7 @@ void ActSalvage::checkStandAfterDisturbance(FMStand *stand)
     }
 
 
-    // restart if a large fraction is cleared, or if the remaining forest is <0.25ha
+    // restart if a large fraction is cleared, or if the remaining forest is <0.5ha
     if (r_low > mThresholdClear || (r_low>0.5 && h_higher<min_split_size)) {
         // total disturbance: restart rotation...
         qCDebug(abe) << "ActSalvage: total damage for stand" << stand->id() << "Restarting rotation.";

@@ -143,6 +143,9 @@ public slots:
     // enable/disable outputs
     bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful
+    // debug outputs
+    void debugOutputFilter(QList<int> ru_indices); ///< enable debug outputs for a list of resource units (output for other RUs are suppressed)
+    bool saveDebugOutputs(bool do_clear); ///< save debug outputs to file; if do_clear=true then debug data is cleared from memorey
     // miscellaneous stuff
     void setViewport(double x, double y, double scale_px_per_m); ///< set the viewport of the main project area view
     bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
