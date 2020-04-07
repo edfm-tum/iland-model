@@ -237,7 +237,7 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
     }
 
     // debug output related to saplings
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSaplingGrowth)) {
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dSaplingGrowth) && ru->shouldCreateDebugOutput()) {
 
         // establishment details
         for (QList<ResourceUnitSpecies*>::const_iterator it=ru->ruSpecies().constBegin();it!=ru->ruSpecies().constEnd();++it) {

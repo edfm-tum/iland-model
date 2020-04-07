@@ -238,7 +238,7 @@ void Establishment::calculateAbioticEnvironment()
 
 void Establishment::writeDebugOutputs()
 {
-    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment)) {
+    if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dEstablishment) && mRUS->ru()->shouldCreateDebugOutput()) {
         DebugList &out = GlobalSettings::instance()->debugList(mRUS->ru()->index(), GlobalSettings::dEstablishment);
         // establishment details
         out << mRUS->species()->id() << mRUS->ru()->index() << mRUS->ru()->id();

@@ -94,6 +94,7 @@ public slots:
     bool continueRun(); ///< continues execution if simulation was paused
     void cancel(); ///< cancel execution of the model
     void repaint(); ///< force a repaint of the main drawing window
+    void saveDebugOutputJs(bool do_clear); ///< save debug outputs, called from Javascript
 private slots:
     void runloop();
 private:
@@ -101,6 +102,7 @@ private:
     void internalStop(); ///< save outputs, stop the model execution
     void fetchDynamicOutput(); ///< execute the dynamic output and fetch data
     void saveDebugOutputs(bool is_final); ///< save debug outputs to file, is_final is true when the model stops
+    void saveDebugOutputsCore(QString p, bool do_append); ///< core function for saving debug outputs
     MainWindow *mViewerWindow;
     Model *mModel;
     bool mPaused;

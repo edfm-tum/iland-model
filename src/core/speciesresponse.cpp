@@ -125,7 +125,7 @@ void SpeciesResponse::calculate()
         mUtilizableRadiation[month]+= utilizeable_radiation;
         doy++;
         //DBGMODE(
-            if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses)) {
+            if (GlobalSettings::instance()->isDebugEnabled(GlobalSettings::dDailyResponses) && mRu->shouldCreateDebugOutput()) {
                 DebugList &out = GlobalSettings::instance()->debugList(day->id(), GlobalSettings::dDailyResponses);
                 // climatic variables
                 out << mSpecies->id() << day->id() << mRu->index() << mRu->id(); // date << day->temperature << day->vpd << day->preciptitation << day->radiation;
