@@ -107,6 +107,7 @@ DEFINES += ILAND_GUI
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../core/permafrost.cpp \
     mainwindow.cpp \
     paintarea.cpp \
     ../core/grid.cpp \
@@ -225,6 +226,7 @@ SOURCES += main.cpp \
     ../bite/biteoutputitem.cpp
 
 HEADERS += mainwindow.h \
+    ../core/permafrost.h \
     stable.h \
     paintarea.h \
     ../core/version.h \

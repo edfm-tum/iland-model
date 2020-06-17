@@ -173,6 +173,7 @@ SOURCES += main.cpp \
     ../core/soil.cpp \
     ../core/snag.cpp \
     ../core/saplings.cpp \
+    ../core/permafrost.cpp \
     ../output/saplingout.cpp \
     ../tools/gisgrid.cpp \
     ../tools/mapgrid.cpp \
@@ -303,6 +304,7 @@ HEADERS += \
     ../tools/modules.h \
     ../tools/dem.h \
     ../core/layeredgrid.h \
+    ../core/permafrost.h \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
     ../tools/spatialanalysis.h \

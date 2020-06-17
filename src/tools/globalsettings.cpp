@@ -282,7 +282,10 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
 
     case dWaterCycle: return QStringList() << "id" << "type" << "year" << "date" << "ruindex" << "rid" << "temp" << "vpd" << "prec" << "rad" << "combined_response"
                                            << "after_intercept" << "after_snow" << "et_canopy" << "evapo_intercepted"
-                                           << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_effective";
+                                           << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_effective"
+                                              // permafrost details
+                                           << "pftop" << "pfbottom" << "pffreezeback" << "delta_mm" << "delta_soil" << "thermalConductivity"
+                                           << "soilfrozen" << "waterfrozen";
 
     case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
                                                << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";
