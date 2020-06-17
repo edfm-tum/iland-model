@@ -25,6 +25,7 @@
 #include "model.h"
 #include "debugtimer.h"
 #include "modules.h"
+#include "permafrost.h"
 
 /** @class WaterCycle
   @ingroup core
@@ -40,6 +41,15 @@
 // static
 QHash<int, double> WaterCycle::mEstPsi;
 
+// parameters
+namespace Water {
+double Canopy::mNeedleFactor = 0.;
+double Canopy::mDecidousFactor = 0.;
+double SnowPack::mSnowTemperature = 0.;
+double SnowPack::mSnowDensity = 300.;
+
+}
+
 WaterCycle::WaterCycle()
 {
     mSoilDepth = 0;
@@ -47,6 +57,13 @@ WaterCycle::WaterCycle()
     for (int i=0;i<366;++i)
         mPsi[i] = 0.;
     mEstPsi.clear();
+    mPermafrost = nullptr;
+}
+
+WaterCycle::~WaterCycle()
+{
+    if (mPermafrost)
+        delete mPermafrost;
 }
 
 void WaterCycle::setup(const ResourceUnit *ru)
@@ -76,7 +93,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
         // and results are more similar to the static WHC estimate without the log(10).
         mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) ) * 0.098; // Eq. 83
     } else {
-        // old version
+        // old version (before fix in 2018)
         mPsi_sat = -exp((1.54 - 0.0095*pct_sand + 0.0063*pct_silt) * log(10)) * 0.000098; // Eq. 83
     }
     mPsi_koeff_b = -( 3.1 + 0.157*pct_clay - 0.003*pct_sand );  // Eq. 84
@@ -101,7 +118,11 @@ void WaterCycle::setup(const ResourceUnit *ru)
     // canopy settings
     mCanopy.mNeedleFactor = xml.valueDouble("model.settings.interceptionStorageNeedle", 4.);
     mCanopy.mDecidousFactor = xml.valueDouble("model.settings.interceptionStorageBroadleaf", 2.);
+
+    // snow settings
     mSnowPack.mSnowTemperature = xml.valueDouble("model.settings.snowMeltTemperature", 0.);
+    mSnowPack.mSnowDensity = xml.valueDouble("model.settings.snowDensity", 300.);
+    mSnowPack.mSnowPack = xml.valueDouble("model.settings.snowInitialDepth", 0.);
 
     // ground vegetation: variable LAI and Psi_min
     mGroundVegetationLAI = xml.valueDouble("model.settings.groundVegetationLAI", 1.);
@@ -111,6 +132,12 @@ void WaterCycle::setup(const ResourceUnit *ru)
     mTotalET = mTotalExcess = mSnowRad = 0.;
     mSnowDays = 0;
     mMeanGrowingSeasonSWC = mMeanSoilWaterContent = 0.;
+
+    // permafrost
+    if (xml.valueBool("model.settings.permafrost.enabled", false)) {
+        mPermafrost = new Water::Permafrost();
+        mPermafrost->setup(this);
+    }
 }
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
@@ -120,7 +147,8 @@ inline double WaterCycle::psiFromHeight(const double mm) const
 {
     // psi_x = psi_ref * ( rho_x / rho_ref) ^ b
     if (mm<0.001)
-        return -100000000;
+        return -5000; // if no water at all is in the soil (e.g. all frozen) return 5 MPa
+
     double psi_x = mPsi_sat * pow((mm / mSoilDepth / mTheta_sat),mPsi_koeff_b);
     return psi_x; // Eq. 82
 }
@@ -247,7 +275,7 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &speci
     DBGMODE(
           if (mRU->averageAging()>1. || mRU->averageAging()<0. || total_response<0 || total_response>1.)
              qDebug() << "water cycle: average aging invalid. aging:" << mRU->averageAging() << "total response" << total_response ;
-    );
+    )
 
     //DBG_IF(mRU->averageAging()>1. || mRU->averageAging()<0.,"water cycle", "average aging invalid!" );
     return total_response;
@@ -271,6 +299,9 @@ void WaterCycle::run()
     mCanopy.setStandParameters(mLAINeedle,
                                mLAIBroadleaved,
                                mCanopyConductance);
+
+    if (mPermafrost)
+        mPermafrost->newYear();
 
     // main loop over all days of the year
     double prec_mm, prec_after_interception, prec_to_soil, et, excess;
@@ -299,7 +330,11 @@ void WaterCycle::run()
             mSnowDays++;
         }
 
-        // (4) add rest to soil
+        // (4) invoke permafrost module (if active)
+        if (mPermafrost)
+            mPermafrost->run(day);
+
+        // (5) add rest to soil
         mContent += prec_to_soil;
 
         excess = 0.;
@@ -351,6 +386,12 @@ void WaterCycle::run()
                 // other states
                 out << mSnowPack.snowPack();
                 out << mEffectiveLAI; // total LAI
+
+                if (mPermafrost)
+                    mPermafrost->debugData(out);
+                else
+                    out << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
+
                 //special sanity check:
                 if (prec_to_soil>0. && mCanopy.interception()>0.)
                     if (mSnowPack.snowPack()==0. && day->preciptitation==0)
