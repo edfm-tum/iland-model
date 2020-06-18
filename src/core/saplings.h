@@ -215,7 +215,7 @@ public:
     /// clear all saplings, biomass is removed (not routed to the soil layer)
     void clearAllSaplings();
 
-    /// generate vegetative offspring from 't' (sprouts)
+    /// generate vegetative offspring from the tree 't' (sprouts)
     int addSprout(const Tree *t, bool tree_is_removed);
 
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
@@ -223,6 +223,7 @@ public:
 
 private:
     bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, HeightGridValue &hgv, float lif_value, int cohorts_on_px);
+    void vegetativeSprouting(const Species *species, SaplingCell &scell, QPoint tree_pos);
     //Grid<SaplingCell> mGrid;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;

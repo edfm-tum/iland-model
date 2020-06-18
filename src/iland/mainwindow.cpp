@@ -2487,3 +2487,13 @@ void MainWindow::on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, Q
     ui->visOtherGrid->setChecked(true); // to enable the right category
     repaint();
 }
+
+void MainWindow::on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
+{
+    Q_UNUSED(column)
+    QString var_name = item->text(0);
+
+    ui->lTreeExpr->setText( var_name );
+    // refresh drawing
+    ui->PaintWidget->update();
+}

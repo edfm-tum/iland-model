@@ -210,6 +210,7 @@ private slots:
     void on_actionSave_regeneration_grid_triggered();
     void on_pbLoadTree_clicked();
     void on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
 };
 
 #endif // MAINWINDOW_H

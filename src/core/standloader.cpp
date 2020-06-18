@@ -499,9 +499,9 @@ int StandLoader::parseInitFile(const QString &content, const QString &fileName, 
         item.dbh_from = infile.value(row, idbh_from).toDouble();
         item.dbh_to = infile.value(row, idbh_to).toDouble();
         item.hd = infile.value(row, ihd).toDouble();
-        if (item.hd==0. || item.dbh_from / 100. * item.hd < 4.)
-            qWarning() << QString("load init file: file '%1' tries to init trees below 4m height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) ;
-            //throw IException(QString("load init file: file '%1' tries to init trees below 4m height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) );
+        if (item.hd==0. || item.dbh_from / 100. * item.hd < cSapHeight)
+            qWarning() << QString("load init file: file '%1' tries to init trees below minimum height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) ;
+            //throw IException(QString("load init file: file '%1' tries to init trees below minimum height. hd=%2, dbh=%3.").arg(fileName).arg(item.hd).arg(item.dbh_from) );
         ok = true;
         if (iage>=0)
             item.age = infile.value(row, iage).toInt(&ok);
@@ -1033,9 +1033,9 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
         while (hits < pxcount) {
             int rnd_index = irandom(0, min_lif_index);
             if (iheightfrom!=-1) {
-                height = limit(nrandom(height_from, height_to), 0.05,4.);
+                height = limit(nrandom(height_from, height_to), 0.05, cSapHeight);
                 if (age<=1.)
-                    age = qMax(qRound(height/4. * age4m),1); // assume a linear relationship between height and age
+                    age = qMax(qRound(height/cSapHeight * age4m),1); // assume a linear relationship between height and age
             }
             QPoint offset = GlobalSettings::instance()->model()->grid()->indexOf(lif_ptrs[rnd_index]);
             ResourceUnit *ru;
