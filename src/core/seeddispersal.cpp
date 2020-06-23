@@ -324,12 +324,16 @@ void SeedDispersal::finalizeExternalSeeds()
 static QMutex _lock_create_seed_map;
 void SeedDispersal::setSaplingTree(const QPoint &lip_index, float leaf_area)
 {
-    if (mSaplingSourceMap.isEmpty()) {
+    if (!mSaplingMapCreated) {
         // setup the data on first use
         QMutexLocker lock(&_lock_create_seed_map);
-        mSaplingSourceMap.setup(mSeedMap);
-        mSaplingSourceMap.initialize(0.);
-        qDebug() << "SeedDispersal: created seed map for sapling trees for species" << species()->name();
+        if (!mSaplingMapCreated) {
+            // if another thread already created the map, skip
+            mSaplingSourceMap.setup(mSeedMap);
+            mSaplingSourceMap.initialize(0.);
+            qDebug() << "SeedDispersal: created seed map for sapling trees for species" << species()->name();
+            mSaplingMapCreated = true;
+        }
     }
 
     mSaplingSourceMap.valueAtIndex(lip_index.x()/mIndexFactor, lip_index.y()/mIndexFactor) += leaf_area;
