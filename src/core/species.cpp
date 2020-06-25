@@ -208,7 +208,7 @@ void Species::setup()
     mSaplingGrowthParams.sproutGrowth = doubleVar("sapSproutGrowth");
     if (mSaplingGrowthParams.sproutGrowth>0.)
         if (mSaplingGrowthParams.sproutGrowth<1. || mSaplingGrowthParams.sproutGrowth>10)
-            qDebug() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ", expected range: 1-10)";
+            qWarning() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ", expected range: 1-10)";
     mSaplingGrowthParams.setupReinekeLookup();
 
     mSaplingGrowthParams.adultSproutProbability = 0.;

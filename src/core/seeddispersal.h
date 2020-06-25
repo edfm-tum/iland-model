@@ -27,7 +27,7 @@ class Tree;
 class SeedDispersal
 {
 public:
-    SeedDispersal(Species *species=0): mIndexFactor(10), mSetup(false), mSpecies(species) {}
+    SeedDispersal(Species *species=0): mIndexFactor(10), mSaplingMapCreated(false), mSetup(false), mSpecies(species)  {}
     ~SeedDispersal();
     bool isSetup() const { return mSetup; }
     void setup();
@@ -83,6 +83,7 @@ private:
     Grid<float> mKernelSerotiny; ///< seed kernel for extra seed rain
     Grid<float> mSeedMapSerotiny; ///< seed map that keeps track of serotiny events (only for serotinous species)
     Grid<float> mSaplingSourceMap; ///< seed map that collects seed distribution from sapling trees
+    bool mSaplingMapCreated; ///< flag that indicates if a map for saplings has been created
     QVector<double> mLDDDistance; ///< long distance dispersal distances (e.g. the "rings")
     QVector<double> mLDDDensity;  ///< long distance dispersal # of cells that should be affected in each "ring"
     int mLDDRings; ///< # of rings (with equal probability) for LDD

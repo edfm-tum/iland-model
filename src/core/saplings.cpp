@@ -73,7 +73,7 @@ void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
                     SaplingTree &tree=s->saplings[j];
                     ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
                     rus->saplingStat().mLiving++;
-                    double n_repr = rus->species()->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px);
+                    float n_repr = static_cast<float>( rus->species()->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px) );
                     if (tree.height>1.3f)
                         rus->saplingStat().mLivingSaplings += n_repr;
                     else
@@ -100,7 +100,7 @@ void Saplings::establishment(const ResourceUnit *ru)
     QPoint iseedmap = QPoint(imap.x()/10, imap.y()/10); // seed-map has 20m resolution, LIF 2m -> factor 10
 
     for (QList<ResourceUnitSpecies*>::const_iterator i=ru->ruSpecies().constBegin(); i!=ru->ruSpecies().constEnd(); ++i) {
-        double la = (*i)->saplingStat().leafArea();
+        float la = (*i)->saplingStat().leafArea();
         (*i)->saplingStat().clearStatistics();
         (*i)->saplingStat().setLeafArea(la); // retain the leaf area just in case the water cycle is executed during regeneration
     }
@@ -247,7 +247,7 @@ void Saplings::saplingGrowth(const ResourceUnit *ru)
             out << (*it)->species()->id() << ru->index() <<ru->id();
             out << (*it)->saplingStat().livingCohorts() << (*it)->saplingStat().averageHeight() << (*it)->saplingStat().averageAge()
                 << (*it)->saplingStat().averageDeltaHPot() << (*it)->saplingStat().averageDeltaHRealized();
-            out << (*it)->saplingStat().newSaplings() << (*it)->saplingStat().diedSaplings()
+            out << (*it)->saplingStat().newSaplings() << (*it)->saplingStat().newSaplingsVegetative() << (*it)->saplingStat().diedSaplings()
                 << (*it)->saplingStat().recruitedSaplings() <<(*it)->species()->saplingGrowthParameters().referenceRatio;
             out << (*it)->saplingStat().carbonLiving().C << (*it)->saplingStat().carbonGain().C;
 
@@ -421,7 +421,7 @@ int Saplings::addSprout(const Tree *t, bool tree_is_removed)
 
         // sprouts spread from a living tree with
         // a low probability in adjacent cells
-        if (t->species()->saplingGrowthParameters().adultSproutProbability > 0.)
+        if (t->species()->saplingGrowthParameters().adultSproutProbability > 0. && t->age() > t->species()->maturityAge())
             vegetativeSprouting(t->species(), *sc, t->positionIndex());
 
     }
@@ -561,12 +561,12 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
                 scell.saplings[i].clear();
             }
         }
-        rus->saplingStat().mCarbonOfRecruitedTrees += total_carbon_added;
+        rus->saplingStat().mCarbonOfRecruitedTrees += static_cast<float>(total_carbon_added);
         return true; // need cleanup
     }
     // book keeping (only for survivors) for the sapling of the resource unit / species
     SaplingStat &ss = rus->saplingStat();
-    double n_repr = species->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px);
+    float n_repr = static_cast<float>( species->saplingGrowthParameters().representedStemNumberH(tree.height) / static_cast<double>(cohorts_on_px) );
     if (tree.height>1.3f) {
         ss.mLivingSaplings += n_repr;
         ss.mCohortsWithDbh++;
@@ -575,8 +575,8 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     ss.mLiving++;
     ss.mAvgHeight+=tree.height;
     ss.mAvgAge+=tree.age;
-    ss.mAvgDeltaHPot+=delta_h_pot;
-    ss.mAvgHRealized += delta_h_pot * delta_h_factor;
+    ss.mAvgDeltaHPot+= static_cast<float>( delta_h_pot );
+    ss.mAvgHRealized += static_cast<float>( delta_h_pot * delta_h_factor );
 
 
     // seed dispersal: the saplings produce seed if they are are old enough
@@ -590,7 +590,7 @@ bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTr
     }
 
     // sprouting from regeneration: this requires a minimum height (and lateral sprouting being enabled)
-    if (tree.height > 2. && species->saplingGrowthParameters().adultSproutProbability > 0.) {
+    if (species->saplingGrowthParameters().adultSproutProbability > 0. && tree.age > species->maturityAge()) {
         vegetativeSprouting(species, scell, GlobalSettings::instance()->model()->grid()->indexOf(isc));
     }
 
@@ -631,8 +631,10 @@ void Saplings::vegetativeSprouting(const Species *species, SaplingCell &scell, Q
                 // the species is not yet on the cell, so let us spread there....
                 SaplingTree *st=sc_new->addSapling(0.05f, 0, species->index());
                 sc_new->checkState();
-                if (st)
+                if (st) {
                     st->set_sprout(true);
+                    ru_new->resourceUnitSpecies(species).saplingStat().mAddedVegetative++;
+                }
                 break;  // stop searching when one sprout was added
 
             }
@@ -649,7 +651,7 @@ void SaplingStat::clearStatistics()
     mAvgHeight=0.;
     mAvgAge=0.;
     mAvgDeltaHPot=mAvgHRealized=0.;
-    mAdded=0;
+    mAdded=0; mAddedVegetative = 0;
     mLeafArea=0.; mLeafAreaIndex=0.;
     mBasalArea = 0.;
     mCarbonOfRecruitedTrees=0.;
@@ -659,10 +661,10 @@ void SaplingStat::clearStatistics()
 void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
 {
     if (mLiving) {
-        mAvgHeight /= double(mLiving);
-        mAvgAge /= double(mLiving);
-        mAvgDeltaHPot /= double(mLiving);
-        mAvgHRealized /= double(mLiving);
+        mAvgHeight /= static_cast<float>(mLiving);
+        mAvgAge /= static_cast<float>(mLiving);
+        mAvgDeltaHPot /= static_cast<float>(mLiving);
+        mAvgHRealized /= static_cast<float>(mLiving);
     }
 
     // calculate carbon balance
@@ -683,9 +685,9 @@ void SaplingStat::calculate(const Species *species, ResourceUnit *ru)
         double woody_bm = species->biomassStem(avg_dbh) + species->biomassBranch(avg_dbh) + species->biomassRoot(avg_dbh);
         double foliage = species->biomassFoliage(avg_dbh);
         double fineroot = foliage*species->finerootFoliageRatio();
-        mLeafArea = foliage * n * species->specificLeafArea(); // calculate leaf area on n saplings using the species specific SLA
-        mLeafAreaIndex = ru->stockableArea()>0. ? mLeafArea / ru->stockableArea() : 0.;
-        mBasalArea = (avg_dbh / 200.)*(avg_dbh/200.)*M_PI * n;
+        mLeafArea = static_cast<float>( foliage * n * species->specificLeafArea() ); // calculate leaf area on n saplings using the species specific SLA
+        mLeafAreaIndex = static_cast<float>( ru->stockableArea()>0. ? mLeafArea / ru->stockableArea() : 0. );
+        mBasalArea = static_cast<float>( (avg_dbh / 200.)*(avg_dbh/200.)*M_PI * n );
 
         // get living carbon.
         mCarbonLiving.addBiomass( woody_bm*n, species->cnWood()  );
