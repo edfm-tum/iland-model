@@ -122,7 +122,8 @@ void WaterCycle::setup(const ResourceUnit *ru)
     // snow settings
     mSnowPack.mSnowTemperature = xml.valueDouble("model.settings.snowMeltTemperature", 0.);
     mSnowPack.mSnowDensity = xml.valueDouble("model.settings.snowDensity", 300.);
-    mSnowPack.mSnowPack = xml.valueDouble("model.settings.snowInitialDepth", 0.);
+    // convert m snowdepth to mm water
+    mSnowPack.mSnowPack = xml.valueDouble("model.settings.snowInitialDepth", 0.) * mSnowPack.mSnowDensity;
 
     // ground vegetation: variable LAI and Psi_min
     mGroundVegetationLAI = xml.valueDouble("model.settings.groundVegetationLAI", 1.);
@@ -390,11 +391,11 @@ void WaterCycle::run()
                 if (mPermafrost)
                     mPermafrost->debugData(out);
                 else
-                    out << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
+                    out << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
 
                 //special sanity check:
                 if (prec_to_soil>0. && mCanopy.interception()>0.)
-                    if (mSnowPack.snowPack()==0. && day->preciptitation==0)
+                    if (mSnowPack.snowPack()==0. && day->preciptitation==0.)
                         qDebug() << "watercontent increase without precipititaion";
 
             }
