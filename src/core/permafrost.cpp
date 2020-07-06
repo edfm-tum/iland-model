@@ -40,9 +40,11 @@ void Permafrost::setup(WaterCycle *wc)
     if (par.lambdaSnow * par.lambdaOrganicLayer == 0.)
         throw IException("Setp Permafrost: lambdaSnow or lambdaOrganicLayer is invalid (0).");
 
+    par.onlySimulate = xml.valueBool("model.settings.permafrost.onlySimulate", false);
+
     mDeepSoilTemperature= xml.valueDouble("model.settings.permafrost.deepSoilTemperature", 0.);
 
-    double ifd = xml.valueDouble("model.settings.permafrost.initialFreezeDepth", 1.);
+    double ifd = xml.valueDouble("model.settings.permafrost.initialDepthFrozen", 1.);
     if (ifd < par.maxPermafrostDepth) {
         // seasonal permafrost
         mBottom = ifd;
@@ -67,11 +69,12 @@ void Permafrost::setup(WaterCycle *wc)
     double fraction_frozen = mCurrentSoilFrozen / mSoilDepth;
     mCurrentWaterFrozen = mWC->currentContent() * fraction_frozen;
 
-    mWC->mContent -= mCurrentWaterFrozen;
-    mWC->mSoilDepth -= mCurrentSoilFrozen * 1000.;
-    mWC->mFieldCapacity = mFC * (1. - fraction_frozen);
-    mWC->mPermanentWiltingPoint = mPWP * (1. - fraction_frozen);
-
+    if (!par.onlySimulate) {
+        mWC->mContent -= mCurrentWaterFrozen;
+        mWC->mSoilDepth -= mCurrentSoilFrozen * 1000.;
+        mWC->mFieldCapacity = mFC * (1. - fraction_frozen);
+        mWC->mPermanentWiltingPoint = mPWP * (1. - fraction_frozen);
+    }
 
     setupThermalConductivity();
 
@@ -107,8 +110,6 @@ void Permafrost::newYear()
 
 void Permafrost::run(const ClimateDay *clim_day)
 {
-    if (clim_day->id() == 19810213 && mWC->mRU->id() == 171)
-        qDebug() << "bingo schlingo";
 
     Permafrost::FTResult delta, delta_ground;
     if (clim_day->mean_temp() > 0.) {
@@ -179,7 +180,7 @@ void Permafrost::run(const ClimateDay *clim_day)
     mResult.delta_soil = delta.delta_soil + delta_ground.delta_soil;
 
     // effect of freezing/thawing on the water storage of the iLand water bucket
-    if (mResult.delta_mm != 0. && mResult.delta_soil != 0.) {
+    if (mResult.delta_mm != 0. && mResult.delta_soil != 0. && !par.onlySimulate) {
 
         mWC->mContent = std::max(mWC->mContent + mResult.delta_mm, 0.);
         mCurrentWaterFrozen = std::min( std::max( mCurrentWaterFrozen - mResult.delta_mm, 0.), mFC);
@@ -321,8 +322,10 @@ Permafrost::FTResult Permafrost::calcFreezeThaw(double at, double temp, bool low
         current_water_content = mCurrentWaterFrozen / mCurrentSoilFrozen / 1000.;
 
     // convert to change in units of soil (m)
-    double delta_soil; //= current_water_content > 0. ? delta_mm / current_water_content / 1000. : 0.;
-    if (current_water_content > 0. & mWC->soilDepth() > 0.1)
+    double delta_soil;
+    // we use the actual iLand water content only if there is at least 10cm of unfrozen soil left, and
+    // the the current position is within the depth of the iLand soil. We assume saturated conditions otherwise.
+    if (current_water_content > 0. && mWC->soilDepth() > 100 && at < mSoilDepth)
         delta_soil = delta_mm / current_water_content / 1000.; // current water content
     else
         delta_soil = delta_mm / (mFC / mSoilDepth); // assume saturated soil

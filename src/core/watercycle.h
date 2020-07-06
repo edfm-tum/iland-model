@@ -172,7 +172,7 @@ private:
     double mTotalET; ///< annual sum of evapotranspiration (mm)
     double mTotalExcess; ///< annual sum of water loss due to lateral outflow/groundwater flow (mm)
     double mSnowRad; ///< sum of radiation input (MJ/m2) for days with snow cover (used in albedo calculations)
-    double mSnowDays; ///< # of days with snowcover >0
+    int mSnowDays; ///< # of days with snowcover >0
     double mMeanSoilWaterContent; ///< mean of annual soil water content (mm)
     double mMeanGrowingSeasonSWC; ///< mean soil water content (mm) during the growing season (fixed: april - september)
 
