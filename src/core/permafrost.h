@@ -18,14 +18,18 @@ public:
     ~Permafrost();
     void setup(WaterCycle *wc);
 
+    //const SStats &stats() const { return stats; }
+
     /// start a new year
     void newYear();
 
     /// run the permafrost calculations for a given resource unit and day
     void run(const ClimateDay *clim_day);
 
-    // add permafrost related debug output to the list 'out'
+    /// add permafrost related debug output to the list 'out'
     void debugData(DebugList &out);
+
+
 
 private:
     void setupThermalConductivity();
@@ -100,12 +104,15 @@ private:
         double organicLayerDensity; ///< density (kg/m3) of the organic layer
 
         // parameters
-        double deepSoilDepth; ///< depth (m) of the zone below the active layer from which the secondary heat flux origins
+        double deepSoilDepth; ///< depth (m) of the zone below the active layer from where the secondary heat flux originates
         double maxFreezeThawPerDay; ///< maximum amount of freeze/thaw (mm watercolumn) per day
+
+        bool onlySimulate; ///< if true, peramfrost has no effect on the available water (and soil depth)
     };
 
     static SParam par;
     friend class PermafrostLayers;
+    friend class WaterOut;
 };
 
 class PermafrostLayers: public LayeredGrid<ResourceUnit*> {
