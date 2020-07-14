@@ -893,6 +893,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                         fill_color = Colors::shadeColor(fill_color, domGrid->cellCenterPoint(p), mRemoteControl.model()->dem());
 
                     painter.fillRect(r, fill_color);
+                } else if (shading) {
+                    // out of project area is not drawn unless shading is enabled
+                    fill_color = Colors::shadeColor(Qt::white, domGrid->cellCenterPoint(p), mRemoteControl.model()->dem());
+                    QRect r = vp.toScreen(domGrid->cellRect(p));
+                    painter.fillRect(r, fill_color);
                 }
                 // areas "outside" are drawn as gray.
                 if (hgv.isForestOutside()) {
@@ -1010,6 +1015,18 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 painter.fillRect(r, QBrush(fill_color, Qt::Dense3Pattern));
             else
                 painter.fillRect(r, fill_color);
+        }
+        if (shading) {
+            const Grid<ResourceUnit*> &mgrid = mRemoteControl.model()->RUgrid();
+            for (ResourceUnit **p=mgrid.begin(); p!=mgrid.end(); ++p) {
+                if (*p == nullptr) { // paint only boxes outside of the project
+                    QRectF rbox = mgrid.cellRect(mgrid.indexOf(p));
+                    QRect r = vp.toScreen(rbox);
+                    fill_color = Colors::shadeColor(Qt::white, rbox.center(), mRemoteControl.model()->dem());
+                    painter.fillRect(r, fill_color);
+
+                }
+            }
         }
         if (!ru_value.lastError().isEmpty())
             qDebug() << "Expression error while painting: " << ru_value.lastError();
