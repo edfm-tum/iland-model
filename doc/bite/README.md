@@ -6,8 +6,9 @@
 * [expressions, events, variables](variables.md)
 
 ## Reference
-
+* [BiteEngine](BiteEngine.md): the Bite module
 * [BiteAgent](BiteAgent.md): a biotic disturbance agent
+* [BiteCell](BiteCell.md): a single cell of an agent
 
 
 ### Items
@@ -20,6 +21,7 @@ Item | Description
 [BiteBiomass](BiteBiomass.md) | growth of biomass and mortality of agents on a cell
 [BiteImpact](BiteImpact.md) | the impact of an agent on the host vegetation on the cell (e.g. mortality of trees)
 [BiteLifeCycle](BiteLifeCycle.md) | general agent properties such as voltinism
+[BiteOutput](BiteOutput.md) | cell level detailed outputs per agent
 
 
 
