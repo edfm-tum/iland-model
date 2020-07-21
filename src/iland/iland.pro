@@ -89,7 +89,7 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 
 DEFINES += ILAND_GUI
 # enable/disble DBGMODE messages: dbg messages are removed when the define is added
-# DEFINES += NO_DEBUG_MSGS
+DEFINES += NO_DEBUG_MSGS
 
 # to enable debug symbols in release code
 # debug information in release-mode executable
@@ -107,6 +107,7 @@ DEFINES += ILAND_GUI
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../core/permafrost.cpp \
     mainwindow.cpp \
     paintarea.cpp \
     ../core/grid.cpp \
@@ -225,6 +226,7 @@ SOURCES += main.cpp \
     ../bite/biteoutputitem.cpp
 
 HEADERS += mainwindow.h \
+    ../core/permafrost.h \
     stable.h \
     paintarea.h \
     ../core/version.h \

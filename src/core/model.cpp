@@ -375,7 +375,7 @@ void Model::setupSpace()
         // setup of external modules
         mModules->setup();
         if (mModules->hasSetupResourceUnits()) {
-            for (ResourceUnit **p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
+            for (p=mRUmap.begin(); p!=mRUmap.end(); ++p) {
                 if (*p) {
                     QRectF r = mRUmap.cellRect(mRUmap.indexOf(p));
                     mEnvironment->setPosition( r.center() ); // if environment is 'disabled' default values from the project file are used.
@@ -644,7 +644,7 @@ void Model::initOutputDatabase()
 }
 
 /// multithreaded running function for the resource unit level establishment
-void nc_establishment(ResourceUnit *unit)
+static void nc_establishment(ResourceUnit *unit)
 {
     Saplings *s = GlobalSettings::instance()->model()->saplings();
     try {
@@ -657,7 +657,7 @@ void nc_establishment(ResourceUnit *unit)
 }
 
 /// multithreaded running function for the resource unit level establishment
-void nc_sapling_growth(ResourceUnit *unit)
+static void nc_sapling_growth(ResourceUnit *unit)
 {
     Saplings *s = GlobalSettings::instance()->model()->saplings();
     try {
@@ -671,7 +671,7 @@ void nc_sapling_growth(ResourceUnit *unit)
 
 
 /// multithreaded execution of the carbon cycle routine
-void nc_carbonCycle(ResourceUnit *unit)
+static void nc_carbonCycle(ResourceUnit *unit)
 {
     try {
         // (1) do calculations on snag dynamics for the resource unit
@@ -774,7 +774,7 @@ void Model::beforeRun()
   */
 void Model::runYear()
 {
-    DebugTimer t("Model::runYear()");
+    DebugTimer t_all("Model::runYear()");
     GlobalSettings::instance()->systemStatistics()->reset();
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
@@ -797,6 +797,7 @@ void Model::runYear()
 
     foreach(SpeciesSet *set, mSpeciesSets)
         set->newYear();
+
     // management classic
     if (mManagement) {
         setCurrentTask("Management");
@@ -821,8 +822,10 @@ void Model::runYear()
     applyPattern(); // create Light Influence Patterns
     setCurrentTask("read LIP");
     readPattern(); // readout light state of individual trees
+
     setCurrentTask("tree growth");
     grow(); // let the trees grow (growth on stand-level, tree-level, mortality)
+
     mGrassCover->execute(); // evaluate the grass / herb cover (and its effect on regeneration)
 
     // regeneration
@@ -834,6 +837,7 @@ void Model::runYear()
             set->regeneration(); // parallel execution for each species set
 
         GlobalSettings::instance()->systemStatistics()->tSeedDistribution+=tseed.elapsed();
+
         // establishment
         Saplings::updateBrowsingPressure();
 
@@ -844,7 +848,14 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tEstablishment+=t.elapsed();
         }
         { DebugTimer t("sapling growth");
-          setCurrentTask("sapling growth");
+        setCurrentTask("sapling growth");
+
+        foreach(SpeciesSet *set, mSpeciesSets) {
+            // the sapling seed maps are cleared before sapling growth (where sapling seed maps are filled)
+            // the content of the seed maps is used in the *next* year
+            set->clearSaplingSeedMap();
+        }
+
         executePerResourceUnit( nc_sapling_growth, false /* true: force single threaded operation */);
         GlobalSettings::instance()->systemStatistics()->tSapling+=t.elapsed();
         }
@@ -912,7 +923,7 @@ void Model::runYear()
     om->execute("svduniquestate"); // list of forest vegetation states (SVD related)
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
-    GlobalSettings::instance()->systemStatistics()->tTotalYear+=t.elapsed();
+    GlobalSettings::instance()->systemStatistics()->tTotalYear+=t_all.elapsed();
     GlobalSettings::instance()->systemStatistics()->writeOutput();
 
     // global javascript event
@@ -932,7 +943,7 @@ void Model::afterStop()
 }
 
 /// multithreaded running function for LIP printing
-void nc_applyPattern(ResourceUnit *unit)
+static void nc_applyPattern(ResourceUnit *unit)
 {
 
     QVector<Tree>::iterator tit;
@@ -965,7 +976,7 @@ void nc_applyPattern(ResourceUnit *unit)
 }
 
 /// multithreaded running function for LIP value extraction
-void nc_readPattern(ResourceUnit *unit)
+static void nc_readPattern(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -983,7 +994,7 @@ void nc_readPattern(ResourceUnit *unit)
 }
 
 /// multithreaded running function for the growth of individual trees
-void nc_grow(ResourceUnit *unit)
+static void nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
     QVector<Tree>::iterator  tend = unit->trees().end();
@@ -1008,7 +1019,7 @@ void nc_grow(ResourceUnit *unit)
 }
 
 /// multithreaded running function for the resource level production
-void nc_production(ResourceUnit *unit)
+static void nc_production(ResourceUnit *unit)
 {
     try {
         unit->production();
@@ -1054,10 +1065,10 @@ void Model::applyPattern()
     // intialize grids...
     initializeGrid();
 
-    // initialize height grid with a value of 4m. This is the height of the regeneration layer
+    // initialize height grid with a default value of 4m. This is the height of the regeneration layer
     for (HeightGridValue *h=mHeightGrid->begin();h!=mHeightGrid->end();++h) {
         h->resetCount(); // set count = 0, but do not touch the flags
-        h->height = 4.f;
+        h->height = cSapHeight;
         h->clearStemHeight();
     }
 

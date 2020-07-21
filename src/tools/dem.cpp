@@ -72,7 +72,7 @@ bool DEM::loadFromFile(const QString &fileName)
 
     const QRectF &world = GlobalSettings::instance()->model()->extent();
 
-    if (fmod(gis_grid.cellSize(), cellsize()) != 0) {
+    if (gis_grid.cellSize() <= cellsize()) {
         QPointF p;
         // simple copy of the data
         for (int i=0;i<count();i++) {
@@ -84,6 +84,9 @@ bool DEM::loadFromFile(const QString &fileName)
         }
     } else {
         // bilinear approximation approach
+        if (fmod(gis_grid.cellSize(), cellsize()) != 0.f )
+            throw IException("DEM: bilinear approximation: this requires a DEM with a resolution of a multiple of 10.");
+
         qDebug() << "DEM: built-in bilinear interpolation from cell size" << gis_grid.cellSize();
         int f = gis_grid.cellSize() / cellsize(); // size-factor
         initialize(-1.f);
@@ -109,7 +112,7 @@ bool DEM::loadFromFile(const QString &fileName)
                         valueAtIndex(x+mx, y+my) = bilinear<float>(mx/float(f), my/float(f), c00, c10, c01, c11);
             }
     }
-
+    qDebug() << "Loaded DEM from " << fileName;
     return true;
 }
 

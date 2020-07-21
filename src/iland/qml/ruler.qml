@@ -35,10 +35,12 @@ Rectangle {
                 text: rulercolors.description
                 wrapMode: Text.WordWrap
                 width: 100
-                anchors.top: rulerCaption.bottom
-                anchors.topMargin: 10
-                anchors.leftMargin: 10
-                anchors.rightMargin: 10
+                Layout.margins: 10
+                Layout.bottomMargin: 0
+                //anchors.top: rulerCaption.bottom
+                //anchors.topMargin: 10
+                //anchors.leftMargin: 10
+                //anchors.rightMargin: 10
 
             }
             Rectangle { height: 10}
@@ -71,10 +73,11 @@ Rectangle {
                         id: details
                         flat: true
                         visible: showRulerDetails.checked
-                        anchors.top: showRulerDetails.bottom
+                        //anchors.top: showRulerDetails.bottom
                         height: visible?50:0
 
-                        anchors.topMargin: 10
+                        // anchors.topMargin: 10
+                        Layout.topMargin: 10
                         SpinBox {
                             id: minValueSpin
                             enabled: !rangeAuto.checked
@@ -107,8 +110,9 @@ Rectangle {
                         }
                     }
                     GroupBox {
-                        anchors.top: details.bottom
-                        anchors.topMargin: 10
+                        //anchors.top: details.bottom
+                        //anchors.topMargin: 10
+                        Layout.topMargin: 10
                         flat: true
                         Column {
                             id: colorRamp

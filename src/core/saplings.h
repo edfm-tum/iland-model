@@ -136,10 +136,11 @@ public:
     /// calculate statistics (and carbon flows) for the saplings of species 'species' on 'ru'.
     void calculate(const Species *species, ResourceUnit *ru);
     // actions
-    void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=static_cast<double>(dbh);  }
+    void addCarbonOfDeadSapling(float dbh) { mDied++; mSumDbhDied+=dbh;  }
 
     // access to statistics
     int newSaplings() const { return mAdded; }
+    int newSaplingsVegetative() const { return mAddedVegetative; }
     int diedSaplings() const { return mDied; }
     int livingCohorts() const { return mLiving; } ///< get the number of cohorts
     double livingSaplings() const { return mLivingSaplings; } ///< number of individual trees in the regen layer (using Reinekes R), with h>1.3m
@@ -152,8 +153,8 @@ public:
     double averageAge() const { return mAvgAge; }
     double averageDeltaHPot() const { return mAvgDeltaHPot; }
     double averageDeltaHRealized() const { return mAvgHRealized; }
-    double leafArea() const { return mLeafArea; }
-    void setLeafArea(double leaf_area){ mLeafArea = leaf_area; }
+    float leafArea() const { return mLeafArea; }
+    void setLeafArea(float leaf_area){ mLeafArea = leaf_area; }
     double leafAreaIndex() const {return mLeafAreaIndex; }
     double basalArea() const { return mBasalArea; }
     // carbon and nitrogen
@@ -161,24 +162,25 @@ public:
     const CNPair &carbonGain() const { return mCarbonGain; } ///< state of the living
 
 private:
-    int mAdded; ///< number of tree cohorts added
-    int mRecruited; ///< number of cohorts recruited (i.e. grown out of regeneration layer)
-    int mDied; ///< number of tree cohorts died
-    double mSumDbhDied; ///< running sum of dbh of died trees (used to calculate detritus)
-    int mLiving; ///< number of trees (cohorts!!!) currently in the regeneration layer
-    int mCohortsWithDbh; ///< number of cohorts that are >1.3m
-    double mLivingSaplings; ///< number of individual trees in the regen layer (using Reinekes R), with h>1.3m
-    double mLivingSmallSaplings; ///< number of individual trees of cohorts < 1.3m height
-    double mAvgHeight; ///< average height of saplings (m)
-    double mAvgAge; ///< average age of saplings (years)
-    double mAvgDeltaHPot; ///< average height increment potential (m)
-    double mAvgHRealized; ///< average realized height increment
-    double mLeafArea; ///< total leaf area (on all pixels of the resource unit)
-    double mLeafAreaIndex; ///< leaf area index (m2/m2)
-    double mBasalArea; ///< basal area (m2) of saplings
+    short int mAdded; ///< number of tree cohorts added (establishment)
+    short int mAddedVegetative; ///< number of cohorts added (vegetative sprouting)
+    short int mRecruited; ///< number of cohorts recruited (i.e. grown out of regeneration layer)
+    short int mDied; ///< number of tree cohorts died
+    float mSumDbhDied; ///< running sum of dbh of died trees (used to calculate detritus)
+    short int mLiving; ///< number of trees (cohorts!!!) currently in the regeneration layer
+    short int mCohortsWithDbh; ///< number of cohorts that are >1.3m
+    float mLivingSaplings; ///< number of individual trees in the regen layer (using Reinekes R), with h>1.3m
+    float mLivingSmallSaplings; ///< number of individual trees of cohorts < 1.3m height
+    float mAvgHeight; ///< average height of saplings (m)
+    float mAvgAge; ///< average age of saplings (years)
+    float mAvgDeltaHPot; ///< average height increment potential (m)
+    float mAvgHRealized; ///< average realized height increment
+    float mLeafArea; ///< total leaf area (on all pixels of the resource unit)
+    float mLeafAreaIndex; ///< leaf area index (m2/m2)
+    float mBasalArea; ///< basal area (m2) of saplings
     CNPair mCarbonLiving; ///< kg Carbon (kg/ru) of saplings
     CNPair mCarbonGain; ///< net growth (kg / ru) of saplings
-    double mCarbonOfRecruitedTrees; ///< carbon that is added when trees >4m are created
+    float mCarbonOfRecruitedTrees; ///< carbon that is added when trees >4m are created
 
     friend class Saplings;
 
@@ -215,7 +217,7 @@ public:
     /// clear all saplings, biomass is removed (not routed to the soil layer)
     void clearAllSaplings();
 
-    /// generate vegetative offspring from 't' (sprouts)
+    /// generate vegetative offspring from the tree 't' (sprouts)
     int addSprout(const Tree *t, bool tree_is_removed);
 
     static void setRecruitmentVariation(const double variation) { mRecruitmentVariation = variation; }
@@ -223,6 +225,7 @@ public:
 
 private:
     bool growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, HeightGridValue &hgv, float lif_value, int cohorts_on_px);
+    void vegetativeSprouting(const Species *species, SaplingCell &scell, QPoint tree_pos);
     //Grid<SaplingCell> mGrid;
     static double mRecruitmentVariation;
     static double mBrowsingPressure;

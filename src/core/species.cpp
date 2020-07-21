@@ -198,7 +198,7 @@ void Species::setup()
 
     // sapling and sapling growth parameters
     mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));
-    mSaplingGrowthParams.heightGrowthPotential.linearize(0., 4.);
+    mSaplingGrowthParams.heightGrowthPotential.linearize(0., cSapHeight);
     mSaplingGrowthParams.hdSapling = static_cast<float>( doubleVar("sapHDSapling") );
     mSaplingGrowthParams.stressThreshold = doubleVar("sapStressThreshold");
     mSaplingGrowthParams.maxStressYears = intVar("sapMaxStressYears");
@@ -208,7 +208,7 @@ void Species::setup()
     mSaplingGrowthParams.sproutGrowth = doubleVar("sapSproutGrowth");
     if (mSaplingGrowthParams.sproutGrowth>0.)
         if (mSaplingGrowthParams.sproutGrowth<1. || mSaplingGrowthParams.sproutGrowth>10)
-            qDebug() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ", expected range: 1-10)";
+            qWarning() << "Value of 'sapSproutGrowth' dubious for species" << name() << "(value: " << mSaplingGrowthParams.sproutGrowth << ", expected range: 1-10)";
     mSaplingGrowthParams.setupReinekeLookup();
 
     mSaplingGrowthParams.adultSproutProbability = 0.;
@@ -279,8 +279,8 @@ void Species::seedProduction(const Tree *tree)
     if (isTreeSerotinous(tree->age()))
         return;
 
-    // no seed production if maturity age is not reached (species parameter) or if tree height is below 4m.
-    if (tree->age() > mMaturityYears && tree->height() > 4.f) {
+    // no seed production if maturity age is not yet reached (species parameter)
+    if (tree->age() > mMaturityYears) {
         mSeedDispersal->setMatureTree(tree->positionIndex(), tree->leafArea());
     }
 }
@@ -310,7 +310,7 @@ void Species::newYear()
         if (mIsSeedYear && logLevelDebug())
             qDebug() << "species" << id() << "has a seed year.";
         // clear seed map
-        seedDispersal()->clear();
+        seedDispersal()->newYear();
     }
 }
 
