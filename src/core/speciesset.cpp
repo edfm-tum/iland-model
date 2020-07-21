@@ -116,7 +116,7 @@ int SpeciesSet::setup()
     mNitrogen_2b = resp.valueDouble("class_2_b");
     mNitrogen_3a = resp.valueDouble("class_3_a");
     mNitrogen_3b = resp.valueDouble("class_3_b");
-    if (mNitrogen_1a*mNitrogen_1b*mNitrogen_2a*mNitrogen_2b*mNitrogen_3a*mNitrogen_3b == 0)
+    if (mNitrogen_1a*mNitrogen_1b*mNitrogen_2a*mNitrogen_2b*mNitrogen_3a*mNitrogen_3b == 0.)
         throw IException("at least one parameter of model.species.nitrogenResponseClasses is not valid (value=0)!");
 
     // setup CO2 response
@@ -125,7 +125,7 @@ int SpeciesSet::setup()
     mCO2comp = co2.valueDouble("compensationPoint");
     mCO2beta0 = co2.valueDouble("beta0");
     mCO2p0 = co2.valueDouble("p0");
-    if (mCO2base*mCO2comp*(mCO2base-mCO2comp)*mCO2beta0*mCO2p0==0)
+    if (mCO2base*mCO2comp*(mCO2base-mCO2comp)*mCO2beta0*mCO2p0==0.)
         throw IException("at least one parameter of model.species.CO2Response is not valid!");
 
     // setup Light responses
@@ -158,7 +158,7 @@ void SpeciesSet::setupRegeneration()
     qDebug() << "Setup of seed dispersal maps finished.";
 }
 
-void nc_seed_distribution(Species *species)
+static void nc_seed_distribution(Species *species)
 {
     species->seedDispersal()->execute();
 }
@@ -174,6 +174,14 @@ void SpeciesSet::regeneration()
 
     if (logLevelDebug())
         qDebug() << "seed dispersal finished.";
+}
+
+void SpeciesSet::clearSaplingSeedMap()
+{
+    foreach(Species *s, mActiveSpecies) {
+        if (s->seedDispersal())
+            s->seedDispersal()->clearSaplingMap();
+    }
 }
 
 /** newYear is called by Model::runYear at the beginning of a year before any growth occurs.
@@ -271,7 +279,7 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
     see also: http://iland.boku.ac.at/CO2+response
     @param ambientCO2 current CO2 concentration (ppm)
     @param nitrogenResponse (yearly) nitrogen response of the species
-    @param soilWaterReponse soil water response (mean value for a month)
+    @param soilWaterResponse soil water response (mean value for a month)
 */
 double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const
 {

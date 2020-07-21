@@ -153,6 +153,7 @@ const int cPxPerRU = 50; // 100/2
 const int cHeightPerRU = 10; // 100/10 height pixels per resource unit
 const int cPxPerHectare = 2500; // pixel/ha ( 10000 / (2*2) )
 const double cHeightPixelArea = 100.; // 100m2 area of a height pixel
+const float cSapHeight = 4.f; // height from which on trees are modeled as individual trees (instead of saplings)
 
 // other constants
 const double biomassCFraction = 0.5; // fraction of (dry) biomass which is carbon

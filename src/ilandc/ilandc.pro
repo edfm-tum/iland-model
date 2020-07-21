@@ -173,6 +173,7 @@ SOURCES += main.cpp \
     ../core/soil.cpp \
     ../core/snag.cpp \
     ../core/saplings.cpp \
+    ../core/permafrost.cpp \
     ../output/saplingout.cpp \
     ../tools/gisgrid.cpp \
     ../tools/mapgrid.cpp \
@@ -231,9 +232,8 @@ SOURCES += main.cpp \
     ../bite/biteclimate.cpp \
     ../bite/biteoutput.cpp \
     ../abe/fmsaplinglist.cpp \
-    ../bite/biteoutputitem.cpp
-
-
+    ../bite/biteoutputitem.cpp \
+    ../core/permafrost.cpp
 
 
 HEADERS += \
@@ -303,6 +303,7 @@ HEADERS += \
     ../tools/modules.h \
     ../tools/dem.h \
     ../core/layeredgrid.h \
+    ../core/permafrost.h \
     ../3rdparty/SimpleRNG.h \
     ../output/snapshot.h \
     ../tools/spatialanalysis.h \
@@ -356,7 +357,9 @@ HEADERS += \
     ../bite/biteclimate.h \
     ../bite/biteoutput.h \
     ../abe/fmsaplinglist.h \
-    ../bite/biteoutputitem.h
+    ../bite/biteoutputitem.h \
+    ../core/permafrost.h
+
 
 
 

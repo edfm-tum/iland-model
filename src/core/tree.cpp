@@ -572,11 +572,6 @@ void Tree::readLIF_torus()
             own_value = qMax(own_value, 0.02);
             value =  *grid_value++ / own_value; // remove impact of focal tree
 
-            // debug for one tree in HJA
-            //if (id()==178020)
-            //    qDebug() << x << y << xt << yt << *grid_value << local_dom << own_value << value << (*reader)(x,y);
-            //if (_isnan(value))
-            //    qDebug() << "isnan" << id();
             if (value * (*reader)(x,y)>1.)
                 qDebug() << "LIFTorus: value>1: " << value * (*reader)(x,y) << " Tree: " << species()->id() << ", dbh: " << dbh();
             sum += value * (*reader)(x,y);
@@ -1087,7 +1082,7 @@ void Tree::removeRootBiomass(const double removeFineRootFraction, const double r
 
 void Tree::setHeight(const float height)
 {
-    if (height<=0. || height>150.)
+    if (height<=0.f || height>150.f)
         qWarning() << "trying to set tree height to invalid value:" << height << " for tree on RU:" << (mRU?mRU->boundingBox():QRect());
     mHeight=height;
 }
@@ -1095,9 +1090,9 @@ void Tree::setHeight(const float height)
 void Tree::mortality(TreeGrowthData &d)
 {
     // death if leaf area is 0 or if stem biomass is 0
-    if (mFoliageMass<0.00001)
+    if (mFoliageMass<0.00001f)
         die();
-    if (mStemMass == 0.)
+    if (mStemMass == 0.f)
         die();
 
     double p_death,  p_stress, p_intrinsic;
