@@ -921,19 +921,19 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
            int in_p = irandom(0, cPxPerHeight*cPxPerHeight); // index of lif-pixel
            offset += QPoint(in_p / cPxPerHeight, in_p % cPxPerHeight);
            SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset);
-           if (sc && sc->max_height()>height) {
-           //if (!ru || ru->saplingHeightForInit(offset) > height) {
-               misses++;
-           } else {
-               // ok
-               hits++;
-               if (sc)
+           if (sc){
+               if (sc->max_height()>height || sc->sapling(species->index())) {
+               //if (!ru || ru->saplingHeightForInit(offset) > height) {
+                   misses++;
+               } else {
+                   // ok
+                   hits++;
                    sc->addSapling(height, age, species->index());
-               //ru->resourceUnitSpecies(species).changeSapling().addSapling(offset, height, age);
-           }
-           if (misses > 3*pxcount) {
-               qDebug() << "tried to add" << pxcount << "saplings at stand" << stand_id << "but failed in finding enough free positions. Added" << hits << "and stopped.";
-               break;
+               }
+               if (misses > 3*pxcount) {
+                   qDebug() << "tried to add" << pxcount << "saplings at stand" << stand_id << "but failed in finding enough free positions. Added" << hits << "and stopped.";
+                   break;
+               }
            }
         }
         total += hits;
@@ -1031,6 +1031,8 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
 
 
         double hits = 0.;
+        int misses = 0;
+        int n_added = 0;
         while (hits < pxcount) {
             int rnd_index = irandom(0, min_lif_index);
             if (iheightfrom!=-1) {
@@ -1041,18 +1043,25 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
             QPoint offset = GlobalSettings::instance()->model()->grid()->indexOf(lif_ptrs[rnd_index]);
             ResourceUnit *ru;
             SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset, true, &ru);
-            if (sc) {
-                if (SaplingTree *st=sc->addSapling(static_cast<float>(height), static_cast<int>(age), species->index()))
+            // Look for an unoccupied slot. If the species is already there, do not add a second cohort.
+            if (sc && !sc->sapling(species->index())) {
+                if (SaplingTree *st=sc->addSapling(static_cast<float>(height), static_cast<int>(age), species->index())) {
                     hits+=std::max(1., ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberH(st->height));
-                else
-                    hits++;
+                    ++n_added;
+                } else {
+                    if (++misses > pxcount)
+                        break; // avoid an infinite loop
+                }
             } else {
-                hits++; // avoid an infinite loop
+                if (++misses > pxcount)
+                    break; // avoid an infinite loop
             }
 
 
         }
         total += pxcount;
+        if (misses > pxcount)
+            qDebug() << "tried to add" << pxcount << "saplings of species " << species->id() << "to stand" << stand_id << "but failed in finding enough free positions. Added" << n_added << "cohorts (Nrepr=" << hits << ") and stopped.";
 
     }
 
