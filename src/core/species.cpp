@@ -318,8 +318,9 @@ void Species::newYear()
 void SaplingGrowthParameters::setupReinekeLookup()
 {
     mRepresentedClasses.clear();
-    for (int i=0;i<41;i++) {
-        double h = i/10. + 0.05; // 0.05, 0.15, 0.25, ... 4.05
+    for (int i=0;i<401;i++) {
+        double h = i/100.;
+        if (i==0) h=0.01; // avoid infinity
         double dbh = h / hdSapling  * 100.;
         mRepresentedClasses.push_back(representedStemNumber(dbh));
     }

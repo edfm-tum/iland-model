@@ -58,7 +58,7 @@ struct SaplingGrowthParameters
     double referenceRatio; ///< f_ref (eq. 3) -> ratio reference site / optimum site
     SaplingGrowthParameters(): maxStressYears(3), stressThreshold(0.1), hdSapling(80.f), ReinekesR(1450.), referenceRatio(1.), browsingProbability(0.), sproutGrowth(0.) {}
     /// represented stem number by height of one cohort (using Reinekes Law): this uses a lookup table to improve performance
-    double representedStemNumberH(const double height) const { return mRepresentedClasses[limit(qRound(height*10.),0,mRepresentedClasses.size())]; }
+    double representedStemNumberH(const double height) const { return mRepresentedClasses[limit(qRound(height*100.),0,mRepresentedClasses.size()-1)]; }
     /// represented stem number by one cohort (using Reinekes Law):
     double representedStemNumber(const double dbh) const { return ReinekesR*pow(dbh/25., -1.605) / double(cPxPerHectare); }
     /// browsing probability
