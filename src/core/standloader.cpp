@@ -1015,10 +1015,11 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
         // find LIF-level in the pixels
         int min_lif_index = 0;
         if (min_lif < 1.) {
-            for (QVector<float*>::ConstIterator it=lif_ptrs.constBegin(); it!=lif_ptrs.constEnd(); ++it, ++min_lif_index)
+            for (QVector<float*>::ConstIterator it=lif_ptrs.constBegin(); it!=lif_ptrs.constEnd(); ++it, ++min_lif_index) {
                 if (**it <= min_lif)
                     break;
-            if (pxcount < min_lif_index) {
+            }
+            if (pxcount > min_lif_index) {
                 // not enough LIF pixels available
                 min_lif_index = static_cast<int>(pxcount); // try the brightest pixels (ie with the largest value for the LIF)
             }
