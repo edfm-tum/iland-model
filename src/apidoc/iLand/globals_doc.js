@@ -44,7 +44,45 @@ The number of resource units in the current simulation.
 @readOnly */
 
 
+/**
+print the contents of the message to the log. In iLand GUI the message is also printed to the screen even if a logfile is specified.
+In addition to the iLand `print()` function also the built-in Javascript object `console` can be used (e.g. `console.log()`; see https://developer.mozilla.org/de/docs/Web/API/Console).
 
+Note: The global function `print()` is a short-cut to `Globals.print()`.
+
+@method print
+@param {string} message message to print as a string
+*/
+
+/**
+shows a message box to the user (only available with iLand GUI) and halts execution until the user clicks OK.
+
+Note: The global function `alert()` is a short-cut to `Globals.alert()`.
+
+@method alert
+@param {string} message message to show as a string
+*/
+
+/**
+Includes / runs a Javascript file. The file is loaded and evaluated in the current Javascript context. `include` is useful for loading additional
+code (e.g., library style scripts), or several management programs in ABE, or several agents in BITE.
+
+Note: The global function `include()` is a short-cut to `Globals.include()`.
+
+@Example
+    // File 1
+    include('scripts/file2.js');
+    print(a); // prints "defined in file2"
+
+    // file2.js:
+    var a = "defined in file2";
+    // some other stuff
+
+
+
+@method include
+@param {string} name of the Javascript file to include (path relative to the project root)
+*/
 
 /**
 Completely reloads the ABE (agent based management engine) sub module. This includes loading of the (static) stand description file,
@@ -357,7 +395,10 @@ force a repaint of the GUI main visualization area.
 /**
 Creates a [ESRI style](http://en.wikipedia.org/wiki/Esri_grid) grid file from an iLand grid.
 Specify the target file name with `file_name` and the type of the source grid with the string `grid_type`.
-See {{#crossLink "Globals/grid:method"}}{{/crossLink}} for the avaialble grids (e.g., 'height' and 'lif)..
+
+The avaialable `grid_type`s are:
+* lif: the basic LIF grid of iLand (2m resolution)
+* height: the height grid (10m resolution) of iLand (top tree heights)
 
 See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 

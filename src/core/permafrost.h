@@ -7,6 +7,7 @@
 class WaterCycle; // forward
 struct ClimateDay; // forward
 class ResourceUnit; // forward
+class WaterOut; // forward
 
 namespace Water {
 
@@ -112,7 +113,7 @@ private:
 
     static SParam par;
     friend class PermafrostLayers;
-    friend class WaterOut;
+    friend class ::WaterOut;
 };
 
 class PermafrostLayers: public LayeredGrid<ResourceUnit*> {
