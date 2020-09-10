@@ -18,7 +18,9 @@ hostTrees | number of host trees (>4m, passing the 'hostFilter') in the current 
 treesKilled | number of host trees killed (>4m) in the current year
 volumeKilled | total volume (m3) of trees killed (>4m) by the agent in the current year
 totalImpact | total impact (e.g. for defoliatores foliage mass consumed)
-
+hostSaplings | number of sapling cohorts that are potential host in the current year (depending on the current filtering)
+saplingImpact | number of sapling cohorts affected (browsing)
+saplingKilled | number of sapling cohorts killed
 
 
 Example:
