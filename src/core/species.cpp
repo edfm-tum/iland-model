@@ -322,6 +322,10 @@ void SaplingGrowthParameters::setupReinekeLookup()
         double h = i/100.;
         if (i==0) h=0.01; // avoid infinity
         double dbh = h / hdSapling  * 100.;
+        // we use a lower limit of 0.25cm dbh, i.e. the reineke formula is truncated
+        // as it is highly unplausible with very small dbh
+        if (dbh < 0.25)
+            dbh = 0.25;
         mRepresentedClasses.push_back(representedStemNumber(dbh));
     }
 }
