@@ -48,6 +48,9 @@ public:
     /// the number of pixels for each patch-id
     QList<int> extractPatches(Grid<double> &src, int min_size, QString fileName);
     QList<int> patchsizes() const { return mLastPatches; }
+
+    static void runCrownProjection2m(FloatGrid *agrid=nullptr); ///< internal function that prepares crown cover for the whole landscape
+
 public slots:
     // API for Javascript
     void saveRumpleGrid(QString fileName); ///< save a grid of rumple index values (resource unit level) to a ESRI grid file (ascii)
@@ -58,7 +61,6 @@ public slots:
 
 private:
     void calculateCrownCoverRU(); ///< calculate resource-unit level crown cover
-    void prepareCrownCover(); ///< internal function that prepares crown cover for the whole landscape
     RumpleIndex *mRumple;
     SpatialLayeredGrid *mLayers;
     FloatGrid mCrownCoverGrid;

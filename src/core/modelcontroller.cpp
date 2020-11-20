@@ -644,11 +644,11 @@ void ModelController::removeLayers(const LayeredGridBase *layers)
 #endif
 }
 
-void ModelController::addPaintLayers(QObject *handler, const QStringList names)
+void ModelController::addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types)
 {
 #ifdef ILAND_GUI
     if (mViewerWindow)
-        mViewerWindow->addPaintLayers(handler, names);
+        mViewerWindow->addPaintLayers(handler, names, view_types);
 
 #else
     Q_UNUSED(handler) Q_UNUSED(names)
@@ -665,8 +665,22 @@ void ModelController::removePaintLayers(QObject *handler)
 #endif
 }
 
-Grid<double> *ModelController::preparePaintGrid(QObject *handler, QString name)
+Grid<double> *ModelController::preparePaintGrid(QObject *handler, QString name, std::pair<QStringList, QStringList> *rNamesColors)
 {
+    // call the slot "paintGrid" from the handler.
+    // the handler slot should return a pointer to a (double) grid
+    Grid<double> *grid_ptr = nullptr;
+    bool success = QMetaObject::invokeMethod(handler, "paintGrid", Qt::DirectConnection,
+                                             Q_RETURN_ARG(Grid<double> *, grid_ptr),
+                                             Q_ARG(QString, name),
+                                             Q_ARG(QStringList&, rNamesColors->first),
+                                             Q_ARG(QStringList&, rNamesColors->second)
+                                             );
+    if (success) {
+        return grid_ptr;
+    }
+
+    // In case the request is not handled, we fall back to asking BITE.
     Grid<double> *grid = BITE::BiteEngine::instance()->preparePaintGrid(handler, name);
     if (grid)
         return grid;

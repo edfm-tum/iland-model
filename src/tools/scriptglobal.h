@@ -120,6 +120,10 @@ public:
     QJSValue viewOptions(); ///< retrieve current viewing options (JS - object)
     void setViewOptions(QJSValue opts); ///< set current view options
 
+    // static functions
+    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QLatin1Literal(""), const QString &errorMessage=QLatin1Literal(""));
+    static QString JStoString(QJSValue value);
+
 public slots:
     // system stuff
     QVariant setting(QString key); ///< get a value from the global xml-settings (returns undefined if not present)

@@ -64,7 +64,7 @@ public:
     void wipe(const T value); ///< overwrite the whole area with "value" size of T must be the size of "int" ERRORNOUS!!!
     /// copies the content of the source grid to this grid.
     /// no operation, if the grids are not of the same size.
-    void copy(const Grid<T> source) { if (source.count()==count()) memcpy(mData, source.mData, count()*sizeof(T)); }
+    void copy(const Grid<T> &source) { if (source.count()==count()) memcpy(mData, source.mData, count()*sizeof(T)); }
     /// create a double grid (same size as this grid) and convert this grid to double values.
     /// NOTE: caller is responsible for freeing memory!
     Grid<double> *toDouble() const;
@@ -141,6 +141,8 @@ public:
     QPointF cellCenterPoint(const QPoint &pos) const { return QPointF( (pos.x()+0.5)*mCellsize+mRect.left(), (pos.y()+0.5)*mCellsize + mRect.top());} ///< get metric coordinates of the cells center
     /// get the metric cell center point of the cell given by index 'index'
     QPointF cellCenterPoint(const int &index) const { QPoint pos=indexOf(index); return QPointF( (pos.x()+0.5)*mCellsize+mRect.left(), (pos.y()+0.5)*mCellsize + mRect.top());}
+    /// get the metric cell center point of the cell given py the pointer
+    QPointF cellCenterPoint(T* ptr) { QPoint pos = indexOf(ptr); return cellCenterPoint(pos); }
     /// get the metric rectangle of the cell with index @pos
     QRectF cellRect(const QPoint &pos) const { QRectF r( QPointF(mRect.left() + mCellsize*pos.x(), mRect.top() + pos.y()*mCellsize),
                                                    QSizeF(mCellsize, mCellsize)); return r; } ///< return coordinates of rect given by @param pos.

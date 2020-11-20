@@ -32,6 +32,8 @@ QVector<QColor> Colors::mTerrainCol = QVector<QColor>() << QColor("#00A600") << 
                                                        << QColor("#ADD900") << QColor("#E6E600") << QColor("#E8C727") << QColor("#EAB64E")
                                                        << QColor("#ECB176") << QColor("#EEB99F") << QColor("#F0CFC8") <<  QColor("#F2F2F2");
 
+QVector<QColor> Colors::mCustomColors = QVector<QColor>();
+
 void Colors::setPalette(const GridViewType type, const float min_val, const float max_val)
 {
     if (mNeedsPaletteUpdate==false && type==mCurrentType &&
@@ -81,6 +83,15 @@ void Colors::setFactorLabels(QStringList labels)
     mNeedsPaletteUpdate = true;
 }
 
+void Colors::setFactorColors(QStringList colors)
+{
+    mColors = colors;
+    // fill also the custom colors
+    mCustomColors.clear();
+    for (int i=0;i<mColors.size();++i)
+        mCustomColors.append(QColor(mColors[i]));
+}
+
 Colors::Colors(QWidget *parent): QObject(parent)
 {
     mNeedsPaletteUpdate =true;
@@ -104,6 +115,7 @@ QColor Colors::colorFromPalette(const int value, const GridViewType view_type)
     case GridViewBrewerDiv: col = mBrewerDiv[n]; break;
     case GridViewBrewerQual: col = mBrewerQual[n]; break;
     case GridViewTerrain: col = mTerrainCol[n]; break;
+    case GridViewCustom: col = n<mCustomColors.size() ?  mCustomColors[n] : QColor(); break;
     default: return QColor();
     }
     if (value < 12)

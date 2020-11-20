@@ -241,15 +241,15 @@ void Permafrost::setupThermalConductivity()
 
 double Permafrost::thermalConductivity() const
 {
-    double rel_water_cotent;
+    double rel_water_content;
 
     if (mWC->fieldCapacity() > 0.)
-        rel_water_cotent = limit(mWC->currentContent() / mWC->fieldCapacity(), 0.001, 1.);
+        rel_water_content = limit(mWC->currentContent() / mWC->fieldCapacity(), 0.001, 1.);
     else
-        rel_water_cotent = 1.;
+        rel_water_content = 1.;
 
     // Eq 5.25
-    double k_e = mSoilIsCoarse ? 1.0 + 0.7 * log10(rel_water_cotent) : 1.0 + log10(rel_water_cotent);
+    double k_e = mSoilIsCoarse ? 1.0 + 0.7 * log10(rel_water_content) : 1.0 + log10(rel_water_content);
     // Eq 5.24
     double k = mKdry + (mKsat - mKdry) * k_e;
     return k;

@@ -162,7 +162,7 @@ void SpatialAnalysis::saveCrownCoverGrid(QString fileName, QJSValue grid)
     gr.setup( *sg->grid() );
 
     // calculate crown cover by looping over all trees and mis-use the LIF grid
-    prepareCrownCover();
+    runCrownProjection2m();
 
 
     FloatGrid *lifgrid = GlobalSettings::instance()->model()->grid();
@@ -205,7 +205,7 @@ void SpatialAnalysis::calculateCrownCoverRU()
                           GlobalSettings::instance()->model()->RUgrid().cellsize());
 
     // calculate crown cover by looping over all trees and mis-use the LIF grid
-    prepareCrownCover();
+    runCrownProjection2m();
 
     FloatGrid *grid = GlobalSettings::instance()->model()->grid();
     // now aggregate values for each resource unit
@@ -230,11 +230,15 @@ void SpatialAnalysis::calculateCrownCoverRU()
     }
 }
 
-void SpatialAnalysis::prepareCrownCover()
+void SpatialAnalysis::runCrownProjection2m(FloatGrid *agrid)
 {
     // calculate the crown cover per resource unit. We use the "reader"-stamps of the individual trees
-    // as they represent the crown (size). We also simply hijack the LIF grid for our calculations.
-    FloatGrid *grid = GlobalSettings::instance()->model()->grid();
+    // as they represent the crown (size). We also simply hijack the LIF grid for our calculations if no grid is provided
+
+    FloatGrid *grid = agrid;
+    if (agrid == nullptr)
+        grid = GlobalSettings::instance()->model()->grid();
+
     grid->initialize(0.f);
     // we simply iterate over all trees of all resource units (not bothering about multithreading here)
     int x,y;

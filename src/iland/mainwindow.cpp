@@ -542,17 +542,17 @@ void MainWindow::addLayers(const LayeredGridBase *layer, const QString &name)
     updatePaintGridList();
 }
 
-void MainWindow::addPaintLayers(QObject *handler, const QStringList names)
+void MainWindow::addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types)
 {
     for (int i=0;i<names.count();++i) {
         if (mPaintList.contains(names[i]))
-            throw IException("The name" + names[i] + "is already in the list of paint items!");
+            throw IException("The name '" + names[i] + "' is already in the list of paint items. (This should not happen. Please file a complaint!)");
         QMap<QString, PaintObject>::iterator po = mPaintList.insert(names[i], PaintObject());
         po.value().handler = handler;
         po.value().what = PaintObject::PaintHandledObject;
         po.value().expression = names[i];
         po.value().auto_range = true;
-        po.value().view_type = GridViewRainbow;
+        po.value().view_type = view_types.size()>=i ? view_types[i] : GridViewRainbow;
         po.value().layer_id = i;
         po.value().name = names[i];
     }
@@ -584,6 +584,15 @@ void MainWindow::removeLayers(const LayeredGridBase *layer)
             ++it;
     if (mPaintNext.layered == layer)
         mPaintNext.what = PaintObject::PaintHeightGrid;
+}
+
+void MainWindow::setPaintGrid(const QString grid_name)
+{
+    if (!mPaintList.contains(grid_name))
+        throw IException(QString("The name '%1' is not a valid name for a grid (use <category> - <name>, e.g. 'wind - basalArea'!").arg(grid_name));
+    PaintObject &po = mPaintList[grid_name];
+    mPaintNext = po;
+
 }
 
 
@@ -676,7 +685,10 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (mPaintNext.what != PaintObject::PaintNothing) {
             if (mPaintNext.what == PaintObject::PaintMapGrid) {
                 mRulerColors->setCaption(mPaintNext.name);
-                paintMapGrid(painter, mPaintNext.map_grid, nullptr, nullptr, mPaintNext.view_type, mPaintNext.min_value, mPaintNext.max_value);
+                paintMapGrid(painter, mPaintNext.map_grid, nullptr, nullptr,
+                             mPaintNext.view_type,
+                             mPaintNext.min_value, mPaintNext.max_value,
+                             shading);
             }
 
             if (mPaintNext.what == PaintObject::PaintFloatGrid) {
@@ -688,7 +700,9 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     mPaintNext.cur_max_value = mPaintNext.max_value;
                     mPaintNext.cur_min_value = mPaintNext.min_value;
                 }
-                paintMapGrid(painter, nullptr, mPaintNext.float_grid, nullptr, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
+                paintMapGrid(painter, nullptr, mPaintNext.float_grid, nullptr,
+                             mPaintNext.view_type,
+                             mPaintNext.cur_min_value, mPaintNext.cur_max_value, shading);
             }
 
             if (mPaintNext.what == PaintObject::PaintLayers)
@@ -697,19 +711,33 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             if (mPaintNext.what == PaintObject::PaintHandledObject) {
                 mRulerColors->setCaption(mPaintNext.name);
                 // prepare grid via the handler
-                mPaintNext.dbl_grid = mRemoteControl.preparePaintGrid(mPaintNext.handler, mPaintNext.expression);
+                std::pair<QStringList, QStringList> names_colors = std::pair<QStringList, QStringList>(QStringList(), QStringList());
+                mPaintNext.dbl_grid = mRemoteControl.preparePaintGrid(mPaintNext.handler, mPaintNext.expression, &names_colors);
                 if (!mPaintNext.dbl_grid)
                     return; // no painting
-                if (!mRulerColors->autoScale()) {
-                    mPaintNext.cur_max_value = mRulerColors->maxValue();
-                    mPaintNext.cur_min_value = mRulerColors->minValue();
+                if (mPaintNext.view_type == GridViewCustom) {
+                    // custom colors and names
+                    mRulerColors->setFactorColors(names_colors.second);
+                    mRulerColors->setFactorLabels(names_colors.first);
+                    mRulerColors->setPalette(GridViewCustom, 0., 1.);
+                    mPaintNext.cur_max_value = names_colors.second.size();
+                    mPaintNext.cur_min_value = 0.;
+
                 } else {
-                    mPaintNext.max_value = mPaintNext.dbl_grid->max();
-                    mPaintNext.min_value = mPaintNext.dbl_grid->min();
-                    mPaintNext.cur_max_value = mPaintNext.max_value;
-                    mPaintNext.cur_min_value = mPaintNext.min_value;
+                    // standard grids
+                    if (!mRulerColors->autoScale()) {
+                        mPaintNext.cur_max_value = mRulerColors->maxValue();
+                        mPaintNext.cur_min_value = mRulerColors->minValue();
+                    } else {
+                        mPaintNext.max_value = mPaintNext.dbl_grid->max();
+                        mPaintNext.min_value = mPaintNext.dbl_grid->min();
+                        mPaintNext.cur_max_value = mPaintNext.max_value;
+                        mPaintNext.cur_min_value = mPaintNext.min_value;
+                    }
                 }
-                paintMapGrid(painter, nullptr, nullptr, mPaintNext.dbl_grid, mPaintNext.view_type, mPaintNext.cur_min_value, mPaintNext.cur_max_value);
+                paintMapGrid(painter, nullptr, nullptr, mPaintNext.dbl_grid,
+                             mPaintNext.view_type, mPaintNext.cur_min_value,
+                             mPaintNext.cur_max_value, shading);
 
             }
             return;
@@ -1239,7 +1267,8 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
 void MainWindow::paintMapGrid(QPainter &painter,
                               MapGrid *map_grid, const FloatGrid *float_grid, const Grid<double> *double_grid,
                               const GridViewType view_type,
-                              double min_val, double max_val)
+                              double min_val, double max_val,
+                              bool shading)
 {
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
@@ -1282,20 +1311,28 @@ void MainWindow::paintMapGrid(QPainter &painter,
 
     bool reverse = view_type == GridViewRainbowReverse || view_type == GridViewGrayReverse;
     bool black_white = view_type == GridViewGray || view_type == GridViewGrayReverse;
+    QPointF world;
     for (iy=0;iy<sy;iy++) {
         for (ix=0;ix<sx;ix++) {
             QPoint p(ix,iy);
             if (int_grid){
                 value = int_grid->constValueAtIndex(p);
                 r = vp.toScreen(int_grid->cellRect(p));
+                world = int_grid->cellCenterPoint(p);
             } else if (float_grid) {
                 value = float_grid->constValueAtIndex(p);
                 r = vp.toScreen(float_grid->cellRect(p));
+                world = float_grid->cellCenterPoint(p);
             } else {
                 value = double_grid->constValueAtIndex(p);
                 r = vp.toScreen(double_grid->cellRect(p));
+                world = double_grid->cellCenterPoint(p);
             }
             fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
+            if (shading) {
+                fill_color = Colors::shadeColor(fill_color, world, mRemoteControl.model()->dem()).rgb();
+            }
+
             painter.fillRect(r, fill_color);
         }
     }

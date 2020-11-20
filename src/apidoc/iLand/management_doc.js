@@ -18,7 +18,7 @@ Several special functions exists, e.g. a function to filter based on a predefine
 that select trees based on some rastered GIS data.
 
 There are several distinct tree removal modes in iLand, namely by harvesting a tree, or by killing a tree, or due to a disturbance.
-In general, harvesting removes all (aboveground) biomass from the system, while a killed trees' biomass is moved to the 'standing dead' pool.
+In general, harvesting removes all (aboveground) biomass from the system, while a killed trees' biomass is moved to the soil pools.
 Disturbed trees behave similar to killed trees. Note, that there are further subtle differences between removal modes: for instance, resprouting
 is only possible from harvested trees; or, trees killed by disturbance might be treated differently by management.
 
