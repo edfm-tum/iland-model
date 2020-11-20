@@ -55,9 +55,11 @@ public:
            e.g.: x+3*y --> Val1->x, Val2->y
            forceExecution: do not apply linearization */
         double calculate(const double Val1=0., const double Val2=0., const bool forceExecution=false) const;
+        bool calculateBool(const double Val1=0., const double Val2=0., const bool forceExecution=false) const { return calculate(Val1, Val2, forceExecution) != 0.; }
         /// calculate formula with object
         ///
         double calculate(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.) const;
+        double calculateBool(ExpressionWrapper &object, const double variable_value1=0., const double variable_value2=0.) const { return calculate(object,variable_value1, variable_value2)!=0.; }
 
         //variables
         /// set the value of the variable named "Var". Note: using addVar to obtain a pointer may be more efficient for multiple executions.

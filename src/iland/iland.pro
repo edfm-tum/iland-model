@@ -108,6 +108,7 @@ DEFINES += NO_DEBUG_MSGS
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     ../core/permafrost.cpp \
+    ../output/devstageout.cpp \
     mainwindow.cpp \
     paintarea.cpp \
     ../core/grid.cpp \
@@ -227,6 +228,7 @@ SOURCES += main.cpp \
 
 HEADERS += mainwindow.h \
     ../core/permafrost.h \
+    ../output/devstageout.h \
     stable.h \
     paintarea.h \
     ../core/version.h \

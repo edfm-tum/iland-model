@@ -41,6 +41,7 @@
 #include "soilinputout.h"
 #include "waterout.h"
 #include "svdout.h"
+#include "devstageout.h"
 
 
 // on creation of the output manager
@@ -69,6 +70,7 @@ OutputManager::OutputManager()
     mOutputs.append(new SVDStateOut);
     mOutputs.append(new SVDIndicatorOut);
     mOutputs.append(new SVDUniqueStateOut);
+    mOutputs.append(new DevStageOut);
 }
 
 void OutputManager::addOutput(Output *output)

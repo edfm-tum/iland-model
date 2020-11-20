@@ -1024,8 +1024,9 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
     // draw a specific grid
     if (opts.property("grid").isString()) {
         QString grid=opts.property("grid").toString();
+        mw->setPaintGrid(grid);
         ui->visOtherGrid->setChecked(true);
-        throw IException("todo: fix with the new grid...");
+        //throw IException("todo: fix with the new grid...");
         //ui->otherGridTree->find()
         //int idx = ui->paintGridBox->findData(grid);
         //ui->paintGridBox->setCurrentIndex(idx);
@@ -1046,6 +1047,37 @@ void ScriptGlobal::setViewOptions(QJSValue opts)
 
 #endif
 
+}
+
+QJSValue ScriptGlobal::valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value, const QString &errorMessage)
+{
+    if (!js_value.hasOwnProperty(key)) {
+        if (!errorMessage.isEmpty())
+            throw IException(QString("Error: required key '%1' not found. In: %2 (JS: %3)").arg(key).arg(errorMessage).arg(JStoString(js_value)));
+        else if (default_value.isEmpty())
+            return QJSValue();
+        else {
+            // return a numeric or string as default value
+            bool ok;
+            double default_numeric = default_value.toDouble(&ok);
+            if (ok)
+                return default_numeric;
+            else
+                return default_value;
+        }
+    }
+    return js_value.property(key);
+
+}
+
+QString ScriptGlobal::JStoString(QJSValue value)
+{
+    if (value.isArray() || value.isObject()) {
+        QJSValue fun = GlobalSettings::instance()->scriptEngine()->evaluate("(function(a) { return JSON.stringify(a); })");
+        QJSValue result = fun.call(QJSValueList() << value);
+        return result.toString();
+    } else
+        return value.toString();
 }
 
 

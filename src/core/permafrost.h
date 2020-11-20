@@ -11,7 +11,11 @@ class WaterOut; // forward
 
 namespace Water {
 
-
+/**
+ * @brief The Permafrost class simulates the permafrost layer of a resource unit
+ *
+ *
+ */
 class Permafrost
 {
 public:

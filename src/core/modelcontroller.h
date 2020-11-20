@@ -71,9 +71,9 @@ public:
 
     void addLayers(const LayeredGridBase *layers, const QString &name);
     void removeLayers(const LayeredGridBase *layers);
-    void addPaintLayers(QObject *handler, const QStringList names);
+    void addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types=QVector<GridViewType>());
     void removePaintLayers(QObject *handler);
-    Grid<double> *preparePaintGrid(QObject *handler, QString name);
+    Grid<double> *preparePaintGrid(QObject *handler, QString name, std::pair<QStringList, QStringList> *rNamesColors);
     QStringList evaluateClick(QObject *handler, const QPointF coord, const QString &grid_name);
     double valueAtHandledGrid(QObject *handler, const QPointF coord, const int layer_id);
     void setViewport(QPointF center_point, double scale_px_per_m);

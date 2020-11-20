@@ -63,7 +63,7 @@ public:
 
     void setPalette(const GridViewType type, const float min_val, const float max_val);
     void setFactorLabels(QStringList labels);
-    void setFactorColors(QStringList colors) { mColors = colors; }
+    void setFactorColors(QStringList colors);
     void setCaption(QString caption, QString description=QString()) {
         if (mCaption==caption && mDescription==description) return;
         mCaption = caption; mDescription=description;mNeedsPaletteUpdate=true; }
@@ -81,6 +81,7 @@ private:
     static QVector<QColor> mBrewerDiv;
     static QVector<QColor> mBrewerQual;
     static QVector<QColor> mTerrainCol;
+    static QVector<QColor> mCustomColors;
     QStringList mColors;
     QStringList mLabels;
     QStringList mFactorLabels;
