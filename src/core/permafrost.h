@@ -40,7 +40,7 @@ private:
     void setupThermalConductivity();
 
     /// thermal conductivity of the mineral soil [W / m2 / K]
-    double thermalConductivity() const;
+    double thermalConductivity(bool from_below) const;
     double thermalConductivityFrozen() const;
 
     struct FTResult {
