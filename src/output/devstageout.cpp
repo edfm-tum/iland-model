@@ -10,6 +10,7 @@
 #include "modelcontroller.h"
 #include "spatialanalysis.h"
 #include "soil.h"
+#include "debugtimer.h"
 
 DevStageOut::DevStageOut()
 {
@@ -31,6 +32,7 @@ void DevStageOut::exec()
         if (!mFilter.calculateBool(GlobalSettings::instance()->currentYear()))
             return;
 
+    DebugTimer t("DevelopmentStageOutput");
     // run spatial analysis of development stages (this updates the internal grid)
     calculateDevStages();
 
@@ -305,7 +307,8 @@ double DevStageCell::deadwoodShare()
     if (area_factor == 0.)
         return 0.;
 
-    double living_biomass = mRU->statistics().totalCarbon(); // kg/ha
+    // aboveground living biomass (+ regeneration), kg / ha
+    double living_biomass = mRU->statistics().cStem() + mRU->statistics().cBranch() + mRU->statistics().cFoliage() + mRU->statistics().cRegeneration();
     // snags pools need scaling with stockable area
     double snags = (mRU->snag()->totalSWD().C + mRU->snag()->totalOtherWood().C * mRU->snag()->otherWoodAbovegroundFraction()) / area_factor;
     // soil poils need conversion to kg / ha

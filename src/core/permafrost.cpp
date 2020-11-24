@@ -204,7 +204,7 @@ void Permafrost::run(const ClimateDay *clim_day)
 void Permafrost::debugData(DebugList &out)
 {
     out << mTop << mBottom << mFreezeBack << mResult.delta_mm << mResult.delta_soil
-        <<  thermalConductivity() << mCurrentSoilFrozen << mCurrentWaterFrozen << mWC->mFieldCapacity;
+        <<  thermalConductivity(false) << mCurrentSoilFrozen << mCurrentWaterFrozen << mWC->mFieldCapacity;
 }
 
 void Permafrost::setupThermalConductivity()
@@ -239,11 +239,12 @@ void Permafrost::setupThermalConductivity()
     qDebug() << "Setup Permafrost: RID " << mWC->mRU->id() << QString(": VWCsat: %1, Kdry: %2, Ksat: %3, Kice: %4. (rho_soil: %5)").arg(VWCsat).arg(mKdry).arg(mKsat).arg(mKice).arg(rho_soil);
 }
 
-double Permafrost::thermalConductivity() const
+double Permafrost::thermalConductivity(bool from_below) const
 {
     double rel_water_content;
 
-    if (mWC->fieldCapacity() > 0.)
+    // assume full water saturation in the soil for energy flux from below
+    if (!from_below && mWC->fieldCapacity() > 0.)
         rel_water_content = limit(mWC->currentContent() / mWC->fieldCapacity(), 0.001, 1.);
     else
         rel_water_content = 1.;
@@ -286,7 +287,7 @@ Permafrost::FTResult Permafrost::calcFreezeThaw(double at, double temp, bool low
 
         // (1) calc thermal resistance of the soil (including snow and organic layer)
         double d_snow = mWC->mSnowPack.snowDepth();
-        double lambda_soil = thermalConductivity();
+        double lambda_soil = thermalConductivity(false);
 
         // thermal resistance of the whole sandwich of layers [m2*K / W]
         Rtotal = d_snow / par.lambdaSnow + mSOLDepth / par.lambdaOrganicLayer + std::max(at, 0.05) / lambda_soil;
@@ -294,7 +295,7 @@ Permafrost::FTResult Permafrost::calcFreezeThaw(double at, double temp, bool low
     } else {
         // energy flux from below
         double dist_to_layer = std::max(par.deepSoilDepth - at, 0.5);
-        double lambda_soil = thermalConductivity(); // unfrozen
+        double lambda_soil = thermalConductivity(true); // unfrozen
         // todo: Question: is soil below fully saturated?
         if (temp < cTempIce)
             lambda_soil = thermalConductivityFrozen(); // frozen
@@ -383,6 +384,7 @@ double PermafrostLayers::value(ResourceUnit * const &data, const int index) cons
     case 1: return pf->stats.maxThawDepth;
     case 2: return pf->mDeepSoilTemperature;
     case 3: return pf->stats.maxSnowDepth;
+    case 4: return pf->mSOLDepth;
     default: return 0.;
     }
 }
@@ -394,7 +396,8 @@ const QVector<LayeredGridBase::LayerElement> &PermafrostLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthFrozen"), QLatin1Literal("maximum depth of freezing (m). Is 2m for full freeze."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthThawed"), QLatin1Literal("maximum depth of thawing (m). Is 2m for fully thawed soil"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deepSoilTemperature"), QLatin1Literal("temperature of ground deep below the soil (C)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("maxSnowCover"), QLatin1Literal("maximum snow height (m)"), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QLatin1Literal("maxSnowCover"), QLatin1Literal("maximum snow height (m)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("SOLDepth"), QLatin1Literal("depth of the soil organic layer (litter + vegetation) (m)"), GridViewHeat);
     return mNames;
 
 }

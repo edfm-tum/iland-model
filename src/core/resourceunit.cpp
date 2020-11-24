@@ -94,8 +94,6 @@ ResourceUnit::ResourceUnit(const int index)
 
 void ResourceUnit::setup()
 {
-    mWater->setup(this);
-
     if (mSnag)
         delete mSnag;
     mSnag=0;
@@ -119,6 +117,8 @@ void ResourceUnit::setup()
                                xml.valueDouble("model.site.youngLabileAbovegroundFraction"),
                                xml.valueDouble("model.site.youngRefractoryAbovegroundFraction"));
     }
+
+    mWater->setup(this);
 
     if (mSaplings)
         delete mSaplings;

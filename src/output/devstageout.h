@@ -50,8 +50,8 @@ private:
 class DevStageCell : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int x READ x)
-    Q_PROPERTY(int y READ y)
+    Q_PROPERTY(int x READ x) ///< x position of the current cell (cell index)
+    Q_PROPERTY(int y READ y) ///< y position of the current cell (cell index)
     Q_PROPERTY(double DBHMax READ DBHMax)
     Q_PROPERTY(double DBHMin READ DBHMin)
     Q_PROPERTY(double DBHMean READ DBHMean)
@@ -61,8 +61,8 @@ class DevStageCell : public QObject
     Q_PROPERTY(double HMedian READ HMedian)
     Q_PROPERTY(double NQD READ NQD)
     Q_PROPERTY(double deadwoodShare READ deadwoodShare)
-    Q_PROPERTY(double CPA READ CPA)
-    Q_PROPERTY(double N_ha READ N_ha)
+    Q_PROPERTY(double CPA READ CPA) ///< crown projection area
+    Q_PROPERTY(double N_ha READ N_ha) ///< number of trees (>4m) per ha
 
 public:
     explicit DevStageCell(QObject *parent = nullptr);
