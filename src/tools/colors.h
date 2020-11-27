@@ -78,10 +78,12 @@ public:
     static QColor colorFromPalette(const int value, const GridViewType view_type);
     static QColor shadeColor(const QColor col, const QPointF &coordinates, const DEM *dem);
 private:
+    void setupFixedPalettes();
     static QVector<QColor> mBrewerDiv;
     static QVector<QColor> mBrewerQual;
     static QVector<QColor> mTerrainCol;
     static QVector<QColor> mCustomColors;
+    static QVector<QColor> mTurboColors;
     QStringList mColors;
     QStringList mLabels;
     QStringList mFactorLabels;
