@@ -393,8 +393,8 @@ const QVector<LayeredGridBase::LayerElement> &PermafrostLayers::names()
 {
     if (mNames.isEmpty())
         mNames= QVector<LayeredGridBase::LayerElement>()
-                << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthFrozen"), QLatin1Literal("maximum depth of freezing (m). Is 2m for full freeze."), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthThawed"), QLatin1Literal("maximum depth of thawing (m). Is 2m for fully thawed soil"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthFrozen"), QLatin1Literal("maximum depth of freezing (m). Is 2m for full freeze."), GridViewTurbo)
+                << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthThawed"), QLatin1Literal("maximum depth of thawing (m). Is 2m for fully thawed soil"), GridViewTurbo)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deepSoilTemperature"), QLatin1Literal("temperature of ground deep below the soil (C)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("maxSnowCover"), QLatin1Literal("maximum snow height (m)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("SOLDepth"), QLatin1Literal("depth of the soil organic layer (litter + vegetation) (m)"), GridViewHeat);
