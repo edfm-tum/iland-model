@@ -151,7 +151,7 @@ inline double WaterCycle::psiFromHeight(const double mm) const
         return -5000; // if no water at all is in the soil (e.g. all frozen) return 5 MPa
 
     double psi_x = mPsi_sat * pow((mm / mSoilDepth / mTheta_sat),mPsi_koeff_b);
-    return psi_x; // Eq. 82
+    return std::max( psi_x, -5000.); // Eq. 82
 }
 
 /// calculate the height of the water column for a given pressure
