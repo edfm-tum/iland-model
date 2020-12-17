@@ -857,7 +857,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 for (float *rg=mRegenerationGrid.begin(); rg!=mRegenerationGrid.end(); ++rg) {
                     SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(mRegenerationGrid.indexOf(rg));
                     if (sc) {
-                        SaplingTree *st=sc->sapling(sidx);
+                        SaplingTree *st=sc->saplingOfSpecies(sidx);
                         if (st) {
                             if (draw_established)
                                 *rg = st->is_occupied() && st->age<2 ? 1.f : 0.f;

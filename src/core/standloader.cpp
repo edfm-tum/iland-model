@@ -922,7 +922,7 @@ int StandLoader::loadSaplings(const QString &content, int stand_id, const QStrin
            offset += QPoint(in_p / cPxPerHeight, in_p % cPxPerHeight);
            SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset);
            if (sc){
-               if (sc->max_height()>height || sc->sapling(species->index())) {
+               if (sc->max_height()>height || sc->saplingOfSpecies(species->index())) {
                //if (!ru || ru->saplingHeightForInit(offset) > height) {
                    misses++;
                } else {
@@ -1044,7 +1044,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
             ResourceUnit *ru;
             SaplingCell *sc = GlobalSettings::instance()->model()->saplings()->cell(offset, true, &ru);
             // Look for an unoccupied slot. If the species is already there, do not add a second cohort.
-            if (sc && !sc->sapling(species->index())) {
+            if (sc && !sc->saplingOfSpecies(species->index())) {
                 if (SaplingTree *st=sc->addSapling(static_cast<float>(height), static_cast<int>(age), species->index())) {
                     hits+=std::max(1., ru->resourceUnitSpecies(st->species_index)->species()->saplingGrowthParameters().representedStemNumberH(st->height));
                     ++n_added;

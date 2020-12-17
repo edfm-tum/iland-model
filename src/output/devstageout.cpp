@@ -10,6 +10,8 @@
 #include "modelcontroller.h"
 #include "spatialanalysis.h"
 #include "soil.h"
+#include "speciesset.h"
+#include "species.h"
 #include "debugtimer.h"
 
 DevStageOut::DevStageOut()
@@ -281,7 +283,7 @@ void DevStageCell::calculateStats()
     sv.dbh_min = stat.min();
     sv.dbh_mean = stat.mean();
     sv.dbh_median = stat.median();
-    sv.dbh_nqd =  sv.dbh_median>0.? (stat.percentile75()-stat.percentile25()) / sv.dbh_median : 0.;
+    sv.dbh_nqd =  sv.dbh_median>0.? 100. * (stat.percentile75()-stat.percentile25()) / sv.dbh_median : 0.;
 
     //
     int i=0;
@@ -329,7 +331,7 @@ double DevStageCell::CPA()
 {
     if (mOut->mRefreshCPA) {
         // do a crown projection for all trees on the landscape
-        // mis-use the 2m LIF grid for this purpose
+        // use a 2m grid for this purpose
         if (mCPA_grid.isEmpty())
             mCPA_grid.setup(*GlobalSettings::instance()->model()->grid());
 
@@ -355,6 +357,43 @@ double DevStageCell::CPA()
     }
 
     return 0.;
+}
+
+double DevStageCell::Pct_PMugo()
+{
+    // count the number of cells in the regeneration layer where P. mugo is present.
+
+    // check if the species is available
+    Species *p_mugo_species_index = GlobalSettings::instance()->model()->speciesSet()->species("pimu");
+    if (!p_mugo_species_index)
+        throw IException("Development stages: Pinus mugo ('pimu') expected but not available!");
+
+    // the rectangle of the current cell:
+    QRectF cell_rect = mOut->mGrid.cellRect(mLocation);
+
+    GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), cell_rect);
+    int n_not_stockable=0;
+    int n_mugo=0, n_nomugo=0;
+    while (runner.next()) {
+        SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(), true);
+        if (sc) {
+            SaplingTree *t = sc->saplingOfSpecies(p_mugo_species_index->index());
+            // count a pixel if P. mugo >1.3m is present
+            if (t && t->height > 1.3f)
+                n_mugo++;
+            else
+                n_nomugo++; // no Pimu or Pimu not tall enough
+
+        } else {
+            n_not_stockable++; // cell not stockable / outside of project area
+        }
+
+    }
+    if (n_mugo == 0)
+        return 0.;
+
+    // perctange mugo relativ to *stockable* area
+    return 100. * n_mugo / (n_mugo + n_nomugo);
 }
 
 QJSValue DevStageCell::grid()

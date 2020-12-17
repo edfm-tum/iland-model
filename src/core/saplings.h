@@ -115,7 +115,7 @@ struct SaplingCell {
                         return false;
     }
     /// return the sapling tree of the requested species, or 0
-    SaplingTree *sapling(int species_index) {
+    SaplingTree *saplingOfSpecies(int species_index) {
         if (state==CellInvalid) return nullptr;
         for (int i=0;i<NSAPCELLS;++i)
             if (saplings[i].species_index == species_index)
