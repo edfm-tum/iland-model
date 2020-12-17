@@ -620,7 +620,7 @@ void Saplings::vegetativeSprouting(const Species *species, SaplingCell &scell, Q
 
         for (int i=0;i<8;++i) {
             SaplingCell *sc_new = cell(tree_pos +QPoint(offsets_x[s], offsets_y[s]), true, &ru_new);
-            if (sc_new && !sc_new->sapling(species->index())) {
+            if (sc_new && !sc_new->saplingOfSpecies(species->index())) {
                 if (GlobalSettings::instance()->model()->settings().torusMode) {
                     // in torus mode we make sure not to grow saplings in an adjacent resource unit
                     if (scell.ru != ru_new) {

@@ -63,6 +63,7 @@ class DevStageCell : public QObject
     Q_PROPERTY(double deadwoodShare READ deadwoodShare)
     Q_PROPERTY(double CPA READ CPA) ///< crown projection area
     Q_PROPERTY(double N_ha READ N_ha) ///< number of trees (>4m) per ha
+    Q_PROPERTY(double Pct_PMugo READ Pct_PMugo) ///< pct of the area covered by P. mugo
 
 public:
     explicit DevStageCell(QObject *parent = nullptr);
@@ -89,6 +90,7 @@ public:
     // other variables
     double deadwoodShare(); ///< share of standing/lying deadwood relative to living biomass
     double CPA(); ///< crown projection area
+    double Pct_PMugo(); ///< % area covered by P. mugo
 
 
 public slots:
