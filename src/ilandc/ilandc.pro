@@ -91,6 +91,8 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 linux-icc*: {
  ## release on linux
 message("linux intel icc release")
+QMAKE_CXXFLAGS -= -O2
+QMAKE_CXXFLAGS += -O3
 PRE_TARGETDEPS += ../plugins/libiland_fire.a
 PRE_TARGETDEPS += ../plugins/libiland_wind.a
 PRE_TARGETDEPS += ../plugins/libiland_barkbeetle.a
