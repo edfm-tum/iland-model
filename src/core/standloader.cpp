@@ -1021,7 +1021,9 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
             }
             if (pxcount > min_lif_index) {
                 // not enough LIF pixels available
-                min_lif_index = static_cast<int>(pxcount); // try the brightest pixels (ie with the largest value for the LIF)
+                // try the brightest pixels (ie with the largest value for the LIF), but limit to the maximum
+                // number of cells
+                min_lif_index = std::min(static_cast<int>(pxcount),  lif_ptrs.size());
             }
         } else {
             // No LIF threshold: the full range of pixels is valid

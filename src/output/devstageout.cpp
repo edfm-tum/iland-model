@@ -17,14 +17,15 @@
 DevStageOut::DevStageOut()
 {
     setName("Stand Development Stage", "devstage");
-    setDescription(" todo " \
-                   " todo " \
+    setDescription(" iLand includes a special output for assessing the development stage of forested cells on the landscape. " \
+                   "The rule set to derive specific development stages is flexible (using a Javascript interface) in order to accomodate different ecosystems.\n  " \
+                   " see [development+stages] for the full documentation.\n " \
                    " todo.\n");
 
     columns() << OutputColumn::year()
-            << OutputColumn("stage", "stand development stage", OutString)
+            << OutputColumn("stage", "stand development stage (name, not numeric ID)", OutString)
             << OutputColumn("ncells", "Number of cells on the landscape within this stage", OutInteger)
-            << OutputColumn("percent_area", "percent of the landscape covered with this stage. Not fully stockable cells are accounted for correctly.", OutDouble);
+            << OutputColumn("percent_area", "percent of the landscape covered with this stage (0..100). Not fully stockable cells are accounted for correctly.", OutDouble);
 
 }
 
@@ -229,6 +230,7 @@ void DevStageOut::calculateDevStages()
 
 int8_t DevStageOut::runZennerModel()
 {
+    // hard-coded version of the adapted Zenner approach (see "Entscheidungsbaum_Zenner_modified3.pdf")
     return static_cast<int8_t>(irandom(0, 3));
 }
 
@@ -378,8 +380,8 @@ double DevStageCell::Pct_PMugo()
         SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(runner.currentIndex(), true);
         if (sc) {
             SaplingTree *t = sc->saplingOfSpecies(p_mugo_species_index->index());
-            // count a pixel if P. mugo >1.3m is present
-            if (t && t->height > 1.3f)
+            // count all pixels with P. mugo .... count a pixel if P. mugo >1.3m is present ( && t->height > 1.3f )
+            if (t)
                 n_mugo++;
             else
                 n_nomugo++; // no Pimu or Pimu not tall enough
