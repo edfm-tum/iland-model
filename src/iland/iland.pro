@@ -109,6 +109,7 @@ PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
+    ../output/ecovizout.cpp \
     mainwindow.cpp \
     paintarea.cpp \
     ../core/grid.cpp \
@@ -229,6 +230,7 @@ SOURCES += main.cpp \
 HEADERS += mainwindow.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
+    ../output/ecovizout.h \
     stable.h \
     paintarea.h \
     ../core/version.h \

@@ -209,6 +209,11 @@ public:
     /// if 'only_valid' is true, then 0 is returned if no living saplings are on the cell
     /// 'rRUPtr' is a pointer to a RU-ptr: if provided, a pointer to the resource unit is stored
     SaplingCell *cell(QPoint lif_coords, bool only_valid=true, ResourceUnit **rRUPtr=nullptr);
+
+    /// return the metric coordinates of a given cell
+    /// at resource unit `ru` and at the internal index `cell_index`
+    QPointF coordOfCell(ResourceUnit *ru, int cell_index);
+
     /// clear/kill all saplings within the rectangle given by 'rectangle'.
     /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt), otherwise they are moved to soil
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout);
