@@ -42,6 +42,7 @@
 #include "waterout.h"
 #include "svdout.h"
 #include "devstageout.h"
+#include "ecovizout.h"
 
 
 // on creation of the output manager
@@ -71,6 +72,7 @@ OutputManager::OutputManager()
     mOutputs.append(new SVDIndicatorOut);
     mOutputs.append(new SVDUniqueStateOut);
     mOutputs.append(new DevStageOut);
+    mOutputs.append(new EcoVizOut);
 }
 
 void OutputManager::addOutput(Output *output)

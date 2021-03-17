@@ -755,6 +755,7 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("dynamicstand"); // year=0
     GlobalSettings::instance()->outputManager()->execute("svdstate"); // year=0
     GlobalSettings::instance()->outputManager()->execute("devstage"); // year=0
+    GlobalSettings::instance()->outputManager()->execute("ecoviz"); // tree output for visualization, year 0
 
 
     GlobalSettings::instance()->setCurrentYear(1); // set to first year
@@ -924,6 +925,7 @@ void Model::runYear()
     om->execute("svdindicator"); // forest indicators on RU level (SVD related)
     om->execute("svduniquestate"); // list of forest vegetation states (SVD related)
     om->execute("devstage"); // spatial analysis of developement stages
+    om->execute("ecoviz"); // tree output for visualization
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t_all.elapsed();
