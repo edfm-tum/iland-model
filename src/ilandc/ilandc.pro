@@ -217,6 +217,7 @@ SOURCES += main.cpp \
     ../core/svdstate.cpp \
     ../output/soilinputout.cpp \
     ../output/devstageout.cpp \
+    ../output/ecovizout.cpp \
     ../tools/scripttree.cpp \
     ../tools/scriptresourceunit.cpp \
     ../bite/bitescript.cpp \
@@ -271,6 +272,7 @@ HEADERS += \
     ../output/standout.h \
     ../output/landscapeout.h \
     ../output/devstageout.h \
+    ../output/ecovizout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
     ../core/management.h \

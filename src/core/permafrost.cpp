@@ -190,8 +190,11 @@ void Permafrost::run(const ClimateDay *clim_day)
 
         double unfrozen = 1. - mCurrentSoilFrozen / mSoilDepth;
         mWC->mPermanentWiltingPoint = std::max( mPWP * unfrozen, 0.);
-        mWC->mFieldCapacity = std::max( mFC * unfrozen, 0.);
-
+        mWC->mFieldCapacity = mFC * unfrozen;
+        if (mWC->mFieldCapacity < 0.000001)
+            mWC->mFieldCapacity = 0.;
+        if( mWC->mContent < 0.000001)
+            mWC->mContent = 0.;
     }
 
 
@@ -242,9 +245,11 @@ void Permafrost::setupThermalConductivity()
 double Permafrost::thermalConductivity(bool from_below) const
 {
     double rel_water_content;
-
+//    static int bug_counter = 0;
+//    if (mWC->fieldCapacity()>0 && mWC->fieldCapacity() < 0.0000001)
+//        ++bug_counter;
     // assume full water saturation in the soil for energy flux from below
-    if (!from_below && mWC->fieldCapacity() > 0.)
+    if (!from_below && mWC->fieldCapacity() > 0.001)
         rel_water_content = limit(mWC->currentContent() / mWC->fieldCapacity(), 0.001, 1.);
     else
         rel_water_content = 1.;
