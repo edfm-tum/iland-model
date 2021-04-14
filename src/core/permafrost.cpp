@@ -191,8 +191,10 @@ void Permafrost::run(const ClimateDay *clim_day)
         double unfrozen = 1. - mCurrentSoilFrozen / mSoilDepth;
         mWC->mPermanentWiltingPoint = std::max( mPWP * unfrozen, 0.);
         mWC->mFieldCapacity = mFC * unfrozen;
-        if (mWC->mFieldCapacity < 0.000001)
+        if (mWC->mFieldCapacity < 0.000001) {
             mWC->mFieldCapacity = 0.;
+            mWC->mPermanentWiltingPoint = 0.;
+        }
         if( mWC->mContent < 0.000001)
             mWC->mContent = 0.;
     }
