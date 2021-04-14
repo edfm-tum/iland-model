@@ -361,12 +361,18 @@ void WaterCycle::run()
         mContent -= et; // reduce content (transpiration)
         // add intercepted water (that is *not* evaporated) again to the soil (or add to snow if temp too low -> call to snowpack)
         mContent += mSnowPack.add(mCanopy.interception(),day->temperature);
+
         
         // do not remove water below the PWP (fixed value)
         if (mContent<mPermanentWiltingPoint) {
             et -= mPermanentWiltingPoint - mContent; // reduce et (for bookkeeping)
             mContent = mPermanentWiltingPoint;
         }
+
+        // forbid negative content
+        if (mContent < 0.)
+            mContent = 0.;
+
 
         mTotalET += et;
         if (day->month>3 && day->month<10) {
@@ -668,7 +674,7 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
         mEvaporation = evap_canopy; // evaporation from intercepted water
 
     }
-    return canopy_transpiration;
+    return std::max(canopy_transpiration, 0.);
 }
 
 } // end namespace
