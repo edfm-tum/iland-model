@@ -7,6 +7,9 @@
 #include "soil.h"
 #include "modelcontroller.h"
 
+
+#include <QMessageBox>
+
 namespace Water {
 
 // static variables
@@ -204,6 +207,9 @@ void Permafrost::run(const ClimateDay *clim_day)
     stats.maxThawDepth = std::max(stats.maxThawDepth, mBottom==0. ? par.maxPermafrostDepth : mTop);
     stats.maxFreezeDepth = std::max(stats.maxFreezeDepth, mBottom);
     stats.maxSnowDepth = std::max(stats.maxSnowDepth, mWC->mSnowPack.snowDepth());
+
+    if (clim_day->month == 7 && mWC->mFieldCapacity == 0.)
+        QMessageBox::warning(0, "Permaforst havoc!", "debug", QMessageBox::Ok, QMessageBox::Cancel);
 }
 
 void Permafrost::debugData(DebugList &out)
