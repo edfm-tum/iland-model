@@ -99,6 +99,9 @@ public:
     const CNPair &fluxToAtmosphere() const { return mTotalToAtm; } ///< total kg/RU heterotrophic respiration / flux to atm
     const CNPair &fluxToExtern() const { return mTotalToExtern; } ///< total kg/RU harvests
     const CNPair &fluxToDisturbance() const { return mTotalToDisturbance; } ///< total kg/RU due to disturbance (e.g. fire)
+
+    /// deciduous foliage litter (kg/ha) from the previous year
+    double freshDeciduousFoliage() const { return mDeciduousFoliageLitter; }
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);
@@ -125,6 +128,9 @@ public:
 
     /// add (died) biomass from the regeneration layer
     void addToSoil(const Species *species, const CNPair &woody_pool, const CNPair &litter_pool, double woody_aboveground_C, double fine_aboveground_C);
+
+    /// add non-tree biomass to soil (litter input). Inputs in kg/ha. decomposition rate in parameter value of CNPool.
+    void addBiomassToSoil(const CNPool &woody_pool, const CNPool &litter_pool);
 
     /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all
     void removeCarbon(const double factor);
@@ -155,6 +161,7 @@ private:
     CNPool mOtherWood[5]; ///< pool for branch biomass and coarse root biomass
     CNPair mTotalOther; ///< sum of mOtherWood[x]
     int mBranchCounter; ///< index which of the branch pools should be emptied
+    double mDeciduousFoliageLitter; ///< foliage litter (biomass) form deciduous trees of the year (kg/ha) [Note: is cleared at the end of the year]
     double mLabileFluxAbovegroundCarbon; ///< C input to the labile flux from aboveground sources (kg/ha)
     double mRefrFluxAbovegroundCarbon; ///< C input to the woody (refractory) pools from aboveground sources (kg/ha)
     double mOtherWoodAbovegroundFrac; ///< fraction of other wood from aboveground

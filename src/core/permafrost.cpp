@@ -14,6 +14,8 @@ namespace Water {
 
 // static variables
 Permafrost::SParam Permafrost::par;
+Permafrost::SMossParam Permafrost::mosspar;
+
 // this global static declaration requires an exit-time destructor (clang warning)
 // this is not optimal; consider moving the object somewhere else
 static PermafrostLayers permafrostLayers;
@@ -81,6 +83,8 @@ void Permafrost::setup(WaterCycle *wc)
 
     setupThermalConductivity();
 
+    setupMossLayer();
+
     // setup visual data layers
     if (!permafrostLayers.isValid()) {
         permafrostLayers.setGrid( GlobalSettings::instance()->model()->RUgrid() );
@@ -98,6 +102,8 @@ void Permafrost::newYear()
 
     // calculate the depth of the organic layer
     Soil *s = mWC->mRU->soil();
+
+    calculateMoss();
 
     if (s) {
         // the fuel layer is the sum of yL (leaves, needles, and twigs) and yR (coarse downed woody debris) pools (t / ha)
@@ -216,6 +222,95 @@ void Permafrost::debugData(DebugList &out)
 {
     out << mTop << mBottom << mFreezeBack << mResult.delta_mm << mResult.delta_soil
         <<  thermalConductivity(false) << mCurrentSoilFrozen << mCurrentWaterFrozen << mWC->mFieldCapacity;
+}
+
+void Permafrost::setupMossLayer()
+{
+    const XmlHelper &xml=GlobalSettings::instance()->settings();
+
+    // state variables per RU
+    mMossBiomass = xml.valueDouble("model.settings.permafrost.moss.biomass", 0.05); // t/ha
+    // paramters
+    //mosspar.init();
+    mosspar.light_mue = xml.valueDouble("model.settings.permafrost.moss.light_mue", 3.5);
+    mosspar.light_a1 = xml.valueDouble("model.settings.permafrost.moss.light_a1", 3.41);
+    mosspar.light_a2 = xml.valueDouble("model.settings.permafrost.moss.light_a2", 2.14);
+    mosspar.light_a3 = xml.valueDouble("model.settings.permafrost.moss.light_a3", 0.08);
+    mosspar.canopy_b1 = xml.valueDouble("model.settings.permafrost.moss.canopy_b1", 1.27);
+    mosspar.canopy_b2 = xml.valueDouble("model.settings.permafrost.moss.canopy_b2", 0.3);
+    mosspar.respiration_q = xml.valueDouble("model.settings.permafrost.moss.respiration_q", 0.12);
+    mosspar.respiration_b1 = xml.valueDouble("model.settings.permafrost.moss.respiration_b1", 0.136);
+    mosspar.CNRatio = xml.valueDouble("model.settings.permafrost.moss.CNRatio", 30.);
+    mosspar.bulk_density = xml.valueDouble("model.settings.permafrost.moss.bulk_density", 5.2);
+    mosspar.r_decomp = xml.valueDouble("model.settings.permafrost.moss.r_decomp", 0.14);
+
+}
+
+void Permafrost::calculateMoss()
+{
+    // See xyz supplementary material for details
+
+    // Moss productivity and respiration
+
+    // (1) calculate the available light
+    double frac_light_available = exp(- mosspar.light_mue * mosspar.SLA * mMossBiomass * 0.5);
+
+    // (2) calculate a number of scaling factors / response factors
+    // (2.1) scaling factor light
+    double f_light = mosspar.light_a1 * (frac_light_available - mosspar.light_a3) / (1. + mosspar.light_a2 * frac_light_available);
+    f_light = std::min(  std::max( f_light, 0.), 1.);
+
+    // (2.2)  shading / dessication due to canopy
+    double f_shadeout = 0., f_dryout = 0.;
+    double stand_lai = mWC->mRU->leafAreaIndex();
+    double al = exp(-0.25 * stand_lai);
+
+    if (al <= 0.5) {
+        f_dryout = 1.;
+        f_shadeout = mosspar.canopy_b1 + mosspar.canopy_b2 * sqrt(al);
+    } else {
+        f_dryout = 1.25 - al*al;
+        f_shadeout = 1.;
+    }
+
+    // (2.3) Effect of deciduous litter
+    // get fresh deciduous litter (t/ha)
+    double fresh_dec_litter = 0.;
+    if (mWC->mRU->snag())
+        fresh_dec_litter = mWC->mRU->snag()->freshDeciduousFoliage() / 1000.; // from kg/ha -> t/ha
+
+    double f_deciduous = exp(-0.45 * fresh_dec_litter);
+
+    // (3) Total productivity
+    // Assimilation: modifiers reduce the potential productivity of 0.3 kg/m2/yr
+    double moss_assimilation = 0.3 * f_light * f_dryout * f_shadeout * f_deciduous;
+
+    // Respiration:
+    double moss_resp = mosspar.SLA * mMossBiomass * (mosspar.respiration_q + mosspar.respiration_b1) - 0.001 * f_deciduous;
+
+    // annual production of moss in kg biomass / m2 / yr
+    double prod = mosspar.SLA * mMossBiomass * moss_assimilation - moss_resp;
+
+
+    // (4) update moss pool and add produced biomass (only if production > 0)
+    //if (prod > 0.)
+    mMossBiomass += prod;
+    mMossBiomass = std::max(mMossBiomass, 0.0001);
+
+    // (5) turnover
+    // kg / m2 / yr
+    double mass_loss = mosspar.SLA * mMossBiomass * (moss_assimilation - mosspar.respiration_q) + 0.001 * f_deciduous - prod;
+
+    // mMossBiomass = std::max(mMossBiomass - mass_loss, 0.);
+    // dead moss is transferred to the forest floor fine litter pool in iLand
+    if (mWC->mRU->snag() && mass_loss > 0.) {
+        // scale up from m2 to stockable area
+        double stockable_area = mWC->mRU->stockableArea();
+        CNPool litter_input(stockable_area * mass_loss * biomassCFraction,
+                            stockable_area * mass_loss * biomassCFraction / mosspar.CNRatio,
+                            mosspar.r_decomp);
+        mWC->mRU->snag()->addBiomassToSoil(CNPool(), litter_input);
+    }
 }
 
 void Permafrost::setupThermalConductivity()
@@ -398,6 +493,7 @@ double PermafrostLayers::value(ResourceUnit * const &data, const int index) cons
     case 2: return pf->mDeepSoilTemperature;
     case 3: return pf->stats.maxSnowDepth;
     case 4: return pf->mSOLDepth;
+    case 5: return pf->mossLayerThickness();
     default: return 0.;
     }
 }
@@ -410,7 +506,8 @@ const QVector<LayeredGridBase::LayerElement> &PermafrostLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthThawed"), QLatin1Literal("maximum depth of thawing (m). Is 2m for fully thawed soil"), GridViewTurbo)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deepSoilTemperature"), QLatin1Literal("temperature of ground deep below the soil (C)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QLatin1Literal("maxSnowCover"), QLatin1Literal("maximum snow height (m)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("SOLDepth"), QLatin1Literal("depth of the soil organic layer (litter + vegetation) (m)"), GridViewHeat);
+                << LayeredGridBase::LayerElement(QLatin1Literal("SOLDepth"), QLatin1Literal("depth of the soil organic layer (litter) (m)"), GridViewHeat)
+                << LayeredGridBase::LayerElement(QLatin1Literal("moss"), QLatin1Literal("depth of the life moss layer (m)"), GridViewHeat);
     return mNames;
 
 }

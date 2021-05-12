@@ -52,7 +52,9 @@ WaterOut::WaterOut()
               << OutputColumn("mean_swc_gs_mm", "mean soil water content in the growing season (fixed: April - September) (mm)", OutDouble)
               << OutputColumn("maxDepthFrozen", "Permafrost: maximum depth of freezing (m). The value is 2m when soil is fully frozen in a year.", OutDouble)
               << OutputColumn("maxDepthThawed", "Permafrost: maximum depth of thawing (m). The value is 2m if soil is fully thawed in a year.", OutDouble)
-              << OutputColumn("maxSnowCover", "Permafrost: maximum snow height (m) in a year.", OutDouble);
+              << OutputColumn("maxSnowCover", "Permafrost: maximum snow height (m) in a year.", OutDouble)
+              << OutputColumn("SOLLayer", "Permafrost: total depth of soil organic layer (excl. life moss) (m).", OutDouble)
+              << OutputColumn("mossLayer", "depth of the life moss layer (m).", OutDouble);
 
 
 }
@@ -95,9 +97,11 @@ void WaterOut::exec()
             if (wc->permafrost()) {
                 *this << wc->permafrost()->stats.maxFreezeDepth
                         << wc->permafrost()->stats.maxThawDepth
-                        << wc->permafrost()->stats.maxSnowDepth;
+                        << wc->permafrost()->stats.maxSnowDepth
+                        << wc->permafrost()->mSOLDepth
+                        << wc->permafrost()->mossLayerThickness();
             } else {
-                *this << 0. << 0. << 0.;
+                *this << 0. << 0. << 0. << 0. << 0.;
             }
             writeRow();
         }
