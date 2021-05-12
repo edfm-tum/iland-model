@@ -116,6 +116,8 @@ void Snag::setup( const ResourceUnit *ru)
         mHalfLife[i] = 0.;
     }
     mTotalSnagCarbon = 0.;
+    mDeciduousFoliageLitter = 0.;
+
     if (mDBHLower<=0)
         throw IException("Snag::setupThresholds() not called or called with invalid parameters.");
 
@@ -347,6 +349,8 @@ void Snag::calculateYear()
 
     mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2];
     mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
+    mDeciduousFoliageLitter = 0.;
+
 }
 
 /// foliage and fineroot litter is transferred during tree growth.
@@ -355,6 +359,8 @@ void Snag::addTurnoverLitter(const Species *species, const double litter_foliage
     mLabileFlux.addBiomass(litter_foliage, species->cnFoliage(), species->snagKyl());
     mLabileFluxAbovegroundCarbon += litter_foliage*biomassCFraction;
     mLabileFlux.addBiomass(litter_fineroot, species->cnFineroot(), species->snagKyl());
+    if (!species->isConiferous())
+        mDeciduousFoliageLitter += litter_foliage;
     DBGMODE(
     if (isnan(mLabileFlux.C))
         qDebug("Snag::addTurnoverLitter: NaN");
@@ -550,7 +556,17 @@ void Snag::addToSoil(const Species *species, const CNPair &woody_pool, const CNP
     DBGMODE(
     if (isnan(mLabileFlux.C) || isnan(mRefractoryFlux.C))
         qDebug("Snag::addToSoil: NaN in C Pool");
-    );
+            );
+}
+
+void Snag::addBiomassToSoil(const CNPool &woody_pool, const CNPool &litter_pool)
+{
+    // add the biomass
+    mLabileFlux.add(litter_pool, litter_pool.parameter());
+    mRefractoryFlux.add(woody_pool, woody_pool.parameter());
+    // assume all biomass input is from above
+    mLabileFluxAbovegroundCarbon += litter_pool.C;
+    mRefrFluxAbovegroundCarbon += woody_pool.C;
 }
 
 /// disturbance function: remove the fraction of 'factor' of biomass from the SWD pools; 0: remove nothing, 1: remove all

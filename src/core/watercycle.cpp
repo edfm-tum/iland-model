@@ -558,7 +558,7 @@ double Canopy::flow(const double &preciptitation_mm)
         double max_flow_needle = 0.9 * sqrt(1.03 - exp(-0.055*preciptitation_mm));
         max_interception_mm += preciptitation_mm *  (1. - max_flow_needle * mLAINeedle/mLAI);
         // (2) calculate maximum storage potential based on the current LAI
-        //     by weighing the needle/decidious storage capacity
+        //     by weighing the needle/deciduous storage capacity
         max_storage_potentital += mNeedleFactor * mLAINeedle/mLAI;
     }
 
