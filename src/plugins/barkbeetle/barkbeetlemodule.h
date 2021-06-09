@@ -169,6 +169,7 @@ private:
     void barkbeetleSpread(); ///< main function of bark beetle spread
     void barkbeetleKill(); ///< kill the trees on pixels marked as killed
     void scanResourceUnitTrees(const QPointF &position); ///< load tree data of the resource unit 'position' (metric) lies inside
+    bool sanitationTreatment(QPointF coord) const; ///< returns true if no beetles should spread from a cell due to sanitation treatments
     //void calculateMeanDamage(); ///< calculate the mean damage percentage (fraction of killed pixels to host pixels)
     int mIteration;
     QString mAfterExecEvent;
@@ -176,7 +177,7 @@ private:
         SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50),
             spreadKernelMaxDistance(100.), backgroundInfestationProbability(0.0001), initialInfestationProbability(0.),
             stormInfestationProbability(1.), winterMortalityBaseLevel(0.),
-            outbreakDurationMin(0.), outbreakDurationMax(0.), deadTreeSelectivity(1.) {}
+            outbreakDurationMin(0.), outbreakDurationMax(0.), deadTreeSelectivity(1.), sanitationTreatmentProb(0.) {}
         float minDbh; ///< minimum dbh of spruce trees that are considered as potential hosts
         int cohortsPerGeneration; ///< 'packages' of beetles that spread from an infested pixel
         int cohortsPerSisterbrood; ///< cohorts that spread from a pixel when a full sister brood developed
@@ -189,6 +190,7 @@ private:
         double outbreakDurationMin; ///< minimum value for the duration of a barkbeetle outbreak
         double outbreakDurationMax; ///< maximum value for the duration of a barkbeetle outbreak#
         double deadTreeSelectivity; ///< how effectively beetles are attracted by dead trees (e.g. windthrown) (5x5 pixel). 1: all beetles go into dead trees, 0: no effect of dead trees
+        double sanitationTreatmentProb; ///< probability (0..1) that a sanitation treatment is effective for a cell (if so, no beetles spread from the cell)
 
     } params;
     struct SBBStats {

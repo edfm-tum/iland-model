@@ -28,6 +28,9 @@
 #include "outputmanager.h"
 #include "climate.h"
 #include "abe/forestmanagementengine.h"
+#include "abe/fmstand.h"
+#include "abe/fmstp.h"
+#include "abe/activity.h"
 
 
 /** @defgroup beetlemodule iLand barkbeetle module
@@ -113,6 +116,7 @@ void BarkBeetleModule::loadParameters(bool do_reset)
     params.initialInfestationProbability = xml.valueDouble(".initialInfestationProbability", params.initialInfestationProbability);
     params.stormInfestationProbability = xml.valueDouble(".stormInfestationProbability", params.stormInfestationProbability);
     params.deadTreeSelectivity = xml.valueDouble(".deadTreeSelectivity", params.deadTreeSelectivity);
+    params.sanitationTreatmentProb = xml.valueDouble(".sanitationTreatmentProbability", params.sanitationTreatmentProb);
 
 
     QString formula = xml.value(".colonizeProbabilityFormula", "0.1");
@@ -331,6 +335,26 @@ void BarkBeetleModule::scanResourceUnitTrees(const QPointF &position)
     }
     // set the "processed" flag
     ru_cell.scanned = true;
+}
+
+bool BarkBeetleModule::sanitationTreatment(QPointF coord) const
+{
+    if (params.sanitationTreatmentProb > 0.) {
+        // there is a chance that treatment is effective
+        return drandom() < params.sanitationTreatmentProb;
+    }
+    // check for ABE
+    ABE::ForestManagementEngine *abe = GlobalSettings::instance()->model()->ABEngine();
+    if (abe) {
+        // coord: metric coordinates of the bb cell
+        ABE::FMStand *stand = abe->standAt(coord);
+        if (stand && stand->stp()) {
+            ABE::ActSalvage *salvage = stand->stp()->salvageActivity();
+            if (salvage)
+                return salvage->checkSanitation(stand);
+        }
+    }
+    return false;
 }
 
 
@@ -581,6 +605,12 @@ void BarkBeetleModule::barkbeetleSpread()
             stats.NAreaKilled++;
             bbru.killed_pixels++;
             bbru.host_pixels--;
+
+            // check for sanitation treatment
+            if (sanitationTreatment(runner.currentCoord())) {
+                // no beetles should spread from this cell
+                continue;
+            }
 
             BarkBeetleCell *nb8[8];
             for (int i=0;i<n_packets;++i) {

@@ -43,6 +43,8 @@ public:
     /// return true, if the (disturbed) tree should be harvested by the salvage activity
     bool evaluateRemove(Tree* tree) const;
     bool barkbeetleAttack(FMStand *stand, double generations, int infested_px_ha);
+
+    bool checkSanitation(FMStand *stand);
 private:
     void checkStandAfterDisturbance(FMStand *stand);
     int floodFillHelper(Grid<int> &grid, QPoint start, int old_color, int color);
@@ -50,6 +52,7 @@ private:
     int replaceValueHelper(Grid<int> &grid, int old_value, int new_value);
     bool mDebugSplit;
     Expression *mCondition; ///< formula to determine which trees should be harvested
+    Expression *mSanitationCondition; ///< formula to determine which trees should be sanitation treated
     int mMaxPreponeActivity; ///< no of years that a already scheduled (regular) activity is 'preponed'
     double mThresholdMinimal; ///< lower threshold (below no action is taken) in m3/ha
     double mThresholdSplit; ///<threshold (relative damage, 0..1) when a split of the stand should be initiated

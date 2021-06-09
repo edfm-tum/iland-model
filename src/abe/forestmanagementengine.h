@@ -93,6 +93,8 @@ public:
     const QMultiMap<FMUnit*, FMStand*> &stands() const {return mUnitStandMap; }
     const QVector<FMUnit*> &units() const { return mUnits; }
     QVariantList standIds() const;
+
+    FMStand *standAt(QPointF coord) const { return mFMStandGrid.constValueAt(coord); }
     // functions
 
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.

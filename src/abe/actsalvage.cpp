@@ -43,6 +43,7 @@ namespace ABE {
 ActSalvage::ActSalvage(FMSTP *parent): Activity(parent)
 {
     mCondition = nullptr;
+    mSanitationCondition = nullptr;
     mMaxPreponeActivity = 0;
 
     mBaseActivity.setIsSalvage(true);
@@ -66,6 +67,12 @@ void ActSalvage::setup(QJSValue value)
     if (!condition.isEmpty() && condition!="undefined") {
         mCondition = new Expression(condition);
     }
+
+    condition = FMSTP::valueFromJs(value, "sanitationCondition").toString();
+    if (!condition.isEmpty() && condition!="undefined") {
+        mSanitationCondition = new Expression(condition);
+    }
+
     mMaxPreponeActivity = FMSTP::valueFromJs(value, "maxPrepone", "0").toInt();
     mThresholdSplit = FMSTP::valueFromJs(value, "thresholdSplitStand", "0.1").toNumber();
     mThresholdClear = FMSTP::valueFromJs(value, "thresholdClearStand", "0.9").toNumber();
@@ -117,6 +124,7 @@ QStringList ActSalvage::info()
 {
     QStringList lines = Activity::info();
     lines << QString("condition: %1").arg(mCondition?mCondition->expression():"-");
+    lines << QString("sanitationCondition: %1").arg(mSanitationCondition?mSanitationCondition->expression():"-");
     lines << QString("maxPrepone: %1").arg(mMaxPreponeActivity);
     return lines;
 }
@@ -148,6 +156,20 @@ bool ActSalvage::barkbeetleAttack(FMStand *stand, double generations, int infest
     if (!result.isBool())
         qCDebug(abe) << "Salvage-Activity:onBarkBeetleAttack: expecting a boolean return";
     return result.toBool();
+}
+
+bool ActSalvage::checkSanitation(FMStand *stand)
+{
+   if (standFlags().enabled() && standFlags(stand).enabled()) {
+       // activity is enabled. Now check
+       if (mSanitationCondition) {
+           bool result = static_cast<bool>( mSanitationCondition->execute() );
+           if (stand->trace())
+               qCDebug(abe) << "Sanitation for stand" << stand->id() << ": result:" << result;
+           return result;
+       }
+   }
+   return false;
 }
 
 void ActSalvage::checkStandAfterDisturbance(FMStand *stand)

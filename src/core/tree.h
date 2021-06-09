@@ -50,8 +50,10 @@ public:
     // access to properties
     int id() const { return mId; } ///< numerical unique ID of the tree
     int age() const { return mAge; } ///< the tree age (years)
-    /// @property position The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
+    /// metric coordinates of the tree
     const QPointF position() const { Q_ASSERT(mGrid!=0); return mGrid->cellCenterPoint(mPositionIndex); }
+
+    /// @property positionIndex The tree does not store the floating point coordinates but only the index of pixel on the LIF grid
     const QPoint positionIndex() const { return mPositionIndex; } ///< the x/y indicies (2m grid) of the tree
     const Species* species() const { Q_ASSERT(mRU!=0); return mSpecies; } ///< pointer to the tree species of the tree.
     const ResourceUnit *ru() const { Q_ASSERT(mRU!=0); return mRU; } ///< pointer to the ressource unit the tree belongs to.
