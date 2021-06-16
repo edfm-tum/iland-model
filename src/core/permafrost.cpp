@@ -8,7 +8,7 @@
 #include "modelcontroller.h"
 
 
-#include <QMessageBox>
+// #include <QMessageBox>
 
 namespace Water {
 
@@ -36,7 +36,7 @@ void Permafrost::setup(WaterCycle *wc)
     const XmlHelper &xml=GlobalSettings::instance()->settings();
 
     par.init();
-    par.deepSoilDepth = xml.valueDouble("model.settings.permafrost.deepSoilDepth", 5.);
+    par.groundBaseDepth = xml.valueDouble("model.settings.permafrost.groundBaseDepth", 5.);
     par.lambdaSnow = xml.valueDouble("model.settings.permafrost.lambdaSnow", 0.);
     par.lambdaOrganicLayer = xml.valueDouble("model.settings.permafrost.lambdaOrganicLayer", 0.);
     par.organicLayerDensity = xml.valueDouble("model.settings.permafrost.organicLayerDensity", 60.);
@@ -47,7 +47,7 @@ void Permafrost::setup(WaterCycle *wc)
 
     par.onlySimulate = xml.valueBool("model.settings.permafrost.onlySimulate", false);
 
-    mDeepSoilTemperature= xml.valueDouble("model.settings.permafrost.deepSoilTemperature", 0.);
+    mGroundBaseTemperature= xml.valueDouble("model.settings.permafrost.initialGroundTemperature", 0.);
 
     double ifd = xml.valueDouble("model.settings.permafrost.initialDepthFrozen", 1.);
     if (ifd < par.maxPermafrostDepth) {
@@ -61,8 +61,9 @@ void Permafrost::setup(WaterCycle *wc)
     mFreezeBack = 0.; // we are not in "freezeback mode" (autumn)
 
     mSOLDepth = 0.;
+    par.SOLDefaultDepth = xml.valueDouble("model.settings.permafrost.organicLayerDefaultDepth", 0.1);
     if (!mWC->mRU->soil()) {
-        mSOLDepth = xml.valueDouble("model.settings.permafrost.organicLayerDefaultDepth", 0.);
+        mSOLDepth = par.SOLDefaultDepth;
         qWarning() << "Permafrost is enabled, but soil carbon cycle is not. Running Permafrost with constant soil organic layer (permafrost.organicLayerDefaultDepth)= " << mSOLDepth;
     }
 
@@ -110,10 +111,12 @@ void Permafrost::newYear()
         double totalbiomass = s->youngLabile().biomass() * s->youngLabileAbovegroundFraction() + s->youngRefractory().biomass() * s->youngRefractoryAbovegroundFraction();
         // biomass t/ha = 10*kg/m2 / rho [kg/m3] = m
         mSOLDepth = totalbiomass * 0.1 / par.organicLayerDensity;
+        // add moss layer
+        mSOLDepth += mossLayerThickness();
     }
     // adapt temperature of deep soil
     // 10 year running average
-    mDeepSoilTemperature = 0.9 * mDeepSoilTemperature + 0.1 * mWC->mRU->climate()->meanAnnualTemperature();
+    mGroundBaseTemperature = 0.9 * mGroundBaseTemperature + 0.1 * mWC->mRU->climate()->meanAnnualTemperature();
 
 }
 
@@ -174,12 +177,12 @@ void Permafrost::run(const ClimateDay *clim_day)
         }
     }
     // effect of ground temperature
-    if (mDeepSoilTemperature < 0.) {
-        delta_ground = calcFreezeThaw(mTop, mDeepSoilTemperature, false, false);
+    if (mGroundBaseTemperature < 0.) {
+        delta_ground = calcFreezeThaw(mTop, mGroundBaseTemperature, false, false);
         mTop = delta_ground.new_depth;
     }
-    if (mDeepSoilTemperature > 0.) {
-        delta_ground = calcFreezeThaw(mBottom, mDeepSoilTemperature, true, false);
+    if (mGroundBaseTemperature > 0.) {
+        delta_ground = calcFreezeThaw(mBottom, mGroundBaseTemperature, true, false);
         mBottom = delta_ground.new_depth;
     }
 
@@ -214,8 +217,8 @@ void Permafrost::run(const ClimateDay *clim_day)
     stats.maxFreezeDepth = std::max(stats.maxFreezeDepth, mBottom);
     stats.maxSnowDepth = std::max(stats.maxSnowDepth, mWC->mSnowPack.snowDepth());
 
-    if (clim_day->month == 7 && mWC->mFieldCapacity == 0.)
-        QMessageBox::warning(0, "Permaforst havoc!", "debug", QMessageBox::Ok, QMessageBox::Cancel);
+//    if (clim_day->month == 7 && mWC->mFieldCapacity == 0.)
+//        QMessageBox::warning(0, "Permaforst havoc!", "debug", QMessageBox::Ok, QMessageBox::Cancel);
 }
 
 void Permafrost::debugData(DebugList &out)
@@ -224,24 +227,21 @@ void Permafrost::debugData(DebugList &out)
         <<  thermalConductivity(false) << mCurrentSoilFrozen << mCurrentWaterFrozen << mWC->mFieldCapacity;
 }
 
+
 void Permafrost::setupMossLayer()
 {
     const XmlHelper &xml=GlobalSettings::instance()->settings();
 
     // state variables per RU
-    mMossBiomass = xml.valueDouble("model.settings.permafrost.moss.biomass", 0.05); // t/ha
+    mMossBiomass = xml.valueDouble("model.settings.permafrost.moss.biomass", 0.05); // kg/m2
     // paramters
-    //mosspar.init();
-    mosspar.light_mue = xml.valueDouble("model.settings.permafrost.moss.light_mue", 3.5);
-    mosspar.light_a1 = xml.valueDouble("model.settings.permafrost.moss.light_a1", 3.41);
-    mosspar.light_a2 = xml.valueDouble("model.settings.permafrost.moss.light_a2", 2.14);
-    mosspar.light_a3 = xml.valueDouble("model.settings.permafrost.moss.light_a3", 0.08);
-    mosspar.canopy_b1 = xml.valueDouble("model.settings.permafrost.moss.canopy_b1", 1.27);
-    mosspar.canopy_b2 = xml.valueDouble("model.settings.permafrost.moss.canopy_b2", 0.3);
+    mosspar.light_k = xml.valueDouble("model.settings.permafrost.moss.light_k", 0.5);
+    mosspar.light_comp = xml.valueDouble("model.settings.permafrost.moss.light_comp", 0.01);
+    mosspar.light_sat = xml.valueDouble("model.settings.permafrost.moss.light_sat", 0.05);
     mosspar.respiration_q = xml.valueDouble("model.settings.permafrost.moss.respiration_q", 0.12);
-    mosspar.respiration_b1 = xml.valueDouble("model.settings.permafrost.moss.respiration_b1", 0.136);
+    mosspar.respiration_b = xml.valueDouble("model.settings.permafrost.moss.respiration_b", 0.136);
     mosspar.CNRatio = xml.valueDouble("model.settings.permafrost.moss.CNRatio", 30.);
-    mosspar.bulk_density = xml.valueDouble("model.settings.permafrost.moss.bulk_density", 5.2);
+    mosspar.bulk_density = xml.valueDouble("model.settings.permafrost.moss.bulk_density", 50);
     mosspar.r_decomp = xml.valueDouble("model.settings.permafrost.moss.r_decomp", 0.14);
 
 }
@@ -250,28 +250,24 @@ void Permafrost::calculateMoss()
 {
     // See xyz supplementary material for details
 
-    // Moss productivity and respiration
+    // 1) Available Light
 
-    // (1) calculate the available light
-    double frac_light_available = exp(- mosspar.light_mue * mosspar.SLA * mMossBiomass * 0.5);
+    // get leaf area index for canopy and moss layer
+    double LAI_canopy = mWC->mRU->leafAreaIndex();
+    double LAI_moss = mMossBiomass * mosspar.SLA;
 
-    // (2) calculate a number of scaling factors / response factors
-    // (2.1) scaling factor light
-    double f_light = mosspar.light_a1 * (frac_light_available - mosspar.light_a3) / (1. + mosspar.light_a2 * frac_light_available);
-    f_light = std::min(  std::max( f_light, 0.), 1.);
+    double light_below = exp(-mosspar.light_k * (LAI_canopy + LAI_moss));
 
-    // (2.2)  shading / dessication due to canopy
-    double f_shadeout = 0., f_dryout = 0.;
-    double stand_lai = mWC->mRU->leafAreaIndex();
-    double al = exp(-0.25 * stand_lai);
+    // f_light is a linear function with 0 at the light compensation point, and 1 at the light saturation level
+    double f_light = (light_below - mosspar.light_comp) / (mosspar.light_sat - mosspar.light_comp);
+    f_light = limit(f_light, 0., 1.); // clamp to interval [0,1]
 
-    if (al <= 0.5) {
-        f_dryout = 1.;
-        f_shadeout = mosspar.canopy_b1 + mosspar.canopy_b2 * sqrt(al);
-    } else {
+    // 2) dessication (=dryout) of moss if the canopy is too open (lack of stomatal control of moss plants)
+    double al = exp(-0.25 * LAI_canopy);
+    double f_dryout = 1.;
+
+    if (al <= 0.5)
         f_dryout = 1.25 - al*al;
-        f_shadeout = 1.;
-    }
 
     // (2.3) Effect of deciduous litter
     // get fresh deciduous litter (t/ha)
@@ -281,33 +277,33 @@ void Permafrost::calculateMoss()
 
     double f_deciduous = exp(-0.45 * fresh_dec_litter);
 
+
     // (3) Total productivity
     // Assimilation: modifiers reduce the potential productivity of 0.3 kg/m2/yr
-    double moss_assimilation = 0.3 * f_light * f_dryout * f_shadeout * f_deciduous;
+    double moss_assimilation = mosspar.AMax * f_light * f_dryout *  f_deciduous;
 
-    // Respiration:
-    double moss_resp = mosspar.SLA * mMossBiomass * (mosspar.respiration_q + mosspar.respiration_b1) - 0.001 * f_deciduous;
+    // producitvity [kg / kg biomass/yr], assimilated carbon for reproduction reduced
+    double effective_assimilation = mosspar.SLA * moss_assimilation * (1 - 0.001*f_deciduous);
 
-    // annual production of moss in kg biomass / m2 / yr
-    double prod = mosspar.SLA * mMossBiomass * moss_assimilation - moss_resp;
+    // annual respiration loss (kg/m2/yr) (flux to atmosphere)
+    double moss_rt = mMossBiomass * mosspar.respiration_q;
+    // annual turnover (biomass to replace) (kg/m2/yr) (flux to litter)
+    double moss_turnover = mMossBiomass * mosspar.respiration_b;
 
+    // net productivty (kg/m2/yr): assimilation - respiration - turnover
+    double moss_prod = effective_assimilation * mMossBiomass - moss_rt - moss_turnover;
 
-    // (4) update moss pool and add produced biomass (only if production > 0)
-    //if (prod > 0.)
-    mMossBiomass += prod;
-    mMossBiomass = std::max(mMossBiomass, 0.0001);
+    // (4) update moss pool and add produced biomass
+    mMossBiomass += moss_prod;
+    // avoid values below 0; assume a minimum biomass always remains
+    mMossBiomass = std::max(mMossBiomass, cMinMossBiomass);
 
-    // (5) turnover
-    // kg / m2 / yr
-    double mass_loss = mosspar.SLA * mMossBiomass * (moss_assimilation - mosspar.respiration_q) + 0.001 * f_deciduous - prod;
-
-    // mMossBiomass = std::max(mMossBiomass - mass_loss, 0.);
     // dead moss is transferred to the forest floor fine litter pool in iLand
-    if (mWC->mRU->snag() && mass_loss > 0.) {
+    if (mWC->mRU->snag() && moss_turnover > 0.) {
         // scale up from m2 to stockable area
         double stockable_area = mWC->mRU->stockableArea();
-        CNPool litter_input(stockable_area * mass_loss * biomassCFraction,
-                            stockable_area * mass_loss * biomassCFraction / mosspar.CNRatio,
+        CNPool litter_input(stockable_area * moss_turnover * biomassCFraction,
+                            stockable_area * moss_turnover * biomassCFraction / mosspar.CNRatio,
                             mosspar.r_decomp);
         mWC->mRU->snag()->addBiomassToSoil(CNPool(), litter_input);
     }
@@ -402,7 +398,7 @@ Permafrost::FTResult Permafrost::calcFreezeThaw(double at, double temp, bool low
 
     } else {
         // energy flux from below
-        double dist_to_layer = std::max(par.deepSoilDepth - at, 0.5);
+        double dist_to_layer = std::max(par.groundBaseDepth - at, 0.5);
         double lambda_soil = thermalConductivity(true); // unfrozen
         // todo: Question: is soil below fully saturated?
         if (temp < cTempIce)
@@ -490,10 +486,10 @@ double PermafrostLayers::value(ResourceUnit * const &data, const int index) cons
     switch (index) {
     case 0: return pf->stats.maxFreezeDepth;
     case 1: return pf->stats.maxThawDepth;
-    case 2: return pf->mDeepSoilTemperature;
-    case 3: return pf->stats.maxSnowDepth;
-    case 4: return pf->mSOLDepth;
-    case 5: return pf->mossLayerThickness();
+    case 2: return pf->mGroundBaseTemperature;
+    case 3: return pf->stats.maxSnowDepth*100.;
+    case 4: return pf->mSOLDepth*100.;
+    case 5: return pf->mossLayerThickness()*100.;
     default: return 0.;
     }
 }
@@ -505,9 +501,9 @@ const QVector<LayeredGridBase::LayerElement> &PermafrostLayers::names()
                 << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthFrozen"), QLatin1Literal("maximum depth of freezing (m). Is 2m for full freeze."), GridViewTurbo)
                 << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthThawed"), QLatin1Literal("maximum depth of thawing (m). Is 2m for fully thawed soil"), GridViewTurbo)
                 << LayeredGridBase::LayerElement(QLatin1Literal("deepSoilTemperature"), QLatin1Literal("temperature of ground deep below the soil (C)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("maxSnowCover"), QLatin1Literal("maximum snow height (m)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("SOLDepth"), QLatin1Literal("depth of the soil organic layer (litter) (m)"), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("moss"), QLatin1Literal("depth of the life moss layer (m)"), GridViewHeat);
+                << LayeredGridBase::LayerElement(QLatin1Literal("maxSnowCover"), QLatin1Literal("maximum snow height (cm)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QLatin1Literal("SOLDepth"), QLatin1Literal("depth of the soil organic layer (litter+dead moss) (cm)"), GridViewTurbo)
+                << LayeredGridBase::LayerElement(QLatin1Literal("moss"), QLatin1Literal("depth of the life moss layer (cm)"), GridViewTurbo);
     return mNames;
 
 }

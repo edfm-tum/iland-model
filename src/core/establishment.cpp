@@ -29,6 +29,7 @@
 #include "helper.h"
 #include "debugtimer.h"
 #include "watercycle.h"
+#include "permafrost.h"
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
@@ -136,6 +137,24 @@ double Establishment::calculateWaterLimitation()
 */
 }
 
+double Establishment::calculateSOLDepthLimitation()
+{
+    if (mRUS->species()->establishmentParameters().SOL_thickness == 0.)
+        return 1.; // no effect for the current species
+
+    if (!mRUS->ru()->waterCycle()->permafrost())
+        return 1.; // no limitation of permafrost module is disabled
+
+    double depth = mRUS->ru()->waterCycle()->permafrost()->mossLayerThickness() +
+            mRUS->ru()->waterCycle()->permafrost()->SOLLayerThickness();
+
+    depth = depth * 100.; // to cm
+
+    double est_SOLlimit = mRUS->species()->establishmentParameters().SOL_thickness;
+    double effect = exp( -est_SOLlimit * depth );
+    return effect;
+}
+
 
 
 /** Calculate the abiotic environemnt for seedling for a given species and a given resource unit.
@@ -228,8 +247,11 @@ void Establishment::calculateAbioticEnvironment()
             frost_effect = pow(p.frost_tolerance, sqrt(double(mTACA_frostAfterBuds)));
         // negative effect due to water limitation on establishment [1: no effect]
         mWaterLimitation = calculateWaterLimitation();
-        // combine drought and frost effect multiplicatively
-        mPAbiotic = frost_effect * mWaterLimitation;
+        // negative effect of a thick soil organic layer on regeneration [1: no effect]
+        double SOL_limitation = calculateSOLDepthLimitation();
+
+        // combine effects of drought, frost, and soil organic layer depth multiplicatively
+        mPAbiotic = frost_effect * mWaterLimitation * SOL_limitation;
     } else {
         mPAbiotic = 0.; // if any of the requirements is not met
     }

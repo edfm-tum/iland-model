@@ -36,8 +36,16 @@ public:
 
     /// thickness of the moss layer in meters
     double mossLayerThickness() const { return mMossBiomass / mosspar.bulk_density; } // kg/m2  / rho [kg/m3] = m
+    /// thickness of the soil organic layer (in meters)
+    double SOLLayerThickness() const {return mSOLDepth; }
+    /// moss biomass (kg/m2)
+    double mossBiomass() const { return mMossBiomass; }
+    /// burn some of the life moss (kg / ha)
+    void burnMoss(const double biomass_kg) { mMossBiomass = mMossBiomass - biomass_kg/cRUArea;
+                                           mMossBiomass = std::max(mMossBiomass, cMinMossBiomass); }
 
 private:
+    const double cMinMossBiomass = 0.0001; // kg/m2
     /// setup function of the moss layer on the resource unit
     void setupMossLayer();
     /// annual calculations for the moss layer
@@ -80,7 +88,7 @@ private:
 
     double mSOLDepth; ///< depth of the soil organic layer on top of the mineral soil (m)
 
-    double mDeepSoilTemperature; ///< temperature (C) of the zone with secondary heat flux
+    double mGroundBaseTemperature; ///< temperature (C) of the zone with secondary heat flux
 
     /// thermal conductivity for dry (unfrozen) soil W/m/K
     double mKdry;
@@ -116,9 +124,10 @@ private:
         double lambdaOrganicLayer; ///< thermal conductivity [W/m*K] of the organic layer
 
         double organicLayerDensity; ///< density (kg/m3) of the organic layer
+        double SOLDefaultDepth = 0.1; ///< 0.1m default depth of soil organic litter
 
         // parameters
-        double deepSoilDepth; ///< depth (m) of the zone below the active layer from where the secondary heat flux originates
+        double groundBaseDepth; ///< depth (m) of the zone below the active layer from where the secondary heat flux originates
         double maxFreezeThawPerDay; ///< maximum amount of freeze/thaw (mm watercolumn) per day
 
         bool onlySimulate; ///< if true, peramfrost has no effect on the available water (and soil depth)
@@ -126,10 +135,11 @@ private:
 
     struct SMossParam {
         const double SLA=1.; ///< specific leaf area of moss (set to 1)
-        double light_mue; ///< empirical parameter in available light calculation
-        double light_a1, light_a2, light_a3; ///< parameters of scaling function available light
-        double canopy_b1, canopy_b2; ///< parameters response function for canopy/shading
-        double respiration_q, respiration_b1; ///< parameter of moss respiration function
+        const double AMax=0.3; ///< maximum moss productivity (0.3kg/m2/yr) (Foster et al 2019)
+        double light_k; ///< light extinction koefficient used for canopy+moss layer
+        double light_comp; ///< light compensation point (proportion of light level above canopy)
+        double light_sat; ///< light saturation point (proportion of light level above canopy)
+        double respiration_q, respiration_b; ///< parameter of moss respiration function: q: respiration, b: turnover
         double bulk_density; ///< density (kg/m3) of moss layer
         // carbon cycle
         double CNRatio; ///< carbon : nitrogen ratio of moss (used for litter input)

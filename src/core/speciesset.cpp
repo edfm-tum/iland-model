@@ -200,14 +200,16 @@ void SpeciesSet::newYear()
   */
 QVariant SpeciesSet::var(const QString& varName)
 {
-    Q_ASSERT(mSetupQuery!=0);
+    Q_ASSERT(mSetupQuery!=nullptr);
     if (!mSetupQuery)
         throw IException("SpeciesSet: query is not active!");
 
     int idx = mSetupQuery->record().indexOf(varName);
     if (idx>=0)
         return mSetupQuery->value(idx);
-    throw IException(QString("SpeciesSet: variable not set: %1").arg(varName));
+    throw IException(QString("SpeciesSet: The species parameter table does not contain the column: '%1'\n%2")
+                     .arg(varName)
+                     .arg("Please check http://iland-model.org/release+notes for details."));
     //throw IException(QString("load species parameter: field %1 not found!").arg(varName));
     // lookup in defaults
     //qDebug() << "variable" << varName << "not found - using default.";

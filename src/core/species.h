@@ -35,16 +35,17 @@ class Tree;
 /// parameters for establishment
 struct EstablishmentParameters
 {
-    double min_temp; //degC
-    int chill_requirement; // days of chilling requirement
-    int GDD_min, GDD_max; // GDD thresholds
-    double GDD_baseTemperature; // for GDD-calc: GDD=sum(T - baseTemp)
-    int bud_birst; // GDDs needed until bud burst
-    int frost_free; // minimum number of annual frost-free days required
-    double frost_tolerance; //factor in growing season frost tolerance calculation
-    double psi_min; // minimum soil water potential for establishment
+    double min_temp; ///< degC
+    int chill_requirement; ///< days of chilling requirement
+    int GDD_min, GDD_max; ///< GDD thresholds
+    double GDD_baseTemperature; ///< for GDD-calc: GDD=sum(T - baseTemp)
+    int bud_birst; ///< GDDs needed until bud burst
+    int frost_free; ///< minimum number of annual frost-free days required
+    double frost_tolerance; ///< factor in growing season frost tolerance calculation
+    double psi_min; ///< minimum soil water potential for establishment
+    double SOL_thickness; ///< effect of thick soil organic layer (0: no effect)
     EstablishmentParameters(): min_temp(-37), chill_requirement(56), GDD_min(177), GDD_max(3261), GDD_baseTemperature(3.4),
-                               bud_birst(255), frost_free(65), frost_tolerance(0.5), psi_min(0.) {}
+                               bud_birst(255), frost_free(65), frost_tolerance(0.5), psi_min(0.), SOL_thickness(0.) {}
 };
 
 /// parameters for sapling growth

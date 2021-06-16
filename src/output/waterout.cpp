@@ -98,7 +98,7 @@ void WaterOut::exec()
                 *this << wc->permafrost()->stats.maxFreezeDepth
                         << wc->permafrost()->stats.maxThawDepth
                         << wc->permafrost()->stats.maxSnowDepth
-                        << wc->permafrost()->mSOLDepth
+                        << wc->permafrost()->SOLLayerThickness()
                         << wc->permafrost()->mossLayerThickness();
             } else {
                 *this << 0. << 0. << 0. << 0. << 0.;

@@ -39,8 +39,8 @@ class FireScript;
 class FireRUData
 {
 public:
-    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.), mValid(false) { fireRUStats.clear(); fireRUStats.n_cum_fire=0; fireRUStats.year_last_fire=0; }
-    void setup();
+    FireRUData(): mKBDIref(0.), mRefMgmt(0.), mRefAnnualPrecipitation(0.), mKBDI(0.), mValid(false), mRU(nullptr) { fireRUStats.clear(); fireRUStats.n_cum_fire=0; fireRUStats.year_last_fire=0; }
+    void setup(const ResourceUnit *ru);
     bool valid() const { return mValid; } ///< returns false if the cell is not a valid resource unit (outside of project area)
     bool allowIgnition() const { return mRefMgmt>0.; }
     void reset() { mKBDI = 0.; }
@@ -48,7 +48,11 @@ public:
     double kbdiRef() const { return mKBDIref; }
     double baseIgnitionProbability() const { return mBaseIgnitionProb; }
     double managementSuppression() const { return mRefMgmt; }
+    const ResourceUnit *ru() const { return mRU; }
+
     // access data
+
+    // statistics for the resource unit
     struct {
         int fire_id;
         // statistics for:
@@ -59,6 +63,7 @@ public:
         int year_last_fire; ///< the year of the last fire event on the RU
         double died_basal_area; ///< basal area (m2) of died trees
         double basal_area; ///< basal area (m2) of all trees on burning pixels
+        double fuel_moss; ///< average affected moss biomass (kg/ha)
         double fuel_ff; ///< average fuel fine material (kg/ha)
         double fuel_dwd; ///< average fuel dead wood (kg/ha)
         double crown_kill; ///< average crown kill percent
@@ -69,7 +74,7 @@ public:
                 fire_id = this_fire_id;
                 // clear all stats
                 n_trees_died = n_trees = n_cells = 0;
-                died_basal_area = basal_area = fuel_ff = fuel_dwd = crown_kill = avg_dbh = 0.;
+                died_basal_area = basal_area = fuel_moss = fuel_ff = fuel_dwd = crown_kill = avg_dbh = 0.;
             }
         }
         // call once after fire is finished
@@ -78,8 +83,9 @@ public:
                 // calculate averages
                 if (n_cells>0) {
                     crown_kill /= double(n_cells);
-                    fuel_ff /= double(n_cells);
-                    fuel_dwd /= double(n_cells);
+                    //fuel_moss /= double(n_cells);
+                    //fuel_ff /= double(n_cells);
+                    //fuel_dwd /= double(n_cells);
                     avg_dbh /= double(n_cells);
                     n_cum_fire++;
                     year_last_fire = current_year;
@@ -103,6 +109,7 @@ private:
     // variables
     double mKBDI; ///< Keetch Byram Drought Index (0..800, in 1/100 inch of water)
     bool mValid; /// correctly set up?
+    const ResourceUnit *mRU; ///< link to corresponding resource unit
 
     friend class FireModule; // allow access to member values
     friend class FireLayers;
@@ -193,7 +200,7 @@ private:
 
     /// calculate combustible fuel
     /// returns the total combustible fuel (kg/ha), and sets the reference variables for forest floor and deadwood
-    double calcCombustibleFuel(const FireRUData &ru_data, double &rForestFloor_kg_ha, double &rDWD_kg_ha);
+    double calcCombustibleFuel(const FireRUData &ru_data, double &rMoss_kg_ha, double &rForestFloor_kg_ha, double &rDWD_kg_ha);
 
     /// prepare the necessary data grid to allow burn ins
     void setupBorderGrid();
