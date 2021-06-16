@@ -195,6 +195,7 @@ void Species::setup()
     mEstablishmentParams.frost_free = intVar("estFrostFreeDays");
     mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
     mEstablishmentParams.psi_min = -fabs(doubleVar("estPsiMin")); // force negative value
+    mEstablishmentParams.SOL_thickness = fabs(doubleVar("estSOLthickness")); // force positive value
 
     // sapling and sapling growth parameters
     mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));

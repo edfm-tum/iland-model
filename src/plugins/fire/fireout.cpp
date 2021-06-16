@@ -42,7 +42,7 @@ FireOut::FireOut()
               << OutputColumn("basalArea_total", "sum of basal area on burning pixels of the fire (m2)", OutDouble)
               << OutputColumn("basalArea_died", "sum of basal area of died trees (m2)", OutDouble)
               << OutputColumn("psme_died", "fraction of doug fir that died (based on basal area of psme trees on burning pixels)", OutDouble)
-              << OutputColumn("avgFuel_kg_ha", "average total fuel (dry) (forest floor + dwd) of burning cells (kg biomass/ha)", OutDouble)
+              << OutputColumn("avgFuel_kg_ha", "average total fuel (dry) (forest floor + dwd + moss) of burning cells (kg biomass/ha)", OutDouble)
               << OutputColumn("windSpeed", "current wind speed during the event (m/s)", OutDouble)
               << OutputColumn("windDirection", "current wind direction during the event (degree)", OutDouble) ;
 
@@ -74,7 +74,7 @@ void FireOut::exec()
         if (fds->fireRUStats.fire_id == fire_id) {
             // the current fire burnt on this area
             n_ru++;
-            avg_fuel += fds->fireRUStats.fuel_dwd+fds->fireRUStats.fuel_ff;
+            avg_fuel += fds->fireRUStats.fuel_dwd+fds->fireRUStats.fuel_ff+fds->fireRUStats.fuel_moss;
             n_trees += fds->fireRUStats.n_trees;
             n_trees_died += fds->fireRUStats.n_trees_died;
             basal_area += fds->fireRUStats.basal_area;

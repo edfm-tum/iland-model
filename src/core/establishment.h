@@ -48,7 +48,11 @@ public:
 
 private:
     double mPAbiotic; ///< abiotic probability for establishment (climate)
-    double calculateWaterLimitation(); ///< calculate effect of water limitation on establishment, returns scalar [0..1]
+    /// calculate effect of water limitation on establishment, returns scalar [0..1]
+    double calculateWaterLimitation();
+    /// limitation if the depth of the soil organic layer is high (e.g. boreal forests)
+    double calculateSOLDepthLimitation();
+
     const Climate *mClimate; ///< link to the current climate
     const ResourceUnitSpecies *mRUS; ///< link to the resource unit species (links to production data and species respones)
     // some statistics
