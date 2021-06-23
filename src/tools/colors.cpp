@@ -136,6 +136,8 @@ QColor Colors::shadeColor(const QColor col, const QPointF &coordinates, const DE
 {
     if (dem) {
         float val = dem->viewGrid()->constValueAt(coordinates); // scales from 0..1
+        if (val == 0.f) // area for which no DEM is available
+            return col;
         double h, s, v;
         col.getHsvF(&h, &s, &v);
         // we adjust the 'v', the lightness: if val=0.5 -> nothing changes

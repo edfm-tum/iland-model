@@ -79,8 +79,8 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
         AllTreeIterator at(GlobalSettings::instance()->model());
         n_trees = 0;
         while (Tree *tree = at.next()) {
-            // Tree_ID<int> species_ID<int> pos_x<float> pos_y<float> height<float> canopy_radius<float> diameter_at_breast_height<float> status<int>
-            stream << tree->id() << ws << tree->species()->index() << ws <<
+            // Tree_ID<int> species_ID<cahr> pos_x<float> pos_y<float> height<float> canopy_radius<float> diameter_at_breast_height<float> status<int>
+            stream << tree->id() << ws << tree->species()->id() << ws <<
                       tree->position().x() << ws << tree->position().y() << ws << tree->height() << ws;
             stream << tree->stamp()->reader()->crownRadius() << ws;
             stream << tree->dbh() << ws << (tree->isDead() ? 1 : 0);
@@ -118,7 +118,7 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
 
 
                             stream << coord.x() << ws << coord.y() << ws <<
-                                      s->saplings[i].species_index << ws <<
+                                      rus->species()->id() << ws <<
                                       dbh << ws <<
                                       s->saplings[i].height << ws <<
                                       n_repr << endl;
