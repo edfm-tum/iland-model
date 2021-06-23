@@ -751,6 +751,30 @@ int ScriptGlobal::addSaplingsOnMap(MapGridWrapper *map, const int mapID, QString
     return 0;
 }
 
+int ScriptGlobal::addSaplings(int standId, double x, double y, double width, double height, QString species, double treeheight, int age)
+{
+    QRectF remove_rect(x, y, width, height);
+    if (standId>0) {
+        // todo: get stand rectangle from stand grid, add to remove rect
+    }
+    if (GlobalSettings::instance()->model()->saplings()) {
+        return GlobalSettings::instance()->model()->saplings()->addSaplings(remove_rect, species, treeheight, age);
+    }
+    return -1;
+
+}
+
+void ScriptGlobal::removeSaplings(int standId, double x, double y, double width, double height)
+{
+    QRectF remove_rect(x, y, width, height);
+    if (standId>0) {
+        // todo: get stand rectangle from stand grid, add to remove rect
+    }
+    if (GlobalSettings::instance()->model()->saplings()) {
+        GlobalSettings::instance()->model()->saplings()->clearSaplings(remove_rect, false, true);
+    }
+}
+
 /// saves a snapshot of the current model state (trees, soil, etc.)
 /// to a dedicated SQLite database.
 bool ScriptGlobal::saveModelSnapshot(QString file_name)

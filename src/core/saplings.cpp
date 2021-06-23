@@ -385,6 +385,26 @@ void Saplings::clearAllSaplings()
     }
 }
 
+int Saplings::addSaplings(const QRectF &rectangle, QString species, double height, int age)
+{
+    GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), rectangle);
+    Species *s = GlobalSettings::instance()->model()->speciesSet()->species(species);
+    if (!s) {
+        throw IException("addSaplings: invalid species: " + species);
+    }
+    short signed int species_index = static_cast<short signed int>(s->index());
+    int nadded = 0;
+    while (runner.next()) {
+        SaplingCell *s = cell(runner.currentIndex(), true);
+        if (s) {
+            if (s->addSapling(height, age, species_index))
+                ++nadded;
+
+        }
+    }
+    return nadded;
+}
+
 int Saplings::addSprout(const Tree *t, bool tree_is_removed)
 {
     if (t->species()->saplingGrowthParameters().sproutGrowth==0.)

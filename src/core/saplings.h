@@ -222,6 +222,9 @@ public:
     /// clear all saplings, biomass is removed (not routed to the soil layer)
     void clearAllSaplings();
 
+    /// add saplings by plantings within the (metric) rectangle. Fill cells with trees of given species/height/age
+    int addSaplings(const QRectF &rectangle, QString species, double height, int age);
+
     /// generate vegetative offspring from the tree 't' (sprouts)
     int addSprout(const Tree *t, bool tree_is_removed);
 

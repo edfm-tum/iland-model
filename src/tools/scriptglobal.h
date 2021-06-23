@@ -144,6 +144,13 @@ public slots:
     int addTreesOnMap(const int standID, QString content); ///< add trees (distribution mode) for stand 'standID'
     // add saplings
     int addSaplingsOnMap(MapGridWrapper *map, const int mapID, QString species, int px_per_hectare, double height, int age);
+    /// add sapling on a metric rectangle given with `width` and `height` at x/y.
+    /// if a `standId` is provided (-1 or 0: no stand), x/y is relative to the lower left edge of the stand rectangle. If no
+    /// stand is provided, x/y are absolute (relative to the project area).
+    /// returns the number of successfully added sapling cells
+    int addSaplings(int standId, double x, double y, double width, double height, QString species, double treeheight, int age);
+    /// remove all saplings from a metric rectangle. See also `addSaplings()`.
+    void removeSaplings(int standId, double x, double y, double width, double height);
     // enable/disable outputs
     bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful
