@@ -95,6 +95,8 @@ public slots:
     /// returns the object itself.
     QJSValue resample(QJSValue grid_object);
 
+    void aggregate(int factor);
+
 
     /// apply the expression "expression" on all pixels of the grid and return the sum of the values
     double sum(QString expression);
@@ -112,7 +114,19 @@ public slots:
     /// write values to the grid at metric coordinates x and y.
     void setValueAt(double x, double y, double value) const { if (isValid() && mGrid->coordValid(x,y))  mGrid->valueAt(x,y)=value; }
 
-
+    // coordinate functions
+    /// convert a cellindex in x-direction to a metric value (x) representing the center of the cell
+    double metricX(int indexx) const { return isValid() ?  mGrid->cellCenterPoint(QPoint(indexx, 0)).x() : 0.; }
+    /// convert a cellindex in y-direction to a metric value (y) representing the center of the cell
+    double metricY(int indexy) const { return isValid() ?  mGrid->cellCenterPoint(QPoint(0, indexy)).y() : 0.; }
+    /// convert a metric value (x-axis) to an index for the x-axis (see also isIndexValid(), isCoordValid() )
+    int indexX(double meterx) const { return isValid() ? mGrid->indexAt(QPointF(meterx, 0)).x() : -1; }
+    /// convert a metric value (y-axis) to an index for the y-axis (see also isIndexValid(), isCoordValid() )
+    int indexY(double metery) const { return isValid() ? mGrid->indexAt(QPointF(0., metery)).y() : -1; }
+    /// check if a given pair of indices (x/y) is valid for the grid
+    bool isIndexValid(int x, int y) const {return isValid() ? mGrid->isIndexValid(x,y): false; }
+    /// check if a given pair of metric coordinates (x/y) is valid for the grid
+    bool isCoordValid(double x, double y) const {return isValid() ? mGrid->coordValid(x, y) : false; }
 
 private:
     Grid<double> *mGrid;

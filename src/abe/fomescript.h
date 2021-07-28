@@ -168,6 +168,7 @@ class StandObj: public QObject
     Q_PROPERTY (int id READ id)
     Q_PROPERTY (int nspecies READ nspecies)
     Q_PROPERTY (double area READ area)
+    Q_PROPERTY (QRectF rectangle READ rectangle)
     Q_PROPERTY (int elapsed READ timeSinceLastExecution)
     Q_PROPERTY (QString lastActivity READ lastActivity)
 
@@ -223,6 +224,7 @@ public:
     int id() const { if (mStand) return mStand->id(); throwError("id"); return -1; }
     int nspecies() const {if (mStand) return mStand->nspecies();  throwError("id"); return -1;}
     double area() const {if (mStand) return mStand->area();  throwError("area"); return -1;}
+    QRectF rectangle() const;
     int timeSinceLastExecution() const;
     QString lastActivity() const;
     double rotationLength() const;

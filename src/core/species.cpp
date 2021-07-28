@@ -52,6 +52,8 @@ Species::~Species()
 void Species::setup()
 {
     Q_ASSERT(mSet != nullptr);
+    const XmlHelper &xml=GlobalSettings::instance()->settings();
+
     // setup general information
     mId = stringVar("shortName");
     mName = stringVar("name");
@@ -195,7 +197,9 @@ void Species::setup()
     mEstablishmentParams.frost_free = intVar("estFrostFreeDays");
     mEstablishmentParams.frost_tolerance = doubleVar("estFrostTolerance");
     mEstablishmentParams.psi_min = -fabs(doubleVar("estPsiMin")); // force negative value
-    mEstablishmentParams.SOL_thickness = fabs(doubleVar("estSOLthickness")); // force positive value
+
+    if (xml.valueBool("model.settings.permafrost.enabled"))
+        mEstablishmentParams.SOL_thickness = fabs(doubleVar("estSOLthickness")); // force positive value
 
     // sapling and sapling growth parameters
     mSaplingGrowthParams.heightGrowthPotential.setAndParse(stringVar("sapHeightGrowthPotential"));

@@ -298,7 +298,7 @@ template <class T>
 Grid<T> Grid<T>::averaged(const int factor, const int offsetx, const int offsety) const
 {
     Grid<T> target;
-    target.setup(cellsize()*factor, sizeX()/factor, sizeY()/factor);
+    target.setup(metricRect(), cellsize()*factor);
     int x,y;
     T sum=0;
     target.initialize(sum);

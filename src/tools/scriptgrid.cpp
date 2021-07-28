@@ -235,7 +235,7 @@ void ScriptGrid::combine(QString expression, QJSValue grid_object)
 QJSValue ScriptGrid::resample(QJSValue grid_object)
 {
     if (!mGrid) {
-        qDebug() << "ERROR in ScriptGrid::crop(): not a valid grid!";
+        qDebug() << "ERROR in ScriptGrid::resample(): not a valid grid!";
         return QJSValue();
     }
     // crop the grid to the extent given by the grid 'grid_object'
@@ -258,12 +258,27 @@ QJSValue ScriptGrid::resample(QJSValue grid_object)
 
 
     } else {
-        qDebug() << "ERROR in ScriptGrid::crop(): grid_object is not a valid grid!";
+        qDebug() << "ERROR in ScriptGrid::resample(): grid_object is not a valid grid!";
         return QJSValue();
     }
 
     QJSValue jsgrid = GlobalSettings::instance()->scriptEngine()->newQObject(this);
     return jsgrid;
+
+
+}
+
+void ScriptGrid::aggregate(int factor)
+{
+    if (!mGrid) {
+        throw IException("ERROR in ScriptGrid::aggregate(): not a valid grid!");
+    }
+    Grid<double> res = mGrid->averaged(factor);
+    // make a copy on the heap
+    Grid<double> *new_grid = new Grid<double>(res);
+    // delete the old data, and use the new data instead
+    delete mGrid;
+    mGrid = new_grid;
 
 
 }
