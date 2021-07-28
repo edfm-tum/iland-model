@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 /** Represents the input of various variables with regard to climate, soil properties and more.
   @ingroup tools
     Data is read from various sources and presented to the core model with a standardized interface.
-    see http://iland.boku.ac.at/simulation+extent
+    see http://iland-model.org/simulation+extent
 */
 Environment::Environment()
 {

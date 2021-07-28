@@ -25,7 +25,7 @@ The ABE forest management system is:
 + follows a declarative paradigma - forest management strategies are described using Javascript-Objects (like JSON), but include also
 imperative section and event handlers that allow a fine grained control
 
-The concept is described in more details on the iLand wiki page: http://iland.boku.ac.at/ABE
+The concept is described in more details on the iLand wiki page: http://iland-model.org/ABE
 
 building blocks
 ---------------

@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -288,7 +288,7 @@ double SpeciesSet::nitrogenResponse(const double availableNitrogen, const double
 
 /** calculation for the CO2 response for the ambientCO2 for the water- and nitrogen responses given.
     The calculation follows Friedlingsstein 1995 (see also links to equations in code)
-    see also: http://iland.boku.ac.at/CO2+response
+    see also: http://iland-model.org/CO2+response
     @param ambientCO2 current CO2 concentration (ppm)
     @param nitrogenResponse (yearly) nitrogen response of the species
     @param soilWaterResponse soil water response (mean value for a month)
@@ -316,7 +316,7 @@ double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenRes
 /** calculates the lightResponse based on a value for LRI and the species lightResponseClass.
     LightResponse is classified from 1 (very shade inolerant) and 5 (very shade tolerant) and interpolated for values between 1 and 5.
     Returns a value between 0..1
-    @sa http://iland.boku.ac.at/allocation#reserve_and_allocation_to_stem_growth */
+    @sa http://iland-model.org/allocation#reserve_and_allocation_to_stem_growth */
 double SpeciesSet::lightResponse(const double lightResourceIndex, const double lightResponseClass) const
 {
     double low = mLightResponseIntolerant.calculate(lightResourceIndex);

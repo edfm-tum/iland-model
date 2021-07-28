@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ double ramp(const double &value, const double minValue, const double maxValue)
   The Phenology submodule calculates the length of the growing season according to the model of Jolly et al (2005). The calculation
   is performed for species-groups (i.e.: species are lumped together to groups) and a given climate (i.e. worst case: for each ResourceUnit).
 
-  See http://iland.boku.ac.at/phenology for details.
+  See http://iland-model.org/phenology for details.
   */
 
 /** calculates the phenology according to Jolly et al. 2005.

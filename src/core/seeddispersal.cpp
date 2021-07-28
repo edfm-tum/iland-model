@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -34,7 +34,7 @@
     The class encapsulates the dispersal of seeds of one species over the whole landscape.
     The dispersal algortihm operate on grids with a 20m resolution.
 
-    See http://iland.boku.ac.at/dispersal
+    See http://iland-model.org/dispersal
 
   */
 
@@ -704,7 +704,7 @@ void SeedDispersal::execute()
 
 /// main seed distribution function
 /// distributes seeds using distribution kernels and long distance dispersal from source cells
-/// see http://iland.boku.ac.at/seed+kernel+and+seed+distribution
+/// see http://iland-model.org/seed+kernel+and+seed+distribution
 void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
 {
     Grid<float> &sourcemap = seed_map ? *seed_map : mSourceMap; // switch to extra seed map if provided

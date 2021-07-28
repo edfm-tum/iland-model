@@ -25,7 +25,7 @@ See also: {{#crossLink "SpatialAnalysis/saveRumpleGrid:method"}}{{/crossLink}}
 
 /**
 Generate a map of the crown cover ( at 2m resolution), and save an average (100m) to `filename` (ESRI ASCII format).
-For each tree, the tree crown (as defined by the ['reader' stamp](http://iland.boku.ac.at/Lightroom), which defines for 2m pixels the share
+For each tree, the tree crown (as defined by the ['reader' stamp](http://iland-model.org/Lightroom), which defines for 2m pixels the share
 of pixels that are covered by the crown) is additively plotted on a 2m grid.
 If that sum is larger then 0.5 (i.e. 50%), a pixel is consiedered as 'covered'.
 The resulting grid provides for each 100m cell a fraction of 'covered' pixels. Note that 2m cells that are out of the project area
@@ -37,7 +37,7 @@ are not counted (i.e., the resulting crown cover refers only to the stockable ar
 
 /**
 Generate a map of the crown cover ( at 2m resolution), and save an average to `filename` (ESRI ASCII format).
-For each tree, the tree crown (as defined by the ['reader' stamp](http://iland.boku.ac.at/Lightroom), which defines for 2m pixels the share
+For each tree, the tree crown (as defined by the ['reader' stamp](http://iland-model.org/Lightroom), which defines for 2m pixels the share
 of pixels that are covered by the crown) is additively plotted on a 2m grid.
 If that sum is larger then 0.5 (i.e. 50%), a pixel is consiedered as 'covered'.
 The `grid` is used as a mask: the resulting grid uses the cell size of `grid` and also the spatial extent.

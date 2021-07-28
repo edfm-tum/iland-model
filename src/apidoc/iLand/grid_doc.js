@@ -174,7 +174,7 @@ Grid = {
 
     /**
     Apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
-    The function is given as a string representing an [Expression](http://iland.boku.ac.at/Expression) and is evaluated for each cell of the grid.
+    The function is given as a string representing an [Expression](http://iland-model.org/Expression) and is evaluated for each cell of the grid.
     In the expression, the current value of the grid cell can be accessed using the {{#crossLink "Grid/name:property"}}{{/crossLink}}.
 
     See also: {{#crossLink "Grid/copy:method"}}{{/crossLink}}, {{#crossLink "Grid/combine:method"}}{{/crossLink}}
@@ -192,7 +192,7 @@ Grid = {
 
     /**
     Combine multiple grids, and set the value of the internal grid to the result of `expression` for each cell. The function expects
-    an object that includes named source grids. The `expression` is an [iLand Expression](http://iland.boku.ac.at/Expression),
+    an object that includes named source grids. The `expression` is an [iLand Expression](http://iland-model.org/Expression),
     and you can refer to the grids in `grid_objects` with the respective name of the grid. Note that the function
     alters the data of the grid.
 
@@ -253,6 +253,7 @@ Grid = {
     @return { double } value of the grid at position (`x`, `y`)
 
       */
+
     /**
     Resamples the content of the current grid to the extent/cellsize given by the grid `target_grid`. If `target_grid` is larger than the current grid 0-values are inserted, otherwise
     the grid is cropped to `target_grid`.
@@ -263,6 +264,15 @@ Grid = {
 
     @method resample
     @param {object} target_grid Grid with target extent and resolution
+    */
+
+    /**
+    Aggregates the grid by averaging over multiple cells. This changes the resolution of the underlying grid by a factor `factor` (e.g., aggregating a 10m grid with
+    `factor`=4 results in a grid with 40m resolution). The value of the target cell is the average over source cells. Note: no special care is
+    taken for -1 values.
+
+    @method aggregate
+    @param {int} factor multiplier for target cell size
     */
 
     /**

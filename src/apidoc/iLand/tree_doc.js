@@ -76,7 +76,7 @@ The y-coordinate of the tree, in m.
 */
 
 /**
-`flags` is a binary encoded set of tree flags (see http://iland.boku.ac.at/outputs#Tree_Removed_Output for a list of all flags).
+`flags` is a binary encoded set of tree flags (see http://iland-model.org/outputs#Tree_Removed_Output for a list of all flags).
 
 @property flags
 @type int
@@ -91,7 +91,7 @@ A string with memory address, Id, dbh, height, and coordinates of the tree.
 */
 
 /**
-`expr()` can be used to retrieve the value of an iLand expression iland.boku.ac.at/Expression. All tree variables can be accessed via the expression. Note that
+`expr()` can be used to retrieve the value of an iLand expression iland-model.org/Expression. All tree variables can be accessed via the expression. Note that
 the `expression` is a string and can contain mathematical operations and a set of pre-defined functions.
 
 See also: {{#crossLink "TreeExpr"}}{{/crossLink}}

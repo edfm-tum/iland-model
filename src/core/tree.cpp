@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -459,7 +459,7 @@ void Tree::heightGrid_torus()
     The LIF field is scanned within the crown area of the focal tree, and the influence of
     the focal tree is "subtracted" from the LIF values.
     Finally, the "LRI correction" is applied.
-    see http://iland.boku.ac.at/competition+for+light for details.
+    see http://iland-model.org/competition+for+light for details.
   */
 void Tree::readLIF()
 {
@@ -621,7 +621,7 @@ void Tree::mortalityParams(double dbh_inc_threshold, int stress_years, double st
 void Tree::calcLightResponse()
 {
     // calculate a light response from lri:
-    // http://iland.boku.ac.at/individual+tree+light+availability
+    // http://iland-model.org/individual+tree+light+availability
     double lri = limit(mLRI * mRU->LRImodifier(), 0., 1.); // Eq. (3)
     mLightResponse = static_cast<float>( mSpecies->lightResponse(lri) ); // Eq. (4)
     mRU->addLR(mLeafArea, mLightResponse);
@@ -634,9 +634,9 @@ void Tree::calcLightResponse()
 
 /** grow() is the main function of the yearly tree growth.
   The main steps are:
-  - Production of GPP/NPP   @sa http://iland.boku.ac.at/primary+production http://iland.boku.ac.at/individual+tree+light+availability
-  - Partitioning of NPP to biomass compartments of the tree @sa http://iland.boku.ac.at/allocation
-  - Growth of the stem http://iland.boku.ac.at/stem+growth (???)
+  - Production of GPP/NPP   @sa http://iland-model.org/primary+production http://iland-model.org/individual+tree+light+availability
+  - Partitioning of NPP to biomass compartments of the tree @sa http://iland-model.org/allocation
+  - Growth of the stem http://iland-model.org/stem+growth (???)
   Further activties: * the age of the tree is increased
                      * the mortality sub routine is executed
                      * seeds are produced */
@@ -705,7 +705,7 @@ void Tree::grow()
 
 /** partitioning of this years assimilates (NPP) to biomass compartments.
   Conceptionally, the algorithm is based on Duursma, 2007.
-  @sa http://iland.boku.ac.at/allocation */
+  @sa http://iland-model.org/allocation */
 inline void Tree::partitioning(TreeGrowthData &d)
 {
     double npp = d.NPP;
@@ -769,7 +769,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
         ru()->snag()->addTurnoverLitter(this->species(), sen_foliage, sen_root);
 
     // Roots
-    // http://iland.boku.ac.at/allocation#belowground_NPP
+    // http://iland-model.org/allocation#belowground_NPP
     mFineRootMass -= static_cast<float>(sen_root); // reduce only fine root pool
     double delta_root = apct_root * npp;
     // 1st, refill the fine root pool
@@ -813,7 +813,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
     d.stress_index =qMax(1. - (npp) / ( to_fol*foliage_mass_allo + to_root*foliage_mass_allo*species()->finerootFoliageRatio() + reserve_size), 0.);
 
     // Woody compartments
-    // see also: http://iland.boku.ac.at/allocation#reserve_and_allocation_to_stem_growth
+    // see also: http://iland-model.org/allocation#reserve_and_allocation_to_stem_growth
     // (1) transfer to reserve pool
     double gross_woody = apct_wood * npp;
     double to_reserve = qMax(qMin(reserve_size, gross_woody), 0.);
@@ -883,7 +883,7 @@ inline void Tree::partitioning(TreeGrowthData &d)
 
 
 /** Determination of diamter and height growth based on increment of the stem mass (@p net_stem_npp).
-    Refer to http://iland.boku.ac.at/stem+growth for equations and variables.
+    Refer to http://iland-model.org/stem+growth for equations and variables.
     This function updates the dbh and height of the tree.
     The equations are based on dbh in meters! */
 inline void Tree::grow_diameter(TreeGrowthData &d)

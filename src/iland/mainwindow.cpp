@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -2130,7 +2130,7 @@ void MainWindow::on_actionTimers_triggered()
 
 void MainWindow::on_actionOnline_ressources_triggered()
 {
-    QDesktopServices::openUrl(QUrl("http://iland.boku.ac.at/"));
+    QDesktopServices::openUrl(QUrl("http://iland-model.org/"));
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -2256,7 +2256,7 @@ void MainWindow::readSettings()
 {
     QSettings::setDefaultFormat(QSettings::IniFormat);
     QCoreApplication::setOrganizationName("iLand");
-    QCoreApplication::setOrganizationDomain("iland.boku.ac.at");
+    QCoreApplication::setOrganizationDomain("iland-model.org");
     QCoreApplication::setApplicationName("iLand");
     QSettings settings;
     qDebug() << "reading settings from" << settings.fileName();

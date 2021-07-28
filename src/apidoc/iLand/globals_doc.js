@@ -8,7 +8,7 @@ iLand - the invidiual based landscape and disturbance model - is capable of simu
 of thousands of hectares. The model is built in C++ (using the [Qt-framework](http://qt.io) and utilizes the the built-in
 V8 Javascript engine. The model exposes a number of (C++)-objects to the Javascript context, that allow accessing various iLand functions from Javascript.
 
-See [iLand scripting](http://iland.boku.ac.at/iLand+scripting) for an overview.
+See [iLand scripting](http://iland-model.org/iLand+scripting) for an overview.
 
 
  *
@@ -91,7 +91,7 @@ and the javascript source code of ABE.
 */
 
 /**
-Read a value from the [project file](http://iland.boku.ac.at/project+file). The `key` is the full path to the
+Read a value from the [project file](http://iland-model.org/project+file). The `key` is the full path to the
 requested node using a '.'-notation.
 
 See also: {{#crossLink "Globals/set:method"}}{{/crossLink}}
@@ -108,7 +108,7 @@ See also: {{#crossLink "Globals/set:method"}}{{/crossLink}}
 
 
 /**
-Set a setting in the [project file](http://iland.boku.ac.at/project+file) with the key `key` to a value of `value`.
+Set a setting in the [project file](http://iland-model.org/project+file) with the key `key` to a value of `value`.
 The `key` is the full path to the requested node using a '.'-notation.
 
 See also: {{#crossLink "Globals/setting:method"}}{{/crossLink}}
@@ -121,7 +121,7 @@ See also: {{#crossLink "Globals/setting:method"}}{{/crossLink}}
 
 
 /**
-Get directory with of the given category `category`. See [filenames and paths](http://iland.boku.ac.at/filenames+and+paths) for available categories.
+Get directory with of the given category `category`. See [filenames and paths](http://iland-model.org/filenames+and+paths) for available categories.
 Using this defaultDirectory() avoids absolute file paths in scripts.
 
 See also: {{#crossLink "Globals/currentDir:property"}}{{/crossLink}}
@@ -199,8 +199,8 @@ The milliseconds since the start of the day.
 
 
 /**
-starts the output `table_name`. The table name for each output can be found on the [output](http://iland.boku.ac.at/output) wiki page.
-Starting [debug outputs](http://iland.boku.ac.at/debug+outputs) is also possible - the `table_name` has to have the format _debug_XXX_, with _XXX_ one of the following:
+starts the output `table_name`. The table name for each output can be found on the [output](http://iland-model.org/output) wiki page.
+Starting [debug outputs](http://iland-model.org/debug+outputs) is also possible - the `table_name` has to have the format _debug_XXX_, with _XXX_ one of the following:
 
 + treeNPP
 + treePartition
@@ -220,7 +220,7 @@ See also: {{#crossLink "Globals/stopOutput:method"}}{{/crossLink}}
     Globals.startOutput("debug_performance");
 */
 /**
-stops the output `table_name`. The table name for each output can be found on the [output](http://iland.boku.ac.at/output) wiki page.
+stops the output `table_name`. The table name for each output can be found on the [output](http://iland-model.org/output) wiki page.
 Starting (debug outputs) is also possible - see {{#crossLink "Globals/startOutput:method"}}{{/crossLink}}.
 
 See also: {{#crossLink "Globals/startOutput:method"}}{{/crossLink}}
@@ -233,7 +233,7 @@ See also: {{#crossLink "Globals/startOutput:method"}}{{/crossLink}}
 
 /**
 creates a snapshot from the current state of the model. `file_name` is the path to the target database, which is created if the database file does not exist
-(paths relative to the _home_ directory). The [wiki](http://iland.boku.ac.at/initialize+trees) provides details about snapshots.
+(paths relative to the _home_ directory). The [wiki](http://iland-model.org/initialize+trees) provides details about snapshots.
 
 See also: {{#crossLink "Globals/loadModelSnapshot:method"}}{{/crossLink}}
 
@@ -342,7 +342,7 @@ command is redirected to the iLand log (stdout, stderr).
 /**
 Add single trees on a specific resource unit with the 0-based index `resourceIndex`.
 The tree list is in the string `content` and follows the
-single-tree syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
+single-tree syntax described in [the wiki](http://iland-model.org/initialize+trees).
 
 
 @method addSingleTrees
@@ -352,7 +352,7 @@ single-tree syntax described in [the wiki](http://iland.boku.ac.at/initialize+tr
 */
 /**
 Add trees distribution on a specific resource unit with the 0-based index `resourceIndex`.
-The tree list is in the string `content` and follows the distribution-tree syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
+The tree list is in the string `content` and follows the distribution-tree syntax described in [the wiki](http://iland-model.org/initialize+trees).
 
 @method addTrees
 @param resourceIndex {integer} 0-based resource unit index
@@ -362,7 +362,7 @@ The tree list is in the string `content` and follows the distribution-tree synta
 /**
 Add trees distribution on a specific stand described by the `standID`.
 The stand is defined in the global stand grid. The tree list is in the string `content` and follows the distribution-tree
-syntax described in [the wiki](http://iland.boku.ac.at/initialize+trees).
+syntax described in [the wiki](http://iland-model.org/initialize+trees).
 
 @method addTreesOnMap
 @param standID {integer} ID of the stand in the stand grid
@@ -438,8 +438,9 @@ The grid has a cell size of 10m or 100m (depending on the type) and covers the f
 The available grid types with 10m resolution are:
 + `height`: dominant tree height (m)
 + `count`: number of living trees (>4m height) on each pixel
-+ `valid`: pixels inside the project area get a value of 1, pixels non within the project area 0 (see [wiki page](http://iland.boku.ac.at/landscape+setup))
-+ `forestoutside`: 1 if a pixel is out of project area and is considered to be forested (see [wiki page](http://iland.boku.ac.at/landscape+setup))
++ `standgrid` the internal standgrid of iLand (see http://iland-model.org/landscape+setup#Setting_up_the_stand_grid)
++ `valid`: pixels inside the project area get a value of 1, pixels non within the project area 0 (see [wiki page](http://iland-model.org/landscape+setup))
++ `forestoutside`: 1 if a pixel is out of project area and is considered to be forested (see [wiki page](http://iland-model.org/landscape+setup))
 
 The available grid types with 100m resolution are:
 + `smallsaplingcover`: the fraction of the area which is covered by small saplings (<=1.3m) OR grass cover (0..1). (Note: RUs with non-stockable area have always a value <1).
@@ -470,8 +471,8 @@ See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 
 /**
 Return a grid (resolution of resource units) with the result of an `expression`
-([Expression](http://iland.boku.ac.at/Expression)) evaluated in the context of the resource unit
-(see the wiki for a list of [available variables](http://iland.boku.ac.at/resource+unit+variables)).
+([Expression](http://iland-model.org/Expression)) evaluated in the context of the resource unit
+(see the wiki for a list of [available variables](http://iland-model.org/resource+unit+variables)).
 
 
 @method resourceUnitGrid

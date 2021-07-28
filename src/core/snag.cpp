@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -233,7 +233,7 @@ double Snag::calculateClimateFactors()
 }
 
 /// do the yearly calculation
-/// see http://iland.boku.ac.at/snag+dynamics
+/// see http://iland-model.org/snag+dynamics
 void Snag::calculateYear()
 {
     mSWDtoSoil.clear();
