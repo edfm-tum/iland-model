@@ -33,6 +33,7 @@
 
 // iLand main includes
 #include "species.h"
+#include "mapgrid.h"
 
 namespace ABE {
 
@@ -494,6 +495,16 @@ void StandObj::setTrace(bool do_trace)
 {
     if (!mStand) { throwError("trace"); return; }
     mStand->setProperty("trace", QJSValue(do_trace));
+}
+
+QRectF StandObj::rectangle() const
+{
+
+    if (!mStand)
+        return QRectF();
+        //return QVector<double>();
+    QRectF box = ForestManagementEngine::instance()->standGrid()->boundingBox(mStand->id());
+    return box;
 }
 
 int StandObj::timeSinceLastExecution() const

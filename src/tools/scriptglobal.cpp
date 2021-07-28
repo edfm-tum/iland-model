@@ -594,6 +594,7 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="valid") index = 1;
     if (type=="count") index = 2;
     if (type=="forestoutside") index=3;
+    if (type=="standgrid") index=4;
     // resource unit level
     if (type=="smallsaplingcover") index=10;
     if (type=="saplingcover") index=11;
@@ -605,6 +606,19 @@ QJSValue ScriptGlobal::grid(QString type)
         return QJSValue();
     }
 
+    if (index == 4) {
+        // stand grid
+        const MapGrid *sg = GlobalSettings::instance()->model()->standGrid();
+        if (!sg || !sg->isValid())
+            throw IException("Error in Globals.grid(): a valid stand grid is not available!");
+        Grid<double> *dgrid = new Grid<double>(sg->grid().metricRect(), sg->grid().cellsize());
+        double *p=dgrid->begin();
+        for (int *s=sg->grid().begin(); s!=sg->grid().end(); ++s,++p)
+            *p = *s;
+        QJSValue g = ScriptGrid::createGrid(dgrid, type);
+        return g;
+
+    }
     if (index < 10) {
         HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
         //Grid<double> *dgrid = new Grid<double>(h->cellsize(), h->sizeX(), h->sizeY());
@@ -755,7 +769,13 @@ int ScriptGlobal::addSaplings(int standId, double x, double y, double width, dou
 {
     QRectF remove_rect(x, y, width, height);
     if (standId>0) {
-        // todo: get stand rectangle from stand grid, add to remove rect
+        if (!GlobalSettings::instance()->model()->standGrid()) {
+            throw IException("addSaplings - no stand grid available!");
+        }
+
+        QRectF box = GlobalSettings::instance()->model()->standGrid()->boundingBox(standId);
+        remove_rect.adjust(box.left(), box.top(), box.left(), box.top());
+
     }
     if (GlobalSettings::instance()->model()->saplings()) {
         return GlobalSettings::instance()->model()->saplings()->addSaplings(remove_rect, species, treeheight, age);
@@ -768,7 +788,13 @@ void ScriptGlobal::removeSaplings(int standId, double x, double y, double width,
 {
     QRectF remove_rect(x, y, width, height);
     if (standId>0) {
-        // todo: get stand rectangle from stand grid, add to remove rect
+        if (!GlobalSettings::instance()->model()->standGrid()) {
+            throw IException("addSaplings - no stand grid available!");
+        }
+
+        QRectF box = GlobalSettings::instance()->model()->standGrid()->boundingBox(standId);
+        //remove_rect.moveTo(box.topLeft());
+        remove_rect.adjust(box.left(), box.top(), box.left(), box.top());
     }
     if (GlobalSettings::instance()->model()->saplings()) {
         GlobalSettings::instance()->model()->saplings()->clearSaplings(remove_rect, false, true);

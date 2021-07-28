@@ -12,8 +12,8 @@ SoilInputOut::SoilInputOut()
 
 
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
-              << OutputColumn("input_lab", "input for labile carbon (i.e. fine debris, foliage and fine roots) in tC/ha (scaled to full ha)", OutDouble)
-              << OutputColumn("input_lab_ag", "fraction (0..1) of 'input_lab' that is aboveground C (foliage)", OutDouble)
+              << OutputColumn("input_lab", "input for labile carbon (i.e. fine debris, foliage and fine roots, moss) in tC/ha (scaled to full ha)", OutDouble)
+              << OutputColumn("input_lab_ag", "fraction (0..1) of 'input_lab' that is aboveground C (foliage, moss turnover)", OutDouble)
               << OutputColumn("input_ref", "input for refractory carbon (i.e. coarse woody debris, branches, stems, coarse roots) in tC/ha (scaled to full ha)", OutDouble)
               << OutputColumn("input_ref_ag", "fraction (0..1) of 'input_ref' that is aboveground C (branches, stems)", OutDouble)
               << OutputColumn("re", "climate factor 're' for snag/carbon decay", OutDouble);

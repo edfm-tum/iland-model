@@ -37,7 +37,8 @@ public:
     Species *species(const QString &speciesId) const { return mSpecies.value(speciesId); }
     const Species *species(const int &index); ///< get by arbirtray index (slower than using string-id!)
     const StampContainer &readerStamps() { return mReaderStamp; }
-    QVariant var(const QString& varName);
+    bool hasVar(const QString& varName); ///< test if variable exists
+    QVariant var(const QString& varName); ///< return variable as QVariant
     int count() const { return mSpecies.count(); }
     /// return 2 iterators. The range between 'rBegin' and 'rEnd' are indices of the current species set (all species are included, order is random).
     void randomSpeciesOrder(QVector<int>::const_iterator &rBegin, QVector<int>::const_iterator &rEnd);

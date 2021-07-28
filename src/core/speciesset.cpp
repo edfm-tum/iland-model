@@ -57,7 +57,17 @@ const Species *SpeciesSet::species(const int &index)
     foreach(Species *s, mSpecies)
         if (s->index() == index)
             return s;
-    return NULL;
+    return nullptr;
+}
+
+bool SpeciesSet::hasVar(const QString &varName)
+{
+    Q_ASSERT(mSetupQuery!=nullptr);
+    if (!mSetupQuery)
+        throw IException("SpeciesSet: query is not active!");
+
+    int idx = mSetupQuery->record().indexOf(varName);
+    return idx >= 0;
 }
 
 /** loads active species from a database table and creates/setups the species.
