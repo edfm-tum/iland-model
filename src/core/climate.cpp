@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 /** @class Climate
   Climate handles climate input data and performs some basic related calculations on that data.
   @ingroup core
-  @sa http://iland.boku.ac.at/ClimateData
+  @sa http://iland-model.org/ClimateData
 */
 #include "global.h"
 #include "climate.h"

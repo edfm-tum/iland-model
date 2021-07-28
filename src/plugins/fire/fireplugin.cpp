@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -44,7 +44,7 @@ QString FirePlugin::version()
 QString FirePlugin::description()
 {
     return "Fire disturbance module for iLand. The fire ignition and fire spread follows the FireBGC v2 model (Keane et al 2011), " \
-            "the estimation of severity and fire effects Schumacher et al (2006). See http://iland.boku.ac.at/wildfire for details.\n" \
+            "the estimation of severity and fire effects Schumacher et al (2006). See http://iland-model.org/wildfire for details.\n" \
             "Designed and written by by Rupert Seidl/Werner Rammer.";
 }
 

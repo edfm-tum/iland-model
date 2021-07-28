@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -43,7 +43,7 @@
     StandLoader initializes trees on the landscape. It reads (usually) from text files, creates the
     trees and distributes the trees on the landscape (on the ResoureceUnit or on a stand defined by a grid).
 
-    See http://iland.boku.ac.at/initialize+trees
+    See http://iland-model.org/initialize+trees
   */
 // provide a mapping between "Picus"-style and "iLand"-style species Ids
 static QVector<int> picusSpeciesIds = QVector<int>() << 0 << 1 << 17;
@@ -430,7 +430,7 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
 
 /** initialize trees on a resource unit based on dbh distributions.
   use a fairly clever algorithm to determine tree positions.
-  see http://iland.boku.ac.at/initialize+trees
+  see http://iland-model.org/initialize+trees
   @param content tree init file (including headers) in a string
   @param ru resource unit
   @param fileName source file name (for error reporting)
@@ -694,7 +694,7 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
 // Initialization routine based on a stand map.
 // Basically a list of 10m pixels for a given stand is retrieved
 // and the filled with the same procedure as the resource unit based init
-// see http://iland.boku.ac.at/initialize+trees
+// see http://iland-model.org/initialize+trees
 void StandLoader::executeiLandInitStand(int stand_id)
 {
 

@@ -1,7 +1,7 @@
 /**
 A `TreeExpr` object is a helper object for efficient access to values of individual trees (>4m) in iLand.
 
-The `TreeExpr` encapsulates an iLand expression (iland.boku.ac.at/Expression) which allows access to many properties of single trees in the model.
+The `TreeExpr` encapsulates an iLand expression (iland-model.org/Expression) which allows access to many properties of single trees in the model.
 The basic use is demonstrated in the following example:
 
     // set up a TreeExpr

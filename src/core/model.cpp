@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
   The class Model is the top level container of iLand. The Model holds a collection of ResourceUnits, links to SpeciesSet and Climate.
   ResourceUnit are grid cells with (currently) a size of 1 ha (100x100m). Many stand level processes (NPP produciton, WaterCycle) operate on this
   level.
-  The Model also contain the landscape-wide 2m LIF-grid (http://iland.boku.ac.at/competition+for+light).
+  The Model also contain the landscape-wide 2m LIF-grid (http://iland-model.org/competition+for+light).
 
   */
 #include "global.h"

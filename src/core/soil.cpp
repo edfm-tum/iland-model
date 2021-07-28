@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 /** @class Soil provides an implementation of the ICBM/2N soil carbon and nitrogen dynamics model.
   @ingroup core
   The ICBM/2N model was developed by Kaetterer and Andren (2001) and used by others (e.g. Xenakis et al, 2008).
-  See http://iland.boku.ac.at/soil+C+and+N+cycling for a model overview and the rationale of the model choice.
+  See http://iland-model.org/soil+C+and+N+cycling for a model overview and the rationale of the model choice.
 
   */
 
@@ -35,7 +35,7 @@ double Soil::mNitrogenDeposition = 0.;
 // i.e. parameters that need to be specified in the environment file
 // note that leaching is not actually influencing soil dynamics but reduces availability of N to plants by assuming that some N
 // (proportional to its mineralization in the mineral soil horizon) is leached
-// see separate wiki-page (http://iland.boku.ac.at/soil+parametrization+and+initialization)
+// see separate wiki-page (http://iland-model.org/soil+parametrization+and+initialization)
 // and R-script on parameter estimation and initialization
 static struct SoilParams {
     // ICBM/2N parameters

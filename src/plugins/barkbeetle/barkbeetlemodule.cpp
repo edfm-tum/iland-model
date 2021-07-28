@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -36,8 +36,8 @@
 /** @defgroup beetlemodule iLand barkbeetle module
   The bark beetle module is a disturbance module within the iLand framework.
 
-  See http://iland.boku.ac.at/barkbeetle for the science behind the module,
-  and http://iland.boku.ac.at/barkbeetle+module for the implementation/ using side.
+  See http://iland-model.org/barkbeetle for the science behind the module,
+  and http://iland-model.org/barkbeetle+module for the implementation/ using side.
  */
 
 

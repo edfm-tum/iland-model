@@ -3,8 +3,8 @@
 \section intro_sec Introduction
 
 \htmlonly
-<img src="http://iland.boku.ac.at/img/tiki/iland/iland_gfx1.png" style="float:right"></br>
-<img src="http://iland.boku.ac.at/img/tiki/iland/iLand_gfx6.png" style="float:right">
+<img src="http://iland-model.org/img/tiki/iland/iland_gfx1.png" style="float:right"></br>
+<img src="http://iland-model.org/img/tiki/iland/iLand_gfx6.png" style="float:right">
 \endhtmlonly
 
 iLand is a model of forest landscape dynamics, simulating individual tree competition, growth, mortality, and regeneration.
@@ -15,7 +15,7 @@ iLand is a research tool already used by a growing number of scientists in the U
 The iLand software is released under the GNU General Public License and freely available.
 
 
-The iLand wiki with 120+ pages of documentation, links to the download package and much more is located <a href="http://iland.boku.ac.at">here.</a>
+The iLand wiki with 120+ pages of documentation, links to the download package and much more is located <a href="http://iland-model.org">here.</a>
 
 \section About the source code
 
@@ -31,7 +31,7 @@ SQLite stores the all tables of a database within one single file. This approach
 
 Subversion
 
-The iLand source code is stored in a <a href="http://subversion.tigris.org/">subversion</a> source code repository. The public SVN-repository (through WebSVN) is available on the net: <a href="http://iland.boku.ac.at/publicsvn/">http://iland.boku.ac.at/publicsvn/</a>. Note that there is also a "private" SVN for portions of the model that are not published yet.
+The iLand source code is stored in a <a href="http://subversion.tigris.org/">subversion</a> source code repository. The public SVN-repository (through WebSVN) is available on the net: <a href="http://iland-model.org/publicsvn/">http://iland-model.org/publicsvn/</a>. Note that there is also a "private" SVN for portions of the model that are not published yet.
 
 
 
@@ -42,7 +42,7 @@ The iLand source code is stored in a <a href="http://subversion.tigris.org/">sub
   The class Model is the top level container of iLand. The Model holds a collection of ResourceUnits, links to SpeciesSet and Climate.
   ResourceUnit are grid cells with (currently) a size of 1 ha (100x100m). Many stand level processes (NPP produciton, WaterCycle) operate on this
   level.
-  The Model also contain the landscape-wide 2m LIF-grid (http://iland.boku.ac.at/competition+for+light).
+  The Model also contain the landscape-wide 2m LIF-grid (http://iland-model.org/competition+for+light).
 
   The basic simulation entity of iLand is the individual Tree. Trees live on a ResourceUnit (i.e. trees are stored in lists owned by ResourceUnits).
 

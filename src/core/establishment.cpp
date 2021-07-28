@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
-    http://iland.boku.ac.at/establishment
+    http://iland-model.org/establishment
     Prerequisites for establishment are:
     the availability of seeds: derived from the seed-maps per Species (@sa SeedDispersal)
     the quality of the abiotic environment (TACA-model): calculations are performend here, based on climate and species responses
@@ -159,7 +159,7 @@ double Establishment::calculateSOLDepthLimitation()
 
 /** Calculate the abiotic environemnt for seedling for a given species and a given resource unit.
  The model is closely based on the TACA approach of Nitschke and Innes (2008), Ecol. Model 210, 263-277
- more details: http://iland.boku.ac.at/establishment#abiotic_environment
+ more details: http://iland-model.org/establishment#abiotic_environment
  a model mockup in R: script_establishment.r
 
  */

@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ class Permafrost; // forward
 
 /** SnowPack handles the snow layer.
    @ingroup core
-   Snow is conceptually very simple (see http://iland.boku.ac.at/water+cycle).
+   Snow is conceptually very simple (see http://iland-model.org/water+cycle).
 */
 class SnowPack
 {

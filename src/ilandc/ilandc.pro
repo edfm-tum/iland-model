@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# iLand console version project file. See iland.boku.ac.at
+# iLand console version project file. See iland-model.org
 #
 #-------------------------------------------------
 

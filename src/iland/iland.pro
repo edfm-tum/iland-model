@@ -1,5 +1,5 @@
 # -------------------------------------------------
-# iLand project file (GUI version). See iland.boku.ac.at
+# iLand project file (GUI version). See iland-model.org
 # -------------------------------------------------
 QT += xml
 QT += qml

@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -130,7 +130,7 @@ private:
 /** FireModule is the main class of the fire sub module.
     @ingroup firemodule
     FireModule  holds all the relevant data/actions for the iLand fire module.
-    See http://iland.boku.ac.at/wildfire and http://iland.boku.ac.at/fire+module
+    See http://iland-model.org/wildfire and http://iland-model.org/fire+module
 
     The fire module has conceptually three parts that stand more or less on its own:
      * Fire ignition

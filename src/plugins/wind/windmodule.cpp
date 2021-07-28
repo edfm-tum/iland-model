@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland.boku.ac.at
+**    http://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -34,8 +34,8 @@
   The wind module is a disturbance module within the iLand framework.
 
   FIXME  !!
-   See http://iland.boku.ac.at/wind for the science behind the module,
-  and http://iland.boku.ac.at/fire+module for the implementation/ using side.
+   See http://iland-model.org/wind for the science behind the module,
+  and http://iland-model.org/fire+module for the implementation/ using side.
  */
 
 

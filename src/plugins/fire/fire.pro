@@ -1,4 +1,4 @@
-# iLand project file for the fire module. See iland.boku.ac.at
+# iLand project file for the fire module. See iland-model.org
 QT += xml
 QT += qml
 QT += sql

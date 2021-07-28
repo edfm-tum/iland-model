@@ -1,4 +1,4 @@
-# Project file for iLand plugins. See iland.boku.ac.at
+# Project file for iLand plugins. See iland-model.org
 TEMPLATE = subdirs
 
 SUBDIRS += \
