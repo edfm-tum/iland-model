@@ -32,7 +32,7 @@ class FMUnit; // forward
 /** @brief SchedulerOptions store agent-specific options.
  * */
 struct SchedulerOptions {
-    SchedulerOptions(): useScheduler(false), useSustainableHarvest(1.), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestLevel(0), harvestIntensity(1.), scheduleRebounceDuration(0), deviationDecayRate(0.){  }
+    SchedulerOptions(): useScheduler(false), useSustainableHarvest(1.), minScheduleHarvest(0), maxScheduleHarvest(0), maxHarvestLevel(0), harvestIntensity(1.), scheduleRebounceDuration(0), deviationDecayRate(0.), maxAbsoluteHarvest(-1.){  }
     bool useScheduler; ///< true, if the agent is using the scheduler at all
     double useSustainableHarvest; ///< scaling factor (0..1), 1 if scheduler used by agent (exclusively), 0: bottom up, linearly scaled in between.
     double minScheduleHarvest; ///< minimum amount of m3/ha*yr that should be scheduled
@@ -41,6 +41,7 @@ struct SchedulerOptions {
     double harvestIntensity; ///< multiplier for the "sustainable" harvest level
     double scheduleRebounceDuration; ///< number of years for which deviations from the planned volume are split into
     double deviationDecayRate; ///< factor to reduce accumulated harvest deviation
+    double maxAbsoluteHarvest; ///< maximum harvest (only used if scheduler is disabled). Scheduler execution stops when level is surpassed
 
     void setup(QJSValue jsvalue);
     static QStringList mAllowedProperties;

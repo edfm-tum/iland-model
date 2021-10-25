@@ -1255,7 +1255,7 @@ void MainWindow::paintGrid(QPainter &painter, PaintObject &object)
     // update ruler
     if (object.view_type>=10) {
         QStringList labels;
-        for (int i=0;i<max_value;++i)
+        for (int i=0;i<=max_value;++i)
             labels.append(object.layered->labelvalue(i,object.layer_id));
         mRulerColors->setFactorLabels(labels);
     }

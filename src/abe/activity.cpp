@@ -64,6 +64,7 @@ void Schedule::setup(const QJSValue &js_value)
         tmaxrel = FMSTP::valueFromJs(js_value, "maxRel", "-1").toNumber();
         toptrel = FMSTP::valueFromJs(js_value, "optRel", "-1").toNumber();
         repeat_interval = FMSTP::valueFromJs(js_value, "repeatInterval", "1").toInt();
+        repeat_start = FMSTP::valueFromJs(js_value, "repeatStart", "0").toInt();
         // switches
         force_execution = FMSTP::boolValueFromJs(js_value, "force", false);
         repeat = FMSTP::boolValueFromJs(js_value, "repeat", false);
@@ -116,8 +117,8 @@ double Schedule::value(const FMStand *stand, const int specific_year)
     if (repeat) {
         // handle special case of repeating activities.
         // we execute the repeating activity if repeatInterval years elapsed
-        // since the last execution.
-        if (int(current_year) % repeat_interval == 0)
+        // since the last execution. The first execution is in year "repeat_start"
+        if (int(current_year)>=repeat_start &&  (int(current_year) - repeat_start) % repeat_interval == 0)
             return 1.; // yes, execute this year
         else
             return 0.; // do not execute this year.

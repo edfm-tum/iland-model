@@ -81,9 +81,69 @@ var fmengine= {
   @param {object} program The javascript object that defines the {{#crossLink "Agent"}}{{/crossLink}}.
   @param {string} name The name that ABE should be use for this {{#crossLink "Agent"}}{{/crossLink}}.
   @return {boolean} true on success.
+
+  @example
+        // define a simple agent
+        var fire_agent = {
+            // scheduler options:
+            scheduler: { enabled: false },
+            // stp is a list of STPs available for the agent
+            stp: {  'fire': 'fire', 'timber':'timber', 'default': 'fire'},
+        };
+
+        fmengine.addAgent(fire_agent, 'fire'); // add the agent
+
   */
     addAgent: function(obj, name),
 
+/**
+  add an agent by specifying the name of an agent type and gives the agent the name `name`.
+
+    See also: {{#crossLink "addAgentType:method"}}{{/crossLink}}
+
+  @method addAgent
+  @param {string} agent_type_name The name of the agent type {{#crossLink "Agent"}}{{/crossLink}}.
+  @param {string} name The name that ABE should be use for this {{#crossLink "addAgentType:method"}}{{/crossLink}}.
+  @return {boolean} true on success.
+  */
+    addAgent: function(agent_type_name, name),
+
+/**
+  add an agent type (and not a specific agent!) by specifying the name of an agent type. The agent type
+  will get the name `name`. Using an agent type (instead of single agents) allow the creation of multiple
+  agents programmatically (e.g. small landowners). Properties of the generated agents can be refined
+  using the `newAgent()` handler function of the agent.
+
+  @example
+
+
+  See also: {{#crossLink "addAgentType:method"}}{{/crossLink}}
+
+  @method addAgentType
+  @param {object} program The javascript object that defines the {{#crossLink "Agent"}}{{/crossLink}}.
+  @param {string} name The name that ABE should be use for this agent type
+  @return {boolean} true on success.
+
+
+  @example
+
+        // define a agent type template
+        var fire_template = {
+            // scheduler options:
+            scheduler: { enabled: true,
+                         harvestIntensity: 1},
+            // stp is a list of STPs available for the agent
+            stp: {  'fire': 'fire', 'timber':'timber', 'default': 'fire'},
+            newAgent: function() {
+                // this is called whenever a new agent is generated
+                var new_ag = {
+                scheduler: this.scheduler };
+                new_ag.harvestIntensity = 1 + Math.random()*0.5; // sample between 1 and 1.5
+                return new_ag;
+            }
+        };
+  */
+    addAgentType: function(agent_type_name, name),
 /**
   checks if a given `stand_id` is valid (i.e., part of the currently simulated area).
 
@@ -97,6 +157,10 @@ var fmengine= {
   returns a list of valid stand-ids within the model.
   See also: {{#crossLink "standId:property"}}{{/crossLink}}
 
+        for (var s of fmengine.standIds) {
+           fmengine.standId = s; // set s to the current stand
+           console.log('Stand ' + s + ': ' + stand.flag('wui')); // print value of the attribute wui for all stands
+        }
 
   @method standIds
   @return {array} Array of valid stand-ids.

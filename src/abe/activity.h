@@ -36,7 +36,7 @@ public:
     // setup and life cycle
     Schedule()  {}
     Schedule(QJSValue &js_value) { clear(); setup(js_value); }
-    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat=false; absolute=false; }
+    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat_start=0; repeat=false; absolute=false; }
     void setup(const QJSValue &js_value);
     QString dump() const;
     // functions
@@ -56,6 +56,7 @@ public:
     bool force_execution;
     // repeating
     int repeat_interval;
+    int repeat_start;
     bool repeat;
     bool absolute;
 };

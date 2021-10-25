@@ -197,7 +197,17 @@ void Scheduler::run()
             }
         } else {
             // scheduler is not active:
-            min_exec_probability = 0.9; // only execute items that are close to the optimal point in time
+            // when absolute limit is not set, execute only items that are very close to the optimum
+            if (mUnit->agent()->schedulerOptions().maxAbsoluteHarvest<0.) {
+                min_exec_probability = 0.9; // only execute items that are close to the optimal point in time
+            } else {
+                // Stop if maximum level exceeded. Note: we use the *scheduled* harvest here, not the realized!
+                // (in order to allow a max area condition)
+                if (harvest_scheduled > mUnit->agent()->schedulerOptions().maxAbsoluteHarvest) {
+                    qCDebug(abe) << "Sum of scheduled harvests (" << harvest_scheduled << ") exceed maxAbsoluteHarvest, stopping";
+                    break;
+                }
+            }
         }
 
 
@@ -520,7 +530,7 @@ void Scheduler::SchedulerItem::calculate()
 QStringList SchedulerOptions::mAllowedProperties = QStringList()
         << "minScheduleHarvest" << "maxScheduleHarvest" << "maxHarvestLevel"
         << "useSustainableHarvest" << "scheduleRebounceDuration" << "deviationDecayRate"
-        << "enabled" << "harvestIntensity";
+        << "enabled" << "harvestIntensity" << "maxAbsoluteHarvest";
 
 
 void SchedulerOptions::setup(QJSValue jsvalue)
@@ -535,6 +545,7 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     minScheduleHarvest = FMSTP::valueFromJs(jsvalue, "minScheduleHarvest","0").toNumber();
     maxScheduleHarvest = FMSTP::valueFromJs(jsvalue, "maxScheduleHarvest","10000").toNumber();
     maxHarvestLevel = FMSTP::valueFromJs(jsvalue, "maxHarvestLevel","2").toNumber();
+    maxAbsoluteHarvest = FMSTP::valueFromJs(jsvalue, "maxAbsoluteHarvest","-1").toNumber();
     qCDebug(abe) << "maxHarvestLevel" << maxHarvestLevel;
     useSustainableHarvest = FMSTP::valueFromJs(jsvalue, "useSustainableHarvest", "1").toNumber();
     if (useSustainableHarvest<0. || useSustainableHarvest>1.)
