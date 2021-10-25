@@ -79,11 +79,26 @@ Agent *AgentType::createAgent(QString agent_name)
 {
     // call the newAgent function in the javascript object assigned to this agent type
     QJSValue func = mJSObj.property("newAgent");
-    if (!func.isCallable())
+    QJSValue result;
+    if (!func.isCallable()) {
+        // add a function with minimal code
+        mJSObj.setProperty("newAgent",
+                           ForestManagementEngine::instance()->scriptEngine()->evaluate("(function() { return {scheduler: this.scheduler } })")
+                           );
+        func = mJSObj.property("newAgent");
+
+    }
+    if (func.isCallable()) {
+        result = func.callWithInstance(mJSObj);
+        if (result.isError())
+            throw IException(QString("calling the 'newAgent' function of agent type '%1' returned with the following error: %2").arg(name()).arg(result.toString()));
+    } else {
+        // newAgent is not available, run minimal code
         throw IException(QString("The agent type '%1' does not have a valid 'newAgent' function.").arg(name()));
-    QJSValue result = func.callWithInstance(mJSObj);
-    if (result.isError())
-        throw IException(QString("calling the 'newAgent' function of agent type '%1' returned with the following error: %2").arg(name()).arg(result.toString()));
+        //result = ForestManagementEngine::instance()->scriptEngine()->evaluate("{ scheduler: this.scheduler }");
+
+    }
+
     Agent *agent = new Agent(this, result);
     if (!agent_name.isEmpty()) {
         agent->setName(agent_name);

@@ -312,6 +312,14 @@ QJSValue FomeScript::addAgent(QString agent_type, QString agent_name)
     }
 }
 
+QJSValue FomeScript::addAgent(QJSValue program, QString name)
+{
+    // first create an agenttype
+    if (!addAgentType(program, name))
+        return false;
+    return addAgent(name, name);
+}
+
 /// force execution of an activity (outside of the usual execution context, e.g. for debugging)
 bool FomeScript::runActivity(int stand_id, QString activity)
 {
@@ -361,7 +369,8 @@ bool FomeScript::runAgent(int stand_id, QString function)
         val = agent_type.property(function).callWithInstance(agent_type);
         qCDebug(abe) << "running agent-function" << function << "for stand" << stand_id << ":" << val.toString();
     } else {
-       qCDebug(abe) << "function" << function << "is not a valid function of agent-type" << stand->unit()->agent()->type()->name();
+        if (stand->trace())
+            qCDebug(abe) << "function" << function << "is not a valid function of agent-type" << stand->unit()->agent()->type()->name();
     }
 
     return true;

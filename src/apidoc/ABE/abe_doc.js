@@ -97,6 +97,22 @@ and a top-down approach (i.e, the scheduling algorithm decides when a stand shou
   @default 1
   */
     maxHarvestLevel: 1.1,
+
+/**
+  The 'maxAbsoluteHarvest' is a cutoff for the annual harvest. If a a value is given (default is no cap), then
+  the scheduler stops when the cap is reached.
+
+  Notes:
+    * the value is only effective when the increment based scheduling is off ('enabled: false')
+    * to calculate the running sum of harvest the scheduler uses the value provided as the return value
+      of the onEvaluate() handler of the activities. This defaults to the volume (per ha) of planned harvests
+      but can be used differently. For example, an area limit can be established by using
+      stand area as return value in the handler.
+
+  @type {double}
+  @default 0
+  */
+    maxAbsoluteHarvest: 1.1,
 }
 
 

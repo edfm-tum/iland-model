@@ -233,7 +233,8 @@ void FMUnit::runAgent()
         val = agent_type.property("run").callWithInstance(agent_type);
         qCDebug(abe) << "running agent-function 'run' for unit" <<  id() << ":" << val.toString();
     } else {
-       qCDebug(abe) << "function 'run' is not a valid function of agent-type" << agent()->type()->name();
+        if (stand->trace())
+            qCDebug(abe) << "function 'run' is not a valid function of agent-type" << agent()->type()->name();
     }
 
 }

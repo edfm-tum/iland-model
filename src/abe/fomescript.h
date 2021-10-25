@@ -111,6 +111,9 @@ public slots:
     bool addAgentType(QJSValue program, QString name);
     /// create an agent of type 'agent_type' (the name of an agent type) and give the name 'agent_name'. 'agent_name' needs to be unique.
     QJSValue addAgent(QString agent_type, QString agent_name);
+
+    /// create an agent with name 'name' and implicitly an AgentType with the same name
+    QJSValue addAgent(QJSValue program, QString name);
     /// executes an activity for stand 'stand_id'. This bypasses the normal scheduling (useful for debugging/testing).
     /// returns false if activity could not be found for the stand.
     bool runActivity(int stand_id, QString activity);
