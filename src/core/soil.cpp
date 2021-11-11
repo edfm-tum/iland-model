@@ -147,6 +147,14 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
     mKyr = mYR.parameter(mInputRef);
     if (isnan(mKyr) || isnan(mYR.C))
         qDebug() << "mKyr is NAN";
+    if (mKyr == 0.) {
+        mKyr = 0.0001;
+        qDebug() << "Soil::setSoilInput: Invalid value (0.) for dwd decomp rate (mKyr). Set to 0.0001.";
+    }
+    if (mKyl == 0.) {
+        mKyl = 0.0001;
+        qDebug() << "Soil::setSoilInput: Invalid value (0.) for litter decomp rate (mKyl). Set to 0.0001.";
+    }
 
     // update the aboveground fraction
     // conceptually this is a weighted mean of the AG fraction of the content with the input
