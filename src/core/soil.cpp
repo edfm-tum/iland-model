@@ -173,6 +173,7 @@ void Soil::setSoilInput(const CNPool &labile_input_kg_ha, const CNPool &refracto
 
 /// Main calculation function
 /// must be called after snag dyanmics (i.e. to ensure input fluxes are available)
+/// See Appendix of Kaetterer et al 2001 for integrated equations
 void Soil::calculateYear()
 {
     SoilParams &sp = *mParams;
@@ -188,17 +189,23 @@ void Soil::calculateYear()
     if (isnan(total_in.C) || isnan(mKyr))
         qDebug() << "soil input is NAN.";
 
-    double ylss = mInputLab.C / (mKyl * mRE); // Yl stedy state C
+    double ylss = mInputLab.C / (mKyl * mRE); // Yl stedy state C (eq A13)
     double cl = sp.el * (1. - mH)/sp.qb - mH*(1.-sp.el)/sp.qh; // eta l in the paper
     double ynlss = 0.;
-    if (!mInputLab.isEmpty())
+    if (!mInputLab.isEmpty()) {
         ynlss = mInputLab.C / (mKyl*mRE*(1.-mH)) * ((1.-sp.el)/mInputLab.CN() + cl); // Yl steady state N
+        if (ynlss < 0.)
+            ynlss = 0.; // do not allow a negative value for steady state
+    }
 
-    double yrss = mInputRef.C / (mKyr * mRE); // Yr steady state C
+    double yrss = mInputRef.C / (mKyr * mRE); // Yr steady state C (eq A14)
     double cr = sp.er * (1. - mH)/sp.qb - mH*(1.-sp.er)/sp.qh; // eta r in the paper
     double ynrss = 0.;
-    if (!mInputRef.isEmpty())
+    if (!mInputRef.isEmpty()) {
         ynrss = mInputRef.C / (mKyr*mRE*(1.-mH)) * ((1.-sp.er)/mInputRef.CN() + cr); // Yr steady state N
+        if (ynrss <0.)
+            ynrss = 0.; // do not allow negative steady state
+    }
 
     double oss = mH*total_in.C / (mKo*mRE); // O steady state C
     double onss = mH*total_in.C / (sp.qh*mKo*mRE); // O steady state N
@@ -213,13 +220,22 @@ void Soil::calculateYear()
     // young labile pool
     CNPair yl=mYL;
     mYL.C = ylss + (yl.C-ylss)*lfactor;
-    mYL.N = ynlss + (yl.N-ynlss-cl/(sp.el-mH)*(yl.C-ylss))*exp(-mKyl*mRE*(1.-mH)*t/(1.-sp.el))+cl/(sp.el-mH)*(yl.C-ylss)*lfactor;
+    // N: see eq A18
+    mYL.N = ynlss + (yl.N-ynlss-cl/(sp.el-mH)*(yl.C-ylss))*exp(-mKyl*mRE*(1.-mH)*t/(1.-sp.el)) + cl/(sp.el-mH)*(yl.C-ylss)*lfactor;
+    if (mYL.N < 0.)
+        mYL.N = 0.;
+
     mYL.setParameter( mKyl ); // update decomposition rate
 
     // young ref. pool
     CNPair yr=mYR;
     mYR.C = yrss + (yr.C-yrss)*rfactor;
-    mYR.N = ynrss + (yr.N-ynrss-cr/(sp.er-mH)*(yr.C-yrss))*exp(-mKyr*mRE*(1.-mH)*t/(1.-sp.er))+cr/(sp.er-mH)*(yr.C-yrss)*rfactor;
+    // N: see eq A19.
+    mYR.N = ynrss + (yr.N-ynrss-cr/(sp.er-mH)*(yr.C-yrss))*exp(-mKyr*mRE*(1.-mH)*t/(1.-sp.er)) + cr/(sp.er-mH)*(yr.C-yrss)*rfactor;
+    if (mYR.N < 0.) {
+        mYR.N = 0.;
+        //qDebug() << "YR.N <0 ";
+    }
     mYR.setParameter( mKyr ); // update decomposition rate
     // SOM pool (old)
     CNPair o = mSOM;
