@@ -222,7 +222,9 @@ double Snag::calculateClimateFactors()
 
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day, ++iday)
     {
-        ft = exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13)));  // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
+        // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
+        // Note: function becomes unstable with very low temperatures (e.g. Alaska)
+        ft = day->temperature > -30 ? exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13))) : 0.;
         fw = fw_month[day->month-1];
 
         f_sum += ft*fw;
@@ -247,7 +249,7 @@ void Snag::calculateYear()
 
     // process branches and coarse roots: every year one of the five baskets is emptied and transfered to the refractory soil pool
     mRefractoryFlux+=mOtherWood[mBranchCounter];
-    mRefrFluxAbovegroundCarbon += mOtherWood[mBranchCounter].C * mOtherWoodAbovegroundFrac; // cotent * aboveground_fraction
+    mRefrFluxAbovegroundCarbon += mOtherWood[mBranchCounter].C * mOtherWoodAbovegroundFrac; // content * aboveground_fraction
     mOtherWood[mBranchCounter].clear();
     mBranchCounter= (mBranchCounter+1) % 5; // increase index, roll over to 0.
 
@@ -349,6 +351,11 @@ void Snag::calculateYear()
 
     mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2];
     mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
+    if (mTotalSWD.C == 0.)
+        qDebug() << "Snag C == 0?!?";
+
+    if (mTotalOther.N < 0.)
+        qDebug() << "Snag-Other N < 0 on RU (index):" << mRU->index();
     mDeciduousFoliageLitter = 0.;
 
 }
@@ -410,6 +417,8 @@ void Snag::addBiomassPools(const Tree *tree,
 
     //coarse roots and a part of branches are equally distributed over five years:
     double biomass_rest = (tree->biomassCoarseRoot() + branch_to_snag*branch_biomass) * 0.2;
+    if (biomass_rest < 0.) // make sure we do not have invalid fluxes / debugging
+        biomass_rest = 0.;
     for (int i=0;i<5; i++)
         mOtherWood[i].addBiomass(biomass_rest, species->cnWood(), species->snagKyr());
 
