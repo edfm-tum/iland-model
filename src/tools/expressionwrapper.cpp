@@ -141,7 +141,7 @@ static QStringList ruVarList=QStringList() << baseVarList << "id" << "totalEffec
                       << "canopyConductance"
                       << "soilC" << "soilN"
                       << "snagC" << "index" << "meanTemp" << "annualPrecip" << "annualRad"
-                      << "LAISaplings" << "estPsiMin";
+                      << "LAISaplings" << "estPsiMin" << "waterHoldingCapacity";
 
 const QStringList RUWrapper::getVariablesList()
 {
@@ -187,6 +187,7 @@ double RUWrapper::value(const int variableIndex)
     case 23: return mRU->climate()->totalRadiation();
     case 24: return mRU->statistics().leafAreaIndexSaplings();
     case 25: return -mRU->waterCycle()->estPsiMin(0); // establishment psi min for conifers, change sign! (positive=limitation)
+    case 26: return mRU->waterCycle()->fieldCapacity();
 
     }
     return ExpressionWrapper::value(variableIndex);

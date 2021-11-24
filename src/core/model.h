@@ -53,10 +53,13 @@ struct HeightGridValue
     int count() const { return mCount & 0x0000ffff; } ///< get count of trees on pixel
     void increaseCount() { mCount++; } ///< increase the number of trees on pixel
     void resetCount() { mCount &= 0xffff0000; } ///< set the count to 0
-    bool isValid() const { return !isBitSet(mCount, 16); } ///< a value of 1: not valid (returns false)
+    /// a value of 1: not valid (returns false).
+    /// true: pixel is stockable and within the project area.
+    /// false: pixel is not stockable (outside of the project area or a non-stockable pixel within the project area)
+    bool isValid() const { return !isBitSet(mCount, 16); }
     void setValid(const bool valid) { setBit(mCount, 16, !valid); } ///< set bit to 1: pixel is not valid
     void setForestOutside(const bool is_outside) { setBit(mCount, 17, is_outside); }
-    bool isForestOutside() const {return isBitSet(mCount, 17); }
+    bool isForestOutside() const {return isBitSet(mCount, 17); } ///< true if a pixel is outside of the project area but considered as forested
     void setIsRadiating() { setBit(mCount, 18, true); } ///< bit 18: if set, the pixel is actively radiating influence on the LIF (such pixels are on the edge of "forestOutside")
     bool isRadiating() const { return isBitSet(mCount, 18); }
     /// get the (coarse, 1m classes) local height (only trees with the stem on the cell are counted here)
