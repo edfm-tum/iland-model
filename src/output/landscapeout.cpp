@@ -30,7 +30,10 @@ LandscapeOut::LandscapeOut()
                    "i.e. output with year=2000 means effectively the state of at the end of the " \
                    "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'." \
                    "You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output)");
-    columns() << OutputColumn::year() << OutputColumn::species()
+    columns() << OutputColumn::year()
+              << OutputColumn("area", "total stockable area of the simulated landscape (ha)", OutDouble)
+              << OutputColumn("areaRU", "total area of all simulated resource units (100m)", OutDouble)
+              << OutputColumn::species()
               << OutputColumn("count_ha", "tree count (living, >4m height) per ha", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
               << OutputColumn("height_avg_m", "average tree height (m)", OutDouble)
@@ -63,10 +66,8 @@ void LandscapeOut::exec()
     for (QMap<QString, StandStatistics>::iterator i=mLandscapeStats.begin(); i!= mLandscapeStats.end();++i)
         i.value().clear();
 
-    // extract total stockable area
-    double total_area = 0.;
-    foreach(const ResourceUnit *ru, m->ruList())
-        total_area += ru->stockableArea();
+    //  total stockable area (in m2)
+    double total_area = m->totalStockableArea() * cRUArea;
 
     if (total_area==0.)
         return;
@@ -88,7 +89,8 @@ void LandscapeOut::exec()
         StandStatistics &stat = i.value();
         stat.calculateAreaWeighted(); // calculate average dbh, height
 
-        *this << currentYear() << i.key(); // keys: year, species
+        *this << currentYear() << m->totalStockableArea() << m->ruList().size();
+        *this << i.key(); // keys: year, species
         *this << stat.count() << stat.dbh_avg() << stat.height_avg()
                               << stat.volume() << stat.totalCarbon() << stat.gwl() << stat.basalArea()
                               << stat.npp() << stat.nppAbove() << stat.leafAreaIndex() << stat.cohortCount();

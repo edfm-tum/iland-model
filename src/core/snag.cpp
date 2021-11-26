@@ -351,8 +351,6 @@ void Snag::calculateYear()
 
     mTotalSWD = mSWD[0] + mSWD[1] + mSWD[2];
     mTotalOther = mOtherWood[0] + mOtherWood[1] + mOtherWood[2] + mOtherWood[3] + mOtherWood[4];
-    if (mTotalSWD.C == 0.)
-        qDebug() << "Snag C == 0?!?";
 
     if (mTotalOther.N < 0.)
         qDebug() << "Snag-Other N < 0 on RU (index):" << mRU->index();

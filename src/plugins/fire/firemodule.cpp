@@ -301,7 +301,10 @@ double FireModule::ignition(bool only_ignite)
             double p_cell = odds / (1. + odds);
             // p_cell is the probability of ignition for a "fire"-pixel. We scale that to RU-level by multiplying with the number of pixels per RU.
             // for small probabilities this yields almost the same results as the more correct 1-(1-p)^cells_per_ru [for p=0.0000001 and cells=25 the difference is 0.000000000003]
-            p_cell *= cells_per_ru;
+            // the probability is scaled down with to the actually stockable area of the resource unit
+            //
+            double cells = cells_per_ru * fd->mRU->stockableArea() / cRUArea;
+            p_cell *= cells;
             if (!p_cell)
                 continue;
 
