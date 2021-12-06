@@ -31,8 +31,8 @@ LandscapeOut::LandscapeOut()
                    "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'." \
                    "You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output)");
     columns() << OutputColumn::year()
-              << OutputColumn("area", "total stockable area of the simulated landscape (ha)", OutDouble)
-              << OutputColumn("areaRU", "total area of all simulated resource units (100m)", OutDouble)
+              << OutputColumn("area", "total stockable area of the simulated landscape with the grain of 10m cells (ha)", OutDouble)
+              << OutputColumn("area_100m", "total area of all simulated resource units (with the grain 100m). This area is larger then 'area', when (some) RUs are only partially stockable.", OutDouble)
               << OutputColumn::species()
               << OutputColumn("count_ha", "tree count (living, >4m height) per ha", OutInteger)
               << OutputColumn("dbh_avg_cm", "average dbh (cm)", OutDouble)
