@@ -110,6 +110,7 @@ and a top-down approach (i.e, the scheduling algorithm decides when a stand shou
       stand area as return value in the handler.
 
   @type {double}
+  @property maxAbsoluteHarvest
   @default 0
   */
     maxAbsoluteHarvest: 1.1,

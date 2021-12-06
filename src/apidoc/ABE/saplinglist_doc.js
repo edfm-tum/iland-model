@@ -12,11 +12,11 @@ The list of sapling cohorts may be manipulated using functions such as `filter()
 The class provides function to kill cohorts (`kill()`) or to modify cohorts (e.g. `browse()`).
 
 ### Variables
-A list of available variables for saplings:  http://iland.boku.ac.at/sapling+variables
+A list of available variables for saplings:  https://iland-model.org/sapling+variables
 
 ### general notes
-The sapling list heavily used the expression engine of iLand http://iland.boku.ac.at/Expression. Expressions are provided as strings to the
-respective Javascript functions (e.g.,`filter`) and evaluated by iLand. Note that tree species names are treated as a special case (http://iland.boku.ac.at/Expression#Constants).
+The sapling list heavily used the expression engine of iLand https://iland-model.org/Expression. Expressions are provided as strings to the
+respective Javascript functions (e.g.,`filter`) and evaluated by iLand. Note that tree species names are treated as a special case (https://iland-model.org/Expression#Constants).
 
 ## Example
     var saplings = biteAgent.cell(0,0).saplings; // currently, only available via Bite

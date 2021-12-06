@@ -26,7 +26,7 @@ SVDGPPOut::SVDGPPOut()
               << OutputColumn("gpp_s9", "gpp of species 9", OutDouble)
               << OutputColumn("gpp_s10", "gpp of species 10", OutDouble);
 
-    mSpeciesList << "piab" << "abal" << "lade" << "pisy" << "fasy" << "quro" << "acps" << "bepe";
+    mSpeciesList << "piab" << "abal" << "lade" << "pisy" << "fasy" << "quro" << "bepe" << "quil" << "pipi" << "piha";
     for (int i=0;i<10;++i) {
         mSpeciesIndex[i]=-1;
     }
