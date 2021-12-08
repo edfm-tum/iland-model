@@ -161,7 +161,7 @@ void Climate::setup()
         qDebug() << "adding climate table where-clause:" << filter;
     }
 
-    QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from %1 %2 order by year, month, day").arg(tableName).arg(filter);
+    QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from '%1' %2 order by year, month, day").arg(tableName).arg(filter);
     // here add more options...
     mClimateQuery = QSqlQuery(g->dbclimate());
     mClimateQuery.exec(query);
@@ -169,7 +169,7 @@ void Climate::setup()
     if (mClimateQuery.lastError().isValid()){
         // fallback: if there is no max_temp try the older format:
         QString errmsg = mClimateQuery.lastError().text();
-        query=QString("select year,month,day,temp,min_temp,prec,rad,vpd from %1 order by year, month, day").arg(tableName);
+        query=QString("select year,month,day,temp,min_temp,prec,rad,vpd from '%1' order by year, month, day").arg(tableName);
         mClimateQuery.exec(query);
         mTMaxAvailable = false;
         if (mClimateQuery.lastError().isValid()){
