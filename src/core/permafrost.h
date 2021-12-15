@@ -144,6 +144,7 @@ private:
         // carbon cycle
         double CNRatio; ///< carbon : nitrogen ratio of moss (used for litter input)
         double r_decomp; ///< decomposition rate of moss (compare KYL of species)
+        double r_deciduous_inhibition; ///< factor for inhibiting effect of fresh broadleaved litter
     };
 
     static SParam par;
