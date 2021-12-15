@@ -243,6 +243,7 @@ void Permafrost::setupMossLayer()
     mosspar.CNRatio = xml.valueDouble("model.settings.permafrost.moss.CNRatio", 30.);
     mosspar.bulk_density = xml.valueDouble("model.settings.permafrost.moss.bulk_density", 50);
     mosspar.r_decomp = xml.valueDouble("model.settings.permafrost.moss.r_decomp", 0.14);
+    mosspar.r_deciduous_inhibition = xml.valueDouble("model.settings.permafrost.moss.r_deciduous_inhibition", 0.45);
 
 }
 
@@ -275,7 +276,7 @@ void Permafrost::calculateMoss()
     if (mWC->mRU->snag())
         fresh_dec_litter = mWC->mRU->snag()->freshDeciduousFoliage() / 1000.; // from kg/ha -> t/ha
 
-    double f_deciduous = exp(-0.45 * fresh_dec_litter);
+    double f_deciduous = exp(-mosspar.r_deciduous_inhibition * fresh_dec_litter);
 
 
     // (3) Total productivity

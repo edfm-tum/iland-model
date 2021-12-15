@@ -51,8 +51,10 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
     const SpeciesResponse *resp = prod.mResponse;
     for (int i=0;i<12;i++) {
         // skip all species/resource units without production
-        if (prod.mUPAR[5]==0.)
+        if (prod.mEnvYear == 0.)
             return;
+        //if (prod.mUPAR[5]==0.)
+        //    return;
 
         *this << currentYear() << rus->ru()->index() << rus->ru()->id() << rus->species()->id();
         *this << (i+1); // month
