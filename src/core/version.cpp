@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 #include <QString>
 static const char *version = "1.1.1";
-static const char *svn_revision = "1447";
+static const char *svn_revision = "1452";
 const char *currentVersion(){ return version;}
 const char *svnRevision(){ return svn_revision;}
 

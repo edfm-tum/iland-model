@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -332,7 +332,7 @@ void ResourceUnit::newYear()
     - the water cycle is calculated
     - statistics for each species are cleared
     - The 3PG production for each species and ressource unit is called (calculates species-responses and NPP production)
-    see also: http://iland-model.org/individual+tree+light+availability */
+    see also: https://iland-model.org/individual+tree+light+availability */
 void ResourceUnit::production()
 {
 

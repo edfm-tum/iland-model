@@ -2,12 +2,12 @@
 The `Map` object encapsulates a "GIS" grid. Grids can be read from ESRI ASCII raster files, and are
 automatically mapped to a 10x10m grid (the resolution and extent of the height grid).
 Internally, a "spatial index" is created allowing for fast access to trees that lie on specific pixels.
-See also the wiki page [landscape setup](http://iland-model.org/landscape+setup).
+See also the wiki page [landscape setup](https://iland-model.org/landscape+setup).
 The loaded map can be used, e.g., to specifically apply management on specific areas.
 
 
 A newly created `Map` object (without a call to `load()`) points to the global stand grid
-defined in the [project file](http://iland-model.org/project+file).
+defined in the [project file](https://iland-model.org/project+file).
 
 Use {{#crossLink "Map/load:method"}}{{/crossLink}} to read a raster file from disk.
 
@@ -44,7 +44,7 @@ Map = {
     */
 
     /**
-    Load a grid (provided in ESRI textformat) from disk. See [landscape setup](http://iland-model.org/landscape+setup) for information about projections.
+    Load a grid (provided in ESRI textformat) from disk. See [landscape setup](https://iland-model.org/landscape+setup) for information about projections.
 
     @method load
     @param {string} file_name
@@ -75,14 +75,14 @@ Map = {
     /**
     Clear only the project area (set all cell values to 0), but do not affect pixels
     that are "outside of project area" (i.e., have values of -1 and -2).
-    (see [Landscape setup](http://iland-model.org/Landscape+setup))
+    (see [Landscape setup](https://iland-model.org/Landscape+setup))
 
     @method clearProjectArea
     */
 
     /**
     "Paint" a shape on the Map with an ID `stand_id`.
-    The `paint_function` is a valid iLand [Expression](http://iland-model.org/Expression)
+    The `paint_function` is a valid iLand [Expression](https://iland-model.org/Expression)
     (with the paramters: `x`and `y` as *metric* coordinates). All pixels for which `paint_function`
     evaluates to `true` are set to `stand_id`, all other pixels are not modified.
 

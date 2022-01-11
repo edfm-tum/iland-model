@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include <QtSql>
 #include "phenology.h"
 /// current climate variables of a day. @sa Climate.
-/// http://iland-model.org/ClimateData
+/// https://iland-model.org/ClimateData
 struct ClimateDay
 {
     int year; // year

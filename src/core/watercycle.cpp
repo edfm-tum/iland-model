@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@
   transpiration from the canopy.
   The WaterCycle covers the "soil water bucket". Main entry function is run().
 
-  See http://iland-model.org/water+cycle
+  See https://iland-model.org/water+cycle
   */
 
 // static
@@ -143,7 +143,7 @@ void WaterCycle::setup(const ResourceUnit *ru)
 
 /** function to calculate the water pressure [saugspannung] for a given amount of water.
     returns water potential in kPa.
-  see http://iland-model.org/water+cycle#transpiration_and_canopy_conductance */
+  see https://iland-model.org/water+cycle#transpiration_and_canopy_conductance */
 inline double WaterCycle::psiFromHeight(const double mm) const
 {
     // psi_x = psi_ref * ( rho_x / rho_ref) ^ b
@@ -156,7 +156,7 @@ inline double WaterCycle::psiFromHeight(const double mm) const
 
 /// calculate the height of the water column for a given pressure
 /// return water amount in mm
-/// see http://iland-model.org/water+cycle#transpiration_and_canopy_conductance
+/// see https://iland-model.org/water+cycle#transpiration_and_canopy_conductance
 inline double WaterCycle::heightFromPsi(const double psi_kpa) const
 {
     // rho_x = rho_ref * (psi_x / psi_ref)^(1/b)
@@ -215,7 +215,7 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
 
     if (total_lai < Model::settings().laiThresholdForClosedStands) {
         // following Landsberg and Waring: when LAI is < 3 (default for laiThresholdForClosedStands), a linear "ramp" from 0 to 3 is assumed
-        // http://iland-model.org/water+cycle#transpiration_and_canopy_conductance
+        // https://iland-model.org/water+cycle#transpiration_and_canopy_conductance
         mCanopyConductance *= total_lai / Model::settings().laiThresholdForClosedStands;
     }
     if (logLevelInfo()) qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
@@ -285,7 +285,7 @@ inline double WaterCycle::calculateSoilAtmosphereResponse(RUSpeciesShares &speci
 
 /// Main Water Cycle function. This function triggers all water related tasks for
 /// one simulation year.
-/// @sa http://iland-model.org/water+cycle
+/// @sa https://iland-model.org/water+cycle
 void WaterCycle::run()
 {
     // necessary?
@@ -397,7 +397,7 @@ void WaterCycle::run()
                 if (mPermafrost)
                     mPermafrost->debugData(out);
                 else
-                    out << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
+                    out << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0;
 
                 //special sanity check:
                 if (prec_to_soil>0. && mCanopy.interception()>0.)
@@ -414,6 +414,10 @@ void WaterCycle::run()
     // call external modules
     GlobalSettings::instance()->model()->modules()->calculateWater(mRU, &add_data);
     mLastYear = GlobalSettings::instance()->currentYear();
+
+    // reset deciduous litter counter
+    if (mRU->snag())
+        mRU->snag()->resetDeciduousFoliage();
 
 }
 
@@ -539,7 +543,7 @@ inline double SnowPack::add(const double &preciptitation_mm, const double &tempe
     Calculates the amount of preciptitation that does not reach the ground and
     is stored in the canopy. The approach is adopted from Picus 1.3.
     Returns the amount of precipitation (mm) that surpasses the canopy layer.
-    @sa http://iland-model.org/water+cycle#precipitation_and_interception */
+    @sa https://iland-model.org/water+cycle#precipitation_and_interception */
 double Canopy::flow(const double &preciptitation_mm)
 {
     // sanity checks
@@ -662,7 +666,7 @@ double Canopy::evapotranspiration3PG(const ClimateDay *climate, const double day
         double div_evap = 1. + svp_slope;
         double evap_canopy_potential = (svp_slope*net_rad + defTerm) / div_evap / latent_heat * daylength;
         // reduce the amount of transpiration on a wet day based on the approach of
-        // Wigmosta et al (1994). see http://iland-model.org/water+cycle#transpiration_and_canopy_conductance
+        // Wigmosta et al (1994). see https://iland-model.org/water+cycle#transpiration_and_canopy_conductance
 
         double ratio_T_E = canopy_transpiration / evap_canopy_potential;
         double evap_canopy = qMin(evap_canopy_potential, mInterception);

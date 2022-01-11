@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -226,7 +226,7 @@ private:
     bool mIsSeedYear; ///< true, if current year is a seed year. see also:
     double mNonSeedYearFraction;  ///< fraction of the seed production in non-seed-years
     // regeneration - seed dispersal
-    double mFecundity_m2; ///< "surviving seeds" (cf. Moles et al) per m2, see also http://iland-model.org/fecundity
+    double mFecundity_m2; ///< "surviving seeds" (cf. Moles et al) per m2, see also https://iland-model.org/fecundity
     double mTM_as1; ///< seed dispersal paramaters (treemig)
     double mTM_as2; ///< seed dispersal paramaters (treemig)
     double mTM_ks; ///< seed dispersal paramaters (treemig)

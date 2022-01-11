@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -249,7 +249,7 @@ double Species::allometricFractionStem(const double dbh) const
 /** Aging formula.
    calculates a relative "age" by combining a height- and an age-related term using a harmonic mean,
    and feeding this into the Landsberg and Waring formula.
-   see http://iland-model.org/primary+production#respiration_and_aging
+   see https://iland-model.org/primary+production#respiration_and_aging
    @param useAge set to true if "real" tree age is available. If false, only the tree height is used.
   */
 double Species::aging(const float height, const int age) const

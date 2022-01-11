@@ -17,8 +17,8 @@ The trees in a list (loaded by `load()`) may be manipulated using functions such
 Trees present in the tree list may be harvested or simply cut down. Main functions are `kill()`, `harvest()`. If `simulate` is true, harvested/killed trees
 are only marked for removal. At a later point in time, all marked trees can be removed using `removeMarkedTrees()`.
 ### general notes
-The tree list heavily used the expression engine of iLand http://iland-model.org/Expression. Expressions are provided as strings to the
-respective Javascript functions (e.g.,`filter`) and evaluated by iLand. Note that tree species names are treated as a special case (http://iland-model.org/Expression#Constants).
+The tree list heavily used the expression engine of iLand https://iland-model.org/Expression. Expressions are provided as strings to the
+respective Javascript functions (e.g.,`filter`) and evaluated by iLand. Note that tree species names are treated as a special case (https://iland-model.org/Expression#Constants).
 
 
 ## Examples
@@ -234,8 +234,8 @@ See also:{{#crossLink "TreeList/mean:method"}}{{/crossLink}}
 **/
 
 /**
-`killSaplings()` provides an access to the cohorts of the sapling layer in iLand http://iland-model.org/sapling+growth+and+competition .
-http://iland-model.org/sapling+variables provides a list of available variables.
+`killSaplings()` provides an access to the cohorts of the sapling layer in iLand https://iland-model.org/sapling+growth+and+competition .
+https://iland-model.org/sapling+variables provides a list of available variables.
 The function removes all sapling cohorts for which `expr` returns `true`.
 
 Note: The interface to saplings currrently much simpler compared to the interface for trees >4m.

@@ -174,7 +174,7 @@ Grid = {
 
     /**
     Apply a function on the values of the grid, thus modifiying the grid (see the copy() function).
-    The function is given as a string representing an [Expression](http://iland-model.org/Expression) and is evaluated for each cell of the grid.
+    The function is given as a string representing an [Expression](https://iland-model.org/Expression) and is evaluated for each cell of the grid.
     In the expression, the current value of the grid cell can be accessed using the {{#crossLink "Grid/name:property"}}{{/crossLink}}.
 
     See also: {{#crossLink "Grid/copy:method"}}{{/crossLink}}, {{#crossLink "Grid/combine:method"}}{{/crossLink}}
@@ -192,7 +192,7 @@ Grid = {
 
     /**
     Combine multiple grids, and set the value of the internal grid to the result of `expression` for each cell. The function expects
-    an object that includes named source grids. The `expression` is an [iLand Expression](http://iland-model.org/Expression),
+    an object that includes named source grids. The `expression` is an [iLand Expression](https://iland-model.org/Expression),
     and you can refer to the grids in `grid_objects` with the respective name of the grid. Note that the function
     alters the data of the grid.
 

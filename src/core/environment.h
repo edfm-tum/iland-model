@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ class GisGrid;
 /** Environment specifes the geographical properties of the landscape.
     This is achieved by specifying (user defined) values (e.g. soil depth) for each resource unit.
     Resource units are specified by x/y indices.
-    see http://iland-model.org/initialize+the+landscape */
+    see https://iland-model.org/initialize+the+landscape */
 class Environment
 {
 public:

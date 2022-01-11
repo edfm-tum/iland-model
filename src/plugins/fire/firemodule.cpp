@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -39,8 +39,8 @@
 /** @defgroup firemodule iLand firemodule
   The fire module is a disturbance module within the iLand framework.
 
-  See http://iland-model.org/wildfire for the science behind the module,
-  and http://iland-model.org/fire+module for the implementation/ using side.
+  See https://iland-model.org/wildfire for the science behind the module,
+  and https://iland-model.org/fire+module for the implementation/ using side.
  */
 
 //*********************************************************************************
@@ -231,7 +231,7 @@ void FireModule::run()
 
 
 /** perform the calculation of the KBDI drought index.
-    see http://iland-model.org/wildfire#fire_ignition
+    see https://iland-model.org/wildfire#fire_ignition
   */
 void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const WaterCycleData *water_data)
 {
@@ -275,7 +275,7 @@ void FireModule::calculateDroughtIndex(const ResourceUnit *resource_unit, const 
 
 
 /** evaluates the probability that a fire starts for each cell (20x20m)
-    see http://iland-model.org/wildfire#fire_ignition
+    see https://iland-model.org/wildfire#fire_ignition
 
 */
 double FireModule::ignition(bool only_ignite)
@@ -652,7 +652,7 @@ void FireModule::probabilisticSpread(const QPoint &start_point, QRect burn_in, i
         }
 
         // update the cells to burn by factoring in different fire sizes within the fire-perimeter
-        // see http://iland-model.org/wildfire+spread
+        // see https://iland-model.org/wildfire+spread
 
         // weighted fire size = sum(fire_size_per_cell) / cells_burned
         fire_size_target = cum_fire_size / static_cast<double>(cells_burned);
@@ -843,7 +843,7 @@ double FireModule::burnInIgnition(const double x_m, const double y_m, const doub
 
 }
 
-/** burning of a single 20x20m pixel. see http://iland-model.org/wildfire.
+/** burning of a single 20x20m pixel. see https://iland-model.org/wildfire.
    The function is called from the fire spread function.
    @return boolean true, if any trees were burned on the pixel
 

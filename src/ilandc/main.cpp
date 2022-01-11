@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     printf("iLand console (%s - #%s)\n", currentVersion(), svnRevision());
     printf("This is the console version of iLand, the individual based\nlandscape and disturbance forest model.\n");
-    printf("More at: http://iland-model.org \n");
+    printf("More at: https://iland-model.org \n");
     printf("(c) Werner Rammer, Rupert Seidl, 2009-2020 \n");
     printf("version: %s\n", verboseVersion().toLocal8Bit().data());
     printf("****************************************\n\n");
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         printf("Options:\n");
         printf("you specify a number key=value pairs, and *after* loading of the project\n");
         printf("the 'key' settings are set to 'value'. E.g.: ilandc project.xml 100 output.stand.enabled=false output.stand.landscape=false\n");
-        printf("See also http://iland-model.org/iLand+console\n.");
+        printf("See also https://iland-model.org/iLand+console\n.");
         return 0;
     }
     ConsoleShell iland_shell;
