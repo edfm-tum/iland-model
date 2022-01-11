@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -102,6 +102,10 @@ public:
 
     /// deciduous foliage litter (kg/ha) from the previous year
     double freshDeciduousFoliage() const { return mDeciduousFoliageLitter; }
+    /// set deciduous foliage litter to 0 - this is not ideal, but timing is complicated
+    /// as litter input comes from both trees and saplings, and the only "user" at the moment
+    /// is permafrost, which is executed between both processes
+    void resetDeciduousFoliage() { mDeciduousFoliageLitter = 0.; }
     // actions
     /// add for a tree with diameter
     void addTurnoverLitter(const Species *species, const double litter_foliage, const double litter_fineroot);

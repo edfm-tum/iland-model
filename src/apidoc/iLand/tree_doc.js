@@ -76,7 +76,7 @@ The y-coordinate of the tree, in m.
 */
 
 /**
-`flags` is a binary encoded set of tree flags (see http://iland-model.org/outputs#Tree_Removed_Output for a list of all flags).
+`flags` is a binary encoded set of tree flags (see https://iland-model.org/outputs#Tree_Removed_Output for a list of all flags).
 
 @property flags
 @type int

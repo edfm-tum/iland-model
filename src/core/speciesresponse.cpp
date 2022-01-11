@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -115,7 +115,7 @@ void SpeciesResponse::calculate()
             // environmental responses for the day
             // combine responses
             min_resp = qMin(qMin(vpd_resp, temp_resp), water_resp);
-            // calculate utilizable radiation, Eq. 4, http://iland-model.org/primary+production
+            // calculate utilizable radiation, Eq. 4, https://iland-model.org/primary+production
             utilizeable_radiation = day->radiation * min_resp;
 
         } else {

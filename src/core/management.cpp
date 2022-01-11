@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,7 @@
   The actual iLand management is based on Javascript functions. This class provides
   the frame for executing the javascript as well as the functions that are called by scripts and
   that really do the work.
-  See http://iland-model.org/iLand+scripting, http://iland-model.org/Object+Management for management Javascript API.
+  See https://iland-model.org/iLand+scripting, https://iland-model.org/Object+Management for management Javascript API.
   */
 
 

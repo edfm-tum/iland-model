@@ -223,8 +223,11 @@ void Permafrost::run(const ClimateDay *clim_day)
 
 void Permafrost::debugData(DebugList &out)
 {
+    // permafrost
     out << mTop << mBottom << mFreezeBack << mResult.delta_mm << mResult.delta_soil
         <<  thermalConductivity(false) << mCurrentSoilFrozen << mCurrentWaterFrozen << mWC->mFieldCapacity;
+    // moss
+    out << stats.mossFLight << stats.mossFDecid << stats.mossFCanopy;
 }
 
 
@@ -250,6 +253,8 @@ void Permafrost::setupMossLayer()
 void Permafrost::calculateMoss()
 {
     // See xyz supplementary material for details
+    if (mWC->mRU->id() == 58664)
+        qDebug() << " debug debug debuk";
 
     // 1) Available Light
 
@@ -308,6 +313,11 @@ void Permafrost::calculateMoss()
                             mosspar.r_decomp);
         mWC->mRU->snag()->addBiomassToSoil(CNPool(), litter_input);
     }
+
+     // save some stats for moss
+     stats.mossFLight = f_light;
+     stats.mossFDecid = f_deciduous;
+     stats.mossFCanopy = f_dryout;
 }
 
 void Permafrost::setupThermalConductivity()

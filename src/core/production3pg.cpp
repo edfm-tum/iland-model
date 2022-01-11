@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@ Production3PG::Production3PG()
 
 /**
   This is based on the utilizable photosynthetic active radiation.
-  @sa http://iland-model.org/primary+production
+  @sa https://iland-model.org/primary+production
   The resulting radiation is MJ/m2       */
 inline double Production3PG::calculateUtilizablePAR(const int month) const
 {
@@ -90,7 +90,7 @@ void Production3PG::clear()
 /** calculate the stand-level NPP
   @ingroup core
   Standlevel (i.e ResourceUnit-level) production (NPP) following the 3PG approach from Landsberg and Waring.
-  @sa http://iland-model.org/primary+production */
+  @sa https://iland-model.org/primary+production */
 double Production3PG::calculate()
 {
     Q_ASSERT(mResponse!=0);
@@ -108,7 +108,7 @@ double Production3PG::calculate()
         year_raw_gpp += mGPP[i]; // kg Biomass/m2
     }
 
-    // calculate f_env,yr: see http://iland-model.org/sapling+growth+and+competition
+    // calculate f_env,yr: see https://iland-model.org/sapling+growth+and+competition
     double f_sum = 0.;
     for (int i=0;i<12;i++)
         f_sum += mGPP[i] / gC_to_kg_biomass; // == uAPar * epsilon_eff

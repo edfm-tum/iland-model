@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -285,7 +285,8 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                                            << "content" << "psi_kpa" << "excess_mm" << "snow_height" << "lai_effective"
                                               // permafrost details
                                            << "pftop" << "pfbottom" << "pffreezeback" << "delta_mm" << "delta_soil" << "thermalConductivity"
-                                           << "soilfrozen" << "waterfrozen" << "current_capacity";
+                                           << "soilfrozen" << "waterfrozen" << "current_capacity"
+                                           << "moss_fLight" << "moss_fDecid" << "moss_fCanopy";
 
     case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
                                                << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";

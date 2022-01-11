@@ -36,7 +36,7 @@ Factory = {
     @return {object} A Javascript {{#crossLink "Grid"}}{{/crossLink}} object
     */
     /**
-    Create an instance of a ClimateConverter (see http://iland-model.org/Object+ClimateConverter).
+    Create an instance of a ClimateConverter (see https://iland-model.org/Object+ClimateConverter).
 
     @method newClimateConverter
     @return {object} A Javascript ClimateConverter object

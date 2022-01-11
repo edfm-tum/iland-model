@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -24,9 +24,9 @@
 #include "grid.h"
 /** Stamp is the basic class for the LIP field of a individual tree.
     @ingroup core
-    In iLand jargon, a Stamp is a LIP (light influence pattern). These patterns are pre-calculated using the "LightRoom" (http://iland-model.org/Lightroom)
+    In iLand jargon, a Stamp is a LIP (light influence pattern). These patterns are pre-calculated using the "LightRoom" (https://iland-model.org/Lightroom)
     and stand for a field of influence (w.r.t. light) of a individual tree of a given size and species.
-    see http://iland-model.org/competition+for+light
+    see https://iland-model.org/competition+for+light
 */
 class Stamp
 {

@@ -29,8 +29,8 @@ to alter the state of the saplings (tree cohorts < 4m height).
 
 Expressions and tree variables
 ------------------------------
-Many function of the `management` object allow to specify a filter ([Expression](http://iland-model.org/Expression)). In the context of
-management, tree variables can be used within filter expressions: see http://iland-model.org/tree+variables
+Many function of the `management` object allow to specify a filter ([Expression](https://iland-model.org/Expression)). In the context of
+management, tree variables can be used within filter expressions: see https://iland-model.org/tree+variables
 
 Tree species can be included in Expressions by using the short name as is; internally, the species (identity) is
 a integer index of the species, and species short names (such as 'piab', 'fasy', or 'pico') are used as placeholders.
@@ -134,7 +134,7 @@ Load all trees that are located on grid pixels with the value `standID` on the g
 
 /**
 Sort the trees in the internal list in ascending order according to a criterion given
-by `expression` (a valid [iLand Expression](http://iland-model.org/Expression)).
+by `expression` (a valid [iLand Expression](https://iland-model.org/Expression)).
 
 See also: {{#crossLink "Management/percentile:method"}}{{/crossLink}}
 
@@ -145,7 +145,7 @@ See also: {{#crossLink "Management/percentile:method"}}{{/crossLink}}
     management.sort('-dbh'); // to sort in descending order, reverse the sign of the expression
 */
 /**
-Apply a filter `expression` on the list of trees (`expression`is a valid [iLand Expression](http://iland-model.org/Expression))
+Apply a filter `expression` on the list of trees (`expression`is a valid [iLand Expression](https://iland-model.org/Expression))
 and return the number of trees remaining in the lists. After calling this function, the list of
 trees is typically reduced and contains only those trees, who meet the condition in `expression`.
 
@@ -180,7 +180,7 @@ to pre-define a management on individual trees.
 See the example below.
 
 
-See also: {{#crossLink "Management/filter:method"}}{{/crossLink}}, http://iland-model.org/initialize+trees
+See also: {{#crossLink "Management/filter:method"}}{{/crossLink}}, https://iland-model.org/initialize+trees
 
 @method filterIdList
 @param {array} list A list of unique tree IDs.

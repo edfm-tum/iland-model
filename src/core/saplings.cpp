@@ -1,6 +1,6 @@
 /********************************************************************************************
 **    iLand - an individual based forest landscape and disturbance model
-**    http://iland-model.org
+**    https://iland-model.org
 **    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
 **
 **    This program is free software: you can redistribute it and/or modify
@@ -91,7 +91,7 @@ void Saplings::calculateInitialStatistics(const ResourceUnit *ru)
 }
 
 /// establishment of saplings from seeds
-/// see http://iland-model.org/seed+kernel+and+seed+distribution and http://iland-model.org/establishment
+/// see https://iland-model.org/seed+kernel+and+seed+distribution and https://iland-model.org/establishment
 void Saplings::establishment(const ResourceUnit *ru)
 {
     FloatGrid *lif_grid = GlobalSettings::instance()->model()->grid();
