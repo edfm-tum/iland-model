@@ -22,6 +22,7 @@ public:
     Permafrost();
     ~Permafrost();
     void setup(WaterCycle *wc);
+    void setFromSnapshot(double moss_biomss);
 
     //const SStats &stats() const { return stats; }
 

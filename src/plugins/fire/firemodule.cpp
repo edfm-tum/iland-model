@@ -986,7 +986,7 @@ void FireModule::afterFire()
     for (FireRUData *fds = mRUGrid.begin(); fds!=mRUGrid.end(); ++fds) {
         fds->fireRUStats.calculate(mFireId, year);
         if (fds->fireRUStats.fire_id == mFireId && fds->fireRUStats.n_cells>0) {
-            // on this resource unit really a fire happened.
+            // a fire happened on this resource unit,
             // so we need to update snags/soil pools
             if (!mOnlyFireSimulation) {
                 //ResourceUnit *ru = GlobalSettings::instance()->model()->ru(ru_idx);
