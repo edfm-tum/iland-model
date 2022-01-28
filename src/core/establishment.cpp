@@ -143,7 +143,7 @@ double Establishment::calculateSOLDepthLimitation()
         return 1.; // no effect for the current species
 
     if (!mRUS->ru()->waterCycle()->permafrost())
-        return 1.; // no limitation of permafrost module is disabled
+        return 1.; // no limitation if permafrost module is disabled
 
     double depth = mRUS->ru()->waterCycle()->permafrost()->mossLayerThickness() +
             mRUS->ru()->waterCycle()->permafrost()->SOLLayerThickness();

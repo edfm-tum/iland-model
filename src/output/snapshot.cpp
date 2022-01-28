@@ -28,6 +28,7 @@
 #include "saplings.h"
 #include "debugtimer.h"
 #include "watercycle.h"
+#include "permafrost.h"
 #include "expressionwrapper.h"
 #include "helper.h"
 #include "gisgrid.h"
@@ -278,7 +279,9 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
             // * add a primary key for RUindex, and then use INSERT OR REPLACE statements
             // * to overwrite the rows on subsequent saves.
             q.exec("drop table soil");
-            q.exec("create table soil (RUindex integer primary key, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLAGFrac real, YLP real, YRC real, YRN real, YRAGFrac real, YRP real, SOMC real, SOMN real, WaterContent, SnowPack real)");
+            q.exec("create table soil (RUindex integer primary key, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, " \
+                                      "YLC real, YLN real, YLAGFrac real, YLP real, YRC real, YRN real, YRAGFrac real, YRP real, SOMC real, SOMN real, WaterContent, " \
+                                      "SnowPack real, MossBiomass real)");
             // snag
             q.exec("drop table snag");
             q.exec("create table snag(RUIndex integer primary key, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
@@ -706,6 +709,7 @@ void Snapshot::saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q)
     q.addBindValue(s->mSOM.N);
     q.addBindValue(ru->waterCycle()->currentContent());
     q.addBindValue(ru->waterCycle()->currentSnowPack());
+    q.addBindValue(ru->waterCycle()->permafrost() ? ru->waterCycle()->permafrost()->mossBiomass() : 0. );
     if (!q.exec()) {
         throw IException(QString("Snapshot::saveSoil: execute:") + q.lastError().text());
     }
@@ -719,7 +723,7 @@ void Snapshot::loadSoil(QSqlDatabase db)
         db=QSqlDatabase::database("snapshot");
 
     QSqlQuery q(db);
-    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack from soil");
+    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack, MossBiomass from soil");
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
@@ -751,6 +755,8 @@ void Snapshot::loadSoil(QSqlDatabase db)
         s->mSOM.C = q.value(17).toDouble();
         s->mSOM.N = q.value(18).toDouble();
         const_cast<WaterCycle*>(ru->waterCycle())->setContent(q.value(19).toDouble(), q.value(20).toDouble());
+        if (ru->waterCycle()->permafrost())
+            const_cast<Water::Permafrost*>(ru->waterCycle()->permafrost())->setFromSnapshot(q.value(21).toDouble());
 
         if (++n % 1000 == 0) {
             qDebug() << n << "soil units loaded...";

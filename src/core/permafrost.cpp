@@ -37,9 +37,9 @@ void Permafrost::setup(WaterCycle *wc)
 
     par.init();
     par.groundBaseDepth = xml.valueDouble("model.settings.permafrost.groundBaseDepth", 5.);
-    par.lambdaSnow = xml.valueDouble("model.settings.permafrost.lambdaSnow", 0.);
+    par.lambdaSnow = xml.valueDouble("model.settings.permafrost.lambdaSnow", 0.3);
     par.lambdaOrganicLayer = xml.valueDouble("model.settings.permafrost.lambdaOrganicLayer", 0.);
-    par.organicLayerDensity = xml.valueDouble("model.settings.permafrost.organicLayerDensity", 60.);
+    par.organicLayerDensity = xml.valueDouble("model.settings.permafrost.organicLayerDensity", 50.);
 
     par.maxFreezeThawPerDay = xml.valueDouble("model.settings.permafrost.maxFreezeThawPerDay", 10.);
     if (par.lambdaSnow * par.lambdaOrganicLayer == 0.)
@@ -94,6 +94,11 @@ void Permafrost::setup(WaterCycle *wc)
 
     stats.reset();
 
+}
+
+void Permafrost::setFromSnapshot(double moss_biomass)
+{
+    mMossBiomass = moss_biomass;
 }
 
 void Permafrost::newYear()
@@ -238,7 +243,7 @@ void Permafrost::setupMossLayer()
     // state variables per RU
     mMossBiomass = xml.valueDouble("model.settings.permafrost.moss.biomass", 0.05); // kg/m2
     // paramters
-    mosspar.light_k = xml.valueDouble("model.settings.permafrost.moss.light_k", 0.5);
+    mosspar.light_k = xml.valueDouble("model.settings.permafrost.moss.light_k", 0.7);
     mosspar.light_comp = xml.valueDouble("model.settings.permafrost.moss.light_comp", 0.01);
     mosspar.light_sat = xml.valueDouble("model.settings.permafrost.moss.light_sat", 0.05);
     mosspar.respiration_q = xml.valueDouble("model.settings.permafrost.moss.respiration_q", 0.12);
@@ -252,9 +257,9 @@ void Permafrost::setupMossLayer()
 
 void Permafrost::calculateMoss()
 {
-    // See xyz supplementary material for details
-    if (mWC->mRU->id() == 58664)
-        qDebug() << " debug debug debuk";
+    // See supplementary material S1 for details
+    //if (mWC->mRU->id() == 58664)
+    //    qDebug() << " debug debug debuk";
 
     // 1) Available Light
 
@@ -272,7 +277,7 @@ void Permafrost::calculateMoss()
     double al = exp(-0.25 * LAI_canopy);
     double f_dryout = 1.;
 
-    if (al <= 0.5)
+    if (al > 0.5)
         f_dryout = 1.25 - al*al;
 
     // (2.3) Effect of deciduous litter
@@ -285,7 +290,7 @@ void Permafrost::calculateMoss()
 
 
     // (3) Total productivity
-    // Assimilation: modifiers reduce the potential productivity of 0.3 kg/m2/yr
+    // Assimilation (kg/m2): modifiers reduce the potential productivity of 0.3 kg/m2/yr
     double moss_assimilation = mosspar.AMax * f_light * f_dryout *  f_deciduous;
 
     // producitvity [kg / kg biomass/yr], assimilated carbon for reproduction reduced
@@ -343,9 +348,10 @@ void Permafrost::setupThermalConductivity()
     const double k_ice = 2.29; // W/m/K ice
 
     // Conductivity of solids (Ksol): use an equation from CLM3 (https://opensky.ucar.edu/islandora/object/technotes:393)
-    // scale between 8.8 (quartz) and 2.92 (clay)
+    // scale between 8.8 (quartz) and 2.92 (clay), Eq 10
     double k_sol = ( 8.8*pct_sand+ 2.92*pct_clay ) / (pct_sand + pct_clay);
 
+    // Eq 8/9
     mKsat = pow( k_sol, (1.-VWCsat)) * pow( k_water, VWCsat);
     mKice = pow( k_sol, (1.-VWCsat)) * pow( k_ice, VWCsat);
 
@@ -358,15 +364,16 @@ double Permafrost::thermalConductivity(bool from_below) const
 //    static int bug_counter = 0;
 //    if (mWC->fieldCapacity()>0 && mWC->fieldCapacity() < 0.0000001)
 //        ++bug_counter;
+
     // assume full water saturation in the soil for energy flux from below
     if (!from_below && mWC->fieldCapacity() > 0.001)
         rel_water_content = limit(mWC->currentContent() / mWC->fieldCapacity(), 0.001, 1.);
     else
         rel_water_content = 1.;
 
-    // Eq 5.25
+    // Eq 4
     double k_e = mSoilIsCoarse ? 1.0 + 0.7 * log10(rel_water_content) : 1.0 + log10(rel_water_content);
-    // Eq 5.24
+    // Eq 4
     double k = mKdry + (mKsat - mKdry) * k_e;
     return k;
 }
