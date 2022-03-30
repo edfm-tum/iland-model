@@ -3,7 +3,7 @@
 
 BITE (the _BIotic disTurbance Engine_), is a general model to simulate biotic disturbances in forest ecosystems. BITE is a modeling framework that is general enough to simulate a wide range of biotic disturbance agents, from fungi to large mammals. The framework is also simple and modular (in order to also be applicable in situations where knowledge about an agent is limited, as is the case with new invaders). BITE allows the quantification of the impacts of emerging pests and pathogens on forests in time and space.
 
-The current implementation of BITE is coupled with the forest landscape simulation model [iLand](http://iland.boku.ac.at). See [iLand BITE](http://iland.boku.ac.at/BITE).
+The current implementation of BITE is coupled with the forest landscape simulation model [iLand](https://iland-model.org). See [iLand BITE](https://iland-model.org/BITE).
 
 
 An important design strategy for achieving general applicability across a wide range of biotic disturbance agents is modularity. BITE models biotic disturbance agents in six distinct modules, i) potential habitat, ii) introduction, iii) dispersal, iv) colonization, v) population dynamics, and vi) impact (see figure below). Each module represents an important aspect of agent biology – such as agent dispersal – and provides specific options in the parameterization of a specific agent (e.g. a different dispersal kernel functions) to accurately characterize agent behavior. The level of detail implemented in each module can vary from simple to very complex, and each module can potentially use state variables such as agent biomass in the previous time step, vegetation structure and composition, and environmental conditions (Table 1). Modules can also be bypassed for selected agents if they are not applicable or if not enough information for their parametrization is available. 
@@ -14,7 +14,7 @@ _The overall structure of the BITE framework for simulating biotic disturbance a
 
 ## Implementation
 
-The BITE model is an modelling software component that simulates biotic disturbance agents. The core of BITE is implemented in C++ and relies on the [Qt-Library](https://qt.io), particularly on the integrated JavaScript engine. The C++ core provides an application programming interface (API) to JavaScript, a higher-level scripting language. By making use of the API, agent behavior is defined in the scripting environment by the user. Here, BITE is coupled with the individual-based forest landscape model iLand (http://iland.boku.ac.at). 
+The BITE model is an modelling software component that simulates biotic disturbance agents. The core of BITE is implemented in C++ and relies on the [Qt-Library](https://qt.io), particularly on the integrated JavaScript engine. The C++ core provides an application programming interface (API) to JavaScript, a higher-level scripting language. By making use of the API, agent behavior is defined in the scripting environment by the user. Here, BITE is coupled with the individual-based forest landscape model iLand (https://iland-model.org). 
 
 In this coupled version, vegetation (i.e., vegetation on a given cell) and environmental data (e.g., current climate data) are retrieved from iLand, and agent impacts (e.g., agent-induced mortality of trees) are reported back and executed in the landscape model. Thus, the interactions of different biotic disturbance agents with the vegetation are simulated explicitly on the landscape level. 
 

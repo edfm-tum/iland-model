@@ -33,7 +33,7 @@ kernel value of a grid cell
 
 ## Properties
 
-* ### `grid` [Grid](http://iland.boku.ac.at/apidoc/classes/Grid.html)
+* ### `grid` [Grid](https://iland-model.org/apidoc/classes/Grid.html)
 The internal dispersal grid (see also `dispersalGrid` variable). 
 
 Note that the `grid` can be manipulated programmatically; for example, to add active
