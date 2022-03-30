@@ -22,7 +22,7 @@ public:
     Permafrost();
     ~Permafrost();
     void setup(WaterCycle *wc);
-    void setFromSnapshot(double moss_biomss);
+    void setFromSnapshot(double moss_biomss, double soil_temp, double depth_frozen, double water_frozen);
 
     //const SStats &stats() const { return stats; }
 
@@ -32,18 +32,25 @@ public:
     /// run the permafrost calculations for a given resource unit and day
     void run(const ClimateDay *clim_day);
 
+    /// burn some of the life moss (kg / ha)
+    void burnMoss(const double biomass_kg) { mMossBiomass = mMossBiomass - biomass_kg/cRUArea;
+                                           mMossBiomass = std::max(mMossBiomass, cMinMossBiomass); }
     /// add permafrost related debug output to the list 'out'
     void debugData(DebugList &out);
 
+    // access to values
     /// thickness of the moss layer in meters
     double mossLayerThickness() const { return mMossBiomass / mosspar.bulk_density; } // kg/m2  / rho [kg/m3] = m
     /// thickness of the soil organic layer (in meters)
     double SOLLayerThickness() const {return mSOLDepth; }
     /// moss biomass (kg/m2)
     double mossBiomass() const { return mMossBiomass; }
-    /// burn some of the life moss (kg / ha)
-    void burnMoss(const double biomass_kg) { mMossBiomass = mMossBiomass - biomass_kg/cRUArea;
-                                           mMossBiomass = std::max(mMossBiomass, cMinMossBiomass); }
+    /// temperature deep below the surface (updated annually)
+    double groundBaseTemperature() const { return mGroundBaseTemperature; }
+    /// depth (m) at where below the soil is frozen (at the end of the year)
+    double depthFrozen() const { return mCurrentSoilFrozen; }
+    /// amount of water (mm) that is trapped in ice (at the end of the year)
+    double waterFrozen() const { return mCurrentWaterFrozen; }
 
 private:
     const double cMinMossBiomass = 0.0001; // kg/m2

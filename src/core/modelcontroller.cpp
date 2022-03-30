@@ -162,6 +162,7 @@ void ModelController::create()
     if (!canCreate())
         return;
     emit bufferLogs(true);
+    const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).resetWarnings();
     mIsStartingUp = true;
     mIsBusy = true;
     qDebug() << "**************************************************";
@@ -200,6 +201,7 @@ void ModelController::create()
     }
     emit bufferLogs(false);
 
+    const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).printSuppressedWarnings();
     qDebug() << "Model created.";
     mIsStartingUp = false;
     mIsBusy = false;
