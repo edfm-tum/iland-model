@@ -48,6 +48,8 @@ public:
     bool loadStandCarbon();
 private:
     bool openDatabase(const QString &file_name, const bool read);
+    // analyze which columns are in the snapshot db
+    void checkContent(QString dbname);
     bool openStandDatabase(const QString &file_name, bool read);
     void saveTrees();
     void saveSoil();
@@ -63,6 +65,10 @@ private:
     void loadSaplings();
     void loadSaplingsOld();
     QHash<int, ResourceUnit* > mRUHash;
+    struct sContent {
+        sContent(): permafrost(false) {}
+        bool permafrost;
+    } dbcontent;
 };
 
 #endif // SNAPSHOT_H

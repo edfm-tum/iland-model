@@ -95,6 +95,24 @@ void XmlHelper::loadFromFile(const QString &fileName)
     }
 }
 
+void XmlHelper::resetWarnings()
+{
+    mMissingKeys.clear();
+}
+
+void XmlHelper::printSuppressedWarnings()
+{
+    qDebug() << "Settings not found >3x in project file:";
+    qDebug() << "=======================================";
+    QHash<QString, int>::const_iterator i = mMissingKeys.constBegin();
+    while (i != mMissingKeys.constEnd()) {
+        if (i.value()>3)
+            qDebug() << i.key() << ":" << i.value() << "times";
+        ++i;
+    }
+    qDebug() << "=======================================";
+}
+
 /** numeric values of elements in the section <parameter> are stored in a QHash structure for faster access.
     with paramValue() these data can be accessed.
   */
@@ -130,7 +148,7 @@ QString XmlHelper::value(const QString &path, const QString &defaultValue) const
 {
     QDomElement e = node(path);
     if (e.isNull()) {
-        qDebug() << "Warning: xml: node" << path << "is not present.";
+        missedKey(path);
         return defaultValue;
     } else {
         if (e.text().isEmpty())
@@ -143,7 +161,7 @@ bool XmlHelper::valueBool(const QString &path, const bool defaultValue) const
 {
     QDomElement e = node(path);
     if (e.isNull()) {
-        qDebug() << "Warning: xml: node" << path << "is not present.";
+        missedKey(path);
         return defaultValue;
     }
     QString v = e.text();
@@ -156,7 +174,7 @@ double XmlHelper::valueDouble(const QString &path, const double defaultValue) co
 {
     QDomElement e = node(path);
     if (e.isNull()) {
-        qDebug() << "Warning: xml: node" << path << "is not present.";
+        missedKey(path);
         return defaultValue;
     } else {
         if (e.text().isEmpty())
@@ -189,7 +207,7 @@ QDomElement XmlHelper::node(const QString &path) const
         } else {
             int pos = level.indexOf('[');
             level.chop(1); // drop closing bracket
-            int ind = level.right( level.length() - pos -1).toInt();
+            int ind = level.rightRef( level.length() - pos -1).toInt();
             QString name = level.left(pos);
             c = c.firstChildElement(name);
             while (ind>0 && !c.isNull()) {
@@ -223,6 +241,41 @@ bool XmlHelper::setNodeValue(const QString &path, const QString &value)
     return setNodeValue(e,value);
 }
 
+void XmlHelper::missedKey(const QString &keyname) const
+{
+    // make the hash non const (for updating it)
+    QHash<QString, int> &keys = const_cast<QHash<QString, int>& >(mMissingKeys);
+
+    QString key = fullName(keyname);
+    keys[key]++;
+
+    int n=keys[key];
+    if (n<3)
+        qDebug() << "Warning: xml: node" << key << "is not present.";
+    if (n==3)
+        qDebug() << "Warning: xml: node" << key << "is not present (3rd occurrence, supressed in the future).";
+}
+
+QString XmlHelper::fullName(const QString &keyname) const
+{
+    QStringList elem = keyname.split('.', QString::SkipEmptyParts);
+
+    if (keyname.count()==0 && keyname.at(0) != '.')
+        return keyname;
+
+    // we have a relative path
+    QString result = keyname;
+    result.remove(0,1); // remove leading "."
+
+    QDomNode c= mCurrentTop;
+    // loop over parents until we reach the top-node ("project")
+    while (!c.isNull() && c.nodeName()!="project") {
+        result = c.nodeName() + "." + result;
+        c = c.parentNode();
+    }
+    return result;
+}
+
 // private recursive loop
 void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out)
 {
@@ -249,6 +302,7 @@ void XmlHelper::dump_rec(QDomElement c, QStringList &stack, QStringList &out)
     self = QString("%1: %3").arg(stack.join("."), self);
     out.push_back(self);
 }
+
 
 QStringList XmlHelper::dump(const QString &path, int levels)
 {

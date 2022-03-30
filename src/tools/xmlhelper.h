@@ -30,6 +30,8 @@ public:
    XmlHelper(const QString &fileName) {loadFromFile(fileName);}
    XmlHelper(QDomElement topNode);
    void loadFromFile(const QString &fileName);
+   void resetWarnings();
+   void printSuppressedWarnings();
    // relative top nodes
    QDomElement top() const { return mTopNode;}
    void setCurrentNode(const QString &path) { mCurrentTop = node(path); } ///< sets @p path as the current (relative) node.
@@ -54,10 +56,14 @@ public:
    QStringList dump(const QString &path, int levels=-1);
 private:
    void dump_rec(QDomElement c, QStringList &stack, QStringList &out);
+   void missedKey(const QString &keyname) const;
+   /// retrieve full name (. - notation)
+   QString fullName(const QString &keyname) const;
    QDomDocument mDoc;
    QDomElement mCurrentTop;
    QDomElement mTopNode;
    QHash<const QString, QString> mParamCache;
+   QHash<QString, int> mMissingKeys;
 };
 
 #endif // XMLHELPER_H

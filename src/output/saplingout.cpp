@@ -99,6 +99,7 @@ SaplingDetailsOut::SaplingDetailsOut()
                    "the tree diameter is below the 'minDbh' threshold (cm). " \
                    "You can further specify a 'condition' to limit execution for specific time/ area with the variables 'ru' (resource unit id) and 'year' (the current year).");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
+              << OutputColumn("position", "location of the cell within the resource unit; a number between 0 (lower left corner) and 2499 (upper right corner) (x=index %% 50; y=floor(index / 50) ).", OutInteger)
               << OutputColumn("n_represented", "number of trees that are represented by the cohort (Reineke function).", OutDouble)
               << OutputColumn("dbh", "diameter of the cohort (cm).", OutDouble)
               << OutputColumn("height", "height of the cohort (m).", OutDouble)
@@ -138,7 +139,7 @@ void SaplingDetailsOut::exec()
 
                         double n_repr = species->saplingGrowthParameters().representedStemNumberH(s->saplings[i].height) / static_cast<double>(n_on_px);
 
-                        *this <<  currentYear() << ru->index() << ru->id() << rus->species()->id();
+                        *this <<  currentYear() << ru->index() << ru->id() << rus->species()->id() << px;
                         *this << n_repr << dbh << s->saplings[i].height << s->saplings[i].age;
                         writeRow();
                     }

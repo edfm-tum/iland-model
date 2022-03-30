@@ -96,9 +96,12 @@ void Permafrost::setup(WaterCycle *wc)
 
 }
 
-void Permafrost::setFromSnapshot(double moss_biomass)
+void Permafrost::setFromSnapshot(double moss_biomass, double soil_temp, double depth_frozen, double water_frozen)
 {
     mMossBiomass = moss_biomass;
+    mGroundBaseTemperature = soil_temp;
+    mCurrentSoilFrozen = depth_frozen;
+    mCurrentWaterFrozen = water_frozen;
 }
 
 void Permafrost::newYear()

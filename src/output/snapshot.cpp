@@ -125,7 +125,9 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         q.exec("create table trees (ID integer, RUindex integer, posX integer, posY integer, species text,  age integer, height real, dbh real, leafArea real, opacity real, foliageMass real, woodyMass real, fineRootMass real, coarseRootMass real, NPPReserve real, stressIndex real)");
         // soil
         q.exec("drop table soil");
-        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, YLC real, YLN real, YLAGFrac real, YLP real, YRC real, YRN real, YRAGFrac real, YRP real, SOMC real, SOMN real, WaterContent, SnowPack real)");
+        q.exec("create table soil (RUindex integer, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, " \
+                "YLC real, YLN real, YLAGFrac real, YLP real, YRC real, YRN real, YRAGFrac real, YRP real, SOMC real, SOMN real, " \
+               "WaterContent, SnowPack, MossBiomass real, DeepSoilTemp real, pfDepthFrozen real, pfWaterFrozen real real)");
         // snag
         q.exec("drop table snag");
         q.exec("create table snag(RUIndex integer, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
@@ -137,7 +139,17 @@ bool Snapshot::openDatabase(const QString &file_name, const bool read)
         q.exec("create table saplings (RUindex integer, posx integer, posy integer, species_index integer, age integer, height float, stress_years integer, flags integer)");
         qDebug() << "Snapshot - tables created. Database" << file_name;
     }
+
+    checkContent("snapshot");
     return true;
+}
+
+void Snapshot::checkContent(QString dbname)
+{
+    QSqlDatabase db=QSqlDatabase::database(dbname);
+    QSqlRecord r = db.record("soil");
+    dbcontent.permafrost = r.indexOf("MossBiomass")>=0; // permafrost columns included
+    qDebug() << "Snapshot content: permafrost: " << dbcontent.permafrost;
 }
 
 bool Snapshot::openStandDatabase(const QString &file_name, bool read)
@@ -145,6 +157,7 @@ bool Snapshot::openStandDatabase(const QString &file_name, bool read)
     if (!GlobalSettings::instance()->setupDatabaseConnection("snapshotstand", file_name, read)) {
         throw IException("Snapshot:createDatabase: database could not be created / opened");
     }
+    checkContent("snapshotstand");
     return true;
 
 }
@@ -281,7 +294,7 @@ bool Snapshot::saveStandSnapshot(const int stand_id, const MapGrid *stand_grid, 
             q.exec("drop table soil");
             q.exec("create table soil (RUindex integer primary key, kyl real, kyr real, inLabC real, inLabN real, inLabP real, inRefC real, inRefN real, inRefP real, " \
                                       "YLC real, YLN real, YLAGFrac real, YLP real, YRC real, YRN real, YRAGFrac real, YRP real, SOMC real, SOMN real, WaterContent, " \
-                                      "SnowPack real, MossBiomass real)");
+                                      "SnowPack real, MossBiomass real, DeepSoilTemp real, pfDepthFrozen real, pfWaterFrozen real)");
             // snag
             q.exec("drop table snag");
             q.exec("create table snag(RUIndex integer primary key, climateFactor real, SWD1C real, SWD1N real, SWD2C real, SWD2N real, SWD3C real, SWD3N real, " \
@@ -640,8 +653,8 @@ void Snapshot::saveSoil()
 {
     QSqlDatabase db=QSqlDatabase::database("snapshot");
     QSqlQuery q(db);
-    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack) " \
-                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylag, :ylp, :yrc, :yrn, :yrag, :yrp, :somc, :somn, :wc, :snowpack)")))
+    if (!q.prepare(QString("insert into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack, MossBiomass, DeepSoilTemp, pfDepthFrozen, pfWaterFrozen) " \
+                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylag, :ylp, :yrc, :yrn, :yrag, :yrp, :somc, :somn, :wc, :snowpack, :moss, :pftemp, :pfdepth, :pfwater)")))
         throw IException(QString("Snapshot::saveSoil: prepare:") + q.lastError().text());
 
     int n = 0;
@@ -667,8 +680,8 @@ void Snapshot::saveSoilRU(QList<int> stand_ids, bool ridmode)
 {
     QSqlDatabase db=QSqlDatabase::database("snapshotstand");
     QSqlQuery q(db);
-    if (!q.prepare(QString("insert or replace into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack) " \
-                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylag, :ylp, :yrc, :yrn, :yrag, :yrp, :somc, :somn, :wc, :snowpack)")))
+    if (!q.prepare(QString("insert or replace into soil (RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack, MossBiomass, DeepSoilTemp, pfDepthFrozen, pfWaterFrozen) " \
+                      "values (:idx, :kyl, :kyr, :inLabC, :iLN, :iLP, :iRC, :iRN, :iRP, :ylc, :yln, :ylag, :ylp, :yrc, :yrn, :yrag, :yrp, :somc, :somn, :wc, :snowpack, :moss, :pftemp, :pfdepth, :pfwater)")))
         throw IException(QString("Snapshot::saveSoil: prepare:") + q.lastError().text());
 
     int n = 0;
@@ -709,7 +722,16 @@ void Snapshot::saveSoilCore(ResourceUnit *ru, Soil *s, QSqlQuery &q)
     q.addBindValue(s->mSOM.N);
     q.addBindValue(ru->waterCycle()->currentContent());
     q.addBindValue(ru->waterCycle()->currentSnowPack());
-    q.addBindValue(ru->waterCycle()->permafrost() ? ru->waterCycle()->permafrost()->mossBiomass() : 0. );
+    if (ru->waterCycle()->permafrost()) {
+         q.addBindValue(ru->waterCycle()->permafrost()->mossBiomass());
+         q.addBindValue(ru->waterCycle()->permafrost()->groundBaseTemperature());
+         q.addBindValue(ru->waterCycle()->permafrost()->depthFrozen());
+         q.addBindValue(ru->waterCycle()->permafrost()->waterFrozen());
+    } else {
+        q.addBindValue(0); q.addBindValue(0);
+        q.addBindValue(0); q.addBindValue(0);
+    }
+
     if (!q.exec()) {
         throw IException(QString("Snapshot::saveSoil: execute:") + q.lastError().text());
     }
@@ -723,7 +745,9 @@ void Snapshot::loadSoil(QSqlDatabase db)
         db=QSqlDatabase::database("snapshot");
 
     QSqlQuery q(db);
-    q.exec("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack, MossBiomass from soil");
+    q.exec(QString("select RUindex, kyl, kyr, inLabC, inLabN, inLabP, inRefC, inRefN, inRefP, YLC, YLN, YLAGFrac, YLP, YRC, " \
+           "YRN, YRAGFrac, YRP, SOMC, SOMN, WaterContent, SnowPack %1 from soil")
+           .arg(dbcontent.permafrost ? ", MossBiomass, DeepSoilTemp, pfDepthFrozen, pfWaterFrozen" : ""));
     int ru_index = -1;
     ResourceUnit *ru = 0;
     int n=0;
@@ -755,8 +779,15 @@ void Snapshot::loadSoil(QSqlDatabase db)
         s->mSOM.C = q.value(17).toDouble();
         s->mSOM.N = q.value(18).toDouble();
         const_cast<WaterCycle*>(ru->waterCycle())->setContent(q.value(19).toDouble(), q.value(20).toDouble());
-        if (ru->waterCycle()->permafrost())
-            const_cast<Water::Permafrost*>(ru->waterCycle()->permafrost())->setFromSnapshot(q.value(21).toDouble());
+        if (dbcontent.permafrost && ru->waterCycle()->permafrost()) {
+            Water::Permafrost *pf = const_cast<Water::Permafrost*>(ru->waterCycle()->permafrost());
+            pf->setFromSnapshot(q.value(21).toDouble(),
+                                q.value(22).toDouble(),
+                                q.value(23).toDouble(),
+                                q.value(24).toDouble());
+
+
+        }
 
         if (++n % 1000 == 0) {
             qDebug() << n << "soil units loaded...";
