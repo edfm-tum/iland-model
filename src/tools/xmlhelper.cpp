@@ -102,15 +102,24 @@ void XmlHelper::resetWarnings()
 
 void XmlHelper::printSuppressedWarnings()
 {
-    qDebug() << "Settings not found >3x in project file:";
-    qDebug() << "=======================================";
     QHash<QString, int>::const_iterator i = mMissingKeys.constBegin();
+    int n=0;
+    while (i != mMissingKeys.constEnd()) {
+        if (i.value()>3)
+            n++;
+    }
+    if (n==0)
+        return;
+
+    qDebug() << "Settings not found in project file (more often than 3 times):";
+    qDebug() << "=============================================================";
+    i = mMissingKeys.constBegin();
     while (i != mMissingKeys.constEnd()) {
         if (i.value()>3)
             qDebug() << i.key() << ":" << i.value() << "times";
         ++i;
     }
-    qDebug() << "=======================================";
+
 }
 
 /** numeric values of elements in the section <parameter> are stored in a QHash structure for faster access.

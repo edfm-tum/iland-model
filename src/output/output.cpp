@@ -136,7 +136,7 @@ void Output::openDatabase()
     //creator.exec("delete from " + tableName()); // clear table??? necessary?
 
     if (creator.lastError().isValid()){
-        throw IException(QString("Error creating output: %1").arg( creator.lastError().text()) );
+        throw IException(QString("Error creating output: %1 \n Statement: %2").arg( creator.lastError().text()).arg(sql) );
     }
     insert[insert.length()-1]=')';
     values[values.length()-1]=')';
@@ -145,7 +145,7 @@ void Output::openDatabase()
     mInserter = QSqlQuery(db);
     mInserter.prepare(insert);
     if (mInserter.lastError().isValid()){
-        throw IException(QString("Error creating output: %1").arg( mInserter.lastError().text()) );
+        throw IException(QString("Error creating output: %1 \n Statement: %2").arg( mInserter.lastError().text()).arg(insert) );
     }
     for (int i=0;i<columns().count();i++)
         mInserter.bindValue(i,mRow[i]);

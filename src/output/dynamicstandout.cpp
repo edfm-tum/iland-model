@@ -99,7 +99,7 @@ void DynamicStandOut::setup()
                                           .arg(aggregation).arg(aggList.join(" ")));
 
              QString stripped_field=QString("%1_%2").arg(field, aggregation);
-             stripped_field.replace(QRegExp("[\\[\\]\\,\\(\\)<>=!\\s]"), "_");
+             stripped_field.replace(QRegExp("[\\[\\]\\,\\(\\)<>=!\\-\\+/\\*\\s]"), "_");
              stripped_field.replace("__", "_");
              columns() << OutputColumn(stripped_field, field, OutDouble);
         }

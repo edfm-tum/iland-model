@@ -481,7 +481,10 @@ bool ScriptGlobal::startOutput(QString table_name)
         qWarning() << err;
         return false;
     }
+    try {
     out->setEnabled(true);
+    } catch(const IException &e) { qWarning() << e.message(); }
+
     qDebug() << "started output" << table_name;
     return true;
 }
