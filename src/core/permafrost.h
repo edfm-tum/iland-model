@@ -117,7 +117,6 @@ private:
         double maxThawDepth; ///< maximum depth of thawed soil (m)
         double mossFLight;  ///< value of fLight (-)
         double mossFDecid;  ///< value of fDecid (-)
-        double mossFCanopy; ///< value of fCanopy (-)
     };
     SStats stats;
 

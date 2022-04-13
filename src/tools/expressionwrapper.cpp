@@ -211,7 +211,7 @@ double SaplingWrapper::value(const int variableIndex)
     if (!mSapling)
         return 0.;
     switch (variableIndex - baseVarListCount) {
-    case 0: return mSapling->species_index;
+    case 0: return mSapling->species_index; // Note: this is the numeric value that is also used for the constant species names in expressions!
     case 1: return static_cast<double>(mSapling->height);
     case 2: return mSapling->age;
     case 3: return mSapling->resourceUnitSpecies(mRU)->species()->saplingGrowthParameters().representedStemNumberH(mSapling->height);
