@@ -286,7 +286,7 @@ QStringList GlobalSettings::debugListCaptions(const DebugOutputs dbg)
                                               // permafrost details
                                            << "pftop" << "pfbottom" << "pffreezeback" << "delta_mm" << "delta_soil" << "thermalConductivity"
                                            << "soilfrozen" << "waterfrozen" << "current_capacity"
-                                           << "moss_fLight" << "moss_fDecid" << "moss_fCanopy";
+                                           << "moss_fLight" << "moss_fDecid";
 
     case dDailyResponses: return QStringList() << "id" << "type" << "year" << "species" << "date" << "RU_index" << "rid"
                                                << "waterResponse" << "tempResponse" << "VpdResponse" << "Radiation of day" << "util.Radiation";

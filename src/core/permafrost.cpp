@@ -235,7 +235,7 @@ void Permafrost::debugData(DebugList &out)
     out << mTop << mBottom << mFreezeBack << mResult.delta_mm << mResult.delta_soil
         <<  thermalConductivity(false) << mCurrentSoilFrozen << mCurrentWaterFrozen << mWC->mFieldCapacity;
     // moss
-    out << stats.mossFLight << stats.mossFDecid << stats.mossFCanopy;
+    out << stats.mossFLight << stats.mossFDecid;
 }
 
 
@@ -277,11 +277,13 @@ void Permafrost::calculateMoss()
     f_light = limit(f_light, 0., 1.); // clamp to interval [0,1]
 
     // 2) dessication (=dryout) of moss if the canopy is too open (lack of stomatal control of moss plants)
-    double al = exp(-0.25 * LAI_canopy);
-    double f_dryout = 1.;
+    // removed the dessication effect for now. Doesn't work as expected, and dessication could be part of a (future)
+    // rework of the water cycle
+    //double al = exp(-0.25 * LAI_canopy);
+    //double f_dryout = 1.;
 
-    if (al > 0.5)
-        f_dryout = 1.25 - al*al;
+    //if (al > 0.5)
+    //    f_dryout = 1.25 - al*al;
 
     // (2.3) Effect of deciduous litter
     // get fresh deciduous litter (t/ha)
@@ -294,7 +296,7 @@ void Permafrost::calculateMoss()
 
     // (3) Total productivity
     // Assimilation (kg/m2): modifiers reduce the potential productivity of 0.3 kg/m2/yr
-    double moss_assimilation = mosspar.AMax * f_light * f_dryout *  f_deciduous;
+    double moss_assimilation = mosspar.AMax * f_light * f_deciduous; // (note: dessication was here: * f_dryout )
 
     // producitvity [kg / kg biomass/yr], assimilated carbon for reproduction reduced
     double effective_assimilation = mosspar.SLA * moss_assimilation * (1 - 0.001*f_deciduous);
@@ -325,7 +327,7 @@ void Permafrost::calculateMoss()
      // save some stats for moss
      stats.mossFLight = f_light;
      stats.mossFDecid = f_deciduous;
-     stats.mossFCanopy = f_dryout;
+     // stats.mossFCanopy = f_dryout;
 }
 
 void Permafrost::setupThermalConductivity()
