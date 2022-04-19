@@ -107,6 +107,7 @@ void XmlHelper::printSuppressedWarnings()
     while (i != mMissingKeys.constEnd()) {
         if (i.value()>3)
             n++;
+        ++i;
     }
     if (n==0)
         return;
@@ -262,7 +263,7 @@ void XmlHelper::missedKey(const QString &keyname) const
     if (n<3)
         qDebug() << "Warning: xml: node" << key << "is not present.";
     if (n==3)
-        qDebug() << "Warning: xml: node" << key << "is not present (3rd occurrence, supressed in the future).";
+        qDebug() << "Warning: xml: node" << key << "is not present (3rd occurrence, suppressed in the future).";
 }
 
 QString XmlHelper::fullName(const QString &keyname) const

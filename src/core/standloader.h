@@ -43,7 +43,7 @@ public:
     /// main function of stand initialization
     /// the function loads - depending on the XML project file - inits for a single resource unit, for polygons or a snapshot from a database.
     void processInit();
-    /// this function is called *after* the init and after  initial LIF-calculations.
+    /// this function is called *after* the init and after initial LIF-calculations.
      void processAfterInit();
 
     /// load a single tree file (picus or iland style). return number of trees loaded.

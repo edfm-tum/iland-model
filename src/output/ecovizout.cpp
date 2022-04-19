@@ -7,7 +7,7 @@
 
 EcoVizOut::EcoVizOut()
 {
-    setName("tree output for visualizatoin software", "ecoviz");
+    setName("tree output for visualization software", "ecoviz");
     setDescription("Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. "\
                    "The output is created after the growth of the year, " \
                    "i.e. output with year=2000 means effectively the state of at the end of the " \
