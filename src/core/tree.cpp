@@ -989,7 +989,8 @@ inline double Tree::relative_height_growth()
     // use the corrected LRI (see tracker#11)
     double lri = limit(mLRI * mRU->LRImodifier(),0.,1.);
     double hd_ratio = hd_high - (hd_high-hd_low)*lri; // hd_high - lri*hd_high + lri*hd_low=(1-lri)*hd_high + lri*hdlow
-    return hd_ratio;
+    // avoid negative HD ratio of increment
+    return std::max(hd_ratio, 0.);
 }
 
 /** This function is called if a tree dies.
