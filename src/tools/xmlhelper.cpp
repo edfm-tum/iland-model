@@ -251,9 +251,11 @@ bool XmlHelper::setNodeValue(const QString &path, const QString &value)
     return setNodeValue(e,value);
 }
 
+QMutex xml_mutex;
 void XmlHelper::missedKey(const QString &keyname) const
 {
-    // make the hash non const (for updating it)
+    // make the hash non const (for updating it), therefore add a lock
+    QMutexLocker lock(&xml_mutex);
     QHash<QString, int> &keys = const_cast<QHash<QString, int>& >(mMissingKeys);
 
     QString key = fullName(keyname);
