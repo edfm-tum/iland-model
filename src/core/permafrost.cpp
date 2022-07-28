@@ -298,9 +298,8 @@ void Permafrost::calculateMoss()
     // Assimilation (kg/m2): modifiers reduce the potential productivity of 0.3 kg/m2/yr
     double moss_assimilation = mosspar.AMax * f_light * f_deciduous; // (note: dessication was here: * f_dryout )
 
-    // producitvity [kg / kg biomass/yr], assimilated carbon for reproduction reduced
-    double effective_assimilation = mosspar.SLA * moss_assimilation * (1 - 0.001*f_deciduous);
-
+    // producitvity [kg / kg biomass/yr]
+    double effective_assimilation = mosspar.SLA * moss_assimilation;
     // annual respiration loss (kg/m2/yr) (flux to atmosphere)
     double moss_rt = mMossBiomass * mosspar.respiration_q;
     // annual turnover (biomass to replace) (kg/m2/yr) (flux to litter)
