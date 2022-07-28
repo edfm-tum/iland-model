@@ -91,7 +91,9 @@ DEFINES += ILAND_GUI
 # enable/disble DBGMODE messages: dbg messages are removed when the define is added
 DEFINES += NO_DEBUG_MSGS
 
+
 # to enable debug symbols in release code
+# CONFIG += force_debug_info
 # debug information in release-mode executable
 #QMAKE_CXXFLAGS_RELEASE += -g
 #QMAKE_LFLAGS_RELEASE -= -Wl,-s

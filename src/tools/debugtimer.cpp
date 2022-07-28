@@ -51,7 +51,7 @@ DebugTimer::~DebugTimer()
         qint64 diff = QDateTime::currentMSecsSinceEpoch() - ms_since_epoch;
         if (diff > 100) {
             ms_since_epoch = QDateTime::currentMSecsSinceEpoch();
-            qDebug() << "DebugTimer:: process events after 100ms - now" << ms_since_epoch;
+            // qDebug() << "DebugTimer:: process events after 100ms - now" << ms_since_epoch;
             // process events only if we are currently in the main thread (GUI)
             if (QThread::currentThread() == QCoreApplication::instance()->thread())
                 QCoreApplication::processEvents();

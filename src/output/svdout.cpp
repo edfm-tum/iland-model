@@ -254,8 +254,10 @@ SVDIndicatorOut::SVDIndicatorOut()
 
 void SVDIndicatorOut::setup()
 {
-    if (!GlobalSettings::instance()->model()->svdStates())
+    if (!GlobalSettings::instance()->model()->svdStates()) {
+        qWarning() << "Output SVDIndicatorOut cannot be used, because it requires the 'svdstate' output (and the SVD subsystem ('model.settings.svdStates.enabled')). Output disabled.";
         return;
+    }
         //throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
 
     // clear extra columns:
