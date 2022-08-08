@@ -568,7 +568,7 @@ QString heightGrid_height(const HeightGridValue &hgv) {
 }
 
 /// write grid to a file...
-bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
+bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hlevel)
 {
     if (!GlobalSettings::instance()->model())
         return false;
@@ -577,6 +577,21 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
         result = gridToESRIRaster(*GlobalSettings::instance()->model()->heightGrid(), *heightGrid_height);
     if (grid_type == "lif")
         result = gridToESRIRaster(*GlobalSettings::instance()->model()->grid());
+    if (grid_type == "lifc") {
+        FloatGrid lif10m_grid = GlobalSettings::instance()->model()->grid()->averaged(5); // average LIF value with 10m resolution
+        HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
+        if (lif10m_grid.count() != height_grid->count()) {
+            qDebug() << "Error: grids do not align!";
+            return false;
+        }
+        SpeciesSet *sset = GlobalSettings::instance()->model()->speciesSet();
+        HeightGridValue *ph = height_grid->begin();
+        for (float *pl = lif10m_grid.begin(); pl != lif10m_grid.end(); ++pl, ++ph) {
+            double rel_height = hlevel / ph->height;
+            *pl = sset->LRIcorrection(*pl, rel_height); // correction based on height
+        }
+        result = gridToESRIRaster(lif10m_grid);
+    }
 
     if (!result.isEmpty()) {
         file_name = GlobalSettings::instance()->path(file_name);
@@ -584,7 +599,7 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name)
         qDebug() << "saved grid to " << file_name;
         return true;
     }
-    qDebug() << "could not save gridToFile because" << grid_type << "is not a valid grid.";
+    qDebug() << "could not save gridToFile because '" << grid_type << "' is not a valid option.";
     return false;
 
 }

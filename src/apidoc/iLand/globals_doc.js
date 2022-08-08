@@ -427,12 +427,14 @@ Specify the target file name with `file_name` and the type of the source grid wi
 The avaialable `grid_type`s are:
 * lif: the basic LIF grid of iLand (2m resolution)
 * height: the height grid (10m resolution) of iLand (top tree heights)
+* lifc: a height-corrected LIF with 10m resolution. Calculated as mean LIF value over 10m, and height corre
 
 See also: {{#crossLink "Globals/grid:method"}}{{/crossLink}}
 
 @method gridToFile
 @param {string} grid_type select the type of grid to export
 @param {string} file_name target file path (relative to the home directory)
+@param {numeric} height_level gives the reference height level for the height-corrected LIF `lifc` (see also the competition for light wiki page)
 @return {boolean} true on success.
 @Example
     Globals.gridToFile('height', 'temp/heightgrid.txt'); // store in project_folder/temp
