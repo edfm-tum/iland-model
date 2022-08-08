@@ -161,7 +161,7 @@ public slots:
     void setViewport(double x, double y, double scale_px_per_m); ///< set the viewport of the main project area view
     bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
     void repaint(); ///< force a repainting of the GUI visualization (if available)
-    bool gridToFile(QString grid_type, QString file_name); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
+    bool gridToFile(QString grid_type, QString file_name, double hlevel=0); ///< create a "ESRI-grid" text file 'grid_type' is one of a fixed list of names, 'file_name' the ouptut file location
 
     /// return Javascript grid for given type
     QJSValue grid(QString type);
