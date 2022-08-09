@@ -563,6 +563,7 @@ void SchedulerOptions::setup(QJSValue jsvalue)
     deviationDecayRate = 1. - deviationDecayRate; // if eg value is 0.05 -> multiplier 0.95
     useScheduler = FMSTP::boolValueFromJs(jsvalue, "enabled", true);
 
+
 }
 
 bool Scheduler::ItemComparator::operator()(const Scheduler::SchedulerItem *lx, const Scheduler::SchedulerItem *rx) const

@@ -17,14 +17,10 @@
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
 
-#include "global.h"
 #include "abe_global.h"
 #include "fmstp.h"
 #include "fmstand.h"
 #include "fomescript.h"
-#include "fomewrapper.h"
-
-#include "expression.h"
 
 
 namespace ABE {

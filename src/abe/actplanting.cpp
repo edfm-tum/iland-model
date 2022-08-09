@@ -296,7 +296,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                 if (sgrid->standIDFromLIFCoord(qp) != stand->id())
                     continue;
                 // check location in the pre-defined planting patterns
-                int idx = (qp.x()+offset)%npx + npx*((qp.y()+offset)%npx);
+                int idx = (qp.x()+offset/cPxSize)%npx + npx*((qp.y()+offset/cPxSize)%npx);
                 if (pp[idx]=='1') {
                     ResourceUnit *ru = model->ru(runner.currentCoord());
                     SaplingCell *sc = ru->saplingCell(qp);
@@ -311,7 +311,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
         } else {
             // pattern based (with spacing / offset, random...)
             int ispacing = spacing_val / cPxSize;
-            QPoint p = model->grid()->indexAt(box.topLeft())-QPoint(offset, offset);
+            QPoint p = model->grid()->indexAt(box.topLeft())-QPoint(offset/cPxSize, offset/cPxSize);
             QPoint pstart = p;
             QPoint p_end = model->grid()->indexAt(box.bottomRight());
             QPoint po;
@@ -324,12 +324,10 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                 n_ha=0;
             }
             bool do_random = random;
-            if (n_ha<=0)
+            if (do_random && n_ha<=0)
                 return;
-            if (stand->trace())
-                qCDebug(abe) << stand->context() << "pattern planting: planted" << n_ha << "pattern/ha for species" << species->id();
 
-
+            int n_planted = 0;
             while(do_random || (p.x() < p_end.x() && p.y() < p_end.y())) {
                 if (do_random) {
                     // random position!
@@ -357,6 +355,7 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                         sc->addSapling(height,age,species->index());
                     }
                 }
+                n_planted++;
                 if (!do_random) {
                     // apply offset
                     p.rx() += ispacing;
@@ -366,6 +365,8 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
                     }
                 }
             }
+            if (stand->trace())
+                qCDebug(abe) << stand->context() << "pattern planting: planted" << n_planted << "patterns for species" << species->id();
         }
     }
 
