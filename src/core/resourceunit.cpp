@@ -151,8 +151,9 @@ void ResourceUnit::setBoundingBox(const QRectF &bb)
 SaplingCell *ResourceUnit::saplingCell(const QPoint &lifCoords) const
 {
     // LIF-Coordinates are global, we here need (RU-)local coordinates
-    int ix = lifCoords.x() % cPxPerRU;
-    int iy = lifCoords.y() % cPxPerRU;
+    QPoint po = lifCoords - mCornerOffset;
+    int ix = po.x() % cPxPerRU;
+    int iy = po.y() % cPxPerRU;
     int i = iy*cPxPerRU+ix;
     Q_ASSERT(i>=0 && i<cPxPerHectare);
     return &mSaplings[i];

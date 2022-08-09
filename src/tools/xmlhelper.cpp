@@ -272,7 +272,7 @@ QString XmlHelper::fullName(const QString &keyname) const
 {
     QStringList elem = keyname.split('.', QString::SkipEmptyParts);
 
-    if (keyname.count()==0 && keyname.at(0) != '.')
+    if (keyname.count()==0 || keyname.at(0) != '.')
         return keyname;
 
     // we have a relative path

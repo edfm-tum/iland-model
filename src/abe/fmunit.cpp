@@ -192,7 +192,8 @@ void FMUnit::managementPlanUpdate()
     h_tot *= agent()->schedulerOptions().harvestIntensity;
     double h_thi = qMax(h_tot - h_reg, 0.);
 
-    qCDebug(abe) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
+    if (scheduler()->enabled())
+        qCDebug(abe) << "plan-update for unit" << id() << ": h-tot:" << h_tot << "h_reg:" << h_reg << "h_thi:" << h_thi << "of total volume:" << volume;
     double sf = mAgent->useSustainableHarvest();
     // we do not calculate sustainable harvest levels.
     // do a pure bottom up calculation

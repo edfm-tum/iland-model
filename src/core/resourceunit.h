@@ -64,7 +64,7 @@ public:
     Snag *snag() const { return mSnag; } ///< access the snag object
     Soil *soil() const { return mSoil; } ///< access the soil model
     SaplingCell *saplingCellArray() const { return mSaplings; } ///< access the array of sapling-cells
-    SaplingCell *saplingCell(const QPoint &lifCoords) const; ///< return a pointer to the 2x2m SaplingCell located at 'lif'
+    SaplingCell *saplingCell(const QPoint &lifCoords) const; ///< return a pointer to the 2x2m SaplingCell located at 'lifCoords'
     /// return the area (m2) which is covered by saplings (cells >0 saplings)
     /// if  `below130cm` is false, then only pixels with saplings >1.3m are counted; otherwise
     /// pixel are counted when saplings < 1.3m are present or when grass cover is present
