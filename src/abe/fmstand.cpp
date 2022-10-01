@@ -656,7 +656,9 @@ void FMStand::newRotatation()
     mMAIdecade = 0.;
     mMAItotal = 0.;
     // use default values
-    setU( unit()->U() );
+    // set U here: this is a problem, as "custom" U for the stand are overwritten at the end of a rotation
+    // on the other hand: this is likely the mechanism to roll out agent behavior changes to all stands (?)
+    // setU( unit()->U() );
     setThinningIntensity( unit()->thinningIntensity() );
     unit()->agent()->type()->agentUpdateForStand(this, QString(), 0); // update at age 0? maybe switch to new STP?
 
