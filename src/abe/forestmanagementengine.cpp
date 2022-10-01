@@ -469,8 +469,11 @@ void ForestManagementEngine::setup()
         FMSTP* stp = s->unit()->agent()->type()->stpByName(it.value());
         if (stp) {
             s->setSTP(stp);
+            // if U is not set (by a U column in the CSV), then use the STP default
+            if (s->U()==0.)
+                s->setU(stp->rotationLengthOfType(2));
         } else {
-            qCDebug(abeSetup) << "Warning while procssing the CSV setup file: for stand '" << s->id() << "' the STP is '" << it.value() << "', but this STP is not available for Agenttype: " << s->unit()->agent()->type()->name();
+            qCDebug(abeSetup) << "Warning while procssing the CSV setup file: for stand '" << s->id() << "' tried to set STP to '" << it.value() << "', but this STP is not available for Agenttype: " << s->unit()->agent()->type()->name();
         }
     }
     qCDebug(abeSetup) << "ABE setup completed.";

@@ -94,7 +94,8 @@ void Agent::setup()
 
             } else {
                 // set values that could be altered by STP (such as U)
-                stand->setU( unit->U() );
+                if (stand->U()==0.)
+                    stand->setU( unit->U() );
                 stand->setThinningIntensity( unit->thinningIntensity() );
                 stand->setTargetSpeciesIndex( unit->targetSpeciesIndex() );
             }

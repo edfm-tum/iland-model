@@ -254,12 +254,6 @@ SVDIndicatorOut::SVDIndicatorOut()
 
 void SVDIndicatorOut::setup()
 {
-    if (!GlobalSettings::instance()->model()->svdStates()) {
-        qWarning() << "Output SVDIndicatorOut cannot be used, because it requires the 'svdstate' output (and the SVD subsystem ('model.settings.svdStates.enabled')). Output disabled.";
-        return;
-    }
-        //throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
-
     // clear extra columns:
     clearColumnsAfter("time");
 
@@ -315,6 +309,13 @@ double SVDIndicatorOut::calcTotalCarbon(const ResourceUnit *ru)
 
 void SVDIndicatorOut::exec()
 {
+    if (!GlobalSettings::instance()->model()->svdStates()) {
+        qWarning() << "Output SVDIndicatorOut cannot be used, because it requires the 'svdstate' output (and the SVD subsystem ('model.settings.svdStates.enabled')). Output disabled.";
+
+        throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
+    }
+
+
     QList<ResourceUnit*>::const_iterator it;
     Model *m = GlobalSettings::instance()->model();
     for (it=m->ruList().constBegin(); it!=m->ruList().constEnd(); ++it) {
