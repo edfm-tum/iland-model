@@ -1,8 +1,26 @@
+/********************************************************************************************
+**    iLand - an individual based forest landscape and disturbance model
+**    https://iland-model.org
+**    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************************/
+
 #ifndef PERMAFROST_H
 #define PERMAFROST_H
 
 #include "layeredgrid.h"
-
 
 class WaterCycle; // forward
 struct ClimateDay; // forward
@@ -13,6 +31,17 @@ namespace Water {
 
 /**
  * @brief The Permafrost class simulates the permafrost layer of a resource unit
+ *
+ * The module mechanistically simulates daily changes in depth to permafrost, annual SOL accumulation, and
+ * links to / interact with vegetation processes (e.g., establishment). The module models processes
+ * per resource unit and runs at daily resolution.
+ *
+ * Setup of data structures/parameters: see setup() (invoked from the setup of the WaterCycle in iLand)
+ * During a simulation:
+ * run() -> daily update of freeze depth / water availability
+ * newYear() -> annual processes (e.g., moss dynamics) (invoked during the calculation of the water cycle)
+ *
+ * See iland-model.org/permafrost
  *
  *
  */
@@ -143,6 +172,7 @@ private:
         bool onlySimulate; ///< if true, peramfrost has no effect on the available water (and soil depth)
     };
 
+    // parameters of the moss submodel
     struct SMossParam {
         const double SLA=1.; ///< specific leaf area of moss (set to 1)
         const double AMax=0.3; ///< maximum moss productivity (0.3kg/m2/yr) (Foster et al 2019)
@@ -157,13 +187,14 @@ private:
         double r_deciduous_inhibition; ///< factor for inhibiting effect of fresh broadleaved litter
     };
 
-    static SParam par;
-    static SMossParam mosspar;
+    static SParam par; ///< (static) parameters of the permafrost module
+    static SMossParam mosspar; ///< (static) parameters of the moss module
 
     friend class PermafrostLayers;
     friend class ::WaterOut;
 };
 
+// Class for visualizing permafrost data in iLand
 class PermafrostLayers: public LayeredGrid<ResourceUnit*> {
   public:
     ~PermafrostLayers() {}

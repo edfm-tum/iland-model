@@ -1,4 +1,22 @@
-#include "global.h"
+/********************************************************************************************
+**    iLand - an individual based forest landscape and disturbance model
+**    https://iland-model.org
+**    Copyright (C) 2009-  Werner Rammer, Rupert Seidl
+**
+**    This program is free software: you can redistribute it and/or modify
+**    it under the terms of the GNU General Public License as published by
+**    the Free Software Foundation, either version 3 of the License, or
+**    (at your option) any later version.
+**
+**    This program is distributed in the hope that it will be useful,
+**    but WITHOUT ANY WARRANTY; without even the implied warranty of
+**    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**    GNU General Public License for more details.
+**
+**    You should have received a copy of the GNU General Public License
+**    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+********************************************************************************************/
+
 #include "permafrost.h"
 
 #include "watercycle.h"
@@ -500,6 +518,9 @@ Permafrost::FTResult Permafrost::calcFreezeThaw(double at, double temp, bool low
     return result;
 }
 
+
+// function used for visualizing permafrost data in iLand (i.e., by returning a value for each cell for a given data layer)
+// see also names()
 double PermafrostLayers::value(ResourceUnit * const &data, const int index) const
 {
     if (!data || !data->waterCycle() || !data->waterCycle()->permafrost())
@@ -516,6 +537,7 @@ double PermafrostLayers::value(ResourceUnit * const &data, const int index) cons
     }
 }
 
+// set names and description of available data layer for iLand visualization of permafrost layers.
 const QVector<LayeredGridBase::LayerElement> &PermafrostLayers::names()
 {
     if (mNames.isEmpty())
