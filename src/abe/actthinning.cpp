@@ -167,7 +167,7 @@ void ActThinning::setupSingleCustom(QJSValue value, SCustomThinning &custom)
         custom.filter = QString();
     custom.targetVariable = FMSTP::valueFromJs(value, "targetVariable", "stems").toString();
     if (custom.targetVariable != "stems" &&
-            custom.targetVariable != "basalArea" &&
+            custom.targetVariable != "basalarea" &&
             custom.targetVariable != "volume")
         throw IException(QString("setup of custom Activity: invalid targetVariable: %1").arg(custom.targetVariable));
 
