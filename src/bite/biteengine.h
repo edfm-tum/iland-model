@@ -82,5 +82,5 @@ private:
     friend class BiteOutput;
 };
 
-} // end namespaec
+} // end namespace
 #endif // BITEENGINE_H

@@ -552,7 +552,7 @@ void MainWindow::addPaintLayers(QObject *handler, const QStringList names, const
         po.value().what = PaintObject::PaintHandledObject;
         po.value().expression = names[i];
         po.value().auto_range = true;
-        po.value().view_type = view_types.size()>=i ? view_types[i] : GridViewRainbow;
+        po.value().view_type = view_types.size()>i ? view_types[i] : GridViewRainbow;
         po.value().layer_id = i;
         po.value().name = names[i];
     }
