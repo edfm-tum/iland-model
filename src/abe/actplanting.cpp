@@ -139,6 +139,7 @@ void ActPlanting::setup(QJSValue value)
     if (GlobalSettings::instance()->model()->settings().regenerationEnabled == false)
         throw IException("Cannot set up planting acitivities when iLand regeneration module is disabled.");
     Activity::setup(value); // setup base events
+    events().setup(value, QStringList() << "onEvaluate");
 
     QJSValue items = FMSTP::valueFromJs(value, "items");
     mItems.clear();
@@ -176,6 +177,18 @@ bool ActPlanting::execute(FMStand *stand)
     if (stand->trace())
         qCDebug(abe) << stand->context() << "execute of planting activity....";
     DebugTimer time("ABE:ActPlanting:execute");
+
+    // call handler
+    bool do_run = true;
+    if (events().hasEvent(QStringLiteral("onEvaluate")))
+        do_run = events().run(QStringLiteral("onEvaluate"), stand).toBool();
+
+    if (!do_run) {
+        // canceled by event
+        if (stand->trace())
+            qDebug(abe) << stand->context() << "canceled planting activity in onEvalulate.";
+        return false;
+    }
 
     for (int s=0;s<mItems.count();++s) {
         mItems[s].run(stand);
