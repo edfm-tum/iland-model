@@ -863,7 +863,7 @@ void Model::runYear()
         GlobalSettings::instance()->systemStatistics()->tSapling+=t.elapsed();
         }
 
-        mGrassCover->executeAfterRegeneration(); // evaluste ground vegetation
+        mGrassCover->executeAfterRegeneration(); // evaluate ground vegetation
 
         // Establishment::debugInfo(); // debug test
 
@@ -871,8 +871,10 @@ void Model::runYear()
 
     // external modules/disturbances
     setCurrentTask("BITE");
-    if (mBiteEngine)
+    if (mBiteEngine) {
+        mBiteEngine->setYear(GlobalSettings::instance()->currentYear());
         mBiteEngine->run();
+    }
 
     setCurrentTask("Disturbance modules");
     mModules->run();

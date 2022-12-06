@@ -89,7 +89,7 @@ public:
     double meanAnnualTemperature() const { return mMeanAnnualTemperature; }
     /// annual precipitation sum (mm)
     double annualPrecipitation() const { double r=0.; for (int i=0;i<12;++i) r+=mPrecipitationMonth[i]; return r;}
-    /// get a array with mean temperatures per month (deg C)
+    /// get a array with mean temperatures (light hours) per month (deg C)
     const double *temperatureMonth() const { return mTemperatureMonth; }
     /// retrieve the year provided in the climate table
     int climateDataYear() const { return mBegin->year; }

@@ -35,6 +35,7 @@ public:
     QString info();
     void notify(BiteCell *cell, BiteCell::ENotification what);
     void run();
+    void yearEnd();
 
 
     bool dieAfterDispersal() const { return mDieAfterDispersal; }

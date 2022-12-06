@@ -246,6 +246,9 @@ void BiteAgent::run()
 
     mEvents.run("onYearEnd", nullptr, &eparam);
 
+    // cleanup, mortality
+    mLC->yearEnd();
+
     qCDebug(bite) << "Agent" << name() << "finished";
     qCDebug(bite) << "NSpread:" << stats().nDispersal << "NColonizable:" << stats().nColonizable << "NColonized:" << stats().nNewlyColonized;
 }

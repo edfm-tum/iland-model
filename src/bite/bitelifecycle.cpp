@@ -91,6 +91,7 @@ QString BiteLifeCycle::info()
 
 void BiteLifeCycle::notify(BiteCell *cell, BiteCell::ENotification what)
 {
+    Q_UNUSED(cell)
     switch (what) {
 
     default: break; // ignore other notifications
@@ -122,6 +123,25 @@ void BiteLifeCycle::run()
 
 }
 
+void BiteLifeCycle::yearEnd()
+{
+
+    if (!dieAfterDispersal())
+        return;
+
+    BiteCell **cell = agent()->grid().begin();
+    for (; cell !=agent()->grid().end(); ++cell) {
+        if (*cell && (*cell)->isActive()) {
+            if ( (*cell)->isSpreading() &&
+                 (*cell)->yearLastSpread() == BiteEngine::instance()->currentYear()) {
+
+                // kill cells that should die after dispersal
+                (*cell)->die();
+            }
+        }
+    }
+}
+
 int BiteLifeCycle::numberAnnualCycles(BiteCell *cell)
 {
     double vol_res = mVoltinism.evaluate(cell);
@@ -143,14 +163,16 @@ bool BiteLifeCycle::shouldSpread(BiteCell *cell)
         double res = mSpreadFilter.evaluate(cell);
         // the result of the filter is interpreted probabilistically
         if (drandom() < res) {
-            if (agent()->verbose()) qCDebug(bite) << "Spreading, p:" << res;
+            if (agent()->verbose())
+                qCDebug(bite) << cell->info() <<  ": Spreading, p:" << res;
             return true;
         }
     }
 
     double val = mSpreadInterval.evaluate(cell);
     if (BiteEngine::instance()->currentYear() - cell->yearLastSpread() >= val) {
-        if (agent()->verbose()) qCDebug(bite) << "Spreading (Interval)";
+        if (agent()->verbose())
+            qCDebug(bite) << cell->info() << ": Spreading (Interval)";
         return true;
     }
 

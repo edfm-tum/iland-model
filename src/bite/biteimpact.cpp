@@ -95,7 +95,7 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
 
     bool filter = mImpactFilter.evaluateBool(cell);
     if (verbose())
-        qCDebug(bite) << "Impact: result of impactFilter:" << filter;
+        qCDebug(bite) << "Impact: " << cell->info() << ": result of impactFilter:" << filter;
     if (!filter)
         return;
 

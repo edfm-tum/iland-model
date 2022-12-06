@@ -79,6 +79,8 @@ public slots:
 
     void reloadTrees();
     void reloadSaplings();
+
+    QVector<double> dailyMeanTemperatures();
 private:
     BiteCell *mCell;
     BiteAgent *mAgent;
@@ -150,8 +152,9 @@ class Constraints {
 public:
     Constraints() {}
     ~Constraints();
+    enum ConstraintEvalMode { Boolean, Multiplicative, Minimum};
     void setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap, BiteAgent *agent); ///< setup from javascript
-    double evaluate(BiteCell *cell); ///< run the constraints
+    double evaluate(BiteCell *cell, ConstraintEvalMode mode=Boolean); ///< run the constraints
     double evaluate(ABE::FMTreeList *treelist); ///< run for trees
     double evaluate(ABE::FMSaplingList *saplinglist); ///< run for saplings
     bool isConst(); ///< return true if no dynamic evaluation happens

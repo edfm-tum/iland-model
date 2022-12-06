@@ -35,6 +35,9 @@ public:
 
     /// retrieve the climate variable with the given index (raise an exception if invalid)
     double value(int var_index, const ResourceUnit *ru) const;
+
+    /// retrieve climate time series
+    QVector<double> dailyMeanTemperatures(const ResourceUnit *ru) const;
 private:
     double calculateGDD(const Climate *clim, double threshold_temp) const;
     static QStringList mClimateVars;

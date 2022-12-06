@@ -76,12 +76,17 @@ double BiteCell::climateVar(int var_index) const
     return mAgent->biteClimate().value(var_index, mRU);
 }
 
+
 void BiteCell::die()
 {
     setActive(false);
     setSpreading(false);
     agent()->notifyItems(this, CellDied);
     mYearsLiving = 0;
+
+    if (agent()->verbose())
+        qCDebug(bite) << "cell died: " << info();
+
 }
 
 void BiteCell::finalize()

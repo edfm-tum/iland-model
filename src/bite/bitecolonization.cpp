@@ -102,6 +102,14 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::F
     if (cell->isActive())
         return;
 
+    // no colonization, if the the cell was spreading in the same year
+    if (cell->yearLastSpread() == BiteEngine::instance()->currentYear())
+        return;
+
+    // TODO?: add a quick test if dispersalGrid is == 0? no need to eval the value if 0 (and if the
+    // BiteDispersal is there)
+
+    // evaluate the dynamic filter that can e.g. react to the dispersal processes modelled in BiteDispersal
     if (mDispersalFilter.evaluateBool(cell)==false) {
         return;
     }
@@ -111,9 +119,14 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::F
 
     ++agent()->stats().nColonizable;
 
-    double result = mCellConstraints.evaluate(cell);
+    double result = mCellConstraints.evaluate(cell, Constraints::Multiplicative);
     if (result == 0.) {
         return; // no colonization
+    }
+    if (result < 1.) {
+        // throw the dice, only pass filter with probabilty 'result'
+        if (drandom() >= result)
+            return;
     }
 
     // now we need to load the trees and saplings, and evaluate
@@ -165,6 +178,9 @@ void BiteColonization::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::F
     }
     agent()->notifyItems(cell, BiteCell::CellColonized);
     ++agent()->stats().nNewlyColonized;
+
+    if (agent()->verbose())
+        qCDebug(bite) << "BiteCol: successfully colonized cell" << cell->info();
 
 }
 

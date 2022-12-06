@@ -37,12 +37,15 @@ class BiteAgent;
 class BiteCell
 {
 public:
-    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1), mYearsLiving(0), mCumYearsLiving(0), mTreesLoaded(false), mSaplingsLoaded(false), mArea(0.f) {}
+    BiteCell() : mRU(nullptr), mIsActive(false), mIsSpreading(false), mIndex(-1),
+        mYearsLiving(0), mLastSpread(-1), mCumYearsLiving(0), mTreesLoaded(false),
+        mSaplingsLoaded(false), mArea(0.f) {}
     void setup(int cellidx, QPointF pos, BiteAgent *agent);
     /// index within the agent grid
     int index() const {return mIndex;}
     BiteAgent *agent() const { return mAgent; }
     QString info();
+    const ResourceUnit *resourceUnit() { return mRU; }
 
     bool isValid() const { return mRU!=nullptr; }
 
@@ -65,6 +68,7 @@ public:
 
     // climate vars
     double climateVar(int var_index) const;
+
     // actions
     void die();
     void finalize();
