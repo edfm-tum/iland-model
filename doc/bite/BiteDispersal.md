@@ -31,6 +31,12 @@ If provided, a ASCII raster file of the kernel is saved to `debugKernel`.
 
 kernel value of a grid cell
 
+* ### `backgroundInfestationProbability` (expression, probabilty) (optional)
+When provided, the expression is evaluated for each cell. The result of the 
+expression (which can be a constant, a expression string, or a Javascript function)
+is interpreted as the annual probability of the initiation of the agent on the cell.
+The 
+
 ## Properties
 
 * ### `grid` [Grid](https://iland-model.org/apidoc/classes/Grid.html)
@@ -80,8 +86,7 @@ newly infested cells.
 `item` is the BiteDispersal object.
 
 * ### `onAfterSpread(item)` 
-called immediately after the spreading algorithm is executed. Useful for inspecting or modifying the post-spread
-state.
+called immediately after the spreading algorithm is executed. Useful for inspecting or modifying the post-spread state.
 
 `item` is the BiteDispersal object.
 

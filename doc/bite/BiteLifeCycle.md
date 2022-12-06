@@ -63,6 +63,10 @@ function outbreakSeries() {
 * ### `voltinism` (dynamic expression)
 *tbc* (not implemented)
 
+* ### `dieAfterDisturbance` (boolean) 
+if `true`, then the cell dies immediately after dispersal from the cell.
+
+
 * ### `spreadDelay` (integer) (optional)
 if a non-0 value is provided, a cell can only start spreading when occupied for `spreadDelay` years.
 
@@ -78,7 +82,7 @@ spread from a cell.
 The cell dies, if the expression (with cell context) returns `true`. 
 
 * ### `outbreakDuration` (dynamic expression, optional) 
-The number of years that an outbreak lasts (evaluted at the begin of an outbreak). The value is truncated to an integer.
+The number of years that an outbreak lasts (evaluated at the begin of an outbreak). The value is truncated to an integer.
 
 * ### `outbreakStart` (dynamic expression, optional) 
 The number of years until the next outbreak (0 or missing means no outbreaks at all). Evaluated at the beginning of the
@@ -87,8 +91,8 @@ simulation and after each outbreak wave.
 
 ## Properties
 
-*no properties*
-
+* ### `dieAfterDiespersla(item)` 
+The `onSetup` event is triggered after the setup of the item. 
 
 ## Variables
 

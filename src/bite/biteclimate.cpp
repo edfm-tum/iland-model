@@ -78,6 +78,18 @@ double BiteClimate::value(int var_index, const ResourceUnit *ru) const
     return 0.;
 }
 
+QVector<double> BiteClimate::dailyMeanTemperatures(const ResourceUnit *ru) const
+{
+    Q_ASSERT(ru != nullptr);
+    const Climate *c = ru->climate();
+    QVector<double> temps;
+    temps.reserve(366);
+    for (const ClimateDay *d=c->begin();d!=c->end();++d) {
+        temps.append(d->mean_temp());
+    }
+    return temps;
+}
+
 double BiteClimate::calculateGDD(const Climate *clim, double threshold_temp) const
 {
     double gdd=0.;

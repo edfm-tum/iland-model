@@ -56,6 +56,13 @@ void BiteDispersal::setup(BiteAgent *parent_agent)
         mGrid.setup(agent()->grid().metricRect(), agent()->grid().cellsize());
         mGrid.initialize(0.);
 
+        QJSValue inf_prob = BiteEngine::valueFromJs(mObj, "backgroundInfestationProbability");
+        if (!inf_prob.isUndefined()) {
+            qCDebug(biteSetup) << ": backgroundInfestationProbability: " << inf_prob.toString();
+            mBackgroundInfestationProbability.setup(inf_prob, DynamicExpression::CellWrap, parent_agent);
+        }
+
+
         // Link to the script grid
         mScriptGrid = new ScriptGrid(&mGrid);
         mScriptGrid->setOwnership(false); // scriptgrid should not delete the grid
@@ -99,7 +106,8 @@ void BiteDispersal::run()
     spreadKernel();
     mEvents.run("onAfterSpread", nullptr, &p);
 
-
+    // background chance for infestation
+    backgroundInfestation();
     // decide();
 }
 
@@ -121,7 +129,7 @@ void BiteDispersal::decide()
 QStringList BiteDispersal::allowedProperties()
 {
     QStringList l = BiteItem::allowedProperties();
-    l << "kernel" << "maxDistance" << "debugKernel";
+    l << "kernel" << "maxDistance" << "debugKernel" << "backgroundInfestationProbability";
     return l;
 }
 
@@ -169,20 +177,17 @@ void BiteDispersal::setupKernel(QString expr, double max_dist, QString dbg_file)
 void BiteDispersal::spreadKernel()
 {
     BiteCell **cell = agent()->grid().begin();
-    bool die_after_disp = agent()->lifeCycle()->dieAfterDispersal();
+    // bool die_after_disp = agent()->lifeCycle()->dieAfterDispersal();
     for (double *p = mGrid.begin(); p!=mGrid.end(); ++p,++cell) {
         if (*cell && *p == 1.) {
             ++agent()->stats().nDispersal;
-            if ( (*cell)->isSpreading() ) {
-                if (die_after_disp) {
-                    (*cell)->die();
-                }
-            }
             agent()->notifyItems(*cell, BiteCell::CellSpread);
+            if (agent()->verbose())
+                qCDebug(bite) << "BiteDispersal spreading:" << (*cell)->info();
+
             QPoint cp=mGrid.indexOf(p);
             // the cell is a source, apply the kernel
-            //int imin = std::max(0, cp.x()-mKernelOffset); int imax=std::min(mGrid.sizeX(), cp.x()+mKernelOffset);
-            //int jmin = std::max(0, cp.y()-mKernelOffset); int jmax=std::min(mGrid.sizeY(), cp.y()+mKernelOffset);
+
             int imin = cp.x()-mKernelOffset; int imax=cp.x()+mKernelOffset;
             int jmin = cp.y()-mKernelOffset; int jmax=cp.y()+mKernelOffset;
             int kj = 0;
@@ -211,6 +216,31 @@ void BiteDispersal::prepareGrid()
         else
             *p = 0.;
     }
+
+}
+
+void BiteDispersal::backgroundInfestation()
+{
+    if (!mBackgroundInfestationProbability.isValid())
+        return;
+
+    // run over each cell and calculate the prob
+    int n_started = 0;
+    BiteCell **cell = agent()->grid().begin();
+    for (double *p = mGrid.begin(); p!=mGrid.end(); ++p, ++cell) {
+        double result = mBackgroundInfestationProbability.evaluate(*cell);
+        if (result > 0 &&
+            drandom() < result &&
+            !(*cell)->isActive()) {
+            // activate the cell:
+            // for now we just set the probability to 1, and give the filters
+            // in colonization a chance to stop infestation
+            *p = 1.;
+            ++n_started;
+        }
+    }
+    if (agent()->verbose())
+        qCDebug(bite) << "BiteDispersal backgroundInfestation: #of pixels activated:" << n_started;
 
 }
 

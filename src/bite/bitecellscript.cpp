@@ -104,6 +104,12 @@ void BiteCellScript::reloadSaplings()
 
 }
 
+QVector<double> BiteCellScript::dailyMeanTemperatures()
+{
+    Q_ASSERT(mAgent!=nullptr && mCell!=nullptr);
+    return mAgent->biteClimate().dailyMeanTemperatures(mCell->resourceUnit());
+}
+
 // ***********************************************************
 // *******************   DynamicExpression *******************
 // ***********************************************************
@@ -362,16 +368,38 @@ void Constraints::setup(QJSValue &js_value, DynamicExpression::EWrapperType wrap
     }
 }
 
-double Constraints::evaluate(BiteCell *cell)
+double Constraints::evaluate(BiteCell *cell, ConstraintEvalMode mode)
 {
     if (mConstraints.isEmpty())
         return 1.; // no constraints to evaluate
 
+    double result = 1.;
+    double value = 1.;
+    bool bvalue = true;;
     for (int i=0;i<mConstraints.count();++i) {
-        if (mConstraints.at(i)->evaluateBool(cell) == false)
-            return 0.;
+
+        switch (mode) {
+            case Boolean:
+                bvalue = mConstraints.at(i)->evaluateBool(cell);
+                if (bvalue == false)
+                    return 0.; // constraint failed
+                break;
+            case Multiplicative:
+                value = mConstraints.at(i)->evaluate(cell);
+                result = result * value;
+                if (result == 0.)
+                    return 0.; // 0 is also failed in multiplicative mode
+                break;
+            case Minimum:
+                value = mConstraints.at(i)->evaluate(cell);
+                result = std::min(result, value); // the minimum
+                if (result == 0.)
+                    return 0.; // 0 is also failed in multiplicative mode
+                break;
+        }
     }
-    return 1.; // all constraints passed, return the lowest returned value...
+
+    return result; // all constraints passed, return the lowest returned value...
 }
 
 double Constraints::evaluate(ABE::FMTreeList *treelist)

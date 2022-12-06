@@ -25,7 +25,8 @@ onCalculate | Javascript event, that can prevent colonization
 expression is either 0, or "false". 
 
 * ### `cellFilter` (dynamic expression) (optional)
-"Constraint" object, i.e. either 1 or more dynamic expressions. Access to cell variables.
+"Constraint" object, i.e. either 1 or more dynamic expressions. Access to cell variables. Multiple filters are combined multiplicatively and if the result is
+<1, then the value is interpreted as probability of passing the filter.
 
 * ### `treeFilter` (dynamic expression) (optional)
 "Constraint" object, i.e. either 1 or more dynamic expressions. Access to tree variables.

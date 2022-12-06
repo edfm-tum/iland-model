@@ -53,10 +53,14 @@ private:
     void spreadKernel();
     /// prepare the grid
     void prepareGrid();
+    /// run background infestation
+    void backgroundInfestation();
     Grid<double>  mKernel;
     int mKernelOffset;
     Grid<double> mGrid;
     ScriptGrid *mScriptGrid;
+    DynamicExpression mBackgroundInfestationProbability;
+
     Events mEvents;
 
 };
@@ -80,7 +84,6 @@ protected:
 private:
     Grid<double> mGrid;
     ScriptGrid *mScriptGrid;
-
 
     Events mEvents;
 

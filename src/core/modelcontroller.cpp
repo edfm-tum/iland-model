@@ -672,12 +672,16 @@ Grid<double> *ModelController::preparePaintGrid(QObject *handler, QString name, 
     // call the slot "paintGrid" from the handler.
     // the handler slot should return a pointer to a (double) grid
     Grid<double> *grid_ptr = nullptr;
-    bool success = QMetaObject::invokeMethod(handler, "paintGrid", Qt::DirectConnection,
-                                             Q_RETURN_ARG(Grid<double> *, grid_ptr),
-                                             Q_ARG(QString, name),
-                                             Q_ARG(QStringList&, rNamesColors->first),
-                                             Q_ARG(QStringList&, rNamesColors->second)
-                                             );
+    bool success = false;
+    if (handler->metaObject()->indexOfMethod("paintGrid")>-1) {
+        success = QMetaObject::invokeMethod(handler, "paintGrid", Qt::DirectConnection,
+                                                 Q_RETURN_ARG(Grid<double> *, grid_ptr),
+                                                 Q_ARG(QString, name),
+                                                 Q_ARG(QStringList&, rNamesColors->first),
+                                                 Q_ARG(QStringList&, rNamesColors->second)
+                                                 );
+    }
+
     if (success) {
         return grid_ptr;
     }
