@@ -831,11 +831,24 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         static int last_year=0;
         static QString last_species="";
         static bool last_regen_mode=false;
-        if (last_year!=GlobalSettings::instance()->currentYear() || species!=last_species || ui->visRegenNew->isChecked()!=last_regen_mode) {
+        static QString last_sap_expr="";
+        static double scaling_max;
+        QString sap_expr = ui->lTreeExpr->text();
+
+        if (last_year!=GlobalSettings::instance()->currentYear() ||
+                species!=last_species ||
+                ui->visRegenNew->isChecked()!=last_regen_mode ||
+                sap_expr != last_sap_expr) {
             last_year=GlobalSettings::instance()->currentYear();
             last_species=species;
+            last_sap_expr = sap_expr;
             bool draw_established = ui->visRegenNew->isChecked();
             last_regen_mode = draw_established;
+            scaling_max = sap_expr.isEmpty() ? 4. : 0; // default for regen (height)
+
+            SaplingWrapper sw;
+            Expression expression(sap_expr, &sw);
+
             // fill grid...
             DebugTimer t("create regeneration map...");
             mRegenerationGrid.wipe(0.f);
@@ -861,8 +874,17 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                         if (st) {
                             if (draw_established)
                                 *rg = st->is_occupied() && st->age<2 ? 1.f : 0.f;
-                            else
-                                *rg = st ? st->height : 0.f;
+                            else {
+                                if (sap_expr.isEmpty()) {
+                                    *rg = st ? st->height : 0.f;
+                                } else {
+                                    // use the expression with the saplings
+                                    sw.setSaplingTree(st, sc->ru);
+                                    double value = expression.execute();
+                                    scaling_max = std::max(scaling_max, value);
+                                    *rg = value;
+                                }
+                            }
                         }
                     }
                 }
@@ -870,8 +892,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         }
         // start from each pixel and query value in grid for the pixel
         int x,y;
+
         mRulerColors->setCaption("Regeneration Layer", "max. tree height of regeneration layer (blue=0m, red=4m)");
-        mRulerColors->setPalette(GridViewRainbow,0., 4.); // ruler
+        if (!sap_expr.isEmpty())
+            mRulerColors->setCaption("Regeneration Layer", QString("Expression for saplings: %1").arg(sap_expr));
+        mRulerColors->setPalette(GridViewRainbow,0., scaling_max); // ruler
         int sizex = rect.width();
         int sizey = rect.height();
         QPointF world;
@@ -883,7 +908,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 world = vp.toWorld(QPoint(x,y));
                 if (mRegenerationGrid.coordValid(world)) {
                     value = mRegenerationGrid.valueAt(world);
-                    col = Colors::colorFromValue(value, 0., 4., false).rgb(); // 0..4m
+                    col = Colors::colorFromValue(value, 0., scaling_max, false).rgb(); // 0..4m
                     if (shading)
                         col = Colors::shadeColor(col, world, mRemoteControl.model()->dem()).rgb();
                     if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(world).isValid())
