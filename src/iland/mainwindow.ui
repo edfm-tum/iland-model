@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1030</width>
-    <height>796</height>
+    <height>837</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -994,7 +994,7 @@ QProgressBar::chunk {
         <item row="3" column="0">
          <widget class="QRadioButton" name="visRegeneration">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show state of the regen layer (2x2m pixels). Value is the maximum height of saplings on the pixel of either all species, or for specific species&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;show state of the regen layer (2x2m pixels). Value is the maximum height of saplings on the pixel of either all species, or for specific species.&lt;/p&gt;&lt;p&gt;If a species is selected, you can show expressions with sapling variables (e.g., age, nrep, height)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Regeneration</string>
