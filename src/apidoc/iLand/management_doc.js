@@ -113,7 +113,7 @@ Load all trees of a resource unit with the index `ruindex` and return the number
 @return {integer} the number of trees that were loaded.
 @Example
     for (var i=0; i<Globals.resourceUnitCount; ++) {
-        management.loadResourceIndex(i);
+        management.loadResourceUnit(i);
         // further processing....
     }
 */
