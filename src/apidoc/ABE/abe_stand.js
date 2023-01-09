@@ -54,6 +54,14 @@ var stand = {
 */
 
 /**
+  The mean DBH in cm. It is calculated as basal area weighted mean DBH of all trees on the stand (>4m).
+  See also {{#crossLink "Stand/basalArea:property"}}{{/crossLink}}.
+
+  @property dbh
+  @type double
+*/
+
+/**
   The mean height of the stand (meter). It is calculated as basal area weighted mean height of all trees on the stand (>4m).
   See also {{#crossLink "Stand/topHeight:property"}}{{/crossLink}}.
 

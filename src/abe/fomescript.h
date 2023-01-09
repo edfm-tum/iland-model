@@ -166,6 +166,7 @@ class StandObj: public QObject
     Q_PROPERTY (double age READ age)
     Q_PROPERTY (double absoluteAge READ absoluteAge WRITE setAbsoluteAge)
     Q_PROPERTY (double volume READ volume)
+    Q_PROPERTY (double dbh READ dbh)
     Q_PROPERTY (double height READ height)
     Q_PROPERTY (double topHeight READ topHeight)
     Q_PROPERTY (int id READ id)
@@ -219,6 +220,7 @@ public:
 
     // properties of the forest
     double basalArea() const { if (mStand)return mStand->basalArea(); throwError("basalArea"); return -1.;}
+    double dbh() const { if (mStand)return mStand->dbh(); throwError("dbh"); return -1.;}
     double height() const { if (mStand)return mStand->height(); throwError("height"); return -1.;}
     double topHeight() const { if (mStand)return mStand->topHeight(); throwError("topHeight"); return -1.;}
     double age() const {if (mStand)return mStand->age(); throwError("age"); return -1.;}
