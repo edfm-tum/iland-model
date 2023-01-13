@@ -228,15 +228,17 @@ void BiteDispersal::backgroundInfestation()
     int n_started = 0;
     BiteCell **cell = agent()->grid().begin();
     for (double *p = mGrid.begin(); p!=mGrid.end(); ++p, ++cell) {
-        double result = mBackgroundInfestationProbability.evaluate(*cell);
-        if (result > 0 &&
-            drandom() < result &&
-            !(*cell)->isActive()) {
-            // activate the cell:
-            // for now we just set the probability to 1, and give the filters
-            // in colonization a chance to stop infestation
-            *p = 1.;
-            ++n_started;
+        if (*cell) {
+            double result = mBackgroundInfestationProbability.evaluate(*cell);
+            if (result > 0 &&
+                    drandom() < result &&
+                    !(*cell)->isActive()) {
+                // activate the cell:
+                // for now we just set the probability to 1, and give the filters
+                // in colonization a chance to stop infestation
+                *p = 1.;
+                ++n_started;
+            }
         }
     }
     if (agent()->verbose())

@@ -24,10 +24,10 @@ void BiteOutputItem::setup(BiteAgent *parent_agent)
     try {
         checkProperties(mObj);
 
-        mTableName = BiteEngine::valueFromJs(mObj, "tableName", "", "The 'tableName' is required!").toString();
-        QJSValue columns = BiteEngine::valueFromJs(mObj, "columns", "", "The 'columns' are required!");
+        mTableName = BiteEngine::valueFromJs(mObj, "tableName", "", "Property 'tableName' is required!").toString();
+        QJSValue columns = BiteEngine::valueFromJs(mObj, "columns", "", "Property 'columns' is required!");
         if (!columns.isArray())
-            throw IException("The 'columns' is no array.");
+            throw IException("Property 'columns' is not an array.");
         QJSValueIterator it(columns);
         while (it.hasNext()) {
             it.next();
@@ -37,7 +37,10 @@ void BiteOutputItem::setup(BiteAgent *parent_agent)
             mColumns.push_back(it.value().toString());
         }
 
-        GlobalSettings::instance()->outputManager()->removeOutput(mTableName);
+        //GlobalSettings::instance()->outputManager()->removeOutput(mTableName);
+        if (GlobalSettings::instance()->outputManager()->find(mTableName)) {
+            throw IException(QString("The table name of the bite output '%1' must be unique but is already used.").arg(mTableName));
+        }
         mOutput = new BiteCellOutput();
         mOutput->setupBite(mColumns, mTableName);
         GlobalSettings::instance()->outputManager()->addOutput(mOutput);
@@ -53,7 +56,7 @@ void BiteOutputItem::setup(BiteAgent *parent_agent)
 
 
     } catch (const IException &e) {
-        QString error = QString("An error occured in the setup of BiteOutput item '%1': %2").arg(name()).arg(e.message());
+        QString error = QString("An error occured in the setup of agent %3 in BiteOutput item '%1': %2").arg(name()).arg(e.message(), parent_agent->name());
         qCInfo(biteSetup) << error;
         BiteEngine::instance()->error(error);
 
