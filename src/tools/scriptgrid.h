@@ -51,6 +51,8 @@ public:
     int width() const { return mGrid?mGrid->sizeX():-1; }
     int height() const { return mGrid?mGrid->sizeY():-1; }
     int count() const { return mGrid?mGrid->count():-1; }
+    double minX() const { return mGrid?mGrid->metricRect().left() : -1; } ///< metric coord left
+    double minY() const { return mGrid?mGrid->metricRect().bottom(): -1; } ///< metric coord bottom
     int cellsize() const { return mGrid?mGrid->cellsize():-1; }
     bool isValid() const { return mGrid?!mGrid->isEmpty():false; }
 
@@ -95,7 +97,11 @@ public slots:
     /// returns the object itself.
     QJSValue resample(QJSValue grid_object);
 
+    /// aggregate the grid by a given factor (this changes the size of the grid)
     void aggregate(int factor);
+
+    /// return the values of the grid as a vector of doubles
+    QJSValue values();
 
 
     /// apply the expression "expression" on all pixels of the grid and return the sum of the values

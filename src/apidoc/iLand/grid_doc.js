@@ -78,6 +78,25 @@ Grid = {
         @readOnly
     */
     /**
+        the minimum metric coordinate in X direction (left border of grid).
+
+        See also: {{#crossLink "Grid/minY:property"}}{{/crossLink}}, {{#crossLink "Grid/height:property"}}{{/crossLink}}, {{#crossLink "Grid/width:property"}}{{/crossLink}}
+
+        @property minX
+        @type double
+        @readOnly
+    */
+    /**
+        the minimum metric coordinate in Y direction (lower border of grid).
+
+        See also: {{#crossLink "Grid/minX:property"}}{{/crossLink}}, {{#crossLink "Grid/height:property"}}{{/crossLink}}, {{#crossLink "Grid/width:property"}}{{/crossLink}}
+
+        @property minY
+        @type double
+        @readOnly
+    */
+
+    /**
         the cell size of the grid in meters.
 
         See also: {{#crossLink "Grid/count:property"}}{{/crossLink}}, {{#crossLink "Grid/height:property"}}{{/crossLink}}, {{#crossLink "Grid/width:property"}}{{/crossLink}}
@@ -228,6 +247,25 @@ Grid = {
         g.apply('height/' + mean_h); // scale the height grid
       */
 
+    /**
+    Get a Javascript array with that contains all the grid values as doubles.
+
+    See also: {{#crossLink "Grid/value:method"}}{{/crossLink}}
+
+    @method values
+    @return { array } Javascript array with all the values of the grid
+    @Example
+        var g = Globals.grid('height');
+        let hs = g.values(); // get a (large) array
+        // loop over the array
+        for (let i=0;i<hs.length;++i) {
+            // do something with hs[i] ....
+        }
+        // use JS mapping/filter functions
+        let bigs = hs.filter(h => h>50); // filter all grid values that are >50m
+        print("number of tall pixels: " + bigs.length);
+
+      */
     /**
     Access individual cell values of the grid at the given position. If the grid is empty, or the the
     given position is invalid, -1 is returned.
