@@ -283,6 +283,18 @@ void ScriptGrid::aggregate(int factor)
 
 }
 
+QJSValue ScriptGrid::values()
+{
+    if (!mGrid || mGrid->count()<=0) {
+        throw IException("ERROR in ScriptGrid::values(): not a valid grid!");
+    }
+    QJSValue array = GlobalSettings::instance()->scriptEngine()->newArray(mGrid->count());
+    for (int i=0;i<mGrid->count(); ++i)
+        array.setProperty(i, mGrid->valueAtIndex(i));
+
+    return array;
+}
+
 double ScriptGrid::sum(QString expression)
 {
     if (!mGrid || mGrid->isEmpty())
