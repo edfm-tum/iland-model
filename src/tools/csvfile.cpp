@@ -227,7 +227,7 @@ QVariant CSVFile::value(const int row, const int col) const
                     if (s.at(lastsep)=='\"' && s.at(i-1)=='\"')
                         result = s.mid(lastsep+1,i-lastsep-2); // ignore "
                     else
-                        result = s.mid(lastsep,i-lastsep);
+                        result = s.mid(lastsep,i-lastsep).trimmed(); // remove whitespace
 
                     return result;
                 }
