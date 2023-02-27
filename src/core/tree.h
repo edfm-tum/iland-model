@@ -63,7 +63,9 @@ public:
     float height() const { return mHeight; } ///< tree height in m
     float lightResourceIndex() const { return mLRI; } ///< LRI of the tree (updated during readStamp())
     float leafArea() const { return mLeafArea; } ///< leaf area (m2) of the tree
-    double volume() const; ///< volume (m3) of stem volume based on geometry and density calculated on the fly.
+    /// volume (m3) of stem volume based on geometry and density calculated on the fly.
+    /// The volume is parameterized as standing tree volume including bark (but not branches). E.g. Pollanschuetz-volume.
+    double volume() const;
     double basalArea() const; ///< basal area of the tree at breast height in m2
     bool isDead() const { return flag(Tree::TreeDead); } ///< returns true if the tree is already dead.
     float crownRadius() const; ///< fetch crown radius (m) from the attached stamp

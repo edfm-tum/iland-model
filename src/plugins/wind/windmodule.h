@@ -119,6 +119,7 @@ private:
     void detectEdges(bool at_startup=false); ///< detect all pixels that are higher than the surrounding and therefore are likely candidates for damage
     void calculateFetch(); ///< calculate maximum gap sizes in upwind direction
     int calculateWindImpact(); ///< do one round of wind effect calculations
+    void setTopexGrid(QString filename); ///< modify the wind speed topex grid on the fly
 
     // details
     /// find distance to the next pixels that give shelter
@@ -171,6 +172,7 @@ private:
     Expression mLRITransferFunction;
 
     QString mAfterExecEvent;
+    QString mBeforeExecEvent;
 
     friend class WindScript;
     friend class WindOut;
