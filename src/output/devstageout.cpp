@@ -165,10 +165,13 @@ void DevStageOut::setup()
       QJSValue js_scriptcell = GlobalSettings::instance()->scriptEngine()->newQObject(&(*mCell));
       mEvalParam = QJSValueList() << js_scriptcell;
 
-      // set up link to iLand (user interface)
+
+#ifdef ILAND_GUI
+      // set up link to iLand (user interface) (only relevant for the GUI version of iLand)
       QStringList varlist = {"DevStage - Stage"};
       QVector<GridViewType> paint_types = {GridViewCustom};
       GlobalSettings::instance()->controller()->addPaintLayers(mCell.get(), varlist, paint_types);
+#endif
 
 }
 
