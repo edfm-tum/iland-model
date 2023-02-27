@@ -104,10 +104,11 @@ void BiteCellScript::reloadSaplings()
 
 }
 
-QVector<double> BiteCellScript::dailyMeanTemperatures()
+QVector<double> BiteCellScript::dailyClimateTimeseries(QString type)
 {
     Q_ASSERT(mAgent!=nullptr && mCell!=nullptr);
-    return mAgent->biteClimate().dailyMeanTemperatures(mCell->resourceUnit());
+    return mAgent->biteClimate().dailyClimateTimeseries(mCell->resourceUnit(), type);
+
 }
 
 // ***********************************************************

@@ -21,6 +21,8 @@
 #include "biteclimate.h"
 #include "climate.h"
 #include "resourceunit.h"
+#include "watercycle.h"
+
 namespace BITE {
 
 QStringList BiteClimate::mClimateVars = QStringList() << "MAT" << "MAP" << "GDD" // 0,1,2
@@ -32,7 +34,8 @@ QStringList BiteClimate::mClimateVars = QStringList() << "MAT" << "MAP" << "GDD"
                                                       << "PMonth4" << "PMonth5" << "PMonth6"
                                                       << "PMonth7" << "PMonth8" << "PMonth9"
                                                       << "PMonth10" << "PMonth11" << "PMonth12"
-                                                      << "GDD10"; // 27
+                                                      << "GDD10" // 27
+                                                      << "relWaterContentGS" << "relWaterContent"; // 28, 29
 
 BiteClimate::BiteClimate()
 {
@@ -67,6 +70,8 @@ double BiteClimate::value(int var_index, const ResourceUnit *ru) const
     case 1: return c->annualPrecipitation(); // MAP
     case 2: return calculateGDD(c, 5.); // GDD(with base temp 5 degrees)
     case 27: return calculateGDD(c, 10.); // GDD(with base temp 10 degrees)
+    case 28: return calculateMeanWaterContent(ru, true); // mean rel. water content in growing season (apr - sept)
+    case 29: return calculateMeanWaterContent(ru, false); // mean rel. water content over the entire year
     }
     if (var_index<3+12) {
         return c->temperatureMonth()[var_index - 3];
@@ -78,16 +83,34 @@ double BiteClimate::value(int var_index, const ResourceUnit *ru) const
     return 0.;
 }
 
-QVector<double> BiteClimate::dailyMeanTemperatures(const ResourceUnit *ru) const
+QVector<double> BiteClimate::dailyClimateTimeseries(const ResourceUnit *ru, QString type) const
 {
     Q_ASSERT(ru != nullptr);
+    int vtyp = -1;
+    if (type == "tmin") vtyp = 0;
+    if (type == "tmax") vtyp = 1;
+    if (type == "tmean") vtyp = 2;
+    if (type == "prec") vtyp = 3;
+    if (type == "rad") vtyp = 4;
+    if (type == "vpd") vtyp = 5;
+    if (vtyp < 0)
+        throw IException("Error - invalid 'type' for dailyClimateTimeseries(). Needs to be one of: tmin, tmax, tmean, prec, rad, vpd.");
     const Climate *c = ru->climate();
-    QVector<double> temps;
-    temps.reserve(366);
+    QVector<double> values;
+    values.reserve(366);
+    double value;
     for (const ClimateDay *d=c->begin();d!=c->end();++d) {
-        temps.append(d->mean_temp());
+        switch (vtyp) {
+            case 0: value = d->min_temperature; break;
+            case 1: value = d->max_temperature; break;
+            case 2: value = d->mean_temp(); break;
+            case 3: value = d->preciptitation; break;
+            case 4: value = d->radiation; break;
+            case 5: value = d->vpd; break;
+        }
+        values.append(value);
     }
-    return temps;
+    return values;
 }
 
 double BiteClimate::calculateGDD(const Climate *clim, double threshold_temp) const
@@ -96,6 +119,18 @@ double BiteClimate::calculateGDD(const Climate *clim, double threshold_temp) con
     for (const ClimateDay *d = clim->begin(); d!=clim->end(); ++d)
         gdd += qMax(d->mean_temp()-threshold_temp, 0.);
     return gdd;
+}
+
+double BiteClimate::calculateMeanWaterContent(const ResourceUnit *ru, bool only_growing_season) const
+{
+    if (!ru->waterCycle()) return 0.;
+    double ru_whc = ru->waterCycle()->waterHoldingCapacity();
+    if (ru_whc == 0.) return 0;
+
+    if (only_growing_season)
+        return limit( ru->waterCycle()->meanGrowingSeasonSWC() / ru_whc, 0., 1.);
+    else
+        return limit( ru->waterCycle()->meanSoilWaterContent() / ru_whc, 0., 1.);
 }
 
 

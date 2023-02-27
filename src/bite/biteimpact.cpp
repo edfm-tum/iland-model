@@ -138,6 +138,12 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
         // for the output - note that we do not have information on volume / biomass which is recorded for the impact-items!
         agent()->stats().treesKilled += killed;
 
+        BACellStat *stat = agent()->cellStat(cell);
+        if (stat) {
+            // we add the number of trees also to the cell-based stats, but still have only n, and not volume etc.
+            stat->nKilled += killed;
+        }
+
     }
 
 

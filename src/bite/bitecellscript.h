@@ -80,7 +80,7 @@ public slots:
     void reloadTrees();
     void reloadSaplings();
 
-    QVector<double> dailyMeanTemperatures();
+    QVector<double> dailyClimateTimeseries(QString type);
 private:
     BiteCell *mCell;
     BiteAgent *mAgent;
