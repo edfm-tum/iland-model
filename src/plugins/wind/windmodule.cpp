@@ -157,15 +157,8 @@ void WindModule::setup()
     mTopexFromGrid = false;
     QString topex_grid_file = xml.value(".topoGridFile");
     if (!topex_grid_file.isEmpty()) {
-        // load the topex-grid from file and assign the values
-        GisGrid topex_grid;
-        topex_grid_file = GlobalSettings::instance()->path(topex_grid_file);
-        if (topex_grid.loadFromFile(topex_grid_file)) {
-            for (int i=0;i<mGrid.count();i++) {
-                mGrid.valueAtIndex(i).topex = static_cast<float>( topex_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i))) );
-            }
-            mTopexFromGrid = true;
-        }
+        setTopexGrid(topex_grid_file);
+
     }
 
     // soil freeze state
@@ -181,7 +174,9 @@ void WindModule::setup()
     mWindLayers.setRUGrid(&mRUGrid);
     GlobalSettings::instance()->controller()->addLayers(&mWindLayers, "wind");
 
+    // Javascript handlers
     mAfterExecEvent = xml.value(".onAfterWind");
+    mBeforeExecEvent = xml.value(".onBeforeWind");
 
     // setup the species parameters that are specific to the wind module
     QString parameter_table_name = xml.value(".speciesParameter", "wind");
@@ -294,6 +289,13 @@ void WindModule::incrementEdgeAge()
 /// the run() function executes the wind events
 void WindModule::run(const int iteration, const bool execute_from_script)
 {
+
+    // execute the after wind event
+    if (!mBeforeExecEvent.isEmpty()) {
+        // evaluate the javascript function...
+        GlobalSettings::instance()->executeJavascript(mBeforeExecEvent);
+    }
+
     // initialize things in the first iteration
     if (iteration<=0) {
 
@@ -557,7 +559,22 @@ int WindModule::calculateWindImpact()
 //        }
 //    }
 //    qDebug() << "calculated impact for" << calculated << "pixels";
-//    return effective;
+    //    return effective;
+}
+
+void WindModule::setTopexGrid(QString filename)
+{
+    // load the topex-grid from file and assign the values
+    GisGrid topex_grid;
+    filename = GlobalSettings::instance()->path(filename);
+    if (topex_grid.loadFromFile(filename)) {
+        for (int i=0;i<mGrid.count();i++) {
+            mGrid.valueAtIndex(i).topex = static_cast<float>( topex_grid.value(mGrid.cellCenterPoint(mGrid.indexOf(i))) );
+        }
+        mTopexFromGrid = true;
+    } else {
+        throw IException(QString("Error: topex-grid-file for wind not found: %1").arg(filename));
+    }
 }
 
 

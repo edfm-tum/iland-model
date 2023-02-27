@@ -94,6 +94,14 @@ void WindScript::initializeEdgeAge(int years)
     }
 }
 
+void WindScript::setTopexGrid(QString filename)
+{
+    if (mModule && !filename.isEmpty()) {
+        mModule->setTopexGrid(filename);
+        qDebug() << "set topex grid of wind module to " << filename;
+    }
+}
+
 int WindScript::damagedArea(int threshold, QString fileName)
 {
     // get damage grid:

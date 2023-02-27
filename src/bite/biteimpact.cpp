@@ -135,6 +135,9 @@ void BiteImpact::runCell(BiteCell *cell, ABE::FMTreeList *treelist, ABE::FMSapli
 
     if (killed>0 || had_impact) {
         agent()->notifyItems(cell, BiteCell::CellImpacted);
+        // for the output - note that we do not have information on volume / biomass which is recorded for the impact-items!
+        agent()->stats().treesKilled += killed;
+
     }
 
 
