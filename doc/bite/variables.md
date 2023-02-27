@@ -17,7 +17,7 @@ var elem = new BiteElement({
 
 Dynamic expression are evaluated in a given context, i.e. either for individual trees (iLand trees), or 
 cells (cells of the BITE agent). This influences which data is accessible during the evaluation of the
-expression. For instance, if the context are trees, then [tree variables](iland.boku.ac.at/tree+variables) 
+expression. For instance, if the context are trees, then [tree variables](https://iland-model.org/tree+variables) 
 (such as `dbh` or `height`) can be used; if the context are cells, then cell variables (see below) can be
 used. 
 

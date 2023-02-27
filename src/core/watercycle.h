@@ -114,7 +114,7 @@ public:
     static void resetPsiMin(); ///< reset/clear the psi-min values for establishment
     // properties
     double fieldCapacity() const { return mFieldCapacity; } ///< field capacity (mm)
-    /// water holding capacity from (default) -15kpa to -4000 kpa (permanent wilting point)
+    /// water holding capacity in mm between suction of (default) -15kpa to -4000 kpa (permanent wilting point)
     double waterHoldingCapacity() const { return mFieldCapacity - mPermanentWiltingPoint; }
     const double &psi_kPa(const int doy) const { return mPsi[doy]; } ///< soil water potential for the day 'doy' (0-index) in kPa
     double soilDepth() const { return mSoilDepth; } ///< soil depth in mm
