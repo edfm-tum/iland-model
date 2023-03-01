@@ -1,6 +1,6 @@
 import QtQuick 2.0
-import QtQuick.Controls 1.1
-import QtQuick.Layouts 1.1
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Rectangle {
     width: 250
@@ -11,7 +11,7 @@ Rectangle {
     Image {
         id: splash_image
         source: "qrc:/iland_splash.png"
-        visible: rulercolors.caption == '';
+        visible: rulercolors.caption === '';
         fillMode: Image.PreserveAspectFit
         anchors.fill: parent
     }
@@ -19,7 +19,7 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 10
         spacing: 10
-        visible: rulercolors.caption != '';
+        visible: rulercolors.caption !== '';
 
 
         ColumnLayout{
@@ -71,7 +71,7 @@ Rectangle {
 
                     GroupBox {
                         id: details
-                        flat: true
+                        //flat: true
                         visible: showRulerDetails.checked
                         //anchors.top: showRulerDetails.bottom
                         height: visible?50:0
@@ -81,9 +81,9 @@ Rectangle {
                         SpinBox {
                             id: minValueSpin
                             enabled: !rangeAuto.checked
-                            decimals: 2
-                            minimumValue: -10000
-                            maximumValue: 1000000
+                            //decimals: 2
+                            from: -10000
+                            to: 1000000
                             width: 80
                             value: rulercolors.minValue
                             onValueChanged: rulercolors.minValue = value
@@ -91,10 +91,10 @@ Rectangle {
                         SpinBox {
                             id: maxValueSpin
                             enabled: !rangeAuto.checked
-                            decimals: 2
+                            //decimals: 2
                             width: 80
-                            minimumValue: -10000
-                            maximumValue: 1000000
+                            from: -10000
+                            to: 1000000
                             value: rulercolors.maxValue
                             anchors.left: minValueSpin.right
                             anchors.leftMargin: 10
@@ -113,7 +113,7 @@ Rectangle {
                         //anchors.top: details.bottom
                         //anchors.topMargin: 10
                         Layout.topMargin: 10
-                        flat: true
+                        //flat: true
                         Column {
                             id: colorRamp
                             anchors.topMargin: 10

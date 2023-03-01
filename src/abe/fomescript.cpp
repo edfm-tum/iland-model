@@ -245,7 +245,7 @@ bool FomeScript::updateManagement(QJSValue program, QString name)
         }
         stp->setup(program, name);
         // update associated stands (fix stand flags)
-        QMapIterator<FMUnit*, FMStand*> i(ForestManagementEngine::instance()->stands());
+        QMultiMapIterator<FMUnit*, FMStand*> i(ForestManagementEngine::instance()->stands());
         while (i.hasNext()) {
             i.next();
             if (i.value()->stp() == stp)
@@ -623,7 +623,7 @@ void ActivityObj::setEnabled(bool do_enable)
             mStand->setToLatestForcedActivity();
             qCDebug(abe) << mStand->context() << "No valid activity found - forced execution of the latest activity with force=true.";
         }
-        qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activty:" << (mStand->currentActivity() ? mStand->currentActivity()->name() : QLatin1Literal("*** no activity ***"));
+        qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activty:" << (mStand->currentActivity() ? mStand->currentActivity()->name() : QStringLiteral("*** no activity ***"));
     }
 }
 

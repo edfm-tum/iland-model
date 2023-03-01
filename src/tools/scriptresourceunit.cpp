@@ -12,7 +12,7 @@ QString ScriptResourceUnit::info()
     // return some information
     if (!mRU) return QString("invalid resource unit!");
     QString s;
-    s.sprintf("%08p", mRU);
+    s.asprintf("%8p", mRU);
     return QString("RU %1: id: %2 index: %3").arg(s).arg(id()).arg(index());
 
 }

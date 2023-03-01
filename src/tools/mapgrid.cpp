@@ -223,7 +223,7 @@ void MapGrid::createIndex()
           while (i != px_per_ru.constEnd()) {
               // each resource-unit / standId combination is unique;
               // in mRUIndex a standId is the key for multiple entries
-              mRUIndex.insertMulti(i.key(), QPair<ResourceUnit*, double>(ru, i.value()));
+              mRUIndex.insert(i.key(), QPair<ResourceUnit*, double>(ru, i.value()));
               ++i;
           }
     }
@@ -364,7 +364,7 @@ void MapGrid::updateNeighborList()
     mNeighborList.clear();
     GridRunner<int> gr(mGrid, mGrid.rectangle()); //  the full grid
     int *n4[4];
-    QHash<int,int>::iterator it_hash;
+    QMultiHash<int,int>::iterator it_hash;
     while (gr.next()) {
         gr.neighbors4(n4); // get the four-neighborhood (0-pointers possible)
         for (int i=0;i<4;++i)
@@ -373,8 +373,8 @@ void MapGrid::updateNeighborList()
                 it_hash = mNeighborList.find(*gr.current(), *n4[i]);
                 if (it_hash == mNeighborList.end()) {
                     // add the "edge" two times in the hash
-                    mNeighborList.insertMulti(*gr.current(), *n4[i]);
-                    mNeighborList.insertMulti(*n4[i], *gr.current());
+                    mNeighborList.insert(*gr.current(), *n4[i]);
+                    mNeighborList.insert(*n4[i], *gr.current());
                 }
             }
     }

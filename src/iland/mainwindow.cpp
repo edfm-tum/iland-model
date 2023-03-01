@@ -118,7 +118,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
             if (qstrcmp(context.category, "default")!=0)
                 bufferedMessages.append(QString("%1: %2").arg(context.category).arg(msg));
             else
-                bufferedMessages.append(QString(msg));
+                bufferedMessages.append(QString("%1: %2").arg(QTime::currentTime().toString("hh:mm:ss:zzz"), msg));
         }
 
         break;
@@ -159,7 +159,7 @@ void dumpMessages()
 
     if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
-            *MainWindow::logStream() << s << endl;
+            *MainWindow::logStream() << s << Qt::endl;
         MainWindow::logStream()->flush();
 
     } else {
@@ -359,7 +359,7 @@ MainWindow::MainWindow(QWidget *parent)
         view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
         view->setResizeMode(QQuickView::SizeRootObjectToView);
         ui->pbReloadQml->setVisible(false); // enable for debug...
-        //view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
+        //view->setSource(QUrl::fromLocalFile("C:/dev/iland_portqt6/src/iland/qml/ruler.qml"));
 
         //qDebug() << "setSource:";
         view->setSource(QUrl("qrc:/qml/ruler.qml"));
@@ -392,7 +392,7 @@ void MainWindow::batchLog(const QString s)
     QFile outfile(QCoreApplication::applicationDirPath()+ "/batchlog.txt");
     if (outfile.open(QIODevice::Append | QIODevice::Text)) {
         QTextStream str(&outfile);
-        str << s << endl;
+        str << s << Qt::endl;
     }
 }
 
@@ -1433,7 +1433,7 @@ void MainWindow::mouseClick(const QPoint& pos)
         //qDebug() <<p->dump();
         showTreeDetails(p);
 
-        ui->treeChange->setProperty("tree", qVariantFromValue((void*)p));
+        ui->treeChange->setProperty("tree", QVariant::fromValue((void*)p));
         ui->treeDbh->setValue(p->dbh());
         ui->treeHeight->setValue(p->height());
         ui->treePosX->setValue(p->position().x());

@@ -23,7 +23,6 @@
 #include "biteengine.h"
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
-
 #include "debugtimer.h"
 
 #include "bitelifecycle.h"
@@ -334,7 +333,7 @@ QString DynamicExpression::dump() const
     case ftConstant: return QString::number(mConstValue);
     //default: return "invalid filter type!";
     }
-    return QLatin1Literal("unknown");
+    return QStringLiteral("unknown");
 }
 
 

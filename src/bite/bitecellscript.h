@@ -25,11 +25,19 @@
 #include "expression.h"
 #include "bitecell.h"
 #include "scripttree.h"
+#include "fmtreelist.h"
+#include "fmsaplinglist.h"
+//#include "biteagent.h"
 
 namespace ABE {
 class FMTreeList;
 class FMSaplingList;
 }
+namespace BITE {
+class BiteAgent; // forward
+}
+Q_DECLARE_OPAQUE_POINTER(BITE::BiteAgent*)
+Q_DECLARE_METATYPE(BITE::BiteAgent*)
 
 namespace BITE {
 

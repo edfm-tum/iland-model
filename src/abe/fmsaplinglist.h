@@ -30,7 +30,7 @@ signals:
 public slots:
     /// return the sum of 'expression' over all saplings in the list
     /// if 'filter' is provided, only trees are counted for which 'filter' evaluates to true.
-    double sum(QString expression, QString filter=QLatin1Literal(""));
+    double sum(QString expression, QString filter=QStringLiteral(""));
 
     /// apply a filter on the current list of saplings. Only saplings for which 'filter' returns true remain in the list.
     /// returns the number of sapplings that remain in the list.
@@ -38,7 +38,7 @@ public slots:
 
     /// kill all saplings in the list for which "filter" evaluates to true (or all if filter is omitted)
     /// return the number of killed cohorts
-    int kill(QString filter = QLatin1Literal(""));
+    int kill(QString filter = QStringLiteral(""));
 
     /// affect all saplings by browsing -> this reduces the height growth in the current year to 0
     int browse(bool do_browse=true);

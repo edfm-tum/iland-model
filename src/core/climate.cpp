@@ -131,7 +131,7 @@ void Climate::setup()
     QString list = xml.value("randomSamplingList");
     if (mDoRandomSampling) {
         if (!list.isEmpty()) {
-            QStringList strlist = list.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+            QStringList strlist = list.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
             foreach(const QString &s,strlist)
                 mRandomYearList.push_back(s.toInt());
             // check for validity

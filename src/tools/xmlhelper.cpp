@@ -203,7 +203,7 @@ int XmlHelper::valueInt(const QString &path, const int defaultValue) const
 /// retreives node with given @p path and a element where isNull() is true if nothing is found.
 QDomElement XmlHelper::node(const QString &path) const
 {
-    QStringList elem = path.split('.', QString::SkipEmptyParts);
+    QStringList elem = path.split('.', Qt::SkipEmptyParts);
     QDomElement c;
     if (path.count()>0 && path.at(0) == '.')
         c = mCurrentTop;
@@ -217,7 +217,7 @@ QDomElement XmlHelper::node(const QString &path) const
         } else {
             int pos = level.indexOf('[');
             level.chop(1); // drop closing bracket
-            int ind = level.rightRef( level.length() - pos -1).toInt();
+            int ind = level.right( level.length() - pos -1).toInt();
             QString name = level.left(pos);
             c = c.firstChildElement(name);
             while (ind>0 && !c.isNull()) {
@@ -270,7 +270,7 @@ void XmlHelper::missedKey(const QString &keyname) const
 
 QString XmlHelper::fullName(const QString &keyname) const
 {
-    QStringList elem = keyname.split('.', QString::SkipEmptyParts);
+    QStringList elem = keyname.split('.', Qt::SkipEmptyParts);
 
     if (keyname.count()==0 || keyname.at(0) != '.')
         return keyname;

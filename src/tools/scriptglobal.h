@@ -121,7 +121,7 @@ public:
     void setViewOptions(QJSValue opts); ///< set current view options
 
     // static functions
-    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QLatin1Literal(""), const QString &errorMessage=QLatin1Literal(""));
+    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QStringLiteral(""), const QString &errorMessage=QStringLiteral(""));
     static QString JStoString(QJSValue value);
 
 public slots:

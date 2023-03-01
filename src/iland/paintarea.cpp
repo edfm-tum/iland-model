@@ -79,7 +79,7 @@ void PaintArea::mouseMoveEvent( QMouseEvent * event )
 
 void PaintArea::wheelEvent ( QWheelEvent * event )
 {
-    emit mouseWheel(event->pos(), event->delta() / 120);
+    emit mouseWheel(event->position().toPoint(), event->angleDelta().y() / 120);
 }
 
 void PaintArea::mouseReleaseEvent ( QMouseEvent * event )
@@ -110,13 +110,13 @@ void PaintArea::keyPressEvent(QKeyEvent *event)
             break;
         // pan with cursor keys
         case Qt::Key_Left:
-            emit mouseDrag(mousepos, mousepos + QPoint(20, 0), Qt::MidButton); break;
+            emit mouseDrag(mousepos, mousepos + QPoint(20, 0), Qt::MiddleButton); break;
         case Qt::Key_Right:
-            emit mouseDrag(mousepos, mousepos + QPoint(-20, 0), Qt::MidButton); break;
+            emit mouseDrag(mousepos, mousepos + QPoint(-20, 0), Qt::MiddleButton); break;
 
         case Qt::Key_Up:
-            emit mouseDrag(mousepos, mousepos + QPoint(0, 20), Qt::MidButton); break;
+            emit mouseDrag(mousepos, mousepos + QPoint(0, 20), Qt::MiddleButton); break;
         case Qt::Key_Down:
-            emit mouseDrag(mousepos, mousepos + QPoint(0, -20), Qt::MidButton); break;
+            emit mouseDrag(mousepos, mousepos + QPoint(0, -20), Qt::MiddleButton); break;
         }
 }

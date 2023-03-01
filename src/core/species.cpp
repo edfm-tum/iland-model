@@ -28,6 +28,7 @@
 
 
 #include <QtCore>
+#include <QRegExp>
 #include "globalsettings.h"
 
 #include "species.h"
@@ -219,7 +220,7 @@ void Species::setup()
     mSaplingGrowthParams.adultSproutProbability = 0.;
     QString adult_sprout = GlobalSettings::instance()->settings().value("model.species.sprouting.adultSproutProbability");
     if (!adult_sprout.isEmpty()) {
-        QStringList sprout_prob_list = adult_sprout.split(QRegExp("([^\\.\\w]+)"));
+        QStringList sprout_prob_list = adult_sprout.split(QRegularExpression("([^\\.\\w]+)"));
 
         if (sprout_prob_list.length() == 1)
             mSaplingGrowthParams.adultSproutProbability = adult_sprout.toDouble();

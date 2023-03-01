@@ -542,12 +542,12 @@ const QVector<LayeredGridBase::LayerElement> &PermafrostLayers::names()
 {
     if (mNames.isEmpty())
         mNames= QVector<LayeredGridBase::LayerElement>()
-                << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthFrozen"), QLatin1Literal("maximum depth of freezing (m). Is 2m for full freeze."), GridViewTurbo)
-                << LayeredGridBase::LayerElement(QLatin1Literal("maxDepthThawed"), QLatin1Literal("maximum depth of thawing (m). Is 2m for fully thawed soil"), GridViewTurbo)
-                << LayeredGridBase::LayerElement(QLatin1Literal("deepSoilTemperature"), QLatin1Literal("temperature of ground deep below the soil (C)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("maxSnowCover"), QLatin1Literal("maximum snow height (cm)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("SOLDepth"), QLatin1Literal("depth of the soil organic layer (litter+dead moss) (cm)"), GridViewTurbo)
-                << LayeredGridBase::LayerElement(QLatin1Literal("moss"), QLatin1Literal("depth of the life moss layer (cm)"), GridViewTurbo);
+                << LayeredGridBase::LayerElement(QStringLiteral("maxDepthFrozen"), QStringLiteral("maximum depth of freezing (m). Is 2m for full freeze."), GridViewTurbo)
+                << LayeredGridBase::LayerElement(QStringLiteral("maxDepthThawed"), QStringLiteral("maximum depth of thawing (m). Is 2m for fully thawed soil"), GridViewTurbo)
+                << LayeredGridBase::LayerElement(QStringLiteral("deepSoilTemperature"), QStringLiteral("temperature of ground deep below the soil (C)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("maxSnowCover"), QStringLiteral("maximum snow height (cm)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("SOLDepth"), QStringLiteral("depth of the soil organic layer (litter+dead moss) (cm)"), GridViewTurbo)
+                << LayeredGridBase::LayerElement(QStringLiteral("moss"), QStringLiteral("depth of the life moss layer (cm)"), GridViewTurbo);
     return mNames;
 
 }

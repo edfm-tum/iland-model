@@ -528,7 +528,7 @@ void FMTreeList::sort(QString statement)
         mTrees[i].second = sorter.execute();
    }
    // now sort the list....
-   qSort(mTrees.begin(), mTrees.end(), treePairValue);
+   std::sort(mTrees.begin(), mTrees.end(), treePairValue);
 }
 
 double FMTreeList::percentile(int pct)
@@ -552,7 +552,7 @@ void FMTreeList::randomize()
         mTrees[i].second = drandom();
     }
     // now sort the list....
-    qSort(mTrees.begin(), mTrees.end(), treePairValue);
+    std::sort(mTrees.begin(), mTrees.end(), treePairValue);
 
 }
 

@@ -73,7 +73,7 @@ void Modules::init()
     if (wind && bb) {
         int iw = mInterfaces.indexOf(wind), ib = mInterfaces.indexOf(bb);
         if (ib<iw)
-            mInterfaces.swap(iw, ib);
+            mInterfaces.swapItemsAt(iw, ib);
     }
 
 

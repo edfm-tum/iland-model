@@ -138,7 +138,7 @@ bool Environment::loadFromString(const QString &source)
             climateNames.removeDuplicates();
             if (logLevelDebug())
                 qDebug() << "creating climatae: " << climateNames;
-            qDebug() << "Environment: climate: # of climates in environment file:" << climateNames.count();
+            qDebug() << "Environment: climate: # of climate tables in environment file:" << climateNames.count();
             foreach (QString name, climateNames) {
                 // create an entry in the list of created objects, but
                 // really create the climate only if required (see setPosition() )

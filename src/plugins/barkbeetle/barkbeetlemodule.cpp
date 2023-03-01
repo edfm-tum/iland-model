@@ -768,18 +768,18 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
 {
     if (mNames.isEmpty())
         mNames = QVector<LayeredGridBase::LayerElement>()
-                << LayeredGridBase::LayerElement(QLatin1Literal("value"), QLatin1Literal("grid value of the pixel"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("dbh"), QLatin1Literal("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("infested"), QLatin1Literal("infested pixels (1) are colonized by beetles."), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("killed"), QLatin1Literal("1 for pixels that have been killed (0 otherwise) in the current year (last execution of the module)."), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("dead"), QLatin1Literal("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). \nNewly infested pixels are included (max iteration + 1)."), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("p_killed"), QLatin1Literal("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
-                << LayeredGridBase::LayerElement(QLatin1Literal("n_landed"), QLatin1Literal("number of cohorts that landed on a pixel (sum of all generations)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("deadwood"), QLatin1Literal("10: trees killed by storm, 8: trap trees, 5: active vicinity of 10/8, 0: no dead trees"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakProbability"), QLatin1Literal("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
-                << LayeredGridBase::LayerElement(QLatin1Literal("outbreakAge"), QLatin1Literal("age of the outbreak that led to the infestation of the pixel."), GridViewGray)
-                << LayeredGridBase::LayerElement(QLatin1Literal("nEvents"), QLatin1Literal("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
-                << LayeredGridBase::LayerElement(QLatin1Literal("sumVolume"), QLatin1Literal("running sum of damages trees (volume, m3)."), GridViewReds);
+                << LayeredGridBase::LayerElement(QStringLiteral("value"), QStringLiteral("grid value of the pixel"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("dbh"), QStringLiteral("diameter of thickest spruce tree on the 10m pixel"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("infested"), QStringLiteral("infested pixels (1) are colonized by beetles."), GridViewHeat)
+                << LayeredGridBase::LayerElement(QStringLiteral("killed"), QStringLiteral("1 for pixels that have been killed (0 otherwise) in the current year (last execution of the module)."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("dead"), QStringLiteral("iteration at which the treees on the pixel were killed (0: alive, -1: no host trees). \nNewly infested pixels are included (max iteration + 1)."), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("p_killed"), QStringLiteral("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
+                << LayeredGridBase::LayerElement(QStringLiteral("n_landed"), QStringLiteral("number of cohorts that landed on a pixel (sum of all generations)"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("deadwood"), QStringLiteral("10: trees killed by storm, 8: trap trees, 5: active vicinity of 10/8, 0: no dead trees"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("outbreakProbability"), QStringLiteral("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
+                << LayeredGridBase::LayerElement(QStringLiteral("outbreakAge"), QStringLiteral("age of the outbreak that led to the infestation of the pixel."), GridViewGray)
+                << LayeredGridBase::LayerElement(QStringLiteral("nEvents"), QStringLiteral("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
+                << LayeredGridBase::LayerElement(QStringLiteral("sumVolume"), QStringLiteral("running sum of damages trees (volume, m3)."), GridViewReds);
     return mNames;
 
 }
@@ -804,7 +804,7 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleRULayers::names()
 {
     if (mNames.isEmpty())
         mNames = QVector<LayeredGridBase::LayerElement>()
-                << LayeredGridBase::LayerElement(QLatin1Literal("generations"), QLatin1Literal("total number of bark beetle generations"), GridViewHeat);
+                << LayeredGridBase::LayerElement(QStringLiteral("generations"), QStringLiteral("total number of bark beetle generations"), GridViewHeat);
     return mNames;
 }
 

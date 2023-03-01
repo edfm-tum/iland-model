@@ -18,6 +18,7 @@
 ********************************************************************************************/
 
 #include "helper.h"
+#include "debugtimer.h"
 #include <QtCore>
 #ifdef ILAND_GUI
 #if QT_VERSION < 0x050000
@@ -50,6 +51,7 @@ QString Helper::currentRevision()
 
 QString Helper::loadTextFile(const QString& fileName)
 {
+    DebugTimer t("Helper::loadTextFile");
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly)) {
@@ -78,11 +80,14 @@ QByteArray Helper::loadFile(const QString& fileName)
     if (!file.open(QIODevice::ReadOnly)) {
         return QByteArray();
     }
-    QTextStream s(&file);
-    QByteArray result;
-    s >> result;
+    return file.readAll();
 
-    return result;
+//    QTextStream s(&file);
+
+//    QByteArray result;
+//    s >> result;
+
+//    return result;
 }
 
 void Helper::saveToFile(const QString &fileName, const QByteArray &data)
@@ -167,7 +172,7 @@ void Helper::openHelp(const QString& topic)
 QString Helper::stripHtml(const QString &source)
 {
     QString str = source.simplified();
-    return str.replace(QRegExp("<[^>]+>"),"");
+    return str.replace(QRegularExpression("<[^>]+>"),"");
 }
 
 

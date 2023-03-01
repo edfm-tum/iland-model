@@ -28,7 +28,6 @@
 
   */
 #include <QtCore>
-#include "global.h"
 
 #include "resourceunit.h"
 #include "resourceunitspecies.h"

@@ -64,7 +64,7 @@ void ScriptGrid::addToScriptEngine(QJSEngine *engine)
 {
     qRegisterMetaType<ScriptGrid*>("ScriptGrid*"); // register type, required to have that type as property
     // allow for "new Grid"
-    QJSValue jsMetaObject = engine->newQMetaObject(&ScriptGrid::staticQtMetaObject);
+    QJSValue jsMetaObject = engine->newQMetaObject(&ScriptGrid::staticMetaObject);
     engine->globalObject().setProperty("Grid", jsMetaObject);
 
 }

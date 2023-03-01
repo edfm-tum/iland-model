@@ -2,13 +2,13 @@
 #define SVDOUT_H
 #include "output.h"
 #include "expression.h"
-// #include <bitset>
+#include <bitset>
 // Qt5.12 bug with MSVC compiler
 // https://bugreports.qt.io/browse/QTBUG-72073
 // created an updated version of "bitset" including a lil fix
 //#ifdef Q_OS_WIN // <- not working for GCC on Windows
 #ifdef Q_CC_MSVC
-#include "../3rdparty/bitset.h"
+//#include "../3rdparty/bitset.h"
 #else
 #include <bitset>
 #endif

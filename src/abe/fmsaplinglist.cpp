@@ -71,7 +71,7 @@ int FMSaplingList::kill(QString filter)
 {
     int nsap_removed = 0;
     SaplingWrapper sw;
-    Expression expression(filter.isEmpty() ? QLatin1Literal("true") : filter, &sw);
+    Expression expression(filter.isEmpty() ? QStringLiteral("true") : filter, &sw);
     for (int i=0;i<mSaplings.size();++i) {
         sw.setSaplingTree(mSaplings[i].first, mSaplings[i].second->ru);
         if (expression.execute()) {

@@ -328,7 +328,7 @@ void Tests::multipleLightRuns(const QString &fileName)
     QString inPath = xml.value("inputpath");
     QString inFile = xml.value("stands");
     qDebug() << "standlist:" << inFile << "inpath:"<<inPath << "save to:"<<outPath;
-    QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', QString::SkipEmptyParts);
+    QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', Qt::SkipEmptyParts);
 
     StandLoader loader(model);
     try {

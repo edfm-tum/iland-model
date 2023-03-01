@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTextEdit>
 #include <QSyntaxHighlighter>
+#include <QRegExp>
 
 class Highlighter;
 class JSTextArea : public QTextEdit

@@ -9,6 +9,8 @@ QT += widgets
 QT += quick
 QT += concurrent
 
+QT += core5compat
+
 TARGET = iland
 TEMPLATE = app
 CONFIG += precompile_header
@@ -80,6 +82,7 @@ message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
 
 win32-msvc*:{
 #release msvc
+
 PRE_TARGETDEPS += ../plugins/iland_fire.lib
 PRE_TARGETDEPS += ../plugins/iland_wind.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib

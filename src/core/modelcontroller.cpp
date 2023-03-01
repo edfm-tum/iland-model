@@ -23,7 +23,8 @@
 
   */
 
-#include "global.h"
+#include <QRegExp>
+
 #include "modelcontroller.h"
 #include <QObject>
 
@@ -478,7 +479,7 @@ void ModelController::fetchDynamicOutput()
             var.pop_front(); // drop first element (contains the full string)
             simple_expression = false;
         } else {
-            var = field.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+            var = field.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
             simple_expression = true;
         }
         if (var.count()!=2)

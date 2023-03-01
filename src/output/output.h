@@ -79,6 +79,7 @@ public:
     // save data
     Output & operator<< ( const double& value ) { add(value); return *this; }
     Output & operator<< ( const int value ) { add(value); return *this; }
+    Output & operator<< ( const long long value ) { add(static_cast<int>(value)); return *this; }
     Output & operator<< ( const QString &value ) { add(value); return *this; }
 
 protected:

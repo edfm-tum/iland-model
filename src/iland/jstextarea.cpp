@@ -116,7 +116,7 @@ JSTextArea::JSTextArea(QWidget *parent) : QTextEdit(parent)
     const int tabStop = 2;  // 4 characters
 
     QFontMetrics metrics(font);
-    setTabStopWidth(tabStop * metrics.width(' '));
+    setTabStopDistance(tabStop * metrics.horizontalAdvance(' '));
 }
 
 void JSTextArea::keyPressEvent ( QKeyEvent * event )

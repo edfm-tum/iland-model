@@ -98,17 +98,17 @@ const QVector<LayeredGridBase::LayerElement> &FireLayers::names()
 {
     if (mNames.isEmpty())
         mNames= QVector<LayeredGridBase::LayerElement>()
-                << LayeredGridBase::LayerElement(QLatin1Literal("baseIgnition"), QLatin1Literal("base ignition rate"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("KBDI"), QLatin1Literal("KBDI"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("KBDIref"), QLatin1Literal("reference KBDI value"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("fireID"), QLatin1Literal("Id of the fire"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("crownKill"), QLatin1Literal("crown kill rate"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("diedBasalArea"), QLatin1Literal("m2 of died basal area"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("diedStemsFrac"), QLatin1Literal("fraction of died stems"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("fuel"), QLatin1Literal("burned fuel (forest floor + dwd + moss) kg/ha"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("nFire"), QLatin1Literal("cumulative count of fires"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("lastFireYear"), QLatin1Literal("sim. year of last burn"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("combustibleFuel"), QLatin1Literal("available combustible fuel (current KBDI, forest floor + dwd + moss) kg/ha"), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QStringLiteral("baseIgnition"), QStringLiteral("base ignition rate"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("KBDI"), QStringLiteral("KBDI"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("KBDIref"), QStringLiteral("reference KBDI value"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("fireID"), QStringLiteral("Id of the fire"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("crownKill"), QStringLiteral("crown kill rate"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("diedBasalArea"), QStringLiteral("m2 of died basal area"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("diedStemsFrac"), QStringLiteral("fraction of died stems"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("fuel"), QStringLiteral("burned fuel (forest floor + dwd + moss) kg/ha"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("nFire"), QStringLiteral("cumulative count of fires"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("lastFireYear"), QStringLiteral("sim. year of last burn"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("combustibleFuel"), QStringLiteral("available combustible fuel (current KBDI, forest floor + dwd + moss) kg/ha"), GridViewRainbow);
 
     return mNames;
 

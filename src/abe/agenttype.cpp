@@ -127,7 +127,7 @@ void AgentType::addAgentUpdate(const AgentUpdate &update, FMUnit *unit)
     }
 
 
-    AgentUpdate &rUpdate = mAgentChanges.insertMulti(unit, update).value();
+    AgentUpdate &rUpdate = mAgentChanges.insert(unit, update).value();
     rUpdate.setCounter( unit->numberOfStands() );
 
     // set default unit value
