@@ -23,8 +23,6 @@
 
   */
 
-#include <QRegExp>
-
 #include "modelcontroller.h"
 #include <QObject>
 
@@ -431,14 +429,11 @@ void ModelController::setupDynamicOutput(QString fieldList)
 {
     mDynFieldList.clear();
     if (!fieldList.isEmpty()) {
-        QRegExp rx("((?:\\[.+\\]|\\w+)\\.\\w+)");
-        int pos=0;
-        while ((pos = rx.indexIn(fieldList, pos)) != -1) {
-            mDynFieldList.append(rx.cap(1));
-            pos += rx.matchedLength();
+        QRegularExpression re("((?:\\[.+\\]|\\w+)\\.\\w+)");
+        for (const QRegularExpressionMatch &match : re.globalMatch(fieldList)) {
+            mDynFieldList.append(match.captured(1));
         }
 
-        //mDynFieldList = fieldList.split(QRegExp("(?:\\[.+\\]|\\w+)\\.\\w+"), QString::SkipEmptyParts);
         mDynFieldList.prepend("count");
         mDynFieldList.prepend("year"); // fixed fields.
     }
@@ -472,16 +467,18 @@ void ModelController::fetchDynamicOutput()
     foreach (QString field, mDynFieldList) {
         if (field=="count" || field=="year")
             continue;
-        if (field.count()>0 && field.at(0)=='[') {
-            QRegExp rex("\\[(.+)\\]\\.(\\w+)");
-            rex.indexIn(field);
-            var = rex.capturedTexts();
-            var.pop_front(); // drop first element (contains the full string)
-            simple_expression = false;
-        } else {
-            var = field.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
-            simple_expression = true;
-        }
+// - removed this to get rid of QRegExp - not sure if it is still used?
+//        if (field.count()>0 && field.at(0)=='[') {
+//            //QRegularExpression rex("\\[(.+)\\]\\.(\\w+)");
+//            QRegExp rex("\\[(.+)\\]\\.(\\w+)");
+//            rex.indexIn(field);
+//            var = rex.capturedTexts();
+//            var.pop_front(); // drop first element (contains the full string)
+//            simple_expression = false;
+//        } else {
+        var = field.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
+        simple_expression = true;
+        //}
         if (var.count()!=2)
                 throw IException(QString("Invalid variable name for dynamic output:") + field);
         if (var.first()!=lastVar) {

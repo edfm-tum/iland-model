@@ -28,7 +28,6 @@
 
 
 #include <QtCore>
-#include <QRegExp>
 #include "globalsettings.h"
 
 #include "species.h"

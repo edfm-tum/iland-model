@@ -38,9 +38,9 @@ inline bool operator==(const SVDState &s1, const SVDState &s2)
     return equal;
 }
 
-inline uint qHash(const SVDState &key, uint seed)
+inline size_t qHash(const SVDState &key, size_t seed)
 {
-    uint hash_value = qHash(key.composition, seed) ^ qHash(key.structure, seed) ^ qHash(key.function, seed);
+    size_t hash_value = qHash(key.composition, seed) ^ qHash(key.structure, seed) ^ qHash(key.function, seed);
     return hash_value;
 }
 

@@ -16,8 +16,6 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
-#include <QRegExp>
-
 #include "global.h"
 #include "standloader.h"
 
@@ -343,13 +341,15 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
     SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
 
     QString my_content(content);
+
     // cut out the <trees> </trees> part if present
     if (content.contains("<trees>")) {
-        QRegExp rx(".*<trees>(.*)</trees>.*");
-        rx.indexIn(content, 0);
-        if (rx.capturedTexts().count()<1)
+        // Note: changed from QRegExp() (qt6 port), but not tested
+        QRegularExpression rx(".*<trees>(.*)</trees>.*");
+        QRegularExpressionMatch match = rx.match(content);
+        my_content = match.captured(1);
+        if (my_content.isEmpty())
             return 0;
-        my_content = rx.cap(1).trimmed();
     }
 
     CSVFile infile;

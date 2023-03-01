@@ -9,8 +9,6 @@ QT += widgets
 QT += quick
 QT += concurrent
 
-QT += core5compat
-
 TARGET = iland
 TEMPLATE = app
 CONFIG += precompile_header

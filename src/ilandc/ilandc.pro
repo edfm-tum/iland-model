@@ -12,6 +12,7 @@ QT       += sql
 QT       += qml
 QT       += concurrent
 
+
 INCLUDEPATH += ../core \
     ../tools \
     ../output \

@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QTextEdit>
 #include <QSyntaxHighlighter>
-#include <QRegExp>
 
 class Highlighter;
 class JSTextArea : public QTextEdit
@@ -25,33 +24,32 @@ private:
 
 // from Qt-Example:
 class Highlighter : public QSyntaxHighlighter
-  {
-      Q_OBJECT
+{
+    Q_OBJECT
 
-  public:
-      Highlighter(QTextDocument *parent = 0);
+public:
+    Highlighter(QTextDocument *parent = nullptr);
 
-  protected:
-      void highlightBlock(const QString &text) override;
+protected:
+    void highlightBlock(const QString &text) override;
 
-  private:
-      struct HighlightingRule
-      {
-          QRegExp pattern;
-          QTextCharFormat format;
-      };
-      QVector<HighlightingRule> highlightingRules;
+private:
+    struct HighlightingRule
+    {
+        QRegularExpression pattern;
+        QTextCharFormat format;
+    };
+    QList<HighlightingRule> highlightingRules;
 
-      QRegExp commentStartExpression;
-      QRegExp commentEndExpression;
+    QRegularExpression commentStartExpression;
+    QRegularExpression commentEndExpression;
 
-      QTextCharFormat keywordFormat;
-      QTextCharFormat classFormat;
-      QTextCharFormat singleLineCommentFormat;
-      QTextCharFormat multiLineCommentFormat;
-      QTextCharFormat quotationFormat;
-      QTextCharFormat singleQuotationFormat;
-      QTextCharFormat functionFormat;
-  };
+    QTextCharFormat keywordFormat;
+    QTextCharFormat classFormat;
+    QTextCharFormat singleLineCommentFormat;
+    QTextCharFormat multiLineCommentFormat;
+    QTextCharFormat quotationFormat;
+    QTextCharFormat functionFormat;
+};
 
 #endif // JSTEXTAREA_H

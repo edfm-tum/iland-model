@@ -16,8 +16,6 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
-#include <QRegExp>
-
 #include "dynamicstandout.h"
 
 #include "debugtimer.h"
@@ -73,16 +71,17 @@ void DynamicStandOut::setup()
     mFieldList.clear();
 
     // setup fields
-   if (!fieldList.isEmpty()) {
-       QRegExp rx("([^\\.]+).(\\w+)[,\\s]*"); // two parts: before dot and after dot, and , + whitespace at the end
-        int pos=0;
+    if (!fieldList.isEmpty()) {
+        QRegularExpression re("([^\\.]+).(\\w+)[,\\s]*"); // two parts: before dot and after dot, and , + whitespace at the end
+
         QString field, aggregation;
         TreeWrapper tw;
-        while ((pos = rx.indexIn(fieldList, pos)) != -1) {
-            pos += rx.matchedLength();
+        QRegularExpressionMatchIterator i = re.globalMatch(fieldList);
+        while (i.hasNext()) {
+            QRegularExpressionMatch match = i.next();
+            field = match.captured(1);
+            aggregation = match.captured(2);
 
-            field = rx.cap(1); // field / expresssion
-            aggregation = rx.cap(2);
             mFieldList.append(SDynamicField());
             // parse field
             if (field.count()>0 && !field.contains('(')) {
@@ -96,15 +95,15 @@ void DynamicStandOut::setup()
 
             mFieldList.back().agg_index = aggList.indexOf(aggregation);
             if (mFieldList.back().agg_index==-1)
-                 throw IException(QString("Invalid aggregate expression for dynamic output: %1\nallowed:%2")
-                                          .arg(aggregation).arg(aggList.join(" ")));
+                throw IException(QString("Invalid aggregate expression for dynamic output: %1\nallowed:%2")
+                                 .arg(aggregation).arg(aggList.join(" ")));
 
-             QString stripped_field=QString("%1_%2").arg(field, aggregation);
-             stripped_field.replace(QRegularExpression("[\\[\\]\\,\\(\\)<>=!\\-\\+/\\*\\s]"), "_");
-             stripped_field.replace("__", "_");
-             columns() << OutputColumn(stripped_field, field, OutDouble);
+            QString stripped_field=QString("%1_%2").arg(field, aggregation);
+            stripped_field.replace(QRegularExpression("[\\[\\]\\,\\(\\)<>=!\\-\\+/\\*\\s]"), "_");
+            stripped_field.replace("__", "_");
+            columns() << OutputColumn(stripped_field, field, OutDouble);
         }
-   }
+    }
 }
 
 void DynamicStandOut::exec()
