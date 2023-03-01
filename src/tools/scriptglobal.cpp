@@ -151,6 +151,11 @@ void ScriptGlobal::include(QString filename)
 
 }
 
+double ScriptGlobal::random(double from, double to)
+{
+    return nrandom(from, to);
+}
+
 QString ScriptGlobal::defaultDirectory(QString dir)
 {
     QString result = GlobalSettings::instance()->path(QString(), dir) + QDir::separator();

@@ -226,12 +226,12 @@ void BiteAgent::run()
     // run the main function in life cycle first
     mLC->run();
 
-    for (auto item : mItems) {
+    for (auto *item : mItems) {
         item->beforeRun();
     }
 
     // step 1: run all phase-level items (e.g. dispersal)
-    for (auto item : mItems) {
+    for (auto *item : mItems) {
         if (item->runCells() == false)
             item->run();
     }

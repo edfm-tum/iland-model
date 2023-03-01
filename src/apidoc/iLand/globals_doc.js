@@ -159,6 +159,18 @@ See also: {{#crossLink "Globals/path:method"}}{{/crossLink}}
 */
 
 /**
+Return a random number between `from` and `to`. This function uses the iLand internal random number generation process
+and respects a global random seed. With other words: Using the Javascript Math.random() does not guarantee the
+same sequence of numbers, even when a global random seed is set (and multithreading is disabled)
+
+
+@method random
+@param from {double} lower bound (inclusive), default=0
+@param to {double} upper bound (inclusive), default=1
+@return {double} the random number
+*/
+
+/**
 extent of the world (without buffer) in meters (x-direction).
 
 See also: {{#crossLink "Globals/worldY:property"}}{{/crossLink}}
