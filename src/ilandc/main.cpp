@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     printf("iLand console (%s - #%s)\n", currentVersion(), svnRevision());
     printf("This is the console version of iLand, the individual based\nlandscape and disturbance forest model.\n");
     printf("More at: https://iland-model.org \n");
-    printf("(c) Werner Rammer, Rupert Seidl, 2009-2020 \n");
+    printf("(c) Werner Rammer, Rupert Seidl, 2009-2023 \n");
     printf("version: %s\n", verboseVersion().toLocal8Bit().data());
     printf("****************************************\n\n");
     if (a.arguments().count()<3) {
