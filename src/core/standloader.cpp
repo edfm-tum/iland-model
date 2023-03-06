@@ -377,7 +377,7 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
     bool ok;
     int cnt=0;
     QString speciesid;
-    for (int i=1;i<infile.rowCount();i++) {
+    for (int i=0;i<infile.rowCount();i++) {
         dbh = infile.value(i, iBhd).toDouble();
 
         //if (dbh<5.)
