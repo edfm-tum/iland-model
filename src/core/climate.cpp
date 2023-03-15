@@ -27,10 +27,14 @@
 #include "climate.h"
 #include "model.h"
 #include "timeevents.h"
+#include "csvfile.h"
 
-double ClimateDay::co2 = 350.; // base value of ambient CO2-concentration (ppm)
 QVector<int> Climate::sampled_years; // list of sampled years to use
 
+double ClimateDay::co2 = 350.; // base value of ambient CO2-concentration (ppm)
+int Climate::co2Startyear = 1980;
+QString Climate::co2Pathway;
+QMap<QString, QVector<double> > Climate::fixedCO2concentrations;
 
 
 void Sun::setup(double latitude_rad)
@@ -184,6 +188,11 @@ void Climate::setup()
     mSun.setup(Model::settings().latitude);
     mCurrentYear--; // go to "-1" -> the first call to next year will go to year 0.
     sampled_years.clear();
+
+    co2Pathway = xml.value("co2pathway", "No");
+    co2Startyear = xml.valueInt("co2startYear", 1980);
+    if (co2Pathway == "No")
+        co2Pathway = QString();
     mIsSetup = true;
 }
 
@@ -334,9 +343,9 @@ void Climate::nextYear()
             qDebug() << "Climate: current year (randomized):" << mCurrentYear;
     }
 
-    ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
-    if (logLevelDebug())
-        qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
+    // update ambient CO2 level
+    updateCO2concentration();
+
     mBegin = mStore.begin() + mDayIndices[mCurrentYear*12];
     mEnd = mStore.begin() + mDayIndices[(mCurrentYear+1)*12];; // point to the 1.1. of the next year
 
@@ -380,6 +389,52 @@ void Climate::climateCalculations(const ClimateDay &lastDay)
         c->temp_delayed=(c-1)->temp_delayed + 1./tau * (c->temperature - (c-1)->temp_delayed);
         ++c;
     }
+
+}
+
+QMutex _loadco2;
+void Climate::updateCO2concentration()
+{
+
+    if (!co2Pathway.isEmpty()) {
+
+        QMutexLocker lock(&_loadco2);
+        if (fixedCO2concentrations.isEmpty()) {
+
+            // load from data file
+            CSVFile input_file(":/rcp_co2_1980_2100.txt");
+
+            for (int i=0;i<input_file.rowCount(); ++i) {
+                fixedCO2concentrations["RCP2.6"].append(input_file.value(i, "RCP_26").toDouble());
+                fixedCO2concentrations["RCP4.5"].append(input_file.value(i, "RCP_45").toDouble());
+                fixedCO2concentrations["RCP6.0"].append(input_file.value(i, "RCP_60").toDouble());
+                fixedCO2concentrations["RCP8.5"].append(input_file.value(i, "RCP_85").toDouble());
+            }
+            if (fixedCO2concentrations["RCP2.6"].isEmpty())
+                throw IException("Error in loading file with CO2 concentrations!");
+        }
+
+
+
+        int year = Globals->currentYear();
+        // derive actual year: first year of sim should get the value from co2Startyear (first year in the file is 1980)
+
+        int yearindex =  std::max( (year + co2Startyear - 1) -  1980, 0);
+        yearindex = std::min(yearindex, static_cast<int>(fixedCO2concentrations[co2Pathway].size()-1));
+        if (yearindex < 0)
+            throw IException("climate: set co2 concentration: invalid value for co2. Valid values for 'co2pathway' are: 'No', 'RCP2.6', 'RCP4.5', 'RCP6.0', 'RCP8.5'");
+
+        double new_co2_value = fixedCO2concentrations[co2Pathway][yearindex];
+        ClimateDay::co2 = new_co2_value;
+
+    } else {
+        ClimateDay::co2 = GlobalSettings::instance()->settings().valueDouble("model.climate.co2concentration", 380.);
+
+    }
+
+    if (logLevelDebug())
+        qDebug() << "CO2 concentration" << ClimateDay::co2 << "ppm.";
+
 
 }
 

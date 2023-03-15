@@ -58,6 +58,7 @@ public:
     void setModel(Model *model) {mModel = model; }
     void setModelController(ModelController *mc) {mModelController = mc; }
 
+    /// the current simulation year (starting with 1)
     int currentYear() const { return mRunYear; }
     void setCurrentYear(const int year) { mRunYear = year; }
 

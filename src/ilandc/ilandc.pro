@@ -365,7 +365,7 @@ HEADERS += \
     ../bite/biteoutputitem.h \
     ../core/permafrost.h
 
-
+RESOURCES += ../iland/res/iland.qrc
 
 
 

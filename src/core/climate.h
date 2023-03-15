@@ -108,6 +108,7 @@ private:
     void load(); ///< load mLoadYears years from database
     void setupPhenology(); ///< setup of phenology groups
     void climateCalculations(const ClimateDay &lastDay); ///< more calculations done after loading of climate data
+    void updateCO2concentration();
     ClimateDay mInvalidDay;
     int mLoadYears; // count of years to load ahead
     int mCurrentYear; // current year (relative)
@@ -128,6 +129,10 @@ private:
     double mTemperatureMonth[12]; ///< this years average temperature per month
     double mMeanAnnualTemperature; ///< mean temperature of the current year
     static QVector<int> sampled_years; ///< list of sampled years to use
+    // co2 concentrations
+    static QString co2Pathway;
+    static int co2Startyear;
+    static QMap<QString, QVector<double> > fixedCO2concentrations;
 };
 
 #endif // CLIMATE_H
