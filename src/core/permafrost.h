@@ -174,7 +174,7 @@ private:
 
     // parameters of the moss submodel
     struct SMossParam {
-        const double SLA=1.; ///< specific leaf area of moss (set to 1)
+        const double SLA=1.; ///< specific leaf area of moss (set to 1 m2/kg)
         const double AMax=0.3; ///< maximum moss productivity (0.3kg/m2/yr) (Foster et al 2019)
         double light_k; ///< light extinction koefficient used for canopy+moss layer
         double light_comp; ///< light compensation point (proportion of light level above canopy)

@@ -459,6 +459,7 @@ ABE::FMSaplingList *BiteAgent::threadSaplingList()
 
 void BiteAgent::createStatsGrid()
 {
+    // set up the stats grid with the same resolution as the base grid
     mStatsGrid.setup(mGrid.metricRect(), mGrid.cellsize());
 }
 

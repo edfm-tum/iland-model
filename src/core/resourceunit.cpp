@@ -241,6 +241,18 @@ double ResourceUnit::topHeight(bool &rIrregular) const
     return h_top;
 }
 
+void ResourceUnit::notifyDisturbance(ERUDisturbanceType source, double info) const
+{
+    // events are stored with newest events first. Oldest event is removed
+    // when maximum number of events reached
+    mSVDState.disturbanceEvents->prepend(RUSVDState::SVDDisturbanceEvent(
+                                            Globals->currentYear(),
+                                            source,
+                                            info));
+    if (mSVDState.disturbanceEvents->size() > 2 )
+        mSVDState.disturbanceEvents->pop_back();
+}
+
 Tree &ResourceUnit::newTree()
 {
     // start simple: just append to the vector...
@@ -488,6 +500,8 @@ void ResourceUnit::updateSVDState()
             int nspecies = GlobalSettings::instance()->model()->speciesSet()->activeSpecies().size();
             mSVDState.localComposition = new QVector<float>(nspecies, 0.f);
             mSVDState.midDistanceComposition = new QVector<float>(nspecies, 0.f);
+            // create history vector
+            mSVDState.disturbanceEvents = new QVector<RUSVDState::SVDDisturbanceEvent>();
         }
         int stateId=GlobalSettings::instance()->model()->svdStates()->evaluateState(this);
         if (mSVDState.stateId==stateId)

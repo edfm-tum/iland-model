@@ -227,7 +227,8 @@ void SVDUniqueStateOut::setup()
 /*  ***********************************************************************  */
 
 // list of available indicators:
-static QStringList svd_indicators = QStringList() << "shannonIndex" << "abovegroundCarbon" << "totalCarbon" << "volume" << "crownCover";
+static const QStringList svd_indicators = QStringList() << "shannonIndex" << "abovegroundCarbon" << "totalCarbon" <<
+                                                     "volume" << "crownCover" << "LAI" << "basalArea" << "stemDensity" << "saplingDensity";
 
 
 SVDIndicatorOut::SVDIndicatorOut()
@@ -235,16 +236,39 @@ SVDIndicatorOut::SVDIndicatorOut()
     setName("SVD forest indicator data", "svdindicator");
     setDescription("Indicator data per resource unit as used by SVD.\n " \
                    "The selection of indicators is triggered by keys in the project file (sub section 'indicators'). " \
+                   "!!! indicators\n\n" \
                    "The following columns are supported:\n\n" \
                    "||__key__|__description__\n" \
                    "shannonIndex|shannon index (exponential) on the RU (based on basal area of trees >4m)\n" \
                    "abovegroundCarbon|living aboveground carbon (tC/ha) on the RU (trees + regen)\n" \
                    "totalCarbon|all C on the RU (tC/ha), including soil, lying and standing deadwood\n" \
                    "volume|tree volume (trees>4m) m3/ha\n" \
-                   "crownCover|fraction of crown cover (0..1) (see saveCrownCoverGrid() in SpatialAnalysis - not yet implemented)||\n\n" \
+                   "crownCover|fraction of crown cover (0..1) (see saveCrownCoverGrid() in SpatialAnalysis - not yet implemented)\n" \
+                   "LAI|leaf area index (trees>4m) m2/m2\n" \
+                   "basalArea|basal area (trees>4m) m2/ha\n" \
+                   "stemDensity|trees per ha (trees>4m) ha-1\n" \
+                    "saplingDensity|density of saplings (represented trees>1.3m) ha-1||\n\n" \
+                   "!!! species proportions\n" \
+                   "A special case is the setting 'speciesProportions': this is a list of species (Ids) separated with a comma or white space. When present, the output will " \
+                   " include for each species the relative proportion calculated based on basal area (for trees >4m). \n" \
+                   " \n" \
+                   "!!! disturbance history\n" \
+                   "The setting 'disturbanceHistory' indicates if (value = 0) and how many (value>0, maximum=3) disturbance events should be recorded and added to the " \
+                   "output. Each __event__ is defined by three columns. 'tsd_x' is number of years since disturbance, 'type_x' encoded the disturbance " \
+                   "agent (see below), and 'addinfo_x' is agent-specific additional information (see below), with 'x' the number of event (1,2,3).\n\n" \
+                   "||__value__|__type__|__additional info__\n" \
+                   "0|fire|proportion of area burned per ha (0..1) \n" \
+                   "1|(spruce) bark beetle|NA\n" \
+                   "2|wind|NA \n" \
+                   "3|BITE|NA \n" \
+                   "4|ABE|NA \n" \
+                   "5|base management|NA|| \n\n" \
+                   "!!! example \n\n" \
                    "An example for the project file node:\n" \
-                   "<indicators>\n<shannonIndex>true</shannonIndex>\n<abovegroundCarbon></abovegroundCarbon> ... \n</indicators>"
-                   );
+                   "<indicators>\n<shannonIndex>true</shannonIndex>\n<abovegroundCarbon>false</abovegroundCarbon>\n ... \n" \
+                   "<speciesProportions>Pico,Abal</speciesProportions>\n" \
+                   "<disturbanceHistory>2</disturbanceHistory>\n</indicators>\n"
+                   ); // //dtFire, dtBarkBeetle, dtWind, dtBite, dtAbe, dtManagement
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id()
               << OutputColumn("stateId", "current state of the resource unit (see 'svdstate' output)", OutInteger)
               << OutputColumn("time", "number of years the resource unit is already in the state 'stateId' (see 'svdstate' output)", OutInteger);
@@ -259,6 +283,7 @@ void SVDIndicatorOut::setup()
 
     // use a condition for to control execuation for the current year
     XmlHelper indicators(settings().node(".indicators"));
+    // look for all defined indicators in the XML structure
     for (int i=0;i<svd_indicators.size();++i) {
         if (indicators.valueBool(QString(".%1").arg(svd_indicators[i]))) {
             // set active
@@ -267,6 +292,31 @@ void SVDIndicatorOut::setup()
             columns() << OutputColumn(svd_indicators[i], QString(), OutDouble);
         }
     }
+    // special case for species proportions
+    QString specieslist = indicators.value(".speciesProportions");
+    if (!specieslist.isEmpty()) {
+        // extract list of species, create columns and store the name for later use
+        QStringList species_list = specieslist.split(QRegularExpression("([^\\.\\w]+)"));
+        mSpecies.clear();
+        for (int i=0;i<species_list.size();++i) {
+            mSpecies.push_back( QPair<QString, int>(species_list[i], -1));
+            columns() << OutputColumn(QString("prop_%1").arg(species_list[i]), QString(), OutDouble);
+        }
+        qDebug() << "SVDIndicatorOut: setup relative species proportions for" << species_list.count() << "species.";
+
+    }
+    // species case disturbance history
+    mNDisturbanceHistory = indicators.valueInt(".disturbanceHistory", 0);
+    if (mNDisturbanceHistory > 0) {
+        // add columns: for each event we need 3 columns
+        for (int i=0;i<mNDisturbanceHistory;++i) {
+            // time since disturbance, type, additional info
+            columns() << OutputColumn(QString("tsd_%1").arg(i+1), QString(), OutInteger);
+            columns() << OutputColumn(QString("type_%1").arg(i+1), QString(), OutInteger);
+            columns() << OutputColumn(QString("addinfo_%1").arg(i+1), QString(), OutDouble);
+        }
+    }
+
     qDebug() << "SVDIndicatorOut: setup indicators: " << mIndicators.count() << "active. Details: " <<  QString::fromStdString(mIndicators.to_string());
 
 }
@@ -307,6 +357,45 @@ double SVDIndicatorOut::calcTotalCarbon(const ResourceUnit *ru)
     return total_carbon;
 }
 
+void SVDIndicatorOut::addSpeciesProportions(const ResourceUnit *ru)
+{
+    if (mSpecies.isEmpty())
+        return;
+
+     // do only once:
+    if (mSpecies[0].second == -1) {
+        for (int i=0;i<mSpecies.size();++i) {
+            Species *s = Globals->model()->speciesSet()->species(mSpecies[i].first);
+            if (!s)
+                throw IException(QString("Setup SVDIndicatorOut: Species '%1' is not available!").arg(mSpecies[i].first));
+            mSpecies[i].second = s->index(); // save index for later use
+        }
+    }
+
+    double total_ba = std::max(ru->statistics().basalArea(), 0.00001);
+    for (int i=0;i<mSpecies.size();++i) {
+        double prop = ru->ruSpecies()[mSpecies[i].second]->constStatistics().basalArea() / total_ba;
+        // add to the output
+        *this << prop;
+    }
+}
+
+void SVDIndicatorOut::addDisturbanceHistory(const ResourceUnit *ru)
+{
+    if (mNDisturbanceHistory == 0) return;
+
+    for (int i=0;i<mNDisturbanceHistory;++i) {
+        if (i < ru->mSVDState.disturbanceEvents->size()) {
+            const ResourceUnit::RUSVDState::SVDDisturbanceEvent &e =  (*ru->mSVDState.disturbanceEvents)[i];
+            *this << Globals->currentYear() - e.year; // time since disturbance
+            *this << e.source; // type of disturbance
+            *this << e.info; // some additional information
+        } else {
+            *this << 0 << 0 << 0; // no data available
+        }
+    }
+}
+
 void SVDIndicatorOut::exec()
 {
     if (!GlobalSettings::instance()->model()->svdStates()) {
@@ -338,6 +427,18 @@ void SVDIndicatorOut::exec()
             *this << (*it)->statistics().volume();
         if (mIndicators.test(EcrownCover))
             *this << calcCrownCover(*it);
+        if (mIndicators.test(ELAI))
+            *this << (*it)->statistics().leafAreaIndex(); // LAI trees > 4m
+        if (mIndicators.test(EbasalArea))
+            *this << (*it)->statistics().basalArea();
+        if (mIndicators.test(EstemDensity))
+            *this << (*it)->statistics().nStem();
+        if (mIndicators.test(EsaplingDensity))
+            *this << (*it)->statistics().saplingCount();
+
+        addSpeciesProportions(*it);
+
+        addDisturbanceHistory(*it);
 
         writeRow();
     }

@@ -57,6 +57,11 @@ public:
     void setBoundingBox(const QRectF &bb);
     void setID(const int id) { mID = id; }
 
+    // data types
+    /// potential sources of disturbance used for SVD state tracking
+    enum ERUDisturbanceType { dtFire, dtBarkBeetle, dtWind, dtBite, dtAbe, dtManagement };
+
+
     // access to elements
     const Climate *climate() const { return mClimate; } ///< link to the climate on this resource unit
     SpeciesSet *speciesSet() const { return  mSpeciesSet; } ///< get SpeciesSet this RU links to.
@@ -105,6 +110,10 @@ public:
     int svdStateTime() const {return mSVDState.time; }
     /// the number of years that the RU was in the previous state svdPreviousStateId()
     int svdPreviousTime() const {return mSVDState.previousTime; }
+    /// notify a disturbance/management related activity happened on the resource unit
+    /// this information is used for SVD states / context for state changes
+    /// source: process caused activity (module), info: addition information, e.g. % killed trees
+    void notifyDisturbance(ERUDisturbanceType source, double info) const;
 
     // actions
     Tree &newTree();  ///< returns a modifiable reference to a free space inside the tree-vector. should be used for tree-init.
@@ -164,14 +173,22 @@ private:
     double mAverageAging; ///< leaf-area weighted average aging f this species on this RU.
     float *mSaplingHeightMap; ///< pointer to array that holds max-height for each 2x2m pixel. Note: this information is not persistent
     struct RUSVDState {
-        RUSVDState(): localComposition(0), midDistanceComposition(0) {}
-        ~RUSVDState() { if (localComposition) {delete localComposition; delete midDistanceComposition; } }
+        RUSVDState(): localComposition(0), midDistanceComposition(0), disturbanceEvents(0) {}
+        ~RUSVDState() { if (localComposition) {delete localComposition; delete midDistanceComposition; delete disturbanceEvents; } }
         qint16 stateId; ///< the Id of the state the resource unit is in
         qint16 previousStateId; ///< the Id of the state the resource unit was previously in
         qint16 time; ///< the number of years the RU is in state 'stateId'
         qint16 previousTime; ///< the number of years that the RU was in the previous state
         QVector<float> *localComposition; ///< save for each species the relative share in the moore-neighborhood
         QVector<float> *midDistanceComposition; ///< save for each species the relative share in a regional neighborhood (200-300m)
+        /// structure to store individual disturbance events
+        struct SVDDisturbanceEvent {
+            SVDDisturbanceEvent(int myear, ERUDisturbanceType msrc, double minfo): year(myear), source(msrc), info(minfo){}
+            int year;
+            ERUDisturbanceType source;
+            double info;
+        };
+        QVector<SVDDisturbanceEvent> *disturbanceEvents;
 
         void clear() { stateId=previousStateId=time=previousTime=0; }
     } mSVDState;

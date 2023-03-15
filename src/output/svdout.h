@@ -68,12 +68,19 @@ public:
     virtual void setup();
 private:
     // list of active indicators
-    enum Indicators {EshannonIndex, EabovegroundCarbon, EtotalCarbon, Evolume, EcrownCover};
+    enum Indicators {EshannonIndex, EabovegroundCarbon, EtotalCarbon, Evolume, EcrownCover,
+                    ELAI, EbasalArea, EstemDensity, EsaplingDensity};
     std::bitset<32> mIndicators;
+    QVector<QPair<QString, int> > mSpecies; // store species IDs and corresponding index
+    int mNDisturbanceHistory;
+
     // indicator calculators
     double calcShannonIndex(const ResourceUnit *ru);
     double calcCrownCover(const ResourceUnit *ru);
     double calcTotalCarbon(const ResourceUnit *ru);
+
+    void addSpeciesProportions(const ResourceUnit *ru);
+    void addDisturbanceHistory(const ResourceUnit *ru);
 };
 
 
