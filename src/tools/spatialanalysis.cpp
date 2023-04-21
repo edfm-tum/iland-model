@@ -30,9 +30,8 @@
 #include <QJSValue>
 void SpatialAnalysis::addToScriptEngine()
 {
-    SpatialAnalysis *spati = new SpatialAnalysis;
-    QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
-    GlobalSettings::instance()->scriptEngine()->globalObject().setProperty("SpatialAnalysis", v);
+    QJSValue jsMetaObject = GlobalSettings::instance()->scriptEngine()->newQMetaObject(&SpatialAnalysis::staticMetaObject);
+    GlobalSettings::instance()->scriptEngine()->globalObject().setProperty("SpatialAnalysis", jsMetaObject);
 }
 
 SpatialAnalysis::~SpatialAnalysis()

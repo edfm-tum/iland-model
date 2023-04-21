@@ -247,9 +247,10 @@ class MapGrid; // forward
 class SaplingCellRunner
 {
 public:
+    /// create a runner for a single stand
     SaplingCellRunner(const int stand_id, const MapGrid *stand_grid=nullptr);
     ~SaplingCellRunner();
-    SaplingCell *next();
+    SaplingCell *next(); ///< get next cell and advance the pointer
     ResourceUnit *ru() const { return mRU; }
     QPointF currentCoord() const;
 private:

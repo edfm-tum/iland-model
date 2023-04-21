@@ -43,6 +43,7 @@
 #include "svdout.h"
 #include "devstageout.h"
 #include "ecovizout.h"
+#include "customaggout.h"
 
 
 // on creation of the output manager
@@ -58,6 +59,7 @@ OutputManager::OutputManager()
     mOutputs.append(new LandscapeOut);
     mOutputs.append(new LandscapeRemovedOut);
     mOutputs.append(new DynamicStandOut);
+    mOutputs.append(new CustomAggOut);
     mOutputs.append(new ProductionOut);
     mOutputs.append(new StandDeadOut);
     mOutputs.append(new ManagementOut);
@@ -184,6 +186,7 @@ bool OutputManager::execute(const QString& tableName)
     qDebug() << "output" << tableName << "not found!";
     return false; // no output found
 }
+
 
 QString OutputManager::wikiFormat()
 {

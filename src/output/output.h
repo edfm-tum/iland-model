@@ -54,7 +54,7 @@ friend class Output;
 class Output
 {
 public:
-    Output(); ///< ctor. Override in derived class to craete columns, etc.
+    Output(); ///< ctor. Override in derived class to create columns, etc.
     virtual ~Output();
     virtual void setup(); ///< setup() is called during project setup and can be ovveridden for specific setup
     void setMode(OutputMode mode) { mMode = mode; }

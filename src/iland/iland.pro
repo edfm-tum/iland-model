@@ -142,6 +142,7 @@ SOURCES += main.cpp \
     ../output/standout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
+    ../output/customaggout.cpp \
     ../core/management.cpp \
     ../core/speciesresponse.cpp \
     ../core/climate.cpp \
@@ -266,6 +267,7 @@ HEADERS += mainwindow.h \
     ../output/standout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
+    ../output/customaggout.h \
     ../core/management.h \
     ../core/speciesresponse.h \
     ../core/climate.h \
@@ -381,6 +383,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \
     ../apidoc/iLand/factory_doc.js \

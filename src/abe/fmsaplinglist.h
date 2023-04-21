@@ -13,7 +13,7 @@ class FMSaplingList : public QObject
     Q_OBJECT
     Q_PROPERTY(int count READ length)
 public:
-    explicit FMSaplingList(QObject *parent = nullptr);
+    Q_INVOKABLE explicit FMSaplingList(QObject *parent = nullptr);
     QVector<QPair<SaplingTree*, SaplingCell*> > &saplings() { return mSaplings; }
     int length() { return mSaplings.length(); }
 
@@ -25,9 +25,14 @@ public:
 
     // to load from a stand: see e.g. FMTreeList::aggregate_function_sapling(QString expression, QString filter, QString type) and SaplingCellRunner....
 
+    static void addToScriptEngine(QJSEngine* engine);
+
 signals:
 
 public slots:
+    /// load all saplings
+    int loadFromStand(int standId, QString filter=QString());
+
     /// return the sum of 'expression' over all saplings in the list
     /// if 'filter' is provided, only trees are counted for which 'filter' evaluates to true.
     double sum(QString expression, QString filter=QStringLiteral(""));

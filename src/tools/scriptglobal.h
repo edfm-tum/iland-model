@@ -33,7 +33,7 @@ class MapGridWrapper: public QObject
     Q_PROPERTY(int valid READ isValid)
     Q_PROPERTY(QString name READ name)
 public:
-    MapGridWrapper(QObject *parent=nullptr);
+    Q_INVOKABLE MapGridWrapper(QObject *parent=nullptr);
     ~MapGridWrapper();
     static void addToScriptEngine(QJSEngine &engine);
     MapGrid *map() const { return mMap; } ///< acccess for C++ classes

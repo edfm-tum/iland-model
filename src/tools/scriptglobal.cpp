@@ -49,6 +49,7 @@
 #include "spatialanalysis.h"
 #include "scripttree.h"
 #include "scriptresourceunit.h"
+#include "fmsaplinglist.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -255,9 +256,13 @@ void MapGridWrapper::addToScriptEngine(QJSEngine &engine)
     //QJSValue cc_class = engine.scriptValueFromQMetaObject<MapGridWrapper>();
     // the script name for the object is "Map".
     // TODO: solution for creating objects!!!
-    QObject *mgw = new MapGridWrapper();
-    QJSValue mgw_cls = engine.newQObject(mgw);
-    engine.globalObject().setProperty("Map", mgw_cls);
+    //QObject *mgw = new MapGridWrapper();
+    //QJSValue mgw_cls = engine.newQObject(mgw);
+    //engine.globalObject().setProperty("Map", mgw_cls);
+
+    QJSValue jsMetaObject = engine.newQMetaObject(&MapGridWrapper::staticMetaObject);
+    engine.globalObject().setProperty("Map", jsMetaObject);
+
 }
 
 MapGridWrapper::MapGridWrapper(QObject *)
@@ -618,6 +623,9 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="count") index = 2;
     if (type=="forestoutside") index=3;
     if (type=="standgrid") index=4;
+    if (type=="sap_hmax10") index=5;
+    if (type=="saplingcover10") index=6;
+    if (type=="smallsaplingcover10") index=7;
     // resource unit level
     if (type=="smallsaplingcover") index=10;
     if (type=="saplingcover") index=11;
@@ -640,7 +648,6 @@ QJSValue ScriptGlobal::grid(QString type)
             *p = *s;
         QJSValue g = ScriptGrid::createGrid(dgrid, type);
         return g;
-
     }
     if (index < 10) {
         HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
@@ -1195,6 +1202,7 @@ void ScriptGlobal::setupGlobalScripting()
     ScriptTree::addToScriptEngine(*engine);
     ScriptTreeExpr::addToScriptEngine(*engine);
     ScriptGrid::addToScriptEngine(engine);
+    ABE::FMSaplingList::addToScriptEngine(engine);
 
 }
 
@@ -1214,6 +1222,7 @@ ScriptObjectFactory::ScriptObjectFactory(QObject *parent):
 
 QJSValue ScriptObjectFactory::newCSVFile(QString filename)
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     CSVFile *csv_file = new CSVFile;
     if (!filename.isEmpty()) {
         qDebug() << "CSVFile: loading file" << filename;
@@ -1227,6 +1236,7 @@ QJSValue ScriptObjectFactory::newCSVFile(QString filename)
 
 QJSValue ScriptObjectFactory::newClimateConverter()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     ClimateConverter *cc = new ClimateConverter(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(cc);
     mObjCreated++;
@@ -1237,6 +1247,7 @@ QJSValue ScriptObjectFactory::newClimateConverter()
 
 QJSValue ScriptObjectFactory::newMap()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     MapGridWrapper *map = new MapGridWrapper(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(map);
     mObjCreated++;
@@ -1246,6 +1257,7 @@ QJSValue ScriptObjectFactory::newMap()
 
 QJSValue ScriptObjectFactory::newDBHDistribution()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     DBHDistribution *dbh = new DBHDistribution();
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(dbh);
     mObjCreated++;
@@ -1254,12 +1266,14 @@ QJSValue ScriptObjectFactory::newDBHDistribution()
 
 QJSValue ScriptObjectFactory::newGrid()
 {
-    QJSValue result = ScriptGrid::createGrid(0); // create with an empty grid
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    QJSValue result = ScriptGrid::createGrid(nullptr); // create with an empty grid
     return result;
 }
 
 QJSValue ScriptObjectFactory::newSpatialAnalysis()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     SpatialAnalysis *spati = new SpatialAnalysis;
     QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
     mObjCreated++;

@@ -39,7 +39,7 @@ class SpatialAnalysis: public QObject
     Q_PROPERTY(QList<int> patchsizes READ patchsizes)
 
 public:
-    SpatialAnalysis(QObject *parent=0): QObject(parent), mRumple(0) {}
+    Q_INVOKABLE SpatialAnalysis(QObject *parent=0): QObject(parent), mRumple(0) {}
     ~SpatialAnalysis();
     static void addToScriptEngine();
 

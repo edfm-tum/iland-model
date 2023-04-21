@@ -3,6 +3,7 @@
 #include "resourceunit.h"
 #include "expressionwrapper.h"
 
+#include <QJSEngine>
 namespace ABE {
 
 FMSaplingList::FMSaplingList(QObject *parent) : QObject(parent)
@@ -43,6 +44,38 @@ int FMSaplingList::loadFromRU(ResourceUnit *ru, bool append)
         }
     }
     return mSaplings.size();
+}
+
+void FMSaplingList::addToScriptEngine(QJSEngine *engine)
+{
+    QJSValue jsMetaObject = engine->newQMetaObject(&ABE::FMSaplingList::staticMetaObject);
+    engine->globalObject().setProperty("SaplingList", jsMetaObject);
+
+}
+
+int FMSaplingList::loadFromStand(int standId, QString filter)
+{
+    mSaplings.clear();
+
+    SaplingWrapper sw;
+    Expression filter_expr(filter.isEmpty() ? "true" : filter, &sw);
+
+    SaplingCellRunner scr(standId, GlobalSettings::instance()->model()->standGrid());
+    while (SaplingCell *sc = scr.next()) {
+        if (sc){
+            for (int i=0;i<NSAPCELLS;++i) {
+                if (sc->saplings[i].is_occupied()) {
+                    sw.setSaplingTree(&sc->saplings[i], sc->ru);
+                    if (filter.isEmpty() || filter_expr.execute()) {
+                        mSaplings.push_back(QPair<SaplingTree*, SaplingCell*>( &(sc->saplings[i]), sc));
+                    }
+                }
+            }
+        }
+    }
+
+    return mSaplings.size();
+
 }
 
 int FMSaplingList::filter(QString filter)

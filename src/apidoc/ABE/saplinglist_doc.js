@@ -4,7 +4,17 @@ The SaplingList class represents a list of saplings (=cohort of trees <4m height
 
 ## Overview
 ### initializing the list
-not implemented (but available in Bite)
+The object is available automatically when using the Bite-submodule.
+
+`SaplingList` can also be used as a standalone object, but in this case populating the sapling list needs to be
+done by the user with functions such `loadFromStand()`.
+
+#### Example
+    var saps = new SaplingList; // create a SaplingList object
+    saps.loadFromStand(123); // load saplings of stand 123
+    saps.kill(); // and be nasty
+
+
 ### manipulating the content of the list
 The list of sapling cohorts may be manipulated using functions such as `filter()`. There are functions helping to get aggregate values
 (`sum()`).
@@ -45,6 +55,20 @@ Kill (i.e., cut down and do not remove from the forest) the saplings in the list
 @return {Integer} the number of trees that have been removed.
 @Example
     saplings.kill('age<5'); // kill young saplings
+**/
+
+/**
+Load all (or a subset) of sapling that are located on the stand denoted by `standId`. The `filter` let you control
+which saplings should be loaded.
+
+
+@method loadFromStand
+@param {Integer} standId A numeric standId that refers to the stand-grid of iLand.
+@param {string} filter A valid filter Expression (see above), can be omitted
+@return {S} the number of trees that have been loaded.
+@Example
+    saplings.loadFromStand(123, 'species=fasy'); // load all beech saplings of stand 123
+
 **/
 
 /**

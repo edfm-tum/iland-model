@@ -83,7 +83,7 @@ static QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << 
                         << "dead" << "stress" << "deltad" //15-17
                         << "afoliagemass" << "species" // 18, 19
                         << "basalarea" << "crownarea" // 20, 21
-                        << "markharvest" << "markcut" << "markcrop" << "markcompetitor" << "branchmass"; // 22-25
+                        << "markharvest" << "markcut" << "markcrop" << "markcompetitor" << "branchmass" << "is_conifer"; // 22-27
 
 const QStringList TreeWrapper::getVariablesList()
 {
@@ -125,6 +125,7 @@ double TreeWrapper::value(const int variableIndex)
     case 24: return mTree->isMarkedAsCropTree()?1:0; // markcrop
     case 25: return mTree->isMarkedAsCropCompetitor()?1:0; // markcompetitor
     case 26: return static_cast<double>(mTree->mBranchMass);
+    case 27: return mTree->species()->isConiferous();
     }
     return ExpressionWrapper::value(variableIndex);
 }
@@ -199,7 +200,7 @@ double RUWrapper::value(const int variableIndex)
 //// SaplingTree Wrapper
 ////////////////////////////////////////////////
 
-static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age" << "nrep" << "dbh" << "foliagemass";
+const static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age" << "nrep" << "dbh" << "foliagemass";
 
 const QStringList SaplingWrapper::getVariablesList()
 {

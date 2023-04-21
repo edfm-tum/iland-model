@@ -34,6 +34,13 @@ DBHDistribution::~DBHDistribution()
     qDeleteAll(mData);
 }
 
+void DBHDistribution::addToScriptEngine(QJSEngine &engine)
+{
+    QJSValue jsMetaObject = engine.newQMetaObject(&DBHDistribution::staticMetaObject);
+    engine.globalObject().setProperty("DBHDistribution", jsMetaObject);
+
+}
+
 void DBHDistribution::calculateFromLandscape()
 {
     // reset

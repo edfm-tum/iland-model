@@ -850,6 +850,7 @@ SaplingCellRunner::SaplingCellRunner(const int stand_id, const MapGrid *stand_gr
 
 }
 
+
 SaplingCellRunner::~SaplingCellRunner()
 {
     if (mRunner)

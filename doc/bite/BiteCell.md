@@ -78,7 +78,6 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
     ### `dailyClimateTimeseries(string type)`: dict of daily climate variable
 
     Use to access an array of climate variable for each day of the year for the current cell. The type of climate variable is given by parameter `type`. This can be used, if the required climatic indices are not built into the model. Note that accessing via the Javascript can come with a performance penalty (see code example below).
-    
 
     `type` can be one of the following:
 
@@ -91,7 +90,7 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
         | vpd      | vapour pressure deficit (kPa)                  |
         | rad      | daily radiation sum (MJ/m2)                    |
 
-        
+
         ``` 
 
             // test GDD calculation

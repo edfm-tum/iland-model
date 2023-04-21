@@ -51,6 +51,9 @@ void CSVFile::addToScriptEngine(QJSEngine &engine)
 
     // the script name for the object is "CSVFile".
     //engine.globalObject().setProperty("CSVFile", cc_class);
+    QJSValue jsMetaObject = engine.newQMetaObject(&CSVFile::staticMetaObject);
+    engine.globalObject().setProperty("CSVFile", jsMetaObject);
+
 }
 
 CSVFile::CSVFile(QObject *)

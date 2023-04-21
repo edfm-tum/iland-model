@@ -43,7 +43,7 @@ void BiteImpact::setup(BiteAgent *parent_agent)
 
         QJSValue impacts = BiteEngine::valueFromJs(mObj, "impact", "", "The 'impact' is required!");
         if (!impacts.isArray())
-            throw IException("The 'impact' is no array.");
+            throw IException("Bite: Property 'impact' is not an array (which is required).");
         QJSValueIterator it(impacts);
         int index=0;
         while (it.hasNext()) {

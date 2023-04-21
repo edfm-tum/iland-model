@@ -154,6 +154,7 @@ SOURCES += main.cpp \
     ../output/landscapeout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
+    ../output/customaggout.cpp \
     ../core/management.cpp \
     ../core/speciesresponse.cpp \
     ../core/climate.cpp \
@@ -276,6 +277,7 @@ HEADERS += \
     ../output/ecovizout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
+    ../output/customaggout.h \
     ../core/management.h \
     ../core/speciesresponse.h \
     ../core/climate.h \
