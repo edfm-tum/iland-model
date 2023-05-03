@@ -110,6 +110,7 @@ DEFINES += NO_DEBUG_MSGS
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../core/microclimate.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
@@ -232,6 +233,7 @@ SOURCES += main.cpp \
     ../bite/biteoutputitem.cpp
 
 HEADERS += mainwindow.h \
+    ../core/microclimate.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \

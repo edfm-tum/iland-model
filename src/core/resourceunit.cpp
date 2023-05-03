@@ -42,6 +42,7 @@
 #include "helper.h"
 #include "svdstate.h"
 #include "statdata.h"
+#include "microclimate.h"
 
 double ResourceUnitVariables::nitrogenAvailableDelta = 0;
 
@@ -68,8 +69,8 @@ ResourceUnit::~ResourceUnit()
 ResourceUnit::ResourceUnit(const int index)
 {
     qDeleteAll(mRUSpecies);
-    mSpeciesSet = 0;
-    mClimate = 0;
+    mSpeciesSet = nullptr;
+    mClimate = nullptr;
     mPixelCount=0;
     mStockedArea = 0;
     mStockedPixelCount = 0;
@@ -81,11 +82,12 @@ ResourceUnit::ResourceUnit(const int index)
     mLRI_modification = 0.;
     mIndex = index;
     mSaplingHeightMap = 0;
+    mMicroclimate = nullptr;
     mEffectiveArea_perWLA = 0.;
     mWater = new WaterCycle();
-    mSnag = 0;
-    mSoil = 0;
-    mSaplings = 0;
+    mSnag = nullptr;
+    mSoil = nullptr;
+    mSaplings = nullptr;
     mID = 0;
     mCreateDebugOutput = true;
     mSVDState.clear();
@@ -95,10 +97,10 @@ void ResourceUnit::setup()
 {
     if (mSnag)
         delete mSnag;
-    mSnag=0;
+    mSnag=nullptr;
     if (mSoil)
         delete mSoil;
-    mSoil=0;
+    mSoil=nullptr;
     if (Model::settings().carbonCycleEnabled) {
         mSoil = new Soil(this);
         mSnag = new Snag;
@@ -125,6 +127,10 @@ void ResourceUnit::setup()
         mSaplings = new SaplingCell[cPxPerHectare];
         for (int i=0;i<cPxPerHectare;++i)
             mSaplings[i].ru = this;
+    }
+
+    if (Model::settings().microclimateEnabled) {
+        mMicroclimate = new Microclimate(this);
     }
 
     // setup variables
@@ -336,6 +342,8 @@ void ResourceUnit::newYear()
         (*i)->statisticsDead().clear();
         (*i)->statisticsMgmt().clear();
     }
+
+
 
 }
 
@@ -588,6 +596,12 @@ void ResourceUnit::recreateStandStatistics(bool recalculate_stats)
             mRUSpecies[i]->statistics().calculate();
         }
     }
+}
+
+void ResourceUnit::analyzeMicroclimate()
+{
+    if (mMicroclimate)
+        mMicroclimate->calculateVegetation();
 }
 
 

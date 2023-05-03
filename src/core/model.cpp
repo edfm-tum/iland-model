@@ -683,6 +683,18 @@ static void nc_carbonCycle(ResourceUnit *unit)
 
 }
 
+/// multithreaded execution of the microclimate routine
+static void nc_microclimate(ResourceUnit *unit)
+{
+    try {
+        unit->analyzeMicroclimate();
+
+    } catch (const IException& e) {
+        GlobalSettings::instance()->controller()->throwError(e.message());
+    }
+
+}
+
 /// beforeRun performs several steps before the models starts running.
 /// inter alia: * setup of the stands
 ///             * setup of the climates
@@ -792,6 +804,11 @@ void Model::runYear()
         foreach(Climate *c, mClimates)
             c->nextYear();
     }
+    // run microclimate
+    if (Model::settings().microclimateEnabled) {
+        executePerResourceUnit(nc_microclimate, true /* true to force single threaded execution */);
+    }
+
     WaterCycle::resetPsiMin();
 
     // reset statistics

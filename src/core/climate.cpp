@@ -41,7 +41,7 @@ void Sun::setup(double latitude_rad)
 {
     mLatitude = latitude_rad;
     if (mLatitude>0)
-        mDayWithMaxLength = 182-10; // 21.juni
+        mDayWithMaxLength = 182-10; // 21st of June
     else
         mDayWithMaxLength = 365-10; //southern hemisphere
     // calculate length of day using  the approximation formulae of: http://herbert.gandraxa.com/length_of_day.aspx

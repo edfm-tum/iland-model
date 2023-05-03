@@ -32,6 +32,7 @@ class WaterCycle;
 class Snag;
 class Soil;
 struct SaplingCell;
+class Microclimate;
 class SVDStates; class SVDStateOut;
 
 struct ResourceUnitVariables
@@ -136,6 +137,8 @@ public:
     void setCreateDebugOutput(const bool do_dbg) { mCreateDebugOutput = do_dbg; } ///< enable/disable output generation for RU
     bool shouldCreateDebugOutput() const { return mCreateDebugOutput; } ///< is debug output enabled for the RU?
 
+    void analyzeMicroclimate(); ///< run vegetation analysis for microclimate
+
     // snag / snag dynamics
     // snag dynamics, soil carbon and nitrogen cycle
     void snagNewYear() { if (snag()) snag()->newYear(); } ///< clean transfer pools
@@ -162,6 +165,7 @@ private:
     QList<ResourceUnitSpecies*> mRUSpecies; ///< data for this ressource unit per species
     QVector<Tree> mTrees; ///< storage container for tree individuals
     SaplingCell *mSaplings; ///< pointer to the array of Sapling-cells for the resource unit
+    Microclimate *mMicroclimate; ///< pointer to the microclimate-array
     QRectF mBoundingBox; ///< bounding box (metric) of the RU
     QPoint mCornerOffset; ///< coordinates on the LIF grid of the upper left corner of the RU
     double mAggregatedLA; ///< sum of leafArea
