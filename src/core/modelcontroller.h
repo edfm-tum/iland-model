@@ -68,6 +68,7 @@ public:
     void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
     void addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value);
     void paintMap(MapGrid *map, double min_value, double max_value);
+    void paintGrid(Grid<double> *grid, QString name, GridViewType view_type=GridViewTurbo, double min_value=0., double max_value=1.);
 
     void addLayers(const LayeredGridBase *layers, const QString &name);
     void removeLayers(const LayeredGridBase *layers);

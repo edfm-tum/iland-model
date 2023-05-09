@@ -6,6 +6,18 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
 
 -   
 
+    ### `x` (int, read-only)
+
+    The x-coordinate of the current cell as grid index, i.e. not in metric coordiantes. 
+
+-   
+
+    ### `y` (int, read-only)
+
+    The y-coordinate of the current cell as grid index, i.e. not in metric coordiantes. 
+
+-   
+
     ### `active` (bool)
 
     A cell is `active` when currently colonized by the agent. Setting `active` to `true` initiates the agent for the given cell.
@@ -83,8 +95,8 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
 
         | Variable | Description                                    |
         |----------|------------------------------------------------|
-        | tmin     | daily minimum temperature (°C)                 |
-        | tmax     | daily maximum temperature (°C)                 |
+        | tmin     | daily minimum temperature (?C)                 |
+        | tmax     | daily maximum temperature (?C)                 |
         | tmean    | daily mean temperature (mean of tmin and tmax) |
         | prec     | daily precipitation (mm)                       |
         | vpd      | vapour pressure deficit (kPa)                  |

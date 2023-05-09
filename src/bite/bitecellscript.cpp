@@ -541,6 +541,16 @@ QString Events::dump()
     return event_list;
 }
 
+int BiteCellScript::x() const
+{
+    return mAgent->grid().indexOf(mCell->index()).x();
+}
+
+int BiteCellScript::y() const
+{
+    return mAgent->grid().indexOf(mCell->index()).y();
+}
+
 
 
 } // end namespace

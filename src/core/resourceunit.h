@@ -85,6 +85,7 @@ public:
     Tree *tree(const int index) { return &(mTrees[index]);} ///< get pointer to a tree
     const ResourceUnitVariables &resouceUnitVariables() const { return mUnitVariables; } ///< access to variables that are specific to resourceUnit (e.g. nitrogenAvailable)
     const StandStatistics &statistics() const {return mStatistics; }
+    const Microclimate *microClimate() const { return mMicroclimate; }
 
     // properties
     int index() const { return mIndex; }

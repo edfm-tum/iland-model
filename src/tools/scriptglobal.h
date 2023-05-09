@@ -27,6 +27,7 @@
 
 // Scripting Interface for MapGrid
 class MapGrid; // forward
+class ScriptGrid; // forward
 class MapGridWrapper: public QObject
 {
     Q_OBJECT
@@ -64,6 +65,8 @@ public slots:
     double copyPolygonFromRect(QJSValue source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2);
 
     void createMapIndex(); ///< call after creating stands with copyPolygonFromRect
+
+    void copyFromGrid(ScriptGrid *grid);
 
 private:
     MapGrid *mMap;
@@ -157,9 +160,10 @@ public slots:
     // enable/disable outputs
     bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful
+    void useSpecialMapForOutputs(MapGridWrapper *m); ///< use a specific map / standgrid for outputs
     // debug outputs
     void debugOutputFilter(QList<int> ru_indices); ///< enable debug outputs for a list of resource units (output for other RUs are suppressed)
-    bool saveDebugOutputs(bool do_clear); ///< save debug outputs to file; if do_clear=true then debug data is cleared from memorey
+    bool saveDebugOutputs(bool do_clear); ///< save debug outputs to file; if do_clear=true then debug data is cleared from memory
     // miscellaneous stuff
     void setViewport(double x, double y, double scale_px_per_m); ///< set the viewport of the main project area view
     bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
@@ -178,8 +182,8 @@ public slots:
 
 
     // DOES NOT FULLY WORK
-    bool seedMapToFile(QString species, QString file_name); ///< save the "seedmap" (i.e. a grid showing the seed distribution) as ESRI rastser file
-    void wait(int milliseconds); ///< wait for 'milliseconds' or (if ms=-1 until a key is pressed)
+    bool seedMapToFile(QString species, QString file_name); ///< save the "seedmap" (i.e. a grid showing the seed distribution) as ESRI raster file
+    void wait(int milliseconds); ///< wait for 'milliseconds' (or if ms=-1 until a key is pressed)
     // vegetation snapshots
     bool saveModelSnapshot(QString file_name);
     bool loadModelSnapshot(QString file_name);

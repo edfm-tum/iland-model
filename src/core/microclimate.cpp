@@ -4,6 +4,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "tree.h"
+#include "modelcontroller.h"
 
 
 Microclimate::Microclimate(const ResourceUnit *ru)
@@ -49,7 +50,63 @@ int Microclimate::cellIndex(const QPointF &coord)
     QPointF local = coord - mRU->boundingBox().topLeft();
     Q_ASSERT(local.x()>=0 && local.x()<100 && local.y()>=0 && local.y() < 100);
 
-    int index = ( int( local.x() / cHeightPerRU) ) * cHeightPerRU + ( int( local.y() / cHeightPerRU ) );
+    int index = ( int( local.y() / cHeightPerRU) ) * cHeightPerRU + ( int( local.x() / cHeightPerRU ) );
     return index;
 }
 
+MicroclimateVisualizer *MicroclimateVisualizer::mVisualizer = nullptr;
+
+MicroclimateVisualizer::MicroclimateVisualizer(QObject *parent)
+{
+}
+
+MicroclimateVisualizer::~MicroclimateVisualizer()
+{
+    mVisualizer = nullptr;
+}
+
+void MicroclimateVisualizer::setupVisualization()
+{
+    // add agent to UI
+    if (mVisualizer)
+        delete mVisualizer;
+
+    mVisualizer = new MicroclimateVisualizer();
+
+    QStringList varlist = {"Microclimate - coniferShare", "Microclimate - LAI"};
+    QVector<GridViewType> paint_types = {GridViewTurbo, GridViewTurbo};
+    GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, varlist, paint_types);
+
+}
+
+Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names, QStringList &colors)
+{
+    if (mGrid.isEmpty()) {
+        // setup grid with the dimensions of the iLand height grid
+        mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(),
+                    GlobalSettings::instance()->model()->heightGrid()->cellsize());
+        mGrid.wipe(0.);
+    }
+    int index = 0;
+    if (what == "Microclimate - coniferShare") index = 0;
+    if (what == "Microclimate - LAI") index = 1;
+
+    // fill the grid with the expected variable
+
+    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        const Microclimate *clim = ru->microClimate();
+        GridRunner<double> runner(mGrid, ru->boundingBox());
+        int cell_index = 0;
+        double value;
+        while (double *gridptr = runner.next()) {
+            switch (index) {
+            case 0: value = clim->constCell(cell_index).coniferShare(); break;
+            case 1: value = clim->constCell(cell_index).LAI(); break;
+            }
+
+            *gridptr = value;
+            ++cell_index;
+        }
+    }
+    return &mGrid;
+}

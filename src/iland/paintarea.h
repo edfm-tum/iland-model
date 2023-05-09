@@ -27,7 +27,7 @@
   */
 struct PaintObject {
     PaintObject(): what(PaintNothing), map_grid(0), float_grid(0), dbl_grid(0), layered(0), layer_id(0), min_value(0.), max_value(1.), cur_min_value(0.), cur_max_value(1.), auto_range(false), handler(0) {}
-    enum { PaintNothing, PaintMapGrid, PaintFloatGrid, PaintLayers, PaintLIF, PaintTrees, PaintHeightGrid, PaintResourceUnits, PaintRegeneration, PaintHandledObject } what;
+    enum { PaintNothing, PaintMapGrid, PaintFloatGrid, PaintDoubleGrid, PaintLayers, PaintLIF, PaintTrees, PaintHeightGrid, PaintResourceUnits, PaintRegeneration, PaintHandledObject } what;
     MapGrid *map_grid;
     QString name;
     QString description;

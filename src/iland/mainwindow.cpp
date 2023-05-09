@@ -324,8 +324,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionError->setProperty("logLevel", QVariant(3));
 
     // species filter
-    connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
+    //connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
     updatePaintGridList();
+    mDoRepaint = true;
 
     // model controller
     mRemoteControl.setMainWindow( this );
@@ -649,6 +650,32 @@ void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
     }
 }
 
+void MainWindow::paintGrid(const Grid<double> *grid, const QString &name, const GridViewType view_type, double min_val, double max_val)
+{
+    if (grid==nullptr && !name.isEmpty()) {
+        // remove the grid from the list
+        mPaintList.remove(name);
+        updatePaintGridList();
+        return;
+    }
+    mPaintNext.what=PaintObject::PaintDoubleGrid;
+    mPaintNext.min_value=min_val;
+    mPaintNext.max_value=max_val;
+    mPaintNext.dbl_grid = grid;
+    mPaintNext.view_type = view_type;
+    mPaintNext.name = name;
+    if (!name.isEmpty()) {
+        mPaintList[name] = mPaintNext;
+        updatePaintGridList();
+    }
+    if (mRemoteControl.canRun()) {
+        ui->visOtherGrid->setChecked(true);
+        repaint();
+    } else {
+        mPaintNext.what = PaintObject::PaintHeightGrid;
+    }
+}
+
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
@@ -701,6 +728,20 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     mPaintNext.cur_min_value = mPaintNext.min_value;
                 }
                 paintMapGrid(painter, nullptr, mPaintNext.float_grid, nullptr,
+                             mPaintNext.view_type,
+                             mPaintNext.cur_min_value, mPaintNext.cur_max_value, shading);
+            }
+
+            if (mPaintNext.what == PaintObject::PaintDoubleGrid) {
+                mRulerColors->setCaption(mPaintNext.name);
+                if (!mRulerColors->autoScale()) {
+                    mPaintNext.cur_max_value = mRulerColors->maxValue();
+                    mPaintNext.cur_min_value = mRulerColors->minValue();
+                } else {
+                    mPaintNext.cur_max_value = mPaintNext.max_value;
+                    mPaintNext.cur_min_value = mPaintNext.min_value;
+                }
+                paintMapGrid(painter, nullptr, nullptr, mPaintNext.dbl_grid,
                              mPaintNext.view_type,
                              mPaintNext.cur_min_value, mPaintNext.cur_max_value, shading);
             }
@@ -1371,18 +1412,30 @@ void MainWindow::paintMapGrid(QPainter &painter,
 
 void MainWindow::repaintArea(QPainter &painter)
 {
+
     if (!mRemoteControl.isBusy())  {
-        paintFON(painter, ui->PaintWidget->rect());
-        // fix viewpoint
-        vp.setScreenRect(ui->PaintWidget->rect());
-        mRulerColors->setScale(vp.pixelToMeter(1));
+
+        if (mDoRepaint) {
+            paintFON(painter, ui->PaintWidget->rect());
+            // // fix viewpoint
+            vp.setScreenRect(ui->PaintWidget->rect());
+            mRulerColors->setScale(vp.pixelToMeter(1));
+            mDoRepaint=false;
+
+        } else {
+            // use existing copy of the visualization
+            painter.drawImage(ui->PaintWidget->rect(), ui->PaintWidget->drawImage());
+        }
+
+
+
     } else {
         qDebug() << "mainwindow::repaint: skipped (busy)" << QDateTime::currentMSecsSinceEpoch();
     }
 }
 
 
-void MainWindow::on_visFon_toggled() { ui->PaintWidget->update(); }
+void MainWindow::on_visFon_toggled() { mDoRepaint=true; ui->PaintWidget->update();  }
 void MainWindow::on_visDomGrid_toggled() { on_visFon_toggled(); }
 void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
 bool wantDrag=false;
@@ -1557,6 +1610,10 @@ void MainWindow::mouseMove(const QPoint& pos)
             case PaintObject::PaintFloatGrid:
                 value = mPaintNext.float_grid->isEmpty()?0: mPaintNext.float_grid->constValueAt(p);
                 break;
+            case PaintObject::PaintDoubleGrid:
+                value = mPaintNext.dbl_grid->isEmpty()?0: mPaintNext.dbl_grid->constValueAt(p);
+                break;
+
             case PaintObject::PaintMapGrid:
                 value = mPaintNext.map_grid->grid().constValueAt(p);
                 break;
@@ -1609,6 +1666,7 @@ void MainWindow::mouseWheel(const QPoint& pos, int steps)
 {
     //qDebug() << "mouse-wheel" << steps;
     vp.zoomTo(pos, qMax(1-(2*steps/10.),0.2));
+    mDoRepaint = true;
     ui->PaintWidget->update();
 }
 
@@ -1635,6 +1693,7 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
     // move view area if not dedicately moving around a tree
     if (!wantDrag) {
         vp.moveTo(from, to);
+        mDoRepaint = true;
         ui->PaintWidget->update();
         return;
     }
@@ -2078,6 +2137,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
 void MainWindow::on_pbExecExpression_clicked()
 {
     // just repaint...
+    mDoRepaint = true;
     ui->PaintWidget->update();
 }
 
@@ -2451,12 +2511,14 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
 void MainWindow::on_actionShow_full_extent_triggered()
 {
     vp.zoomToAll();
+    mDoRepaint = true;
     repaint();
     //ui->PaintWidget->update();
 }
 
 void MainWindow::on_actionRepaint_triggered()
 {
+    mDoRepaint = true;
     repaint();
     // ui->PaintWidget->update();
 }
@@ -2564,6 +2626,7 @@ void MainWindow::on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, Q
 
     mPaintNext = po;
     ui->visOtherGrid->setChecked(true); // to enable the right category
+    mDoRepaint = true;
     repaint();
 }
 
@@ -2576,3 +2639,10 @@ void MainWindow::on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column
     // refresh drawing
     ui->PaintWidget->update();
 }
+
+void MainWindow::on_speciesFilterBox_currentIndexChanged(int index)
+{
+    mDoRepaint = true;
+    repaint();
+}
+

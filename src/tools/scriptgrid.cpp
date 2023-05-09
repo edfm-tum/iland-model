@@ -110,8 +110,8 @@ void ScriptGrid::clear()
 void ScriptGrid::paint(double min_val, double max_val)
 {
     // TODO: implement
-    //if (GlobalSettings::instance()->controller())
-    //    GlobalSettings::instance()->controller()->addGrid(mGrid, mVariableName, GridViewRainbow, min_val, max_val);
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->paintGrid(mGrid, mVariableName, GridViewRainbow, min_val, max_val);
 }
 
 QString ScriptGrid::info()

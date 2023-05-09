@@ -50,6 +50,8 @@
 #include "scripttree.h"
 #include "scriptresourceunit.h"
 #include "fmsaplinglist.h"
+#include "scriptgrid.h"
+#include "customaggout.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -452,6 +454,20 @@ void MapGridWrapper::createMapIndex()
         mMap->createIndex();
 }
 
+void MapGridWrapper::copyFromGrid(ScriptGrid *grid)
+{
+    if (!grid->isValid() || !mMap)
+        throw IException("copyFromGrid: invalid input grid or mapgrid!");
+
+    if (mMap->grid().cellsize() != grid->cellsize() || mMap->grid().sizeX() != grid->grid()->sizeX() || mMap->grid().sizeY() != grid->grid()->sizeY())
+        throw IException("copyFromGrid: dimensions of input grid do not match the map grid!");
+
+    int *target = mMap->grid().begin();
+    double *src = grid->grid()->begin();
+    for (; src!= grid->grid()->end(); ++src, ++target)
+        *target = static_cast<int>(*src);
+}
+
 QString MapGridWrapper::name() const
 {
     if (mMap)
@@ -527,6 +543,17 @@ bool ScriptGlobal::stopOutput(QString table_name)
     out->setEnabled(false);
     qDebug() << "stopped output" << table_name;
     return true;
+}
+
+void ScriptGlobal::useSpecialMapForOutputs(MapGridWrapper *m)
+{
+    CustomAggOut *out = dynamic_cast<CustomAggOut*>(GlobalSettings::instance()->outputManager()->find("customagg"));
+    if (!out)
+        throw IException("useSpecialMapForOutputs() requires 'customagg' output to be available!");
+    if (!m)
+        throw IException("useSpecialMapForOutputs(): empty input map!");
+
+    out->setStandGrid(m->map());
 }
 
 void ScriptGlobal::debugOutputFilter(QList<int> ru_indices)

@@ -343,17 +343,17 @@ Grid = {
       */
 
     /**
-    Set the value at the coordinates (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
+    Set the value at the metric coordinates (`x`, `y`) to `value`. Note that using the {{#crossLink "Grid/value:method"}}{{/crossLink}} and
     {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods is much slower than using functions such as {{#crossLink "Grid/apply:method"}}{{/crossLink}}.
 
-    The coordinates are relative to the iLand project area.
+    The coordinates are relative to the iLand project area and given in meters.
 
 
     See also: {{#crossLink "Grid/value:method"}}{{/crossLink}}
 
     @method setValueAt
-    @param {double} x index in x direction (between 0 and grid.width-1)
-    @param {double} y index in y direction (between 0 and grid.height-1)
+    @param {double} x meters in x direction (between 0 and )
+    @param {double} y meteres in y direction (between 0 and grid.height-1)
     @param {double} value value to set
     @Example
         // using javascript access functions can be 100x times slower:
@@ -408,5 +408,18 @@ Grid = {
 
       */
 
+    /**
+    `paint` shows the content of the grid visually in iLand. Use `min_value` and `max_value` to provide a value range.
 
+
+
+    @method paint
+    @param {double} min_value minimum value (mapped to bottom of the color ramp)
+    @param {double} max_value maximum value (mapped to top of the color ramp)
+
+    @Example
+        var g = Globals.grid('height'); // get height grid from iLand
+        g.paint(0,50);
+
+      */
 }

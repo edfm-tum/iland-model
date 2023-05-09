@@ -610,6 +610,18 @@ void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
 #endif
 }
 
+void ModelController::paintGrid(Grid<double> *grid, QString name, GridViewType view_type, double min_value, double max_value)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow) {
+        mViewerWindow->paintGrid(grid, name, view_type, min_value, max_value);
+        qDebug() << "painted custom grid min-value (blue):" << min_value << "max-value(red):" << max_value;
+    }
+#else
+    Q_UNUSED(grid);Q_UNUSED(min_value);Q_UNUSED(max_value);
+#endif
+}
+
 void ModelController::addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value)
 {
 #ifdef ILAND_GUI
@@ -671,14 +683,17 @@ Grid<double> *ModelController::preparePaintGrid(QObject *handler, QString name, 
     // the handler slot should return a pointer to a (double) grid
     Grid<double> *grid_ptr = nullptr;
     bool success = false;
-    if (handler->metaObject()->indexOfMethod("paintGrid")>-1) {
+    handler->dumpObjectTree();
+
+
+    //if (handler->metaObject()->indexOfMethod("paintGrid")>-1) {
         success = QMetaObject::invokeMethod(handler, "paintGrid", Qt::DirectConnection,
                                                  Q_RETURN_ARG(Grid<double> *, grid_ptr),
                                                  Q_ARG(QString, name),
                                                  Q_ARG(QStringList&, rNamesColors->first),
                                                  Q_ARG(QStringList&, rNamesColors->second)
                                                  );
-    }
+    //}
 
     if (success) {
         return grid_ptr;
