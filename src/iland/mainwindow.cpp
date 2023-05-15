@@ -435,6 +435,7 @@ void MainWindow::updateLabel()
 // simply command an update of the painting area
 void MainWindow::repaint()
 {
+    mDoRepaint = true;
     ui->PaintWidget->update();
     //QCoreApplication::processEvents();
 }

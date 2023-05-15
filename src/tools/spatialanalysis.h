@@ -59,6 +59,7 @@ public slots:
 
     QJSValue patches(QJSValue grid, int min_size);
 
+
 private:
     void calculateCrownCoverRU(); ///< calculate resource-unit level crown cover
     RumpleIndex *mRumple;

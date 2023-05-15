@@ -11,7 +11,7 @@ class ResourceUnit; // forward
 struct MicroclimateCell {
 public:
     MicroclimateCell() { clear(); }
-    void clear() { mConiferShare = 0; mLAI = 0; }
+    void clear() { mConiferShare = 0; mLAI = 0; mTPI=0; mNorthness=0; }
 
     /// set conifer share on the cell (0..1)
     void setConiferShare(double share) { mConiferShare = static_cast<short unsigned int>(share * 1000.); /* save as short int */ }
@@ -23,10 +23,20 @@ public:
     /// conifer share from 0 (=0%) to 1 (=100%). Empty cells have a share of 0.
     double LAI() const { return static_cast<double>(mLAI) / 1000.; }
 
+    /// northness (= cos(aspect) ) [-1 .. 1]
+    double northness() const { return static_cast<double>(mNorthness) / 10000.; }
+    void setNorthness(double value)  { mNorthness = static_cast<short int>(value * 10000); }
+
+    /// topographic Position Index (~ differece between elevation and average elevation in with a radius)
+    double topographicPositionIndex() const { return static_cast<double>(mTPI) / 10.; }
+    void setTopographicPositionIndex(double value)  { mTPI = static_cast<short int>(value * 10); }
+
 private:
     // use 16 bit per value
     short unsigned int mConiferShare;
     short unsigned int mLAI;
+    short int mTPI;
+    short int mNorthness;
 };
 
 class Microclimate
@@ -40,10 +50,14 @@ public:
 
     MicroclimateCell &cell(int index) { Q_ASSERT(index>=0 && index < 100); return mCells[index]; }
     const MicroclimateCell &constCell(int index) const { Q_ASSERT(index>=0 && index < 100); return mCells[index]; }
+    /// get the cell located at a given metric location
     int cellIndex(const QPointF &coord);
+    QPointF cellCoord(int index);
 private:
+    void calculateFixedFactors();
     const ResourceUnit *mRU;
     MicroclimateCell *mCells;
+    bool mIsSetup;
 };
 
 class MicroclimateVisualizer: public QObject {

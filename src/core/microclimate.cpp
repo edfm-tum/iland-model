@@ -5,12 +5,15 @@
 #include "species.h"
 #include "tree.h"
 #include "modelcontroller.h"
+#include "dem.h"
 
 
 Microclimate::Microclimate(const ResourceUnit *ru)
 {
     mRU = ru;
     mCells = new MicroclimateCell[cHeightPerRU*cHeightPerRU];
+    mIsSetup = false;
+
 }
 
 Microclimate::~Microclimate()
@@ -23,6 +26,11 @@ void Microclimate::calculateVegetation()
     QVector<double> ba_total(cHeightPerRU*cHeightPerRU, 0.);
     QVector<double> ba_conifer(cHeightPerRU*cHeightPerRU, 0.);
     QVector<double> lai_total(cHeightPerRU*cHeightPerRU, 0.);
+
+    if (!mIsSetup)
+        // calculate (only once) northness and other factors that only depend on elevation model
+        calculateFixedFactors();
+
 
     // loop over trees and calculate aggregate values
     for ( QVector<Tree>::const_iterator t = mRU->constTrees().constBegin(); t != mRU->constTrees().constEnd(); ++t) {
@@ -54,6 +62,38 @@ int Microclimate::cellIndex(const QPointF &coord)
     return index;
 }
 
+QPointF Microclimate::cellCoord(int index)
+{
+    QPointF local( ( (index % cHeightPerRU) + 0.5) * cHeightPerRU, ((index/cHeightPerRU) + 0.5) * cHeightPerRU );
+    return local + mRU->boundingBox().topLeft();
+}
+
+void Microclimate::calculateFixedFactors()
+{
+    if (!GlobalSettings::instance()->model()->dem())
+        throw IException("The iLand Microclimate module requires a digital elevation model (DEM).");
+
+
+    // extract fixed factors from DEM
+    const DEM *dem =  GlobalSettings::instance()->model()->dem();
+
+    for (int i=0;i<cHeightPerRU*cHeightPerRU; ++i) {
+        QPointF p = cellCoord(i);
+
+        double aspect = dem->aspectGrid()->constValueAt(p)*M_PI / 180.;
+        double northness = cos(aspect);
+        const int radius = 100;
+
+        double tpi = dem->topographicPositionIndex(p, radius);
+
+        cell(i).setNorthness(northness);
+        cell(i).setTopographicPositionIndex(tpi);
+
+    }
+
+    mIsSetup = true;
+}
+
 MicroclimateVisualizer *MicroclimateVisualizer::mVisualizer = nullptr;
 
 MicroclimateVisualizer::MicroclimateVisualizer(QObject *parent)
@@ -62,6 +102,7 @@ MicroclimateVisualizer::MicroclimateVisualizer(QObject *parent)
 
 MicroclimateVisualizer::~MicroclimateVisualizer()
 {
+    GlobalSettings::instance()->controller()->removePaintLayers(mVisualizer);
     mVisualizer = nullptr;
 }
 
@@ -73,7 +114,7 @@ void MicroclimateVisualizer::setupVisualization()
 
     mVisualizer = new MicroclimateVisualizer();
 
-    QStringList varlist = {"Microclimate - coniferShare", "Microclimate - LAI"};
+    QStringList varlist = {"Microclimate - coniferShare", "Microclimate - LAI", "Microclimate - TPI", "Microclimate - Northness"};
     QVector<GridViewType> paint_types = {GridViewTurbo, GridViewTurbo};
     GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, varlist, paint_types);
 
@@ -90,6 +131,8 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
     int index = 0;
     if (what == "Microclimate - coniferShare") index = 0;
     if (what == "Microclimate - LAI") index = 1;
+    if (what == "Microclimate - TPI") index = 2;
+    if (what == "Microclimate - Northness") index = 3;
 
     // fill the grid with the expected variable
 
@@ -102,6 +145,8 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
             switch (index) {
             case 0: value = clim->constCell(cell_index).coniferShare(); break;
             case 1: value = clim->constCell(cell_index).LAI(); break;
+            case 2: value = clim->constCell(cell_index).topographicPositionIndex(); break;
+            case 3: value = clim->constCell(cell_index).northness(); break;
             }
 
             *gridptr = value;

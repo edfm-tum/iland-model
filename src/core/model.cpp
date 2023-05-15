@@ -601,6 +601,7 @@ void Model::loadProject()
     // microclimate
     if (Model::settings().microclimateEnabled) {
         MicroclimateVisualizer::setupVisualization();
+        DebugTimer t("Microclimate setup");
         executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
 
     }
@@ -815,6 +816,7 @@ void Model::runYear()
     }
     // run microclimate
     if (Model::settings().microclimateEnabled) {
+        DebugTimer t("Microclimate");
         executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
     }
 
