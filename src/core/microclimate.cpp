@@ -6,6 +6,8 @@
 #include "tree.h"
 #include "modelcontroller.h"
 #include "dem.h"
+#include "phenology.h"
+#include "climate.h"
 
 
 Microclimate::Microclimate(const ResourceUnit *ru)
@@ -26,6 +28,7 @@ void Microclimate::calculateVegetation()
     QVector<double> ba_total(cHeightPerRU*cHeightPerRU, 0.);
     QVector<double> ba_conifer(cHeightPerRU*cHeightPerRU, 0.);
     QVector<double> lai_total(cHeightPerRU*cHeightPerRU, 0.);
+    QVector<double> shade_tol(cHeightPerRU*cHeightPerRU, 0.);
 
     if (!mIsSetup)
         // calculate (only once) northness and other factors that only depend on elevation model
@@ -40,12 +43,15 @@ void Microclimate::calculateVegetation()
         lai_total[idx] += t->leafArea();
         if (t->species()->isConiferous())
             ba_conifer[idx] += t->basalArea();
+        // shade-tolerance uses species parameter light response class
+        shade_tol[idx] += t->species()->lightResponseClass() * t->basalArea();
     }
 
     // now write back to the microclimate store
     for (int i=0;i<cHeightPerRU*cHeightPerRU; ++i) {
         cell(i).setLAI( lai_total[i] / cHeightPixelArea ); // calculate m2/m2
         cell(i).setConiferShare( ba_total[i] > 0. ? ba_conifer[i] / ba_total[i] : 0.);
+        cell(i).setShadeToleranceMean( ba_total[i] > 0. ? shade_tol[i] / ba_total[i] : 0.);
     }
 
 }
@@ -82,7 +88,7 @@ void Microclimate::calculateFixedFactors()
 
         double aspect = dem->aspectGrid()->constValueAt(p)*M_PI / 180.;
         double northness = cos(aspect);
-        const int radius = 100;
+        const int radius = 500;
 
         double tpi = dem->topographicPositionIndex(p, radius);
 
@@ -114,7 +120,10 @@ void MicroclimateVisualizer::setupVisualization()
 
     mVisualizer = new MicroclimateVisualizer();
 
-    QStringList varlist = {"Microclimate - coniferShare", "Microclimate - LAI", "Microclimate - TPI", "Microclimate - Northness"};
+    QStringList varlist = {"Microclimate - coniferShare", "Microclimate - LAI", "Microclimate - ShadeTol",
+                           "Microclimate - TPI", "Microclimate - Northness",
+                           "Microclimate - Min.Buffer(June)", "Microclimate - Min.Buffer(Dec)",
+                           "Microclimate - Max.Buffer(June)", "Microclimate - Max.Buffer(Dec)"};
     QVector<GridViewType> paint_types = {GridViewTurbo, GridViewTurbo};
     GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, varlist, paint_types);
 
@@ -131,8 +140,13 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
     int index = 0;
     if (what == "Microclimate - coniferShare") index = 0;
     if (what == "Microclimate - LAI") index = 1;
-    if (what == "Microclimate - TPI") index = 2;
-    if (what == "Microclimate - Northness") index = 3;
+    if (what == "Microclimate - ShadeTol") index = 2;
+    if (what == "Microclimate - TPI") index = 3;
+    if (what == "Microclimate - Northness") index = 4;
+    if (what == "Microclimate - Min.Buffer(June)") index=5;
+    if (what == "Microclimate - Min.Buffer(Dec)") index=6;
+    if (what == "Microclimate - Max.Buffer(June)") index=7;
+    if (what == "Microclimate - Max.Buffer(Dec)") index=8;
 
     // fill the grid with the expected variable
 
@@ -145,8 +159,17 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
             switch (index) {
             case 0: value = clim->constCell(cell_index).coniferShare(); break;
             case 1: value = clim->constCell(cell_index).LAI(); break;
-            case 2: value = clim->constCell(cell_index).topographicPositionIndex(); break;
-            case 3: value = clim->constCell(cell_index).northness(); break;
+            case 2: value = clim->constCell(cell_index).shadeToleranceMean(); break;
+            case 3: value = clim->constCell(cell_index).topographicPositionIndex(); break;
+            case 4: value = clim->constCell(cell_index).northness(); break;
+                // buffering capacity: minimum summer
+            case 5:  value = clim->constCell(cell_index).minimumMicroclimateBuffering(ru, 180); break;
+                // minimum winter
+            case 6:  value = clim->constCell(cell_index).minimumMicroclimateBuffering(ru, 0); break;
+                // buffering capacity: max summer
+            case 7:  value = clim->constCell(cell_index).maximumMicroclimateBuffering(ru, 180); break;
+                // max winter
+            case 8:  value = clim->constCell(cell_index).maximumMicroclimateBuffering(ru, 0); break;
             }
 
             *gridptr = value;
@@ -154,4 +177,50 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
         }
     }
     return &mGrid;
+}
+
+double MicroclimateCell::minimumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const
+{
+    const int pheno_broadleaved = 1;
+    const Phenology &pheno = ru->climate()->phenology(pheno_broadleaved );
+
+    int rDay, rMonth;
+    ru->climate()->toDate(dayofyear, &rDay, &rMonth);
+
+    double gsi = pheno.month()[rMonth];
+
+    // "Minimum temperature buffer ~ -1.7157325 - 0.0187969*North + 0.0161997*RelEmin500 + 0.0890564*lai + 0.3414672*stol + 0.8302521*GSI + 0.0208083*prop_evergreen - 0.0107308*GSI:prop_evergreen"
+    double buf = -1.7157325 +
+                 -0.0187969*northness() +
+                 0.0161997*topographicPositionIndex() +
+                 0.0890564*LAI() +
+                 0.3414672*shadeToleranceMean() +
+                 0.8302521*gsi +
+                 0.0208083*coniferShare() +
+                 -0.0107308*gsi*coniferShare();
+
+    return buf;
+}
+
+double MicroclimateCell::maximumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const
+{
+    const int pheno_broadleaved = 1;
+    const Phenology &pheno = ru->climate()->phenology(pheno_broadleaved );
+
+    int rDay, rMonth;
+    ru->climate()->toDate(dayofyear, &rDay, &rMonth);
+
+    double gsi = pheno.month()[rMonth];
+
+    // "Maximum temperature buffer ~ 1.9058391 - 0.2528409*North - 0.0027037*RelEmin500 - 0.1549061*lai - 0.3806543*stol - 1.2863341*GSI - 0.8070951*prop_evergreen + 0.5004421*GSI:prop_evergreen"
+    double buf = 1.9058391 +
+                 -0.2528409*northness() +
+                 -0.0027037*topographicPositionIndex() +
+                 -0.1549061*LAI() +
+                 -0.3806543*shadeToleranceMean() +
+                 -1.2863341*gsi +
+                 -0.8070951*coniferShare() +
+                 0.5004421*gsi*coniferShare();
+
+    return buf;
 }

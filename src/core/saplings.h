@@ -212,7 +212,7 @@ public:
 
     /// return the metric coordinates of a given cell
     /// at resource unit `ru` and at the internal index `cell_index`
-    QPointF coordOfCell(ResourceUnit *ru, int cell_index);
+    static QPointF coordOfCell(const ResourceUnit *ru, int cell_index);
 
     /// clear/kill all saplings within the rectangle given by 'rectangle'.
     /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt), otherwise they are moved to soil

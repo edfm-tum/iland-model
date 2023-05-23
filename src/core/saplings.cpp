@@ -317,7 +317,7 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **r
     return nullptr;
 }
 
-QPointF Saplings::coordOfCell(ResourceUnit *ru, int cell_index)
+QPointF Saplings::coordOfCell(const ResourceUnit *ru, int cell_index)
 {
     QPoint imap = ru->cornerPointOffset();
     int x = imap.x() + cell_index % cPxPerRU;

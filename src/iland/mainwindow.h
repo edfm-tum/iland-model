@@ -94,7 +94,8 @@ public slots:
     void setUIshortcuts(QVariantMap shortcuts);
 
 protected:
-     void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
 
 private:
     Ui::MainWindowClass *ui;

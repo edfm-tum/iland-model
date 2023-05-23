@@ -647,7 +647,7 @@ void rungrid_custom(float &cell, int &n, const Tree *tree, const FMTreeList *lis
         ++n;
     }
 }
-void FMTreeList::prepareStandGrid(QString type, QString custom_expression)
+void FMTreeList::prepareLocalGrid(QString type, QString custom_expression)
 {
     if(!mStand){
         qCDebug(abe) << "Error: FMTreeList: no current stand defined.";
@@ -680,6 +680,17 @@ void FMTreeList::exportStandGrid(QString file_name)
     file_name = GlobalSettings::instance()->path(file_name);
     Helper::saveToTextFile(file_name, gridToESRIRaster(mStandGrid) );
     qCDebug(abe) << "saved grid to file" << file_name;
+}
+
+QJSValue FMTreeList::localGrid()
+{
+    Grid<double> *dgrid = new Grid<double>(mLocalGrid.metricRect(), mLocalGrid.cellsize());
+    double *p=dgrid->begin();
+    for (float *s=mLocalGrid.begin(); s!=mLocalGrid.end(); ++s,++p)
+        *p = *s;
+
+    QJSValue g = ScriptGrid::createGrid(dgrid, "local");
+    return g;
 }
 
 int FMTreeList::killSaplings(QString expression)

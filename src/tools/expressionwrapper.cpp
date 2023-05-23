@@ -200,7 +200,7 @@ double RUWrapper::value(const int variableIndex)
 //// SaplingTree Wrapper
 ////////////////////////////////////////////////
 
-const static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age" << "nrep" << "dbh" << "foliagemass";
+const static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age" << "nrep" << "dbh" << "foliagemass" << "x" << "y";
 
 const QStringList SaplingWrapper::getVariablesList()
 {
@@ -221,6 +221,14 @@ double SaplingWrapper::value(const int variableIndex)
     case 5: { const Species *sp = mSapling->resourceUnitSpecies(mRU)->species();
               double dbh = mSapling->height / sp->saplingGrowthParameters().hdSapling * 100.;
               return sp->biomassFoliage(dbh); }
+    case 6:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
+              size_t index = diff * sizeof(int*) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
+              QPointF p = Saplings::coordOfCell(mRU, index);
+              return p.x();    }
+    case 7:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
+              size_t index = diff * sizeof(int*) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
+              QPointF p = Saplings::coordOfCell(mRU, index);
+              return p.y();    }
     }
 
     return ExpressionWrapper::value(variableIndex);

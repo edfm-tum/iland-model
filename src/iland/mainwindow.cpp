@@ -1628,7 +1628,13 @@ void MainWindow::mouseMove(const QPoint& pos)
 
                 break;
             case PaintObject::PaintHandledObject:
-                value = mRemoteControl.valueAtHandledGrid(mPaintNext.handler, p, mPaintNext.layer_id);
+                if (mPaintNext.dbl_grid->isEmpty()) {
+                    // use the handler (e.g. BITE)
+                    value = mRemoteControl.valueAtHandledGrid(mPaintNext.handler, p, mPaintNext.layer_id);
+                } else {
+                    // use the grid directly
+                    value = mPaintNext.dbl_grid->constValueAt(p);
+                }
                 break;
 
             default: has_value = false;
@@ -1726,8 +1732,8 @@ void MainWindow::yearSimulated(int year)
     ui->modelRunProgress->setValue(year);
     labelMessage(QString("Running.... year %1 of %2. %3").arg(year).arg(mRemoteControl.totalYears()).arg(mRemoteControl.timeString()));
     ui->treeChange->setProperty("tree",0);
-    ui->PaintWidget->update();
-    //QApplication::processEvents();
+    mDoRepaint = true;
+    repaint();
 }
 
 void MainWindow::modelFinished(QString errorMessage)
@@ -2050,6 +2056,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     writeSettings();
     event->accept();
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    mDoRepaint = true;
+    QMainWindow::resizeEvent(event);
 }
 
 

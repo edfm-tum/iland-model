@@ -238,7 +238,8 @@ SOURCES += main.cpp \
     ../bite/biteoutput.cpp \
     ../abe/fmsaplinglist.cpp \
     ../bite/biteoutputitem.cpp \
-    ../core/permafrost.cpp
+    ../core/permafrost.cpp \
+    ../core/microclimate.cpp
 
 
 HEADERS += \
@@ -365,7 +366,8 @@ HEADERS += \
     ../bite/biteoutput.h \
     ../abe/fmsaplinglist.h \
     ../bite/biteoutputitem.h \
-    ../core/permafrost.h
+    ../core/permafrost.h \
+    ../core/microclimate.h
 
 RESOURCES += ../iland/res/iland.qrc
 

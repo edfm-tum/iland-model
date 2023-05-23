@@ -23,6 +23,10 @@ public:
     /// conifer share from 0 (=0%) to 1 (=100%). Empty cells have a share of 0.
     double LAI() const { return static_cast<double>(mLAI) / 1000.; }
 
+    void setShadeToleranceMean(double stol) {mShadeTol = static_cast<short unsigned int>(stol*10000.); /*stol: 1-5*/}
+    /// basal area weighted shade tolerance class (iLand species parameter)
+    double shadeToleranceMean() const { return static_cast<double>(mShadeTol) / 10000.; }
+
     /// northness (= cos(aspect) ) [-1 .. 1]
     double northness() const { return static_cast<double>(mNorthness) / 10000.; }
     void setNorthness(double value)  { mNorthness = static_cast<short int>(value * 10000); }
@@ -31,10 +35,17 @@ public:
     double topographicPositionIndex() const { return static_cast<double>(mTPI) / 10.; }
     void setTopographicPositionIndex(double value)  { mTPI = static_cast<short int>(value * 10); }
 
+    // microclimate buffering for a single day
+
+    /// minimum microclimate buffering
+    double minimumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const;
+    double maximumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const;
+
 private:
     // use 16 bit per value
     short unsigned int mConiferShare;
     short unsigned int mLAI;
+    short unsigned int mShadeTol;
     short int mTPI;
     short int mNorthness;
 };
