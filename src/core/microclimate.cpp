@@ -26,7 +26,7 @@ Microclimate::~Microclimate()
 void Microclimate::calculateVegetation()
 {
     QVector<double> ba_total(cHeightPerRU*cHeightPerRU, 0.);
-    QVector<double> ba_conifer(cHeightPerRU*cHeightPerRU, 0.);
+    QVector<double> ba_evergreen(cHeightPerRU*cHeightPerRU, 0.);
     QVector<double> lai_total(cHeightPerRU*cHeightPerRU, 0.);
     QVector<double> shade_tol(cHeightPerRU*cHeightPerRU, 0.);
 
@@ -41,8 +41,8 @@ void Microclimate::calculateVegetation()
 
         ba_total[idx] += t->basalArea();
         lai_total[idx] += t->leafArea();
-        if (t->species()->isConiferous())
-            ba_conifer[idx] += t->basalArea();
+        if (t->species()->isEvergreen())
+            ba_evergreen[idx] += t->basalArea();
         // shade-tolerance uses species parameter light response class
         shade_tol[idx] += t->species()->lightResponseClass() * t->basalArea();
     }
@@ -50,7 +50,7 @@ void Microclimate::calculateVegetation()
     // now write back to the microclimate store
     for (int i=0;i<cHeightPerRU*cHeightPerRU; ++i) {
         cell(i).setLAI( lai_total[i] / cHeightPixelArea ); // calculate m2/m2
-        cell(i).setConiferShare( ba_total[i] > 0. ? ba_conifer[i] / ba_total[i] : 0.);
+        cell(i).setEvergreenShare( ba_total[i] > 0. ? ba_evergreen[i] / ba_total[i] : 0.);
         cell(i).setShadeToleranceMean( ba_total[i] > 0. ? shade_tol[i] / ba_total[i] : 0.);
     }
 
@@ -120,17 +120,24 @@ void MicroclimateVisualizer::setupVisualization()
 
     mVisualizer = new MicroclimateVisualizer();
 
-    QStringList varlist = {"Microclimate - coniferShare", "Microclimate - LAI", "Microclimate - ShadeTol",
-                           "Microclimate - TPI", "Microclimate - Northness",
-                           "Microclimate - Min.Buffer(June)", "Microclimate - Min.Buffer(Dec)",
-                           "Microclimate - Max.Buffer(June)", "Microclimate - Max.Buffer(Dec)"};
-    QVector<GridViewType> paint_types = {GridViewTurbo, GridViewTurbo};
+    QStringList varlist = {"Microclimate - evergreenShare", "Microclimate - LAI", "Microclimate - ShadeTol", // 0,1,2
+                           "Microclimate - TPI", "Microclimate - Northness",  // 3,4
+                           "Microclimate - Min.Buffer(June)", "Microclimate - Min.Buffer(Dec)", // 5,6
+                           "Microclimate - Max.Buffer(June)", "Microclimate - Max.Buffer(Dec)"};  // 7,8
+
+    QVector<GridViewType> paint_types = {GridViewTurbo, GridViewTurbo, GridViewTurbo,
+                                         GridViewTurbo, GridViewTurbo,
+                                         GridViewTurbo, GridViewTurbo,
+                                         GridViewTurbo, GridViewTurbo};
     GlobalSettings::instance()->controller()->addPaintLayers(mVisualizer, varlist, paint_types);
 
 }
 
 Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names, QStringList &colors)
 {
+    Q_UNUSED(names)
+    Q_UNUSED(colors)
+
     if (mGrid.isEmpty()) {
         // setup grid with the dimensions of the iLand height grid
         mGrid.setup(GlobalSettings::instance()->model()->heightGrid()->metricRect(),
@@ -138,7 +145,7 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
         mGrid.wipe(0.);
     }
     int index = 0;
-    if (what == "Microclimate - coniferShare") index = 0;
+    if (what == "Microclimate - evergreenShare") index = 0;
     if (what == "Microclimate - LAI") index = 1;
     if (what == "Microclimate - ShadeTol") index = 2;
     if (what == "Microclimate - TPI") index = 3;
@@ -157,7 +164,7 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
         double value;
         while (double *gridptr = runner.next()) {
             switch (index) {
-            case 0: value = clim->constCell(cell_index).coniferShare(); break;
+            case 0: value = clim->constCell(cell_index).evergreenShare(); break;
             case 1: value = clim->constCell(cell_index).LAI(); break;
             case 2: value = clim->constCell(cell_index).shadeToleranceMean(); break;
             case 3: value = clim->constCell(cell_index).topographicPositionIndex(); break;
@@ -179,7 +186,51 @@ Grid<double> *MicroclimateVisualizer::paintGrid(QString what, QStringList &names
     return &mGrid;
 }
 
-double MicroclimateCell::minimumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const
+Grid<double> *MicroclimateVisualizer::grid(QString what, int dayofyear)
+{
+    Grid<double> *grid = new Grid<double>(GlobalSettings::instance()->model()->heightGrid()->metricRect(),
+                                         GlobalSettings::instance()->model()->heightGrid()->cellsize());
+    grid->wipe(0.);
+    int index = -1;
+    if (what == "evergreenShare") index = 0;
+    if (what == "LAI") index = 1;
+    if (what == "ShadeTol") index = 2;
+    if (what == "TPI") index = 3;
+    if (what == "Northness") index = 4;
+    if (what == "MinTBuffer") index=5;
+    if (what == "MaxTBuffer") index=6;
+    if (what == "GSI") index=7;
+
+    if (index < 0)
+        throw IException("Microclimate: invalid grid name");
+
+    // fill the grid with the expected variable
+
+    foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
+        const Microclimate *clim = ru->microClimate();
+        GridRunner<double> runner(grid, ru->boundingBox());
+        int cell_index = 0;
+        double value;
+        while (double *gridptr = runner.next()) {
+            switch (index) {
+            case 0: value = clim->constCell(cell_index).evergreenShare(); break;
+            case 1: value = clim->constCell(cell_index).LAI(); break;
+            case 2: value = clim->constCell(cell_index).shadeToleranceMean(); break;
+            case 3: value = clim->constCell(cell_index).topographicPositionIndex(); break;
+            case 4: value = clim->constCell(cell_index).northness(); break;
+            case 5:  value = clim->constCell(cell_index).minimumMicroclimateBuffering(ru, dayofyear); break;
+            case 6:  value = clim->constCell(cell_index).maximumMicroclimateBuffering(ru, dayofyear); break;
+            case 7:  value = clim->constCell(cell_index).growingSeasonIndex(ru, dayofyear); break;
+            }
+
+            *gridptr = value;
+            ++cell_index;
+        }
+    }
+    return grid;
+}
+
+double MicroclimateCell::growingSeasonIndex(const ResourceUnit *ru, int dayofyear) const
 {
     const int pheno_broadleaved = 1;
     const Phenology &pheno = ru->climate()->phenology(pheno_broadleaved );
@@ -188,6 +239,13 @@ double MicroclimateCell::minimumMicroclimateBuffering(const ResourceUnit *ru, in
     ru->climate()->toDate(dayofyear, &rDay, &rMonth);
 
     double gsi = pheno.month()[rMonth];
+    return gsi;
+}
+
+double MicroclimateCell::minimumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const
+{
+
+    double gsi = growingSeasonIndex(ru, dayofyear);
 
     // "Minimum temperature buffer ~ -1.7157325 - 0.0187969*North + 0.0161997*RelEmin500 + 0.0890564*lai + 0.3414672*stol + 0.8302521*GSI + 0.0208083*prop_evergreen - 0.0107308*GSI:prop_evergreen"
     double buf = -1.7157325 +
@@ -196,8 +254,8 @@ double MicroclimateCell::minimumMicroclimateBuffering(const ResourceUnit *ru, in
                  0.0890564*LAI() +
                  0.3414672*shadeToleranceMean() +
                  0.8302521*gsi +
-                 0.0208083*coniferShare() +
-                 -0.0107308*gsi*coniferShare();
+                 0.0208083*evergreenShare() +
+                 -0.0107308*gsi*evergreenShare();
 
     return buf;
 }
@@ -219,8 +277,8 @@ double MicroclimateCell::maximumMicroclimateBuffering(const ResourceUnit *ru, in
                  -0.1549061*LAI() +
                  -0.3806543*shadeToleranceMean() +
                  -1.2863341*gsi +
-                 -0.8070951*coniferShare() +
-                 0.5004421*gsi*coniferShare();
+                 -0.8070951*evergreenShare() +
+                 0.5004421*gsi*evergreenShare();
 
     return buf;
 }

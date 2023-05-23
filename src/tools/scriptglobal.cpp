@@ -52,6 +52,7 @@
 #include "fmsaplinglist.h"
 #include "scriptgrid.h"
 #include "customaggout.h"
+#include "microclimate.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -753,6 +754,15 @@ QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
     QJSValue g = ScriptGrid::createGrid(grid, "ru");
     return g;
 
+}
+
+QJSValue ScriptGlobal::microclimateGrid(QString variable, int dayofyear)
+{
+    if (!Model::settings().microclimateEnabled)
+        throw IException("microclimateGrid(): Error, microclimate submodule is not enabled.");
+    Grid<double> *grid = MicroclimateVisualizer::grid(variable, dayofyear);
+    QJSValue g = ScriptGrid::createGrid(grid, variable);
+    return g;
 }
 
 QJSValue ScriptGlobal::resourceUnit(int index)

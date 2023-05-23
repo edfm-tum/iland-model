@@ -43,6 +43,9 @@ public:
     void setGrid(Grid<double> *grid) { mGrid = grid; mOwner=true; }
     void setOwnership(bool should_delete) { mOwner = should_delete; }
     ~ScriptGrid();
+
+    /// create a ScriptGrid-Wrapper around "grid".
+    /// Note: destructing the 'grid' is done via the JS-garbage-collector.
     static QJSValue createGrid(Grid<double> *grid, QString name=QString());
 
     QString name() const {return mVariableName;}

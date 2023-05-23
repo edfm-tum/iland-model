@@ -70,7 +70,8 @@ bool DEM::loadFromFile(const QString &fileName)
 
     setup(h_grid->metricRect(),h_grid->cellsize());
 
-    const QRectF &world = GlobalSettings::instance()->model()->extent();
+    //const QRectF &world = GlobalSettings::instance()->model()->extent(); // without buffer
+    const QRectF &world = h_grid->metricRect(); // including buffer
 
     if (gis_grid.cellSize() <= cellsize()) {
         QPointF p;

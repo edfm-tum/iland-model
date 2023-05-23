@@ -1340,6 +1340,7 @@ void MainWindow::paintMapGrid(QPainter &painter,
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
     const Grid<int> *int_grid = nullptr;
+    bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
 
     int sx, sy;
     QRect total_rect;
@@ -1395,9 +1396,13 @@ void MainWindow::paintMapGrid(QPainter &painter,
                 r = vp.toScreen(double_grid->cellRect(p));
                 world = double_grid->cellCenterPoint(p);
             }
-            fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
-            if (shading) {
-                fill_color = Colors::shadeColor(fill_color, world, mRemoteControl.model()->dem()).rgb();
+            if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(world).isValid()) {
+                fill_color = Qt::white;
+            } else {
+                fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
+                if (shading) {
+                    fill_color = Colors::shadeColor(fill_color, world, mRemoteControl.model()->dem()).rgb();
+                }
             }
 
             painter.fillRect(r, fill_color);
@@ -1908,6 +1913,7 @@ void MainWindow::on_actionRun_one_year_triggered()
     GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
     labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
 
+    mDoRepaint = true;
     ui->PaintWidget->update();
     checkModelState();
 }

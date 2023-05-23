@@ -11,12 +11,12 @@ class ResourceUnit; // forward
 struct MicroclimateCell {
 public:
     MicroclimateCell() { clear(); }
-    void clear() { mConiferShare = 0; mLAI = 0; mTPI=0; mNorthness=0; }
+    void clear() { mEvergreenShare = 0; mLAI = 0; mTPI=0; mNorthness=0; }
 
     /// set conifer share on the cell (0..1)
-    void setConiferShare(double share) { mConiferShare = static_cast<short unsigned int>(share * 1000.); /* save as short int */ }
+    void setEvergreenShare(double share) { mEvergreenShare = static_cast<short unsigned int>(share * 1000.); /* save as short int */ }
     /// conifer share from 0 (=0%) to 1 (=100%). Empty cells have a share of 0.
-    double coniferShare() const { return static_cast<double>(mConiferShare) / 1000.; }
+    double evergreenShare() const { return static_cast<double>(mEvergreenShare) / 1000.; }
 
     /// set conifer share on the cell (0..1)
     void setLAI(double lai) { mLAI = static_cast<short unsigned int>(lai * 1000.); /* save as short int */ }
@@ -35,6 +35,8 @@ public:
     double topographicPositionIndex() const { return static_cast<double>(mTPI) / 10.; }
     void setTopographicPositionIndex(double value)  { mTPI = static_cast<short int>(value * 10); }
 
+    double growingSeasonIndex(const ResourceUnit *ru, int dayofyear) const;
+
     // microclimate buffering for a single day
 
     /// minimum microclimate buffering
@@ -43,7 +45,7 @@ public:
 
 private:
     // use 16 bit per value
-    short unsigned int mConiferShare;
+    short unsigned int mEvergreenShare;
     short unsigned int mLAI;
     short unsigned int mShadeTol;
     short int mTPI;
@@ -80,6 +82,8 @@ public:
 public slots:
     //QJSValue grid(); ///< return a copy of the underlying grid
     Grid<double> *paintGrid(QString what, QStringList &names, QStringList &colors); ///< function called from iLand visualization
+
+    static Grid<double> *grid(QString what, int dayofyear);
 private:
     Grid<double> mGrid;
     static MicroclimateVisualizer *mVisualizer;
