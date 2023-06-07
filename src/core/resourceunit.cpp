@@ -249,6 +249,9 @@ double ResourceUnit::topHeight(bool &rIrregular) const
 
 void ResourceUnit::notifyDisturbance(ERUDisturbanceType source, double info) const
 {
+    if (!mSVDState.disturbanceEvents) // do nothing if SVD states are not used
+        return;
+
     // events are stored with newest events first. Oldest event is removed
     // when maximum number of events reached
     mSVDState.disturbanceEvents->prepend(RUSVDState::SVDDisturbanceEvent(

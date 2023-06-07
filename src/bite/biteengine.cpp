@@ -60,8 +60,10 @@ BiteEngine::~BiteEngine()
 
 void BiteEngine::setup()
 {
-    QLoggingCategory::setFilterRules("bite.debug=true\n" \
-                                     "bite.setup.debug=true"); // enable *all*
+    // link BITE specific logging to general logging settings
+    QString enable_log = logLevelDebug() ? "true" : "false";
+    QLoggingCategory::setFilterRules(QString("bite.debug=%1\n" \
+                                     "bite.setup.debug=%1").arg(enable_log)); // enable *all*
 
     resetErrors();
 
