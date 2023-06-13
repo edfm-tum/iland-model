@@ -59,13 +59,8 @@ public:
     virtual void setup();
     void setStandGrid(MapGrid* m) { mStandGrid = m; }
 
-private:
-    CustomAggOut::AggregationEntity mEntity; ///< aggregation entity (ru, trees, saplings)
-    CustomAggOut::AggregationLevel mLevel; ///< spatial level on which data is aggregated (ru, stand, landscape)
-
-    Expression mEntityFilter;
-    Expression mCondition; ///< filter for years
-
+    // data structure for a field
+    // (is public bc Q_DECLARE_TYPEINFO below)
     struct SDynamicField {
         SDynamicField(): agg_index(-1), var_index(-1), expression(nullptr){}
         ~SDynamicField() { if(expression) delete expression; }
@@ -73,6 +68,15 @@ private:
         int var_index;
         Expression *expression;
     };
+
+
+private:
+    CustomAggOut::AggregationEntity mEntity; ///< aggregation entity (ru, trees, saplings)
+    CustomAggOut::AggregationLevel mLevel; ///< spatial level on which data is aggregated (ru, stand, landscape)
+
+    Expression mEntityFilter;
+    Expression mCondition; ///< filter for years
+
 
     QVector<SDynamicField> mFieldList;
     const MapGrid *mStandGrid;
@@ -97,5 +101,10 @@ private:
     void writeResults(QMap<QString, QVector<QVector<double> > >  &data, ResourceUnit *ru, int stand_id);
     void writeFirstCols(QString &species_id, ResourceUnit *ru, int stand_id);
 };
+
+// declare as relocatable: this tells the QVector container
+// that the actual bytes can be copied (moved to another location)
+// without invoking the destructor. Without, iLand crashed (Expression-ptr destroyed)
+Q_DECLARE_TYPEINFO(CustomAggOutLevel::SDynamicField, Q_RELOCATABLE_TYPE);
 
 #endif // DYNAMICSTANDOUT_H

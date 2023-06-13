@@ -150,7 +150,7 @@ void CustomAggOutLevel::setup()
             field = match.captured(1);
             aggregation = match.captured(2);
 
-            mFieldList.append(SDynamicField());
+            mFieldList.append( SDynamicField() );
             // parse field
             if (field.size()>0 && !field.contains('(')) {
                 // simple expression: extract index from wrappers

@@ -91,7 +91,7 @@ void Output::setup()
 
 Output::~Output()
 {
-    mInserter.clear();
+    //mInserter.clear();
 }
 
 Output::Output()
