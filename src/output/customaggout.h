@@ -47,10 +47,6 @@ private:
     QList<Output*> mLevels;
 
 
-
-
-
-
 };
 
 class CustomAggOutLevel : public Output {
@@ -59,15 +55,7 @@ public:
     virtual void setup();
     void setStandGrid(MapGrid* m) { mStandGrid = m; }
 
-    // data structure for a field
-    // (is public bc Q_DECLARE_TYPEINFO below)
-    struct SDynamicField {
-        SDynamicField(): agg_index(-1), var_index(-1), expression(nullptr){}
-        ~SDynamicField() { if(expression) delete expression; }
-        int agg_index;
-        int var_index;
-        Expression *expression;
-    };
+
 
 
 private:
@@ -77,8 +65,25 @@ private:
     Expression mEntityFilter;
     Expression mCondition; ///< filter for years
 
+    // data structure for a field
+    // (is public bc Q_DECLARE_TYPEINFO below)
+    struct SDynamicField {
+        SDynamicField(): agg_index(-1), var_index(-1), expression(nullptr){}
+        // move semantics (requires C++ 11)
+        //SDynamicField(SDynamicField && field): agg_index(field.agg_index), var_index(field.var_index), expression(field.expression) {
+        //    expression = nullptr;
+        //}
+        //~SDynamicField() {
+        //    if(expression) delete expression;
+        //}
+        // Copy c'tor
 
-    QVector<SDynamicField> mFieldList;
+        int agg_index;
+        int var_index;
+        Expression expression;
+    };
+
+    QVector<SDynamicField*> mFieldList;
     const MapGrid *mStandGrid;
 
     // helper function to aggregate values of a vector(means, medians, percentiles)
@@ -105,6 +110,6 @@ private:
 // declare as relocatable: this tells the QVector container
 // that the actual bytes can be copied (moved to another location)
 // without invoking the destructor. Without, iLand crashed (Expression-ptr destroyed)
-Q_DECLARE_TYPEINFO(CustomAggOutLevel::SDynamicField, Q_RELOCATABLE_TYPE);
+//Q_DECLARE_TYPEINFO(CustomAggOutLevel::SDynamicField, Q_RELOCATABLE_TYPE);
 
 #endif // DYNAMICSTANDOUT_H

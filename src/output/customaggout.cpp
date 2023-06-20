@@ -120,6 +120,7 @@ void CustomAggOutLevel::setup()
 
     // clear columns
     columns().clear();
+    qDeleteAll(mFieldList);
     mFieldList.clear();
 
 
@@ -150,7 +151,7 @@ void CustomAggOutLevel::setup()
             field = match.captured(1);
             aggregation = match.captured(2);
 
-            mFieldList.append( SDynamicField() );
+            mFieldList.append( new SDynamicField() );
             // parse field
             if (field.size()>0 && !field.contains('(')) {
                 // simple expression: extract index from wrappers
@@ -162,16 +163,16 @@ void CustomAggOutLevel::setup()
                 case CustomAggOut::RU: var_index = rw.variableIndex(field); break;
                 }
 
-                mFieldList.back().var_index = var_index;
+                mFieldList.back()->var_index = var_index;
             } else {
                 // complex expression
-                mFieldList.back().var_index=-1;
-                mFieldList.back().expression = new Expression(field);
+                mFieldList.back()->var_index=-1;
+                mFieldList.back()->expression.setExpression(field);
                 //mFieldList.back().expression = QScopedPointer<Expression>(new Expression(field));
             }
 
-            mFieldList.back().agg_index = aggList.indexOf(aggregation);
-            if (mFieldList.back().agg_index==-1)
+            mFieldList.back()->agg_index = aggList.indexOf(aggregation);
+            if (mFieldList.back()->agg_index==-1)
                 throw IException(QString("Invalid aggregate expression for dynamic output: %1\nallowed:%2")
                                  .arg(aggregation).arg(aggList.join(" ")));
 
@@ -368,11 +369,11 @@ void CustomAggOutLevel::processTree(const Tree *t, QMap<QString, QVector< QVecto
 
     // retrieve values for all fields for the tree
     for (int i=0;i<mFieldList.size();++i) {
-        SDynamicField &field = mFieldList[i];
-        if (field.var_index>-1) {
-            dat[i].push_back(tw.value(field.var_index));
+        SDynamicField *field = mFieldList[i];
+        if (field->var_index>-1) {
+            dat[i].push_back(tw.value(field->var_index));
         } else {
-            dat[i].push_back( field.expression->calculate(tw) );
+            dat[i].push_back( field->expression.calculate(tw) );
         }
     }
 }
@@ -411,11 +412,11 @@ void CustomAggOutLevel::processSapling(const SaplingTree *t, const ResourceUnit 
 
     // retrieve values for all fields for the tree
     for (int i=0;i<mFieldList.size();++i) {
-        SDynamicField &field = mFieldList[i];
-        if (field.var_index>-1) {
-            dat[i].push_back(sw.value(field.var_index));
+        SDynamicField *field = mFieldList[i];
+        if (field->var_index>-1) {
+            dat[i].push_back(sw.value(field->var_index));
         } else {
-            dat[i].push_back( field.expression->calculate(sw) );
+            dat[i].push_back( field->expression.calculate(sw) );
         }
     }
 }
@@ -427,11 +428,13 @@ void CustomAggOutLevel::processRU(const ResourceUnit *ru)
 
     // retrieve values for all fields for the tree
     for (int i=0;i<mFieldList.size();++i) {
-        SDynamicField &field = mFieldList[i];
-        if (field.var_index>-1) {
+        SDynamicField *field = mFieldList[i];
+        if (field->var_index>-1) {
             //field.data.push_back(rw.value(field.var_index));
+            // TODO
         } else {
             //field.data.push_back( field.expression->calculate(rw) );
+            // TODO
         }
     }
 }
@@ -448,7 +451,7 @@ void CustomAggOutLevel::writeResults(QMap<QString, QVector<QVector<double> > > &
 
         for (int i=0;i<mFieldList.size();++i) {
             // summarize according to the definition
-            double value = aggregate(mFieldList[i], dat[i] );
+            double value = aggregate(*mFieldList[i], dat[i] );
             // add to output stream
             *this << value;
         }
