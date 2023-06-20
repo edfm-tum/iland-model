@@ -662,6 +662,7 @@ template <class T>
 {
     QString res;
     QTextStream ts(&res);
+    ts.setRealNumberPrecision(10);
 
     int newl_counter = newline_after;
     for (int y=grid.sizeY()-1;y>=0;--y){
@@ -687,6 +688,7 @@ template <class T>
         {
             QString res;
             QTextStream ts(&res);
+            ts.setRealNumberPrecision(10);
 
             int newl_counter = newline_after;
             for (int y=grid.sizeY()-1;y>=0;--y){
