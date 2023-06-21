@@ -55,9 +55,6 @@ public:
     virtual void setup();
     void setStandGrid(MapGrid* m) { mStandGrid = m; }
 
-
-
-
 private:
     CustomAggOut::AggregationEntity mEntity; ///< aggregation entity (ru, trees, saplings)
     CustomAggOut::AggregationLevel mLevel; ///< spatial level on which data is aggregated (ru, stand, landscape)
@@ -69,15 +66,6 @@ private:
     // (is public bc Q_DECLARE_TYPEINFO below)
     struct SDynamicField {
         SDynamicField(): agg_index(-1), var_index(-1), expression(nullptr){}
-        // move semantics (requires C++ 11)
-        //SDynamicField(SDynamicField && field): agg_index(field.agg_index), var_index(field.var_index), expression(field.expression) {
-        //    expression = nullptr;
-        //}
-        //~SDynamicField() {
-        //    if(expression) delete expression;
-        //}
-        // Copy c'tor
-
         int agg_index;
         int var_index;
         Expression expression;

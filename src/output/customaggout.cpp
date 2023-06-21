@@ -51,7 +51,7 @@ void CustomAggOut::exec()
 
 void CustomAggOut::setup()
 {
-    // clear levels (0..9)
+
     qDeleteAll(mLevels);
     mLevels.clear();
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
@@ -120,7 +120,7 @@ void CustomAggOutLevel::setup()
 
     // clear columns
     columns().clear();
-    qDeleteAll(mFieldList);
+    //qDeleteAll(mFieldList);
     mFieldList.clear();
 
 
@@ -151,7 +151,8 @@ void CustomAggOutLevel::setup()
             field = match.captured(1);
             aggregation = match.captured(2);
 
-            mFieldList.append( new SDynamicField() );
+            SDynamicField *dfield = new SDynamicField;
+            mFieldList.append( dfield );
             // parse field
             if (field.size()>0 && !field.contains('(')) {
                 // simple expression: extract index from wrappers
@@ -163,16 +164,16 @@ void CustomAggOutLevel::setup()
                 case CustomAggOut::RU: var_index = rw.variableIndex(field); break;
                 }
 
-                mFieldList.back()->var_index = var_index;
+                dfield->var_index = var_index;
             } else {
                 // complex expression
-                mFieldList.back()->var_index=-1;
-                mFieldList.back()->expression.setExpression(field);
+                dfield->var_index=-1;
+                dfield->expression.setExpression(field);
                 //mFieldList.back().expression = QScopedPointer<Expression>(new Expression(field));
             }
 
-            mFieldList.back()->agg_index = aggList.indexOf(aggregation);
-            if (mFieldList.back()->agg_index==-1)
+            dfield->agg_index = aggList.indexOf(aggregation);
+            if (dfield->agg_index==-1)
                 throw IException(QString("Invalid aggregate expression for dynamic output: %1\nallowed:%2")
                                  .arg(aggregation).arg(aggList.join(" ")));
 

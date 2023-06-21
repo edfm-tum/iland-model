@@ -174,19 +174,19 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
     switch (type) {
     case QtDebugMsg:
-        *ConsoleShell::logStream() << msg << Qt::endl;
+        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": "  << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         break;
     case QtWarningMsg:
-        *ConsoleShell::logStream() << msg << Qt::endl;
+        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
         break;
 // available from qt5.5
     case QtInfoMsg:
-        *ConsoleShell::logStream() << msg << Qt::endl;
+        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());

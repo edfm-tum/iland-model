@@ -212,6 +212,7 @@ void BiteAgent::runOnTreeRemovedFilter(Tree *tree, int reason)
 
 void BiteAgent::run()
 {
+    BiteEngine::instance()->scriptEngine()->collectGarbage();
     stats().clear(); // reset stats
     if (!mStatsGrid.isEmpty()) {
         // reset cell level stats
