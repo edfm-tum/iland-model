@@ -444,6 +444,7 @@ ABE::FMTreeList *BiteAgent::threadTreeList()
         return mTreeLists[QThread::currentThread()];
     QMutexLocker lock(&_thread_treelist);
     mTreeLists[QThread::currentThread()] = new ABE::FMTreeList;
+    BiteAgent::setCPPOwnership(mTreeLists[QThread::currentThread()]); // avoid crashes due to gc freeing inadvertantly stuff?
     return mTreeLists[QThread::currentThread()];
 
 }
