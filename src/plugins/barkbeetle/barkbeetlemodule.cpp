@@ -118,6 +118,8 @@ void BarkBeetleModule::loadParameters(bool do_reset)
     params.deadTreeSelectivity = xml.valueDouble(".deadTreeSelectivity", params.deadTreeSelectivity);
     params.sanitationTreatmentProb = xml.valueDouble(".sanitationTreatmentProbability", params.sanitationTreatmentProb);
 
+    if (xml.hasNode(".useAirTempForGenerations"))
+        mGenerations.setUseAirTempForGenerations(xml.valueBool(".useAirTempForGenerations", false));
 
     QString formula = xml.value(".colonizeProbabilityFormula", "0.1");
     mColonizeProbability.setExpression(formula);

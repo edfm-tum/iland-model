@@ -12,6 +12,8 @@ struct MicroclimateCell {
 public:
     MicroclimateCell() { clear(); }
     void clear() { mEvergreenShare = 0; mLAI = 0; mTPI=0; mNorthness=0; }
+    bool valid() { return mNorthness > std::numeric_limits<short int>().min(); }
+    void setInvalid() {mNorthness = std::numeric_limits<short int>().min(); }
 
     /// set conifer share on the cell (0..1)
     void setEvergreenShare(double share) { mEvergreenShare = static_cast<short unsigned int>(share * 1000.); /* save as short int */ }
@@ -28,7 +30,7 @@ public:
     double shadeToleranceMean() const { return static_cast<double>(mShadeTol) / 10000.; }
 
     /// northness (= cos(aspect) ) [-1 .. 1]
-    double northness() const { return static_cast<double>(mNorthness) / 10000.; }
+    double northness() const {  return mNorthness > std::numeric_limits<short int>().min() ? static_cast<double>(mNorthness) / 10000. : 0.; }
     void setNorthness(double value)  { mNorthness = static_cast<short int>(value * 10000); }
 
     /// topographic Position Index (~ differece between elevation and average elevation in with a radius)
@@ -60,6 +62,15 @@ public:
 
     /// analyze vegetation on resource unit and calculate indices
     void calculateVegetation();
+
+    // get resource unit aggregates
+    /// average minimum buffering, i.e. actual min temperature = min_temp + buffering
+    double minimumMicroclimateBuffering(int dayofyear) const;
+    /// average maximum buffering, i.e. actual max temperature = max_temp + buffering
+    double maximumMicroclimateBuffering(int dayofyear) const;
+
+    double meanMicroclimateBuffering(int dayofyear) const;
+
 
     MicroclimateCell &cell(int index) { Q_ASSERT(index>=0 && index < 100); return mCells[index]; }
     const MicroclimateCell &constCell(int index) const { Q_ASSERT(index>=0 && index < 100); return mCells[index]; }

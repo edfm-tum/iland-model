@@ -10,6 +10,7 @@
 #include "climate.h"
 
 
+
 Microclimate::Microclimate(const ResourceUnit *ru)
 {
     mRU = ru;
@@ -56,6 +57,51 @@ void Microclimate::calculateVegetation()
 
 }
 
+double Microclimate::minimumMicroclimateBuffering(int dayofyear) const
+{
+    double buffering = 0.;
+    int n=0;
+    for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
+        if (mCells[i].valid()) {
+            buffering += mCells[i].minimumMicroclimateBuffering(mRU, dayofyear);
+            ++n;
+        }
+    }
+    return n>0 ? buffering / n : 0.;
+}
+
+double Microclimate::maximumMicroclimateBuffering(int dayofyear) const
+{
+    double buffering = 0.;
+    int n=0;
+    for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
+        if (mCells[i].valid()) {
+            buffering += mCells[i].maximumMicroclimateBuffering(mRU, dayofyear);
+            ++n;
+        }
+    }
+    return n>0 ? buffering / n : 0.;
+
+}
+
+double Microclimate::meanMicroclimateBuffering(int dayofyear) const
+{
+    // microclimate buffering for the mean daily temperature is
+    // calculated as the mean of min- and max-buffering
+    double buffering = 0.;
+    int n=0;
+    for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
+        if (mCells[i].valid()) {
+            double buffer = (mCells[i].minimumMicroclimateBuffering(mRU, dayofyear) +
+                             mCells[i].maximumMicroclimateBuffering(mRU, dayofyear) ) / 2.;
+            buffering += buffer;
+            ++n;
+        }
+    }
+    return n>0 ? buffering / n : 0.;
+
+}
+
 
 
 int Microclimate::cellIndex(const QPointF &coord)
@@ -83,6 +129,8 @@ void Microclimate::calculateFixedFactors()
     // extract fixed factors from DEM
     const DEM *dem =  GlobalSettings::instance()->model()->dem();
 
+    HeightGrid *hg = GlobalSettings::instance()->model()->heightGrid();
+
     for (int i=0;i<cHeightPerRU*cHeightPerRU; ++i) {
         QPointF p = cellCoord(i);
 
@@ -94,6 +142,10 @@ void Microclimate::calculateFixedFactors()
 
         cell(i).setNorthness(northness);
         cell(i).setTopographicPositionIndex(tpi);
+
+        // we only process cells that are stockable
+        if (!hg->constValueAt(p).isValid())
+            cell(i).setInvalid();
 
     }
 
