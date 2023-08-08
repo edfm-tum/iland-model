@@ -261,7 +261,7 @@ void Tests::testPheno(const Climate *clim)
     pheno.calculate();
     qDebug() << "Phenology is the key:";
     for (int i=0;i<12;i++)
-        qDebug() << i << pheno.month()[i];
+        qDebug() << i << pheno.monthArray()[i];
 }
 
 void Tests::climateResponse()

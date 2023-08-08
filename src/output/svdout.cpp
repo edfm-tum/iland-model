@@ -235,7 +235,7 @@ SVDIndicatorOut::SVDIndicatorOut()
 {
     setName("SVD forest indicator data", "svdindicator");
     setDescription("Indicator data per resource unit as used by SVD.\n " \
-                   "The selection of indicators is triggered by keys in the project file (sub section 'indicators'). " \
+                   "The selection of indicators is triggered by keys in the project file (sub section 'indicators').\n " \
                    "!!! indicators\n\n" \
                    "The following columns are supported:\n\n" \
                    "||__key__|__description__\n" \
@@ -401,7 +401,7 @@ void SVDIndicatorOut::exec()
     if (!GlobalSettings::instance()->model()->svdStates()) {
         qWarning() << "Output SVDIndicatorOut cannot be used, because it requires the 'svdstate' output (and the SVD subsystem ('model.settings.svdStates.enabled')). Output disabled.";
 
-        throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.svdStates.enabled').");
+        throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.settings.svdStates.enabled').");
     }
 
 

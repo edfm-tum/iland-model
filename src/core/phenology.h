@@ -34,7 +34,7 @@ public:
     /// calculate the phenology for the current year
     void calculate();
     /// get result of phenology calcualtion for this year (a pointer to a array of 12 values between 0..1: 0: no days with foliage)
-    const double *month() const { return mPhenoFraction; }
+    const double *monthArray() const { return mPhenoFraction; }
     int vegetationPeriodLength() const { return mDayEnd - mDayStart; } ///< length of vegetation period in days, returs 365 for evergreens
     int vegetationPeriodStart() const { return mDayStart; } ///< day of year when vegeation period starts
     int vegetationPeriodEnd() const { return mDayEnd; } ///< day of year when vegeation period stops

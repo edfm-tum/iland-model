@@ -160,7 +160,7 @@ double Establishment::calculateSOLDepthLimitation()
  a model mockup in R: script_establishment.r
 
  */
-void Establishment::calculateAbioticEnvironment()
+void Establishment::calculateAbioticEnvironment(QVector< QPair<double, double> > &rClim_buffer)
 {
     //DebugTimer t("est_abiotic"); t.setSilent();
     // make sure that required calculations (e.g. watercycle are already performed)
@@ -176,6 +176,15 @@ void Establishment::calculateAbioticEnvironment()
     mTACA_frostAfterBuds = 0; // frost days after bud birst
     mGDD = 0;
 
+    bool do_buffer_clim = false;
+    if (Model::settings().microclimateEnabled && rClim_buffer.isEmpty()) {
+        // reserve space for a year of min/mean buffer temperatures
+        // the values are used for *all* species as they depend only on aggregated values (10x10m)
+        // this saves a lot of duplicated computations (x number of species)
+        rClim_buffer.resize(366);
+        do_buffer_clim = true;
+
+    }
 
     const ClimateDay *day = mClimate->begin();
     int doy = 0;
@@ -197,11 +206,21 @@ void Establishment::calculateAbioticEnvironment()
 
         if (Model::settings().microclimateEnabled) {
             // use microclimate calculations to modify the temperature
-            // for establishmet
-            double mc_min_buf = mRUS->ru()->microClimate()->minimumMicroclimateBuffering(doy);
-            double mc_mean_buf = mRUS->ru()->microClimate()->meanMicroclimateBuffering(doy);
-            day_tmin += mc_min_buf;
-            day_tavg += mc_mean_buf;
+            // for establishment
+            if (do_buffer_clim) {
+                double mc_min_buf = mRUS->ru()->microClimate()->minimumMicroclimateBuffering(doy);
+                double mc_max_buf = mRUS->ru()->microClimate()->maximumMicroclimateBuffering(doy);
+                double mc_mean_buf = (mc_min_buf + mc_max_buf) / 2.;
+                day_tmin += mc_min_buf;
+                day_tavg += mc_mean_buf;
+                // fill the buffer for the RU and the current year
+                rClim_buffer[doy].first = day_tmin;
+                rClim_buffer[doy].second = day_tavg;
+            }
+            // read from buffer
+            day_tmin = rClim_buffer[doy].first; // = tmin + buffer
+            day_tavg = rClim_buffer[doy].second; // tavg + buffer
+
         }
 
         // minimum temperature: if temp too low -> set prob. to zero

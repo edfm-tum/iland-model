@@ -23,6 +23,7 @@
 #include "resourceunit.h"
 #include "species.h"
 #include "speciesresponse.h"
+#include "climate.h"
 
 ProductionOut::ProductionOut()
 {
@@ -30,6 +31,7 @@ ProductionOut::ProductionOut()
     setDescription("Details about the 3PG production submodule on monthly basis and for each species and resource unit.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("month", "month of year", OutInteger)
+              << OutputColumn("phenology", "proportion of the month (0..1) that is within the vegetation period (and thus it is assumed that leaves are out)", OutDouble)
               << OutputColumn("tempResponse", "monthly average of daily respose value temperature", OutDouble)
               << OutputColumn("waterResponse", "monthly average of daily respose value soil water", OutDouble)
               << OutputColumn("vpdResponse", "monthly vapour pressure deficit respose.", OutDouble)
@@ -49,6 +51,7 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
 {
     const Production3PG &prod = rus->prod3PG();
     const SpeciesResponse *resp = prod.mResponse;
+    const double *pheno_fractions = rus->ru()->climate()->phenology(rus->species()->phenologyClass()).monthArray();
     for (int i=0;i<12;i++) {
         // skip all species/resource units without production
         if (prod.mEnvYear == 0.)
@@ -58,6 +61,8 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
 
         *this << currentYear() << rus->ru()->index() << rus->ru()->id() << rus->species()->id();
         *this << (i+1); // month
+        *this << pheno_fractions[i]; // phenology (proportion of month with leaves)
+
         // responses
         *this <<  resp->tempResponse()[i]
               << resp->soilWaterResponse()[i]

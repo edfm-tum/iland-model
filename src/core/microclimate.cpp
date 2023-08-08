@@ -290,7 +290,7 @@ double MicroclimateCell::growingSeasonIndex(const ResourceUnit *ru, int dayofyea
     int rDay, rMonth;
     ru->climate()->toDate(dayofyear, &rDay, &rMonth);
 
-    double gsi = pheno.month()[rMonth];
+    double gsi = pheno.monthArray()[rMonth];
     return gsi;
 }
 
@@ -320,7 +320,7 @@ double MicroclimateCell::maximumMicroclimateBuffering(const ResourceUnit *ru, in
     int rDay, rMonth;
     ru->climate()->toDate(dayofyear, &rDay, &rMonth);
 
-    double gsi = pheno.month()[rMonth];
+    double gsi = pheno.monthArray()[rMonth];
 
     // "Maximum temperature buffer ~ 1.9058391 - 0.2528409*North - 0.0027037*RelEmin500 - 0.1549061*lai - 0.3806543*stol - 1.2863341*GSI - 0.8070951*prop_evergreen + 0.5004421*GSI:prop_evergreen"
     double buf = 1.9058391 +
