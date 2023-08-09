@@ -223,12 +223,12 @@ double Snag::calculateClimateFactors()
     {
         double temp_day = day->temperature;
         if (Model::settings().microclimateEnabled) {
-            double mc_mean_buffer = mRU->microClimate()->meanMicroclimateBuffering(iday);
+            double mc_mean_buffer = mRU->microClimate()->meanMicroclimateBufferingRU(iday);
             temp_day += mc_mean_buffer;
         }
         // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)
         // Note: function becomes unstable with very low temperatures (e.g. Alaska)
-        ft = temp_day > -30 ? exp(308.56*(1./56.02-1./((273.+day->temperature)-227.13))) : 0.;
+        ft = temp_day > -30 ? exp(308.56*(1./56.02-1./((273.+ temp_day )-227.13))) : 0.;
         fw = fw_month[day->month-1];
 
         f_sum += ft*fw;

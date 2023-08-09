@@ -191,7 +191,7 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
         double min_temp = clim->min_temperature;
         // include microclimate effect when module is turned on
         if (Model::settings().microclimateEnabled)
-            min_temp = min_temp + ru->microClimate()->minimumMicroclimateBuffering(i);
+            min_temp = min_temp + ru->microClimate()->minimumMicroclimateBufferingRU(i);
 
         if (min_temp < -15.) {
             if (i < ru->climate()->sun().longestDay())

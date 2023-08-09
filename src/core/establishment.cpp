@@ -208,8 +208,8 @@ void Establishment::calculateAbioticEnvironment(QVector< QPair<double, double> >
             // use microclimate calculations to modify the temperature
             // for establishment
             if (do_buffer_clim) {
-                double mc_min_buf = mRUS->ru()->microClimate()->minimumMicroclimateBuffering(doy);
-                double mc_max_buf = mRUS->ru()->microClimate()->maximumMicroclimateBuffering(doy);
+                double mc_min_buf = mRUS->ru()->microClimate()->minimumMicroclimateBufferingRU(doy);
+                double mc_max_buf = mRUS->ru()->microClimate()->maximumMicroclimateBufferingRU(doy);
                 double mc_mean_buf = (mc_min_buf + mc_max_buf) / 2.;
                 day_tmin += mc_min_buf;
                 day_tavg += mc_mean_buf;

@@ -55,10 +55,15 @@ void Microclimate::calculateVegetation()
         cell(i).setShadeToleranceMean( ba_total[i] > 0. ? shade_tol[i] / ba_total[i] : 0.);
     }
 
+    // do additionally calculate and buffer values on RU resolution for performance reasons
+    calculateRUMeanValues();
+
 }
 
-double Microclimate::minimumMicroclimateBuffering(int dayofyear) const
+double Microclimate::minimumMicroclimateBufferingRU(int dayofyear) const
 {
+    return mRUvalues[dayofyear].first;
+    /* // unbuffered version
     double buffering = 0.;
     int n=0;
     for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
@@ -67,11 +72,47 @@ double Microclimate::minimumMicroclimateBuffering(int dayofyear) const
             ++n;
         }
     }
-    return n>0 ? buffering / n : 0.;
+    return n>0 ? buffering / n : 0.; */
 }
 
-double Microclimate::maximumMicroclimateBuffering(int dayofyear) const
+void Microclimate::calculateRUMeanValues()
 {
+
+    // calculate average values for drivers
+    double northness=0., tpi=0., lai=0., stol=0., evergreen_share = 0.;
+    double n=0.;
+    for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
+        if (mCells[i].valid()) {
+            northness += mCells[i].northness();
+            tpi += mCells[i].topographicPositionIndex();
+            lai += mCells[i].LAI();
+            stol += mCells[i].shadeToleranceMean();
+            evergreen_share += mCells[i].evergreenShare();
+            ++n;
+        }
+    }
+    if (n==0.) n=1.;
+    // create a cell with mean RU characteristics:
+    MicroclimateCell cell(evergreen_share/n,lai/n,stol/n,tpi/n,northness/n);
+
+    if (mRUvalues.empty())
+        mRUvalues.resize(366);
+
+    // run over the year
+    for (int doy=0;doy < mRU->climate()->daysOfYear(); ++doy) {
+        double buffer_min = cell.minimumMicroclimateBuffering(mRU, doy);
+        double buffer_max = cell.maximumMicroclimateBuffering(mRU, doy);
+        mRUvalues[doy] = QPair<float, float>(static_cast<float>(buffer_min),
+                                             static_cast<float>(buffer_max));
+    }
+
+}
+
+
+double Microclimate::maximumMicroclimateBufferingRU(int dayofyear) const
+{
+    return mRUvalues[dayofyear].second;
+    /* // unbuffered version....
     double buffering = 0.;
     int n=0;
     for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
@@ -80,26 +121,16 @@ double Microclimate::maximumMicroclimateBuffering(int dayofyear) const
             ++n;
         }
     }
-    return n>0 ? buffering / n : 0.;
+    return n>0 ? buffering / n : 0.; */
 
 }
 
-double Microclimate::meanMicroclimateBuffering(int dayofyear) const
+double Microclimate::meanMicroclimateBufferingRU(int dayofyear) const
 {
-    // microclimate buffering for the mean daily temperature is
-    // calculated as the mean of min- and max-buffering
-    double buffering = 0.;
-    int n=0;
-    for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
-        if (mCells[i].valid()) {
-            double buffer = (mCells[i].minimumMicroclimateBuffering(mRU, dayofyear) +
-                             mCells[i].maximumMicroclimateBuffering(mRU, dayofyear) ) / 2.;
-            buffering += buffer;
-            ++n;
-        }
-    }
-    return n>0 ? buffering / n : 0.;
-
+    // calculate mean value of min and max buffering
+    double buffer = ( minimumMicroclimateBufferingRU(dayofyear) +
+                     maximumMicroclimateBufferingRU(dayofyear) ) / 2.;
+    return buffer;
 }
 
 
@@ -280,6 +311,15 @@ Grid<double> *MicroclimateVisualizer::grid(QString what, int dayofyear)
         }
     }
     return grid;
+}
+
+MicroclimateCell::MicroclimateCell(double evergreen_share, double lai, double shade_tol, double tpi, double northness)
+{
+    setEvergreenShare(evergreen_share);
+    setLAI(lai);
+    setShadeToleranceMean(shade_tol);
+    setTopographicPositionIndex(tpi);
+    setNorthness(northness);
 }
 
 double MicroclimateCell::growingSeasonIndex(const ResourceUnit *ru, int dayofyear) const

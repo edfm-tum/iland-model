@@ -11,6 +11,7 @@ class ResourceUnit; // forward
 struct MicroclimateCell {
 public:
     MicroclimateCell() { clear(); }
+    MicroclimateCell(double evergreen_share, double lai, double shade_tol, double tpi, double northness);
     void clear() { mEvergreenShare = 0; mLAI = 0; mTPI=0; mNorthness=0; }
     bool valid() { return mNorthness > std::numeric_limits<short int>().min(); }
     void setInvalid() {mNorthness = std::numeric_limits<short int>().min(); }
@@ -65,11 +66,13 @@ public:
 
     // get resource unit aggregates
     /// average minimum buffering, i.e. actual min temperature = min_temp + buffering
-    double minimumMicroclimateBuffering(int dayofyear) const;
-    /// average maximum buffering, i.e. actual max temperature = max_temp + buffering
-    double maximumMicroclimateBuffering(int dayofyear) const;
+    double minimumMicroclimateBufferingRU(int dayofyear) const;
 
-    double meanMicroclimateBuffering(int dayofyear) const;
+
+    /// average maximum buffering, i.e. actual max temperature = max_temp + buffering
+    double maximumMicroclimateBufferingRU(int dayofyear) const;
+
+    double meanMicroclimateBufferingRU(int dayofyear) const;
 
 
     MicroclimateCell &cell(int index) { Q_ASSERT(index>=0 && index < 100); return mCells[index]; }
@@ -79,8 +82,10 @@ public:
     QPointF cellCoord(int index);
 private:
     void calculateFixedFactors();
+    void calculateRUMeanValues();
     const ResourceUnit *mRU;
     MicroclimateCell *mCells;
+    QVector< QPair<float, float> > mRUvalues;
     bool mIsSetup;
 };
 
