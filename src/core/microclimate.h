@@ -46,6 +46,10 @@ public:
     double minimumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const;
     double maximumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const;
 
+    /// faster calculation minimum microclimate buffering, when growingseasonindex is known
+    double minimumMicroclimateBuffering(double gsi) const;
+    double maximumMicroclimateBuffering(double gsi) const;
+
 private:
     // use 16 bit per value
     short unsigned int mEvergreenShare;

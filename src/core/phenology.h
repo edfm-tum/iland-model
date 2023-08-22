@@ -24,11 +24,15 @@ class Climate;
 class Phenology
 {
 public:
-    Phenology(const Climate* climate) {mClimate=climate; mId=0; mMinVpd=mMaxVpd=mMinDayLength=mMaxDayLength=mMinTemp=mMaxTemp=0.; mDayStart=0;mDayEnd=365;mChillDaysBefore=-1; mChillDaysAfter=0;mChillDaysAfterLastYear=0;}
+    Phenology(const Climate* climate) {mClimate=climate; mId=0; mMinVpd=mMaxVpd=mMinDayLength=mMaxDayLength=mMinTemp=mMaxTemp=0.;
+        mDayStart=0;mDayEnd=365;mChillDaysBefore=-1; mChillDaysAfter=0;mChillDaysAfterLastYear=0;
+        for (int i=0;i<12;++i) mPhenoFraction[i]=0.; }
     Phenology(const int id, const Climate* climate, const double minVpd, const double maxVpd,
               const double minDayLength, const double maxDayLength,
               const double minTemp, const double maxTemp): mId(id), mClimate(climate), mMinVpd(minVpd), mMaxVpd(maxVpd),
-                                mMinDayLength(minDayLength), mMaxDayLength(maxDayLength), mMinTemp(minTemp), mMaxTemp(maxTemp),mChillDaysAfter(0),mChillDaysAfterLastYear(0) {}
+                                mMinDayLength(minDayLength), mMaxDayLength(maxDayLength), mMinTemp(minTemp), mMaxTemp(maxTemp),mChillDaysAfter(0),mChillDaysAfterLastYear(0) {
+        for (int i=0;i<12;++i) mPhenoFraction[i]=0.;
+    }
     // access
     int id() const { return mId; }
     /// calculate the phenology for the current year

@@ -78,6 +78,7 @@ double Microclimate::minimumMicroclimateBufferingRU(int dayofyear) const
 void Microclimate::calculateRUMeanValues()
 {
 
+    /*
     // calculate average values for drivers
     double northness=0., tpi=0., lai=0., stol=0., evergreen_share = 0.;
     double n=0.;
@@ -93,15 +94,41 @@ void Microclimate::calculateRUMeanValues()
     }
     if (n==0.) n=1.;
     // create a cell with mean RU characteristics:
-    MicroclimateCell cell(evergreen_share/n,lai/n,stol/n,tpi/n,northness/n);
+    MicroclimateCell cell(evergreen_share/n,lai/n,stol/n,tpi/n,northness/n); */
 
     if (mRUvalues.empty())
         mRUvalues.resize(366);
 
+    const int pheno_broadleaved = 1;
+    const Phenology &pheno = mRU->climate()->phenology(pheno_broadleaved );
+
     // run over the year
-    for (int doy=0;doy < mRU->climate()->daysOfYear(); ++doy) {
-        double buffer_min = cell.minimumMicroclimateBuffering(mRU, doy);
-        double buffer_max = cell.maximumMicroclimateBuffering(mRU, doy);
+    double buffer_min;
+    double buffer_max;
+    int n, doy;
+    const ClimateDay *cday;
+    for (doy=0,  cday=mRU->climate()->begin();  doy < mRU->climate()->daysOfYear(); ++doy, ++cday) {
+
+        // calculate gsi, and re-use for each cell of the RU
+        double gsi = pheno.monthArray()[cday->month - 1];
+
+        // loop over all cells and calculate buffering
+        buffer_min=0.;
+        buffer_max=0.;
+        n=0;
+        for (int i=0;i < cHeightPerRU*cHeightPerRU; ++i) {
+            if (mCells[i].valid()) {
+
+                buffer_min += mCells[i].minimumMicroclimateBuffering(gsi);
+                buffer_max += mCells[i].maximumMicroclimateBuffering(gsi);
+                ++n;
+            }
+        }
+
+        // calculate mean values for RU and save for later
+        buffer_min = n>0 ? buffer_min / n : 0.;
+        buffer_max = n>0 ? buffer_max / n : 0.;
+
         mRUvalues[doy] = QPair<float, float>(static_cast<float>(buffer_min),
                                              static_cast<float>(buffer_max));
     }
@@ -336,9 +363,18 @@ double MicroclimateCell::growingSeasonIndex(const ResourceUnit *ru, int dayofyea
 
 double MicroclimateCell::minimumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const
 {
-
     double gsi = growingSeasonIndex(ru, dayofyear);
+    return minimumMicroclimateBuffering(gsi);
+}
 
+double MicroclimateCell::maximumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const
+{
+    double gsi = growingSeasonIndex(ru, dayofyear);
+    return maximumMicroclimateBuffering(gsi);
+}
+
+double MicroclimateCell::minimumMicroclimateBuffering(double gsi) const
+{
     // "Minimum temperature buffer ~ -1.7157325 - 0.0187969*North + 0.0161997*RelEmin500 + 0.0890564*lai + 0.3414672*stol + 0.8302521*GSI + 0.0208083*prop_evergreen - 0.0107308*GSI:prop_evergreen"
     double buf = -1.7157325 +
                  -0.0187969*northness() +
@@ -350,18 +386,11 @@ double MicroclimateCell::minimumMicroclimateBuffering(const ResourceUnit *ru, in
                  -0.0107308*gsi*evergreenShare();
 
     return buf;
+
 }
 
-double MicroclimateCell::maximumMicroclimateBuffering(const ResourceUnit *ru, int dayofyear) const
+double MicroclimateCell::maximumMicroclimateBuffering(double gsi) const
 {
-    const int pheno_broadleaved = 1;
-    const Phenology &pheno = ru->climate()->phenology(pheno_broadleaved );
-
-    int rDay, rMonth;
-    ru->climate()->toDate(dayofyear, &rDay, &rMonth);
-
-    double gsi = pheno.monthArray()[rMonth];
-
     // "Maximum temperature buffer ~ 1.9058391 - 0.2528409*North - 0.0027037*RelEmin500 - 0.1549061*lai - 0.3806543*stol - 1.2863341*GSI - 0.8070951*prop_evergreen + 0.5004421*GSI:prop_evergreen"
     double buf = 1.9058391 +
                  -0.2528409*northness() +
