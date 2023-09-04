@@ -230,7 +230,11 @@ SOURCES += main.cpp \
     ../bite/biteclimate.cpp \
     ../bite/biteoutput.cpp \
     ../abe/fmsaplinglist.cpp \
-    ../bite/biteoutputitem.cpp
+    ../bite/biteoutputitem.cpp \
+    ui/dialogcomment.cpp \
+    ui/dialogsystemsettings.cpp \
+    ui/linkxmlqt.cpp \
+    ui/moduledialog.cpp
 
 HEADERS += mainwindow.h \
     ../core/microclimate.h \
@@ -360,9 +364,17 @@ HEADERS += mainwindow.h \
     ../bite/biteclimate.h \
     ../bite/biteoutput.h \
     ../abe/fmsaplinglist.h \
-    ../bite/biteoutputitem.h
+    ../bite/biteoutputitem.h \
+    ui/dialogcomment.h \
+    ui/dialogsystemsettings.h \
+    ui/linkxmlqt.h \
+    ui/moduledialog.h
 FORMS += mainwindow.ui \
-    aboutdialog.ui
+    aboutdialog.ui \
+    ui/dialogcomment.ui \
+    ui/dialogsystemsettings.ui \
+    ui/moduledialog.ui \
+    ui/moduledialog_backup.ui
 RESOURCES += ./res/iland.qrc \
     qml_res.qrc
 
