@@ -49,6 +49,10 @@
 #include "spatialanalysis.h"
 #include "scripttree.h"
 #include "scriptresourceunit.h"
+#include "fmsaplinglist.h"
+#include "scriptgrid.h"
+#include "customaggout.h"
+#include "microclimate.h"
 
 #ifdef ILAND_GUI
 #include "mainwindow.h"
@@ -151,6 +155,11 @@ void ScriptGlobal::include(QString filename)
 
 }
 
+double ScriptGlobal::random(double from, double to)
+{
+    return nrandom(from, to);
+}
+
 QString ScriptGlobal::defaultDirectory(QString dir)
 {
     QString result = GlobalSettings::instance()->path(QString(), dir) + QDir::separator();
@@ -250,9 +259,13 @@ void MapGridWrapper::addToScriptEngine(QJSEngine &engine)
     //QJSValue cc_class = engine.scriptValueFromQMetaObject<MapGridWrapper>();
     // the script name for the object is "Map".
     // TODO: solution for creating objects!!!
-    QObject *mgw = new MapGridWrapper();
-    QJSValue mgw_cls = engine.newQObject(mgw);
-    engine.globalObject().setProperty("Map", mgw_cls);
+    //QObject *mgw = new MapGridWrapper();
+    //QJSValue mgw_cls = engine.newQObject(mgw);
+    //engine.globalObject().setProperty("Map", mgw_cls);
+
+    QJSValue jsMetaObject = engine.newQMetaObject(&MapGridWrapper::staticMetaObject);
+    engine.globalObject().setProperty("Map", jsMetaObject);
+
 }
 
 MapGridWrapper::MapGridWrapper(QObject *)
@@ -442,6 +455,20 @@ void MapGridWrapper::createMapIndex()
         mMap->createIndex();
 }
 
+void MapGridWrapper::copyFromGrid(ScriptGrid *grid)
+{
+    if (!grid->isValid() || !mMap)
+        throw IException("copyFromGrid: invalid input grid or mapgrid!");
+
+    if (mMap->grid().cellsize() != grid->cellsize() || mMap->grid().sizeX() != grid->grid()->sizeX() || mMap->grid().sizeY() != grid->grid()->sizeY())
+        throw IException("copyFromGrid: dimensions of input grid do not match the map grid!");
+
+    int *target = mMap->grid().begin();
+    double *src = grid->grid()->begin();
+    for (; src!= grid->grid()->end(); ++src, ++target)
+        *target = static_cast<int>(*src);
+}
+
 QString MapGridWrapper::name() const
 {
     if (mMap)
@@ -517,6 +544,17 @@ bool ScriptGlobal::stopOutput(QString table_name)
     out->setEnabled(false);
     qDebug() << "stopped output" << table_name;
     return true;
+}
+
+void ScriptGlobal::useSpecialMapForOutputs(MapGridWrapper *m)
+{
+    CustomAggOut *out = dynamic_cast<CustomAggOut*>(GlobalSettings::instance()->outputManager()->find("customagg"));
+    if (!out)
+        throw IException("useSpecialMapForOutputs() requires 'customagg' output to be available!");
+    if (!m)
+        throw IException("useSpecialMapForOutputs(): empty input map!");
+
+    out->setStandGrid(m->map());
 }
 
 void ScriptGlobal::debugOutputFilter(QList<int> ru_indices)
@@ -613,6 +651,9 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="count") index = 2;
     if (type=="forestoutside") index=3;
     if (type=="standgrid") index=4;
+    if (type=="sap_hmax10") index=5;
+    if (type=="saplingcover10") index=6;
+    if (type=="smallsaplingcover10") index=7;
     // resource unit level
     if (type=="smallsaplingcover") index=10;
     if (type=="saplingcover") index=11;
@@ -635,7 +676,6 @@ QJSValue ScriptGlobal::grid(QString type)
             *p = *s;
         QJSValue g = ScriptGrid::createGrid(dgrid, type);
         return g;
-
     }
     if (index < 10) {
         HeightGrid *h = GlobalSettings::instance()->model()->heightGrid();
@@ -714,6 +754,15 @@ QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
     QJSValue g = ScriptGrid::createGrid(grid, "ru");
     return g;
 
+}
+
+QJSValue ScriptGlobal::microclimateGrid(QString variable, int dayofyear)
+{
+    if (!Model::settings().microclimateEnabled)
+        throw IException("microclimateGrid(): Error, microclimate submodule is not enabled.");
+    Grid<double> *grid = MicroclimateVisualizer::grid(variable, dayofyear);
+    QJSValue g = ScriptGrid::createGrid(grid, variable);
+    return g;
 }
 
 QJSValue ScriptGlobal::resourceUnit(int index)
@@ -948,8 +997,8 @@ void ScriptGlobal::loadScript(const QString &fileName)
         int lineno = result.property("lineNumber").toInt();
         QStringList code_lines = program.replace('\r', "").split('\n'); // remove CR, split by LF
         QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
-            code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>( lineno+5 ), code_lines.count()); ++i)
+            code_part.append(QString("%1: %2 %3\n\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qDebug() << "Javascript Error in file" << fileName << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
 
     }
@@ -1001,7 +1050,7 @@ QString ScriptGlobal::formattedErrorMessage(const QJSValue &error_value, const Q
         QString code = sourcecode;
         QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
         QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+        for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>(lineno+5), code_lines.count()); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         QString error_string = QString("Javascript Error in file '%1:%2':%3\n%4")
                 .arg(error_value.property("fileName").toString())
@@ -1190,6 +1239,7 @@ void ScriptGlobal::setupGlobalScripting()
     ScriptTree::addToScriptEngine(*engine);
     ScriptTreeExpr::addToScriptEngine(*engine);
     ScriptGrid::addToScriptEngine(engine);
+    ABE::FMSaplingList::addToScriptEngine(engine);
 
 }
 
@@ -1209,6 +1259,7 @@ ScriptObjectFactory::ScriptObjectFactory(QObject *parent):
 
 QJSValue ScriptObjectFactory::newCSVFile(QString filename)
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     CSVFile *csv_file = new CSVFile;
     if (!filename.isEmpty()) {
         qDebug() << "CSVFile: loading file" << filename;
@@ -1222,6 +1273,7 @@ QJSValue ScriptObjectFactory::newCSVFile(QString filename)
 
 QJSValue ScriptObjectFactory::newClimateConverter()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     ClimateConverter *cc = new ClimateConverter(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(cc);
     mObjCreated++;
@@ -1232,6 +1284,7 @@ QJSValue ScriptObjectFactory::newClimateConverter()
 
 QJSValue ScriptObjectFactory::newMap()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     MapGridWrapper *map = new MapGridWrapper(nullptr);
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(map);
     mObjCreated++;
@@ -1241,6 +1294,7 @@ QJSValue ScriptObjectFactory::newMap()
 
 QJSValue ScriptObjectFactory::newDBHDistribution()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     DBHDistribution *dbh = new DBHDistribution();
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(dbh);
     mObjCreated++;
@@ -1249,12 +1303,14 @@ QJSValue ScriptObjectFactory::newDBHDistribution()
 
 QJSValue ScriptObjectFactory::newGrid()
 {
-    QJSValue result = ScriptGrid::createGrid(0); // create with an empty grid
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
+    QJSValue result = ScriptGrid::createGrid(nullptr); // create with an empty grid
     return result;
 }
 
 QJSValue ScriptObjectFactory::newSpatialAnalysis()
 {
+    qInfo() << "object creation in Javascript is deprecated. See https://iland-model.org/apidoc/classes/Factory.html";
     SpatialAnalysis *spati = new SpatialAnalysis;
     QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
     mObjCreated++;

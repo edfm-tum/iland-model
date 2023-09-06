@@ -13,7 +13,7 @@ class FMSaplingList : public QObject
     Q_OBJECT
     Q_PROPERTY(int count READ length)
 public:
-    explicit FMSaplingList(QObject *parent = nullptr);
+    Q_INVOKABLE explicit FMSaplingList(QObject *parent = nullptr);
     QVector<QPair<SaplingTree*, SaplingCell*> > &saplings() { return mSaplings; }
     int length() { return mSaplings.length(); }
 
@@ -25,12 +25,17 @@ public:
 
     // to load from a stand: see e.g. FMTreeList::aggregate_function_sapling(QString expression, QString filter, QString type) and SaplingCellRunner....
 
+    static void addToScriptEngine(QJSEngine* engine);
+
 signals:
 
 public slots:
+    /// load all saplings
+    int loadFromStand(int standId, QString filter=QString());
+
     /// return the sum of 'expression' over all saplings in the list
     /// if 'filter' is provided, only trees are counted for which 'filter' evaluates to true.
-    double sum(QString expression, QString filter=QLatin1Literal(""));
+    double sum(QString expression, QString filter=QStringLiteral(""));
 
     /// apply a filter on the current list of saplings. Only saplings for which 'filter' returns true remain in the list.
     /// returns the number of sapplings that remain in the list.
@@ -38,7 +43,7 @@ public slots:
 
     /// kill all saplings in the list for which "filter" evaluates to true (or all if filter is omitted)
     /// return the number of killed cohorts
-    int kill(QString filter = QLatin1Literal(""));
+    int kill(QString filter = QStringLiteral(""));
 
     /// affect all saplings by browsing -> this reduces the height growth in the current year to 0
     int browse(bool do_browse=true);

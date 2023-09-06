@@ -25,6 +25,7 @@
 /* Add C++ includes here */
 
 #include <iostream>
+#include <QtCore>
 #include <QtGui>
 #include <QtXml>
 #include <QtSql>
@@ -36,6 +37,6 @@
 #include <math.h>
 
 // globals of project
-#include "global.h"
+
 #endif
 //! [0]

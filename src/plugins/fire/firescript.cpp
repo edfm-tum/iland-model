@@ -68,7 +68,7 @@ QString fireRUValue(const FireRUData &data) {
     return "Error";
 }
 QString fireCharToStr(const char &c) {
-    return QString('0' + c ); // convert \0 to '0', \1 to '1', ...
+    return  QString::number(c); //  QString('0' + c ); // convert \0 to '0', \1 to '1', ...
 }
 
 bool FireScript::gridToFile(QString grid_type, QString file_name)

@@ -31,8 +31,8 @@ class CSVFile : public QObject
     Q_PROPERTY(int colCount READ colCount)
     Q_PROPERTY(int rowCount READ rowCount)
 public:
-    CSVFile(QObject *parent=0);
-    CSVFile(const QString &fileName) {     mHasCaptions = true; mFlat = false; mFixedWidth=false; loadFile(fileName);} ///< ctor, load @p fileName.
+    Q_INVOKABLE CSVFile(QObject *parent=0);
+    Q_INVOKABLE CSVFile(const QString &fileName) {     mHasCaptions = true; mFlat = false; mFixedWidth=false; loadFile(fileName);} ///< ctor, load @p fileName.
     // actions
     bool openFile(const QString &fileName); ///< open file in streaming mode.
     QVariant colValue(const int col); ///< get value of column with index @p col. Use in streaming mode.
@@ -45,7 +45,7 @@ public:
     int colCount() const { return mColCount; } ///< number of columns, or -1
     bool isEmpty() const { return mIsEmpty; } /// returns true when no valid file has been loaded (returns false when a file with 0 rows is loaded)
     QStringList captions() const { return mCaptions; } ///< retrieve (a copy) of column headers
-    QStringList column(const int col) const; ///< retrieve a string list of a given row
+    QStringList column(const int col) const; ///< retrieve a string list of a given column
     QVariantList values(const int row) const; ///< get a list of the values in row "row"
     // setters
     void setHasCaptions(const bool hasCaps) { mHasCaptions = hasCaps; }

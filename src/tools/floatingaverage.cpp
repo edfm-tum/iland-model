@@ -60,7 +60,7 @@ double FloatingAverage::add(double add_value)
     if (countto)
         mCurrentAverage = sum/countto;
     else
-        mCurrentAverage = mInitValue; // kann sein, wenn als erster wert 0 übergeben wird.
+        mCurrentAverage = mInitValue; // kann sein, wenn als erster wert 0 uebergeben wird.
     return mCurrentAverage;
 }
 

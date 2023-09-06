@@ -64,7 +64,7 @@ void ScriptGrid::addToScriptEngine(QJSEngine *engine)
 {
     qRegisterMetaType<ScriptGrid*>("ScriptGrid*"); // register type, required to have that type as property
     // allow for "new Grid"
-    QJSValue jsMetaObject = engine->newQMetaObject(&ScriptGrid::staticQtMetaObject);
+    QJSValue jsMetaObject = engine->newQMetaObject(&ScriptGrid::staticMetaObject);
     engine->globalObject().setProperty("Grid", jsMetaObject);
 
 }
@@ -110,8 +110,8 @@ void ScriptGrid::clear()
 void ScriptGrid::paint(double min_val, double max_val)
 {
     // TODO: implement
-    //if (GlobalSettings::instance()->controller())
-    //    GlobalSettings::instance()->controller()->addGrid(mGrid, mVariableName, GridViewRainbow, min_val, max_val);
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->paintGrid(mGrid, mVariableName, GridViewRainbow, min_val, max_val);
 }
 
 QString ScriptGrid::info()

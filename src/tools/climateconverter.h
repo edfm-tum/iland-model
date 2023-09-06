@@ -44,7 +44,7 @@ class ClimateConverter : public QObject
     Q_PROPERTY(QString vpd WRITE setVpd READ vpd);
 
 public:
-    ClimateConverter(QObject *parent=0);
+    Q_INVOKABLE ClimateConverter(QObject *parent=0);
     static void addToScriptEngine(QJSEngine &engine); ///< add this class to scripting engine
     // getters
     const QString fileName() const { return mFileName; }

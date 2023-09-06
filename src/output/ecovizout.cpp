@@ -70,10 +70,10 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
 
         //stream << "Center Point: " << iter_result[0] << "  " << iter_result[1]
         //       << "  " << iter_result[2] << " Rotation: " << iter_result[3] <<'\n';
-        stream << "2.0" << endl; // PDB_file_version
-        stream << year << endl; // Time_step_number
+        stream << "2.0" << Qt::endl; // PDB_file_version
+        stream << year << Qt::endl; // Time_step_number
         qint64 ntree_pos = stream.pos();
-        stream << "          " << endl; // space for total number of trees
+        stream << "          " << Qt::endl; // space for total number of trees
 
         // now loop over all trees and write a line for each tree
         AllTreeIterator at(GlobalSettings::instance()->model());
@@ -84,13 +84,13 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
                       tree->position().x() << ws << tree->position().y() << ws << tree->height() << ws;
             stream << tree->stamp()->reader()->crownRadius() << ws;
             stream << tree->dbh() << ws << (tree->isDead() ? 1 : 0);
-            stream << endl;
+            stream << Qt::endl;
             ++n_trees;
         }
 
         // now loop over all the saplings
         qint64 nsap_pos = stream.pos();
-        stream << "          " << endl;
+        stream << "          " << Qt::endl;
         n_cohorts = 0;
         Saplings *saplings = GlobalSettings::instance()->model()->saplings();
         foreach(ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
@@ -121,7 +121,7 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
                                       rus->species()->id() << ws <<
                                       dbh << ws <<
                                       s->saplings[i].height << ws <<
-                                      n_repr << endl;
+                                      n_repr << Qt::endl;
                             ++n_cohorts;
 
                         }

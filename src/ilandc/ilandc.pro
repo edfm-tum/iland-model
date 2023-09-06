@@ -12,6 +12,7 @@ QT       += sql
 QT       += qml
 QT       += concurrent
 
+
 INCLUDEPATH += ../core \
     ../tools \
     ../output \
@@ -153,6 +154,7 @@ SOURCES += main.cpp \
     ../output/landscapeout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
+    ../output/customaggout.cpp \
     ../core/management.cpp \
     ../core/speciesresponse.cpp \
     ../core/climate.cpp \
@@ -236,7 +238,8 @@ SOURCES += main.cpp \
     ../bite/biteoutput.cpp \
     ../abe/fmsaplinglist.cpp \
     ../bite/biteoutputitem.cpp \
-    ../core/permafrost.cpp
+    ../core/permafrost.cpp \
+    ../core/microclimate.cpp
 
 
 HEADERS += \
@@ -275,6 +278,7 @@ HEADERS += \
     ../output/ecovizout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
+    ../output/customaggout.h \
     ../core/management.h \
     ../core/speciesresponse.h \
     ../core/climate.h \
@@ -362,9 +366,10 @@ HEADERS += \
     ../bite/biteoutput.h \
     ../abe/fmsaplinglist.h \
     ../bite/biteoutputitem.h \
-    ../core/permafrost.h
+    ../core/permafrost.h \
+    ../core/microclimate.h
 
-
+RESOURCES += ../iland/res/iland.qrc
 
 
 

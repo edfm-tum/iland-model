@@ -21,6 +21,7 @@
 
 #include "bite_global.h"
 #include "bitecell.h"
+#include "biteagent.h"
 #include <QObject>
 
 namespace ABE {

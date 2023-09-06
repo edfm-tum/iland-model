@@ -598,7 +598,7 @@ void Management::sort(QString statement)
         mTrees[i].second = sorter.execute();
    }
    // now sort the list....
-   qSort(mTrees.begin(), mTrees.end(), treePairValue);
+   std::sort(mTrees.begin(), mTrees.end(), treePairValue);
 }
 
 double Management::percentile(int pct)
@@ -620,7 +620,7 @@ void Management::randomize()
         mTrees[i].second = drandom();
     }
     // now sort the list....
-    qSort(mTrees.begin(), mTrees.end(), treePairValue);
+    std::sort(mTrees.begin(), mTrees.end(), treePairValue);
 
 }
 

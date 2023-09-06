@@ -177,7 +177,8 @@ private:
         SBBParams(): minDbh(10.f), cohortsPerGeneration(30), cohortsPerSisterbrood(50),
             spreadKernelMaxDistance(100.), backgroundInfestationProbability(0.0001), initialInfestationProbability(0.),
             stormInfestationProbability(1.), winterMortalityBaseLevel(0.),
-            outbreakDurationMin(0.), outbreakDurationMax(0.), deadTreeSelectivity(1.), sanitationTreatmentProb(0.) {}
+            outbreakDurationMin(0.), outbreakDurationMax(0.), deadTreeSelectivity(1.),
+            sanitationTreatmentProb(0.) {}
         float minDbh; ///< minimum dbh of spruce trees that are considered as potential hosts
         int cohortsPerGeneration; ///< 'packages' of beetles that spread from an infested pixel
         int cohortsPerSisterbrood; ///< cohorts that spread from a pixel when a full sister brood developed

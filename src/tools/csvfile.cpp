@@ -51,6 +51,9 @@ void CSVFile::addToScriptEngine(QJSEngine &engine)
 
     // the script name for the object is "CSVFile".
     //engine.globalObject().setProperty("CSVFile", cc_class);
+    QJSValue jsMetaObject = engine.newQMetaObject(&CSVFile::staticMetaObject);
+    engine.globalObject().setProperty("CSVFile", jsMetaObject);
+
 }
 
 CSVFile::CSVFile(QObject *)
@@ -76,9 +79,9 @@ bool CSVFile::loadFromString(const QString &content)
     clear();
     // split into rows: use either with windows or unix style delimiter
     if (content.left(1000).contains("\r\n"))
-        mRows = content.split("\r\n", QString::SkipEmptyParts);
+        mRows = content.split("\r\n", Qt::SkipEmptyParts);
     else
-        mRows = content.split("\n", QString::SkipEmptyParts);
+        mRows = content.split("\n", Qt::SkipEmptyParts);
 
     if (mRows.count()==0)
         return false;
@@ -121,11 +124,11 @@ bool CSVFile::loadFromString(const QString &content)
 
     // captions
     if (mHasCaptions) {
-        mCaptions = first.split(mSeparator, QString::KeepEmptyParts).replaceInStrings("\"", ""); // drop "-characters
+        mCaptions = first.split(mSeparator, Qt::KeepEmptyParts).replaceInStrings("\"", ""); // drop "-characters
         mRows.pop_front(); // drop the first line
     } else {
         // create pseudo captions
-        mCaptions = first.split(mSeparator, QString::KeepEmptyParts);
+        mCaptions = first.split(mSeparator, Qt::KeepEmptyParts);
         for (int i=0;i<mCaptions.count();i++)
             mCaptions[i] = QString("c%1").arg(i);
     }
@@ -342,8 +345,8 @@ void CSVFile::saveFile(const QString &fileName)
     }
     QTextStream str(&file);
     if (mHasCaptions)
-        str << mCaptions.join(mSeparator) << endl;
+        str << mCaptions.join(mSeparator) << Qt::endl;
     foreach(const QString s, mRows)
-        str << s << endl;
+        str << s << Qt::endl;
 }
 

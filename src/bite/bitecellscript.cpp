@@ -23,7 +23,6 @@
 #include "biteengine.h"
 #include "fmtreelist.h"
 #include "fmsaplinglist.h"
-
 #include "debugtimer.h"
 
 #include "bitelifecycle.h"
@@ -334,7 +333,7 @@ QString DynamicExpression::dump() const
     case ftConstant: return QString::number(mConstValue);
     //default: return "invalid filter type!";
     }
-    return QLatin1Literal("unknown");
+    return QStringLiteral("unknown");
 }
 
 
@@ -540,6 +539,16 @@ QString Events::dump()
     foreach (QString event, mEvents.keys())
         event_list.append(event).append(" ");
     return event_list;
+}
+
+int BiteCellScript::x() const
+{
+    return mAgent->grid().indexOf(mCell->index()).x();
+}
+
+int BiteCellScript::y() const
+{
+    return mAgent->grid().indexOf(mCell->index()).y();
 }
 
 

@@ -23,6 +23,8 @@
 #include <QObject>
 #include <QJSValue>
 
+#include "scriptgrid.h"
+
 #include "bitecell.h"
 #include "grid.h"
 #include "biteitem.h"
@@ -65,7 +67,9 @@ struct BACellStat {
 
 };
 
-class BiteLifeCycle;
+class BiteLifeCycle; // forward
+class BiteItem; // forward
+class BiteCellScript;
 
 class BiteAgent : public QObject
 {

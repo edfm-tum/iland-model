@@ -146,6 +146,7 @@ public:
     double canopyConductance() const { return mMaxCanopyConductance; } ///< maximum canopy conductance in m/s
     inline double soilwaterResponse(const double &psi_kPa) const; ///< input: matrix potential (kPa) (e.g. -15)
     double lightResponse(const double lightResourceIndex) const {return mSet->lightResponse(lightResourceIndex, mLightResponseClass); }
+    double lightResponseClass() const { return mLightResponseClass; }
     double psiMin() const { return mPsiMin; }
     double vpdResponseExponent() const { return mRespVpdExponent; }
     // parameters for seed dispersal

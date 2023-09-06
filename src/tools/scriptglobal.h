@@ -27,13 +27,14 @@
 
 // Scripting Interface for MapGrid
 class MapGrid; // forward
+class ScriptGrid; // forward
 class MapGridWrapper: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int valid READ isValid)
     Q_PROPERTY(QString name READ name)
 public:
-    MapGridWrapper(QObject *parent=nullptr);
+    Q_INVOKABLE MapGridWrapper(QObject *parent=nullptr);
     ~MapGridWrapper();
     static void addToScriptEngine(QJSEngine &engine);
     MapGrid *map() const { return mMap; } ///< acccess for C++ classes
@@ -64,6 +65,8 @@ public slots:
     double copyPolygonFromRect(QJSValue source, int id_in, int id, double destx, double desty, double x1, double y1, double x2, double y2);
 
     void createMapIndex(); ///< call after creating stands with copyPolygonFromRect
+
+    void copyFromGrid(ScriptGrid *grid);
 
 private:
     MapGrid *mMap;
@@ -121,7 +124,7 @@ public:
     void setViewOptions(QJSValue opts); ///< set current view options
 
     // static functions
-    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QLatin1Literal(""), const QString &errorMessage=QLatin1Literal(""));
+    static QJSValue valueFromJs(const QJSValue &js_value, const QString &key, const QString default_value=QStringLiteral(""), const QString &errorMessage=QStringLiteral(""));
     static QString JStoString(QJSValue value);
 
 public slots:
@@ -131,6 +134,9 @@ public slots:
     void print(QString message); ///< print the contents of the message to the log
     void alert(QString message); ///< shows a message box to the user (if in GUI mode)
     void include(QString filename); ///< "include" the given script file and evaluate. The path is relative to the "script" path
+    /// return a random number between from and to (inclusive).
+    /// Note: when using standard JS Math.random(), the random seed of iLand is not effective
+    double random(double from=0., double to=1.);
     // file stuff
     QString defaultDirectory(QString dir); ///< get default directory of category 'dir'
     QString path(QString filename); ///< get a path relative to the project main folder
@@ -154,9 +160,10 @@ public slots:
     // enable/disable outputs
     bool startOutput(QString table_name); ///< starts output 'table_name'. return true if successful
     bool stopOutput(QString table_name); ///< stops output 'table_name'. return true if successful
+    void useSpecialMapForOutputs(MapGridWrapper *m); ///< use a specific map / standgrid for outputs
     // debug outputs
     void debugOutputFilter(QList<int> ru_indices); ///< enable debug outputs for a list of resource units (output for other RUs are suppressed)
-    bool saveDebugOutputs(bool do_clear); ///< save debug outputs to file; if do_clear=true then debug data is cleared from memorey
+    bool saveDebugOutputs(bool do_clear); ///< save debug outputs to file; if do_clear=true then debug data is cleared from memory
     // miscellaneous stuff
     void setViewport(double x, double y, double scale_px_per_m); ///< set the viewport of the main project area view
     bool screenshot(QString file_name); ///< make a screenshot from the central viewing widget
@@ -170,13 +177,15 @@ public slots:
     /// return a grid (level of resource units) with the result of an expression evaluated in the context of the resource unit.
     QJSValue resourceUnitGrid(QString expression);
 
+    /// get a grid for a given variable and a dayofyear (0..365)
+    QJSValue microclimateGrid(QString variable, int dayofyear);
     /// access to single resource unit (returns a reference)
     QJSValue resourceUnit(int index);
 
 
     // DOES NOT FULLY WORK
-    bool seedMapToFile(QString species, QString file_name); ///< save the "seedmap" (i.e. a grid showing the seed distribution) as ESRI rastser file
-    void wait(int milliseconds); ///< wait for 'milliseconds' or (if ms=-1 until a key is pressed)
+    bool seedMapToFile(QString species, QString file_name); ///< save the "seedmap" (i.e. a grid showing the seed distribution) as ESRI raster file
+    void wait(int milliseconds); ///< wait for 'milliseconds' (or if ms=-1 until a key is pressed)
     // vegetation snapshots
     bool saveModelSnapshot(QString file_name);
     bool loadModelSnapshot(QString file_name);

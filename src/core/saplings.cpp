@@ -109,6 +109,8 @@ void Saplings::establishment(const ResourceUnit *ru)
     for (int i=0;i<cPxPerHectare;++i)
         lif_corr[i]=-1.;
 
+    QVector< QPair<double, double> > clim_buffered;
+
     int species_idx;
     QVector<int>::const_iterator sbegin, send;
     ru->speciesSet()->randomSpeciesOrder(sbegin, send);
@@ -133,7 +135,7 @@ void Saplings::establishment(const ResourceUnit *ru)
             continue;
 
         // calculate the abiotic environment (TACA) (this could also trigger the execution of the water cycle)
-        rus->establishment().calculateAbioticEnvironment();
+        rus->establishment().calculateAbioticEnvironment(clim_buffered);
         double abiotic_env = rus->establishment().abioticEnvironment();
         if (abiotic_env==0.) {
             rus->establishment().writeDebugOutputs();
@@ -317,7 +319,7 @@ SaplingCell *Saplings::cell(QPoint lif_coords, bool only_valid, ResourceUnit **r
     return nullptr;
 }
 
-QPointF Saplings::coordOfCell(ResourceUnit *ru, int cell_index)
+QPointF Saplings::coordOfCell(const ResourceUnit *ru, int cell_index)
 {
     QPoint imap = ru->cornerPointOffset();
     int x = imap.x() + cell_index % cPxPerRU;
@@ -849,6 +851,7 @@ SaplingCellRunner::SaplingCellRunner(const int stand_id, const MapGrid *stand_gr
     mRunner = new GridRunner<float>(GlobalSettings::instance()->model()->grid(), box);
 
 }
+
 
 SaplingCellRunner::~SaplingCellRunner()
 {

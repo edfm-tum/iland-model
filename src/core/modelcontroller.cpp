@@ -23,7 +23,6 @@
 
   */
 
-#include "global.h"
 #include "modelcontroller.h"
 #include <QObject>
 
@@ -430,14 +429,11 @@ void ModelController::setupDynamicOutput(QString fieldList)
 {
     mDynFieldList.clear();
     if (!fieldList.isEmpty()) {
-        QRegExp rx("((?:\\[.+\\]|\\w+)\\.\\w+)");
-        int pos=0;
-        while ((pos = rx.indexIn(fieldList, pos)) != -1) {
-            mDynFieldList.append(rx.cap(1));
-            pos += rx.matchedLength();
+        QRegularExpression re("((?:\\[.+\\]|\\w+)\\.\\w+)");
+        for (const QRegularExpressionMatch &match : re.globalMatch(fieldList)) {
+            mDynFieldList.append(match.captured(1));
         }
 
-        //mDynFieldList = fieldList.split(QRegExp("(?:\\[.+\\]|\\w+)\\.\\w+"), QString::SkipEmptyParts);
         mDynFieldList.prepend("count");
         mDynFieldList.prepend("year"); // fixed fields.
     }
@@ -471,16 +467,18 @@ void ModelController::fetchDynamicOutput()
     foreach (QString field, mDynFieldList) {
         if (field=="count" || field=="year")
             continue;
-        if (field.count()>0 && field.at(0)=='[') {
-            QRegExp rex("\\[(.+)\\]\\.(\\w+)");
-            rex.indexIn(field);
-            var = rex.capturedTexts();
-            var.pop_front(); // drop first element (contains the full string)
-            simple_expression = false;
-        } else {
-            var = field.split(QRegExp("\\W+"), QString::SkipEmptyParts);
-            simple_expression = true;
-        }
+// - removed this to get rid of QRegExp - not sure if it is still used?
+//        if (field.count()>0 && field.at(0)=='[') {
+//            //QRegularExpression rex("\\[(.+)\\]\\.(\\w+)");
+//            QRegExp rex("\\[(.+)\\]\\.(\\w+)");
+//            rex.indexIn(field);
+//            var = rex.capturedTexts();
+//            var.pop_front(); // drop first element (contains the full string)
+//            simple_expression = false;
+//        } else {
+        var = field.split(QRegularExpression("\\W+"), Qt::SkipEmptyParts);
+        simple_expression = true;
+        //}
         if (var.count()!=2)
                 throw IException(QString("Invalid variable name for dynamic output:") + field);
         if (var.first()!=lastVar) {
@@ -612,6 +610,18 @@ void ModelController::paintMap(MapGrid *map, double min_value, double max_value)
 #endif
 }
 
+void ModelController::paintGrid(Grid<double> *grid, QString name, GridViewType view_type, double min_value, double max_value)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow) {
+        mViewerWindow->paintGrid(grid, name, view_type, min_value, max_value);
+        qDebug() << "painted custom grid min-value (blue):" << min_value << "max-value(red):" << max_value;
+    }
+#else
+    Q_UNUSED(grid);Q_UNUSED(min_value);Q_UNUSED(max_value);
+#endif
+}
+
 void ModelController::addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value)
 {
 #ifdef ILAND_GUI
@@ -673,14 +683,17 @@ Grid<double> *ModelController::preparePaintGrid(QObject *handler, QString name, 
     // the handler slot should return a pointer to a (double) grid
     Grid<double> *grid_ptr = nullptr;
     bool success = false;
-    if (handler->metaObject()->indexOfMethod("paintGrid")>-1) {
+    handler->dumpObjectTree();
+
+
+    //if (handler->metaObject()->indexOfMethod("paintGrid")>-1) {
         success = QMetaObject::invokeMethod(handler, "paintGrid", Qt::DirectConnection,
                                                  Q_RETURN_ARG(Grid<double> *, grid_ptr),
                                                  Q_ARG(QString, name),
                                                  Q_ARG(QStringList&, rNamesColors->first),
                                                  Q_ARG(QStringList&, rNamesColors->second)
                                                  );
-    }
+    //}
 
     if (success) {
         return grid_ptr;

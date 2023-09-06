@@ -25,17 +25,27 @@
 #include "expression.h"
 #include "bitecell.h"
 #include "scripttree.h"
+#include "fmtreelist.h"
+#include "fmsaplinglist.h"
+//#include "biteagent.h"
 
 namespace ABE {
 class FMTreeList;
 class FMSaplingList;
 }
+namespace BITE {
+class BiteAgent; // forward
+}
+Q_DECLARE_OPAQUE_POINTER(BITE::BiteAgent*)
+Q_DECLARE_METATYPE(BITE::BiteAgent*)
 
 namespace BITE {
 
 class BiteCellScript : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int x READ x)
+    Q_PROPERTY(int y READ y)
     Q_PROPERTY(bool active READ active WRITE setActive)
     Q_PROPERTY(bool spreading READ spreading WRITE setSpreading)
     Q_PROPERTY(int yearsLiving READ yearsLiving)
@@ -66,6 +76,9 @@ public:
     ABE::FMSaplingList *saplings();
 
 
+    int x() const;
+    int y() const;
+
 signals:
 
 public slots:
@@ -84,6 +97,7 @@ public slots:
 private:
     BiteCell *mCell;
     BiteAgent *mAgent;
+
 };
 
 

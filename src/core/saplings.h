@@ -144,7 +144,7 @@ public:
     int diedSaplings() const { return mDied; }
     int livingCohorts() const { return mLiving; } ///< get the number of cohorts
     double livingSaplings() const { return mLivingSaplings; } ///< number of individual trees in the regen layer (using Reinekes R), with h>1.3m
-    double livingSaplingsSmall() const { return mLivingSmallSaplings; }
+    double livingSaplingsSmall() const { return mLivingSmallSaplings; } ///< number of individual trees in the regen layer (using Reinekes R), no height threshold
     int recruitedSaplings() const { return mRecruited; }
     ///  returns the *represented* (Reineke's Law) number of trees (N/ha) and the mean dbh/height (cm/m)
     double livingStemNumber(const Species *species, double &rAvgDbh, double &rAvgHeight, double &rAvgAge) const;
@@ -212,7 +212,7 @@ public:
 
     /// return the metric coordinates of a given cell
     /// at resource unit `ru` and at the internal index `cell_index`
-    QPointF coordOfCell(ResourceUnit *ru, int cell_index);
+    static QPointF coordOfCell(const ResourceUnit *ru, int cell_index);
 
     /// clear/kill all saplings within the rectangle given by 'rectangle'.
     /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt), otherwise they are moved to soil
@@ -247,9 +247,10 @@ class MapGrid; // forward
 class SaplingCellRunner
 {
 public:
+    /// create a runner for a single stand
     SaplingCellRunner(const int stand_id, const MapGrid *stand_grid=nullptr);
     ~SaplingCellRunner();
-    SaplingCell *next();
+    SaplingCell *next(); ///< get next cell and advance the pointer
     ResourceUnit *ru() const { return mRU; }
     QPointF currentCoord() const;
 private:

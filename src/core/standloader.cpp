@@ -16,7 +16,6 @@
 **    You should have received a copy of the GNU General Public License
 **    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************************************/
-
 #include "global.h"
 #include "standloader.h"
 
@@ -342,13 +341,15 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
     SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
 
     QString my_content(content);
+
     // cut out the <trees> </trees> part if present
     if (content.contains("<trees>")) {
-        QRegExp rx(".*<trees>(.*)</trees>.*");
-        rx.indexIn(content, 0);
-        if (rx.capturedTexts().count()<1)
+        // Note: changed from QRegExp() (qt6 port), but not tested
+        QRegularExpression rx(".*<trees>(.*)</trees>.*");
+        QRegularExpressionMatch match = rx.match(content);
+        my_content = match.captured(1);
+        if (my_content.isEmpty())
             return 0;
-        my_content = rx.cap(1).trimmed();
     }
 
     CSVFile infile;
@@ -376,7 +377,7 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
     bool ok;
     int cnt=0;
     QString speciesid;
-    for (int i=1;i<infile.rowCount();i++) {
+    for (int i=0;i<infile.rowCount();i++) {
         dbh = infile.value(i, iBhd).toDouble();
 
         //if (dbh<5.)
@@ -631,10 +632,10 @@ void StandLoader::executeiLandInit(ResourceUnit *ru)
             if ( (total_count < 20 && i%2==0)
                 || (total_count<100 && i%10==0 )
                 || (i%30==0) ) {
-                qSort(tcount.begin(), tcount.end(), sortPairLessThan);
+                std::sort(tcount.begin(), tcount.end(), sortPairLessThan);
             }
         }
-        qSort(tcount.begin(), tcount.end(), sortPairLessThan);
+        std::sort(tcount.begin(), tcount.end(), sortPairLessThan);
     }
 
     unsigned int bits;
@@ -747,17 +748,17 @@ void StandLoader::executeiLandInitStand(int stand_id)
                 // randomize the pixels
                 for (QList<SInitPixel>::iterator it=pixel_list.begin();it!=pixel_list.end();++it)
                     it->basal_area = drandom();
-                qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+                std::sort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
                 for (QList<SInitPixel>::iterator it=pixel_list.begin();it!=pixel_list.end();++it)
                     it->basal_area = 0.;
             }
 
             if (item.species != last_locked_species) {
                 last_locked_species=item.species;
-                qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelUnlocked);
+                std::sort(pixel_list.begin(), pixel_list.end(), sortInitPixelUnlocked);
             }
         } else {
-            qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+            std::sort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
             last_locked_species=0;
         }
         rand_fraction = item.density;
@@ -821,7 +822,7 @@ void StandLoader::executeiLandInitStand(int stand_id)
             if (last_locked_species==0 && ((total_count < 20 && i%2==0)
                 || (total_count<100 && i%10==0 )
                 || (i%30==0)) ) {
-                qSort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
+                std::sort(pixel_list.begin(), pixel_list.end(), sortInitPixelLessThan);
             }
         }
     }
@@ -1023,7 +1024,7 @@ int StandLoader::loadSaplingsLIF(int stand_id, const CSVFile &init, int low_inde
                 // not enough LIF pixels available
                 // try the brightest pixels (ie with the largest value for the LIF), but limit to the maximum
                 // number of cells
-                min_lif_index = std::min(static_cast<int>(pxcount),  lif_ptrs.size());
+                min_lif_index = std::min(static_cast<qsizetype>(pxcount),  lif_ptrs.size());
             }
         } else {
             // No LIF threshold: the full range of pixels is valid

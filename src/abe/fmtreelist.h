@@ -38,7 +38,7 @@ class FMTreeList : public QObject
     Q_PROPERTY(bool simulate READ simulate WRITE setSimulate) ///< if 'simulate' is true, trees are only marked for removal
 public:
 
-    explicit FMTreeList(QObject *parent = 0);
+    Q_INVOKABLE explicit FMTreeList(QObject *parent = 0);
     explicit FMTreeList(FMStand *stand, QObject *parent = 0);
     ~FMTreeList();
     int standId() const { return mStandId; }
@@ -56,8 +56,8 @@ public:
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
 
-    /// access to local grid (setup if necessary)
-    Grid<float> &localGrid() { prepareGrids(); return mLocalGrid; }
+    /// access to local grid (setup if necessary) - return a reference (no copy)
+    Grid<float> &localStandGrid() { prepareGrids(); return mLocalGrid; }
 
 signals:
 
@@ -135,9 +135,10 @@ public slots:
 
     /// set up internally a map (10m grid cells) of the stand
     /// with a given grid type or using a custom expression.
-    void prepareStandGrid(QString type, QString custom_expression=QString());
+    void prepareLocalGrid(QString type, QString custom_expression=QString());
     void exportStandGrid(QString file_name);
-    FloatGrid &standGrid() {return mStandGrid; }
+    /// get access to the locally prepared grid
+    QJSValue localGrid();
 
     /// modify sapling
     int killSaplings(QString expression);

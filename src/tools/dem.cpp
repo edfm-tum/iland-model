@@ -70,7 +70,8 @@ bool DEM::loadFromFile(const QString &fileName)
 
     setup(h_grid->metricRect(),h_grid->cellsize());
 
-    const QRectF &world = GlobalSettings::instance()->model()->extent();
+    //const QRectF &world = GlobalSettings::instance()->model()->extent(); // without buffer
+    const QRectF &world = h_grid->metricRect(); // including buffer
 
     if (gis_grid.cellSize() <= cellsize()) {
         QPointF p;
@@ -157,6 +158,26 @@ float DEM::orientation(const QPointF &point, float &rslope_angle, float &rslope_
         rslope_aspect = 0.;
         return 0.;
     }
+}
+
+float DEM::topographicPositionIndex(const QPointF &point, float radius) const
+{
+    int rpix = radius / cHeightSize;
+    QPoint o = indexAt(point);
+    double point_elevation = (*this)(o.x(), o.y());
+    int n = 0;
+    double avg_elevation=0.;
+    for (int iy = std::max(0, o.y() - rpix); iy < std::min(sizeY(), o.y() + rpix); ++iy)
+        for (int ix = std::max(0, o.x() - rpix); ix < std::min(sizeX(), o.x() + rpix); ++ix) {
+            int dist = (ix - o.x())*(ix - o.x()) + (iy - o.y())*(iy - o.y());
+            if (dist <= rpix*rpix) {
+                avg_elevation += (*this)(ix, iy);
+                ++n;
+            }
+        }
+    if (n>0)
+        return point_elevation - (avg_elevation / static_cast<double>(n));
+    return 0.f;
 }
 
 void DEM::createSlopeGrid() const

@@ -23,13 +23,10 @@
 #include "species.h"
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
-#include "seeddispersal.h"
 #include "model.h"
-#include "grasscover.h"
-#include "helper.h"
-#include "debugtimer.h"
 #include "watercycle.h"
 #include "permafrost.h"
+#include "microclimate.h"
 
 /** @class Establishment
     Establishment deals with the establishment process of saplings.
@@ -163,7 +160,7 @@ double Establishment::calculateSOLDepthLimitation()
  a model mockup in R: script_establishment.r
 
  */
-void Establishment::calculateAbioticEnvironment()
+void Establishment::calculateAbioticEnvironment(QVector< QPair<double, double> > &rClim_buffer)
 {
     //DebugTimer t("est_abiotic"); t.setSilent();
     // make sure that required calculations (e.g. watercycle are already performed)
@@ -179,6 +176,15 @@ void Establishment::calculateAbioticEnvironment()
     mTACA_frostAfterBuds = 0; // frost days after bud birst
     mGDD = 0;
 
+    bool do_buffer_clim = false;
+    if (Model::settings().microclimateEnabled && rClim_buffer.isEmpty()) {
+        // reserve space for a year of min/mean buffer temperatures
+        // the values are used for *all* species as they depend only on aggregated values (10x10m)
+        // this saves a lot of duplicated computations (x number of species)
+        rClim_buffer.resize(366);
+        do_buffer_clim = true;
+
+    }
 
     const ClimateDay *day = mClimate->begin();
     int doy = 0;
@@ -194,16 +200,39 @@ void Establishment::calculateAbioticEnvironment()
         veg_period_end = mClimate->sun().dayShorter10_5hrs();
 
     for (; day!=mClimate->end(); ++day, ++doy) {
+
+        double day_tmin = day->min_temperature;
+        double day_tavg = day->temperature;
+
+        if (Model::settings().microclimateEnabled) {
+            // use microclimate calculations to modify the temperature
+            // for establishment
+            if (do_buffer_clim) {
+                double mc_min_buf = mRUS->ru()->microClimate()->minimumMicroclimateBufferingRU(doy);
+                double mc_max_buf = mRUS->ru()->microClimate()->maximumMicroclimateBufferingRU(doy);
+                double mc_mean_buf = (mc_min_buf + mc_max_buf) / 2.;
+                day_tmin += mc_min_buf;
+                day_tavg += mc_mean_buf;
+                // fill the buffer for the RU and the current year
+                rClim_buffer[doy].first = day_tmin;
+                rClim_buffer[doy].second = day_tavg;
+            }
+            // read from buffer
+            day_tmin = rClim_buffer[doy].first; // = tmin + buffer
+            day_tavg = rClim_buffer[doy].second; // tavg + buffer
+
+        }
+
         // minimum temperature: if temp too low -> set prob. to zero
-        if (day->min_temperature < p.min_temp)
+        if (day_tmin < p.min_temp)
             mTACA_min_temp = false;
 
         // count frost free days
-        if (day->min_temperature > 0.)
+        if (day_tmin > 0.)
             frost_free++;
 
         // chilling requirement, GDD, bud birst
-        if (day->temperature>=-5. && day->temperature<5. && doy<=veg_period_end)
+        if (day_tavg >=-5. && day_tavg <5. && doy<=veg_period_end)
             chill_days++;
         if (chill_days>p.chill_requirement)
             chill_ok=true;
@@ -211,18 +240,18 @@ void Establishment::calculateAbioticEnvironment()
         // up to a fixed day ending the veg period
         if (doy<=veg_period_end) {
             // accumulate growing degree days
-            if (chill_ok && day->temperature > p.GDD_baseTemperature) {
-                GDD += day->temperature - p.GDD_baseTemperature;
-                GDD_BudBirst += day->temperature - p.GDD_baseTemperature;
+            if (chill_ok && day_tavg > p.GDD_baseTemperature) {
+                GDD += day_tavg - p.GDD_baseTemperature;
+                GDD_BudBirst += day_tavg - p.GDD_baseTemperature;
             }
             // if day-frost occurs, the GDD counter for bud birst is reset
-            if (day->temperature <= 0.)
+            if (day_tavg <= 0.)
                 GDD_BudBirst = 0.;
 
             if (GDD_BudBirst > p.bud_birst)
                 buds_are_birst = true;
 
-            if (doy<veg_period_end && buds_are_birst && day->min_temperature <= 0.)
+            if (doy<veg_period_end && buds_are_birst && day_tmin <= 0.)
                 mTACA_frostAfterBuds++;
         }
     }

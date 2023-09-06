@@ -196,7 +196,7 @@ QString SVDStates::stateLabel(int index)
     QString flabel;
     switch (mFunctioningClassification) {
     case Functioning3Classes:
-        flabel =  s.function==0 ? QLatin1Literal("<2") : (s.function==1 ? QLatin1Literal("2-4") : QLatin1Literal(">4"));
+        flabel =  s.function==0 ? QStringLiteral("<2") : (s.function==1 ? QStringLiteral("2-4") : QStringLiteral(">4"));
         break;
     case Functioning5Classes:
         if (s.function == 0) flabel = "<1";

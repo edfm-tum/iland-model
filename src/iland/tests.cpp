@@ -261,7 +261,7 @@ void Tests::testPheno(const Climate *clim)
     pheno.calculate();
     qDebug() << "Phenology is the key:";
     for (int i=0;i<12;i++)
-        qDebug() << i << pheno.month()[i];
+        qDebug() << i << pheno.monthArray()[i];
 }
 
 void Tests::climateResponse()
@@ -328,7 +328,7 @@ void Tests::multipleLightRuns(const QString &fileName)
     QString inPath = xml.value("inputpath");
     QString inFile = xml.value("stands");
     qDebug() << "standlist:" << inFile << "inpath:"<<inPath << "save to:"<<outPath;
-    QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', QString::SkipEmptyParts);
+    QStringList fileList = Helper::loadTextFile(inFile).remove('\r').split('\n', Qt::SkipEmptyParts);
 
     StandLoader loader(model);
     try {

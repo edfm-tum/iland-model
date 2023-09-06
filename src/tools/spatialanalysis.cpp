@@ -30,9 +30,8 @@
 #include <QJSValue>
 void SpatialAnalysis::addToScriptEngine()
 {
-    SpatialAnalysis *spati = new SpatialAnalysis;
-    QJSValue v = GlobalSettings::instance()->scriptEngine()->newQObject(spati);
-    GlobalSettings::instance()->scriptEngine()->globalObject().setProperty("SpatialAnalysis", v);
+    QJSValue jsMetaObject = GlobalSettings::instance()->scriptEngine()->newQMetaObject(&SpatialAnalysis::staticMetaObject);
+    GlobalSettings::instance()->scriptEngine()->globalObject().setProperty("SpatialAnalysis", jsMetaObject);
 }
 
 SpatialAnalysis::~SpatialAnalysis()
@@ -194,7 +193,14 @@ QJSValue SpatialAnalysis::patches(QJSValue grid, int min_size)
         // create a (double) copy of the internal clump grid, and return this grid
         // as a JS value
         QJSValue v = ScriptGrid::createGrid(mClumpGrid.toDouble(),"patch");
-        return v;
+        QJSValue res = GlobalSettings::instance()->scriptEngine()->newObject();
+        QJSValue areas; // = QJSValue(mLastPatches);
+        areas = GlobalSettings::instance()->scriptEngine()->newArray(mLastPatches.length());
+        for (int i=0;i<mLastPatches.size();++i)
+            areas.setProperty(i, QJSValue(mLastPatches[i]));
+        res.setProperty("grid", v);
+        res.setProperty("areas", areas);
+        return res;
     }
     return QJSValue();
 }

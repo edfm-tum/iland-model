@@ -174,32 +174,32 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
     switch (type) {
     case QtDebugMsg:
-        *ConsoleShell::logStream() << msg << endl;
+        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": "  << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         break;
     case QtWarningMsg:
-        *ConsoleShell::logStream() << msg << endl;
+        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
         break;
 // available from qt5.5
     case QtInfoMsg:
-        *ConsoleShell::logStream() << msg << endl;
+        *ConsoleShell::logStream() << QTime::currentTime().toString("hh:mm:ss:zzz") << ": " << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         printf("%s: %s\n", QDateTime::currentDateTime().toString("hh:mm:ss").toLocal8Bit().data(), msg.toLocal8Bit().data());
 
         break;
     case QtCriticalMsg:
-        *ConsoleShell::logStream() << msg << endl;
+        *ConsoleShell::logStream() << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         printf("Critical: %s\n", msg.toLocal8Bit().data());
         break;
     case QtFatalMsg:
-        *ConsoleShell::logStream() << msg << endl;
+        *ConsoleShell::logStream() << msg << Qt::endl;
         if (ConsoleShell::flush())
             ConsoleShell::logStream()->flush();
         printf("Fatal: %s\n", msg.toLocal8Bit().data());

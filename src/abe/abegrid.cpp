@@ -72,9 +72,9 @@ double ABELayers::value(const FMStandPtr &data, const int index) const
              return mSTPIndex[data->stp()->name()];
     case 13: return
                 data->property(ABE::ForestManagementEngine::instance()->scriptBridge()->standVisualization()).toNumber();
-    case 14: if (!mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QLatin1Literal("invalid")])
-                mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QLatin1Literal("invalid")] = mActivityIndex.count();
-            return mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QLatin1Literal("invalid")];
+    case 14: if (!mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QStringLiteral("invalid")])
+                mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QStringLiteral("invalid")] = mActivityIndex.count();
+            return mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QStringLiteral("invalid")];
 
     default: throw IException("ABELayers:value(): Invalid index");
     }

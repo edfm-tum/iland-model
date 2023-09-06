@@ -159,6 +159,18 @@ See also: {{#crossLink "Globals/path:method"}}{{/crossLink}}
 */
 
 /**
+Return a random number between `from` and `to`. This function uses the iLand internal random number generation process
+and respects a global random seed. With other words: Using the Javascript Math.random() does not guarantee the
+same sequence of numbers, even when a global random seed is set (and multithreading is disabled)
+
+
+@method random
+@param from {double} lower bound (inclusive), default=0
+@param to {double} upper bound (inclusive), default=1
+@return {double} the random number
+*/
+
+/**
 extent of the world (without buffer) in meters (x-direction).
 
 See also: {{#crossLink "Globals/worldY:property"}}{{/crossLink}}
@@ -397,6 +409,67 @@ syntax described in [the wiki](https://iland-model.org/initialize+trees).
 @param content {string} line (or lines) of an init-file to initialize
 @return {integer} the number of added trees.
 */
+
+
+
+
+/**
+add sapling on a metric rectangle given with `width` and `height` at x/y.
+if a `standId` is provided (-1 or 0: no stand), x/y is relative to the lower left edge of the stand rectangle. If no
+stand is provided, x/y are absolute (relative to the project area).
+returns the number of successfully added sapling cells
+@method addSaplings
+@param standId {integer} id of the stand (0 or -1 for no stand provided)
+@param x {double} id x-coordinate of the rectangle
+@param y {double} id y-coordinate of the rectangle
+@param width {double} width (m) of the rectangle
+@param height {double} height (m) of the rectangle
+@param species {string} species code of the species to plant saplings
+@param treeheight {double} height (m) of saplings
+@param age {integer} age of the saplings that are planted
+@return {integer} the number of saplings trees
+
+@Example
+    // this function creates gaps of fixed sizes on a fixed location relative to a position given by dx/dy
+    function createPattern4x4(id, dx, dy) {
+        var beech = true;
+        // (1) remove saplings...
+        Globals.removeSaplings(-1,dx-20,dy-20,40,40);
+        // (2) ... and trees
+        trees.loadAll();
+        trees.simulate = false;
+        console.log('createPattern4x4: stand ' + id + ', N=' + trees.count);
+        trees.filter("mod(x,100)>29 and mod(x,100)<71 and mod(y,100)>29 and mod(y,100)<71");
+        console.log('createPattern4x4: stand ' + id + ', Nafter=' + trees.count);
+        trees.kill();
+        // (3) plant saplings into the created gaps; actually, create alternating 10x10m cells with Silver fir and beech.
+        for (var ix=0;ix<4;++ix) {
+            for (var iy=0;iy<4;++iy) {
+                Globals.addSaplings(-1, dx-20 + 10*ix, dy-20 + 10*iy, 8,8, (beech?"abal":"fasy"), 0.25, 4);
+                beech = !beech; // flip between beech and silver fir
+                //console.log('createPattern4x4: ' + id + ', x: ' + dx +  ', y: ' + dy );
+            }
+        }
+    }
+*/
+
+
+
+/**
+add sapling on a stand defined by a (spatial) map
+if a `standId` is provided (-1 or 0: no stand), x/y is relative to the lower left edge of the stand rectangle. If no
+stand is provided, x/y are absolute (relative to the project area).
+returns the number of successfully added sapling cells
+@method addSaplingsOnMap
+@param map {Map} {{#crossLink "Map"}}{{/crossLink}} object
+@param mapId {integer} identifier for the stand / polygon on the given map for which to add saplings
+@param species {string} species code of the species to plant saplings
+@param px_per_hectare {double} proportion to plant saplings from the 2x2m cells within the given stand (0..1)
+@param treeheight {double} height (m) of saplings
+@param age {integer} age of the saplings that are planted
+@return {integer} the number of saplings trees
+*/
+
 
 
 /**

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1030</width>
-    <height>837</height>
+    <height>861</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -327,13 +327,16 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
          <item>
           <widget class="QLabel" name="scriptActiveScriptFile">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
            <property name="text">
             <string>loaded: -</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

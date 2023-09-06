@@ -194,7 +194,8 @@ private:
     // Digital elevation model
     DEM *mDEM; ///< digital elevation model
     GrassCover *mGrassCover; ///< cover of the ground with grass / herbs
-    // SVD States
+    /// SVD States
+    /// collection of all realized SVD states in the model
     SVDStates *mSVDStates;
 };
 

@@ -58,6 +58,10 @@ public:
     float orientation(const QPointF &point, float &rslope_angle, float &rslope_aspect) const;
     float orientation(const float x, const float y, float &rslope_angle, float &rslope_aspect)
                         { return orientation(QPointF(x,y), rslope_angle, rslope_aspect); }
+    /// topographic position index
+    /// TPI measures the difference between elevation at the central point
+    ///  and the average elevation (z) around it within a predetermined radius (radius in m)
+    float topographicPositionIndex(const QPointF &point, float radius) const;
 
 
 private:

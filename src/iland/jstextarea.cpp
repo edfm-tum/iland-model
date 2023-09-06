@@ -7,98 +7,96 @@
 #include <QSyntaxHighlighter>
 
 
-// Syntax highlighter, from Qt Example
+// from QT Example syntaxhighlighter
+
 Highlighter::Highlighter(QTextDocument *parent)
-      : QSyntaxHighlighter(parent)
-  {
-      HighlightingRule rule;
+    : QSyntaxHighlighter(parent)
+{
+    HighlightingRule rule;
 
-      keywordFormat.setForeground(Qt::darkBlue);
-      keywordFormat.setFontWeight(QFont::Bold);
-      QStringList keywordPatterns;
-      keywordPatterns << "\\babstract\\b" << "\\barguments\\b" << "\\bboolean\\b" << "\\bbreak\\b" << "\\bbytecase\\b"
-                      << "\\bcatch\\b" << "\\bchar\\b" << "\\bclass\\b" << "\\bconst\\b" << "\\bcontinue\\b"
-                      << "\\bdebugger\\b" << "\\bdefault\\b" << "\\bdelete\\b" << "\\bdo\\b" << "\\bdouble\\b"
-                      << "\\belse\\b" << "\\benum*\\b" << "\\beval\\b" << "\\bexport\\b" << "\\bextends*\\b"
-                      << "\\bfalse\\b" << "\\bfinal\\b" << "\\bfinally\\b" << "\\bfloat\\b" << "\\bfor\\b"
-                      << "\\bfunction\\b" << "\\bgoto\\b" << "\\bif\\b" << "\\bimplements\\b" << "\\bimport\\b"
-                      << "\\bin\\b" << "\\binstanceof\\b" << "\\bint\\b" << "\\binterface\\b" << "\\blet\\b"
-                      << "\\blong\\b" << "\\bnative\\b" << "\\bnew\\b" << "\\bnull\\b" << "\\bpackage\\b"
-                      << "\\bprivate\\b" << "\\bprotected\\b" << "\\bpublic\\b" << "\\breturn\\b" << "\\bshort\\b"
-                      << "\\bstatic\\b" << "\\bsuper\\b" << "\\bswitch\\b" << "\\bsynchronized\\b" << "\\bthis\\b"
-                      << "\\bthrow\\b" << "\\bthrows\\b" << "\\btransient\\b" << "\\btrue\\b" << "\\btry\\b"
-                      << "\\btypeof\\b" << "\\bvar\\b" << "\\bvoid\\b" << "\\bvolatile\\b" << "\\bwhile\\b"
-                      << "\\bwith\\b" << "\\byield\\b";
-      foreach (const QString &pattern, keywordPatterns) {
-          rule.pattern = QRegExp(pattern);
-          rule.format = keywordFormat;
-          highlightingRules.append(rule);
-      }
+    keywordFormat.setForeground(Qt::darkBlue);
+    keywordFormat.setFontWeight(QFont::Bold);
+    const QString keywordPatterns[] = {
+        QStringLiteral("\\bchar\\b"), QStringLiteral("\\bclass\\b"), QStringLiteral("\\bconst\\b"),
+        QStringLiteral("\\bdouble\\b"), QStringLiteral("\\benum\\b"), QStringLiteral("\\bexplicit\\b"),
+        QStringLiteral("\\bfriend\\b"), QStringLiteral("\\binline\\b"), QStringLiteral("\\bint\\b"),
+        QStringLiteral("\\blong\\b"), QStringLiteral("\\bnamespace\\b"), QStringLiteral("\\boperator\\b"),
+        QStringLiteral("\\bprivate\\b"), QStringLiteral("\\bprotected\\b"), QStringLiteral("\\bpublic\\b"),
+        QStringLiteral("\\bshort\\b"), QStringLiteral("\\bsignals\\b"), QStringLiteral("\\bsigned\\b"),
+        QStringLiteral("\\bslots\\b"), QStringLiteral("\\bstatic\\b"), QStringLiteral("\\bstruct\\b"),
+        QStringLiteral("\\btemplate\\b"), QStringLiteral("\\btypedef\\b"), QStringLiteral("\\btypename\\b"),
+        QStringLiteral("\\bunion\\b"), QStringLiteral("\\bunsigned\\b"), QStringLiteral("\\bvirtual\\b"),
+        QStringLiteral("\\bvoid\\b"), QStringLiteral("\\bvolatile\\b"), QStringLiteral("\\bbool\\b")
+    };
+    for (const QString &pattern : keywordPatterns) {
+        rule.pattern = QRegularExpression(pattern);
+        rule.format = keywordFormat;
+        highlightingRules.append(rule);
+    }
 
-      classFormat.setFontWeight(QFont::Bold);
-      classFormat.setForeground(Qt::darkMagenta);
-      rule.pattern = QRegExp("\\bQ[A-Za-z]+\\b");
-      rule.format = classFormat;
-      highlightingRules.append(rule);
+    classFormat.setFontWeight(QFont::Bold);
+    classFormat.setForeground(Qt::darkMagenta);
+    rule.pattern = QRegularExpression(QStringLiteral("\\bQ[A-Za-z]+\\b"));
+    rule.format = classFormat;
+    highlightingRules.append(rule);
 
-      singleLineCommentFormat.setForeground(Qt::darkGreen);
-      rule.pattern = QRegExp("//[^\n]*");
-      rule.format = singleLineCommentFormat;
-      highlightingRules.append(rule);
+    quotationFormat.setForeground(Qt::darkGreen);
+    rule.pattern = QRegularExpression(QStringLiteral("\".*\""));
+    rule.format = quotationFormat;
+    highlightingRules.append(rule);
 
-      multiLineCommentFormat.setForeground(Qt::darkGreen);
+    functionFormat.setFontItalic(true);
+    functionFormat.setForeground(Qt::blue);
+    rule.pattern = QRegularExpression(QStringLiteral("\\b[A-Za-z0-9_]+(?=\\()"));
+    rule.format = functionFormat;
+    highlightingRules.append(rule);
 
-      quotationFormat.setForeground(Qt::gray);
-      rule.pattern = QRegExp("\".*\"");
-      rule.format = quotationFormat;
-      highlightingRules.append(rule);
+    singleLineCommentFormat.setForeground(Qt::red);
+    rule.pattern = QRegularExpression(QStringLiteral("//[^\n]*"));
+    rule.format = singleLineCommentFormat;
+    highlightingRules.append(rule);
 
-      singleQuotationFormat.setForeground(Qt::gray);
-      rule.pattern = QRegExp("\'.*\'");
-      rule.format = singleQuotationFormat;
-      highlightingRules.append(rule);
+    multiLineCommentFormat.setForeground(Qt::red);
 
-      functionFormat.setFontItalic(true);
-      functionFormat.setForeground(Qt::blue);
-      rule.pattern = QRegExp("\\b[A-Za-z0-9_]+(?=\\()");
-      rule.format = functionFormat;
-      highlightingRules.append(rule);
+    commentStartExpression = QRegularExpression(QStringLiteral("/\\*"));
+    commentEndExpression = QRegularExpression(QStringLiteral("\\*/"));
+}
 
-      commentStartExpression = QRegExp("/\\*");
-      commentEndExpression = QRegExp("\\*/");
-  }
 
-  void Highlighter::highlightBlock(const QString &text)
-  {
-      foreach (const HighlightingRule &rule, highlightingRules) {
-          QRegExp expression(rule.pattern);
-          int index = expression.indexIn(text);
-          while (index >= 0) {
-              int length = expression.matchedLength();
-              setFormat(index, length, rule.format);
-              index = expression.indexIn(text, index + length);
-          }
-      }
-      setCurrentBlockState(0);
 
-      int startIndex = 0;
-      if (previousBlockState() != 1)
-          startIndex = commentStartExpression.indexIn(text);
+void Highlighter::highlightBlock(const QString &text)
+{
+    for (const HighlightingRule &rule : std::as_const(highlightingRules)) {
+        QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
+        while (matchIterator.hasNext()) {
+            QRegularExpressionMatch match = matchIterator.next();
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+        }
+    }
 
-      while (startIndex >= 0) {
-          int endIndex = commentEndExpression.indexIn(text, startIndex);
-          int commentLength;
-          if (endIndex == -1) {
-              setCurrentBlockState(1);
-              commentLength = text.length() - startIndex;
-          } else {
-              commentLength = endIndex - startIndex
-                              + commentEndExpression.matchedLength();
-          }
-          setFormat(startIndex, commentLength, multiLineCommentFormat);
-          startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
-      }
-  }
+    setCurrentBlockState(0);
+
+    int startIndex = 0;
+    if (previousBlockState() != 1)
+        startIndex = text.indexOf(commentStartExpression);
+
+    while (startIndex >= 0) {
+        QRegularExpressionMatch match = commentEndExpression.match(text, startIndex);
+        int endIndex = match.capturedStart();
+        int commentLength = 0;
+        if (endIndex == -1) {
+            setCurrentBlockState(1);
+            commentLength = text.length() - startIndex;
+        } else {
+            commentLength = endIndex - startIndex
+                    + match.capturedLength();
+        }
+        setFormat(startIndex, commentLength, multiLineCommentFormat);
+        startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
+    }
+}
+// end QT example
+
 
 
 
@@ -116,7 +114,7 @@ JSTextArea::JSTextArea(QWidget *parent) : QTextEdit(parent)
     const int tabStop = 2;  // 4 characters
 
     QFontMetrics metrics(font);
-    setTabStopWidth(tabStop * metrics.width(' '));
+    setTabStopDistance(tabStop * metrics.horizontalAdvance(' '));
 }
 
 void JSTextArea::keyPressEvent ( QKeyEvent * event )

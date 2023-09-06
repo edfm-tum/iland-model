@@ -20,6 +20,7 @@
 #include <QString>
 #include <QHash>
 #include <QVector>
+#include <QJSEngine>
 #ifndef DBHDISTRIBUTION_H
 #define DBHDISTRIBUTION_H
 
@@ -43,8 +44,10 @@ public slots:
     void saveStandInfo(QString filename);
 
 public:
-    DBHDistribution(QObject *parent=0);
+    Q_INVOKABLE DBHDistribution(QObject *parent=0);
     ~DBHDistribution();
+    static void addToScriptEngine(QJSEngine &engine);
+
 
 
     /// add the trees of the resource unit `ru`.

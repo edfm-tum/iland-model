@@ -28,7 +28,6 @@
 
   */
 #include <QtCore>
-#include "global.h"
 
 #include "resourceunit.h"
 #include "resourceunitspecies.h"
@@ -43,6 +42,7 @@
 #include "helper.h"
 #include "svdstate.h"
 #include "statdata.h"
+#include "microclimate.h"
 
 double ResourceUnitVariables::nitrogenAvailableDelta = 0;
 
@@ -69,8 +69,8 @@ ResourceUnit::~ResourceUnit()
 ResourceUnit::ResourceUnit(const int index)
 {
     qDeleteAll(mRUSpecies);
-    mSpeciesSet = 0;
-    mClimate = 0;
+    mSpeciesSet = nullptr;
+    mClimate = nullptr;
     mPixelCount=0;
     mStockedArea = 0;
     mStockedPixelCount = 0;
@@ -82,11 +82,12 @@ ResourceUnit::ResourceUnit(const int index)
     mLRI_modification = 0.;
     mIndex = index;
     mSaplingHeightMap = 0;
+    mMicroclimate = nullptr;
     mEffectiveArea_perWLA = 0.;
     mWater = new WaterCycle();
-    mSnag = 0;
-    mSoil = 0;
-    mSaplings = 0;
+    mSnag = nullptr;
+    mSoil = nullptr;
+    mSaplings = nullptr;
     mID = 0;
     mCreateDebugOutput = true;
     mSVDState.clear();
@@ -96,10 +97,10 @@ void ResourceUnit::setup()
 {
     if (mSnag)
         delete mSnag;
-    mSnag=0;
+    mSnag=nullptr;
     if (mSoil)
         delete mSoil;
-    mSoil=0;
+    mSoil=nullptr;
     if (Model::settings().carbonCycleEnabled) {
         mSoil = new Soil(this);
         mSnag = new Snag;
@@ -126,6 +127,10 @@ void ResourceUnit::setup()
         mSaplings = new SaplingCell[cPxPerHectare];
         for (int i=0;i<cPxPerHectare;++i)
             mSaplings[i].ru = this;
+    }
+
+    if (Model::settings().microclimateEnabled) {
+        mMicroclimate = new Microclimate(this);
     }
 
     // setup variables
@@ -242,6 +247,21 @@ double ResourceUnit::topHeight(bool &rIrregular) const
     return h_top;
 }
 
+void ResourceUnit::notifyDisturbance(ERUDisturbanceType source, double info) const
+{
+    if (!mSVDState.disturbanceEvents) // do nothing if SVD states are not used
+        return;
+
+    // events are stored with newest events first. Oldest event is removed
+    // when maximum number of events reached
+    mSVDState.disturbanceEvents->prepend(RUSVDState::SVDDisturbanceEvent(
+                                            Globals->currentYear(),
+                                            source,
+                                            info));
+    if (mSVDState.disturbanceEvents->size() > 2 )
+        mSVDState.disturbanceEvents->pop_back();
+}
+
 Tree &ResourceUnit::newTree()
 {
     // start simple: just append to the vector...
@@ -325,6 +345,8 @@ void ResourceUnit::newYear()
         (*i)->statisticsDead().clear();
         (*i)->statisticsMgmt().clear();
     }
+
+
 
 }
 
@@ -489,6 +511,8 @@ void ResourceUnit::updateSVDState()
             int nspecies = GlobalSettings::instance()->model()->speciesSet()->activeSpecies().size();
             mSVDState.localComposition = new QVector<float>(nspecies, 0.f);
             mSVDState.midDistanceComposition = new QVector<float>(nspecies, 0.f);
+            // create history vector
+            mSVDState.disturbanceEvents = new QVector<RUSVDState::SVDDisturbanceEvent>();
         }
         int stateId=GlobalSettings::instance()->model()->svdStates()->evaluateState(this);
         if (mSVDState.stateId==stateId)
@@ -575,6 +599,12 @@ void ResourceUnit::recreateStandStatistics(bool recalculate_stats)
             mRUSpecies[i]->statistics().calculate();
         }
     }
+}
+
+void ResourceUnit::analyzeMicroclimate()
+{
+    if (mMicroclimate)
+        mMicroclimate->calculateVegetation();
 }
 
 

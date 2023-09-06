@@ -91,7 +91,7 @@ void Output::setup()
 
 Output::~Output()
 {
-    mInserter.clear();
+    //mInserter.clear();
 }
 
 Output::Output()
@@ -171,7 +171,7 @@ void Output::openFile()
             line += ";" + col.name();
         }
     }
-    mFileStream << line << endl;
+    mFileStream << line << Qt::endl;
 
 }
 
@@ -295,7 +295,7 @@ void Output::saveFile()
         if (i!=mCount-1)
             mFileStream << ";";
     }
-    mFileStream << endl;
+    mFileStream << Qt::endl;
     newRow();
 }
 

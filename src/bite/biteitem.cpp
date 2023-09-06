@@ -19,6 +19,7 @@
 #include "biteitem.h"
 #include "biteengine.h"
 
+
 namespace BITE {
 
 BiteItem::BiteItem(QObject *parent) : QObject(parent), mAgent(nullptr)

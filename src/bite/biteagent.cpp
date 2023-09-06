@@ -212,6 +212,7 @@ void BiteAgent::runOnTreeRemovedFilter(Tree *tree, int reason)
 
 void BiteAgent::run()
 {
+    BiteEngine::instance()->scriptEngine()->collectGarbage();
     stats().clear(); // reset stats
     if (!mStatsGrid.isEmpty()) {
         // reset cell level stats
@@ -226,12 +227,12 @@ void BiteAgent::run()
     // run the main function in life cycle first
     mLC->run();
 
-    for (auto item : mItems) {
+    for (auto *item : mItems) {
         item->beforeRun();
     }
 
     // step 1: run all phase-level items (e.g. dispersal)
-    for (auto item : mItems) {
+    for (auto *item : mItems) {
         if (item->runCells() == false)
             item->run();
     }
@@ -443,6 +444,7 @@ ABE::FMTreeList *BiteAgent::threadTreeList()
         return mTreeLists[QThread::currentThread()];
     QMutexLocker lock(&_thread_treelist);
     mTreeLists[QThread::currentThread()] = new ABE::FMTreeList;
+    BiteAgent::setCPPOwnership(mTreeLists[QThread::currentThread()]); // avoid crashes due to gc freeing inadvertantly stuff?
     return mTreeLists[QThread::currentThread()];
 
 }
@@ -459,6 +461,7 @@ ABE::FMSaplingList *BiteAgent::threadSaplingList()
 
 void BiteAgent::createStatsGrid()
 {
+    // set up the stats grid with the same resolution as the base grid
     mStatsGrid.setup(mGrid.metricRect(), mGrid.cellsize());
 }
 

@@ -58,6 +58,7 @@ public:
     void setModel(Model *model) {mModel = model; }
     void setModelController(ModelController *mc) {mModelController = mc; }
 
+    /// the current simulation year (starting with 1)
     int currentYear() const { return mRunYear; }
     void setCurrentYear(const int year) { mRunYear = year; }
 
@@ -163,7 +164,7 @@ const double cAutotrophicRespiration = 0.47;
 #define Globals (GlobalSettings::instance())
 
 // provide a hashing function for the QPoint type (needed from stand init functions, ABE, ...)
-inline uint qHash(const QPoint &key)
+inline size_t qHash(const QPoint &key)
 {
     return qHash(key.x()) ^ qHash(key.y());
 }

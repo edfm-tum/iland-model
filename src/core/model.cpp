@@ -38,6 +38,7 @@
 #include "helper.h"
 #include "resourceunit.h"
 #include "climate.h"
+#include "microclimate.h"
 #include "watercycle.h"
 #include "speciesset.h"
 #include "standloader.h"
@@ -115,6 +116,18 @@ Tree *AllTreeIterator::nextLiving()
 Tree *AllTreeIterator::current() const
 {
     return mCurrent?mCurrent-1:nullptr;
+}
+
+/// multithreaded execution of the microclimate routine
+static void nc_microclimate(ResourceUnit *unit)
+{
+    try {
+        unit->analyzeMicroclimate();
+
+    } catch (const IException& e) {
+        GlobalSettings::instance()->controller()->throwError(e.message());
+    }
+
 }
 
 
@@ -585,7 +598,13 @@ void Model::loadProject()
         mBiteEngine = BITE::BiteEngine::instance();
         mBiteEngine->setup();
     }
+    // microclimate
+    if (Model::settings().microclimateEnabled) {
+        MicroclimateVisualizer::setupVisualization();
+        DebugTimer t("Microclimate setup");
+        executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
 
+    }
 
 }
 
@@ -683,6 +702,7 @@ static void nc_carbonCycle(ResourceUnit *unit)
 
 }
 
+
 /// beforeRun performs several steps before the models starts running.
 /// inter alia: * setup of the stands
 ///             * setup of the climates
@@ -756,6 +776,8 @@ void Model::beforeRun()
     GlobalSettings::instance()->outputManager()->execute("svdstate"); // year=0
     GlobalSettings::instance()->outputManager()->execute("devstage"); // year=0
     GlobalSettings::instance()->outputManager()->execute("ecoviz"); // tree output for visualization, year 0
+    GlobalSettings::instance()->outputManager()->execute("customagg"); // custom aggregation, much like dynamic stand, year 0
+    GlobalSettings::instance()->outputManager()->save(); // commit database changes
 
 
     GlobalSettings::instance()->setCurrentYear(1); // set to first year
@@ -792,6 +814,12 @@ void Model::runYear()
         foreach(Climate *c, mClimates)
             c->nextYear();
     }
+    // run microclimate
+    if (Model::settings().microclimateEnabled) {
+        DebugTimer t("Microclimate");
+        executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
+    }
+
     WaterCycle::resetPsiMin();
 
     // reset statistics
@@ -928,6 +956,7 @@ void Model::runYear()
     om->execute("svduniquestate"); // list of forest vegetation states (SVD related)
     om->execute("devstage"); // spatial analysis of developement stages
     om->execute("ecoviz"); // tree output for visualization
+    om->execute("customagg"); // custom aggregation, much like dynamic stand
 
     GlobalSettings::instance()->systemStatistics()->tWriteOutput+=toutput.elapsed();
     GlobalSettings::instance()->systemStatistics()->tTotalYear+=t_all.elapsed();

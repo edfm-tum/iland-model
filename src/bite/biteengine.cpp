@@ -60,8 +60,10 @@ BiteEngine::~BiteEngine()
 
 void BiteEngine::setup()
 {
-    QLoggingCategory::setFilterRules("bite.debug=true\n" \
-                                     "bite.setup.debug=true"); // enable *all*
+    // link BITE specific logging to general logging settings
+    QString enable_log = logLevelDebug() ? "true" : "false";
+    QLoggingCategory::setFilterRules(QString("bite.debug=%1\n" \
+                                     "bite.setup.debug=%1").arg(enable_log)); // enable *all*
 
     resetErrors();
 
@@ -86,7 +88,7 @@ void BiteEngine::setup()
         int lineno = result.property("lineNumber").toInt();
         QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
         QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qCCritical(biteSetup).noquote() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
         throw IException("BITE Error in Javascript (Please check the logfile): " + result.toString());

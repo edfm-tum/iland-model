@@ -5,7 +5,7 @@
 
 
 ; Outputs
-output.dynamic.enabled = false
+output.dynamic.enabled = bool,false,"description asdfasdfs"
 output.dynamic.columns = false
 output.dynamic = false
 output.tree.enabled = false

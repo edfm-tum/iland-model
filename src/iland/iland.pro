@@ -12,7 +12,7 @@ QT += concurrent
 TARGET = iland
 TEMPLATE = app
 CONFIG += precompile_header
-
+CONFIG += c++17
 #LIBS += -lQt5Concurrent
 
 # includepath: adds directories to the standard include (no directory needed when #include a file).
@@ -75,15 +75,17 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 #QMAKE_CXXFLAGS_RELEASE += -g
 QMAKE_CXXFLAGS_RELEASE = $$QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
 QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
-message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
+#message($$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO)
 }
 
 win32-msvc*:{
 #release msvc
+
 PRE_TARGETDEPS += ../plugins/iland_fire.lib
 PRE_TARGETDEPS += ../plugins/iland_wind.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+
 }
 }
 
@@ -109,6 +111,7 @@ DEFINES += NO_DEBUG_MSGS
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../core/microclimate.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
@@ -141,6 +144,7 @@ SOURCES += main.cpp \
     ../output/standout.cpp \
     ../core/standstatistics.cpp \
     ../output/dynamicstandout.cpp \
+    ../output/customaggout.cpp \
     ../core/management.cpp \
     ../core/speciesresponse.cpp \
     ../core/climate.cpp \
@@ -230,6 +234,7 @@ SOURCES += main.cpp \
     ../bite/biteoutputitem.cpp
 
 HEADERS += mainwindow.h \
+    ../core/microclimate.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
@@ -265,6 +270,7 @@ HEADERS += mainwindow.h \
     ../output/standout.h \
     ../core/standstatistics.h \
     ../output/dynamicstandout.h \
+    ../output/customaggout.h \
     ../core/management.h \
     ../core/speciesresponse.h \
     ../core/climate.h \
@@ -380,6 +386,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \
     ../apidoc/iLand/factory_doc.js \

@@ -100,9 +100,9 @@ inline bool isBitSet(const unsigned int value, const int bit)
 }
 
 // define a global isnan() function
-#ifndef isnan
-#define isnan(x) ((x) != (x))
-#endif
+// #ifndef isnan
+// #define isnan(x) ((x) != (x))
+// #endif
 
 #include "globalsettings.h"
 

@@ -98,17 +98,17 @@ const QVector<LayeredGridBase::LayerElement> &FireLayers::names()
 {
     if (mNames.isEmpty())
         mNames= QVector<LayeredGridBase::LayerElement>()
-                << LayeredGridBase::LayerElement(QLatin1Literal("baseIgnition"), QLatin1Literal("base ignition rate"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("KBDI"), QLatin1Literal("KBDI"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("KBDIref"), QLatin1Literal("reference KBDI value"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("fireID"), QLatin1Literal("Id of the fire"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("crownKill"), QLatin1Literal("crown kill rate"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("diedBasalArea"), QLatin1Literal("m2 of died basal area"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("diedStemsFrac"), QLatin1Literal("fraction of died stems"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("fuel"), QLatin1Literal("burned fuel (forest floor + dwd + moss) kg/ha"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("nFire"), QLatin1Literal("cumulative count of fires"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("lastFireYear"), QLatin1Literal("sim. year of last burn"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QLatin1Literal("combustibleFuel"), QLatin1Literal("available combustible fuel (current KBDI, forest floor + dwd + moss) kg/ha"), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QStringLiteral("baseIgnition"), QStringLiteral("base ignition rate"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("KBDI"), QStringLiteral("KBDI"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("KBDIref"), QStringLiteral("reference KBDI value"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("fireID"), QStringLiteral("Id of the fire"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("crownKill"), QStringLiteral("crown kill rate"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("diedBasalArea"), QStringLiteral("m2 of died basal area"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("diedStemsFrac"), QStringLiteral("fraction of died stems"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("fuel"), QStringLiteral("burned fuel (forest floor + dwd + moss) kg/ha"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("nFire"), QStringLiteral("cumulative count of fires"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("lastFireYear"), QStringLiteral("sim. year of last burn"), GridViewRainbow)
+                << LayeredGridBase::LayerElement(QStringLiteral("combustibleFuel"), QStringLiteral("available combustible fuel (current KBDI, forest floor + dwd + moss) kg/ha"), GridViewRainbow);
 
     return mNames;
 
@@ -883,7 +883,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
     double fuel = calcCombustibleFuel(ru_data, fuel_moss, fuel_ff, fuel_dwd); // kg BM/ha
 
     // if fuel level is below 0.05kg BM/m2 (=500kg/ha), then no burning happens!
-    // note, that it is not necessary that trees are on the pixel, as long as there is enough fuel on the ground.
+    // note that it is not necessary that trees are on the pixel, as long as there is enough fuel on the ground.
     if (fuel < mMinimumFuel)
         return false;
 
@@ -895,7 +895,7 @@ bool FireModule::burnPixel(const QPoint &pos, FireRUData &ru_data)
 
     ru_data.fireRUStats.fuel_moss += fuel_moss * cell_fraction; // kg/cell moss biomass
 
-    if (ru_data.fireRUStats.fuel_ff > ru->soil()->youngLabile().biomass()*1000.)
+    if (ru->soil() && ru_data.fireRUStats.fuel_ff > ru->soil()->youngLabile().biomass()*1000.)
         qWarning() << "!!!burnPixel: invalid fuel. now: " << ru_data.fireRUStats.fuel_ff <<  ", this px: " << fuel_ff*cell_fraction << "labile: " << ru->soil()->youngLabile().biomass()*1000. << ", RU-index: " << ru->index();
 
     ru_data.fireRUStats.fuel_dwd += fuel_dwd * cell_fraction; // fuel in kg/cell Biomass
@@ -1010,6 +1010,8 @@ void FireModule::afterFire()
                         const_cast<Water::Permafrost*>(ru->waterCycle()->permafrost())->burnMoss(fds->fireRUStats.fuel_moss);
                 }
             }
+            // notify iLand that a fire happened. info = proportion of area burned on the RU
+            fds->ru()->notifyDisturbance(ResourceUnit::dtFire, fds->fireRUStats.n_cells * pixel_fraction);
         }
     }
 
@@ -1046,7 +1048,9 @@ double FireModule::calcCombustibleFuel(const FireRUData &ru_data, double &rMoss_
     if (ru->waterCycle()->permafrost())
         fuel_moss = (kfc1 + kfc2*ru_data.kbdi()) * ru->waterCycle()->permafrost()->mossBiomass() * 10000.;
 
-    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 0. );
+    // Note: when carbon cycle is disabled (and Soil/Snags etc not available), we
+    // assume a non-zero amount of DWD (10t/ha), to allow the fire module to run
+    double fuel_dwd = kfc3*ru_data.kbdi() * (ru->soil() ? ru->soil()->youngRefractory().biomass() * ru->soil()->youngRefractoryAbovegroundFraction() * 1000. : 10000. );
     // calculate fuel (kg biomass / ha)
     double fuel = fuel_ff + fuel_dwd + fuel_moss;
 

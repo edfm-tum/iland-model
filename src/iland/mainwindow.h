@@ -75,6 +75,11 @@ public slots:
                    const QString &name=QString(),
                    const GridViewType view_type=GridViewRainbow,
                    double min_val=0., double max_val=1.);
+    void paintGrid(const Grid<double> *grid,
+                   const QString &name=QString(),
+                   const GridViewType view_type=GridViewRainbow,
+                   double min_val=0., double max_val=1.);
+
     void addLayers(const LayeredGridBase *layer, const QString &name);
 
     void addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types=QVector<GridViewType>());
@@ -89,7 +94,8 @@ public slots:
     void setUIshortcuts(QVariantMap shortcuts);
 
 protected:
-     void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event);
+    void resizeEvent(QResizeEvent *event);
 
 private:
     Ui::MainWindowClass *ui;
@@ -103,6 +109,7 @@ private:
     void readwriteCycle();
     // paint
     void updatePaintGridList();
+    bool mDoRepaint;
     /// PaintObject stores what kind of object to paint during next repaint
     PaintObject mPaintNext;
     QMap<QString, PaintObject> mPaintList;
@@ -219,6 +226,7 @@ private slots:
     void on_pbLoadTree_clicked();
     void on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
     void on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
+    void on_speciesFilterBox_currentIndexChanged(int index);
 };
 
 #endif // MAINWINDOW_H

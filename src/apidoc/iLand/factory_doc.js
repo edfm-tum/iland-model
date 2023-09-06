@@ -1,9 +1,22 @@
 /**
-  The `Factory` is a helper object for the creation of other iLand script objects such as
-  a {{#crossLink "Map"}}{{/crossLink}}.
+## NOTE: The `Factory` is no longer necessary, and its us is deprecated!
 
-  Technically, the `Factory`can instantiate objects of other C++ (QObject-based) types.
-  This factory approach is used because the V8 (QJSEngine) has limitations with regard to the `new` operator of Javascript.
+To create an object in Javascript, you can use the standard Javascript operator `new`:
+
+## Examples
+    // Create a instance of a Map object
+    var map = new Map;
+    // now you are good to use the objects properties and methods
+    console.log(map.name); // print the name of the stand grid file
+
+
+The `Factory` is a helper object for the creation of other iLand script objects such as
+a {{#crossLink "Map"}}{{/crossLink}}.
+
+Technically, the `Factory`can instantiate objects of other C++ (QObject-based) types.
+This factory approach is used because the V8 (QJSEngine) had limitations with regard to the `new` operator of Javascript.
+Now (with version Qt6, and likely also some versions before) the proper use of `new` is possible again.
+
 
 
  @module iLand

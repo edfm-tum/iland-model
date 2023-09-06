@@ -6,6 +6,18 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
 
 -   
 
+    ### `x` (int, read-only)
+
+    The x-coordinate of the current cell as grid index, i.e. not in metric coordiantes. 
+
+-   
+
+    ### `y` (int, read-only)
+
+    The y-coordinate of the current cell as grid index, i.e. not in metric coordiantes. 
+
+-   
+
     ### `active` (bool)
 
     A cell is `active` when currently colonized by the agent. Setting `active` to `true` initiates the agent for the given cell.
@@ -78,20 +90,19 @@ A cell is the smalled spatial execution unit of an agent. Each agent has a grid 
     ### `dailyClimateTimeseries(string type)`: dict of daily climate variable
 
     Use to access an array of climate variable for each day of the year for the current cell. The type of climate variable is given by parameter `type`. This can be used, if the required climatic indices are not built into the model. Note that accessing via the Javascript can come with a performance penalty (see code example below).
-    
 
     `type` can be one of the following:
 
         | Variable | Description                                    |
         |----------|------------------------------------------------|
-        | tmin     | daily minimum temperature (°C)                 |
-        | tmax     | daily maximum temperature (°C)                 |
+        | tmin     | daily minimum temperature (?C)                 |
+        | tmax     | daily maximum temperature (?C)                 |
         | tmean    | daily mean temperature (mean of tmin and tmax) |
         | prec     | daily precipitation (mm)                       |
         | vpd      | vapour pressure deficit (kPa)                  |
         | rad      | daily radiation sum (MJ/m2)                    |
 
-        
+
         ``` 
 
             // test GDD calculation

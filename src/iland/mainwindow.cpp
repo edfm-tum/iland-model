@@ -118,7 +118,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
             if (qstrcmp(context.category, "default")!=0)
                 bufferedMessages.append(QString("%1: %2").arg(context.category).arg(msg));
             else
-                bufferedMessages.append(QString(msg));
+                bufferedMessages.append(QString("%1: %2").arg(QTime::currentTime().toString("hh:mm:ss:zzz"), msg));
         }
 
         break;
@@ -159,7 +159,7 @@ void dumpMessages()
 
     if (MainWindow::logStream() && !doLogToWindow) {
         foreach(const QString &s, bufferedMessages)
-            *MainWindow::logStream() << s << endl;
+            *MainWindow::logStream() << s << Qt::endl;
         MainWindow::logStream()->flush();
 
     } else {
@@ -324,8 +324,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionError->setProperty("logLevel", QVariant(3));
 
     // species filter
-    connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
+    //connect( ui->speciesFilterBox, SIGNAL(currentIndexChanged(int)), SLOT(repaint()));
     updatePaintGridList();
+    mDoRepaint = true;
 
     // model controller
     mRemoteControl.setMainWindow( this );
@@ -359,7 +360,7 @@ MainWindow::MainWindow(QWidget *parent)
         view->engine()->rootContext()->setContextProperty("rulercolors", mRulerColors);
         view->setResizeMode(QQuickView::SizeRootObjectToView);
         ui->pbReloadQml->setVisible(false); // enable for debug...
-        //view->setSource(QUrl::fromLocalFile("E:/dev/iland_port_qt5_64bit/src/iland/qml/ruler.qml"));
+        //view->setSource(QUrl::fromLocalFile("C:/dev/iland_portqt6/src/iland/qml/ruler.qml"));
 
         //qDebug() << "setSource:";
         view->setSource(QUrl("qrc:/qml/ruler.qml"));
@@ -392,7 +393,7 @@ void MainWindow::batchLog(const QString s)
     QFile outfile(QCoreApplication::applicationDirPath()+ "/batchlog.txt");
     if (outfile.open(QIODevice::Append | QIODevice::Text)) {
         QTextStream str(&outfile);
-        str << s << endl;
+        str << s << Qt::endl;
     }
 }
 
@@ -434,6 +435,7 @@ void MainWindow::updateLabel()
 // simply command an update of the painting area
 void MainWindow::repaint()
 {
+    mDoRepaint = true;
     ui->PaintWidget->update();
     //QCoreApplication::processEvents();
 }
@@ -649,6 +651,32 @@ void MainWindow::paintGrid(const FloatGrid *grid, const QString &name,
     }
 }
 
+void MainWindow::paintGrid(const Grid<double> *grid, const QString &name, const GridViewType view_type, double min_val, double max_val)
+{
+    if (grid==nullptr && !name.isEmpty()) {
+        // remove the grid from the list
+        mPaintList.remove(name);
+        updatePaintGridList();
+        return;
+    }
+    mPaintNext.what=PaintObject::PaintDoubleGrid;
+    mPaintNext.min_value=min_val;
+    mPaintNext.max_value=max_val;
+    mPaintNext.dbl_grid = grid;
+    mPaintNext.view_type = view_type;
+    mPaintNext.name = name;
+    if (!name.isEmpty()) {
+        mPaintList[name] = mPaintNext;
+        updatePaintGridList();
+    }
+    if (mRemoteControl.canRun()) {
+        ui->visOtherGrid->setChecked(true);
+        repaint();
+    } else {
+        mPaintNext.what = PaintObject::PaintHeightGrid;
+    }
+}
+
 void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
@@ -701,6 +729,20 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                     mPaintNext.cur_min_value = mPaintNext.min_value;
                 }
                 paintMapGrid(painter, nullptr, mPaintNext.float_grid, nullptr,
+                             mPaintNext.view_type,
+                             mPaintNext.cur_min_value, mPaintNext.cur_max_value, shading);
+            }
+
+            if (mPaintNext.what == PaintObject::PaintDoubleGrid) {
+                mRulerColors->setCaption(mPaintNext.name);
+                if (!mRulerColors->autoScale()) {
+                    mPaintNext.cur_max_value = mRulerColors->maxValue();
+                    mPaintNext.cur_min_value = mRulerColors->minValue();
+                } else {
+                    mPaintNext.cur_max_value = mPaintNext.max_value;
+                    mPaintNext.cur_min_value = mPaintNext.min_value;
+                }
+                paintMapGrid(painter, nullptr, nullptr, mPaintNext.dbl_grid,
                              mPaintNext.view_type,
                              mPaintNext.cur_min_value, mPaintNext.cur_max_value, shading);
             }
@@ -1298,6 +1340,7 @@ void MainWindow::paintMapGrid(QPainter &painter,
     // clear background
     painter.fillRect(ui->PaintWidget->rect(), Qt::white);
     const Grid<int> *int_grid = nullptr;
+    bool clip_with_stand_grid = ui->visClipStandGrid->isChecked();
 
     int sx, sy;
     QRect total_rect;
@@ -1353,9 +1396,13 @@ void MainWindow::paintMapGrid(QPainter &painter,
                 r = vp.toScreen(double_grid->cellRect(p));
                 world = double_grid->cellCenterPoint(p);
             }
-            fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
-            if (shading) {
-                fill_color = Colors::shadeColor(fill_color, world, mRemoteControl.model()->dem()).rgb();
+            if (clip_with_stand_grid && !GlobalSettings::instance()->model()->heightGrid()->valueAt(world).isValid()) {
+                fill_color = Qt::white;
+            } else {
+                fill_color = view_type<10? Colors::colorFromValue(value, min_val, max_val, reverse,black_white) : Colors::colorFromPalette(value, view_type);
+                if (shading) {
+                    fill_color = Colors::shadeColor(fill_color, world, mRemoteControl.model()->dem()).rgb();
+                }
             }
 
             painter.fillRect(r, fill_color);
@@ -1371,18 +1418,30 @@ void MainWindow::paintMapGrid(QPainter &painter,
 
 void MainWindow::repaintArea(QPainter &painter)
 {
+
     if (!mRemoteControl.isBusy())  {
-        paintFON(painter, ui->PaintWidget->rect());
-        // fix viewpoint
-        vp.setScreenRect(ui->PaintWidget->rect());
-        mRulerColors->setScale(vp.pixelToMeter(1));
+
+        if (mDoRepaint) {
+            paintFON(painter, ui->PaintWidget->rect());
+            // // fix viewpoint
+            vp.setScreenRect(ui->PaintWidget->rect());
+            mRulerColors->setScale(vp.pixelToMeter(1));
+            mDoRepaint=false;
+
+        } else {
+            // use existing copy of the visualization
+            painter.drawImage(ui->PaintWidget->rect(), ui->PaintWidget->drawImage());
+        }
+
+
+
     } else {
         qDebug() << "mainwindow::repaint: skipped (busy)" << QDateTime::currentMSecsSinceEpoch();
     }
 }
 
 
-void MainWindow::on_visFon_toggled() { ui->PaintWidget->update(); }
+void MainWindow::on_visFon_toggled() { mDoRepaint=true; ui->PaintWidget->update();  }
 void MainWindow::on_visDomGrid_toggled() { on_visFon_toggled(); }
 void MainWindow::on_visImpact_toggled() { on_visFon_toggled(); }
 bool wantDrag=false;
@@ -1433,7 +1492,7 @@ void MainWindow::mouseClick(const QPoint& pos)
         //qDebug() <<p->dump();
         showTreeDetails(p);
 
-        ui->treeChange->setProperty("tree", qVariantFromValue((void*)p));
+        ui->treeChange->setProperty("tree", QVariant::fromValue((void*)p));
         ui->treeDbh->setValue(p->dbh());
         ui->treeHeight->setValue(p->height());
         ui->treePosX->setValue(p->position().x());
@@ -1557,6 +1616,10 @@ void MainWindow::mouseMove(const QPoint& pos)
             case PaintObject::PaintFloatGrid:
                 value = mPaintNext.float_grid->isEmpty()?0: mPaintNext.float_grid->constValueAt(p);
                 break;
+            case PaintObject::PaintDoubleGrid:
+                value = mPaintNext.dbl_grid->isEmpty()?0: mPaintNext.dbl_grid->constValueAt(p);
+                break;
+
             case PaintObject::PaintMapGrid:
                 value = mPaintNext.map_grid->grid().constValueAt(p);
                 break;
@@ -1570,7 +1633,13 @@ void MainWindow::mouseMove(const QPoint& pos)
 
                 break;
             case PaintObject::PaintHandledObject:
-                value = mRemoteControl.valueAtHandledGrid(mPaintNext.handler, p, mPaintNext.layer_id);
+                if (mPaintNext.dbl_grid->isEmpty()) {
+                    // use the handler (e.g. BITE)
+                    value = mRemoteControl.valueAtHandledGrid(mPaintNext.handler, p, mPaintNext.layer_id);
+                } else {
+                    // use the grid directly
+                    value = mPaintNext.dbl_grid->constValueAt(p);
+                }
                 break;
 
             default: has_value = false;
@@ -1609,6 +1678,7 @@ void MainWindow::mouseWheel(const QPoint& pos, int steps)
 {
     //qDebug() << "mouse-wheel" << steps;
     vp.zoomTo(pos, qMax(1-(2*steps/10.),0.2));
+    mDoRepaint = true;
     ui->PaintWidget->update();
 }
 
@@ -1635,6 +1705,7 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
     // move view area if not dedicately moving around a tree
     if (!wantDrag) {
         vp.moveTo(from, to);
+        mDoRepaint = true;
         ui->PaintWidget->update();
         return;
     }
@@ -1666,8 +1737,8 @@ void MainWindow::yearSimulated(int year)
     ui->modelRunProgress->setValue(year);
     labelMessage(QString("Running.... year %1 of %2. %3").arg(year).arg(mRemoteControl.totalYears()).arg(mRemoteControl.timeString()));
     ui->treeChange->setProperty("tree",0);
-    ui->PaintWidget->update();
-    //QApplication::processEvents();
+    mDoRepaint = true;
+    repaint();
 }
 
 void MainWindow::modelFinished(QString errorMessage)
@@ -1842,6 +1913,7 @@ void MainWindow::on_actionRun_one_year_triggered()
     GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
     labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
 
+    mDoRepaint = true;
     ui->PaintWidget->update();
     checkModelState();
 }
@@ -1992,6 +2064,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    mDoRepaint = true;
+    QMainWindow::resizeEvent(event);
+}
+
 
 void MainWindow::on_actionImageToClipboard_triggered()
 {
@@ -2078,6 +2156,7 @@ void MainWindow::on_pbCalculateExpression_clicked()
 void MainWindow::on_pbExecExpression_clicked()
 {
     // just repaint...
+    mDoRepaint = true;
     ui->PaintWidget->update();
 }
 
@@ -2451,12 +2530,14 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
 void MainWindow::on_actionShow_full_extent_triggered()
 {
     vp.zoomToAll();
+    mDoRepaint = true;
     repaint();
     //ui->PaintWidget->update();
 }
 
 void MainWindow::on_actionRepaint_triggered()
 {
+    mDoRepaint = true;
     repaint();
     // ui->PaintWidget->update();
 }
@@ -2564,6 +2645,7 @@ void MainWindow::on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, Q
 
     mPaintNext = po;
     ui->visOtherGrid->setChecked(true); // to enable the right category
+    mDoRepaint = true;
     repaint();
 }
 
@@ -2576,3 +2658,10 @@ void MainWindow::on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column
     // refresh drawing
     ui->PaintWidget->update();
 }
+
+void MainWindow::on_speciesFilterBox_currentIndexChanged(int index)
+{
+    mDoRepaint = true;
+    repaint();
+}
+

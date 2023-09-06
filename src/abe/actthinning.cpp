@@ -471,7 +471,7 @@ bool ActThinning::markCropTrees(FMStand *stand)
     clearTreeMarks(treelist);
 
     // get the 2x2m grid for the current stand
-    Grid<float> &grid = treelist->localGrid();
+    Grid<float> &grid = treelist->localStandGrid();
     // clear (except the out of "stand" pixels)
     for (float *p=grid.begin(); p!=grid.end(); ++p)
         if (*p > -1.f)

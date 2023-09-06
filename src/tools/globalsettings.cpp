@@ -256,7 +256,7 @@ const QList<const DebugList*> GlobalSettings::debugLists(const int ID, const Deb
     }
     // sort result list
     //std::sort(result_list.begin(), result_list.end(), debuglist_sorter); // changed because of compiler warnings
-    qSort(result_list.begin(), result_list.end(), debuglist_sorter);
+    std::sort(result_list.begin(), result_list.end(), debuglist_sorter);
     return result_list;
 }
 
@@ -339,7 +339,7 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type,
         } else {
             if (out_file.open(QFile::WriteOnly)) {
                 ts.setDevice(&out_file);
-                ts << g->debugListCaptions(type).join(separator) << endl;
+                ts << g->debugListCaptions(type).join(separator) << Qt::endl;
             } else {
                 qDebug() << "Cannot open debug output file" << fileName;
             }
@@ -357,7 +357,7 @@ QStringList GlobalSettings::debugDataTable(GlobalSettings::DebugOutputs type,
         }
         // save data to the file, or to the
         if (out_file.isOpen())
-            ts << line << endl;
+            ts << line << Qt::endl;
         else
             result << line;
     }

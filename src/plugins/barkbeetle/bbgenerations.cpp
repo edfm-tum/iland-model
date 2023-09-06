@@ -21,12 +21,15 @@
 
 #include "resourceunit.h"
 #include "climate.h"
+#include "microclimate.h"
+
 /** @class BBGenerations
     @ingroup beetlemodule
     BBGenerations calculates potential bark beetle generations based on climate data (including bark temperature).
   */
 BBGenerations::BBGenerations()
 {
+    mUseAirTempForGenerations = false; // this is the default
 }
 
 /**
@@ -154,6 +157,7 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
     mFrostDaysEarly=0;
     mFrostDaysLate=0;
 
+
     for (int i=0;i<ru->climate()->daysOfYear();++i) {
         const ClimateDay *clim = ru->climate()->dayOfYear(i);
         // radiation: MJ/m2/day -> the regression uses Wh/m2/day -> conversion-factor: 1/0.0036
@@ -175,10 +179,21 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
         // corrected for days with very high bark temperature (>30.4 degrees)
         double bt_sum_eff = (bt_sum - diff_bt) / 24.; // degree * days
 
+        if (mUseAirTempForGenerations) {
+            // we revert to the minimum, that is simply the GDD based on mean temp
+            // bt_sum_eff is in degree*days, no need to change
+            bt_sum_eff = std::max(clim->mean_temp() - 8.3, 0.);
+        }
+
         mEffectiveBarkTemp[i] = (i>0? mEffectiveBarkTemp[i-1] : 0.) + bt_sum_eff;
 
         // frost days:
-        if (clim->min_temperature < -15.) {
+        double min_temp = clim->min_temperature;
+        // include microclimate effect when module is turned on
+        if (Model::settings().microclimateEnabled)
+            min_temp = min_temp + ru->microClimate()->minimumMicroclimateBufferingRU(i);
+
+        if (min_temp < -15.) {
             if (i < ru->climate()->sun().longestDay())
                 mFrostDaysEarly++;
             else

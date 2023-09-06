@@ -28,6 +28,8 @@ class BBGenerations
 {
 public:
     BBGenerations();
+    /// flag to enable/disable bark temperature model in calculation of generations
+    void setUseAirTempForGenerations(bool use_air) { mUseAirTempForGenerations = use_air; }
     /// calculate the number of barbeetle generations for the given resource unit.
     double calculateGenerations(const ResourceUnit *ru);
 
@@ -47,6 +49,7 @@ public:
 
 private:
     void calculateBarkTemperature(const ResourceUnit *ru);
+    bool mUseAirTempForGenerations;
     struct BBGeneration {
         BBGeneration(): start_day(-1), gen(0), is_sister_brood(false), value(0.) {}
         BBGeneration(int start, bool is_sister, int generation) { start_day=start; is_sister_brood=is_sister; value=0.; gen=generation; }

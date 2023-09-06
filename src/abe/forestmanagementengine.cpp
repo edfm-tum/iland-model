@@ -126,7 +126,7 @@ void ForestManagementEngine::setupScripting()
         int lineno = result.property("lineNumber").toInt();
         QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
         QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qCDebug(abeSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
     }
@@ -437,7 +437,7 @@ void ForestManagementEngine::setup()
 
         mMaxStandId = qMax(mMaxStandId, stand_id);
 
-        mUnitStandMap.insertMulti(unit,stand);
+        mUnitStandMap.insert(unit,stand);
         mStands.append(stand);
 
     }
@@ -673,7 +673,7 @@ void ForestManagementEngine::test()
         int lineno = result.property("lineNumber").toInt();
         QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
         QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, code_lines.count()); ++i)
+        for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qDebug() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
     }
@@ -796,7 +796,7 @@ FMStand *ForestManagementEngine::splitExistingStand(FMStand *stand)
     FMUnit *unit = const_cast<FMUnit*> (stand->unit());
     FMStand *new_stand = new FMStand(unit,new_stand_id);
 
-    mUnitStandMap.insertMulti(unit,new_stand);
+    mUnitStandMap.insert(unit,new_stand);
     mStands.append(new_stand);
     mStandHash[new_stand_id] = new_stand;
 

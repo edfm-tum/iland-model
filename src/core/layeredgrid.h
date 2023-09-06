@@ -80,7 +80,7 @@ public:
     {
         Q_UNUSED(value)
         Q_UNUSED(index)
-        return QLatin1Literal("-");
+        return QStringLiteral("-");
     }
 
 };
