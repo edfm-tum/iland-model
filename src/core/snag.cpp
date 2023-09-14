@@ -216,7 +216,7 @@ double Snag::calculateClimateFactors()
         else
             ratio = 0;
         fw_month[m] = 1. / (1. + 30.*exp(-8.5*ratio));
-        if (logLevelDebug()) qDebug() <<"month"<< m << "PET" << mRU->waterCycle()->referenceEvapotranspiration()[m] << "prec" <<mRU->climate()->precipitationMonth()[m];
+        //if (logLevelDebug()) qDebug() <<"month"<< m << "PET" << mRU->waterCycle()->referenceEvapotranspiration()[m] << "prec" <<mRU->climate()->precipitationMonth()[m];
     }
 
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day, ++iday)

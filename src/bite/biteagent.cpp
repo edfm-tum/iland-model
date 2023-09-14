@@ -220,6 +220,11 @@ void BiteAgent::run()
             p->clear();
     }
 
+    // make sure the tree list is empty for all life cycle and phase-level functions
+    // (note: cells take care of that for cell level functions)
+    threadTreeList()->clear();
+    threadSaplingList()->clear();
+
     // main function
     QJSValueList eparam = QJSValueList() << mThis;
     mEvents.run("onYearBegin", nullptr, &eparam);

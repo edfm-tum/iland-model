@@ -58,6 +58,15 @@ Kill (i.e., cut down and do not remove from the forest) the saplings in the list
 **/
 
 /**
+Clear the list without affecting the saplings in the list. Note that explcitly clearing the list is usually not necessary (e.g. when using loadFromStand() )
+
+@method clear
+@Example
+    saplings.clear(); // empty lsit
+    console.log(saplings.count); // -> 0
+**/
+
+/**
 Load all (or a subset) of sapling that are located on the stand denoted by `standId`. The `filter` let you control
 which saplings should be loaded.
 

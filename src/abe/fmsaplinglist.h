@@ -33,6 +33,10 @@ public slots:
     /// load all saplings
     int loadFromStand(int standId, QString filter=QString());
 
+    /// clear the list (this does not affect trees loaded)
+    void clear() { mSaplings.clear(); }
+
+
     /// return the sum of 'expression' over all saplings in the list
     /// if 'filter' is provided, only trees are counted for which 'filter' evaluates to true.
     double sum(QString expression, QString filter=QStringLiteral(""));

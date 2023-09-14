@@ -1633,6 +1633,8 @@ void MainWindow::mouseMove(const QPoint& pos)
 
                 break;
             case PaintObject::PaintHandledObject:
+                if (!mPaintNext.dbl_grid)
+                    return;
                 if (mPaintNext.dbl_grid->isEmpty()) {
                     // use the handler (e.g. BITE)
                     value = mRemoteControl.valueAtHandledGrid(mPaintNext.handler, p, mPaintNext.layer_id);

@@ -108,6 +108,15 @@ See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}
     trees.kill('dbh<10'); // kill all trees with a dbh<10cm
 **/
 
+/**
+Clear the list without affecting the trees in the list. Note that explcitly clearing the list is usually not necessary (e.g. when using load() )
+
+@method clear
+@Example
+    trees.clear(); // empty lsit
+    trees.log(trees.count); // -> 0
+**/
+
 
 /**
 Apply a filter on the list. Only trees for which the filter condition `filter` is true, remain in the list.

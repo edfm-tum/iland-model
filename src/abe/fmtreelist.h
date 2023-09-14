@@ -68,6 +68,9 @@ public slots:
     /// load all trees passing the filter, return number of trees (load only living trees)
     int load(const QString &filter);
 
+    /// clear the list (this does not affect trees loaded)
+    void clear() { mTrees.clear(); }
+
     /// apply a filter on the current tree list. Only trees for which 'filter' returns true remain in the list.
     /// returns the number of tree that remain in the list.
     int filter(QString filter);
