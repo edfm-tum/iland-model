@@ -256,6 +256,15 @@ int BarkBeetleScript::setInfestedFromMap(MapGridWrapper *grid, int key, double p
 
 }
 
+void BarkBeetleScript::setBackgroundInfestationProbability(double new_value)
+{
+    for (BarkBeetleCell *b=mBeetle->mGrid.begin();b!=mBeetle->mGrid.end();++b) {
+        b->backgroundInfestationProbability = new_value;
+    }
+    qDebug() << "BarkBeetle: set backgroundInfestationProbability to" << new_value;
+
+}
+
 bool BarkBeetleScript::simulate()
 {
     return mBeetle->simulate();
