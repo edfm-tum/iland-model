@@ -16,12 +16,15 @@ public:
     void traverseTreeSetElements(const QDomNode& node, int tabIndex, QTabWidget* tabWidget);
 
     void readCommentXml(QPlainTextEdit* commentEdit, const QStringList& xmlPath);
-    void editComment(const QString& objectName);
+    void writeCommentXml(QPlainTextEdit* commentEdit, const QStringList& xmlPath, const QString& comment);
+
+    void editComment(const QStringList& nodeList);
 
 
 private:
-    const QString& xmlFile = xmlFile;
+    const QString& mXmlFile = mXmlFile;
     QWidget* guiWidget;
+    bool mSiblingIsComment;
 
 
 };

@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+//#include "ui/linkxmlqt.h"
+
 namespace Ui {
 class DialogComment;
 }
@@ -17,6 +19,8 @@ public:
 
 private:
     Ui::DialogComment *ui;
+    void acceptComment();
+
 };
 
 #endif // DIALOGCOMMENT_H

@@ -3,7 +3,8 @@
 
 #include <QDialog>
 #include "ui/dialogcomment.h"
-//#include "test/linkxmlqt.h"
+#include "ui/linkxmlqt.h"
+
 
 class LinkXmlQt; // forward
 
@@ -17,6 +18,7 @@ class DialogSystemSettings : public QDialog
 
 public:
     explicit DialogSystemSettings(const QString& xmlFile, QWidget *parent = nullptr);
+    //explicit DialogSystemSettings(LinkXmlQt& Linkxqt, QWidget *parent = nullptr);
     ~DialogSystemSettings();
 
 private:

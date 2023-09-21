@@ -20,7 +20,7 @@ public:
 
 private:
     Ui::ModuleDialog *ui;
-    QString xmlFile;
+    const QString& mXmlFile = mXmlFile;
     void readValuesXml();
     void readValuesXml_2();
     void readValuesXml_3();

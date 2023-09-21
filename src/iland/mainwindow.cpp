@@ -32,6 +32,9 @@
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "settingmetadata.h"
+#include "ui/moduledialog.h"
+#include "ui/dialogsystemsettings.h"
+#include "ui/linkxmlqt.h"
 
 #include "model.h"
 #include "standloader.h"
@@ -249,6 +252,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
             this, SLOT(mouseWheel(const QPoint&, int)));
 
+    connect(ui->button_moduleDialog, SIGNAL(clicked()), this, SLOT(openModuleDialog()));
+    connect(ui->button_systemSettingsDialog, SIGNAL(clicked()), this, SLOT(openSystemSettingsDialog()));
+
     // javascript console
     connect(ui->scriptCode, SIGNAL(executeJS(QString)),
             this, SLOT(executeJS(QString)) );
@@ -294,6 +300,10 @@ MainWindow::MainWindow(QWidget *parent)
             //return;
         }
     }
+
+    //const QString& xmlPath = ui->initFileName->text();
+    //const LinkXmlQt mLinkxqt = *new LinkXmlQt(xmlPath);
+    //LinkXmlQt mLinkxqt = MainWindow::mLinkxqt(ui->initFileName->text());
 
     on_actionEdit_XML_settings_triggered();
 
@@ -385,7 +395,24 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     mRemoteControl.destroy(); // delete model and free resources.
+    //delete mLinkxqt;
     delete ui;
+}
+
+void MainWindow::openModuleDialog()
+{
+    QString xmlFile = ui->initFileName->text();
+    ui_modules = new ModuleDialog(xmlFile, this);
+    //ui_modules = new ModuleDialog(xmlFile);
+    ui_modules->show();
+}
+
+
+void MainWindow::openSystemSettingsDialog()
+{
+    QString xmlFile = ui->initFileName->text();
+    ui_systemSettings = new DialogSystemSettings(xmlFile, this);
+    ui_systemSettings->show();
 }
 
 void MainWindow::batchLog(const QString s)

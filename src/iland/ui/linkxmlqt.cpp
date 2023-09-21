@@ -9,7 +9,7 @@
 #include "ui/dialogcomment.h"
 
 LinkXmlQt::LinkXmlQt(const QString& xmlFile)
-    : xmlFile(xmlFile)
+    : mXmlFile(xmlFile)
 {
 
 }
@@ -18,13 +18,9 @@ LinkXmlQt::~LinkXmlQt(){
 
 }
 
-void LinkXmlQt::editComment(const QString& nameObject) {
-
-}
-
-void LinkXmlQt::readCommentXml(QPlainTextEdit* commentEdit, const QStringList& xmlPath) {
+void LinkXmlQt::editComment(const QStringList& nodeList) {
     QDomDocument curXml;
-    QFile file(xmlFile);
+    QFile file(mXmlFile);
 
     QString errorMsg;
     int errorLine, errorColumn;
@@ -32,29 +28,90 @@ void LinkXmlQt::readCommentXml(QPlainTextEdit* commentEdit, const QStringList& x
     if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
         qDebug() << "Error loading file content. Abort.";
         file.close();
+    }
 
+    //QDomNode curNode;
+    QDomElement curNode = curXml.documentElement();
+    //QDomElement curNode = rootElement;
+    foreach (QString element, nodeList) {
+        curNode = curNode.firstChildElement(element);
+        //qDebug() << curNode.tagName();
+    }
+}
+
+void LinkXmlQt::readCommentXml(QPlainTextEdit* commentEdit, const QStringList& xmlPath) {
+    QDomDocument curXml;
+    QFile file(mXmlFile);
+
+    QString errorMsg;
+    int errorLine, errorColumn;
+
+    if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
+        qDebug() << "Error loading file content. Abort.";
+        file.close();
     }
 
     else {
         QDomElement rootElement = curXml.documentElement();
         QDomElement curNode = rootElement;
-        for (int i = 0; i < xmlPath.size(); ++i ) {
-            curNode = curNode.firstChildElement(xmlPath[i]);
-            }
+        foreach (QString node, xmlPath) {
+            curNode = curNode.firstChildElement(node);
+        }
 
         QDomNode prevSibl = curNode.previousSibling();
             if (prevSibl.isComment()) {
                 QString commentText = prevSibl.toComment().nodeValue();
                 commentEdit->setPlainText(commentText);
+                mSiblingIsComment = true;
                 }
+            else {
+                //commentEdit->setPlainText("Default");
+                mSiblingIsComment = false;
+            }
 
+    }
+}
+
+void LinkXmlQt::writeCommentXml(QPlainTextEdit* commentEdit,
+                                const QStringList& xmlPath,
+                                const QString& comment) {
+
+    QDomDocument curXml;
+    QFile file(mXmlFile);
+
+    QString errorMsg;
+    int errorLine, errorColumn;
+
+    if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
+            qDebug() << "Error loading file content. Abort.";
+            file.close();
+    }
+
+    else {
+            QDomElement rootElement = curXml.documentElement();
+            QDomElement curNode = rootElement;
+            foreach (QString node, xmlPath) {
+                curNode = curNode.firstChildElement(node);
+            }
+
+            QDomNode prevSibl = curNode.previousSibling();
+            if (prevSibl.isComment()) {
+                QString commentText = commentEdit->toPlainText();
+                prevSibl.setNodeValue(commentText);
+                //commentEdit->setPlainText(commentText);
+                mSiblingIsComment = true;
+            }
+            else {
+                //commentEdit->setPlainText("Default");
+                mSiblingIsComment = false;
+            }
 
     }
 }
 
 void LinkXmlQt::readValuesXml(QTabWidget* tabWidget, QString xmlElement) {
     QDomDocument curXml;
-    QFile file(xmlFile);
+    QFile file(mXmlFile);
 
     QString errorMsg;
     int errorLine, errorColumn;

@@ -34,6 +34,10 @@
 #include "paintarea.h"
 #include "viewport.h"
 
+#include "ui/moduledialog.h"
+#include "ui/dialogsystemsettings.h"
+#include "ui/linkxmlqt.h"
+
 class QQuickView;
 class Model;
 class Tree;
@@ -60,6 +64,7 @@ public:
     ~MainWindow();
     Ui::MainWindowClass *uiclass() {return ui; }
     Colors *ruler() { return mRulerColors; }
+
 public slots:
     void repaint(); ///< force a repaint of the main drawing area
     void yearSimulated(int year);
@@ -100,6 +105,12 @@ protected:
 private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
+
+    ModuleDialog *ui_modules;
+    DialogSystemSettings *ui_systemSettings;
+
+    LinkXmlQt *mLinkxqt;
+
     QLabel *mStatusLabel;
     QQuickView *mRuler;
     Colors *mRulerColors;
@@ -145,6 +156,9 @@ private:
     QList<QString> mRecentFileList;
 
 private slots:
+    void openModuleDialog();
+    void openSystemSettingsDialog();
+
     void automaticRun(); ///< automatically start a simulation...
     void updateLabel(); ///< update UI labels during run
 

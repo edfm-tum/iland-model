@@ -6,7 +6,7 @@
 
 
 ModuleDialog::ModuleDialog(const QString& xmlFile, QWidget *parent)
-    : QDialog(parent), ui(new Ui::ModuleDialog), xmlFile(xmlFile)
+    : QDialog(parent), ui(new Ui::ModuleDialog), mXmlFile(xmlFile)
 {
     //XmlHelper helper;
 
@@ -17,7 +17,7 @@ ModuleDialog::ModuleDialog(const QString& xmlFile, QWidget *parent)
     connect(ui->buttonBox_moduleDialog, SIGNAL(rejected()), this, SLOT(closeModuleDialog()));
 
     //readValuesXml();
-    LinkXmlQt linkxqt(xmlFile);
+    LinkXmlQt linkxqt(mXmlFile);
     QTabWidget* moduleTabs = ui->moduleTabs;
     QString element = "modules";
     linkxqt.readValuesXml(moduleTabs, element);

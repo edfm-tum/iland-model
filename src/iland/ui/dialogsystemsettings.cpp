@@ -13,7 +13,8 @@ DialogSystemSettings::DialogSystemSettings(const QString& xmlFile, QWidget *pare
     mXmlFile(xmlFile)
 {
     ui->setupUi(this);
-    mLinkxqt = new  LinkXmlQt(xmlFile);
+
+    mLinkxqt = new LinkXmlQt(mXmlFile);
 
     //connect(ui->buttonBox_systemSettingsDialog, SIGNAL(accepted()), this, SLOT(getModuleInput()));
     connect(ui->path_fileDialog_home, SIGNAL(clicked()), this, SLOT(setPath_home()));
@@ -29,6 +30,7 @@ DialogSystemSettings::DialogSystemSettings(const QString& xmlFile, QWidget *pare
     connect(ui->javascript_fileDialog_fileName, SIGNAL(clicked()), this, SLOT(setJavascript_fileName()));
 
     connect(ui->path_database_commentDialog, &QToolButton::clicked, this, [=]() {editComment(ui->path_database_commentDialog->objectName(), "system");});
+    connect(ui->path_home_commentDialog, &QToolButton::clicked, this, [=]() {editComment(ui->path_home_commentDialog->objectName(), "system");});
     //readValuesXml();
 
     QTabWidget* systemTab = ui->systemTab;
@@ -39,7 +41,7 @@ DialogSystemSettings::DialogSystemSettings(const QString& xmlFile, QWidget *pare
 DialogSystemSettings::~DialogSystemSettings()
 {
     delete ui;
-    delete mLinkxqt;
+    //delete mLinkxqt;
 }
 
 
@@ -62,10 +64,9 @@ void DialogSystemSettings::editComment(const QString& nameObject, const QString 
 
     QPlainTextEdit* commentEdit = ui_comment->findChild<QPlainTextEdit *>();
 
-    //mLinkxqt->editComment();
+    //mLinkxqt->editComment(xmlPath);
 
-
-
+    mLinkxqt->readCommentXml(commentEdit, xmlPath);
 
 }
 
