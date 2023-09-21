@@ -79,7 +79,7 @@ controls how frequent a cell can spread; at least `spreadInterval` years have to
 spread from a cell.
 
 * ### `mortality` (dynamic expression) 
-The cell dies, if the expression (with cell context) returns `true`. 
+The cell dies, if the expression (with cell context) returns `true`. Note that tree lists are not populated automatically (i.e. you need to call cell.reloadTrees() to have access to trees on the cell).
 
 * ### `outbreakDuration` (dynamic expression, optional) 
 The number of years that an outbreak lasts (evaluated at the begin of an outbreak). The value is truncated to an integer.
