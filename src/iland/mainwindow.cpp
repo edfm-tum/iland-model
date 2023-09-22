@@ -301,9 +301,9 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    //const QString& xmlPath = ui->initFileName->text();
-    //const LinkXmlQt mLinkxqt = *new LinkXmlQt(xmlPath);
-    //LinkXmlQt mLinkxqt = MainWindow::mLinkxqt(ui->initFileName->text());
+    QString xmlPath = ui->initFileName->text();
+    mLinkxqt = new LinkXmlQt();
+    mLinkxqt->setXmlPath(xmlPath);
 
     on_actionEdit_XML_settings_triggered();
 
@@ -395,23 +395,24 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     mRemoteControl.destroy(); // delete model and free resources.
-    //delete mLinkxqt;
+    delete mLinkxqt;
     delete ui;
 }
 
 void MainWindow::openModuleDialog()
 {
     QString xmlFile = ui->initFileName->text();
-    ui_modules = new ModuleDialog(xmlFile, this);
-    //ui_modules = new ModuleDialog(xmlFile);
+    //ui_modules = new ModuleDialog(xmlFile, this);
+    ui_modules = new ModuleDialog(mLinkxqt, this);
     ui_modules->show();
 }
 
 
 void MainWindow::openSystemSettingsDialog()
 {
-    QString xmlFile = ui->initFileName->text();
-    ui_systemSettings = new DialogSystemSettings(xmlFile, this);
+    //QString xmlFile = ui->initFileName->text();
+    //ui_systemSettings = new DialogSystemSettings(xmlFile, this);
+    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
     ui_systemSettings->show();
 }
 
@@ -1876,7 +1877,13 @@ void MainWindow::on_openFile_clicked()
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
     ui->iniEdit->setPlainText(xmlFile);
+    mLinkxqt->setXmlPath(fileName);
     checkModelState();
+}
+
+void MainWindow::on_initFileName_editingFinished()
+{
+    mLinkxqt->setXmlPath(ui->initFileName->text());
 }
 
 void MainWindow::on_actionTreelist_triggered()

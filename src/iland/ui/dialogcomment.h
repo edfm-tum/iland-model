@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-//#include "ui/linkxmlqt.h"
+#include "ui/linkxmlqt.h"
 
 namespace Ui {
 class DialogComment;
@@ -14,13 +14,15 @@ class DialogComment : public QDialog
     Q_OBJECT
 
 public:
-    explicit DialogComment(QWidget *parent = nullptr);
+    explicit DialogComment(LinkXmlQt* Linkxqt, const QStringList& xmlPath,QWidget *parent = nullptr);
     ~DialogComment();
 
 private:
     Ui::DialogComment *ui;
+    QPlainTextEdit* mCommentEdit;
     void acceptComment();
-
+    const QStringList mXmlPath;
+    LinkXmlQt* mLinkxqt;
 };
 
 #endif // DIALOGCOMMENT_H

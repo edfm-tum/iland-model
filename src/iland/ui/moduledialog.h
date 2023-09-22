@@ -15,12 +15,13 @@ class ModuleDialog : public QDialog
 
 
 public:
-    explicit ModuleDialog(const QString& xmlFile, QWidget *parent = nullptr);
+    explicit ModuleDialog(LinkXmlQt* Linkxqt, QWidget *parent = nullptr);
     ~ModuleDialog();
 
 private:
     Ui::ModuleDialog *ui;
-    const QString& mXmlFile = mXmlFile;
+    //const QString& mXmlFile = mXmlFile;
+    LinkXmlQt* mLinkxqt;
     void readValuesXml();
     void readValuesXml_2();
     void readValuesXml_3();

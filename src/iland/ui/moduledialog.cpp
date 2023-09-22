@@ -5,8 +5,11 @@
 #include <QDomDocument>
 
 
-ModuleDialog::ModuleDialog(const QString& xmlFile, QWidget *parent)
-    : QDialog(parent), ui(new Ui::ModuleDialog), mXmlFile(xmlFile)
+//ModuleDialog::ModuleDialog(const QString& xmlFile, QWidget *parent)
+ModuleDialog::ModuleDialog(LinkXmlQt* Linkxqt, QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::ModuleDialog),
+    mLinkxqt(Linkxqt)
 {
     //XmlHelper helper;
 
@@ -17,10 +20,10 @@ ModuleDialog::ModuleDialog(const QString& xmlFile, QWidget *parent)
     connect(ui->buttonBox_moduleDialog, SIGNAL(rejected()), this, SLOT(closeModuleDialog()));
 
     //readValuesXml();
-    LinkXmlQt linkxqt(mXmlFile);
+    //LinkXmlQt linkxqt(mXmlFile);
     QTabWidget* moduleTabs = ui->moduleTabs;
     QString element = "modules";
-    linkxqt.readValuesXml(moduleTabs, element);
+    mLinkxqt->readValuesXml(moduleTabs, element);
 
 }
 

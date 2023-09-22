@@ -6,10 +6,9 @@
 #include <QDomDocument>
 #include <QPlainTextEdit>
 
-#include "ui/dialogcomment.h"
 
-LinkXmlQt::LinkXmlQt(const QString& xmlFile)
-    : mXmlFile(xmlFile)
+LinkXmlQt::LinkXmlQt()
+
 {
 
 }
@@ -18,28 +17,14 @@ LinkXmlQt::~LinkXmlQt(){
 
 }
 
-void LinkXmlQt::editComment(const QStringList& nodeList) {
-    QDomDocument curXml;
-    QFile file(mXmlFile);
-
-    QString errorMsg;
-    int errorLine, errorColumn;
-
-    if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
-        qDebug() << "Error loading file content. Abort.";
-        file.close();
-    }
-
-    //QDomNode curNode;
-    QDomElement curNode = curXml.documentElement();
-    //QDomElement curNode = rootElement;
-    foreach (QString element, nodeList) {
-        curNode = curNode.firstChildElement(element);
-        //qDebug() << curNode.tagName();
-    }
+void LinkXmlQt::setXmlPath(const QString xmlPath) {
+    mXmlFile = xmlPath;
 }
 
-void LinkXmlQt::readCommentXml(QPlainTextEdit* commentEdit, const QStringList& xmlPath) {
+
+void LinkXmlQt::readCommentXml(QPlainTextEdit* commentEdit,
+                               const QStringList& xmlPath)
+{
     QDomDocument curXml;
     QFile file(mXmlFile);
 
@@ -68,16 +53,22 @@ void LinkXmlQt::readCommentXml(QPlainTextEdit* commentEdit, const QStringList& x
                 //commentEdit->setPlainText("Default");
                 mSiblingIsComment = false;
             }
-
+    file.close();
     }
+
 }
 
 void LinkXmlQt::writeCommentXml(QPlainTextEdit* commentEdit,
-                                const QStringList& xmlPath,
-                                const QString& comment) {
+                                const QStringList& xmlPath)
 
+{
     QDomDocument curXml;
+
     QFile file(mXmlFile);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Error with File";
+    }
 
     QString errorMsg;
     int errorLine, errorColumn;
@@ -98,6 +89,8 @@ void LinkXmlQt::writeCommentXml(QPlainTextEdit* commentEdit,
             if (prevSibl.isComment()) {
                 QString commentText = commentEdit->toPlainText();
                 prevSibl.setNodeValue(commentText);
+                QDomNode testComment = curXml.createComment(commentText);
+                curXml.insertBefore(testComment, curNode);
                 //commentEdit->setPlainText(commentText);
                 mSiblingIsComment = true;
             }
@@ -105,18 +98,29 @@ void LinkXmlQt::writeCommentXml(QPlainTextEdit* commentEdit,
                 //commentEdit->setPlainText("Default");
                 mSiblingIsComment = false;
             }
-
+        file.close();
+        //QFile testFile("C:/Users/gu47yiy/Documents/iLand/iLand/example/tst.xml");
+        QFile testFile(mXmlFile);
+        testFile.open(QIODevice::WriteOnly | QIODevice::Text);
+        QTextStream outStream(&testFile);
+        curXml.save(outStream, 4);
+        testFile.close();
     }
 }
 
+
 void LinkXmlQt::readValuesXml(QTabWidget* tabWidget, QString xmlElement) {
     QDomDocument curXml;
+
     QFile file(mXmlFile);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Error with File";
+    }
 
     QString errorMsg;
     int errorLine, errorColumn;
 
-    if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
+        if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
         qDebug() << "Error loading file content. Abort.";
         file.close();
     }
@@ -132,11 +136,15 @@ void LinkXmlQt::readValuesXml(QTabWidget* tabWidget, QString xmlElement) {
             traverseTreeSetElements(curBranch.firstChild(), i, tabWidget);
         }
 
+        file.close();
     }
 }
 
 
-void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode, int tabIndex, QTabWidget* widgetElement) {
+void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode,
+                                        int tabIndex,
+                                        QTabWidget* widgetElement)
+{
     QDomNode node = curNode;
     QString nameModule = widgetElement->widget(tabIndex)->objectName();
 
@@ -209,4 +217,12 @@ void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode, int tabIndex, Q
         // Move to the next sibling
         node = node.nextSibling();
     }
+}
+
+
+void LinkXmlQt::writeToXml(QDomDocument& curXml, QFile& xmlFile)
+{
+
+
+
 }

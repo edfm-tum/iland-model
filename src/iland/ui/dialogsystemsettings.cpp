@@ -7,14 +7,14 @@
 
 #include "helper.h"
 
-DialogSystemSettings::DialogSystemSettings(const QString& xmlFile, QWidget *parent) :
+//DialogSystemSettings::DialogSystemSettings(const QString& xmlFile, QWidget *parent) :
+DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogSystemSettings),
-    mXmlFile(xmlFile)
+    mLinkxqt(Linkxqt)
 {
     ui->setupUi(this);
 
-    mLinkxqt = new LinkXmlQt(mXmlFile);
 
     //connect(ui->buttonBox_systemSettingsDialog, SIGNAL(accepted()), this, SLOT(getModuleInput()));
     connect(ui->path_fileDialog_home, SIGNAL(clicked()), this, SLOT(setPath_home()));
@@ -29,13 +29,13 @@ DialogSystemSettings::DialogSystemSettings(const QString& xmlFile, QWidget *pare
     connect(ui->database_fileDialog_climate, SIGNAL(clicked()), this, SLOT(setDatabase_climate()));
     connect(ui->javascript_fileDialog_fileName, SIGNAL(clicked()), this, SLOT(setJavascript_fileName()));
 
-    connect(ui->path_database_commentDialog, &QToolButton::clicked, this, [=]() {editComment(ui->path_database_commentDialog->objectName(), "system");});
-    connect(ui->path_home_commentDialog, &QToolButton::clicked, this, [=]() {editComment(ui->path_home_commentDialog->objectName(), "system");});
-    //readValuesXml();
+    connect(ui->path_database_commentDialog, &QToolButton::clicked, this, [=]() {openCommentDialog(ui->path_database_commentDialog->objectName(), "system");});
+    connect(ui->path_home_commentDialog, &QToolButton::clicked, this, [=]() {openCommentDialog(ui->path_home_commentDialog->objectName(), "system");});
 
     QTabWidget* systemTab = ui->systemTab;
     QString element = "system";
     mLinkxqt->readValuesXml(systemTab, element);
+
 }
 
 DialogSystemSettings::~DialogSystemSettings()
@@ -52,9 +52,7 @@ DialogSystemSettings::~DialogSystemSettings()
 
 //}
 
-void DialogSystemSettings::editComment(const QString& nameObject, const QString submodule) {
-    ui_comment = new DialogComment(this);
-    ui_comment->show();
+void DialogSystemSettings::openCommentDialog(const QString& nameObject, const QString submodule) {
 
     QString currentObject = nameObject;
     QString currentTag = currentObject.remove("_commentDialog");
@@ -62,13 +60,11 @@ void DialogSystemSettings::editComment(const QString& nameObject, const QString 
     QStringList xmlPath = currentTag.split("_");
     xmlPath.prepend(submodule);
 
-    QPlainTextEdit* commentEdit = ui_comment->findChild<QPlainTextEdit *>();
-
-    //mLinkxqt->editComment(xmlPath);
-
-    mLinkxqt->readCommentXml(commentEdit, xmlPath);
+    ui_comment = new DialogComment(mLinkxqt, xmlPath, this);
+    ui_comment->show();
 
 }
+
 
 void DialogSystemSettings::setPath_home()
 {
