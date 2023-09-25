@@ -26,5 +26,6 @@ DialogComment::~DialogComment()
 
 void DialogComment::acceptComment()
 {
-    mLinkxqt->writeCommentXml(mCommentEdit, mXmlPath);
+    QString commentText = mCommentEdit->toPlainText();
+    mLinkxqt->writeCommentXml(commentText, mXmlPath);
 }

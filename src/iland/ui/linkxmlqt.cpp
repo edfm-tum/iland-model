@@ -11,6 +11,7 @@ LinkXmlQt::LinkXmlQt()
 
 {
 
+
 }
 
 LinkXmlQt::~LinkXmlQt(){
@@ -42,23 +43,29 @@ void LinkXmlQt::readCommentXml(QPlainTextEdit* commentEdit,
         foreach (QString node, xmlPath) {
             curNode = curNode.firstChildElement(node);
         }
-
+        QStringList commentListed;
         QDomNode prevSibl = curNode.previousSibling();
-            if (prevSibl.isComment()) {
-                QString commentText = prevSibl.toComment().nodeValue();
-                commentEdit->setPlainText(commentText);
-                mSiblingIsComment = true;
-                }
-            else {
-                //commentEdit->setPlainText("Default");
-                mSiblingIsComment = false;
-            }
+//            if (prevSibl.isComment()) {
+//                QString commentText = prevSibl.toComment().nodeValue();
+//                commentEdit->setPlainText(commentText);
+//                mSiblingIsComment = true;
+//                }
+//            else {
+//                //commentEdit->setPlainText("Default");
+//                mSiblingIsComment = false;
+//            }
+        while (prevSibl.isComment()) {
+            commentListed.prepend(prevSibl.toComment().nodeValue());
+            prevSibl = prevSibl.previousSibling();
+        }
+        commentEdit->setPlainText(commentListed.join("\n"));
+
     file.close();
     }
 
 }
 
-void LinkXmlQt::writeCommentXml(QPlainTextEdit* commentEdit,
+void LinkXmlQt::writeCommentXml(const QString& comment,
                                 const QStringList& xmlPath)
 
 {
@@ -84,20 +91,30 @@ void LinkXmlQt::writeCommentXml(QPlainTextEdit* commentEdit,
             foreach (QString node, xmlPath) {
                 curNode = curNode.firstChildElement(node);
             }
+            //If Qt::SkipEmptyParts is included no empty lines are included as (empty) comments
+            //trimmed() delets trailing and leading whitespaces, leaving internal whitespaces alone
+            QStringList commentSplittedLines = comment.trimmed().split("\n");//, Qt::SkipEmptyParts);
 
-            QDomNode prevSibl = curNode.previousSibling();
-            if (prevSibl.isComment()) {
-                QString commentText = commentEdit->toPlainText();
-                prevSibl.setNodeValue(commentText);
-                QDomNode testComment = curXml.createComment(commentText);
-                curXml.insertBefore(testComment, curNode);
-                //commentEdit->setPlainText(commentText);
-                mSiblingIsComment = true;
-            }
-            else {
-                //commentEdit->setPlainText("Default");
-                mSiblingIsComment = false;
-            }
+            //If comments stretch severa lines, setting new values and replacing them, can be tricky.
+            //Because of that, before a new comment is written, old comment(s) is/are deleted and the new comment(s) added.
+            clearCommentXml(curNode);
+            setComment(curNode, commentSplittedLines);
+
+//            QDomNode prevSibl = curNode.previousSibling();
+//
+//            if (prevSibl.isComment()) {
+//                //QString commentText = commentEdit->toPlainText();
+//                prevSibl.setNodeValue(comment);
+//                //commentEdit->setPlainText(commentText);
+//                mSiblingIsComment = true;
+//            }
+//            else {
+//                //commentEdit->setPlainText("Default");
+//                QDomNode newComment = curXml.createComment(comment);
+//                QDomNode curParentNode = curNode.parentNode();
+//                curParentNode.insertBefore(newComment, curNode);
+//                mSiblingIsComment = false;
+//            }
         file.close();
         //QFile testFile("C:/Users/gu47yiy/Documents/iLand/iLand/example/tst.xml");
         QFile testFile(mXmlFile);
@@ -106,6 +123,26 @@ void LinkXmlQt::writeCommentXml(QPlainTextEdit* commentEdit,
         curXml.save(outStream, 4);
         testFile.close();
     }
+}
+
+void LinkXmlQt::clearCommentXml(QDomNode& curNode) {
+    QDomNode prevSibl = curNode.previousSibling();
+    QDomNode curParentNode = curNode.parentNode();
+    while (prevSibl.isComment()) {
+        curParentNode.removeChild(prevSibl);
+        prevSibl = curNode.previousSibling();
+    }
+}
+
+void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines) {
+    QDomDocument curXml = curNode.ownerDocument();
+
+    foreach(QString comment, commentSplittedLines) {
+        QDomNode newComment = curXml.createComment(comment);
+        QDomNode curParentNode = curNode.parentNode();
+        curParentNode.insertBefore(newComment, curNode);
+    }
+
 }
 
 

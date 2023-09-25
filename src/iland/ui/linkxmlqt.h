@@ -16,16 +16,18 @@ public:
     void traverseTreeSetElements(const QDomNode& node, int tabIndex, QTabWidget* tabWidget);
 
     void readCommentXml(QPlainTextEdit* commentEdit, const QStringList& xmlPath);
-    void writeCommentXml(QPlainTextEdit* commentEdit, const QStringList& xmlPath);
-
+    void writeCommentXml(const QString& comment, const QStringList& xmlPath);
     void setXmlPath(const QString xmlPath);
-
     void writeToXml(QDomDocument& curXml, QFile& xmlFile);
+    void clearCommentXml(QDomNode& curNode);
+    void setComment(QDomNode& curNode, QStringList& commentSplittedLines);
 
 private:
     QString mXmlFile;
     QWidget* guiWidget;
     bool mSiblingIsComment;
+    QDomDocument mLoadedXml;
+    QFile file(QString& xmlFile);
 
 
 
