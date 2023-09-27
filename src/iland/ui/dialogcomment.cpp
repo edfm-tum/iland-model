@@ -15,7 +15,8 @@ DialogComment::DialogComment(LinkXmlQt* Linkxqt, const QStringList& xmlPath, QWi
 
     mCommentEdit = this->findChild<QPlainTextEdit *>();
 
-    mLinkxqt->readCommentXml(mCommentEdit, mXmlPath);
+    //mXmlComment = mLinkxqt->readCommentXml(mXmlPath);
+    mCommentEdit->setPlainText(mLinkxqt->readCommentXml(mXmlPath));
 }
 
 DialogComment::~DialogComment()

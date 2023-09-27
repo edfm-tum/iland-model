@@ -15,7 +15,6 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
 {
     ui->setupUi(this);
 
-
     //connect(ui->buttonBox_systemSettingsDialog, SIGNAL(accepted()), this, SLOT(getModuleInput()));
     connect(ui->path_fileDialog_home, SIGNAL(clicked()), this, SLOT(setPath_home()));
     connect(ui->path_fileDialog_database, SIGNAL(clicked()), this, SLOT(setPath_database()));

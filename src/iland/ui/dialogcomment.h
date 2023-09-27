@@ -23,6 +23,7 @@ private:
     void acceptComment();
     const QStringList mXmlPath;
     LinkXmlQt* mLinkxqt;
+    //QString& mXmlComment;
 };
 
 #endif // DIALOGCOMMENT_H
