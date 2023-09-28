@@ -15,7 +15,7 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
 {
     ui->setupUi(this);
 
-    //connect(ui->buttonBox_systemSettingsDialog, SIGNAL(accepted()), this, SLOT(getModuleInput()));
+    connect(ui->buttonBox_systemSettingsDialog, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeToFile();});
     connect(ui->path_fileDialog_home, SIGNAL(clicked()), this, SLOT(setPath_home()));
     connect(ui->path_fileDialog_database, SIGNAL(clicked()), this, SLOT(setPath_database()));
     connect(ui->path_fileDialog_lip, SIGNAL(clicked()), this, SLOT(setPath_lip()));
@@ -37,19 +37,13 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
 
 }
 
+
 DialogSystemSettings::~DialogSystemSettings()
 {
     delete ui;
     //delete mLinkxqt;
 }
 
-
-//void DialogSystemSettings::test_comment()
-//{
-//    QToolButton* clickedButton = qobject_cast<QToolButton*>(sender());
-//    qDebug() << clickedButton->objectName();
-
-//}
 
 void DialogSystemSettings::openCommentDialog(const QString& nameObject, const QString submodule) {
 

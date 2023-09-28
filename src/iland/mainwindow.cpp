@@ -302,8 +302,8 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     QString xmlPath = ui->initFileName->text();
-    mLinkxqt = new LinkXmlQt();
-    mLinkxqt->setXmlPath(xmlPath);
+    mLinkxqt = new LinkXmlQt(xmlPath);
+    //mLinkxqt->setXmlPath(xmlPath);
 
     on_actionEdit_XML_settings_triggered();
 

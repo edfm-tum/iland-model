@@ -7,72 +7,28 @@
 #include <QPlainTextEdit>
 
 
-LinkXmlQt::LinkXmlQt()
-
+LinkXmlQt::LinkXmlQt(QString xmlFile) :
+    xmlFile(xmlFile)
 {
-
-    //mXmlFileLoaded = loadXmlFile();
-//    QDomDocument curXml;
-//    QFile file(mXmlFile);
-
-//    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-//        qDebug() << "Error with File";
-//        return "";
-//    }
-
-//    QString errorMsg;
-//    int errorLine, errorColumn;
-
-//    if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
-//        qDebug() << "Error loading file content. Abort.";
-//        file.close();
-//    }
+    xmlFileLoaded = loadXmlFile();
 
 }
 
 LinkXmlQt::~LinkXmlQt() {
 
-
-
 }
 
-
-
 void LinkXmlQt::setXmlPath(const QString xmlPath) {
-    mXmlFile = xmlPath;
+    xmlFile = xmlPath;
 }
 
 bool LinkXmlQt::loadXmlFile() {
     QDomDocument curXml;
-    QFile file(mXmlFile);
+    QFile file(xmlFile);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Error with File";
+        qDebug() << "File couldn't be opened. Abort.";
         return false;
-    }
-
-    QString errorMsg;
-    int errorLine, errorColumn;
-
-    if (!mLoadedXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
-        qDebug() << "Error loading file content. Abort.";
-        file.close();
-        return false;
-    }
-    file.close();
-    return true;
-}
-
-
-QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
-{
-    //if (mXmlFileLoaded) {
-    QDomDocument curXml;// = mLoadedXml;
-    QFile file(mXmlFile);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Error with File";
-        return "";
     }
 
     QString errorMsg;
@@ -81,11 +37,23 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
     if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
         qDebug() << "Error loading file content. Abort.";
         file.close();
+        return false;
     }
 
-    else {
-        QDomElement rootElement = curXml.documentElement();
-        QDomElement curNode = rootElement;
+    loadedXml = curXml;
+    file.close();
+    return true;
+}
+
+
+QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
+{
+
+    if ( xmlFileLoaded ) {
+        QDomDocument curXml = loadedXml;
+
+        QDomElement curNode = curXml.documentElement();
+        //QDomElement curNode = rootElement;
         foreach (QString node, xmlPath) {
             curNode = curNode.firstChildElement(node);
         }
@@ -109,6 +77,9 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
         return commentListed.join("\n");
 
     }
+    else {
+        return "Problem";
+    }
 
 }
 
@@ -116,64 +87,24 @@ void LinkXmlQt::writeCommentXml(const QString& comment,
                                 const QStringList& xmlPath)
 
 {
-    QDomDocument curXml;
-
-    QFile file(mXmlFile);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Error with File";
-        return;
-    }
-    else {
-        QTextStream inStream(&file);
-        QString errorMsg;
-        int errorLine, errorColumn;
-
-        if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
-            qDebug() << "Error loading file content. Abort.";
-            file.close();
-        }
-    }
+    QDomDocument curXml = loadedXml;
 
     QDomElement rootElement = curXml.documentElement();
     QDomElement curNode = rootElement;
     foreach (QString node, xmlPath) {
         curNode = curNode.firstChildElement(node);
     }
-    //If Qt::SkipEmptyParts is included no empty lines are included as (empty) comments
+    //If Qt::SkipEmptyParts is set no empty lines are included as (empty) comments
     //trimmed() delets trailing and leading whitespaces, leaving internal whitespaces alone
     QStringList commentSplittedLines = comment.trimmed().split("\n");//, Qt::SkipEmptyParts);
 
-    //If comments stretch severa lines, setting new values and replacing them, can be tricky.
+    //If comments stretch several lines, setting new values and replacing them can be tricky.
     //Because of that, before a new comment is written, old comment(s) is/are deleted and the new comment(s) added.
     clearCommentXml(curNode);
     setComment(curNode, commentSplittedLines);
 
-    //            QDomNode prevSibl = curNode.previousSibling();
-    //
-    //            if (prevSibl.isComment()) {
-    //                //QString commentText = commentEdit->toPlainText();
-    //                prevSibl.setNodeValue(comment);
-    //                //commentEdit->setPlainText(commentText);
-    //                mSiblingIsComment = true;
-    //            }
-    //            else {
-    //                //commentEdit->setPlainText("Default");
-    //                QDomNode newComment = curXml.createComment(comment);
-    //                QDomNode curParentNode = curNode.parentNode();
-    //                curParentNode.insertBefore(newComment, curNode);
-    //                mSiblingIsComment = false;
-    //            }
-    file.close();
-    //QFile testFile("C:/Users/gu47yiy/Documents/iLand/iLand/example/tst.xml");
-    QFile testFile(mXmlFile);
-    testFile.open(QIODevice::WriteOnly | QIODevice::Text);
-
-    QTextStream outStream(&testFile);
-    curXml.save(outStream, 4);
-    testFile.close();
-
 }
+
 
 void LinkXmlQt::clearCommentXml(QDomNode& curNode) {
     QDomNode prevSibl = curNode.previousSibling();
@@ -192,24 +123,17 @@ void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines)
         QDomNode curParentNode = curNode.parentNode();
         curParentNode.insertBefore(newComment, curNode);
     }
-
+    loadedXml = curXml;
 }
 
 
 void LinkXmlQt::readValuesXml(QTabWidget* tabWidget, QString xmlElement) {
-    QDomDocument curXml;
+    QDomDocument curXml = loadedXml;
 
-    QFile file(mXmlFile);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qDebug() << "Error with File";
-    }
-
-    QString errorMsg;
-    int errorLine, errorColumn;
-
-        if (!curXml.setContent(&file, &errorMsg, &errorLine, &errorColumn)) {
-        qDebug() << "Error loading file content. Abort.";
-        file.close();
+    //QFile file(xmlFile);
+    if (!xmlFileLoaded) {
+        qDebug() << "Error with loading data. Check xml file! Abort.";
+        return;
     }
 
     else {
@@ -223,7 +147,6 @@ void LinkXmlQt::readValuesXml(QTabWidget* tabWidget, QString xmlElement) {
             traverseTreeSetElements(curBranch.firstChild(), i, tabWidget);
         }
 
-        file.close();
     }
 }
 
@@ -300,16 +223,28 @@ void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode,
             }
         }
 
-
         // Move to the next sibling
         node = node.nextSibling();
     }
 }
 
 
-void LinkXmlQt::writeToXml(QDomDocument& curXml, QFile& xmlFile)
+void LinkXmlQt::writeToFile(QString xmlFilePath)
 {
+    if (xmlFilePath != "") {
+        this->setXmlPath(xmlFilePath);
+    }
 
+    QFile file(xmlFile);
 
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "File couldn't be opened for writing. Abort.";
+        return;
+    }
+
+    QTextStream outStream(&file);
+    loadedXml.save(outStream, 4);
+
+    file.close();
 
 }

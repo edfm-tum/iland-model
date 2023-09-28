@@ -10,7 +10,7 @@ class LinkXmlQt
 {
 public:
     //LinkXmlQt();
-    explicit LinkXmlQt();
+    explicit LinkXmlQt(QString xmlFileIn);
     ~LinkXmlQt();
     void readValuesXml(QTabWidget* tabWidget, QString xmlElement);
     void traverseTreeSetElements(const QDomNode& node, int tabIndex, QTabWidget* tabWidget);
@@ -18,24 +18,22 @@ public:
     QString readCommentXml(const QStringList& xmlPath);
     void writeCommentXml(const QString& comment, const QStringList& xmlPath);
     void setXmlPath(const QString xmlPath);
-    void writeToXml(QDomDocument& curXml, QFile& xmlFile);
-
+    void writeToFile(QString xmlFilePath = "");
 
 private:
     // Viariables
-    QString mXmlFile;
+    QString xmlFile;
     QWidget* guiWidget;
     bool mSiblingIsComment;
-    QDomDocument mLoadedXml;
+
     QFile mFile(QString& xmlFile);
-    bool mXmlFileLoaded;
+    bool xmlFileLoaded;
+    QDomDocument loadedXml;
 
     // Functions
     void clearCommentXml(QDomNode& curNode);
     void setComment(QDomNode& curNode, QStringList& commentSplittedLines);
     bool loadXmlFile();
-
-
 
 };
 
