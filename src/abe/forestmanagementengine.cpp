@@ -120,6 +120,8 @@ void ForestManagementEngine::setupScripting()
 
     QString file_name = GlobalSettings::instance()->path(xml.value("model.management.abe.file"));
     QString code = Helper::loadTextFile(file_name);
+    if (code.isEmpty())
+        throw IException("Loading of ABE script file '"  + file_name + "'failed; file missing or empty.");
     qCDebug(abeSetup) << "Loading script file" << file_name;
     QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code,file_name);
     if (result.isError()) {

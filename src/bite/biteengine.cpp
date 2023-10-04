@@ -81,6 +81,9 @@ void BiteEngine::setup()
     mRunning = true;
 
     QString code = Helper::loadTextFile(file_name);
+    if (code.isEmpty())
+        throw IException("Loading of BITE script file '"  + file_name + "'failed; file missing or empty.");
+
     qCDebug(biteSetup) << "Loading script file" << file_name;
     QJSValue result = GlobalSettings::instance()->scriptEngine()->evaluate(code, file_name);
     mRunning = false;
