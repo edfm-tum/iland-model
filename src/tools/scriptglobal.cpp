@@ -21,6 +21,7 @@
 #include <QTextEdit>
 #endif
 #include <QJSValue>
+#include <QtGlobal>
 #include "global.h"
 #include "scriptglobal.h"
 #include "model.h"
@@ -207,16 +208,21 @@ bool ScriptGlobal::fileExists(QString fileName)
 
 void ScriptGlobal::systemCmd(QString command)
 {
+#ifdef Q_OS_WASM
     qDebug() << "running system command:" << command;
-    QProcess process;
+/*    QProcess process;
     process.start(command);
     process.waitForFinished(); // will wait forever until finished
 
     QByteArray res_stdout = process.readAllStandardOutput();
     QByteArray res_stderr = process.readAllStandardError();
     qDebug() << "result (stdout):" << res_stdout;
-    qDebug() << "result (stderr):" << res_stderr;
+    qDebug() << "result (stderr):" << res_stderr; */
+#else
+    qDebug() << "not supported on WASM";
+#endif
 }
+
 
 /// add trees on given resource unit
 /// @param content init file in a string (containing headers)

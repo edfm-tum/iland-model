@@ -244,7 +244,7 @@ void BiteAgent::run()
 
     // step 2: run cell-by-cell functions parallel
     try {
-        GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells);
+        GlobalSettings::instance()->model()->threadExec().run<BiteCell>( &BiteAgent::runCell, mCells, true);
     } catch (const IException &e) {
         qCWarning(bite) << "An error occured while running the agent" << name() << ":" << e.what();
         throw IException(QString("Bite: Error while running agent: %1: %2").arg(name()).arg(e.what()));
