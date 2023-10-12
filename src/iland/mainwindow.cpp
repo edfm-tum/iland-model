@@ -410,8 +410,9 @@ void MainWindow::openModuleDialog()
 
 void MainWindow::openSystemSettingsDialog()
 {
-    //QString xmlFile = ui->initFileName->text();
+    QString xmlFile = ui->initFileName->text();
     //ui_systemSettings = new DialogSystemSettings(xmlFile, this);
+    bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
     ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
     ui_systemSettings->show();
 }

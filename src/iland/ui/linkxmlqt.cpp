@@ -10,7 +10,7 @@
 LinkXmlQt::LinkXmlQt(QString xmlFile) :
     xmlFile(xmlFile)
 {
-    xmlFileLoaded = loadXmlFile();
+    xmlFileLoaded = loadXmlFile(xmlFile);
 
 }
 
@@ -18,13 +18,16 @@ LinkXmlQt::~LinkXmlQt() {
 
 }
 
+
 void LinkXmlQt::setXmlPath(const QString xmlPath) {
     xmlFile = xmlPath;
 }
 
-bool LinkXmlQt::loadXmlFile() {
+
+bool LinkXmlQt::loadXmlFile(const QString xmlPath) {
     QDomDocument curXml;
-    QFile file(xmlFile);
+    setXmlPath(xmlPath);
+    QFile file(xmlPath);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "File couldn't be opened. Abort.";
@@ -127,8 +130,9 @@ void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines)
 }
 
 
-void LinkXmlQt::readValuesXml(QTabWidget* tabWidget, QString xmlElement) {
+void LinkXmlQt::readValuesXml(QTabWidget* tabWidget) {
     QDomDocument curXml = loadedXml;
+    QString xmlElement = tabWidget->objectName().remove("Tab");
 
     //QFile file(xmlFile);
     if (!xmlFileLoaded) {
@@ -144,14 +148,38 @@ void LinkXmlQt::readValuesXml(QTabWidget* tabWidget, QString xmlElement) {
         for (int i = 0; i < tabWidget->count(); i++) {
             QString currentTab = tabWidget->widget(i)->objectName();
             QDomElement curBranch = moduleBranch.firstChildElement(currentTab);
-            traverseTreeSetElements(curBranch.firstChild(), i, tabWidget);
+            traverseTreeSetElementsGui(curBranch.firstChild(), i, tabWidget);
+        }
+
+    }
+}
+
+void LinkXmlQt::writeValuesXml(QTabWidget* tabWidget) {
+    QDomDocument curXml = loadedXml;
+    QString xmlElement = tabWidget->objectName().remove("Tab");
+
+    //QFile file(xmlFile);
+    if (!xmlFileLoaded) {
+        qDebug() << "Error with loading data. Check xml file! Abort.";
+        return;
+    }
+
+    else {
+        //QTabWidget* moduleTabs = tabWidget;
+        QDomElement rootElement = curXml.documentElement();
+        QDomElement moduleBranch = rootElement.firstChildElement(xmlElement);
+
+        for (int i = 0; i < tabWidget->count(); i++) {
+            QString currentTab = tabWidget->widget(i)->objectName();
+            QDomElement curBranch = moduleBranch.firstChildElement(currentTab);
+            traverseTreeSetElementsXml(curBranch.firstChild(), i, tabWidget);
         }
 
     }
 }
 
 
-void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode,
+void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& curNode,
                                         int tabIndex,
                                         QTabWidget* widgetElement)
 {
@@ -160,14 +188,15 @@ void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode,
 
     while (!node.isNull()) {
         if (node.isElement()) {
-            QDomElement element = node.toElement();
+            //QDomElement element = node.toElement();
             //qDebug() << QString("Element: %1").arg(element.tagName());
 
             // Recurse into child nodes
-            traverseTreeSetElements(node.firstChild(), tabIndex, widgetElement);
+            traverseTreeSetElementsGui(node.firstChild(), tabIndex, widgetElement);
         } else if (node.isText()) {
             QString curValue = node.toText().data();
-            QString curTag = node.parentNode().toElement().tagName();
+            //QString curTag = node.parentNode().toElement().tagName();
+            QString curTag = node.parentNode().nodeName();
             QString widgetName = nameModule + '_' + curTag;
             QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
 
@@ -204,6 +233,7 @@ void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode,
                     else if (curValue == "false" || curValue == "False" || curValue == "0") {
                         checkBox->setChecked(FALSE);
                     }
+                }
                 else if (QTableWidget* table = dynamic_cast<QTableWidget*>(w)) {
                         QTableWidgetItem* item;
                         int tableRows = table->rowCount();
@@ -217,6 +247,68 @@ void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode,
                         }
                     }
                 }
+                else {
+                    qDebug() << "Could not find GUI element for variable " << widgetName;
+                }
+        }
+
+        // Move to the next sibling
+        node = node.nextSibling();
+    }
+}
+
+void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& curNode,
+                                        int tabIndex,
+                                        QTabWidget* widgetElement)
+{
+
+    QDomNode node = curNode;
+    QString nameModule = widgetElement->widget(tabIndex)->objectName();
+    QString elementValue;
+
+    while (!node.isNull()) {
+        if (node.isElement()) {
+
+            // Recurse into child nodes
+            traverseTreeSetElementsXml(node.firstChild(), tabIndex, widgetElement);
+        } else if (node.isText()) {
+            //QString curValue = node.toText().data();
+            QString curTag = node.parentNode().nodeName();
+            QString widgetName = nameModule + '_' + curTag;
+            QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
+
+            if (w != nullptr) {
+                //qDebug() << widgetName << ", " << w->metaObject()->className();
+                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(w)) {
+                    //lineEdit->setText(curValue);
+                    elementValue = lineEdit->text();
+                }
+                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(w)) {
+                    elementValue = comboBox->currentText();
+
+                }
+                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(w)) {
+                    if (checkBox->isChecked()) {
+                        elementValue = "true";
+                    }
+                    else {
+                        elementValue = "false";
+                    }
+                }
+                else if (QTableWidget* table = dynamic_cast<QTableWidget*>(w)) {
+                    QTableWidgetItem* item;
+                    int tableRows = table->rowCount();
+                    int tableColumns = table->columnCount();
+                    for (int i = 0; i < tableRows; i++) {
+                        for (int n = 0; n < tableColumns; n++) {
+                            item = table->item(i, n);
+                            QString curElem = item->text();
+                            qDebug() << "row: " << i << ", column: " << n << ", item.text: " << curElem;
+                        }
+                    }
+                }
+
+                node.setNodeValue(elementValue);
             }
             else {
                 qDebug() << "Could not find GUI element for variable " << widgetName;
@@ -227,7 +319,6 @@ void LinkXmlQt::traverseTreeSetElements(const QDomNode& curNode,
         node = node.nextSibling();
     }
 }
-
 
 void LinkXmlQt::writeToFile(QString xmlFilePath)
 {

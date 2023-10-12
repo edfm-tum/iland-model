@@ -12,10 +12,13 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
     QDialog(parent),
     ui(new Ui::DialogSystemSettings),
     mLinkxqt(Linkxqt)
+
+
 {
     ui->setupUi(this);
 
-    connect(ui->buttonBox_systemSettingsDialog, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeToFile();});
+    //connect(ui->buttonBox_systemSettingsDialog, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeToFile();});
+    connect(ui->buttonBox_systemSettingsDialog, &QDialogButtonBox::accepted, this, [=]() {acceptChanges();});
     connect(ui->path_fileDialog_home, SIGNAL(clicked()), this, SLOT(setPath_home()));
     connect(ui->path_fileDialog_database, SIGNAL(clicked()), this, SLOT(setPath_database()));
     connect(ui->path_fileDialog_lip, SIGNAL(clicked()), this, SLOT(setPath_lip()));
@@ -31,9 +34,9 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
     connect(ui->path_database_commentDialog, &QToolButton::clicked, this, [=]() {openCommentDialog(ui->path_database_commentDialog->objectName(), "system");});
     connect(ui->path_home_commentDialog, &QToolButton::clicked, this, [=]() {openCommentDialog(ui->path_home_commentDialog->objectName(), "system");});
 
-    QTabWidget* systemTab = ui->systemTab;
+    mSystemTab = ui->systemTab;
     QString element = "system";
-    mLinkxqt->readValuesXml(systemTab, element);
+    mLinkxqt->readValuesXml(mSystemTab);
 
 }
 
@@ -44,6 +47,11 @@ DialogSystemSettings::~DialogSystemSettings()
     //delete mLinkxqt;
 }
 
+void DialogSystemSettings::acceptChanges() {
+    mLinkxqt->writeValuesXml(mSystemTab);
+    mLinkxqt->writeToFile();
+
+}
 
 void DialogSystemSettings::openCommentDialog(const QString& nameObject, const QString submodule) {
 

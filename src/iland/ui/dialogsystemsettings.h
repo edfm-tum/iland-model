@@ -27,6 +27,12 @@ private:
     //QString mXmlFile;
     void openCommentDialog(const QString& nameObject, const QString submodule);
     LinkXmlQt* mLinkxqt;
+    void acceptChanges();
+    QTabWidget* mSystemTab;
+
+
+//protected:
+
 
 private slots:
     void setPath_home();

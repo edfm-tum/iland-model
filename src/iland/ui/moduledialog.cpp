@@ -23,7 +23,7 @@ ModuleDialog::ModuleDialog(LinkXmlQt* Linkxqt, QWidget *parent) :
     //LinkXmlQt linkxqt(mXmlFile);
     QTabWidget* moduleTabs = ui->moduleTabs;
     QString element = "modules";
-    mLinkxqt->readValuesXml(moduleTabs, element);
+    mLinkxqt->readValuesXml(moduleTabs);
 
 }
 
