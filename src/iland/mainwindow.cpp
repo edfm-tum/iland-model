@@ -403,6 +403,7 @@ void MainWindow::openModuleDialog()
 {
     QString xmlFile = ui->initFileName->text();
     //ui_modules = new ModuleDialog(xmlFile, this);
+    bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
     ui_modules = new ModuleDialog(mLinkxqt, this);
     ui_modules->show();
 }

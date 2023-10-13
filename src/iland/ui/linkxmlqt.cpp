@@ -199,6 +199,7 @@ void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& curNode,
             QString curTag = node.parentNode().nodeName();
             QString widgetName = nameModule + '_' + curTag;
             QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
+            QList<QTableWidget *> tableList = widgetElement->widget(tabIndex)->findChildren<QTableWidget *>();
 
             if (w != nullptr) {
                 //qDebug() << widgetName << ", " << w->metaObject()->className();
@@ -234,22 +235,47 @@ void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& curNode,
                         checkBox->setChecked(FALSE);
                     }
                 }
-                else if (QTableWidget* table = dynamic_cast<QTableWidget*>(w)) {
-                        QTableWidgetItem* item;
-                        int tableRows = table->rowCount();
-                        int tableColumns = table->columnCount();
-                        for (int i = 0; i < tableRows; i++) {
-                            for (int n = 0; n < tableColumns; n++) {
-                                item = table->item(i, n);
-                                QString curElem = item->text();
-                                qDebug() << "row: " << i << ", column: " << n << ", item.text: " << curElem;
+//                else if (QTableWidget* table = dynamic_cast<QTableWidget*>(w)) {
+//                        QTableWidgetItem* item;
+//                        int tableRows = table->rowCount();
+//                        int tableColumns = table->columnCount();
+//                        for (int i = 0; i < tableRows; i++) {
+//                            for (int n = 0; n < tableColumns; n++) {
+//                                item = table->item(i, n);
+//                                QString curElem = item->text();
+//                                qDebug() << "row: " << i << ", column: " << n << ", item.text: " << curElem;
+//                            }
+//                        }
+//                    }
+            }
+            else if (w == nullptr && !tableList.isEmpty()) {
+                //QTableWidgetItem* item;
+                QStringList columnValues = curValue.split(",");
+                foreach (QTableWidget* table, tableList) {
+                    int numberInputValues = columnValues.length();
+                    int columnNumber = qMax(numberInputValues, table->columnCount());
+                    table->setColumnCount(columnNumber);
+                    int rowNumber = table->rowCount();
+                    for (int i = 0; i < rowNumber; i++) {
+                        QString horHeader = table->verticalHeaderItem(i)->whatsThis();
+                        if (horHeader == widgetName) {
+                            for (int n = 0; n < columnNumber; n++) {
+                                QTableWidgetItem* item = new QTableWidgetItem();
+                                if (n >= numberInputValues) {
+                                    item->setText("");
+                                } else {
+                                    item->setText(columnValues[n].trimmed());
+                                }
+                                table->setItem(i, n, item);
                             }
                         }
                     }
                 }
-                else {
-                    qDebug() << "Could not find GUI element for variable " << widgetName;
-                }
+
+            }
+            else {
+                qDebug() << "Could not find GUI element for variable " << widgetName;
+            }
         }
 
         // Move to the next sibling
@@ -276,6 +302,7 @@ void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& curNode,
             QString curTag = node.parentNode().nodeName();
             QString widgetName = nameModule + '_' + curTag;
             QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
+            QList<QTableWidget *> tableList = widgetElement->widget(tabIndex)->findChildren<QTableWidget *>();
 
             if (w != nullptr) {
                 //qDebug() << widgetName << ", " << w->metaObject()->className();
@@ -295,20 +322,31 @@ void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& curNode,
                         elementValue = "false";
                     }
                 }
-                else if (QTableWidget* table = dynamic_cast<QTableWidget*>(w)) {
-                    QTableWidgetItem* item;
-                    int tableRows = table->rowCount();
-                    int tableColumns = table->columnCount();
-                    for (int i = 0; i < tableRows; i++) {
-                        for (int n = 0; n < tableColumns; n++) {
-                            item = table->item(i, n);
-                            QString curElem = item->text();
-                            qDebug() << "row: " << i << ", column: " << n << ", item.text: " << curElem;
+
+                node.setNodeValue(elementValue);
+            }
+            else if (w == nullptr && !tableList.isEmpty()) {
+                //QTableWidgetItem* item;
+                //QStringList columnValues = curValue.split(",");
+                foreach (QTableWidget* table, tableList) {
+                    int columnNumber = table->columnCount();
+                    int rowNumber = table->rowCount();
+                    for (int i = 0; i < rowNumber; i++) {
+                        QString horHeader = table->verticalHeaderItem(i)->whatsThis();
+                        if (horHeader == widgetName) {
+                            QStringList columnValues;
+                            for (int n = 0; n < columnNumber; n++) {
+                                QTableWidgetItem* curItem = table->item(i, n);
+                                if ((curItem != nullptr)) {
+                                    QString itemText = curItem->text();
+                                    if (itemText != "") {columnValues.append(itemText);}
+                                }
+                            }
+                        node.setNodeValue(columnValues.join(","));
                         }
                     }
                 }
 
-                node.setNodeValue(elementValue);
             }
             else {
                 qDebug() << "Could not find GUI element for variable " << widgetName;

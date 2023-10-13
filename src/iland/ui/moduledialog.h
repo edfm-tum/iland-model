@@ -22,17 +22,18 @@ private:
     Ui::ModuleDialog *ui;
     //const QString& mXmlFile = mXmlFile;
     LinkXmlQt* mLinkxqt;
-    void readValuesXml();
-    void readValuesXml_2();
-    void readValuesXml_3();
     QMap<QString, QString> traverseNode(const QDomNode& node, QString& nameModule);
     void traverseTreeSetElements(const QDomNode& node, int tabIndex, QTabWidget* widget);
     void setWidget(const QDomNode& node, QString nameModule);
+    QTabWidget* mModuleTabs;
+    void acceptChanges();
+
 
 private slots:
-    void getModuleInput();
+    //void getModuleInput();
     void closeModuleDialog();
 
+    void on_button_addColumn_clicked();
 };
 
 #endif // MODULEDIALOG_H

@@ -1253,10 +1253,16 @@
             <property name="text">
              <string>Seasonal Precipitation Sum</string>
             </property>
+            <property name="whatsThis">
+             <string>barkbeetle_seasonalPrecipSum</string>
+            </property>
            </row>
            <row>
             <property name="text">
              <string>Seasonal Temperature Average</string>
+            </property>
+            <property name="whatsThis">
+             <string>barkbeetle_seasonalTemperatureAverage</string>
             </property>
            </row>
            <column>
@@ -1274,6 +1280,9 @@
            <item row="0" column="0">
             <property name="text">
              <string>305.3</string>
+            </property>
+            <property name="whatsThis">
+             <string/>
             </property>
            </item>
            <item row="0" column="1">
