@@ -5,8 +5,8 @@
 
 
 ; Outputs
-output.dynamic.enabled = bool,false,"description asdfasdfs"
-output.dynamic.columns = false
+output.dynamic.enabled = bool,false,description asdfasdfs
+output.dynamic.columns = float,,tool tip,label
 output.dynamic = false
 output.tree.enabled = false
 output.tree.filter = false

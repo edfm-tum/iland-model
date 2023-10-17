@@ -45,6 +45,10 @@ void SettingMetaData::checkXMLFile(const QString fileName)
     QStringList existingKeys = set.allKeys();
 
 
+    foreach (QString key, existingKeys) {
+        qDebug() << "Key,Value ausm File: " << key << ", " << set.value(key) << "\n";
+    }
+
     // Check for keys in XML - File
     qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";
     qDebug() << "=========================================================";

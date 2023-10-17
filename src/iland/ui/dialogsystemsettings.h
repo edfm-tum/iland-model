@@ -7,6 +7,7 @@
 
 
 class LinkXmlQt; // forward
+//class genericInputWidget;
 
 namespace Ui {
 class DialogSystemSettings;

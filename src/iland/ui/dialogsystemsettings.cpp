@@ -4,8 +4,11 @@
 #include "ui/linkxmlqt.h"
 #include "ui_dialogsystemsettings.h"
 #include "ui/dialogcomment.h"
+#include "ui/genericinputwidget.h"
 
 #include "helper.h"
+
+
 
 //DialogSystemSettings::DialogSystemSettings(const QString& xmlFile, QWidget *parent) :
 DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) :
@@ -37,6 +40,26 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
     mSystemTab = ui->systemTab;
     QString element = "system";
     mLinkxqt->readValuesXml(mSystemTab);
+
+    QWidget *testTab = new QWidget(mSystemTab);
+
+    mSystemTab->addTab(testTab, "test");
+
+    QVBoxLayout *testLay = new QVBoxLayout(testTab);
+    testLay->setAlignment(Qt::AlignTop);
+
+
+    //QLayout *gridLay = mSystemTab->widget(3)->layout();
+
+    genericInputWidget *genericInput1 = new genericInputWidget(mSystemTab->widget(4), "string", "testSTring");
+    genericInputWidget *genericInput2 = new genericInputWidget(mSystemTab->widget(4), "bool", "testBool");
+    genericInputWidget *genericInput3 = new genericInputWidget(mSystemTab->widget(4), "path", "testPath");
+
+
+    testLay->addWidget(genericInput1);
+    testLay->addWidget(genericInput2);
+    testLay->addWidget(genericInput3);
+    //testLay->
 
 }
 

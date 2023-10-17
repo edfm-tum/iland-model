@@ -33,7 +33,7 @@ private slots:
     //void getModuleInput();
     void closeModuleDialog();
 
-    void on_button_addColumn_clicked();
+    //void on_button_addColumn_clicked();
 };
 
 #endif // MODULEDIALOG_H

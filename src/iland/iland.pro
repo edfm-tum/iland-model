@@ -233,6 +233,7 @@ SOURCES += main.cpp \
     ../bite/biteoutputitem.cpp \
     ui/dialogcomment.cpp \
     ui/dialogsystemsettings.cpp \
+    ui/genericinputwidget.cpp \
     ui/linkxmlqt.cpp \
     ui/moduledialog.cpp
 
@@ -367,6 +368,7 @@ HEADERS += mainwindow.h \
     ../bite/biteoutputitem.h \
     ui/dialogcomment.h \
     ui/dialogsystemsettings.h \
+    ui/genericinputwidget.h \
     ui/linkxmlqt.h \
     ui/moduledialog.h
 FORMS += mainwindow.ui \

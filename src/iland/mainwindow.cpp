@@ -403,7 +403,8 @@ void MainWindow::openModuleDialog()
 {
     QString xmlFile = ui->initFileName->text();
     //ui_modules = new ModuleDialog(xmlFile, this);
-    bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
+    //bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
+    mLinkxqt->loadXmlFile(xmlFile);
     ui_modules = new ModuleDialog(mLinkxqt, this);
     ui_modules->show();
 }
@@ -413,7 +414,7 @@ void MainWindow::openSystemSettingsDialog()
 {
     QString xmlFile = ui->initFileName->text();
     //ui_systemSettings = new DialogSystemSettings(xmlFile, this);
-    bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
+    mLinkxqt->loadXmlFile(xmlFile);
     ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
     ui_systemSettings->show();
 }
