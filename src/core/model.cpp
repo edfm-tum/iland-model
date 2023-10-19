@@ -598,13 +598,7 @@ void Model::loadProject()
         mBiteEngine = BITE::BiteEngine::instance();
         mBiteEngine->setup();
     }
-    // microclimate
-    if (Model::settings().microclimateEnabled) {
-        MicroclimateVisualizer::setupVisualization();
-        DebugTimer t("Microclimate setup");
-        executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
 
-    }
 
 }
 
@@ -741,6 +735,14 @@ void Model::beforeRun()
         // load the first year of the climate database
         foreach(Climate *c, mClimates)
             c->nextYear();
+
+    }
+
+    // microclimate
+    if (Model::settings().microclimateEnabled) {
+        MicroclimateVisualizer::setupVisualization();
+        DebugTimer t("Microclimate setup");
+        executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
 
     }
 

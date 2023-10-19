@@ -191,8 +191,6 @@ private slots:
     void on_pbSetAsDebug_clicked();
 
 
-    void on_actionEdit_XML_settings_triggered();
-
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
     void mouseMove(const QPoint& pos);

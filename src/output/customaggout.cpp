@@ -92,6 +92,7 @@ void CustomAggOutLevel::setup()
 
 
     QString entity_filter = settings().value(".entityfilter","");
+    QString level_filter = settings().value(".levelfilter","");
     QString fieldList = settings().value(".columns", "");
     QString condition = settings().value(".filter", "");
 
@@ -115,6 +116,7 @@ void CustomAggOutLevel::setup()
         return;
     mEntityFilter.setExpression(entity_filter);
     mCondition.setExpression(condition);
+    mLevelFilter.setExpression(level_filter);
 
     mStandGrid = GlobalSettings::instance()->model()->standGrid();
 
@@ -238,6 +240,10 @@ void CustomAggOutLevel::runTrees()
         const QList<ResourceUnit*> &ru_list = GlobalSettings::instance()->model()->ruList();
         for (int i=0;i<ru_list.size();++i) {
             data.clear();
+            if (!mLevelFilter.isEmpty()) {
+                if (!mLevelFilter.calculateBool(ru_list[i]->id()))
+                    continue;
+            }
 
             // loop over all trees
             QVector<Tree> &trees = ru_list[i]->trees();
@@ -261,6 +267,11 @@ void CustomAggOutLevel::runTrees()
 
         QList<int> ids = mStandGrid->mapIds();
         for (int i=0;i<ids.size();++i) {
+            if (!mLevelFilter.isEmpty()) {
+                if (!mLevelFilter.calculateBool(ids[i]))
+                    continue;
+            }
+
             data.clear();
             // skip stands with Ids < 1 (empty, out of project area)
             if (ids[i] <= 0)
@@ -315,7 +326,10 @@ void CustomAggOutLevel::runSaplings()
     case CustomAggOut::sRU: {
         // loop over all trees in the landsacpe
         foreach (ResourceUnit *ru, GlobalSettings::instance()->model()->ruList()) {
-
+            if (!mLevelFilter.isEmpty()) {
+                if (!mLevelFilter.calculateBool(ru->id()))
+                    continue;
+            }
             data.clear(); // reset data for each resource unit
 
             SaplingCell *s = ru->saplingCellArray();
@@ -336,6 +350,11 @@ void CustomAggOutLevel::runSaplings()
 
         QList<int> ids = mStandGrid->mapIds();
         for (int i=0;i<ids.size();++i) {
+            if (!mLevelFilter.isEmpty()) {
+                if (!mLevelFilter.calculateBool(ids[i]))
+                    continue;
+            }
+
             data.clear();
             // skip stands with Ids < 1 (empty, out of project area)
             if (ids[i] <= 0)

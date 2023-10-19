@@ -159,7 +159,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionEdit_XML_settings"/>
    <addaction name="separator"/>
    <addaction name="actionModelCreate"/>
    <addaction name="actionModelDestroy"/>
@@ -1119,15 +1118,6 @@ QProgressBar::chunk {
     </layout>
    </widget>
   </widget>
-  <action name="actionEdit_XML_settings">
-   <property name="icon">
-    <iconset resource="res/iland.qrc">
-     <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
-   </property>
-   <property name="text">
-    <string>XML settings</string>
-   </property>
-  </action>
   <action name="actionTreelist">
    <property name="text">
     <string>treelist</string>

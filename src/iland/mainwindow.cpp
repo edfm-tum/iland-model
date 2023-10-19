@@ -295,7 +295,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    on_actionEdit_XML_settings_triggered();
+    ui->editStack->setCurrentIndex(0); // always switch to first tab
 
     qDebug() << "threadcount: " << QThread::idealThreadCount();
 
@@ -1725,11 +1725,6 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
 
 
 
-void MainWindow::on_actionEdit_XML_settings_triggered()
-{
-    ui->editStack->setCurrentIndex(0);
-    ui->PaintWidget->update();
-}
 
 QMutex mutex_yearSimulated;
 void MainWindow::yearSimulated(int year)

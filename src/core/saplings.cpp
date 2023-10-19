@@ -109,7 +109,6 @@ void Saplings::establishment(const ResourceUnit *ru)
     for (int i=0;i<cPxPerHectare;++i)
         lif_corr[i]=-1.;
 
-    QVector< QPair<double, double> > clim_buffered;
 
     int species_idx;
     QVector<int>::const_iterator sbegin, send;
@@ -135,7 +134,7 @@ void Saplings::establishment(const ResourceUnit *ru)
             continue;
 
         // calculate the abiotic environment (TACA) (this could also trigger the execution of the water cycle)
-        rus->establishment().calculateAbioticEnvironment(clim_buffered);
+        rus->establishment().calculateAbioticEnvironment();
         double abiotic_env = rus->establishment().abioticEnvironment();
         if (abiotic_env==0.) {
             rus->establishment().writeDebugOutputs();
