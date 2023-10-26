@@ -29,6 +29,7 @@
 
 #include "global.h"
 #include "mainwindow.h"
+#include "ui/genericinputwidget.h"
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "settingmetadata.h"
@@ -389,6 +390,23 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logOutput->setFont(font);
     //qDebug() << "mainwindow init done";
 
+    // List of dialogs to create
+    QStringList dialogList = QStringList() << "Modules" << "System";
+    // List of lists with tabs to include
+    QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
+    QStringList systemList = QStringList() << "path" << "database" << "logging" << "settings" << "javascript";
+    QList<QStringList> tabList;
+    tabList.append(modulesList);
+    tabList.append(systemList);
+
+    // import all variables, their types, default values, etc defined in metadata.txt
+    metadata meta;
+    processMetaData(meta);
+
+    for (int i = 0; i < dialogList.length(); i++) {
+        createDialog(dialogList[i], tabList[i], meta);
+    }
+
 }
 
 
@@ -397,6 +415,78 @@ MainWindow::~MainWindow()
     mRemoteControl.destroy(); // delete model and free resources.
     delete mLinkxqt;
     delete ui;
+}
+
+void MainWindow::processMetaData(metadata &meta) {
+
+    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
+    QStringList existingKeys = set.allKeys();
+
+    foreach (QString key, existingKeys) {
+        meta.elements.append(key);
+        QStringList curValue = set.value(key).toStringList();
+        meta.inputType.append(curValue[0]);
+        if (!key.contains("modules.fire")) {
+            meta.defaultValue.append("curValue[1]");
+            meta.labelName.append("curValue[2]");
+            meta.toolTip.append("curValue[3]");
+        }
+        else {
+            meta.defaultValue.append(curValue[1]);
+            meta.labelName.append(curValue[2]);
+            meta.toolTip.append(curValue[3]);
+        }
+    }
+
+}
+
+void MainWindow::createDialog(const QString& dialogName,
+                              QStringList tabs,
+                              metadata& meta) {
+
+    // Create button and add to ruler layout
+    QPushButton *openDialogButton = new QPushButton(this);
+    openDialogButton->setText(dialogName + " Settings");
+
+    // Create dialog
+    QDialog *newDialog = new QDialog(this);
+    QVBoxLayout *dialogLay = new QVBoxLayout(newDialog);
+    QTabWidget *dialogTabs = new QTabWidget(newDialog);
+
+    dialogLay->addWidget(dialogTabs);
+
+    foreach (const QString& tab, tabs) {
+        QWidget *newTab = new QWidget(dialogTabs);
+        dialogTabs->addTab(newTab, tab);
+        QVBoxLayout *tabLay = new QVBoxLayout(newTab);
+        //QGridLayout *tabLay = new QGridLayout(newTab);
+        tabLay->setAlignment(Qt::AlignTop);
+
+        for (int i = 0; i < meta.elements.length(); i++) {
+            QString element = meta.elements[i];
+            QStringList xmlPath = element.split(".");
+            if ((xmlPath.length() > 2) && (meta.inputType[i] != "noInput")) {
+                if (xmlPath[0] == dialogName.toLower() && xmlPath[1] == tab.toLower()) {
+                    genericInputWidget *newInputWidget = new genericInputWidget(mLinkxqt,
+                                                                                meta.inputType[i],
+                                                                                xmlPath,
+                                                                                meta.labelName[i],
+                                                                                meta.toolTip[i]);
+                    tabLay->addWidget(newInputWidget);
+
+                }
+            }
+        }
+
+    }
+
+    connect(newDialog, &QDialog::accepted, this, [=]() {mLinkxqt->writeValuesXml(dialogTabs); mLinkxqt->writeToFile();});
+    connect(openDialogButton, &QPushButton::clicked, this, [=]() {newDialog->exec();});
+    // connect button to open dialog
+    // dialog buttons have to be connected-> accepted(), rejected()
+    // link to Linkxmlqt, not clear whether necessary at all
+
+    ui->qmlRulerLayout->addWidget(openDialogButton);
 }
 
 void MainWindow::openModuleDialog()

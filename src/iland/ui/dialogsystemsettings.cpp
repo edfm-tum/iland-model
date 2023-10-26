@@ -41,7 +41,7 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
     QString element = "system";
     mLinkxqt->readValuesXml(mSystemTab);
 
-    QWidget *testTab = new QWidget(mSystemTab);
+    /*QWidget *testTab = new QWidget(mSystemTab);
 
     mSystemTab->addTab(testTab, "test");
 
@@ -59,8 +59,8 @@ DialogSystemSettings::DialogSystemSettings(LinkXmlQt* Linkxqt, QWidget *parent) 
     testLay->addWidget(genericInput1);
     testLay->addWidget(genericInput2);
     testLay->addWidget(genericInput3);
-    //testLay->
-
+    testLay->
+*/
 }
 
 

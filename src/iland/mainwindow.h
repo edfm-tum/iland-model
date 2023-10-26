@@ -46,6 +46,13 @@ class MapGrid;
 class LayeredGridBase;
 class Colors;
 
+struct metadata {
+    QStringList elements;
+    QStringList inputType;
+    QStringList defaultValue;
+    QStringList labelName;
+    QStringList toolTip;
+} ;
 
 namespace Ui
 {
@@ -154,6 +161,10 @@ private:
     //recent file menu
     void recentFileMenu();
     QList<QString> mRecentFileList;
+
+    //Dialog
+    void createDialog(const QString& dialogName, QStringList tabs, metadata& meta);
+    void processMetaData(metadata& meta);
 
 private slots:
     void openModuleDialog();
