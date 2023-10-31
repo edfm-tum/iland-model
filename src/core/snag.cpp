@@ -226,6 +226,7 @@ double Snag::calculateClimateFactors()
         double temp_day = day->temperature;
         if (use_microclimate) {
             double mc_mean_buffer = mRU->microClimate()->meanMicroclimateBufferingRU(day->month - 1);
+
             temp_day += mc_mean_buffer;
         }
         // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)

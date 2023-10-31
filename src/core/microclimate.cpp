@@ -80,7 +80,10 @@ void Microclimate::calculateRUMeanValues()
     double mean_tmin[12];
     double mean_tmax[12];
 
-
+    for (int i=0;i<12;++i) {
+        mean_tmin[i] = 0.;
+        mean_tmax[i] = 0.;
+    }
     // calculate mean min / max temperature
     for (cday = mRU->climate()->begin(); cday != mRU->climate()->end(); ++cday) {
         mean_tmin[cday->month - 1] += cday->min_temperature;
@@ -111,6 +114,12 @@ void Microclimate::calculateRUMeanValues()
         // calculate mean values for RU and save for later
         buffer_min = n>0 ? buffer_min / n : 0.;
         buffer_max = n>0 ? buffer_max / n : 0.;
+        if (abs(buffer_min) > 15 || abs(buffer_max)>15) {
+            qDebug() << "Microclimate: dubious buffering: RU: " << mRU->id() << ", buffer_min:" << buffer_min << ", buffermax:" << buffer_max;
+            buffer_min = 0.;
+            buffer_max = 0.; // just make sure nothing bad happens downstream
+
+        }
 
         mRUvalues[m] = QPair<float, float>(static_cast<float>(buffer_min),
                                              static_cast<float>(buffer_max));
@@ -175,7 +184,7 @@ void Microclimate::calculateFixedFactors()
 
         // slope
         double slope = dem->slopeGrid()->constValueAt(p); // percentage of degrees, i.e. 1 = 45 degrees
-        slope = slope * 45.; // convert to deg
+        slope = atan(slope) * M_PI/180; // convert degree, thanks Kristin for spotting the error in a previous version
 
         // topographic position
         const int radius = 500;
@@ -378,7 +387,8 @@ double MicroclimateCell::minimumMicroclimateBuffering(double gsi, double macro_t
                  0.0502*shadeToleranceMean() +
                  -0.7601*evergreenShare() +
                  -0.8385*gsi*evergreenShare();
-
+    if (abs(buf)>10)
+        buf=0;
     return buf;
 
 }
@@ -389,13 +399,15 @@ double MicroclimateCell::maximumMicroclimateBuffering(double gsi, double macro_t
     // Buffer_maxT = 2.7839 – 0.2729 * Macroclimate_maxT - 0.5403 * Northness  - 0.1127 * Slope + 0.0155 * TPI – 0.3182 * LAI + 0.1403 * STol – 1.1039 * Evergreen + 6.9670 * GSI:Evergreen
     double buf = 2.7839 +
                  -0.2729*macro_t_max +
-                 - 0.5403*northness() +
+                 -0.5403*northness() +
                  -0.1127*slope() +
                  0.0155*topographicPositionIndex() +
                  -0.3182*LAI() +
                  0.1403*shadeToleranceMean() +
-                 1.1039*evergreenShare() +
+                 -1.1039*evergreenShare() +
                  6.9670*gsi*evergreenShare();
 
+    if (abs(buf)>10)
+        buf=0;
     return buf;
 }

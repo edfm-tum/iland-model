@@ -204,6 +204,7 @@ void Establishment::calculateAbioticEnvironment()
             double mc_min_buf = mRUS->ru()->microClimate()->minimumMicroclimateBufferingRU(day->month-1);
             double mc_max_buf = mRUS->ru()->microClimate()->maximumMicroclimateBufferingRU(day->month-1);
             double mc_mean_buf = (mc_min_buf + mc_max_buf) / 2.;
+
             day_tmin += mc_min_buf;
             day_tavg += mc_mean_buf;
 
