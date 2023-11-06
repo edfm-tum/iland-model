@@ -428,7 +428,7 @@ void MainWindow::processMetaData(metadata &meta) {
         meta.inputType.append(curValue[0]);
         if (!key.contains("modules.fire")) {
             meta.defaultValue.append("curValue[1]");
-            meta.labelName.append("curValue[2]");
+            meta.labelName.append("c");
             meta.toolTip.append("curValue[3]");
         }
         else {
@@ -461,7 +461,9 @@ void MainWindow::createDialog(const QString& dialogName,
         QVBoxLayout *tabLay = new QVBoxLayout(newTab);
         //QGridLayout *tabLay = new QGridLayout(newTab);
         tabLay->setAlignment(Qt::AlignTop);
-
+        int labelSize = 0;
+        int curLabelSize;
+        QString maxLabel;
         for (int i = 0; i < meta.elements.length(); i++) {
             QString element = meta.elements[i];
             QStringList xmlPath = element.split(".");
@@ -473,12 +475,25 @@ void MainWindow::createDialog(const QString& dialogName,
                                                                                 meta.labelName[i],
                                                                                 meta.toolTip[i]);
                     tabLay->addWidget(newInputWidget);
+                    QString labelName = meta.labelName[i] + "_label";
+                    QLabel *label = newTab->findChild<QLabel *>(labelName);
+                    curLabelSize = label->fontMetrics().boundingRect(label->text()).width();
+
+                    if (curLabelSize > labelSize) {
+                        labelSize = curLabelSize;
+                        maxLabel = labelName;
+                        }
+
+                    }
 
                 }
             }
-        }
+        qDebug() << "Max label: " << maxLabel << "size: " << labelSize;
+        foreach (QLabel *label, newTab->findChildren<QLabel *>()) {
+                label->setMinimumWidth(labelSize);
 
-    }
+           }
+        }
 
     connect(newDialog, &QDialog::accepted, this, [=]() {mLinkxqt->writeValuesXml(dialogTabs); mLinkxqt->writeToFile();});
     connect(openDialogButton, &QPushButton::clicked, this, [=]() {newDialog->exec();});

@@ -27,6 +27,8 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
     // Set label
     QLabel *label1 = new QLabel(labelName);
     label1->setToolTip(toolTip);
+    QString labelNa = labelName + "_label";
+    label1->setObjectName(labelNa);
 
     // Define button to open comment dialog, connect() below
     QToolButton *buttonComment = new QToolButton();
