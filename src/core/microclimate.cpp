@@ -184,7 +184,7 @@ void Microclimate::calculateFixedFactors()
 
         // slope
         double slope = dem->slopeGrid()->constValueAt(p); // percentage of degrees, i.e. 1 = 45 degrees
-        slope = atan(slope) * M_PI/180; // convert degree, thanks Kristin for spotting the error in a previous version
+        slope = atan(slope) * 180./M_PI; // convert degree, thanks Kristin for spotting the error in a previous version
 
         // topographic position
         const int radius = 500;
