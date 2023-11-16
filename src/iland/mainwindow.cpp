@@ -30,6 +30,7 @@
 #include "global.h"
 #include "mainwindow.h"
 #include "ui/genericinputwidget.h"
+#include "ui/settingsdialog.h"
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "settingmetadata.h"
@@ -400,8 +401,11 @@ MainWindow::MainWindow(QWidget *parent)
     tabList.append(systemList);
 
     // import all variables, their types, default values, etc defined in metadata.txt
+    SettingMetaData mSettingMetaData;
+
     metadata meta;
     processMetaData(meta);
+
 
     for (int i = 0; i < dialogList.length(); i++) {
         createDialog(dialogList[i], tabList[i], meta);
@@ -419,12 +423,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::processMetaData(metadata &meta) {
 
-    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
-    QStringList existingKeys = set.allKeys();
-
-    foreach (QString key, existingKeys) {
+//    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
+//    QStringList existingKeys = set.allKeys();
+//    QString mainDir = QDir::currentPath();
+    QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    mSettingMetaData->loadFromFile(mainDir + "/project_file_metadata.txt", mMetaKeys, mMetaValues);
+    QString key;
+    for (int i = 0; i < mMetaKeys.size(); i ++) {
+        key = mMetaKeys[i];
         meta.elements.append(key);
-        QStringList curValue = set.value(key).toStringList();
+        QStringList curValue = mMetaValues[i].split(",");
         meta.inputType.append(curValue[0]);
         if (!key.contains("modules.fire")) {
             meta.defaultValue.append("curValue[1]");
@@ -452,57 +460,91 @@ void MainWindow::createDialog(const QString& dialogName,
     QDialog *newDialog = new QDialog(this);
     QVBoxLayout *dialogLay = new QVBoxLayout(newDialog);
     QTabWidget *dialogTabs = new QTabWidget(newDialog);
+    QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
+    dialogTabs->setObjectName(dialogName.toLower());
     dialogLay->addWidget(dialogTabs);
+    dialogLay->addWidget(dialogButtons);
+
+    QString element;
+    QString inputType;
+    QStringList xmlPath;
 
     foreach (const QString& tab, tabs) {
         QWidget *newTab = new QWidget(dialogTabs);
         dialogTabs->addTab(newTab, tab);
+        newTab->setObjectName(tab.toLower());
         QVBoxLayout *tabLay = new QVBoxLayout(newTab);
+        tabLay->setSpacing(0);
+        tabLay->setContentsMargins(0, 0, 0, 0);
+//        QScrollArea *scrollArea = new QScrollArea(dialogTabs);
+//        scrollArea->setWidget(newTab);
+//        newTab->setLayout(tabLay);
         //QGridLayout *tabLay = new QGridLayout(newTab);
         tabLay->setAlignment(Qt::AlignTop);
         int labelSize = 0;
         int curLabelSize;
+
         QString maxLabel;
         for (int i = 0; i < meta.elements.length(); i++) {
-            QString element = meta.elements[i];
-            QStringList xmlPath = element.split(".");
-            if ((xmlPath.length() > 2) && (meta.inputType[i] != "noInput")) {
+            element = meta.elements[i];
+            xmlPath = element.split(".");
+            if (xmlPath.length() > 2) {
                 if (xmlPath[0] == dialogName.toLower() && xmlPath[1] == tab.toLower()) {
-                    genericInputWidget *newInputWidget = new genericInputWidget(mLinkxqt,
-                                                                                meta.inputType[i],
-                                                                                xmlPath,
-                                                                                meta.labelName[i],
-                                                                                meta.toolTip[i]);
-                    tabLay->addWidget(newInputWidget);
-                    QString labelName = meta.labelName[i] + "_label";
-                    QLabel *label = newTab->findChild<QLabel *>(labelName);
-                    curLabelSize = label->fontMetrics().boundingRect(label->text()).width();
+                    inputType = meta.inputType[i];
 
-                    if (curLabelSize > labelSize) {
-                        labelSize = curLabelSize;
-                        maxLabel = labelName;
+                    if (inputType != "noInput") {
+                        if (inputType == "group") {
+                            QLabel* subheading = new QLabel(meta.defaultValue[i]);
+                            subheading->setStyleSheet("font-weight: bold");
+                            tabLay->addWidget(subheading);
                         }
+                        else {
+                            genericInputWidget *newInputWidget = new genericInputWidget(mLinkxqt,
+                                                                                        inputType,
+                                                                                        meta.defaultValue[i],
+                                                                                        xmlPath,
+                                                                                        meta.labelName[i],
+                                                                                        meta.toolTip[i],
+                                                                                        newTab);
+                            //newInputWidget->setContentsMargins(0,0,0,0);
+                            tabLay->addWidget(newInputWidget);
+                            QString labelName = meta.labelName[i] + "_label";
+                            QLabel *label = newTab->findChild<QLabel *>(labelName);
+                            curLabelSize = label->fontMetrics().boundingRect(label->text()).width();
 
+                            if (curLabelSize > labelSize) {
+                                labelSize = curLabelSize;
+                                maxLabel = labelName;
+                                }
+
+                            }
+                        }
                     }
-
                 }
             }
-        qDebug() << "Max label: " << maxLabel << "size: " << labelSize;
-        foreach (QLabel *label, newTab->findChildren<QLabel *>()) {
-                label->setMinimumWidth(labelSize);
 
-           }
+            foreach (QLabel *label, newTab->findChildren<QLabel *>()) {
+                label->setMinimumWidth(labelSize + 2);
+               }
+
+            //scrollArea->setWidget(newTab);
+
         }
 
-    connect(newDialog, &QDialog::accepted, this, [=]() {mLinkxqt->writeValuesXml(dialogTabs); mLinkxqt->writeToFile();});
-    connect(openDialogButton, &QPushButton::clicked, this, [=]() {newDialog->exec();});
+    connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(dialogTabs);
+                                                                     mLinkxqt->writeToFile();
+                                                                     newDialog->close();});
+    connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {newDialog->close();});
+    connect(newDialog, &QDialog::rejected, this, [=]() {newDialog->close();});
+    connect(openDialogButton, &QPushButton::clicked, this, [=]() {mLinkxqt->readValuesXml(dialogTabs); newDialog->exec();});
     // connect button to open dialog
     // dialog buttons have to be connected-> accepted(), rejected()
     // link to Linkxmlqt, not clear whether necessary at all
 
     ui->qmlRulerLayout->addWidget(openDialogButton);
 }
+
 
 void MainWindow::openModuleDialog()
 {
@@ -517,11 +559,13 @@ void MainWindow::openModuleDialog()
 
 void MainWindow::openSystemSettingsDialog()
 {
-    QString xmlFile = ui->initFileName->text();
+    //QString xmlFile = ui->initFileName->text();
     //ui_systemSettings = new DialogSystemSettings(xmlFile, this);
-    mLinkxqt->loadXmlFile(xmlFile);
-    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
-    ui_systemSettings->show();
+//    mLinkxqt->loadXmlFile(xmlFile);
+//    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
+//    ui_systemSettings->show();
+    ui_settingsDialog = new SettingsDialog(this);
+    ui_settingsDialog->show();
 }
 
 void MainWindow::batchLog(const QString s)

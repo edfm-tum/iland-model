@@ -307,9 +307,9 @@ model.parameter = string
 
 
 ; modules.fire
-modules.fire.enabled = boolean,false,Enabled,Turn fire simulation on or off
+modules.fire.enabled = boolean,false,"01 Enabled",Turn fire simulation on or off
 modules.fire.onlySimulation = boolean,false,Only Simulation,"Only if value is string real effects of fire (on trees, snags, soil pools) are simulated (default: string). A value of true can be useful for testing purposes."
-modules.fire.KBDIref = numeric,200,KBDI Ref.,Reference value for the site specific KBDI (Keetch Byram Drought Index)
+modules.fire.KBDIref = path,200,KBDI Ref.,Reference value for the site specific KBDI (Keetch Byram Drought Index)
 modules.fire.rFireSuppression = numeric,1,r Fire Suppress.,A scalar for fire suppression
 modules.fire.rLand = numeric,1,r Land,"Multiplier for the fire spread probability for the resource unit (0..1). If below the (default) value of 1, fire spreads with a reduced probability (e.g. for riparian areas)"
 modules.fire.meanAnnualPrecipitation = numeric,240,Mean Annual Precipitation,Mean annual precipitation (mm)
@@ -335,27 +335,30 @@ modules.fire.allowBurnIn = boolean,true,Allow Burn In,"A value of 'true' is requ
 
 ; modules.wind
 modules.wind.enabled = string
+modules.wind.direction = group, Direction
+modules.wind.direction = string
+modules.wind.directionVariation = string
+modules.wind.edge = group, Edge
+modules.wind.edgeProbability = string
+modules.wind.edgeAgeBaseValue = string
+modules.wind.edgeBackgroundProbability = string
+modules.wind.edgeDetectionThreshold = string
+modules.wind.factorEdge = string
+modules.wind.topography = group, Topography
+modules.wind.topoModifier = string
+modules.wind.topoGridFile = string
+modules.wind.topexModifierType = string
 modules.wind.speciesParameter = string
 modules.wind.soilFreezeMode = string
 modules.wind.triggeredByTimeEvent = string
 modules.wind.durationPerIteration = string
 modules.wind.gustModifier = string
-modules.wind.topoModifier = string
-modules.wind.directionVariation = string
-modules.wind.direction = string
 modules.wind.dayOfYear = string
 modules.wind.speed = string
 modules.wind.duration = string
-modules.wind.topoGridFile = string
-modules.wind.factorEdge = string
-modules.wind.edgeDetectionThreshold = string
-modules.wind.topexModifierType = string
 modules.wind.LRITransferFunction = string
-modules.wind.edgeProbability = string
-modules.wind.edgeAgeBaseValue = string
-modules.wind.edgeBackgroundProbability = string
 modules.wind.onAfterWind = string
-modules.wind = string
+; modules.wind = string
 
 ; modules.barkbeetle
 modules.barkbeetle.enabled = string
@@ -375,7 +378,7 @@ modules.barkbeetle.outbreakDurationMin = string
 modules.barkbeetle.outbreakDurationMax = string
 modules.barkbeetle.outbreakDurationMortalityFormula = string
 modules.barkbeetle.initialInfestationProbability = string
-modules.barkbeetle.referenceClimate.tableName = string
+modules.barkbeetle.referenceClimate.tableName = table
 modules.barkbeetle.referenceClimate.seasonalPrecipSum = string
 modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = string
 modules.barkbeetle.referenceClimate = string

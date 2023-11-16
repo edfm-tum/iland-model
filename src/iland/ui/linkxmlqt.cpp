@@ -132,8 +132,8 @@ void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines)
 
 void LinkXmlQt::readValuesXml(QTabWidget* tabWidget) {
     QDomDocument curXml = loadedXml;
-    QString xmlElement = tabWidget->objectName().remove("Tab");
-
+    QString xmlElement = tabWidget->objectName().toLower();
+    qDebug() << "Tab name: " << tabWidget->objectName();
     //QFile file(xmlFile);
     if (!xmlFileLoaded) {
         qDebug() << "Error with loading data. Check xml file! Abort.";
@@ -156,7 +156,7 @@ void LinkXmlQt::readValuesXml(QTabWidget* tabWidget) {
 
 void LinkXmlQt::writeValuesXml(QTabWidget* tabWidget) {
     QDomDocument curXml = loadedXml;
-    QString xmlElement = tabWidget->objectName().remove("Tab");
+    QString xmlElement = tabWidget->objectName();
 
     //QFile file(xmlFile);
     if (!xmlFileLoaded) {
@@ -179,42 +179,226 @@ void LinkXmlQt::writeValuesXml(QTabWidget* tabWidget) {
 }
 
 
-void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& curNode,
-                                        int tabIndex,
-                                        QTabWidget* widgetElement)
+//void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& curNode,
+//                                        int tabIndex,
+//                                        QTabWidget* widgetElement)
+//{
+//    QDomNode node = curNode;
+//    QString nameModule = widgetElement->objectName() + "." + widgetElement->widget(tabIndex)->objectName();
+
+//    while (!node.isNull()) {
+//        if (node.isElement()) {
+//            //QDomElement element = node.toElement();
+//            //qDebug() << QString("Element: %1").arg(element.tagName());
+
+//            // Recurse into child nodes
+//            traverseTreeSetElementsGui(node.firstChild(), tabIndex, widgetElement);
+//        } else if (node.isText()) {
+//            QString curValue = node.toText().data();
+//            //QString curTag = node.parentNode().toElement().tagName();
+//            QString curTag = node.parentNode().nodeName();
+//            QString widgetName = nameModule + '.' + curTag;
+//            QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
+//            QList<QTableWidget *> tableList = widgetElement->widget(tabIndex)->findChildren<QTableWidget *>();
+
+//            if (w != nullptr) {
+//                //qDebug() << widgetName << ", " << w->metaObject()->className();
+//                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(w)) {
+//                    lineEdit->setText(curValue);
+//                }
+//                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(w)) {
+//                    curValue = curValue.toLower();
+
+////                    if (curValue == "1") {
+////                        curValue = "true";
+////                    }
+////                    else if (curValue == "0") {
+////                        curValue = "false";
+////                    }
+
+//                    QStringList comboBoxValidValues;
+//                    for (int i = 0; i < comboBox->count(); ++i) {
+//                        comboBoxValidValues.append(comboBox->itemText(i));
+//                    }
+//                    if (comboBoxValidValues.contains(curValue)) {
+//                        comboBox->setCurrentText(curValue);
+//                    }
+//                    else {
+//                        qDebug() << curTag << ": " << curValue << " is not a valid value. Please Check notation.";
+//                    }
+//                }
+//                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(w)) {
+//                    if (curValue == "true" || curValue == "True" || curValue == "1") {
+//                        checkBox->setChecked(TRUE);
+//                    }
+//                    else if (curValue == "false" || curValue == "False" || curValue == "0") {
+//                        checkBox->setChecked(FALSE);
+//                    }
+//                }
+////                else if (QTableWidget* table = dynamic_cast<QTableWidget*>(w)) {
+////                        QTableWidgetItem* item;
+////                        int tableRows = table->rowCount();
+////                        int tableColumns = table->columnCount();
+////                        for (int i = 0; i < tableRows; i++) {
+////                            for (int n = 0; n < tableColumns; n++) {
+////                                item = table->item(i, n);
+////                                QString curElem = item->text();
+////                                qDebug() << "row: " << i << ", column: " << n << ", item.text: " << curElem;
+////                            }
+////                        }
+////                    }
+//            }
+//            else if (w == nullptr && !tableList.isEmpty()) {
+//                //QTableWidgetItem* item;
+//                QStringList columnValues = curValue.split(",");
+//                foreach (QTableWidget* table, tableList) {
+//                    int numberInputValues = columnValues.length();
+//                    int columnNumber = qMax(numberInputValues, table->columnCount());
+//                    table->setColumnCount(columnNumber);
+//                    int rowNumber = table->rowCount();
+//                    for (int i = 0; i < rowNumber; i++) {
+//                        QString horHeader = table->verticalHeaderItem(i)->whatsThis();
+//                        if (horHeader == widgetName) {
+//                            for (int n = 0; n < columnNumber; n++) {
+//                                QTableWidgetItem* item = new QTableWidgetItem();
+//                                if (n >= numberInputValues) {
+//                                    item->setText("");
+//                                } else {
+//                                    item->setText(columnValues[n].trimmed());
+//                                }
+//                                table->setItem(i, n, item);
+//                            }
+//                        }
+//                    }
+//                }
+
+//            }
+//            else {
+//                qDebug() << "Could not find GUI element for variable " << widgetName;
+//            }
+//        }
+
+//        // Move to the next sibling
+//        node = node.nextSibling();
+//    }
+//}
+
+//void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& curNode,
+//                                        int tabIndex,
+//                                        QTabWidget* widgetElement)
+//{
+
+//    QDomNode node = curNode;
+//    QString nameModule = widgetElement->objectName() + "." + widgetElement->widget(tabIndex)->objectName();
+//    QString elementValue;
+
+//    while (!node.isNull()) {
+//        if (node.isElement()) {
+
+//            // Recurse into child nodes
+//            traverseTreeSetElementsXml(node.firstChild(), tabIndex, widgetElement);
+//        } else if (node.isText()) {
+//            //QString curValue = node.toText().data();
+//            QString curTag = node.parentNode().nodeName();
+//            QString widgetName = nameModule + '.' + curTag;
+//            QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
+//            QList<QTableWidget *> tableList = widgetElement->widget(tabIndex)->findChildren<QTableWidget *>();
+
+//            if (w != nullptr) {
+//                //qDebug() << widgetName << ", " << w->metaObject()->className();
+//                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(w)) {
+//                    //lineEdit->setText(curValue);
+//                    elementValue = lineEdit->text();
+//                }
+//                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(w)) {
+//                    elementValue = comboBox->currentText();
+
+//                }
+//                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(w)) {
+//                    if (checkBox->isChecked()) {
+//                        elementValue = "true";
+//                    }
+//                    else {
+//                        elementValue = "false";
+//                    }
+//                }
+
+//                node.setNodeValue(elementValue);
+//            }
+//            else if (w == nullptr && !tableList.isEmpty()) {
+//                //QTableWidgetItem* item;
+//                //QStringList columnValues = curValue.split(",");
+//                foreach (QTableWidget* table, tableList) {
+//                    int columnNumber = table->columnCount();
+//                    int rowNumber = table->rowCount();
+//                    for (int i = 0; i < rowNumber; i++) {
+//                        QString horHeader = table->verticalHeaderItem(i)->whatsThis();
+//                        if (horHeader == widgetName) {
+//                            QStringList columnValues;
+//                            for (int n = 0; n < columnNumber; n++) {
+//                                QTableWidgetItem* curItem = table->item(i, n);
+//                                if ((curItem != nullptr)) {
+//                                    QString itemText = curItem->text();
+//                                    if (itemText != "") {columnValues.append(itemText);}
+//                                }
+//                            }
+//                        node.setNodeValue(columnValues.join(","));
+//                        }
+//                    }
+//                }
+
+//            }
+//            else {
+//                qDebug() << "Could not find GUI element for variable " << widgetName;
+//            }
+//        }
+
+//        // Move to the next sibling
+//        node = node.nextSibling();
+//    }
+//}
+
+
+void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& node,
+                                           int tabIndex,
+                                           QTabWidget* tabWidget)
 {
-    QDomNode node = curNode;
-    QString nameModule = widgetElement->widget(tabIndex)->objectName();
 
-    while (!node.isNull()) {
-        if (node.isElement()) {
-            //QDomElement element = node.toElement();
-            //qDebug() << QString("Element: %1").arg(element.tagName());
+    QDomDocument curXml = loadedXml;
 
-            // Recurse into child nodes
-            traverseTreeSetElementsGui(node.firstChild(), tabIndex, widgetElement);
-        } else if (node.isText()) {
-            QString curValue = node.toText().data();
-            //QString curTag = node.parentNode().toElement().tagName();
-            QString curTag = node.parentNode().nodeName();
-            QString widgetName = nameModule + '_' + curTag;
-            QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
-            QList<QTableWidget *> tableList = widgetElement->widget(tabIndex)->findChildren<QTableWidget *>();
+    QDomElement rootElement = curXml.documentElement();
+    QDomElement curNode;
+    QString elementValue;
 
-            if (w != nullptr) {
-                //qDebug() << widgetName << ", " << w->metaObject()->className();
-                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(w)) {
+    for (int i = 0; i < tabWidget->count(); i++) {
+        QList<QWidget *> widgetElements = tabWidget->widget(i)->findChildren<QWidget *>();
+        QList<QTableWidget *> tableList = tabWidget->widget(i)->findChildren<QTableWidget *>();
+
+        foreach (QWidget* curWidget, widgetElements) {
+            //qDebug() << "Aktuelles Widget: " << curWidget->objectName();
+            QStringList xmlPath = curWidget->objectName().split(".");
+
+            curNode = rootElement;
+            foreach (QString node, xmlPath) {
+                curNode = curNode.firstChildElement(node);
+                //qDebug() << "Current node: " << curNode.nodeName();
+            }
+
+            if (!curNode.isNull()) {
+                QString curValue = curNode.firstChild().toText().data();
+                //qDebug() << "Aktueller Wert: " << curValue;
+                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
                     lineEdit->setText(curValue);
                 }
-                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(w)) {
+                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
                     curValue = curValue.toLower();
 
-//                    if (curValue == "1") {
-//                        curValue = "true";
-//                    }
-//                    else if (curValue == "0") {
-//                        curValue = "false";
-//                    }
+                    //                    if (curValue == "1") {
+                    //                        curValue = "true";
+                    //                    }
+                    //                    else if (curValue == "0") {
+                    //                        curValue = "false";
+                    //                    }
 
                     QStringList comboBoxValidValues;
                     for (int i = 0; i < comboBox->count(); ++i) {
@@ -223,139 +407,77 @@ void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& curNode,
                     if (comboBoxValidValues.contains(curValue)) {
                         comboBox->setCurrentText(curValue);
                     }
-                    else {
-                        qDebug() << curTag << ": " << curValue << " is not a valid value. Please Check notation.";
-                    }
+
                 }
-                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(w)) {
+                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
                     if (curValue == "true" || curValue == "True" || curValue == "1") {
                         checkBox->setChecked(TRUE);
-                    }
+                        }
                     else if (curValue == "false" || curValue == "False" || curValue == "0") {
                         checkBox->setChecked(FALSE);
-                    }
-                }
-//                else if (QTableWidget* table = dynamic_cast<QTableWidget*>(w)) {
-//                        QTableWidgetItem* item;
-//                        int tableRows = table->rowCount();
-//                        int tableColumns = table->columnCount();
-//                        for (int i = 0; i < tableRows; i++) {
-//                            for (int n = 0; n < tableColumns; n++) {
-//                                item = table->item(i, n);
-//                                QString curElem = item->text();
-//                                qDebug() << "row: " << i << ", column: " << n << ", item.text: " << curElem;
-//                            }
-//                        }
-//                    }
-            }
-            else if (w == nullptr && !tableList.isEmpty()) {
-                //QTableWidgetItem* item;
-                QStringList columnValues = curValue.split(",");
-                foreach (QTableWidget* table, tableList) {
-                    int numberInputValues = columnValues.length();
-                    int columnNumber = qMax(numberInputValues, table->columnCount());
-                    table->setColumnCount(columnNumber);
-                    int rowNumber = table->rowCount();
-                    for (int i = 0; i < rowNumber; i++) {
-                        QString horHeader = table->verticalHeaderItem(i)->whatsThis();
-                        if (horHeader == widgetName) {
-                            for (int n = 0; n < columnNumber; n++) {
-                                QTableWidgetItem* item = new QTableWidgetItem();
-                                if (n >= numberInputValues) {
-                                    item->setText("");
-                                } else {
-                                    item->setText(columnValues[n].trimmed());
-                                }
-                                table->setItem(i, n, item);
-                            }
                         }
                     }
-                }
 
             }
-            else {
-                qDebug() << "Could not find GUI element for variable " << widgetName;
-            }
+
         }
 
-        // Move to the next sibling
-        node = node.nextSibling();
     }
+
 }
 
-void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& curNode,
-                                        int tabIndex,
-                                        QTabWidget* widgetElement)
+
+void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& node,
+                                           int tabIndex,
+                                           QTabWidget* tabWidget)
 {
 
-    QDomNode node = curNode;
-    QString nameModule = widgetElement->widget(tabIndex)->objectName();
+    QDomDocument curXml = loadedXml;
+
+    QDomElement rootElement = curXml.documentElement();
+    QDomElement curNode;
     QString elementValue;
 
-    while (!node.isNull()) {
-        if (node.isElement()) {
+    for (int i = 0; i < tabWidget->count(); i++) {
+        QList<QWidget *> widgetElements = tabWidget->widget(i)->findChildren<QWidget *>();
 
-            // Recurse into child nodes
-            traverseTreeSetElementsXml(node.firstChild(), tabIndex, widgetElement);
-        } else if (node.isText()) {
-            //QString curValue = node.toText().data();
-            QString curTag = node.parentNode().nodeName();
-            QString widgetName = nameModule + '_' + curTag;
-            QWidget* w = widgetElement->widget(tabIndex)->findChild<QWidget *>(widgetName);
-            QList<QTableWidget *> tableList = widgetElement->widget(tabIndex)->findChildren<QTableWidget *>();
+        foreach (QWidget* curWidget, widgetElements) {
+            //qDebug() << "Aktuelles Widget: " << curWidget->objectName();
+            QStringList xmlPath = curWidget->objectName().split(".");
 
-            if (w != nullptr) {
-                //qDebug() << widgetName << ", " << w->metaObject()->className();
-                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(w)) {
-                    //lineEdit->setText(curValue);
+            curNode = rootElement;
+            foreach (QString node, xmlPath) {
+                curNode = curNode.firstChildElement(node);
+                //qDebug() << "Current node: " << curNode.nodeName();
+                }
+
+            if (!curNode.isNull()) {
+                QString curValue = curNode.firstChild().toText().data();
+                //qDebug() << "Aktueller Wert: " << curValue;
+                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
                     elementValue = lineEdit->text();
-                }
-                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(w)) {
+                    }
+                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
                     elementValue = comboBox->currentText();
-
-                }
-                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(w)) {
+                    }
+                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
                     if (checkBox->isChecked()) {
                         elementValue = "true";
-                    }
+                        }
                     else {
                         elementValue = "false";
-                    }
-                }
-
-                node.setNodeValue(elementValue);
-            }
-            else if (w == nullptr && !tableList.isEmpty()) {
-                //QTableWidgetItem* item;
-                //QStringList columnValues = curValue.split(",");
-                foreach (QTableWidget* table, tableList) {
-                    int columnNumber = table->columnCount();
-                    int rowNumber = table->rowCount();
-                    for (int i = 0; i < rowNumber; i++) {
-                        QString horHeader = table->verticalHeaderItem(i)->whatsThis();
-                        if (horHeader == widgetName) {
-                            QStringList columnValues;
-                            for (int n = 0; n < columnNumber; n++) {
-                                QTableWidgetItem* curItem = table->item(i, n);
-                                if ((curItem != nullptr)) {
-                                    QString itemText = curItem->text();
-                                    if (itemText != "") {columnValues.append(itemText);}
-                                }
-                            }
-                        node.setNodeValue(columnValues.join(","));
                         }
                     }
+                else {
+                    //qDebug() << "Widget not specified: " << curWidget->objectName();
+                    }
+                curNode.firstChild().setNodeValue(elementValue);
                 }
 
             }
-            else {
-                qDebug() << "Could not find GUI element for variable " << widgetName;
-            }
-        }
 
-        // Move to the next sibling
-        node = node.nextSibling();
     }
+
 }
 
 void LinkXmlQt::writeToFile(QString xmlFilePath)

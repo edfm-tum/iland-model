@@ -105,3 +105,36 @@ void SettingMetaData::checkXMLFile(const QString fileName)
 
 }
 
+void SettingMetaData::loadFromFile(const QString &metaFilePath,
+                                   QStringList &keys,
+                                   QStringList &values)
+{
+//    QDir parentDir = QDir::current();
+//    QDir::
+    QFile file(metaFilePath);
+
+    if (file.open(QIODevice::ReadOnly)) {
+        keys.clear();
+        values.clear();
+
+        QTextStream inStream(&file);
+        QString line;
+        QStringList keyValuePair;
+
+        while (!inStream.atEnd()) {
+            line = inStream.readLine();
+            if (line.size() > 0 && !line.startsWith(";")) {
+                keyValuePair = line.split("=");
+                keys.append(keyValuePair[0].trimmed());
+                values.append(keyValuePair[1].trimmed());
+            }
+        }
+
+        file.close();
+    }
+    else {
+        qDebug() << "File couldn't be opened. Abort.";
+        }
+
+}
+

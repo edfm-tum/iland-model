@@ -20,6 +20,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "ui/settingsdialog.h"
 #if QT_VERSION < 0x050000
 #include <QtGui>
 #else
@@ -115,8 +116,12 @@ private:
 
     ModuleDialog *ui_modules;
     DialogSystemSettings *ui_systemSettings;
+    SettingsDialog *ui_settingsDialog;
 
     LinkXmlQt *mLinkxqt;
+    SettingMetaData *mSettingMetaData;
+    QStringList mMetaKeys;
+    QStringList mMetaValues;
 
     QLabel *mStatusLabel;
     QQuickView *mRuler;

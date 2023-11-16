@@ -235,7 +235,8 @@ SOURCES += main.cpp \
     ui/dialogsystemsettings.cpp \
     ui/genericinputwidget.cpp \
     ui/linkxmlqt.cpp \
-    ui/moduledialog.cpp
+    ui/moduledialog.cpp \
+    ui/settingsdialog.cpp
 
 HEADERS += mainwindow.h \
     ../core/microclimate.h \
@@ -370,13 +371,15 @@ HEADERS += mainwindow.h \
     ui/dialogsystemsettings.h \
     ui/genericinputwidget.h \
     ui/linkxmlqt.h \
-    ui/moduledialog.h
+    ui/moduledialog.h \
+    ui/settingsdialog.h
 FORMS += mainwindow.ui \
     aboutdialog.ui \
     ui/dialogcomment.ui \
     ui/dialogsystemsettings.ui \
     ui/moduledialog.ui \
-    ui/moduledialog_backup.ui
+    ui/moduledialog_backup.ui \
+    ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \
     qml_res.qrc
 
