@@ -361,6 +361,9 @@ bool FMStand::execute()
         if (!currentActivity()->isRepeatingActivity()) {
             currentFlags().setActive(false);
             afterExecution(!executed); // check what comes next for the stand
+        } else {
+            // run the onExecuted handler in also for repeating activities
+            currentActivity()->events().run(QStringLiteral("onExecuted"),this);
         }
         return executed;
     }
@@ -554,8 +557,17 @@ int FMStand::setToLatestForcedActivity()
             mCurrentIndex = i;
             break;
         }
-    if (mCurrentIndex<0)
-        qCDebug(abe) << context() << "Warning: setToLatestForcedActivity(): no valid activity found!";
+    if (mCurrentIndex<0) {
+        // look also for a repeating activity - not sure if this is a good idea
+//        for (i=0;i<mStandFlags.count();++i)
+//            if (mStandFlags[i].activity()->isRepeatingActivity()) {
+//                mCurrentIndex = i;
+//                break;
+//            }
+
+        if (mCurrentIndex < 0)
+            qCDebug(abe) << context() << "Warning: setToLatestForcedActivity(): no valid activity found!";
+    }
     return i;
 
 }

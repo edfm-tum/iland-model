@@ -38,6 +38,7 @@ namespace ABE {
 
 AgentType::AgentType()
 {
+    mAllSTPAvailable = false;
 }
 
 void AgentType::setupSTP(QJSValue agent_code, const QString agent_name)
@@ -53,10 +54,14 @@ void AgentType::setupSTP(QJSValue agent_code, const QString agent_name)
     QJSValueIterator it(stps);
     while (it.hasNext()) {
         it.next();
-        FMSTP *stp = ForestManagementEngine::instance()->stp(it.value().toString());
-        if (!stp)
-           throw IException(QString("ABE:AgentType:setup: definition of agent '%1': the STP for mixture type '%2': '%3' is not available.").arg(agent_name).arg(it.name()).arg(it.value().toString()));
-        mSTP[it.name()] = stp;
+        if (it.value().toString() == "_default") {
+            mAllSTPAvailable = true;
+        } else {
+            FMSTP *stp = ForestManagementEngine::instance()->stp(it.value().toString());
+            if (!stp)
+               throw IException(QString("ABE:AgentType:setup: definition of agent '%1': the STP for mixture type '%2': '%3' is not available.").arg(agent_name).arg(it.name()).arg(it.value().toString()));
+            mSTP[it.name()] = stp;
+        }
     }
 
     if (FMSTP::verbose())
@@ -223,8 +228,12 @@ FMSTP *AgentType::stpByName(const QString &name)
 {
     if (mSTP.contains(name))
         return mSTP[name];
-    else
-        return 0;
+    if (mAllSTPAvailable) {
+        // look globally
+        FMSTP *stp = ForestManagementEngine::instance()->stp(name);
+        return stp;
+    }
+    return nullptr; // not found
 }
 
 int AgentType::speciesCompositionIndex(const QString &key)

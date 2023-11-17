@@ -88,6 +88,9 @@ void ActThinning::setup(QJSValue value)
     default: throw IException("No setup defined for thinning type");
     }
 
+    if (isRepeatingActivity())
+        mBaseActivity.setIsScheduled(false);
+
 }
 
 bool ActThinning::evaluate(FMStand *stand)
@@ -109,6 +112,11 @@ bool ActThinning::evaluate(FMStand *stand)
 bool ActThinning::execute(FMStand *stand)
 {
     if (stand->trace()) qCDebug(abe) << stand->context() << "execute  activity" << name() << ":" << type();
+    if (!stand->currentFlags().isScheduled()) {
+        // if scheduling is off for this thinning activity,
+        // then we need to invoke this manually.
+        evaluate(stand);
+    }
     if (events().hasEvent(QStringLiteral("onExecute"))) {
         // switch off simulation mode
         stand->currentFlags().setDoSimulate(false);

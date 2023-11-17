@@ -61,7 +61,7 @@ void Agent::setup()
 
     FMSTP *stp = type()->stpByName("default");
     if (!stp)
-        throw IException("Agent::setup(): default-STP not defined");
+        throw IException("Agent::setup(): default-STP not defined. Could be due to a Javascript error.");
 
     QJSValue onSelect_handler = type()->jsObject().property("onSelect");
 

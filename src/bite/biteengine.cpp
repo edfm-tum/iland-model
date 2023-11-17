@@ -94,7 +94,7 @@ void BiteEngine::setup()
         for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
         qCCritical(biteSetup).noquote() << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
-        throw IException("BITE Error in Javascript (Please check the logfile): " + result.toString());
+        throw IException("BITE Error in Javascript (Please check the logfile): " + result.toString() + "\nIn:\n" + code_part) ;
     }
 
 

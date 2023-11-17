@@ -130,7 +130,9 @@ void ForestManagementEngine::setupScripting()
         QString code_part;
         for (int i=std::max(0, lineno - 5); i<std::min(lineno+5, static_cast<int>(code_lines.count())); ++i)
             code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
-        qCDebug(abeSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
+        qCCritical(abeSetup) << "Javascript Error in file" << result.property("fileName").toString() << ":" << result.property("lineNumber").toInt() << ":" << result.toString() << ":\n" << code_part;
+        throw IException("Abe Error in Javascript (Please check also the logfile): " + result.toString()+ "\nIn:\n" + code_part);
+
     }
 }
 
@@ -344,10 +346,10 @@ void ForestManagementEngine::setup()
     int iharvest_mode = data_file.columnIndex("harvestMode");
 
 
-    if (ikey<0 || iunit<0)
-        throw IException("setup ABE agentDataFile: one (or two) of the required columns 'id' or 'unit' not available.");
-    if (iagent<0 && iagent_type<0)
-        throw IException("setup ABE agentDataFile: the columns 'agent' or 'agentType' are not available. You have to include at least one of the columns.");
+    if (ikey<0)
+        throw IException("setup ABE agentDataFile: the required column 'id' not available.");
+    //if (iagent<0 && iagent_type<0)
+    //    throw IException("setup ABE agentDataFile: the columns 'agent' or 'agentType' are not available. You have to include at least one of the columns.");
 
 
     QList<QString> unit_codes;
@@ -362,21 +364,23 @@ void ForestManagementEngine::setup()
         // check agents
         QString agent_code = iagent>-1 ? data_file.value(i, iagent).toString() : QString();
         QString agent_type_code = iagent_type>-1 ? data_file.value(i, iagent_type).toString() : QString();
-        QString unit_id = data_file.value(i, iunit).toString();
+        QString unit_id = iunit >-1 ? data_file.value(i, iunit).toString() : "_default";
 
-        Agent *ag=nullptr;
-        AgentType *at=nullptr;
+        Agent *ag=agent("_default");
+        AgentType *at=(ag ? ag->type() : nullptr);
         if (agent_code.isEmpty() && agent_type_code.isEmpty())
-            throw IException(QString("setup ABE agentDataFile row '%1': no code for columns 'agent' and 'agentType' available.").arg(i) );
+            qCDebug(abeSetup) << "setup ABE agentDataFile row" << i << " : no code for columns 'agent' and 'agentType'. Using '_default' agent.";
 
         if (!agent_code.isEmpty()) {
             // search for a specific agent
             ag = agent(agent_code);
             if (!ag)
-                throw IException(QString("Agent '%1' is not set up (row '%2')! Use the 'newAgent()' JS function of agent-types to add agent definitions.\nYou might have a Javascript error - check the logfile.").arg(agent_code).arg(i));
+                throw IException(QString("Agent '%1' is not available (referenced in row '%2')! Use 'addAgent()' JS function to create agents.\nYou might have a Javascript error - check the logfile.").arg(agent_code).arg(i));
             at = ag->type();
 
-        } else {
+        }
+
+        if (!agent_type_code.isEmpty()) {
             // look up the agent type and create the agent on the fly
             // create the agent / agent type
             at = agentType(agent_type_code);
@@ -388,6 +392,9 @@ void ForestManagementEngine::setup()
                 ag = at->createAgent();
             }
         }
+
+        if (!ag)
+            throw IException("ABE setup: no agent defined and no default agent available.");
 
 
         // check units
@@ -728,6 +735,8 @@ QJSEngine *ForestManagementEngine::scriptEngine()
 
 FMSTP *ForestManagementEngine::stp(QString stp_name) const
 {
+    if (stp_name == "default" && mSTP.size()==1)
+        return mSTP[0];
     for (QVector<FMSTP*>::const_iterator it = mSTP.constBegin(); it!=mSTP.constEnd(); ++it)
         if ( (*it)->name() == stp_name )
             return *it;

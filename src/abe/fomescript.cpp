@@ -118,6 +118,13 @@ void FomeScript::setupScriptEnvironment()
     QJSValue script_value = ForestManagementEngine::scriptEngine()->newQObject(this);
     ForestManagementEngine::scriptEngine()->globalObject().setProperty("fmengine", script_value);
 
+    // default agent
+    ForestManagementEngine::scriptEngine()->evaluate(
+    "fmengine.addAgent({ scheduler: {enabled: false}, " \
+        "stp: { 'default': '_default'},"\
+        "run: function() {}  }, '_default');"
+        );
+
 }
 
 void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
@@ -526,7 +533,7 @@ int StandObj::timeSinceLastExecution() const
 
 QString StandObj::lastActivity() const
 {
-    if (mStand->lastExecutedActivity())
+    if (mStand && mStand->lastExecutedActivity())
         return mStand->lastExecutedActivity()->name();
     return QString();
 }
@@ -547,6 +554,7 @@ void StandObj::setRotationLength(int new_length)
 
 QString StandObj::speciesComposition() const
 {
+    if (!mStand) return QString("Invalid");
     int index = mStand->targetSpeciesIndex();
     return mStand->unit()->agent()->type()->speciesCompositionName(index);
 
@@ -554,6 +562,7 @@ QString StandObj::speciesComposition() const
 
 QString StandObj::thinningIntensity() const
 {
+    if (!mStand) return QString("Invalid");
     int t = mStand->thinningIntensity();
     return FomeScript::levelLabel(t);
 
@@ -561,6 +570,7 @@ QString StandObj::thinningIntensity() const
 
 QString StandObj::stp() const
 {
+    if (!mStand) return QString("Invalid");
     if (mStand->stp())
         return mStand->stp()->name();
     return QString();

@@ -46,7 +46,8 @@ namespace ABE {
   */
 
 // statics
-QStringList Activity::mAllowedProperties = QStringList() << "schedule" << "constraint" << "type";
+QStringList Activity::mAllowedProperties = QStringList() << "schedule" << "constraint" << "type"
+                                                         << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel";
 
 /***************************************************************************/
 /***************************   Schedule  ***********************************/
@@ -480,6 +481,9 @@ void Activity::setup(QJSValue value)
     mSchedule.setup(FMSTP::valueFromJs(value, "schedule", "", "setup activity"));
     if (FMSTP::verbose())
         qCDebug(abeSetup) << mSchedule.dump();
+
+    if (isRepeatingActivity())
+        mBaseActivity.setIsScheduled(false);
 
     // setup of events
     mEvents.clear();
