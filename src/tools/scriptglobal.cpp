@@ -762,11 +762,13 @@ QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
 
 }
 
-QJSValue ScriptGlobal::microclimateGrid(QString variable, int dayofyear)
+QJSValue ScriptGlobal::microclimateGrid(QString variable, int month=1)
 {
     if (!Model::settings().microclimateEnabled)
         throw IException("microclimateGrid(): Error, microclimate submodule is not enabled.");
-    Grid<double> *grid = MicroclimateVisualizer::grid(variable, dayofyear);
+    if (month<1 || month>12)
+        throw IException("microclimateGrid(): month needs to be from 1..12!");
+    Grid<double> *grid = MicroclimateVisualizer::grid(variable, month-1);
     QJSValue g = ScriptGrid::createGrid(grid, variable);
     return g;
 }

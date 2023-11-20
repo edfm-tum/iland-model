@@ -139,11 +139,18 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
             it.next();
             // parse special properties
             if (it.name()=="U" && it.value().isArray()) {
-                QVariantList list = it.value().toVariant().toList();
-                if (list.length()!=3)
-                    throw IException("STP: the 'U'-property needs to be an array with three elements!");
-                for (int i=0;i<list.length();++i)
-                    mRotationLength[i] = list.at(i).toInt();
+                if (it.value().isArray()) {
+                    QVariantList list = it.value().toVariant().toList();
+                    if (list.length()!=3)
+                        throw IException("STP: the 'U'-property needs to be an array with three elements!");
+                    for (int i=0;i<list.length();++i)
+                        mRotationLength[i] = list.at(i).toInt();
+                } else {
+                    // if U is not an array, use only the single value
+                    int u = it.value().toInt();
+                    for (int i=0;i<3;++i)
+                        mRotationLength[i] = u;
+                }
                 continue;
             }
             if (it.name()=="options") {

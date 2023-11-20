@@ -177,8 +177,8 @@ public slots:
     /// return a grid (level of resource units) with the result of an expression evaluated in the context of the resource unit.
     QJSValue resourceUnitGrid(QString expression);
 
-    /// get a grid for a given variable and a dayofyear (0..365)
-    QJSValue microclimateGrid(QString variable, int dayofyear);
+    /// get a grid for a given variable and a month (1..12)
+    QJSValue microclimateGrid(QString variable, int month);
     /// access to single resource unit (returns a reference)
     QJSValue resourceUnit(int index);
 
