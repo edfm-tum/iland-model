@@ -395,7 +395,7 @@ MainWindow::MainWindow(QWidget *parent)
     QStringList dialogList = QStringList() << "Modules" << "System";
     // List of lists with tabs to include
     QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
-    QStringList systemList = QStringList() << "path" << "database" << "logging" << "settings" << "javascript";
+    QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
     QList<QStringList> tabList;
     tabList.append(modulesList);
     tabList.append(systemList);
@@ -403,12 +403,12 @@ MainWindow::MainWindow(QWidget *parent)
     // import all variables, their types, default values, etc defined in metadata.txt
     SettingMetaData mSettingMetaData;
 
-    metadata meta;
-    processMetaData(meta);
+
+    processMetaData(mMeta);
 
 
     for (int i = 0; i < dialogList.length(); i++) {
-        createDialog(dialogList[i], tabList[i], meta);
+        createDialog(dialogList[i], tabList[i], mMeta);
     }
 
 }
@@ -431,18 +431,18 @@ void MainWindow::processMetaData(metadata &meta) {
     QString key;
     for (int i = 0; i < mMetaKeys.size(); i ++) {
         key = mMetaKeys[i];
-        meta.elements.append(key);
+        mMeta.elements.append(key);
         QStringList curValue = mMetaValues[i].split(",");
-        meta.inputType.append(curValue[0]);
+        mMeta.inputType.append(curValue[0]);
         if (!key.contains("modules.fire")) {
-            meta.defaultValue.append("curValue[1]");
-            meta.labelName.append("c");
-            meta.toolTip.append("curValue[3]");
+            mMeta.defaultValue.append("curValue[1]");
+            mMeta.labelName.append("c");
+            mMeta.toolTip.append("curValue[3]");
         }
         else {
-            meta.defaultValue.append(curValue[1]);
-            meta.labelName.append(curValue[2]);
-            meta.toolTip.append(curValue[3]);
+            mMeta.defaultValue.append(curValue[1]);
+            mMeta.labelName.append(curValue[2]);
+            mMeta.toolTip.append(curValue[3]);
         }
     }
 
@@ -551,6 +551,7 @@ void MainWindow::openModuleDialog()
     QString xmlFile = ui->initFileName->text();
     //ui_modules = new ModuleDialog(xmlFile, this);
     //bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
+
     mLinkxqt->loadXmlFile(xmlFile);
     ui_modules = new ModuleDialog(mLinkxqt, this);
     ui_modules->show();
@@ -564,7 +565,16 @@ void MainWindow::openSystemSettingsDialog()
 //    mLinkxqt->loadXmlFile(xmlFile);
 //    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
 //    ui_systemSettings->show();
-    ui_settingsDialog = new SettingsDialog(this);
+
+    QStringList dialogList = QStringList() << "System" << "Modules";
+    QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
+    QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
+    QList<QStringList> tabList;
+    tabList.append(systemList);
+    tabList.append(modulesList);
+
+
+    ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMeta, this);
     ui_settingsDialog->show();
 }
 

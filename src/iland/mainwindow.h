@@ -120,8 +120,10 @@ private:
 
     LinkXmlQt *mLinkxqt;
     SettingMetaData *mSettingMetaData;
+
     QStringList mMetaKeys;
     QStringList mMetaValues;
+    metadata mMeta;
 
     QLabel *mStatusLabel;
     QQuickView *mRuler;
