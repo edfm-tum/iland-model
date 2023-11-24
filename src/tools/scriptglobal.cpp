@@ -84,7 +84,6 @@ class ResourceUnit;
 
 QObject *ScriptGlobal::scriptOutput = nullptr;
 QString ScriptGlobal::mLastErrorMessage = "";
-QJSValue ScriptGlobal::throwErrorFunction = QJSValue();
 
 ScriptGlobal::ScriptGlobal(QObject *)
 {
@@ -103,7 +102,7 @@ QVariant ScriptGlobal::setting(QString key)
 {
     const XmlHelper &xml = GlobalSettings::instance()->settings();
     if (!xml.hasNode(key)) {
-        qDebug() << "scriptglobal: setting key " << key << "not valid.";
+        throwError("setting(): setting key '" + key + "' not valid.");
         return QVariant(); // undefined???
     }
     return QVariant(xml.value(key));
@@ -112,7 +111,7 @@ void ScriptGlobal::set(QString key, QString value)
 {
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     if (!xml.hasNode(key)) {
-        qDebug() << "scriptglobal: setting key " << key << "not valid.";
+        throwError("setting(): setting key '" + key + "' not valid.");
         return;
     }
     xml.setNodeValue(key, value);
@@ -144,8 +143,9 @@ void ScriptGlobal::alert(QString message)
 void ScriptGlobal::include(QString filename)
 {
     QString path = GlobalSettings::instance()->path(filename);
-    if (!QFile::exists(path))
-        throw IException(QString("include(): The javascript source file '%1' could not be found.").arg(path));
+    if (!QFile::exists(path)) {
+        throwError(QString("include(): The javascript source file '%1' could not be found.").arg(path)); return;
+    }
 
     QString includeFile=Helper::loadTextFile(path);
 
@@ -153,7 +153,7 @@ void ScriptGlobal::include(QString filename)
     if (ret.isError()) {
         QString error_message = formattedErrorMessage(ret, includeFile);
         qDebug() << error_message;
-        throw IException("Error in javascript-include():" + error_message);
+        throwError("Error in javascript-include():" + error_message);
     }
 
 }
@@ -197,32 +197,37 @@ double ScriptGlobal::worldY()
 // wrapped helper functions
 QString ScriptGlobal::loadTextFile(QString fileName)
 {
-    return Helper::loadTextFile(GlobalSettings::instance()->path(fileName));
+    QString file = GlobalSettings::instance()->path(fileName);
+    QString content = Helper::loadTextFile(file);
+    if (content.isEmpty())
+        throwError(QString("loadTextFile: the file '%1' does not exist or is empty.").arg(file));
+    return content;
 }
 void ScriptGlobal::saveTextFile(QString fileName, QString content)
 {
-    Helper::saveToTextFile(fileName, content);
+    Helper::saveToTextFile(GlobalSettings::instance()->path(fileName), content);
 }
 bool ScriptGlobal::fileExists(QString fileName)
 {
-    return QFile::exists(fileName);
+    return QFile::exists(GlobalSettings::instance()->path(fileName));
 }
 
-void ScriptGlobal::systemCmd(QString command)
+QString ScriptGlobal::systemCmd(QString command)
 {
-#ifdef Q_OS_WASM
+//#ifdef Q_OS_WASM
     qDebug() << "running system command:" << command;
-/*    QProcess process;
-    process.start(command);
+    QProcess process;
+    process.startCommand(command);
     process.waitForFinished(); // will wait forever until finished
 
     QByteArray res_stdout = process.readAllStandardOutput();
     QByteArray res_stderr = process.readAllStandardError();
-    qDebug() << "result (stdout):" << res_stdout;
-    qDebug() << "result (stderr):" << res_stderr; */
-#else
-    qDebug() << "not supported on WASM";
-#endif
+    qDebug() << "Process ended with exit code"<< process.exitCode() << "result (stdout):" << res_stdout;
+    qDebug() << "result (stderr):" << res_stderr;
+    return res_stdout;
+//#else
+//    qDebug() << "not supported on WASM";
+//#endif
 }
 
 
@@ -233,8 +238,10 @@ int ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
 {
     StandLoader loader(mModel);
     ResourceUnit *ru = mModel->ru(resourceIndex);
-    if (!ru)
-        throw IException(QString("addSingleTrees: invalid resource unit (index: %1").arg(resourceIndex));
+    if (!ru) {
+        throwError(QString("addSingleTrees: invalid resource unit (index: %1").arg(resourceIndex));
+        return -1;
+    }
     int cnt = loader.loadSingleTreeList(content, ru, "called_from_script");
     qDebug() << "script: addSingleTrees:" << cnt <<"trees loaded.";
     return cnt;
@@ -244,8 +251,10 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
 {
     StandLoader loader(mModel);
     ResourceUnit *ru = mModel->ru(resourceIndex);
-    if (!ru)
-        throw IException(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
+    if (!ru) {
+        throwError(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
+        return -1;
+    }
     return loader.loadDistributionList(content, ru, 0, "called_from_script");
 }
 
@@ -302,7 +311,7 @@ void MapGridWrapper::load(QString file_name)
 
 bool MapGridWrapper::isValid() const
 {
-    return mMap->isValid();
+    return mMap && mMap->isValid();
 }
 
 void MapGridWrapper::saveAsImage(QString)
@@ -351,8 +360,10 @@ void MapGridWrapper::clearProjectArea()
 
 void MapGridWrapper::createStand(int stand_id, QString paint_function, bool wrap_around)
 {
-    if (!mMap)
-        throw IException("no valid map to paint on");
+    if (!mMap) {
+        ScriptGlobal::throwError("no valid map to paint on");
+        return;
+    }
     Expression expr(paint_function);
     expr.setCatchExceptions(true);
     double *x_var = expr.addVar("x");
@@ -406,7 +417,7 @@ double MapGridWrapper::copyPolygonFromRect(QJSValue source, int id_in, int id, d
     } else  if (o && qobject_cast<MapGridWrapper*>(o)) {
         isrc = & (qobject_cast<MapGridWrapper*>(o)->map()->grid());
     } else {
-        qDebug() << "MapGridWrapper: copyPolygonFromRect: invalid source (neither Grid, nor MapGrid)!";
+        ScriptGlobal::throwError("MapGridWrapper: copyPolygonFromRect: invalid source (neither Grid, nor MapGrid)!");
         return 0.;
     }
 
@@ -465,11 +476,15 @@ void MapGridWrapper::createMapIndex()
 
 void MapGridWrapper::copyFromGrid(ScriptGrid *grid)
 {
-    if (!grid->isValid() || !mMap)
-        throw IException("copyFromGrid: invalid input grid or mapgrid!");
+    if (!grid->isValid() || !mMap) {
+        ScriptGlobal::throwError("copyFromGrid: invalid input grid or mapgrid!");
+        return;
+    }
 
-    if (mMap->grid().cellsize() != grid->cellsize() || mMap->grid().sizeX() != grid->grid()->sizeX() || mMap->grid().sizeY() != grid->grid()->sizeY())
-        throw IException("copyFromGrid: dimensions of input grid do not match the map grid!");
+    if (mMap->grid().cellsize() != grid->cellsize() || mMap->grid().sizeX() != grid->grid()->sizeX() || mMap->grid().sizeY() != grid->grid()->sizeY()) {
+        ScriptGlobal::throwError("copyFromGrid: dimensions of input grid do not match the map grid!");
+        return;
+    }
 
     int *target = mMap->grid().begin();
     double *src = grid->grid()->begin();
@@ -557,10 +572,12 @@ bool ScriptGlobal::stopOutput(QString table_name)
 void ScriptGlobal::useSpecialMapForOutputs(MapGridWrapper *m)
 {
     CustomAggOut *out = dynamic_cast<CustomAggOut*>(GlobalSettings::instance()->outputManager()->find("customagg"));
-    if (!out)
-        throw IException("useSpecialMapForOutputs() requires 'customagg' output to be available!");
-    if (!m)
-        throw IException("useSpecialMapForOutputs(): empty input map!");
+    if (!out) {
+        throwError("useSpecialMapForOutputs() requires 'customagg' output to be available!"); return;
+    }
+    if (!m) {
+        throwError("useSpecialMapForOutputs(): empty input map!"); return;
+    }
 
     out->setStandGrid(m->map());
 }
@@ -627,7 +644,7 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hleve
         FloatGrid lif10m_grid = GlobalSettings::instance()->model()->grid()->averaged(5); // average LIF value with 10m resolution
         HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
         if (lif10m_grid.count() != height_grid->count()) {
-            qDebug() << "Error: grids do not align!";
+            throwError("gridToFile: Error: grids do not align!");
             return false;
         }
         SpeciesSet *sset = GlobalSettings::instance()->model()->speciesSet();
@@ -645,7 +662,7 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hleve
         qDebug() << "saved grid to " << file_name;
         return true;
     }
-    qDebug() << "could not save gridToFile because '" << grid_type << "' is not a valid option.";
+    throwError("gridToFile(): could not save gridToFile because '" +  grid_type + "' is not a valid option.");
     return false;
 
 }
@@ -669,7 +686,7 @@ QJSValue ScriptGlobal::grid(QString type)
     if (type=="swc_gs") index=13;
     if (type=="swc_pot") index=14;
     if (index<0) {
-        qDebug()<< "ScriptGlobal::grid(): error: invalid grid specified:" << type << ". valid options: 'height', 'valid', 'count', 'forestoutside'.";
+        throwError("ScriptGlobal::grid(): error: invalid grid specified: '" + type + "'.");
         return QJSValue();
     }
 
@@ -726,7 +743,7 @@ QJSValue ScriptGlobal::speciesShareGrid(QString species)
 {
     Species *s = GlobalSettings::instance()->model()->speciesSet()->species(species);
     if (!s) {
-        qDebug() << "speciesShareGrid: invalid species" << species;
+        throwError("speciesShareGrid: invalid species: '" + species + "'.");
         return QJSValue();
     }
     const Grid<ResourceUnit*> &rug = GlobalSettings::instance()->model()->RUgrid();
@@ -744,6 +761,7 @@ QJSValue ScriptGlobal::speciesShareGrid(QString species)
 
 QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
 {
+    try {
     const Grid<ResourceUnit*> &rug = GlobalSettings::instance()->model()->RUgrid();
     Grid<double> *grid = new Grid<double>(rug.cellsize(), rug.sizeX(), rug.sizeY());
     double *p=grid->begin();
@@ -761,6 +779,10 @@ QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
     }
     QJSValue g = ScriptGrid::createGrid(grid, "ru");
     return g;
+    } catch (const IException &e) {
+        throwError(e.message());
+        return QJSValue();
+    }
 
 }
 
@@ -804,7 +826,7 @@ bool ScriptGlobal::seedMapToFile(QString species, QString file_name)
     // find species
     Species *s = GlobalSettings::instance()->model()->speciesSet()->species(species);
     if (!s) {
-        qDebug() << "invalid species" << species << ". No seed map saved.";
+        throwError("seedMapToFile: invalid species '" + species + "'. No map saved.");
         return false;
     }
     s->seedDispersal()->dumpMapNextYear(file_name);
@@ -851,7 +873,8 @@ int ScriptGlobal::addSaplings(int standId, double x, double y, double width, dou
     QRectF remove_rect(x, y, width, height);
     if (standId>0) {
         if (!GlobalSettings::instance()->model()->standGrid()) {
-            throw IException("addSaplings - no stand grid available!");
+            throwError("addSaplings - no stand grid available!");
+            return -1;
         }
 
         QRectF box = GlobalSettings::instance()->model()->standGrid()->boundingBox(standId);
@@ -870,7 +893,7 @@ void ScriptGlobal::removeSaplings(int standId, double x, double y, double width,
     QRectF remove_rect(x, y, width, height);
     if (standId>0) {
         if (!GlobalSettings::instance()->model()->standGrid()) {
-            throw IException("addSaplings - no stand grid available!");
+            throwError("addSaplings - no stand grid available!"); return;
         }
 
         QRectF box = GlobalSettings::instance()->model()->standGrid()->boundingBox(standId);
@@ -994,11 +1017,9 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
 
 void ScriptGlobal::throwError(const QString &errormessage)
 {
-    //GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw new Error('%1')").arg(errormessage));
-    throwErrorFunction.call(QJSValueList() << errormessage);
+    GlobalSettings::instance()->scriptEngine()->throwError(errormessage);
     mLastErrorMessage += errormessage + "\n";
     qWarning() << "Scripterror:" << errormessage;
-    // TODO: check if this works....
 }
 
 void ScriptGlobal::loadScript(const QString &fileName)
@@ -1038,7 +1059,7 @@ QString ScriptGlobal::executeScript(QString cmd)
         QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
         qDebug() << msg;
         mLastErrorMessage += msg + "\n";
-        //msg+=engine->uncaughtExceptionBacktrace().join("\n");
+
         // throw only a exception during a simulation
         if (GlobalSettings::instance()->controller()->isRunning())
             throw IException("A Javascript error occured: " + msg);
@@ -1235,23 +1256,16 @@ QString ScriptGlobal::JStoString(QJSValue value)
 void ScriptGlobal::setupGlobalScripting()
 {
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
-//    QJSValue dbgprint = engine->newFunction(script_debug);
-//    QJSValue sinclude = engine->newFunction(script_include);
-//    QJSValue alert = engine->newFunction(script_alert);
-//    engine->globalObject().setProperty("print",dbgprint);
-//    engine->globalObject().setProperty("include",sinclude);
-//    engine->globalObject().setProperty("alert", alert);
 
     // check if update necessary
     if (engine->globalObject().property("include").isCallable())
         return;
 
-    // wrapper functions for (former) stand-alone javascript functions
-    // Qt5 - modification
+    // wrapper functions that are available globally
     QString code = "function print(x) { Globals.print(x); } " \
                      "function include(x) { Globals.include(x); } " \
                      "function alert(x) { Globals.alert(x); } " \
-                     "function throwError(x) { console.log('Exception: ' + x); throw new Error(x); } ";
+                     "function printObj(x) { console.log(JSON.stringify(x, null, 4)); } ";
     ScriptGlobal::executeScript(code);
     // add a (fake) console.log / console.print
 /*/    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
@@ -1260,10 +1274,6 @@ void ScriptGlobal::setupGlobalScripting()
 //                     "                                   } " \
 //                     "              }"); */
 
-    // save a static ref for throwing errors
-    throwErrorFunction = GlobalSettings::instance()->scriptEngine()->globalObject().property("throwError");
-    if (throwErrorFunction.isCallable())
-        qDebug() << "yoyoyo";
 
     ScriptObjectFactory *factory = new ScriptObjectFactory;
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(factory);
