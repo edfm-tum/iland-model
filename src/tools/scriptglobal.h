@@ -91,7 +91,7 @@ class ScriptGlobal : public QObject
     Q_PROPERTY(bool qt5 READ qt5)
     Q_PROPERTY(int msec READ msec)
     Q_PROPERTY(QJSValue viewOptions READ viewOptions WRITE setViewOptions)
-
+    Q_PROPERTY(QString lastErrorMessage READ lastErrorMessage);
 
 public:
     ScriptGlobal(QObject *parent=nullptr);
@@ -112,6 +112,8 @@ public:
     static QString executeJSFunction(QString function);
     static QObject *scriptOutput; ///< public "pipe" for script output (is redirected to GUI if available)
     static QString formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode);
+    static void throwError(const QString &errormessage);
+    static QString lastErrorMessage() { return mLastErrorMessage; }
 
     // view options
     /* View options:
@@ -178,7 +180,7 @@ public slots:
     QJSValue resourceUnitGrid(QString expression);
 
     /// get a grid for a given variable and a month (1..12)
-    QJSValue microclimateGrid(QString variable, int month);
+    QJSValue microclimateGrid(QString variable, int month=1);
     /// access to single resource unit (returns a reference)
     QJSValue resourceUnit(int index);
 
@@ -201,7 +203,8 @@ public slots:
 
     void test_tree_mortality(double thresh, int years, double p_death);
 private:
-    void throwError(const QString &errormessage);
+    static QString mLastErrorMessage;
+    static QJSValue throwErrorFunction;
     QString mCurrentDir;
     Model *mModel;
     QJSValue mRUValue;

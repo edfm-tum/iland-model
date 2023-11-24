@@ -155,12 +155,18 @@ GlobalSettings::~GlobalSettings()
 
 QString GlobalSettings::executeJavascript(const QString &command)
 {
-    return ScriptGlobal::executeScript(command);
+    QString result = ScriptGlobal::executeScript(command);
+    if (!ScriptGlobal::lastErrorMessage().isEmpty())
+        Helper::msg("Javascript-Error: \n" + ScriptGlobal::lastErrorMessage());
+    return result;
 }
 
 QString GlobalSettings::executeJSFunction(const QString function_name)
 {
-    return ScriptGlobal::executeJSFunction(function_name);
+    QString result = ScriptGlobal::executeJSFunction(function_name);
+    if (!ScriptGlobal::lastErrorMessage().isEmpty())
+        Helper::msg("Javascript-Error: \n" + ScriptGlobal::lastErrorMessage());
+    return result;
 }
 
 void GlobalSettings::resetScriptEngine()

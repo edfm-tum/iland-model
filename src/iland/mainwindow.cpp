@@ -1694,6 +1694,9 @@ void MainWindow::executeJS(QString code)
         if (!result.isEmpty()) {
             qDebug() << result;
         }
+        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+            Helper::msg(ScriptGlobal::lastErrorMessage());
+        }
     } catch(const IException &e) {
         Helper::msg(e.message());
     }
@@ -2207,6 +2210,10 @@ void MainWindow::on_scriptCommand_returnPressed()
         if (!result.isEmpty()) {
             qDebug() << result;
         }
+        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+            Helper::msg(ScriptGlobal::lastErrorMessage());
+        }
+
     } catch(const IException &e) {
         Helper::msg(e.message());
     }
@@ -2512,6 +2519,10 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
     try {
 
         qDebug() << ScriptGlobal::executeScript(link);
+        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+            Helper::msg(ScriptGlobal::lastErrorMessage());
+        }
+
 
     } catch(const IException &e) {
         Helper::msg(e.message());

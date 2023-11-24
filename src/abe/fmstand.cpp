@@ -282,6 +282,7 @@ bool FMStand::execute()
         }
     }
 
+    FomeScript::setExecutionContext(this);
     mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
 
 

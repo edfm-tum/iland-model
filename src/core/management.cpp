@@ -49,7 +49,12 @@
 // global output function
 QString Management::executeScript(QString cmd)
 {
-    return ScriptGlobal::executeScript(cmd);
+    QString result = ScriptGlobal::executeScript(cmd);
+    if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+        Helper::msg(ScriptGlobal::lastErrorMessage());
+    }
+
+    return result;
 }
 
 Management::Management()

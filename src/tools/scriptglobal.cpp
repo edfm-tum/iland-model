@@ -83,6 +83,8 @@ class ResourceUnit;
 */
 
 QObject *ScriptGlobal::scriptOutput = nullptr;
+QString ScriptGlobal::mLastErrorMessage = "";
+QJSValue ScriptGlobal::throwErrorFunction = QJSValue();
 
 ScriptGlobal::ScriptGlobal(QObject *)
 {
@@ -762,12 +764,16 @@ QJSValue ScriptGlobal::resourceUnitGrid(QString expression)
 
 }
 
-QJSValue ScriptGlobal::microclimateGrid(QString variable, int month=1)
+QJSValue ScriptGlobal::microclimateGrid(QString variable, int month)
 {
-    if (!Model::settings().microclimateEnabled)
-        throw IException("microclimateGrid(): Error, microclimate submodule is not enabled.");
-    if (month<1 || month>12)
-        throw IException("microclimateGrid(): month needs to be from 1..12!");
+    if (!Model::settings().microclimateEnabled) {
+        throwError("microclimateGrid(): Error, microclimate submodule is not enabled.");
+        return QJSValue();
+    }
+    if (month<1 || month>12) {
+        throwError("microclimateGrid(): month needs to be from 1..12!");
+        return QJSValue();
+    }
     Grid<double> *grid = MicroclimateVisualizer::grid(variable, month-1);
     QJSValue g = ScriptGrid::createGrid(grid, variable);
     return g;
@@ -958,7 +964,11 @@ bool ScriptGlobal::loadStandCarbon()
 void ScriptGlobal::reloadABE()
 {
     qDebug() << "attempting to reload ABE";
-    GlobalSettings::instance()->model()->reloadABE();
+    try {
+        GlobalSettings::instance()->model()->reloadABE();
+    } catch (const IException &e) {
+        throwError(e.message());
+    }
 }
 
 void ScriptGlobal::setUIshortcuts(QJSValue shortcuts)
@@ -984,7 +994,9 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
 
 void ScriptGlobal::throwError(const QString &errormessage)
 {
-    GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
+    //GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw new Error('%1')").arg(errormessage));
+    throwErrorFunction.call(QJSValueList() << errormessage);
+    mLastErrorMessage += errormessage + "\n";
     qWarning() << "Scripterror:" << errormessage;
     // TODO: check if this works....
 }
@@ -1018,14 +1030,21 @@ QString ScriptGlobal::executeScript(QString cmd)
     DebugTimer t("execute javascript");
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     QJSValue result;
+    mLastErrorMessage = "";
     if (engine)
         result = engine->evaluate(cmd);
     if (result.isError()) {
         //int line = mEngine->uncaughtExceptionLineNumber();
         QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
         qDebug() << msg;
+        mLastErrorMessage += msg + "\n";
         //msg+=engine->uncaughtExceptionBacktrace().join("\n");
+        // throw only a exception during a simulation
+        if (GlobalSettings::instance()->controller()->isRunning())
+            throw IException("A Javascript error occured: " + msg);
+
         return msg;
+
     } else {
         return QString();
     }
@@ -1036,6 +1055,8 @@ QString ScriptGlobal::executeJSFunction(QString function)
     DebugTimer t("execute javascript");
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     QJSValue result;
+    mLastErrorMessage = "";
+
     if (!engine)
         return QStringLiteral("No valid javascript engine!");
 
@@ -1043,7 +1064,12 @@ QString ScriptGlobal::executeJSFunction(QString function)
         result = engine->globalObject().property(function).call();
         if (result.isError()) {
             QString msg = QString( "Script Error occured: %1\n").arg( result.toString() );
+            mLastErrorMessage += msg + "\n";
             qDebug() << msg;
+            // throw only a exception during a simulation
+            if (GlobalSettings::instance()->controller()->isRunning())
+                throw IException("A Javascript error occured: " + msg);
+
             return msg;
         }
     }
@@ -1222,9 +1248,11 @@ void ScriptGlobal::setupGlobalScripting()
 
     // wrapper functions for (former) stand-alone javascript functions
     // Qt5 - modification
-    engine->evaluate("function print(x) { Globals.print(x); } \n" \
-                     "function include(x) { Globals.include(x); } \n" \
-                     "function alert(x) { Globals.alert(x); } \n");
+    QString code = "function print(x) { Globals.print(x); } " \
+                     "function include(x) { Globals.include(x); } " \
+                     "function alert(x) { Globals.alert(x); } " \
+                     "function throwError(x) { console.log('Exception: ' + x); throw new Error(x); } ";
+    ScriptGlobal::executeScript(code);
     // add a (fake) console.log / console.print
 /*/    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \
 //                     "                print: function(x) { for(var propertyName in x)  " \
@@ -1232,6 +1260,10 @@ void ScriptGlobal::setupGlobalScripting()
 //                     "                                   } " \
 //                     "              }"); */
 
+    // save a static ref for throwing errors
+    throwErrorFunction = GlobalSettings::instance()->scriptEngine()->globalObject().property("throwError");
+    if (throwErrorFunction.isCallable())
+        qDebug() << "yoyoyo";
 
     ScriptObjectFactory *factory = new ScriptObjectFactory;
     QJSValue obj = GlobalSettings::instance()->scriptEngine()->newQObject(factory);

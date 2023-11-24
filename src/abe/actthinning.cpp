@@ -244,6 +244,8 @@ bool ActThinning::evaluateCustom(FMStand *stand, SCustomThinning &custom)
     if (custom.targetRelative && (target_value>100. || target_value<0.))
         throw IException(QString("Thinning activity: invalid relative targetValue (0-100): %1").arg(target_value));
 
+    if (target_value < 0. || remaining_stems < 0. || min_dbh < 0.)
+        throw IException(QString("Thinning activity, error: target_value or min_dbh or remaining_stems < 0."));
 
     FMTreeList trees(stand);
     QString filter = custom.filter;
