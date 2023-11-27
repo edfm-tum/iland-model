@@ -19,6 +19,7 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
     mLinkxqt(Linkxqt)
 {
 
+    QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     //ui->setupUi(this);
     // create a tree widget used to navigate
     QTreeWidget *treeWidget = new QTreeWidget(this);
@@ -31,10 +32,11 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
     int treeIndex = 0;
 
     for (int i = 0; i < mModulesList.length(); i++) {
-        QTreeWidgetItem* curItem = new QTreeWidgetItem(treeWidget);
-        curItem->setText(0, mModulesList[i]);
-        curItem->setWhatsThis(0, QString::number(treeIndex ++));
+        const QString& curModule = mModulesList[i];
 
+        QTreeWidgetItem* curItem = new QTreeWidgetItem(treeWidget);
+        curItem->setText(0, curModule);
+        curItem->setWhatsThis(0, QString::number(treeIndex ++));
 
         // Create pages with scroll areas
         QWidget* curParentStack = new QWidget();
@@ -48,14 +50,15 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
         QString element;
         QString inputType;
         QStringList xmlPath;
-        QString dialogName = mModulesList[i];
+        //QString dialogName = mModulesList[i];
 
-        foreach (QString tab, inputTabList[i]) {
+        foreach (QString tab, mTabsOfModulesList[i]) {
             QTreeWidgetItem* curSubItem = new QTreeWidgetItem(curItem);
             curSubItem->setText(0, tab);
             curSubItem->setWhatsThis(0, QString::number(treeIndex ++));
 
             QWidget* curChildStack = new QWidget();
+            curChildStack->setObjectName(curModule + "." + tab.toLower());
 
             QScrollArea* localScroll = new QScrollArea(this);
             localScroll->setWidgetResizable(true);
@@ -73,7 +76,7 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
                 element = mMeta.elements[n];
                 xmlPath = element.split(".");
                 if (xmlPath.length() > 2) {
-                    if (xmlPath[0] == dialogName.toLower() && xmlPath[1] == tab.toLower()) {
+                    if (xmlPath[0] == curModule.toLower() && xmlPath[1] == tab.toLower()) {
                         inputType = mMeta.inputType[n];
 
                         if (inputType != "noInput") {
@@ -117,24 +120,30 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
 
     }
 
-    QHBoxLayout* layout = new QHBoxLayout(this);
-    layout->addWidget(treeWidget);
-    layout->addWidget(stackedWidget);
-    layout->setStretch(0, 1);
-    layout->setStretch(1, 3);
+    QHBoxLayout* contentLayout = new QHBoxLayout();
+    contentLayout->addWidget(treeWidget);
+    contentLayout->addWidget(stackedWidget);
+    contentLayout->setStretch(0, 1);
+    contentLayout->setStretch(1, 3);
+
+    QVBoxLayout* overallLayout = new QVBoxLayout(this);
+    overallLayout->addLayout(contentLayout);
+    overallLayout->addWidget(dialogButtons);
 
     connect(treeWidget, &QTreeWidget::itemSelectionChanged, this, [stackedWidget, treeWidget]() {
         int itemIndex = treeWidget->currentItem()->whatsThis(0).toInt();
         stackedWidget->setCurrentIndex(itemIndex);
     });
 
-    setLayout(layout);
+    setLayout(overallLayout);
 
-//    connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(stackedWidget);
-//                                                                     mLinkxqt->writeToFile();
-//                                                                     this->close();});
-//    connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {this->close();});
-//    connect(this, &QDialog::rejected, this, [=]() {this->close();});
+    mLinkxqt->readValuesXml(stackedWidget);
+
+    connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(stackedWidget);
+                                                                     mLinkxqt->writeToFile();
+                                                                     this->close();});
+    connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {this->close();});
+    connect(this, &QDialog::rejected, this, [=]() {this->close();});
 
 
 }

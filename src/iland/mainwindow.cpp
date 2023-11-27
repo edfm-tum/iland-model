@@ -403,6 +403,7 @@ MainWindow::MainWindow(QWidget *parent)
     // import all variables, their types, default values, etc defined in metadata.txt
     SettingMetaData mSettingMetaData;
 
+    connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
 
     processMetaData(mMeta);
 
@@ -451,6 +452,8 @@ void MainWindow::processMetaData(metadata &meta) {
 void MainWindow::createDialog(const QString& dialogName,
                               QStringList tabs,
                               metadata& meta) {
+
+
 
     // Create button and add to ruler layout
     QPushButton *openDialogButton = new QPushButton(this);
@@ -552,13 +555,13 @@ void MainWindow::openModuleDialog()
     //ui_modules = new ModuleDialog(xmlFile, this);
     //bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
 
-    mLinkxqt->loadXmlFile(xmlFile);
+    mLinkxqt->loadXmlFile();
     ui_modules = new ModuleDialog(mLinkxqt, this);
     ui_modules->show();
 }
 
 
-void MainWindow::openSystemSettingsDialog()
+void MainWindow::on_actionSettingsDialog_triggered()
 {
     //QString xmlFile = ui->initFileName->text();
     //ui_systemSettings = new DialogSystemSettings(xmlFile, this);
@@ -573,7 +576,7 @@ void MainWindow::openSystemSettingsDialog()
     tabList.append(systemList);
     tabList.append(modulesList);
 
-
+    mLinkxqt->loadXmlFile();
     ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMeta, this);
     ui_settingsDialog->show();
 }

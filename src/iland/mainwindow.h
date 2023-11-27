@@ -175,7 +175,7 @@ private:
 
 private slots:
     void openModuleDialog();
-    void openSystemSettingsDialog();
+    //void openSystemSettingsDialog();
 
     void automaticRun(); ///< automatically start a simulation...
     void updateLabel(); ///< update UI labels during run
@@ -223,8 +223,8 @@ private slots:
     void on_openFile_clicked();
     void on_pbSetAsDebug_clicked();
 
-
     void on_actionEdit_XML_settings_triggered();
+    void on_actionSettingsDialog_triggered();
 
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);

@@ -160,6 +160,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionEdit_XML_settings"/>
+   <addaction name="actionSettingsDialog"/>
    <addaction name="separator"/>
    <addaction name="actionModelCreate"/>
    <addaction name="actionModelDestroy"/>
@@ -216,7 +217,7 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
 @</string>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="editStackMain">
         <attribute name="title">
@@ -1455,6 +1456,15 @@ QProgressBar::chunk {
   <action name="actionSave_regeneration_grid">
    <property name="text">
     <string>Save regeneration grid</string>
+   </property>
+  </action>
+  <action name="actionSettingsDialog">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/load-settings.png</normaloff>res/load-settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings Dialog</string>
    </property>
   </action>
  </widget>

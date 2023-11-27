@@ -7,10 +7,10 @@
 #include <QPlainTextEdit>
 
 
-LinkXmlQt::LinkXmlQt(QString xmlFile) :
-    xmlFile(xmlFile)
+LinkXmlQt::LinkXmlQt(const QString& xmlFile) :
+    mXmlFile(xmlFile)
 {
-    xmlFileLoaded = loadXmlFile(xmlFile);
+    xmlFileLoaded = loadXmlFile();
 
 }
 
@@ -19,15 +19,16 @@ LinkXmlQt::~LinkXmlQt() {
 }
 
 
-void LinkXmlQt::setXmlPath(const QString xmlPath) {
-    xmlFile = xmlPath;
+void LinkXmlQt::setXmlPath(const QString& xmlPath) {
+    mXmlFile = xmlPath;
 }
 
 
-bool LinkXmlQt::loadXmlFile(const QString xmlPath) {
+bool LinkXmlQt::loadXmlFile() {
     QDomDocument curXml;
-    setXmlPath(xmlPath);
-    QFile file(xmlPath);
+    //setXmlPath(xmlPath);
+    QString filetest = mXmlFile;
+    QFile file(mXmlFile);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "File couldn't be opened. Abort.";
@@ -43,7 +44,7 @@ bool LinkXmlQt::loadXmlFile(const QString xmlPath) {
         return false;
     }
 
-    loadedXml = curXml;
+    mLoadedXml = curXml;
     file.close();
     return true;
 }
@@ -53,7 +54,7 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 {
 
     if ( xmlFileLoaded ) {
-        QDomDocument curXml = loadedXml;
+        QDomDocument curXml = mLoadedXml;
 
         QDomElement curNode = curXml.documentElement();
         //QDomElement curNode = rootElement;
@@ -90,7 +91,7 @@ void LinkXmlQt::writeCommentXml(const QString& comment,
                                 const QStringList& xmlPath)
 
 {
-    QDomDocument curXml = loadedXml;
+    QDomDocument curXml = mLoadedXml;
 
     QDomElement rootElement = curXml.documentElement();
     QDomElement curNode = rootElement;
@@ -126,15 +127,15 @@ void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines)
         QDomNode curParentNode = curNode.parentNode();
         curParentNode.insertBefore(newComment, curNode);
     }
-    loadedXml = curXml;
+    mLoadedXml = curXml;
 }
 
 
 void LinkXmlQt::readValuesXml(QTabWidget* tabWidget) {
-    QDomDocument curXml = loadedXml;
+
+    QDomDocument curXml = mLoadedXml;
     QString xmlElement = tabWidget->objectName().toLower();
-    qDebug() << "Tab name: " << tabWidget->objectName();
-    //QFile file(xmlFile);
+
     if (!xmlFileLoaded) {
         qDebug() << "Error with loading data. Check xml file! Abort.";
         return;
@@ -148,14 +149,94 @@ void LinkXmlQt::readValuesXml(QTabWidget* tabWidget) {
         for (int i = 0; i < tabWidget->count(); i++) {
             QString currentTab = tabWidget->widget(i)->objectName();
             QDomElement curBranch = moduleBranch.firstChildElement(currentTab);
-            traverseTreeSetElementsGui(curBranch.firstChild(), i, tabWidget);
+            traverseTreeSetElementsGui(curBranch.firstChild(), tabWidget);
         }
 
     }
 }
 
+void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
+
+    QDomDocument curXml = mLoadedXml;
+
+    if (!xmlFileLoaded) {
+        qDebug() << "Error with loading data. Check xml file! Abort.";
+        return;
+    }
+
+    else {
+        //QTabWidget* moduleTabs = tabWidget;
+
+        QDomElement rootElement = curXml.documentElement();
+        QDomElement curNode;
+        QString elementValue;
+
+        QList<QWidget *> widgetElements = stackedWidget->findChildren<QWidget *>();
+        QList<QTableWidget *> tableList = stackedWidget->findChildren<QTableWidget *>();
+
+        foreach (QWidget* curWidget, widgetElements) {
+            //qDebug() << "Aktuelles Widget: " << curWidget->objectName();
+            QStringList xmlPath = curWidget->objectName().split(".");
+
+            curNode = rootElement;
+            foreach (QString node, xmlPath) {
+                curNode = curNode.firstChildElement(node);
+                //qDebug() << "Current node: " << curNode.nodeName();
+            }
+
+            if (!curNode.isNull()) {
+                QString curValue = curNode.firstChild().toText().data();
+                //qDebug() << "Aktueller Wert: " << curValue;
+                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
+                    lineEdit->setText(curValue);
+                }
+                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
+                    curValue = curValue.toLower();
+
+                    //                    if (curValue == "1") {
+                    //                        curValue = "true";
+                    //                    }
+                    //                    else if (curValue == "0") {
+                    //                        curValue = "false";
+                    //                    }
+
+                    QStringList comboBoxValidValues;
+                    for (int i = 0; i < comboBox->count(); ++i) {
+                        comboBoxValidValues.append(comboBox->itemText(i));
+                    }
+                    if (comboBoxValidValues.contains(curValue)) {
+                        comboBox->setCurrentText(curValue);
+                    }
+
+                }
+                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
+                    if (curValue == "true" || curValue == "True" || curValue == "1") {
+                        checkBox->setChecked(TRUE);
+                    }
+                    else if (curValue == "false" || curValue == "False" || curValue == "0") {
+                        checkBox->setChecked(FALSE);
+                    }
+                }
+
+            }
+
+        }
+
+//        for (int i = 0; i < tabWidget->count(); i++) {
+//            QString xmlElement = tabWidget->objectName().toLower();
+//            QDomElement moduleBranch = rootElement.firstChildElement(xmlElement);
+//            QString currentTab = tabWidget->widget(i)->objectName();
+//            QDomElement curBranch = moduleBranch.firstChildElement(currentTab);
+//            traverseTreeSetElementsGui(curBranch.firstChild(), tabWidget);
+//        }
+
+    }
+}
+
 void LinkXmlQt::writeValuesXml(QTabWidget* tabWidget) {
-    QDomDocument curXml = loadedXml;
+
+    QDomDocument curXml = mLoadedXml;
+
     QString xmlElement = tabWidget->objectName();
 
     //QFile file(xmlFile);
@@ -172,11 +253,76 @@ void LinkXmlQt::writeValuesXml(QTabWidget* tabWidget) {
         for (int i = 0; i < tabWidget->count(); i++) {
             QString currentTab = tabWidget->widget(i)->objectName();
             QDomElement curBranch = moduleBranch.firstChildElement(currentTab);
-            traverseTreeSetElementsXml(curBranch.firstChild(), i, tabWidget);
+            traverseTreeSetElementsXml(curBranch.firstChild(), tabWidget);
         }
 
     }
 }
+
+void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
+
+    QDomDocument curXml = mLoadedXml;
+
+    //QFile file(xmlFile);
+    if (!xmlFileLoaded) {
+        qDebug() << "Error with loading data. Check xml file! Abort.";
+        return;
+    }
+
+    else {
+        //QTabWidget* moduleTabs = tabWidget;
+        QDomElement rootElement = curXml.documentElement();
+        QDomElement curNode;
+        QString elementValue;
+
+        QList<QWidget *> widgetElements = stackedWidget->findChildren<QWidget *>();
+
+        foreach (QWidget* curWidget, widgetElements) {
+            //qDebug() << "Aktuelles Widget: " << curWidget->objectName();
+            QStringList xmlPath = curWidget->objectName().split(".");
+
+            curNode = rootElement;
+            foreach (QString node, xmlPath) {
+                curNode = curNode.firstChildElement(node);
+                //qDebug() << "Current node: " << curNode.nodeName();
+            }
+
+            if (!curNode.isNull()) {
+                //QString curValue = curNode.firstChild().toText().data();
+                //qDebug() << "Aktueller Wert: " << curValue;
+                if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
+                    elementValue = lineEdit->text();
+                }
+                else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
+                    elementValue = comboBox->currentText();
+                }
+                else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
+                    if (checkBox->isChecked()) {
+                        elementValue = "true";
+                    }
+                    else {
+                        elementValue = "false";
+                    }
+                }
+                else {
+                    //qDebug() << "Widget not specified: " << curWidget->objectName();
+                }
+                curNode.firstChild().setNodeValue(elementValue);
+            }
+
+        }
+
+//        for (int i = 0; i < stackedWidget->count(); i++) {
+
+//            QStringList xmlPath = stackedWidget->objectName().split(".");
+//            QDomElement branch = rootElement.firstChildElement(xmlPath[0]);
+//            QDomElement curBranch = branch.firstChildElement(xmlPath[1]);
+//            traverseTreeSetElementsXml(curBranch.firstChild(), stackedWidget);
+//        }
+
+    }
+}
+
 
 
 //void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& curNode,
@@ -360,11 +506,10 @@ void LinkXmlQt::writeValuesXml(QTabWidget* tabWidget) {
 
 
 void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& node,
-                                           int tabIndex,
                                            QTabWidget* tabWidget)
 {
 
-    QDomDocument curXml = loadedXml;
+    QDomDocument curXml = mLoadedXml;
 
     QDomElement rootElement = curXml.documentElement();
     QDomElement curNode;
@@ -428,11 +573,10 @@ void LinkXmlQt::traverseTreeSetElementsGui(const QDomNode& node,
 
 
 void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& node,
-                                           int tabIndex,
                                            QTabWidget* tabWidget)
 {
 
-    QDomDocument curXml = loadedXml;
+    QDomDocument curXml = mLoadedXml;
 
     QDomElement rootElement = curXml.documentElement();
     QDomElement curNode;
@@ -480,13 +624,13 @@ void LinkXmlQt::traverseTreeSetElementsXml(const QDomNode& node,
 
 }
 
-void LinkXmlQt::writeToFile(QString xmlFilePath)
+void LinkXmlQt::writeToFile(const QString& xmlFilePath)
 {
     if (xmlFilePath != "") {
         this->setXmlPath(xmlFilePath);
     }
 
-    QFile file(xmlFile);
+    QFile file(mXmlFile);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << "File couldn't be opened for writing. Abort.";
@@ -494,7 +638,7 @@ void LinkXmlQt::writeToFile(QString xmlFilePath)
     }
 
     QTextStream outStream(&file);
-    loadedXml.save(outStream, 4);
+    mLoadedXml.save(outStream, 4);
 
     file.close();
 
