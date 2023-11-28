@@ -402,15 +402,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     // import all variables, their types, default values, etc defined in metadata.txt
     SettingMetaData mSettingMetaData;
+    QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    mSettingMetaData.loadFromFile(mainDir + "/project_file_metadata.txt", mMetaKeys, mMetaValues);
 
     connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
 
-    processMetaData(mMeta);
+//    processMetaData(mMeta);
 
 
-    for (int i = 0; i < dialogList.length(); i++) {
-        createDialog(dialogList[i], tabList[i], mMeta);
-    }
+//    for (int i = 0; i < dialogList.length(); i++) {
+//        createDialog(dialogList[i], tabList[i], mMeta);
+//    }
 
 }
 
@@ -577,7 +579,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
     tabList.append(modulesList);
 
     mLinkxqt->loadXmlFile();
-    ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMeta, this);
+    ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
     ui_settingsDialog->show();
 }
 

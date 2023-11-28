@@ -6,6 +6,7 @@
 #include "qtoolbutton.h"
 #include "helper.h"
 #include "ui/dialogcomment.h"
+#include "qtablewidget.h"
 
 genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
                                        const QString& inputDataType,
@@ -43,6 +44,7 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
     layout->addWidget(label1);
     layout->addWidget(buttonComment);
 
+
     // Depending on input type, define the corresponding input widget
     // Defined as generic class QWidget, in case cast inputField with dynamic_cast<T *>(inputField)
     //QWidget *inputField;
@@ -67,6 +69,7 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
             numericValidator->setLocale(QLocale::English);
             inputField->setValidator(numericValidator);
         }
+
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
@@ -75,11 +78,23 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
-//    else if (dataType == "numeric") {
-//        inputField = new QLineEdit();
-//    }
 
-    // If input type is path, an additional button is added and connected to open a file dialog
+    else if (dataType == "combo") {
+        QComboBox* inputField = new QComboBox();
+        inputField->addItems(defaultValue.split(";"));
+        inputField->setObjectName(objName);
+        layout->addWidget(inputField);
+    }
+    else if (dataType == "table") {
+        QTableWidget* table = new QTableWidget(this);
+        QStringList tableItems = defaultValue.split(";");
+        table->setRowCount(tableItems.length());
+        for (int i = 0; i < tableItems.length(); i ++) {
+            QTableWidgetItem *newItem = new QTableWidgetItem();
+            newItem->setWhatsThis(tableItems[i]);
+            table->setVerticalHeaderItem(i, newItem);
+        }
+    }
 
 
 }

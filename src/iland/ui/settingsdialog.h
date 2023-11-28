@@ -8,7 +8,7 @@ namespace Ui {
 class SettingsDialog;
 }
 
-struct metadata;
+//struct metadata;
 //{
 //    QStringList elements;
 //    QStringList inputType;
@@ -23,17 +23,21 @@ class SettingsDialog : public QDialog
 
 public:
     explicit SettingsDialog(LinkXmlQt* Linkxqt,
-                            QStringList& inputModules,
-                            QList<QStringList>& inputTabList,
-                            metadata& inputMetaData,
+                            QStringList& inputSettings,
+                            QList<QStringList>& inputSettingsList,
+                            QStringList inputMetaKeys,
+                            QStringList inputMetaValues,
+                            //metadata& inputMetaData,
                             QWidget *parent = nullptr);
     //~SettingsDialog();
 
 
 private:
-    QStringList& mModulesList;
-    QList<QStringList>& mTabsOfModulesList;
-    metadata& mMeta;
+    QStringList& mSettingsList;
+    QList<QStringList>& mTabsOfSettingsList;
+    //metadata& mMeta;
+    QStringList mMetaKeys;
+    QStringList mMetaValues;
     LinkXmlQt* mLinkxqt;
 
 //    Ui::SettingsDialog *ui;
