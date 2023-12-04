@@ -16,9 +16,9 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
                                        const QString& inputToolTip,
                                        QWidget *parent)
     : QWidget{parent}, // pointer holding parent, to which widget is added (e. g. tab: QTabWidget->widget(i))
-    dataType{inputDataType}, // inputType: "boolean", "string", "numeric", "path"
-    defaultValue(inputDefaultValue), // Default value defined in metadata file
-    xmlPath{inputXmlPath}, // Name of the variable in xml-file
+    mDataType{inputDataType}, // inputType: "boolean", "string", "numeric", "path"
+    mDefaultValue(inputDefaultValue), // Default value defined in metadata file
+    mXmlPath{inputXmlPath}, // Name of the variable in xml-file
     mLabelName{inputLabelName}, // Name on label to show up
     mToolTip{inputToolTip}, // Tool tip to show up when hovering over label
     mLinkxqt{Linkxqt}
@@ -36,9 +36,9 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
 
     // Define button to open comment dialog, connect() below
     QToolButton *buttonComment = new QToolButton();
-    buttonComment->setObjectName(xmlPath.join(".") + ".comment");
+    buttonComment->setObjectName(mXmlPath.join(".") + ".comment");
 
-    connect(buttonComment, &QToolButton::clicked, this, [=]() {openCommentDialog(xmlPath);});
+    connect(buttonComment, &QToolButton::clicked, this, [=]() {openCommentDialog(mXmlPath);});
 
     // Add widgets to layout
     layout->addWidget(label1);
@@ -49,45 +49,47 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
     // Defined as generic class QWidget, in case cast inputField with dynamic_cast<T *>(inputField)
     //QWidget *inputField;
     // Name of inputField, which is used for internal functionality
-    const QString& objName = inputXmlPath.join(".");
+    const QString& objName = mXmlPath.join(".");
 
-    if (dataType == "string" ||
-        dataType == "path" ||
-        dataType == "numeric") {
+    if (mDataType == "string" ||
+        mDataType == "path" ||
+        mDataType == "numeric") {
         QLineEdit *inputField = new QLineEdit();
         // default value given in metadata shown as grey placeholder text
-        inputField->setPlaceholderText(defaultValue);
-        if (dataType == "path") {
+        inputField->setPlaceholderText(mDefaultValue);
+        if (mDataType == "path") {
             QToolButton *fileDialog = new QToolButton();
             fileDialog->setText("...");
             layout->addWidget(fileDialog);
-            connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(xmlPath.join("_"), inputField);});
+            connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(mXmlPath.join("_"), inputField);});
         }
-        else if (dataType == "numeric") {
+        else if (mDataType == "numeric") {
             QDoubleValidator* numericValidator = new QDoubleValidator(inputField);
             numericValidator->setNotation(QDoubleValidator::StandardNotation);
             numericValidator->setLocale(QLocale::English);
             inputField->setValidator(numericValidator);
         }
-
+        inputField->setToolTip(mToolTip);
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
-    else if (dataType == "boolean") {
+    else if (mDataType == "boolean") {
         QCheckBox* inputField = new QCheckBox();
+        inputField->setToolTip(mToolTip);
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
 
-    else if (dataType == "combo") {
+    else if (mDataType == "combo") {
         QComboBox* inputField = new QComboBox();
-        inputField->addItems(defaultValue.split(";"));
+        inputField->addItems(mDefaultValue.split(";"));
+        inputField->setToolTip(mToolTip);
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
-    else if (dataType == "table") {
+    else if (mDataType == "table") {
         QTableWidget* table = new QTableWidget(this);
-        QStringList tableItems = defaultValue.split(";");
+        QStringList tableItems = mDefaultValue.split(";");
         table->setRowCount(tableItems.length());
         for (int i = 0; i < tableItems.length(); i ++) {
             QTableWidgetItem *newItem = new QTableWidgetItem();

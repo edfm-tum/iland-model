@@ -193,13 +193,6 @@ void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
                 else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
                     curValue = curValue.toLower();
 
-                    //                    if (curValue == "1") {
-                    //                        curValue = "true";
-                    //                    }
-                    //                    else if (curValue == "0") {
-                    //                        curValue = "false";
-                    //                    }
-
                     QStringList comboBoxValidValues;
                     for (int i = 0; i < comboBox->count(); ++i) {
                         comboBoxValidValues.append(comboBox->itemText(i));

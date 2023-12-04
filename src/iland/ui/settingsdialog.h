@@ -40,6 +40,8 @@ private:
     QStringList mMetaValues;
     LinkXmlQt* mLinkxqt;
 
+    void setDialogLayout();
+
 //    Ui::SettingsDialog *ui;
 
 //signals:

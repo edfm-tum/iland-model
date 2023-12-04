@@ -21,9 +21,9 @@ public:
     //~genericInputWidget();
 
 private:
-    QString dataType;
-    QString defaultValue;
-    QStringList xmlPath;
+    QString mDataType;
+    QString mDefaultValue;
+    QStringList mXmlPath;
     QString mLabelName;
     QString mToolTip;
 

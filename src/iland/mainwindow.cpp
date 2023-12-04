@@ -571,12 +571,16 @@ void MainWindow::on_actionSettingsDialog_triggered()
 //    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
 //    ui_systemSettings->show();
 
-    QStringList dialogList = QStringList() << "System" << "Modules";
+    QStringList dialogList = QStringList() << "System" << "Modules" << "Model" << "Output";
+    QStringList modelList = QStringList() << "General" << "World" << "Seed Dispersal" << "Soil" << "Grass" << "Browsing" << "Species" ;
     QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
+    QStringList outputList = QStringList() << "Output";
     QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
     QList<QStringList> tabList;
     tabList.append(systemList);
     tabList.append(modulesList);
+    tabList.append(modelList);
+    tabList.append(outputList);
 
     mLinkxqt->loadXmlFile();
     ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
