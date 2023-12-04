@@ -45,6 +45,7 @@ void PaintArea::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
     m_bitmap = QImage(this->size(), QImage::Format_ARGB32_Premultiplied);
+    emit doRepaint();
     //qDebug() << "paintarea resize" << this->size();
 }
 

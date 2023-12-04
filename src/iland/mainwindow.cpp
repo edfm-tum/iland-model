@@ -248,6 +248,9 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(mouseMove(const QPoint&)));
     connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
             this, SLOT(mouseWheel(const QPoint&, int)));
+    connect(ui->PaintWidget, SIGNAL(doRepaint()),
+            this, SLOT(repaint()));
+
 
     // javascript console
     connect(ui->scriptCode, SIGNAL(executeJS(QString)),
@@ -258,8 +261,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuView->addAction( ui->dockLogviewer->toggleViewAction() );
     ui->menuView->addAction( ui->dockWidget->toggleViewAction() );
     ui->menuView->addAction( ui->dockModelDrill->toggleViewAction() );
+    ui->menuView->addAction( ui->dockJavascriptEditor->toggleViewAction() );
+    ui->menuView->addAction( ui->dockJavascriptWorkspace->toggleViewAction() );
 
     ui->pbResults->setMenu(ui->menuOutput_menu);
+
+    setUIshortcuts(QVariantMap());
 
     mLogSpace = ui->logOutput;
     mLogSpace->setMaximumBlockCount(1000000); // set a maximum for the in-GUI size of messages. // removed in Qt5 (because it works ;) )
@@ -343,7 +350,8 @@ MainWindow::MainWindow(QWidget *parent)
     qRegisterMetaType<QTextCursor>("QTextCursor");
 
     ui->iniEdit->setVisible(false);
-    ui->editStack->setTabEnabled(4,false); // the "other" tab
+    ui->editStack->setTabVisible(2, false); // the other tab
+    //ui->editStack->setTabEnabled(4,false); // the "other" tab
 
     // qml setup
     mRulerColors = new Colors();
@@ -368,6 +376,9 @@ MainWindow::MainWindow(QWidget *parent)
         //view->show();
         //qDebug() << "addWidget:";
         ui->qmlRulerLayout->addWidget(container);
+
+        connect(mRulerColors, SIGNAL(manualColorsChanged()), this, SLOT(repaint()));
+
     }
     //ui->qmlRulerLayout->addWidget(container);
     //    QDir d(":/qml");
@@ -2050,8 +2061,10 @@ void MainWindow::setUIshortcuts(QVariantMap shortcuts)
 {
     if (shortcuts.isEmpty()) {
         ui->lJSShortcuts->setText("(no shortcuts defined)");
+        ui->lJSShortcuts->setVisible(false);
         return;
     }
+    ui->lJSShortcuts->setVisible(true);
     QString msg = "<html><head/><body><p>Javascript shortcuts<br>";
     QVariantMap::const_iterator i;
     for (i = shortcuts.constBegin(); i != shortcuts.constEnd(); ++i) {
@@ -2201,34 +2214,6 @@ void MainWindow::on_selectJavaScript_clicked()
 
 }
 
-void MainWindow::on_scriptCommand_returnPressed()
-{
-    LogToWindow l; // force UI logging
-    QString command = ui->scriptCommand->text();
-    if (ui->scriptCommandHistory->currentText() != command) {
-        ui->scriptCommandHistory->insertItem(0, command);
-        ui->scriptCommandHistory->setCurrentIndex(0);
-    }
-
-    qDebug() << "executing" << command;
-    try {
-
-        QString result = ScriptGlobal::executeScript(command);
-        if (!result.isEmpty()) {
-            qDebug() << result;
-        }
-        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
-            Helper::msg(ScriptGlobal::lastErrorMessage());
-        }
-
-    } catch(const IException &e) {
-        Helper::msg(e.message());
-    }
-}
-
-
-
-
 
 void MainWindow::on_actionOutput_table_description_triggered()
 {
@@ -2335,12 +2320,6 @@ void MainWindow::on_actionDebug_triggered()
 
 
 
-void MainWindow::on_scriptCommandHistory_currentIndexChanged(int index)
-{
-    if (index>=0)
-        ui->scriptCommand->setText(ui->scriptCommandHistory->itemText(index));
-}
-
 void MainWindow::writeSettings()
 {
     QSettings settings;
@@ -2348,14 +2327,6 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
     settings.endGroup();
-    // javascript commands
-    settings.beginWriteArray("javascriptCommands");
-    int size = qMin(ui->scriptCommandHistory->count(), 15); // max 15 entries in the history
-    for (int i=0;i<size; ++i) {
-        settings.setArrayIndex(i);
-        settings.setValue("item", ui->scriptCommandHistory->itemText(i));
-    }
-    settings.endArray();
     settings.beginGroup("project");
     settings.setValue("lastxmlfile", ui->initFileName->text());
     settings.endGroup();
@@ -2380,13 +2351,6 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("MainWindow/geometry").toByteArray());
     restoreState(settings.value("MainWindow/windowState").toByteArray());
 
-    // read javascript commands
-    int size = settings.beginReadArray("javascriptCommands");
-    for (int i=0;i<size; ++i) {
-        settings.setArrayIndex(i);
-        ui->scriptCommandHistory->addItem(settings.value("item").toString());
-    }
-    settings.endArray();
     //recent files menu qsettings registry load
     settings.beginGroup("recent_files");
     for(int i = 0;i < settings.childKeys().size();i++){

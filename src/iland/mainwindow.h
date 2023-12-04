@@ -168,7 +168,6 @@ private slots:
     void on_actionWater_Output_triggered();
     void on_actionStop_triggered();
     void on_actionPause_triggered();
-    void on_scriptCommand_returnPressed();
     void on_reloadJavaScript_clicked();
     void on_actionShow_Debug_Messages_triggered(bool checked);
     void on_actionDynamic_Output_triggered();
@@ -208,7 +207,6 @@ private slots:
     void on_visOtherGrid_clicked()  { on_visFon_toggled();    } // force repaint
     void on_visShading_clicked() {on_visFon_toggled();   }
     void on_actionPerformance_triggered();
-    void on_scriptCommandHistory_currentIndexChanged(int index);
     void on_actionTest_triggered();
     void on_pbReloadQml_clicked();
     void on_actionExit_triggered();

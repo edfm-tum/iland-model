@@ -43,7 +43,7 @@ class Colors: public QObject
 
 
 public:
-    Colors(QWidget*parent=0);
+    Colors(QWidget*parent=nullptr);
     // properties
     QStringList colors() const {return mColors; }
     QStringList labels() const {return mLabels; }
@@ -52,12 +52,12 @@ public:
     double minValue() const {return mMinValue; }
     double maxValue() const {return mMaxValue; }
     void setMinValue(double val) { if(val==mMinValue) return;
-        mNeedsPaletteUpdate=true; setPalette(mCurrentType, val, mMaxValue); mMinValue = val; }
+        mNeedsPaletteUpdate=true; mMinValue = val; setPalette(mCurrentType, val, mMaxValue); emit manualColorsChanged(); }
     void setMaxValue(double val) { if(val==mMaxValue) return;
-        mNeedsPaletteUpdate=true; setPalette(mCurrentType, mMinValue, val); mMaxValue = val; }
+        mNeedsPaletteUpdate=true; mMaxValue = val; setPalette(mCurrentType, mMinValue, val);  emit manualColorsChanged(); }
     bool hasFactors() const { return mHasFactors; }
     bool autoScale() const {return mAutoScale; }
-    void setAutoScale(bool value) { if (value==mAutoScale) return; mAutoScale=value; mNeedsPaletteUpdate=true; setPalette(mCurrentType, mMinValue, mMaxValue);}
+    void setAutoScale(bool value) { if (value==mAutoScale) return; mAutoScale=value; mNeedsPaletteUpdate=true; setPalette(mCurrentType, mMinValue, mMaxValue); emit manualColorsChanged(); }
     QString caption() const {return mCaption; }
     QString description() const {return mDescription; }
 
@@ -99,6 +99,7 @@ private:
 signals:
     void colorsChanged();
     void scaleChanged();
+    void manualColorsChanged();
 };
 
 #endif // COLORS_H

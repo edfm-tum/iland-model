@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1030</width>
-    <height>861</height>
+    <width>1092</width>
+    <height>890</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,7 +57,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1030</width>
+     <width>1092</width>
      <height>21</height>
     </rect>
    </property>
@@ -74,14 +74,11 @@
      <addaction name="actionWarning"/>
      <addaction name="actionError"/>
     </widget>
-    <addaction name="actionTreelist"/>
-    <addaction name="actionFON_grid"/>
     <addaction name="actionOutput_table_description"/>
     <addaction name="actionTimers"/>
     <addaction name="menuLog_Level"/>
     <addaction name="separator"/>
     <addaction name="actionImageToClipboard"/>
-    <addaction name="actionSave_regeneration_grid"/>
     <addaction name="actionTest"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -173,7 +170,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockEditor">
    <property name="windowTitle">
-    <string>Main</string>
+    <string>Legend</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -315,166 +312,6 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
             </widget>
            </item>
           </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="scriptPage">
-        <attribute name="title">
-         <string>Scripting</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_8">
-         <item>
-          <widget class="QLabel" name="scriptActiveScriptFile">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>loaded: -</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QToolButton" name="selectJavaScript">
-             <property name="toolTip">
-              <string>Select a javascript file and load it.</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="res/iland.qrc">
-               <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="reloadJavaScript">
-             <property name="text">
-              <string>reload script</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>Clear Output</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_5">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Below is a minimalistic Javascript Editor.&lt;/p&gt;&lt;p&gt;Use Ctrl+Enter to execute the current line of code, or a selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Enter Javascript (Ctrl+Enter to execute):</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="JSTextArea" name="scriptCode"/>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="scriptCommand">
-           <property name="placeholderText">
-            <string>... enter javascript and press Enter</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>or select from the command history:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="scriptCommandHistory"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="lJSShortcuts">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(no shortcuts defined)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="textFormat">
-            <enum>Qt::RichText</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="JSExplorerPage">
-        <attribute name="title">
-         <string>JS Workspace</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <item>
-          <widget class="QGroupBox" name="groupBox_2">
-           <property name="title">
-            <string>type top node</string>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <property name="leftMargin">
-             <number>3</number>
-            </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>3</number>
-            </property>
-            <property name="bottomMargin">
-             <number>3</number>
-            </property>
-            <item>
-             <widget class="QLineEdit" name="lJSTree">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;type a valid javascript object and click 'show'. If empty, all elements of the global Javascript context are shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pbLoadTree">
-              <property name="maximumSize">
-               <size>
-                <width>40</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Show</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTreeWidget" name="JSTree">
-           <property name="columnCount">
-            <number>2</number>
-           </property>
-           <column>
-            <property name="text">
-             <string>Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Value</string>
-            </property>
-           </column>
-          </widget>
          </item>
         </layout>
        </widget>
@@ -834,19 +671,49 @@ QProgressBar::chunk {
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="windowTitle">
-    <string>Console</string>
+    <string>Visualization Options</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
-        <string>Visualization Options</string>
+        <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>3</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>3</number>
+        </property>
+        <property name="horizontalSpacing">
+         <number>0</number>
+        </property>
+        <property name="verticalSpacing">
+         <number>1</number>
+        </property>
         <item row="19" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
@@ -1079,7 +946,7 @@ QProgressBar::chunk {
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>Data</string>
+    <string>View Details</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -1103,6 +970,180 @@ QProgressBar::chunk {
        <attribute name="headerDefaultSectionSize">
         <number>64</number>
        </attribute>
+       <column>
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Value</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockJavascriptEditor">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Javascript Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_5">
+    <layout class="QVBoxLayout" name="verticalLayout_9">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QToolButton" name="selectJavaScript">
+         <property name="toolTip">
+          <string>Select a javascript file and load it.</string>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="res/iland.qrc">
+           <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="scriptActiveScriptFile">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>loaded: -</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="reloadJavaScript">
+         <property name="toolTip">
+          <string>reload Javascript file</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="res/iland.qrc">
+           <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Below is a minimalistic Javascript Editor.&lt;/p&gt;&lt;p&gt;Use Ctrl+Enter to execute the current line of code, or a selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Enter Javascript (Ctrl+Enter to execute):</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="JSTextArea" name="scriptCode"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="lJSShortcuts">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(no shortcuts defined)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockJavascriptWorkspace">
+   <property name="windowTitle">
+    <string>Javascript Workspace</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_6">
+    <layout class="QVBoxLayout" name="verticalLayout_10">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>3</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>3</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="lJSTree">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;type a valid javascript object and click 'show'. If empty, all elements of the global Javascript context are shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbLoadTree">
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Show</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTreeWidget" name="JSTree">
+       <property name="columnCount">
+        <number>2</number>
+       </property>
        <column>
         <property name="text">
          <string>Name</string>
@@ -1239,7 +1280,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionTimers">
    <property name="text">
-    <string>Timers</string>
+    <string>Log timers</string>
    </property>
   </action>
   <action name="actionOnline_ressources">
@@ -1484,22 +1525,6 @@ QProgressBar::chunk {
     <hint type="destinationlabel">
      <x>864</x>
      <y>242</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>lJSTree</sender>
-   <signal>returnPressed()</signal>
-   <receiver>pbLoadTree</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>111</x>
-     <y>164</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>177</x>
-     <y>166</y>
     </hint>
    </hints>
   </connection>
