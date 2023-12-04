@@ -263,8 +263,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuView->addAction( ui->dockModelDrill->toggleViewAction() );
     ui->menuView->addAction( ui->dockJavascriptEditor->toggleViewAction() );
     ui->menuView->addAction( ui->dockJavascriptWorkspace->toggleViewAction() );
+    ui->menuView->addAction( ui->dockTreeExpression->toggleViewAction() );
 
-    ui->pbResults->setMenu(ui->menuOutput_menu);
+    ui->dockLogviewer->installEventFilter(this); // for dynamic resize
+
 
     setUIshortcuts(QVariantMap());
 
@@ -292,7 +294,6 @@ MainWindow::MainWindow(QWidget *parent)
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
 
     if (!xmlFile.isEmpty()) {
-        ui->iniEdit->setPlainText(xmlFile);
         QString errMsg;
         int errLine, errCol;
         if (!xmldoc.setContent(xmlFile, &errMsg, &errLine, &errCol)) {
@@ -302,7 +303,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    ui->editStack->setCurrentIndex(0); // always switch to first tab
 
     qDebug() << "threadcount: " << QThread::idealThreadCount();
 
@@ -348,10 +348,6 @@ MainWindow::MainWindow(QWidget *parent)
     // to silence some warnings during startup - maybe not required (anymore):
     qRegisterMetaType<QTextBlock>("QTextBlock");
     qRegisterMetaType<QTextCursor>("QTextCursor");
-
-    ui->iniEdit->setVisible(false);
-    ui->editStack->setTabVisible(2, false); // the other tab
-    //ui->editStack->setTabEnabled(4,false); // the "other" tab
 
     // qml setup
     mRulerColors = new Colors();
@@ -440,6 +436,14 @@ void MainWindow::updateLabel()
         labelMessage(QString("Running.... year %1 of %2 [%3] %4").arg(mRemoteControl.currentYear()).arg(mRemoteControl.totalYears()).arg(mRemoteControl.model()->currentTask(), mRemoteControl.timeString()));
     } else if (mRemoteControl.isStartingUp()) {
         labelMessage(QString("Creating model - %3").arg(mRemoteControl.model()->currentTask()));
+    }
+}
+
+void MainWindow::checkExpressionError()
+{
+    if (!mLastPaintError.isEmpty()) {
+        Helper::msg("Error while painting: " + mLastPaintError);
+        mLastPaintError.clear();
     }
 }
 
@@ -692,8 +696,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
     drawtimer.setSilent();
-    // debug redraw counter
-    ui->lRedraws->setText( QString::number( ui->lRedraws->text().toInt() + 1 )  );
 
     if (!mRemoteControl.canRun())
         return;
@@ -1137,7 +1139,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (!ru_value.lastError().isEmpty()) {
             qDebug() << "Expression error while painting: " << ru_value.lastError();
             if (!GlobalSettings::instance()->controller()->isRunning())
-                Helper::msg("Error while painting: " + ru_value.lastError());
+                mLastPaintError = ru_value.lastError();
         }
     }
 
@@ -1207,7 +1209,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (!tree_value.lastError().isEmpty()) {
             qDebug() << "Expression error while painting: " << tree_value.lastError();
             if (!GlobalSettings::instance()->controller()->isRunning())
-                Helper::msg("Error while painting: " + tree_value.lastError());
+                mLastPaintError = tree_value.lastError();
 
         }
         // ruler
@@ -1230,14 +1232,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 
     } // if (show_trees)
 
-    // highlight selected tree
-    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
-    if (t) {
-        QPointF pos = t->position();
-        painter.setPen(Qt::black);
-        QPoint p = vp.toScreen(pos);
-        painter.drawRect( p.x()-1, p.y()-1, 3,3);
-    }
     // draw rectangle around the grid
     QRectF r = grid->metricRect();
     QRect rs = vp.toScreen(r);
@@ -1440,11 +1434,15 @@ void MainWindow::repaintArea(QPainter &painter)
     if (!mRemoteControl.isBusy())  {
 
         if (mDoRepaint) {
-            paintFON(painter, ui->PaintWidget->rect());
+            QRect viewport = ui->PaintWidget->rect();
+            //viewport.setHeight(viewport.height()-1);
+            //viewport.setWidth(viewport.width()-1);
+            paintFON(painter, viewport);
             // // fix viewpoint
-            vp.setScreenRect(ui->PaintWidget->rect());
+            vp.setScreenRect(viewport);
             mRulerColors->setScale(vp.pixelToMeter(1));
             mDoRepaint=false;
+            QTimer::singleShot(250, this, SLOT(checkExpressionError()));
 
         } else {
             // use existing copy of the visualization
@@ -1492,7 +1490,6 @@ void MainWindow::mouseClick(const QPoint& pos)
     if (!ru)
         return;
 
-    ui->treeChange->setProperty("tree",0);
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     Tree *closestTree=0;
@@ -1506,16 +1503,8 @@ void MainWindow::mouseClick(const QPoint& pos)
     }
     if (min_distance<5 && closestTree) {
         Tree *p = closestTree;
-        //qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
-        //qDebug() <<p->dump();
         showTreeDetails(p);
 
-        ui->treeChange->setProperty("tree", QVariant::fromValue((void*)p));
-        ui->treeDbh->setValue(p->dbh());
-        ui->treeHeight->setValue(p->height());
-        ui->treePosX->setValue(p->position().x());
-        ui->treePosY->setValue(p->position().y());
-        ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightResourceIndex(),5));
         wantDrag=true;
         ui->PaintWidget->setCursor(Qt::SizeAllCursor);
         ui->PaintWidget->update();
@@ -1733,15 +1722,6 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
         return;
     }
     wantDrag = false;
-    qDebug() << "drag from" << from << "to" << to;
-    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
-    if (!t)
-        return;
-    QPointF pos = vp.toWorld(to);
-    // calculate new position...
-    t->setPosition(pos);
-    readwriteCycle();
-    ui->PaintWidget->update();
 }
 
 
@@ -1754,7 +1734,6 @@ void MainWindow::yearSimulated(int year)
     checkModelState();
     ui->modelRunProgress->setValue(year);
     labelMessage(QString("Running.... year %1 of %2. %3").arg(year).arg(mRemoteControl.totalYears()).arg(mRemoteControl.timeString()));
-    ui->treeChange->setProperty("tree",0);
     mDoRepaint = true;
     repaint();
 }
@@ -1819,7 +1798,6 @@ void MainWindow::setupModel()
         ui->visDomGrid->setChecked(true);
         //ui->PaintWidget->update();
     }
-    ui->treeChange->setProperty("tree",0);
 
     // setup dynamic output
     QString dout = GlobalSettings::instance()->settings().value("output.dynamic.columns");
@@ -1849,16 +1827,6 @@ void MainWindow::setupModel()
 }
 
 
-
-void MainWindow::on_pbSetAsDebug_clicked()
-{
-    Tree *t = reinterpret_cast<Tree *>( ui->treeChange->property("tree").toLongLong() );
-    if (!t)
-        return;
-    t->enableDebugging();
-
-}
-
 void MainWindow::on_openFile_clicked()
 {
     QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml",this);
@@ -1866,7 +1834,6 @@ void MainWindow::on_openFile_clicked()
         return;
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
-    ui->iniEdit->setPlainText(xmlFile);
     checkModelState();
 }
 
@@ -1915,7 +1882,6 @@ void MainWindow::on_actionModelRun_triggered()
     update_label.start(100);
 
     count = count + mRemoteControl.currentYear();
-    ui->treeChange->setProperty("tree",0);
     ui->modelRunProgress->setMaximum(count-1);
     mRemoteControl.run(count);
     GlobalSettings::instance()->executeJSFunction("onFinish");
@@ -1926,7 +1892,6 @@ void MainWindow::on_actionRun_one_year_triggered()
 {
     if (!mRemoteControl.canRun())
         return;
-    ui->treeChange->setProperty("tree",0);
     mRemoteControl.runYear();
     GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
     labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
@@ -2090,6 +2055,16 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
 }
 
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    // dynamic resize of the detail buttons for log filtering etc
+    if (event->type() == QEvent::Resize && obj == ui->dockLogviewer) {
+        QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event);
+        ui->logViewerDetailsPanel->setVisible(resizeEvent->size().height() > 200);
+    }
+    return QWidget::eventFilter(obj, event);
+}
+
 
 void MainWindow::on_actionImageToClipboard_triggered()
 {
@@ -2178,6 +2153,7 @@ void MainWindow::on_pbExecExpression_clicked()
     // just repaint...
     mDoRepaint = true;
     ui->PaintWidget->update();
+
 }
 
 void MainWindow::on_actionDynamic_Output_triggered()
@@ -2186,11 +2162,6 @@ void MainWindow::on_actionDynamic_Output_triggered()
     qDebug() << "copied dynamic output to clipboard";
 }
 
-void MainWindow::on_actionShow_Debug_Messages_triggered(bool checked)
-{
-    // enable/disble debug messages
-    showDebugMessages=checked;
-}
 
 void MainWindow::on_reloadJavaScript_clicked()
 {
@@ -2451,7 +2422,6 @@ void MainWindow::on_actionOpen_triggered()
         return;
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
-    ui->iniEdit->setPlainText(xmlFile);
     checkModelState();
 
 }
@@ -2644,4 +2614,5 @@ void MainWindow::on_speciesFilterBox_currentIndexChanged(int index)
     mDoRepaint = true;
     repaint();
 }
+
 

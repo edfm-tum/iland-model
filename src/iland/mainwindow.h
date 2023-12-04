@@ -96,6 +96,7 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *event);
     void resizeEvent(QResizeEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private:
     Ui::MainWindowClass *ui;
@@ -103,7 +104,9 @@ private:
     QLabel *mStatusLabel;
     QQuickView *mRuler;
     Colors *mRulerColors;
+    QString mLastPaintError;
     // setup
+
     void labelMessage(const QString message) { if (mStatusLabel) mStatusLabel->setText(message);}
     void setupModel();
     void readwriteCycle();
@@ -147,6 +150,7 @@ private:
 private slots:
     void automaticRun(); ///< automatically start a simulation...
     void updateLabel(); ///< update UI labels during run
+    void checkExpressionError(); ///< show error message in case an error occured previously
 
     void on_actionWarning_triggered() { on_actionDebug_triggered(); }
     void on_actionError_triggered() { on_actionDebug_triggered(); }
@@ -169,7 +173,6 @@ private slots:
     void on_actionStop_triggered();
     void on_actionPause_triggered();
     void on_reloadJavaScript_clicked();
-    void on_actionShow_Debug_Messages_triggered(bool checked);
     void on_actionDynamic_Output_triggered();
     void on_pbExecExpression_clicked();
     void on_pbCalculateExpression_clicked();
@@ -187,8 +190,6 @@ private slots:
     void on_actionTreelist_triggered();
     void on_actionImageToClipboard_triggered();
     void on_openFile_clicked();
-    void on_pbSetAsDebug_clicked();
-
 
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
@@ -223,6 +224,7 @@ private slots:
     void on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
     void on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_speciesFilterBox_currentIndexChanged(int index);
+    void on_visRUSpeciesColor_stateChanged(int arg1) {on_visFon_toggled();  } // force repaint
 };
 
 #endif // MAINWINDOW_H
