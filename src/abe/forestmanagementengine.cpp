@@ -712,7 +712,7 @@ void ForestManagementEngine::test()
 
     // dump all objects:
     foreach(FMSTP *stp, mSTP)
-        stp->dumpInfo();
+        qDebug() << stp->info();
 
     setup();
     qDebug() << "finished";

@@ -27,9 +27,9 @@
 ManagementOut::ManagementOut()
 {
     setName("Removed trees by species/RU", "management");
-    setDescription("Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare."\
+    setDescription("Aggregates for trees that are removed (harvested or cut down) in current year on the level of RU x species. All values are scaled to one hectare."\
                    "The output is created after the growth of the year, " \
-                   "i.e. the growth of the year in which trees are dying, is included!  " \
+                   "i.e. the growth of the year in which trees are removed, is included!  " \
                    " ");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("count_ha", "tree count (living)", OutInteger)

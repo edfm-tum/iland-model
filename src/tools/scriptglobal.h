@@ -111,7 +111,7 @@ public:
     static QString executeScript(QString cmd);
     static QString executeJSFunction(QString function);
     static QObject *scriptOutput; ///< public "pipe" for script output (is redirected to GUI if available)
-    static QString formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode);
+    static QString formattedErrorMessage(const QJSValue &error_value, const QString sourcecode=QString());
     static void throwError(const QString &errormessage);
     static QString lastErrorMessage() { return mLastErrorMessage; }
 

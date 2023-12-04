@@ -23,6 +23,7 @@
 #include "fmstand.h"
 #include "fomescript.h"
 #include "fmstp.h"
+#include "fmunit.h"
 
 namespace ABE {
 

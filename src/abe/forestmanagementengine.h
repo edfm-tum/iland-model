@@ -92,6 +92,7 @@ public:
     //QVector<FMStand*> stands() const {return mStands; }
     const QMultiMap<FMUnit*, FMStand*> &stands() const {return mUnitStandMap; }
     const QVector<FMUnit*> &units() const { return mUnits; }
+    const QVector<FMSTP*> &stps() const { return mSTP; }
     QVariantList standIds() const;
 
     FMStand *standAt(QPointF coord) const { return mFMStandGrid.constValueAt(coord); }

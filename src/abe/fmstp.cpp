@@ -61,7 +61,7 @@ bool activityScheduledEarlier(const Activity *a, const Activity *b)
     return a->earliestSchedule() < b->earliestSchedule();
 }
 
-void FMSTP::setup(QJSValue &js_value, const QString name)
+void FMSTP::setup(QJSValue &js_value, const QString &name)
 {
     clear();
 
@@ -176,20 +176,20 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
 }
 
 
-void FMSTP::dumpInfo()
+QString FMSTP::info()
 {
-    if (!abe().isDebugEnabled())
-        return;
-    qCDebug(abe) << " ***************************************";
-    qCDebug(abe) << " **************** Program dump for:" << name();
-    qCDebug(abe) << " ***************************************";
+    QStringList lines;
+    lines << " ***************************************";
+    lines << " **************** Program dump for:" << name();
+    lines << " ***************************************";
     foreach(Activity *act, mActivities) {
-        qCDebug(abe) << "******* Activity *********";
+        lines << "******* Activity *********";
         QString info =  act->info().join('\n');
-        qCDebug(abe) << info;
-
+        lines << info;
     }
+    return lines.join('\n');
 }
+
 
 void FMSTP::setupActivity(const QJSValue &js_value, const QString &name)
 {

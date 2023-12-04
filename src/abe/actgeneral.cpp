@@ -57,7 +57,9 @@ bool ActGeneral::execute(FMStand *stand)
 
     QJSValue result = mAction.call();
     if (result.isError()) {
-        throw IException(QString("%1 Javascript error in 'general' activity '%3': %2").arg(stand->context()).arg(result.toString()).arg(name()));
+        throw IException(QString("%1 Javascript error in 'general' activity '%3': %2. \n %4").arg(stand->context())
+                             .arg(result.toString())
+                             .arg(name(), ScriptGlobal::formattedErrorMessage(result)));
     }
     return result.toBool();
 }

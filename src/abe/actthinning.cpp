@@ -156,6 +156,7 @@ void ActThinning::setupCustom(QJSValue value)
 void ActThinning::setupSelective(QJSValue value)
 {
     mSelectiveThinning.N = FMSTP::valueFromJs(value, "N", "400").toInt();
+    mSelectiveThinning.speciesProb = FMSTP::valueFromJs(value, "speciesSelectivity");
 }
 
 // setup of the "custom" thinning operation
@@ -468,11 +469,14 @@ void ActThinning::clearTreeMarks(FMTreeList *list)
 
 bool ActThinning::evaluateSelective(FMStand *stand)
 {
-    markCropTrees(stand);
+    QJSValue result = FMSTP::evaluateJS(mSelectiveThinning.speciesProb);
+    bool selective_species = populateSpeciesSelectivity(result);
+
+    markCropTrees(stand, selective_species);
     return true;
 }
 
-bool ActThinning::markCropTrees(FMStand *stand)
+bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
 {
     // tree list from current exeution context
     FMTreeList *treelist = ForestManagementEngine::instance()->scriptBridge()->treesObj();
@@ -508,15 +512,24 @@ bool ActThinning::markCropTrees(FMStand *stand)
     // start with a part of N and 0 overlap
     int n_found = 0;
     int tests=0;
-    for (int i=0;i<target_n/3;i++) {
+    int i=0;
+    while (n_found < target_n/3 && i<target_n/2) {
         float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
         if (f==0.f) {
-            setPixel(treelist->trees().at(i).first->position(), grid);
-            treelist->trees()[i].first->markCropTree(true);
-            ++n_found;
+            // no neighbors: check species
+            if (!selective_species ||
+                drandom() < mSpeciesSelectivity[treelist->trees().at(i).first->species()]) {
+
+                // found! Now mark as crop trees
+                setPixel(treelist->trees().at(i).first->position(), grid);
+                treelist->trees()[i].first->markCropTree(true);
+                ++n_found;
+
+            }
         }
+        ++i;
     }
-    // continue with a higher probability --- incr
+    // continue with a higher probability
     for (int run=0;run<4;++run) {
         for (int i=0; i<max_target_n;++i) {
             if (treelist->trees().at(i).first->isMarkedAsCropTree())
@@ -529,6 +542,9 @@ bool ActThinning::markCropTrees(FMStand *stand)
                  (run==1 && f<=4 && drandom()<overprint) ||
                  (run==2 && drandom()<overprint) ||
                  (run==3) ) {
+
+                if (selective_species & !( drandom() < mSpeciesSelectivity[treelist->trees().at(i).first->species()]) )
+                    continue;
 
                 setPixel(treelist->trees().at(i).first->position(), grid);
                 treelist->trees()[i].first->markCropTree(true);
@@ -609,6 +625,24 @@ void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
     if (grid.isIndexValid(x-1,y+1)) grid.valueAtIndex(x-1, y+1)++;
     if (grid.isIndexValid(x,y+1)) grid.valueAtIndex(x, y+1)++;
     if (grid.isIndexValid(x+1,y+1)) grid.valueAtIndex(x+1, y+1)++;
+}
+
+bool ActThinning::populateSpeciesSelectivity(QJSValue value)
+{
+    // fill with all active species in the simulation (this list does not change)
+    if (mSpeciesSelectivity.isEmpty()) {
+        foreach(const Species *s, GlobalSettings::instance()->model()->speciesSet()->activeSpecies())
+            mSpeciesSelectivity[s] = 1.;
+    }
+    if (value.isUndefined() || value.isNull())
+        return false;
+
+    // fetch from javascript object
+    double rest_val = value.property(QStringLiteral("rest")).isNumber() ?  value.property(QStringLiteral("rest")).toNumber() : 1.;
+    foreach(const Species *s, mSpeciesSelectivity.keys()) {
+        mSpeciesSelectivity[s] = limit( value.property(s->id()).isNumber() ? value.property(s->id()).toNumber() : rest_val, 0., 1.);
+    }
+    return true;
 }
 
 

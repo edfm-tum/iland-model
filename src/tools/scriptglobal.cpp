@@ -1098,15 +1098,17 @@ QString ScriptGlobal::executeJSFunction(QString function)
 
 }
 
-QString ScriptGlobal::formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode)
+QString ScriptGlobal::formattedErrorMessage(const QJSValue &error_value, const QString sourcecode)
 {
     if (error_value.isError()) {
         int lineno = error_value.property("lineNumber").toInt();
         QString code = sourcecode;
         QStringList code_lines = code.replace('\r', "").split('\n'); // remove CR, split by LF
         QString code_part;
-        for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>(lineno+5), code_lines.count()); ++i)
-            code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        if (code_lines.count() >= lineno) {
+            for (int i=std::max(0, lineno - 5); i<std::min(static_cast<qsizetype>(lineno+5), code_lines.count()); ++i)
+                code_part.append(QString("%1: %2 %3\n").arg(i).arg(code_lines[i]).arg(i==lineno?"  <---- [ERROR]":""));
+        }
         QString error_string = QString("Javascript Error in file '%1:%2':%3\n%4")
                 .arg(error_value.property("fileName").toString())
                 .arg(error_value.property("lineNumber").toInt())

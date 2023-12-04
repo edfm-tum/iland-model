@@ -43,10 +43,13 @@ public:
     const QString &name() const {return mName; }
     /// returns the (first) Activity with the name 'name', or 0 if the activity could not be found.
     Activity *activity(const QString &name) const;
+    /// gets the index of an activity given by a pointer
     int activityIndex(Activity* act) { return mActivities.indexOf(act); }
+    /// gets a const list of activities
+    const QVector<Activity*> activities() const { return mActivities; }
 
     /// read the options from a javascript structure / object
-    void setup(QJSValue &js_value, const QString name=QString());
+    void setup(QJSValue &js_value, const QString &name);
     /// defaultFlags() is used to initalized the flags for indiv. forest stands
     QVector<ActivityFlags> defaultFlags() {return mActivityStand; }
     Events &events() { return mEvents; }
@@ -63,7 +66,7 @@ public:
     /// evaluate bound expressions for all activities of the STP for the given stand
     void evaluateDynamicExpressions(FMStand *stand);
     // helper functions
-    void dumpInfo();
+    QString info();
     /// if verbose is true, detailed debug information is provided.
     static void setVerbose(bool verbose) {mVerbose = verbose; }
     static bool verbose()  {return mVerbose; } ///< returns true in debug mode

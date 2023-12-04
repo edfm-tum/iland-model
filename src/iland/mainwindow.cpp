@@ -1123,8 +1123,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 }
             }
         }
-        if (!ru_value.lastError().isEmpty())
+        if (!ru_value.lastError().isEmpty()) {
             qDebug() << "Expression error while painting: " << ru_value.lastError();
+            if (!GlobalSettings::instance()->controller()->isRunning())
+                Helper::msg("Error while painting: " + ru_value.lastError());
+        }
     }
 
     if (show_trees) {
@@ -1190,8 +1193,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             int diameter = qMax(1,vp.meterToPixel( tree->crownRadius()));
             painter.drawEllipse(p, diameter, diameter);
         }
-        if (!tree_value.lastError().isEmpty())
+        if (!tree_value.lastError().isEmpty()) {
             qDebug() << "Expression error while painting: " << tree_value.lastError();
+            if (!GlobalSettings::instance()->controller()->isRunning())
+                Helper::msg("Error while painting: " + tree_value.lastError());
+
+        }
         // ruler
         if (species_color) {
             mRulerColors->setCaption("Single trees", "species specific colors.");
@@ -2573,7 +2580,8 @@ void MainWindow::on_pbLoadTree_clicked()
         return;
 
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
-    QStringList hideList = QStringList() << "Math" << "JSON" << "undefined" << "NaN" << "Infinity";
+    QStringList hideList = QStringList() << "Math" << "JSON" << "undefined" << "NaN"
+                                         << "Infinity" << "Atomics" << "Reflect";
 
     QJSValue start;
     if (ui->lJSTree->text().isEmpty())

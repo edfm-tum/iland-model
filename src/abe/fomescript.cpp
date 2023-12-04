@@ -28,6 +28,7 @@
 #include "fmtreelist.h"
 #include "scheduler.h"
 #include "fmstp.h"
+#include "fmunit.h"
 
 #include "actplanting.h"
 
@@ -84,10 +85,10 @@ void FomeScript::setupScriptEnvironment()
     QJSValue stand_value = ForestManagementEngine::scriptEngine()->newQObject(mStandObj);
     ForestManagementEngine::scriptEngine()->globalObject().setProperty("stand", stand_value);
 
-    // site variables
+    // unit level
     mUnitObj = new UnitObj;
-    QJSValue site_value = ForestManagementEngine::scriptEngine()->newQObject(mUnitObj);
-    ForestManagementEngine::scriptEngine()->globalObject().setProperty("unit", site_value);
+    //QJSValue site_value = ForestManagementEngine::scriptEngine()->newQObject(mUnitObj);
+    //ForestManagementEngine::scriptEngine()->globalObject().setProperty("unit", site_value);
 
     // general simulation variables (mainly scenariolevel)
     mSimulationObj = new SimulationObj;
@@ -96,18 +97,18 @@ void FomeScript::setupScriptEnvironment()
 
     //access to the current activity
     mActivityObj = new ActivityObj;
-    QJSValue activity_value = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
-    ForestManagementEngine::scriptEngine()->globalObject().setProperty("activity", activity_value);
+    //QJSValue activity_value = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
+    //ForestManagementEngine::scriptEngine()->globalObject().setProperty("activity", activity_value);
 
     // general simulation variables (mainly scenariolevel)
     mTrees = new FMTreeList;
-    QJSValue treelist_value = ForestManagementEngine::scriptEngine()->newQObject(mTrees);
-    ForestManagementEngine::scriptEngine()->globalObject().setProperty("trees", treelist_value);
+    //QJSValue treelist_value = ForestManagementEngine::scriptEngine()->newQObject(mTrees);
+    //ForestManagementEngine::scriptEngine()->globalObject().setProperty("trees", treelist_value);
 
     // options of the STP
     mSTPObj = new STPObj;
-    QJSValue stp_value = ForestManagementEngine::scriptEngine()->newQObject(mSTPObj);
-    ForestManagementEngine::scriptEngine()->globalObject().setProperty("stp", stp_value);
+    //QJSValue stp_value = ForestManagementEngine::scriptEngine()->newQObject(mSTPObj);
+    //ForestManagementEngine::scriptEngine()->globalObject().setProperty("stp", stp_value);
 
     // scheduler options
     mSchedulerObj = new SchedulerObj;
@@ -134,9 +135,9 @@ void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
     br->mStandObj->setStand(stand);
     br->mTrees->setStand(stand);
     br->mUnitObj->setStand(stand);
-    br->mActivityObj->setStand(stand);
+    br->mActivityObj->setStand(stand, stand ? stand->currentActivity() : nullptr);
     br->mSchedulerObj->setStand(stand);
-    br->mSTPObj->setSTP(stand);
+    br->mSTPObj->setFromStand(stand);
     if (stand && stand->trace())
         qCDebug(abe) << br->context() << "Prepared execution context (thread" << QThread::currentThread() << ").";
     if (add_agent) {
@@ -167,6 +168,15 @@ QString FomeScript::JStoString(QJSValue value)
         return result.toString();
     } else
         return value.toString();
+
+}
+
+QStringList FomeScript::stpNames() const
+{
+    QStringList names;
+    foreach (const FMSTP* stp, ForestManagementEngine::instance()->stps())
+        names.push_back(stp->name());
+    return names;
 
 }
 
@@ -231,7 +241,12 @@ void FomeScript::abort(QJSValue message)
 bool FomeScript::addManagement(QJSValue program, QString name)
 {
     try {
-        FMSTP *stp = new FMSTP();
+        FMSTP *stp = ForestManagementEngine::instance()->stp(name);
+        if (stp) {
+            ScriptGlobal::throwError(QString("Error in setting up STP '%1'. There is already a STP registered with that name.").arg(name));
+            return false;
+        }
+        stp = new FMSTP();
         stp->setup(program, name);
         ForestManagementEngine::instance()->addSTP(stp);
         return true;
@@ -415,7 +430,7 @@ QJSValue FomeScript::activity(QString stp_name, QString activity_name)
     }
 
     int idx = stp->activityIndex(act);
-    ActivityObj *ao = new ActivityObj(0, act, idx);
+    ActivityObj *ao = new ActivityObj(nullptr, act, idx);
     QJSValue value = ForestManagementEngine::scriptEngine()->newQObject(ao);
     return value;
 
@@ -431,6 +446,20 @@ void FomeScript::runPlanting(int stand_id, QJSValue planting_item)
 
     ActPlanting::runSinglePlantingItem(stand, planting_item);
 
+
+}
+
+QJSValue FomeScript::stpByName(QString name)
+{
+    FMSTP *stp = ForestManagementEngine::instance()->stp(name);
+    if (!stp) {
+        ScriptGlobal::throwError(QString("stpByName(): No STP with name '%1'.").arg(name));
+        return QJSValue();
+    }
+    STPObj *so = new STPObj();
+    so->setSTP(stp);
+    QJSValue value = ForestManagementEngine::scriptEngine()->newQObject(so);
+    return value;
 
 }
 
@@ -465,7 +494,7 @@ QString StandObj::speciesId(int index) const
     if (index>=0 && index<nspecies()) return mStand->speciesData(index).species->id(); else return "error";
 }
 
-QJSValue StandObj::activity(QString name)
+QJSValue StandObj::activityByName(QString name)
 {
     Activity *act = mStand->stp()->activity(name);
     if (!act)
@@ -478,6 +507,26 @@ QJSValue StandObj::activity(QString name)
 
 }
 
+void StandObj::runNext(ActivityObj *next_act)
+{
+    if (!mStand || !mStand->stp()) return;
+
+    if (!next_act->activity()) {
+        ScriptGlobal::throwError("stand.runNext() called with an invalid activity.");
+        return;
+    }
+    int index = mStand->stp()->activityIndex(next_act->activity());
+    if (index < 0) {
+        ScriptGlobal::throwError("stand.runNext() called with an activity that is not part of the current STP. Activity: " + next_act->name());
+        return;
+    }
+    mStand->flags(index).setForceNext(true);
+    mStand->setActivityIndex(index);
+    if (mStand->sleepYears()>0){
+        mStand->sleep(0, true);
+    }
+}
+
 QJSValue StandObj::agent()
 {
     if (mStand && mStand->unit()->agent())
@@ -485,6 +534,37 @@ QJSValue StandObj::agent()
     else
         throwError("get agent of the stand failed.");
     return QJSValue();
+}
+
+UnitObj *StandObj::unit()
+{
+    if (!mStand) {
+        throwError("stand not valid!"); return nullptr; }
+    return FomeScript::bridge()->unitObj();
+}
+
+ActivityObj *StandObj::activity()
+{
+    if (!mStand) {
+        throwError("stand not valid!"); return nullptr; }
+    return FomeScript::bridge()->activityObj();
+
+}
+
+STPObj *StandObj::stp()
+{
+    if (!mStand) {
+        throwError("stand not valid!"); return nullptr; }
+    return FomeScript::bridge()->stpObj();
+
+}
+
+FMTreeList *StandObj::trees()
+{
+    if (!mStand) {
+        throwError("stand not valid!"); return nullptr; }
+    return FomeScript::bridge()->treesObj();
+
 }
 
 void StandObj::setAbsoluteAge(double arg)
@@ -568,18 +648,11 @@ QString StandObj::thinningIntensity() const
 
 }
 
-QString StandObj::stp() const
-{
-    if (!mStand) return QString("Invalid");
-    if (mStand->stp())
-        return mStand->stp()->name();
-    return QString();
-}
 
-void StandObj::setStp(QString stp_name)
+void StandObj::setSTP(QString stp_name)
 {
     if (mStand && mStand->unit() && mStand->unit()->agent() && mStand->unit()->agent()->type()) {
-        QString old_stp = mStand->stp()->name();
+        QString old_stp = mStand->stp() ? mStand->stp()->name() : "none";
         FMSTP *stp = mStand->unit()->agent()->type()->stpByName(stp_name);
         if (!stp) {
             throwError(QString("The stp '%1' is not valid, and cannot be set for stand %2.").arg(stp_name).arg(mStand->id()));
@@ -620,6 +693,11 @@ QString ActivityObj::name() const
     return mActivity? mActivity->name() : QStringLiteral("undefined");
 }
 
+QString ActivityObj::description() const
+{
+    return mActivity? mActivity->description() : QStringLiteral("undefined");
+}
+
 void ActivityObj::setEnabled(bool do_enable)
 {
     flags().setEnabled(do_enable);
@@ -639,17 +717,17 @@ void ActivityObj::setEnabled(bool do_enable)
 
 ActivityFlags &ActivityObj::flags() const
 {
-    // refer to a specific  activity of the stand (as returned by stand.activity("xxx") )
+    // refer to a specific  activity of the stand (as returned by stand.activityByName("xxx") )
     if (mStand && mActivityIndex>-1)
         return mStand->flags(mActivityIndex);
-    if (mStand && !mActivity && mActivityIndex == -1)
-        return mEmptyFlags; // in this case also the currentFlags of the stand would be missing
-    // refer to the *current* activity (the "activity" variable)
-    if (mStand && !mActivity)
-        return mStand->currentFlags();
+//    if (mStand && !mActivity && mActivityIndex == -1)
+//        return mEmptyFlags; // in this case also the currentFlags of the stand would be missing
     // during setup of activites (onCreate-handler)
     if (!mStand && mActivity)
         return mActivity->mBaseActivity;
+    // refer to the *current* activity (the "activity" variable)
+    if (mStand && mStand->currentActivityIndex()>-1)
+        return mStand->currentFlags();
 
 
     qCDebug(abe) << "ActivityObj:flags: invalid access of flags! stand: " << mStand << "activity-index:" << mActivityIndex;
@@ -872,7 +950,7 @@ void SchedulerObj::setMaxScheduleHarvest(double new_level)
     opt.maxScheduleHarvest = new_level;
 }
 
-void STPObj::setSTP(FMStand *stand)
+void STPObj::setFromStand(FMStand *stand)
 {
     if (stand && stand->stp()) {
         mSTP = stand->stp();
@@ -883,12 +961,45 @@ void STPObj::setSTP(FMStand *stand)
     }
 }
 
+void STPObj::setSTP(FMSTP *stp)
+{
+    mSTP = stp;
+    mOptions = mSTP->JSoptions();
+}
+
 QString STPObj::name()
 {
     if (mSTP)
         return mSTP->name();
     else
         return "undefined";
+}
+
+int STPObj::activityCount() const
+{
+    if (!mSTP) {
+        ScriptGlobal::throwError("stp not valid!"); return -1; }
+    return mSTP->activities().size();
+}
+
+QStringList STPObj::activityNames()
+{
+    if (!mSTP) {
+        ScriptGlobal::throwError("stp not valid!"); return QStringList(); }
+    QStringList names;
+    for (int i=0;i<mSTP->activities().size();++i)
+        names.push_back(mSTP->activities()[i]->name());
+    return names;
+
+}
+
+
+QString STPObj::info()
+{
+    if (mSTP) {
+        return mSTP->info();
+    }
+    return "invalid";
 }
 
 

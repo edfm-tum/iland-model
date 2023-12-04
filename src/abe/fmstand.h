@@ -151,7 +151,7 @@ public:
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.
-    void sleep(int years_to_sleep);
+    void sleep(int years_to_sleep, bool also_shorten=false);
     int sleepYears() const {return mYearsToWait; }
 
     /// calculate mean annual increment (m3/ha) and return total MAI.
@@ -169,8 +169,14 @@ public:
     ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
     /// flags of currently active Activity
     ActivityFlags &currentFlags()  { return flags(mCurrentIndex); }
+
     /// get a pointer to the current activity; returns 0 if no activity is set.
     Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():nullptr; }
+    /// the index of the current activity
+    int currentActivityIndex() const { return mCurrentIndex; }
+
+    /// set a new activity index. No checks performed.
+    void setActivityIndex(int index) { mCurrentIndex = index; }
 
     /// get a pointer to the last executed activity; returns 0 if no activity has been executed before.
     Activity *lastExecutedActivity() const { return mLastExecutedIndex>-1?mStandFlags[mLastExecutedIndex].activity():nullptr; }

@@ -506,9 +506,12 @@ bool FMStand::notifyBarkBeetleAttack(double generations, int infested_px_per_ha)
 }
 
 
-void FMStand::sleep(int years_to_sleep)
+void FMStand::sleep(int years_to_sleep, bool also_shorten)
 {
-    mYearsToWait = qMax(mYearsToWait, qMax(years_to_sleep,0));
+    if (also_shorten)
+        mYearsToWait = years_to_sleep;
+    else
+        mYearsToWait = qMax(mYearsToWait, qMax(years_to_sleep,0));
 }
 
 

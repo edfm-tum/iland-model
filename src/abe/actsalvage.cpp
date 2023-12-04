@@ -25,6 +25,7 @@
 #include "scheduler.h"
 #include "forestmanagementengine.h"
 #include "fmtreelist.h"
+#include "fmunit.h"
 
 #include "tree.h"
 #include "expression.h"

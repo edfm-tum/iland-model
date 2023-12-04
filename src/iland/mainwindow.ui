@@ -58,7 +58,7 @@
      <x>0</x>
      <y>0</y>
      <width>1030</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -215,7 +215,7 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
 @</string>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="editStackMain">
         <attribute name="title">
@@ -415,7 +415,7 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
        </widget>
        <widget class="QWidget" name="JSExplorerPage">
         <attribute name="title">
-         <string>JSExplore</string>
+         <string>JS Workspace</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>

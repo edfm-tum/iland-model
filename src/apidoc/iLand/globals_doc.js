@@ -357,7 +357,7 @@ See also: {{#crossLink "Globals/saveModelSnapshot:method"}}{{/crossLink}}
 
 
 /**
-Load the content of a text file into a string.
+Load the content of a text file into a string. Throws an error if the file does not exist.
 
 @method loadTextFile
 @param file_name {string} filename to load
@@ -382,10 +382,11 @@ Check if the file `file_name` already exists.
 /**
 Execute a system command (e.g., for copying files). Commands are operating system dependent; For windows,
 `cmd.exe /C` executes a command without a separate command window (see example below). Output of the executed
-command is redirected to the iLand log (stdout, stderr).
+command is redirected to the iLand log (stdout, stderr), the stdout output is returned as a string.
 
 @method systemCmd
 @param command {string} command to execute
+@return {string} the output of the command (std-out)
 @Example
     // helper function for windows: fix slashes and add 'cmd.exe /C'
     function winnify(s) {
