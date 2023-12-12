@@ -29,6 +29,7 @@
 #include "scheduler.h"
 #include "fmstp.h"
 #include "fmunit.h"
+#include "patches.h"
 
 #include "actplanting.h"
 
@@ -565,6 +566,13 @@ FMTreeList *StandObj::trees()
         throwError("stand not valid!"); return nullptr; }
     return FomeScript::bridge()->treesObj();
 
+}
+
+Patches *StandObj::patches()
+{
+    if (!mStand) {
+        throwError("stand not valid!"); return nullptr; }
+    return mStand->patches();
 }
 
 void StandObj::setAbsoluteAge(double arg)

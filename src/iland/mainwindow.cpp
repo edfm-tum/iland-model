@@ -56,6 +56,7 @@
 #include "expressionwrapper.h"
 #include "management.h"
 #include "outputmanager.h"
+#include "saplings.h"
 
 #include "tests.h"
 #include "mapgrid.h"
@@ -257,15 +258,27 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(executeJS(QString)) );
 
     // dock windows
-    ui->menuView->addAction( ui->dockEditor->toggleViewAction() );
+    ui->menuView->addAction( ui->dockLegend->toggleViewAction() );
     ui->menuView->addAction( ui->dockLogviewer->toggleViewAction() );
-    ui->menuView->addAction( ui->dockWidget->toggleViewAction() );
+    ui->menuView->addAction( ui->dockVisualization->toggleViewAction() );
     ui->menuView->addAction( ui->dockModelDrill->toggleViewAction() );
     ui->menuView->addAction( ui->dockJavascriptEditor->toggleViewAction() );
     ui->menuView->addAction( ui->dockJavascriptWorkspace->toggleViewAction() );
     ui->menuView->addAction( ui->dockTreeExpression->toggleViewAction() );
 
     ui->dockLogviewer->installEventFilter(this); // for dynamic resize
+    // position of dock widgets
+    addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, ui->dockJavascriptWorkspace);
+    addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, ui->dockTreeExpression);
+    ui->dockTreeExpression->setVisible(false);
+    // put some of the docks into tabs
+    tabifyDockWidget(ui->dockJavascriptEditor, ui->dockLegend);
+    tabifyDockWidget(ui->dockJavascriptWorkspace, ui->dockVisualization);
+
+
+    resizeDocks({ui->dockLogviewer}, {100}, Qt::Vertical);
+
+    resize(QSize(1000, 750));
 
 
     setUIshortcuts(QVariantMap());
@@ -1452,7 +1465,7 @@ void MainWindow::repaintArea(QPainter &painter)
 
 
     } else {
-        qDebug() << "mainwindow::repaint: skipped (busy)" << QDateTime::currentMSecsSinceEpoch();
+        //qDebug() << "mainwindow::repaint: skipped (busy)" << QDateTime::currentMSecsSinceEpoch();
     }
 }
 
@@ -1486,6 +1499,12 @@ void MainWindow::mouseClick(const QPoint& pos)
         if (showABEDetails(coord))
             return;
     }
+
+    if (ui->visRegeneration->isChecked()) {
+        showRegenDetails(coord);
+        return;
+    }
+
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     if (!ru)
         return;
@@ -1578,6 +1597,36 @@ bool MainWindow::showABEDetails(const QPointF &coord)
 
 
 
+}
+
+void MainWindow::showRegenDetails(const QPointF &coord)
+{
+    ui->dataTree->clear();
+    if (mRegenerationGrid.isEmpty())
+        return;
+    QPoint lif_p = GlobalSettings::instance()->model()->grid()->indexAt(coord);
+    ResourceUnit *rRU;
+    SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(lif_p,true, &rRU);
+    if (!sc)
+        return;
+
+    QList<QTreeWidgetItem *> items;
+    SaplingWrapper sw;
+    const QStringList &names = sw.getVariablesList();
+
+    for (int i=0;i<NSAPCELLS;++i) {
+        if (sc->saplings[i].is_occupied()) {
+            sw.setSaplingTree(&sc->saplings[i], rRU);
+            items.append(new QTreeWidgetItem(QStringList() << "species" << mRemoteControl.model()->speciesSet()->species(sw.valueByName("species"))->id() ));
+            QTreeWidgetItem *parent = items.back();
+            foreach(QString name, names) {
+                if (name != "species") {
+                   items.append(new QTreeWidgetItem(parent, QStringList() << name << QString::number(sw.valueByName(name), 'f') ));
+                }
+            }
+        }
+    }
+    ui->dataTree->addTopLevelItems(items);
 }
 
 
@@ -1697,6 +1746,7 @@ void MainWindow::executeJS(QString code)
     LogToWindow l; // force UI logging
     try {
 
+        qDebug() << "code:" << code;
         QString result = ScriptGlobal::executeScript(code);
         if (!result.isEmpty()) {
             qDebug() << result;
@@ -1773,7 +1823,9 @@ void MainWindow::setupModel()
     recentFileMenu();
 
     // load project xml file to global xml settings structure
-    mRemoteControl.setFileName(ui->initFileName->text());
+    if (!mRemoteControl.setFileName(ui->initFileName->text())) {
+        return; // not loaded
+    }
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
     labelMessage("Creating model...");
 
@@ -2515,7 +2567,8 @@ void MainWindow::on_pbLoadTree_clicked()
 
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     QStringList hideList = QStringList() << "Math" << "JSON" << "undefined" << "NaN"
-                                         << "Infinity" << "Atomics" << "Reflect";
+                                         << "Infinity" << "Atomics" << "Reflect"
+                                         << "console" << "Factory";
 
     QJSValue start;
     if (ui->lJSTree->text().isEmpty())

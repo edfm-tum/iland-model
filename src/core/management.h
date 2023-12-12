@@ -125,7 +125,6 @@ private:
     int remove_percentiles(int pctfrom, int pctto, int number, bool management);
     int remove_trees(QString expression, double fraction, bool management);
     double aggregate_function(QString expression, QString filter, QString type);
-    void throwError(const QString &errormessage);
 
     // removal fractions
     double mRemoveFoliage, mRemoveBranch, mRemoveStem;

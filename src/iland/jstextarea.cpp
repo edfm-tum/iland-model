@@ -131,7 +131,7 @@ void JSTextArea::keyPressEvent ( QKeyEvent * event )
             cursor.movePosition(QTextCursor::NextBlock);
             setTextCursor(cursor);
         }
-        qDebug() << "code:" << code;
+        //qDebug() << "code:" << code;
         if (!code.isEmpty())
             emit executeJS(code);
         event->accept();

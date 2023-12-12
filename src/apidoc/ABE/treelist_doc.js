@@ -4,7 +4,8 @@
 /**
 The TreeList class (**`trees`** variable) represents a list of trees that can be manipulated (e.g., harvested) with functions of the class.
 When javascript code is executed in the context of an Activity, a variable 'trees' is available in the global context. This instance
-of a TreeList is linked automatically to the forest stand that is currently managed.
+of a TreeList is linked automatically to the forest stand that is currently managed. Note that a TreeList can created using `new TreeList` - in this
+case the TreeList is not linked automatically to a forest stand (but see also loadFromList()).
 
 ## Overview
 ### initializing the list
@@ -54,6 +55,29 @@ variables.
 @return {Integer} the number of trees loaded.
 **/
 
+/**
+The `loadFromList()` method is a way to copy tree list data from a different TreeList object. A typical use case is when you
+need to process parts of a tree lists (e.g., based on location).
+Per default, all trees (i.e. trees>4m height) that are located in `other_list`are loaded. If `filter` is provided, only a subset
+of the trees are loaded. `filter` can either be a probability (between 0..1) for selecting individual trees, or an Expression using tree
+variables. Note also, that the linked forest stand is copied as well, i.e. a later call to `loadAll()` would load all trees of that stand.
+
+
+    var my_list = new TreeList;
+    stand.trees.load('dbh > 20');
+    // loop over three species and count for each species the number of trees >20cm
+    // (note that this would have been also possible with the sum() function)
+    for (s of ['piab', 'fasy', 'lade']) {
+       const n = my_list.loadFromList(stand.trees, 'species=' + s);
+       console.log(`Species '${s}' has ${n} trees >20cm.`);
+    }
+
+@method loadFromList
+@param {TreeList} other_list TreeList object to copy tree information from
+@param {String} filter optional filter criterion (see above).
+@return {Integer} the number of trees loaded.
+**/
+
 
 /**
 When `simulate` is true, harvest operations are not actually executed, but affected trees are marked as either for harvest or killing. Calling `removeMarkedTrees()` then
@@ -66,7 +90,7 @@ Note: tree variables `markharvest`, `markcut`, `markcrop` are available for use 
 
 /**
 the ID of the currently active stand (or -1).
-@property stand
+@property standId
 @type Integer
 @readonly
 */

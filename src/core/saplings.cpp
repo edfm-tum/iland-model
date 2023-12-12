@@ -326,6 +326,17 @@ QPointF Saplings::coordOfCell(const ResourceUnit *ru, int cell_index)
     return GlobalSettings::instance()->model()->grid()->cellCenterPoint(QPoint(x,y));
 }
 
+QPoint Saplings::coordOfCellLIF(const ResourceUnit *ru, int cell_index)
+{
+    QPoint imap = ru->cornerPointOffset();
+    int x = imap.x() + cell_index % cPxPerRU;
+    int y = imap.y() + cell_index/cPxPerRU;
+    QPointF coord = GlobalSettings::instance()->model()->grid()->cellCenterPoint(QPoint(x,y));
+    return GlobalSettings::instance()->model()->grid()->indexAt(coord);
+}
+
+
+
 void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout)
 {
     GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), rectangle);

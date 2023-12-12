@@ -198,6 +198,8 @@ void BiteEngine::run()
 {
     DebugTimer t("Bite:run");
     resetErrors();
+    ExprExceptionAsScriptError no_expression;
+
 
 
     qCDebug(bite) << "Run year" << currentYear();

@@ -42,8 +42,8 @@ ABELayers::~ABELayers()
 
 double ABELayers::value(const FMStandPtr &data, const int index) const
 {
-    if (data == 0 && index<2) return -1; // for classes
-    if (data == 0) return 0;
+    if (data == nullptr && index<2) return -1; // for classes
+    if (data == nullptr) return 0;
     switch (index) {
     case 0:
         if(!mStandIndex.contains(data->id()))
@@ -75,6 +75,7 @@ double ABELayers::value(const FMStandPtr &data, const int index) const
     case 14: if (!mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QStringLiteral("invalid")])
                 mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QStringLiteral("invalid")] = mActivityIndex.count();
             return mActivityIndex[data->currentActivity() ? data->currentActivity()->name() : QStringLiteral("invalid")];
+
 
     default: throw IException("ABELayers:value(): Invalid index");
     }

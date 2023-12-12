@@ -33,6 +33,7 @@
 #include "fomescript.h"
 #include "saplings.h"
 #include "scriptgrid.h"
+#include "patch.h"
 
 namespace ABE {
 
@@ -114,6 +115,33 @@ int FMTreeList::loadFromRU(ResourceUnit *ru, bool append)
     }
     return mTrees.size();
 
+}
+
+void FMTreeList::addToScriptEngine(QJSEngine *engine)
+{
+    QJSValue jsMetaObject = engine->newQMetaObject(&ABE::FMTreeList::staticMetaObject);
+    engine->globalObject().setProperty("TreeList", jsMetaObject);
+
+}
+
+int FMTreeList::loadFromPatch(int patchId, bool append)
+{
+    if (!append)
+        mTrees.clear();
+    // test
+    for (auto tp : mTrees) {
+        int patch = mStand->patches()->patch(tp.first->positionIndex());
+        qDebug() << "Tree position: " << tp.first->positionIndex() << " - patch: " << patch;
+    }
+    return mTrees.size();
+
+}
+
+int FMTreeList::loadFromList(FMTreeList *from, QString filter_cond)
+{
+    setStand(from->mStand);
+    mTrees = from->mTrees; // copy trees from the source list. With Qt copy on write semantic, a deep copy happens when this list is changed
+    return filter(filter_cond);
 }
 
 

@@ -86,7 +86,7 @@ signals:
     void bufferLogs(bool do_buffer); ///< signal indicating that logs should be buffered (true, model run mode) or that buffering should stop (false) for "interactive" mode
     void stateChanged(); ///< is emitted when model started/stopped/paused
 public slots:
-    void setFileName(QString initFileName); ///< set project file name
+    bool setFileName(QString initFileName); ///< set project file name
     void create(); ///< create the model
     void destroy(); ///< delete the model
     void run(int years); ///< run the model

@@ -27,6 +27,7 @@
 #include "fmstand.h"
 #include "scripttree.h"
 #include "fmtreelist.h"
+#include "patches.h"
 
 namespace ABE {
 
@@ -192,6 +193,7 @@ class StandObj: public QObject
     Q_PROPERTY(ActivityObj* activity READ activity);
     Q_PROPERTY(STPObj* stp READ stp);
     Q_PROPERTY(FMTreeList* trees READ trees);
+    Q_PROPERTY(Patches* patches READ patches);
 
 
 /*    basalArea: 0, // total basal area/ha of the stand
@@ -239,6 +241,8 @@ public:
     ActivityObj *activity();
     STPObj* stp();
     FMTreeList* trees();
+    Patches* patches();
+
 
 
     // properties of the forest

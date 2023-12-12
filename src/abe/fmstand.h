@@ -32,6 +32,7 @@ namespace ABE {
 
 class FOMEWrapper; // forward
 class FMUnit; // forward
+class Patches; // forward
 
 struct SSpeciesStand
 {
@@ -50,6 +51,7 @@ class FMStand
 public:
     /// c'tor: link stand to a forest management unit
     FMStand(FMUnit *unit, const int id);
+    ~FMStand();
     /// set the stand to be managed by a given 'stp'
     void setSTP(FMSTP *stp) {mSTP = stp; }
     void initialize();
@@ -84,6 +86,10 @@ public:
     void setU(const double rotation_length) { mU = rotation_length; }
     void setThinningIntensity(const int th_class) { mThinningIntensityClass = th_class; }
     void setTargetSpeciesIndex(const int index) { mSpeciesCompositionIndex = index; }
+
+    // access to the patches within the stand
+    bool hasPatches() const { return mPatches != nullptr; }
+    Patches *patches() const;
 
     // stand properties
     /// total area of the stand (ha)
@@ -242,6 +248,8 @@ private:
     QVector<ActivityFlags> mStandFlags;
     // additional property values for each stand
     QString mContextStr;
+    // access to patches
+    Patches *mPatches;
     static QHash<const FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
 
     friend class StandObj;

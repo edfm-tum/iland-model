@@ -51,6 +51,7 @@
 #include "scripttree.h"
 #include "scriptresourceunit.h"
 #include "fmsaplinglist.h"
+#include "fmtreelist.h"
 #include "scriptgrid.h"
 #include "customaggout.h"
 #include "microclimate.h"
@@ -1025,6 +1026,8 @@ void ScriptGlobal::throwError(const QString &errormessage)
 void ScriptGlobal::loadScript(const QString &fileName)
 {
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
+    ExprExceptionAsScriptError no_expression;
+
 
     QString program = Helper::loadTextFile(fileName);
     if (program.isEmpty()) {
@@ -1051,6 +1054,8 @@ QString ScriptGlobal::executeScript(QString cmd)
     DebugTimer t("execute javascript");
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     QJSValue result;
+    ExprExceptionAsScriptError no_expression;
+
     mLastErrorMessage = "";
     if (engine)
         result = engine->evaluate(cmd);
@@ -1076,6 +1081,8 @@ QString ScriptGlobal::executeJSFunction(QString function)
     DebugTimer t("execute javascript");
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
     QJSValue result;
+    ExprExceptionAsScriptError no_expression;
+
     mLastErrorMessage = "";
 
     if (!engine)
@@ -1292,6 +1299,7 @@ void ScriptGlobal::setupGlobalScripting()
     ScriptTreeExpr::addToScriptEngine(*engine);
     ScriptGrid::addToScriptEngine(engine);
     ABE::FMSaplingList::addToScriptEngine(engine);
+    ABE::FMTreeList::addToScriptEngine(engine);
 
 }
 

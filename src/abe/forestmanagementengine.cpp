@@ -582,6 +582,7 @@ void ForestManagementEngine::run(int debug_year)
 
 
     prepareRun();
+    ExprExceptionAsScriptError no_expression;
 
     // execute an event handler before invoking the ABE core
     runJavascript(false);

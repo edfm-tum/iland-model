@@ -30,6 +30,7 @@
 #include "fomescript.h"
 #include "agent.h"
 #include "agenttype.h"
+#include "patches.h"
 
 #include "tree.h"
 #include "species.h"
@@ -60,6 +61,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mStandType = 1; // just testing...
 
     mU = 0; mSpeciesCompositionIndex = -1; mThinningIntensityClass = -1;
+    mPatches = nullptr;
 
     newRotatation();
     mSTP = nullptr;
@@ -84,6 +86,14 @@ FMStand::FMStand(FMUnit *unit, const int id)
 
     mArea = ForestManagementEngine::standGrid()->area(mId)/cRUArea;
 
+}
+
+FMStand::~FMStand()
+{
+    if (mPatches) {
+        delete mPatches;
+        mPatches = nullptr;
+    }
 }
 
 
@@ -259,6 +269,16 @@ void FMStand::reload(bool force)
     mStems *= area_factor; // convert to stems/ha
     // sort species data by relative share....
     std::sort(mSpeciesData.begin(), mSpeciesData.end(), relBasalAreaIsHigher);
+}
+
+Patches *FMStand::patches() const
+{
+    if (!mPatches) {
+        FMStand *const_hack = const_cast<FMStand*>(this);
+        const_hack->mPatches = new Patches();
+        const_hack->mPatches->setup(const_hack);
+    }
+    return mPatches;
 }
 
 // return stand area in ha

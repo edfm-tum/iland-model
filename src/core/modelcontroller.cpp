@@ -142,11 +142,12 @@ QString ModelController::timeString() const
     return QString("%1 (%2 remaining)").arg(time_str, todo_str);
 }
 
-void ModelController::setFileName(QString initFileName)
+bool ModelController::setFileName(QString initFileName)
 {
     mInitFile = initFileName;
     try {
         GlobalSettings::instance()->loadProjectFile(mInitFile);
+        return true;
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
@@ -154,6 +155,7 @@ void ModelController::setFileName(QString initFileName)
         mLastError = error_msg;
         qDebug() << error_msg;
     }
+    return false;
 }
 
 void ModelController::create()

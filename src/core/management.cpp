@@ -240,7 +240,7 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
             }
         }
     } catch(const IException &e) {
-        throwError(e.message());
+        ScriptGlobal::throwError(e.message());
     }
     return n;
 }
@@ -279,21 +279,13 @@ double Management::aggregate_function(QString expression, QString filter, QStrin
         }
 
     } catch(const IException &e) {
-        throwError(e.message());
+         ScriptGlobal::throwError(e.message());
     }
     if (type=="sum")
         return sum;
     if (type=="mean")
         return n>0?sum/double(n):0.;
     return 0.;
-}
-
-// introduced with switch to QJSEngine (context->throwMessage not available any more)
-void Management::throwError(const QString &errormessage)
-{
-    GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
-    qDebug() << "Management-script error:" << errormessage;
-    // no idea if this works!!!
 }
 
 
@@ -324,6 +316,8 @@ int Management::manageAll()
 
 void Management::run()
 {
+    ExprExceptionAsScriptError no_expression; // turn expression errors to JS exceptions
+
     mTrees.clear();
     mRemoved=0;
     qDebug() << "Management::run() called";
@@ -407,7 +401,7 @@ int Management::filter(QString filter)
                 ++tp;
         }
     } catch(const IException &e) {
-        throwError(e.message());
+         ScriptGlobal::throwError(e.message());
     }
 
     qDebug() << "filtering with" << filter << "N=" << n_before << "/" << mTrees.count()  << "trees (before/after filtering).";
@@ -463,7 +457,7 @@ void Management::loadFromTreeList(QList<Tree*>tree_list)
 int Management::loadFromMap(MapGridWrapper *wrap, int key)
 {
     if (!wrap) {
-        throwError("loadFromMap called with invalid map object!");
+         ScriptGlobal::throwError("loadFromMap called with invalid map object!");
         return 0;
     }
     loadFromMap(wrap->map(), key);
@@ -527,7 +521,7 @@ void Management::killSaplingsResourceUnit(int ruindex)
 void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
 {
     if (!(SWDfrac>=0. && SWDfrac<=1. && DWDfrac>=0. && DWDfrac<=1. && soilFrac>=0. && soilFrac<=1. && litterFrac>=0. && litterFrac<=1.)) {
-        throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: ---"));
+         ScriptGlobal::throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: ---"));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
@@ -555,7 +549,7 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
 void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction)
 {
     if (slash_fraction<0 || slash_fraction>1) {
-        throwError(QString("slashSnags called with invalid parameters!!\nArgs: ...."));
+         ScriptGlobal::throwError(QString("slashSnags called with invalid parameters!!\nArgs: ...."));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);

@@ -247,6 +247,13 @@ bool ActPlanting::SPlantingItem::setup(QJSValue value)
     age = FMSTP::valueFromJs(value, "age", "1").toInt();
     clear = FMSTP::boolValueFromJs(value, "clear", false);
 
+    // patches
+    on_patches = value.hasProperty("patches");
+    if (on_patches) {
+        patches = new Expression(FMSTP::valueFromJs(value, "patches").toString());
+        patch_var = patches->addVar("patch");
+    }
+
     // pattern
     QString group = FMSTP::valueFromJs(value, "pattern", "").toString();
     group_type = planting_pattern_names.indexOf(group);
@@ -279,7 +286,12 @@ void ActPlanting::SPlantingItem::run(FMStand *stand)
         while (runner.next()) {
             if (sgrid->standIDFromLIFCoord(runner.currentIndex()) != stand->id())
                 continue;
-            //
+            if (on_patches && stand->hasPatches()) {
+                int patch_id = stand->patches()->patch(runner.currentIndex());
+                *patch_var = patch_id;
+                if (!patches->executeBool())
+                    continue;
+            }
             if (clear) {
                 ResourceUnit *ru;
                 SaplingCell *sc=model->saplings()->cell(runner.currentIndex(),true, &ru);

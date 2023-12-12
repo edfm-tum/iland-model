@@ -51,8 +51,10 @@ public:
     // access
     /// returns true, if 'id' is a valid id in the grid, false otherwise.
     bool isValid(const int id) const { return mRectIndex.contains(id); }
-    QRectF boundingBox(const int id) const { return isValid(id)?mRectIndex[id].first: QRectF(); } ///< returns the bounding box of a polygon
-    double area(const int id) const {return isValid(id)?mRectIndex[id].second : 0.;} ///< return the area (m2) covered by the polygon
+    /// returns the bounding box of a polygon (metric coordinates)
+    QRectF boundingBox(const int id) const { return isValid(id)?mRectIndex[id].first: QRectF(); }
+    /// return the area (m2) covered by the polygon
+    double area(const int id) const {return isValid(id)?mRectIndex[id].second : 0.;}
     /// returns the list of resource units with at least one pixel within the area designated by 'id'
     QList<ResourceUnit*> resourceUnits(const int id) const;
     /// returns a list with resource units and area factors per 'id'.

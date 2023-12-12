@@ -39,6 +39,7 @@
 #include "soil.h"
 #include "climate.h"
 #include "saplings.h"
+#include "patches.h"
 
 #include <QtCore>
 
@@ -83,7 +84,9 @@ static QStringList treeVarList=QStringList() << baseVarList << "id" << "dbh" << 
                         << "dead" << "stress" << "deltad" //15-17
                         << "afoliagemass" << "species" // 18, 19
                         << "basalarea" << "crownarea" // 20, 21
-                        << "markharvest" << "markcut" << "markcrop" << "markcompetitor" << "branchmass" << "is_conifer"; // 22-27
+                        << "markharvest" << "markcut" << "markcrop" << "markcompetitor"
+                        << "branchmass" << "is_conifer" // 22-27
+                        << "patch"; // 28
 
 const QStringList TreeWrapper::getVariablesList()
 {
@@ -126,6 +129,7 @@ double TreeWrapper::value(const int variableIndex)
     case 25: return mTree->isMarkedAsCropCompetitor()?1:0; // markcompetitor
     case 26: return static_cast<double>(mTree->mBranchMass);
     case 27: return mTree->species()->isConiferous();
+    case 28: return ABE::Patches::getPatch(mTree->positionIndex()); // patch
     }
     return ExpressionWrapper::value(variableIndex);
 }
@@ -200,7 +204,9 @@ double RUWrapper::value(const int variableIndex)
 //// SaplingTree Wrapper
 ////////////////////////////////////////////////
 
-const static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age" << "nrep" << "dbh" << "foliagemass" << "x" << "y";
+const static QStringList saplingVarList=QStringList() << baseVarList << "species" << "height" << "age" // 0-2
+                                                        << "nrep" << "dbh" << "foliagemass" // 3,4,5
+                                                        << "x" << "y" << "patch"; // 6,7,8
 
 const QStringList SaplingWrapper::getVariablesList()
 {
@@ -222,13 +228,18 @@ double SaplingWrapper::value(const int variableIndex)
               double dbh = mSapling->height / sp->saplingGrowthParameters().hdSapling * 100.;
               return sp->biomassFoliage(dbh); }
     case 6:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
-              size_t index = diff * sizeof(int*) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
+              size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
               QPointF p = Saplings::coordOfCell(mRU, index);
               return p.x();    }
     case 7:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
-              size_t index = diff * sizeof(int*) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
+              size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
               QPointF p = Saplings::coordOfCell(mRU, index);
               return p.y();    }
+    case 8:  { size_t diff = (int*)(mSapling) - (int*)( mRU->saplingCellArray() ); // difference in int* ptr (64bit, usually)
+              size_t index = diff * sizeof(int) / sizeof(SaplingCell); // convert to difference in "SaplingCell" (with size (currently) 72 bytes)
+              QPoint p = Saplings::coordOfCellLIF(mRU, index);
+              return ABE::Patches::getPatch(p);    }
+
     }
 
     return ExpressionWrapper::value(variableIndex);
