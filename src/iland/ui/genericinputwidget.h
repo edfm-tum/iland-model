@@ -17,7 +17,8 @@ public:
                                 QStringList list = QStringList() << "default" << "path",
                                 const QString& inputLabelName = "default label",
                                 const QString& inputToolTip = "default tool tip",
-                                QWidget *parent = nullptr);
+                                QWidget *parent = nullptr,
+                                bool connected = false);
     //~genericInputWidget();
 
 private:
@@ -26,6 +27,7 @@ private:
     QStringList mXmlPath;
     QString mLabelName;
     QString mToolTip;
+    bool mConnected;
 
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit);
     void openCommentDialog(QStringList xmlPath);

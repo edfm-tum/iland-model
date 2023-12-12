@@ -14,13 +14,15 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
                                        QStringList inputXmlPath,
                                        const QString& inputLabelName,
                                        const QString& inputToolTip,
-                                       QWidget *parent)
+                                       QWidget *parent,
+                                       bool connected)
     : QWidget{parent}, // pointer holding parent, to which widget is added (e. g. tab: QTabWidget->widget(i))
     mDataType{inputDataType}, // inputType: "boolean", "string", "numeric", "path"
     mDefaultValue(inputDefaultValue), // Default value defined in metadata file
     mXmlPath{inputXmlPath}, // Name of the variable in xml-file
     mLabelName{inputLabelName}, // Name on label to show up
-    mToolTip{inputToolTip}, // Tool tip to show up when hovering over label
+    mToolTip{inputToolTip}, // Tool tip to show up when hovering over label or input element
+    mConnected{connected}, // defautl "false", when true gui element is a copy of another element
     mLinkxqt{Linkxqt}
 {
     // Widgets are aligned in horizontal box layout, aligned left
@@ -49,7 +51,13 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
     // Defined as generic class QWidget, in case cast inputField with dynamic_cast<T *>(inputField)
     //QWidget *inputField;
     // Name of inputField, which is used for internal functionality
-    const QString& objName = mXmlPath.join(".");
+    QString objName;
+    if (!mConnected) {
+        objName = mXmlPath.join(".");
+    } else {
+        objName = mXmlPath.join(".") + ".connected";
+    }
+
 
     if (mDataType == "string" ||
         mDataType == "path" ||
@@ -79,7 +87,6 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
-
     else if (mDataType == "combo") {
         QComboBox* inputField = new QComboBox();
         inputField->addItems(mDefaultValue.split(";"));

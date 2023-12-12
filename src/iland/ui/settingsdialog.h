@@ -3,6 +3,8 @@
 
 #include "ui/linkxmlqt.h"
 #include <QDialog>
+#include "qstackedwidget.h"
+#include "qtreewidget.h"
 
 namespace Ui {
 class SettingsDialog;
@@ -39,8 +41,11 @@ private:
     QStringList mMetaKeys;
     QStringList mMetaValues;
     LinkXmlQt* mLinkxqt;
+    QTreeWidget* treeWidget;
+    QStackedWidget* stackedWidget;
 
-    void setDialogLayout();
+    void setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget);
+    void setTabCaptions(QStackedWidget* stackedWidget);
 
 //    Ui::SettingsDialog *ui;
 
