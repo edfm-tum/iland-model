@@ -93,14 +93,7 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <widget class="QWidget" name="modules">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QComboBox" name="comboBox_3"/>
-       </item>
-       <item>
-        <widget class="QListWidget" name="listWidget"/>
-       </item>
-      </layout>
+      <layout class="QHBoxLayout" name="horizontalLayout_2"/>
      </widget>
      <widget class="QWidget" name="modules_fire">
       <layout class="QVBoxLayout" name="verticalLayout">

@@ -5,42 +5,80 @@
 
 
 ; output
-gui.layout = tab|tabOutput
-output.dynamic.enabled = string|string|string|string
-output.dynamic.columns = string|string|string|string
+gui.layout = tab|tabOutput|Output|Outputs in iLand are per default created as a SQLite database. Every type of output is represented by one table within this output database. Thus, the results of one simulation run are contained in one single file. Each iLand output database contains a small table named "runinfo" which stores the timestamp when the simulation was started, and iLand version information. Alternatively, individual outputs can be configured to generate data tables as a text file instead of a table in the output database. 
+output.dynamic.enabled = connected|Enable Dynamic
+output.tree.enabled = connected|Enable Tree
+output.treeremoved.enabled = connected|Enable Remove trees
+output.stand.enabled = connected|Enable Stand
+output.standdead.enabled = connected|Enable Dead stands
+output.production_month.enabled = connected|Enable production month
+output.management.enabled = connected|Enable Management
+output.sapling.enabled = connected|Enable Saplings
+output.saplingdetail.enabled = connected|Enable Sapling Details
+output.carbon.enabled = connected|Enable Carbon
+output.carbonflow.enabled = connected|Enable Carbon flow
+output.water.enabled = connected|Enable Water
+
+gui.layout = tab|tabDynamic|Dynamic|Dummy....
+output.dynamic.enabled = boolean|true|string|string
+output.dynamic.columns = string|Columns|string|string
 ; output.dynamic = string|string|string|string
-output.tree.enabled = string|string|string|string
+
+gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
+
+gui.layout = group|Tree
+output.tree.enabled = boolean|true|string|string
 output.tree.filter = string|string|string|string
-; output.tree = string|string|string|string	
-output.treeremoved.enabled = string|string|string|string
-output.treeremoved.filter = string|string|string|string
+; output.tree = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Remove trees	
+output.treeremoved.enabled = boolean|true|Remove trees|string
+output.treeremoved.filter = string|Filter|string|string
 ; output.treeremoved = string|string|string|string
-output.stand.enabled = string|string|string|string
-output.stand.condition = string|string|string|string
-output.stand.byRU = string|string|string|string
-output.stand = string|string|string|string
-output.standdead.enabled = string|string|string|string
-output.standdead = string|string|string|string
-output.production_month.enabled = string|string|string|string
-output.production_month = string|string|string|string
-output.management.enabled = string|string|string|string
-output.management = string|string|string|string
-output.sapling.enabled = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Stand	
+output.stand.enabled = boolean|false|Stand|string
+output.stand.condition = string|Condition|string|string
+output.stand.byRU = string|by Ru|string|string
+; output.stand = string|string|string|string
+output.standdead.enabled = boolean|true|Stand dead|string
+; output.standdead = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Production & Management	
+output.production_month.enabled = boolean|false|Production month|string
+output.production_month = string|january, february|Production month|string
+output.management.enabled = boolean|true|Enable Management|string
+; output.management = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Sapling	
+output.sapling.enabled = boolean|true|Enable Saplings|string
 output.sapling.condition = string|string|string|string
 output.sapling = string|string|string|string
-output.saplingdetail.enabled = string|string|string|string
-output.saplingdetail.condition = string|string|string|string
-output.saplingdetail.minDbh = string|string|string|string
-output.saplingdetail = string|string|string|string
-output.carbon.enabled = string|string|string|string
-output.carbon.condition = string|string|string|string
-output.carbon.conditionRU = string|string|string|string
-output.carbon = string|string|string|string
-output.carbonflow.enabled = string|string|string|string
+output.saplingdetail.enabled = boolean|true|Sapling Details|string
+output.saplingdetail.condition = string|details|Condition details|string
+output.saplingdetail.minDbh = string|minimiiii|Detail minDbh|string
+; output.saplingdetail = string|string|string|string
+
+gui.layout = tab|tabEnvironment|Environment|Carbon (flow), Water, condition, soil...
+
+gui.layout = layout|hl
+gui.layout = group|Carbon
+output.carbon.enabled = boolean|false|Enable Carbon|string
+output.carbon.condition = string|string|Condition|string
+output.carbon.conditionRU = string|string|Condition RU|string
+; output.carbon = string|string|string|string
+output.carbonflow.enabled = boolean|true|Enable carbon flow|string
 output.carbonflow.condition = string|string|string|string
 output.carbonflow.conditionRU = string|string|string|string
-output.carbonflow = string|string|string|string
-output.water.enabled = string|string|string|string
+; output.carbonflow = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Water
+output.water.enabled = boolean|true|Enable Water|string
 output.water.condition = string|string|string|string
 output.water.conditionRU = string|string|string|string
 output.water = string|string|string|string
@@ -324,9 +362,15 @@ model.parameter.debugDumpStamps = string|string|string|string
 model.parameter = string|string|string|string
 
 
-; modules.fire
+; modules overview
+gui.layout = tab|tabModules|Modules|Description goes here
+modules.fire.enabled = connected|Enable Fire
+modules.wind.enabled = connected|Enable Wind
+modules.barkbeetle.enabled = connected|Enable Barkbeetle
 
-gui.layout = tab|tabFire|Fire-caption|fire-description....
+
+; modules.fire
+gui.layout = tab|tabFire|Fire|The main design objectives were (i) to model fire regimes as an emerging property of vegetation and climate, (ii) to include processes of individual-tree fire resistance in order to simulate complex and heterogeneous fire impacts, (iii) to take into account landscape heterogeneity on fire processes, and (iv) to be sensitive to climate and thus applicable under climate change conditions. 
 modules.fire.enabled = boolean|false|Enable|Turn fire simulation on or off
 modules.fire.onlySimulation = boolean|false|Only Simulation|Only if value is string real effects of fire (on trees, snags, soil pools) are simulated (default: string). A value of true can be useful for testing purposes."
 modules.fire.allowBurnIn = boolean|true|Allow Burn In|A value of 'true' is required for burn-ins (if true, iLand builds a map of edge pixels)
@@ -429,4 +473,5 @@ modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = numeric|12.3;43
 ; modules.barkbeetle.referenceClimate = string|string|string|string
 ; modules.barkbeetle = string
 ; modules = string
+
 

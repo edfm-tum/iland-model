@@ -34,8 +34,10 @@ setDialogLayout(mTreeWidget, mStackedWidget);
 
 void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget)
 {
-    QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
+    // First part of function defines the general layout and elements of the gui
+    // Second part adds all the edits, labels, input elements to the layout
+    // In the third part everything is put together and connections are defined
+    // First part
     // create a tree widget used to navigate
     treeWidget->setHeaderLabel("Settings");
 
@@ -46,9 +48,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     QString element;
     QStringList xmlPath;
 
-
     for (int i = 0; i < mSettingsList.length(); i++) {
-        const QString& curModule = mSettingsList[i];
+        QString curModule = mSettingsList[i];
 
         QTreeWidgetItem* curItem = new QTreeWidgetItem(treeWidget);
         curItem->setText(0, curModule);
@@ -60,20 +61,21 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         QScrollArea* ParentScroll = new QScrollArea(this);
         ParentScroll->setWidgetResizable(true);
         ParentScroll->setWidget(curParentStack);
+        ParentScroll->setObjectName("tab" + curModule.replace(" ", ""));
 
         QVBoxLayout* layoutParent = new QVBoxLayout();
         curParentStack->setLayout(layoutParent);
         layoutParent->setAlignment(Qt::AlignTop);
-        layoutParent->setObjectName("layout" + curModule);
+        layoutParent->setObjectName(ParentScroll->objectName() + "Layout");
 
-        QTextBrowser *TextBrowser = new QTextBrowser();
-        TextBrowser->setObjectName("setting_" + curModule);
-        layoutParent->addWidget(TextBrowser);
+//        QTextBrowser *TextBrowser = new QTextBrowser();
+//        TextBrowser->setObjectName("setting_" + curModule);
+//        layoutParent->addWidget(TextBrowser);
 
-        //QUrl htmlFile = QUrl::fromLocalFile("C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res/" + curModule.toLower() + ".html");
-        QUrl htmlFile = QUrl::fromLocalFile("F:\\iLand\\book\\book\\_book\\scripting.html");
-        //QUrl htmlFile = QUrl("iland-model.org/project+file");
-        TextBrowser->setSource(htmlFile);
+//        //QUrl htmlFile = QUrl::fromLocalFile("C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res/" + curModule.toLower() + ".html");
+//        QUrl htmlFile = QUrl::fromLocalFile("F:\\iLand\\book\\book\\_book\\scripting.html");
+//        //QUrl htmlFile = QUrl("iland-model.org/project+file");
+//        TextBrowser->setSource(htmlFile);
 
         //scrollParent->setWidget(curParentStack);
         stackedWidget->addWidget(ParentScroll);
@@ -82,31 +84,36 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
         foreach (QString tab, mTabsOfSettingsList[i]) {
 
-        QTreeWidgetItem* curSubItem = new QTreeWidgetItem(curItem);
-        curSubItem->setText(0, tab);
-        curSubItem->setWhatsThis(0, QString::number(treeIndex ++));
+            QTreeWidgetItem* curSubItem = new QTreeWidgetItem(curItem);
+            curSubItem->setText(0, tab);
+            curSubItem->setWhatsThis(0, QString::number(treeIndex ++));
 
-        QWidget* curChildStack = new QWidget();
+            QWidget* curChildStack = new QWidget();
 
-        QScrollArea* localScroll = new QScrollArea(this);
-        localScroll->setWidgetResizable(true);
-        localScroll->setWidget(curChildStack);
-        localScroll->setObjectName("tab" + tab.replace(" ", ""));
+            QScrollArea* localScroll = new QScrollArea(this);
+            localScroll->setWidgetResizable(true);
+            localScroll->setWidget(curChildStack);
+            localScroll->setObjectName("tab" + tab.replace(" ", ""));
 
-        QVBoxLayout* tabLay = new QVBoxLayout();
-        tabLay->setObjectName(localScroll->objectName() + "Layout");
-        curChildStack->setLayout(tabLay);
-        tabLay->setAlignment(Qt::AlignTop);
+            QVBoxLayout* tabLay = new QVBoxLayout();
+            tabLay->setObjectName(localScroll->objectName() + "Layout");
+            curChildStack->setLayout(tabLay);
+            tabLay->setAlignment(Qt::AlignTop);
 
-        stackedWidget->addWidget(localScroll);
+            stackedWidget->addWidget(localScroll);
         }
     }
+
+    // Second part
 
     QString curTabName;
 //        QLayout *tabLay;
     QWidget *curChildStack;
     QVBoxLayout *tabLay;
     QStringList valueTypes = {"string", "boolean", "numeric", "path", "combo"};
+    QFont fontHeading("Arial", 15, QFont::Bold);
+    // List used to store copied gui elements to connect them to their respective twin
+    QList<QStringList> connectedElements;
 
     for (int n = 0; n < mMetaKeys.length(); n++) {
         element = mMetaKeys[n];
@@ -120,6 +127,17 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
             if (curChildStack) {
                 tabLay = curChildStack->findChild<QVBoxLayout *>(curTabName + "Layout");
+                if (values.length() > 2) {
+                    QLabel* tabHeading = new QLabel(values[2]);
+                    tabHeading->setFont(fontHeading);
+                    QLabel* tabDescription = new QLabel(values[3]);
+                    tabDescription->setWordWrap(true);
+
+                    tabLay->addWidget(tabHeading);
+                    tabLay->addWidget(tabDescription);
+                }
+
+//                tabHeading->setStyleSheet("font-size: 15");
             }
             else {
                 qDebug() << curTabName << ": Tab not found";
@@ -153,24 +171,50 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                                                                         curChildStack);
 
             tabLay->addWidget(newInputWidget);
+
         }
-//        else if (inputType == "connected") {
-//            QStringList connectedValue =
-//        }
+        else if (inputType == "connected") {
+            int k;
+            QStringList connectedValues;
+            if (mMetaKeys.mid(0, n).contains(element)) {
+                k = mMetaKeys.indexOf(element);
+            }
+            else if (mMetaKeys.mid(n+1).contains(element)) {
+                k = mMetaKeys.lastIndexOf(element);
+            }
+            connectedValues = mMetaValues[k].split("|");
+            inputType = connectedValues[0];
+            defaultValue = connectedValues[1];
+            labelName = values[1];
+            toolTip = connectedValues[3];
+            genericInputWidget *newInputWidget = new genericInputWidget(mLinkxqt,
+                                                                        inputType,
+                                                                        defaultValue,
+                                                                        xmlPath,
+                                                                        labelName,
+                                                                        toolTip,
+                                                                        curChildStack,
+                                                                        true);
+
+            tabLay->addWidget(newInputWidget);
+            QStringList curPair = {element, inputType};
+            connectedElements.append(curPair);
+        }
 
     }
 
         int curLabelSize;
         int labelSize;
         QString maxLabel;
-        QRegularExpression exp("\\btab[A-Z]\\w*");
-        QList<QWidget *> stackList = stackedWidget->findChildren<QWidget *>(exp);
+        QRegularExpression reTab("\\btab[A-Z]\\w*");
+        QList<QWidget *> stackList = stackedWidget->findChildren<QWidget *>(reTab);
         //qDebug() << "Num Stacks: " << stackList.length();
         foreach (QWidget *curStack, stackList) {
             //qDebug() << "Current Widget: " << curStack->objectName();
             labelSize = 0;
-            QList<QLabel *> labelList = curStack->findChildren<QLabel *>();
-//            qDebug() << "Num labels: " << labelList.length();
+            QRegularExpression reLabel("\\w*_label");
+            QList<QLabel *> labelList = curStack->findChildren<QLabel *>(reLabel);
+
             foreach (QLabel *label, labelList) {
                 curLabelSize = label->fontMetrics().boundingRect(label->text()).width();
 //                labelNameGui = label->objectName();
@@ -185,12 +229,14 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             }
         }
 
-
+    // third part
     QHBoxLayout* contentLayout = new QHBoxLayout();
     contentLayout->addWidget(treeWidget);
     contentLayout->addWidget(stackedWidget);
     contentLayout->setStretch(0, 1);
     contentLayout->setStretch(1, 3);
+
+    QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
     QVBoxLayout* overallLayout = new QVBoxLayout(this);
     overallLayout->addLayout(contentLayout);
@@ -210,6 +256,27 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                                                                      this->close();});
     connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {this->close();});
     connect(this, &QDialog::rejected, this, [=]() {this->close();});
+
+    QString sibling;
+    foreach (QStringList elementType, connectedElements) {
+        element = elementType[0];
+        sibling = element + ".connected";
+        inputType = elementType[1];
+
+        if (inputType == "boolean") {
+            QCheckBox *origEl = stackedWidget->findChild<QCheckBox *>(element);
+            QCheckBox *siblEl = stackedWidget->findChild<QCheckBox *>(sibling);
+            siblEl->setCheckState(origEl->checkState());
+            connect(origEl, &QCheckBox::stateChanged, this, [siblEl](int state) {
+                siblEl->setChecked(state == Qt::Checked); // Set state of checkBox2 accordingly
+            });
+
+            connect(siblEl, &QCheckBox::stateChanged, this, [origEl](int state) {
+                origEl->setChecked(state == Qt::Checked); // Set state of checkBox1 accordingly
+            });
+        }
+
+    }
 
 }
 

@@ -574,7 +574,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
     QStringList dialogList = QStringList() << "System" << "Modules" << "Model" << "Output";
     QStringList modelList = QStringList() << "General" << "World" << "Seed Dispersal" << "Soil" << "Grass" << "Browsing" << "Species" ;
     QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
-    QStringList outputList = QStringList() << "Output";
+    QStringList outputList = QStringList() << "Dynamic" << "Tree" << "Environment";
     QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
     QList<QStringList> tabList;
     tabList.append(systemList);
