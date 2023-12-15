@@ -325,6 +325,7 @@ void Model::setupSpace()
 
         if (mStandGrid && mStandGrid->isValid()) {
             mStandGrid->createIndex();
+            GlobalSettings::instance()->controller()->addScriptLayer(nullptr, mStandGrid, "iLand standGrid");
             qDebug() << "Loaded stand grid from " << mStandGrid->name() << ", #stands: " << mStandGrid->count();
         }
         // now store the pointers in the grid.
@@ -453,8 +454,10 @@ void Model::clear()
         delete mEnvironment;
     if (mTimeEvents)
         delete mTimeEvents;
-    if (mStandGrid)
+    if (mStandGrid) {
+        GlobalSettings::instance()->controller()->removeMapGrid(nullptr, mStandGrid);
         delete mStandGrid;
+    }
     if (mModules)
         delete mModules;
     if (mDEM)

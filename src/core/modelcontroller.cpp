@@ -624,6 +624,33 @@ void ModelController::paintGrid(Grid<double> *grid, QString name, GridViewType v
 #endif
 }
 
+void ModelController::addScriptLayer(Grid<double> *grid, MapGrid *map, QString name)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow) {
+        if (map)
+            mViewerWindow->addPaintLayer(nullptr, map, name);
+        if (grid)
+            mViewerWindow->addPaintLayer(grid, nullptr, name);
+
+    }
+#else
+    Q_UNUSED(grid);Q_UNUSED(map);
+#endif
+
+}
+
+void ModelController::removeMapGrid(Grid<double> *grid, MapGrid *map)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow) {
+        mViewerWindow->removePaintLayer(grid, map);
+    }
+#else
+    Q_UNUSED(grid);Q_UNUSED(map);
+#endif
+}
+
 void ModelController::addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value)
 {
 #ifdef ILAND_GUI

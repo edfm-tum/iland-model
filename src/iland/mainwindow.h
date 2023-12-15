@@ -82,6 +82,9 @@ public slots:
 
     void addLayers(const LayeredGridBase *layer, const QString &name);
 
+    void addPaintLayer(Grid<double> *dbl_grid, MapGrid* mapgrid, const QString name, GridViewType view_type=GridViewRainbow);
+    void removePaintLayer(Grid<double> *dbl_grid, MapGrid* mapgrid);
+
     void addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types=QVector<GridViewType>());
     void removePaintLayers(QObject *handler);
 

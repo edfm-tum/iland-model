@@ -589,6 +589,60 @@ void MainWindow::addPaintLayers(QObject *handler, const QStringList names, const
     updatePaintGridList();
 }
 
+void MainWindow::addPaintLayer(Grid<double> *dbl_grid, MapGrid* mapgrid, const QString name, GridViewType view_type)
+{
+    QString qualified_name = QString("Script - %1").arg(name);
+    if (mPaintList.contains(qualified_name)) {
+        mPaintList.remove(qualified_name);
+    }
+    double min_val=0., max_val=1.;
+    if (dbl_grid) {
+        min_val = dbl_grid->min();
+        max_val = dbl_grid->max();
+    }
+    if (mapgrid) {
+        min_val = 0;
+        max_val = mapgrid->count();
+    }
+
+    QMap<QString, PaintObject>::iterator po = mPaintList.insert(qualified_name, PaintObject());
+    po.value().map_grid = mapgrid;
+    po.value().dbl_grid = dbl_grid;
+    po.value().what = dbl_grid!=nullptr ? PaintObject::PaintDoubleGrid : PaintObject::PaintMapGrid;
+    po.value().auto_range = true;
+    po.value().min_value = min_val;
+    po.value().max_value = max_val;
+    po.value().view_type = view_type;
+    po.value().name = qualified_name;
+
+    updatePaintGridList();
+}
+
+void MainWindow::removePaintLayer(Grid<double> *dbl_grid, MapGrid *mapgrid)
+{
+    // remove all layers that have the underlying grid or map
+    QMutableMapIterator<QString, PaintObject> i(mPaintList);
+    while (i.hasNext()) {
+        i.next();
+        if (dbl_grid && i.value().dbl_grid == dbl_grid)
+            i.remove();
+
+        if (mapgrid && i.value().map_grid == mapgrid)
+            i.remove();
+
+    }
+
+    // make sure an invalid grid is somewhere
+    if (mapgrid && mPaintNext.map_grid == mapgrid)
+        mPaintNext.what = PaintObject::PaintNothing;
+    if (dbl_grid && mPaintNext.dbl_grid == dbl_grid)
+        mPaintNext.what = PaintObject::PaintNothing;
+
+
+    updatePaintGridList();
+
+}
+
 void MainWindow::removePaintLayers(QObject *handler)
 {
     // remove all layers that have the given handler
@@ -2622,7 +2676,7 @@ void MainWindow::on_pbLoadTree_clicked()
             QJSValueIterator *vi = iterators.pop();
             delete vi;
             js_obj.pop();
-            if (stack.size()==0)
+            if (stack.empty())
                 break;
         }
 

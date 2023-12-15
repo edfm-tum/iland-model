@@ -297,7 +297,7 @@ See also: {{#crossLink "Grid/create:method"}}{{/crossLink}}, {{#crossLink "Grid/
 @return {int}  the number of trees still remaining in the list, or -1 if an error occurs.
 @Example
     // create a grid
-    var g = Factory.newGrid();
+    var g = new Grid();
     g.create(10,10,5); // 50x50m, default name is 'x'
     g.setOrigin(30,20); // set lower left corner to 30/20
     // in the context of ABE:

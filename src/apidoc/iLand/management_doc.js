@@ -127,7 +127,7 @@ Load all trees that are located on grid pixels with the value `standID` on the g
 @return {integer} the number of trees that were loaded.
 @Example
     // Access to the global stand grid (required only once)
-    var stand_grid = Factory.newMap();
+    var stand_grid = new Map();
     // load all trees of the forest stand with ID=1
     management.loadFromMap(stand_grid, 1);
 */

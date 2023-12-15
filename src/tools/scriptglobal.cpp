@@ -299,6 +299,9 @@ MapGridWrapper::~MapGridWrapper()
 {
     if (mCreated)
         delete mMap;
+    // remove potential links in UI to this grid
+    GlobalSettings::instance()->controller()->removeMapGrid(nullptr, mMap);
+
 }
 
 
@@ -327,6 +330,22 @@ void MapGridWrapper::paint(double min_value, double max_value)
         if (GlobalSettings::instance()->controller())
             GlobalSettings::instance()->controller()->paintMap(mMap, min_value, max_value);
 
+    }
+
+}
+
+void MapGridWrapper::registerUI(QString name)
+{
+    if (mMap) {
+        if (GlobalSettings::instance()->controller()) {
+            QString mapname = name;
+            if (name.isEmpty()) {
+                QString home_folder = GlobalSettings::instance()->path("");
+                mapname = mMap->name();
+                mapname.replace(home_folder, ""); // ... remove project folder from name
+            }
+            GlobalSettings::instance()->controller()->addScriptLayer(nullptr, mMap, mapname);
+        }
     }
 
 }
