@@ -18,17 +18,29 @@ output.saplingdetail.enabled = connected|Enable Sapling Details
 output.carbon.enabled = connected|Enable Carbon
 output.carbonflow.enabled = connected|Enable Carbon flow
 output.water.enabled = connected|Enable Water
+output.landscape.enabled = connected|Enable Landscape
+output.soilinput.enabled = connected|Enable Soilinput
+output.svdgpp.enabled = connected|Enable SVDgpp
+output.svdstate.enabled = connected|Enable SVD state
+output.svduniquestate.enabled = connected|Enable SVD unique state
+output.svdindicator.enabled = connected|Enable SVD indicator
+output.dynamicstand.enabled = connected|Enable Dynamic stand
+output.barkbeetle.enabled = connected|Enable Barkbeetle
+output.wind.enabled = connected|Enable Wind
+output.fire.enabled = connected|Enable Fire
+output.landscape_removed.enabled = connected|Enable Landscape removed
+output.abeStand.enabled = connected|Enable ABE stand
 
 gui.layout = tab|tabDynamic|Dynamic|Dummy....
-output.dynamic.enabled = boolean|true|string|string
-output.dynamic.columns = string|Columns|string|string
+output.dynamic.enabled = boolean|true|Enable dynamic|string
+output.dynamic.columns = string|enter column names here|Columns|string
 ; output.dynamic = string|string|string|string
 
 gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
 
 gui.layout = group|Tree
-output.tree.enabled = boolean|true|string|string
-output.tree.filter = string|string|string|string
+output.tree.enabled = boolean|true|Enable trees|string
+output.tree.filter = string|Filter|Filter|string
 ; output.tree = string|string|string|string
 
 gui.layout = layout|hl
@@ -40,8 +52,8 @@ output.treeremoved.filter = string|Filter|string|string
 gui.layout = layout|hl
 gui.layout = group|Stand	
 output.stand.enabled = boolean|false|Stand|string
-output.stand.condition = string|Condition|string|string
-output.stand.byRU = string|by Ru|string|string
+output.stand.condition = string|stand condition|Condition|string
+output.stand.byRU = string|ruuu|by RU|string
 ; output.stand = string|string|string|string
 output.standdead.enabled = boolean|true|Stand dead|string
 ; output.standdead = string|string|string|string
@@ -49,15 +61,15 @@ output.standdead.enabled = boolean|true|Stand dead|string
 gui.layout = layout|hl
 gui.layout = group|Production & Management	
 output.production_month.enabled = boolean|false|Production month|string
-output.production_month = string|january, february|Production month|string
+; output.production_month = string|january, february|Production month|string
 output.management.enabled = boolean|true|Enable Management|string
 ; output.management = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Sapling	
 output.sapling.enabled = boolean|true|Enable Saplings|string
-output.sapling.condition = string|string|string|string
-output.sapling = string|string|string|string
+output.sapling.condition = string|Sapling condition|Sapling|string
+; output.sapling = string|string|string|string
 output.saplingdetail.enabled = boolean|true|Sapling Details|string
 output.saplingdetail.condition = string|details|Condition details|string
 output.saplingdetail.minDbh = string|minimiiii|Detail minDbh|string
@@ -68,64 +80,85 @@ gui.layout = tab|tabEnvironment|Environment|Carbon (flow), Water, condition, soi
 gui.layout = layout|hl
 gui.layout = group|Carbon
 output.carbon.enabled = boolean|false|Enable Carbon|string
-output.carbon.condition = string|string|Condition|string
-output.carbon.conditionRU = string|string|Condition RU|string
+output.carbon.condition = string|condition carbon|Condition|string
+output.carbon.conditionRU = string|condition carbon Ru|Condition RU|string
 ; output.carbon = string|string|string|string
 output.carbonflow.enabled = boolean|true|Enable carbon flow|string
-output.carbonflow.condition = string|string|string|string
-output.carbonflow.conditionRU = string|string|string|string
+output.carbonflow.condition = string|condition carbonflow|Condition|string
+output.carbonflow.conditionRU = string|condition carbonflow RU|Condition RU|string
 ; output.carbonflow = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Water
 output.water.enabled = boolean|true|Enable Water|string
-output.water.condition = string|string|string|string
-output.water.conditionRU = string|string|string|string
-output.water = string|string|string|string
-output.landscape.enabled = string|string|string|string
-output.landscape.condition = string|string|string|string
-output.landscape = string|string|string|string
-output.soilinput.enabled = string|string|string|string
-output.soilinput = string|string|string|string
-output.soilinput.enabled = string|string|string|string
-output.svdgpp = string|string|string|string
-output.svdgpp.enabled = string|string|string|string
-output.svdstate = string|string|string|string
-output.svdstate.enabled = string|string|string|string
-output.svduniquestate = string|string|string|string
-output.svduniquestate.enabled = string|string|string|string
-output.svduniquestate.condition = string|string|string|string
-output.svdindicator = string|string|string|string
-output.svdindicator.enabled = string|string|string|string
-output.dynamicstand.enabled = string|string|string|string
-output.dynamicstand.condition = string|string|string|string
-output.dynamicstand.conditionRU = string|string|string|string
-output.dynamicstand.rufilter = string|string|string|string
-output.dynamicstand.treefilter = string|string|string|string
-output.dynamicstand.by_species = string|string|string|string
-output.dynamicstand.by_ru = string|string|string|string
-output.dynamicstand.columns = string|string|string|string
-output.dynamicstand = string|string|string|string
-output.barkbeetle.enabled = string|string|string|string
-output.barkbeetle = string|string|string|string
-output.wind.enabled = string|string|string|string
-output.wind = string|string|string|string
-output.fire.enabled = string|string|string|string
-output.fire = string|string|string|string
-output.landscape_removed.enabled = string|string|string|string
-output.landscape_removed.includeHarvest = string|string|string|string
-output.landscape_removed.includeNatural = string|string|string|string
-output.landscape_removed = string|string|string|string
-output.abeStand.enabled = string|string|string|string
-output.abeStand.condition = string|string|string|string
-output.abeStand = string|string|string|string
-output.abeUnit.enabled = string|string|string|string
-output.abeUnit = string|string|string|string
-output.abeStandRemoval.enabled = string|string|string|string
-output.abeStandRemoval = string|string|string|string
-output.abeStandDetail.enabled = string|string|string|string
-output.abeStandDetail.condition = string|string|string|string
-output.abeStandDetail = string|string|string|string
+output.water.condition = string|condition water|Condition|string
+output.water.conditionRU = string|condition water RU|Condition RU|string
+; output.water = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Landscape
+output.landscape.enabled = boolean|false|Enable Landscape|string
+output.landscape.condition = string|condition landscape|Condition|string
+; output.landscape = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Landscape removed
+output.landscape_removed.enabled = boolean|false|Enabel landscape removed|string
+output.landscape_removed.includeHarvest = boolean|false|Include harvest|string
+output.landscape_removed.includeNatural = boolean|false|Include natural|string
+; output.landscape_removed = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Soilinput
+output.soilinput.enabled = boolean|false|Enable Soilinput|string
+; output.soilinput = string|string|string|string
+; output.soilinput.enabled = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|SVD
+; output.svdgpp = string|string|string|string
+output.svdgpp.enabled = boolean|false|Enable GPP|string
+; output.svdstate = string|string|string|string
+output.svdstate.enabled = boolean|false|Enable State|string
+; output.svduniquestate = string|string|string|string
+output.svduniquestate.enabled = boolean|false|Enable Unique State|string
+; output.svduniquestate.condition = string|string|string|string
+; output.svdindicator = string|string|string|string
+output.svdindicator.enabled = boolean|false|Enable Indicator|string
+
+gui.layout = layout|hl
+gui.layout = group|Dynamic stand
+output.dynamicstand.enabled = boolean|false|Enable dynamic Stand|string
+output.dynamicstand.condition = string|condition dynamic stand|Condition|string
+output.dynamicstand.conditionRU = string|condition dynamic stand ru|Condition RU|string
+output.dynamicstand.rufilter = string|dynamic stand ru filter|RU filter|string
+output.dynamicstand.treefilter = string|dynamic stand tree filter|Tree filter|string
+output.dynamicstand.by_species = boolean|false|Filter by species|string
+output.dynamicstand.by_ru = boolean|false|Filter by RU|string
+output.dynamicstand.columns = string|dyanmic stand columns|Columns|string
+
+gui.layout = layout|hl
+gui.layout = group|Modules
+; output.dynamicstand = string|string|string|string
+output.barkbeetle.enabled = boolean|false|Enable barkbeetle|string
+; output.barkbeetle = string|string|string|string
+output.wind.enabled = boolean|false|Enable wind|string
+; output.wind = string|string|string|string
+output.fire.enabled = boolean|false|Enable fire|string
+; output.fire = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|ABE stand
+output.abeStand.enabled = boolean|false|Enable ABE stand|string
+; output.abeStand.condition = string|string|string|string
+; output.abeStand = string|string|string|string
+output.abeUnit.enabled = boolean|false|Enable ABE unit|string
+; output.abeUnit = string|string|string|string
+output.abeStandRemoval.enabled = boolean|false|Enable ABE stand removal|string
+; output.abeStandRemoval = string|string|string|string
+output.abeStandDetail.enabled = boolean|false|Enable ABE stand detail|string
+; output.abeStandDetail.condition = string|string|string|string
+; output.abeStandDetail = string|string|string|string
 ; output = string|string|string|string
 
 
@@ -409,11 +442,21 @@ modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probabi
 
 ; modules.wind
 ; modules.fire = gui|tabFire|test|test
-gui.layout = tab|tabWind
+gui.layout = tab|tabWind|Wind|Users of the iLand wind module need to provide several types of input data. These types are (i) static parameters: either global parameters or variables per tree species. Examples are species specific turning moments or crown shape parameters. While global parameters are directly provided in the project file, species specific parameters are provided in an own parameter table in the input database of iLand. (ii) parameters in space: this is currently the topoModifier which scales the global wind pattern to a local value. Values per resource unit can be assigned using the mechanism to set up the simulation extent. (iii) parameters in time: basically a time series of wind events (with accompanying properties like wind direction and storm duration). This time series is provided with a time events file. 
 modules.wind.enabled = boolean|true|Enable|Turn wind simulation on or off
+modules.wind.triggeredByTimeEvent = boolean|false|Time triggers wind|If true, then wind events are triggered by time events (i.e. defined in an external input file). 
+modules.wind.onbeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) 
+modules.wind.onAfterWind = string|javascript expression|on AfterWind|Javascript function that is called after every wind event (e.g. for postprocessing). For example, you can provide myTestFunction() in XML, and defined a myTestFunction within the iLand Javascript engine. (Note: it is "on AfterWind" (no space) not "onafterWind" - the wiki does not allow the correct term )
+
+gui.layout = layout|hl
+modules.wind.speed = numeric|in m/s|Speed|Hourly mean above-canopy wind speed (10m above canopy, m/s). This general wind speed is modified by topography and may be modified during a event. 
+modules.wind.duration = numeric|in min|Duration|Duration of the wind event in minutes. Internally, duration is transformed to a number of iterations (see also durationPerIteration). 
+
+gui.layout = layout|hl
 gui.layout = group|Direction
 modules.wind.direction = numeric|90|Main|Main cardinal direction of the storm in degrees (0°: north, 90°: east, 180°: south, 270°: west). The direction of the wind may be modified for individual pixels (see directionVariation)
 modules.wind.directionVariation = numeric|5|Variation|variation in wind direction (°) for fetch calculation; current wind direction = direction + rnd(-x, +x)
+
 gui.layout = layout|hl
 gui.layout = group|Edge
 modules.wind.edgeProbability = numeric||Probability|Something about probability
@@ -421,43 +464,55 @@ modules.wind.edgeAgeBaseValue = numeric||Age Base Value|Tool tip about Base Valu
 modules.wind.edgeBackgroundProbability = numeric||Background Probability|Hi
 modules.wind.edgeDetectionThreshold = numeric||Detection Threshold|Guggug
 modules.wind.factorEdge = numeric||Factor|Factor Edge
+
 gui.layout = layout|hl
 gui.layout = group| Topography
 modules.wind.topoModifier = numeric||Modifier|Multiplier accounting for differences in local wind speed. The modifier is either resource unit specific (see simulation extent) or defined by 10m pixel (see setting topoGridFile). The actual wind speed for a pixel is calculated by multiplying the modifier with the speed.
 modules.wind.topoGridFile = path||Grid File|Specifies a ASCII grid file containing the topoModifier. Modifier values are sampled for 10m pixels. File paths are relative to the project root folder.
 modules.wind.topexModifierType = combo|multiplicative;additive|Modifier Type|Specifies the calculation mode for values for the topoModifier. Possible values are "additive" and "multiplicative", which is the default. If "additive", the 10m-wind speed is calculated as (speed + topoModifier) * gustModifier.
+
 gui.layout = layout|hl
-modules.wind.speciesParameter = string|string|string|string
-modules.wind.soilFreezeMode = string|string|string|string
-modules.wind.triggeredByTimeEvent = string|string|string|string
-modules.wind.durationPerIteration = string|string|string|string
-modules.wind.gustModifier = string|string|string|string
-modules.wind.dayOfYear = string|string|string|string
-modules.wind.speed = string|string|string|string
-modules.wind.duration = string|string|string|string
-modules.wind.LRITransferFunction = string|string|string|string
-modules.wind.onAfterWind = string|string|string|string
+modules.wind.speciesParameter = string|species name|Species parameter|Table name of the species parameter table for the wind module
+modules.wind.soilFreezeMode = combo|yes;no;auto|Soil Freeze Mode|Switch to define how to determine the state of the soil. Possible values are the strings yes: always frozen, no: never frozen, auto: the state is determined by calculating the soil temperature; if the temperature in 10cm depth is below 0°, the soil is considered as frozen. 
+modules.wind.durationPerIteration = numeric|duration in minutes|Duration per iteration|duration (minutes) of one iteration of the model, i.e. how long it takes to advance the frontline of the storm to the next (10m) pixel. The factor is used to scale the duration to a number of iterations used internally by the model. 
+modules.wind.gustModifier = numeric|numeric factor|Gust modifier|Defines the variation of the global wind speed between iterations of the model. The gustModifier is given as a fraction (e.g. 0.05). The base wind speed is modified for each iteration with a value from the range +/- gustModifier (e.g.: multiplied by 0.95 - 1.05). 
+modules.wind.dayOfYear = numeric|0-365|Day of year|Day of the year (0..365) of the storm event (used to calculate soil temperature). 
+modules.wind.LRITransferFunction = string|max(min(3.733-6.467*LRI,3.41),0.5)|LRI Transfer function|Expression to compute the Hegyi concurrency index from the trees' LRI. Default: max(min(3.733-6.467*LRI,3.41),0.5)
+
 ; modules.wind = string
 
+
 ; modules.barkbeetle
-gui.layout = tab|tabBarkbeetle
+gui.layout = tab|tabBarkbeetle|Barkbeetle|Description of barkbeetle module
 modules.barkbeetle.enabled = boolean|false|Enable|string
-modules.barkbeetle.onAfterBarkbeetle = boolean|false|On after Barkbeetle|string
+modules.barkbeetle.onAfterBarkbeetle = string|Javascript|On after Barkbeetle|string
+
+gui.layout = layout|hl
+modules.barkbeetle.colonizeProbabilityFormula = string|string|Colonalization probability formula|string
+modules.barkbeetle.deadTreeSelectivity = string|string|Dead tree selectivity|string
+modules.barkbeetle.minimumDbh = string|string|Minimum Dbh|string
+
 gui.layout = layout|hl
 gui.layout = group|Infestation Probability
 modules.barkbeetle.backgroundInfestationProbability = string|string|Background|string
 modules.barkbeetle.initialInfestationProbability = string|string|Initial|string
 modules.barkbeetle.stormInfestationProbability = string|string|Storm related|string
-modules.barkbeetle = layout|hl
-modules.barkbeetle.baseWinterMortality = string|string|string|string
-modules.barkbeetle.winterMortalityFormula = string|string|string|string
-modules.barkbeetle.spreadKernelFormula = string|string|string|string
-modules.barkbeetle.spreadKernelMaxDistance = string|string|string|string
-modules.barkbeetle.cohortsPerGeneration = string|string|string|string
-modules.barkbeetle.cohortsPerSisterbrood = string|string|string|string
-modules.barkbeetle.colonizeProbabilityFormula = string|string|string|string
-modules.barkbeetle.deadTreeSelectivity = string|string|string|string
-modules.barkbeetle.minimumDbh = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Winter mortality
+modules.barkbeetle.baseWinterMortality = string|string|Base Mortality|string
+modules.barkbeetle.winterMortalityFormula = string|string|Formula|string
+
+gui.layout = layout|hl
+gui.layout = group|Spread kernel
+modules.barkbeetle.spreadKernelFormula = string|string|Formula|string
+modules.barkbeetle.spreadKernelMaxDistance = string|string|Max. distance|string
+
+gui.layout = layout|hl
+gui.layout = group|Cohorts
+modules.barkbeetle.cohortsPerGeneration = string|string|Per generation|string
+modules.barkbeetle.cohortsPerSisterbrood = string|string|Per sisterbrood|string
+
 gui.layout = layout|hl
 gui.layout = group|Outbreak
 modules.barkbeetle.outbreakClimateSensitivityFormula = string|string|Climate Sensitivity Formula|string
