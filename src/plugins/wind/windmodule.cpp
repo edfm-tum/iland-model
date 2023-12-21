@@ -120,6 +120,11 @@ WindModule::WindModule()
     mTopexFactorModificationType = gfMultiply;
 }
 
+WindModule::~WindModule()
+{
+    GlobalSettings::instance()->controller()->removeLayers(&mWindLayers);
+}
+
 /// setup of general settings from the project file.
 /// the function is invoked from the Plugin.
 void WindModule::setup()

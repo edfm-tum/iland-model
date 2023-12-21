@@ -31,7 +31,7 @@ class BarkBeetlePlugin: public QObject,
 {
     Q_OBJECT
     #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "at.ac.boku.iland.barkbeetleplugin" FILE "barkbeetleplugin.json")
+    Q_PLUGIN_METADATA(IID "org.iland-model.barkbeetleplugin" FILE "barkbeetleplugin.json")
     #endif
     Q_INTERFACES(DisturbanceInterface SetupResourceUnitInterface TreeDeathInterface)
 

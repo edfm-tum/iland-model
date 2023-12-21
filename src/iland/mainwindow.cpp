@@ -602,7 +602,11 @@ void MainWindow::addPaintLayer(Grid<double> *dbl_grid, MapGrid* mapgrid, const Q
     }
     if (mapgrid) {
         min_val = 0;
-        max_val = mapgrid->count();
+        const auto &ids = mapgrid->mapIds();
+        if (ids.size()>0) {
+            min_val = *std::min_element(ids.begin(), ids.end());
+            max_val = *std::max_element(ids.begin(), ids.end());
+        }
     }
 
     QMap<QString, PaintObject>::iterator po = mPaintList.insert(qualified_name, PaintObject());

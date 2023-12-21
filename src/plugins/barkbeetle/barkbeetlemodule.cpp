@@ -64,6 +64,8 @@ BarkBeetleModule::BarkBeetleModule()
 
 BarkBeetleModule::~BarkBeetleModule()
 {
+    GlobalSettings::instance()->controller()->removeLayers(&mLayers);
+    GlobalSettings::instance()->controller()->removeLayers(&mRULayers);
 }
 
 void BarkBeetleModule::setup()

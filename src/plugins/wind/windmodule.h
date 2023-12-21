@@ -95,6 +95,7 @@ class WindModule
 {
 public:
     WindModule();
+    ~WindModule();
     static double cellsize() { return 10.; }
     /// the general setup routine after starting iland
     void setup();

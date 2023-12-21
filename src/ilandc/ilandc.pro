@@ -211,6 +211,8 @@ SOURCES += main.cpp \
     ../abe/output/abestandout.cpp \
     ../abe/output/abestandremovalout.cpp \
     ../abe/actthinning.cpp \
+    ../abe/patch.cpp \
+    ../abe/patches.cpp \
     ../core/grasscover.cpp \
     ../tools/scriptgrid.cpp \
     ../output/waterout.cpp \
@@ -340,6 +342,8 @@ HEADERS += \
     ../abe/output/abestandout.h \
     ../abe/output/abestandremovalout.h \
     ../abe/actthinning.h \
+    ../abe/patch.h \
+    ../abe/patches.h \
     ../core/grasscover.h \
     ../tools/scriptgrid.h \
     ../output/waterout.h \
