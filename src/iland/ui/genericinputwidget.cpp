@@ -25,6 +25,8 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
     mConnected{connected}, // defautl "false", when true gui element is a copy of another element
     mLinkxqt{Linkxqt}
 {
+    // Each genericInputWidget consists of a label, a comment button, and input field
+    // Path elements also include a button for a file dialog
     // Widgets are aligned in horizontal box layout, aligned left
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setAlignment(Qt::AlignLeft);
@@ -33,6 +35,7 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
     // Set label
     QLabel *label1 = new QLabel(mLabelName);
     label1->setToolTip(mToolTip);
+    // Label name is later used for formatting purposes in settingsdialog.cpp
     QString labelNa = mLabelName + "_label";
     label1->setObjectName(labelNa);
 
@@ -49,8 +52,8 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
 
     // Depending on input type, define the corresponding input widget
     // Defined as generic class QWidget, in case cast inputField with dynamic_cast<T *>(inputField)
-    //QWidget *inputField;
-    // Name of inputField, which is used for internal functionality
+
+    // Name of inputField, which is used for referencing in settingsdialog.cpp
     QString objName;
     if (!mConnected) {
         objName = mXmlPath.join(".");
@@ -109,21 +112,16 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
 }
 
 
-void genericInputWidget::connectFileDialog(const QString& variableName, QLineEdit *lineEdit) {
+void genericInputWidget::connectFileDialog(const QString& variableName, QLineEdit *lineEdit)
+{
     QString fileName = Helper::fileDialog("Select " + variableName, "", "");
     if (fileName.isEmpty())
         return;
     lineEdit->setText(fileName);
 }
 
-void genericInputWidget::openCommentDialog(QStringList xmlPath) {
-
-//    QString currentObject = nameObject;
-//    QString currentTag = currentObject.remove("_commentDialog");
-
-//    QStringList xmlPath = currentTag.split("_");
-//    xmlPath.prepend(submodule);
-
+void genericInputWidget::openCommentDialog(QStringList xmlPath)
+{
     ui_comment = new DialogComment(mLinkxqt, xmlPath, this);
     ui_comment->show();
 

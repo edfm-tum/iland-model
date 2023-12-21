@@ -35,21 +35,34 @@ public:
 
 
 private:
+    // The settings list holds the first level of the navigation hierachy
     QStringList& mSettingsList;
+
+    // Second level of settings. The first list corresponds
+    // to the first element in mSettingsList, second to second...
     QList<QStringList>& mTabsOfSettingsList;
-    //metadata& mMeta;
+
+    //mMetaKeys and mMetaValues hold the entries of project_file_metadata.txt
+    // The lists are used to preserve the order of the elements in the file
     QStringList mMetaKeys;
     QStringList mMetaValues;
+
+    // Class to read/write files from/to xml document/gui
     LinkXmlQt* mLinkxqt;
+
+    // Navigation element in gui
     QTreeWidget* treeWidget;
+
+    // Container for gui elements
     QStackedWidget* stackedWidget;
 
+    // Based on keys and values and their respective order as defined in project_file_metadata.txt
+    // setDialogLayout builds the layout of the dialog and defines all the elements.
     void setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget);
-    void setTabCaptions(QStackedWidget* stackedWidget);
 
-//    Ui::SettingsDialog *ui;
 
-//signals:
+    // void setTabCaptions(QStackedWidget* stackedWidget);
+
 
 };
 

@@ -34,8 +34,6 @@
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "settingmetadata.h"
-#include "ui/moduledialog.h"
-#include "ui/dialogsystemsettings.h"
 #include "ui/linkxmlqt.h"
 
 #include "model.h"
@@ -254,10 +252,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
             this, SLOT(mouseWheel(const QPoint&, int)));
 
-    connect(ui->button_moduleDialog, SIGNAL(clicked()), this, SLOT(openModuleDialog()));
-    connect(ui->button_systemSettingsDialog, SIGNAL(clicked()), this, SLOT(openSystemSettingsDialog()));
-
-    // javascript console
+     // javascript console
     connect(ui->scriptCode, SIGNAL(executeJS(QString)),
             this, SLOT(executeJS(QString)) );
 
@@ -449,117 +444,6 @@ void MainWindow::processMetaData(metadata &meta) {
         }
     }
 
-}
-
-void MainWindow::createDialog(const QString& dialogName,
-                              QStringList tabs,
-                              metadata& meta) {
-
-
-
-    // Create button and add to ruler layout
-    QPushButton *openDialogButton = new QPushButton(this);
-    openDialogButton->setText(dialogName + " Settings");
-
-    // Create dialog
-    QDialog *newDialog = new QDialog(this);
-    QVBoxLayout *dialogLay = new QVBoxLayout(newDialog);
-    QTabWidget *dialogTabs = new QTabWidget(newDialog);
-    QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
-    dialogTabs->setObjectName(dialogName.toLower());
-    dialogLay->addWidget(dialogTabs);
-    dialogLay->addWidget(dialogButtons);
-
-    QString element;
-    QString inputType;
-    QStringList xmlPath;
-
-    foreach (const QString& tab, tabs) {
-        QWidget *newTab = new QWidget(dialogTabs);
-        dialogTabs->addTab(newTab, tab);
-        newTab->setObjectName(tab.toLower());
-        QVBoxLayout *tabLay = new QVBoxLayout(newTab);
-        tabLay->setSpacing(0);
-        tabLay->setContentsMargins(0, 0, 0, 0);
-//        QScrollArea *scrollArea = new QScrollArea(dialogTabs);
-//        scrollArea->setWidget(newTab);
-//        newTab->setLayout(tabLay);
-        //QGridLayout *tabLay = new QGridLayout(newTab);
-        tabLay->setAlignment(Qt::AlignTop);
-        int labelSize = 0;
-        int curLabelSize;
-
-        QString maxLabel;
-        for (int i = 0; i < meta.elements.length(); i++) {
-            element = meta.elements[i];
-            xmlPath = element.split(".");
-            if (xmlPath.length() > 2) {
-                if (xmlPath[0] == dialogName.toLower() && xmlPath[1] == tab.toLower()) {
-                    inputType = meta.inputType[i];
-
-                    if (inputType != "noInput") {
-                        if (inputType == "group") {
-                            QLabel* subheading = new QLabel(meta.defaultValue[i]);
-                            subheading->setStyleSheet("font-weight: bold");
-                            tabLay->addWidget(subheading);
-                        }
-                        else {
-                            genericInputWidget *newInputWidget = new genericInputWidget(mLinkxqt,
-                                                                                        inputType,
-                                                                                        meta.defaultValue[i],
-                                                                                        xmlPath,
-                                                                                        meta.labelName[i],
-                                                                                        meta.toolTip[i],
-                                                                                        newTab);
-                            //newInputWidget->setContentsMargins(0,0,0,0);
-                            tabLay->addWidget(newInputWidget);
-                            QString labelName = meta.labelName[i] + "_label";
-                            QLabel *label = newTab->findChild<QLabel *>(labelName);
-                            curLabelSize = label->fontMetrics().boundingRect(label->text()).width();
-
-                            if (curLabelSize > labelSize) {
-                                labelSize = curLabelSize;
-                                maxLabel = labelName;
-                                }
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            foreach (QLabel *label, newTab->findChildren<QLabel *>()) {
-                label->setMinimumWidth(labelSize + 2);
-               }
-
-            //scrollArea->setWidget(newTab);
-
-        }
-
-    connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(dialogTabs);
-                                                                     mLinkxqt->writeToFile();
-                                                                     newDialog->close();});
-    connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {newDialog->close();});
-    connect(newDialog, &QDialog::rejected, this, [=]() {newDialog->close();});
-    connect(openDialogButton, &QPushButton::clicked, this, [=]() {mLinkxqt->readValuesXml(dialogTabs); newDialog->exec();});
-    // connect button to open dialog
-    // dialog buttons have to be connected-> accepted(), rejected()
-    // link to Linkxmlqt, not clear whether necessary at all
-
-    ui->qmlRulerLayout->addWidget(openDialogButton);
-}
-
-
-void MainWindow::openModuleDialog()
-{
-    QString xmlFile = ui->initFileName->text();
-    //ui_modules = new ModuleDialog(xmlFile, this);
-    //bool xmlFileLoaded = mLinkxqt->loadXmlFile(xmlFile);
-
-    mLinkxqt->loadXmlFile();
-    ui_modules = new ModuleDialog(mLinkxqt, this);
-    ui_modules->show();
 }
 
 

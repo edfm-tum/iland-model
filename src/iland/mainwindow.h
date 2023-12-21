@@ -35,8 +35,6 @@
 #include "paintarea.h"
 #include "viewport.h"
 
-#include "ui/moduledialog.h"
-#include "ui/dialogsystemsettings.h"
 #include "ui/linkxmlqt.h"
 
 class QQuickView;
@@ -114,8 +112,6 @@ private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
 
-    ModuleDialog *ui_modules;
-    DialogSystemSettings *ui_systemSettings;
     SettingsDialog *ui_settingsDialog;
 
     LinkXmlQt *mLinkxqt;
@@ -170,11 +166,9 @@ private:
     QList<QString> mRecentFileList;
 
     //Dialog
-    void createDialog(const QString& dialogName, QStringList tabs, metadata& meta);
     void processMetaData(metadata& meta);
 
 private slots:
-    void openModuleDialog();
     //void openSystemSettingsDialog();
 
     void automaticRun(); ///< automatically start a simulation...

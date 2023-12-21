@@ -217,7 +217,7 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
 @</string>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="editStackMain">
         <attribute name="title">
@@ -309,20 +309,6 @@ QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: n
            <property name="spacing">
             <number>0</number>
            </property>
-           <item>
-            <widget class="QPushButton" name="button_systemSettingsDialog">
-             <property name="text">
-              <string>system settings</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="button_moduleDialog">
-             <property name="text">
-              <string>modules settings</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QPushButton" name="pbReloadQml">
              <property name="text">
@@ -1460,8 +1446,8 @@ QProgressBar::chunk {
   </action>
   <action name="actionSettingsDialog">
    <property name="icon">
-    <iconset>
-     <normaloff>res/load-settings.png</normaloff>res/load-settings.png</iconset>
+    <iconset resource="res/iland.qrc">
+     <normaloff>:/load-settings.png</normaloff>:/load-settings.png</iconset>
    </property>
    <property name="text">
     <string>Settings Dialog</string>
