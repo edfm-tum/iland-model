@@ -2,6 +2,7 @@
 #define ABE_PATCH_H
 
 #include <QObject>
+#include <QRectF>
 
 namespace ABE {
 

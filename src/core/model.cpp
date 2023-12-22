@@ -192,6 +192,9 @@ void Model::setupSpace()
     if (mGrid)
         delete mGrid;
     mGrid = new FloatGrid(total_grid, static_cast<float>(cellSize));
+    if (mGrid->isEmpty()) {
+        throw IException("setup of the world: definition of project area (width/height/buffer) invalid or too large.");
+    }
     mGrid->initialize(1.f);
     if (mHeightGrid)
         delete mHeightGrid;

@@ -243,7 +243,7 @@ int ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
         throwError(QString("addSingleTrees: invalid resource unit (index: %1").arg(resourceIndex));
         return -1;
     }
-    int cnt = loader.loadSingleTreeList(content, ru, "called_from_script");
+    int cnt = loader.loadSingleTreeList(content, ru, -1, "called_from_script");
     qDebug() << "script: addSingleTrees:" << cnt <<"trees loaded.";
     return cnt;
 }
