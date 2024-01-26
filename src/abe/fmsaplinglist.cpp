@@ -53,9 +53,10 @@ void FMSaplingList::addToScriptEngine(QJSEngine *engine)
 
 }
 
-int FMSaplingList::loadFromStand(int standId, QString filter)
+int FMSaplingList::loadFromStand(int standId, QString filter, bool do_append)
 {
-    mSaplings.clear();
+    if (!do_append)
+        mSaplings.clear();
 
     SaplingWrapper sw;
     Expression filter_expr(filter.isEmpty() ? "true" : filter, &sw);

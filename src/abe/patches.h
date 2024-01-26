@@ -4,6 +4,7 @@
 #include "patch.h"
 #include "grid.h"
 #include "tree.h"
+#include "scriptgrid.h"
 
 #include <QObject>
 
@@ -29,30 +30,36 @@ public:
     int patch(QPoint pos) const {
         QPoint p = QPoint(pos.x() / cPxPerHeight - mStandOffset.x(),
                           pos.y() / cPxPerHeight - mStandOffset.y() );
-        if (!mStandGrid.isIndexValid(p))
+        if (!mLocalStandGrid.isIndexValid(p))
             throw IException(QString("Invalid access to Patches: ix: %1,iy: %2.").arg(pos.x()).arg(pos.y()));
-        return mStandGrid.constValueAtIndex(p);
+        return mLocalStandGrid.constValueAtIndex(p);
     }
 
     // properties
     FMStand* stand() const { return mStand; }
-    Grid<short int> &grid()  { return mStandGrid; }
+    Grid<short int> &grid()  { return mLocalStandGrid; }
     QList<Patch*> list() const { return mPatches; }
     QRectF rectangle() const { return mStandRect; }
 
+    /// re-create the internal stand grid from the list of patches
     void updateGrid();
     /// get patch from a tree (static)
     static int getPatch(QPoint position_lif);
 public slots:
-    void createRandom(int n);
+    void createRandomPatches(int n);
     void clear();
+    bool createPatch(double x, double y, QString shape_string, int id=-1);
+    void createStrips(double width, bool horizontal);
+    bool createFromGrid(ScriptGrid *grid);
 signals:
 private:
+    /// get or
+    Patch *getPatch(int patch_id, bool create_on_miss=false);
     FMStand *mStand;
     QList<Patch*> mPatches;
     QRectF mStandRect; ///< metric rect of the stand
     QPoint mStandOffset; ///< offset of the stand on the 10m grid
-    Grid<short int> mStandGrid;
+    Grid<short int> mLocalStandGrid;
 
 };
 

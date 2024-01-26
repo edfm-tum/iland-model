@@ -68,7 +68,7 @@ double WindLayers::value(const WindCell &data, const int param_index) const
     case 10: return data.n_affected; // number of storm events affecting the pixel
     case 11: return data.sum_volume_killed; // sum of killed volume
     case 12: return data.edge_age; // # of years that a cell is an edge
-    case 13: return data.n_trees; // # of trees
+    case 13: return data.basalarea; // # of trees
     default: throw IException(QString("invalid variable index for a WindCell: %1").arg(param_index));
     }
 }
@@ -91,7 +91,7 @@ const QVector<LayeredGridBase::LayerElement> &WindLayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("nEvents"), QStringLiteral("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
                 << LayeredGridBase::LayerElement(QStringLiteral("sumVolume"), QStringLiteral("running sum of damaged tree volume on the pixel."), GridViewReds)
                 << LayeredGridBase::LayerElement(QStringLiteral("edgeAge"), QStringLiteral("age of an edge (consecutive number of years that a cell is an edge)."), GridViewBlues)
-                << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("sum of basal area (trees>4m) on the cel.l"), GridViewRainbow);
+                << LayeredGridBase::LayerElement(QStringLiteral("basalArea"), QStringLiteral("sum of basal area (trees>4m) on the cell."), GridViewRainbow);
     return mNames;
 }
 
@@ -423,7 +423,7 @@ void WindModule::detectEdges(bool at_startup)
         for (x=1;x<dx-1;++x,++p,++p_below, ++p_above) {
             if (at_startup)
                 p->edge=0.f;
-            if (p->n_trees>0) {
+            if (p->basalarea>0) {
                 float min_h = p->height - threshold; // max_h: if no surrounding pixel is lower than this value, then there is no edge here
                 // edges are only detected if trees are >10m high
                 if (p->height>10.f && min_h > 0) {
@@ -760,7 +760,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
         wind_speed_10 =( mWindSpeed + topo_mod) * mCurrentGustFactor; // wind speed on current resource unit 10m above the canopy, topo modifier calculated additively
 
     // cell->n_trees: sum of basal area of all trees on the pixel
-    double n_trees = cell->n_trees / cell->tree->basalArea(); // number of trees with the dimension of the focal tree
+    double n_trees = cell->basalarea / cell->tree->basalArea(); // number of trees with the dimension of the focal tree
 
     double u_crown = calculateCrownWindSpeed(cell->tree, params, n_trees, wind_speed_10);
 
@@ -835,7 +835,7 @@ bool WindModule::windImpactOnPixel(const QPoint position, WindCell *cell)
     cell->edge = 0.f;
     cell->n_iteration = mCurrentIteration;
     cell->tree = 0;
-    cell->n_trees = 0.f; // no more trees on the pixel
+    cell->basalarea = 0.f; // no more trees on the pixel
     if (!mSimulationMode)
         cell->edge_age = 0; // ... and no edge
     cell->n_affected++; // pixel has been cleared this time...
@@ -976,7 +976,7 @@ void WindModule::scanResourceUnitTrees(const QPoint &position)
                 const QPoint &tp = t->positionIndex();
                 QPoint pwind(tp.x()/cPxPerHeight, tp.y()/cPxPerHeight);
                 WindCell &wind=mGrid.valueAtIndex(pwind);
-                wind.n_trees += t->basalArea();
+                wind.basalarea += t->basalArea();
                 if (!wind.tree || t->height()>wind.tree->height()) {
                     wind.height = t->height();
                     wind.tree = &(*t);

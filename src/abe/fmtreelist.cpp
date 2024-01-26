@@ -697,7 +697,7 @@ void FMTreeList::prepareLocalGrid(QString type, QString custom_expression)
         mRunGridCustomCell = mRunGridCustom->addVar("cell");
         runGrid(&rungrid_custom);
         delete mRunGridCustom;
-        mRunGridCustom = 0;
+        mRunGridCustom = nullptr;
         return;
     }
     qCDebug(abe) << "FMTreeList: invalid type for prepareStandGrid: " << type;
@@ -719,6 +719,18 @@ QJSValue FMTreeList::localGrid()
 
     QJSValue g = ScriptGrid::createGrid(dgrid, "local");
     return g;
+}
+
+QJSValue FMTreeList::local10Grid()
+{
+    Grid<double> *dgrid = new Grid<double>(mStandGrid.metricRect(), mStandGrid.cellsize());
+    double *p=dgrid->begin();
+    for (float *s=mStandGrid.begin(); s!=mStandGrid.end(); ++s,++p)
+        *p = *s;
+
+    QJSValue g = ScriptGrid::createGrid(dgrid, "local10");
+    return g;
+
 }
 
 int FMTreeList::killSaplings(QString expression)

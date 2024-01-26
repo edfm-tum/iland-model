@@ -31,7 +31,7 @@ signals:
 
 public slots:
     /// load all saplings
-    int loadFromStand(int standId, QString filter=QString());
+    int loadFromStand(int standId, QString filter=QString(), bool do_append=false);
 
     /// clear the list (this does not affect trees loaded)
     void clear() { mSaplings.clear(); }

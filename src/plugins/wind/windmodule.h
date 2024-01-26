@@ -34,11 +34,11 @@ class ResourceUnit; // forward
 class WindCell {
 public:
     WindCell() { topex = 0; n_affected=0; sum_volume_killed=0.; edge_age=0; clear(); }
-    void clear() {height = edge = 0.f; n_trees=0.f; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
+    void clear() {height = edge = 0.f; basalarea=0.f; tree=0; n_killed = 0; basal_area_killed = 0.f; cws_uproot = 0.; cws_break= crown_windspeed= 0.; n_iteration = 0;}
     bool isValid() const { return height<9999.f; } ///< returns true if the pixel is on the valid project area
     float topex; ///< topographic modifier for wind speed (-)
     float height; ///< top height (m).
-    float n_trees; ///< number of trees on pixel
+    float basalarea; ///< total basal area (m2) on pixel
     const Tree *tree; ///< pointer to the tallest tree on the pixel (if already populated)
     float edge; ///< maximum difference to neighboring cells (m)
     // statistics

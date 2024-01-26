@@ -1239,6 +1239,19 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         if (!mRulerColors->autoScale()) {
             max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
         }
+        if (auto_scale_color && !ui->lTreeExpr->text().isEmpty()) {
+            AllTreeIterator ati(model);
+            min_val = 9999999999999;
+            max_val = -999999999999999;
+            while ((tree = ati.next())) {
+                tw.setTree(tree);
+                double v = tree_value.execute();
+                min_val = std::min(min_val, v);
+                max_val = std::max(max_val, v);
+            }
+            if (min_val == max_val)
+                max_val = min_val + 1;
+        }
 
         while ((tree = treelist.next())) {
             if ( !vp.isVisible(treelist.currentRU()->boundingBox()) ) {
@@ -1297,8 +1310,7 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             mRulerColors->setPalette(GridViewCustom, 0., 1.);
         } else {
             mRulerColors->setCaption("Single trees", QString("result of expression: '%1'").arg(single_tree_expr));
-            mRulerColors->setPalette(GridViewRainbow, 0., 1.);
-
+            mRulerColors->setPalette(GridViewRainbow, static_cast<float>(min_val), static_cast<float>(max_val)); // ruler
         }
 
     } // if (show_trees)

@@ -38,8 +38,8 @@ class FMTreeList : public QObject
     Q_PROPERTY(bool simulate READ simulate WRITE setSimulate) ///< if 'simulate' is true, trees are only marked for removal
 public:
 
-    Q_INVOKABLE explicit FMTreeList(QObject *parent = 0);
-    explicit FMTreeList(FMStand *stand, QObject *parent = 0);
+    Q_INVOKABLE explicit FMTreeList(QObject *parent = nullptr);
+    explicit FMTreeList(FMStand *stand, QObject *parent = nullptr);
     ~FMTreeList();
     int standId() const { return mStandId; }
     void setStand(FMStand *stand);
@@ -150,6 +150,7 @@ public slots:
     void exportStandGrid(QString file_name);
     /// get access to the locally prepared grid
     QJSValue localGrid();
+    QJSValue local10Grid();
 
     /// modify sapling
     int killSaplings(QString expression);
