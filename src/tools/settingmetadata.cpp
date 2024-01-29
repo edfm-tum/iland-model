@@ -118,15 +118,21 @@ void SettingMetaData::loadFromFile(const QString &metaFilePath,
         values.clear();
 
         QTextStream inStream(&file);
-        QString line;
+        QString line, key, value;
         QStringList keyValuePair;
+        int indexDel;
 
         while (!inStream.atEnd()) {
             line = inStream.readLine();
             if (line.size() > 0 && !line.startsWith(";")) {
-                keyValuePair = line.split("=");
-                keys.append(keyValuePair[0].trimmed());
-                values.append(keyValuePair[1].trimmed());
+                // use different approach to split. If there are "=" somewhere in the
+                // labels or tool tips line.split("=") messes the key-value pair up.
+                //keyValuePair = line.split("=");
+                indexDel = line.indexOf("=");
+                key = line.sliced(0, indexDel).trimmed();
+                value = line.mid(indexDel+1).trimmed();
+                keys.append(key);
+                values.append(value);
             }
         }
 

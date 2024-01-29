@@ -34,7 +34,8 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
 
     // Set label
     QLabel *label1 = new QLabel(mLabelName);
-    label1->setToolTip(mToolTip);
+    richToolTip = QString("<FONT COLOR=black>") + mToolTip + QString("</FONT>");
+    label1->setToolTip(richToolTip);
     // Label name is later used for formatting purposes in settingsdialog.cpp
     QString labelNa = mLabelName + "_label";
     label1->setObjectName(labelNa);
@@ -80,20 +81,20 @@ genericInputWidget::genericInputWidget( LinkXmlQt* Linkxqt,
             numericValidator->setLocale(QLocale::English);
             inputField->setValidator(numericValidator);
         }
-        inputField->setToolTip(mToolTip);
+        inputField->setToolTip(richToolTip);
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
     else if (mDataType == "boolean") {
         QCheckBox* inputField = new QCheckBox();
-        inputField->setToolTip(mToolTip);
+        inputField->setToolTip(richToolTip);
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }
     else if (mDataType == "combo") {
         QComboBox* inputField = new QComboBox();
         inputField->addItems(mDefaultValue.split(";"));
-        inputField->setToolTip(mToolTip);
+        inputField->setToolTip(richToolTip);
         inputField->setObjectName(objName);
         layout->addWidget(inputField);
     }

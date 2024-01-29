@@ -27,6 +27,7 @@ private:
     QStringList mXmlPath;
     QString mLabelName;
     QString mToolTip;
+    QString richToolTip;
     bool mConnected;
 
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit);

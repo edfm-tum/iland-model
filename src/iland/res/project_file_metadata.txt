@@ -31,7 +31,7 @@ output.fire.enabled = connected|Enable Fire
 output.landscape_removed.enabled = connected|Enable Landscape removed
 output.abeStand.enabled = connected|Enable ABE stand
 
-gui.layout = tab|tabDynamic|Dynamic|Dummy....
+gui.layout = tab|tabDynamic|Dynamic|Something about dynamic
 output.dynamic.enabled = boolean|true|Enable dynamic|string
 output.dynamic.columns = string|enter column names here|Columns|string
 ; output.dynamic = string|string|string|string
@@ -39,103 +39,43 @@ output.dynamic.columns = string|enter column names here|Columns|string
 gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
 
 gui.layout = group|Tree
-output.tree.enabled = boolean|true|Enable trees|string
-output.tree.filter = string|Filter|Filter|string
+output.tree.enabled = boolean|true|Enable trees|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.
+output.tree.filter = numeric|1|Filter|See tooltip treeremoved
 ; output.tree = string|string|string|string
 
 gui.layout = layout|hl
-gui.layout = group|Remove trees	
-output.treeremoved.enabled = boolean|true|Remove trees|string
-output.treeremoved.filter = string|Filter|string|string
+gui.layout = group|Remove trees
+output.treeremoved.enabled = boolean|true|Remove trees|Output of removed indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered immediately when a tree is removed due to mortality or management.
+output.treeremoved.filter = numeric|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192
 ; output.treeremoved = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Stand	
-output.stand.enabled = boolean|false|Stand|string
-output.stand.condition = string|stand condition|Condition|string
-output.stand.byRU = string|ruuu|by RU|string
+output.stand.enabled = boolean|false|Stand|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.
+output.stand.condition = string|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).
+output.stand.byRU = string|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.
 ; output.stand = string|string|string|string
-output.standdead.enabled = boolean|true|Stand dead|string
+output.standdead.enabled = boolean|true|Stand dead|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management. 
 ; output.standdead = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Production & Management	
-output.production_month.enabled = boolean|false|Production month|string
+output.production_month.enabled = boolean|false|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit. 
 ; output.production_month = string|january, february|Production month|string
-output.management.enabled = boolean|true|Enable Management|string
+output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included! 
 ; output.management = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Sapling	
-output.sapling.enabled = boolean|true|Enable Saplings|string
-output.sapling.condition = string|Sapling condition|Sapling|string
+output.sapling.enabled = boolean|true|Enable Saplings|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.
+output.sapling.condition = string|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).
 ; output.sapling = string|string|string|string
-output.saplingdetail.enabled = boolean|true|Sapling Details|string
-output.saplingdetail.condition = string|details|Condition details|string
-output.saplingdetail.minDbh = string|minimiiii|Detail minDbh|string
+output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm). 
+output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).
+output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.
 ; output.saplingdetail = string|string|string|string
 
 gui.layout = tab|tabEnvironment|Environment|Carbon (flow), Water, condition, soil...
-
-gui.layout = layout|hl
-gui.layout = group|Carbon
-output.carbon.enabled = boolean|false|Enable Carbon|string
-output.carbon.condition = string|condition carbon|Condition|string
-output.carbon.conditionRU = string|condition carbon Ru|Condition RU|string
-; output.carbon = string|string|string|string
-output.carbonflow.enabled = boolean|true|Enable carbon flow|string
-output.carbonflow.condition = string|condition carbonflow|Condition|string
-output.carbonflow.conditionRU = string|condition carbonflow RU|Condition RU|string
-; output.carbonflow = string|string|string|string
-
-gui.layout = layout|hl
-gui.layout = group|Water
-output.water.enabled = boolean|true|Enable Water|string
-output.water.condition = string|condition water|Condition|string
-output.water.conditionRU = string|condition water RU|Condition RU|string
-; output.water = string|string|string|string
-
-gui.layout = layout|hl
-gui.layout = group|Landscape
-output.landscape.enabled = boolean|false|Enable Landscape|string
-output.landscape.condition = string|condition landscape|Condition|string
-; output.landscape = string|string|string|string
-
-gui.layout = layout|hl
-gui.layout = group|Landscape removed
-output.landscape_removed.enabled = boolean|false|Enabel landscape removed|string
-output.landscape_removed.includeHarvest = boolean|false|Include harvest|string
-output.landscape_removed.includeNatural = boolean|false|Include natural|string
-; output.landscape_removed = string|string|string|string
-
-gui.layout = layout|hl
-gui.layout = group|Soilinput
-output.soilinput.enabled = boolean|false|Enable Soilinput|string
-; output.soilinput = string|string|string|string
-; output.soilinput.enabled = string|string|string|string
-
-gui.layout = layout|hl
-gui.layout = group|SVD
-; output.svdgpp = string|string|string|string
-output.svdgpp.enabled = boolean|false|Enable GPP|string
-; output.svdstate = string|string|string|string
-output.svdstate.enabled = boolean|false|Enable State|string
-; output.svduniquestate = string|string|string|string
-output.svduniquestate.enabled = boolean|false|Enable Unique State|string
-; output.svduniquestate.condition = string|string|string|string
-; output.svdindicator = string|string|string|string
-output.svdindicator.enabled = boolean|false|Enable Indicator|string
-
-gui.layout = layout|hl
-gui.layout = group|Dynamic stand
-output.dynamicstand.enabled = boolean|false|Enable dynamic Stand|string
-output.dynamicstand.condition = string|condition dynamic stand|Condition|string
-output.dynamicstand.conditionRU = string|condition dynamic stand ru|Condition RU|string
-output.dynamicstand.rufilter = string|dynamic stand ru filter|RU filter|string
-output.dynamicstand.treefilter = string|dynamic stand tree filter|Tree filter|string
-output.dynamicstand.by_species = boolean|false|Filter by species|string
-output.dynamicstand.by_ru = boolean|false|Filter by RU|string
-output.dynamicstand.columns = string|dyanmic stand columns|Columns|string
 
 gui.layout = layout|hl
 gui.layout = group|Modules
@@ -144,20 +84,81 @@ output.barkbeetle.enabled = boolean|false|Enable barkbeetle|string
 ; output.barkbeetle = string|string|string|string
 output.wind.enabled = boolean|false|Enable wind|string
 ; output.wind = string|string|string|string
-output.fire.enabled = boolean|false|Enable fire|string
+output.fire.enabled = boolean|false|Enable fire|Fire event aggregates per fire event. The output contains a row for each (ignited) fire event. 
 ; output.fire = string|string|string|string
+output.bite.enabled = boolean|false|Enable bite|The output provides annual statistics for each simulated biotic agent. 
+
+gui.layout = layout|hl
+gui.layout = group|Carbon
+output.carbon.enabled = boolean|false|Enable Carbon|Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. On resource unit level, the outputs contain aggregated above ground pools (kg/ha) and below ground pools (kg/ha). For landscape level outputs, all variables are scaled to kg/ha stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground. 
+output.carbon.condition = string|condition carbon|Condition|Controls if the output should be created for the current year(see also dynamic stand output). 
+output.carbon.conditionRU = string|condition carbon Ru|Condition RU|can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default). 
+; output.carbon = string|string|string|string
+output.carbonflow.enabled = boolean|true|Enable carbon flow|Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). For results limited to the project area, the data values need to be scaled to the stockable area. For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included). Furthermore, the following sign convention is used in iLand: fluxes from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux. 
+output.carbonflow.condition = string|condition carbonflow|Condition|Limits the output execution to specific years (variable 'year').
+output.carbonflow.conditionRU = string|condition carbonflow RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default). 
+; output.carbonflow = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Water
+output.water.enabled = boolean|true|Enable Water|Annual water cycle output on resource unit/landscape unit. The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns. Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m). 
+output.water.condition = string|condition water|Condition|Limits the output execution to specific years (variable 'year').
+output.water.conditionRU = string|condition water RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default). 
+; output.water = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Landscape
+output.landscape.enabled = boolean|false|Enable Landscape|Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.
+output.landscape.condition = string|condition landscape|Condition|Controls if the output should be created for the current year(see also dynamic stand output).
+; output.landscape = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Landscape removed
+output.landscape_removed.enabled = boolean|false|Enable landscape removed|Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape. The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing).
+output.landscape_removed.includeHarvest = boolean|false|Include harvest|true/false: include/exclude trees that died due to natural mortality 
+output.landscape_removed.includeNatural = boolean|false|Include natural|true/false: include/exclude harvested trees
+; output.landscape_removed = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|Soilinput
+output.soilinput.enabled = boolean|false|Enable Soilinput|The output contains all carbon inputs to the soil layer (per RU) and the climate modifier re. The data of the output can be used for estimating soil carbon parameters. 
+; output.soilinput = string|string|string|string
+; output.soilinput.enabled = string|string|string|string
+
+gui.layout = layout|hl
+gui.layout = group|SVD
+; output.svdgpp = string|string|string|string
+output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.
+; output.svdstate = string|string|string|string
+output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output. 
+; output.svduniquestate = string|string|string|string
+output.svduniquestate.enabled = string|choose id|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output. 
+; output.svduniquestate.condition = string|string|string|string
+; output.svdindicator = string|string|string|string
+output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file
+
+gui.layout = layout|hl
+gui.layout = group|Dynamic stand
+output.dynamicstand.enabled = boolean|false|Enable dynamic Stand|Userdefined outputs for tree aggregates for each stand or species. Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) are calculated. The aggregated values are not scaled to any area unit. 
+output.dynamicstand.condition = string|condition dynamic stand|Condition|When present, the condition is evaluated and output is executed only when condition=true (variable='year').This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year. 
+output.dynamicstand.conditionRU = string|in(year,50,100,150,200)|Condition RU|With this, calculation of RU level can be triggered even if filter by_ru is set to false (variable='year'). Note that in this case landscape level outputs are generated always, RU-level outputs only for certain years. 
+output.dynamicstand.rufilter = string|dynamic stand ru filter|RU filter|Reduces the output to a subset of resource units
+output.dynamicstand.treefilter = string|dynamic stand tree filter|Tree filter|Reduces the output to a subset of trees, e. g.  a treefilter of 'speciesindex=0' reduces the output to just one species.
+output.dynamicstand.by_species = boolean|false|Filter by species|true: for each species a row is created
+output.dynamicstand.by_ru = boolean|false|Filter by RU|true: outputs for all resource units are created, false: aggregate over the full project area is created
+output.dynamicstand.columns = string|dyanmic stand columns|Columns|Each field is defined as: field.aggregation (separated by a dot). A field is a valid Expression. Aggregation is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.). Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50). Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted. 
 
 gui.layout = layout|hl
 gui.layout = group|ABE stand
-output.abeStand.enabled = boolean|false|Enable ABE stand|string
-; output.abeStand.condition = string|string|string|string
+output.abeStand.enabled = boolean|false|Enable ABE stand|This output provides details about the forest state on stand level. The timber is provided as standing timber per hectare. The output is rather performance critical, condition for evaluation can be applied.
+output.abeStand.condition = string|mod(year,10)=1|ABE stand eval. cond.|Limits the execution to certain years.
 ; output.abeStand = string|string|string|string
-output.abeUnit.enabled = boolean|false|Enable ABE unit|string
+output.abeUnit.enabled = boolean|false|Enable ABE unit|The output provides planned and realized harvests on the level of planning units. Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column 
 ; output.abeUnit = string|string|string|string
-output.abeStandRemoval.enabled = boolean|false|Enable ABE stand removal|string
+output.abeStandRemoval.enabled = boolean|false|Enable ABE stand removal|This output provides details about realized timber harvests on stand level. The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final. 
 ; output.abeStandRemoval = string|string|string|string
-output.abeStandDetail.enabled = boolean|false|Enable ABE stand detail|string
-; output.abeStandDetail.condition = string|string|string|string
+output.abeStandDetail.enabled = boolean|false|Enable ABE stand detail|This output provides details about the forest state on species- and stand level. This output is more detailed than the abeStand output. The output is rather performance critical, condition for evaluation can be applied.
+output.abeStandDetail.condition = string|mod(year,10)=1|ABE Standdetail eval. cond.|Limits the execution to certain years.
 ; output.abeStandDetail = string|string|string|string
 ; output = string|string|string|string
 

@@ -135,6 +135,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         element = mMetaKeys[n];
         // xmlPath is used to traverse tree in xml document
         xmlPath = element.split(".");
+        QString metaValue = mMetaValues[n];
         values = mMetaValues[n].split("|");
         inputType = values[0];
 
@@ -177,6 +178,12 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             QLabel* subheading = new QLabel(values[1]);
             subheading->setStyleSheet("font-weight: bold");
             tabLay->addWidget(subheading);
+            // a description of the subgroup can be included
+            if (values.length() > 2) {
+                QLabel* descriptionSubgroup = new QLabel(values[2]);
+                descriptionSubgroup->setWordWrap(true);
+                tabLay->addWidget(descriptionSubgroup);
+            }
         }
         else if (valueTypes.contains(inputType)) {
             // adds an actual element
@@ -239,6 +246,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         //qDebug() << "Current Widget: " << curStack->objectName();
         labelSize = 0;
         // The label name is consistently set in genericInputWidget
+        // That way only labels which name input widgets are considered.
         QRegularExpression reLabel("\\w*_label");
         QList<QLabel *> labelList = curStack->findChildren<QLabel *>(reLabel);
 
