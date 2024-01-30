@@ -389,6 +389,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \

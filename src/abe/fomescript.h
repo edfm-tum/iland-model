@@ -226,13 +226,14 @@ public slots:
     /// force a reload of the stand data.
     void reload() { if (mStand) mStand->reload(true); }
     void sleep(int years) { if (mStand) mStand->sleep(years); }
+    void wakeup() { if (mStand) mStand->wakeUp(); }
 
     void setAbsoluteAge(double arg);
     /// start the management program again (initialize the stand)
     void reset();
 
 public:
-    explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}
+    explicit StandObj(QObject *parent = nullptr): QObject(parent), mStand(0) {}
     // system stuff
     void setStand(FMStand* stand) { mStand = stand; }
     bool trace() const;
@@ -295,7 +296,7 @@ public slots:
     /// force an out-of-schedule update of the management plan
     void updateManagementPlan();
 public:
-    explicit UnitObj(QObject *parent = 0): QObject(parent) {}
+    explicit UnitObj(QObject *parent = nullptr): QObject(parent) {}
     void setStand(const FMStand* stand) { mStand = stand; }
     QString harvestMode() const;
     QString speciesComposition() const;
@@ -325,7 +326,7 @@ class SimulationObj: public QObject
     Q_OBJECT
     Q_PROPERTY (double timberPriceIndex READ timberPriceIndex)
 public:
-    explicit SimulationObj(QObject *parent = 0): QObject(parent) {}
+    explicit SimulationObj(QObject *parent = nullptr): QObject(parent) {}
     double timberPriceIndex() const { return 1.010101; } // dummy
 private:
 
@@ -346,7 +347,7 @@ class STPObj: public QObject
 public:
     void setFromStand(FMStand *stand);
     void setSTP(FMSTP *stp);
-    explicit STPObj(QObject *parent = 0): QObject(parent) { mSTP = 0;}
+    explicit STPObj(QObject *parent = 0): QObject(parent) { mSTP = nullptr;}
     QJSValue options() { if (mOptions) return *mOptions;  else return QJSValue(); }
     QString name();
 
@@ -378,11 +379,11 @@ class ActivityObj : public QObject
 public:
     explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
     // used to construct a link to a given activty (with an index that could be not the currently active index!)
-    ActivityObj(FMStand *stand, Activity *act, int index ): QObject(0) { mActivityIndex=index; mStand=stand; mActivity=act; }
+    ActivityObj(FMStand *stand, Activity *act, int index ): QObject(nullptr) { mActivityIndex=index; mStand=stand; mActivity=act; }
     /// default-case: set a forest stand as the context.
     void setStand(FMStand *stand, Activity *act=nullptr, int activity_index=-1) { mStand = stand; mActivity=act; mActivityIndex=activity_index;}
     /// set an activity context (without a stand) to access base properties of activities
-    void setActivity(Activity *act) { mStand = 0; mActivity=act; mActivityIndex=-1;}
+    void setActivity(Activity *act) { mStand = nullptr; mActivity=act; mActivityIndex=-1;}
     /// set an activity that is not the current activity of the stand
     void setActivityIndex(const int index) { mActivityIndex = index; }
 

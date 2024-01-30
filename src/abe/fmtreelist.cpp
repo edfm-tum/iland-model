@@ -204,6 +204,41 @@ int FMTreeList::filter(QString filter)
     return mTrees.size();
 }
 
+int FMTreeList::filterRandomExclude(int N)
+{
+    int to_remove = mTrees.size() - N;
+    return filterRandom(to_remove);
+}
+
+int FMTreeList::filterRandom(int n_remove)
+{
+    QPair<Tree*, double> empty_tree(nullptr,0.);
+
+    if (n_remove <= 0)
+        return 0;
+    double p_remove = n_remove / double(mTrees.size());
+    int removed = 0;
+    int n_loops = 0;
+    while (removed < n_remove) {
+        for (int i=0;i<mTrees.size() && removed<n_remove;++i) {
+            if (mTrees[i].first) {
+                if (drandom() < p_remove) {
+                    mTrees[i] = empty_tree;
+                    ++removed;
+                }
+            }
+        }
+        ++n_loops;
+        if (n_loops > 10)
+            break;
+    }
+    mTrees.removeAll(empty_tree);
+    if (logLevelDebug())
+        qDebug() << "random selection: number of loops: " << n_loops << ", to remove: " << n_remove << ", removed" << removed;
+    return removed;
+
+}
+
 int FMTreeList::spatialFilter(QJSValue grid, QString filter)
 {
     QObject *o = grid.toQObject();

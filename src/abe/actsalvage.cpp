@@ -116,7 +116,8 @@ bool ActSalvage::execute(FMStand *stand)
     // as a preliminary check we only look closer, if we have more than  x m3/ha of damage.
     if (stand->disturbedTimber()/stand->area() > mThresholdMinimal) {
         if (events().hasEvent("onAfterDisturbance")) {
-            events().run(QStringLiteral("onAfterDisturbance"), stand);
+            QJSValueList params =  QJSValueList() << stand->disturbedTimber();
+            events().run(QStringLiteral("onAfterDisturbance"), stand, &params);
         } else {
             checkStandAfterDisturbance(stand);
         }

@@ -1651,7 +1651,7 @@ bool MainWindow::showABEDetails(const QPointF &coord)
     ui->dataTree->clear();
     QList<QTreeWidgetItem *> items;
     QStack<QTreeWidgetItem*> stack;
-    stack.push(0);
+    stack.push(nullptr);
     foreach (QString s, list) {
         QStringList elem = s.split(":");
         if (s=="-")
@@ -1659,7 +1659,7 @@ bool MainWindow::showABEDetails(const QPointF &coord)
         else if (s=="/-")
             stack.pop();
         else  {
-            items.append( new QTreeWidgetItem(stack.last(), elem) );
+            items.append( new QTreeWidgetItem(stack.isEmpty() ? nullptr:  stack.last(), elem) );
         }
     }
     ui->dataTree->addTopLevelItems(items);

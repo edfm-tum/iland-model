@@ -159,6 +159,8 @@ public:
     /// for 'years_to_sleep'.
     void sleep(int years_to_sleep, bool also_shorten=false);
     int sleepYears() const {return mYearsToWait; }
+    /// stop sleeping = pausing eval/execuation of management activities
+    void wakeUp() { mYearsToWait = 0; }
 
     /// calculate mean annual increment (m3/ha) and return total MAI.
     double calculateMAI();

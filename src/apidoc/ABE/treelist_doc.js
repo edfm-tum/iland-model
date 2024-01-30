@@ -309,6 +309,50 @@ See also: {{#crossLink "Grid/create:method"}}{{/crossLink}}, {{#crossLink "Grid/
 **/
 
 /**
+`filterRandom()` selects randomly `n_trees` from the list and removes all other trees.
+
+See also: {{#crossLink "TreeList/filterRandomExclude:method"}}{{/crossLink}}
+
+@method filterRandom
+@param {int} n_trees the number of trees to select randomly from the list
+@return {int}  the number of trees that were selected.
+@Example
+
+    stand.trees.loadAll(); // load all trees
+    // filter so, that only 100 trees remain in the list:
+    stand.trees.filterRandom(100);
+    // do something, e.g.,
+    stand.trees.harvest(); // remove those 100 trees
+**/
+
+/**
+`filterRandomExclude()` excludes randomly `n_trees` trees from the list, i.e. the number of trees *after* execution in the list is
+`n_trees_before - n_trees` (the number of trees before the call minus the trees excluded). This is useful when you want to
+keep a number of trees *remaining* on the stand (i.e., not harvested). Note that the exclusion is relative to the current content of the list (e.g., filtered).
+
+A typical use is to reduce the number of trees on a stand to a given number of stems (e.g., from a yield table).
+
+See also: {{#crossLink "TreeList/filterRandom:method"}}{{/crossLink}}
+
+
+@method filterRandomExclude
+@param {int} n_trees the number of trees to select randomly from the list
+@return {int}  the number of trees that were selected.
+@Example
+
+    stand.trees.loadAll(); // load all trees, e.g. 1500 trees
+    let yield_table_target = 1200;
+    stand.trees.filterRandomExclude(yield_table_target); // 300 trees remain in the lsit
+    // do something, e.g.,
+    stand.trees.harvest(); // remove trees in the list (n=300), i.e. 1200 will remain on the stand
+
+    // using a subset of trees:
+    stand.trees.load('species = fasy'); // load all beech trees
+    stand.trees.filterRandomExclude(50); // 50 beech trees should not remain in the list (i.e. excluded from harvest)
+    stand.trees.harvest(); // remove all but 50 beech trees from the stand
+**/
+
+/**
 `tree(index)` returns the tree with index `index` (index is 0-based) from the current list. The returned Javascript object
 is a reference to the represented tree in iLand. See {{#crossLink "Tree"}}{{/crossLink}} for more details.
 

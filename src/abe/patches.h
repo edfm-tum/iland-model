@@ -17,7 +17,7 @@ class FMStand; // forward
 class Patches : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QList<Patch*> list READ list)
+    Q_PROPERTY(QList<Patch*> list READ list WRITE setList)
     Q_PROPERTY(QRectF rectangle READ rectangle)
 public:
     explicit Patches(QObject *parent = nullptr);
@@ -39,6 +39,7 @@ public:
     FMStand* stand() const { return mStand; }
     Grid<short int> &grid()  { return mLocalStandGrid; }
     QList<Patch*> list() const { return mPatches; }
+    void setList(QList<Patch*> l) { mPatches = l; updateGrid(); }
     QRectF rectangle() const { return mStandRect; }
 
     /// re-create the internal stand grid from the list of patches
@@ -49,12 +50,13 @@ public slots:
     void createRandomPatches(int n);
     void clear();
     bool createPatch(double x, double y, QString shape_string, int id=-1);
-    void createStrips(double width, bool horizontal);
-    bool createFromGrid(ScriptGrid *grid);
+    QList<Patch *> createStrips(double width, bool horizontal);
+    QList<Patch *> createRegular(int size, int spacing);
+    QList<Patch *> createFromGrid(ScriptGrid *grid);
 signals:
 private:
     /// get or
-    Patch *getPatch(int patch_id, bool create_on_miss=false);
+    Patch *getPatch(QList<Patch *> &list, int patch_id, bool create_on_miss=false);
     FMStand *mStand;
     QList<Patch*> mPatches;
     QRectF mStandRect; ///< metric rect of the stand

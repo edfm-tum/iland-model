@@ -78,6 +78,11 @@ public slots:
     /// returns the number of tree that remain in the list.
     int filter(QString filter);
 
+    /// filter randomly until N trees remain from the current list of trees
+    int filterRandomExclude(int N);
+    /// filter randomly N trees from the current list of trees
+    int filterRandom(int n_remove);
+
     /// load trees from a specific Patch (within a staind) (TEST)
     int loadFromPatch(int patchId, bool append=false);
 

@@ -94,9 +94,10 @@ bool Patches::createPatch(double x, double y, QString shape_string, int id)
 
 }
 
-void Patches::createStrips(double width, bool horizontal)
+QList<Patch*> Patches::createStrips(double width, bool horizontal)
 {
-    clear();
+
+    QList<Patch*> patches;
 
     for (short int* pg= mLocalStandGrid.begin(); pg!=mLocalStandGrid.end(); ++pg) {
         if (*pg != -1) {
@@ -104,46 +105,67 @@ void Patches::createStrips(double width, bool horizontal)
             double dx = p.x() - mLocalStandGrid.metricRect().left();
             double dy = p.y() - mLocalStandGrid.metricRect().top();
             int strip = (horizontal ? dy : dx) / width + 1;
-            getPatch(strip, true)->indices().push_back(pg - mLocalStandGrid.begin());
+            getPatch(patches, strip, true)->indices().push_back(pg - mLocalStandGrid.begin());
         }
     }
-    updateGrid();
+    //updateGrid();
+    return patches;
 
 }
 
-bool Patches::createFromGrid(ScriptGrid *grid)
+QList<Patch *> Patches::createRegular(int size, int spacing)
 {
-    clear();
+    QList<Patch*> patches;
+    int box_size = size + spacing;
+    int d_box = mLocalStandGrid.sizeY() / box_size;
+
+    for (short int* pg= mLocalStandGrid.begin(); pg!=mLocalStandGrid.end(); ++pg) {
+        if (*pg != -1) {
+            QPoint p = mLocalStandGrid.indexOf(pg);
+            int dx = p.x() / box_size;
+            int dy = p.y() / box_size;
+            int id = dy * d_box + dx + 1;
+            if (p.x() % box_size <= size &&
+                p.y() % box_size <= size)
+                getPatch(patches, id, true)->indices().push_back(pg - mLocalStandGrid.begin());
+        }
+    }
+
+    return patches;
+}
+
+QList<Patch *> Patches::createFromGrid(ScriptGrid *grid)
+{
+    QList<Patch*> patches;
 
     if (!grid || !grid->isCoordValid(mStandRect.x(), mStandRect.y()))
-        return false;
+        return patches;
 
     GridRunner<double> runner(grid->grid(), mStandRect);
-    short int *pg=mLocalStandGrid.begin();
-
+    short int *pg = mLocalStandGrid.begin();
     while (runner.next()) {
-        if (*pg == 0) {
-            *pg = *runner.current();
-            if (*pg > 0.) {
-                Patch *pt = getPatch(*pg, true); // get / create patch
-                pt->indices().push_back(pg - mLocalStandGrid.begin());
-            }
+        short int v = *runner.current();
+        if (*pg>-1 && v > 0.) {
+            Patch *pt = getPatch(patches, v, true); // get / create patch
+            pt->indices().push_back(pg - mLocalStandGrid.begin());
         }
         ++pg;
     }
-    updateGrid();
-    return true;
+    for (auto &p : patches)
+        p->update();
+
+    return patches;
 }
 
-Patch *Patches::getPatch(int patch_id, bool create_on_miss)
+Patch *Patches::getPatch(QList<Patch*> &list, int patch_id, bool create_on_miss)
 {
-    for (auto *p : mPatches) {
+    for (auto *p : list) {
         if (p->id() == patch_id)
             return p;
     }
     if (create_on_miss) {
-        mPatches.push_back(new Patch(this, patch_id));
-        return mPatches.last();
+        list.push_back(new Patch(this, patch_id));
+        return list.last();
     } else {
         return nullptr;
     }

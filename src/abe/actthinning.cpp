@@ -503,7 +503,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     // if each tree dominates its Moore-neighborhood, 2500/9 = 267 trees are possible (/ha)
     // if *more* trees should be marked, some trees need to be on neighbor pixels:
     // pixels = 2500 / N; if 9 px are the Moore neighborhood, the "overprint" is N*9 / 2500.
-    // N*)/2500 -1 = probability of having more than zero overlapping pixels
+    // N*9/2500 -1 = probability of having more than zero overlapping pixels
     double overprint = (mSelectiveThinning.N * 9) / double(cPxPerHectare) - 1.;
 
     // order the list of trees according to tree height
