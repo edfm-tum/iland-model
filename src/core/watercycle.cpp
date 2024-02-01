@@ -218,7 +218,7 @@ void WaterCycle::getStandValues(RUSpeciesShares &species_shares)
         // https://iland-model.org/water+cycle#transpiration_and_canopy_conductance
         mCanopyConductance *= total_lai / Model::settings().laiThresholdForClosedStands;
     }
-    if (logLevelInfo()) qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
+    if (logLevelDebug()) qDebug() << "WaterCycle:getStandValues: LAI needle" << mLAINeedle << "LAI Broadl:"<< mLAIBroadleaved << "weighted avg. Conductance (m/2):" << mCanopyConductance;
 }
 
 /// calculate responses for ground vegetation, i.e. for "unstocked" areas.

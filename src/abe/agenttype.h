@@ -96,6 +96,7 @@ public:
 
 private:
     QString mName; // agent name
+    bool mAllSTPAvailable; ///< if true the type can access all STPs and not only those specifically added
     QJSValue mJSObj; ///< javascript object
     QHash<QString,FMSTP*> mSTP; ///< list of all STP linked to this agent type
     QVector<QString> mSpeciesCompositions; ///< list of available target species composition (objects)

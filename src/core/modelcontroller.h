@@ -67,8 +67,12 @@ public:
 
     void saveScreenshot(QString file_name); ///< saves a screenshot of the central view widget to 'file_name'
     void addGrid(const FloatGrid *grid, const QString &name, const GridViewType view_type, double min_value, double max_value);
+
     void paintMap(MapGrid *map, double min_value, double max_value);
     void paintGrid(Grid<double> *grid, QString name, GridViewType view_type=GridViewTurbo, double min_value=0., double max_value=1.);
+    void addScriptLayer(Grid<double> *grid, MapGrid* map, QString name);
+
+    void removeMapGrid(Grid<double> *grid, MapGrid *map);
 
     void addLayers(const LayeredGridBase *layers, const QString &name);
     void removeLayers(const LayeredGridBase *layers);
@@ -86,7 +90,7 @@ signals:
     void bufferLogs(bool do_buffer); ///< signal indicating that logs should be buffered (true, model run mode) or that buffering should stop (false) for "interactive" mode
     void stateChanged(); ///< is emitted when model started/stopped/paused
 public slots:
-    void setFileName(QString initFileName); ///< set project file name
+    bool setFileName(QString initFileName); ///< set project file name
     void create(); ///< create the model
     void destroy(); ///< delete the model
     void run(int years); ///< run the model

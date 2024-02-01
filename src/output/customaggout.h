@@ -59,7 +59,8 @@ private:
     CustomAggOut::AggregationEntity mEntity; ///< aggregation entity (ru, trees, saplings)
     CustomAggOut::AggregationLevel mLevel; ///< spatial level on which data is aggregated (ru, stand, landscape)
 
-    Expression mEntityFilter;
+    Expression mEntityFilter; ///< filter for entities (trees, ...)
+    Expression mLevelFilter; ///< filter for stands, resource-unit-ids, ...
     Expression mCondition; ///< filter for years
 
     // data structure for a field

@@ -32,6 +32,7 @@ namespace ABE {
 
 class FOMEWrapper; // forward
 class FMUnit; // forward
+class Patches; // forward
 
 struct SSpeciesStand
 {
@@ -50,6 +51,7 @@ class FMStand
 public:
     /// c'tor: link stand to a forest management unit
     FMStand(FMUnit *unit, const int id);
+    ~FMStand();
     /// set the stand to be managed by a given 'stp'
     void setSTP(FMSTP *stp) {mSTP = stp; }
     void initialize();
@@ -84,6 +86,10 @@ public:
     void setU(const double rotation_length) { mU = rotation_length; }
     void setThinningIntensity(const int th_class) { mThinningIntensityClass = th_class; }
     void setTargetSpeciesIndex(const int index) { mSpeciesCompositionIndex = index; }
+
+    // access to the patches within the stand
+    bool hasPatches() const { return mPatches != nullptr; }
+    Patches *patches() const;
 
     // stand properties
     /// total area of the stand (ha)
@@ -151,8 +157,10 @@ public:
 
     /// sleep() pauses the evaluation/execution of management activities
     /// for 'years_to_sleep'.
-    void sleep(int years_to_sleep);
+    void sleep(int years_to_sleep, bool also_shorten=false);
     int sleepYears() const {return mYearsToWait; }
+    /// stop sleeping = pausing eval/execuation of management activities
+    void wakeUp() { mYearsToWait = 0; }
 
     /// calculate mean annual increment (m3/ha) and return total MAI.
     double calculateMAI();
@@ -169,8 +177,14 @@ public:
     ActivityFlags &flags(const int index)  {return mStandFlags[index]; }
     /// flags of currently active Activity
     ActivityFlags &currentFlags()  { return flags(mCurrentIndex); }
+
     /// get a pointer to the current activity; returns 0 if no activity is set.
     Activity *currentActivity() const { return mCurrentIndex>-1?mStandFlags[mCurrentIndex].activity():nullptr; }
+    /// the index of the current activity
+    int currentActivityIndex() const { return mCurrentIndex; }
+
+    /// set a new activity index. No checks performed.
+    void setActivityIndex(int index) { mCurrentIndex = index; }
 
     /// get a pointer to the last executed activity; returns 0 if no activity has been executed before.
     Activity *lastExecutedActivity() const { return mLastExecutedIndex>-1?mStandFlags[mLastExecutedIndex].activity():nullptr; }
@@ -236,6 +250,8 @@ private:
     QVector<ActivityFlags> mStandFlags;
     // additional property values for each stand
     QString mContextStr;
+    // access to patches
+    Patches *mPatches;
     static QHash<const FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
 
     friend class StandObj;

@@ -1,17 +1,14 @@
 /**
-* Access to properties of the current stand.
-* The `stand` variable is available in the execution context of forest management and provides access to properties and functions
-* of the stand that is currently processed.
-*
-* Note that the variable `stand` is provided through the C++ framework and does not need to be created separately.
-*
-* Use the 'flag' and 'setFlag' methods to (persistently) modify / read user-specific properties for each stand. This is a means
-* to pass stand-specific information between activities (or between different events within one activity).
+* Access the `patches` of a stand, which are sub-stand pattern (10m resolution)
+* that can be used for spatially explicit forest management.
+* Use the `patches` property of the (current) `stand` variable to access.
 *
 *
-@class Stand
+*
+*
+@class Patches
 */
-var stand = {
+var patches = {
 /**
   If `trace` is set to true, detailed log information is produced by ABE. This is useful for testing/ debugging.
   The trace-mode can be switched on/ off like this:

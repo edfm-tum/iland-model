@@ -25,6 +25,7 @@
 #include "scheduler.h"
 #include "forestmanagementengine.h"
 #include "fmtreelist.h"
+#include "fmunit.h"
 
 #include "tree.h"
 #include "expression.h"
@@ -61,7 +62,7 @@ ActSalvage::~ActSalvage()
 void ActSalvage::setup(QJSValue value)
 {
     Activity::setup(value); // setup base events
-    events().setup(value, QStringList() << "onBarkBeetleAttack");
+    events().setup(value, QStringList() << "onBarkBeetleAttack" << "onAfterDisturbance");
 
     QString condition = FMSTP::valueFromJs(value, "disturbanceCondition").toString();
     if (!condition.isEmpty() && condition!="undefined") {
@@ -81,6 +82,7 @@ void ActSalvage::setup(QJSValue value)
 
     mJSConditionFunc = FMSTP::valueFromJs(value, "onDisturbanceCondition", "");
     mJSCondition = mJSConditionFunc.isCallable();
+
 
 }
 
@@ -112,8 +114,14 @@ bool ActSalvage::execute(FMStand *stand)
     // now in forestmanagementengine: const_cast<FMUnit*>(stand->unit())->scheduler()->addExtraHarvest(stand, stand->salvagedTimber(), Scheduler::Salvage);
     // check if we should re-assess the stand grid (after large disturbances)
     // as a preliminary check we only look closer, if we have more than  x m3/ha of damage.
-    if (stand->disturbedTimber()/stand->area() > mThresholdMinimal)
-        checkStandAfterDisturbance(stand);
+    if (stand->disturbedTimber()/stand->area() > mThresholdMinimal) {
+        if (events().hasEvent("onAfterDisturbance")) {
+            QJSValueList params =  QJSValueList() << stand->disturbedTimber();
+            events().run(QStringLiteral("onAfterDisturbance"), stand, &params);
+        } else {
+            checkStandAfterDisturbance(stand);
+        }
+    }
 
     // the harvest happen(ed) anyways.
     //stand->resetHarvestCounter(); // set back to zero...

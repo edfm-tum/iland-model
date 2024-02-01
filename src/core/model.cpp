@@ -192,6 +192,9 @@ void Model::setupSpace()
     if (mGrid)
         delete mGrid;
     mGrid = new FloatGrid(total_grid, static_cast<float>(cellSize));
+    if (mGrid->isEmpty()) {
+        throw IException("setup of the world: definition of project area (width/height/buffer) invalid or too large.");
+    }
     mGrid->initialize(1.f);
     if (mHeightGrid)
         delete mHeightGrid;
@@ -325,6 +328,7 @@ void Model::setupSpace()
 
         if (mStandGrid && mStandGrid->isValid()) {
             mStandGrid->createIndex();
+            GlobalSettings::instance()->controller()->addScriptLayer(nullptr, mStandGrid, "iLand standGrid");
             qDebug() << "Loaded stand grid from " << mStandGrid->name() << ", #stands: " << mStandGrid->count();
         }
         // now store the pointers in the grid.
@@ -453,8 +457,10 @@ void Model::clear()
         delete mEnvironment;
     if (mTimeEvents)
         delete mTimeEvents;
-    if (mStandGrid)
+    if (mStandGrid) {
+        GlobalSettings::instance()->controller()->removeMapGrid(nullptr, mStandGrid);
         delete mStandGrid;
+    }
     if (mModules)
         delete mModules;
     if (mDEM)
@@ -598,13 +604,7 @@ void Model::loadProject()
         mBiteEngine = BITE::BiteEngine::instance();
         mBiteEngine->setup();
     }
-    // microclimate
-    if (Model::settings().microclimateEnabled) {
-        MicroclimateVisualizer::setupVisualization();
-        DebugTimer t("Microclimate setup");
-        executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
 
-    }
 
 }
 
@@ -741,6 +741,14 @@ void Model::beforeRun()
         // load the first year of the climate database
         foreach(Climate *c, mClimates)
             c->nextYear();
+
+    }
+
+    // microclimate
+    if (Model::settings().microclimateEnabled) {
+        MicroclimateVisualizer::setupVisualization();
+        DebugTimer t("Microclimate setup");
+        executePerResourceUnit(nc_microclimate, false /* true to force single threaded execution */);
 
     }
 

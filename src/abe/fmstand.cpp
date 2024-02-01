@@ -30,6 +30,7 @@
 #include "fomescript.h"
 #include "agent.h"
 #include "agenttype.h"
+#include "patches.h"
 
 #include "tree.h"
 #include "species.h"
@@ -60,6 +61,7 @@ FMStand::FMStand(FMUnit *unit, const int id)
     mStandType = 1; // just testing...
 
     mU = 0; mSpeciesCompositionIndex = -1; mThinningIntensityClass = -1;
+    mPatches = nullptr;
 
     newRotatation();
     mSTP = nullptr;
@@ -84,6 +86,14 @@ FMStand::FMStand(FMUnit *unit, const int id)
 
     mArea = ForestManagementEngine::standGrid()->area(mId)/cRUArea;
 
+}
+
+FMStand::~FMStand()
+{
+    if (mPatches) {
+        delete mPatches;
+        mPatches = nullptr;
+    }
 }
 
 
@@ -261,6 +271,16 @@ void FMStand::reload(bool force)
     std::sort(mSpeciesData.begin(), mSpeciesData.end(), relBasalAreaIsHigher);
 }
 
+Patches *FMStand::patches() const
+{
+    if (!mPatches) {
+        FMStand *const_hack = const_cast<FMStand*>(this);
+        const_hack->mPatches = new Patches();
+        const_hack->mPatches->setup(const_hack);
+    }
+    return mPatches;
+}
+
 // return stand area in ha
 
 
@@ -282,6 +302,7 @@ bool FMStand::execute()
         }
     }
 
+    FomeScript::setExecutionContext(this);
     mContextStr = QString("S%2Y%1:").arg(ForestManagementEngine::instance()->currentYear()).arg(id());
 
 
@@ -361,6 +382,9 @@ bool FMStand::execute()
         if (!currentActivity()->isRepeatingActivity()) {
             currentFlags().setActive(false);
             afterExecution(!executed); // check what comes next for the stand
+        } else {
+            // run the onExecuted handler in also for repeating activities
+            currentActivity()->events().run(QStringLiteral("onExecuted"),this);
         }
         return executed;
     }
@@ -502,9 +526,12 @@ bool FMStand::notifyBarkBeetleAttack(double generations, int infested_px_per_ha)
 }
 
 
-void FMStand::sleep(int years_to_sleep)
+void FMStand::sleep(int years_to_sleep, bool also_shorten)
 {
-    mYearsToWait = qMax(mYearsToWait, qMax(years_to_sleep,0));
+    if (also_shorten)
+        mYearsToWait = years_to_sleep;
+    else
+        mYearsToWait = qMax(mYearsToWait, qMax(years_to_sleep,0));
 }
 
 
@@ -554,8 +581,17 @@ int FMStand::setToLatestForcedActivity()
             mCurrentIndex = i;
             break;
         }
-    if (mCurrentIndex<0)
-        qCDebug(abe) << context() << "Warning: setToLatestForcedActivity(): no valid activity found!";
+    if (mCurrentIndex<0) {
+        // look also for a repeating activity - not sure if this is a good idea
+//        for (i=0;i<mStandFlags.count();++i)
+//            if (mStandFlags[i].activity()->isRepeatingActivity()) {
+//                mCurrentIndex = i;
+//                break;
+//            }
+
+        if (mCurrentIndex < 0)
+            qCDebug(abe) << context() << "Warning: setToLatestForcedActivity(): no valid activity found!";
+    }
     return i;
 
 }

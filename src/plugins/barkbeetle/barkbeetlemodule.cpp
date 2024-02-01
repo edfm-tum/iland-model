@@ -64,6 +64,8 @@ BarkBeetleModule::BarkBeetleModule()
 
 BarkBeetleModule::~BarkBeetleModule()
 {
+    GlobalSettings::instance()->controller()->removeLayers(&mLayers);
+    GlobalSettings::instance()->controller()->removeLayers(&mRULayers);
 }
 
 void BarkBeetleModule::setup()
@@ -117,9 +119,6 @@ void BarkBeetleModule::loadParameters(bool do_reset)
     params.stormInfestationProbability = xml.valueDouble(".stormInfestationProbability", params.stormInfestationProbability);
     params.deadTreeSelectivity = xml.valueDouble(".deadTreeSelectivity", params.deadTreeSelectivity);
     params.sanitationTreatmentProb = xml.valueDouble(".sanitationTreatmentProbability", params.sanitationTreatmentProb);
-
-    if (xml.hasNode(".useAirTempForGenerations"))
-        mGenerations.setUseAirTempForGenerations(xml.valueBool(".useAirTempForGenerations", false));
 
     QString formula = xml.value(".colonizeProbabilityFormula", "0.1");
     mColonizeProbability.setExpression(formula);

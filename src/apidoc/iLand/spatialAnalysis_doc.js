@@ -49,7 +49,7 @@ The resulting grid provides for each 100m cell a fraction of 'covered' pixels.
 @param {Grid} mask (a {{#crossLink "Grid"}}{{/crossLink}}
 @Example
     // create a grid:
-    var mask = Factory.newGrid();
+    var mask = new Grid();
     mask.create(100, 60, 10); // cell-size 10m, 100 x 60 cells
     mask.setOrigin(100,1020); // define the origin, the grid covers (100/1020)-(1100/1620)
     SpatialAnalysis.saveCrownCoverGrid('temp/test.asc', mask); // save the crown cover grid

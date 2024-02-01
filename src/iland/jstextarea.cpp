@@ -108,7 +108,7 @@ JSTextArea::JSTextArea(QWidget *parent) : QTextEdit(parent)
     font.setFamily("Courier");
     font.setStyleHint(QFont::Monospace);
     font.setFixedPitch(true);
-    font.setPointSize(10);
+    font.setPointSize(11);
     setFont(font);
     highlighter = new Highlighter(document());
     const int tabStop = 2;  // 4 characters
@@ -131,7 +131,7 @@ void JSTextArea::keyPressEvent ( QKeyEvent * event )
             cursor.movePosition(QTextCursor::NextBlock);
             setTextCursor(cursor);
         }
-        qDebug() << "code:" << code;
+        //qDebug() << "code:" << code;
         if (!code.isEmpty())
             emit executeJS(code);
         event->accept();

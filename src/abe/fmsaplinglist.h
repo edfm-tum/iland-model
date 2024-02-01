@@ -31,7 +31,11 @@ signals:
 
 public slots:
     /// load all saplings
-    int loadFromStand(int standId, QString filter=QString());
+    int loadFromStand(int standId, QString filter=QString(), bool do_append=false);
+
+    /// clear the list (this does not affect trees loaded)
+    void clear() { mSaplings.clear(); }
+
 
     /// return the sum of 'expression' over all saplings in the list
     /// if 'filter' is provided, only trees are counted for which 'filter' evaluates to true.

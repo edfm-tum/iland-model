@@ -86,9 +86,10 @@ void TimeEvents::run()
 
         } else {
             // no special value: a xml node...
-            if (! const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, entries[i].second.toString()))
+            if (! const_cast<XmlHelper&>(GlobalSettings::instance()->settings()).setNodeValue(key, entries[i].second.toString())) {
                 qDebug() << "TimeEvents: Error: Key " << key << "not found! (tried to set to" << entries[i].second.toString() << ")";
-            else
+                throw IException("TimeEvents: key '" + key + "' not found in the XML file. \n (Note: corresponding value must not be empty in the project file!). ");
+            } else
                 qDebug() << "TimeEvents: set" << key << "to" << entries[i].second.toString();
         }
         values_set++;

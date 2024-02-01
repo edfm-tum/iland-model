@@ -111,6 +111,8 @@ DEFINES += NO_DEBUG_MSGS
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../abe/patch.cpp \
+    ../abe/patches.cpp \
     ../core/microclimate.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
@@ -234,6 +236,8 @@ SOURCES += main.cpp \
     ../bite/biteoutputitem.cpp
 
 HEADERS += mainwindow.h \
+    ../abe/patch.h \
+    ../abe/patches.h \
     ../core/microclimate.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
@@ -386,6 +390,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \

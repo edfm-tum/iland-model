@@ -10,7 +10,7 @@ All indices are 0-based (e.g., valid rows are 0..rowCount-1).
 Example
 -------
 
-        var csv = Factory.newCSVFile(""); // do not load a file
+        var csv = new CSVFile(""); // do not load a file
 
         csv.loadFromString('a;b;c\n1;2;3\n1;4;12.1'); // note the newline characters
         console.log( csv.value(1,2) ); // -> 12.1
@@ -19,7 +19,7 @@ Example
         csv.setValue(csv.rowCount-1,csv.columnIndex('a'), 100);
         csv.saveFile(Globals.path('temp/test.csv'));
 
-        var csv = Factory.newCSVFile( Globals.path('temp/test.csv') );
+        var csv = new CSVFile( Globals.path('temp/test.csv') );
         console.log( csv.value(1,"c") ); // -> 12.1
         console.log( csv.row(0) ); // get the full row (including delimiters)
 
@@ -69,7 +69,6 @@ CSVFile = {
     /**
     Load a table from the file given in `fileName`. The delimiter is autodetected (see above).
 
-    See also: {{#crossLink "Factory/newCSVFile:method"}}{{/crossLink}}
 
     @method loadFile
     @param {string} fileName file to load (Use {{#crossLink "Globals/path:method"}}{{/crossLink}} for using relative paths).
@@ -78,8 +77,6 @@ CSVFile = {
 
     /**
     Load a table from a string. The delimiter is autodetected (see above). Use newline characters (`\n`) to separate lines. Captions
-
-    See also: {{#crossLink "Factory/newCSVFile:method"}}{{/crossLink}}
 
     @method loadFromString
     @param {string} content  string that should be interpreted as a table.

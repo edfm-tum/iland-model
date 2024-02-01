@@ -1,5 +1,5 @@
 /**
-## NOTE: The `Factory` is no longer necessary, and its us is deprecated!
+## NOTE: The `Factory` is no longer necessary, and its use is deprecated!
 
 To create an object in Javascript, you can use the standard Javascript operator `new`:
 
@@ -8,6 +8,7 @@ To create an object in Javascript, you can use the standard Javascript operator 
     var map = new Map;
     // now you are good to use the objects properties and methods
     console.log(map.name); // print the name of the stand grid file
+
 
 
 The `Factory` is a helper object for the creation of other iLand script objects such as

@@ -78,6 +78,8 @@ public slots:
 
     /// draw the map
     void paint(double min_val, double max_val);
+    /// register for interactive viewing (with this name)
+    void registerUI(QString name=QString());
 
     QString info();
 
@@ -140,7 +142,7 @@ public slots:
 private:
     Grid<double> *mGrid;
     QString mVariableName;
-    bool mOwner; // true if grid should be deleted
+    bool mOwner; // true if we have ownership and should free the grid in d'tor
     static int mCreated;
     static int mDeleted;
 };

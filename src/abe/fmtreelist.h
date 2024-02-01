@@ -25,7 +25,7 @@
 #include "scripttree.h"
 
 class Tree; // forward
-class Expression;
+class Expression; // forward
 
 namespace ABE {
 class FMStand;
@@ -33,13 +33,13 @@ class FMStand;
 class FMTreeList : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int stand READ standId) ///< return stand, -1 if not set
+    Q_PROPERTY(int standId READ standId) ///< return stand, -1 if not set
     Q_PROPERTY(int count READ count) ///< return the number of trees that are currently loaded
     Q_PROPERTY(bool simulate READ simulate WRITE setSimulate) ///< if 'simulate' is true, trees are only marked for removal
 public:
 
-    Q_INVOKABLE explicit FMTreeList(QObject *parent = 0);
-    explicit FMTreeList(FMStand *stand, QObject *parent = 0);
+    Q_INVOKABLE explicit FMTreeList(QObject *parent = nullptr);
+    explicit FMTreeList(FMStand *stand, QObject *parent = nullptr);
     ~FMTreeList();
     int standId() const { return mStandId; }
     void setStand(FMStand *stand);
@@ -53,11 +53,14 @@ public:
     /// load all trees from a RU
     int loadFromRU(ResourceUnit *ru, bool append=false);
 
+
     /// access the list of trees
     const QVector<QPair<Tree*, double> > trees() const { return mTrees; }
 
     /// access to local grid (setup if necessary) - return a reference (no copy)
     Grid<float> &localStandGrid() { prepareGrids(); return mLocalGrid; }
+
+    static void addToScriptEngine(QJSEngine* engine);
 
 signals:
 
@@ -68,9 +71,22 @@ public slots:
     /// load all trees passing the filter, return number of trees (load only living trees)
     int load(const QString &filter);
 
+    /// clear the list (this does not affect trees loaded)
+    void clear() { mTrees.clear(); }
+
     /// apply a filter on the current tree list. Only trees for which 'filter' returns true remain in the list.
     /// returns the number of tree that remain in the list.
     int filter(QString filter);
+
+    /// filter randomly until N trees remain from the current list of trees
+    int filterRandomExclude(int N);
+    /// filter randomly N trees from the current list of trees
+    int filterRandom(int n_remove);
+
+    /// load trees from a specific Patch (within a staind) (TEST)
+    int loadFromPatch(int patchId, bool append=false);
+
+    int loadFromList(FMTreeList *from, QString filter_cond=QString());
 
     /// spatial filter *within* the stand
     /// trees are kept in the list if the expession 'filter' returns true for the location of the tree
@@ -139,6 +155,7 @@ public slots:
     void exportStandGrid(QString file_name);
     /// get access to the locally prepared grid
     QJSValue localGrid();
+    QJSValue local10Grid();
 
     /// modify sapling
     int killSaplings(QString expression);

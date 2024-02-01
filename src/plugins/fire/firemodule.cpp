@@ -129,6 +129,11 @@ FireModule::FireModule()
     mFireScript = nullptr;
 }
 
+FireModule::~FireModule()
+{
+    GlobalSettings::instance()->controller()->removeLayers(&mFireLayers);
+}
+
 // access data element
 FireRUData &FireModule::data(const ResourceUnit *ru)
 {

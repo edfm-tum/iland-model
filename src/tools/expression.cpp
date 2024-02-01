@@ -69,6 +69,8 @@
 
 #include "helper.h"
 
+#include "scriptglobal.h" // for throwing errors in JS
+
 #define opEqual 1
 #define opGreaterThen 2
 #define opLowerThen 3
@@ -92,6 +94,8 @@ void Expression::addConstant(const QString const_name, const double const_value)
 }
 
 bool Expression::mLinearizationAllowed = false;
+bool Expression::mThrowExceptionsInJS = true;
+
 Expression::Expression()
 {
     mModelObject = 0;
@@ -273,10 +277,13 @@ void  Expression::parse(ExpressionWrapper *wrapper)
 
     } catch (const IException& e) {
         m_errorMsg =QString("Expression::parse: Error in: %1 : %2").arg(m_expression, e.message());
-        if (m_catchExceptions)
-            Helper::msg(m_errorMsg);
-        else
+        if (mThrowExceptionsInJS){
+             ScriptGlobal::throwError(m_errorMsg);
+        } else if (m_catchExceptions) {
+             Helper::msg(m_errorMsg);
+        } else {
             throw IException(m_errorMsg);
+        }
     }
 }
 

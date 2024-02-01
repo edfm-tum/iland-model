@@ -31,7 +31,7 @@ public:
     /// setup function that links to a climate and the resource unit / species
     void setup(const Climate *climate, const ResourceUnitSpecies *rus);
     void clear();
-    void calculateAbioticEnvironment(QVector< QPair<double, double> > &clim_buffer); ///< calculate the abiotic environment (TACA model)
+    void calculateAbioticEnvironment(); ///< calculate the abiotic environment (TACA model)
     void writeDebugOutputs();
     // some informations after execution
     double avgSeedDensity() const { return mPxDensity;} ///< average seed density on the RU

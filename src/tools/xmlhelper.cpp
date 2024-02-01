@@ -154,11 +154,11 @@ bool XmlHelper::hasNode(const QString &path) const
     return !node(path).isNull();
 }
 
-QString XmlHelper::value(const QString &path, const QString &defaultValue) const
+QString XmlHelper::value(const QString &path, const QString &defaultValue, bool do_warn) const
 {
     QDomElement e = node(path);
     if (e.isNull()) {
-        missedKey(path);
+        if (do_warn) missedKey(path);
         return defaultValue;
     } else {
         if (e.text().isEmpty())
@@ -167,11 +167,11 @@ QString XmlHelper::value(const QString &path, const QString &defaultValue) const
             return e.text();
     }
 }
-bool XmlHelper::valueBool(const QString &path, const bool defaultValue) const
+bool XmlHelper::valueBool(const QString &path, const bool defaultValue, bool do_warn) const
 {
     QDomElement e = node(path);
     if (e.isNull()) {
-        missedKey(path);
+        if (do_warn) missedKey(path);
         return defaultValue;
     }
     QString v = e.text();
@@ -180,11 +180,11 @@ bool XmlHelper::valueBool(const QString &path, const bool defaultValue) const
     else
         return false;
 }
-double XmlHelper::valueDouble(const QString &path, const double defaultValue) const
+double XmlHelper::valueDouble(const QString &path, const double defaultValue, bool do_warn) const
 {
     QDomElement e = node(path);
     if (e.isNull()) {
-        missedKey(path);
+        if (do_warn) missedKey(path);
         return defaultValue;
     } else {
         if (e.text().isEmpty())
@@ -194,9 +194,9 @@ double XmlHelper::valueDouble(const QString &path, const double defaultValue) co
     }
 }
 
-int XmlHelper::valueInt(const QString &path, const int defaultValue) const
+int XmlHelper::valueInt(const QString &path, const int defaultValue, bool do_warn) const
 {
-    double dbl_val = valueDouble(path, defaultValue);
+    double dbl_val = valueDouble(path, defaultValue, do_warn);
     return static_cast<int>(dbl_val);
 }
 

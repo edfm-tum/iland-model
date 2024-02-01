@@ -25,8 +25,9 @@
 #include <QVariantList>
 
 #include "fmstand.h"
-#include "fmunit.h"
 #include "scripttree.h"
+#include "fmtreelist.h"
+#include "patches.h"
 
 namespace ABE {
 
@@ -49,6 +50,7 @@ class FomeScript : public QObject
     Q_PROPERTY(int standId READ standId WRITE setStandId)
     Q_PROPERTY(QString standVisualization READ standVisualization WRITE setStandVisualization)
     Q_PROPERTY(QVariantList standIds READ standIds)
+    Q_PROPERTY(QStringList stpNames READ stpNames)
 public:
     explicit FomeScript(QObject *parent = nullptr);
     ~FomeScript();
@@ -70,11 +72,14 @@ public:
     /// convert a javascript object to a string (for debug output)
     static QString JStoString(QJSValue value);
 
+    /// returns a list of all STPs
+    QStringList stpNames() const;
 
     StandObj *standObj() const { return mStandObj; }
-    UnitObj *siteObj() const { return mUnitObj; }
+    UnitObj *unitObj() const { return mUnitObj; }
     FMTreeList *treesObj() const { return mTrees; }
     ActivityObj *activityObj() const { return mActivityObj; }
+    STPObj* stpObj() const { return mSTPObj; }
     /// get a JS-Object referencing a single tree
     QJSValue treeRef(Tree *tree);
 
@@ -129,7 +134,9 @@ public slots:
     QJSValue activity(QString stp_name, QString activity_name);
 
     void runPlanting(int stand_id, QJSValue planting_item);
-
+    // access to elements
+    /// return the internal representation of a STP with the given name
+    QJSValue stpByName(QString name);
     // just for testing
     QJSValue test(QJSValue val);
 public:
@@ -180,7 +187,13 @@ class StandObj: public QObject
     Q_PROPERTY(QString speciesComposition READ speciesComposition )
     Q_PROPERTY(QString thinningIntensity READ thinningIntensity )
 
-    Q_PROPERTY(QString stp READ stp WRITE setStp)
+
+    // access to the unit, stp, agents, etc
+    Q_PROPERTY(UnitObj* unit READ unit);
+    Q_PROPERTY(ActivityObj* activity READ activity);
+    Q_PROPERTY(STPObj* stp READ stp);
+    Q_PROPERTY(FMTreeList* trees READ trees);
+    Q_PROPERTY(Patches* patches READ patches);
 
 
 /*    basalArea: 0, // total basal area/ha of the stand
@@ -199,24 +212,39 @@ public slots:
     // set and get standspecific data (persistent!)
     void setFlag(const QString &name, QJSValue value){ const_cast<FMStand*>(mStand)->setProperty(name, value);}
     QJSValue flag(const QString &name) { return const_cast<FMStand*>(mStand)->property(name); }
-    QJSValue activity(QString name);
+    QJSValue activityByName(QString name);
+
+    /// force a given activity to run next
+    void runNext(ActivityObj *next_act);
+
     QJSValue agent();
+    /// set/replace the STP of a stand
+    void setSTP(QString stp_name);
+
 
     // actions
     /// force a reload of the stand data.
     void reload() { if (mStand) mStand->reload(true); }
     void sleep(int years) { if (mStand) mStand->sleep(years); }
+    void wakeup() { if (mStand) mStand->wakeUp(); }
 
     void setAbsoluteAge(double arg);
     /// start the management program again (initialize the stand)
     void reset();
 
 public:
-    explicit StandObj(QObject *parent = 0): QObject(parent), mStand(0) {}
+    explicit StandObj(QObject *parent = nullptr): QObject(parent), mStand(0) {}
     // system stuff
     void setStand(FMStand* stand) { mStand = stand; }
     bool trace() const;
     void setTrace(bool do_trace);
+    UnitObj* unit();
+    ActivityObj *activity();
+    STPObj* stp();
+    FMTreeList* trees();
+    Patches* patches();
+
+
 
     // properties of the forest
     double basalArea() const { if (mStand)return mStand->basalArea(); throwError("basalArea"); return -1.;}
@@ -236,10 +264,6 @@ public:
     void setRotationLength(int new_length);
     QString speciesComposition() const;
     QString thinningIntensity() const;
-    QString stp() const;
-    void setStp(QString stp_name);
-
-
 
 
 private:
@@ -272,7 +296,7 @@ public slots:
     /// force an out-of-schedule update of the management plan
     void updateManagementPlan();
 public:
-    explicit UnitObj(QObject *parent = 0): QObject(parent) {}
+    explicit UnitObj(QObject *parent = nullptr): QObject(parent) {}
     void setStand(const FMStand* stand) { mStand = stand; }
     QString harvestMode() const;
     QString speciesComposition() const;
@@ -302,7 +326,7 @@ class SimulationObj: public QObject
     Q_OBJECT
     Q_PROPERTY (double timberPriceIndex READ timberPriceIndex)
 public:
-    explicit SimulationObj(QObject *parent = 0): QObject(parent) {}
+    explicit SimulationObj(QObject *parent = nullptr): QObject(parent) {}
     double timberPriceIndex() const { return 1.010101; } // dummy
 private:
 
@@ -316,12 +340,24 @@ class STPObj: public QObject
     Q_OBJECT
     Q_PROPERTY (QString name READ name)
     Q_PROPERTY (QJSValue options READ options)
+    Q_PROPERTY (QString info READ info)
+    Q_PROPERTY (int activityCount READ activityCount)
+    Q_PROPERTY (QStringList activityNames READ activityNames)
+
 public:
-    void setSTP(FMStand *stand);
-    explicit STPObj(QObject *parent = 0): QObject(parent) { mSTP = 0;}
+    void setFromStand(FMStand *stand);
+    void setSTP(FMSTP *stp);
+    explicit STPObj(QObject *parent = 0): QObject(parent) { mSTP = nullptr;}
     QJSValue options() { if (mOptions) return *mOptions;  else return QJSValue(); }
     QString name();
+
+    int activityCount() const;
+    QStringList activityNames();
+public slots:
+
+
 private:
+    QString info();
     FMSTP *mSTP;
     QJSValue *mOptions; ///< options of the current STP
 
@@ -339,20 +375,25 @@ class ActivityObj : public QObject
     Q_PROPERTY(bool finalHarvest READ finalHarvest WRITE setFinalHarvest)
     Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled)
     Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QString description READ description)
 public:
     explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
     // used to construct a link to a given activty (with an index that could be not the currently active index!)
-    ActivityObj(FMStand *stand, Activity *act, int index ): QObject(0) { mActivityIndex=index; mStand=stand; mActivity=act; }
+    ActivityObj(FMStand *stand, Activity *act, int index ): QObject(nullptr) { mActivityIndex=index; mStand=stand; mActivity=act; }
     /// default-case: set a forest stand as the context.
-    void setStand(FMStand *stand) { mStand = stand; mActivity=0; mActivityIndex=-1;}
+    void setStand(FMStand *stand, Activity *act=nullptr, int activity_index=-1) { mStand = stand; mActivity=act; mActivityIndex=activity_index;}
     /// set an activity context (without a stand) to access base properties of activities
-    void setActivity(Activity *act) { mStand = 0; mActivity=act; mActivityIndex=-1;}
+    void setActivity(Activity *act) { mStand = nullptr; mActivity=act; mActivityIndex=-1;}
     /// set an activity that is not the current activity of the stand
     void setActivityIndex(const int index) { mActivityIndex = index; }
+
+    /// access the current activity
+    Activity* activity() const { return mActivity; }
 
     // properties
 
     QString name() const;
+    QString description() const;
     bool enabled() const;
     void setEnabled(bool do_enable);
 

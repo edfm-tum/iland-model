@@ -103,6 +103,9 @@ int SpeciesSet::setup()
         // call setup routine (which calls SpeciesSet::var() to retrieve values
         s->setup();
 
+        if (mSpecies.contains(s->id())) {
+            throw IException(QString("Error loading species: the species id '%1' is not unique and appears multiple times!").arg(s->id()));
+        }
         mSpecies.insert(s->id(), s); // store
         if (s->active())
             mActiveSpecies.append(s);

@@ -142,11 +142,12 @@ QString ModelController::timeString() const
     return QString("%1 (%2 remaining)").arg(time_str, todo_str);
 }
 
-void ModelController::setFileName(QString initFileName)
+bool ModelController::setFileName(QString initFileName)
 {
     mInitFile = initFileName;
     try {
         GlobalSettings::instance()->loadProjectFile(mInitFile);
+        return true;
     } catch(const IException &e) {
         QString error_msg = e.message();
         Helper::msg(error_msg);
@@ -154,6 +155,7 @@ void ModelController::setFileName(QString initFileName)
         mLastError = error_msg;
         qDebug() << error_msg;
     }
+    return false;
 }
 
 void ModelController::create()
@@ -619,6 +621,33 @@ void ModelController::paintGrid(Grid<double> *grid, QString name, GridViewType v
     }
 #else
     Q_UNUSED(grid);Q_UNUSED(min_value);Q_UNUSED(max_value);
+#endif
+}
+
+void ModelController::addScriptLayer(Grid<double> *grid, MapGrid *map, QString name)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow) {
+        if (map)
+            mViewerWindow->addPaintLayer(nullptr, map, name);
+        if (grid)
+            mViewerWindow->addPaintLayer(grid, nullptr, name);
+
+    }
+#else
+    Q_UNUSED(grid);Q_UNUSED(map);
+#endif
+
+}
+
+void ModelController::removeMapGrid(Grid<double> *grid, MapGrid *map)
+{
+#ifdef ILAND_GUI
+    if (mViewerWindow) {
+        mViewerWindow->removePaintLayer(grid, map);
+    }
+#else
+    Q_UNUSED(grid);Q_UNUSED(map);
 #endif
 }
 

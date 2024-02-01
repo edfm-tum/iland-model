@@ -54,7 +54,8 @@ private:
         QJSValue remainingStems; ///< minimum remaining stems/ha (>minDbh)
     };
     struct SSelectiveThinning {
-        int N; // stems pro ha target
+        int N; ///< stems pro ha target
+        QJSValue speciesProb;
     };
 
     SSelectiveThinning mSelectiveThinning;
@@ -75,11 +76,13 @@ private:
 
     // selective
     bool evaluateSelective(FMStand *stand);
-    bool markCropTrees(FMStand* stand);
+    bool markCropTrees(FMStand* stand, bool selective_species=false);
     float testPixel(const QPointF &pos,  Grid<float> &grid);
     void setPixel(const QPointF &pos,  Grid<float> &grid);
     ThinningType mThinningType;
 
+    // general
+    bool populateSpeciesSelectivity(QJSValue value);
     // syntax checking
     static QStringList mSyntaxCustom;
     static QStringList mSyntaxSelective;

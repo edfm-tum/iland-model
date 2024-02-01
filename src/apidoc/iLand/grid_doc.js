@@ -4,7 +4,8 @@ for element-wise computations, but also methods for Javascript access. You can {
 grids from disk (and {{#crossLink "Grid/save:method"}}{{/crossLink}} to disk), or from iLand by using methods such as
 {{#crossLink "Globals/grid:method"}}Globals.grid{{/crossLink}}, or one of its disturbance submodules (e.g.,
 {{#crossLink "Barkbeetle/grid:method"}}Barkbeetle.grid{{/crossLink}}, {{#crossLink "Wind/grid:method"}}Wind.grid{{/crossLink}}). The extent and
-cell size depend on the respective functions, but usually cover the whole landscape.
+cell size depend on the respective functions, but usually cover the whole landscape. To view the content of the grid visually,
+use the {{#crossLink "Grid/registerUI:method"}}{{/crossLink}} method.
 
 
 Use {{#crossLink "Grid/apply:method"}}{{/crossLink}} for updating a single grid, and {{#crossLink "Grid/combine:method"}}{{/crossLink}} for
@@ -12,6 +13,7 @@ calculating grid values based on combining multiple grid sources.
 
 Javacsript based access to grid values is possible via {{#crossLink "Grid/value:method"}}{{/crossLink}} and {{#crossLink "Grid/setValue:method"}}{{/crossLink}} methods (
 {{#crossLink "Grid/valueAt:method"}}{{/crossLink}} and {{#crossLink "Grid/setValueAt:method"}}{{/crossLink}} for access by coordinates).
+
 
 Memory management
 -----------------
@@ -136,6 +138,7 @@ Grid = {
 
     @method clear
       */
+
     /**
     Retrieve some key parameters of the grid as a string.
 
@@ -168,13 +171,27 @@ Grid = {
       */
 
     /**
+    Registers the grid with the user interface of iLand (https://iland-model.org/iLand+viewer). The grid is added to the "Scripts" section of grids,
+    and iLand renders the grid when clicking on it. Default value range is set to min/max values within the grid. Note that a Grid's `name` is the
+    relative file path when loaded from disk.
+
+    @method registerUI
+    @param {string} name Name to use for the grid in the UI. When blank, the variable {{#crossLink "Grid/name:property"}}{{/crossLink}} is used.
+
+    @Example
+    // create a new grid and load some data
+    var g = new Grid(Globals.path('gis/extra_grid.asc'));
+    g.registerUI();
+      */
+
+    /**
     Creates a numeric grid (floating point) with the dimensions `width` and `height` with the cell size `cellsize` and fills the grid with 0. The grid is
     located at the origin of the project area (i.e., at coordiantes (0,0)). No clipping is applied.
 
-    Note that the grid object must already exist! Use {{#crossLink "Factory/newGrid:method"}}{{/crossLink}} to create a new grid from scratch, or other functions
+    Note that the grid object must already exist! Use `new Grid()` to create a new grid from scratch, or other functions
     that return grids (e.g., {{#crossLink "Grid/copy:method"}}{{/crossLink}}, {{#crossLink "Globals/grid:method"}}{{/crossLink}} ).
 
-    See also: {{#crossLink "Grid/load:method"}}{{/crossLink}}, {{#crossLink "Grid/setOrigin:method"}}{{/crossLink}}, {{#crossLink "Factory/newGrid:method"}}{{/crossLink}}
+    See also: {{#crossLink "Grid/load:method"}}{{/crossLink}}, {{#crossLink "Grid/setOrigin:method"}}{{/crossLink}}
 
     @method create
     @param {int} width the number of cells in x-direction
@@ -183,7 +200,7 @@ Grid = {
     @return { boolean } true on success.
 
     @Example
-        var g = Factory.newGrid(); // create a grid
+        var g = new Grid(); // create a grid
         g.create(10,20,5); // populate with an empty grid with 50x100m
         g.setValue(4,5,-1); // modify the grid
         g.setOrigin(1000, 1000); // move the grid (the lower left corner) to the given coordinates
@@ -384,7 +401,7 @@ Grid = {
     @param {double} x new value for the x-coordinate of the origin
     @param {double} y new value for the y-coordinate of the origin
     @Example
-        var g = Factory.newGrid(); // create a grid
+        var g = new Grid(); // create a grid
         g.create(10,20,5); // populate with an empty grid with 50x100m
         g.setValue(4,5,-1); // modify the grid
         g.setOrigin(1000, 1000); // move the grid (the lower left corner) to the given coordinates
@@ -403,7 +420,7 @@ Grid = {
     @param {string} fileName the filename of the grid; paths are relatve to the root folder of the project.
     @return {boolean} returns true on success
     @Example
-        var g = Factory.newGrid(); // create a grid
+        var g = new Grid(); // create a grid
         g.load('gis/biggrid.asc'); // load the raster file
 
       */

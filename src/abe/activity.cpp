@@ -46,7 +46,8 @@ namespace ABE {
   */
 
 // statics
-QStringList Activity::mAllowedProperties = QStringList() << "schedule" << "constraint" << "type";
+QStringList Activity::mAllowedProperties = QStringList() << "schedule" << "constraint" << "type"
+                                                         << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel";
 
 /***************************************************************************/
 /***************************   Schedule  ***********************************/
@@ -258,7 +259,11 @@ QJSValue Events::run(const QString event, FMStand *stand, QJSValueList *params)
 
         //qDebug() << "event called:" << event << "result:" << result.toString();
         if (result.isError()) {
-            throw IException(QString("%3 Javascript error in event %1: %2").arg(event).arg(result.toString()).arg(stand?stand->context():"----"));
+            throw IException(QString("%3 Javascript error in event %1: %2. \n %4")
+                                 .arg(event)
+                                 .arg(result.toString())
+                                 .arg(stand?stand->context():"----")
+                                 .arg(ScriptGlobal::formattedErrorMessage(result)));
         }
         return result;
     }
@@ -481,6 +486,9 @@ void Activity::setup(QJSValue value)
     if (FMSTP::verbose())
         qCDebug(abeSetup) << mSchedule.dump();
 
+    if (isRepeatingActivity())
+        mBaseActivity.setIsScheduled(false);
+
     // setup of events
     mEvents.clear();
     mEvents.setup(value, QStringList() << "onCreate" << "onSetup" << "onEnter" << "onExit" << "onExecute" << "onExecuted" << "onCancel");
@@ -496,6 +504,9 @@ void Activity::setup(QJSValue value)
     QJSValue enabled_if = FMSTP::valueFromJs(value, "enabledIf");
     if (!enabled_if.isUndefined())
         mEnabledIf.setup(enabled_if);
+
+    QJSValue description = FMSTP::valueFromJs(value, "description");
+    mDescription = description.toString();
 }
 
 double Activity::scheduleProbability(FMStand *stand, const int specific_year)
@@ -537,6 +548,8 @@ QStringList Activity::info()
 {
     QStringList lines;
     lines << QString("Activity '%1': type '%2'").arg(name()).arg(type());
+    if (!description().isEmpty())
+        lines << "Details: " << description() << "/-";
     lines << "Events" << "-" << events().dump() << "/-";
     lines << "Schedule" << "-" << schedule().dump() << "/-";
     lines << "Constraints" << "-" << constraints().dump() << "/-";

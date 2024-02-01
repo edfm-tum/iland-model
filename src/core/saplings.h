@@ -214,6 +214,10 @@ public:
     /// at resource unit `ru` and at the internal index `cell_index`
     static QPointF coordOfCell(const ResourceUnit *ru, int cell_index);
 
+    /// return the LIF coordinates/indices of a given cell
+    /// at resource unit `ru` and at the internal index `cell_index`
+    static QPoint coordOfCellLIF(const ResourceUnit *ru, int cell_index);
+
     /// clear/kill all saplings within the rectangle given by 'rectangle'.
     /// If 'remove_biomass' is true, then the biomass is extracted (e.g. burnt), otherwise they are moved to soil
     void clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout);

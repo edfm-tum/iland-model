@@ -29,7 +29,6 @@
   */
 BBGenerations::BBGenerations()
 {
-    mUseAirTempForGenerations = false; // this is the default
 }
 
 /**
@@ -40,6 +39,7 @@ BBGenerations::BBGenerations()
 double BBGenerations::calculateGenerations(const ResourceUnit *ru)
 {
     calculateBarkTemperature(ru);
+    bool use_microclimate = Model::settings().microclimateEnabled && ru->microClimate()->settings().barkbeetle_effect;
 
     // start at the 1. of April, and wait for 140.3 degree days (with a threhsold of 8.3 degrees)
     const ClimateDay *clim = ru->climate()->day(4-1,1-1); // 0-based indices
@@ -48,12 +48,17 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
 
     double dd=0.;
     while (dd<140.3 && clim<last_day) {
-        dd+=std::max(clim->max_temperature-8.3, 0.);
+        double tmax = clim->max_temperature + ( use_microclimate ? ru->microClimate()->maximumMicroclimateBufferingRU(clim->month-1) : 0);
+        dd+=std::max(tmax-8.3, 0.);
         ++clim;
     }
     // now wait for a decent warm day with tmax > 16.5 degrees
-    while (clim->max_temperature<=16.5 && clim<last_day)
+    while (clim<last_day) {
+        double tmax = clim->max_temperature + ( use_microclimate ? ru->microClimate()->maximumMicroclimateBufferingRU(clim->month-1) : 0);
+        if (tmax > 16.5)
+            break;
         ++clim;
+    }
 
     mGenerations.clear();
     // start with the first generation....
@@ -89,7 +94,8 @@ double BBGenerations::calculateGenerations(const ResourceUnit *ru)
             } else if (t_sum>0.5 && !added_sister_brood) {
                 // start a sister brood, *if* the maximum air temperature is high enough, and if the
                 // length of the day > 14.5 hours
-                if (c->max_temperature>16.5 && c<day_too_short) {
+                double tmax = c->max_temperature + (use_microclimate ? ru->microClimate()->maximumMicroclimateBufferingRU(c->month-1) : 0 );
+                if ( tmax>16.5 && c<day_too_short) {
                     mGenerations.append(BBGeneration(doy, true, bb.gen)); // add a sister brood generation (true), keep gen. of originating brood
                     added_sister_brood = true;
                 }
@@ -157,21 +163,29 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
     mFrostDaysEarly=0;
     mFrostDaysLate=0;
 
+    bool use_microclimate = Model::settings().microclimateEnabled && ru->microClimate()->settings().barkbeetle_effect;
 
     for (int i=0;i<ru->climate()->daysOfYear();++i) {
         const ClimateDay *clim = ru->climate()->dayOfYear(i);
+        double t_mean = clim->mean_temp();
+        double t_max = clim->max_temperature;
+        if (use_microclimate) {
+            t_mean += ru->microClimate()->meanMicroclimateBufferingRU(clim->month - 1);
+            t_max += ru->microClimate()->maximumMicroclimateBufferingRU(clim->month - 1);
+        }
         // radiation: MJ/m2/day -> the regression uses Wh/m2/day -> conversion-factor: 1/0.0036
         double rad_wh = clim->radiation*ground_light_fraction/0.0036;
         // calc. maximum bark temperature
-        double bt_max=1.656 + 0.002955*rad_wh + 0.534*clim->max_temperature + 0.01884 * clim->max_temperature*clim->max_temperature;
+        double bt_max=1.656 + 0.002955*rad_wh + 0.534*t_max + 0.01884 * t_max*t_max;
         double diff_bt=0.;
 
 
         if (bt_max>=30.4)
             diff_bt=std::max(-310.667 + 9.603 * bt_max, 0.); // degree * hours
 
+
         // mean bark temperature
-        double bt_mean=-0.173+0.0008518*rad_wh+1.054*clim->mean_temp();
+        double bt_mean=-0.173+ 0.0008518*rad_wh + 1.054*t_mean;
 
         // effective:
         double bt_sum = std::max(bt_mean - 8.3, 0.)*24.; // degree * hours
@@ -179,19 +193,14 @@ void BBGenerations::calculateBarkTemperature(const ResourceUnit *ru)
         // corrected for days with very high bark temperature (>30.4 degrees)
         double bt_sum_eff = (bt_sum - diff_bt) / 24.; // degree * days
 
-        if (mUseAirTempForGenerations) {
-            // we revert to the minimum, that is simply the GDD based on mean temp
-            // bt_sum_eff is in degree*days, no need to change
-            bt_sum_eff = std::max(clim->mean_temp() - 8.3, 0.);
-        }
 
         mEffectiveBarkTemp[i] = (i>0? mEffectiveBarkTemp[i-1] : 0.) + bt_sum_eff;
 
         // frost days:
         double min_temp = clim->min_temperature;
         // include microclimate effect when module is turned on
-        if (Model::settings().microclimateEnabled)
-            min_temp = min_temp + ru->microClimate()->minimumMicroclimateBufferingRU(i);
+        if (use_microclimate)
+            min_temp = min_temp + ru->microClimate()->minimumMicroclimateBufferingRU(clim->month - 1);
 
         if (min_temp < -15.) {
             if (i < ru->climate()->sun().longestDay())

@@ -114,10 +114,11 @@ void StandLoader::processInit()
     // one global init-file for the whole area:
     if (copy_mode=="single") {
         // useful for 1ha simulations only...
-        if (GlobalSettings::instance()->model()->ruList().size()>1)
-            throw IException("Error initialization: 'mode' is 'single' but more than one resource unit is simulated (consider using another 'mode').");
+        //if (GlobalSettings::instance()->model()->ruList().size()>1)
+        //    throw IException("Error initialization: 'mode' is 'single' but more than one resource unit is simulated (consider using another 'mode').");
+        // -> is now ok for multiple resource units in a single file
 
-        loadInitFile(fileName, type, 0, GlobalSettings::instance()->model()->ru()); // this is the first resource unit
+        loadInitFile(fileName, type);
         evaluateDebugTrees();
         return;
     }
@@ -305,40 +306,45 @@ int StandLoader::loadInitFile(const QString &fileName, const QString &type, int 
 {
     QString pathFileName = GlobalSettings::instance()->path(fileName, "init");
     if (!QFile::exists(pathFileName))
-        throw IException(QString("StandLoader::loadInitFile: File %1 does not exist!").arg(pathFileName));
+        throw IException(QString("StandLoader::loadInitFile: File '%1' does not exist!").arg(pathFileName));
 
     if (type=="picus" || type=="single") {
-        if (stand_id>0)
-            throw IException(QLatin1String("StandLoader::loadInitFile: initialization type %1 currently not supported for stand initilization mode!")+type);
-        return loadPicusFile(pathFileName, ru);
+        //if (stand_id>0)
+        //    throw IException(QString("StandLoader::loadInitFile: initialization type '%1' currently not supported for stand initilization mode!").arg(type));
+        return loadPicusFile(pathFileName, ru, stand_id);
     }
     if (type=="iland" || type=="distribution")
         return loadiLandFile(pathFileName, ru, stand_id);
 
-    throw IException(QLatin1String("StandLoader::loadInitFile: unknown initalization.type:")+type);
+    throw IException(QString("StandLoader::loadInitFile: unknown initalization.type: '%1'").arg(type));
 }
 
-int StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru)
+int StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru, int stand_id)
 {
     QString content = Helper::loadTextFile(fileName);
     if (content.isEmpty()) {
         qDebug() << "file not found: " + fileName;
         return 0;
     }
-    return loadSingleTreeList(content, ru, fileName);
+    return loadSingleTreeList(content, ru, stand_id, fileName);
 }
 
 /** load a list of trees (given by content) to a resource unit. Param fileName is just for error reporting.
   returns the number of loaded trees.
   */
-int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, const QString &fileName)
+int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru_offset, int stand_id, const QString &fileName)
 {
-    if (!ru)
-        ru = mModel->ru();
-    Q_ASSERT(ru!=0);
+    QPointF offset;
+    if (ru_offset && stand_id<0) {
+        offset = ru_offset->boundingBox().topLeft();
+    }
 
-    QPointF offset = ru->boundingBox().topLeft();
-    SpeciesSet *speciesSet = ru->speciesSet(); // of default RU
+    ResourceUnit *ru;
+
+//    QPointF offset = ru->boundingBox().topLeft();
+    SpeciesSet *speciesSet = GlobalSettings::instance()->model()->speciesSet();
+    const Grid<ResourceUnit*> &rugrid = GlobalSettings::instance()->model()->RUgrid();
+
 
     QString my_content(content);
 
@@ -380,19 +386,23 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru, co
     for (int i=0;i<infile.rowCount();i++) {
         dbh = infile.value(i, iBhd).toDouble();
 
-        //if (dbh<5.)
-        //    continue;
-
         QPointF f;
-        if (iX>=0 && iY>=0) {
-           f.setX( infile.value(i, iX).toDouble() );
-           f.setY( infile.value(i, iY).toDouble() );
-           f+=offset;
+        f.setX( infile.value(i, iX).toDouble() );
+        f.setY( infile.value(i, iY).toDouble() );
+        f += offset; // if the input is relative to a given resource unit
 
-        }
         // position valid?
+        if (!rugrid.coordValid(f))
+            continue;
+
         if (!mModel->heightGrid()->valueAt(f).isValid())
             continue;
+
+        // get resource unit
+        ru = rugrid.constValueAt(f);
+        if (!ru)
+            continue;
+
         Tree &tree = ru->newTree();
         tree.setPosition(f);
         if (iID>=0)
@@ -457,9 +467,10 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
         // execute stand based initialization
         executeiLandInitStand(stand_id);
     } else {
-        // exeucte the initialization based on single resource units
-        executeiLandInit(ru);
-        ru->cleanTreeList();
+        // exeucte the initialization based on single resource units (in this case we care for the ru parameter)
+        ResourceUnit *ru_load = ru ? ru : GlobalSettings::instance()->model()->ru();
+        executeiLandInit(ru_load);
+        ru_load->cleanTreeList();
     }
     return total_count;
 

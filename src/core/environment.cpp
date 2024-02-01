@@ -211,7 +211,12 @@ void Environment::setPosition(const QPointF position)
                 continue;
             value = mInfile->value(row,col).toString();
             if (logLevelInfo()) qDebug() << "set" << mKeys[col] << "to" << value;
-            xml.setNodeValue(mKeys[col], value);
+            if (!xml.hasNode(mKeys[col])) {
+                throw IException("Setup of the environment: tried to set the value of the xml-key '" + mKeys[col] + "', but the node does not exist.");
+            }
+            if (!xml.setNodeValue(mKeys[col], value)) {
+                throw IException("Setup of the environment: tried to set the value of the xml-key '" + mKeys[col] + "', but the node is empty (Note that nodes must not be empty in the XML file, even if they are to be overwritten).");
+            }
             // special handling for constructed objects:
             if (mKeys[col]==speciesKey)
                 mCurrentSpeciesSet = (SpeciesSet*)mCreatedObjects[value];

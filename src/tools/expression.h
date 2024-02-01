@@ -154,6 +154,16 @@ private:
         double mLinearStepY;
         int mLinearStepCountY;
         static bool mLinearizationAllowed;
+        static bool mThrowExceptionsInJS;
+        friend class ExprExceptionAsScriptError;
+};
+
+/// use this class to force exceptions from expression to be routed to the global
+/// JS environment (this avoids crashes as no exceptions can happen during JS execution)
+class ExprExceptionAsScriptError {
+    public:
+        ExprExceptionAsScriptError() { Expression::mThrowExceptionsInJS = true; }
+        ~ExprExceptionAsScriptError() { Expression::mThrowExceptionsInJS = false; }
 };
 
 #endif // LOGICEXPRESSION_H

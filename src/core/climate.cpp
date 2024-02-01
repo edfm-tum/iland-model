@@ -173,11 +173,11 @@ void Climate::setup()
     if (mClimateQuery.lastError().isValid()){
         // fallback: if there is no max_temp try the older format:
         QString errmsg = mClimateQuery.lastError().text();
-        query=QString("select year,month,day,temp,min_temp,prec,rad,vpd from '%1' order by year, month, day").arg(tableName);
-        mClimateQuery.exec(query);
+        QString query_fb=QString("select year,month,day,temp,min_temp,prec,rad,vpd from '%1' order by year, month, day").arg(tableName);
+        mClimateQuery.exec(query_fb);
         mTMaxAvailable = false;
         if (mClimateQuery.lastError().isValid()){
-            throw IException(QString("Error setting up climate: %1 \n %2 (tried fallback: %3)").arg(query, errmsg, mClimateQuery.lastError().text()) );
+            throw IException(QString("Error setting up climate: %1 \n %2 (\n\ntried also fallback '%4' and got: '%3')").arg(query, errmsg, mClimateQuery.lastError().text(), query_fb) );
         }
     }
     // setup query

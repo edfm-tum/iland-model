@@ -4,7 +4,8 @@
 /**
 The TreeList class (**`trees`** variable) represents a list of trees that can be manipulated (e.g., harvested) with functions of the class.
 When javascript code is executed in the context of an Activity, a variable 'trees' is available in the global context. This instance
-of a TreeList is linked automatically to the forest stand that is currently managed.
+of a TreeList is linked automatically to the forest stand that is currently managed. Note that a TreeList can created using `new TreeList` - in this
+case the TreeList is not linked automatically to a forest stand (but see also loadFromList()).
 
 ## Overview
 ### initializing the list
@@ -54,6 +55,29 @@ variables.
 @return {Integer} the number of trees loaded.
 **/
 
+/**
+The `loadFromList()` method is a way to copy tree list data from a different TreeList object. A typical use case is when you
+need to process parts of a tree lists (e.g., based on location).
+Per default, all trees (i.e. trees>4m height) that are located in `other_list`are loaded. If `filter` is provided, only a subset
+of the trees are loaded. `filter` can either be a probability (between 0..1) for selecting individual trees, or an Expression using tree
+variables. Note also, that the linked forest stand is copied as well, i.e. a later call to `loadAll()` would load all trees of that stand.
+
+
+    var my_list = new TreeList;
+    stand.trees.load('dbh > 20');
+    // loop over three species and count for each species the number of trees >20cm
+    // (note that this would have been also possible with the sum() function)
+    for (s of ['piab', 'fasy', 'lade']) {
+       const n = my_list.loadFromList(stand.trees, 'species=' + s);
+       console.log(`Species '${s}' has ${n} trees >20cm.`);
+    }
+
+@method loadFromList
+@param {TreeList} other_list TreeList object to copy tree information from
+@param {String} filter optional filter criterion (see above).
+@return {Integer} the number of trees loaded.
+**/
+
 
 /**
 When `simulate` is true, harvest operations are not actually executed, but affected trees are marked as either for harvest or killing. Calling `removeMarkedTrees()` then
@@ -66,7 +90,7 @@ Note: tree variables `markharvest`, `markcut`, `markcrop` are available for use 
 
 /**
 the ID of the currently active stand (or -1).
-@property stand
+@property standId
 @type Integer
 @readonly
 */
@@ -106,6 +130,15 @@ See also: {{#crossLink "TreeList/simulate:property"}}{{/crossLink}}
 @Example
     trees.loadAll();
     trees.kill('dbh<10'); // kill all trees with a dbh<10cm
+**/
+
+/**
+Clear the list without affecting the trees in the list. Note that explcitly clearing the list is usually not necessary (e.g. when using load() )
+
+@method clear
+@Example
+    trees.clear(); // empty lsit
+    trees.log(trees.count); // -> 0
 **/
 
 
@@ -264,7 +297,7 @@ See also: {{#crossLink "Grid/create:method"}}{{/crossLink}}, {{#crossLink "Grid/
 @return {int}  the number of trees still remaining in the list, or -1 if an error occurs.
 @Example
     // create a grid
-    var g = Factory.newGrid();
+    var g = new Grid();
     g.create(10,10,5); // 50x50m, default name is 'x'
     g.setOrigin(30,20); // set lower left corner to 30/20
     // in the context of ABE:
@@ -273,6 +306,50 @@ See also: {{#crossLink "Grid/create:method"}}{{/crossLink}}, {{#crossLink "Grid/
     trees.spatialFilter(g, 'x=1');
     // do something, e.g.,
     trees.harvest();
+**/
+
+/**
+`filterRandom()` selects randomly `n_trees` from the list and removes all other trees.
+
+See also: {{#crossLink "TreeList/filterRandomExclude:method"}}{{/crossLink}}
+
+@method filterRandom
+@param {int} n_trees the number of trees to select randomly from the list
+@return {int}  the number of trees that were selected.
+@Example
+
+    stand.trees.loadAll(); // load all trees
+    // filter so, that only 100 trees remain in the list:
+    stand.trees.filterRandom(100);
+    // do something, e.g.,
+    stand.trees.harvest(); // remove those 100 trees
+**/
+
+/**
+`filterRandomExclude()` excludes randomly `n_trees` trees from the list, i.e. the number of trees *after* execution in the list is
+`n_trees_before - n_trees` (the number of trees before the call minus the trees excluded). This is useful when you want to
+keep a number of trees *remaining* on the stand (i.e., not harvested). Note that the exclusion is relative to the current content of the list (e.g., filtered).
+
+A typical use is to reduce the number of trees on a stand to a given number of stems (e.g., from a yield table).
+
+See also: {{#crossLink "TreeList/filterRandom:method"}}{{/crossLink}}
+
+
+@method filterRandomExclude
+@param {int} n_trees the number of trees to select randomly from the list
+@return {int}  the number of trees that were selected.
+@Example
+
+    stand.trees.loadAll(); // load all trees, e.g. 1500 trees
+    let yield_table_target = 1200;
+    stand.trees.filterRandomExclude(yield_table_target); // 300 trees remain in the lsit
+    // do something, e.g.,
+    stand.trees.harvest(); // remove trees in the list (n=300), i.e. 1200 will remain on the stand
+
+    // using a subset of trees:
+    stand.trees.load('species = fasy'); // load all beech trees
+    stand.trees.filterRandomExclude(50); // 50 beech trees should not remain in the list (i.e. excluded from harvest)
+    stand.trees.harvest(); // remove all but 50 beech trees from the stand
 **/
 
 /**

@@ -363,7 +363,7 @@ bool Grid<T>::setup(const float cellsize, const int sizex, const int sizey)
     }
     mCellsize=cellsize;
     mCount = mSizeX*mSizeY;
-    if (mCount==0)
+    if (mCount<=0)
         return false;
     if (mData==NULL)
         mData = new T[mCount];

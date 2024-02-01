@@ -43,18 +43,22 @@ public:
     static void runSinglePlantingItem(FMStand *stand, QJSValue value);
 private:
     struct SPlantingItem {
-        SPlantingItem(): species(0), fraction(0.), height(0.05), age(1), clear(false), grouped(false), group_type(-1), n(0), offset(0), spacing(0) {}
-        Species *species;
-        QJSValue fraction;
-        double height;
-        int age;
-        bool clear;
-        bool grouped; ///< true for pattern creation
-        int group_type; ///< index of the pattern in the pattern list
+        //SPlantingItem() {}
+        ~SPlantingItem() { if (patches) delete patches; }
+        Species *species {nullptr};
+        QJSValue fraction {0};
+        double height {0.05};
+        int age {1};
+        bool clear {false};
+        bool grouped {false}; ///< true for pattern creation
+        int group_type {0}; ///< index of the pattern in the pattern list
         QJSValue n; ///< the number of patterns (random spread)
-        int offset; ///< offset (in LIF-pixels) for the pattern algorithm
+        int offset {0}; ///< offset (in LIF-pixels) for the pattern algorithm
         QJSValue spacing;  ///< distance between two applications of a pattern
-        bool random; ///< true if patterns are to be applied randomly
+        bool random {false}; ///< true if patterns are to be applied randomly
+        bool on_patches {false}; ///< true if planting is applied on within-stand patches
+        Expression* patches {nullptr}; ///< which patches to apply the planting to
+        double *patch_var; ///< for the expression
         bool setup(QJSValue value);
         void run(FMStand *stand);
     };
