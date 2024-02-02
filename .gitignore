@@ -1,0 +1,5 @@
+build-iland*
+build-plugins*
+*.pro.user
+*.lib
+*.pdb
