@@ -1,5 +1,5 @@
-iLand - the invdividual based landscape and disturbance model
-=============================================================
+iLand - the individual-based forest landscape and disturbance model
+===================================================================
 
 This is the official GitHub repository of iLand.
 
