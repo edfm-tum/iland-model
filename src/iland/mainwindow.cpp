@@ -29,7 +29,6 @@
 
 #include "global.h"
 #include "mainwindow.h"
-#include "ui/genericinputwidget.h"
 #include "ui/settingsdialog.h"
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
@@ -37,8 +36,6 @@
 #include "ui/linkxmlqt.h"
 
 #include "model.h"
-#include "standloader.h"
-#include "stampcontainer.h"
 #include "resourceunit.h"
 #include "speciesset.h"
 #include "tree.h"
@@ -323,8 +320,6 @@ MainWindow::MainWindow(QWidget *parent)
     mLinkxqt = new LinkXmlQt(xmlPath);
     ui_settingsDialog = nullptr; // create on first use
 
-
-    on_actionEdit_XML_settings_triggered();
 
     qDebug() << "threadcount: " << QThread::idealThreadCount();
 
@@ -2048,7 +2043,7 @@ void MainWindow::on_openFile_clicked()
         return;
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
-    ui->iniEdit->setPlainText(xmlFile);
+    //ui->iniEdit->setPlainText(xmlFile);
     mLinkxqt->setXmlPath(fileName);
     checkModelState();
 }

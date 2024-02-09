@@ -158,9 +158,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionEdit_XML_settings"/>
-   <addaction name="actionSettingsDialog"/>
    <addaction name="separator"/>
+   <addaction name="actionSettingsDialog"/>
    <addaction name="actionModelCreate"/>
    <addaction name="actionModelDestroy"/>
    <addaction name="separator"/>
@@ -1301,6 +1300,18 @@ QProgressBar::chunk {
   <action name="actionaction_9">
    <property name="text">
     <string>action_9</string>
+   </property>
+  </action>
+  <action name="actionSettingsDialog">
+   <property name="icon">
+    <iconset resource="res/iland.qrc">
+     <normaloff>:/load-settings.png</normaloff>:/load-settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Edit Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
    </property>
   </action>
  </widget>

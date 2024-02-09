@@ -222,7 +222,6 @@ private slots:
     void on_initFileName_editingFinished();
     void on_openFile_clicked();
 
-    void on_actionEdit_XML_settings_triggered();
     void on_actionSettingsDialog_triggered();
 
     void repaintArea(QPainter &painter);
