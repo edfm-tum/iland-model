@@ -298,9 +298,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
+    // settings dialog / editor
     QString xmlPath = ui->initFileName->text();
     mLinkxqt = new LinkXmlQt(xmlPath);
-    //mLinkxqt->setXmlPath(xmlPath);
+    ui_settingsDialog = nullptr; // create on first use
+
 
     on_actionEdit_XML_settings_triggered();
 
@@ -397,10 +399,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     // import all variables, their types, default values, etc defined in metadata.txt
     SettingMetaData mSettingMetaData;
-    QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    // QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    QString mainDir = ":";
     mSettingMetaData.loadFromFile(mainDir + "/project_file_metadata.txt", mMetaKeys, mMetaValues);
 
     connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
+
 
 //    processMetaData(mMeta);
 
@@ -424,7 +428,8 @@ void MainWindow::processMetaData(metadata &meta) {
 //    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
 //    QStringList existingKeys = set.allKeys();
 //    QString mainDir = QDir::currentPath();
-    QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    //QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    QString mainDir = ":";
     mSettingMetaData->loadFromFile(mainDir + "/project_file_metadata.txt", mMetaKeys, mMetaValues);
     QString key;
     for (int i = 0; i < mMetaKeys.size(); i ++) {
@@ -455,19 +460,23 @@ void MainWindow::on_actionSettingsDialog_triggered()
 //    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
 //    ui_systemSettings->show();
 
-    QStringList dialogList = QStringList() << "System" << "Modules" << "Model" << "Output";
-    QStringList modelList = QStringList() << "General" << "World" << "Seed Dispersal" << "Soil" << "Grass" << "Browsing" << "Species" ;
-    QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
-    QStringList outputList = QStringList() << "Dynamic" << "Tree" << "Environment";
-    QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
-    QList<QStringList> tabList;
-    tabList.append(systemList);
-    tabList.append(modulesList);
-    tabList.append(modelList);
-    tabList.append(outputList);
+    if (!ui_settingsDialog) {
+        QStringList dialogList = QStringList() << "System"  << "Model" << "Output" << "Modules";
+        QStringList modelList = QStringList() << "General" << "World" << "Seed Dispersal" << "Soil" << "Grass" << "Browsing" << "Species" ;
+        QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
+        QStringList outputList = QStringList() << "Dynamic" << "Tree" << "Environment";
+        QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
+        QList<QStringList> tabList;
+        tabList.append(systemList);
+        tabList.append(modulesList);
+        tabList.append(modelList);
+        tabList.append(outputList);
+        ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
+
+    }
 
     mLinkxqt->loadXmlFile();
-    ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
+    ui_settingsDialog->updateData();
     ui_settingsDialog->show();
 }
 

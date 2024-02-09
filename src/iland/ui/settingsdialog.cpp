@@ -1,12 +1,16 @@
 #include "settingsdialog.h"
-#include "qboxlayout.h"
-#include "qlabel.h"
-#include "qscrollarea.h"
-#include "qstackedwidget.h"
-#include "qtreewidget.h"
+
+#include <QToolBar>
+#include <QBoxLayout>
+#include <QLabel>
+#include <QTreeWidget>
+#include <QStackedWidget>
+#include <QScrollArea>
+
+
 #include "ui/genericinputwidget.h"
 #include "qdialogbuttonbox.h"
-#include "qtextbrowser.h"
+
 
 SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
                                QStringList &inputSettings,
@@ -23,14 +27,44 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
     //mMeta(inputMetaData),
     mLinkxqt(Linkxqt)
 {
-// Tree Widget offers navigation
-QTreeWidget* mTreeWidget = new QTreeWidget();
-// The "pages" of the stacked widget hold the gui elements
-QStackedWidget* mStackedWidget = new QStackedWidget();
+    // Tree Widget offers navigation
+    QTreeWidget* mTreeWidget = new QTreeWidget();
+    // The "pages" of the stacked widget hold the gui elements
+    QStackedWidget* mStackedWidget = new QStackedWidget();
 
-//
-setDialogLayout(mTreeWidget, mStackedWidget);
+    //
+    setDialogLayout(mTreeWidget, mStackedWidget);
 
+}
+
+void SettingsDialog::updateData()
+{
+    readXMLValues();
+}
+
+void SettingsDialog::setFilterMode(int mode)
+{
+    qDebug() << "filter mode " << mode;
+    // 0: all
+    // 1: simplified
+    switch (mode) {
+    case 0:
+        for (auto &v : mKeys) {
+            v->widget->setVisible(true);
+        }
+        break;
+
+    case 1:
+        for (auto &v : mKeys) {
+            // set visibility based on a flag - this is fake here, should be part of the meta data!
+            // actually, it should be three categories:
+            // simplified - often used settings
+            // advanced - including the more detailed flags
+            // all - also include "deprecated" flags
+            v->widget->setVisible(v->type != SettingsItem::DataNumeric);
+        }
+
+    }
 
 }
 
@@ -139,6 +173,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         values = mMetaValues[n].split("|");
         inputType = values[0];
 
+
         if (inputType == "tab") {
             // curTabName holds the object name of the tab were subsequent elements are added
             curTabName = values[1];
@@ -187,16 +222,28 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         }
         else if (valueTypes.contains(inputType)) {
             // adds an actual element
+            // size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault
+
+            SettingsItem *item = new SettingsItem(n,
+                              element,
+                              inputType,
+                              values[2], // label
+                              values[3], // tooltip
+                              values[1]); // default
+            mKeys[element] = item;
+
             defaultValue = values[1];
             labelName = values[2];
             toolTip = values[3];
-            genericInputWidget *newInputWidget = new genericInputWidget(mLinkxqt,
-                                                                        inputType,
-                                                                        defaultValue,
-                                                                        xmlPath,
-                                                                        labelName,
-                                                                        toolTip,
-                                                                        curChildStack);
+//            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+//                                                                        inputType,
+//                                                                        defaultValue,
+//                                                                        xmlPath,
+//                                                                        labelName,
+//                                                                        toolTip,
+//                                                                        curChildStack);
+            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+                                                                        item);
 
             tabLay->addWidget(newInputWidget);
 
@@ -208,16 +255,19 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             QStringList connectedValues;
             if (mMetaKeys.mid(0, n).contains(element)) {
                 k = mMetaKeys.indexOf(element);
-            }
-            else if (mMetaKeys.mid(n+1).contains(element)) {
+            }  else if (mMetaKeys.mid(n+1).contains(element)) {
                 k = mMetaKeys.lastIndexOf(element);
+            } else {
+                k=0; // todo: check?
             }
             connectedValues = mMetaValues[k].split("|");
             inputType = connectedValues[0];
             defaultValue = connectedValues[1];
             labelName = values[1];
+            if (labelName == "string")
+                labelName = xmlPath.last();
             toolTip = connectedValues[3];
-            genericInputWidget *newInputWidget = new genericInputWidget(mLinkxqt,
+            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
                                                                         inputType,
                                                                         defaultValue,
                                                                         xmlPath,
@@ -271,9 +321,11 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     contentLayout->setStretch(0, 1);
     contentLayout->setStretch(1, 3);
 
+
     QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
     QVBoxLayout* overallLayout = new QVBoxLayout(this);
+    overallLayout->addWidget(  createToolbar(), 1 );
     overallLayout->addLayout(contentLayout);
     overallLayout->addWidget(dialogButtons);
 
@@ -286,7 +338,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     setLayout(overallLayout);
 
     // Set values in gui defined in xml file
-    mLinkxqt->readValuesXml(stackedWidget);
+    //mLinkxqt->readValuesXml(stackedWidget);
+
 
     connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(stackedWidget);
                                                                      mLinkxqt->writeToFile();
@@ -318,6 +371,31 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
     }
 
+}
+
+void SettingsDialog::readXMLValues()
+{
+    for (auto &item : mKeys) {
+        if (item->widget) {
+            QString value = mLinkxqt->readXmlValue(item->key);
+            QString comment = mLinkxqt->readXmlComment(item->key);
+            item->widget->setValue(value);
+            item->widget->setComment(comment);
+        }
+    }
+}
+
+QToolBar *SettingsDialog::createToolbar()
+{
+    QToolBar *toolbar = new QToolBar(this);
+    QAction *a_all = new QAction("Show all");
+    QAction *a_selected = new QAction("Simplified View");
+    connect(a_all, &QAction::triggered, this, [this]() { setFilterMode(0);});
+    connect(a_selected, &QAction::triggered, this, [this]() { setFilterMode(1);});
+    toolbar->addAction(a_all);
+    toolbar->addAction(a_selected);
+
+    return toolbar;
 }
 
 //void SettingsDialog::setTabCaptions(QStackedWidget* stackWidget)

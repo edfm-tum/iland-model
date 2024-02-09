@@ -140,7 +140,7 @@ void SettingMetaData::loadFromFile(const QString &metaFilePath,
     }
     else {
         qDebug() << "File couldn't be opened. Abort.";
-        }
+    }
 
 }
 

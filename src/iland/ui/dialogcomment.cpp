@@ -17,6 +17,24 @@ DialogComment::DialogComment(LinkXmlQt* Linkxqt, const QStringList& xmlPath, QWi
 
     //mXmlComment = mLinkxqt->readCommentXml(mXmlPath);
     mCommentEdit->setPlainText(mLinkxqt->readCommentXml(mXmlPath));
+
+}
+
+DialogComment::DialogComment(GenericInputWidget *widget, QWidget *parent):
+    QDialog(parent),
+    ui(new Ui::DialogComment),
+    mWidget(widget)
+{
+    ui->setupUi(this);
+
+    connect(ui->buttonBox_dialogComment, &QDialogButtonBox::accepted, this, [=]() {acceptComment();});
+
+
+    //mCommentEdit = this->findChild<QPlainTextEdit *>();
+
+    //mXmlComment = mLinkxqt->readCommentXml(mXmlPath);
+    ui->commentField->setPlainText(widget->comment());
+
 }
 
 DialogComment::~DialogComment()
@@ -27,6 +45,7 @@ DialogComment::~DialogComment()
 
 void DialogComment::acceptComment()
 {
-    QString commentText = mCommentEdit->toPlainText();
-    mLinkxqt->writeCommentXml(commentText, mXmlPath);
+    QString commentText = ui->commentField->toPlainText();
+    mWidget->setComment(commentText);
+    //mLinkxqt->writeCommentXml(commentText, mXmlPath);
 }

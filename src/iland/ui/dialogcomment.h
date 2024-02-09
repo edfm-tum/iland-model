@@ -4,6 +4,7 @@
 #include <QDialog>
 
 #include "ui/linkxmlqt.h"
+#include "genericinputwidget.h"
 
 namespace Ui {
 class DialogComment;
@@ -15,6 +16,7 @@ class DialogComment : public QDialog
 
 public:
     explicit DialogComment(LinkXmlQt* Linkxqt, const QStringList& xmlPath,QWidget *parent = nullptr);
+    explicit DialogComment(GenericInputWidget *widget, QWidget *parent = nullptr);
     ~DialogComment();
 
 private:
@@ -23,6 +25,7 @@ private:
     void acceptComment();
     const QStringList mXmlPath;
     LinkXmlQt* mLinkxqt;
+    GenericInputWidget *mWidget;
     //QString& mXmlComment;
 };
 

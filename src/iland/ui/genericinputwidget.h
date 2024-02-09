@@ -1,17 +1,17 @@
 #ifndef GENERICINPUTWIDGET_H
 #define GENERICINPUTWIDGET_H
 
-#include "ui/dialogcomment.h"
 #include "ui/linkxmlqt.h"
 #include <QWidget>
+#include <QLabel>
 
 //struct metadata;
-
-class genericInputWidget : public QWidget
+class DialogComment; // forward
+class GenericInputWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit genericInputWidget(LinkXmlQt* Linkxqt,
+    explicit GenericInputWidget(LinkXmlQt* Linkxqt,
                                 const QString& inputDataType = "string",
                                 const QString& inputDefaultValue = "",
                                 QStringList list = QStringList() << "default" << "path",
@@ -20,8 +20,23 @@ public:
                                 QWidget *parent = nullptr,
                                 bool connected = false);
     //~genericInputWidget();
+    explicit GenericInputWidget(LinkXmlQt *link,
+                                SettingsItem *item,
+                                bool connected = false);
 
+    QString strValue();
+    void setValue(QString str_value);
+
+    QString comment();
+    void setComment(QString comment);
 private:
+    SettingsItem *mSetting;
+    QCheckBox *mInputCheckBox;
+    QLineEdit *mInputField;
+    QComboBox *mInputComboBox;
+    QLabel *mLabel;
+    QToolButton *mButtonComment;
+
     QString mDataType;
     QString mDefaultValue;
     QStringList mXmlPath;
@@ -32,6 +47,7 @@ private:
 
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit);
     void openCommentDialog(QStringList xmlPath);
+    void checkCommentButton();
 
     DialogComment* ui_comment;
     LinkXmlQt* mLinkxqt;

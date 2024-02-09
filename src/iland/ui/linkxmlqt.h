@@ -7,6 +7,36 @@
 #include <QCheckBox>
 #include <QPlainTextEdit>
 
+#include "exception.h"
+
+class GenericInputWidget; // forward
+/// SettingsItem stores information for a single setting
+/// this includes meta data of the setting, as well as the current value
+struct SettingsItem {
+
+    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault):
+        metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault) {
+        auto ti =  mInputTypes.indexOf(atype);
+        if (ti < 0)
+            throw IException("SettingsItem: invalid input type");
+        type = (EInputType) ti;
+    };
+    enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataCombo, DataTable };
+    GenericInputWidget *widget;
+    size_t metakeyIndex;
+    QString key;
+    EInputType type;
+    QString label;
+    QString tooltip;
+    QString defaultValue;
+    // link to xml or whatever
+    QString strValue; // value as given in XML
+    QString comment; // the dynamic comment
+private:
+    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "combo", "table" };
+};
+
+
 class LinkXmlQt
 {
 public:
@@ -23,8 +53,13 @@ public:
     void writeValuesXml(QStackedWidget* stackedWidget);
     void readValuesXml(QStackedWidget* stackedWidget);
 
+
+    QString readXmlValue(QString key);
+    QString readXmlComment(QString key);
+
+
 private:
-    // Viariables
+    // Variables
     QString mXmlFile;
     QWidget* guiWidget;
     bool mSiblingIsComment;
@@ -38,6 +73,8 @@ private:
     void setComment(QDomNode& curNode, QStringList& commentSplittedLines);
 
 
+
 };
+
 
 #endif // LINKXMLQT_H

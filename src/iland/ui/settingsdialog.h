@@ -1,8 +1,9 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
+#include <QDialog>
+#include <QToolBar>
 
 #include "ui/linkxmlqt.h"
-#include <QDialog>
 #include "qstackedwidget.h"
 #include "qtreewidget.h"
 
@@ -19,6 +20,8 @@ class SettingsDialog;
 //    QStringList toolTip;
 //} ;
 
+
+
 class SettingsDialog : public QDialog
 {
     Q_OBJECT
@@ -32,6 +35,9 @@ public:
                             //metadata& inputMetaData,
                             QWidget *parent = nullptr);
     //~SettingsDialog();
+public slots:
+    void updateData(); ///< fetch data from data structure and fill ui element
+    void setFilterMode(int mode);
 
 
 private:
@@ -46,6 +52,8 @@ private:
     // The lists are used to preserve the order of the elements in the file
     QStringList mMetaKeys;
     QStringList mMetaValues;
+
+    QMap<QString, SettingsItem*> mKeys;
 
     // Class to read/write files from/to xml document/gui
     LinkXmlQt* mLinkxqt;
@@ -62,6 +70,10 @@ private:
 
 
     // void setTabCaptions(QStackedWidget* stackedWidget);
+
+    void readXMLValues();
+
+    QToolBar *createToolbar();
 
 
 };

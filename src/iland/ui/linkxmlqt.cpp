@@ -146,6 +146,33 @@ void LinkXmlQt::setComment(QDomNode& curNode, QStringList& commentSplittedLines)
     mLoadedXml = curXml;
 }
 
+QString LinkXmlQt::readXmlValue(QString key)
+{
+    if (!xmlFileLoaded) {
+        throw IException("Error with loading data. Check xml file! Abort.");
+    }
+    QDomDocument curXml = mLoadedXml;
+    QDomElement rootElement = curXml.documentElement();
+    QStringList xmlPath = key.split(".");
+    QDomElement curNode = rootElement;
+    foreach (QString node, xmlPath) {
+        curNode = curNode.firstChildElement(node);
+        //qDebug() << "Current node: " << curNode.nodeName();
+    }
+    if (!curNode.isNull()) {
+        // Get value of current node
+        return curNode.firstChild().toText().data();
+    } else {
+        return QString();
+    }
+}
+
+QString LinkXmlQt::readXmlComment(QString key)
+{
+    QStringList xmlPath = key.split(".");
+    return readCommentXml(xmlPath);
+}
+
 // Function reads the values from the xml file and sets the values in the gui
 void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
 
@@ -215,6 +242,7 @@ void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
 
     }
 }
+
 
 // Values from the gui are read and written into the xml tree
 // In general, procedure follows the approach described in loadValuesXml
