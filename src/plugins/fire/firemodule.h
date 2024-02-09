@@ -141,6 +141,7 @@ class FireModule
 {
 public:
     FireModule();
+    ~FireModule();
     /// the setup function sets up the grids and parameters used for the fire module.
     /// this should be called when the main model is already created.
     void setup(); ///< general setup

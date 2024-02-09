@@ -49,7 +49,12 @@
 // global output function
 QString Management::executeScript(QString cmd)
 {
-    return ScriptGlobal::executeScript(cmd);
+    QString result = ScriptGlobal::executeScript(cmd);
+    if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+        Helper::msg(ScriptGlobal::lastErrorMessage());
+    }
+
+    return result;
 }
 
 Management::Management()
@@ -77,14 +82,16 @@ Management::~Management()
 
 int Management::remain(int number)
 {
-    qDebug() << "remain called (number): " << number;
+    if (logLevelDebug())
+        qDebug() << "remain called (number): " << number;
     Model *m = GlobalSettings::instance()->model();
     AllTreeIterator at(m);
     QList<Tree*> trees;
     while (Tree *t=at.next())
         trees.push_back(t);
     int to_kill = trees.count() - number;
-    qDebug() << trees.count() << " standing, targetsize" << number << ", hence " << to_kill << "trees to remove";
+    if (logLevelDebug())
+        qDebug() << trees.count() << " standing, targetsize" << number << ", hence " << to_kill << "trees to remove";
     for (int i=0;i<to_kill;i++) {
         int index = irandom(0, trees.count());
         trees[index]->remove();
@@ -160,7 +167,8 @@ int Management::remove_percentiles(int pctfrom, int pctto, int number, bool mana
     int index_to = limit(int(pctto/100. * mTrees.count()), 0, mTrees.count());
     if (index_from>=index_to)
         return 0;
-    qDebug() << "attempting to remove" << number << "trees between indices" << index_from << "and" << index_to;
+    if (logLevelDebug())
+        qDebug() << "attempting to remove" << number << "trees between indices" << index_from << "and" << index_to;
     int i;
     int count = number;
     if (index_to-index_from <= number)  {
@@ -197,7 +205,8 @@ int Management::remove_percentiles(int pctfrom, int pctto, int number, bool mana
             }
         }
     }
-    qDebug() << count << "removed.";
+    if (logLevelDebug())
+        qDebug() << count << "removed.";
     // clean up the tree list...
     for (int i=mTrees.count()-1; i>=0; --i) {
         if (mTrees[i].first->isDead())
@@ -235,7 +244,7 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
             }
         }
     } catch(const IException &e) {
-        throwError(e.message());
+        ScriptGlobal::throwError(e.message());
     }
     return n;
 }
@@ -274,21 +283,13 @@ double Management::aggregate_function(QString expression, QString filter, QStrin
         }
 
     } catch(const IException &e) {
-        throwError(e.message());
+         ScriptGlobal::throwError(e.message());
     }
     if (type=="sum")
         return sum;
     if (type=="mean")
         return n>0?sum/double(n):0.;
     return 0.;
-}
-
-// introduced with switch to QJSEngine (context->throwMessage not available any more)
-void Management::throwError(const QString &errormessage)
-{
-    GlobalSettings::instance()->scriptEngine()->evaluate(QString("throw '%1'").arg(errormessage));
-    qDebug() << "Management-script error:" << errormessage;
-    // no idea if this works!!!
 }
 
 
@@ -319,6 +320,8 @@ int Management::manageAll()
 
 void Management::run()
 {
+    ExprExceptionAsScriptError no_expression; // turn expression errors to JS exceptions
+
     mTrees.clear();
     mRemoved=0;
     qDebug() << "Management::run() called";
@@ -375,7 +378,8 @@ int Management::filterIdList(QVariantList idList)
         else
             ++tp;
     }
-    qDebug() << "Management::filter by id-list:" << mTrees.count();
+    if (logLevelDebug())
+        qDebug() << "Management::filter by id-list:" << mTrees.count();
     return mTrees.count();
 }
 
@@ -402,10 +406,11 @@ int Management::filter(QString filter)
                 ++tp;
         }
     } catch(const IException &e) {
-        throwError(e.message());
+         ScriptGlobal::throwError(e.message());
     }
 
-    qDebug() << "filtering with" << filter << "N=" << n_before << "/" << mTrees.count()  << "trees (before/after filtering).";
+    if (logLevelDebug())
+        qDebug() << "filtering with" << filter << "N=" << n_before << "/" << mTrees.count()  << "trees (before/after filtering).";
     return mTrees.count();
 }
 
@@ -435,7 +440,8 @@ int Management::load(QString filter)
     } else {
         Expression expr(filter,&tw);
         expr.enableIncSum();
-        qDebug() << "filtering with" << filter;
+        if (logLevelDebug())
+            qDebug() << "filtering with" << filter;
         while (Tree *t=at.nextLiving()) {
             tw.setTree(t);
             if (!t->isDead() && expr.execute())
@@ -447,21 +453,22 @@ int Management::load(QString filter)
 
 /**
 */
-void Management::loadFromTreeList(QList<Tree*>tree_list)
+void Management::loadFromTreeList(QList<Tree*>tree_list, bool do_append)
 {
-    mTrees.clear();
+    if (!do_append)
+        mTrees.clear();
     for (int i=0;i<tree_list.count();++i)
         mTrees.append(QPair<Tree*, double>(tree_list[i], 0.));
 }
 
 // loadFromMap: script access
-int Management::loadFromMap(MapGridWrapper *wrap, int key)
+int Management::loadFromMap(MapGridWrapper *wrap, int key, bool do_append)
 {
     if (!wrap) {
-        throwError("loadFromMap called with invalid map object!");
+         ScriptGlobal::throwError("loadFromMap called with invalid map object!");
         return 0;
     }
-    loadFromMap(wrap->map(), key);
+    loadFromMap(wrap->map(), key, do_append);
     return count();
 }
 
@@ -522,7 +529,7 @@ void Management::killSaplingsResourceUnit(int ruindex)
 void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac, double DWDfrac, double litterFrac, double soilFrac)
 {
     if (!(SWDfrac>=0. && SWDfrac<=1. && DWDfrac>=0. && DWDfrac<=1. && soilFrac>=0. && soilFrac<=1. && litterFrac>=0. && litterFrac<=1.)) {
-        throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: ---"));
+         ScriptGlobal::throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: ---"));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
@@ -538,7 +545,8 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
         ru->soil()->disturbance(DWDfrac*area_factor, litterFrac*area_factor, soilFrac*area_factor);
         // qDebug() << ru->index() << area_factor;
     }
-    qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
+    if (logLevelDebug())
+        qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
 }
 
 /** slash snags (SWD and otherWood-Pools) of polygon \p key on the map \p wrap.
@@ -550,7 +558,7 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
 void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction)
 {
     if (slash_fraction<0 || slash_fraction>1) {
-        throwError(QString("slashSnags called with invalid parameters!!\nArgs: ...."));
+         ScriptGlobal::throwError(QString("slashSnags called with invalid parameters!!\nArgs: ...."));
         return;
     }
     QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
@@ -562,13 +570,14 @@ void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction
         ru->snag()->management(slash_fraction * area_factor);
         // qDebug() << ru->index() << area_factor;
     }
-    qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
+    if (logLevelDebug())
+        qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
 
 }
 
 /** loadFromMap selects trees located on pixels with value 'key' within the grid 'map_grid'.
 */
-void Management::loadFromMap(const MapGrid *map_grid, int key)
+void Management::loadFromMap(const MapGrid *map_grid, int key, bool do_append)
 {
     if (!map_grid) {
         qDebug() << "invalid parameter for Management::loadFromMap: Map expected!";
@@ -576,7 +585,7 @@ void Management::loadFromMap(const MapGrid *map_grid, int key)
     }
     if (map_grid->isValid()) {
         QList<Tree*> tree_list = map_grid->trees(key);
-        loadFromTreeList( tree_list );
+        loadFromTreeList( tree_list, do_append );
     } else {
         qDebug() << "Management::loadFromMap: grid is not valid - no trees loaded";
     }

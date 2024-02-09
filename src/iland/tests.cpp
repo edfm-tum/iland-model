@@ -1004,7 +1004,7 @@ void Tests::testDEM()
 
 void Tests::testFire()
 {
-    // get fire module
+/*    // get fire module
     FirePlugin *plugin =dynamic_cast<FirePlugin *>(GlobalSettings::instance()->model()->modules()->module("fire"));
     if (plugin) {
         FireModule *fire = plugin->fireModule();
@@ -1015,11 +1015,12 @@ void Tests::testFire()
         }
     }
     GlobalSettings::instance()->controller()->repaint();
-
+*/
 }
 
 void Tests::testWind()
 {
+    /*
     // get fire module
     WindPlugin *plugin = dynamic_cast<WindPlugin *>(GlobalSettings::instance()->model()->modules()->module("wind"));
     if (plugin) {
@@ -1062,7 +1063,7 @@ void Tests::testWind()
         }
 
     }
-    GlobalSettings::instance()->controller()->repaint();
+    GlobalSettings::instance()->controller()->repaint(); */
 }
 
 void Tests::testRumple()

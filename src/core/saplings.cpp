@@ -109,7 +109,6 @@ void Saplings::establishment(const ResourceUnit *ru)
     for (int i=0;i<cPxPerHectare;++i)
         lif_corr[i]=-1.;
 
-    QVector< QPair<double, double> > clim_buffered;
 
     int species_idx;
     QVector<int>::const_iterator sbegin, send;
@@ -135,7 +134,7 @@ void Saplings::establishment(const ResourceUnit *ru)
             continue;
 
         // calculate the abiotic environment (TACA) (this could also trigger the execution of the water cycle)
-        rus->establishment().calculateAbioticEnvironment(clim_buffered);
+        rus->establishment().calculateAbioticEnvironment();
         double abiotic_env = rus->establishment().abioticEnvironment();
         if (abiotic_env==0.) {
             rus->establishment().writeDebugOutputs();
@@ -327,6 +326,17 @@ QPointF Saplings::coordOfCell(const ResourceUnit *ru, int cell_index)
     return GlobalSettings::instance()->model()->grid()->cellCenterPoint(QPoint(x,y));
 }
 
+QPoint Saplings::coordOfCellLIF(const ResourceUnit *ru, int cell_index)
+{
+    QPoint imap = ru->cornerPointOffset();
+    int x = imap.x() + cell_index % cPxPerRU;
+    int y = imap.y() + cell_index/cPxPerRU;
+    QPointF coord = GlobalSettings::instance()->model()->grid()->cellCenterPoint(QPoint(x,y));
+    return GlobalSettings::instance()->model()->grid()->indexAt(coord);
+}
+
+
+
 void Saplings::clearSaplings(const QRectF &rectangle, const bool remove_biomass, bool resprout)
 {
     GridRunner<float> runner(GlobalSettings::instance()->model()->grid(), rectangle);
@@ -469,8 +479,14 @@ void Saplings::updateBrowsingPressure()
 bool Saplings::growSapling(const ResourceUnit *ru, SaplingCell &scell, SaplingTree &tree, int isc, HeightGridValue &hgv, float lif_value, int cohorts_on_px)
 {
     ResourceUnitSpecies *rus = tree.resourceUnitSpecies(ru);
-
+    if (!rus) {
+        return false;
+    }
     const Species *species = rus->species();
+    if (!species) {
+        return false;
+    }
+
 
     // (1) calculate height growth potential for the tree (uses linerization of expressions...)
     double h_pot = species->saplingGrowthParameters().heightGrowthPotential.calculate(tree.height);
@@ -836,6 +852,8 @@ double SaplingStat::livingStemNumber(const Species *species, double &rAvgDbh, do
 ResourceUnitSpecies *SaplingTree::resourceUnitSpecies(const ResourceUnit *ru) const
 {
     if (!ru || !is_occupied())
+        return nullptr;
+    if (species_index  < 0)
         return nullptr;
     ResourceUnitSpecies *rus = ru->resourceUnitSpecies(species_index);
     return rus;

@@ -35,7 +35,9 @@ class MapGridWrapper: public QObject
     Q_PROPERTY(QString name READ name)
 public:
     Q_INVOKABLE MapGridWrapper(QObject *parent=nullptr);
+    Q_INVOKABLE MapGridWrapper(QString fileName): MapGridWrapper() { load(fileName); }
     ~MapGridWrapper();
+
     static void addToScriptEngine(QJSEngine &engine);
     MapGrid *map() const { return mMap; } ///< acccess for C++ classes
     bool isValid() const; ///< returns true if map is successfully loaded
@@ -49,6 +51,10 @@ public slots:
     void load(QString file_name);
     void saveAsImage(QString file);
     void paint(double min_value, double max_value);
+
+    /// register this map for interactive viewing in the UI
+    void registerUI(QString name=QString());
+
     // active modifications of the map
     void clear(); ///< clears the map (set all values to 0)
     void clearProjectArea(); ///< clear the project area (set to 0), but copy mask with pixels from "outside of project area" (i.e., -1, -2)
@@ -91,7 +97,7 @@ class ScriptGlobal : public QObject
     Q_PROPERTY(bool qt5 READ qt5)
     Q_PROPERTY(int msec READ msec)
     Q_PROPERTY(QJSValue viewOptions READ viewOptions WRITE setViewOptions)
-
+    Q_PROPERTY(QString lastErrorMessage READ lastErrorMessage);
 
 public:
     ScriptGlobal(QObject *parent=nullptr);
@@ -111,7 +117,9 @@ public:
     static QString executeScript(QString cmd);
     static QString executeJSFunction(QString function);
     static QObject *scriptOutput; ///< public "pipe" for script output (is redirected to GUI if available)
-    static QString formattedErrorMessage(const QJSValue &error_value, const QString &sourcecode);
+    static QString formattedErrorMessage(const QJSValue &error_value, const QString sourcecode=QString());
+    static void throwError(const QString &errormessage);
+    static QString lastErrorMessage() { return mLastErrorMessage; }
 
     // view options
     /* View options:
@@ -143,7 +151,7 @@ public slots:
     QString loadTextFile(QString fileName); ///< load content from a text file in a String (@sa CSVFile)
     void saveTextFile(QString fileName, QString content); ///< save string (@p content) to a text file.
     bool fileExists(QString fileName); ///< return true if the given file exists.
-    void systemCmd(QString command); ///< execute system command (e.g., copy files)
+    QString systemCmd(QString command); ///< execute system command (e.g., copy files)
     // add trees
     int addSingleTrees(const int resourceIndex, QString content); ///< add single trees
     int addTrees(const int resourceIndex, QString content); ///< add tree distribution
@@ -177,8 +185,8 @@ public slots:
     /// return a grid (level of resource units) with the result of an expression evaluated in the context of the resource unit.
     QJSValue resourceUnitGrid(QString expression);
 
-    /// get a grid for a given variable and a dayofyear (0..365)
-    QJSValue microclimateGrid(QString variable, int dayofyear);
+    /// get a grid for a given variable and a month (1..12)
+    QJSValue microclimateGrid(QString variable, int month=1);
     /// access to single resource unit (returns a reference)
     QJSValue resourceUnit(int index);
 
@@ -201,7 +209,7 @@ public slots:
 
     void test_tree_mortality(double thresh, int years, double p_death);
 private:
-    void throwError(const QString &errormessage);
+    static QString mLastErrorMessage;
     QString mCurrentDir;
     Model *mModel;
     QJSValue mRUValue;

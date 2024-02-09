@@ -44,9 +44,12 @@ ScriptGrid::ScriptGrid(QObject *parent) : QObject(parent)
 
 ScriptGrid::~ScriptGrid()
 {
-    if (mGrid && mOwner)
+    GlobalSettings::instance()->controller()->removeMapGrid(mGrid, nullptr);
+    if (mGrid && mOwner) {
         delete mGrid;
+    }
     mDeleted++;
+    // remove potential links in UI to this grid
     qDebug() << "ScriptGrid::balance: created:" << mCreated << "deleted:" << mDeleted;
 }
 
@@ -109,9 +112,15 @@ void ScriptGrid::clear()
 
 void ScriptGrid::paint(double min_val, double max_val)
 {
-    // TODO: implement
     if (GlobalSettings::instance()->controller())
         GlobalSettings::instance()->controller()->paintGrid(mGrid, mVariableName, GridViewRainbow, min_val, max_val);
+}
+
+void ScriptGrid::registerUI(QString name)
+{
+    if (GlobalSettings::instance()->controller())
+        GlobalSettings::instance()->controller()->addScriptLayer(mGrid, nullptr, name.isEmpty() ? mVariableName : name);
+
 }
 
 QString ScriptGrid::info()

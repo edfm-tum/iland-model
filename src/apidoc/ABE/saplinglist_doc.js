@@ -58,16 +58,28 @@ Kill (i.e., cut down and do not remove from the forest) the saplings in the list
 **/
 
 /**
+Clear the list without affecting the saplings in the list. Note that explcitly clearing the list is usually not necessary (e.g. when using loadFromStand() )
+
+@method clear
+@Example
+    saplings.clear(); // empty lsit
+    console.log(saplings.count); // -> 0
+**/
+
+/**
 Load all (or a subset) of sapling that are located on the stand denoted by `standId`. The `filter` let you control
-which saplings should be loaded.
+which saplings should be loaded. Control with `do_append` whether the list should be cleared before loading saplings.
 
 
 @method loadFromStand
 @param {Integer} standId A numeric standId that refers to the stand-grid of iLand.
 @param {string} filter A valid filter Expression (see above), can be omitted
-@return {S} the number of trees that have been loaded.
+@param {bool} do_append if true, saplings are added to the list without clearing the list first. Default is false (list is cleared). Can be omitted.
+@return {Integer} the number of trees that have been loaded.
 @Example
     saplings.loadFromStand(123, 'species=fasy'); // load all beech saplings of stand 123
+
+    saplings.loadFromStand(124, 'true', true); // append (all) saplings from stand 124
 
 **/
 

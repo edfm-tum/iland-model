@@ -41,10 +41,10 @@ public:
    bool hasNode(const QString &path) const; ///< returns true if @p path exists.
     // read access
    QDomElement node(const QString &path) const; ///< retrieve node defined by path (see class description)
-   QString value(const QString &path, const QString &defaultValue="") const; ///< retrieve value (as string) from node @p path.
-   bool valueBool(const QString &path, const bool defaultValue=false) const; ///< retrieve value (as bool) from node @p path.
-   double valueDouble(const QString &path, const double defaultValue=0.) const; ///< retrieve value (as double) from node @p path.
-   int valueInt(const QString &path, const int defaultValue=0) const; ///< retrieve value (as int) from node @p path.
+   QString value(const QString &path, const QString &defaultValue="", bool do_warn=true) const; ///< retrieve value (as string) from node @p path.
+   bool valueBool(const QString &path, const bool defaultValue=false, bool do_warn=true) const; ///< retrieve value (as bool) from node @p path.
+   double valueDouble(const QString &path, const double defaultValue=0., bool do_warn=true) const; ///< retrieve value (as double) from node @p path.
+   int valueInt(const QString &path, const int defaultValue=0, bool do_warn=true) const; ///< retrieve value (as int) from node @p path.
    // write access
    bool setNodeValue(QDomElement &node, const QString &value); ///< set value of 'node'. return true on success.
    bool setNodeValue(const QString &path, const QString &value); ///< set value of node indicated by 'path'. return true on success.

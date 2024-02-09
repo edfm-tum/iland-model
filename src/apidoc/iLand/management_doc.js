@@ -124,10 +124,11 @@ Load all trees that are located on grid pixels with the value `standID` on the g
 @method loadFromMap
 @param {Map} map a GIS grid that defines stand IDs.
 @param {integer} standID the ID of the stand that should be loaded.
+@param {boolean} do_append if `true`, the list is not cleared and trees are added to the existing list. Default is `false`.
 @return {integer} the number of trees that were loaded.
 @Example
     // Access to the global stand grid (required only once)
-    var stand_grid = Factory.newMap();
+    var stand_grid = new Map();
     // load all trees of the forest stand with ID=1
     management.loadFromMap(stand_grid, 1);
 */

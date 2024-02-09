@@ -155,12 +155,18 @@ GlobalSettings::~GlobalSettings()
 
 QString GlobalSettings::executeJavascript(const QString &command)
 {
-    return ScriptGlobal::executeScript(command);
+    QString result = ScriptGlobal::executeScript(command);
+    if (!ScriptGlobal::lastErrorMessage().isEmpty())
+        Helper::msg("Javascript-Error: \n" + ScriptGlobal::lastErrorMessage());
+    return result;
 }
 
 QString GlobalSettings::executeJSFunction(const QString function_name)
 {
-    return ScriptGlobal::executeJSFunction(function_name);
+    QString result = ScriptGlobal::executeJSFunction(function_name);
+    if (!ScriptGlobal::lastErrorMessage().isEmpty())
+        Helper::msg("Javascript-Error: \n" + ScriptGlobal::lastErrorMessage());
+    return result;
 }
 
 void GlobalSettings::resetScriptEngine()
@@ -456,10 +462,10 @@ void GlobalSettings::setupDirectories(QDomElement pathNode, const QString &proje
     // make other paths relativ to "home" if given as relative paths
     mFilePath.insert("lip", path(xml.value("lip", "lip"), "home"));
     mFilePath.insert("database", path(xml.value("database", "database"), "home"));
-    mFilePath.insert("temp", path(xml.value("temp", ""), "home"));
-    mFilePath.insert("log", path(xml.value("log", ""), "home"));
-    mFilePath.insert("script", path(xml.value("script", ""), "home"));
-    mFilePath.insert("init", path(xml.value("init", ""), "home"));
+    mFilePath.insert("temp", path(xml.value("temp", "", false), "home"));
+    mFilePath.insert("log", path(xml.value("log", "", false), "home"));
+    mFilePath.insert("script", path(xml.value("script", "", false), "home"));
+    mFilePath.insert("init", path(xml.value("init", "", false), "home"));
     mFilePath.insert("output", path(xml.value("output", "output"), "home"));
 }
 

@@ -47,12 +47,12 @@ public:
      void processAfterInit();
 
     /// load a single tree file (picus or iland style). return number of trees loaded.
-    int loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL);
+    int loadPicusFile(const QString &fileName, ResourceUnit *ru=NULL, int stand_id=-1);
     /// load a tree distribution based on dbh classes. return number of trees loaded.
     int loadiLandFile(const QString &fileName, ResourceUnit *ru=NULL, int stand_id=0);
 
     /// worker function to load a file containing single trees
-    int loadSingleTreeList(const QString &content, ResourceUnit*ru = NULL, const QString &fileName="");
+    int loadSingleTreeList(const QString &content, ResourceUnit*ru_offset = NULL, int stand_id=-1, const QString &fileName="");
     /// worker function to load a file containing rows with dbhclasses
     int loadDistributionList(const QString &content, ResourceUnit *ru = NULL, int stand_id=0, const QString &fileName="");
     // load regeneration in stands

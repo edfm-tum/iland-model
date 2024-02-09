@@ -115,7 +115,7 @@ void Phenology::calculate()
             if (i==bMon)
                 mPhenoFraction[i] -=  (bDay+1) / double(mClimate->days(bMon));
             if (i==eMon)
-                mPhenoFraction[i] -=  (mClimate->days(eMon) - (bDay+1)) / double(mClimate->days(eMon));
+                mPhenoFraction[i] -=  (mClimate->days(eMon) - (eDay+1)) / double(mClimate->days(eMon));
         }
     }
 

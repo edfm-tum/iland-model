@@ -79,6 +79,10 @@ public slots:
     /// set all pixels on stand 'key' on the map 'grid' (with probability 'probability') as infested
     int setInfestedFromMap(MapGridWrapper *grid, int key, double probability, int agerange);
 
+    /// set a new value for background infestation probability (this overwrites
+    /// the value given in the project file)
+    void setBackgroundInfestationProbability(double new_value);
+
 private:
 
     QJSValue mOnClick;

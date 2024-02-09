@@ -26,6 +26,35 @@ The provided function cover inter alia:
 - access and control over Outputs
 - miscellaneous functions (e.g., for making screeshots)
 
+Global functions
+================
+In addition to the functions provided by the `Globals` object, there are a number of (truly) global helper functions available. They are:
+
+- `print(x)`: prints `x` (see Globals.print() and console.log())
+- `include(source_file)`: loads a Javascript code file `source_file` and runs the code. Can be useful to load "libraries". (See Globals.include()).
+- `alert(message)`: shows a message box with the text `message` and stops until user clicks Ok. (See Globals.alert())
+- `printObj(obj)`: helper function to pretty print an object to the console.
+
+
+Handling of exceptions
+======================
+
+Some functions throughout the iLand API "throw errors". Unhandled, a message box shows the error and iLand stops running. You can, however, also handle these
+errors programmatically, i.e. "catch" them and continue with the execution of the model.
+Here is an example:
+
+
+    // not handled: this throws an error that the setting key is not valid.
+    let x = Globals.setting("mr.james.bond");
+
+    // handled using a try/catch block
+    try {
+    let x = Globals.setting("mr.james.bond");
+    } catch (error) {
+        console.log(error);
+    }
+
+
  @class Globals
  */
 
@@ -328,7 +357,7 @@ See also: {{#crossLink "Globals/saveModelSnapshot:method"}}{{/crossLink}}
 
 
 /**
-Load the content of a text file into a string.
+Load the content of a text file into a string. Throws an error if the file does not exist.
 
 @method loadTextFile
 @param file_name {string} filename to load
@@ -353,10 +382,11 @@ Check if the file `file_name` already exists.
 /**
 Execute a system command (e.g., for copying files). Commands are operating system dependent; For windows,
 `cmd.exe /C` executes a command without a separate command window (see example below). Output of the executed
-command is redirected to the iLand log (stdout, stderr).
+command is redirected to the iLand log (stdout, stderr), the stdout output is returned as a string.
 
 @method systemCmd
 @param command {string} command to execute
+@return {string} the output of the command (std-out)
 @Example
     // helper function for windows: fix slashes and add 'cmd.exe /C'
     function winnify(s) {

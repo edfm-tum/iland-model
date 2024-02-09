@@ -59,6 +59,7 @@
 #include "expressionwrapper.h"
 #include "management.h"
 #include "outputmanager.h"
+#include "saplings.h"
 
 #include "tests.h"
 #include "mapgrid.h"
@@ -251,18 +252,38 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(mouseMove(const QPoint&)));
     connect(ui->PaintWidget, SIGNAL(mouseWheel(QPoint, int)),
             this, SLOT(mouseWheel(const QPoint&, int)));
+    connect(ui->PaintWidget, SIGNAL(doRepaint()),
+            this, SLOT(repaint()));
 
      // javascript console
     connect(ui->scriptCode, SIGNAL(executeJS(QString)),
             this, SLOT(executeJS(QString)) );
 
     // dock windows
-    ui->menuView->addAction( ui->dockEditor->toggleViewAction() );
+    ui->menuView->addAction( ui->dockLegend->toggleViewAction() );
     ui->menuView->addAction( ui->dockLogviewer->toggleViewAction() );
-    ui->menuView->addAction( ui->dockWidget->toggleViewAction() );
+    ui->menuView->addAction( ui->dockVisualization->toggleViewAction() );
     ui->menuView->addAction( ui->dockModelDrill->toggleViewAction() );
+    ui->menuView->addAction( ui->dockJavascriptEditor->toggleViewAction() );
+    ui->menuView->addAction( ui->dockJavascriptWorkspace->toggleViewAction() );
+    ui->menuView->addAction( ui->dockTreeExpression->toggleViewAction() );
 
-    ui->pbResults->setMenu(ui->menuOutput_menu);
+    ui->dockLogviewer->installEventFilter(this); // for dynamic resize
+    // position of dock widgets
+    addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, ui->dockJavascriptWorkspace);
+    addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, ui->dockTreeExpression);
+    ui->dockTreeExpression->setVisible(false);
+    // put some of the docks into tabs
+    tabifyDockWidget(ui->dockJavascriptEditor, ui->dockLegend);
+    tabifyDockWidget(ui->dockJavascriptWorkspace, ui->dockVisualization);
+
+
+    resizeDocks({ui->dockLogviewer}, {100}, Qt::Vertical);
+
+    resize(QSize(1000, 750));
+
+
+    setUIshortcuts(QVariantMap());
 
     mLogSpace = ui->logOutput;
     mLogSpace->setMaximumBlockCount(1000000); // set a maximum for the in-GUI size of messages. // removed in Qt5 (because it works ;) )
@@ -288,7 +309,6 @@ MainWindow::MainWindow(QWidget *parent)
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
 
     if (!xmlFile.isEmpty()) {
-        ui->iniEdit->setPlainText(xmlFile);
         QString errMsg;
         int errLine, errCol;
         if (!xmldoc.setContent(xmlFile, &errMsg, &errLine, &errCol)) {
@@ -351,9 +371,6 @@ MainWindow::MainWindow(QWidget *parent)
     qRegisterMetaType<QTextBlock>("QTextBlock");
     qRegisterMetaType<QTextCursor>("QTextCursor");
 
-    ui->iniEdit->setVisible(false);
-    ui->editStack->setTabEnabled(4,false); // the "other" tab
-
     // qml setup
     mRulerColors = new Colors();
     mRuler = nullptr;
@@ -377,6 +394,9 @@ MainWindow::MainWindow(QWidget *parent)
         //view->show();
         //qDebug() << "addWidget:";
         ui->qmlRulerLayout->addWidget(container);
+
+        connect(mRulerColors, SIGNAL(manualColorsChanged()), this, SLOT(repaint()));
+
     }
     //ui->qmlRulerLayout->addWidget(container);
     //    QDir d(":/qml");
@@ -524,6 +544,14 @@ void MainWindow::updateLabel()
     }
 }
 
+void MainWindow::checkExpressionError()
+{
+    if (!mLastPaintError.isEmpty()) {
+        Helper::msg("Error while painting: " + mLastPaintError);
+        mLastPaintError.clear();
+    }
+}
+
 // simply command an update of the painting area
 void MainWindow::repaint()
 {
@@ -653,6 +681,64 @@ void MainWindow::addPaintLayers(QObject *handler, const QStringList names, const
     updatePaintGridList();
 }
 
+void MainWindow::addPaintLayer(Grid<double> *dbl_grid, MapGrid* mapgrid, const QString name, GridViewType view_type)
+{
+    QString qualified_name = QString("Script - %1").arg(name);
+    if (mPaintList.contains(qualified_name)) {
+        mPaintList.remove(qualified_name);
+    }
+    double min_val=0., max_val=1.;
+    if (dbl_grid) {
+        min_val = dbl_grid->min();
+        max_val = dbl_grid->max();
+    }
+    if (mapgrid) {
+        min_val = 0;
+        const auto &ids = mapgrid->mapIds();
+        if (ids.size()>0) {
+            min_val = *std::min_element(ids.begin(), ids.end());
+            max_val = *std::max_element(ids.begin(), ids.end());
+        }
+    }
+
+    QMap<QString, PaintObject>::iterator po = mPaintList.insert(qualified_name, PaintObject());
+    po.value().map_grid = mapgrid;
+    po.value().dbl_grid = dbl_grid;
+    po.value().what = dbl_grid!=nullptr ? PaintObject::PaintDoubleGrid : PaintObject::PaintMapGrid;
+    po.value().auto_range = true;
+    po.value().min_value = min_val;
+    po.value().max_value = max_val;
+    po.value().view_type = view_type;
+    po.value().name = qualified_name;
+
+    updatePaintGridList();
+}
+
+void MainWindow::removePaintLayer(Grid<double> *dbl_grid, MapGrid *mapgrid)
+{
+    // remove all layers that have the underlying grid or map
+    QMutableMapIterator<QString, PaintObject> i(mPaintList);
+    while (i.hasNext()) {
+        i.next();
+        if (dbl_grid && i.value().dbl_grid == dbl_grid)
+            i.remove();
+
+        if (mapgrid && i.value().map_grid == mapgrid)
+            i.remove();
+
+    }
+
+    // make sure an invalid grid is somewhere
+    if (mapgrid && mPaintNext.map_grid == mapgrid)
+        mPaintNext.what = PaintObject::PaintNothing;
+    if (dbl_grid && mPaintNext.dbl_grid == dbl_grid)
+        mPaintNext.what = PaintObject::PaintNothing;
+
+
+    updatePaintGridList();
+
+}
+
 void MainWindow::removePaintLayers(QObject *handler)
 {
     // remove all layers that have the given handler
@@ -773,8 +859,6 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
 {
     DebugTimer drawtimer("painting");
     drawtimer.setSilent();
-    // debug redraw counter
-    ui->lRedraws->setText( QString::number( ui->lRedraws->text().toInt() + 1 )  );
 
     if (!mRemoteControl.canRun())
         return;
@@ -1215,8 +1299,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
                 }
             }
         }
-        if (!ru_value.lastError().isEmpty())
+        if (!ru_value.lastError().isEmpty()) {
             qDebug() << "Expression error while painting: " << ru_value.lastError();
+            if (!GlobalSettings::instance()->controller()->isRunning())
+                mLastPaintError = ru_value.lastError();
+        }
     }
 
     if (show_trees) {
@@ -1243,6 +1330,19 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
         double max_val=1., min_val=0.;
         if (!mRulerColors->autoScale()) {
             max_val = mRulerColors->maxValue(); min_val = mRulerColors->minValue();
+        }
+        if (auto_scale_color && !ui->lTreeExpr->text().isEmpty()) {
+            AllTreeIterator ati(model);
+            min_val = 9999999999999;
+            max_val = -999999999999999;
+            while ((tree = ati.next())) {
+                tw.setTree(tree);
+                double v = tree_value.execute();
+                min_val = std::min(min_val, v);
+                max_val = std::max(max_val, v);
+            }
+            if (min_val == max_val)
+                max_val = min_val + 1;
         }
 
         while ((tree = treelist.next())) {
@@ -1282,8 +1382,12 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             int diameter = qMax(1,vp.meterToPixel( tree->crownRadius()));
             painter.drawEllipse(p, diameter, diameter);
         }
-        if (!tree_value.lastError().isEmpty())
+        if (!tree_value.lastError().isEmpty()) {
             qDebug() << "Expression error while painting: " << tree_value.lastError();
+            if (!GlobalSettings::instance()->controller()->isRunning())
+                mLastPaintError = tree_value.lastError();
+
+        }
         // ruler
         if (species_color) {
             mRulerColors->setCaption("Single trees", "species specific colors.");
@@ -1298,20 +1402,11 @@ void MainWindow::paintFON(QPainter &painter, QRect rect)
             mRulerColors->setPalette(GridViewCustom, 0., 1.);
         } else {
             mRulerColors->setCaption("Single trees", QString("result of expression: '%1'").arg(single_tree_expr));
-            mRulerColors->setPalette(GridViewRainbow, 0., 1.);
-
+            mRulerColors->setPalette(GridViewRainbow, static_cast<float>(min_val), static_cast<float>(max_val)); // ruler
         }
 
     } // if (show_trees)
 
-    // highlight selected tree
-    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
-    if (t) {
-        QPointF pos = t->position();
-        painter.setPen(Qt::black);
-        QPoint p = vp.toScreen(pos);
-        painter.drawRect( p.x()-1, p.y()-1, 3,3);
-    }
     // draw rectangle around the grid
     QRectF r = grid->metricRect();
     QRect rs = vp.toScreen(r);
@@ -1514,11 +1609,15 @@ void MainWindow::repaintArea(QPainter &painter)
     if (!mRemoteControl.isBusy())  {
 
         if (mDoRepaint) {
-            paintFON(painter, ui->PaintWidget->rect());
+            QRect viewport = ui->PaintWidget->rect();
+            //viewport.setHeight(viewport.height()-1);
+            //viewport.setWidth(viewport.width()-1);
+            paintFON(painter, viewport);
             // // fix viewpoint
-            vp.setScreenRect(ui->PaintWidget->rect());
+            vp.setScreenRect(viewport);
             mRulerColors->setScale(vp.pixelToMeter(1));
             mDoRepaint=false;
+            QTimer::singleShot(250, this, SLOT(checkExpressionError()));
 
         } else {
             // use existing copy of the visualization
@@ -1528,7 +1627,7 @@ void MainWindow::repaintArea(QPainter &painter)
 
 
     } else {
-        qDebug() << "mainwindow::repaint: skipped (busy)" << QDateTime::currentMSecsSinceEpoch();
+        //qDebug() << "mainwindow::repaint: skipped (busy)" << QDateTime::currentMSecsSinceEpoch();
     }
 }
 
@@ -1562,11 +1661,16 @@ void MainWindow::mouseClick(const QPoint& pos)
         if (showABEDetails(coord))
             return;
     }
+
+    if (ui->visRegeneration->isChecked()) {
+        showRegenDetails(coord);
+        return;
+    }
+
     //qDebug() << "coord:" << coord << "RU:"<< ru << "ru-rect:" << ru->boundingBox();
     if (!ru)
         return;
 
-    ui->treeChange->setProperty("tree",0);
     QVector<Tree> &mTrees =  ru->trees();
     QVector<Tree>::iterator tit;
     Tree *closestTree=0;
@@ -1580,16 +1684,8 @@ void MainWindow::mouseClick(const QPoint& pos)
     }
     if (min_distance<5 && closestTree) {
         Tree *p = closestTree;
-        //qDebug() << "found!" << tit->id() << "at" << tit->position()<<"value"<<p->lightResourceIndex();
-        //qDebug() <<p->dump();
         showTreeDetails(p);
 
-        ui->treeChange->setProperty("tree", QVariant::fromValue((void*)p));
-        ui->treeDbh->setValue(p->dbh());
-        ui->treeHeight->setValue(p->height());
-        ui->treePosX->setValue(p->position().x());
-        ui->treePosY->setValue(p->position().y());
-        ui->treeImpact->setText(QString("#:%1 - %2").arg(p->id()).arg(p->lightResourceIndex(),5));
         wantDrag=true;
         ui->PaintWidget->setCursor(Qt::SizeAllCursor);
         ui->PaintWidget->update();
@@ -1647,7 +1743,7 @@ bool MainWindow::showABEDetails(const QPointF &coord)
     ui->dataTree->clear();
     QList<QTreeWidgetItem *> items;
     QStack<QTreeWidgetItem*> stack;
-    stack.push(0);
+    stack.push(nullptr);
     foreach (QString s, list) {
         QStringList elem = s.split(":");
         if (s=="-")
@@ -1655,7 +1751,7 @@ bool MainWindow::showABEDetails(const QPointF &coord)
         else if (s=="/-")
             stack.pop();
         else  {
-            items.append( new QTreeWidgetItem(stack.last(), elem) );
+            items.append( new QTreeWidgetItem(stack.isEmpty() ? nullptr:  stack.last(), elem) );
         }
     }
     ui->dataTree->addTopLevelItems(items);
@@ -1663,6 +1759,36 @@ bool MainWindow::showABEDetails(const QPointF &coord)
 
 
 
+}
+
+void MainWindow::showRegenDetails(const QPointF &coord)
+{
+    ui->dataTree->clear();
+    if (mRegenerationGrid.isEmpty())
+        return;
+    QPoint lif_p = GlobalSettings::instance()->model()->grid()->indexAt(coord);
+    ResourceUnit *rRU;
+    SaplingCell *sc=GlobalSettings::instance()->model()->saplings()->cell(lif_p,true, &rRU);
+    if (!sc)
+        return;
+
+    QList<QTreeWidgetItem *> items;
+    SaplingWrapper sw;
+    const QStringList &names = sw.getVariablesList();
+
+    for (int i=0;i<NSAPCELLS;++i) {
+        if (sc->saplings[i].is_occupied()) {
+            sw.setSaplingTree(&sc->saplings[i], rRU);
+            items.append(new QTreeWidgetItem(QStringList() << "species" << mRemoteControl.model()->speciesSet()->species(sw.valueByName("species"))->id() ));
+            QTreeWidgetItem *parent = items.back();
+            foreach(QString name, names) {
+                if (name != "species") {
+                   items.append(new QTreeWidgetItem(parent, QStringList() << name << QString::number(sw.valueByName(name), 'f') ));
+                }
+            }
+        }
+    }
+    ui->dataTree->addTopLevelItems(items);
 }
 
 
@@ -1725,6 +1851,8 @@ void MainWindow::mouseMove(const QPoint& pos)
 
                 break;
             case PaintObject::PaintHandledObject:
+                if (!mPaintNext.dbl_grid)
+                    return;
                 if (mPaintNext.dbl_grid->isEmpty()) {
                     // use the handler (e.g. BITE)
                     value = mRemoteControl.valueAtHandledGrid(mPaintNext.handler, p, mPaintNext.layer_id);
@@ -1780,9 +1908,13 @@ void MainWindow::executeJS(QString code)
     LogToWindow l; // force UI logging
     try {
 
+        qDebug() << "code:" << code;
         QString result = ScriptGlobal::executeScript(code);
         if (!result.isEmpty()) {
             qDebug() << result;
+        }
+        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+            Helper::msg(ScriptGlobal::lastErrorMessage());
         }
     } catch(const IException &e) {
         Helper::msg(e.message());
@@ -1802,24 +1934,10 @@ void MainWindow::mouseDrag(const QPoint& from, const QPoint &to, Qt::MouseButton
         return;
     }
     wantDrag = false;
-    qDebug() << "drag from" << from << "to" << to;
-    Tree *t = reinterpret_cast<Tree*>( ui->treeChange->property("tree").toLongLong() );
-    if (!t)
-        return;
-    QPointF pos = vp.toWorld(to);
-    // calculate new position...
-    t->setPosition(pos);
-    readwriteCycle();
-    ui->PaintWidget->update();
 }
 
 
 
-void MainWindow::on_actionEdit_XML_settings_triggered()
-{
-    ui->editStack->setCurrentIndex(0);
-    ui->PaintWidget->update();
-}
 
 QMutex mutex_yearSimulated;
 void MainWindow::yearSimulated(int year)
@@ -1828,7 +1946,6 @@ void MainWindow::yearSimulated(int year)
     checkModelState();
     ui->modelRunProgress->setValue(year);
     labelMessage(QString("Running.... year %1 of %2. %3").arg(year).arg(mRemoteControl.totalYears()).arg(mRemoteControl.timeString()));
-    ui->treeChange->setProperty("tree",0);
     mDoRepaint = true;
     repaint();
 }
@@ -1868,7 +1985,9 @@ void MainWindow::setupModel()
     recentFileMenu();
 
     // load project xml file to global xml settings structure
-    mRemoteControl.setFileName(ui->initFileName->text());
+    if (!mRemoteControl.setFileName(ui->initFileName->text())) {
+        return; // not loaded
+    }
     //GlobalSettings::instance()->loadProjectFile(ui->initFileName->text());
     labelMessage("Creating model...");
 
@@ -1893,7 +2012,6 @@ void MainWindow::setupModel()
         ui->visDomGrid->setChecked(true);
         //ui->PaintWidget->update();
     }
-    ui->treeChange->setProperty("tree",0);
 
     // setup dynamic output
     QString dout = GlobalSettings::instance()->settings().value("output.dynamic.columns");
@@ -1922,16 +2040,6 @@ void MainWindow::setupModel()
 
 }
 
-
-
-void MainWindow::on_pbSetAsDebug_clicked()
-{
-    Tree *t = reinterpret_cast<Tree *>( ui->treeChange->property("tree").toLongLong() );
-    if (!t)
-        return;
-    t->enableDebugging();
-
-}
 
 void MainWindow::on_openFile_clicked()
 {
@@ -1995,7 +2103,6 @@ void MainWindow::on_actionModelRun_triggered()
     update_label.start(100);
 
     count = count + mRemoteControl.currentYear();
-    ui->treeChange->setProperty("tree",0);
     ui->modelRunProgress->setMaximum(count-1);
     mRemoteControl.run(count);
     GlobalSettings::instance()->executeJSFunction("onFinish");
@@ -2006,7 +2113,6 @@ void MainWindow::on_actionRun_one_year_triggered()
 {
     if (!mRemoteControl.canRun())
         return;
-    ui->treeChange->setProperty("tree",0);
     mRemoteControl.runYear();
     GlobalSettings::instance()->outputManager()->save(); // save output tables when stepping single year by year
     labelMessage(QString("Simulated a single year. year %1.").arg(mRemoteControl.currentYear()));
@@ -2141,8 +2247,10 @@ void MainWindow::setUIshortcuts(QVariantMap shortcuts)
 {
     if (shortcuts.isEmpty()) {
         ui->lJSShortcuts->setText("(no shortcuts defined)");
+        ui->lJSShortcuts->setVisible(false);
         return;
     }
+    ui->lJSShortcuts->setVisible(true);
     QString msg = "<html><head/><body><p>Javascript shortcuts<br>";
     QVariantMap::const_iterator i;
     for (i = shortcuts.constBegin(); i != shortcuts.constEnd(); ++i) {
@@ -2166,6 +2274,16 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
     mDoRepaint = true;
     QMainWindow::resizeEvent(event);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    // dynamic resize of the detail buttons for log filtering etc
+    if (event->type() == QEvent::Resize && obj == ui->dockLogviewer) {
+        QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event);
+        ui->logViewerDetailsPanel->setVisible(resizeEvent->size().height() > 200);
+    }
+    return QWidget::eventFilter(obj, event);
 }
 
 
@@ -2256,6 +2374,7 @@ void MainWindow::on_pbExecExpression_clicked()
     // just repaint...
     mDoRepaint = true;
     ui->PaintWidget->update();
+
 }
 
 void MainWindow::on_actionDynamic_Output_triggered()
@@ -2264,11 +2383,6 @@ void MainWindow::on_actionDynamic_Output_triggered()
     qDebug() << "copied dynamic output to clipboard";
 }
 
-void MainWindow::on_actionShow_Debug_Messages_triggered(bool checked)
-{
-    // enable/disble debug messages
-    showDebugMessages=checked;
-}
 
 void MainWindow::on_reloadJavaScript_clicked()
 {
@@ -2291,30 +2405,6 @@ void MainWindow::on_selectJavaScript_clicked()
     qDebug() << "loaded Javascript file" << fileName;
 
 }
-
-void MainWindow::on_scriptCommand_returnPressed()
-{
-    LogToWindow l; // force UI logging
-    QString command = ui->scriptCommand->text();
-    if (ui->scriptCommandHistory->currentText() != command) {
-        ui->scriptCommandHistory->insertItem(0, command);
-        ui->scriptCommandHistory->setCurrentIndex(0);
-    }
-
-    qDebug() << "executing" << command;
-    try {
-
-        QString result = ScriptGlobal::executeScript(command);
-        if (!result.isEmpty()) {
-            qDebug() << result;
-        }
-    } catch(const IException &e) {
-        Helper::msg(e.message());
-    }
-}
-
-
-
 
 
 void MainWindow::on_actionOutput_table_description_triggered()
@@ -2422,12 +2512,6 @@ void MainWindow::on_actionDebug_triggered()
 
 
 
-void MainWindow::on_scriptCommandHistory_currentIndexChanged(int index)
-{
-    if (index>=0)
-        ui->scriptCommand->setText(ui->scriptCommandHistory->itemText(index));
-}
-
 void MainWindow::writeSettings()
 {
     QSettings settings;
@@ -2435,14 +2519,6 @@ void MainWindow::writeSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
     settings.endGroup();
-    // javascript commands
-    settings.beginWriteArray("javascriptCommands");
-    int size = qMin(ui->scriptCommandHistory->count(), 15); // max 15 entries in the history
-    for (int i=0;i<size; ++i) {
-        settings.setArrayIndex(i);
-        settings.setValue("item", ui->scriptCommandHistory->itemText(i));
-    }
-    settings.endArray();
     settings.beginGroup("project");
     settings.setValue("lastxmlfile", ui->initFileName->text());
     settings.endGroup();
@@ -2467,13 +2543,6 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("MainWindow/geometry").toByteArray());
     restoreState(settings.value("MainWindow/windowState").toByteArray());
 
-    // read javascript commands
-    int size = settings.beginReadArray("javascriptCommands");
-    for (int i=0;i<size; ++i) {
-        settings.setArrayIndex(i);
-        ui->scriptCommandHistory->addItem(settings.value("item").toString());
-    }
-    settings.endArray();
     //recent files menu qsettings registry load
     settings.beginGroup("recent_files");
     for(int i = 0;i < settings.childKeys().size();i++){
@@ -2574,7 +2643,6 @@ void MainWindow::on_actionOpen_triggered()
         return;
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
-    ui->iniEdit->setPlainText(xmlFile);
     checkModelState();
 
 }
@@ -2613,6 +2681,10 @@ void MainWindow::on_lJSShortcuts_linkActivated(const QString &link)
     try {
 
         qDebug() << ScriptGlobal::executeScript(link);
+        if (!ScriptGlobal::lastErrorMessage().isEmpty()) {
+            Helper::msg(ScriptGlobal::lastErrorMessage());
+        }
+
 
     } catch(const IException &e) {
         Helper::msg(e.message());
@@ -2663,7 +2735,9 @@ void MainWindow::on_pbLoadTree_clicked()
         return;
 
     QJSEngine *engine = GlobalSettings::instance()->scriptEngine();
-    QStringList hideList = QStringList() << "Math" << "JSON" << "undefined" << "NaN" << "Infinity";
+    QStringList hideList = QStringList() << "Math" << "JSON" << "undefined" << "NaN"
+                                         << "Infinity" << "Atomics" << "Reflect"
+                                         << "console" << "Factory";
 
     QJSValue start;
     if (ui->lJSTree->text().isEmpty())
@@ -2717,7 +2791,7 @@ void MainWindow::on_pbLoadTree_clicked()
             QJSValueIterator *vi = iterators.pop();
             delete vi;
             js_obj.pop();
-            if (stack.size()==0)
+            if (stack.empty())
                 break;
         }
 
@@ -2762,4 +2836,5 @@ void MainWindow::on_speciesFilterBox_currentIndexChanged(int index)
     mDoRepaint = true;
     repaint();
 }
+
 

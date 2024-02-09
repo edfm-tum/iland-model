@@ -23,6 +23,7 @@
 #include "fmstand.h"
 #include "fomescript.h"
 #include "fmstp.h"
+#include "fmunit.h"
 
 namespace ABE {
 
@@ -60,8 +61,11 @@ void Agent::setup()
     mSchedulerOptions.setup( scheduler );
 
     FMSTP *stp = type()->stpByName("default");
-    if (!stp)
-        throw IException("Agent::setup(): default-STP not defined");
+    if (!stp) {
+        if (mName == "_default") // we do not care if the built-in default agent has an error
+            return;
+        throw IException("Agent::setup(): default-STP not defined. Could be due to a Javascript error.");
+    }
 
     QJSValue onSelect_handler = type()->jsObject().property("onSelect");
 

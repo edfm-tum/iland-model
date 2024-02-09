@@ -172,6 +172,7 @@ public:
     const FMSTP *program() const { return mProgram; }
     virtual QString type() const;
     QString name() const {return mName; } ///< name of the activity as provided by JS
+    QString description() const {return mDescription; } ///< additional description of the acitivity
     int index() const { return mIndex; } ///< index of the activity within the STP
     /// get earlist possible scheduled year (relative to rotation begin)
     int earliestSchedule(const double U=100.) const {return mSchedule.minValue(U); }
@@ -209,6 +210,7 @@ private:
     void setName(const QString &name) { mName = name; }
     int mIndex; ///< index of the activity within the STP
     QString mName; ///< the name of the activity;
+    QString mDescription; ///< a more detailed descrption of the activity
     const FMSTP *mProgram; // link to the management programme the activity is part of
     Schedule mSchedule; // timing of activity
     Constraints mConstraints; // constraining factors

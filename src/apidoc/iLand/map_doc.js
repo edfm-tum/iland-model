@@ -17,8 +17,7 @@ Example
     function loadMap()
     {
       var path = Globals.defaultDirectory("script"); // get project script folder; see also the "currentDir" property of "Globals". defaultDirectory() adds already a slash
-      // var stand_map = new Map(); // Qt4
-      var stand_map = Factory.newMap(); // Qt5
+      var stand_map = new Map();
       stand_map.load(path + "test.txt");
       // now load all trees on pixels with value '2020' in the "test.txt" grid
       management.loadFromMap(stand_map, 2020);
@@ -73,6 +72,21 @@ Map = {
     */
 
     /**
+    Registers the map with the user interface of iLand (https://iland-model.org/iLand+viewer). The map is added to the "Scripts" section of grids,
+    and iLand renders it when clicking on it. Default value range is set to min/max values within the grid.
+
+    @method registerUI
+    @param {string} name Name to use for the map in the UI. When blank, the file path is used (relative to the project folder)
+
+
+    @Example
+    // load a extra stand grid
+    var extra_stand_grid = new Map();
+    extra_stand_grid.load(Globals.path('gis/stand_grid2.asc'));
+    extra_stand_grid.registerUI();
+      */
+
+    /**
     Clear only the project area (set all cell values to 0), but do not affect pixels
     that are "outside of project area" (i.e., have values of -1 and -2).
     (see [Landscape setup](https://iland-model.org/Landscape+setup))
@@ -99,7 +113,7 @@ Map = {
         function random_circles()
         {
             if (map == undefined) {
-               map = Factory.newMap(); // create a new map
+               map = new Map(); // create a new map
                map.clear();
             }
             for (var i=1;i<10;++i) {

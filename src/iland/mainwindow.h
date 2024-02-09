@@ -93,6 +93,9 @@ public slots:
 
     void addLayers(const LayeredGridBase *layer, const QString &name);
 
+    void addPaintLayer(Grid<double> *dbl_grid, MapGrid* mapgrid, const QString name, GridViewType view_type=GridViewRainbow);
+    void removePaintLayer(Grid<double> *dbl_grid, MapGrid* mapgrid);
+
     void addPaintLayers(QObject *handler, const QStringList names, const QVector<GridViewType> view_types=QVector<GridViewType>());
     void removePaintLayers(QObject *handler);
 
@@ -107,6 +110,7 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *event);
     void resizeEvent(QResizeEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private:
     Ui::MainWindowClass *ui;
@@ -124,7 +128,9 @@ private:
     QLabel *mStatusLabel;
     QQuickView *mRuler;
     Colors *mRulerColors;
+    QString mLastPaintError;
     // setup
+
     void labelMessage(const QString message) { if (mStatusLabel) mStatusLabel->setText(message);}
     void setupModel();
     void readwriteCycle();
@@ -153,6 +159,7 @@ private:
     void showTreeDetails(Tree* tree);
     void showResourceUnitDetails(const ResourceUnit *ru);
     bool showABEDetails(const QPointF &coord);
+    void showRegenDetails(const QPointF &coord);
 
     void readSettings();
     void writeSettings();
@@ -173,6 +180,7 @@ private slots:
 
     void automaticRun(); ///< automatically start a simulation...
     void updateLabel(); ///< update UI labels during run
+    void checkExpressionError(); ///< show error message in case an error occured previously
 
     void on_actionWarning_triggered() { on_actionDebug_triggered(); }
     void on_actionError_triggered() { on_actionDebug_triggered(); }
@@ -194,9 +202,7 @@ private slots:
     void on_actionWater_Output_triggered();
     void on_actionStop_triggered();
     void on_actionPause_triggered();
-    void on_scriptCommand_returnPressed();
     void on_reloadJavaScript_clicked();
-    void on_actionShow_Debug_Messages_triggered(bool checked);
     void on_actionDynamic_Output_triggered();
     void on_pbExecExpression_clicked();
     void on_pbCalculateExpression_clicked();
@@ -215,7 +221,6 @@ private slots:
     void on_actionImageToClipboard_triggered();
     void on_initFileName_editingFinished();
     void on_openFile_clicked();
-    void on_pbSetAsDebug_clicked();
 
     void on_actionEdit_XML_settings_triggered();
     void on_actionSettingsDialog_triggered();
@@ -237,7 +242,6 @@ private slots:
     void on_visOtherGrid_clicked()  { on_visFon_toggled();    } // force repaint
     void on_visShading_clicked() {on_visFon_toggled();   }
     void on_actionPerformance_triggered();
-    void on_scriptCommandHistory_currentIndexChanged(int index);
     void on_actionTest_triggered();
     void on_pbReloadQml_clicked();
     void on_actionExit_triggered();
@@ -254,6 +258,7 @@ private slots:
     void on_otherGridTree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
     void on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_speciesFilterBox_currentIndexChanged(int index);
+    void on_visRUSpeciesColor_stateChanged(int arg1) {on_visFon_toggled();  } // force repaint
 };
 
 #endif // MAINWINDOW_H

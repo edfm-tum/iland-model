@@ -33,6 +33,7 @@
 #include "fomescript.h"
 #include "saplings.h"
 #include "scriptgrid.h"
+#include "patch.h"
 
 namespace ABE {
 
@@ -116,6 +117,33 @@ int FMTreeList::loadFromRU(ResourceUnit *ru, bool append)
 
 }
 
+void FMTreeList::addToScriptEngine(QJSEngine *engine)
+{
+    QJSValue jsMetaObject = engine->newQMetaObject(&ABE::FMTreeList::staticMetaObject);
+    engine->globalObject().setProperty("TreeList", jsMetaObject);
+
+}
+
+int FMTreeList::loadFromPatch(int patchId, bool append)
+{
+    if (!append)
+        mTrees.clear();
+    // test
+    for (auto tp : mTrees) {
+        int patch = mStand->patches()->patch(tp.first->positionIndex());
+        qDebug() << "Tree position: " << tp.first->positionIndex() << " - patch: " << patch;
+    }
+    return mTrees.size();
+
+}
+
+int FMTreeList::loadFromList(FMTreeList *from, QString filter_cond)
+{
+    setStand(from->mStand);
+    mTrees = from->mTrees; // copy trees from the source list. With Qt copy on write semantic, a deep copy happens when this list is changed
+    return filter(filter_cond);
+}
+
 
 
 int FMTreeList::load(const QString &filter)
@@ -174,6 +202,41 @@ int FMTreeList::filter(QString filter)
     if (logLevelDebug())
         qDebug() << "apply filter" << filter << ", removed" << n_rem;
     return mTrees.size();
+}
+
+int FMTreeList::filterRandomExclude(int N)
+{
+    int to_remove = mTrees.size() - N;
+    return filterRandom(to_remove);
+}
+
+int FMTreeList::filterRandom(int n_remove)
+{
+    QPair<Tree*, double> empty_tree(nullptr,0.);
+
+    if (n_remove <= 0)
+        return 0;
+    double p_remove = n_remove / double(mTrees.size());
+    int removed = 0;
+    int n_loops = 0;
+    while (removed < n_remove) {
+        for (int i=0;i<mTrees.size() && removed<n_remove;++i) {
+            if (mTrees[i].first) {
+                if (drandom() < p_remove) {
+                    mTrees[i] = empty_tree;
+                    ++removed;
+                }
+            }
+        }
+        ++n_loops;
+        if (n_loops > 10)
+            break;
+    }
+    mTrees.removeAll(empty_tree);
+    if (logLevelDebug())
+        qDebug() << "random selection: number of loops: " << n_loops << ", to remove: " << n_remove << ", removed" << removed;
+    return removed;
+
 }
 
 int FMTreeList::spatialFilter(QJSValue grid, QString filter)
@@ -669,7 +732,7 @@ void FMTreeList::prepareLocalGrid(QString type, QString custom_expression)
         mRunGridCustomCell = mRunGridCustom->addVar("cell");
         runGrid(&rungrid_custom);
         delete mRunGridCustom;
-        mRunGridCustom = 0;
+        mRunGridCustom = nullptr;
         return;
     }
     qCDebug(abe) << "FMTreeList: invalid type for prepareStandGrid: " << type;
@@ -691,6 +754,18 @@ QJSValue FMTreeList::localGrid()
 
     QJSValue g = ScriptGrid::createGrid(dgrid, "local");
     return g;
+}
+
+QJSValue FMTreeList::local10Grid()
+{
+    Grid<double> *dgrid = new Grid<double>(mStandGrid.metricRect(), mStandGrid.cellsize());
+    double *p=dgrid->begin();
+    for (float *s=mStandGrid.begin(); s!=mStandGrid.end(); ++s,++p)
+        *p = *s;
+
+    QJSValue g = ScriptGrid::createGrid(dgrid, "local10");
+    return g;
+
 }
 
 int FMTreeList::killSaplings(QString expression)

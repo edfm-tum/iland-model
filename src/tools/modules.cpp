@@ -42,6 +42,12 @@ Modules::Modules()
     init();
 }
 
+Modules::~Modules()
+{
+    qDeleteAll(mInterfaces);
+    mInterfaces.clear();
+}
+
 // load the static plugins
 void Modules::init()
 {

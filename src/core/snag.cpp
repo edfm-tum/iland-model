@@ -216,14 +216,17 @@ double Snag::calculateClimateFactors()
         else
             ratio = 0;
         fw_month[m] = 1. / (1. + 30.*exp(-8.5*ratio));
-        if (logLevelDebug()) qDebug() <<"month"<< m << "PET" << mRU->waterCycle()->referenceEvapotranspiration()[m] << "prec" <<mRU->climate()->precipitationMonth()[m];
+        //if (logLevelDebug()) qDebug() <<"month"<< m << "PET" << mRU->waterCycle()->referenceEvapotranspiration()[m] << "prec" <<mRU->climate()->precipitationMonth()[m];
     }
+
+    bool use_microclimate = Model::settings().microclimateEnabled && mRU->microClimate()->settings().decomposition_effect;
 
     for (const ClimateDay *day=mRU->climate()->begin(); day!=mRU->climate()->end(); ++day, ++iday)
     {
         double temp_day = day->temperature;
-        if (Model::settings().microclimateEnabled) {
-            double mc_mean_buffer = mRU->microClimate()->meanMicroclimateBufferingRU(iday);
+        if (use_microclimate) {
+            double mc_mean_buffer = mRU->microClimate()->meanMicroclimateBufferingRU(day->month - 1);
+
             temp_day += mc_mean_buffer;
         }
         // empirical variable Q10 model of Lloyd and Taylor (1994), see also Adair et al. (2008)

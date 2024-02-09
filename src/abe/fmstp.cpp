@@ -61,7 +61,7 @@ bool activityScheduledEarlier(const Activity *a, const Activity *b)
     return a->earliestSchedule() < b->earliestSchedule();
 }
 
-void FMSTP::setup(QJSValue &js_value, const QString name)
+void FMSTP::setup(QJSValue &js_value, const QString &name)
 {
     clear();
 
@@ -139,11 +139,18 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
             it.next();
             // parse special properties
             if (it.name()=="U" && it.value().isArray()) {
-                QVariantList list = it.value().toVariant().toList();
-                if (list.length()!=3)
-                    throw IException("STP: the 'U'-property needs to be an array with three elements!");
-                for (int i=0;i<list.length();++i)
-                    mRotationLength[i] = list.at(i).toInt();
+                if (it.value().isArray()) {
+                    QVariantList list = it.value().toVariant().toList();
+                    if (list.length()!=3)
+                        throw IException("STP: the 'U'-property needs to be an array with three elements!");
+                    for (int i=0;i<list.length();++i)
+                        mRotationLength[i] = list.at(i).toInt();
+                } else {
+                    // if U is not an array, use only the single value
+                    int u = it.value().toInt();
+                    for (int i=0;i<3;++i)
+                        mRotationLength[i] = u;
+                }
                 continue;
             }
             if (it.name()=="options") {
@@ -169,20 +176,20 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
 }
 
 
-void FMSTP::dumpInfo()
+QString FMSTP::info()
 {
-    if (!abe().isDebugEnabled())
-        return;
-    qCDebug(abe) << " ***************************************";
-    qCDebug(abe) << " **************** Program dump for:" << name();
-    qCDebug(abe) << " ***************************************";
+    QStringList lines;
+    lines << " ***************************************";
+    lines << " **************** Program dump for:" << name();
+    lines << " ***************************************";
     foreach(Activity *act, mActivities) {
-        qCDebug(abe) << "******* Activity *********";
+        lines << "******* Activity *********";
         QString info =  act->info().join('\n');
-        qCDebug(abe) << info;
-
+        lines << info;
     }
+    return lines.join('\n');
 }
+
 
 void FMSTP::setupActivity(const QJSValue &js_value, const QString &name)
 {

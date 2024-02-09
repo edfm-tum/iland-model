@@ -31,7 +31,7 @@ class FirePlugin: public QObject,
 {
     Q_OBJECT
     #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "at.ac.boku.iland.fireplugin" FILE  "fireplugin.json")
+    Q_PLUGIN_METADATA(IID "org.iland-model.fireplugin" FILE  "fireplugin.json")
     #endif
     Q_INTERFACES(DisturbanceInterface WaterInterface SetupResourceUnitInterface)
 

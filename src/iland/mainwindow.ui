@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1030</width>
-    <height>861</height>
+    <width>1065</width>
+    <height>958</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,8 +57,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1030</width>
-     <height>17</height>
+     <width>1065</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -74,14 +74,11 @@
      <addaction name="actionWarning"/>
      <addaction name="actionError"/>
     </widget>
-    <addaction name="actionTreelist"/>
-    <addaction name="actionFON_grid"/>
     <addaction name="actionOutput_table_description"/>
     <addaction name="actionTimers"/>
     <addaction name="menuLog_Level"/>
     <addaction name="separator"/>
     <addaction name="actionImageToClipboard"/>
-    <addaction name="actionSave_regeneration_grid"/>
     <addaction name="actionTest"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -91,11 +88,10 @@
     <addaction name="actionRepaint"/>
     <addaction name="actionShow_full_extent"/>
     <addaction name="separator"/>
-    <addaction name="actionShow_Debug_Messages"/>
    </widget>
    <widget class="QMenu" name="menuDebug_Data">
     <property name="title">
-     <string>Debug Data</string>
+     <string>Debug data</string>
     </property>
     <addaction name="actionSelect_Data_Types"/>
     <addaction name="actionClearDebugOutput"/>
@@ -131,6 +127,9 @@
      <addaction name="action_4"/>
      <addaction name="action_5"/>
      <addaction name="action_6"/>
+     <addaction name="actionaction_7"/>
+     <addaction name="actionaction_8"/>
+     <addaction name="actionaction_9"/>
     </widget>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
@@ -173,17 +172,17 @@
    <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QDockWidget" name="dockEditor">
+  <widget class="QDockWidget" name="dockLegend">
    <property name="windowTitle">
-    <string>Main</string>
+    <string>Legend</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_3">
-    <layout class="QVBoxLayout" name="verticalLayout_5">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <property name="spacing">
-      <number>0</number>
+      <number>3</number>
      </property>
      <property name="leftMargin">
       <number>3</number>
@@ -198,514 +197,78 @@
       <number>3</number>
      </property>
      <item>
-      <widget class="QTabWidget" name="editStack">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="leftMargin">
+        <number>6</number>
        </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
+       <property name="rightMargin">
+        <number>3</number>
        </property>
-       <property name="styleSheet">
-        <string notr="true">@
-QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: none; }
-@</string>
-       </property>
-       <property name="currentIndex">
+       <item>
+        <widget class="QLineEdit" name="initFileName">
+         <property name="toolTip">
+          <string>Name of the XML project file </string>
+         </property>
+         <property name="text">
+          <string>fon.xml</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="openFile">
+         <property name="toolTip">
+          <string>Select a project file </string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="res/iland.qrc">
+           <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>16</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="checkXMLFile">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check the XML project file (results in log)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="res/iland.qrc">
+           <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>16</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="qmlRulerLayout">
+       <property name="spacing">
         <number>0</number>
        </property>
-       <widget class="QWidget" name="editStackMain">
-        <attribute name="title">
-         <string>Main</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,2,10">
-         <item>
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>iLand project file</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLineEdit" name="initFileName">
-             <property name="text">
-              <string>fon.xml</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="openFile">
-             <property name="toolTip">
-              <string>Select a project file </string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="res/iland.qrc">
-               <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>16</width>
-               <height>16</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="checkXMLFile">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check the XML project file (results in log)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="res/iland.qrc">
-               <normaloff>:/camera.png</normaloff>:/camera.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>16</width>
-               <height>16</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTextEdit" name="iniEdit">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>1000</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="lineWrapMode">
-            <enum>QTextEdit::NoWrap</enum>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="qmlRulerLayout">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QPushButton" name="pbReloadQml">
-             <property name="text">
-              <string>reload</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="scriptPage">
-        <attribute name="title">
-         <string>Scripting</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_8">
-         <item>
-          <widget class="QLabel" name="scriptActiveScriptFile">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>loaded: -</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QToolButton" name="selectJavaScript">
-             <property name="toolTip">
-              <string>Select a javascript file and load it.</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="res/iland.qrc">
-               <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="reloadJavaScript">
-             <property name="text">
-              <string>reload script</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>Clear Output</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_5">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Below is a minimalistic Javascript Editor.&lt;/p&gt;&lt;p&gt;Use Ctrl+Enter to execute the current line of code, or a selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Enter Javascript (Ctrl+Enter to execute):</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="JSTextArea" name="scriptCode"/>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="scriptCommand">
-           <property name="placeholderText">
-            <string>... enter javascript and press Enter</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>or select from the command history:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="scriptCommandHistory"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="lJSShortcuts">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(no shortcuts defined)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="textFormat">
-            <enum>Qt::RichText</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="JSExplorerPage">
-        <attribute name="title">
-         <string>JSExplore</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <item>
-          <widget class="QGroupBox" name="groupBox_2">
-           <property name="title">
-            <string>type top node</string>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <property name="leftMargin">
-             <number>3</number>
-            </property>
-            <property name="topMargin">
-             <number>3</number>
-            </property>
-            <property name="rightMargin">
-             <number>3</number>
-            </property>
-            <property name="bottomMargin">
-             <number>3</number>
-            </property>
-            <item>
-             <widget class="QLineEdit" name="lJSTree">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;type a valid javascript object and click 'show'. If empty, all elements of the global Javascript context are shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pbLoadTree">
-              <property name="maximumSize">
-               <size>
-                <width>40</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Show</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTreeWidget" name="JSTree">
-           <property name="columnCount">
-            <number>2</number>
-           </property>
-           <column>
-            <property name="text">
-             <string>Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Value</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="editStackExpressions">
-        <attribute name="title">
-         <string>Expressions</string>
-        </attribute>
-        <layout class="QFormLayout" name="formLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Filter expression</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLineEdit" name="expressionFilter"/>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="cbDrawFiltered">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;when checked, only &amp;quot;filtered&amp;quot; trees are drawn in the main visualization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>draw filtered</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Aggregate Expression</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLineEdit" name="expressionText"/>
-         </item>
-         <item row="3" column="1">
-          <widget class="QPushButton" name="pbCalculateExpression">
-           <property name="text">
-            <string>calculate</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Expression history</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0" colspan="2">
-          <widget class="QListWidget" name="expressionHistory"/>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="editOtherFunctions">
-        <attribute name="title">
-         <string>Other</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QTabWidget" name="tabRest">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>2</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <widget class="QWidget" name="tab_2">
-            <attribute name="title">
-             <string>Stamping</string>
-            </attribute>
-            <widget class="QPushButton" name="stampTrees">
-             <property name="geometry">
-              <rect>
-               <x>90</x>
-               <y>10</y>
-               <width>91</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>stamp trees</string>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="fonRun">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>10</y>
-               <width>75</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>Setup FON</string>
-             </property>
-            </widget>
-            <widget class="QGroupBox" name="gEditTree_2">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>40</y>
-               <width>268</width>
-               <height>121</height>
-              </rect>
-             </property>
-             <property name="title">
-              <string>Edit tree</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_2">
-              <item row="0" column="0" rowspan="2">
-               <widget class="QDoubleSpinBox" name="treeDbh">
-                <property name="toolTip">
-                 <string>diameter (cm)</string>
-                </property>
-                <property name="maximum">
-                 <double>299.990000000000009</double>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1" rowspan="2">
-               <widget class="QDoubleSpinBox" name="treeHeight">
-                <property name="toolTip">
-                 <string>Height [m]</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="treeChange">
-                <property name="text">
-                 <string>Change</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2" rowspan="2">
-               <widget class="QPushButton" name="pbSetAsDebug">
-                <property name="text">
-                 <string>debug tree</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QDoubleSpinBox" name="treePosX"/>
-              </item>
-              <item row="2" column="1">
-               <widget class="QDoubleSpinBox" name="treePosY"/>
-              </item>
-              <item row="3" column="0" colspan="2">
-               <widget class="QLabel" name="treeImpact">
-                <property name="text">
-                 <string>(value)</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QPushButton" name="pbResults">
-             <property name="geometry">
-              <rect>
-               <x>180</x>
-               <y>10</y>
-               <width>71</width>
-               <height>23</height>
-              </rect>
-             </property>
-             <property name="toolTip">
-              <string>copies tree results in clipboard.</string>
-             </property>
-             <property name="text">
-              <string>Results</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="lRedraws">
-             <property name="geometry">
-              <rect>
-               <x>70</x>
-               <y>170</y>
-               <width>91</width>
-               <height>20</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>-</string>
-             </property>
-            </widget>
-            <widget class="QLabel" name="label_6">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>170</y>
-               <width>51</width>
-               <height>16</height>
-              </rect>
-             </property>
-             <property name="text">
-              <string>#redraws:</string>
-             </property>
-            </widget>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="pbReloadQml">
+         <property name="text">
+          <string>reload</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QProgressBar" name="modelRunProgress">
@@ -774,62 +337,76 @@ QProgressBar::chunk {
       <number>0</number>
      </property>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Filter:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="logFilterExpression"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pbFilterExecute">
-         <property name="text">
-          <string>Filter</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pbLogFilterClear">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Clear Filter</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pbLogClearText">
-         <property name="text">
-          <string>clear Text</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pbLogToClipboard">
-         <property name="text">
-          <string>Copy to clipboard</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QWidget" name="logViewerDetailsPanel" native="true">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="leftMargin">
+         <number>3</number>
+        </property>
+        <property name="topMargin">
+         <number>3</number>
+        </property>
+        <property name="rightMargin">
+         <number>3</number>
+        </property>
+        <property name="bottomMargin">
+         <number>3</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Filter:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="logFilterExpression"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbFilterExecute">
+          <property name="text">
+           <string>Filter</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbLogFilterClear">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Clear Filter</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>333</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbLogClearText">
+          <property name="text">
+           <string>clear Text</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbLogToClipboard">
+          <property name="text">
+           <string>Copy to clipboard</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
      <item>
       <widget class="QPlainTextEdit" name="logOutput">
@@ -847,21 +424,51 @@ QProgressBar::chunk {
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="dockVisualization">
    <property name="windowTitle">
-    <string>Console</string>
+    <string>Visualization Options</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
-        <string>Visualization Options</string>
+        <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>3</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>3</number>
+        </property>
+        <property name="horizontalSpacing">
+         <number>0</number>
+        </property>
+        <property name="verticalSpacing">
+         <number>1</number>
+        </property>
         <item row="19" column="0" colspan="3">
          <widget class="QLabel" name="fonValue">
           <property name="text">
@@ -948,7 +555,7 @@ QProgressBar::chunk {
         <item row="6" column="1">
          <widget class="QCheckBox" name="visRUSpeciesColor">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, species domiance on resource unit level is shown. If a species is selected in the dropdown box below, then basal aera of the selected species is drawn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, species dominance on resource unit level is shown. If a species is selected in the dropdown box below, then basal aera of the selected species is drawn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>species shares</string>
@@ -1094,10 +701,10 @@ QProgressBar::chunk {
     <bool>false</bool>
    </property>
    <property name="windowTitle">
-    <string>Data</string>
+    <string>View Details</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>2</number>
+    <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_4">
     <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -1133,15 +740,263 @@ QProgressBar::chunk {
     </layout>
    </widget>
   </widget>
-  <action name="actionEdit_XML_settings">
-   <property name="icon">
-    <iconset resource="res/iland.qrc">
-     <normaloff>:/source_xml.png</normaloff>:/source_xml.png</iconset>
+  <widget class="QDockWidget" name="dockJavascriptEditor">
+   <property name="floating">
+    <bool>false</bool>
    </property>
-   <property name="text">
-    <string>XML settings</string>
+   <property name="windowTitle">
+    <string>Javascript Editor</string>
    </property>
-  </action>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_5">
+    <layout class="QVBoxLayout" name="verticalLayout_9">
+     <property name="spacing">
+      <number>3</number>
+     </property>
+     <property name="leftMargin">
+      <number>2</number>
+     </property>
+     <property name="topMargin">
+      <number>3</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <property name="leftMargin">
+        <number>3</number>
+       </property>
+       <property name="rightMargin">
+        <number>3</number>
+       </property>
+       <item>
+        <widget class="QToolButton" name="selectJavaScript">
+         <property name="toolTip">
+          <string>Select a javascript file and load it.</string>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="res/iland.qrc">
+           <normaloff>:/document-open.png</normaloff>:/document-open.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="scriptActiveScriptFile">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>loaded: -</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="reloadJavaScript">
+         <property name="toolTip">
+          <string>reload Javascript file</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="res/iland.qrc">
+           <normaloff>:/Backup Green Button.png</normaloff>:/Backup Green Button.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Below is a minimalistic Javascript Editor.&lt;/p&gt;&lt;p&gt;Use Ctrl+Enter to execute the current line of code, or a selection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>  Enter Javascript (Ctrl+Enter to execute):</string>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="JSTextArea" name="scriptCode"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="lJSShortcuts">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(no shortcuts defined)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockJavascriptWorkspace">
+   <property name="windowTitle">
+    <string>Javascript Workspace</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_6">
+    <layout class="QVBoxLayout" name="verticalLayout_10">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>3</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>3</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="lJSTree">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;type a valid javascript object and click 'show'. If empty, all elements of the global Javascript context are shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbLoadTree">
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Show</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTreeWidget" name="JSTree">
+       <property name="columnCount">
+        <number>2</number>
+       </property>
+       <column>
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Value</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockTreeExpression">
+   <property name="windowTitle">
+    <string>Aggregate tree expression</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_7">
+    <layout class="QVBoxLayout" name="verticalLayout_7">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Filter expression</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="cbDrawFiltered">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;when checked, only &amp;quot;filtered&amp;quot; trees are drawn in the main visualization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>draw filtered</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="expressionFilter"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Aggregate Expression</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbCalculateExpression">
+       <property name="text">
+        <string>calculate</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="expressionText"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Expression history</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QListWidget" name="expressionHistory"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionTreelist">
    <property name="text">
     <string>treelist</string>
@@ -1222,17 +1077,6 @@ QProgressBar::chunk {
     <string>Dynamic Output</string>
    </property>
   </action>
-  <action name="actionShow_Debug_Messages">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show Debug Messages</string>
-   </property>
-  </action>
   <action name="actionPause">
    <property name="icon">
     <iconset resource="res/iland.qrc">
@@ -1263,7 +1107,7 @@ QProgressBar::chunk {
   </action>
   <action name="actionTimers">
    <property name="text">
-    <string>Timers</string>
+    <string>Log timers</string>
    </property>
   </action>
   <action name="actionOnline_ressources">
@@ -1444,13 +1288,19 @@ QProgressBar::chunk {
     <string>Save regeneration grid</string>
    </property>
   </action>
-  <action name="actionSettingsDialog">
-   <property name="icon">
-    <iconset resource="res/iland.qrc">
-     <normaloff>:/load-settings.png</normaloff>:/load-settings.png</iconset>
-   </property>
+  <action name="actionaction_7">
    <property name="text">
-    <string>Settings Dialog</string>
+    <string>action_7</string>
+   </property>
+  </action>
+  <action name="actionaction_8">
+   <property name="text">
+    <string>action_8</string>
+   </property>
+  </action>
+  <action name="actionaction_9">
+   <property name="text">
+    <string>action_9</string>
    </property>
   </action>
  </widget>
@@ -1472,22 +1322,6 @@ QProgressBar::chunk {
   <include location="res/iland.qrc"/>
  </resources>
  <connections>
-  <connection>
-   <sender>logFilterExpression</sender>
-   <signal>returnPressed()</signal>
-   <receiver>pbFilterExecute</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>358</x>
-     <y>659</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>439</x>
-     <y>661</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>visSpeciesColor</sender>
    <signal>clicked()</signal>
@@ -1517,22 +1351,6 @@ QProgressBar::chunk {
     <hint type="destinationlabel">
      <x>864</x>
      <y>242</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>lJSTree</sender>
-   <signal>returnPressed()</signal>
-   <receiver>pbLoadTree</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>111</x>
-     <y>164</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>177</x>
-     <y>166</y>
     </hint>
    </hints>
   </connection>

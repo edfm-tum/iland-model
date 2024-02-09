@@ -43,7 +43,9 @@ public:
     bool loadFromFile(const QString &fileName);
     // create and fill grids for aspect/slope
     void createSlopeGrid() const;
+    /// grid with aspect, i.e. slope direction in degrees (0: North, 90: east, 180: south, 270: west)
     const FloatGrid *aspectGrid() const { createSlopeGrid(); return &aspect_grid; }
+    /// grid with slope, given as slope angle as percentage (i.e: 1:=45 degrees)
     const FloatGrid *slopeGrid() const { createSlopeGrid(); return &slope_grid; }
     const FloatGrid *viewGrid() const { createSlopeGrid(); return &view_grid; }
     // special functions for DEM

@@ -12,7 +12,7 @@ QT += concurrent
 TARGET = iland
 TEMPLATE = app
 CONFIG += precompile_header
-
+CONFIG += c++17
 #LIBS += -lQt5Concurrent
 
 # includepath: adds directories to the standard include (no directory needed when #include a file).
@@ -85,6 +85,7 @@ PRE_TARGETDEPS += ../plugins/iland_fire.lib
 PRE_TARGETDEPS += ../plugins/iland_wind.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
+
 }
 }
 
@@ -110,6 +111,8 @@ DEFINES += NO_DEBUG_MSGS
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER = stable.h
 SOURCES += main.cpp \
+    ../abe/patch.cpp \
+    ../abe/patches.cpp \
     ../core/microclimate.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
@@ -237,6 +240,8 @@ SOURCES += main.cpp \
     ui/settingsdialog.cpp
 
 HEADERS += mainwindow.h \
+    ../abe/patch.h \
+    ../abe/patches.h \
     ../core/microclimate.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
@@ -395,6 +400,7 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \
     ../apidoc/iLand/map_doc.js \

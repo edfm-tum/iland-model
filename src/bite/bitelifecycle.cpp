@@ -107,10 +107,12 @@ void BiteLifeCycle::run()
     if (mMortality.isConst())
         return;
 
+
     BiteCell **cell = agent()->grid().begin();
     for (; cell !=agent()->grid().end(); ++cell) {
         if (*cell && (*cell)->isActive()) {
-
+            (*cell)->setTreesLoaded(false);
+            (*cell)->setSaplingsLoaded(false);
             if (mMortality.evaluateBool(*cell)) {
                 (*cell)->die();
             }

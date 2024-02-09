@@ -60,6 +60,7 @@ class PaintArea : public QWidget
 
 signals:
      void needsPainting(QPainter &painter);
+    void doRepaint();
      void mouseClick(const QPoint &pos);
      void mouseDrag(const QPoint &from, const QPoint &to, Qt::MouseButton mouseButton);
      void mouseMove(const QPoint &pos);
