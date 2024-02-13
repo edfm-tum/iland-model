@@ -164,15 +164,14 @@ output.abeStandDetail.condition = string|mod(year,10)=1|ABE Standdetail eval. co
 
 
 ; system
-gui.layout = tab|tabPath|Path settings|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory.
+gui.layout = tab|tabPath|Path settings|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. 
 system.path.home = path|project's home directory|Home|The project's home directory. If empty, the directory containing the project file is the home folder.
-system.path.database = path|database directory|Database|Default: "database"
+system.path.database = path|database directory|Database|Directory containing the databases. Default: "database"
 system.path.lip = path|LIP file directory|LIP files|Directory containing the binary LIP files. Default: "lip" 
+system.path.output = path|output directory|Output|Default path for the output database(s). Default: "output"
 system.path.temp = string|string|string|string
 system.path.script = string|string|string|string
 system.path.init = string|string|string|string
-system.path.output = path|output directory|Output|Default path for the output database(s). Default: "output"
-system.path = string|string|string|string
 gui.layout = tab|tabDatabase|Database|iLand uses primarily the SQLite database system, which stores all tables of a database within a single database file. This database files are considered to be located in the database location defined in the path section. 
 system.database.in = path|input database file|Input|Defines the input database. Stored in this database are e.g. species parameter.
 system.database.out = path|output database file|Output|Results (see Outputs) are written to this database.
@@ -200,70 +199,120 @@ system.javascript.fileName = string|javascript file name|File name|The filename 
 
 ; model.settings
 ; model = string|string|string|string
-gui.layout = tab|tabGeneral
-model.settings.regenerationEnabled = string|string|string|string
-model.settings.mortalityEnabled = string|string|string|string
-model.settings.growthEnabled = string|string|string|string
-model.settings.carbonCycleEnabled = string|string|string|string
-model.settings.epsilon = string|string|string|string
-model.settings.lightExtinctionCoefficient = string|string|string|string
-model.settings.lightExtinctionCoefficientOpacity = string|string|string|string
-model.settings.temperatureTau = string|string|string|string
-model.settings.airDensity = string|string|string|string
-model.settings.laiThresholdForClosedStands = string|string|string|string
-model.settings.boundaryLayerConductance = string|string|string|string
-model.settings.interceptionStorageNeedle = string|string|string|string
-model.settings.interceptionStorageBroadleaf = string|string|string|string
-model.settings.snowMeltTemperature = string|string|string|string
-model.settings.waterUseSoilSaturation = string|string|string|string
-model.settings.groundVegetationLAI = string|string|string|string
-model.settings.groundVegetationPsiMin = string|string|string|string
-model.settings.usePARFractionBelowGroundAllocation = string|string|string|string
-gui.layout = tab|tabSeedDispersal
-model.settings.seedDispersal.seedBelt.enabled = string|string|string|string
-model.settings.seedDispersal.seedBelt.width = string|string|string|string
-model.settings.seedDispersal.seedBelt.sizeX = string|string|string|string
-model.settings.seedDispersal.seedBelt.sizeY = string|string|string|string
-model.settings.seedDispersal.seedBelt = string|string|string|string
-model.settings.seedDispersal.dumpSeedMapsEnabled = string|string|string|string
-model.settings.seedDispersal.dumpSeedMapsPath = string|string|string|string
-model.settings.seedDispersal.externalSeedEnabled = string|string|string|string
-model.settings.seedDispersal.externalSeedSource = string|string|string|string
-model.settings.seedDispersal.externalSeedSpecies = string|string|string|string
-model.settings.seedDispersal.externalSeedBuffer = string|string|string|string
-model.settings.seedDispersal.externalSeedBackgroundInput = string|string|string|string
-model.settings.seedDispersal.recruitmentDimensionVariation = string|string|string|string
-model.settings.seedDispersal.longDistanceDispersal.rings = string|string|string|string
-model.settings.seedDispersal.longDistanceDispersal.thresholdArea = string|string|string|string
-model.settings.seedDispersal.longDistanceDispersal.thresholdLDD = string|string|string|string
-model.settings.seedDispersal.longDistanceDispersal.LDDSeedlings = string|string|string|string
-model.settings.seedDispersal.longDistanceDispersal = string|string|string|string
-model.settings.seedDispersal = string|string|string|string
-gui.layout = tab|tabSoil
-model.settings.soil.qb = string|string|string|string
-model.settings.soil.qh = string|string|string|string
-model.settings.soil.leaching = string|string|string|string
-model.settings.soil.el = string|string|string|string
-model.settings.soil.er = string|string|string|string
-model.settings.soil.swdDBHClass12 = string|string|string|string
-model.settings.soil.swdDBHClass23 = string|string|string|string
-model.settings.soil.useDynamicAvailableNitrogen = string|string|string|string
-model.settings.soil.nitrogenDeposition = string|string|string|string
-model.settings.soil = string|string|string|string
-gui.layout = tab|tabGrass
-model.settings.grass.enabled = string|string|string|string
-model.settings.grass.type = string|string|string|string
-model.settings.grass.grassDuration = string|string|string|string
-model.settings.grass.LIFThreshold = string|string|string|string
-model.settings.grass.grassPotential = string|string|string|string
-model.settings.grass.maxTimeLag = string|string|string|string
-model.settings.grass.grassEffect = string|string|string|string
-model.settings.grass = string|string|string|string
-gui.layout = tab|tabBrowsing
-model.settings.browsing.enabled = string|string|string|string
-model.settings.browsing.browsingPressure = string|string|string|string
-model.settings.browsing = string|string|string|string
-; model.settings = string|string|string|string
+
+gui.layout = tab|tabModel|Model Settings
+gui.layout = layout|hl
+gui.layout = group|General switches
+model.settings.regenerationEnabled = connected|Enable Regeneration
+model.settings.mortalityEnabled = connected|Enable Mortality
+model.settings.growthEnabled = connected|Enable Growth
+model.settings.carbonCycleEnabled = connected|Enable Carbon Cycle
+gui.layout = layout|hl
+gui.layout = group|Seed Dispersal
+model.settings.seedDispersal.dumpSeedMapsEnabled = connected|Enable Dump Seed Maps
+model.settings.seedDispersal.externalSeedEnabled = connected|Enable External Seeds
+model.settings.seedDispersal.seedBelt.enabled = connected|Enable Seed Belt
+gui.layout = layout|hl
+gui.layout = group|Grass & Browsing
+model.settings.grass.enabled = connected|Enable Grass
+model.settings.browsing.enabled = connected|Enable Browsing
+gui.layout = layout|hl
+gui.layout = group|Management & ABE
+model.management.enabled = connected|Enable Management 
+model.management.abeEnabled = connected|Enable ABE Management
+
+
+gui.layout = tab|tabGlobalSettings|Global Settings|In this global model settings can be set.
+gui.layout = layout|hl
+gui.layout = group|General switches
+model.settings.regenerationEnabled = boolean|false|Regeneration|If true, the regeneration submodule is enabled (seed production, seed dispersal, establishment, sapling growth, recruitment).
+model.settings.mortalityEnabled = boolean|true|Mortality|If false, tree mortaliy (intrinsic and stress related) will not be executed. Management works.
+model.settings.growthEnabled = boolean|true|Growth|If false, trees will apply/read light patterns, but do not grow.
+model.settings.carbonCycleEnabled = boolean|false|Carbon Cycle|If true, the snag dynamics and soil CN cycling sub-modules are enabled.
+
+gui.layout = layout|hl
+gui.layout = group|Light calculations
+model.settings.lightExtinctionCoefficient = numeric|0.5|Light Extinction Coefficient|"k" parameter (beer lambert) used for calc. of absorbed light on resourceUnit level
+model.settings.lightExtinctionCoefficientOpacity = numeric|0.5|Light Extinction Coefficient Opacity|"k" for beer lambert used for opacity of single trees
+model.settings.temperatureTau = numeric|300|Temperature tau|"tau"-value for delayed temperature calculation acc. to Mäkela 2008
+
+gui.layout = layout|hl
+gui.layout = group|Production
+model.settings.epsilon = numeric|1.8|Epsilon|3PG's maximum efficiency in GPP production (default value: 1.8).
+model.settings.usePARFractionBelowGroundAllocation = boolean|true|Use PAR Fraction Below Ground Allocation|Changes the behavior of belowground allocation. If true, the ratio of utilized total radiation is used, otherwise this ratio is considered to be 1. (default=true)
+
+gui.layout = layout|hl
+gui.layout = group|Water cycle
+model.settings.airDensity = numeric|1|Air density|Density of air [kg/m3]
+model.settings.laiThresholdForClosedStands = numeric|3|LAI Threshold Closed Stands|For the calculation of the maximum canopy conductance a ramp is assumed for LAI values below this threshold. Default: 3
+model.settings.boundaryLayerConductance = numeric|0.2|Boundary Layer Conductance|Boundary layer conductance for the evaporation calculation. Default value: 0.2 m/s
+model.settings.waterUseSoilSaturation = boolean|false|Water Use Soil Saturation|If true, plants can access the water up to the saturation point (0kPa). If false, the accessible water is limited with the field capacity (-15kPa). Default is false.
+model.settings.interceptionStorageNeedle = numeric|4|string|Asymptotic crown storage capacity for intercepted rain water of confiers. (default: 4).
+model.settings.interceptionStorageBroadleaf = numeric|2|string|Asymptotic crown storage capacity for intercepted rain water of deciduous trees. (default: 2).
+model.settings.snowMeltTemperature = numeric|0|Snow Melt Temperature|Threshold temperature for snow (degree Celsius). Precipitation on days with mean temperature below this threshold is modeled as snow; snow melts at mean temperatures above the threshold. default: 0°C.
+model.settings.groundVegetationLAI = numeric|1|string|string
+model.settings.groundVegetationPsiMin = numeric|0|string|string
+; heatCapacityAir and air Pressure are deprecated. included for filtering reasons
+model.settings.heatCapacityAir = numeric|1003.5|Heat Capacity Air|Specific heat capacity of air (J /(kg °C)). Sea level, dry, 0 °C 
+model.settings.airPressure = numeric|1013|Air Pressure|Atmospheric average pressure (mbar)
+
+gui.layout = tab|tabSeedDispersal|Seed Dispersal|Settings for external seed input and high-detailed outputs during seed dispersal are configured in a sub-section seedDispersal of the "model.settings" section.
+gui.layout = layout|hl
+model.settings.seedDispersal.dumpSeedMapsEnabled = boolean|true|Enable Dump Seed Maps|If "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal)
+model.settings.seedDispersal.dumpSeedMapsPath = path|target directory seed maps|Path Seed Maps|target directory for seed maps / seed kernel dumps
+model.settings.seedDispersal.externalSeedEnabled = boolean|false|Enable External Seeds|If "true" external seeds are produced by species listed under externalSeedSpecies. If external seeds are enabled, the buffer-area of the simulation area is considered as a source of seeds.
+model.settings.seedDispersal.externalSeedSpecies = string|Psme,Abmi|External Seed Species|list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi").
+model.settings.seedDispersal.externalSeedSource = string|N,W|External Seed Source|Cardinal directions of external seed input. Specify as list of N,E,S,W (i.e.. north, east, south, west). If empty or missing, seeds enter from all directions. e.g.: "E,S" -> seed from east and south direction.
+model.settings.seedDispersal.externalSeedBuffer = string|string|External Seed Buffer|This specifies a species-specific special "buffer", i.e. it defines the distance between the external seed input and the edge of the simulation area. Unit is "seed pixels", i.e. currently 20m. Specify as a ',' separated list of alternately species name and buffer-width (e.g. "Psme, 2, Abmi, 1" -> 40m for Psme, 20m for Abmi). No special buffer is used for species not in the list. Note: the remaining seed source must be >1px due to an implementation detail of the dispersal routine.
+model.settings.seedDispersal.externalSeedBackgroundInput = string|Psme|External Seed Background Input|Specifies a list of species together with a probability for each species. If a species is in the list, then a global background seed input is assumed (see external seeds).
+model.settings.seedDispersal.recruitmentDimensionVariation = numeric|0.2|Recruitment Dimension Variation|Defines the range of variation (r) for recruited trees compared to the dimensions of the cohrt. tree_dbh = cohort_dbh * rnd(1-r, 1+r), tree_h = cohort_h * rnd(1-r, 1+r) (e.g: r=0.2 -> random number from 0.8 to 1.2)
+
+gui.layout = layout|hl
+gui.layout = group|Seed Belt
+model.settings.seedDispersal.seedBelt.enabled = boolean|false|Enable|The submodule is only active if enabled is true.
+model.settings.seedDispersal.seedBelt.width = numeric|10|Width|The width of the seed belt (in pixels of the seed maps, currently 20m). E.g., a value of 10 would lead to a seed belt with a width of 200m.
+model.settings.seedDispersal.seedBelt.sizeX = numeric|100|Size x|The number of sectors in x-direction. Sectors are used to specify fine grained species distribution within the belt.
+model.settings.seedDispersal.seedBelt.sizeY = numeric|100|Size y|The number of sectors in y-direction. Sectors are used to specify fine grained species distribution within the belt.
+; model.settings.seedDispersal.species_ = string|string|Species|specifies species and proportion of a given sector. The x and y in the key specify the coordinates of the sector. x and y are between 0 and sizeX and sizeY, respectively. 0/0 is the lower left corner (south west), sizeX-1 / sizeY-1 the upper right (north east) corner. The string is a list of species code and the fraction of pixels that should act as a seed source for that species. The information is specified as a space-delimited list: ... Example: a value for the key species_0_0 of "Psme 0.7 Abmi 0.2" means: in the sector (0/0), 70% of the seed pixels in the belt should be populated with Psme, 20% with Abmi. Note that the sum of fractions need not to be 1. 
+
+gui.layout = layout|hl
+gui.layout = group|Longdistance Dispersal|These settings affect the size of the area that is handled by long distance dispersal. 
+model.settings.seedDispersal.longDistanceDispersal.thresholdArea = numeric|0.0001|Threshold Area|The threshold defines the density of potential seedlings per m² up to which a full kernel is used (default: 0.0001).
+model.settings.seedDispersal.longDistanceDispersal.thresholdLDD = numeric|0.0000001|Threshold LDD|The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal (default: 0.0000001).
+model.settings.seedDispersal.longDistanceDispersal.LDDSeedlings = numeric|0.5|LDD Seedlings|For LDD, the parameter defines p, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5).
+model.settings.seedDispersal.longDistanceDispersal.rings = numeric|5|Rings|‘Rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5)
+
+gui.layout = tab|tabSoil|Soil Settings|This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub model. Find more details on the model and the parameters on the pages soil C and N cycling and soil parametrization and initialization. 
+gui.layout = layout|hl
+gui.layout = group|Soil Dynamics Settings
+model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Available Nitrogen|If true, iLand utilizes the plant available N from the soil model to calculate species responses. If false, the static value world.site.availableNitrogen will be used.
+model.settings.soil.nitrogenDeposition = numeric|0|Nitrogen Deposition|To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static world.site.availableNitrogen value is used.
+model.settings.soil.qb = numeric|0.2|C/N Ratio Soil Microbes|C/N ratio of soil microbes
+model.settings.soil.qh = numeric|0.2|C/N Ratio SOM|C/N ratio of SOM
+model.settings.soil.leaching = numeric|0.5|string|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?
+model.settings.soil.el = numeric|0.1|Microbal Eff. Labile Pool|microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)
+model.settings.soil.er = numeric|0.1|Microbal Eff. Refractory Pool|microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)
+
+gui.layout = layout|hl
+gui.layout = group|Snag Settings
+model.settings.soil.swdDBHClass12 = numeric|10|Dbh Class break 1-2|class break between classes 1 and 2 for standing snags (dbh, cm)
+model.settings.soil.swdDBHClass23 = numeric|20|Dbh Class break 2-3|class break between classes 2 and 3 for standing snags (dbh, cm)
+
+
+gui.layout = tab|tabGrass|Grass Settings|This section contains settings related to the ground vegetation (grass and herbs) and its effect on regeneration success.
+model.settings.grass.enabled = boolean|false|Enable Grass|enable/disable the submodule. Default is false.
+model.settings.grass.grassPotential = string|polygon(lif,0.1,0,0.7,1)|Potential|Function defining the potential grass cover 0..1 as a function of the light level of each 2x2m pixel value. The parameter is the light influence field (LIF), i.e. it is close to 1 for unobstructed conditions, and reach almost 0 within dense forests. See competition for light. Default value: polygon(lif, 0.1,0, 0.7,1)
+model.settings.grass.maxTimeLag = numeric|2|Cover Time Lag|Number of years needed by the grass/herb layer to grow from 0 to full cover. This settings defines the growth speed, i.e. how fast new openings are occupied by ground vegetation.
+model.settings.grass.grassEffect = string|string|Effect|Formula describing the probability of prohibiting regeneration as a function of grass level. Parameter: the current grass level on the pixel 0..1.
+model.settings.grass.type = string|string|Type|string
+model.settings.grass.grassDuration = string|string|Duration|string
+model.settings.grass.LIFThreshold = string|string|LIFT Threshold|string
+
+
+gui.layout = tab|tabBrowsing|Browsing Settings|This section contains settings related to the browsing effect by ungulate game species.
+model.settings.browsing.enabled = boolean|false|Enable|If false the browsing module is disabled, i.e. no effect is calculated.
+model.settings.browsing.browsingPressure = numeric|0.1|Browsing Pressure|scaling factor modifying the base probability
+
 
 ; model.species
 gui.layout = tab|tabSpecies
@@ -291,8 +340,54 @@ model.species.sprouting.adultSproutProbability = string|string|string|string
 model.species.sprouting = string|string|string|string
 model.species = string|string|string|string
 
+
+; model.initialization
+gui.layout = tab|tabInitialization|Initilization Settings
+model.initialization.mode = combo|copy;single;snapshot|Mode|Describes the general mode. Following options: 'copy': initalize 1 resource unit, then copy to all others, 'unit': separate initailization for each resource unit, 'single': one initialization for the full area, 'map': init-files for each stand (defined by a map), 'snapshot': load from a database snapshot. See initialize trees for details.
+model.initialization.type = combo|distribution;single|Type|Describes the type of the expected initialization file. Possible values: distribution or single (see also: initialize trees ).
+model.initialization.mapFileName = path|file for init and matching stands|Map File Name|When using the map mode, the matching of stands and init files is defined in this file.
+model.initialization.randomFunction = string|function expression|Random Function|Defines the function (as an expression) used when estimating positions for individual trees (for init files of type distribution).
+model.initialization.file = path|path to initialization file|File|Path of the initialization file to be loaded. In mode unit this key needs to be overwritten by the environment file. If blank, no trees are loaded.
+model.initialization.saplingFile = path|path to sapling file|Sapling File|Path of the initialization file for saplings (see initialize trees). If blank, no saplings are loaded.
+gui.layout = layout|hl
+gui.layout = group|Snags
+model.initialization.snags.swdC = numeric|5|string|initial carbon content in (standing) snags (kg/ha)
+model.initialization.snags.swdCN = numeric|0.1|C/N Ratio|CN ratio of snags
+model.initialization.snags.swdCount = numeric|100|Number Snags|number of snags
+model.initialization.snags.otherC = numeric|string|Carbon Content Other Wood Pools|Initial carbon content in the pools for other wood (i.e. branches and coarse roots). (kg/ha.). This content is split up into the five parts.
+model.initialization.snags.otherCN = numeric|string|C/N Ratio Branches,Roots|CN ratio of 'otherC' (branches, coarse roots).
+model.initialization.snags.otherAbovegroundFraction = numeric|0.4|Other Aboveground Fraction|Initial fraction (0..1) of C in the other pool from aboveground (branches).
+model.initialization.snags.swdDecompRate = numeric|0.1|Decay rate standing snags|decay rate of standing snags (i.e. ksw)
+model.initialization.snags.woodDecompRate = numeric|0.1|Decay rate wood|string
+model.initialization.snags.swdHalfLife = numeric|10|Halflife initial snags|halflife attached to initial snags (years)
+gui.layout = layout|hl
+gui.layout = group|Height Grid
+model.initialization.heightGrid.enabled = boolean|false|Enable|If true, the top height grid is used.
+model.initialization.heightGrid.fileName = path|default system.path.init|File name|the ESRI ASCII file that holds the tree top heights (default path is system.path.init).
+model.initialization.heightGrid.maxTries = numeric|10|Max. tries|The maximum number of attempts to find a suitable cell for a tree (default: 10).
+model.initialization.heightGrid.fitFormula = string|polygon(x,0,0,0.8,1,1.1,1,1.25,0)|Fit formula|Equation that estimates the suitability of a target 10m cell based on the relative height of the tree compared to the top canopy height. default: polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0).
+
+; model.management
+gui.layout = tab|tabManagement|Management|The management section controls the Javascript based management subsytem of iLand. See also management. Note that, the Javascript interface can be 'misused' for other (i.e., not management related) tasks as well. 
+model.management.enabled = boolean|false|Enable Management|Management is disabled if the value is false. This switch relates to the "base" management subsystem.
+model.management.file = path|javascrip file|Javacsript file|Filename of the Javascript file to load (default path is the script path provided in the paths section).
+gui.layout = layout|hl
+gui.layout = group|Management ABE
+model.management.abeEnabled = boolean|false|Enable ABE|Switch for turning the agent based management engine on/off.
+model.management.abe.file = path|javascrip file of ABE|Javacsript file|Filename of the main Javascript file of ABE (relative paths are relative to the project root).
+model.management.abe.agentDataFile = path|data file for the spatial ABE setup|Agent data file|Filename of the data file for the spatial setup of ABE (relative paths are relative to the project root).
+
+; model.paramter
+gui.layout = tab|tabParameter|Parameter
+model.parameter.torus = boolean|false|Torus landscape|If true, the simulation space is treated as a torus, where any influence (e.g. a light influence pattern) leaving on one side again enters at the opposite site. This is especially useful for small simulated areas to provide a continuous environment without edge effects.
+model.parameter.debug_tree = string|ruindex=2 and dbh>30|Debug tree|A filter expression executed for trees during initialization. Textual debug output is generated only for those trees passing the filter. (e.g.: "ruindex=2 and dbh>30"). Providing an empty string is the fastest option when the debug data is not used. To enable debug output for all trees, set the value to '1' or 'true'.
+model.parameter.debug_clear = boolean|false|Clear debug|If true, text debug will be cleared after each simulation year. If set to false, the debug info is kept to provide time series information.
+model.parameter.gpp_per_year = numeric|10|GPP per year|If set, the production module is short-cut and this amound of NPP (kg/ha) is available for growth.
+model.parameter.debugDumpStamps = boolean|false|Dumb stamps|If true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes.
+
+
 ; model.world
-gui.layout = tab|tabWorld
+gui.layout = tab|tabWorld|World
 gui.layout = layout|hl
 gui.layout = group|Simulation area
 model.world.cellSize = numeric|2|Cell size|The size of pixels of the light grid (m). The default is 2m.
@@ -315,8 +410,8 @@ model.world.areaMask.imageFile = string|image file name|Image file|Filename of t
 ; model.world.areaMask = string|string|string|string
 gui.layout = layout|hl
 gui.layout = group|Time Events
-model.world.timeEventsEnabled = string|string|string|string
-model.world.timeEventsFile = string|string|string|string
+model.world.timeEventsEnabled = boolean|false|Enable|If true, the time event mechanism is enabled. Similar to the spatial parameter distribution, project settings can be linked to specific year to change.
+model.world.timeEventsFile = string|time event file name|Time event file|filename of the "time events" file. This is a simple CSV-style file with a fixed column year and user-defined columns with column names of valid project file keys.
 gui.layout = layout|hl
 gui.layout = group|Location|The following keys (x, y, z, rotation) specify the location of the 0/0 point of the local iLand coordinate in the (metric) coordinate system of GIS-based input data. See landscape setup for details.
 model.world.location.x = numeric|0|x|Offset in x-direction
@@ -327,30 +422,36 @@ gui.layout = layout|hl
 gui.layout = group|Stand grid
 model.world.standGrid.enabled = boolean|false|Enable|If checked, the stand grid is loaded and use.
 model.world.standGrid.fileName = path|stand grid file|File path|Path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section location, and landscape setup.
-; model.world.standGrid = string|string|string|string
-
 
 
 ; model.site
-gui.layout = tab|tabSite
+gui.layout = tab|tabSite|Site|Site characteristics and soil properties
 model.site.availableNitrogen = numeric|3|Available nitrogen|Plant available nitrogen kg/ha/year
-model.site.soilDepth = string|string|string|string
-model.site.pctSand = string|string|string|string
-model.site.pctSilt = string|string|string|string
-model.site.pctClay = string|string|string|string
-model.site.youngLabileC = string|string|string|string
-model.site.youngLabileN = string|string|string|string
-model.site.youngLabileDecompRate = string|string|string|string
-model.site.youngLabileAbovegroundFraction = string|string|string|string
-model.site.youngRefractoryC = string|string|string|string
-model.site.youngRefractoryN = string|string|string|string
-model.site.youngRefractoryDecompRate = string|string|string|string
-model.site.youngRefractoryAbovegroundFraction = string|string|string|string
-model.site.somC = string|string|string|string
-model.site.somN = string|string|string|string
-model.site.somDecompRate = string|string|string|string
-model.site.soilHumificationRate = string|string|string|string
-model.site = string|string|string|string
+gui.layout = layout|hl
+gui.layout = group|Water cycle|For a more detailed description see iLand Wiki - water cycle.
+model.site.soilDepth = numeric|20|Soil depth [cm]|Depth of root accessible soil in cm.
+gui.layout = group|Soil composition - Fraction of sand, silt, and clay
+model.site.pctSand = numeric|string|Sand|Percentange of sand (0..100) in soil. 
+model.site.pctSilt = numeric|string|Silt|Percentange of silt (0..100) in soil. 
+model.site.pctClay = numeric|string|Clay|Percentange of clay (0..100) in soil. 
+gui.layout = layout|hl
+gui.layout = group|Carbon and nitrogen cycling
+gui.layout = group|Labile carbon and nitrogen
+model.site.youngLabileC = numeric|1|Carbon content|(Initial) carbon content of ylC (i.e. litter) soil pool (kg/ha).
+model.site.youngLabileN = numeric|3|Nitrogen content|(Initial) nitrogen content of ylC soil pool (kg/ha).
+model.site.youngLabileDecompRate = numeric|0.5|Decomposition rate|(Initial) decomposition rate of yr pool.
+model.site.youngLabileAbovegroundFraction = numeric|0.1|Fraction of C|(Initial) fraction of aboveground C in the litter (yL) layer (foliage).
+gui.layout = group|Recfractory carbon and nitrogen
+model.site.youngRefractoryC = numeric|2|Carbon content [kg/ha]|(Initial) carbon content of yrC (woody) soil pool (kg/ha)
+model.site.youngRefractoryN = numeric|2|Nitrogen content|(Initial) nitrogen content of yrC (woody) soil pool (kg/ha)
+model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool
+model.site.youngRefractoryAbovegroundFraction = numeric|0.1|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)
+gui.layout = group|Organic matter
+model.site.somC = numeric|1|Nitrogen content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)
+model.site.somN = numeric|2|Carbon content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)
+model.site.somDecompRate = numeric|string|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
+model.site.soilHumificationRate = numeric|1|Soil humification rate|humification rate
+
 
 ; model.climate
 gui.layout = tab|tabClimate
@@ -363,50 +464,6 @@ model.climate.randomSamplingEnabled = string|string|string|string
 model.climate.randomSamplingList = string|string|string|string
 model.climate.filter = string|string|string|string
 model.climate = string|string|string|string
-
-; model.initialization
-gui.layout = tab|tabInitialization
-model.initialization.mode = string|string|string|string
-model.initialization.type = string|string|string|string
-model.initialization.randomFunction = string|string|string|string
-model.initialization.file = string|string|string|string
-model.initialization.saplingFile = string|string|string|string
-model.initialization.snags.swdC = string|string|string|string
-model.initialization.snags.swdCN = string|string|string|string
-model.initialization.snags.swdCount = string|string|string|string
-model.initialization.snags.otherC = string|string|string|string
-model.initialization.snags.otherCN = string|string|string|string
-model.initialization.snags.otherAbovegroundFraction = string|string|string|string
-model.initialization.snags.swdDecompRate = string|string|string|string
-model.initialization.snags.woodDecompRate = string|string|string|string
-model.initialization.snags.swdHalfLife = string|string|string|string
-model.initialization.snags = string|string|string|string
-model.initialization.heightGrid.enabled = string|string|string|string
-model.initialization.heightGrid.fileName = string|string|string|string
-model.initialization.heightGrid.maxTries = string|string|string|string
-model.initialization.heightGrid.fitFormula = string|string|string|string
-model.initialization.heightGrid = string|string|string|string
-model.initialization = string|string|string|string
-
-; model.management
-gui.layout = tab|tabManagement
-model.management.enabled = string|string|string|string
-model.management.file = string|string|string|string
-model.management.abeEnabled = string|string|string|string
-model.management.abe = string|string|string|string
-model.management = string|string|string|string
-model.management.abe.file = string|string|string|string
-model.management.abe.agentDataFile = string|string|string|string
-
-; model.paramter
-gui.layout = tab|tabParameter
-model.parameter.torus = string|string|string|string
-model.parameter.debug_tree = string|string|string|string
-model.parameter.debug_clear = string|string|string|string
-model.parameter.gpp_per_year = string|string|string|string
-model.parameter.debugDumpStamps = string|string|string|string
-model.parameter = string|string|string|string
-
 
 ; modules overview
 gui.layout = tab|tabModules|Modules|Description goes here

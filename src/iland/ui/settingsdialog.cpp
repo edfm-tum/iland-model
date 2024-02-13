@@ -164,6 +164,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     QFont fontHeading("Arial", 15, QFont::Bold);
     // List used to store copied gui elements to connect them to their respective twin
     QList<QStringList> connectedElements;
+    bool activeTab = false;
 
     for (int n = 0; n < mMetaKeys.length(); n++) {
         element = mMetaKeys[n];
@@ -181,107 +182,112 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
             if (curChildStack) {
                 tabLay = curChildStack->findChild<QVBoxLayout *>(curTabName + "Layout");
+                activeTab = true;
+
                 if (values.length() > 2) {
                     QLabel* tabHeading = new QLabel(values[2]);
                     tabHeading->setFont(fontHeading);
-                    QLabel* tabDescription = new QLabel(values[3]);
-                    tabDescription->setWordWrap(true);
-
                     tabLay->addWidget(tabHeading);
-                    tabLay->addWidget(tabDescription);
+                    if (values.length() > 3) {
+                        QLabel* tabDescription = new QLabel(values[3]);
+                        tabDescription->setWordWrap(true);
+                        tabLay->addWidget(tabDescription);
+                    }
                 }
 
 //                tabHeading->setStyleSheet("font-size: 15");
             }
             else {
                 qDebug() << curTabName << ": Tab not found";
+                activeTab = false;
             }
         }
-        else if (inputType == "layout") {
-            if (values[1] == "hl") {
-                // adds a horizontal line
-                QFrame *line = new QFrame();
-                line->setObjectName(QString::fromUtf8("line"));
-                line->setGeometry(QRect(320, 150, 118, 3));
-                line->setFrameShape(QFrame::HLine);
-                line->setFrameShadow(QFrame::Sunken);
-                tabLay->addWidget(line);
+        if (activeTab) {
+            if (inputType == "layout") {
+                if (values[1] == "hl") {
+                    // adds a horizontal line
+                    QFrame *line = new QFrame();
+                    line->setObjectName(QString::fromUtf8("line"));
+                    line->setGeometry(QRect(320, 150, 118, 3));
+                    line->setFrameShape(QFrame::HLine);
+                    line->setFrameShadow(QFrame::Sunken);
+                    tabLay->addWidget(line);
+                }
+            }
+            else if (inputType == "group") {
+                // adds a group label in bold
+                QLabel* subheading = new QLabel(values[1]);
+                subheading->setStyleSheet("font-weight: bold");
+                tabLay->addWidget(subheading);
+                // a description of the subgroup can be included
+                if (values.length() > 2) {
+                    QLabel* descriptionSubgroup = new QLabel(values[2]);
+                    descriptionSubgroup->setWordWrap(true);
+                    tabLay->addWidget(descriptionSubgroup);
+                }
+            }
+            else if (valueTypes.contains(inputType)) {
+                // adds an actual element
+                // size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault
+
+                SettingsItem *item = new SettingsItem(n,
+                                  element,
+                                  inputType,
+                                  values[2], // label
+                                  values[3], // tooltip
+                                  values[1]); // default
+                mKeys[element] = item;
+
+                defaultValue = values[1];
+                labelName = values[2];
+                toolTip = values[3];
+    //            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+    //                                                                        inputType,
+    //                                                                        defaultValue,
+    //                                                                        xmlPath,
+    //                                                                        labelName,
+    //                                                                        toolTip,
+    //                                                                        curChildStack);
+                GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+                                                                            item);
+
+                tabLay->addWidget(newInputWidget);
+
+            }
+            else if (inputType == "connected") {
+                // adds a copy of a gui element
+                // By now (21.12.2023) only one copy is allowed
+                int k;
+                QStringList connectedValues;
+                if (mMetaKeys.mid(0, n).contains(element)) {
+                    k = mMetaKeys.indexOf(element);
+                }  else if (mMetaKeys.mid(n+1).contains(element)) {
+                    k = mMetaKeys.lastIndexOf(element);
+                } else {
+                    k=0; // todo: check?
+                }
+                connectedValues = mMetaValues[k].split("|");
+                inputType = connectedValues[0];
+                defaultValue = connectedValues[1];
+                labelName = values[1];
+                if (labelName == "string")
+                    labelName = xmlPath.last();
+                toolTip = connectedValues[3];
+                GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+                                                                            inputType,
+                                                                            defaultValue,
+                                                                            xmlPath,
+                                                                            labelName,
+                                                                            toolTip,
+                                                                            curChildStack,
+                                                                            true);
+
+                tabLay->addWidget(newInputWidget);
+                QStringList curPair = {element, inputType};
+                // list is later used to connect the copies to the original element
+                connectedElements.append(curPair);
             }
         }
-        else if (inputType == "group") {
-            // adds a group label in bold
-            QLabel* subheading = new QLabel(values[1]);
-            subheading->setStyleSheet("font-weight: bold");
-            tabLay->addWidget(subheading);
-            // a description of the subgroup can be included
-            if (values.length() > 2) {
-                QLabel* descriptionSubgroup = new QLabel(values[2]);
-                descriptionSubgroup->setWordWrap(true);
-                tabLay->addWidget(descriptionSubgroup);
-            }
-        }
-        else if (valueTypes.contains(inputType)) {
-            // adds an actual element
-            // size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault
-
-            SettingsItem *item = new SettingsItem(n,
-                              element,
-                              inputType,
-                              values[2], // label
-                              values[3], // tooltip
-                              values[1]); // default
-            mKeys[element] = item;
-
-            defaultValue = values[1];
-            labelName = values[2];
-            toolTip = values[3];
-//            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-//                                                                        inputType,
-//                                                                        defaultValue,
-//                                                                        xmlPath,
-//                                                                        labelName,
-//                                                                        toolTip,
-//                                                                        curChildStack);
-            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-                                                                        item);
-
-            tabLay->addWidget(newInputWidget);
-
-        }
-        else if (inputType == "connected") {
-            // adds a copy of a gui element
-            // By now (21.12.2023) only one copy is allowed
-            int k;
-            QStringList connectedValues;
-            if (mMetaKeys.mid(0, n).contains(element)) {
-                k = mMetaKeys.indexOf(element);
-            }  else if (mMetaKeys.mid(n+1).contains(element)) {
-                k = mMetaKeys.lastIndexOf(element);
-            } else {
-                k=0; // todo: check?
-            }
-            connectedValues = mMetaValues[k].split("|");
-            inputType = connectedValues[0];
-            defaultValue = connectedValues[1];
-            labelName = values[1];
-            if (labelName == "string")
-                labelName = xmlPath.last();
-            toolTip = connectedValues[3];
-            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-                                                                        inputType,
-                                                                        defaultValue,
-                                                                        xmlPath,
-                                                                        labelName,
-                                                                        toolTip,
-                                                                        curChildStack,
-                                                                        true);
-
-            tabLay->addWidget(newInputWidget);
-            QStringList curPair = {element, inputType};
-            // list is later used to connect the copies to the original element
-            connectedElements.append(curPair);
-        }
-
     }
     // Formatting of the labels.
     // On each tab the longest label is determined.

@@ -477,15 +477,15 @@ void MainWindow::on_actionSettingsDialog_triggered()
 
     if (!ui_settingsDialog) {
         QStringList dialogList = QStringList() << "System"  << "Model" << "Output" << "Modules";
-        QStringList modelList = QStringList() << "General" << "World" << "Seed Dispersal" << "Soil" << "Grass" << "Browsing" << "Species" ;
+        QStringList modelList = QStringList() << "Global Settings" << "World" << "Site" << "Climate" << "Seed Dispersal" << "Soil" << "Grass" << "Browsing" << "Initialization" << "Parameter" ;
         QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
         QStringList outputList = QStringList() << "Dynamic" << "Tree" << "Environment";
-        QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
+        QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
         QList<QStringList> tabList;
         tabList.append(systemList);
-        tabList.append(modulesList);
         tabList.append(modelList);
         tabList.append(outputList);
+        tabList.append(modulesList);
         ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
 
     }
