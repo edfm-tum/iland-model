@@ -182,7 +182,7 @@ system.logging.logTarget = combo|console;file|Log target|If file the log output 
 system.logging.logFile = string|log file name|Log file|Log-output is stored in this file. If the filename contains the string date, it is replaced by a timestamp (yyyymmdd__hrmiss). The default location is the log-path. A new file is created whenever the model created (e.g. after clicking "Create Model" or "Reload").
 system.logging.flush = boolean|false|Flush log|Log information is immediately written to the logfile when flush is true. This can be useful for debugging purposes (but might slow down execution).
 ; system.logging = string|string|string|string
-gui.layout = tab|tabSettings|Settings|Multithreading, debug
+gui.layout = tab|tabSystemSettings|Settings|Multithreading, debug
 system.settings.multithreading = boolean|true|Multithreading|If checked, iLand will use several threads to perform its calculations (if more than 10 RessourceUnits are defined).
 system.settings.threadCount = numeric|-1|ThreadCount|Number of used threads if multithreading is enabled. -1 uses all available CPU cores.
 system.settings.debugOutput = numeric|1|Debug Output|Defines the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the debug data menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1).
@@ -452,18 +452,19 @@ model.site.somN = numeric|2|Carbon content|(Initial) nitrogen content of oN (soi
 model.site.somDecompRate = numeric|string|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)
 model.site.soilHumificationRate = numeric|1|Soil humification rate|humification rate
 
-
 ; model.climate
-gui.layout = tab|tabClimate
-model.climate.co2concentration = string|string|string|string
-model.climate.temperatureShift = string|string|string|string
-model.climate.precipitationShift = string|string|string|string
-model.climate.tableName = string|string|string|string
-model.climate.batchYears = string|string|string|string
-model.climate.randomSamplingEnabled = string|string|string|string
-model.climate.randomSamplingList = string|string|string|string
-model.climate.filter = string|string|string|string
-model.climate = string|string|string|string
+gui.layout = tab|tabClimate|Climate|For detailed information see iLand Wiki about ClimateData.
+model.climate.tableName = string|name sqlite table|Table name|Name of the SQLite table within the defined climate database to load (system.database.climate).
+model.climate.filter = string|filter expression|Filter|An optional filter criterion that is added to the where clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year>2000 and year<2010' limits used climate data to the years 2001 to 2009.
+model.climate.co2concentration = numeric|380|CO2 concentration|Current value of the atmospheric CO2 concentration. Default value is 380ppm. A time series may be implementing using the Time-Event feature. See also section world.species.CO2Response
+model.climate.co2pathway = combo|No;RCP2.6;RCP4.5;RCP6.0;RCP8.5|CO2 pathway>|Selects a pre-defined CO2 concentration pathway, default is no change ('No').
+model.climate.co2startYear = numeric|1840|CO2 start year|If a co2pathway is used, then co2startYear defines the starting point of CO2 concentration within the simulation.
+model.climate.batchYears = numeric|10|Batch years|For performance reasons the access to the climate database accesses is performed bulked. This setting specifies how many years are loaded at once.
+model.climate.temperatureShift = numeric|0|Temperature shift|Simple option to modify the climate. The value is added to each daily temperature (default = 0)
+model.climate.precipitationShift = numeric|1|Precipitation shift|Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1).
+model.climate.randomSamplingEnabled = boolean|false|Enable random sampling|if true, only the first batchYears of the climate file are loaded (but see filter). The actual climate for each year is the sampled from this climate data. See also randomSamplingList. (default=false)
+model.climate.randomSamplingList = string|empty|Random sampling list|if this key contains a list of 0-based indices (e.g. "3, 12, 14, 0, 3, 14", the random sampling (if enabled) uses this sequence of years. Note: the index is 0-based (in the example the 4th year would be used first). Use any non-word characters as delimiters. The list will be recycled if more years are simulated than present in the list. The index values are to be between 0 and batchYears-1. If invalid indices are in the list, an error is reported. If the key is empty or not present, each year a climate year is selected randomly from the list of loaded years. default=empty
+
 
 ; modules overview
 gui.layout = tab|tabModules|Modules|Description goes here
