@@ -39,26 +39,11 @@ void SettingMetaData::checkXMLFile(const QString fileName)
         return;
     }
 
-    QStringList exceptions = QStringList() << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user";
+    QStringList exceptions = QStringList() << "gui.layout" << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user";
     // load from resource file
     QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
     QStringList setChildGroups = set.childGroups();
     QStringList existingKeys = set.allKeys();
-
-//    foreach (QString group, setChildGroups) {
-//        set.beginGroup(group);
-//        existingKeys.append(set.allKeys());
-//        set.endGroup();
-//    }
-//    qDebug() << "Child Groups: " << set.childGroups() << "\n";
-
-//    foreach (QString group, setChildGroups) {
-//        set.beginGroup(group);
-//        foreach (QString key, set.childKeys()){
-//            qDebug() << "Key, Value, Group: " << key << ", " << set.value(key) << set.group() << "\n";
-//        }
-//        set.endGroup();
-//    }
 
     // Check for keys in XML - File
     qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";

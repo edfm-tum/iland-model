@@ -47,7 +47,8 @@ public:
     QString readCommentXml(const QStringList& xmlPath);
     void writeCommentXml(const QString& comment, const QStringList& xmlPath);
     void setXmlPath(const QString& xmlPath);
-    void writeToFile(const QString& xmlFilePath = "");
+    void writeToFile(QString xmlFilePath);
+    QString getXmlFile();
     bool loadXmlFile();
 
     void writeValuesXml(QStackedWidget* stackedWidget);
@@ -57,6 +58,7 @@ public:
     QString readXmlValue(QString key);
     QString readXmlComment(QString key);
 
+    void createXML(const QStringList &metaKeys, const QString& pathXmlFile);
 
 private:
     // Variables

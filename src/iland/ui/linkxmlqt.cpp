@@ -95,7 +95,7 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 
     }
     else {
-        return "Problem";
+        return "Problem reading comment (see LinkXmlQt::readCommentXml";
     }
 
 }
@@ -275,6 +275,7 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
             }
 
             if (!curNode.isNull()) {
+
                 //QString curValue = curNode.firstChild().toText().data();
                 //qDebug() << "Aktueller Wert: " << curValue;
                 if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
@@ -303,7 +304,7 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
 }
 
 // Save open document to file
-void LinkXmlQt::writeToFile(const QString& xmlFilePath)
+void LinkXmlQt::writeToFile(QString xmlFilePath)
 {
     if (xmlFilePath != "") {
         this->setXmlPath(xmlFilePath);
@@ -321,4 +322,65 @@ void LinkXmlQt::writeToFile(const QString& xmlFilePath)
 
     file.close();
 
+}
+
+void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFile)
+{
+    QStringList initCommentList;
+
+    initCommentList << "More details on iland-model.org/project+file";
+    initCommentList << "***********************************************************************";
+    initCommentList << "(c) 2016, Rupert Seidl & Werner Rammer";
+    initCommentList << "***********************************************************************";
+
+    QFile xmlFile(pathXmlFile);
+
+    if (!xmlFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "File couldn't be opened for writing. Abort.";
+        return;
+    }
+
+    QTextStream outStream(&xmlFile);
+
+    QDomDocument newXml;
+
+    QDomProcessingInstruction header = newXml.createProcessingInstruction("xml", "version=\"1.0\" encoding=\"utf-8\"");
+    newXml.appendChild(header);
+
+    foreach (QString comment, initCommentList) {
+        newXml.appendChild(newXml.createComment(comment));
+    }
+
+    QDomElement root = newXml.createElement("project");
+
+    QStringList xmlPath;
+    QDomNode childBranch, curNode;
+
+    foreach (QString element, metaKeys) {
+        if (element != "gui.layout") {
+            xmlPath = element.split(".");
+            curNode = root;
+
+            for (int i = 0; i < xmlPath.length(); i++) {
+                childBranch = curNode.firstChildElement(xmlPath[i]);
+                if ( childBranch.isNull() ) {
+                    curNode = curNode.appendChild(newXml.createElement(xmlPath[i]));
+                }
+                else {
+                    curNode = childBranch;
+                }
+            }
+            curNode.appendChild(newXml.createTextNode(""));
+        }
+    }
+
+    newXml.appendChild(root);
+    newXml.save(outStream, 4);
+
+    xmlFile.close();
+}
+
+QString LinkXmlQt::getXmlFile()
+{
+    return mXmlFile;
 }

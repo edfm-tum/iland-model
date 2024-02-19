@@ -348,7 +348,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
 
     connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(stackedWidget);
-                                                                     mLinkxqt->writeToFile();
+                                                                     mLinkxqt->writeToFile(mLinkxqt->getXmlFile());
                                                                      this->close();});
     connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {this->close();});
     connect(this, &QDialog::rejected, this, [=]() {this->close();});

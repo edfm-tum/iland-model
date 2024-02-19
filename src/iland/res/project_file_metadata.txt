@@ -1,7 +1,7 @@
 ; This file contains all the nodes of the XML project file that iLand is actively using
 ; The list is used to check existing XML files.
 ; Format:
-; setting = defaultvalue, with setting the setting name with dot-notation (e.g. model.world.size)
+; setting = type|defaultValue|labelName|toolTip, with setting the setting name with dot-notation (e.g. model.world.size)
 
 
 ; output
@@ -34,58 +34,46 @@ output.abeStand.enabled = connected|Enable ABE stand
 gui.layout = tab|tabDynamic|Dynamic|Something about dynamic
 output.dynamic.enabled = boolean|true|Enable dynamic|string
 output.dynamic.columns = string|enter column names here|Columns|string
-; output.dynamic = string|string|string|string
 
 gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
 
 gui.layout = group|Tree
 output.tree.enabled = boolean|true|Enable trees|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.
 output.tree.filter = numeric|1|Filter|See tooltip treeremoved
-; output.tree = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Remove trees
 output.treeremoved.enabled = boolean|true|Remove trees|Output of removed indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered immediately when a tree is removed due to mortality or management.
 output.treeremoved.filter = numeric|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192
-; output.treeremoved = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Stand	
 output.stand.enabled = boolean|false|Stand|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.
 output.stand.condition = string|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).
 output.stand.byRU = string|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.
-; output.stand = string|string|string|string
 output.standdead.enabled = boolean|true|Stand dead|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management. 
-; output.standdead = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Production & Management	
 output.production_month.enabled = boolean|false|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit. 
 ; output.production_month = string|january, february|Production month|string
 output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included! 
-; output.management = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Sapling	
 output.sapling.enabled = boolean|true|Enable Saplings|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.
 output.sapling.condition = string|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).
-; output.sapling = string|string|string|string
 output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm). 
 output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).
 output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.
-; output.saplingdetail = string|string|string|string
 
 gui.layout = tab|tabEnvironment|Environment|Carbon (flow), Water, condition, soil...
 
 gui.layout = layout|hl
 gui.layout = group|Modules
-; output.dynamicstand = string|string|string|string
 output.barkbeetle.enabled = boolean|false|Enable barkbeetle|string
-; output.barkbeetle = string|string|string|string
 output.wind.enabled = boolean|false|Enable wind|string
-; output.wind = string|string|string|string
 output.fire.enabled = boolean|false|Enable fire|Fire event aggregates per fire event. The output contains a row for each (ignited) fire event. 
-; output.fire = string|string|string|string
 output.bite.enabled = boolean|false|Enable bite|The output provides annual statistics for each simulated biotic agent. 
 
 gui.layout = layout|hl
@@ -93,11 +81,9 @@ gui.layout = group|Carbon
 output.carbon.enabled = boolean|false|Enable Carbon|Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. On resource unit level, the outputs contain aggregated above ground pools (kg/ha) and below ground pools (kg/ha). For landscape level outputs, all variables are scaled to kg/ha stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground. 
 output.carbon.condition = string|condition carbon|Condition|Controls if the output should be created for the current year(see also dynamic stand output). 
 output.carbon.conditionRU = string|condition carbon Ru|Condition RU|can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default). 
-; output.carbon = string|string|string|string
 output.carbonflow.enabled = boolean|true|Enable carbon flow|Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). For results limited to the project area, the data values need to be scaled to the stockable area. For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included). Furthermore, the following sign convention is used in iLand: fluxes from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux. 
 output.carbonflow.condition = string|condition carbonflow|Condition|Limits the output execution to specific years (variable 'year').
 output.carbonflow.conditionRU = string|condition carbonflow RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default). 
-; output.carbonflow = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Water
@@ -110,31 +96,22 @@ gui.layout = layout|hl
 gui.layout = group|Landscape
 output.landscape.enabled = boolean|false|Enable Landscape|Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.
 output.landscape.condition = string|condition landscape|Condition|Controls if the output should be created for the current year(see also dynamic stand output).
-; output.landscape = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Landscape removed
 output.landscape_removed.enabled = boolean|false|Enable landscape removed|Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape. The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing).
 output.landscape_removed.includeHarvest = boolean|false|Include harvest|true/false: include/exclude trees that died due to natural mortality 
 output.landscape_removed.includeNatural = boolean|false|Include natural|true/false: include/exclude harvested trees
-; output.landscape_removed = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|Soilinput
 output.soilinput.enabled = boolean|false|Enable Soilinput|The output contains all carbon inputs to the soil layer (per RU) and the climate modifier re. The data of the output can be used for estimating soil carbon parameters. 
-; output.soilinput = string|string|string|string
-; output.soilinput.enabled = string|string|string|string
 
 gui.layout = layout|hl
 gui.layout = group|SVD
-; output.svdgpp = string|string|string|string
 output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.
-; output.svdstate = string|string|string|string
 output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output. 
-; output.svduniquestate = string|string|string|string
 output.svduniquestate.enabled = string|choose id|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output. 
-; output.svduniquestate.condition = string|string|string|string
-; output.svdindicator = string|string|string|string
 output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file
 
 gui.layout = layout|hl
@@ -152,16 +129,10 @@ gui.layout = layout|hl
 gui.layout = group|ABE stand
 output.abeStand.enabled = boolean|false|Enable ABE stand|This output provides details about the forest state on stand level. The timber is provided as standing timber per hectare. The output is rather performance critical, condition for evaluation can be applied.
 output.abeStand.condition = string|mod(year,10)=1|ABE stand eval. cond.|Limits the execution to certain years.
-; output.abeStand = string|string|string|string
 output.abeUnit.enabled = boolean|false|Enable ABE unit|The output provides planned and realized harvests on the level of planning units. Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column 
-; output.abeUnit = string|string|string|string
 output.abeStandRemoval.enabled = boolean|false|Enable ABE stand removal|This output provides details about realized timber harvests on stand level. The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final. 
-; output.abeStandRemoval = string|string|string|string
 output.abeStandDetail.enabled = boolean|false|Enable ABE stand detail|This output provides details about the forest state on species- and stand level. This output is more detailed than the abeStand output. The output is rather performance critical, condition for evaluation can be applied.
 output.abeStandDetail.condition = string|mod(year,10)=1|ABE Standdetail eval. cond.|Limits the execution to certain years.
-; output.abeStandDetail = string|string|string|string
-; output = string|string|string|string
-
 
 ; system
 gui.layout = tab|tabPath|Path settings|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. 
@@ -172,16 +143,17 @@ system.path.output = path|output directory|Output|Default path for the output da
 system.path.temp = string|string|string|string
 system.path.script = string|string|string|string
 system.path.init = string|string|string|string
+
 gui.layout = tab|tabDatabase|Database|iLand uses primarily the SQLite database system, which stores all tables of a database within a single database file. This database files are considered to be located in the database location defined in the path section. 
 system.database.in = path|input database file|Input|Defines the input database. Stored in this database are e.g. species parameter.
 system.database.out = path|output database file|Output|Results (see Outputs) are written to this database.
 system.database.climate = path|climate database file|Climate|The SQLite database containing the climate data
-; system.database = string|string|string|string
+
 gui.layout = tab|tabLogging|Logging|Here settings can be defined to tell iLand how to handle logging.
 system.logging.logTarget = combo|console;file|Log target|If file the log output is stored in a file (see logFile). If console the log output is printed in the log window of the iLand main application.
 system.logging.logFile = string|log file name|Log file|Log-output is stored in this file. If the filename contains the string date, it is replaced by a timestamp (yyyymmdd__hrmiss). The default location is the log-path. A new file is created whenever the model created (e.g. after clicking "Create Model" or "Reload").
 system.logging.flush = boolean|false|Flush log|Log information is immediately written to the logfile when flush is true. This can be useful for debugging purposes (but might slow down execution).
-; system.logging = string|string|string|string
+
 gui.layout = tab|tabSystemSettings|Settings|Multithreading, debug
 system.settings.multithreading = boolean|true|Multithreading|If checked, iLand will use several threads to perform its calculations (if more than 10 RessourceUnits are defined).
 system.settings.threadCount = numeric|-1|ThreadCount|Number of used threads if multithreading is enabled. -1 uses all available CPU cores.
@@ -191,11 +163,10 @@ system.settings.randomSeed = numeric|0|Random seed|Non-zero values are used as t
 system.settings.expressionLinearizationEnabled = boolean|false|Expression Linearization|If checked, specific expressions (user defined formulas, e.g. for light response) use a interpolation approach to increase the calculation performance.
 system.settings.logLevel = combo|Debug;Info;Warning;Error|Log level|This setting defines the logging intensity.When running on the Debug logging level, the log output contains many details that may slow down the application. Default is Debug.
 system.settings.responsive = boolean|true|Responsive|If checked, iLand is more responsive during lengthy calculations (i.e. the user interface freezes less frequently)
-; system.settings = string|string|string|string
+
 gui.layout = tab|tabJavascript|Javascript|This section deals with Javascript-script files that are loaded into the models' script engine at startup. Note that you can load multiple files by using the Globals.include() javascript function.
 system.javascript.fileName = string|javascript file name|File name|The filename of a javascript file to load. Default location is the "scripts"-directory.
-; system.javascript = string|string|string|string
-; system = string|string|string|string
+
 
 ; model.settings
 ; model = string|string|string|string
@@ -298,7 +269,6 @@ gui.layout = group|Snag Settings
 model.settings.soil.swdDBHClass12 = numeric|10|Dbh Class break 1-2|class break between classes 1 and 2 for standing snags (dbh, cm)
 model.settings.soil.swdDBHClass23 = numeric|20|Dbh Class break 2-3|class break between classes 2 and 3 for standing snags (dbh, cm)
 
-
 gui.layout = tab|tabGrass|Grass Settings|This section contains settings related to the ground vegetation (grass and herbs) and its effect on regeneration success.
 model.settings.grass.enabled = boolean|false|Enable Grass|enable/disable the submodule. Default is false.
 model.settings.grass.grassPotential = string|polygon(lif,0.1,0,0.7,1)|Potential|Function defining the potential grass cover 0..1 as a function of the light level of each 2x2m pixel value. The parameter is the light influence field (LIF), i.e. it is close to 1 for unobstructed conditions, and reach almost 0 within dense forests. See competition for light. Default value: polygon(lif, 0.1,0, 0.7,1)
@@ -308,11 +278,9 @@ model.settings.grass.type = string|string|Type|string
 model.settings.grass.grassDuration = string|string|Duration|string
 model.settings.grass.LIFThreshold = string|string|LIFT Threshold|string
 
-
 gui.layout = tab|tabBrowsing|Browsing Settings|This section contains settings related to the browsing effect by ungulate game species.
 model.settings.browsing.enabled = boolean|false|Enable|If false the browsing module is disabled, i.e. no effect is calculated.
 model.settings.browsing.browsingPressure = numeric|0.1|Browsing Pressure|scaling factor modifying the base probability
-
 
 ; model.species
 gui.layout = tab|tabSpecies
@@ -323,22 +291,16 @@ model.species.CO2Response.p0 = string|string|string|string
 model.species.CO2Response.baseConcentration = string|string|string|string
 model.species.CO2Response.compensationPoint = string|string|string|string
 model.species.CO2Response.beta0 = string|string|string|string
-model.species.CO2Response = string|string|string|string
 model.species.lightResponse.shadeTolerant = string|string|string|string
 model.species.lightResponse.shadeIntolerant = string|string|string|string
 model.species.lightResponse.LRImodifier = string|string|string|string
-model.species.lightResponse = string|string|string|string
 model.species.phenology.type.vpdMin = string|string|string|string
 model.species.phenology.type.vpdMax = string|string|string|string
 model.species.phenology.type.dayLengthMin = string|string|string|string
 model.species.phenology.type.dayLengthMax = string|string|string|string
 model.species.phenology.type.tempMin = string|string|string|string
 model.species.phenology.type.tempMax = string|string|string|string
-model.species.phenology.type = string|string|string|string
-model.species.phenology = string|string|string|string
 model.species.sprouting.adultSproutProbability = string|string|string|string
-model.species.sprouting = string|string|string|string
-model.species = string|string|string|string
 
 
 ; model.initialization
@@ -508,7 +470,6 @@ modules.fire.averageFireSize = numeric||Average Fire Size|Average fire size in m
 modules.fire.fireSizeSigma = numeric||Fire Size Sigma|""
 modules.fire.fireReturnInterval = numeric|100| Fire Return Interval|Average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years"
 modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probability that a the fire on a burning pixel extincts without a chance to spread further
-; modules.wind.fire = noInput
 
 
 ; modules.wind
@@ -549,9 +510,6 @@ modules.wind.durationPerIteration = numeric|duration in minutes|Duration per ite
 modules.wind.gustModifier = numeric|numeric factor|Gust modifier|Defines the variation of the global wind speed between iterations of the model. The gustModifier is given as a fraction (e.g. 0.05). The base wind speed is modified for each iteration with a value from the range +/- gustModifier (e.g.: multiplied by 0.95 - 1.05). 
 modules.wind.dayOfYear = numeric|0-365|Day of year|Day of the year (0..365) of the storm event (used to calculate soil temperature). 
 modules.wind.LRITransferFunction = string|max(min(3.733-6.467*LRI,3.41),0.5)|LRI Transfer function|Expression to compute the Hegyi concurrency index from the trees' LRI. Default: max(min(3.733-6.467*LRI,3.41),0.5)
-
-; modules.wind = string
-
 
 ; modules.barkbeetle
 gui.layout = tab|tabBarkbeetle|Barkbeetle|Description of barkbeetle module
@@ -596,8 +554,4 @@ modules.barkbeetle.referenceClimate.tableName = string|Type in table name|Table 
 modules.barkbeetle.referenceClimate = table|seasonalPrecipSum;seasonalTemperatureAverage|1|2
 modules.barkbeetle.referenceClimate.seasonalPrecipSum = numeric|1;2;3;4|Precipitation sum|Tool tip seasonal prcip sum
 modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = numeric|12.3;4354.23|Temperature average|Tool tip temperature average
-; modules.barkbeetle.referenceClimate = string|string|string|string
-; modules.barkbeetle = string
-; modules = string
-
 

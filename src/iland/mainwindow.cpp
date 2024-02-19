@@ -420,7 +420,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
 
-
 //    processMetaData(mMeta);
 
 
@@ -474,6 +473,8 @@ void MainWindow::on_actionSettingsDialog_triggered()
 //    mLinkxqt->loadXmlFile(xmlFile);
 //    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
 //    ui_systemSettings->show();
+
+    //mLinkxqt->createXML(mMetaKeys, "C:\\Users\\gu47yiy\\Documents\\edfm_projects\\iland-model\\test.xml");
 
     if (!ui_settingsDialog) {
         QStringList dialogList = QStringList() << "System"  << "Model" << "Output" << "Modules";
