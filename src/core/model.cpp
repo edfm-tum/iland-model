@@ -262,17 +262,20 @@ void Model::setupSpace()
         if (xml.valueBool("standGrid.enabled")) {
             QString fileName = GlobalSettings::instance()->path(xml.value("standGrid.fileName"));
             mStandGrid = new MapGrid(fileName,false); // create stand grid index later
-
-            if (mStandGrid->isValid()) {
-                for (int i=0;i<mStandGrid->grid().count();i++) {
-                    const int &grid_value = mStandGrid->grid().constValueAtIndex(i);
-                    mHeightGrid->valueAtIndex(i).setValid( grid_value > -1 );
-                    if (grid_value>-1)
-                        mRUmap.valueAt(mStandGrid->grid().cellCenterPoint(i)) = (ResourceUnit*)1;
-                    if (grid_value < -1)
-                        mHeightGrid->valueAtIndex(i).setForestOutside(true);
-                }
+            if (!mStandGrid->isValid()) {
+                throw IException("Error loading stand grid '" + fileName + "'.");
             }
+
+
+            for (int i=0;i<mStandGrid->grid().count();i++) {
+                const int &grid_value = mStandGrid->grid().constValueAtIndex(i);
+                mHeightGrid->valueAtIndex(i).setValid( grid_value > -1 );
+                if (grid_value>-1)
+                    mRUmap.valueAt(mStandGrid->grid().cellCenterPoint(i)) = (ResourceUnit*)1;
+                if (grid_value < -1)
+                    mHeightGrid->valueAtIndex(i).setForestOutside(true);
+            }
+
             mask_is_setup = true;
         } else {
             if (!settings().torusMode) {

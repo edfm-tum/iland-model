@@ -66,7 +66,7 @@ class Climate
 {
 public:
     Climate();
-    void setup(); ///< setup routine that opens database connection
+    void setup(bool do_log=true); ///< setup routine that opens database connection
     bool isSetup() const { return mIsSetup; }
     const QString &name() const { return mName; } ///< table name of this climate
     // activity

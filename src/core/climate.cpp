@@ -120,7 +120,7 @@ void Climate::toDate(const int yearday, int *rDay, int *rMonth, int *rYear) cons
     if (rYear) *rYear = d->year;
 }
 
-void Climate::setup()
+void Climate::setup(bool do_log)
 {
     GlobalSettings *g=GlobalSettings::instance();
     XmlHelper xml(g->settings().node("model.climate"));
@@ -143,16 +143,17 @@ void Climate::setup()
                 if (year < 0 || year>=mLoadYears)
                     throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!!");
         }
-
-        if (mRandomYearList.count()>0)
-            qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << "of years. climate:" << name();
-        else
-            qDebug() << "Climate: Random sampling enabled (without a fixed list). climate:" << name();
+        if (do_log) {
+            if (mRandomYearList.count()>0)
+                qDebug() << "Climate: Random sampling enabled with fixed list" << mRandomYearList.count() << "of years.";
+            else
+                qDebug() << "Climate: Random sampling enabled (without a fixed list)." ;
+            }
     }
     mTemperatureShift = xml.valueDouble("temperatureShift", 0.);
     mPrecipitationShift = xml.valueDouble("precipitationShift", 1.);
     if (mTemperatureShift!=0. || mPrecipitationShift!=1.)
-        qDebug() << "Climate modifaction: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
+        if (do_log) qDebug() << "Climate modifaction: add temperature:" << mTemperatureShift << ". Multiply precipitation: " << mPrecipitationShift;
 
     mStore.resize(mLoadYears * 366 + 1); // reserve enough space (1 more than used at max)
     mCurrentYear=0;
@@ -162,7 +163,7 @@ void Climate::setup()
     // add a where-clause
     if (!filter.isEmpty()) {
         filter = QString("where %1").arg(filter);
-        qDebug() << "adding climate table where-clause:" << filter;
+        if (do_log) qDebug() << "adding climate table where-clause:" << filter;
     }
 
     QString query=QString("select year,month,day,min_temp,max_temp,prec,rad,vpd from '%1' %2 order by year, month, day").arg(tableName).arg(filter);

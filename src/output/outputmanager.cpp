@@ -100,12 +100,14 @@ OutputManager::~OutputManager()
 void OutputManager::setup()
 {
     //close();
+    qDebug() << "Setting up outputs...";
+    QStringList output_names;
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     QString nodepath;
     foreach(Output *o, mOutputs) {
         nodepath = QString("output.%1").arg(o->tableName());
         xml.setCurrentNode(nodepath);
-        qDebug() << "setup of output" << o->name() << "(" << o->tableName() << ")";
+        output_names.push_back(o->tableName());
         o->setup();
         bool enabled = xml.valueBool(".enabled", false);
         bool file_mode = false;
@@ -117,6 +119,8 @@ void OutputManager::setup()
         if (enabled)
             o->open();
     }
+    qDebug() << "processed" << output_names.size() << "outputs: " << output_names;
+    qDebug() << "Setup of outputs completed.";
     endTransaction(); // just to be sure
 }
 

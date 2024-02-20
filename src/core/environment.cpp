@@ -227,7 +227,7 @@ void Environment::setPosition(const QPointF position)
                     Climate *climate = new Climate();
                     mClimate.push_back(climate);
                     mCreatedObjects[value]=(void*)climate;
-                    climate->setup();
+                    climate->setup(mClimate.size()<2); // debug log only for the first climate
                     mCurrentClimate = climate;
 
                 }
