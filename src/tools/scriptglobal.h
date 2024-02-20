@@ -55,6 +55,9 @@ public slots:
     /// register this map for interactive viewing in the UI
     void registerUI(QString name=QString());
 
+    /// retrieve bounding box of a stand
+    QRectF boundingBox(int stand_id);
+
     // active modifications of the map
     void clear(); ///< clears the map (set all values to 0)
     void clearProjectArea(); ///< clear the project area (set to 0), but copy mask with pixels from "outside of project area" (i.e., -1, -2)

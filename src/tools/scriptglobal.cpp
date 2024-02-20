@@ -350,6 +350,15 @@ void MapGridWrapper::registerUI(QString name)
 
 }
 
+QRectF MapGridWrapper::boundingBox(int stand_id)
+{
+    if (mMap) {
+        QRectF rect = mMap->boundingBox(stand_id);
+        return rect;
+    }
+    return QRectF();
+}
+
 void MapGridWrapper::clear()
 {
     if (!mCreated) {

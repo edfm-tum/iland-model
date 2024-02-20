@@ -95,6 +95,29 @@ Map = {
     */
 
     /**
+    return the metric bounding box, i.e. the smallest rectangle that entirely circumferences the pixels with value `stand_id`.
+    The return value is a RectF, a simple Qt data type describing a rectangle with the properties x, y, width, height, left, right, top, bottom.
+    If the stand does not exist, an empty Rect is returned (all properties = 0).
+
+    @Example
+    var sgrid = new Map(); // standard standgrid of iLand
+    var bbox = stand_map.boundingBox(8594); // get bounding box
+
+    // getting the center point of the rect is easy:
+    function centerPoint(bbox) {
+       return { x: bbox.x + bbox.width/2,
+                y: bbox.y + bbox.height/2 }
+    }
+
+    var cp = centerPoint(bbox);
+    console.log('centerpoint: x : ' + cp.x + ', y: ' + cp.y );
+
+    @method boundingBox
+    @param {integer} stand_id stand Id to extract the bounding box
+    @return {RectF} a rectangle (technically a QRectF type).
+    */
+
+    /**
     "Paint" a shape on the Map with an ID `stand_id`.
     The `paint_function` is a valid iLand [Expression](https://iland-model.org/Expression)
     (with the paramters: `x`and `y` as *metric* coordinates). All pixels for which `paint_function`
