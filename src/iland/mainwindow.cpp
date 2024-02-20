@@ -487,10 +487,11 @@ void MainWindow::on_actionSettingsDialog_triggered()
         tabList.append(modelList);
         tabList.append(outputList);
         tabList.append(modulesList);
+
         ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
 
     }
-
+    mLinkxqt->setTempHomePath(mLinkxqt->getXmlFile());
     mLinkxqt->loadXmlFile();
     ui_settingsDialog->updateData();
     ui_settingsDialog->show();
@@ -2039,7 +2040,7 @@ void MainWindow::setupModel()
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml",this);
+    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml", "file", this);
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);

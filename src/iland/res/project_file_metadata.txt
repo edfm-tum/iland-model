@@ -136,18 +136,18 @@ output.abeStandDetail.condition = string|mod(year,10)=1|ABE Standdetail eval. co
 
 ; system
 gui.layout = tab|tabPath|Path settings|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. 
-system.path.home = path|project's home directory|Home|The project's home directory. If empty, the directory containing the project file is the home folder.
-system.path.database = path|database directory|Database|Directory containing the databases. Default: "database"
-system.path.lip = path|LIP file directory|LIP files|Directory containing the binary LIP files. Default: "lip" 
-system.path.output = path|output directory|Output|Default path for the output database(s). Default: "output"
+system.path.home = directory|project's home directory|Home|The project's home directory. If empty, the directory containing the project file is the home folder.
+system.path.database = directory|database directory|Database|Directory containing the databases. Default: "database"
+system.path.lip = directory|LIP file directory|LIP files|Directory containing the binary LIP files. Default: "lip" 
+system.path.output = directory|output directory|Output|Default path for the output database(s). Default: "output"
 system.path.temp = string|string|string|string
 system.path.script = string|string|string|string
 system.path.init = string|string|string|string
 
 gui.layout = tab|tabDatabase|Database|iLand uses primarily the SQLite database system, which stores all tables of a database within a single database file. This database files are considered to be located in the database location defined in the path section. 
-system.database.in = path|input database file|Input|Defines the input database. Stored in this database are e.g. species parameter.
-system.database.out = path|output database file|Output|Results (see Outputs) are written to this database.
-system.database.climate = path|climate database file|Climate|The SQLite database containing the climate data
+system.database.in = file|input database file|Input|Defines the input database. Stored in this database are e.g. species parameter.
+system.database.out = file|output database file|Output|Results (see Outputs) are written to this database.
+system.database.climate = file|climate database file|Climate|The SQLite database containing the climate data
 
 gui.layout = tab|tabLogging|Logging|Here settings can be defined to tell iLand how to handle logging.
 system.logging.logTarget = combo|console;file|Log target|If file the log output is stored in a file (see logFile). If console the log output is printed in the log window of the iLand main application.
@@ -230,7 +230,7 @@ model.settings.airPressure = numeric|1013|Air Pressure|Atmospheric average press
 gui.layout = tab|tabSeedDispersal|Seed Dispersal|Settings for external seed input and high-detailed outputs during seed dispersal are configured in a sub-section seedDispersal of the "model.settings" section.
 gui.layout = layout|hl
 model.settings.seedDispersal.dumpSeedMapsEnabled = boolean|true|Enable Dump Seed Maps|If "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal)
-model.settings.seedDispersal.dumpSeedMapsPath = path|target directory seed maps|Path Seed Maps|target directory for seed maps / seed kernel dumps
+model.settings.seedDispersal.dumpSeedMapsPath = directory|target directory seed maps|Path Seed Maps|target directory for seed maps / seed kernel dumps
 model.settings.seedDispersal.externalSeedEnabled = boolean|false|Enable External Seeds|If "true" external seeds are produced by species listed under externalSeedSpecies. If external seeds are enabled, the buffer-area of the simulation area is considered as a source of seeds.
 model.settings.seedDispersal.externalSeedSpecies = string|Psme,Abmi|External Seed Species|list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi").
 model.settings.seedDispersal.externalSeedSource = string|N,W|External Seed Source|Cardinal directions of external seed input. Specify as list of N,E,S,W (i.e.. north, east, south, west). If empty or missing, seeds enter from all directions. e.g.: "E,S" -> seed from east and south direction.
@@ -307,10 +307,10 @@ model.species.sprouting.adultSproutProbability = string|string|string|string
 gui.layout = tab|tabInitialization|Initilization Settings
 model.initialization.mode = combo|copy;single;snapshot|Mode|Describes the general mode. Following options: 'copy': initalize 1 resource unit, then copy to all others, 'unit': separate initailization for each resource unit, 'single': one initialization for the full area, 'map': init-files for each stand (defined by a map), 'snapshot': load from a database snapshot. See initialize trees for details.
 model.initialization.type = combo|distribution;single|Type|Describes the type of the expected initialization file. Possible values: distribution or single (see also: initialize trees ).
-model.initialization.mapFileName = path|file for init and matching stands|Map File Name|When using the map mode, the matching of stands and init files is defined in this file.
+model.initialization.mapFileName = file|file for init and matching stands|Map File Name|When using the map mode, the matching of stands and init files is defined in this file.
 model.initialization.randomFunction = string|function expression|Random Function|Defines the function (as an expression) used when estimating positions for individual trees (for init files of type distribution).
-model.initialization.file = path|path to initialization file|File|Path of the initialization file to be loaded. In mode unit this key needs to be overwritten by the environment file. If blank, no trees are loaded.
-model.initialization.saplingFile = path|path to sapling file|Sapling File|Path of the initialization file for saplings (see initialize trees). If blank, no saplings are loaded.
+model.initialization.file = file|path to initialization file|File|Path of the initialization file to be loaded. In mode unit this key needs to be overwritten by the environment file. If blank, no trees are loaded.
+model.initialization.saplingFile = file|path to sapling file|Sapling File|Path of the initialization file for saplings (see initialize trees). If blank, no saplings are loaded.
 gui.layout = layout|hl
 gui.layout = group|Snags
 model.initialization.snags.swdC = numeric|5|string|initial carbon content in (standing) snags (kg/ha)
@@ -325,19 +325,19 @@ model.initialization.snags.swdHalfLife = numeric|10|Halflife initial snags|halfl
 gui.layout = layout|hl
 gui.layout = group|Height Grid
 model.initialization.heightGrid.enabled = boolean|false|Enable|If true, the top height grid is used.
-model.initialization.heightGrid.fileName = path|default system.path.init|File name|the ESRI ASCII file that holds the tree top heights (default path is system.path.init).
+model.initialization.heightGrid.fileName = file|default system.path.init|File name|the ESRI ASCII file that holds the tree top heights (default path is system.path.init).
 model.initialization.heightGrid.maxTries = numeric|10|Max. tries|The maximum number of attempts to find a suitable cell for a tree (default: 10).
 model.initialization.heightGrid.fitFormula = string|polygon(x,0,0,0.8,1,1.1,1,1.25,0)|Fit formula|Equation that estimates the suitability of a target 10m cell based on the relative height of the tree compared to the top canopy height. default: polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0).
 
 ; model.management
 gui.layout = tab|tabManagement|Management|The management section controls the Javascript based management subsytem of iLand. See also management. Note that, the Javascript interface can be 'misused' for other (i.e., not management related) tasks as well. 
 model.management.enabled = boolean|false|Enable Management|Management is disabled if the value is false. This switch relates to the "base" management subsystem.
-model.management.file = path|javascrip file|Javacsript file|Filename of the Javascript file to load (default path is the script path provided in the paths section).
+model.management.file = file|javascript file|Javacsript file|Filename of the Javascript file to load (default path is the script path provided in the paths section).
 gui.layout = layout|hl
 gui.layout = group|Management ABE
 model.management.abeEnabled = boolean|false|Enable ABE|Switch for turning the agent based management engine on/off.
-model.management.abe.file = path|javascrip file of ABE|Javacsript file|Filename of the main Javascript file of ABE (relative paths are relative to the project root).
-model.management.abe.agentDataFile = path|data file for the spatial ABE setup|Agent data file|Filename of the data file for the spatial setup of ABE (relative paths are relative to the project root).
+model.management.abe.file = file|javascript file of ABE|Javacsript file|Filename of the main Javascript file of ABE (relative paths are relative to the project root).
+model.management.abe.agentDataFile = file|data file for the spatial ABE setup|Agent data file|Filename of the data file for the spatial setup of ABE (relative paths are relative to the project root).
 
 ; model.paramter
 gui.layout = tab|tabParameter|Parameter
@@ -358,13 +358,13 @@ model.world.height = numeric|100|Height|The vertical (north-south) extent of the
 model.world.buffer = numeric|50|Buffer|A buffer zone with the given width is attached to the rectangle of the simulation area (defined by width and height).
 model.world.latitude = numeric|45|Latitude|Latitude of project area (in degree). Used for day of length calculation.
 model.world.resourceUnitsAsGrid = boolean|true|RU as grid|If checked, each resource unit is a 100x100 pixel.
-model.world.DEM = string|DEM file|DEM file|If not empty, a digital elevation model is read from a file (ESRI ASCII raster, relative to the project root).
+model.world.DEM = file|DEM file|DEM file|If not empty, a digital elevation model is read from a file (ESRI ASCII raster, relative to the project root).
 gui.layout = layout|hl
 gui.layout = group|Environment
 model.world.environmentEnabled = boolean|false|Enable|If checked, the spatial distribution of several model parameters is loaded from an environment file. See keys below and the pages initialization and simulation extent for details.
 model.world.environmentMode = combo|grid;matrix|Mode|This settings determines how the environment file is interpreted. Possible values are grid and matrix. In grid-mode a GIS grid defines the spatial pattern, in matrix mode resource units are addressed using the resource unit index.
-model.world.environmentGrid = string|grid filename|Grid|Filename of the GIS grid which is used in grid-mode. The grid contains integer IDs which are used to map the parameter values in the environment file to resource units within the landscape.
-model.world.environmentFile = string|environment filename|File|filename of the environment file. Default path is the project path.
+model.world.environmentGrid = file|grid filename|Grid|Filename of the GIS grid which is used in grid-mode. The grid contains integer IDs which are used to map the parameter values in the environment file to resource units within the landscape.
+model.world.environmentFile = file|environment filename|File|filename of the environment file. Default path is the project path.
 gui.layout = layout|hl
 gui.layout = group|Area mask
 model.world.areaMask.enabled = boolean|false|Enable|If checked, the mask of valid project area is retrieved from an image (located at imageFile).
@@ -383,7 +383,7 @@ model.world.location.rotation = numeric|0|Rotation|A value for rotation rotates 
 gui.layout = layout|hl
 gui.layout = group|Stand grid
 model.world.standGrid.enabled = boolean|false|Enable|If checked, the stand grid is loaded and use.
-model.world.standGrid.fileName = path|stand grid file|File path|Path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section location, and landscape setup.
+model.world.standGrid.fileName = file|stand grid file|File path|Path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section location, and landscape setup.
 
 
 ; model.site
@@ -468,7 +468,7 @@ modules.fire.rLand = numeric|1|r Land|"Multiplier for the fire spread probabilit
 modules.fire.meanAnnualPrecipitation = numeric|240|Mean Annual Precipitation|Mean annual precipitation (mm)
 modules.fire.averageFireSize = numeric||Average Fire Size|Average fire size in m2
 modules.fire.fireSizeSigma = numeric||Fire Size Sigma|""
-modules.fire.fireReturnInterval = numeric|100| Fire Return Interval|Average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years"
+modules.fire.fireReturnInterval = numeric|100|Fire Return Interval|Average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years"
 modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probability that a the fire on a burning pixel extincts without a chance to spread further
 
 
@@ -500,7 +500,7 @@ modules.wind.factorEdge = numeric||Factor|Factor Edge
 gui.layout = layout|hl
 gui.layout = group| Topography
 modules.wind.topoModifier = numeric||Modifier|Multiplier accounting for differences in local wind speed. The modifier is either resource unit specific (see simulation extent) or defined by 10m pixel (see setting topoGridFile). The actual wind speed for a pixel is calculated by multiplying the modifier with the speed.
-modules.wind.topoGridFile = path||Grid File|Specifies a ASCII grid file containing the topoModifier. Modifier values are sampled for 10m pixels. File paths are relative to the project root folder.
+modules.wind.topoGridFile = file||Grid File|Specifies a ASCII grid file containing the topoModifier. Modifier values are sampled for 10m pixels. File paths are relative to the project root folder.
 modules.wind.topexModifierType = combo|multiplicative;additive|Modifier Type|Specifies the calculation mode for values for the topoModifier. Possible values are "additive" and "multiplicative", which is the default. If "additive", the 10m-wind speed is calculated as (speed + topoModifier) * gustModifier.
 
 gui.layout = layout|hl

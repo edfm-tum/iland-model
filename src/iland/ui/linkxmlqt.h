@@ -21,7 +21,7 @@ struct SettingsItem {
             throw IException("SettingsItem: invalid input type");
         type = (EInputType) ti;
     };
-    enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataCombo, DataTable };
+    enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataPathFile, DataPathDirectory, DataCombo, DataTable };
     GenericInputWidget *widget;
     size_t metakeyIndex;
     QString key;
@@ -33,7 +33,7 @@ struct SettingsItem {
     QString strValue; // value as given in XML
     QString comment; // the dynamic comment
 private:
-    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "combo", "table" };
+    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "table" };
 };
 
 
@@ -59,10 +59,14 @@ public:
     QString readXmlComment(QString key);
 
     void createXML(const QStringList &metaKeys, const QString& pathXmlFile);
+    void setTempHomePath(QString homePath);
+    QString getTempHomePath();
+
 
 private:
     // Variables
     QString mXmlFile;
+    QString mTempHomePath;
     QWidget* guiWidget;
     bool mSiblingIsComment;
 

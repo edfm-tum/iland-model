@@ -160,7 +160,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 //        QLayout *tabLay;
     QWidget *curChildStack;
     QVBoxLayout *tabLay;
-    QStringList valueTypes = {"string", "boolean", "numeric", "path", "combo"};
+    QStringList valueTypes = {"string", "boolean", "numeric", "path", "file", "directory", "combo"};
     QFont fontHeading("Arial", 15, QFont::Bold);
     // List used to store copied gui elements to connect them to their respective twin
     QList<QStringList> connectedElements;
@@ -352,6 +352,11 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                                                                      this->close();});
     connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {this->close();});
     connect(this, &QDialog::rejected, this, [=]() {this->close();});
+
+    // Home path should be used as relative file path.
+    // To use it after it was changed without saving the changes and opening the dialog again, a temporary global variable is used.
+    QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
+    connect(homePathEdit, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setTempHomePath(homePathEdit->text());});
 
     QString sibling;
     // connect the copied and original element, so that they mirror the state of the other

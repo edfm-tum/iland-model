@@ -3,3 +3,4 @@ build-plugins*
 *.pro.user
 *.lib
 *.pdb
+project_file.xml

@@ -65,15 +65,23 @@ GenericInputWidget::GenericInputWidget( LinkXmlQt* Linkxqt,
 
     if (mDataType == "string" ||
         mDataType == "path" ||
-        mDataType == "numeric") {
+        mDataType == "numeric" ||
+        mDataType == "file" ||
+        mDataType == "directory") {
         QLineEdit *inputField = new QLineEdit();
         // default value given in metadata shown as grey placeholder text
         inputField->setPlaceholderText(mDefaultValue);
-        if (mDataType == "path") {
+        if (mDataType == "file" ||
+            mDataType == "directory") {
             QToolButton *fileDialog = new QToolButton();
             fileDialog->setText("...");
             layout->addWidget(fileDialog);
-            connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(mXmlPath.join("_"), inputField);});
+            if ( mDataType == "file") {
+                connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(mXmlPath.join("_"), inputField, "file");});
+            }
+            else if ( mDataType == "directory") {
+                connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(mXmlPath.join("_"), inputField, "directory");});
+            }
         }
         else if (mDataType == "numeric") {
             QDoubleValidator* numericValidator = new QDoubleValidator(inputField);
@@ -159,15 +167,23 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
 
     if (item->type == SettingsItem::DataString ||
         item->type == SettingsItem::DataPath ||
-        item->type == SettingsItem::DataNumeric) {
+        item->type == SettingsItem::DataNumeric ||
+        item->type == SettingsItem::DataPathDirectory ||
+        item->type == SettingsItem::DataPathFile) {
         mInputField = new QLineEdit();
         // default value given in metadata shown as grey placeholder text
         mInputField->setPlaceholderText(item->defaultValue);
-        if (item->type == SettingsItem::DataPath) {
+        if (item->type == SettingsItem::DataPathFile ||
+            item->type == SettingsItem::DataPathDirectory) {
             QToolButton *fileDialog = new QToolButton();
             fileDialog->setText("...");
             layout->addWidget(fileDialog);
-            connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(mXmlPath.join("_"), mInputField);});
+            if (item->type == SettingsItem::DataPathFile) {
+                connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(objName, mInputField, "file");});
+            }
+            else if (item->type == SettingsItem::DataPathDirectory) {
+                connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(objName, mInputField, "directory");});
+            }
         }
         else if (item->type == SettingsItem::DataNumeric) {
             QDoubleValidator* numericValidator = new QDoubleValidator(mInputField);
@@ -211,6 +227,8 @@ QString GenericInputWidget::strValue()
     case SettingsItem::DataNumeric:
     case SettingsItem::DataPath:
     case SettingsItem::DataString:
+    case SettingsItem::DataPathDirectory:
+    case SettingsItem::DataPathFile:
         return mInputField->text();
     case SettingsItem::DataBoolean:
         return mInputCheckBox->isChecked() ? "true" : "false";
@@ -228,6 +246,8 @@ void GenericInputWidget::setValue(QString str_value)
     case SettingsItem::DataNumeric:
     case SettingsItem::DataString:
     case SettingsItem::DataPath:
+    case SettingsItem::DataPathDirectory:
+    case SettingsItem::DataPathFile:
         mInputField->setText(str_value);
         break;
 
@@ -293,11 +313,39 @@ void GenericInputWidget::setComment(QString comment)
 }
 
 
-void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdit *lineEdit)
+void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString& type)
 {
-    QString fileName = Helper::fileDialog("Select " + variableName, "", "");
-    if (fileName.isEmpty())
+    QString xmlPath;
+    QDir homePathAbsolute;
+    QDir xmlHomePathAbsolute = mLinkxqt->getTempHomePath();
+
+    if ( xmlHomePathAbsolute.exists() ) {
+        homePathAbsolute = xmlHomePathAbsolute;
+        qDebug() << "Using default directory set in xml Path: ";
+    }
+    else {
+        xmlPath = mLinkxqt->getXmlFile();
+
+        QFileInfo fileInfo(xmlPath);
+        homePathAbsolute = fileInfo.absolutePath();
+
+        qDebug() << "Home path not set or invalid. Default to directory containing project settings file (xml file).";
+    }
+    qDebug() << homePathAbsolute;
+
+    QString selectedFile = Helper::fileDialog("Select " + variableName, homePathAbsolute.absolutePath(), "", type, nullptr);
+    if (selectedFile.isEmpty())
         return;
+    QString relativeFilePath = homePathAbsolute.relativeFilePath(selectedFile);
+    QString fileName;
+    if (relativeFilePath.startsWith("..") ||
+        variableName == "system.path.home" ) {
+        qDebug() << "Set absolute path.";
+        fileName = selectedFile;
+    } else {
+        qDebug() << "Set relative path.";
+        fileName = relativeFilePath;
+    }
     lineEdit->setText(fileName);
 }
 

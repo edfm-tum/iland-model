@@ -27,6 +27,7 @@
 
 
 LinkXmlQt::LinkXmlQt(const QString& xmlFile) :
+    mTempHomePath(""),
     mXmlFile(xmlFile)
 {
     xmlFileLoaded = loadXmlFile();
@@ -378,6 +379,16 @@ void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFil
     newXml.save(outStream, 4);
 
     xmlFile.close();
+}
+
+void LinkXmlQt::setTempHomePath(QString homePath)
+{
+    mTempHomePath = homePath;
+}
+
+QString LinkXmlQt::getTempHomePath()
+{
+    return mTempHomePath;
 }
 
 QString LinkXmlQt::getXmlFile()

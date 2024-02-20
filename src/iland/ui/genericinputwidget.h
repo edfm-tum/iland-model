@@ -45,7 +45,7 @@ private:
     QString richToolTip;
     bool mConnected;
 
-    void connectFileDialog(const QString& variableName, QLineEdit *lineEdit);
+    void connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString &type);
     void openCommentDialog(QStringList xmlPath);
     void checkCommentButton();
 
