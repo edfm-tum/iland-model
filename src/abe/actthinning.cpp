@@ -157,6 +157,7 @@ void ActThinning::setupSelective(QJSValue value)
 {
     mSelectiveThinning.N = FMSTP::valueFromJs(value, "N", "400").toInt();
     mSelectiveThinning.speciesProb = FMSTP::valueFromJs(value, "speciesSelectivity");
+    mSelectiveThinning.rankingExpr = FMSTP::valueFromJs(value, "ranking", "").toString();
 }
 
 // setup of the "custom" thinning operation
@@ -506,8 +507,16 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     // N*9/2500 -1 = probability of having more than zero overlapping pixels
     double overprint = (mSelectiveThinning.N * 9) / double(cPxPerHectare) - 1.;
 
-    // order the list of trees according to tree height
-    treelist->sort("-height");
+    // rank the trees according to their ranking
+    if (mSelectiveThinning.rankingExpr.isEmpty()) {
+        // order the list of trees according to tree height
+        treelist->sort("-height");
+    } else {
+        // order the list of trees according to a user defined ranking expression
+        treelist->sort(mSelectiveThinning.rankingExpr);
+        qCDebug(abe) << "using user-defined ranking for selective thinning: " << mSelectiveThinning.rankingExpr;
+
+    }
 
     // start with a part of N and 0 overlap
     int n_found = 0;

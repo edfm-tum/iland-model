@@ -284,8 +284,10 @@ Grid = {
 
       */
     /**
-    Access individual cell values of the grid at the given position. If the grid is empty, or the the
-    given position is invalid, -1 is returned.
+    Access individual cell values with an index in x- and y-direction (i.e., values between 0 and the width/height-1).
+    If the grid is empty, or the the given position is invalid, -1 is returned.
+
+   Note: For access with metric coordinates, use the `valueAt()` function!
 
     See also: {{#crossLink "Grid/setValue:method"}}{{/crossLink}}
 
@@ -297,8 +299,10 @@ Grid = {
       */
 
     /**
-    Access individual cell values of the grid at the given metric coordinates. If the grid is empty, or the the
+    Access individual cell values of the grid at the given *metri*c coordinates. If the grid is empty, or the the
     given position is invalid, -1 is returned. The coordiantes are relative to the origin of the iLand project area.
+
+    Note: For access with index coordinates, use the `value()` function!
 
     See also: {{#crossLink "Grid/setValue:method"}}{{/crossLink}}
 

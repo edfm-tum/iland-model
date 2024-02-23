@@ -56,6 +56,7 @@ private:
     struct SSelectiveThinning {
         int N; ///< stems pro ha target
         QJSValue speciesProb;
+        QString rankingExpr;
     };
 
     SSelectiveThinning mSelectiveThinning;
