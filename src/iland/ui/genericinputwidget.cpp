@@ -317,11 +317,12 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
 {
     QString xmlPath;
     QDir homePathAbsolute;
+   //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
     QDir xmlHomePathAbsolute = mLinkxqt->getTempHomePath();
 
     if ( xmlHomePathAbsolute.exists() ) {
         homePathAbsolute = xmlHomePathAbsolute;
-        qDebug() << "Using default directory set in xml Path: ";
+        qDebug() << "Home path set to user defined path: ";
     }
     else {
         xmlPath = mLinkxqt->getXmlFile();
@@ -329,7 +330,7 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
         QFileInfo fileInfo(xmlPath);
         homePathAbsolute = fileInfo.absolutePath();
 
-        qDebug() << "Home path not set or invalid. Default to directory containing project settings file (xml file).";
+        qDebug() << "Home path set to directory containing project file (xml file): ";
     }
     qDebug() << homePathAbsolute;
 
@@ -347,6 +348,7 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
         fileName = relativeFilePath;
     }
     lineEdit->setText(fileName);
+    mLinkxqt->setTempHomePath(fileName);
 }
 
 void GenericInputWidget::openCommentDialog(QStringList xmlPath)

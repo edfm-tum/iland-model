@@ -47,7 +47,7 @@ public:
     QString readCommentXml(const QStringList& xmlPath);
     void writeCommentXml(const QString& comment, const QStringList& xmlPath);
     void setXmlPath(const QString& xmlPath);
-    void writeToFile(QString xmlFilePath);
+    void writeToFile(const QString &xmlFilePath);
     QString getXmlFile();
     bool loadXmlFile();
 
@@ -59,7 +59,7 @@ public:
     QString readXmlComment(QString key);
 
     void createXML(const QStringList &metaKeys, const QString& pathXmlFile);
-    void setTempHomePath(QString homePath);
+    void setTempHomePath(QString homePath = "");
     QString getTempHomePath();
 
 

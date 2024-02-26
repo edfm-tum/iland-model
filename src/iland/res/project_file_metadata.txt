@@ -3,6 +3,8 @@
 ; Format:
 ; setting = type|defaultValue|labelName|toolTip, with setting the setting name with dot-notation (e.g. model.world.size)
 
+gui.layout = tab|tabSettings|Settings|Insert html for settings,....
+
 
 ; output
 gui.layout = tab|tabOutput|Output|Outputs in iLand are per default created as a SQLite database. Every type of output is represented by one table within this output database. Thus, the results of one simulation run are contained in one single file. Each iLand output database contains a small table named "runinfo" which stores the timestamp when the simulation was started, and iLand version information. Alternatively, individual outputs can be configured to generate data tables as a text file instead of a table in the output database. 

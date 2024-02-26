@@ -27,8 +27,8 @@
 
 
 LinkXmlQt::LinkXmlQt(const QString& xmlFile) :
-    mTempHomePath(""),
-    mXmlFile(xmlFile)
+    mXmlFile(xmlFile),
+    mTempHomePath("")
 {
     xmlFileLoaded = loadXmlFile();
 
@@ -49,7 +49,7 @@ bool LinkXmlQt::loadXmlFile()
 {
     QDomDocument curXml;
     //setXmlPath(xmlPath);
-    QString filetest = mXmlFile;
+    //QString filetest = mXmlFile;
     QFile file(mXmlFile);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -67,6 +67,7 @@ bool LinkXmlQt::loadXmlFile()
     }
 
     mLoadedXml = curXml;
+
     file.close();
     return true;
 }
@@ -267,13 +268,15 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
 
         foreach (QWidget* curWidget, widgetElements) {
             //qDebug() << "Aktuelles Widget: " << curWidget->objectName();
-            QStringList xmlPath = curWidget->objectName().split(".");
+            QString widgetName = curWidget->objectName();
+            QStringList xmlPath = widgetName.split(".");
 
             curNode = rootElement;
             foreach (QString node, xmlPath) {
                 curNode = curNode.firstChildElement(node);
                 //qDebug() << "Current node: " << curNode.nodeName();
             }
+
 
             if (!curNode.isNull()) {
 
@@ -296,7 +299,12 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
                 else {
                     //qDebug() << "Widget not specified: " << curWidget->objectName();
                 }
+                if ( widgetName == "system.path.database" ) {
+                    qDebug() << "system.path.database = " << elementValue;
+                }
+                //QDomText curText = curXml.createTextNode(elementValue);
                 curNode.firstChild().setNodeValue(elementValue);
+                //curNode.setNodeValue(elementValue);
             }
 
         }
@@ -305,7 +313,7 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
 }
 
 // Save open document to file
-void LinkXmlQt::writeToFile(QString xmlFilePath)
+void LinkXmlQt::writeToFile(const QString& xmlFilePath)
 {
     if (xmlFilePath != "") {
         this->setXmlPath(xmlFilePath);
@@ -316,12 +324,16 @@ void LinkXmlQt::writeToFile(QString xmlFilePath)
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         qDebug() << "File couldn't be opened for writing. Abort.";
         return;
+    } else {
+        qDebug() << "file error output: " << file.error();
+        qDebug() << "Write current data to file.";
+        QTextStream outStream(&file);
+        mLoadedXml.save(outStream, 4);
+
+        file.close();
     }
 
-    QTextStream outStream(&file);
-    mLoadedXml.save(outStream, 4);
 
-    file.close();
 
 }
 
@@ -383,7 +395,21 @@ void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFil
 
 void LinkXmlQt::setTempHomePath(QString homePath)
 {
+    if (homePath == "") {
+        QDomElement rootElement = mLoadedXml.documentElement();
+        QDomElement curNode = rootElement;
+
+        QStringList homePathXml = {"system", "path", "home"};
+
+        foreach (QString node, homePathXml) {
+            curNode = curNode.firstChildElement(node);
+        }
+        homePath = curNode.firstChild().toText().data();
+        //mTempHomePath = curNode.firstChild().toText().data();
+    }
     mTempHomePath = homePath;
+
+
 }
 
 QString LinkXmlQt::getTempHomePath()

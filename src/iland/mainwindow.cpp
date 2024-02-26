@@ -477,22 +477,25 @@ void MainWindow::on_actionSettingsDialog_triggered()
     //mLinkxqt->createXML(mMetaKeys, "C:\\Users\\gu47yiy\\Documents\\edfm_projects\\iland-model\\test.xml");
 
     if (!ui_settingsDialog) {
-        QStringList dialogList = QStringList() << "System"  << "Model" << "Output" << "Modules";
+        QStringList dialogList = QStringList() << "Settings" << "System"  << "Model" << "Output" << "Modules";
         QStringList modelList = QStringList() << "Global Settings" << "World" << "Site" << "Climate" << "Seed Dispersal" << "Soil" << "Grass" << "Browsing" << "Initialization" << "Management" << "Parameter" ;
         QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
         QStringList outputList = QStringList() << "Dynamic" << "Tree" << "Environment";
         QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
         QList<QStringList> tabList;
+        tabList.append(QStringList());
         tabList.append(systemList);
         tabList.append(modelList);
         tabList.append(outputList);
         tabList.append(modulesList);
 
         ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
-
+        ui_settingsDialog->findChild<QStackedWidget *>()->setCurrentIndex(1000);
     }
-    mLinkxqt->setTempHomePath(mLinkxqt->getXmlFile());
+    //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
+    //mLinkxqt->setTempHomePath(xmlFileInfo.absolutePath());
     mLinkxqt->loadXmlFile();
+    mLinkxqt->setTempHomePath();
     ui_settingsDialog->updateData();
     ui_settingsDialog->show();
 }

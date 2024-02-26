@@ -39,6 +39,7 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
 
 void SettingsDialog::updateData()
 {
+    this->setWindowTitle(mLinkxqt->getXmlFile());
     readXMLValues();
 }
 
@@ -76,7 +77,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
     // First part
     // create a tree widget used for navigation
-    treeWidget->setHeaderLabel("Settings");
+    treeWidget->setHeaderHidden(true);
 
     // By default, a tree widget offers no inherent way for propper indexing
     int treeIndex = 0;
@@ -355,8 +356,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
     // Home path should be used as relative file path.
     // To use it after it was changed without saving the changes and opening the dialog again, a temporary global variable is used.
-    QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
-    connect(homePathEdit, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setTempHomePath(homePathEdit->text());});
+    //QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
+    //connect(homePathEdit, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setTempHomePath(homePathEdit->text());});
 
     QString sibling;
     // connect the copied and original element, so that they mirror the state of the other
