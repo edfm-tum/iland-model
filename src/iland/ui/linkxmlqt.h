@@ -14,8 +14,8 @@ class GenericInputWidget; // forward
 /// this includes meta data of the setting, as well as the current value
 struct SettingsItem {
 
-    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault):
-        metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault) {
+    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility):
+        metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility) {
         auto ti =  mInputTypes.indexOf(atype);
         if (ti < 0)
             throw IException("SettingsItem: invalid input type");
@@ -29,6 +29,7 @@ struct SettingsItem {
     QString label;
     QString tooltip;
     QString defaultValue;
+    QString visibility;
     // link to xml or whatever
     QString strValue; // value as given in XML
     QString comment; // the dynamic comment

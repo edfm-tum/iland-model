@@ -8,9 +8,40 @@
 #include <QScrollArea>
 
 
+#include "qbuttongroup.h"
+#include "qpushbutton.h"
 #include "ui/genericinputwidget.h"
 #include "qdialogbuttonbox.h"
 
+FilterButton::FilterButton(const QString& text, const QString& pathIcon, QWidget *parent)
+    :QAbstractButton(parent),
+    mText(text),
+    mPathIcon(pathIcon)
+{
+    this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    this->setCheckable(true);
+    this->setAutoExclusive(true);
+
+    this->setText(mText);
+}
+
+void FilterButton::paintEvent(QPaintEvent *e)
+{
+    Q_UNUSED(e);
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    QPixmap pixmapIconRaw = QPixmap(mPathIcon);
+    int iconWidth = pixmapIconRaw.width();
+    int iconHeight = pixmapIconRaw.height();
+    QIcon icon = isChecked() ? this->icon() : QIcon(pixmapIconRaw);
+    QSize iconSize = QSize(iconWidth, iconHeight);
+    QPixmap pixmapIcon = icon.pixmap(iconSize, isChecked() ? QIcon::Normal : QIcon::Disabled);
+
+    painter.drawPixmap(rect().center() - pixmapIcon.rect().center(), pixmapIcon);
+
+}
 
 SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
                                QStringList &inputSettings,
@@ -48,6 +79,7 @@ void SettingsDialog::setFilterMode(int mode)
     qDebug() << "filter mode " << mode;
     // 0: all
     // 1: simplified
+    // 2: advanced
     switch (mode) {
     case 0:
         for (auto &v : mKeys) {
@@ -62,9 +94,15 @@ void SettingsDialog::setFilterMode(int mode)
             // simplified - often used settings
             // advanced - including the more detailed flags
             // all - also include "deprecated" flags
-            v->widget->setVisible(v->type != SettingsItem::DataNumeric);
-        }
+            v->widget->setVisible(v->visibility == "simple");
+            }
+        break;
+    case 2:
+        for (auto &v : mKeys) {
+            v->widget->setVisible(v->visibility != "all");
 
+        }
+        break;
     }
 
 }
@@ -236,7 +274,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                                   inputType,
                                   values[2], // label
                                   values[3], // tooltip
-                                  values[1]); // default
+                                  values[1], // default
+                                  values[4]); // visibility
                 mKeys[element] = item;
 
                 defaultValue = values[1];
@@ -400,12 +439,46 @@ void SettingsDialog::readXMLValues()
 QToolBar *SettingsDialog::createToolbar()
 {
     QToolBar *toolbar = new QToolBar(this);
-    QAction *a_all = new QAction("Show all");
-    QAction *a_selected = new QAction("Simplified View");
+    toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    QActionGroup *groupFilter = new QActionGroup(toolbar);
+    groupFilter->setExclusive(true);
+
+    QAction *a_all = new QAction("Show &all", groupFilter);
+    QAction *a_simple = new QAction("Sim&plified view", groupFilter);
+    QAction *a_advanced = new QAction("Ad&vanced view", groupFilter);
+
+    groupFilter->addAction(a_all);
+    groupFilter->addAction(a_simple);
+    groupFilter->addAction(a_advanced);
+
+    a_all->setCheckable(true);
+    a_simple->setCheckable(true);
+    a_advanced->setCheckable(true);
+
+    QIcon iconAll = QIcon(":/iconFilterAll.png");
+    QIcon iconAdvanced = QIcon(":/iconFilterAdvanced.png");
+    QIcon iconSimple = QIcon(":/iconFilterSimple.png");
+
+    a_all->setIcon(iconAll);
+    a_all->setText("Show &all");
+    a_all->setToolTip("Advanced settings and also deprecated variables.");
+    a_advanced->setIcon(iconAdvanced);
+    a_advanced->setText("Ad&vanced view");
+    a_advanced->setToolTip("Shows also more advanced options, besides the elements of 'Simple view'.");
+    a_simple->setIcon(iconSimple);
+    a_simple->setText("Sim&ple view");
+    a_simple->setToolTip("Only basic options are shown.");
+
     connect(a_all, &QAction::triggered, this, [this]() { setFilterMode(0);});
-    connect(a_selected, &QAction::triggered, this, [this]() { setFilterMode(1);});
-    toolbar->addAction(a_all);
-    toolbar->addAction(a_selected);
+    connect(a_simple, &QAction::triggered, this, [this]() { setFilterMode(1);});
+    connect(a_advanced, &QAction::triggered, this, [this]() { setFilterMode(2);});
+
+    QList actions = {a_simple, a_advanced, a_all};
+
+    toolbar->addActions(actions);
+
+    a_simple->setChecked(true);
 
     return toolbar;
 }

@@ -299,9 +299,7 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
                 else {
                     //qDebug() << "Widget not specified: " << curWidget->objectName();
                 }
-                if ( widgetName == "system.path.database" ) {
-                    qDebug() << "system.path.database = " << elementValue;
-                }
+
                 //QDomText curText = curXml.createTextNode(elementValue);
                 curNode.firstChild().setNodeValue(elementValue);
                 //curNode.setNodeValue(elementValue);
@@ -325,7 +323,7 @@ void LinkXmlQt::writeToFile(const QString& xmlFilePath)
         qDebug() << "File couldn't be opened for writing. Abort.";
         return;
     } else {
-        qDebug() << "file error output: " << file.error();
+
         qDebug() << "Write current data to file.";
         QTextStream outStream(&file);
         mLoadedXml.save(outStream, 4);

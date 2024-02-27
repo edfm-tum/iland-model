@@ -403,15 +403,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logOutput->setFont(font);
     //qDebug() << "mainwindow init done";
 
-    // List of dialogs to create
-    QStringList dialogList = QStringList() << "Modules" << "System";
-    // List of lists with tabs to include
-    QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
-    QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "Settings" << "Javascript";
-    QList<QStringList> tabList;
-    tabList.append(modulesList);
-    tabList.append(systemList);
-
     // import all variables, their types, default values, etc defined in metadata.txt
     SettingMetaData mSettingMetaData;
     // QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
@@ -420,15 +411,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
 
-//    processMetaData(mMeta);
-
-
-//    for (int i = 0; i < dialogList.length(); i++) {
-//        createDialog(dialogList[i], tabList[i], mMeta);
-//    }
-
 }
-
 
 MainWindow::~MainWindow()
 {
@@ -468,13 +451,6 @@ void MainWindow::processMetaData(metadata &meta) {
 
 void MainWindow::on_actionSettingsDialog_triggered()
 {
-    //QString xmlFile = ui->initFileName->text();
-    //ui_systemSettings = new DialogSystemSettings(xmlFile, this);
-//    mLinkxqt->loadXmlFile(xmlFile);
-//    ui_systemSettings = new DialogSystemSettings(mLinkxqt, this);
-//    ui_systemSettings->show();
-
-    //mLinkxqt->createXML(mMetaKeys, "C:\\Users\\gu47yiy\\Documents\\edfm_projects\\iland-model\\test.xml");
 
     if (!ui_settingsDialog) {
         QStringList dialogList = QStringList() << "Settings" << "System"  << "Model" << "Output" << "Modules";
@@ -490,7 +466,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
         tabList.append(modulesList);
 
         ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
-        ui_settingsDialog->findChild<QStackedWidget *>()->setCurrentIndex(1000);
+
     }
     //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
     //mLinkxqt->setTempHomePath(xmlFileInfo.absolutePath());

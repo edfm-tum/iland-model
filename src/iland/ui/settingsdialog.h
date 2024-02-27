@@ -11,6 +11,20 @@ namespace Ui {
 class SettingsDialog;
 }
 
+class FilterButton : public QAbstractButton
+{
+    Q_OBJECT
+public:
+    explicit FilterButton(const QString& text, const QString& pathIcon, QWidget *parent = nullptr);
+
+    void paintEvent(QPaintEvent *e) override;
+
+private:
+    QString mText;
+    QString mPathIcon;
+};
+
+
 //struct metadata;
 //{
 //    QStringList elements;
