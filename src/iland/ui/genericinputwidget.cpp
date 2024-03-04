@@ -184,6 +184,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
             else if (item->type == SettingsItem::DataPathDirectory) {
                 connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(objName, mInputField, "directory");});
             }
+
         }
         else if (item->type == SettingsItem::DataNumeric) {
             QDoubleValidator* numericValidator = new QDoubleValidator(mInputField);
@@ -309,6 +310,7 @@ QString GenericInputWidget::comment()
 void GenericInputWidget::setComment(QString comment)
 {
     mSetting->comment = comment;
+   // mLinkxqt->writeCommentXml(comment, mSetting->key);
     checkCommentButton();
 }
 
@@ -348,7 +350,12 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
         fileName = relativeFilePath;
     }
     lineEdit->setText(fileName);
-    mLinkxqt->setTempHomePath(fileName);
+    //mLinkxqt->setTempHomePath(fileName);
+    if (variableName == "system.path.home") {
+        emit lineEdit->editingFinished();
+    }
+
+
 }
 
 void GenericInputWidget::openCommentDialog(QStringList xmlPath)

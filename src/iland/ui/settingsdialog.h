@@ -89,6 +89,8 @@ private:
 
     QToolBar *createToolbar();
 
+public slots:
+    void updateFilePaths(const QString& homePath);
 
 };
 

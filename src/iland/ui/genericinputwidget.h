@@ -45,6 +45,7 @@ private:
     QString richToolTip;
     bool mConnected;
 
+    //void updateFilePath(const QString& path, QLineEdit *lineEdit);
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString &type);
     void openCommentDialog(QStringList xmlPath);
     void checkCommentButton();
@@ -52,8 +53,8 @@ private:
     DialogComment* ui_comment;
     LinkXmlQt* mLinkxqt;
 
-signals:
-
+//signals:
+    //void homePathUpdate(const QString& homePath);
 };
 
 #endif // GENERICINPUTWIDGET_H

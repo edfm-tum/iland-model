@@ -395,8 +395,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
     // Home path should be used as relative file path.
     // To use it after it was changed without saving the changes and opening the dialog again, a temporary global variable is used.
-    //QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
-    //connect(homePathEdit, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setTempHomePath(homePathEdit->text());});
+    QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
+    connect(homePathEdit, &QLineEdit::editingFinished, this, [=]{updateFilePaths(homePathEdit->text());});
 
     QString sibling;
     // connect the copied and original element, so that they mirror the state of the other
@@ -423,6 +423,43 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     }
 
 }
+
+void SettingsDialog::updateFilePaths(const QString &homePath)
+{
+    QString fileName, relativeFilePath, lineEditContent;
+    QDir pathOldDir;
+    QDir homePathAbsolute = QDir(homePath);
+    QDir formerHomePath = QDir(mLinkxqt->getTempHomePath());
+    mLinkxqt->setTempHomePath(homePath);
+
+    for (auto &item : mKeys) {
+
+        if ((item->type == SettingsItem::DataPathDirectory ||
+            item->type == SettingsItem::DataPathFile) &&
+            item->key != "system.path.home") {
+            QLineEdit *pathField = item->widget->findChild<QLineEdit *>();
+            lineEditContent = pathField->text();
+
+            if ( lineEditContent != "" ) {
+
+                pathOldDir = QDir(lineEditContent);
+                if ( pathOldDir.isRelative() ) {pathOldDir = QDir(formerHomePath.path() + "/" + lineEditContent);};
+
+                relativeFilePath = homePathAbsolute.relativeFilePath(pathOldDir.path());
+                if (relativeFilePath.startsWith(".."))
+                {
+                    qDebug() << "Set absolute path.";
+                    fileName = pathOldDir.path();
+                } else {
+                    qDebug() << "Set relative path.";
+                    fileName = relativeFilePath;
+                }
+                pathField->setText(QDir::cleanPath(fileName));
+            }
+        }
+    }
+}
+
 
 void SettingsDialog::readXMLValues()
 {

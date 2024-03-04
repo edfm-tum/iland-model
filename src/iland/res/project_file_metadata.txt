@@ -1,7 +1,7 @@
 ; This file contains all the nodes of the XML project file that iLand is actively using
 ; The list is used to check existing XML files.
 ; Format:
-; setting = type|defaultValue|labelName|toolTip, with setting the setting name with dot-notation (e.g. model.world.size)
+; setting = type|defaultValue|labelName|toolTip|filterView, with setting the setting name with dot-notation (e.g. model.world.size)
 
 gui.layout = tab|tabSettings|Settings|Insert html for settings,....
 

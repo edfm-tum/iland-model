@@ -103,14 +103,14 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 }
 
 void LinkXmlQt::writeCommentXml(const QString& comment,
-                                const QStringList& xmlPath)
+                                const QString& xmlPath)
 
 {
     QDomDocument curXml = mLoadedXml;
 
     QDomElement rootElement = curXml.documentElement();
     QDomElement curNode = rootElement;
-    foreach (QString node, xmlPath) {
+    foreach (QString node, xmlPath.split(".")) {
         curNode = curNode.firstChildElement(node);
     }
     //If Qt::SkipEmptyParts is set no empty lines are included as (empty) comments
@@ -403,6 +403,7 @@ void LinkXmlQt::setTempHomePath(QString homePath)
             curNode = curNode.firstChildElement(node);
         }
         homePath = curNode.firstChild().toText().data();
+        while ( homePath.endsWith("/") ) { homePath.chop(1); };
         //mTempHomePath = curNode.firstChild().toText().data();
     }
     mTempHomePath = homePath;
