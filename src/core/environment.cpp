@@ -222,7 +222,7 @@ void Environment::setPosition(const QPointF position)
                 mCurrentSpeciesSet = (SpeciesSet*)mCreatedObjects[value];
             if (mKeys[col]==climateKey) {
                 mCurrentClimate = (Climate*)mCreatedObjects[value];
-                if (mCurrentClimate==0) {
+                if (mCurrentClimate==nullptr) {
                     // create only those climate sets that are really used in the current landscape
                     Climate *climate = new Climate();
                     mClimate.push_back(climate);

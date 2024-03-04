@@ -305,6 +305,13 @@ void Model::setupSpace()
                 new_ru->setBoundingBox(r);
                 new_ru->setID( mEnvironment->currentID() ); // set id of resource unit in grid mode
                 new_ru->setClimate( mEnvironment->climate() );
+                if (!mEnvironment->climate()) {
+                    QString err_msg = QString("Setup of landscape: Trying to set up a resource unit " \
+                                              " with center point (%1/%2), but no climate is defined in the environment for that location. \n " \
+                                              "Check spatial extent of your stand grid / environment grid, and the log file.").
+                                      arg(r.center().x()).arg(r.center().y());
+                    throw IException(err_msg);
+                }
                 new_ru->setSpeciesSet( mEnvironment->speciesSet() );
                 new_ru->setup();
                 mRU.append(new_ru);
