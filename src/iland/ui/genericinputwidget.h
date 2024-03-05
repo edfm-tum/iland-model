@@ -5,7 +5,7 @@
 #include <QWidget>
 #include <QLabel>
 
-//struct metadata;
+struct SettingsItem;
 class DialogComment; // forward
 class GenericInputWidget : public QWidget
 {
@@ -49,6 +49,7 @@ private:
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString &type);
     void openCommentDialog(QStringList xmlPath);
     void checkCommentButton();
+    //void valueChanged(QWidget *inputField);
 
     DialogComment* ui_comment;
     LinkXmlQt* mLinkxqt;

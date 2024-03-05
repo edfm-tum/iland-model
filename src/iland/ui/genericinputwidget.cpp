@@ -195,19 +195,32 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         mInputField->setToolTip(richToolTip);
         mInputField->setObjectName(objName);
         layout->addWidget(mInputField);
+
+        // connect to check for changes
+        connect(mInputField, &QLineEdit::textEdited, mSetting, &SettingsItem::valueChanged);
+
+
     }
     else if (item->type == SettingsItem::DataBoolean) {
         mInputCheckBox = new QCheckBox();
         mInputCheckBox->setToolTip(richToolTip);
         mInputCheckBox->setObjectName(objName);
         layout->addWidget(mInputCheckBox);
+
+        // connect to check for changes
+        connect(mInputCheckBox, &QAbstractButton::clicked, mSetting, &SettingsItem::valueChanged);
     }
+
+
     else if (item->type == SettingsItem::DataCombo) {
         mInputComboBox = new QComboBox();
         mInputComboBox->addItems(item->defaultValue.split(";"));
         mInputComboBox->setToolTip(richToolTip);
         mInputComboBox->setObjectName(objName);
         layout->addWidget(mInputComboBox);
+
+        // connect to check for changes
+        connect(mInputComboBox, &QComboBox::currentTextChanged, mSetting, &SettingsItem::valueChanged);
     }
     else if (item->type == SettingsItem::DataTable) {
         QTableWidget* table = new QTableWidget(this);
@@ -219,6 +232,9 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
             table->setVerticalHeaderItem(i, newItem);
         }
     }
+
+
+
 
 }
 
@@ -302,6 +318,7 @@ void GenericInputWidget::setValue(QString str_value)
 */
 }
 
+
 QString GenericInputWidget::comment()
 {
     return mSetting->comment;
@@ -354,7 +371,7 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
     if (variableName == "system.path.home") {
         emit lineEdit->editingFinished();
     }
-
+    emit lineEdit->textEdited(fileName);
 
 }
 

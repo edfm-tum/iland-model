@@ -52,6 +52,7 @@ public:
 public slots:
     void updateData(); ///< fetch data from data structure and fill ui element
     void setFilterMode(int mode);
+    void updateFilePaths(const QString& homePath);
 
 
 private:
@@ -89,8 +90,7 @@ private:
 
     QToolBar *createToolbar();
 
-public slots:
-    void updateFilePaths(const QString& homePath);
+
 
 };
 

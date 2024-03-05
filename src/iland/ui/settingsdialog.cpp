@@ -8,7 +8,6 @@
 #include <QScrollArea>
 
 
-#include "qbuttongroup.h"
 #include "qpushbutton.h"
 #include "ui/genericinputwidget.h"
 #include "qdialogbuttonbox.h"
