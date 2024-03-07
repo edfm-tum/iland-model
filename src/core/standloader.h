@@ -52,7 +52,7 @@ public:
     int loadiLandFile(const QString &fileName, ResourceUnit *ru=NULL, int stand_id=0);
 
     /// worker function to load a file containing single trees
-    int loadSingleTreeList(const QString &content, ResourceUnit*ru_offset = NULL, int stand_id=-1, const QString &fileName="");
+    int loadSingleTreeList(QStringList content, ResourceUnit*ru_offset = NULL, int stand_id=-1, const QString &fileName="");
     /// worker function to load a file containing rows with dbhclasses
     int loadDistributionList(const QStringList &content, ResourceUnit *ru = NULL, int stand_id=0, const QString &fileName="");
     // load regeneration in stands
