@@ -256,13 +256,15 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
         throwError(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
         return -1;
     }
-    return loader.loadDistributionList(content, ru, 0, "called_from_script");
+    QStringList lines = content.split("\n", Qt::SkipEmptyParts);
+    return loader.loadDistributionList(lines, ru, 0, "called_from_script");
 }
 
 int ScriptGlobal::addTreesOnMap(const int standID, QString content)
 {
     StandLoader loader(mModel);
-    return loader.loadDistributionList(content, nullptr, standID, "called_from_script");
+    QStringList lines = content.split("\n", Qt::SkipEmptyParts);
+    return loader.loadDistributionList(lines, nullptr, standID, "called_from_script");
 }
 
 /*

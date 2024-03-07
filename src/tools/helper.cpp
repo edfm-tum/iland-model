@@ -63,6 +63,22 @@ QString Helper::loadTextFile(const QString& fileName)
     return result;
 }
 
+QStringList Helper::loadTextFileLines(const QString &fileName)
+{
+    DebugTimer t("Helper::loadTextFileLines");
+    QStringList lines;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return lines;
+
+    QTextStream in(&file);
+    //lines.reserve(100000); // Or a more realistic estimate of expected lines
+    while (!in.atEnd()) {
+        lines.append(in.readLine());
+    }
+    return lines;
+}
+
 void Helper::saveToTextFile(const QString& fileName, const QString& text)
 {
     QFile file(fileName);

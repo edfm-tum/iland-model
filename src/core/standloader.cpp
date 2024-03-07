@@ -179,7 +179,7 @@ void StandLoader::processInit()
 
         if (!QFile::exists(fileName))
             throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
-        QString content = Helper::loadTextFile(fileName);
+        QStringList content = Helper::loadTextFileLines(fileName);
         // this processes the init file (also does the checking) and
         // stores in a QHash datastrucutre
         parseInitFile(content, fileName);
@@ -447,7 +447,7 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru_off
   @param fileName source file name (for error reporting)
   @return number of trees added
   */
-int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, int stand_id, const QString &fileName)
+int StandLoader::loadDistributionList(const QStringList &content, ResourceUnit *ru, int stand_id, const QString &fileName)
 {
     int total_count = parseInitFile(content, fileName, ru);
     if (total_count==0)
@@ -476,7 +476,7 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
 
 }
 
-int StandLoader::parseInitFile(const QString &content, const QString &fileName, ResourceUnit* ru)
+int StandLoader::parseInitFile(const QStringList &content, const QString &fileName, ResourceUnit* ru)
 {
     if (!ru)
         ru = mModel->ru();
@@ -486,7 +486,7 @@ int StandLoader::parseInitFile(const QString &content, const QString &fileName, 
 
     //DebugTimer t("StandLoader::loadiLandFile");
     CSVFile infile;
-    infile.loadFromString(content);
+    infile.loadFromStringList(content);
 
     int icount = infile.columnIndex("count");
     int ispecies = infile.columnIndex("species");
@@ -552,7 +552,7 @@ int StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru, int st
 {
     if (!QFile::exists(fileName))
         throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
-    QString content = Helper::loadTextFile(fileName);
+    QStringList content = Helper::loadTextFileLines(fileName);
     return loadDistributionList(content, ru, stand_id, fileName);
 }
 

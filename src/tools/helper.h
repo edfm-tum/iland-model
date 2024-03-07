@@ -35,7 +35,10 @@ class Helper
 {
 public:
     Helper();
+    /// Load a text file into a single string
     static QString loadTextFile(const QString& fileName);
+    /// Load a text file into a string list (line-by-line).
+    static QStringList loadTextFileLines(const QString& fileName);
     static void saveToTextFile(const QString& fileName, const QString& text);
     static QByteArray loadFile(const QString &fileName);
     static void saveToFile(const QString &fileName, const QByteArray &data);

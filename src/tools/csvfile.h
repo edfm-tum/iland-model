@@ -55,6 +55,7 @@ public:
 public slots:
     bool loadFile(const QString &fileName); ///< load @p fileName. load the complete file at once.
     bool loadFromString(const QString &content); ///< load content from a given string.
+    bool loadFromStringList(QStringList content); ///< load from a string list
     QString columnName(const int col) { if (col<mColCount) return mCaptions[col]; return QString(); } ///< get caption of ith column.
     int columnIndex(const QString &columnName) const { return mCaptions.indexOf(columnName); } ///< index of column or -1 if not available
     // value function with a column name
@@ -71,6 +72,7 @@ public slots:
 
 private:
     void clear();
+    bool processRows();
     bool mIsEmpty;
     bool mHasCaptions;
     bool mFixedWidth;
