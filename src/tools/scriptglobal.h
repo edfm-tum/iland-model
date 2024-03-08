@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QVariant>
 #include <QJSValue>
+#include <QRectF>
 
 
 // Scripting Interface for MapGrid

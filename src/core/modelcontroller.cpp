@@ -169,7 +169,7 @@ void ModelController::create()
     qDebug() << "**************************************************";
     qDebug() << "project-file:" << mInitFile;
     qDebug() << "started at: " << QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
-    qDebug() << "iLand " << currentVersion() << " (" << svnRevision() << ")";
+    qDebug() << "iLand " << currentVersion() << " (" << verboseVersion() << ")";
     qDebug() << "**************************************************";
 
 

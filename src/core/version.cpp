@@ -69,9 +69,22 @@ QString compiler()
     return QString("%1 %2 Qt %3").arg(MYCC).arg(BITS).arg(qVersion());
 }
 
+// QString verboseVersion()
+// {
+//     const char *bd = __DATE__; // build date
+//     QString s = QString("%1 (svn: %2, %3, %4)").arg(currentVersion()).arg(svnRevision()).arg(bd).arg(qVersion());
+//     return s;
+// }
+
 QString verboseVersion()
 {
-    const char *bd = __DATE__; // build date
-    QString s = QString("%1 (svn: %2, %3, %4)").arg(currentVersion()).arg(svnRevision()).arg(bd).arg(qVersion());
+    QString s = QString("branch: %1, version: %2, date: %3").arg(GIT_BRANCH).arg(GIT_HASH).arg(BUILD_TIMESTAMP);
     return s;
+
+}
+
+QString buildYear()
+{
+    QString s(BUILD_TIMESTAMP);
+    return s.left(4);
 }
