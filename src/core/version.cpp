@@ -86,5 +86,11 @@ QString verboseVersion()
 QString buildYear()
 {
     QString s(BUILD_TIMESTAMP);
-    return s.left(4);
+    QRegularExpression yearRegex("(\\d{4})");
+    QRegularExpressionMatch match = yearRegex.match(s);
+    if (match.hasMatch()) {
+        QString year = match.captured(1); // Access the captured year
+        return year;
+    }
+    return s; // default
 }
