@@ -106,6 +106,14 @@ void SettingsDialog::setFilterMode(int mode)
 
 }
 
+void SettingsDialog::registerChangedValue(const QString &itemKey, QVariant newValue)
+{
+    qDebug() << "Key: " << itemKey;
+    qDebug() << "Old Value: " << mKeys[itemKey]->strValue;
+    qDebug() << "new Value: " << newValue;
+    if (!saveButton->isEnabled()) {saveButton->setEnabled(true);}
+}
+
 void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget)
 {
     // First part of function defines the general layout and elements of the gui
@@ -366,8 +374,12 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     contentLayout->setStretch(0, 1);
     contentLayout->setStretch(1, 3);
 
-
     QDialogButtonBox *dialogButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    saveButton = dialogButtons->button(QDialogButtonBox::Ok);
+    cancelButton = dialogButtons->button(QDialogButtonBox::Cancel);
+
+    saveButton->setText("Save Changes");
+    cancelButton->setText("Cancel");
 
     QVBoxLayout* overallLayout = new QVBoxLayout(this);
     overallLayout->addWidget(  createToolbar(), 1 );
@@ -396,6 +408,11 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     // To use it after it was changed without saving the changes and opening the dialog again, a temporary global variable is used.
     QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
     connect(homePathEdit, &QLineEdit::editingFinished, this, [=]{updateFilePaths(homePathEdit->text());});
+
+    // connect to register changed values
+    for (auto &item : mKeys) {
+        connect(item, &SettingsItem::itemChanged, this, &SettingsDialog::registerChangedValue);
+    }
 
     QString sibling;
     // connect the copied and original element, so that they mirror the state of the other
@@ -466,6 +483,7 @@ void SettingsDialog::readXMLValues()
         if (item->widget) {
             QString value = mLinkxqt->readXmlValue(item->key);
             QString comment = mLinkxqt->readXmlComment(item->key);
+            item->strValue = value;
             item->widget->setValue(value);
             item->widget->setComment(comment);
         }

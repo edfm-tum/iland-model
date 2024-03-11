@@ -37,7 +37,11 @@ public:
     QString comment; // the dynamic comment
 
 public slots:
-    void valueChanged(QVariant newValue) {qDebug() << "New value: " << newValue;};
+    void valueChanged(QVariant newValue) {  emit itemChanged(key, newValue);};
+    //void valueChanged(const SettingsItem& item, QVariant newValue) {};
+
+signals:
+    void itemChanged(const QString& changedKey, QVariant newValue);
 
 private:
     inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "table" };

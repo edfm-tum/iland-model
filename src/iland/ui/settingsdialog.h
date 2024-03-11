@@ -49,10 +49,15 @@ public:
                             //metadata& inputMetaData,
                             QWidget *parent = nullptr);
     //~SettingsDialog();
+
+    QAbstractButton* saveButton;
+    QAbstractButton* cancelButton;
+
 public slots:
     void updateData(); ///< fetch data from data structure and fill ui element
     void setFilterMode(int mode);
     void updateFilePaths(const QString& homePath);
+    void registerChangedValue(const QString& itemKey, QVariant newValue);
 
 
 private:

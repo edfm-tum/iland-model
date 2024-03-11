@@ -473,6 +473,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
     mLinkxqt->loadXmlFile();
     mLinkxqt->setTempHomePath();
     ui_settingsDialog->updateData();
+    ui_settingsDialog->saveButton->setEnabled(false);
     ui_settingsDialog->show();
 }
 
