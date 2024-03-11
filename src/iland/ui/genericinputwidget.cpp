@@ -371,6 +371,7 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
     if (variableName == "system.path.home") {
         emit lineEdit->editingFinished();
     }
+    // needed to register changes via file dialog (unsaved changes)
     emit lineEdit->textEdited(fileName);
 
 }
