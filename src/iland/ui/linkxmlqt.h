@@ -15,8 +15,8 @@ class GenericInputWidget; // forward
 struct SettingsItem : public QObject {
     Q_OBJECT
 public:
-    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility, QWidget* parent = nullptr):
-        QObject(parent), metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility){
+    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility, QString aparent, QWidget* parent = nullptr):
+        QObject(parent), metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility), parentTab(aparent){
         auto ti =  mInputTypes.indexOf(atype);
         if (ti < 0)
             throw IException("SettingsItem: invalid input type");
@@ -32,6 +32,7 @@ public:
     QString tooltip;
     QString defaultValue;
     QString visibility;
+    QString parentTab;
     // link to xml or whatever
     QString strValue; // value as given in XML
     QString comment; // the dynamic comment

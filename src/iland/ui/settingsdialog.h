@@ -3,6 +3,7 @@
 #include <QDialog>
 #include <QToolBar>
 
+#include "ui/dialogchangedvalues.h"
 #include "ui/linkxmlqt.h"
 #include "qstackedwidget.h"
 #include "qtreewidget.h"
@@ -52,6 +53,7 @@ public:
 
     QAbstractButton* saveButton;
     QAbstractButton* cancelButton;
+    QAction* a_changedValuesDialog;
 
 public slots:
     void updateData(); ///< fetch data from data structure and fill ui element
@@ -59,6 +61,8 @@ public slots:
     void updateFilePaths(const QString& homePath);
     void registerChangedValue(const QString& itemKey, QVariant newValue);
 
+signals:
+    void updateValueChangeTable(SettingsItem *item, QVariant newValue);
 
 private:
     // The settings list holds the first level of the navigation hierachy
@@ -87,6 +91,7 @@ private:
     // Based on keys and values and their respective order as defined in project_file_metadata.txt
     // setDialogLayout builds the layout of the dialog and defines all the elements.
     void setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget);
+    void showChangedValuesDialog();
 
 
     // void setTabCaptions(QStackedWidget* stackedWidget);
@@ -94,8 +99,7 @@ private:
     void readXMLValues();
 
     QToolBar *createToolbar();
-
-
+    DialogChangedValues* ui_dialogChangedValues;
 
 };
 

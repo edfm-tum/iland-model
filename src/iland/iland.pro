@@ -234,6 +234,7 @@ SOURCES += main.cpp \
     ../bite/biteoutput.cpp \
     ../abe/fmsaplinglist.cpp \
     ../bite/biteoutputitem.cpp \
+    ui/dialogchangedvalues.cpp \
     ui/dialogcomment.cpp \
     ui/genericinputwidget.cpp \
     ui/linkxmlqt.cpp \
@@ -370,12 +371,14 @@ HEADERS += mainwindow.h \
     ../bite/biteoutput.h \
     ../abe/fmsaplinglist.h \
     ../bite/biteoutputitem.h \
+    ui/dialogchangedvalues.h \
     ui/dialogcomment.h \
     ui/genericinputwidget.h \
     ui/linkxmlqt.h \
     ui/settingsdialog.h
 FORMS += mainwindow.ui \
     aboutdialog.ui \
+    ui/dialogchangedvalues.ui \
     ui/dialogcomment.ui \
     ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \

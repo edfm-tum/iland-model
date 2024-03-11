@@ -63,6 +63,7 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
     QStackedWidget* mStackedWidget = new QStackedWidget();
 
     //
+    ui_dialogChangedValues = nullptr;
     setDialogLayout(mTreeWidget, mStackedWidget);
 
 }
@@ -111,7 +112,11 @@ void SettingsDialog::registerChangedValue(const QString &itemKey, QVariant newVa
     qDebug() << "Key: " << itemKey;
     qDebug() << "Old Value: " << mKeys[itemKey]->strValue;
     qDebug() << "new Value: " << newValue;
-    if (!saveButton->isEnabled()) {saveButton->setEnabled(true);}
+    qDebug() << "Tab/parent :" << mKeys[itemKey]->parentTab;
+    emit updateValueChangeTable(mKeys[itemKey], newValue);
+
+    if (!saveButton->isEnabled()) {saveButton->setEnabled(true);};
+        //a_changedValuesDialog->setEnabled(true);}
 }
 
 void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget)
@@ -182,12 +187,14 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             localScroll->setWidgetResizable(true);
             localScroll->setWidget(curChildStack);
             localScroll->setObjectName("tab" + tab.replace(" ", ""));
+            //curChildStack->setWhatsThis(curModule + ":" + tab);
 
             QVBoxLayout* tabLay = new QVBoxLayout();
             tabLay->setObjectName(localScroll->objectName() + "Layout");
             curChildStack->setLayout(tabLay);
             tabLay->setAlignment(Qt::AlignTop);
 
+            localScroll->setWhatsThis(curModule + ":" + tab);
             stackedWidget->addWidget(localScroll);
         }
     }
@@ -210,6 +217,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     QFont fontHeading("Arial", 15, QFont::Bold);
     // List used to store copied gui elements to connect them to their respective twin
     QList<QStringList> connectedElements;
+    QLabel* tabHeading;
     bool activeTab = false;
 
     for (int n = 0; n < mMetaKeys.length(); n++) {
@@ -226,12 +234,13 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             curTabName = values[1];
             curChildStack = stackedWidget->findChild<QWidget *>(curTabName);
 
+
             if (curChildStack) {
                 tabLay = curChildStack->findChild<QVBoxLayout *>(curTabName + "Layout");
                 activeTab = true;
 
                 if (values.length() > 2) {
-                    QLabel* tabHeading = new QLabel(values[2]);
+                    tabHeading = new QLabel(values[2]);
                     tabHeading->setFont(fontHeading);
                     tabLay->addWidget(tabHeading);
                     if (values.length() > 3) {
@@ -275,14 +284,15 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             else if (valueTypes.contains(inputType)) {
                 // adds an actual element
                 // size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault
-
+                QString tabName = curChildStack->whatsThis();
                 SettingsItem *item = new SettingsItem(n,
                                   element,
                                   inputType,
                                   values[2], // label
                                   values[3], // tooltip
                                   values[1], // default
-                                  values[4]); // visibility
+                                  values[4], // visibility
+                                  tabName); // name of parent tab
                 mKeys[element] = item;
 
                 defaultValue = values[1];
@@ -440,6 +450,15 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
 }
 
+void SettingsDialog::showChangedValuesDialog()
+{
+    if (!ui_dialogChangedValues) {
+        ui_dialogChangedValues = new DialogChangedValues(this);
+       connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
+    }
+    ui_dialogChangedValues->show();
+}
+
 void SettingsDialog::updateFilePaths(const QString &homePath)
 {
     QString fileName, relativeFilePath, lineEditContent;
@@ -502,6 +521,10 @@ QToolBar *SettingsDialog::createToolbar()
     QAction *a_simple = new QAction("Sim&plified view", groupFilter);
     QAction *a_advanced = new QAction("Ad&vanced view", groupFilter);
 
+    QAction *a_changedValuesDialog = new QAction("Show Changes");
+    a_changedValuesDialog->setText("Show changes");
+    a_changedValuesDialog->setDisabled(true);
+
     groupFilter->addAction(a_all);
     groupFilter->addAction(a_simple);
     groupFilter->addAction(a_advanced);
@@ -528,7 +551,8 @@ QToolBar *SettingsDialog::createToolbar()
     connect(a_simple, &QAction::triggered, this, [this]() { setFilterMode(1);});
     connect(a_advanced, &QAction::triggered, this, [this]() { setFilterMode(2);});
 
-    QList actions = {a_simple, a_advanced, a_all};
+    connect(a_changedValuesDialog, &QAction::triggered, this, [=] {showChangedValuesDialog();});
+    QList actions = {a_simple, a_advanced, a_all, a_changedValuesDialog};
 
     toolbar->addActions(actions);
 
