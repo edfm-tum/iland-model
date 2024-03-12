@@ -24,5 +24,6 @@
         <file>iconFilterAdvanced.png</file>
         <file>iconFilterAll.png</file>
         <file>iconFilterSimple.png</file>
+        <file>iconMagnifyingGlass.png</file>
     </qresource>
 </RCC>

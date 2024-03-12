@@ -63,8 +63,11 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
     QStackedWidget* mStackedWidget = new QStackedWidget();
 
     //
-    ui_dialogChangedValues = nullptr;
+    //ui_dialogChangedValues = nullptr;
     setDialogLayout(mTreeWidget, mStackedWidget);
+    ui_dialogChangedValues = new DialogChangedValues(this);
+    connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
+
 
 }
 
@@ -109,14 +112,10 @@ void SettingsDialog::setFilterMode(int mode)
 
 void SettingsDialog::registerChangedValue(const QString &itemKey, QVariant newValue)
 {
-    qDebug() << "Key: " << itemKey;
-    qDebug() << "Old Value: " << mKeys[itemKey]->strValue;
-    qDebug() << "new Value: " << newValue;
-    qDebug() << "Tab/parent :" << mKeys[itemKey]->parentTab;
     emit updateValueChangeTable(mKeys[itemKey], newValue);
 
-    if (!saveButton->isEnabled()) {saveButton->setEnabled(true);};
-        //a_changedValuesDialog->setEnabled(true);}
+    if (!saveButton->isEnabled()) { saveButton->setEnabled(true);
+                                    a_changedValuesDialog->setEnabled(true);}
 }
 
 void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget)
@@ -410,9 +409,15 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
     connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(stackedWidget);
                                                                      mLinkxqt->writeToFile(mLinkxqt->getXmlFile());
+                                                                     ui_dialogChangedValues->mValueTable->setRowCount(0);
+                                                                     ui_dialogChangedValues->mKeys = {};
+                                                                     a_changedValuesDialog->setDisabled(true);
                                                                      this->close();});
     connect(dialogButtons, &QDialogButtonBox::rejected, this, [=]() {this->close();});
-    connect(this, &QDialog::rejected, this, [=]() {this->close();});
+    connect(this, &QDialog::rejected, this, [=]() { ui_dialogChangedValues->mValueTable->setRowCount(0);
+                                                    ui_dialogChangedValues->mKeys = {};
+                                                    a_changedValuesDialog->setDisabled(true);
+                                                    this->close();});
 
     // Home path should be used as relative file path.
     // To use it after it was changed without saving the changes and opening the dialog again, a temporary global variable is used.
@@ -452,10 +457,10 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
 void SettingsDialog::showChangedValuesDialog()
 {
-    if (!ui_dialogChangedValues) {
-        ui_dialogChangedValues = new DialogChangedValues(this);
-       connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
-    }
+//    if (!ui_dialogChangedValues) {
+//       ui_dialogChangedValues = new DialogChangedValues(this);
+//       connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
+//    }
     ui_dialogChangedValues->show();
 }
 
@@ -521,7 +526,7 @@ QToolBar *SettingsDialog::createToolbar()
     QAction *a_simple = new QAction("Sim&plified view", groupFilter);
     QAction *a_advanced = new QAction("Ad&vanced view", groupFilter);
 
-    QAction *a_changedValuesDialog = new QAction("Show Changes");
+    a_changedValuesDialog = new QAction("Show Changes");
     a_changedValuesDialog->setText("Show changes");
     a_changedValuesDialog->setDisabled(true);
 
@@ -536,6 +541,7 @@ QToolBar *SettingsDialog::createToolbar()
     QIcon iconAll = QIcon(":/iconFilterAll.png");
     QIcon iconAdvanced = QIcon(":/iconFilterAdvanced.png");
     QIcon iconSimple = QIcon(":/iconFilterSimple.png");
+    QIcon iconValueChanged = QIcon(":/iconMagnifyingGlass.png");
 
     a_all->setIcon(iconAll);
     a_all->setText("Show &all");
@@ -546,6 +552,8 @@ QToolBar *SettingsDialog::createToolbar()
     a_simple->setIcon(iconSimple);
     a_simple->setText("Sim&ple view");
     a_simple->setToolTip("Only basic options are shown.");
+    a_changedValuesDialog->setIcon(iconValueChanged);
+    a_changedValuesDialog->setToolTip("Show table with modified values.");
 
     connect(a_all, &QAction::triggered, this, [this]() { setFilterMode(0);});
     connect(a_simple, &QAction::triggered, this, [this]() { setFilterMode(1);});

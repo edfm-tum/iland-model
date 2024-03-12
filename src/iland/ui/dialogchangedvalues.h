@@ -17,11 +17,12 @@ class DialogChangedValues : public QDialog
 public:
     explicit DialogChangedValues(QWidget *parent = nullptr);
     ~DialogChangedValues();
+    QTableWidget* mValueTable;
+    QStringList mKeys;
+
 
 private:
     Ui::DialogChangedValues *ui;
-    QTableWidget* mValueTable;
-    QStringList mKeys;
     int mNumCols;
 
 public slots:

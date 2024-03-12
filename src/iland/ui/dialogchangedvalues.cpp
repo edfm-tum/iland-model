@@ -10,7 +10,6 @@ DialogChangedValues::DialogChangedValues(QWidget *parent) :
     mValueTable = this->findChild<QTableWidget *>();
     mNumCols = mValueTable->columnCount();
 
-
 }
 
 DialogChangedValues::~DialogChangedValues()
@@ -32,7 +31,6 @@ void DialogChangedValues::updateTable(SettingsItem *item, QVariant newValue)
             mValueTable->setItem(numRows, column, tableItem);
         }
         mKeys << item->key;
-        qDebug() << mKeys;
     } else {
         QStringList curItem = {item->label, newValue.toString(), item->strValue, item->parentTab};
         for (int column = 0; column < mNumCols; ++ column) {
