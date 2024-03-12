@@ -23,7 +23,7 @@ public:
         type = (EInputType) ti;
     };
 public:
-    enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataPathFile, DataPathDirectory, DataCombo, DataTable };
+    enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataPathFile, DataPathDirectory, DataCombo, DataFunction, DataTable };
     GenericInputWidget *widget;
     size_t metakeyIndex;
     QString key;
@@ -45,7 +45,7 @@ signals:
     void itemChanged(const QString& changedKey, QVariant newValue);
 
 private:
-    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "table" };
+    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "table", "function" };
 };
 
 

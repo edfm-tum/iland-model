@@ -212,7 +212,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 //        QLayout *tabLay;
     QWidget *curChildStack;
     QVBoxLayout *tabLay;
-    QStringList valueTypes = {"string", "boolean", "numeric", "path", "file", "directory", "combo"};
+    QStringList valueTypes = {"string", "boolean", "numeric", "path", "file", "directory", "combo", "function"};
     QFont fontHeading("Arial", 15, QFont::Bold);
     // List used to store copied gui elements to connect them to their respective twin
     QList<QStringList> connectedElements;

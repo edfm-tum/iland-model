@@ -184,13 +184,18 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
             else if (item->type == SettingsItem::DataPathDirectory) {
                 connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(objName, mInputField, "directory");});
             }
-
         }
         else if (item->type == SettingsItem::DataNumeric) {
             QDoubleValidator* numericValidator = new QDoubleValidator(mInputField);
             numericValidator->setNotation(QDoubleValidator::StandardNotation);
             numericValidator->setLocale(QLocale::English);
             mInputField->setValidator(numericValidator);
+        }
+        else if (item->type == SettingsItem::DataFunction) {
+            QToolButton *functionDialog = new QToolButton();
+            functionDialog->setText("f(x)");
+            layout->addWidget(functionDialog);
+            connect(functionDialog, &QToolButton::clicked, this, [=]{ openFunctionPlotter(item, mInputField->text());});
         }
         mInputField->setToolTip(richToolTip);
         mInputField->setObjectName(objName);
@@ -246,6 +251,7 @@ QString GenericInputWidget::strValue()
     case SettingsItem::DataString:
     case SettingsItem::DataPathDirectory:
     case SettingsItem::DataPathFile:
+    case SettingsItem::DataFunction:
         return mInputField->text();
     case SettingsItem::DataBoolean:
         return mInputCheckBox->isChecked() ? "true" : "false";
@@ -265,6 +271,7 @@ void GenericInputWidget::setValue(QString str_value)
     case SettingsItem::DataPath:
     case SettingsItem::DataPathDirectory:
     case SettingsItem::DataPathFile:
+    case SettingsItem::DataFunction:
         mInputField->setText(str_value);
         break;
 
@@ -394,4 +401,11 @@ void GenericInputWidget::checkCommentButton()
         mButtonComment->setText(" ");
     }
     mButtonComment->setToolTip(mSetting->comment);
+}
+
+void GenericInputWidget::openFunctionPlotter(SettingsItem *item, const QString& curExpr)
+{
+    ui_functionPlotter = new DialogFunctionPlotter(curExpr, this);
+    //ui_functionPlotter->setTitle(item->label);
+    ui_functionPlotter->show();
 }

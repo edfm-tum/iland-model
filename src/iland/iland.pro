@@ -5,9 +5,11 @@ QT += xml
 QT += qml
 QT += sql
 QT += widgets
+QT += charts
 # quick: for QML based user interface
 QT += quick
 QT += concurrent
+
 
 TARGET = iland
 TEMPLATE = app
@@ -236,6 +238,7 @@ SOURCES += main.cpp \
     ../bite/biteoutputitem.cpp \
     ui/dialogchangedvalues.cpp \
     ui/dialogcomment.cpp \
+    ui/dialogfunctionplotter.cpp \
     ui/genericinputwidget.cpp \
     ui/linkxmlqt.cpp \
     ui/settingsdialog.cpp
@@ -373,6 +376,7 @@ HEADERS += mainwindow.h \
     ../bite/biteoutputitem.h \
     ui/dialogchangedvalues.h \
     ui/dialogcomment.h \
+    ui/dialogfunctionplotter.h \
     ui/genericinputwidget.h \
     ui/linkxmlqt.h \
     ui/settingsdialog.h
@@ -380,6 +384,7 @@ FORMS += mainwindow.ui \
     aboutdialog.ui \
     ui/dialogchangedvalues.ui \
     ui/dialogcomment.ui \
+    ui/dialogfunctionplotter.ui \
     ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \
     qml_res.qrc

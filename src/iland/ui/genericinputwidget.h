@@ -1,6 +1,7 @@
 #ifndef GENERICINPUTWIDGET_H
 #define GENERICINPUTWIDGET_H
 
+#include "ui/dialogfunctionplotter.h"
 #include "ui/linkxmlqt.h"
 #include <QWidget>
 #include <QLabel>
@@ -49,9 +50,11 @@ private:
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString &type);
     void openCommentDialog(QStringList xmlPath);
     void checkCommentButton();
+    void openFunctionPlotter(SettingsItem *item, const QString& curExpr);
     //void valueChanged(QWidget *inputField);
 
     DialogComment* ui_comment;
+    DialogFunctionPlotter* ui_functionPlotter;
     LinkXmlQt* mLinkxqt;
 
 //signals:
