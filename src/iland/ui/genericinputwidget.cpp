@@ -169,7 +169,8 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         item->type == SettingsItem::DataPath ||
         item->type == SettingsItem::DataNumeric ||
         item->type == SettingsItem::DataPathDirectory ||
-        item->type == SettingsItem::DataPathFile) {
+        item->type == SettingsItem::DataPathFile ||
+        item->type == SettingsItem::DataFunction) {
         mInputField = new QLineEdit();
         // default value given in metadata shown as grey placeholder text
         mInputField->setPlaceholderText(item->defaultValue);
@@ -194,6 +195,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         else if (item->type == SettingsItem::DataFunction) {
             QToolButton *functionDialog = new QToolButton();
             functionDialog->setText("f(x)");
+            functionDialog->setStyleSheet("font: italic;");
             layout->addWidget(functionDialog);
             connect(functionDialog, &QToolButton::clicked, this, [=]{ openFunctionPlotter(item, mInputField->text());});
         }
@@ -407,6 +409,5 @@ void GenericInputWidget::checkCommentButton()
 void GenericInputWidget::openFunctionPlotter(SettingsItem *item, const QString& curExpr)
 {
     ui_functionPlotter = new DialogFunctionPlotter(curExpr, this);
-    //ui_functionPlotter->setTitle(item->label);
     ui_functionPlotter->show();
 }

@@ -23,21 +23,21 @@ public:
 
 private:
     Ui::DialogFunctionPlotter *ui;
-//    QGraphicsView* mGraphicView;
-//    QChart* mChart;
-//    QChartView* mChartView;
+    //QGraphicsView* mGraphicView;
+    QChart* mChart;
+    QChartView* mChartView;
 
     QString mFuncExpression;
-//    double mMinValue = 0;
-//    double mMaxValue = 1;
-//    int mNumPoints = 500;
-//    QString funcName;
+    double mMinValue = 0;
+    double mMaxValue = 1;
+    int mNumPoints = 500;
+    QString funcName;
 
-//    QJSEngine funcEngine;
+    //QJSEngine funcEngine;
 
-    //functions
-//    void drawFunction();
-//    double evaluateFunction(const QString& expression, double x);
+   // functions
+    void drawFunction();
+    double evaluateFunction(const QString& expression, double x);
 };
 
 #endif // DIALOGFUNCTIONPLOTTER_H

@@ -44,7 +44,7 @@ struct SettingsItem  {
 //    void itemChanged(const QString& changedKey, QVariant newValue);
 
 private:
-    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "table", "function" };
+    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "function", "table" };
 };
 
 

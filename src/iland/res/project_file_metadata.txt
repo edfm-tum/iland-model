@@ -141,7 +141,7 @@ system.path.home = directory|project's home directory|Home|The project's home di
 system.path.database = directory|database directory|Database|Directory containing the databases. Default: "database"|simple
 system.path.lip = directory|LIP file directory|LIP files|Directory containing the binary LIP files. Default: "lip"|simple
 system.path.output = directory|output directory|Output|Default path for the output database(s). Default: "output"|simple
-system.path.temp = function|x^2|TestLabelName|string|advanced
+system.path.temp = function|x+x|TestLabelName|string|advanced
 system.path.script = string|string|string|string|advanced
 system.path.init = string|string|string|string|advanced
 
