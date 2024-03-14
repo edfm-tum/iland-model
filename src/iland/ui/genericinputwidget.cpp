@@ -202,7 +202,8 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         layout->addWidget(mInputField);
 
         // connect to check for changes
-        connect(mInputField, &QLineEdit::textEdited, mSetting, &SettingsItem::valueChanged);
+//        connect(mInputField, &QLineEdit::textEdited, mSetting, &SettingsItem::valueChanged);
+        connect(mInputField, &QLineEdit::textEdited, this, [=]{emit widgetValueChanged(item, mInputField->text());});
 
 
     }
@@ -213,7 +214,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         layout->addWidget(mInputCheckBox);
 
         // connect to check for changes
-        connect(mInputCheckBox, &QAbstractButton::clicked, mSetting, &SettingsItem::valueChanged);
+        connect(mInputCheckBox, &QAbstractButton::clicked, this, [=]{emit widgetValueChanged(item, mInputCheckBox->isChecked());});
     }
 
 
@@ -225,7 +226,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         layout->addWidget(mInputComboBox);
 
         // connect to check for changes
-        connect(mInputComboBox, &QComboBox::currentTextChanged, mSetting, &SettingsItem::valueChanged);
+        connect(mInputComboBox, &QComboBox::currentTextChanged, this, [=]{emit widgetValueChanged(item, mInputComboBox->currentText());});
     }
     else if (item->type == SettingsItem::DataTable) {
         QTableWidget* table = new QTableWidget(this);

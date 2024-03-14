@@ -57,8 +57,9 @@ private:
     DialogFunctionPlotter* ui_functionPlotter;
     LinkXmlQt* mLinkxqt;
 
-//signals:
+signals:
     //void homePathUpdate(const QString& homePath);
+    void widgetValueChanged(SettingsItem* item, QVariant newValue);
 };
 
 #endif // GENERICINPUTWIDGET_H

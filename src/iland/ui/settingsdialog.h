@@ -59,10 +59,8 @@ public slots:
     void updateData(); ///< fetch data from data structure and fill ui element
     void setFilterMode(int mode);
     void updateFilePaths(const QString& homePath);
-    void registerChangedValue(const QString& itemKey, QVariant newValue);
+    void registerChangedValue(SettingsItem* item, QVariant newValue);
 
-signals:
-    void updateValueChangeTable(SettingsItem *item, QVariant newValue);
 
 private:
     // The settings list holds the first level of the navigation hierachy
@@ -100,6 +98,9 @@ private:
 
     QToolBar *createToolbar();
     DialogChangedValues* ui_dialogChangedValues;
+
+signals:
+    void updateValueChangeTable(SettingsItem* item, QVariant newValue);
 
 };
 

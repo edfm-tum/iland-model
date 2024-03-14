@@ -110,13 +110,16 @@ void SettingsDialog::setFilterMode(int mode)
 
 }
 
-void SettingsDialog::registerChangedValue(const QString &itemKey, QVariant newValue)
+
+void SettingsDialog::registerChangedValue(SettingsItem* item, QVariant newValue)
 {
-    emit updateValueChangeTable(mKeys[itemKey], newValue);
+
+    emit updateValueChangeTable(item, newValue);
 
     if (!saveButton->isEnabled()) { saveButton->setEnabled(true);
                                     a_changedValuesDialog->setEnabled(true);}
 }
+
 
 void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget)
 {
@@ -307,6 +310,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                 GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
                                                                             item);
 
+                connect(newInputWidget, &GenericInputWidget::widgetValueChanged, this, [this](SettingsItem* item, QVariant newValue){this->registerChangedValue(item, newValue);});
+
                 tabLay->addWidget(newInputWidget);
 
             }
@@ -423,11 +428,6 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     // To use it after it was changed without saving the changes and opening the dialog again, a temporary global variable is used.
     QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
     connect(homePathEdit, &QLineEdit::editingFinished, this, [=]{updateFilePaths(homePathEdit->text());});
-
-    // connect to register changed values
-    for (auto &item : mKeys) {
-        connect(item, &SettingsItem::itemChanged, this, &SettingsDialog::registerChangedValue);
-    }
 
     QString sibling;
     // connect the copied and original element, so that they mirror the state of the other

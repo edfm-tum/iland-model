@@ -12,17 +12,16 @@
 class GenericInputWidget; // forward
 /// SettingsItem stores information for a single setting
 /// this includes meta data of the setting, as well as the current value
-struct SettingsItem : public QObject {
-    Q_OBJECT
-public:
-    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility, QString aparent, QWidget* parent = nullptr):
-        QObject(parent), metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility), parentTab(aparent){
+struct SettingsItem  {
+
+    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility, QString aparent):
+        metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility), parentTab(aparent){
         auto ti =  mInputTypes.indexOf(atype);
         if (ti < 0)
             throw IException("SettingsItem: invalid input type");
         type = (EInputType) ti;
     };
-public:
+
     enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataPathFile, DataPathDirectory, DataCombo, DataFunction, DataTable };
     GenericInputWidget *widget;
     size_t metakeyIndex;
@@ -37,12 +36,12 @@ public:
     QString strValue; // value as given in XML
     QString comment; // the dynamic comment
 
-public slots:
-    void valueChanged(QVariant newValue) {  emit itemChanged(key, newValue);};
-    //void valueChanged(const SettingsItem& item, QVariant newValue) {};
+//public slots:
+//    void valueChanged(QVariant newValue) {  emit itemChanged(key, newValue);};
+//    //void valueChanged(const SettingsItem& item, QVariant newValue) {};
 
-signals:
-    void itemChanged(const QString& changedKey, QVariant newValue);
+//signals:
+//    void itemChanged(const QString& changedKey, QVariant newValue);
 
 private:
     inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "table", "function" };
