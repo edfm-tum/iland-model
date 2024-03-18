@@ -216,6 +216,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     QWidget *curChildStack;
     QVBoxLayout *tabLay;
     QStringList valueTypes = {"string", "boolean", "numeric", "path", "file", "directory", "combo", "function"};
+    QStringList connectedValues;
     QFont fontHeading("Arial", 15, QFont::Bold);
     // List used to store copied gui elements to connect them to their respective twin
     QList<QStringList> connectedElements;
@@ -318,38 +319,62 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             else if (inputType == "connected") {
                 // adds a copy of a gui element
                 // By now (21.12.2023) only one copy is allowed
-                int k;
-                QStringList connectedValues;
-                if (mMetaKeys.mid(0, n).contains(element)) {
-                    k = mMetaKeys.indexOf(element);
-                }  else if (mMetaKeys.mid(n+1).contains(element)) {
-                    k = mMetaKeys.lastIndexOf(element);
-                } else {
-                    k=0; // todo: check?
-                }
-                connectedValues = mMetaValues[k].split("|");
-                inputType = connectedValues[0];
-                defaultValue = connectedValues[1];
-                labelName = values[1];
-                if (labelName == "string")
-                    labelName = xmlPath.last();
-                toolTip = connectedValues[3];
-                GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-                                                                            inputType,
-                                                                            defaultValue,
-                                                                            xmlPath,
-                                                                            labelName,
-                                                                            toolTip,
-                                                                            curChildStack,
-                                                                            true);
+//                int k;
 
-                tabLay->addWidget(newInputWidget);
-                QStringList curPair = {element, inputType};
+//                if (mMetaKeys.mid(0, n).contains(element)) {
+//                    k = mMetaKeys.indexOf(element);
+//                }  else if (mMetaKeys.mid(n+1).contains(element)) {
+//                    k = mMetaKeys.lastIndexOf(element);
+//                } else {
+//                    k=0; // todo: check?
+//                }
+//                connectedValues = mMetaValues[k].split("|");
+//                inputType = connectedValues[0];
+//                defaultValue = connectedValues[1];
+//                labelName = values[1];
+//                if (labelName == "string")
+//                    labelName = xmlPath.last();
+//                toolTip = connectedValues[3];
+//                SettingsItem *item = new SettingsItem(n,
+//                                                      element,
+//                                                      inputType,
+//                                                      values[2], // label
+//                                                      values[3], // tooltip
+//                                                      values[1], // default
+//                                                      values[4], // visibility
+//                                                      tabName); // name of parent tab
+//                mKeys[element] = item;
+//                GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+//                                                                            inputType,
+//                                                                            defaultValue,
+//                                                                            xmlPath,
+//                                                                            labelName,
+//                                                                            toolTip,
+//                                                                            curChildStack,
+//                                                                            true);
+//                GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+//                                                                            item);
+
+//                tabLay->addWidget(newInputWidget);
+                QStringList curPair = {element, curTabName};
                 // list is later used to connect the copies to the original element
                 connectedElements.append(curPair);
             }
         }
     }
+
+    //Add mirrored items
+    foreach (QList mirroredItemProps, connectedElements) {
+        curTabName = mirroredItemProps[1];
+        SettingsItem* mirroredItem = mKeys[mirroredItemProps[0]];
+        mirroredItem->type = SettingsItem::DataConnected;
+        curChildStack = stackedWidget->findChild<QWidget *>(curTabName);
+        tabLay = curChildStack->findChild<QVBoxLayout *>(curTabName + "Layout");
+        GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
+                                                                    mirroredItem);
+        tabLay->addWidget(newInputWidget);
+    }
+
     // Formatting of the labels.
     // On each tab the longest label is determined.
     // The maximum length + buffer is then applied to all labels of the respective tab

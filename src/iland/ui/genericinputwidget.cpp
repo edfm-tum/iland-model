@@ -199,6 +199,12 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
             layout->addWidget(functionDialog);
             connect(functionDialog, &QToolButton::clicked, this, [=]{ openFunctionPlotter(item, mInputField->text());});
         }
+        else if (item->type == SettingsItem::DataConnected) {
+            QList<QWidget *> origElementList = item->widget->findChildren<QWidget *>();
+            foreach (QWidget* widget, origElementList) {
+                layout->addWidget(widget);
+            }
+        }
         mInputField->setToolTip(richToolTip);
         mInputField->setObjectName(objName);
         layout->addWidget(mInputField);

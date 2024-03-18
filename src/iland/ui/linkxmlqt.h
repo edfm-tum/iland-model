@@ -22,7 +22,7 @@ struct SettingsItem  {
         type = (EInputType) ti;
     };
 
-    enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataPathFile, DataPathDirectory, DataCombo, DataFunction, DataTable };
+    enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataPathFile, DataPathDirectory, DataCombo, DataFunction, DataConnected, DataTable };
     GenericInputWidget *widget;
     size_t metakeyIndex;
     QString key;
@@ -44,7 +44,7 @@ struct SettingsItem  {
 //    void itemChanged(const QString& changedKey, QVariant newValue);
 
 private:
-    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "function", "table" };
+    inline const static QStringList mInputTypes { "string", "boolean", "numeric", "path", "file", "directory", "combo", "function", "connected", "table" };
 };
 
 
