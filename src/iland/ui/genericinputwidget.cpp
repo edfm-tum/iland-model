@@ -408,6 +408,9 @@ void GenericInputWidget::checkCommentButton()
 
 void GenericInputWidget::openFunctionPlotter(SettingsItem *item, const QString& curExpr)
 {
-    ui_functionPlotter = new DialogFunctionPlotter(curExpr, this);
+    ui_functionPlotter = new DialogFunctionPlotter(curExpr, item->label, this);
+    connect(ui_functionPlotter, &DialogFunctionPlotter::acceptFunction,
+            [=](const QString& funcExpr){ item->strValue = funcExpr;
+                                          mInputField->setText(funcExpr);});
     ui_functionPlotter->show();
 }

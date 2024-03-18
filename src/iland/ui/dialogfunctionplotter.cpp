@@ -1,15 +1,17 @@
 #include "dialogfunctionplotter.h"
+#include "qboxlayout.h"
 #include "qlineedit.h"
 #include "ui_dialogfunctionplotter.h"
 #include "QLineSeries"
 
-DialogFunctionPlotter::DialogFunctionPlotter(const QString& funcExpression, QWidget *parent) :
+DialogFunctionPlotter::DialogFunctionPlotter(const QString& funcExpression, const QString& itemLabel, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogFunctionPlotter),
+    mItemLabel(itemLabel),
     mFuncExpression(funcExpression)
 {
     ui->setupUi(this);
-    this->setWindowTitle("Function Plotter");
+    this->setWindowTitle("Function Plotter: " + mItemLabel);
     //mGraphicView = this->findChild<QGraphicsView *>();
     mChart = new QChart();
     mChart->legend()->hide();
@@ -20,14 +22,27 @@ DialogFunctionPlotter::DialogFunctionPlotter(const QString& funcExpression, QWid
 
     chartLayout->addWidget(mChartView);
 
-    this->findChild<QLineEdit *>("inputFunction")->setText(mFuncExpression);
-
+    mEditMaxValue = this->findChild<QLineEdit *>("inputMaxValue");
+    mEditMaxValue->setText(QString::number(mMaxValue));
+    mEditMinValue = this->findChild<QLineEdit *>("inputMinValue");
+    mEditMinValue->setText(QString::number(mMinValue));
+    mEditNumPoints = this->findChild<QLineEdit *>("inputNumPoints");
+    mEditNumPoints->setText(QString::number(mNumPoints));
+    mEditFuncExpr = this->findChild<QLineEdit *>("inputFunction");
+    mEditFuncExpr->setText(mFuncExpression);
+    mEditFuncExpr->setToolTip("Expressions are based on Javascript. You can use all the functions that are included in the Math module, e. g.: Math.sin, Math.exp, Math.log");
     //setTitle(item->label);
 
     QPushButton* updateButton = this->findChild<QPushButton *>("buttonUpdate");
+    QDialogButtonBox* buttonBox = this->findChild<QDialogButtonBox *>("buttonBox");
+    buttonBox->addButton("Apply", QDialogButtonBox::AcceptRole);
+    buttonBox->addButton("Close", QDialogButtonBox::RejectRole);
 
     connect(updateButton, &QPushButton::clicked, this, [=] {    mChart->removeAllSeries();
                                                                 drawFunction(); });
+
+    connect(buttonBox, &QDialogButtonBox::accepted, this,
+            [=] { emit acceptFunction(mEditFuncExpr->text()); });
     drawFunction();
 }
 
@@ -40,17 +55,20 @@ DialogFunctionPlotter::~DialogFunctionPlotter()
 void DialogFunctionPlotter::drawFunction()
 {
     auto series = new QLineSeries;
-    mMaxValue = this->findChild<QLineEdit *>("inputMaxValue")->text().toDouble();
-    mMinValue = this->findChild<QLineEdit *>("inputMinValue")->text().toDouble();
-    mFuncExpression = this->findChild<QLineEdit *>("inputFunction")->text();
+    mMaxValue = mEditMaxValue->text().toDouble();
+    mMinValue = mEditMinValue->text().toDouble();
+    mNumPoints = mEditNumPoints->text().toDouble();
+    mFuncExpression = mEditFuncExpr->text();
 
-    double delta = (mMaxValue - mMinValue) / mNumPoints;
-    double x = mMinValue;
+    double delta = (mMaxValue - mMinValue) / (mNumPoints);
+    int i = 0;
+    double x;
 
-    while (x <= mMaxValue)
+    while (i <= mNumPoints)
     {
+        x = mMinValue + i*delta;
         series->append(x, this->evaluateFunction(mFuncExpression, x));
-        x += delta;
+        i ++;
     }
 
     mChart->addSeries(series);

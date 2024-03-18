@@ -5,6 +5,7 @@
 #include <QDialog>
 #include "QJSEngine"
 #include "qchartview.h"
+#include "qlineedit.h"
 
 namespace Ui {
 class DialogFunctionPlotter;
@@ -15,7 +16,7 @@ class DialogFunctionPlotter : public QDialog
     Q_OBJECT
 
 public:
-    explicit DialogFunctionPlotter(const QString& funcExpression, QWidget *parent = nullptr);
+    explicit DialogFunctionPlotter(const QString& funcExpression, const QString& itemLabel, QWidget *parent = nullptr);
     ~DialogFunctionPlotter();
 
     //functions
@@ -26,11 +27,16 @@ private:
     //QGraphicsView* mGraphicView;
     QChart* mChart;
     QChartView* mChartView;
+    QLineEdit* mEditMaxValue;
+    QLineEdit* mEditMinValue;
+    QLineEdit* mEditNumPoints;
+    QLineEdit* mEditFuncExpr;
 
     QString mFuncExpression;
+    QString mItemLabel;
     double mMinValue = 0;
     double mMaxValue = 1;
-    int mNumPoints = 500;
+    int mNumPoints = 50;
     QString funcName;
 
     //QJSEngine funcEngine;
@@ -38,6 +44,9 @@ private:
    // functions
     void drawFunction();
     double evaluateFunction(const QString& expression, double x);
+
+signals:
+    void acceptFunction(const QString& funcExpr);
 };
 
 #endif // DIALOGFUNCTIONPLOTTER_H
