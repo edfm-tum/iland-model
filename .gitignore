@@ -3,3 +3,4 @@ build-plugins*
 *.pro.user
 *.lib
 *.pdb
+.Rproj.user

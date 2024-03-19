@@ -513,7 +513,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
         treelist->sort("-height");
     } else {
         // order the list of trees according to a user defined ranking expression
-        treelist->sort(mSelectiveThinning.rankingExpr);
+        treelist->sort(QString("-(%1)").arg(mSelectiveThinning.rankingExpr));
         qCDebug(abe) << "using user-defined ranking for selective thinning: " << mSelectiveThinning.rankingExpr;
 
     }
@@ -577,7 +577,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
 
             float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
 
-            if ( (f>12.f) ||
+            if ( (f>12.f) ||         // JM: define kernel thresholds here
                  (run==1 && f>8) ||
                  (run==2 && f>4) ) {
                 tree->markCropCompetitor(true);
@@ -602,39 +602,106 @@ float ActThinning::testPixel(const QPointF &pos, Grid<float> &grid)
     int y=grid.indexAt(pos).y();
 
     float sum = 0.f;
-    sum += grid.isIndexValid(x-1,y-1) ? grid.valueAtIndex(x-1, y-1) : 0;
-    sum += grid.isIndexValid(x,y-1) ? grid.valueAtIndex(x, y-1) : 0;
-    sum += grid.isIndexValid(x+1,y-1) ? grid.valueAtIndex(x+1, y-1) : 0;
+    for (int i=-2;i<=2;++i){
+        for (int j=-2;j<=2;++j){
+            sum += grid.isIndexValid(x+i,y+j) ? grid.valueAtIndex(x+i, y+j) : 0;
+        }
+    }
+    // sum += grid.isIndexValid(x-2,y-2) ? grid.valueAtIndex(x-2,y-2) : 0;
+    // sum += grid.isIndexValid(x-2,y-1) ? grid.valueAtIndex(x-2,y-1) : 0;
+    // sum += grid.isIndexValid(x-2,y) ? grid.valueAtIndex(x-2,y) : 0;
+    // sum += grid.isIndexValid(x-2,y+1) ? grid.valueAtIndex(x-2,y+1) : 0;
+    // sum += grid.isIndexValid(x-2,y+2) ? grid.valueAtIndex(x-2,y+2) : 0;
 
-    sum += grid.isIndexValid(x-1,y) ? grid.valueAtIndex(x-1, y) : 0;
-    sum += grid.isIndexValid(x,y) ? grid.valueAtIndex(x, y) : 0;
-    sum += grid.isIndexValid(x+1,y) ? grid.valueAtIndex(x+1, y) : 0;
+    // sum += grid.isIndexValid(x-1,y-2) ? grid.valueAtIndex(x-1,y-2) : 0;
+    // sum += grid.isIndexValid(x-1,y-1) ? grid.valueAtIndex(x-1,y-1) : 0;
+    // sum += grid.isIndexValid(x-1,y) ? grid.valueAtIndex(x-1,y) : 0;
+    // sum += grid.isIndexValid(x-1,y+1) ? grid.valueAtIndex(x-1,y+1) : 0;
+    // sum += grid.isIndexValid(x-1,y+2) ? grid.valueAtIndex(x-1,y+2) : 0;
 
-    sum += grid.isIndexValid(x-1,y+1) ? grid.valueAtIndex(x-1, y+1) : 0;
-    sum += grid.isIndexValid(x,y+1) ? grid.valueAtIndex(x, y+1) : 0;
-    sum += grid.isIndexValid(x+1,y+1) ? grid.valueAtIndex(x+1, y+1) : 0;
+    // sum += grid.isIndexValid(x,y-2) ? grid.valueAtIndex(x,y-2) : 0;
+    // sum += grid.isIndexValid(x,y-1) ? grid.valueAtIndex(x,y-1) : 0;
+    // sum += grid.isIndexValid(x,y) ? grid.valueAtIndex(x,y) : 0;
+    // sum += grid.isIndexValid(x,y+1) ? grid.valueAtIndex(x,y+1) : 0;
+    // sum += grid.isIndexValid(x,y+2) ? grid.valueAtIndex(x,y+2) : 0;
+
+    // sum += grid.isIndexValid(x+1,y-2) ? grid.valueAtIndex(x+1,y-2) : 0;
+    // sum += grid.isIndexValid(x+1,y-1) ? grid.valueAtIndex(x+1,y-1) : 0;
+    // sum += grid.isIndexValid(x+1,y) ? grid.valueAtIndex(x+1,y) : 0;
+    // sum += grid.isIndexValid(x+1,y+1) ? grid.valueAtIndex(x+1,y+1) : 0;
+    // sum += grid.isIndexValid(x+1,y+2) ? grid.valueAtIndex(x+1,y+2) : 0;
+
+    // sum += grid.isIndexValid(x+2,y-2) ? grid.valueAtIndex(x+2,y-2) : 0;
+    // sum += grid.isIndexValid(x+2,y-1) ? grid.valueAtIndex(x+2,y-1) : 0;
+    // sum += grid.isIndexValid(x+2,y) ? grid.valueAtIndex(x+2,y) : 0;
+    // sum += grid.isIndexValid(x+2,y+1) ? grid.valueAtIndex(x+2,y+1) : 0;
+    // sum += grid.isIndexValid(x+2,y+2) ? grid.valueAtIndex(x+2,y+2) : 0;
 
     return sum;
 }
 
+
+QVector<QPair<QPoint, float> > rel_positions = { //calculated using 9 minus squared distance to center
+    {{-2, -2}, 1},
+    {{-2, -1}, 4},
+    {{-2, 0}, 5},
+    {{-2, 1}, 4},
+    {{-2, 2}, 1},
+    {{-1, -2}, 4},
+    {{-1, -1}, 7},
+    {{-1, 0}, 8},
+    {{-1, 1}, 7},
+    {{-1, 2}, 4},
+    {{0, -2}, 5},
+    {{0, -1}, 8},
+    {{0, 0}, 9},
+    {{0, 1}, 8},
+    {{0, 2}, 5},
+    {{1, -2}, 4},
+    {{1, -1}, 7},
+    {{1, 0}, 8},
+    {{1, 1}, 7},
+    {{1, 2}, 4},
+    {{2, -2}, 1},
+    {{2, -1}, 4},
+    {{2, 0}, 5},
+    {{2, 1}, 4},
+    {{2, 2}, 1}
+};
+
 void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
 {
     // check Moore neighborhood
-    int x=grid.indexAt(pos).x();
-    int y=grid.indexAt(pos).y();
+    QPoint center_point(grid.indexAt(pos).x(),
+                        grid.indexAt(pos).y());
 
-    if (grid.isIndexValid(x-1,y-1)) grid.valueAtIndex(x-1, y-1)++;
-    if (grid.isIndexValid(x,y-1)) grid.valueAtIndex(x, y-1)++;
-    if (grid.isIndexValid(x+1,y-1)) grid.valueAtIndex(x+1, y-1)++;
+    for (auto &p : rel_positions) {
+        QPoint pt = center_point + p.first;
+        if (grid.isIndexValid(pt))
+            grid.valueAtIndex(pt) += p.second;
+    }
 
-    if (grid.isIndexValid(x-1,y)) grid.valueAtIndex(x-1, y)++;
-    if (grid.isIndexValid(x,y)) grid.valueAtIndex(x, y) += 3; // more impact on center pixel
-    if (grid.isIndexValid(x+1,y)) grid.valueAtIndex(x+1, y)++;
-
-    if (grid.isIndexValid(x-1,y+1)) grid.valueAtIndex(x-1, y+1)++;
-    if (grid.isIndexValid(x,y+1)) grid.valueAtIndex(x, y+1)++;
-    if (grid.isIndexValid(x+1,y+1)) grid.valueAtIndex(x+1, y+1)++;
 }
+
+
+//void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
+//{
+//    // check Moore neighborhood
+//    int x=grid.indexAt(pos).x();
+//    int y=grid.indexAt(pos).y();
+//
+//    if (grid.isIndexValid(x-1,y-1)) grid.valueAtIndex(x-1, y-1)++;
+//    if (grid.isIndexValid(x,y-1)) grid.valueAtIndex(x, y-1)++;
+//    if (grid.isIndexValid(x+1,y-1)) grid.valueAtIndex(x+1, y-1)++;
+//
+//    if (grid.isIndexValid(x-1,y)) grid.valueAtIndex(x-1, y)++;
+//    if (grid.isIndexValid(x,y)) grid.valueAtIndex(x, y) += 3; // more impact on center pixel
+//    if (grid.isIndexValid(x+1,y)) grid.valueAtIndex(x+1, y)++;
+//
+//    if (grid.isIndexValid(x-1,y+1)) grid.valueAtIndex(x-1, y+1)++;
+//    if (grid.isIndexValid(x,y+1)) grid.valueAtIndex(x, y+1)++;
+//    if (grid.isIndexValid(x+1,y+1)) grid.valueAtIndex(x+1, y+1)++;
+//}
 
 bool ActThinning::populateSpeciesSelectivity(QJSValue value)
 {
