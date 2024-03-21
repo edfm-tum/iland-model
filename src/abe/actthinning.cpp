@@ -505,7 +505,8 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     // if *more* trees should be marked, some trees need to be on neighbor pixels:
     // pixels = 2500 / N; if 9 px are the Moore neighborhood, the "overprint" is N*9 / 2500.
     // N*9/2500 -1 = probability of having more than zero overlapping pixels
-    double overprint = (mSelectiveThinning.N * 9) / double(cPxPerHectare) - 1.;
+    //double overprint = (mSelectiveThinning.N * 9) / double(cPxPerHectare) - 1.;
+    //double overprint = (mSelectiveThinning.N * 49) / double(cPxPerHectare) - 1.; // JM: Adjusted, since we have a 7x7 Kernle now instead of 3x3
 
     // rank the trees according to their ranking
     if (mSelectiveThinning.rankingExpr.isEmpty()) {
@@ -522,7 +523,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     int n_found = 0;
     int tests=0;
     int i=0;
-    while (n_found < target_n/3 && i<target_n/2) {
+    while (n_found < target_n/3 && i<target_n/2) {                        //JM: why do we need this part?
         float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
         if (f==0.f) {
             // no neighbors: check species
@@ -546,11 +547,11 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
 
             float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
 
-            if ( (f==0.f) ||
-                 (f<=2.f && drandom()<overprint) ||
-                 (run==1 && f<=4 && drandom()<overprint) ||
-                 (run==2 && drandom()<overprint) ||
-                 (run==3) ) {
+            if ((f==0.f) ||                                                   // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
+                (f<=(0.0805*mSelectiveThinning.N-2.4256)) ||                  // JM: define kernel thresholds here     scaled: max(0, 0.1484*NZBaum-5.4919)
+                (run==1 && f<=(0.1484*mSelectiveThinning.N-5.4919)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1679*NZBaum-4.8988)
+                (run==2 && f<=(0.1679*mSelectiveThinning.N-4.8988)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
+                ((run==3) && f<=3*(0.1679*mSelectiveThinning.N-4.8988))) {    // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
 
                 if (selective_species & !( drandom() < mSpeciesSelectivity[treelist->trees().at(i).first->species()]) )
                     continue;
@@ -577,7 +578,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
 
             float f=testPixel(treelist->trees().at(i).first->position(), grid); ++tests;
 
-            if ( (f>12.f) ||         // JM: define kernel thresholds here
+            if ( (f>12.f) ||          // JM: to do!!!
                  (run==1 && f>8) ||
                  (run==2 && f>4) ) {
                 tree->markCropCompetitor(true);
@@ -602,8 +603,8 @@ float ActThinning::testPixel(const QPointF &pos, Grid<float> &grid)
     int y=grid.indexAt(pos).y();
 
     float sum = 0.f;
-    for (int i=-2;i<=2;++i){
-        for (int j=-2;j<=2;++j){
+    for (int i=-3;i<=3;++i){
+        for (int j=-3;j<=3;++j){
             sum += grid.isIndexValid(x+i,y+j) ? grid.valueAtIndex(x+i, y+j) : 0;
         }
     }
@@ -642,31 +643,55 @@ float ActThinning::testPixel(const QPointF &pos, Grid<float> &grid)
 
 
 QVector<QPair<QPoint, float> > rel_positions = { //calculated using 9 minus squared distance to center
-    {{-2, -2}, 1},
-    {{-2, -1}, 4},
-    {{-2, 0}, 5},
-    {{-2, 1}, 4},
-    {{-2, 2}, 1},
-    {{-1, -2}, 4},
-    {{-1, -1}, 7},
-    {{-1, 0}, 8},
-    {{-1, 1}, 7},
-    {{-1, 2}, 4},
-    {{0, -2}, 5},
-    {{0, -1}, 8},
-    {{0, 0}, 9},
-    {{0, 1}, 8},
-    {{0, 2}, 5},
-    {{1, -2}, 4},
-    {{1, -1}, 7},
-    {{1, 0}, 8},
-    {{1, 1}, 7},
-    {{1, 2}, 4},
-    {{2, -2}, 1},
-    {{2, -1}, 4},
-    {{2, 0}, 5},
-    {{2, 1}, 4},
-    {{2, 2}, 1}
+    {{-3, -3}, 1/19.f},
+    {{-3, -2}, 6/19.f},
+    {{-3, -1}, 9/19.f},
+    {{-3,  0}, 10/19.f},
+    {{-3,  1}, 9/19.f},
+    {{-3,  2}, 6/19.f},
+    {{-3,  3}, 1/19.f},
+    {{-2, -3}, 6/19.f},
+    {{-2, -2}, 11/19.f},
+    {{-2, -1}, 14/19.f},
+    {{-2,  0}, 15/19.f},
+    {{-2,  1}, 14/19.f},
+    {{-2,  2}, 11/19.f},
+    {{-2,  3}, 6/19.f},
+    {{-1, -3}, 9/19.f},
+    {{-1, -2}, 14/19.f},
+    {{-1, -1}, 17/19.f},
+    {{-1,  0}, 18/19.f},
+    {{-1,  1}, 17/19.f},
+    {{-1,  2}, 14/19.f},
+    {{-1,  3}, 9/19.f},
+    {{ 0, -3}, 10/19.f},
+    {{ 0, -2}, 15/19.f},
+    {{ 0, -1}, 18/19.f},
+    {{ 0,  0}, 19/19.f},
+    {{ 0,  1}, 18/19.f},
+    {{ 0,  2}, 15/19.f},
+    {{ 0,  3}, 10/19.f},
+    {{ 1, -3}, 9/19.f},
+    {{ 1, -2}, 14/19.f},
+    {{ 1, -1}, 17/19.f},
+    {{ 1,  0}, 18/19.f},
+    {{ 1,  1}, 17/19.f},
+    {{ 1,  2}, 14/19.f},
+    {{ 1,  3}, 9/19.f},
+    {{ 2, -3}, 6/19.f},
+    {{ 2, -2}, 11/19.f},
+    {{ 2, -1}, 14/19.f},
+    {{ 2,  0}, 15/19.f},
+    {{ 2,  1}, 14/19.f},
+    {{ 2,  2}, 11/19.f},
+    {{ 2,  3}, 6/19.f},
+    {{ 3, -3}, 1/19.f},
+    {{ 3, -2}, 6/19.f},
+    {{ 3, -1}, 9/19.f},
+    {{ 3,  0}, 10/19.f},
+    {{ 3,  1}, 9/19.f},
+    {{ 3,  2}, 6/19.f},
+    {{ 3,  3}, 1/19.f}
 };
 
 void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
@@ -684,7 +709,7 @@ void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
 }
 
 
-//void ActThinning::setPixel(const QPointF &pos, Grid<float> &grid)
+//void ActThinning::setPixelOld(const QPointF &pos, Grid<float> &grid)
 //{
 //    // check Moore neighborhood
 //    int x=grid.indexAt(pos).x();
