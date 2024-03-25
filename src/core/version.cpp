@@ -19,6 +19,8 @@
 
 
 #include <QString>
+#include <QRegularExpression>
+
 static const char *version = "1.9.1";
 static const char *svn_revision = "1556";
 const char *currentVersion(){ return version;}

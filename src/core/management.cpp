@@ -539,9 +539,11 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
 
     //QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
 
-    auto it = wrap->map()->resourceUnitAreasIterator(key);
+    auto it_pair = wrap->map()->resourceUnitAreasIterator(key);
+    auto it = it_pair.first; // the iterator
+    auto itend = it_pair.second; // the end
     double total_area = 0.;
-    while (it.key() == key) {
+    while (it!=itend && it.key() == key) {
         ResourceUnit *ru = it->first;
         double area_factor = it->second; // 0..1
         total_area += area_factor;
@@ -575,9 +577,12 @@ void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction
     }
     if (!wrap || !wrap->map())
         return;
-    auto it = wrap->map()->resourceUnitAreasIterator(key);
+    auto it_pair = wrap->map()->resourceUnitAreasIterator(key);
+    auto it = it_pair.first; // the iterator
+    auto itend = it_pair.second; // the end
+
     double total_area = 0.;
-    while (it.key() == key) {
+    while (it!=itend && it.key() == key) {
         ResourceUnit *ru = it->first;
         double area_factor = it->second; // 0..1
         total_area += area_factor;
