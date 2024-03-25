@@ -265,6 +265,23 @@ Grid = {
       */
 
     /**
+    Evaluate the expression `expression` for all *trees* in the current treelist, and sum the
+    result of `expression` to the cells of the grid. With other words, the result is a grid
+    with a sum over expression for all trees on a cell. The `filter` lets you sum over a subset of trees.
+
+    See also: {{#crossLink "Grid/apply:method"}}{{/crossLink}}
+
+    @method sumTrees
+    @param {string} expresion expression to evaluate and sum for each grid cell
+    @param {string} filter expression to filter a subset of trees (empty is no filter)
+    @return { double } sum of `expression` over all cells
+    @Example
+        var g = Globals.grid('height'); // get a grid with the right size / resolution, here 10m
+        g.sumTrees('basalArea', 'species=piab'); //
+        g.save(Globals.path('temp/basal-area-spruce.asc'));
+      */
+
+    /**
     Get a Javascript array with that contains all the grid values as doubles.
 
     See also: {{#crossLink "Grid/value:method"}}{{/crossLink}}

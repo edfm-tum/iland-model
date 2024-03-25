@@ -224,9 +224,10 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
     Expression expr(expression,&tw);
     expr.enableIncSum();
     int n = 0;
+    QPair<Tree*, double> empty_tree(nullptr,0.);
     QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
     try {
-        while (tp!=mTrees.end()) {
+        for (;tp!=mTrees.end();++tp) {
             tw.setTree(tp->first);
             // if expression evaluates to true and if random number below threshold...
             if (expr.calculate(tw) && drandom() <=fraction) {
@@ -237,12 +238,11 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
                     tp->first->remove(); // kill
 
                 // remove from tree list
-                tp = mTrees.erase(tp);
+                *tp = empty_tree;
                 n++;
-            } else {
-                ++tp;
             }
         }
+        mTrees.removeAll(empty_tree);
     } catch(const IException &e) {
         ScriptGlobal::throwError(e.message());
     }
@@ -389,12 +389,11 @@ int Management::filter(QString filter)
     Expression expr(filter,&tw);
     expr.enableIncSum();
     int n_before = mTrees.count();
-    QList<QPair<Tree*, double> > new_list;
-    new_list.reserve(mTrees.size());
+    QPair<Tree*, double> empty_tree(nullptr,0.);
     try {
-        for (const auto &it : mTrees) {
+        for (QList< QPair<Tree*, double> >::iterator it=mTrees.begin(); it!=mTrees.end(); ++it) {
 
-            tw.setTree(it.first); // iterate
+            tw.setTree(it->first); // iterate
 
             double value = expr.calculate(tw);
             // keep if expression returns true (1)
@@ -403,15 +402,14 @@ int Management::filter(QString filter)
             if (!keep && value>0.)
                 keep = drandom() < value;
 
-            if (keep)
-                new_list.push_back(it);
+            if (!keep)
+                *it = empty_tree;
 
         }
+        mTrees.removeAll(empty_tree);
     } catch(const IException &e) {
         ScriptGlobal::throwError(e.message());
     }
-
-    mTrees = new_list; // swap
 
     if (logLevelDebug())
         qDebug() << "filtering with" << filter << "N=" << n_before << "/" << mTrees.count()  << "trees (before/after filtering).";

@@ -436,9 +436,10 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
     Expression expr(expression,&tw);
     expr.enableIncSum();
     int n = 0;
+    QPair<Tree*, double> empty_tree(nullptr,0.);
     QVector<QPair<Tree*, double> >::iterator tp=mTrees.begin();
     try {
-        while (tp!=mTrees.end()) {
+        for (;tp!=mTrees.end();++tp) {
             tw.setTree(tp->first);
             // if expression evaluates to true and if random number below threshold...
             if (expr.calculate(tw) && drandom() <=fraction) {
@@ -463,12 +464,11 @@ int FMTreeList::remove_trees(QString expression, double fraction, bool managemen
                     }
                 }
                 // remove from tree list
-                tp = mTrees.erase(tp);
+                *tp = empty_tree;
                 n++;
-            } else {
-                ++tp;
             }
         }
+        mTrees.removeAll(empty_tree);
     } catch(const IException &e) {
         qCWarning(abe) << "treelist: remove_trees: expression:" << expression << ", msg:" << e.message();
     }

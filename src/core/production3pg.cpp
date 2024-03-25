@@ -93,7 +93,7 @@ void Production3PG::clear()
   @sa https://iland-model.org/primary+production */
 double Production3PG::calculate()
 {
-    Q_ASSERT(mResponse!=0);
+    Q_ASSERT(mResponse!=nullptr);
     // Radiation: sum over all days of each month with foliage
     double year_raw_gpp = 0.;
     clear();
