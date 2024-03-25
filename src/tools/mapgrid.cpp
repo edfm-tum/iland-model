@@ -48,7 +48,6 @@ private:
     QMutex mLock;
     QWaitCondition mWC;
 };
-static MapGridRULock mapGridLock;
 
 void MapGridRULock::lock(const int id, QList<ResourceUnit *> &elements)
 {
@@ -255,14 +254,27 @@ QList<ResourceUnit *> MapGrid::resourceUnits(const int id) const
 /// return a list of all living trees on the area denoted by 'id'
 QList<Tree *> MapGrid::trees(const int id) const
 {
+    // QList<Tree*> tree_list;
+    // QList<ResourceUnit*> resource_units = resourceUnits(id);
+    // foreach(ResourceUnit *ru, resource_units) {
+    //     foreach(const Tree &tree, ru->constTrees())
+    //         if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
+    //             tree_list.append( & const_cast<Tree&>(tree) );
+    //         }
+    // }
+
+
     QList<Tree*> tree_list;
-    QList<ResourceUnit*> resource_units = resourceUnits(id);
-    foreach(ResourceUnit *ru, resource_units) {
-        foreach(const Tree &tree, ru->constTrees())
+    auto i = mRUIndex.constFind(id);
+    while (i != mRUIndex.cend() && i.key() == id) {
+        for (const auto &tree : i.value().first->constTrees()) {
             if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
                 tree_list.append( & const_cast<Tree&>(tree) );
             }
+        }
+        ++i;
     }
+
 //    qDebug() << "MapGrid::trees: found" << c << "/" << tree_list.size();
     return tree_list;
 
@@ -279,12 +291,13 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
         expression = new Expression(filter, &tw);
         expression ->enableIncSum();
     }
-    QList<ResourceUnit*> resource_units = resourceUnits(id);
+    //QList<ResourceUnit*> resource_units = resourceUnits(id);
     // lock the resource units: removed again, WR20140821
     // mapGridLock.lock(id, resource_units);
-
-    foreach(ResourceUnit *ru, resource_units) {
-        foreach(const Tree &tree, ru->constTrees())
+    QList<Tree*> tree_list;
+    auto i = mRUIndex.constFind(id);
+    while (i != mRUIndex.cend() && i.key() == id) {
+        for (const auto &tree : i.value().first->constTrees()) {
             if (standIDFromLIFCoord(tree.positionIndex()) == id && !tree.isDead()) {
                 Tree *t =  & const_cast<Tree&>(tree);
                 tw.setTree(t);
@@ -301,18 +314,17 @@ int MapGrid::loadTrees(const int id, QVector<QPair<Tree *, double> > &rList, con
                 }
                 rList.push_back(QPair<Tree*, double>(t,0.));
             }
+        }
+        ++i;
     }
+
+
     if (expression)
         delete expression;
     return rList.size();
 
 }
 
-void MapGrid::freeLocksForStand(const int id)
-{
-    if (id>-1)
-        mapGridLock.unlock(id);
-}
 
 /// return a list of grid-indices of a given stand-id (a grid-index
 /// is the index of 10m x 10m pixels within the internal storage)

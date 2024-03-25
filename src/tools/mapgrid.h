@@ -58,14 +58,15 @@ public:
     /// returns the list of resource units with at least one pixel within the area designated by 'id'
     QList<ResourceUnit*> resourceUnits(const int id) const;
     /// returns a list with resource units and area factors per 'id'.
-    /// the area is '1' if the resource unit is fully covered by the grid-value.
+    /// the area is '1' if the resource unit is fully covered by the grid-value. (Less efficient that the function returning directly an iterator)
     QList<QPair<ResourceUnit*, double> > resourceUnitAreas(const int id) const { return mRUIndex.values(id); }
+    /// returns an iterator to the intenal hash with resource units and area factors for stand 'id'.
+    /// the area is '1' if the resource unit is fully covered by the grid-value.
+    QMultiHash<int, QPair<ResourceUnit*, double> >::const_iterator resourceUnitAreasIterator(const int id) const { return mRUIndex.constFind(id); }
     /// return a list of all living trees on the area 'id'
     QList<Tree*> trees(const int id) const;
     /// load trees and store in list 'rList'. If 'filter'<>"", then the filter criterion is applied
     int loadTrees(const int id,  QVector<QPair<Tree *, double> > &rList, const QString filter=QString(), int n_estimate=0) const;
-    /// free locks for a given stand
-    static void freeLocksForStand(const int id);
     /// return a list of grid-indices of a given stand-id
     QList<int> gridIndices(const int id) const;
     /// extract a list of neighborhood relationships between all the polygons of the grid
