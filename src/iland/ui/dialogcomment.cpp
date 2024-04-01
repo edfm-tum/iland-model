@@ -47,5 +47,6 @@ void DialogComment::acceptComment()
 {
     QString commentText = ui->commentField->toPlainText();
     mWidget->setComment(commentText);
+    emit commentBoxStatus();
     //mLinkxqt->writeCommentXml(commentText, xmlPath);
 }

@@ -27,6 +27,9 @@ private:
     LinkXmlQt* mLinkxqt;
     GenericInputWidget *mWidget;
     //QString& mXmlComment;
+
+signals:
+    void commentBoxStatus();
 };
 
 #endif // DIALOGCOMMENT_H

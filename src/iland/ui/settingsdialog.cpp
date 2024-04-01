@@ -310,69 +310,98 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     //                                                                        curChildStack);
                 GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
                                                                             item);
-
-                connect(newInputWidget, &GenericInputWidget::widgetValueChanged, this, [this](SettingsItem* item, QVariant newValue){this->registerChangedValue(item, newValue);});
+                // to avoid one extra function call, registerChangedValue coud be omitted and its content could be directly called in the lambda function
+                connect(newInputWidget, &GenericInputWidget::widgetValueChanged,
+                        this, [this](SettingsItem* item, QVariant newValue){registerChangedValue(item, newValue);});
 
                 tabLay->addWidget(newInputWidget);
 
             }
             else if (inputType == "connected") {
-                // adds a copy of a gui element
-                // By now (21.12.2023) only one copy is allowed
-//                int k;
-
-//                if (mMetaKeys.mid(0, n).contains(element)) {
-//                    k = mMetaKeys.indexOf(element);
-//                }  else if (mMetaKeys.mid(n+1).contains(element)) {
-//                    k = mMetaKeys.lastIndexOf(element);
-//                } else {
-//                    k=0; // todo: check?
-//                }
-//                connectedValues = mMetaValues[k].split("|");
-//                inputType = connectedValues[0];
-//                defaultValue = connectedValues[1];
-//                labelName = values[1];
-//                if (labelName == "string")
-//                    labelName = xmlPath.last();
-//                toolTip = connectedValues[3];
-//                SettingsItem *item = new SettingsItem(n,
-//                                                      element,
-//                                                      inputType,
-//                                                      values[2], // label
-//                                                      values[3], // tooltip
-//                                                      values[1], // default
-//                                                      values[4], // visibility
-//                                                      tabName); // name of parent tab
-//                mKeys[element] = item;
-//                GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-//                                                                            inputType,
-//                                                                            defaultValue,
-//                                                                            xmlPath,
-//                                                                            labelName,
-//                                                                            toolTip,
-//                                                                            curChildStack,
-//                                                                            true);
-//                GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-//                                                                            item);
-
-//                tabLay->addWidget(newInputWidget);
+                // make a list of all connected elements to add the later at once
                 QStringList curPair = {element, curTabName};
-                // list is later used to connect the copies to the original element
+
                 connectedElements.append(curPair);
             }
         }
     }
 
+    QString original, sibling;
+    SettingsItem* origItem;
+
     //Add mirrored items
     foreach (QList mirroredItemProps, connectedElements) {
+        original = mirroredItemProps[0];
+        sibling = original + ".connected";
         curTabName = mirroredItemProps[1];
-        SettingsItem* mirroredItem = mKeys[mirroredItemProps[0]];
-        mirroredItem->type = SettingsItem::DataConnected;
+        origItem = mKeys[original];
+//        mirroredItem->type = SettingsItem::DataConnected;
         curChildStack = stackedWidget->findChild<QWidget *>(curTabName);
         tabLay = curChildStack->findChild<QVBoxLayout *>(curTabName + "Layout");
-        GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-                                                                    mirroredItem);
-        tabLay->addWidget(newInputWidget);
+        GenericInputWidget *newMirroredWidget = new GenericInputWidget(mLinkxqt,
+                                                                    origItem,
+                                                                    true);
+
+        tabLay->addWidget(newMirroredWidget);
+
+        // connect the mirrored element to its original version
+
+        if (origItem->type == SettingsItem::DataBoolean) {
+            QCheckBox *origEl = stackedWidget->findChild<QCheckBox *>(original);
+            QCheckBox *siblEl = stackedWidget->findChild<QCheckBox *>(sibling);
+            if (origEl && siblEl) {
+                siblEl->setCheckState(origEl->checkState());
+                connect(origEl, &QCheckBox::stateChanged, this, [siblEl](int state) {
+                    siblEl->setChecked(state == Qt::Checked); // Set state of checkBox2 accordingly
+                });
+
+                connect(siblEl, &QCheckBox::stateChanged, this, [origEl](int state) {
+                    origEl->setChecked(state == Qt::Checked); // Set state of checkBox1 accordingly
+                });
+            }
+        }
+        else if (origItem->type == SettingsItem::DataCombo) {
+            QComboBox *origEl = stackedWidget->findChild<QComboBox *>(original);
+            QComboBox *siblEl = stackedWidget->findChild<QComboBox *>(sibling);
+            if (origEl && siblEl) {
+                siblEl->setCurrentText(origEl->currentText());
+                connect(origEl, &QComboBox::currentTextChanged, this, [siblEl](const QString& text) {
+                    siblEl->setCurrentText(text);
+                });
+
+                connect(siblEl, &QComboBox::currentTextChanged, this, [origEl](const QString& text) {
+                    origEl->setCurrentText(text);
+                });
+            }
+        }
+        else if (origItem->type == SettingsItem::DataString ||
+                 origItem->type == SettingsItem::DataNumeric ||
+                 origItem->type == SettingsItem::DataPathDirectory ||
+                 origItem->type == SettingsItem::DataPathFile ||
+                 origItem->type == SettingsItem::DataFunction) {
+            QLineEdit *origEl = stackedWidget->findChild<QLineEdit *>(original);
+            QLineEdit *siblEl = stackedWidget->findChild<QLineEdit *>(sibling);
+            if (origEl && siblEl) {
+                siblEl->setText(origEl->text());
+                connect(origEl, &QLineEdit::textChanged, this, [siblEl](const QString& text) {
+                    siblEl->setText(text);
+                });
+
+                connect(siblEl, &QLineEdit::textChanged, this, [origEl](const QString& text) {
+                    origEl->setText(text);
+                });
+            }
+
+        // comment button should reflect state of original button and vice versa
+            //newMirroredWidget->checkCommentButton();
+
+        }
+        // connect to register changes
+        connect(newMirroredWidget, &GenericInputWidget::widgetValueChanged,
+                this, [this](SettingsItem* item, QVariant newValue){registerChangedValue(item, newValue);});
+
+
+
     }
 
     // Formatting of the labels.
@@ -451,41 +480,19 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
     // Home path should be used as relative file path.
     // To use it after it was changed without saving the changes and opening the dialog again, a temporary global variable is used.
-    QLineEdit* homePathEdit = this->findChild<QLineEdit *>("system.path.home");
-    connect(homePathEdit, &QLineEdit::editingFinished, this, [=]{updateFilePaths(homePathEdit->text());});
+    QRegularExpression homeEdit ("^system\\.path\\.home(?:\\.connected)?$");
+    QList homePathEditList = this->findChildren<QLineEdit *>(homeEdit);
 
-    QString sibling;
-    // connect the copied and original element, so that they mirror the state of the other
-    foreach (QStringList elementType, connectedElements) {
-        element = elementType[0];
-        sibling = element + ".connected";
-        inputType = elementType[1];
-
-        if (inputType == "boolean") {
-            QCheckBox *origEl = stackedWidget->findChild<QCheckBox *>(element);
-            QCheckBox *siblEl = stackedWidget->findChild<QCheckBox *>(sibling);
-            if (origEl && siblEl) {
-                siblEl->setCheckState(origEl->checkState());
-                connect(origEl, &QCheckBox::stateChanged, this, [siblEl](int state) {
-                    siblEl->setChecked(state == Qt::Checked); // Set state of checkBox2 accordingly
-                });
-
-                connect(siblEl, &QCheckBox::stateChanged, this, [origEl](int state) {
-                    origEl->setChecked(state == Qt::Checked); // Set state of checkBox1 accordingly
-                });
-            }
-        }
-
+    foreach ( QLineEdit* homePathEdit, homePathEditList) {//  = this->findChild<QLineEdit *>("system.path.home");
+        connect(homePathEdit, &QLineEdit::editingFinished, this, [=]{updateFilePaths(homePathEdit->text());});
     }
+
+
 
 }
 
 void SettingsDialog::showChangedValuesDialog()
 {
-//    if (!ui_dialogChangedValues) {
-//       ui_dialogChangedValues = new DialogChangedValues(this);
-//       connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
-//    }
     ui_dialogChangedValues->show();
 }
 
@@ -529,7 +536,8 @@ void SettingsDialog::updateFilePaths(const QString &homePath)
 void SettingsDialog::readXMLValues()
 {
     for (auto &item : mKeys) {
-        if (item->widget) {
+        if (item->widget &&
+            item->type != SettingsItem::DataConnected) {
             QString value = mLinkxqt->readXmlValue(item->key);
             QString comment = mLinkxqt->readXmlComment(item->key);
             item->strValue = value;

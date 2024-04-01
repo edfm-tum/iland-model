@@ -30,6 +30,9 @@ public:
 
     QString comment();
     void setComment(QString comment);
+    void checkCommentButton();
+
+
 private:
     SettingsItem *mSetting;
     QCheckBox *mInputCheckBox;
@@ -49,7 +52,7 @@ private:
     //void updateFilePath(const QString& path, QLineEdit *lineEdit);
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString &type);
     void openCommentDialog(QStringList xmlPath);
-    void checkCommentButton();
+
     void openFunctionPlotter(SettingsItem *item, const QString& curExpr);
     //void valueChanged(QWidget *inputField);
 

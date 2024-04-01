@@ -124,9 +124,15 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     mInputCheckBox(nullptr), mInputField(nullptr), mInputComboBox(nullptr), mLabel(nullptr)
 {
     mLinkxqt = link;
-    mConnected = connected;
+//    mConnected = connected;
+    mConnected = false;
     mSetting = item;
-    item->widget = this;
+    if ( !connected ) {item->widget = this;}
+    QString suffix = "";
+
+    if ( connected ) {
+        suffix = ".connected";
+    }
 
     // Each genericInputWidget consists of a label, a comment button, and input field
     // Path elements also include a button for a file dialog
@@ -140,12 +146,12 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     richToolTip = QString("<FONT COLOR=black>") + item->tooltip + QString("</FONT>");
     mLabel->setToolTip(richToolTip);
     // Label name is later used for formatting purposes in settingsdialog.cpp
-    QString labelName = item->key + "_label";
+    QString labelName = item->key + "_label" + suffix;
     mLabel->setObjectName(labelName);
 
     // Define button to open comment dialog, connect() below
     mButtonComment = new QToolButton();
-    mButtonComment->setObjectName(item->key + ".comment");
+    mButtonComment->setObjectName(item->key + suffix);
 
     connect(mButtonComment, &QToolButton::clicked, this, [=]() {openCommentDialog(mXmlPath);});
 
@@ -153,16 +159,14 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     layout->addWidget(mButtonComment);
     layout->addWidget(mLabel);
 
-
-
     // Depending on input type, define the corresponding input widget
     // Defined as generic class QWidget, in case cast inputField with dynamic_cast<T *>(inputField)
 
     // Name of inputField, which is used for referencing in settingsdialog.cpp
-    QString objName = item->key;
-    if (mConnected) {
-        objName = objName + ".connected";
-    }
+    QString objName = item->key + suffix;
+//    if (mConnected) {
+//        objName = objName + ".connected";
+//    }
 
 
     if (item->type == SettingsItem::DataString ||
@@ -199,18 +203,19 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
             layout->addWidget(functionDialog);
             connect(functionDialog, &QToolButton::clicked, this, [=]{ openFunctionPlotter(item, mInputField->text());});
         }
-        else if (item->type == SettingsItem::DataConnected) {
-            QList<QWidget *> origElementList = item->widget->findChildren<QWidget *>();
-            foreach (QWidget* widget, origElementList) {
-                layout->addWidget(widget);
-            }
-        }
+//        else if (item->type == SettingsItem::DataConnected) {
+//            QList<QWidget *> origElementList = item->widget->findChildren<QWidget *>();
+//            foreach (QWidget* widget, origElementList) {
+//                layout->addWidget(widget);
+//            }
+//        }
         mInputField->setToolTip(richToolTip);
         mInputField->setObjectName(objName);
         layout->addWidget(mInputField);
 
         // connect to check for changes
 //        connect(mInputField, &QLineEdit::textEdited, mSetting, &SettingsItem::valueChanged);
+
         connect(mInputField, &QLineEdit::textEdited, this, [=]{emit widgetValueChanged(item, mInputField->text());});
 
 
@@ -246,8 +251,6 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
             table->setVerticalHeaderItem(i, newItem);
         }
     }
-
-
 
 
 }
@@ -384,7 +387,8 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
     }
     lineEdit->setText(fileName);
     //mLinkxqt->setTempHomePath(fileName);
-    if (variableName == "system.path.home") {
+    if (variableName == "system.path.home" ||
+        variableName == "system.path.home.connected") {
         emit lineEdit->editingFinished();
     }
     // needed to register changes via file dialog (unsaved changes)
@@ -396,6 +400,8 @@ void GenericInputWidget::openCommentDialog(QStringList xmlPath)
 {
     //ui_comment = new DialogComment(mLinkxqt, xmlPath, this);
     ui_comment = new DialogComment(this, this);
+    //Connect Comment Dialog accept button to reflect changes over all items
+    connect(ui_comment, &DialogComment::commentBoxStatus, this, [this]{checkCommentButton();});
     ui_comment->show();
 
 }
@@ -405,9 +411,12 @@ void GenericInputWidget::checkCommentButton()
     if (!mSetting->comment.isEmpty()) {
         //mButtonComment->setIcon(QIcon(":/go_next.png"));
         mButtonComment->setText("!");
+
+
     } else {
         //mButtonComment->setIcon(QIcon());
         mButtonComment->setText(" ");
+
     }
     mButtonComment->setToolTip(mSetting->comment);
 }

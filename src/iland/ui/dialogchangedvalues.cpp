@@ -19,8 +19,8 @@ DialogChangedValues::~DialogChangedValues()
 
 void DialogChangedValues::updateTable(SettingsItem *item, QVariant newValue)
 {
-
-    int index = mKeys.indexOf(item->key);
+    QString element = item->key;
+    int index = mKeys.indexOf(element.remove(".connected"));
 
     if (index == -1) {
         int numRows = mValueTable->rowCount();

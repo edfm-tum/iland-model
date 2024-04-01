@@ -136,6 +136,13 @@ output.abeStandDetail.enabled = boolean|false|Enable ABE stand detail|This outpu
 output.abeStandDetail.condition = string|mod(year,10)=1|ABE Standdetail eval. cond.|Limits the execution to certain years.|advanced
 
 ; system
+gui.layout = tab|tabSystem|System Settings|Path Settings, Logging, etc. 
+system.path.home = connected|Home Directory
+system.path.script = connected|Script String
+system.database.in = connected|Test File
+system.logging.logTarget = connected|Test combo
+
+; system
 gui.layout = tab|tabPath|Path settings|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. 
 system.path.home = directory|project's home directory|Home|The project's home directory. If empty, the directory containing the project file is the home folder.|simple
 system.path.database = directory|database directory|Database|Directory containing the databases. Default: "database"|simple
