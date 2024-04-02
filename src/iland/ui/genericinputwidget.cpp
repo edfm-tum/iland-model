@@ -127,7 +127,13 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
 //    mConnected = connected;
     mConnected = false;
     mSetting = item;
-    if ( !connected ) {item->widget = this;}
+    if ( !connected ) {
+        item->widget = this;
+    }
+    else {
+        item->connectedWidgets.append(this);
+    }
+
     QString suffix = "";
 
     if ( connected ) {
@@ -142,7 +148,8 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     layout->setContentsMargins(11,3,11,3);
 
     // Set label
-    mLabel = new QLabel(item->label);
+    QString label = (item->altLabel == "") ? item->label : item->altLabel;
+    mLabel = new QLabel(label);
     richToolTip = QString("<FONT COLOR=black>") + item->tooltip + QString("</FONT>");
     mLabel->setToolTip(richToolTip);
     // Label name is later used for formatting purposes in settingsdialog.cpp
@@ -402,6 +409,12 @@ void GenericInputWidget::openCommentDialog(QStringList xmlPath)
     ui_comment = new DialogComment(this, this);
     //Connect Comment Dialog accept button to reflect changes over all items
     connect(ui_comment, &DialogComment::commentBoxStatus, this, [this]{checkCommentButton();});
+
+    foreach (GenericInputWidget* mirroredWidget, mSetting->connectedWidgets) {
+        connect(ui_comment, &DialogComment::commentBoxStatus, mirroredWidget, [=]{mirroredWidget->checkCommentButton();});
+        connect(mirroredWidget, &GenericInputWidget::commentChanged, this, [this]{checkCommentButton();});
+    }
+
     ui_comment->show();
 
 }

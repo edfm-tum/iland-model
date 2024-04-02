@@ -176,7 +176,7 @@ gui.layout = tab|tabJavascript|Javascript|This section deals with Javascript-scr
 system.javascript.fileName = string|javascript file name|File name|The filename of a javascript file to load. Default location is the "scripts"-directory.|all
 
 ; model.settings
-gui.layout = tab|tabModel|Model Settings
+gui.layout = tab|tabModel|Model Settings|Test ob das angenommen wird
 gui.layout = layout|hl
 gui.layout = group|General switches
 model.settings.regenerationEnabled = connected|Enable Regeneration

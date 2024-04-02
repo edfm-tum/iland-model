@@ -14,8 +14,8 @@ class GenericInputWidget; // forward
 /// this includes meta data of the setting, as well as the current value
 struct SettingsItem  {
 
-    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility, QString aparent):
-        metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility), parentTab(aparent){
+    SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility, QString aparent = "", QString aAltLabel = ""):
+        metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility), parentTab(aparent), altLabel(aAltLabel){
         auto ti =  mInputTypes.indexOf(atype);
         if (ti < 0)
             throw IException("SettingsItem: invalid input type");
@@ -24,10 +24,12 @@ struct SettingsItem  {
 
     enum EInputType {  DataString, DataBoolean, DataNumeric, DataPath, DataPathFile, DataPathDirectory, DataCombo, DataFunction, DataConnected, DataTable };
     GenericInputWidget *widget;
+    QList<GenericInputWidget *> connectedWidgets;
     size_t metakeyIndex;
     QString key;
     EInputType type;
     QString label;
+    QString altLabel;
     QString tooltip;
     QString defaultValue;
     QString visibility;

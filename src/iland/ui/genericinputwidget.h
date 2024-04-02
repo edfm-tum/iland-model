@@ -63,6 +63,7 @@ private:
 signals:
     //void homePathUpdate(const QString& homePath);
     void widgetValueChanged(SettingsItem* item, QVariant newValue);
+    void commentChanged();
 };
 
 #endif // GENERICINPUTWIDGET_H

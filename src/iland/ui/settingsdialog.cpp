@@ -87,6 +87,9 @@ void SettingsDialog::setFilterMode(int mode)
     case 0:
         for (auto &v : mKeys) {
             v->widget->setVisible(true);
+            foreach (GenericInputWidget* mirroredWidget, v->connectedWidgets) {
+                mirroredWidget->setVisible(true);
+            }
         }
         break;
 
@@ -98,11 +101,17 @@ void SettingsDialog::setFilterMode(int mode)
             // advanced - including the more detailed flags
             // all - also include "deprecated" flags
             v->widget->setVisible(v->visibility == "simple");
+            foreach (GenericInputWidget* mirroredWidget, v->connectedWidgets) {
+                mirroredWidget->setVisible(v->visibility == "simple");
+                }
             }
         break;
     case 2:
         for (auto &v : mKeys) {
             v->widget->setVisible(v->visibility != "all");
+            foreach (GenericInputWidget* mirroredWidget, v->connectedWidgets) {
+                mirroredWidget->setVisible(v->visibility != "all");
+                }
 
         }
         break;
@@ -223,6 +232,26 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     QLabel* tabHeading;
     bool activeTab = false;
 
+    // SettingsItem must be defined first in order to use them with the mirrored items
+    SettingsItem *item;
+    for (int n = 0; n < mMetaKeys.length(); n++) {
+        element = mMetaKeys[n];
+        values = mMetaValues[n].split("|");
+        inputType = values[0];
+        if (valueTypes.contains(inputType) &&
+            !element.startsWith("model.species")) {
+            item = new SettingsItem(  n,
+                                      element,
+                                      inputType, //input type
+                                      values[2], // label
+                                      values[3], // tooltip
+                                      values[1], // default
+                                      values[4]); // visibility
+
+            mKeys[element] = item;
+        }
+    }
+
     for (int n = 0; n < mMetaKeys.length(); n++) {
         element = mMetaKeys[n];
         // xmlPath is used to traverse tree in xml document
@@ -288,26 +317,9 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                 // adds an actual element
                 // size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault
                 QString tabName = curChildStack->whatsThis();
-                SettingsItem *item = new SettingsItem(n,
-                                  element,
-                                  inputType,
-                                  values[2], // label
-                                  values[3], // tooltip
-                                  values[1], // default
-                                  values[4], // visibility
-                                  tabName); // name of parent tab
-                mKeys[element] = item;
 
-                defaultValue = values[1];
-                labelName = values[2];
-                toolTip = values[3];
-    //            GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
-    //                                                                        inputType,
-    //                                                                        defaultValue,
-    //                                                                        xmlPath,
-    //                                                                        labelName,
-    //                                                                        toolTip,
-    //                                                                        curChildStack);
+                item = mKeys[element];
+                item->parentTab = tabName;
                 GenericInputWidget *newInputWidget = new GenericInputWidget(mLinkxqt,
                                                                             item);
                 // to avoid one extra function call, registerChangedValue coud be omitted and its content could be directly called in the lambda function
@@ -319,8 +331,22 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             }
             else if (inputType == "connected") {
                 // make a list of all connected elements to add the later at once
-                QStringList curPair = {element, curTabName};
+                item = mKeys[element];
+                item->altLabel = values[1];
+                GenericInputWidget *newMirroredWidget = new GenericInputWidget(mLinkxqt,
+                                                                               item,
+                                                                               true);
 
+                // connect to register changes
+                connect(newMirroredWidget, &GenericInputWidget::widgetValueChanged,
+                        this, [this](SettingsItem* item, QVariant newValue){registerChangedValue(item, newValue);});
+
+                // connect comment buttons
+//                connect(newMirroredWidget, &GenericInputWidget::commentChanged, item->widget, [=]{item->widget->checkCommentButton();});
+//                connect(item->widget, &GenericInputWidget::commentChanged, newMirroredWidget, [=]{newMirroredWidget->checkCommentButton();});
+
+                tabLay->addWidget(newMirroredWidget);
+                QStringList curPair = {element, curTabName};
                 connectedElements.append(curPair);
             }
         }
@@ -338,11 +364,6 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 //        mirroredItem->type = SettingsItem::DataConnected;
         curChildStack = stackedWidget->findChild<QWidget *>(curTabName);
         tabLay = curChildStack->findChild<QVBoxLayout *>(curTabName + "Layout");
-        GenericInputWidget *newMirroredWidget = new GenericInputWidget(mLinkxqt,
-                                                                    origItem,
-                                                                    true);
-
-        tabLay->addWidget(newMirroredWidget);
 
         // connect the mirrored element to its original version
 
@@ -396,9 +417,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             //newMirroredWidget->checkCommentButton();
 
         }
-        // connect to register changes
-        connect(newMirroredWidget, &GenericInputWidget::widgetValueChanged,
-                this, [this](SettingsItem* item, QVariant newValue){registerChangedValue(item, newValue);});
+
 
 
 
@@ -536,13 +555,15 @@ void SettingsDialog::updateFilePaths(const QString &homePath)
 void SettingsDialog::readXMLValues()
 {
     for (auto &item : mKeys) {
-        if (item->widget &&
-            item->type != SettingsItem::DataConnected) {
+        if (item->widget) {
             QString value = mLinkxqt->readXmlValue(item->key);
             QString comment = mLinkxqt->readXmlComment(item->key);
             item->strValue = value;
             item->widget->setValue(value);
             item->widget->setComment(comment);
+            foreach (GenericInputWidget* mirroredWidget, item->connectedWidgets) {
+                mirroredWidget->checkCommentButton();
+            }
         }
     }
 }
@@ -601,16 +622,3 @@ QToolBar *SettingsDialog::createToolbar()
 
     return toolbar;
 }
-
-//void SettingsDialog::setTabCaptions(QStackedWidget* stackWidget)
-//{
-//    for (int i = 0; i < mSettingsList.length(); i ++) {
-
-//    }
-//}
-
-//SettingsDialog::~SettingsDialog()
-//{
-//    delete ui;
-//}
-
