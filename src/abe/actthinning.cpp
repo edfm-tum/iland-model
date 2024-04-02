@@ -158,6 +158,7 @@ void ActThinning::setupSelective(QJSValue value)
     mSelectiveThinning.N = FMSTP::valueFromJs(value, "N", "400").toInt();
     mSelectiveThinning.speciesProb = FMSTP::valueFromJs(value, "speciesSelectivity");
     mSelectiveThinning.rankingExpr = FMSTP::valueFromJs(value, "ranking", "").toString();
+    mSelectiveThinning.Ncompetitors = FMSTP::valueFromJs(value, "NCompetitors", "1.5").toNumber();
 }
 
 // setup of the "custom" thinning operation
@@ -497,7 +498,9 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     if (target_n>=treelist->trees().count())
         target_n = treelist->trees().count();
 
-    int max_target_n = qMax(target_n * 1.5, treelist->trees().count()/2.);
+    qCDebug(abe) << "using user-defined number of competitors: " << mSelectiveThinning.Ncompetitors;
+
+    int max_target_n = qMax(target_n * 1.5, treelist->trees().count()/2.); // JM: why max(..., treelist->trees().count()/2.)?!
     if (max_target_n>=treelist->trees().count())
         max_target_n = treelist->trees().count();
     // we have 2500 px per ha (2m resolution)
@@ -519,6 +522,9 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
 
     }
 
+    qCDebug(abe) << "Target number of crop trees: " << target_n;
+
+
     // start with a part of N and 0 overlap
     int n_found = 0;
     int tests=0;
@@ -539,6 +545,14 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
         }
         ++i;
     }
+
+
+
+    qCDebug(abe) << "numbers found in first round: " << n_found;
+
+
+
+
     // continue with a higher probability
     for (int run=0;run<4;++run) {
         for (int i=0; i<max_target_n;++i) {
@@ -551,7 +565,7 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
                 (f<=(0.0805*mSelectiveThinning.N-2.4256)) ||                  // JM: define kernel thresholds here     scaled: max(0, 0.1484*NZBaum-5.4919)
                 (run==1 && f<=(0.1484*mSelectiveThinning.N-5.4919)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.1679*NZBaum-4.8988)
                 (run==2 && f<=(0.1679*mSelectiveThinning.N-4.8988)) ||        // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
-                ((run==3) && f<=3*(0.1679*mSelectiveThinning.N-4.8988))) {    // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
+                ((run==3) && f<=4*(0.1679*mSelectiveThinning.N-4.8988))) {    // JM: define kernel thresholds here     scaled: max(0, 0.0805*NZBaum-2.4256)
 
                 if (selective_species & !( drandom() < mSpeciesSelectivity[treelist->trees().at(i).first->species()]) )
                     continue;
@@ -570,7 +584,9 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
     // now mark the competitors:
     // competitors are trees up to 75th percentile of the tree population that
     int n_competitor=0;
-    for (int run=0;run<3;++run) {
+    int target_competitors = std::round(mSelectiveThinning.Ncompetitors * target_n);
+
+    for (int run=0;run<3 && n_competitor<target_competitors;++run) {
         for (int i=0; i<max_target_n;++i) {
             Tree *tree = treelist->trees().at(i).first;
             if (tree->isMarkedAsCropTree() || tree->isMarkedAsCropCompetitor())
@@ -583,6 +599,8 @@ bool ActThinning::markCropTrees(FMStand *stand, bool selective_species)
                  (run==2 && f>4) ) {
                 tree->markCropCompetitor(true);
                 n_competitor++;
+                if (n_competitor >= target_competitors)
+                    break;
             }
         }
     }
