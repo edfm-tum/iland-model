@@ -19,6 +19,7 @@
 
 
 #include <QString>
+#include <QRegularExpression>
 static const char *version = "1.9.1";
 static const char *svn_revision = "1556";
 const char *currentVersion(){ return version;}
@@ -79,6 +80,13 @@ QString compiler()
 QString verboseVersion()
 {
     QString s = QString("branch: %1, version: %2, date: %3").arg(GIT_BRANCH).arg(GIT_HASH).arg(BUILD_TIMESTAMP);
+    return s;
+
+}
+
+QString verboseVersionHtml()
+{
+    QString s = QString("branch: %1, version: <a href=\"https://github.com/edfm-tum/iland-model/tree/%2\">%2</a>, date: %3").arg(GIT_BRANCH).arg(GIT_HASH).arg(BUILD_TIMESTAMP);
     return s;
 
 }

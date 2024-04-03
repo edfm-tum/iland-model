@@ -22,5 +22,6 @@ const char *currentVersion();
 const char *svnRevision();
 QString compiler();
 QString verboseVersion();
+QString verboseVersionHtml();
 QString buildYear();
 
