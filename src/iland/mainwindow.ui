@@ -80,6 +80,7 @@
     <addaction name="separator"/>
     <addaction name="actionImageToClipboard"/>
     <addaction name="actionTest"/>
+    <addaction name="actionExpression_plotter"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1312,6 +1313,11 @@ QProgressBar::chunk {
    </property>
    <property name="shortcut">
     <string>F2</string>
+   </property>
+  </action>
+  <action name="actionExpression_plotter">
+   <property name="text">
+    <string>Expression plotter</string>
    </property>
   </action>
  </widget>

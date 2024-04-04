@@ -16,7 +16,7 @@ class DialogFunctionPlotter : public QDialog
     Q_OBJECT
 
 public:
-    explicit DialogFunctionPlotter(const QString& funcExpression, const QString& itemLabel, QWidget *parent = nullptr);
+    explicit DialogFunctionPlotter(const QString& funcExpression, const QString& itemLabel, bool standAlone=false, QWidget *parent = nullptr);
     ~DialogFunctionPlotter();
 
     //functions
@@ -40,6 +40,7 @@ private:
     QString funcName;
 
     //QJSEngine funcEngine;
+    bool mStandAlone;
 
    // functions
     void drawFunction();

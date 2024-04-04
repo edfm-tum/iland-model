@@ -34,6 +34,7 @@
 #include "aboutdialog.h"
 #include "settingmetadata.h"
 #include "ui/linkxmlqt.h"
+#include "ui/dialogfunctionplotter.h"
 
 #include "model.h"
 #include "resourceunit.h"
@@ -2814,4 +2815,11 @@ void MainWindow::on_speciesFilterBox_currentIndexChanged(int index)
     repaint();
 }
 
+
+
+void MainWindow::on_actionExpression_plotter_triggered()
+{
+    DialogFunctionPlotter *ui_functionPlotter = new DialogFunctionPlotter("x^2", "Test expressions", true, this);
+    ui_functionPlotter->show();
+}
 

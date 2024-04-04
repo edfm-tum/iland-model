@@ -258,6 +258,7 @@ private slots:
     void on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_speciesFilterBox_currentIndexChanged(int index);
     void on_visRUSpeciesColor_stateChanged(int arg1) {on_visFon_toggled();  } // force repaint
+    void on_actionExpression_plotter_triggered();
 };
 
 #endif // MAINWINDOW_H
