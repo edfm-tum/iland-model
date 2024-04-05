@@ -26,7 +26,7 @@ DialogComment::DialogComment(GenericInputWidget *widget, QWidget *parent):
     mWidget(widget)
 {
     ui->setupUi(this);
-
+    mLinkxqt = mWidget->getLinkXmlQt();
     connect(ui->buttonBox_dialogComment, &QDialogButtonBox::accepted, this, [=]() {acceptComment();});
 
 
@@ -49,5 +49,6 @@ void DialogComment::acceptComment()
     mWidget->setComment(commentText);
     emit commentBoxStatus();
     emit mWidget->commentChanged();
-    //mLinkxqt->writeCommentXml(commentText, xmlPath);
+    QStringList xmlPath = mWidget->getWidgetName().split(".");
+    mLinkxqt->writeCommentXml(commentText, xmlPath);
 }

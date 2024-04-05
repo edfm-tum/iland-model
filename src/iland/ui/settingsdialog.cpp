@@ -12,36 +12,6 @@
 #include "ui/genericinputwidget.h"
 #include "qdialogbuttonbox.h"
 
-FilterButton::FilterButton(const QString& text, const QString& pathIcon, QWidget *parent)
-    :QAbstractButton(parent),
-    mText(text),
-    mPathIcon(pathIcon)
-{
-    this->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    this->setCheckable(true);
-    this->setAutoExclusive(true);
-
-    this->setText(mText);
-}
-
-void FilterButton::paintEvent(QPaintEvent *e)
-{
-    Q_UNUSED(e);
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-
-    QPixmap pixmapIconRaw = QPixmap(mPathIcon);
-    int iconWidth = pixmapIconRaw.width();
-    int iconHeight = pixmapIconRaw.height();
-    QIcon icon = isChecked() ? this->icon() : QIcon(pixmapIconRaw);
-    QSize iconSize = QSize(iconWidth, iconHeight);
-    QPixmap pixmapIcon = icon.pixmap(iconSize, isChecked() ? QIcon::Normal : QIcon::Disabled);
-
-    painter.drawPixmap(rect().center() - pixmapIcon.rect().center(), pixmapIcon);
-
-}
-
 SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
                                QStringList &inputSettings,
                                QList<QStringList> &inputSettingsList,
@@ -506,7 +476,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         connect(homePathEdit, &QLineEdit::editingFinished, this, [=]{updateFilePaths(homePathEdit->text());});
     }
 
-
+    setFilterMode(1);
 
 }
 

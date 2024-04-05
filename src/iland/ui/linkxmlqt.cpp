@@ -103,14 +103,14 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 }
 
 void LinkXmlQt::writeCommentXml(const QString& comment,
-                                const QString& xmlPath)
+                                QStringList xmlPath)
 
 {
-    QDomDocument curXml = mLoadedXml;
+    //QDomDocument curXml = mLoadedXml;
 
-    QDomElement rootElement = curXml.documentElement();
+    QDomElement rootElement = mLoadedXml.documentElement();
     QDomElement curNode = rootElement;
-    foreach (QString node, xmlPath.split(".")) {
+    foreach (QString node, xmlPath) {
         curNode = curNode.firstChildElement(node);
     }
     //If Qt::SkipEmptyParts is set no empty lines are included as (empty) comments

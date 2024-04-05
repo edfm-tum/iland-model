@@ -353,7 +353,7 @@ QString GenericInputWidget::comment()
 void GenericInputWidget::setComment(QString comment)
 {
     mSetting->comment = comment;
-   // mLinkxqt->writeCommentXml(comment, mSetting->key);
+    //mLinkxqt->writeCommentXml(comment, mSetting->key);
     checkCommentButton();
 }
 
@@ -365,19 +365,21 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
    //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
     QDir xmlHomePathAbsolute = mLinkxqt->getTempHomePath();
 
-    if ( xmlHomePathAbsolute.exists() ) {
-        homePathAbsolute = xmlHomePathAbsolute;
-        qDebug() << "Home path set to user defined path: ";
-    }
-    else {
-        xmlPath = mLinkxqt->getXmlFile();
+//    if ( xmlHomePathAbsolute.exists() ) {
+//        homePathAbsolute = xmlHomePathAbsolute;
+//        qDebug() << "Home path set to user defined path: ";
+//    }
+//    else {
+//        xmlPath = mLinkxqt->getXmlFile();
 
-        QFileInfo fileInfo(xmlPath);
-        homePathAbsolute = fileInfo.absolutePath();
+//        QFileInfo fileInfo(xmlPath);
+//        homePathAbsolute = fileInfo.absolutePath();
 
-        qDebug() << "Home path set to directory containing project file (xml file): ";
-    }
-    qDebug() << homePathAbsolute;
+//        qDebug() << "Home path set to directory containing project file (xml file): ";
+//    }
+    homePathAbsolute = mLinkxqt->getXmlFile();
+    qDebug() << "Project Folder:";
+    qDebug() << homePathAbsolute.path();
 
     QString selectedFile = Helper::fileDialog("Select " + variableName, homePathAbsolute.absolutePath(), "", type, nullptr);
     if (selectedFile.isEmpty())
@@ -432,6 +434,16 @@ void GenericInputWidget::checkCommentButton()
 
     }
     mButtonComment->setToolTip(mSetting->comment);
+}
+
+QString GenericInputWidget::getWidgetName()
+{
+    return mSetting->key;
+}
+
+LinkXmlQt *GenericInputWidget::getLinkXmlQt()
+{
+    return this->mLinkxqt;
 }
 
 void GenericInputWidget::openFunctionPlotter(SettingsItem *item, const QString& curExpr)
