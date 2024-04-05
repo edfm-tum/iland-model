@@ -31,6 +31,8 @@ public:
     QString comment();
     void setComment(QString comment);
     void checkCommentButton();
+    QString getWidgetName();
+    LinkXmlQt* getLinkXmlQt();
 
 
 private:

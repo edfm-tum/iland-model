@@ -58,7 +58,7 @@ public:
     ~LinkXmlQt();
 
     QString readCommentXml(const QStringList& xmlPath);
-    void writeCommentXml(const QString& comment, const QString& xmlPath);
+    void writeCommentXml(const QString& comment, QStringList xmlPath);
     void setXmlPath(const QString& xmlPath);
     void writeToFile(const QString &xmlFilePath);
     QString getXmlFile();

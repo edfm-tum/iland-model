@@ -173,7 +173,7 @@ system.settings.logLevel = combo|Warning;Debug;Info;Error|Log level|This setting
 system.settings.responsive = boolean|true|Responsive|If checked, iLand is more responsive during lengthy calculations (i.e. the user interface freezes less frequently)|advanced
 
 gui.layout = tab|tabJavascript|Javascript|This section deals with Javascript-script files that are loaded into the models' script engine at startup. Note that you can load multiple files by using the Globals.include() javascript function.
-system.javascript.fileName = string|javascript file name|File name|The filename of a javascript file to load. Default location is the "scripts"-directory.|all
+system.javascript.fileName = file|javascript file name|File name|The filename of a javascript file to load. Default location is the "scripts"-directory.|advanced
 
 ; model.settings
 gui.layout = tab|tabModel|Model Settings|Test ob das angenommen wird
@@ -288,24 +288,24 @@ model.settings.browsing.enabled = boolean|false|Enable|If false the browsing mod
 model.settings.browsing.browsingPressure = numeric|0.1|Browsing Pressure|scaling factor modifying the base probability|advanced
 
 ; model.species
-gui.layout = tab|tabSpecies
-model.species.source = string|string|string|string
-model.species.reader = string|string|string|string
-model.species.nitrogenResponseClasses = string|string|string|string
-model.species.CO2Response.p0 = string|string|string|string
-model.species.CO2Response.baseConcentration = string|string|string|string
-model.species.CO2Response.compensationPoint = string|string|string|string
-model.species.CO2Response.beta0 = string|string|string|string
-model.species.lightResponse.shadeTolerant = string|string|string|string
-model.species.lightResponse.shadeIntolerant = string|string|string|string
-model.species.lightResponse.LRImodifier = string|string|string|string
-model.species.phenology.type.vpdMin = string|string|string|string
-model.species.phenology.type.vpdMax = string|string|string|string
-model.species.phenology.type.dayLengthMin = string|string|string|string
-model.species.phenology.type.dayLengthMax = string|string|string|string
-model.species.phenology.type.tempMin = string|string|string|string
-model.species.phenology.type.tempMax = string|string|string|string
-model.species.sprouting.adultSproutProbability = string|string|string|string
+gui.layout = tab|tabSpecies|Species Parameters|The species parameter can only be customized in the xml project file.
+; model.species.source = string|string|string|string
+; model.species.reader = string|string|string|string
+; model.species.nitrogenResponseClasses = string|string|string|string
+; model.species.CO2Response.p0 = string|string|string|string
+; model.species.CO2Response.baseConcentration = string|string|string|string
+; model.species.CO2Response.compensationPoint = string|string|string|string
+; model.species.CO2Response.beta0 = string|string|string|string
+; model.species.lightResponse.shadeTolerant = string|string|string|string
+; model.species.lightResponse.shadeIntolerant = string|string|string|string
+; model.species.lightResponse.LRImodifier = string|string|string|string
+; model.species.phenology.type.vpdMin = string|string|string|string
+; model.species.phenology.type.vpdMax = string|string|string|string
+; model.species.phenology.type.dayLengthMin = string|string|string|string
+; model.species.phenology.type.dayLengthMax = string|string|string|string
+; model.species.phenology.type.tempMin = string|string|string|string
+; model.species.phenology.type.tempMax = string|string|string|string
+; model.species.sprouting.adultSproutProbability = string|string|string|string
 
 
 ; model.initialization

@@ -43,7 +43,7 @@
      </attribute>
      <column>
       <property name="text">
-       <string>New Column</string>
+       <string>Value Name</string>
       </property>
      </column>
      <column>
