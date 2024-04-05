@@ -97,11 +97,13 @@ void BarkBeetleModule::setup(const ResourceUnit *ru)
     // probabilistic OR-calculation: p_1ha = 1 - (1 - p_pixel)^n   -> p_pixel = 1 - (1-p_ha)^(1/n)
     // we need the probability of damage starting on a single 10m - pixel.
     double pixel_value = 1. - pow(1. - ru_value, 1./( cellsize()*cellsize()));
+    BarkBeetleRUCell &rucell = mRUGrid.valueAt(ru->boundingBox().center());
 
+    rucell.backgroundInfestationProbability = pixel_value;
     // set all pixel within the resource unit
-    GridRunner<BarkBeetleCell> runner(mGrid, ru->boundingBox());
-    while (BarkBeetleCell *cell = runner.next())
-        cell->backgroundInfestationProbability = static_cast<float>(pixel_value);
+    //GridRunner<BarkBeetleCell> runner(mGrid, ru->boundingBox());
+    //while (BarkBeetleCell *cell = runner.next())
+    //    cell->backgroundInfestationProbability = static_cast<float>(pixel_value);
 
 }
 
@@ -138,6 +140,12 @@ void BarkBeetleModule::loadParameters(bool do_reset)
     *p++ = mOutbreakClimateSensitivityFormula.addVar("Tautumn");
     *p++ = mOutbreakClimateSensitivityFormula.addVar("Twinter");
     mOutbreakClimateSensitivityFormula.parse();
+
+    formula = xml.value(".outbreakClimateMultiplier", "");
+    mOutbreakClimateMultiplier.setExpression(formula);
+
+    mClimateVariables[8] = mOutbreakClimateMultiplier.addVar("VPDjj"); // save at index position 8
+    mOutbreakClimateMultiplier.parse();
 
     params.outbreakDurationMin = xml.valueDouble(".outbreakDurationMin", 0.);
     params.outbreakDurationMax = xml.valueDouble(".outbreakDurationMax", 0.);
@@ -398,6 +406,29 @@ void BarkBeetleModule::calculateGenerations()
 
 void BarkBeetleModule::calculateOutbreakFactor()
 {
+    if (!mOutbreakClimateMultiplier.isEmpty()) {
+        double vpd = 0;
+
+        ResourceUnit **ru = GlobalSettings::instance()->model()->RUgrid().begin();
+        for (BarkBeetleRUCell *bbru= mRUGrid.begin(); bbru!=mRUGrid.end(); ++bbru, ++ru) {
+            if (*ru) {
+                // calc mean VPD for june / july
+                const ClimateDay *cday = (*ru)->climate()->day(5, 0); // 0-based indices -> 1st of June
+                const ClimateDay *cend = (*ru)->climate()->day(7, 0); // 1st of august
+                int n=0;
+                vpd=0.;
+                do {
+                    vpd += cday->vpd;
+                    ++n;
+                } while (++cday < cend);
+                vpd /= n;
+                *mClimateVariables[8] = vpd; // store to internal memory of expression
+
+                bbru->climateOutbreakFactor = mOutbreakClimateMultiplier.execute();
+            }
+        }
+    }
+
     if (!mRefClimate) {
         mRc = 1.;
         return;
@@ -444,17 +475,22 @@ void BarkBeetleModule::startSpread()
             }
 
         } else if (b->isPotentialHost()) {
+            const BarkBeetleRUCell &ru_b = mRUGrid(mGrid.cellCenterPoint(b));
             if (mYear==1 && params.initialInfestationProbability>0.) {
                 if (drandom() < params.initialInfestationProbability) {
                     b->setInfested(true);
                     b->outbreakYear = 1 - irandom(0,4); // initial outbreaks has an age of 1-4 years
                     stats.infestedBackground++;
                 }
-            } else if (b->backgroundInfestationProbability>0.f) {
+            } else if (ru_b.backgroundInfestationProbability>0.f) {
                 // calculate probability for an outbreak
-                double p = static_cast<double>(b->backgroundInfestationProbability);
+                double p = static_cast<double>(ru_b.backgroundInfestationProbability);
+                // we include both climate sensitive pathways here:
+                // one is the (landscape-wide) seasonal change relative to a reference period (mean T, mean P)
+                // the other is based on absolute thresholds from the current climate (on current RU)
+                double odds_factor = mRc * ru_b.climateOutbreakFactor;
                 double odds_base = p / (1. - p);
-                double p_mod = (odds_base*mRc) / (1. + odds_base*mRc);
+                double p_mod = (odds_base * odds_factor) / (1. + odds_base * odds_factor);
                 if (drandom() < p_mod) {
                     // background activation: 10 px
                     //clumpedBackgroundActivation(mGrid.indexOf(b));
@@ -756,10 +792,9 @@ double BarkBeetleLayers::value(const BarkBeetleCell &data, const int param_index
     case 5: return static_cast<double>(data.p_colonize); // probability of kill
     case 6: return static_cast<double>(data.n_total); // # landed
     case 7: return double(data.deadtrees); // availabilitiy of deadwood (spruce)
-    case 8: return static_cast<double>(data.backgroundInfestationProbability);
-    case 9: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
-    case 10: return data.n_events; // number of events on a specific pixel
-    case 11: return static_cast<double>(data.sum_volume_killed); // total sum of trees killed for a pixel
+    case 8: return GlobalSettings::instance()->currentYear() - data.outbreakYear;
+    case 9: return data.n_events; // number of events on a specific pixel
+    case 10: return static_cast<double>(data.sum_volume_killed); // total sum of trees killed for a pixel
     default: throw IException(QString("invalid variable index for a BarkBeetleCell: %1").arg(param_index));
     }
 }
@@ -777,7 +812,6 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleLayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("p_killed"), QStringLiteral("highest probability (within one year) that a pixel is colonized/killed (integrates the number of arriving beetles and the defense state) 0..1"), GridViewHeat)
                 << LayeredGridBase::LayerElement(QStringLiteral("n_landed"), QStringLiteral("number of cohorts that landed on a pixel (sum of all generations)"), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QStringLiteral("deadwood"), QStringLiteral("10: trees killed by storm, 8: trap trees, 5: active vicinity of 10/8, 0: no dead trees"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QStringLiteral("outbreakProbability"), QStringLiteral("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
                 << LayeredGridBase::LayerElement(QStringLiteral("outbreakAge"), QStringLiteral("age of the outbreak that led to the infestation of the pixel."), GridViewGray)
                 << LayeredGridBase::LayerElement(QStringLiteral("nEvents"), QStringLiteral("number of events (total since start of simulation) that killed trees on a pixel."), GridViewReds)
                 << LayeredGridBase::LayerElement(QStringLiteral("sumVolume"), QStringLiteral("running sum of damages trees (volume, m3)."), GridViewReds);
@@ -796,6 +830,8 @@ double BarkBeetleRULayers::value(const BarkBeetleRUCell &data, const int index) 
 {
     switch(index){
     case 0: return data.generations; // number of generation
+    case 1: return data.backgroundInfestationProbability; // background prob
+    case 2: return data.climateOutbreakFactor; // climatically driven outbreak multiplier
     default: throw IException(QString("invalid variable index for a BarkBeetleRUCell: %1").arg(index));
     }
 
@@ -805,7 +841,11 @@ const QVector<LayeredGridBase::LayerElement> &BarkBeetleRULayers::names()
 {
     if (mNames.isEmpty())
         mNames = QVector<LayeredGridBase::LayerElement>()
-                << LayeredGridBase::LayerElement(QStringLiteral("generations"), QStringLiteral("total number of bark beetle generations"), GridViewHeat);
+                << LayeredGridBase::LayerElement(QStringLiteral("generations"), QStringLiteral("total number of bark beetle generations"), GridViewHeat)
+                << LayeredGridBase::LayerElement(QStringLiteral("outbreakProbability"), QStringLiteral("background infestation probability (p that outbreak starts at each 10m pixel per year) (does not include the interannual climate sensitivity)"), GridViewGray)
+                << LayeredGridBase::LayerElement(QStringLiteral("outbreakClimateMultiplier"), QStringLiteral("multiplier of outbreak probability due to current climate (VPD)"), GridViewTurbo);
+
+
     return mNames;
 }
 

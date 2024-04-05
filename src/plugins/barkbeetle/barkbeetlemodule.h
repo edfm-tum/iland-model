@@ -46,7 +46,6 @@ public:
     void setInfested(bool is_infested) { infested=is_infested; if (infested) { total_infested++; killedYear=0; n=0;} }
     /// called after beetles spread out from the cell. The cell is marked as 'killed', and trees will be killed later (barkbeetleKill()).
     void finishedSpread(int iteration) { infested=false; killedYear=iteration; killed=true; max_iteration=qMax(max_iteration, iteration); ++n_events; }
-    float backgroundInfestationProbability; ///< background prob. of infestation per 10m cell
 
     bool infested; // true for cells that are currently occupied by beetles
     bool killed; // true for cells that are killed in the current year
@@ -82,7 +81,7 @@ public:
     BarkBeetleRUCell(): scanned(false), generations(0.), add_sister(false),
         cold_days(0), cold_days_late(0), killed_trees(false),
         killed_pixels(0), host_pixels(0),
-        infested(0.) {}
+        infested(0.), climateOutbreakFactor(1.) {}
     /// relative damage: fraction of host pixels that died in the current or the last year
     double currentDamageFraction() { return host_pixels+killed_pixels>0? (killed_pixels)/double(host_pixels+killed_pixels): 0.; }
     bool scanned;
@@ -94,6 +93,8 @@ public:
     int killed_pixels;
     int host_pixels;
     int infested; // number of pixels that are currently infested
+    float backgroundInfestationProbability; ///< background prob. of infestation per 10m cell (same value for all cells of a RU)
+    float climateOutbreakFactor; ///< modification of background outbreak prob due to climate (if set)
 
 };
 
@@ -221,7 +222,8 @@ private:
     Expression mWinterMortalityFormula; ///< temperature dependent winter mortality (more beetle die if there are more cold days)
     /// equation calculating the 'r_c' factor (modifying probability of outbreak linked to climate means)
     /// variables: <Var><season>; Var: [T|P]: T current temperature - average temperature, P: current precipitation / average precipitation, <season>: [spring, summer, autumn, winter]; e.g.: Tspring, Psummer
-    Expression mOutbreakClimateSensitivityFormula;
+    Expression mOutbreakClimateSensitivityFormula; ///< equation for seasonal relative changes
+    Expression mOutbreakClimateMultiplier;  ///< equation for absolute climate variables
     Expression mOutbreakDurationFormula;
     Grid<BarkBeetleCell> mGrid;
     Grid<BarkBeetleRUCell> mRUGrid;
@@ -229,7 +231,7 @@ private:
     BarkBeetleRULayers mRULayers;
     // reference climate
     QVector<double> mRefClimateAverages; ///< vector containing 4 reference temperatures, and 4 reference seasonal precipitation values (MAM, JJA, SON, DJF): Pspring, Psummer, Pautumn, Pwinter, Tspring, Tsummer, Tautumn, Twinter
-    double *mClimateVariables[8]; // pointer to the variables
+    double *mClimateVariables[10]; // pointer to the variables
     const Climate *mRefClimate;
     double mRc; ///< climate sensitive outbreak probability: 1: this scales the backgroundOutbreakProbability, and is calculated by the respective sensitivity-Formula.
 

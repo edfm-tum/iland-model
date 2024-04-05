@@ -91,6 +91,8 @@ public:
     inline const T& operator()(const int ix, const int iy) const { return constValueAtIndex(ix, iy); }
     /// access (const) using metric variables. use float.
     inline const T& operator()(const float x, const float y) const { return constValueAt(x, y); }
+    /// access (const) value using a QPointF
+    inline const T& operator()(const QPointF &p) const {return constValueAt(p); }
     /// access value of grid with a QPoint
     inline const T& operator[](const QPoint &p) const { return constValueAtIndex(p); }
     /// use the square brackets to access by index
