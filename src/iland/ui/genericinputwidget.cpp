@@ -148,7 +148,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     layout->setContentsMargins(11,3,11,3);
 
     // Set label
-    QString label = (item->altLabel == "") ? item->label : item->altLabel;
+    QString label = ( connected ) ? item->altLabel : item->label;
     mLabel = new QLabel(label);
     richToolTip = QString("<FONT COLOR=black>") + item->tooltip + QString("</FONT>");
     mLabel->setToolTip(richToolTip);
@@ -179,6 +179,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     if (item->type == SettingsItem::DataString ||
         item->type == SettingsItem::DataPath ||
         item->type == SettingsItem::DataNumeric ||
+        item->type == SettingsItem::DataInteger ||
         item->type == SettingsItem::DataPathDirectory ||
         item->type == SettingsItem::DataPathFile ||
         item->type == SettingsItem::DataFunction) {
@@ -202,6 +203,11 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
             numericValidator->setNotation(QDoubleValidator::StandardNotation);
             numericValidator->setLocale(QLocale::English);
             mInputField->setValidator(numericValidator);
+        }
+        else if (item->type == SettingsItem::DataInteger) {
+            QIntValidator* integerValidator = new QIntValidator(mInputField);
+            integerValidator->setLocale(QLocale::English);
+            mInputField->setValidator(integerValidator);
         }
         else if (item->type == SettingsItem::DataFunction) {
             QToolButton *functionDialog = new QToolButton();
@@ -246,8 +252,12 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         layout->addWidget(mInputComboBox);
 
         // connect to check for changes
-        connect(mInputComboBox, &QComboBox::currentTextChanged, this, [=]{emit widgetValueChanged(item, mInputComboBox->currentText());});
+        // signals/changes of combo boxes behave differently, necessary to avoid emitting the signal twice
+        if ( !connected ) {
+            connect(mInputComboBox, &QComboBox::currentTextChanged, this, [=]{emit widgetValueChanged(item, mInputComboBox->currentText());});
+        }
     }
+
     else if (item->type == SettingsItem::DataTable) {
         QTableWidget* table = new QTableWidget(this);
         QStringList tableItems = item->defaultValue.split(";");
@@ -354,6 +364,7 @@ void GenericInputWidget::setComment(QString comment)
 {
     mSetting->comment = comment;
     //mLinkxqt->writeCommentXml(comment, mSetting->key);
+    emit commentChanged();
     checkCommentButton();
 }
 
@@ -414,7 +425,8 @@ void GenericInputWidget::openCommentDialog(QStringList xmlPath)
 
     foreach (GenericInputWidget* mirroredWidget, mSetting->connectedWidgets) {
         connect(ui_comment, &DialogComment::commentBoxStatus, mirroredWidget, [=]{mirroredWidget->checkCommentButton();});
-        connect(mirroredWidget, &GenericInputWidget::commentChanged, this, [this]{checkCommentButton();});
+        //connect(mirroredWidget, &GenericInputWidget::commentChanged, this, [this]{checkCommentButton();});
+
     }
 
     ui_comment->show();
@@ -426,7 +438,6 @@ void GenericInputWidget::checkCommentButton()
     if (!mSetting->comment.isEmpty()) {
         //mButtonComment->setIcon(QIcon(":/go_next.png"));
         mButtonComment->setText("!");
-
 
     } else {
         //mButtonComment->setIcon(QIcon());

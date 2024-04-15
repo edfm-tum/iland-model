@@ -37,7 +37,7 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
     setDialogLayout(mTreeWidget, mStackedWidget);
     ui_dialogChangedValues = new DialogChangedValues(this);
     connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
-
+    connect(ui_dialogChangedValues, &DialogChangedValues::noChanges, this, [this]{a_changedValuesDialog->setEnabled(false);});
 
 }
 
@@ -90,13 +90,21 @@ void SettingsDialog::setFilterMode(int mode)
 }
 
 
+void SettingsDialog::registerChangedComment()
+{
+    if (!saveButton->isEnabled()) { saveButton->setEnabled(true); }
+
+}
+
 void SettingsDialog::registerChangedValue(SettingsItem* item, QVariant newValue)
 {
 
     emit updateValueChangeTable(item, newValue);
 
-    if (!saveButton->isEnabled()) { saveButton->setEnabled(true);
-                                    a_changedValuesDialog->setEnabled(true);}
+//    if (!saveButton->isEnabled()) { saveButton->setEnabled(true);
+//                                    a_changedValuesDialog->setEnabled(true);}
+    saveButton->setEnabled(true);
+    a_changedValuesDialog->setEnabled(true);
 }
 
 
@@ -194,7 +202,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 //        QLayout *tabLay;
     QWidget *curChildStack;
     QVBoxLayout *tabLay;
-    QStringList valueTypes = {"string", "boolean", "numeric", "path", "file", "directory", "combo", "function"};
+    QStringList valueTypes = {"string", "boolean", "numeric", "integer", "path", "file", "directory", "combo", "function"};
     QStringList connectedValues;
     QFont fontHeading("Arial", 15, QFont::Bold);
     // List used to store copied gui elements to connect them to their respective twin
@@ -296,6 +304,9 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                 connect(newInputWidget, &GenericInputWidget::widgetValueChanged,
                         this, [this](SettingsItem* item, QVariant newValue){registerChangedValue(item, newValue);});
 
+                 // connect to register changed comment
+                connect(newInputWidget, &GenericInputWidget::commentChanged, this, [this]{registerChangedComment();});
+
                 tabLay->addWidget(newInputWidget);
 
             }
@@ -311,9 +322,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                 connect(newMirroredWidget, &GenericInputWidget::widgetValueChanged,
                         this, [this](SettingsItem* item, QVariant newValue){registerChangedValue(item, newValue);});
 
-                // connect comment buttons
-//                connect(newMirroredWidget, &GenericInputWidget::commentChanged, item->widget, [=]{item->widget->checkCommentButton();});
-//                connect(item->widget, &GenericInputWidget::commentChanged, newMirroredWidget, [=]{newMirroredWidget->checkCommentButton();});
+                connect(newMirroredWidget, &GenericInputWidget::commentChanged, this, [this]{registerChangedComment();});
+                connect(newMirroredWidget, &GenericInputWidget::commentChanged, this, [=]{item->widget->checkCommentButton();});
 
                 tabLay->addWidget(newMirroredWidget);
                 QStringList curPair = {element, curTabName};
@@ -367,6 +377,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         }
         else if (origItem->type == SettingsItem::DataString ||
                  origItem->type == SettingsItem::DataNumeric ||
+                 origItem->type == SettingsItem::DataInteger ||
                  origItem->type == SettingsItem::DataPathDirectory ||
                  origItem->type == SettingsItem::DataPathFile ||
                  origItem->type == SettingsItem::DataFunction) {
@@ -387,9 +398,6 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             //newMirroredWidget->checkCommentButton();
 
         }
-
-
-
 
     }
 
