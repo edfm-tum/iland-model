@@ -47,7 +47,7 @@ public:
     static QString userValue(const QString &message, const QString defaultValue, QWidget *parent=0); ///< ask the user for a input value
     /// open a File Dialog and let the user choose a file.
     /// @return the filename selected by the user, an empty string if user cancels.
-    static QString fileDialog(const QString &title, const QString &start_directory="", const QString &filter="", QWidget *parent=0);
+    static QString fileDialog(const QString &title, const QString &start_directory="", const QString &filter="", const QString &type = "file", QWidget *parent=0);
     static bool quiet() { return m_NoDebug || m_quiet; }
     static bool debugEnabled() { return !m_NoDebug; }
     static void setQuiet(bool quiet) { m_quiet = quiet; }

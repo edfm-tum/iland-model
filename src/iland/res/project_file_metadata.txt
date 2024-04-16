@@ -1,386 +1,562 @@
 ; This file contains all the nodes of the XML project file that iLand is actively using
 ; The list is used to check existing XML files.
 ; Format:
-; setting = defaultvalue, with setting the setting name with dot-notation (e.g. model.world.size)
+; setting = type|defaultValue|labelName|toolTip|filterView, with setting the setting name with dot-notation (e.g. model.world.size)
+
+gui.layout = tab|tabSettings|Settings|Insert html for settings,....
 
 
-; Outputs
-output.dynamic.enabled = bool,false,"description asdfasdfs"
-output.dynamic.columns = false
-output.dynamic = false
-output.tree.enabled = false
-output.tree.filter = false
-output.tree = false
-output.treeremoved.enabled = false
-output.treeremoved.filter = false
-output.treeremoved = false
-output.stand.enabled = false
-output.stand.condition = false
-output.stand.by_ru = false
-output.stand = false
-output.standdead.enabled = false
-output.standdead = false
-output.production_month.enabled = false
-output.production_month = false
-output.management.enabled = false
-output.management = false
-output.sapling.enabled = false
-output.sapling.condition = false
-output.sapling = false
-output.saplingdetail.enabled = false
-output.saplingdetail.condition = false
-output.saplingdetail.minDbh = false
-output.saplingdetail = false
-output.carbon.enabled = false
-output.carbon.condition = false
-output.carbon.conditionRU = false
-output.carbon = false
-output.carbonflow.enabled = false
-output.carbonflow.condition = false
-output.carbonflow.conditionRU = false
-output.carbonflow = false
-output.water.enabled = false
-output.water.condition = false
-output.water.conditionRU = false
-output.water = false
-output.landscape.enabled = false
-output.landscape.condition = false
-output.landscape = false
-output.soilinput.enabled = false
-output.soilinput = false
-output.soilinput.enabled = false
-output.svdgpp = false
-output.svdgpp.enabled = false
-output.svdstate = false
-output.svdstate.enabled = false
-output.svduniquestate = false
-output.svduniquestate.enabled = false
-output.svduniquestate.condition = false
-output.svdindicator = false
-output.svdindicator.enabled = false
-output.dynamicstand.enabled = false
-output.dynamicstand.condition = false
-output.dynamicstand.conditionRU = false
-output.dynamicstand.rufilter = false
-output.dynamicstand.treefilter = false
-output.dynamicstand.by_species = false
-output.dynamicstand.by_ru = false
-output.dynamicstand.columns = false
-output.dynamicstand = false
-output.barkbeetle.enabled = false
-output.barkbeetle = false
-output.wind.enabled = false
-output.wind = false
-output.fire.enabled = false
-output.fire = false
-output.landscape_removed.enabled = false
-output.landscape_removed.includeHarvest = false
-output.landscape_removed.includeNatural = false
-output.landscape_removed = false
-output.abeStand.enabled = false
-output.abeStand.condition = false
-output.abeStand = false
-output.abeUnit.enabled = false
-output.abeUnit = false
-output.abeStandRemoval.enabled = false
-output.abeStandRemoval = false
-output.abeStandDetail.enabled = false
-output.abeStandDetail.condition = false
-output.abeStandDetail = false
-output = false
+; output
+gui.layout = tab|tabOutput|Output|Outputs in iLand are per default created as a SQLite database. Every type of output is represented by one table within this output database. Thus, the results of one simulation run are contained in one single file. Each iLand output database contains a small table named "runinfo" which stores the timestamp when the simulation was started, and iLand version information. Alternatively, individual outputs can be configured to generate data tables as a text file instead of a table in the output database. 
+output.dynamic.enabled = connected|Enable Dynamic
+output.tree.enabled = connected|Enable Tree
+output.treeremoved.enabled = connected|Enable Remove trees
+output.stand.enabled = connected|Enable Stand
+output.standdead.enabled = connected|Enable Dead stands
+output.production_month.enabled = connected|Enable production month
+output.management.enabled = connected|Enable Management
+output.sapling.enabled = connected|Enable Saplings
+output.saplingdetail.enabled = connected|Enable Sapling Details
+output.carbon.enabled = connected|Enable Carbon
+output.carbonflow.enabled = connected|Enable Carbon flow
+output.water.enabled = connected|Enable Water
+output.landscape.enabled = connected|Enable Landscape
+output.soilinput.enabled = connected|Enable Soilinput
+output.svdgpp.enabled = connected|Enable SVDgpp
+output.svdstate.enabled = connected|Enable SVD state
+output.svduniquestate.enabled = connected|Enable SVD unique state
+output.svdindicator.enabled = connected|Enable SVD indicator
+output.dynamicstand.enabled = connected|Enable Dynamic stand
+output.barkbeetle.enabled = connected|Enable Barkbeetle
+output.wind.enabled = connected|Enable Wind
+output.fire.enabled = connected|Enable Fire
+output.landscape_removed.enabled = connected|Enable Landscape removed
+output.abeStand.enabled = connected|Enable ABE stand
 
+gui.layout = tab|tabDynamic|Dynamic|Something about dynamic
+output.dynamic.enabled = boolean|true|Enable dynamic|Output of dynamic|simple
+output.dynamic.columns = string|enter column names here|Columns|Which columns to inlcude in output|advanced
+
+gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
+
+gui.layout = group|Tree
+output.tree.enabled = boolean|true|Enable trees|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.|simple
+output.tree.filter = integer|1|Filter|See tooltip treeremoved|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Remove trees
+output.treeremoved.enabled = boolean|true|Remove trees|Output of removed indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered immediately when a tree is removed due to mortality or management.|simple
+output.treeremoved.filter = integer|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Stand	
+output.stand.enabled = boolean|false|Stand|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
+output.stand.condition = string|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).|advanced
+output.stand.byRU = string|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.|advanced
+output.standdead.enabled = boolean|true|Stand dead|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.|simple
+
+gui.layout = layout|hl
+gui.layout = group|Production & Management	
+output.production_month.enabled = boolean|false|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
+; output.production_month = string|january, february|Production month|string|advanced
+output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Sapling	
+output.sapling.enabled = boolean|true|Enable Saplings|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple
+output.sapling.condition = string|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
+output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm).|simple
+output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
+output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|advanced
+
+gui.layout = tab|tabEnvironment|Environment|Carbon (flow), Water, condition, soil...
+
+gui.layout = layout|hl
+gui.layout = group|Modules
+output.barkbeetle.enabled = boolean|false|Enable barkbeetle|Output results from barkbeetle module|advanced
+output.wind.enabled = boolean|false|Enable wind|The output contains information about wind impacts|advanced
+output.fire.enabled = boolean|false|Enable fire|Fire event aggregates per fire event. The output contains a row for each (ignited) fire event.|advanced
+output.bite.enabled = boolean|false|Enable bite|The output provides annual statistics for each simulated biotic agent.|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Carbon
+output.carbon.enabled = boolean|false|Enable Carbon|Carbon and nitrogen pools (C and N) per resource unit / year and/or by landsacpe/year. On resource unit level, the outputs contain aggregated above ground pools (kg/ha) and below ground pools (kg/ha). For landscape level outputs, all variables are scaled to kg/ha stockable area. The area column contains the stockable area (per resource unit / landscape) and can be used to scale to values to the actual value on the ground.|simple
+output.carbon.condition = string|condition carbon|Condition|Controls if the output should be created for the current year(see also dynamic stand output).|advanced
+output.carbon.conditionRU = string|condition carbon Ru|Condition RU|can be used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|advanced
+output.carbonflow.enabled = boolean|true|Enable carbon flow|Carbon fluxes per resource unit and year and/or aggregated for the full landscape. All values are reported on a per hectare basis (use the area provided in carbon or stand outputs to scale to realized values on the respective resource unit). For results limited to the project area, the data values need to be scaled to the stockable area. For landsacpe level outputs, data is always given per ha of (stockable) project area (i.e. scaling with stockable area is already included). Furthermore, the following sign convention is used in iLand: fluxes from the atmosphere to the ecosystem are positive, while C leaving the ecosystem is reported as negative C flux.|simple
+output.carbonflow.condition = string|condition carbonflow|Condition|Limits the output execution to specific years (variable 'year').|advanced
+output.carbonflow.conditionRU = string|condition carbonflow RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Water
+output.water.enabled = boolean|true|Enable Water|Annual water cycle output on resource unit/landscape unit. The output includes annual averages of precipitation, evapotranspiration, water excess, snow cover, and radiation input. The difference of precip - (evapotranspiration + excess) is the evaporation from intercepted precipitation. The spatial resolution is landscape averages and/or resource unit level (i.e. 100m pixels). Landscape level averages are indicated by -1 for the 'ru' and 'index' columns. Columns related to permafrost are 0 when permafrost module is disabled. The given values for depth are independent from the soil depth of iLand (e.g., soil depth can be 0.5m, but maxDepthFrozen can be 1.5m).|simple
+output.water.condition = string|condition water|Condition|Limits the output execution to specific years (variable 'year').|advanced
+output.water.conditionRU = string|condition water RU|Condition RU|Used to suppress resource-unit-level details; eg. specifying 'in(year,100,200,300)' limits output on reosurce unit level to the years 100,200,300 (leaving 'conditionRU' blank enables details per default).|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Landscape
+output.landscape.enabled = boolean|false|Enable Landscape|Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
+output.landscape.condition = string|condition landscape|Condition|Controls if the output should be created for the current year(see also dynamic stand output).|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Landscape removed
+output.landscape_removed.enabled = boolean|false|Enable landscape removed|Aggregates of all removed trees due to 'natural' death, harvest, or disturbance per species and reason. All values are totals for the whole landscape. The user can select with options whether to include 'natural' death and harvested trees (which may slow down the processing).|simple
+output.landscape_removed.includeHarvest = boolean|false|Include harvest|true/false: include/exclude trees that died due to natural mortality|advanced
+output.landscape_removed.includeNatural = boolean|false|Include natural|true/false: include/exclude harvested trees|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Soilinput
+output.soilinput.enabled = boolean|false|Enable Soilinput|The output contains all carbon inputs to the soil layer (per RU) and the climate modifier re. The data of the output can be used for estimating soil carbon parameters.|advanced
+
+gui.layout = layout|hl
+gui.layout = group|SVD
+output.svdgpp.enabled = boolean|false|Enable GPP|GPP potential (as conditioned by climate/site) per species and m2.|simple
+output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.|simple
+output.svduniquestate.enabled = string|choose id|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|advanced
+output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file|simple
+
+gui.layout = layout|hl
+gui.layout = group|Dynamic stand
+output.dynamicstand.enabled = boolean|false|Enable dynamic Stand|Userdefined outputs for tree aggregates for each stand or species. Technically, each field is calculated 'live', i.e. it is looped over all trees, and eventually the statistics (percentiles) are calculated. The aggregated values are not scaled to any area unit.|simple
+output.dynamicstand.condition = string|condition dynamic stand|Condition|When present, the condition is evaluated and output is executed only when condition=true (variable='year').This can be used to constrain the output to specific years (e.g. 'in(year,100,200,300)' produces output only for the given year.|advanced
+output.dynamicstand.conditionRU = string|in(year,50,100,150,200)|Condition RU|With this, calculation of RU level can be triggered even if filter by_ru is set to false (variable='year'). Note that in this case landscape level outputs are generated always, RU-level outputs only for certain years.|advanced
+output.dynamicstand.rufilter = string|dynamic stand ru filter|RU filter|Reduces the output to a subset of resource units|advanced
+output.dynamicstand.treefilter = string|dynamic stand tree filter|Tree filter|Reduces the output to a subset of trees, e. g.  a treefilter of 'speciesindex=0' reduces the output to just one species.|advanced
+output.dynamicstand.by_species = boolean|false|Filter by species|true: for each species a row is created|advanced
+output.dynamicstand.by_ru = boolean|false|Filter by RU|true: outputs for all resource units are created, false: aggregate over the full project area is created|advanced
+output.dynamicstand.columns = string|dyanmic stand columns|Columns|Each field is defined as: field.aggregation (separated by a dot). A field is a valid Expression. Aggregation is one of the following: mean, sum, min, max, p25, p50, p75, p5, 10, p80, p85, p90, p95 (pXX=XXth percentile), sd (std.dev.). Complex expression are allowed, e.g: if(dbh>50,1,0).sum (-> counts trees with dbh>50). Note that the column names in the output table may be slightly different, as dots (and other special characsters) are not allowed in column names und substituted.|advanced
+
+gui.layout = layout|hl
+gui.layout = group|ABE stand
+output.abeStand.enabled = boolean|false|Enable ABE stand|This output provides details about the forest state on stand level. The timber is provided as standing timber per hectare. The output is rather performance critical, condition for evaluation can be applied.|simple
+output.abeStand.condition = string|mod(year,10)=1|ABE stand eval. cond.|Limits the execution to certain years.|advanced
+output.abeUnit.enabled = boolean|false|Enable ABE unit|The output provides planned and realized harvests on the level of planning units. Note that the planning unit area, mean age, mean volume and MAI are only updated every 10 years. Harvested timber is given as 'realizedHarvest', which is the sum of 'finalHarvest' and 'thinningHarvest.' The 'salvageHarvest' is provided extra, but already accounted for in the 'finalHarvest' column.|simple
+output.abeStandRemoval.enabled = boolean|false|Enable ABE stand removal|This output provides details about realized timber harvests on stand level. The timber is provided as standing timber per hectare. The total harvest on the stand is the sum of thinning and final.|simple
+output.abeStandDetail.enabled = boolean|false|Enable ABE stand detail|This output provides details about the forest state on species- and stand level. This output is more detailed than the abeStand output. The output is rather performance critical, condition for evaluation can be applied.|simple
+output.abeStandDetail.condition = string|mod(year,10)=1|ABE Standdetail eval. cond.|Limits the execution to certain years.|advanced
 
 ; system
-system.path.home = false
-system.path.database = false
-system.path.lip = false
-system.path.temp = false
-system.path.script = false
-system.path.init = false
-system.path.output = false
-system.path = false
-system.database.in = false
-system.database.out = false
-system.database.climate = false
-system.database = false
-system.logging.logTarget = false
-system.logging.logFile = false
-system.logging.flush = false
-system.logging = false
-system.settings.multithreading = false
-system.settings.threadCount = -1
-system.settings.debugOutput = false
-system.settings.debugOutputAutoSave = false
-system.settings.randomSeed = false
-system.settings.expressionLinearizationEnabled = false
-system.settings.logLevel = false
-system.settings.responsive = false
-system.settings = false
-system.javascript.fileName = false
-system.javascript = false
-system = false
+gui.layout = tab|tabSystem|System Settings|Path Settings, Logging, etc. 
+system.path.home = connected|Home Directory
+system.path.script = connected|Script String
+system.database.in = connected|Test File
+system.logging.logTarget = connected|Test combo
+
+; system
+gui.layout = tab|tabPath|Path settings|Default paths for different types of files are defined in the section system.path in the project file. Generally, all paths might be given either as absolute or as relative. If relative paths are provided, then they are considered to be relative to the home directory of the project. If the home project setting is empty, the location of the project.xml itself will be used as the the home-directory. 
+system.path.home = directory|project's home directory|Home|The project's home directory. If empty, the directory containing the project file is the home folder.|simple
+system.path.database = directory|database directory|Database|Directory containing the databases. Default: "database"|simple
+system.path.lip = directory|LIP file directory|LIP files|Directory containing the binary LIP files. Default: "lip"|simple
+system.path.output = directory|output directory|Output|Default path for the output database(s). Default: "output"|simple
+system.path.temp = function|x+x|TestLabelName|string|advanced
+system.path.script = string|string|string|string|advanced
+system.path.init = string|string|string|string|advanced
+
+gui.layout = tab|tabDatabase|Database|iLand uses primarily the SQLite database system, which stores all tables of a database within a single database file. This database files are considered to be located in the database location defined in the path section. 
+system.database.in = file|input database file|Input|Defines the input database. Stored in this database are e.g. species parameter.|simple
+system.database.out = file|output database file|Output|Results (see Outputs) are written to this database.|simple
+system.database.climate = file|climate database file|Climate|The SQLite database containing the climate data|simple
+
+gui.layout = tab|tabLogging|Logging|Here settings can be defined to tell iLand how to handle logging.
+system.logging.logTarget = combo|console;file|Log target|If file the log output is stored in a file (see logFile). If console the log output is printed in the log window of the iLand main application.|advanced
+system.logging.logFile = file|log file name|Log file|Log-output is stored in this file. If the filename contains the string date, it is replaced by a timestamp (yyyymmdd__hrmiss). The default location is the log-path. A new file is created whenever the model created (e.g. after clicking "Create Model" or "Reload").|advanced
+system.logging.flush = boolean|false|Flush log|Log information is immediately written to the logfile when flush is true. This can be useful for debugging purposes (but might slow down execution).|advanced
+
+gui.layout = tab|tabSystemSettings|Settings|Multithreading, debug
+system.settings.multithreading = boolean|true|Multithreading|If checked, iLand will use several threads to perform its calculations (if more than 10 RessourceUnits are defined).|simple
+system.settings.threadCount = integer|-1|ThreadCount|Number of used threads if multithreading is enabled. -1 uses all available CPU cores.|advanced
+system.settings.debugOutput = integer|1|Debug Output|Defines the active debug outputs. Each output is coded by a single bit. Find a list of currently available outputs under the debug data menu of the iLand application. e.g: a value of 17 (=16+1) would enable the water output (16) and the Tree NPP output (1).|advanced
+system.settings.debugOutputAutoSave = boolean|true|Debug output autosave|If checked, csv-output files are created for each active debug output and saved to the temp directory (see Path-section).|advanced
+system.settings.randomSeed = numeric|0|Random seed|Non-zero values are used as the seed for the random number generator. This results in a reproducible series of (pseudo)-random numbers. Empty or 0 causes different random numbers for each run and therefore stochastic variation between runs. Note: this does not work when multi threading is enabled. Default value is 0.|advanced
+system.settings.expressionLinearizationEnabled = boolean|false|Expression Linearization|If checked, specific expressions (user defined formulas, e.g. for light response) use a interpolation approach to increase the calculation performance.|advanced
+system.settings.logLevel = combo|Warning;Debug;Info;Error|Log level|This setting defines the logging intensity.When running on the Debug logging level, the log output contains many details that may slow down the application. Default is Debug.|advanced
+system.settings.responsive = boolean|true|Responsive|If checked, iLand is more responsive during lengthy calculations (i.e. the user interface freezes less frequently)|advanced
+
+gui.layout = tab|tabJavascript|Javascript|This section deals with Javascript-script files that are loaded into the models' script engine at startup. Note that you can load multiple files by using the Globals.include() javascript function.
+system.javascript.fileName = file|javascript file name|File name|The filename of a javascript file to load. Default location is the "scripts"-directory.|advanced
 
 ; model.settings
-model = false
-model.settings.regenerationEnabled = false
-model.settings.mortalityEnabled = false
-model.settings.growthEnabled = false
-model.settings.carbonCycleEnabled = false
-model.settings.epsilon = false
-model.settings.lightExtinctionCoefficient = false
-model.settings.lightExtinctionCoefficientOpacity = false
-model.settings.temperatureTau = false
-model.settings.airDensity = false
-model.settings.laiThresholdForClosedStands = false
-model.settings.boundaryLayerConductance = false
-model.settings.interceptionStorageNeedle = false
-model.settings.interceptionStorageBroadleaf = false
-model.settings.snowMeltTemperature = false
-model.settings.waterUseSoilSaturation = false
-model.settings.groundVegetationLAI = false
-model.settings.groundVegetationPsiMin = false
-model.settings.usePARFractionBelowGroundAllocation = false
-model.settings.seedDispersal.seedBelt.enabled = false
-model.settings.seedDispersal.seedBelt.width = false
-model.settings.seedDispersal.seedBelt.sizeX = false
-model.settings.seedDispersal.seedBelt.sizeY = false
-model.settings.seedDispersal.seedBelt = false
-model.settings.seedDispersal.dumpSeedMapsEnabled = false
-model.settings.seedDispersal.dumpSeedMapsPath = false
-model.settings.seedDispersal.externalSeedEnabled = false
-model.settings.seedDispersal.externalSeedSource = false
-model.settings.seedDispersal.externalSeedSpecies = false
-model.settings.seedDispersal.externalSeedBuffer = false
-model.settings.seedDispersal.externalSeedBackgroundInput = false
-model.settings.seedDispersal.recruitmentDimensionVariation = false
-model.settings.seedDispersal.longDistanceDispersal.rings = false
-model.settings.seedDispersal.longDistanceDispersal.thresholdArea = false
-model.settings.seedDispersal.longDistanceDispersal.thresholdLDD = false
-model.settings.seedDispersal.longDistanceDispersal.LDDSeedlings = false
-model.settings.seedDispersal.longDistanceDispersal = false
-model.settings.seedDispersal = false
-model.settings.soil.qb = false
-model.settings.soil.qh = false
-model.settings.soil.leaching = false
-model.settings.soil.el = false
-model.settings.soil.er = false
-model.settings.soil.swdDBHClass12 = false
-model.settings.soil.swdDBHClass23 = false
-model.settings.soil.useDynamicAvailableNitrogen = false
-model.settings.soil.nitrogenDeposition = false
-model.settings.soil = false
-model.settings.grass.enabled = false
-model.settings.grass.type = false
-model.settings.grass.grassDuration = false
-model.settings.grass.LIFThreshold = false
-model.settings.grass.grassPotential = false
-model.settings.grass.maxTimeLag = false
-model.settings.grass.grassEffect = false
-model.settings.grass = false
-model.settings.browsing.enabled = false
-model.settings.browsing.browsingPressure = false
-model.settings.browsing = false
-model.settings = false
+gui.layout = tab|tabModel|Model Settings|Test ob das angenommen wird
+gui.layout = layout|hl
+gui.layout = group|General switches
+model.settings.regenerationEnabled = connected|Enable Regeneration
+model.settings.mortalityEnabled = connected|Enable Mortality
+model.settings.growthEnabled = connected|Enable Growth
+model.settings.carbonCycleEnabled = connected|Enable Carbon Cycle
+gui.layout = layout|hl
+gui.layout = group|Seed Dispersal
+model.settings.seedDispersal.dumpSeedMapsEnabled = connected|Enable Dump Seed Maps
+model.settings.seedDispersal.externalSeedEnabled = connected|Enable External Seeds
+model.settings.seedDispersal.seedBelt.enabled = connected|Enable Seed Belt
+gui.layout = layout|hl
+gui.layout = group|Grass & Browsing
+model.settings.grass.enabled = connected|Enable Grass
+model.settings.browsing.enabled = connected|Enable Browsing
+gui.layout = layout|hl
+gui.layout = group|Management & ABE
+model.management.enabled = connected|Enable Management 
+model.management.abeEnabled = connected|Enable ABE Management
+
+
+gui.layout = tab|tabGlobalSettings|Global Settings|In this global model settings can be set.
+gui.layout = layout|hl
+gui.layout = group|General switches
+model.settings.regenerationEnabled = boolean|false|Regeneration|If true, the regeneration submodule is enabled (seed production, seed dispersal, establishment, sapling growth, recruitment).|simple
+model.settings.mortalityEnabled = boolean|true|Mortality|If false, tree mortaliy (intrinsic and stress related) will not be executed. Management works.|simple
+model.settings.growthEnabled = boolean|true|Growth|If false, trees will apply/read light patterns, but do not grow.|simple
+model.settings.carbonCycleEnabled = boolean|false|Carbon Cycle|If true, the snag dynamics and soil CN cycling sub-modules are enabled.|simple
+
+gui.layout = layout|hl
+gui.layout = group|Light calculations
+model.settings.lightExtinctionCoefficient = numeric|0.5|Light Extinction Coefficient|"k" parameter (beer lambert) used for calc. of absorbed light on resourceUnit level|advanced
+model.settings.lightExtinctionCoefficientOpacity = numeric|0.5|Light Extinction Coefficient Opacity|"k" for beer lambert used for opacity of single trees|advanced
+model.settings.temperatureTau = numeric|300|Temperature tau|"tau"-value for delayed temperature calculation acc. to Mäkela 2008|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Production
+model.settings.epsilon = numeric|1.8|Epsilon|3PG's maximum efficiency in GPP production (default value: 1.8).|advanced
+model.settings.usePARFractionBelowGroundAllocation = boolean|true|Use PAR Fraction Below Ground Allocation|Changes the behavior of belowground allocation. If true, the ratio of utilized total radiation is used, otherwise this ratio is considered to be 1. (default=true)|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Water cycle
+model.settings.airDensity = numeric|1|Air density|Density of air [kg/m3]|advanced
+model.settings.laiThresholdForClosedStands = numeric|3|LAI Threshold Closed Stands|For the calculation of the maximum canopy conductance a ramp is assumed for LAI values below this threshold. Default: 3|advanced
+model.settings.boundaryLayerConductance = numeric|0.2|Boundary Layer Conductance|Boundary layer conductance for the evaporation calculation. Default value: 0.2 m/s|advanced
+model.settings.waterUseSoilSaturation = boolean|false|Water Use Soil Saturation|If true, plants can access the water up to the saturation point (0kPa). If false, the accessible water is limited with the field capacity (-15kPa). Default is false.|simple
+model.settings.interceptionStorageNeedle = numeric|4|string|Asymptotic crown storage capacity for intercepted rain water of confiers. (default: 4).|advanced
+model.settings.interceptionStorageBroadleaf = numeric|2|string|Asymptotic crown storage capacity for intercepted rain water of deciduous trees. (default: 2).|advanced
+model.settings.snowMeltTemperature = numeric|0|Snow Melt Temperature|Threshold temperature for snow (degree Celsius). Precipitation on days with mean temperature below this threshold is modeled as snow; snow melts at mean temperatures above the threshold. default: 0°C.|advanced
+model.settings.groundVegetationLAI = numeric|1|string|string|all
+model.settings.groundVegetationPsiMin = numeric|0|string|string|all
+; heatCapacityAir and air Pressure are deprecated. included for filtering reasons
+model.settings.heatCapacityAir = numeric|1003.5|Heat Capacity Air|Specific heat capacity of air (J /(kg °C)). Sea level, dry, 0 °C|all
+model.settings.airPressure = numeric|1013|Air Pressure|Atmospheric average pressure (mbar)|all
+
+gui.layout = tab|tabSeedDispersal|Seed Dispersal|Settings for external seed input and high-detailed outputs during seed dispersal are configured in a sub-section seedDispersal of the "model.settings" section.
+gui.layout = layout|hl
+model.settings.seedDispersal.dumpSeedMapsEnabled = boolean|true|Enable Dump Seed Maps|If "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal)|simple
+model.settings.seedDispersal.dumpSeedMapsPath = directory|target directory seed maps|Path Seed Maps|target directory for seed maps / seed kernel dumps|advanced
+model.settings.seedDispersal.externalSeedEnabled = boolean|false|Enable External Seeds|If "true" external seeds are produced by species listed under externalSeedSpecies. If external seeds are enabled, the buffer-area of the simulation area is considered as a source of seeds.|simple
+model.settings.seedDispersal.externalSeedSpecies = string|Psme,Abmi|External Seed Species|list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi").|advanced
+model.settings.seedDispersal.externalSeedSource = string|N,W|External Seed Source|Cardinal directions of external seed input. Specify as list of N,E,S,W (i.e.. north, east, south, west). If empty or missing, seeds enter from all directions. e.g.: "E,S" -> seed from east and south direction.|advanced
+model.settings.seedDispersal.externalSeedBuffer = string|string|External Seed Buffer|This specifies a species-specific special "buffer", i.e. it defines the distance between the external seed input and the edge of the simulation area. Unit is "seed pixels", i.e. currently 20m. Specify as a ',' separated list of alternately species name and buffer-width (e.g. "Psme, 2, Abmi, 1" -> 40m for Psme, 20m for Abmi). No special buffer is used for species not in the list. Note: the remaining seed source must be >1px due to an implementation detail of the dispersal routine.|advanced
+model.settings.seedDispersal.externalSeedBackgroundInput = string|Psme|External Seed Background Input|Specifies a list of species together with a probability for each species. If a species is in the list, then a global background seed input is assumed (see external seeds).|advanced
+model.settings.seedDispersal.recruitmentDimensionVariation = numeric|0.2|Recruitment Dimension Variation|Defines the range of variation (r) for recruited trees compared to the dimensions of the cohrt. tree_dbh = cohort_dbh * rnd(1-r, 1+r), tree_h = cohort_h * rnd(1-r, 1+r) (e.g: r=0.2 -> random number from 0.8 to 1.2)|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Seed Belt
+model.settings.seedDispersal.seedBelt.enabled = boolean|false|Enable|The submodule is only active if enabled is true.|simple
+model.settings.seedDispersal.seedBelt.width = integer|10|Width|The width of the seed belt (in pixels of the seed maps, currently 20m). E.g., a value of 10 would lead to a seed belt with a width of 200m.|advanced
+model.settings.seedDispersal.seedBelt.sizeX = integer|100|Size x|The number of sectors in x-direction. Sectors are used to specify fine grained species distribution within the belt.|advanced
+model.settings.seedDispersal.seedBelt.sizeY = integer|100|Size y|The number of sectors in y-direction. Sectors are used to specify fine grained species distribution within the belt.|advanced
+; model.settings.seedDispersal.species_ = string|string|Species|specifies species and proportion of a given sector. The x and y in the key specify the coordinates of the sector. x and y are between 0 and sizeX and sizeY, respectively. 0/0 is the lower left corner (south west), sizeX-1 / sizeY-1 the upper right (north east) corner. The string is a list of species code and the fraction of pixels that should act as a seed source for that species. The information is specified as a space-delimited list: ... Example: a value for the key species_0_0 of "Psme 0.7 Abmi 0.2" means: in the sector (0/0), 70% of the seed pixels in the belt should be populated with Psme, 20% with Abmi. Note that the sum of fractions need not to be 1. |advanced
+
+gui.layout = layout|hl
+gui.layout = group|Longdistance Dispersal|These settings affect the size of the area that is handled by long distance dispersal. 
+model.settings.seedDispersal.longDistanceDispersal.thresholdArea = numeric|0.0001|Threshold Area|The threshold defines the density of potential seedlings per m² up to which a full kernel is used (default: 0.0001).|advanced
+model.settings.seedDispersal.longDistanceDispersal.thresholdLDD = numeric|0.0000001|Threshold LDD|The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal (default: 0.0000001).|advanced
+model.settings.seedDispersal.longDistanceDispersal.LDDSeedlings = numeric|0.5|LDD Seedlings|For LDD, the parameter defines p, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5).|advanced
+model.settings.seedDispersal.longDistanceDispersal.rings = integer|5|Rings|‘Rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5)|advanced
+
+gui.layout = tab|tabSoil|Soil Settings|This section contains parameters for the ICBM/2N carbon and nitrogen cycling sub model. Find more details on the model and the parameters on the pages soil C and N cycling and soil parametrization and initialization. 
+gui.layout = layout|hl
+gui.layout = group|Soil Dynamics Settings
+model.settings.soil.useDynamicAvailableNitrogen = boolean|false|Use Dynamic Available Nitrogen|If true, iLand utilizes the plant available N from the soil model to calculate species responses. If false, the static value world.site.availableNitrogen will be used.|simple
+model.settings.soil.nitrogenDeposition = numeric|0|Nitrogen Deposition|To account for external nitrogen input, a nitrogen deposition (kgN/ha*yr) is added to the available nitrogen which is derived by the dynamic soil module calculations. Default: 0. Note that nitrogen deposition is *not* added if the static world.site.availableNitrogen value is used.|advanced
+model.settings.soil.qb = numeric|0.2|C/N Ratio Soil Microbes|C/N ratio of soil microbes|advanced
+model.settings.soil.qh = numeric|0.2|C/N Ratio SOM|C/N ratio of SOM|advanced
+model.settings.soil.leaching = numeric|0.5|string|How many percent of the mineralized nitrogen in O is not available for plants but is leached (0..1)?|advanced
+model.settings.soil.el = numeric|0.1|Microbal Eff. Labile Pool|microbal efficiency in the labile pool, auxiliary parameter (see parameterization example)|advanced
+model.settings.soil.er = numeric|0.1|Microbal Eff. Refractory Pool|microbal efficiency in the refractory pool, auxiliary parameter (see parameterization example)|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Snag Settings
+model.settings.soil.swdDBHClass12 = numeric|10|Dbh Class break 1-2|class break between classes 1 and 2 for standing snags (dbh, cm)|advanced
+model.settings.soil.swdDBHClass23 = numeric|20|Dbh Class break 2-3|class break between classes 2 and 3 for standing snags (dbh, cm)|advanced
+
+gui.layout = tab|tabGrass|Grass Settings|This section contains settings related to the ground vegetation (grass and herbs) and its effect on regeneration success.
+model.settings.grass.enabled = boolean|false|Enable Grass|enable/disable the submodule. Default is false.|simple
+model.settings.grass.grassPotential = string|polygon(lif,0.1,0,0.7,1)|Potential|Function defining the potential grass cover 0..1 as a function of the light level of each 2x2m pixel value. The parameter is the light influence field (LIF), i.e. it is close to 1 for unobstructed conditions, and reach almost 0 within dense forests. See competition for light. Default value: polygon(lif, 0.1,0, 0.7,1)|advanced
+model.settings.grass.maxTimeLag = integer|2|Cover Time Lag|Number of years needed by the grass/herb layer to grow from 0 to full cover. This settings defines the growth speed, i.e. how fast new openings are occupied by ground vegetation.|advanced
+model.settings.grass.grassEffect = function|formula for grass effect|Effect|Formula describing the probability of prohibiting regeneration as a function of grass level. Parameter: the current grass level on the pixel 0..1.|advanced
+model.settings.grass.type = function|string|Type|string|advanced
+model.settings.grass.grassDuration = string|string|Duration|string|advanced
+model.settings.grass.LIFThreshold = string|string|LIFT Threshold|string|advanced
+
+gui.layout = tab|tabBrowsing|Browsing Settings|This section contains settings related to the browsing effect by ungulate game species.
+model.settings.browsing.enabled = boolean|false|Enable|If false the browsing module is disabled, i.e. no effect is calculated.|simple
+model.settings.browsing.browsingPressure = numeric|0.1|Browsing Pressure|scaling factor modifying the base probability|advanced
 
 ; model.species
-model.species.source = false
-model.species.reader = false
-model.species.nitrogenResponseClasses = false
-model.species.CO2Response.p0 = false
-model.species.CO2Response.baseConcentration = false
-model.species.CO2Response.compensationPoint = false
-model.species.CO2Response.beta0 = false
-model.species.CO2Response = false
-model.species.lightResponse.shadeTolerant = false
-model.species.lightResponse.shadeIntolerant = false
-model.species.lightResponse.LRImodifier = false
-model.species.lightResponse = false
-model.species.phenology.type.vpdMin = false
-model.species.phenology.type.vpdMax = false
-model.species.phenology.type.dayLengthMin = false
-model.species.phenology.type.dayLengthMax = false
-model.species.phenology.type.tempMin = false
-model.species.phenology.type.tempMax = false
-model.species.phenology.type = false
-model.species.phenology = false
-model.species.sprouting.adultSproutProbability
-model.species.sprouting
-model.species = false
+gui.layout = tab|tabSpecies|Species Parameters|The species parameter can only be customized in the xml project file.
+; model.species.source = string|string|string|string
+; model.species.reader = string|string|string|string
+; model.species.nitrogenResponseClasses = string|string|string|string
+; model.species.CO2Response.p0 = string|string|string|string
+; model.species.CO2Response.baseConcentration = string|string|string|string
+; model.species.CO2Response.compensationPoint = string|string|string|string
+; model.species.CO2Response.beta0 = string|string|string|string
+; model.species.lightResponse.shadeTolerant = string|string|string|string
+; model.species.lightResponse.shadeIntolerant = string|string|string|string
+; model.species.lightResponse.LRImodifier = string|string|string|string
+; model.species.phenology.type.vpdMin = string|string|string|string
+; model.species.phenology.type.vpdMax = string|string|string|string
+; model.species.phenology.type.dayLengthMin = string|string|string|string
+; model.species.phenology.type.dayLengthMax = string|string|string|string
+; model.species.phenology.type.tempMin = string|string|string|string
+; model.species.phenology.type.tempMax = string|string|string|string
+; model.species.sprouting.adultSproutProbability = string|string|string|string
 
-; model.world
-model.world.cellSize = false
-model.world.width = false
-model.world.height = false
-model.world.buffer = false
-model.world.latitude = false
-model.world.resourceUnitsAsGrid = false
-model.world.environmentEnabled = false
-model.world.environmentMode = false
-model.world.environmentGrid = false
-model.world.environmentFile = false
-model.world.areaMask.enabled = false
-model.world.areaMask.imageFile = false
-model.world.areaMask = false
-model.world.timeEventsEnabled = false
-model.world.timeEventsFile = false
-model.world.location.x = false
-model.world.location.y = false
-model.world.location.z = false
-model.world.location.rotation = false
-model.world.location = false
-model.world.standGrid.enabled = false
-model.world.standGrid.fileName = false
-model.world.standGrid = false
-model.world.DEM = false
-model.world = false
-
-; model.site
-model.site.availableNitrogen = false
-model.site.soilDepth = false
-model.site.pctSand = false
-model.site.pctSilt = false
-model.site.pctClay = false
-model.site.youngLabileC = false
-model.site.youngLabileN = false
-model.site.youngLabileDecompRate = false
-model.site.youngLabileAbovegroundFraction = false
-model.site.youngRefractoryC = false
-model.site.youngRefractoryN = false
-model.site.youngRefractoryDecompRate = false
-model.site.youngRefractoryAbovegroundFraction = false
-model.site.somC = false
-model.site.somN = false
-model.site.somDecompRate = false
-model.site.soilHumificationRate = false
-model.site = false
-
-; model.climate
-model.climate.co2concentration = false
-model.climate.temperatureShift = false
-model.climate.precipitationShift = false
-model.climate.tableName = false
-model.climate.batchYears = false
-model.climate.randomSamplingEnabled = false
-model.climate.randomSamplingList = false
-model.climate.filter = false
-model.climate = false
 
 ; model.initialization
-model.initialization.mode = false
-model.initialization.type = false
-model.initialization.randomFunction = false
-model.initialization.file = false
-model.initialization.saplingFile = false
-model.initialization.snags.swdC = false
-model.initialization.snags.swdCN = false
-model.initialization.snags.swdCount = false
-model.initialization.snags.otherC = false
-model.initialization.snags.otherCN = false
-model.initialization.snags.otherAbovegroundFraction = false
-model.initialization.snags.swdDecompRate = false
-model.initialization.snags.woodDecompRate = false
-model.initialization.snags.swdHalfLife = false
-model.initialization.snags = false
-model.initialization.heightGrid.enabled = false
-model.initialization.heightGrid.fileName = false
-model.initialization.heightGrid.maxTries = false
-model.initialization.heightGrid.fitFormula = false
-model.initialization.heightGrid = false
-model.initialization = false
+gui.layout = tab|tabInitialization|Initilization Settings
+model.initialization.mode = combo|copy;single;snapshot|Mode|Describes the general mode. Following options: 'copy': initalize 1 resource unit, then copy to all others, 'unit': separate initailization for each resource unit, 'single': one initialization for the full area, 'map': init-files for each stand (defined by a map), 'snapshot': load from a database snapshot. See initialize trees for details.|simple
+model.initialization.type = combo|distribution;single|Type|Describes the type of the expected initialization file. Possible values: distribution or single (see also: initialize trees ).|simple
+model.initialization.mapFileName = file|file for init and matching stands|Map File Name|When using the map mode, the matching of stands and init files is defined in this file.|simple
+model.initialization.randomFunction = function|function expression|Random Function|Defines the function (as an expression) used when estimating positions for individual trees (for init files of type distribution).|simple
+model.initialization.file = file|path to initialization file|File|Path of the initialization file to be loaded. In mode unit this key needs to be overwritten by the environment file. If blank, no trees are loaded.|simple
+model.initialization.saplingFile = file|path to sapling file|Sapling File|Path of the initialization file for saplings (see initialize trees). If blank, no saplings are loaded.|simple
+gui.layout = layout|hl
+gui.layout = group|Snags
+model.initialization.snags.swdC = numeric|5|string|initial carbon content in (standing) snags (kg/ha)|advanced
+model.initialization.snags.swdCN = numeric|0.1|C/N Ratio|CN ratio of snags|advanced
+model.initialization.snags.swdCount = integer|100|Number Snags|number of snags|advanced
+model.initialization.snags.otherC = numeric|string|Carbon Content Other Wood Pools|Initial carbon content in the pools for other wood (i.e. branches and coarse roots). (kg/ha.). This content is split up into the five parts.|advanced
+model.initialization.snags.otherCN = numeric|string|C/N Ratio Branches,Roots|CN ratio of 'otherC' (branches, coarse roots).|advanced
+model.initialization.snags.otherAbovegroundFraction = numeric|0.4|Other Aboveground Fraction|Initial fraction (0..1) of C in the other pool from aboveground (branches).|advanced
+model.initialization.snags.swdDecompRate = numeric|0.1|Decay rate standing snags|decay rate of standing snags (i.e. ksw)|advanced
+model.initialization.snags.woodDecompRate = numeric|0.1|Decay rate wood|string|advanced
+model.initialization.snags.swdHalfLife = integer|10|Halflife initial snags|halflife attached to initial snags (years)|advanced
+gui.layout = layout|hl
+gui.layout = group|Height Grid
+model.initialization.heightGrid.enabled = boolean|false|Enable|If true, the top height grid is used.|simple
+model.initialization.heightGrid.fileName = file|default system.path.init|File name|the ESRI ASCII file that holds the tree top heights (default path is system.path.init).|simple
+model.initialization.heightGrid.maxTries = integer|10|Max. tries|The maximum number of attempts to find a suitable cell for a tree (default: 10).|advanced
+model.initialization.heightGrid.fitFormula = function|polygon(x,0,0,0.8,1,1.1,1,1.25,0)|Fit formula|Equation that estimates the suitability of a target 10m cell based on the relative height of the tree compared to the top canopy height. default: polygon(x, 0,0, 0.8,1, 1.1, 1, 1.25,0).|advanced
 
 ; model.management
-model.management.enabled = false
-model.management.file = false
-model.management.abeEnabled = false
-model.management.abe = false
-model.management = false
-model.management.abe.file = false
-model.management.abe.agentDataFile = false
+gui.layout = tab|tabManagement|Management|The management section controls the Javascript based management subsytem of iLand. See also management. Note that, the Javascript interface can be 'misused' for other (i.e., not management related) tasks as well. 
+model.management.enabled = boolean|false|Enable Management|Management is disabled if the value is false. This switch relates to the "base" management subsystem.|simple
+model.management.file = file|javascript file|Javacsript file|Filename of the Javascript file to load (default path is the script path provided in the paths section).|advanced
+gui.layout = layout|hl
+gui.layout = group|Management ABE
+model.management.abeEnabled = boolean|false|Enable ABE|Switch for turning the agent based management engine on/off.|simple
+model.management.abe.file = file|javascript file of ABE|Javacsript file|Filename of the main Javascript file of ABE (relative paths are relative to the project root).|advanced
+model.management.abe.agentDataFile = file|data file for the spatial ABE setup|Agent data file|Filename of the data file for the spatial setup of ABE (relative paths are relative to the project root).|advanced
 
 ; model.paramter
-model.parameter.torus = false
-model.parameter.debug_tree = false
-model.parameter.debug_clear = false
-model.parameter.gpp_per_year = false
-model.parameter.debugDumpStamps = false
-model.parameter = false
+gui.layout = tab|tabParameter|Parameter
+model.parameter.torus = boolean|false|Torus landscape|If true, the simulation space is treated as a torus, where any influence (e.g. a light influence pattern) leaving on one side again enters at the opposite site. This is especially useful for small simulated areas to provide a continuous environment without edge effects.|advanced
+model.parameter.debug_tree = string|ruindex=2 and dbh>30|Debug tree|A filter expression executed for trees during initialization. Textual debug output is generated only for those trees passing the filter. (e.g.: "ruindex=2 and dbh>30"). Providing an empty string is the fastest option when the debug data is not used. To enable debug output for all trees, set the value to '1' or 'true'.|advanced
+model.parameter.debug_clear = boolean|false|Clear debug|If true, text debug will be cleared after each simulation year. If set to false, the debug info is kept to provide time series information.|advanced
+model.parameter.gpp_per_year = numeric|10|GPP per year|If set, the production module is short-cut and this amound of NPP (kg/ha) is available for growth.|advanced
+model.parameter.debugDumpStamps = boolean|false|Dumb stamps|If true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes.|advanced
 
 
-; modules - fire
-modules.fire.enabled = false
-modules.fire.onlySimulation = false
-modules.fire.KBDIref = false
-modules.fire.rFireSuppression = false
-modules.fire.rLand = false
-modules.fire.meanAnnualPrecipitation = false
-modules.fire.averageFireSize = false
-modules.fire.fireSizeSigma = false
-modules.fire.fireReturnInterval = false
-modules.fire.fireExtinctionProbability = false
-modules.fire.fuelKFC1 = false
-modules.fire.fuelKFC2 = false
-modules.fire.fuelKFC3 = false
-modules.fire.crownKill1 = false
-modules.fire.crownKill2 = false
-modules.fire.crownKillDbh = false
-modules.fire.burnSOMFraction = false
-modules.fire.burnFoliageFraction = false
-modules.fire.burnBranchFraction = false
-modules.fire.burnStemFraction = false
-modules.fire.wind.speedMin = false
-modules.fire.wind.speedMax = false
-modules.fire.wind.direction = false
-modules.fire.wind = false
-modules.fire = false
-modules.fire.allowBurnIn = false
+; model.world
+gui.layout = tab|tabWorld|World
+gui.layout = layout|hl
+gui.layout = group|Simulation area
+model.world.cellSize = numeric|2|Cell size|The size of pixels of the light grid (m). The default is 2m.|simple
+model.world.width = numeric|100|Width|The horizontal (east-west) extent of the simulation area (m).|simple
+model.world.height = numeric|100|Height|The vertical (north-south) extent of the simulation area (m).|simple
+model.world.buffer = numeric|50|Buffer|A buffer zone with the given width is attached to the rectangle of the simulation area (defined by width and height).|simple
+model.world.latitude = numeric|45|Latitude|Latitude of project area (in degree). Used for day of length calculation.|simple
+model.world.resourceUnitsAsGrid = boolean|true|RU as grid|If checked, each resource unit is a 100x100 pixel.|simple
+model.world.DEM = file|DEM file|DEM file|If not empty, a digital elevation model is read from a file (ESRI ASCII raster, relative to the project root).|advanced
+gui.layout = layout|hl
+gui.layout = group|Environment
+model.world.environmentEnabled = boolean|false|Enable|If checked, the spatial distribution of several model parameters is loaded from an environment file. See keys below and the pages initialization and simulation extent for details.|simple
+model.world.environmentMode = combo|grid;matrix|Mode|This settings determines how the environment file is interpreted. Possible values are grid and matrix. In grid-mode a GIS grid defines the spatial pattern, in matrix mode resource units are addressed using the resource unit index.|advanced
+model.world.environmentGrid = file|grid filename|Grid|Filename of the GIS grid which is used in grid-mode. The grid contains integer IDs which are used to map the parameter values in the environment file to resource units within the landscape.|advanced
+model.world.environmentFile = file|environment filename|File|filename of the environment file. Default path is the project path.|advanced
+gui.layout = layout|hl
+gui.layout = group|Area mask
+model.world.areaMask.enabled = boolean|false|Enable|If checked, the mask of valid project area is retrieved from an image (located at imageFile).|advanced
+model.world.areaMask.imageFile = string|image file name|Image file|Filename of the image file used for the overlay.|advanced
 
-; modules - wind
-modules.wind.enabled = false
-modules.wind.speciesParameter = false
-modules.wind.soilFreezeMode = false
-modules.wind.triggeredByTimeEvent = false
-modules.wind.durationPerIteration = false
-modules.wind.gustModifier = false
-modules.wind.topoModifier = false
-modules.wind.directionVariation = false
-modules.wind.direction = false
-modules.wind.dayOfYear = false
-modules.wind.speed = false
-modules.wind.duration = false
-modules.wind.topoGridFile = false
-modules.wind.factorEdge = false
-modules.wind.edgeDetectionThreshold = false
-modules.wind.topexModifierType = false
-modules.wind.LRITransferFunction = false
-modules.wind.edgeProbability = false
-modules.wind.edgeAgeBaseValue = false
-modules.wind.edgeBackgroundProbability = false
-modules.wind.onAfterWind = false
-modules.wind = false
+gui.layout = layout|hl
+gui.layout = group|Time Events
+model.world.timeEventsEnabled = boolean|false|Enable|If true, the time event mechanism is enabled. Similar to the spatial parameter distribution, project settings can be linked to specific year to change.|simple
+model.world.timeEventsFile = string|time event file name|Time event file|filename of the "time events" file. This is a simple CSV-style file with a fixed column year and user-defined columns with column names of valid project file keys.|advanced
+gui.layout = layout|hl
+gui.layout = group|Location|The following keys (x, y, z, rotation) specify the location of the 0/0 point of the local iLand coordinate in the (metric) coordinate system of GIS-based input data. See landscape setup for details.
+model.world.location.x = numeric|0|x|Offset in x-direction|advanced
+model.world.location.y = numeric|0|y|Offset in y-direction|advanced
+model.world.location.z = numeric|0|z|Offset in z-direction|advanced
+model.world.location.rotation = numeric|0|Rotation|A value for rotation rotates the GIS-based input data. Note that this can have side-effects with e.g. the orientation of LIP-patterns. rotation is given in degrees.|advanced
+gui.layout = layout|hl
+gui.layout = group|Stand grid
+model.world.standGrid.enabled = boolean|false|Enable|If checked, the stand grid is loaded and use.|simple
+model.world.standGrid.fileName = file|stand grid file|File path|Path to the stand grid file (ESRI ASCII format, relative to the project root). See also the section location, and landscape setup.|advanced
 
-; modules - barkbeetle
-modules.barkbeetle.enabled = false
-modules.barkbeetle.minimumDbh = false
-modules.barkbeetle.backgroundInfestationProbability = false
-modules.barkbeetle.stormInfestationProbability = false
-modules.barkbeetle.baseWinterMortality = false
-modules.barkbeetle.winterMortalityFormula = false
-modules.barkbeetle.spreadKernelFormula = false
-modules.barkbeetle.spreadKernelMaxDistance = false
-modules.barkbeetle.cohortsPerGeneration = false
-modules.barkbeetle.cohortsPerSisterbrood = false
-modules.barkbeetle.colonizeProbabilityFormula = false
-modules.barkbeetle.deadTreeSelectivity = false
-modules.barkbeetle.outbreakClimateSensitivityFormula = false
-modules.barkbeetle.outbreakDurationMin = false
-modules.barkbeetle.outbreakDurationMax = false
-modules.barkbeetle.outbreakDurationMortalityFormula = false
-modules.barkbeetle.initialInfestationProbability = false
-modules.barkbeetle.referenceClimate.tableName = false
-modules.barkbeetle.referenceClimate.seasonalPrecipSum = false
-modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = false
-modules.barkbeetle.referenceClimate = false
-modules.barkbeetle.onAfterBarkbeetle = false
-modules.barkbeetle = false
-modules = false
+
+; model.site
+gui.layout = tab|tabSite|Site|Site characteristics and soil properties
+model.site.availableNitrogen = numeric|3|Available nitrogen|Plant available nitrogen kg/ha/year|simpl
+gui.layout = layout|hl
+gui.layout = group|Water cycle|For a more detailed description see iLand Wiki - water cycle.
+model.site.soilDepth = numeric|20|Soil depth [cm]|Depth of root accessible soil in cm.|advanced
+gui.layout = group|Soil composition - Fraction of sand, silt, and clay
+model.site.pctSand = numeric|string|Sand|Percentange of sand (0..100) in soil. |advanced
+model.site.pctSilt = numeric|string|Silt|Percentange of silt (0..100) in soil. |advanced
+model.site.pctClay = numeric|string|Clay|Percentange of clay (0..100) in soil. |advanced
+gui.layout = layout|hl
+gui.layout = group|Carbon and nitrogen cycling
+gui.layout = group|Labile carbon and nitrogen
+model.site.youngLabileC = numeric|1|Carbon content|(Initial) carbon content of ylC (i.e. litter) soil pool (kg/ha).|advanced
+model.site.youngLabileN = numeric|3|Nitrogen content|(Initial) nitrogen content of ylC soil pool (kg/ha).|advanced
+model.site.youngLabileDecompRate = numeric|0.5|Decomposition rate|(Initial) decomposition rate of yr pool.|advanced
+model.site.youngLabileAbovegroundFraction = numeric|0.1|Fraction of C|(Initial) fraction of aboveground C in the litter (yL) layer (foliage).|advanced
+gui.layout = group|Recfractory carbon and nitrogen
+model.site.youngRefractoryC = numeric|2|Carbon content [kg/ha]|(Initial) carbon content of yrC (woody) soil pool (kg/ha)|advanced
+model.site.youngRefractoryN = numeric|2|Nitrogen content|(Initial) nitrogen content of yrC (woody) soil pool (kg/ha)|advanced
+model.site.youngRefractoryDecompRate = numeric|string|Decomposition rate|(Initial) decomposition rate of yr pool|advanced
+model.site.youngRefractoryAbovegroundFraction = numeric|0.1|Aboveground fraction|Fraction (0..1) of C in the yR pool from aboveground sources (branches, stems)|advanced
+gui.layout = group|Organic matter
+model.site.somC = numeric|1|Nitrogen content|(Initial) carbon content of oC (soil organic matter) soil pool (kg/ha)|advanced
+model.site.somN = numeric|2|Carbon content|(Initial) nitrogen content of oN (soil organic matter) soil pool (kg/ha)|advanced
+model.site.somDecompRate = numeric|string|Decomposition rate|Decomposition rate for soil organic matter (i.e. the "old" pool sensu ICBM)|advanced
+model.site.soilHumificationRate = numeric|1|Soil humification rate|humification rate|advanced
+
+; model.climate
+gui.layout = tab|tabClimate|Climate|For detailed information see iLand Wiki about ClimateData.
+model.climate.tableName = string|name sqlite table|Table name|Name of the SQLite table within the defined climate database to load (system.database.climate).|simple
+model.climate.filter = string|filter expression|Filter|An optional filter criterion that is added to the where clause of the SQL for reading the climate data. This can be useful e.g. for skipping parts of the climate records. Example: 'year>2000 and year<2010' limits used climate data to the years 2001 to 2009.|advanced
+model.climate.co2concentration = numeric|380|CO2 concentration|Current value of the atmospheric CO2 concentration. Default value is 380ppm. A time series may be implementing using the Time-Event feature. See also section world.species.CO2Response|advanced
+model.climate.co2pathway = combo|No;RCP2.6;RCP4.5;RCP6.0;RCP8.5|CO2 pathway>|Selects a pre-defined CO2 concentration pathway, default is no change ('No').|advanced
+model.climate.co2startYear = numeric|1840|CO2 start year|If a co2pathway is used, then co2startYear defines the starting point of CO2 concentration within the simulation.|advanced
+model.climate.batchYears = integer|10|Batch years|For performance reasons the access to the climate database accesses is performed bulked. This setting specifies how many years are loaded at once.|advanced
+model.climate.temperatureShift = numeric|0|Temperature shift|Simple option to modify the climate. The value is added to each daily temperature (default = 0)|advanced
+model.climate.precipitationShift = numeric|1|Precipitation shift|Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1).|advanced
+model.climate.randomSamplingEnabled = boolean|false|Enable random sampling|if true, only the first batchYears of the climate file are loaded (but see filter). The actual climate for each year is the sampled from this climate data. See also randomSamplingList. (default=false)|advanced
+model.climate.randomSamplingList = string|empty|Random sampling list|if this key contains a list of 0-based indices (e.g. "3, 12, 14, 0, 3, 14", the random sampling (if enabled) uses this sequence of years. Note: the index is 0-based (in the example the 4th year would be used first). Use any non-word characters as delimiters. The list will be recycled if more years are simulated than present in the list. The index values are to be between 0 and batchYears-1. If invalid indices are in the list, an error is reported. If the key is empty or not present, each year a climate year is selected randomly from the list of loaded years. default=empty|advanced
+
+
+; modules overview
+gui.layout = tab|tabModules|Modules|Description goes here
+modules.fire.enabled = connected|Enable Fire
+modules.wind.enabled = connected|Enable Wind
+modules.barkbeetle.enabled = connected|Enable Barkbeetle
+
+
+; modules.fire
+gui.layout = tab|tabFire|Fire|The main design objectives were (i) to model fire regimes as an emerging property of vegetation and climate, (ii) to include processes of individual-tree fire resistance in order to simulate complex and heterogeneous fire impacts, (iii) to take into account landscape heterogeneity on fire processes, and (iv) to be sensitive to climate and thus applicable under climate change conditions. 
+modules.fire.enabled = boolean|false|Enable|Turn fire simulation on or off|advanced
+modules.fire.onlySimulation = boolean|false|Only Simulation|Only if value is string real effects of fire (on trees, snags, soil pools) are simulated (default: string). A value of true can be useful for testing purposes."|advanced
+modules.fire.allowBurnIn = boolean|true|Allow Burn In|A value of 'true' is required for burn-ins (If checked, iLand builds a map of edge pixels)|advanced
+gui.layout = layout|hl
+gui.layout = group|Fuel
+modules.fire.fuelKFC1 = numeric|0.8|KFC1|Parameter kfC1 for calculation of fuel amount using compartment specific moisture relations|advanced
+modules.fire.fuelKFC2 = numeric|0.2|KFC2|Parameter kfC2 for calculation of fuel amount using compartment specific moisture relations|advanced
+modules.fire.fuelKFC3 = numeric|0.4|KFC3|Parameter kfC3 for calculation of fuel amount using compartment specific moisture relations|advanced
+gui.layout = layout|hl
+gui.layout = group|Crown Kill
+modules.fire.crownKill1 = numeric|0.21111|1|Parameter kCK1 to calculate fraction of crown kill|advanced
+modules.fire.crownKill2 = numeric|-0.00445|2|Parameter kCK2 to calculate fraction of crown kill|advanced
+modules.fire.crownKillDbh = numeric|40|Dbh|Dbh-threshold (cm) dbh_thres used in crown kill calculations|advanced
+gui.layout = layout|hl
+gui.layout = group|Burn
+modules.fire.burnSOMFraction = numeric|0|SOM Fraction|Fraction (0..1) of SOM biomass that is assumed to be lost by a fire. 0=no biomass lost|advanced
+modules.fire.burnFoliageFraction = numeric|1|Foliage Fraction|Fraction of foliage biomass (0..1) of died trees that is combusted|advanced
+modules.fire.burnBranchFraction = numeric|0.5|Branch Fraction|Fraction of branch biomass (0..1) of died trees that is combusted |advanced
+modules.fire.burnStemFraction = numeric|0.1|Stem Fraction|Fraction of stem biomass (0..1) of died trees that is combusted|advanced
+gui.layout = layout|hl
+gui.layout = group|Wind
+modules.fire.wind.speedMin = numeric|0|Min. speed|Minimum wind speed (m/s)|advanced
+modules.fire.wind.speedMax = numeric|10|Max. speed|Maximum wind speed (m/s). The wind speed is randomly selected between speedMin and speedMax for each fire event|advanced
+modules.fire.wind.direction = numeric|0|Direction|The main wind direction (in degrees). North=0, East=90, South=180, West=270. For each fire event the wind direction is calculated as direction +- 45°"|advanced
+modules.fire = layout|hl
+modules.fire.KBDIref = numeric|200|KBDI Ref.|Reference value for the site specific KBDI (Keetch Byram Drought Index)|advanced
+modules.fire.rFireSuppression = numeric|1|r Fire Suppress.|A scalar for fire suppression|advanced
+modules.fire.rLand = numeric|1|r Land|"Multiplier for the fire spread probability for the resource unit (0..1). If below the (default) value of 1, fire spreads with a reduced probability (e.g. for riparian areas)"|advanced
+modules.fire.meanAnnualPrecipitation = numeric|240|Mean Annual Precipitation|Mean annual precipitation (mm)|advanced
+modules.fire.averageFireSize = numeric||Average Fire Size|Average fire size in m2|advanced
+modules.fire.fireSizeSigma = numeric||Fire Size Sigma|""|advanced
+modules.fire.fireReturnInterval = numeric|100|Fire Return Interval|Average number of years between two fires affecting a single pixel. A value of e.g. 100 means, that, on average, a pixel burns every 100 years"|advanced
+modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probability that a the fire on a burning pixel extincts without a chance to spread further|advanced
+
+
+; modules.wind
+; modules.fire = gui|tabFire|test|test
+gui.layout = tab|tabWind|Wind|Users of the iLand wind module need to provide several types of input data. These types are (i) static parameters: either global parameters or variables per tree species. Examples are species specific turning moments or crown shape parameters. While global parameters are directly provided in the project file, species specific parameters are provided in an own parameter table in the input database of iLand. (ii) parameters in space: this is currently the topoModifier which scales the global wind pattern to a local value. Values per resource unit can be assigned using the mechanism to set up the simulation extent. (iii) parameters in time: basically a time series of wind events (with accompanying properties like wind direction and storm duration). This time series is provided with a time events file. 
+modules.wind.enabled = boolean|true|Enable|Turn wind simulation on or off|advanced
+modules.wind.triggeredByTimeEvent = boolean|false|Time triggers wind|If checked, then wind events are triggered by time events (i.e. defined in an external input file). |advanced
+modules.wind.onbeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) |advanced
+modules.wind.onAfterWind = string|javascript expression|on AfterWind|Javascript function that is called after every wind event (e.g. for postprocessing). For example, you can provide myTestFunction() in XML, and defined a myTestFunction within the iLand Javascript engine. (Note: it is "on AfterWind" (no space) not "onafterWind" - the wiki does not allow the correct term )|advanced
+
+gui.layout = layout|hl
+modules.wind.speed = numeric|in m/s|Speed|Hourly mean above-canopy wind speed (10m above canopy, m/s). This general wind speed is modified by topography and may be modified during a event. |advanced
+modules.wind.duration = numeric|in min|Duration|Duration of the wind event in minutes. Internally, duration is transformed to a number of iterations (see also durationPerIteration). |advanced
+
+gui.layout = layout|hl
+gui.layout = group|Direction
+modules.wind.direction = numeric|90|Main|Main cardinal direction of the storm in degrees (0°: north, 90°: east, 180°: south, 270°: west). The direction of the wind may be modified for individual pixels (see directionVariation)|advanced
+modules.wind.directionVariation = numeric|5|Variation|variation in wind direction (°) for fetch calculation; current wind direction = direction + rnd(-x, +x)|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Edge
+modules.wind.edgeProbability = numeric||Probability|Something about probability|advanced
+modules.wind.edgeAgeBaseValue = numeric||Age Base Value|Tool tip about Base Value goes here|advanced
+modules.wind.edgeBackgroundProbability = numeric||Background Probability|Hi|advanced
+modules.wind.edgeDetectionThreshold = numeric||Detection Threshold|Guggug|advanced
+modules.wind.factorEdge = numeric||Factor|Factor Edge|advanced
+
+gui.layout = layout|hl
+gui.layout = group| Topography
+modules.wind.topoModifier = numeric||Modifier|Multiplier accounting for differences in local wind speed. The modifier is either resource unit specific (see simulation extent) or defined by 10m pixel (see setting topoGridFile). The actual wind speed for a pixel is calculated by multiplying the modifier with the speed.|advanced
+modules.wind.topoGridFile = file||Grid File|Specifies a ASCII grid file containing the topoModifier. Modifier values are sampled for 10m pixels. File paths are relative to the project root folder.|advanced
+modules.wind.topexModifierType = combo|multiplicative;additive|Modifier Type|Specifies the calculation mode for values for the topoModifier. Possible values are "additive" and "multiplicative", which is the default. If "additive", the 10m-wind speed is calculated as (speed + topoModifier) * gustModifier.|advanced
+
+gui.layout = layout|hl
+modules.wind.speciesParameter = string|species name|Species parameter|Table name of the species parameter table for the wind module|advanced
+modules.wind.soilFreezeMode = combo|yes;no;auto|Soil Freeze Mode|Switch to define how to determine the state of the soil. Possible values are the strings yes: always frozen, no: never frozen, auto: the state is determined by calculating the soil temperature; if the temperature in 10cm depth is below 0°, the soil is considered as frozen. |advanced
+modules.wind.durationPerIteration = numeric|duration in minutes|Duration per iteration|duration (minutes) of one iteration of the model, i.e. how long it takes to advance the frontline of the storm to the next (10m) pixel. The factor is used to scale the duration to a number of iterations used internally by the model. |advanced
+modules.wind.gustModifier = numeric|numeric factor|Gust modifier|Defines the variation of the global wind speed between iterations of the model. The gustModifier is given as a fraction (e.g. 0.05). The base wind speed is modified for each iteration with a value from the range +/- gustModifier (e.g.: multiplied by 0.95 - 1.05). |advanced
+modules.wind.dayOfYear = numeric|0-365|Day of year|Day of the year (0..365) of the storm event (used to calculate soil temperature). |advanced
+modules.wind.LRITransferFunction = string|max(min(3.733-6.467*LRI,3.41),0.5)|LRI Transfer function|Expression to compute the Hegyi concurrency index from the trees' LRI. Default: max(min(3.733-6.467*LRI,3.41),0.5)|advanced
+
+; modules.barkbeetle
+gui.layout = tab|tabBarkbeetle|Barkbeetle|Description of barkbeetle module
+modules.barkbeetle.enabled = boolean|false|Enable|string|advanced
+modules.barkbeetle.onAfterBarkbeetle = string|Javascript|On after Barkbeetle|string|advanced
+
+gui.layout = layout|hl
+modules.barkbeetle.colonizeProbabilityFormula = function|string|Colonalization probability formula|string|advanced
+modules.barkbeetle.deadTreeSelectivity = string|string|Dead tree selectivity|string|advanced
+modules.barkbeetle.minimumDbh = string|string|Minimum Dbh|string|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Infestation Probability
+modules.barkbeetle.backgroundInfestationProbability = string|string|Background|string|advanced
+modules.barkbeetle.initialInfestationProbability = string|string|Initial|string|advanced
+modules.barkbeetle.stormInfestationProbability = string|string|Storm related|string|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Winter mortality
+modules.barkbeetle.baseWinterMortality = string|string|Base Mortality|string|advanced
+modules.barkbeetle.winterMortalityFormula = string|string|Formula|string|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Spread kernel
+modules.barkbeetle.spreadKernelFormula = function|string|Formula|string|advanced
+modules.barkbeetle.spreadKernelMaxDistance = string|string|Max. distance|string|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Cohorts
+modules.barkbeetle.cohortsPerGeneration = string|string|Per generation|string|advanced
+modules.barkbeetle.cohortsPerSisterbrood = string|string|Per sisterbrood|string|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Outbreak
+modules.barkbeetle.outbreakClimateSensitivityFormula = string|string|Climate Sensitivity Formula|string|advanced
+modules.barkbeetle.outbreakDurationMin = string|string|Duration min.|string|advanced
+modules.barkbeetle.outbreakDurationMax = string|string|Duration max.|string|advanced
+modules.barkbeetle.outbreakDurationMortalityFormula = string|string|Duration Mortality Formula|string|advanced
+gui.layout = layout|hl
+gui.layout = group|Reference Climate
+modules.barkbeetle.referenceClimate.tableName = string|Type in table name|Table Name|Tool tip|advanced
+modules.barkbeetle.referenceClimate = table|seasonalPrecipSum;seasonalTemperatureAverage|1|2|advanced
+modules.barkbeetle.referenceClimate.seasonalPrecipSum = numeric|1;2;3;4|Precipitation sum|Tool tip seasonal prcip sum|advanced
+modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = numeric|12.3;4354.23|Temperature average|Tool tip temperature average|advanced
 

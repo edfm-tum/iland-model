@@ -39,11 +39,11 @@ void SettingMetaData::checkXMLFile(const QString fileName)
         return;
     }
 
-    QStringList exceptions = QStringList() << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user";
+    QStringList exceptions = QStringList() << "gui.layout" << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user";
     // load from resource file
     QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
+    QStringList setChildGroups = set.childGroups();
     QStringList existingKeys = set.allKeys();
-
 
     // Check for keys in XML - File
     qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";
@@ -89,3 +89,43 @@ void SettingMetaData::checkXMLFile(const QString fileName)
 
 
 }
+
+void SettingMetaData::loadFromFile(const QString &metaFilePath,
+                                   QStringList &keys,
+                                   QStringList &values)
+{
+//    QDir parentDir = QDir::current();
+//    QDir::
+    QFile file(metaFilePath);
+
+    if (file.open(QIODevice::ReadOnly)) {
+        keys.clear();
+        values.clear();
+
+        QTextStream inStream(&file);
+        QString line, key, value;
+        QStringList keyValuePair;
+        int indexDel;
+
+        while (!inStream.atEnd()) {
+            line = inStream.readLine();
+            if (line.size() > 0 && !line.startsWith(";")) {
+                // use different approach to split. If there are "=" somewhere in the
+                // labels or tool tips line.split("=") messes the key-value pair up.
+                //keyValuePair = line.split("=");
+                indexDel = line.indexOf("=");
+                key = line.sliced(0, indexDel).trimmed();
+                value = line.mid(indexDel+1).trimmed();
+                keys.append(key);
+                values.append(value);
+            }
+        }
+
+        file.close();
+    }
+    else {
+        qDebug() << "File couldn't be opened. Abort.";
+    }
+
+}
+

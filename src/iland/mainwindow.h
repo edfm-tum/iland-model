@@ -20,6 +20,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "ui/settingsdialog.h"
 #if QT_VERSION < 0x050000
 #include <QtGui>
 #else
@@ -34,6 +35,8 @@
 #include "paintarea.h"
 #include "viewport.h"
 
+#include "ui/linkxmlqt.h"
+
 class QQuickView;
 class Model;
 class Tree;
@@ -42,6 +45,13 @@ class MapGrid;
 class LayeredGridBase;
 class Colors;
 
+struct metadata {
+    QStringList elements;
+    QStringList inputType;
+    QStringList defaultValue;
+    QStringList labelName;
+    QStringList toolTip;
+} ;
 
 namespace Ui
 {
@@ -60,6 +70,7 @@ public:
     ~MainWindow();
     Ui::MainWindowClass *uiclass() {return ui; }
     Colors *ruler() { return mRulerColors; }
+
 public slots:
     void repaint(); ///< force a repaint of the main drawing area
     void yearSimulated(int year);
@@ -104,6 +115,16 @@ protected:
 private:
     Ui::MainWindowClass *ui;
     ModelController mRemoteControl;
+
+    SettingsDialog *ui_settingsDialog;
+
+    LinkXmlQt *mLinkxqt;
+    SettingMetaData *mSettingMetaData;
+
+    QStringList mMetaKeys;
+    QStringList mMetaValues;
+    metadata mMeta;
+
     QLabel *mStatusLabel;
     QQuickView *mRuler;
     Colors *mRulerColors;
@@ -151,7 +172,12 @@ private:
     void recentFileMenu();
     QList<QString> mRecentFileList;
 
+    //Dialog
+    void processMetaData(metadata& meta);
+
 private slots:
+    //void openSystemSettingsDialog();
+
     void automaticRun(); ///< automatically start a simulation...
     void updateLabel(); ///< update UI labels during run
     void checkExpressionError(); ///< show error message in case an error occured previously
@@ -193,7 +219,10 @@ private slots:
     void on_actionFON_grid_triggered();
     void on_actionTreelist_triggered();
     void on_actionImageToClipboard_triggered();
+    void on_initFileName_editingFinished();
     void on_openFile_clicked();
+
+    void on_actionSettingsDialog_triggered();
 
     void repaintArea(QPainter &painter);
     void mouseClick(const QPoint& pos);
@@ -229,6 +258,7 @@ private slots:
     void on_dataTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_speciesFilterBox_currentIndexChanged(int index);
     void on_visRUSpeciesColor_stateChanged(int arg1) {on_visFon_toggled();  } // force repaint
+    void on_actionExpression_plotter_triggered();
 };
 
 #endif // MAINWINDOW_H

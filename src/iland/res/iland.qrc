@@ -20,5 +20,10 @@
         <file>project_file_metadata.txt</file>
         <file>rcp_co2_1765_2150.txt</file>
         <file>rcp_co2_1980_2100.txt</file>
+        <file>load-settings.png</file>
+        <file>iconFilterAdvanced.png</file>
+        <file>iconFilterAll.png</file>
+        <file>iconFilterSimple.png</file>
+        <file>iconMagnifyingGlass.png</file>
     </qresource>
 </RCC>
