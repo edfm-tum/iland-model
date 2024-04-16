@@ -392,7 +392,19 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
     qDebug() << "Project Folder:";
     qDebug() << homePathAbsolute.path();
 
-    QString selectedFile = Helper::fileDialog("Select " + variableName, homePathAbsolute.absolutePath(), "", type, nullptr);
+    //format dialog title
+    QStringList parts = variableName.split('.', Qt::SkipEmptyParts);
+    for (int i = 0; i < parts.size(); ++i)
+        if (parts[i] != "connected") {
+            parts[i].replace(0, 1, parts[i][0].toUpper());
+        }
+        else {
+            parts.removeAt(i);
+        }
+
+    const QString& title = "Select " + parts.join(":");
+
+    QString selectedFile = Helper::fileDialog(title, homePathAbsolute.absolutePath(), "", type, nullptr);
     if (selectedFile.isEmpty())
         return;
     QString relativeFilePath = homePathAbsolute.relativeFilePath(selectedFile);
