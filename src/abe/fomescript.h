@@ -195,6 +195,8 @@ class StandObj: public QObject
     Q_PROPERTY(FMTreeList* trees READ trees);
     Q_PROPERTY(Patches* patches READ patches);
 
+    Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
+
 
 /*    basalArea: 0, // total basal area/ha of the stand
     volume: 100, // total volume/ha of the stand
@@ -264,6 +266,11 @@ public:
     void setRotationLength(int new_length);
     QString speciesComposition() const;
     QString thinningIntensity() const;
+
+    /// get general purpose javascript object for a stand
+    QJSValue JSObj() { if (mStand) return mStand->JSobj(); throwError("JS object"); return QJSValue(); }
+    /// set general purpose javascript object for a stand
+    void setJSObj(QJSValue val) {if (mStand) mStand->JSobj() = val; }
 
 
 private:
@@ -375,6 +382,7 @@ class ActivityObj : public QObject
     Q_PROPERTY(bool finalHarvest READ finalHarvest WRITE setFinalHarvest)
     Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled)
     Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(int index READ index)
     Q_PROPERTY(QString description READ description)
 public:
     explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
@@ -394,6 +402,7 @@ public:
 
     QString name() const;
     QString description() const;
+    int index() const { if( mActivity) return mActivity->index(); return -1; }
     bool enabled() const;
     void setEnabled(bool do_enable);
 

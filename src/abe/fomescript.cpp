@@ -681,7 +681,7 @@ void StandObj::setSTP(QString stp_name)
         return;
 
     }
-    throwError(QString("The stp cannot be set, because the agent for stand %1 is not properly defined.").arg(mStand->id()));
+    throwError(QString("The stp cannot be set, because the agent for stand %1 is not properly defined.").arg(mStand ? mStand->id() : -1));
 }
 
 void StandObj::throwError(QString msg) const

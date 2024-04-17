@@ -159,6 +159,21 @@ void ScriptGlobal::include(QString filename)
 
 }
 
+void ScriptGlobal::loadModule(QString moduleName, QString filename)
+{
+    QString path = GlobalSettings::instance()->path(filename);
+    if (!QFile::exists(path)) {
+        throwError(QString("include(): The javascript module file '%1' could not be found.").arg(path)); return;
+    }
+    QJSValue module = GlobalSettings::instance()->scriptEngine()->importModule(path);
+    if (module.isError()) {
+        throwError("Error in javascript-include():" + module.toString());
+        return;
+    }
+    GlobalSettings::instance()->scriptEngine()->globalObject().setProperty(moduleName, module);
+
+}
+
 double ScriptGlobal::random(double from, double to)
 {
     return nrandom(from, to);

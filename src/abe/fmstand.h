@@ -198,6 +198,9 @@ public:
     /// retrieve the value of the property 'name'. Returns an empty QJSValue if the property is not defined.
     QJSValue property(const QString &name) const;
 
+    /// general JS object of a stand
+    QJSValue &JSobj() { return mJSObj; }
+
     // retrieve current state of the object
     QStringList info();
     friend class FOMEWrapper;
@@ -253,6 +256,7 @@ private:
     // access to patches
     Patches *mPatches;
     static QHash<const FMStand*, QHash<QString, QJSValue> > mStandPropertyStorage;
+    QJSValue mJSObj;
 
     friend class StandObj;
 };
