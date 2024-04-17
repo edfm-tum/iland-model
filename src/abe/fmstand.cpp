@@ -139,8 +139,8 @@ void FMStand::initialize()
         // run the onSetup event
         // specifically set 'i' as the activity to be evaluated.
         FomeScript::setExecutionContext(this);
-        FomeScript::bridge()->activityObj()->setActivityIndex(i);
-        mStandFlags[i].activity()->events().run(QStringLiteral("onSetup"), 0);
+        FomeScript::bridge()->activityObj()->setActivityIndex(i, mStandFlags[i].activity());
+        mStandFlags[i].activity()->events().run(QStringLiteral("onSetup"), nullptr);
 
         if (!mStandFlags[i].enabled() || !mStandFlags[i].active())
             continue;

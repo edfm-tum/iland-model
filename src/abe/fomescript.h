@@ -393,7 +393,7 @@ public:
     /// set an activity context (without a stand) to access base properties of activities
     void setActivity(Activity *act) { mStand = nullptr; mActivity=act; mActivityIndex=-1;}
     /// set an activity that is not the current activity of the stand
-    void setActivityIndex(const int index) { mActivityIndex = index; }
+    void setActivityIndex(const int index, Activity *act) { mActivityIndex = index; mActivity = act; }
 
     /// access the current activity
     Activity* activity() const { return mActivity; }
