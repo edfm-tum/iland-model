@@ -67,7 +67,7 @@ public:
     /// clear the list of events
     void clear();
     /// setup events from the javascript object
-    void setup(QJSValue &js_value, QStringList event_names);
+    void setup(QJSValue &js_value, QJSValue &this_object, QStringList event_names);
     /// execute javascript event /if registered) in the context of the forest stand 'stand'.
     QJSValue run(const QString event, FMStand *stand, QJSValueList *params=0);
     /// returns true, if the event 'event' is available.
@@ -198,6 +198,10 @@ public:
     virtual void evaluateDyanamicExpressions(FMStand *stand);
     /// dumps some information for debugging
     virtual QStringList info();
+
+    /// general purpose and user-defined JS object of an activity
+    QJSValue &JSobj() { return mJSObj; }
+
 protected:
     Schedule &schedule()  { return mSchedule; }
     Constraints &constraints()  { return mConstraints; }
@@ -216,6 +220,7 @@ private:
     Constraints mConstraints; // constraining factors
     Events mEvents; // action handlers such as "onExecute"
     DynamicExpression mEnabledIf; // enabledIf property (dynamically evaluated)
+    QJSValue mJSObj;
     friend class FMSTP; // allow access of STP class to internals
     friend class FMStand; // allow access of the activity class (e.g for events)
     friend class ActivityObj; // allow access to scripting function

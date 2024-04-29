@@ -44,7 +44,7 @@ ActScheduled::ActScheduled(FMSTP *parent): Activity(parent)
 void ActScheduled::setup(QJSValue value)
 {
     Activity::setup(value);
-    events().setup(value, QStringList() << "onEvaluate");
+    events().setup(value, FomeScript::bridge()->activityJS(), QStringList() << "onEvaluate");
 
     if (!events().hasEvent(QStringLiteral("onEvaluate")))
         throw IException("activity %1 (of type 'scheduled') requires to have the 'onEvaluate' event.");

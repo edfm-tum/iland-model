@@ -80,8 +80,11 @@ public:
     FMTreeList *treesObj() const { return mTrees; }
     ActivityObj *activityObj() const { return mActivityObj; }
     STPObj* stpObj() const { return mSTPObj; }
+    QJSValue &stpJS() { return mSTPJS; }
     /// get a JS-Object referencing a single tree
     QJSValue treeRef(Tree *tree);
+
+    QJSValue &activityJS() { return mActivityJS; }
 
     // Properties
     /// verbose: when true, the logging intensity is increased significantly.
@@ -152,13 +155,16 @@ private:
     UnitObj *mUnitObj;
     SimulationObj *mSimulationObj;
     ActivityObj *mActivityObj;
+    QJSValue mActivityJS;
     FMTreeList *mTrees;
     SchedulerObj *mSchedulerObj;
     STPObj *mSTPObj;
+    QJSValue mSTPJS;
     QString mLastErrorMessage;
     QString mStandVisualization;
     QJSValue mTreeValue;
     ScriptTree mTree;
+
 
 
 };
@@ -384,6 +390,8 @@ class ActivityObj : public QObject
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(int index READ index)
     Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
+
 public:
     explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
     // used to construct a link to a given activty (with an index that could be not the currently active index!)
@@ -414,6 +422,12 @@ public:
 
     bool scheduled() const { return flags().isScheduled(); }
     void setScheduled(bool issched) { flags().setIsScheduled(issched);}
+
+    /// get general purpose javascript object for a stand
+    QJSValue JSObj() { if (mActivity) return mActivity->JSobj(); return QJSValue(); }
+    /// set general purpose javascript object for a stand
+    void setJSObj(QJSValue val) {if (mActivity) mActivity->JSobj() = val; }
+
 public slots:
 private:
     ActivityFlags &flags() const; // get (depending on the linked objects) the right flags

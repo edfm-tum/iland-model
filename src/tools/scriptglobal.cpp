@@ -1317,7 +1317,14 @@ void ScriptGlobal::setupGlobalScripting()
     QString code = "function print(x) { Globals.print(x); } " \
                      "function include(x) { Globals.include(x); } " \
                      "function alert(x) { Globals.alert(x); } " \
-                     "function printObj(x) { console.log(JSON.stringify(x, null, 4)); } ";
+                    "function printObj(x) { " \
+                    "  function replacer(key, value) { " \
+                    "   if (typeof value === 'undefined') { return '<undefined>'; " \
+                    "   } else if (typeof value === 'function') { return '<function>'; " \
+                    "   } return value; " \
+                    "  } " \
+                    "console.log(JSON.stringify(x, replacer, 4)); " \
+                    "}";
     ScriptGlobal::executeScript(code);
     // add a (fake) console.log / console.print
 /*/    engine->evaluate("var console = { log: function(x) {Globals.print(x); }, " \

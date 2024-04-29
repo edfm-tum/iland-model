@@ -91,7 +91,7 @@ void FMSTP::setup(QJSValue &js_value, const QString &name)
     }
 
     // (3) set up top-level events
-    mEvents.setup(js_value, QStringList() << QStringLiteral("onInit") << QStringLiteral("onExit"));
+    mEvents.setup(js_value, FomeScript::bridge()->stpJS(), QStringList() << QStringLiteral("onInit") << QStringLiteral("onExit"));
 }
 
 bool FMSTP::executeRepeatingActivities(FMStand *stand)
@@ -138,7 +138,7 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
         while (it.hasNext()) {
             it.next();
             // parse special properties
-            if (it.name()=="U" && it.value().isArray()) {
+            if (it.name()=="U") {
                 if (it.value().isArray()) {
                     QVariantList list = it.value().toVariant().toList();
                     if (list.length()!=3)
@@ -168,10 +168,14 @@ void FMSTP::internalSetup(const QJSValue &js_value, int level)
                     internalSetup(it.value(), ++level);
                 else
                     throw IException("setup of STP: too many nested levels (>=10) - check your syntax!");
+            } else {
+                QString name = it.name();
+                if (name.left(2) != "on") // skip events
+                    qCDebug(abeSetup) << "SetupSTP: element not used: name: " << name << ", value: " << it.value().toString();
             }
         }
     } else {
-        qCDebug(abeSetup) << "FMSTP::setup: not a valid javascript object.";
+        throw IException("FMSTP::setup: not a valid javascript object.");
     }
 }
 
@@ -206,7 +210,7 @@ void FMSTP::setupActivity(const QJSValue &js_value, const QString &name)
 
     // call the onCreate handler:
     FomeScript::bridge()->setActivity(act);
-    act->events().run(QStringLiteral("onCreate"),0);
+    act->events().run(QStringLiteral("onCreate"), nullptr);
     mActivities.push_back(act);
 }
 

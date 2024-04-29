@@ -136,7 +136,7 @@ bool ActThinning::execute(FMStand *stand)
 
 void ActThinning::setupCustom(QJSValue value)
 {
-    events().setup(value, QStringList() << "onEvaluate");
+    events().setup(value, FomeScript::bridge()->activityJS(), QStringList() << "onEvaluate");
     mCustomThinnings.clear();
     if (value.hasProperty("thinnings") && value.property("thinnings").isArray()) {
         QJSValueIterator it(value.property("thinnings"));

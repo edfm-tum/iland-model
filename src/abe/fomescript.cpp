@@ -21,6 +21,8 @@
 #include "abe_global.h"
 #include "fomescript.h"
 
+#include <QQmlEngine>
+
 #include "forestmanagementengine.h"
 #include "fmstp.h"
 #include "agenttype.h"
@@ -98,6 +100,10 @@ void FomeScript::setupScriptEnvironment()
 
     //access to the current activity
     mActivityObj = new ActivityObj;
+    mActivityJS = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
+    QQmlEngine::setObjectOwnership(mActivityObj, QQmlEngine::CppOwnership);
+
+
     //QJSValue activity_value = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
     //ForestManagementEngine::scriptEngine()->globalObject().setProperty("activity", activity_value);
 
@@ -108,6 +114,8 @@ void FomeScript::setupScriptEnvironment()
 
     // options of the STP
     mSTPObj = new STPObj;
+    mSTPJS = ForestManagementEngine::scriptEngine()->newQObject(mSTPObj);
+    QQmlEngine::setObjectOwnership(mSTPObj, QQmlEngine::CppOwnership);
     //QJSValue stp_value = ForestManagementEngine::scriptEngine()->newQObject(mSTPObj);
     //ForestManagementEngine::scriptEngine()->globalObject().setProperty("stp", stp_value);
 
@@ -151,7 +159,7 @@ void FomeScript::setExecutionContext(FMStand *stand, bool add_agent)
 void FomeScript::setActivity(Activity *act)
 {
     FomeScript *br = bridge();
-    setExecutionContext(0);
+    setExecutionContext(nullptr);
     br->mActivityObj->setActivity(act);
 }
 
