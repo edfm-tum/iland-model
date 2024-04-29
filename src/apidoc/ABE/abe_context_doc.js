@@ -260,14 +260,28 @@ var fmengine= {
 
 
 /**
-* Access to properties of the current activity.
-* The `activity` variable is available in the execution context of forest management and provides access to properties and functions
+* Access to properties of the current activity is provided by the `activity` property of a stand, and using the `this`
+* property within event handlers.
+*
+* The variable provides access to properties and functions
 * of the current activity (linked to a `stand`) that is currently processed. In addition, other activities of the (currently active) programme
 * can be accessed with {{#crossLink "Stand/activity:method"}}{{/crossLink}}.
 *
-* Note that the variable `activity` is provided through the C++ framework and does not need to be created separately.
+* Note that in previous versions a global variable `activity` was provided by the C++ framework. This is no longer the case for consistency reasons. Please
+* use the `stand.activity` or `this` variables instead.
+*
 *
 * See also: Variables `stand` ({{#crossLink "Stand"}}{{/crossLink}})
+*
+
+        // within an activity:
+        onEnter: function() {
+           console.log( this.name ); // access the activity with `this`
+        },
+        onExecute: function() {
+            fmengine.log('now running: ' + stand.activity.name); // access via the stand object
+        }
+
 
 *
 @class Activity
@@ -282,6 +296,7 @@ var activity: {
 
         //re-enable the 'todo' activity.
         stand.activity("todo").active = true;
+
 
 
   See also: {{#crossLink "Activity/enabled:property"}}{{/crossLink}}
@@ -331,6 +346,18 @@ var activity: {
   */
     finalHarvest: false,
 
+/**
+  The `obj` is a general purpose javascript entity that is stored for an activity.
+
+  Note that `obj` can hold arbitrary Javascript objects, including data structures and functions.
+
+
+  See also: {{#crossLink "Stand/obj:property"}}{{/crossLink}}.
+
+  @property obj
+  @type Javascript object
+  @default undefined
+*/
 
 /**
   The name of the activity as provided in the definition of the activity.
@@ -349,10 +376,9 @@ var activity: {
 
 /**
 * Access to properties of the current stand treatment program.
-* The `stp` variable is available in the execution context of forest management and provides access to properties STP
-* activity (linked to a `stand`).
+* the STP can be accessed via the `stp` property of a stand, or using the `this` keyword within event handlers of STPs.
 *
-* Note that the variable `stp` is provided through the C++ framework and does not need to be created separately.
+* Note that the in earler versions, the variable `stp` was provided in the global context.
 *
 * See also: Variables `stand` ({{#crossLink "Stand"}}{{/crossLink}})
 
