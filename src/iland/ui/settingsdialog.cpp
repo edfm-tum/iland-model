@@ -6,6 +6,7 @@
 #include <QTreeWidget>
 #include <QStackedWidget>
 #include <QScrollArea>
+#include <QMessageBox>
 
 
 #include "qpushbutton.h"
@@ -34,9 +35,14 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
 
     //
     //ui_dialogChangedValues = nullptr;
+    try {
     setDialogLayout(mTreeWidget, mStackedWidget);
     ui_dialogChangedValues = new DialogChangedValues(this);
     connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
+    } catch (const IException &e) {
+        QMessageBox::critical(this,"Error", e.message());
+        close();
+    }
 
 
 }
@@ -56,7 +62,8 @@ void SettingsDialog::setFilterMode(int mode)
     switch (mode) {
     case 0:
         for (auto &v : mKeys) {
-            v->widget->setVisible(true);
+            if (v->widget)
+                v->widget->setVisible(true);
             foreach (GenericInputWidget* mirroredWidget, v->connectedWidgets) {
                 mirroredWidget->setVisible(true);
             }
@@ -70,7 +77,8 @@ void SettingsDialog::setFilterMode(int mode)
             // simplified - often used settings
             // advanced - including the more detailed flags
             // all - also include "deprecated" flags
-            v->widget->setVisible(v->visibility == "simple");
+            if (v->widget)
+                v->widget->setVisible(v->visibility == "simple");
             foreach (GenericInputWidget* mirroredWidget, v->connectedWidgets) {
                 mirroredWidget->setVisible(v->visibility == "simple");
                 }
@@ -78,7 +86,9 @@ void SettingsDialog::setFilterMode(int mode)
         break;
     case 2:
         for (auto &v : mKeys) {
-            v->widget->setVisible(v->visibility != "all");
+
+            if (v->widget)
+                v->widget->setVisible(v->visibility != "all");
             foreach (GenericInputWidget* mirroredWidget, v->connectedWidgets) {
                 mirroredWidget->setVisible(v->visibility != "all");
                 }
@@ -96,7 +106,39 @@ void SettingsDialog::registerChangedValue(SettingsItem* item, QVariant newValue)
     emit updateValueChangeTable(item, newValue);
 
     if (!saveButton->isEnabled()) { saveButton->setEnabled(true);
-                                    a_changedValuesDialog->setEnabled(true);}
+        a_changedValuesDialog->setEnabled(true);}
+}
+
+QString SettingsDialog::linkify(QString text, bool collapse) {
+    // Regular Expression to match URLs
+    QRegularExpression urlRegex("((?:https?|ftp)://\\S+)");
+
+    // Find all URL matches in the text
+    QRegularExpressionMatchIterator matches = urlRegex.globalMatch(text);
+
+    QString linkifiedText;
+    int lastPos = 0; // Keep track of position in the original text
+
+    while (matches.hasNext()) {
+        QRegularExpressionMatch match = matches.next();
+        QString matchedUrl = match.captured(1); // Extract the full URL
+
+        // Add text before the link
+        linkifiedText += text.mid(lastPos, match.capturedStart() - lastPos);
+
+        // Create the HTML link
+        if (collapse)
+            linkifiedText += QString("<a href=\"%1\">(more)</a>").arg(matchedUrl);
+        else
+            linkifiedText += QString("<a href=\"%1\">%1</a>").arg(matchedUrl);
+
+        lastPos = match.capturedEnd();
+    }
+
+    // Add any remaining text at the end
+    linkifiedText += text.mid(lastPos);
+
+    return linkifiedText;
 }
 
 
@@ -137,6 +179,12 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 
         QVBoxLayout* layoutParent = new QVBoxLayout();
         curParentStack->setLayout(layoutParent);
+        curParentStack->setBackgroundRole(QPalette::Base);
+
+        // backgroud image only for the top category
+        if(curModule == "Settings")
+            curParentStack->setStyleSheet("background-image: url(:/iland_splash3.jpg);");
+
         layoutParent->setAlignment(Qt::AlignTop);
         layoutParent->setObjectName(ParentScroll->objectName() + "Layout");
 
@@ -169,6 +217,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             localScroll->setWidget(curChildStack);
             localScroll->setObjectName("tab" + tab.replace(" ", ""));
             //curChildStack->setWhatsThis(curModule + ":" + tab);
+            curChildStack->setBackgroundRole(QPalette::Base);
 
             QVBoxLayout* tabLay = new QVBoxLayout();
             tabLay->setObjectName(localScroll->objectName() + "Layout");
@@ -246,7 +295,10 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                     tabHeading->setFont(fontHeading);
                     tabLay->addWidget(tabHeading);
                     if (values.length() > 3) {
-                        QLabel* tabDescription = new QLabel(values[3]);
+                        QString txt = linkify( values[3] );
+                        QLabel* tabDescription = new QLabel(txt);
+                        tabDescription->setTextFormat(Qt::RichText);
+                        tabDescription->setOpenExternalLinks(true);
                         tabDescription->setWordWrap(true);
                         tabLay->addWidget(tabDescription);
                     }
@@ -273,12 +325,19 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             }
             else if (inputType == "group") {
                 // adds a group label in bold
-                QLabel* subheading = new QLabel(values[1]);
-                subheading->setStyleSheet("font-weight: bold");
-                tabLay->addWidget(subheading);
+                QString txt = linkify( values[1], true );
+                if (!txt.isEmpty()) {
+                    // omit label if text is empty
+                    QLabel* subheading = new QLabel(txt);
+                    subheading->setStyleSheet("font-weight: bold");
+                    tabLay->addWidget(subheading);
+                }
                 // a description of the subgroup can be included
                 if (values.length() > 2) {
-                    QLabel* descriptionSubgroup = new QLabel(values[2]);
+                    QString txt = linkify( values[2], true );
+                    QLabel* descriptionSubgroup = new QLabel(txt);
+                    descriptionSubgroup->setTextFormat(Qt::RichText);
+                    descriptionSubgroup->setOpenExternalLinks(true);
                     descriptionSubgroup->setWordWrap(true);
                     tabLay->addWidget(descriptionSubgroup);
                 }
@@ -302,6 +361,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             else if (inputType == "connected") {
                 // make a list of all connected elements to add the later at once
                 item = mKeys[element];
+                if (!item)
+                    throw IException(QString("Internal error setting up setting dialog: input for connected element not found: %1").arg(element));
                 item->altLabel = values[1];
                 GenericInputWidget *newMirroredWidget = new GenericInputWidget(mLinkxqt,
                                                                                item,

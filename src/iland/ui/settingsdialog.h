@@ -63,6 +63,9 @@ public slots:
 
 
 private:
+    // make a html link for link-like strings
+    QString linkify(QString text, bool collapse=false);
+
     // The settings list holds the first level of the navigation hierachy
     QStringList& mSettingsList;
 

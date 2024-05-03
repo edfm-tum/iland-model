@@ -340,9 +340,9 @@ void LinkXmlQt::createXML(const QStringList& metaKeys, const QString &pathXmlFil
     QStringList initCommentList;
 
     initCommentList << "More details on iland-model.org/project+file";
-    initCommentList << "***********************************************************************";
-    initCommentList << "(c) 2016, Rupert Seidl & Werner Rammer";
-    initCommentList << "***********************************************************************";
+    initCommentList << "*****************************************************************************";
+    initCommentList << "(c) Rupert Seidl (rupert.seidl@tum.de) & Werner Rammer (werner.rammer@tum.de)";
+    initCommentList << "*****************************************************************************";
 
     QFile xmlFile(pathXmlFile);
 

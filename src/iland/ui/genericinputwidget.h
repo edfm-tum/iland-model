@@ -12,15 +12,6 @@ class GenericInputWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GenericInputWidget(LinkXmlQt* Linkxqt,
-                                const QString& inputDataType = "string",
-                                const QString& inputDefaultValue = "",
-                                QStringList list = QStringList() << "default" << "path",
-                                const QString& inputLabelName = "default label",
-                                const QString& inputToolTip = "default tool tip",
-                                QWidget *parent = nullptr,
-                                bool connected = false);
-    //~genericInputWidget();
     explicit GenericInputWidget(LinkXmlQt *link,
                                 SettingsItem *item,
                                 bool connected = false);

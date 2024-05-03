@@ -8,117 +8,6 @@
 #include "ui/dialogcomment.h"
 #include "qtablewidget.h"
 
-GenericInputWidget::GenericInputWidget( LinkXmlQt* Linkxqt,
-                                       const QString& inputDataType,
-                                       const QString& inputDefaultValue,
-                                       QStringList inputXmlPath,
-                                       const QString& inputLabelName,
-                                       const QString& inputToolTip,
-                                       QWidget *parent,
-                                       bool connected)
-    : QWidget{parent}, // pointer holding parent, to which widget is added (e. g. tab: QTabWidget->widget(i))
-    mDataType{inputDataType}, // inputType: "boolean", "string", "numeric", "path"
-    mDefaultValue(inputDefaultValue), // Default value defined in metadata file
-    mXmlPath{inputXmlPath}, // Name of the variable in xml-file
-    mLabelName{inputLabelName}, // Name on label to show up
-    mToolTip{inputToolTip}, // Tool tip to show up when hovering over label or input element
-    mConnected{connected}, // defautl "false", when true gui element is a copy of another element
-    mLinkxqt{Linkxqt}
-{
-    // Each genericInputWidget consists of a label, a comment button, and input field
-    // Path elements also include a button for a file dialog
-    // Widgets are aligned in horizontal box layout, aligned left
-    QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setAlignment(Qt::AlignLeft);
-    layout->setContentsMargins(11,3,11,3);
-
-    // Set label
-    QLabel *label1 = new QLabel(mLabelName);
-    richToolTip = QString("<FONT COLOR=black>") + mToolTip + QString("</FONT>");
-    label1->setToolTip(richToolTip);
-    // Label name is later used for formatting purposes in settingsdialog.cpp
-    QString labelNa = mLabelName + "_label";
-    label1->setObjectName(labelNa);
-
-    // Define button to open comment dialog, connect() below
-    QToolButton *buttonComment = new QToolButton();
-    buttonComment->setObjectName(mXmlPath.join(".") + ".comment");
-
-    connect(buttonComment, &QToolButton::clicked, this, [=]() {openCommentDialog(mXmlPath);});
-
-    // Add widgets to layout
-    layout->addWidget(label1);
-    layout->addWidget(buttonComment);
-
-
-    // Depending on input type, define the corresponding input widget
-    // Defined as generic class QWidget, in case cast inputField with dynamic_cast<T *>(inputField)
-
-    // Name of inputField, which is used for referencing in settingsdialog.cpp
-    QString objName;
-    if (!mConnected) {
-        objName = mXmlPath.join(".");
-    } else {
-        objName = mXmlPath.join(".") + ".connected";
-    }
-
-
-    if (mDataType == "string" ||
-        mDataType == "path" ||
-        mDataType == "numeric" ||
-        mDataType == "file" ||
-        mDataType == "directory") {
-        QLineEdit *inputField = new QLineEdit();
-        // default value given in metadata shown as grey placeholder text
-        inputField->setPlaceholderText(mDefaultValue);
-        if (mDataType == "file" ||
-            mDataType == "directory") {
-            QToolButton *fileDialog = new QToolButton();
-            fileDialog->setText("...");
-            layout->addWidget(fileDialog);
-            if ( mDataType == "file") {
-                connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(mXmlPath.join("_"), inputField, "file");});
-            }
-            else if ( mDataType == "directory") {
-                connect(fileDialog, &QToolButton::clicked, this, [=]{connectFileDialog(mXmlPath.join("_"), inputField, "directory");});
-            }
-        }
-        else if (mDataType == "numeric") {
-            QDoubleValidator* numericValidator = new QDoubleValidator(inputField);
-            numericValidator->setNotation(QDoubleValidator::StandardNotation);
-            numericValidator->setLocale(QLocale::English);
-            inputField->setValidator(numericValidator);
-        }
-        inputField->setToolTip(richToolTip);
-        inputField->setObjectName(objName);
-        layout->addWidget(inputField);
-    }
-    else if (mDataType == "boolean") {
-        QCheckBox* inputField = new QCheckBox();
-        inputField->setToolTip(richToolTip);
-        inputField->setObjectName(objName);
-        layout->addWidget(inputField);
-    }
-    else if (mDataType == "combo") {
-        QComboBox* inputField = new QComboBox();
-        inputField->addItems(mDefaultValue.split(";"));
-        inputField->setToolTip(richToolTip);
-        inputField->setObjectName(objName);
-        layout->addWidget(inputField);
-    }
-    else if (mDataType == "table") {
-        QTableWidget* table = new QTableWidget(this);
-        QStringList tableItems = mDefaultValue.split(";");
-        table->setRowCount(tableItems.length());
-        for (int i = 0; i < tableItems.length(); i ++) {
-            QTableWidgetItem *newItem = new QTableWidgetItem();
-            newItem->setWhatsThis(tableItems[i]);
-            table->setVerticalHeaderItem(i, newItem);
-        }
-    }
-
-
-}
 
 GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool connected):
     mInputCheckBox(nullptr), mInputField(nullptr), mInputComboBox(nullptr), mLabel(nullptr)
@@ -127,10 +16,10 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
 //    mConnected = connected;
     mConnected = false;
     mSetting = item;
+    item->widget = nullptr;
     if ( !connected ) {
         item->widget = this;
-    }
-    else {
+    } else {
         item->connectedWidgets.append(this);
     }
 
@@ -150,7 +39,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     // Set label
     QString label = (item->altLabel == "") ? item->label : item->altLabel;
     mLabel = new QLabel(label);
-    richToolTip = QString("<FONT COLOR=black>") + item->tooltip + QString("</FONT>");
+    richToolTip = QString("<FONT COLOR=black>%1<br/>%2</FONT>").arg(item->key, item->tooltip);
     mLabel->setToolTip(richToolTip);
     // Label name is later used for formatting purposes in settingsdialog.cpp
     QString labelName = item->key + "_label" + suffix;
@@ -314,34 +203,7 @@ void GenericInputWidget::setValue(QString str_value)
         break;
 
     }
-    /*
-    // According to type of widget, the value of the widget is set
-    if (QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(curWidget)) {
-        lineEdit->setText(curValue);
-    }
-    else if (QComboBox* comboBox = dynamic_cast<QComboBox*>(curWidget)) {
-        curValue = curValue.toLower();
 
-        QStringList comboBoxValidValues;
-        for (int i = 0; i < comboBox->count(); ++i) {
-            comboBoxValidValues.append(comboBox->itemText(i));
-        }
-        if (comboBoxValidValues.contains(curValue)) {
-            comboBox->setCurrentText(curValue);
-        }
-
-    }
-    else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
-        if (curValue == "true" || curValue == "True" || curValue == "1") {
-            checkBox->setChecked(TRUE);
-        }
-        else if (curValue == "false" || curValue == "False" || curValue == "0") {
-            checkBox->setChecked(FALSE);
-        }
-    }
-    // To be included: table widget,...
-}
-*/
 }
 
 
@@ -365,18 +227,7 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
    //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
     QDir xmlHomePathAbsolute = mLinkxqt->getTempHomePath();
 
-//    if ( xmlHomePathAbsolute.exists() ) {
-//        homePathAbsolute = xmlHomePathAbsolute;
-//        qDebug() << "Home path set to user defined path: ";
-//    }
-//    else {
-//        xmlPath = mLinkxqt->getXmlFile();
 
-//        QFileInfo fileInfo(xmlPath);
-//        homePathAbsolute = fileInfo.absolutePath();
-
-//        qDebug() << "Home path set to directory containing project file (xml file): ";
-//    }
     homePathAbsolute = mLinkxqt->getXmlFile();
     qDebug() << "Project Folder:";
     qDebug() << homePathAbsolute.path();
