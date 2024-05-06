@@ -3,8 +3,12 @@
 ; Format:
 ; setting = type|defaultValue|labelName|toolTip|filterView, with setting the setting name with dot-notation (e.g. model.world.size)
 
+; *** Initial page *****
+; Note: background image set by c++ side
 gui.layout = tab|tabSettings|Settings|Insert html for settings,....
-
+gui.layout = group|general|lorem ipso
+gui.layout = group|general|lorem ipso
+gui.layout = group|general|lorem ipso
 
 ; ********** outputs *************
 ; ****** overview page ***********
@@ -199,7 +203,7 @@ output.ecoviz.enabled = boolean|true|ecoviz|Output of dynamic|simple
 ; ************************************
 
 ; system overview
-gui.layout = tab|tabSystem|System Settings|Path Settings, Logging, etc. 
+gui.layout = tab|tabSystem|System Settings|The settings in this section let you control general behavior of iLand and characteristics of your project. For example, <ul><li>File paths within your project</li><li>References to species parameters and input climate data</li><li>name of the output database</li><li>Settings for system logging, parallel code execution (multithreading) and more</li></ul>
 ;system.path.home = connected|Home Directory
 ;system.path.script = connected|Script String
 ;system.database.in = connected|parameter database
@@ -284,7 +288,7 @@ model.management.enabled = connected|Enable Management
 model.management.abeEnabled = connected|Enable ABE Management
 
 ; *************  Global settings **************
-gui.layout = tab|tabGlobalSettings|Global Settings|General settings controling the overall behavior of the model.
+gui.layout = tab|tabGlobalSettings|Model Settings|Settings that control the overall behavior of the model. This section contains many low(er)-level settings of iLand that are hidden per default. Click "Advanced view" in the tool bar to show them.
 
 gui.layout = group|Main submodules|Enable/disable main model processes
 model.settings.regenerationEnabled = boolean|false|Regeneration|If true, the regeneration submodule is enabled (seed production, seed dispersal, establishment, sapling growth, recruitment).|simple
@@ -319,31 +323,34 @@ model.settings.groundVegetationPsiMin = numeric|-1.5|PsiMin of ground vegetation
 
 
 ; *************  Seed dispersal **************
-gui.layout = tab|tabSeedDispersal|Seed Dispersal|Settings for external seed input and high-detailed outputs during seed dispersal are configured in a sub-section seedDispersal of the "model.settings" section.
-gui.layout = layout|hl
-model.settings.seedDispersal.dumpSeedMapsEnabled = boolean|true|Enable Dump Seed Maps|If "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal)|simple
-model.settings.seedDispersal.dumpSeedMapsPath = directory|target directory seed maps|Path Seed Maps|target directory for seed maps / seed kernel dumps|simple
+gui.layout = tab|tabSeedDispersal|Seed Dispersal|This section describes if and how external seeds (i.e., seed input not dynamically simulated) is handled by the model. <br/>The available options are: <ul><li>No external seed input</li> <li>Seeds are available everywhere (with given probability per species)</li> <li>Seed input is spatially explicit, limited to cardinal directions ("buffer")</li><li>Fine-grained control over seed avaialability in the areas surrounding the simulated landscape ("seed belt")</li></ul>See https://iland-model.org/external+seeds
 model.settings.seedDispersal.externalSeedEnabled = boolean|false|Enable External Seeds|If "true" external seeds are produced by species listed under externalSeedSpecies. If external seeds are enabled, the buffer-area of the simulation area is considered as a source of seeds.|simple
-model.settings.seedDispersal.externalSeedSpecies = string|Psme,Abmi|External Seed Species|list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi").|simple
-model.settings.seedDispersal.externalSeedSource = string|N,W|External Seed Source|Cardinal directions of external seed input. Specify as list of N,E,S,W (i.e.. north, east, south, west). If empty or missing, seeds enter from all directions. e.g.: "E,S" -> seed from east and south direction.|simple
-model.settings.seedDispersal.externalSeedBuffer = string|string|External Seed Buffer|This specifies a species-specific special "buffer", i.e. it defines the distance between the external seed input and the edge of the simulation area. Unit is "seed pixels", i.e. currently 20m. Specify as a ',' separated list of alternately species name and buffer-width (e.g. "Psme, 2, Abmi, 1" -> 40m for Psme, 20m for Abmi). No special buffer is used for species not in the list. Note: the remaining seed source must be >1px due to an implementation detail of the dispersal routine.|simple
+
+gui.layout = group|Seeds everywhere|Provide a delimited list of species and probabilities (e.g., piab, 0.0001, fasy, 0.0001). If empty, seeds everywhere turned off.
 model.settings.seedDispersal.externalSeedBackgroundInput = string|Psme|External Seed Background Input|Specifies a list of species together with a probability for each species. If a species is in the list, then a global background seed input is assumed (see external seeds).|simple
-model.settings.seedDispersal.recruitmentDimensionVariation = numeric|0.2|Recruitment Dimension Variation|Defines the range of variation (r) for recruited trees compared to the dimensions of the cohrt. tree_dbh = cohort_dbh * rnd(1-r, 1+r), tree_h = cohort_h * rnd(1-r, 1+r) (e.g: r=0.2 -> random number from 0.8 to 1.2)|simple
 
 gui.layout = layout|hl
-gui.layout = group|Seed Belt
+gui.layout = group|External seeds in buffer|Provide a list of species (<i>externalSeedSpecies</i>). Optionally control cardinal directions (<i>externalSeedSource</i>) and intensity (<i>externalSeedBuffer</i>) of seed input. Buffer turned off, when species list is empty.
+model.settings.seedDispersal.dumpSeedMapsEnabled = boolean|true|Enable Dump Seed Maps|If "true", seed-kernels are stored per species as .CSV file, and seedmaps are dumped per species and year as a pair of images (one image before actual dispersal, indicating seed availability, and one after seed dispersal)|advanced
+model.settings.seedDispersal.dumpSeedMapsPath = directory|target directory seed maps|Path Seed Maps|target directory for seed maps / seed kernel dumps|advanced
+model.settings.seedDispersal.externalSeedSpecies = string|Psme,Abmi|External Seed Species|list of species (case sensitive!) with external seed input (e.g., "Psme, Abmi").|simple
+model.settings.seedDispersal.externalSeedSource = string|N,W|External Seed Source|Cardinal directions of external seed input. Specify as list of N,E,S,W (i.e.. north, east, south, west). If empty or missing, seeds enter from all directions. e.g.: "E,S" -> seed from east and south direction.|simple
+model.settings.seedDispersal.externalSeedBuffer = string|string|External Seed Buffer|This specifies a species-specific special "buffer", i.e. it defines the distance between the external seed input and the edge of the simulation area. Unit is "seed pixels", i.e. currently 20m. Specify as a ',' separated list of alternately species name and buffer-width (e.g. "Psme, 2, Abmi, 1" -> 40m for Psme, 20m for Abmi). No special buffer is used for species not in the list. Note: the remaining seed source must be >1px due to an implementation detail of the dispersal routine.|advanced
+model.settings.seedDispersal.recruitmentDimensionVariation = numeric|0.2|Recruitment Dimension Variation|Defines the range of variation (r) for recruited trees compared to the dimensions of the cohrt. tree_dbh = cohort_dbh * rnd(1-r, 1+r), tree_h = cohort_h * rnd(1-r, 1+r) (e.g: r=0.2 -> random number from 0.8 to 1.2). Note: this setting is slightly misplaced and affects all recruitments (transitions from saplings to trees)|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Seed Belt|Seed belts provide the most fine-gained control over external seeds. <br/>Please configure details in the XML project file!
 model.settings.seedDispersal.seedBelt.enabled = boolean|false|Enable|The submodule is only active if enabled is true.|simple
-model.settings.seedDispersal.seedBelt.width = numeric|10|Width|The width of the seed belt (in pixels of the seed maps, currently 20m). E.g., a value of 10 would lead to a seed belt with a width of 200m.|simple
-model.settings.seedDispersal.seedBelt.sizeX = numeric|100|Size x|The number of sectors in x-direction. Sectors are used to specify fine grained species distribution within the belt.|simple
-model.settings.seedDispersal.seedBelt.sizeY = numeric|100|Size y|The number of sectors in y-direction. Sectors are used to specify fine grained species distribution within the belt.|simple
-; model.settings.seedDispersal.species_ = string|string|Species|specifies species and proportion of a given sector. The x and y in the key specify the coordinates of the sector. x and y are between 0 and sizeX and sizeY, respectively. 0/0 is the lower left corner (south west), sizeX-1 / sizeY-1 the upper right (north east) corner. The string is a list of species code and the fraction of pixels that should act as a seed source for that species. The information is specified as a space-delimited list: ... Example: a value for the key species_0_0 of "Psme 0.7 Abmi 0.2" means: in the sector (0/0), 70% of the seed pixels in the belt should be populated with Psme, 20% with Abmi. Note that the sum of fractions need not to be 1. |simple
+model.settings.seedDispersal.seedBelt.width = numeric|5|Width|The width of the seed belt (in pixels of the seed maps, currently 20m). E.g., a value of 10 would lead to a seed belt with a width of 200m.|advanced
+model.settings.seedDispersal.seedBelt.sizeX = numeric|3|Size x|The number of sectors in x-direction. Sectors are used to specify fine grained species distribution within the belt.|advanced
+model.settings.seedDispersal.seedBelt.sizeY = numeric|3|Size y|The number of sectors in y-direction. Sectors are used to specify fine grained species distribution within the belt.|advanced
 
 gui.layout = layout|hl
 gui.layout = group|Longdistance Dispersal|These settings affect the size of the area that is handled by long distance dispersal. 
-model.settings.seedDispersal.longDistanceDispersal.thresholdArea = numeric|0.0001|Threshold Area|The threshold defines the density of potential seedlings per m² up to which a full kernel is used (default: 0.0001).|simple
-model.settings.seedDispersal.longDistanceDispersal.thresholdLDD = numeric|0.0000001|Threshold LDD|The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal (default: 0.0000001).|simple
-model.settings.seedDispersal.longDistanceDispersal.LDDSeedlings = numeric|0.5|LDD Seedlings|For LDD, the parameter defines p, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5).|simple
-model.settings.seedDispersal.longDistanceDispersal.rings = numeric|5|Rings|‘Rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5)|simple
+model.settings.seedDispersal.longDistanceDispersal.thresholdArea = numeric|0.0001|Threshold Area|The threshold defines the density of potential seedlings per m² up to which a full kernel is used (default: 0.0001).|advanced
+model.settings.seedDispersal.longDistanceDispersal.thresholdLDD = numeric|0.0000001|Threshold LDD|The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal (default: 0.0000001).|advanced
+model.settings.seedDispersal.longDistanceDispersal.LDDSeedlings = numeric|0.5|LDD Seedlings|For LDD, the parameter defines p, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5).|advanced
+model.settings.seedDispersal.longDistanceDispersal.rings = numeric|5|Rings|‘Rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5)|advanced
 
 
 ; *************  Soil / Carbon **************
@@ -363,18 +370,28 @@ gui.layout = group|Snag Settings
 model.settings.soil.swdDBHClass12 = numeric|10|Dbh Class break 1-2|class break between classes 1 and 2 for standing snags (dbh, cm)|simple
 model.settings.soil.swdDBHClass23 = numeric|20|Dbh Class break 2-3|class break between classes 2 and 3 for standing snags (dbh, cm)|simple
 
-gui.layout = tab|tabGrass|Grass Settings|This section contains settings related to the ground vegetation (grass and herbs) and its effect on regeneration success.
-model.settings.grass.enabled = boolean|false|Enable Grass|enable/disable the submodule. Default is false.|simple
-model.settings.grass.grassPotential = string|polygon(lif,0.1,0,0.7,1)|Potential|Function defining the potential grass cover 0..1 as a function of the light level of each 2x2m pixel value. The parameter is the light influence field (LIF), i.e. it is close to 1 for unobstructed conditions, and reach almost 0 within dense forests. See competition for light. Default value: polygon(lif, 0.1,0, 0.7,1)|simple
-model.settings.grass.maxTimeLag = numeric|2|Cover Time Lag|Number of years needed by the grass/herb layer to grow from 0 to full cover. This settings defines the growth speed, i.e. how fast new openings are occupied by ground vegetation.|simple
-model.settings.grass.grassEffect = string|formula for grass effect|Effect|Formula describing the probability of prohibiting regeneration as a function of grass level. Parameter: the current grass level on the pixel 0..1.|simple
-model.settings.grass.type = string|string|Type|string|simple
-model.settings.grass.grassDuration = string|string|Duration|string|simple
-model.settings.grass.LIFThreshold = string|string|LIFT Threshold|string|simple
+gui.layout = tab|tabSubmodules|Sub modules
 
-gui.layout = tab|tabBrowsing|Browsing Settings|This section contains settings related to the browsing effect by ungulate game species.
+gui.layout = group|Browsing|This section contains settings related to the browsing effect by ungulate game species.
 model.settings.browsing.enabled = boolean|false|Enable|If false the browsing module is disabled, i.e. no effect is calculated.|simple
 model.settings.browsing.browsingPressure = numeric|0.1|Browsing Pressure|scaling factor modifying the base probability|simple
+
+gui.layout = group|Permafrost
+
+gui.layout = group|Miroclimate|The microclimate module simulates temperature buffering below canopies. https://iland-model.org/microclimate
+model.climate.microclimate.enabled = boolean|false|Enable|Enables the submodule|simple
+model.climate.microclimate.barkbeetle = boolean|true|Effect on bark beetles|Enables the effect of microclimate buffering for overwintering success of Spruce bark beetles|simple
+model.climate.microclimate.decomposition = boolean|true|Effect on decomposition|Enables the microclimate buffering effect for decomposition of dead wood and litter|simple
+model.climate.microclimate.establishment = boolean|true|Effect on establishment|Enables the effect of microclimate buffering for tree establishment|simple
+
+gui.layout = group|Grass|This section contains settings related to the ground vegetation (grass and herbs) and its effect on regeneration success.
+model.settings.grass.enabled = boolean|false|Enable Grass|enable/disable the submodule. Default is false.|simple
+model.settings.grass.type = combo|pixel;continuous;simplified|Type|string|simple
+model.settings.grass.grassPotential = function|polygon(lif,0.1,0,0.7,1)|Potential|Function defining the potential grass cover 0..1 as a function of the light level of each 2x2m pixel value. The parameter is the light influence field (LIF), i.e. it is close to 1 for unobstructed conditions, and reach almost 0 within dense forests. See competition for light. Default value: polygon(lif, 0.1,0, 0.7,1)|simple
+model.settings.grass.maxTimeLag = numeric|2|Cover Time Lag|Number of years needed by the grass/herb layer to grow from 0 to full cover. This settings defines the growth speed, i.e. how fast new openings are occupied by ground vegetation.|simple
+model.settings.grass.grassEffect = function|formula for grass effect|Effect|Formula describing the probability of prohibiting regeneration as a function of grass level. Parameter: the current grass level on the pixel 0..1.|simple
+model.settings.grass.grassDuration = function|string|Duration|string|simple
+model.settings.grass.LIFThreshold = numeric|0.1|LIF Threshold|string|simple
 
 ; model.species
 gui.layout = tab|tabSpecies
@@ -425,11 +442,13 @@ model.initialization.snags.woodDecompRate = numeric|0.1|Decay rate wood|string|s
 model.initialization.snags.swdHalfLife = numeric|10|Halflife initial snags|halflife attached to initial snags (years)|simple
 
 ; model.management
-gui.layout = tab|tabManagement|Management|The management section controls the Javascript based management subsytem of iLand. See also management. Note that, the Javascript interface can be 'misused' for other (i.e., not management related) tasks as well. 
+gui.layout = tab|tabManagement|Management|The management section controls the Javascript based management subsytem of iLand. Note that, the Javascript interface can be 'misused' for other (i.e., not management related) tasks as well.
 model.management.enabled = boolean|false|Enable Management|Management is disabled if the value is false. This switch relates to the "base" management subsystem.|simple
+gui.layout = layout|hl
+gui.layout = group|Base management http://iland-model.org/management
 model.management.file = file|javascript file|Javacsript file|Filename of the Javascript file to load (default path is the script path provided in the paths section).|simple
 gui.layout = layout|hl
-gui.layout = group|Management ABE
+gui.layout = group|Management ABE|Agent Based Engine for forest management. http://iland-model.org/ABE
 model.management.abeEnabled = boolean|false|Enable ABE|Switch for turning the agent based management engine on/off.|simple
 model.management.abe.file = file|javascript file of ABE|Javacsript file|Filename of the main Javascript file of ABE (relative paths are relative to the project root).|simple
 model.management.abe.agentDataFile = file|data file for the spatial ABE setup|Agent data file|Filename of the data file for the spatial setup of ABE (relative paths are relative to the project root).|simple

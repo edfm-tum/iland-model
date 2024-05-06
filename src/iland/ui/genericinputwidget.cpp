@@ -41,6 +41,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     mLabel = new QLabel(label);
     richToolTip = QString("<FONT COLOR=black>%1<br/>%2</FONT>").arg(item->key, item->tooltip);
     mLabel->setToolTip(richToolTip);
+    mLabel->setAttribute(Qt::WA_NoSystemBackground); // no background color
     // Label name is later used for formatting purposes in settingsdialog.cpp
     QString labelName = item->key + "_label" + suffix;
     mLabel->setObjectName(labelName);

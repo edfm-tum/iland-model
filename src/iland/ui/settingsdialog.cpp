@@ -329,13 +329,16 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                 if (!txt.isEmpty()) {
                     // omit label if text is empty
                     QLabel* subheading = new QLabel(txt);
-                    subheading->setStyleSheet("font-weight: bold");
+                    subheading->setStyleSheet("font-weight: bold;");
+                    subheading->setAttribute(Qt::WA_NoSystemBackground); // no background color
                     tabLay->addWidget(subheading);
                 }
                 // a description of the subgroup can be included
                 if (values.length() > 2) {
                     QString txt = linkify( values[2], true );
                     QLabel* descriptionSubgroup = new QLabel(txt);
+                    //descriptionSubgroup->setStyleSheet("background-color: transparent;");
+                    descriptionSubgroup->setAttribute(Qt::WA_NoSystemBackground); // no background color
                     descriptionSubgroup->setTextFormat(Qt::RichText);
                     descriptionSubgroup->setOpenExternalLinks(true);
                     descriptionSubgroup->setWordWrap(true);
