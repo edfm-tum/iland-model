@@ -27,6 +27,9 @@ private:
 
 public slots:
     void updateTable(SettingsItem* item, QVariant newValue);
+
+signals:
+    void noChanges();
 };
 
 #endif // DIALOGCHANGEDVALUES_H

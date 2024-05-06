@@ -350,7 +350,7 @@ gui.layout = group|Longdistance Dispersal|These settings affect the size of the 
 model.settings.seedDispersal.longDistanceDispersal.thresholdArea = numeric|0.0001|Threshold Area|The threshold defines the density of potential seedlings per m² up to which a full kernel is used (default: 0.0001).|advanced
 model.settings.seedDispersal.longDistanceDispersal.thresholdLDD = numeric|0.0000001|Threshold LDD|The threshold (again, seedlings per m²) defines the maximum distance of long-distance-dispersal (default: 0.0000001).|advanced
 model.settings.seedDispersal.longDistanceDispersal.LDDSeedlings = numeric|0.5|LDD Seedlings|For LDD, the parameter defines p, the number of seedlings that is dispersed per discrete LDD-package. (default: 0.5).|advanced
-model.settings.seedDispersal.longDistanceDispersal.rings = numeric|5|Rings|‘Rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5)|advanced
+model.settings.seedDispersal.longDistanceDispersal.rings = integer|5|Rings|‘Rings’ defines the number of rings for which LDD dispersal is calculated.(default: 5)|advanced
 
 
 ; *************  Soil / Carbon **************
@@ -394,24 +394,24 @@ model.settings.grass.grassDuration = function|string|Duration|string|simple
 model.settings.grass.LIFThreshold = numeric|0.1|LIF Threshold|string|simple
 
 ; model.species
-gui.layout = tab|tabSpecies
-model.species.source = string|string|string|string
-model.species.reader = string|string|string|string
-model.species.nitrogenResponseClasses = string|string|string|string
-model.species.CO2Response.p0 = string|string|string|string
-model.species.CO2Response.baseConcentration = string|string|string|string
-model.species.CO2Response.compensationPoint = string|string|string|string
-model.species.CO2Response.beta0 = string|string|string|string
-model.species.lightResponse.shadeTolerant = string|string|string|string
-model.species.lightResponse.shadeIntolerant = string|string|string|string
-model.species.lightResponse.LRImodifier = string|string|string|string
-model.species.phenology.type.vpdMin = string|string|string|string
-model.species.phenology.type.vpdMax = string|string|string|string
-model.species.phenology.type.dayLengthMin = string|string|string|string
-model.species.phenology.type.dayLengthMax = string|string|string|string
-model.species.phenology.type.tempMin = string|string|string|string
-model.species.phenology.type.tempMax = string|string|string|string
-model.species.sprouting.adultSproutProbability = string|string|string|string
+gui.layout = tab|tabSpecies|Species Parameters|The species parameter can only be customized in the xml project file.
+; model.species.source = string|string|string|string
+; model.species.reader = string|string|string|string
+; model.species.nitrogenResponseClasses = string|string|string|string
+; model.species.CO2Response.p0 = string|string|string|string
+; model.species.CO2Response.baseConcentration = string|string|string|string
+; model.species.CO2Response.compensationPoint = string|string|string|string
+; model.species.CO2Response.beta0 = string|string|string|string
+; model.species.lightResponse.shadeTolerant = string|string|string|string
+; model.species.lightResponse.shadeIntolerant = string|string|string|string
+; model.species.lightResponse.LRImodifier = string|string|string|string
+; model.species.phenology.type.vpdMin = string|string|string|string
+; model.species.phenology.type.vpdMax = string|string|string|string
+; model.species.phenology.type.dayLengthMin = string|string|string|string
+; model.species.phenology.type.dayLengthMax = string|string|string|string
+; model.species.phenology.type.tempMin = string|string|string|string
+; model.species.phenology.type.tempMax = string|string|string|string
+; model.species.sprouting.adultSproutProbability = string|string|string|string
 
 ; ************* Initalization **************
 ; model.initialization

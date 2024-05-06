@@ -60,7 +60,7 @@ public slots:
     void setFilterMode(int mode);
     void updateFilePaths(const QString& homePath);
     void registerChangedValue(SettingsItem* item, QVariant newValue);
-
+    void registerChangedComment();
 
 private:
     // make a html link for link-like strings

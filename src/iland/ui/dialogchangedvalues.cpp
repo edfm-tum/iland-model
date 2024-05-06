@@ -32,10 +32,21 @@ void DialogChangedValues::updateTable(SettingsItem *item, QVariant newValue)
         }
         mKeys << item->key;
     } else {
-        QStringList curItem = {item->label, newValue.toString(), item->strValue, item->parentTab};
-        for (int column = 0; column < mNumCols; ++ column) {
-            QTableWidgetItem *tableItem = new QTableWidgetItem(curItem[column]);
-            mValueTable->setItem(index, column, tableItem);
+        QString oldValue = item->strValue;
+        if (oldValue == newValue.toString() ) {
+            mValueTable->removeRow(index);
+            mKeys.removeAt(index);
+            mKeys.squeeze();
+            if ( mKeys.isEmpty() ) {
+                emit noChanges();
+            }
+        }
+        else {
+            QStringList curItem = {item->label, newValue.toString(), oldValue, item->parentTab};
+            for (int column = 0; column < mNumCols; ++ column) {
+                QTableWidgetItem *tableItem = new QTableWidgetItem(curItem[column]);
+                mValueTable->setItem(index, column, tableItem);
+            }
         }
     }
 }
