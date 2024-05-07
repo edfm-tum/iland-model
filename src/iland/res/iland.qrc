@@ -27,5 +27,7 @@
         <file>iconMagnifyingGlass.png</file>
         <file>iland2_splash.jpg</file>
         <file>iland_splash3.jpg</file>
+        <file>note_empty.png</file>
+        <file>note_full.png</file>
     </qresource>
 </RCC>

@@ -49,6 +49,9 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
     // Define button to open comment dialog, connect() below
     mButtonComment = new QToolButton();
     mButtonComment->setObjectName(item->key + suffix);
+    mButtonComment->setIcon(QIcon(":/note_empty.png"));
+    mButtonComment->setAutoRaise(true);
+    //mButtonComment->setStyleSheet("QToolButton { border: none; background: transparent; } "); //
 
     connect(mButtonComment, &QToolButton::clicked, this, [=]() {openCommentDialog(mXmlPath);});
 
@@ -289,14 +292,16 @@ void GenericInputWidget::checkCommentButton()
 {
     if (!mSetting->comment.isEmpty()) {
         //mButtonComment->setIcon(QIcon(":/go_next.png"));
-        mButtonComment->setText("!");
+        mButtonComment->setIcon(QIcon(":/note_full.png"));
+        mButtonComment->setToolTip(mSetting->comment);
 
     } else {
         //mButtonComment->setIcon(QIcon());
-        mButtonComment->setText(" ");
+        mButtonComment->setIcon(QIcon(":/note_empty.png"));
+        mButtonComment->setToolTip("Click to edit comment");
 
     }
-    mButtonComment->setToolTip(mSetting->comment);
+
 }
 
 QString GenericInputWidget::getWidgetName()
