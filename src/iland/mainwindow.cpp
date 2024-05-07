@@ -452,9 +452,12 @@ void MainWindow::processMetaData(metadata &meta) {
 
 void MainWindow::on_actionSettingsDialog_triggered()
 {
+    mLinkxqt->loadXmlFile();
+    mLinkxqt->setTempHomePath();
+    mLinkxqt->readXmlProjectDescription();
 
     if (!ui_settingsDialog) {
-        QStringList dialogList = QStringList() << "Settings" << "System"  << "Model" << "Output" << "Modules";
+        QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
         QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Management"  ;
         QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
         QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
@@ -471,11 +474,11 @@ void MainWindow::on_actionSettingsDialog_triggered()
     }
     //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
     //mLinkxqt->setTempHomePath(xmlFileInfo.absolutePath());
-    mLinkxqt->loadXmlFile();
-    mLinkxqt->setTempHomePath();
+
     ui_settingsDialog->updateData();
     ui_settingsDialog->saveButton->setEnabled(false);
     ui_settingsDialog->show();
+
 }
 
 void MainWindow::batchLog(const QString s)

@@ -70,6 +70,10 @@ public:
 
     QString readXmlValue(QString key);
     QString readXmlComment(QString key);
+    void readXmlProjectDescription();
+    void writeProjectDescriptionXml(const QString &description);
+
+    QString xmlProjectDescription;
 
     void createXML(const QStringList &metaKeys, const QString& pathXmlFile);
     void setTempHomePath(QString homePath = "");

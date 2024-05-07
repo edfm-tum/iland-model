@@ -5,10 +5,10 @@
 
 ; *** Initial page *****
 ; Note: background image set by c++ side
-gui.layout = tab|tabSettings|Settings|Insert html for settings,....
-gui.layout = group|general|lorem ipso
-gui.layout = group|general|lorem ipso
-gui.layout = group|general|lorem ipso
+gui.layout = tab|tabProject|Project Description
+; gui.layout = group|general|lorem ipso
+; gui.layout = group|general|lorem ipso
+; gui.layout = group|general|lorem ipso
 
 ; ********** outputs *************
 ; ****** overview page ***********
