@@ -29,7 +29,7 @@
 #include "xmlhelper.h"
 #include "exception.h"
 
-void SettingMetaData::checkXMLFile(const QString fileName)
+void SettingMetaData::checkXMLFile(const QString fileName, QStringList metaKeys)
 {
     XmlHelper xml; ///< xml-based hierarchical settings
     try {
@@ -39,11 +39,12 @@ void SettingMetaData::checkXMLFile(const QString fileName)
         return;
     }
 
-    QStringList exceptions = QStringList() << "gui.layout" << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user";
+    QStringList exceptions = QStringList() << "gui.layout" << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user" << "model.species";
     // load from resource file
     QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
     QStringList setChildGroups = set.childGroups();
-    QStringList existingKeys = set.allKeys();
+//    QStringList existingKeys = set.allKeys();
+    QStringList existingKeys = metaKeys;
 
     // Check for keys in XML - File
     qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";
@@ -67,9 +68,13 @@ void SettingMetaData::checkXMLFile(const QString fileName)
     // check for keys in XML but not in the list of allowed keys
     n_not_found = 0;
     QStringList xmlkeys = xml.dump("");
-    for (QStringList::Iterator it=xmlkeys.begin(); it!=xmlkeys.end(); ++it) {
-        QString key = it->mid(8, it->indexOf(QChar(':'))-8); // skip 'project.' (8 char)
-        if (!existingKeys.contains(key) && key!=" ") {
+    foreach (QString rawKey, xmlkeys) {
+    //for (QStringList::Iterator it=xmlkeys.begin(); it!=xmlkeys.end(); ++it) {
+        //QString key = it->mid(8, it->indexOf(QChar(':'))-8); // skip 'project.' (8 char)
+        //int index = it.indexOf(":");
+        rawKey.truncate(rawKey.indexOf(":"));
+        QString key = (rawKey.size() > 7) ? rawKey.sliced(8) : " ";
+        if (!existingKeys.contains(key) && key!=" " && key.split(".").size() > 2) {
             // check for exceptions
             bool is_exc = false;
             for (QStringList::ConstIterator s=exceptions.constBegin(); s!=exceptions.constEnd(); ++s)

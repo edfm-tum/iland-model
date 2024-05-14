@@ -29,7 +29,7 @@
 class SettingMetaData
 {
 public:
-    void checkXMLFile(const QString fileName);
+    void checkXMLFile(const QString fileName, QStringList metaKeys);
     void loadFromFile(const QString &fileName,
                       QStringList& keys,
                       QStringList& values);

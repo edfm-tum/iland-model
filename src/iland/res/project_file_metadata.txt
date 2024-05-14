@@ -606,7 +606,7 @@ gui.layout = group|Wind
 modules.fire.wind.speedMin = numeric|0|Min. speed|Minimum wind speed (m/s)|simple
 modules.fire.wind.speedMax = numeric|10|Max. speed|Maximum wind speed (m/s). The wind speed is randomly selected between speedMin and speedMax for each fire event|simple
 modules.fire.wind.direction = numeric|0|Direction|The main wind direction (in degrees). North=0, East=90, South=180, West=270. For each fire event the wind direction is calculated as direction +- 45°"|simple
-modules.fire = layout|hl
+gui.layout = layout|hl
 modules.fire.KBDIref = numeric|200|KBDI Ref.|Reference value for the site specific KBDI (Keetch Byram Drought Index)|simple
 modules.fire.rFireSuppression = numeric|1|r Fire Suppress.|A scalar for fire suppression|simple
 modules.fire.rLand = numeric|1|r Land|"Multiplier for the fire spread probability for the resource unit (0..1). If below the (default) value of 1, fire spreads with a reduced probability (e.g. for riparian areas)"|simple

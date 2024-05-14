@@ -2696,7 +2696,7 @@ void MainWindow::on_actionRepaint_triggered()
 void MainWindow::on_checkXMLFile_clicked()
 {
     SettingMetaData sm;
-    sm.checkXMLFile(ui->initFileName->text());
+    sm.checkXMLFile(ui->initFileName->text(), mMetaKeys);
 }
 
 void MainWindow::on_actionSave_regeneration_grid_triggered()
