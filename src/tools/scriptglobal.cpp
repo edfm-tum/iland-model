@@ -112,7 +112,7 @@ void ScriptGlobal::set(QString key, QString value)
 {
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     if (!xml.hasNode(key)) {
-        throwError("setting(): setting key '" + key + "' not valid.");
+        throwError("setting(): setting key '" + key + "' is not valid.");
         return;
     }
     xml.setNodeValue(key, value);
