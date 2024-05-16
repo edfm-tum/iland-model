@@ -65,7 +65,7 @@ gui.layout = layout|hl
 gui.layout = group|Sapling	
 output.sapling.enabled = boolean|true|Enable Saplings|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple
 output.sapling.condition = string|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
-output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unlessthe tree diameter is below the 'minDbh' threshold (cm).|simple
+output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unless the tree diameter is below the 'minDbh' threshold (cm).|simple
 output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
 output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|advanced
 

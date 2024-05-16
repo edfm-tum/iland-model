@@ -98,7 +98,7 @@ void FomeScript::setupScriptEnvironment()
 
     //access to the current activity
     mActivityObj = new ActivityObj;
-    //QJSValue activity_value = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
+    mActivityJS = ForestManagementEngine::scriptEngine()->newQObject(mActivityObj);
     //ForestManagementEngine::scriptEngine()->globalObject().setProperty("activity", activity_value);
 
     // general simulation variables (mainly scenariolevel)

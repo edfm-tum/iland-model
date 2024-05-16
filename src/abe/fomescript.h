@@ -83,6 +83,8 @@ public:
     /// get a JS-Object referencing a single tree
     QJSValue treeRef(Tree *tree);
 
+    QJSValue &activityJS() { return mActivityJS; }
+
     // Properties
     /// verbose: when true, the logging intensity is increased significantly.
     bool verbose() const;
@@ -159,6 +161,7 @@ private:
     QString mStandVisualization;
     QJSValue mTreeValue;
     ScriptTree mTree;
+    QJSValue mActivityJS;
 
 
 };

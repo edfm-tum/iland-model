@@ -141,7 +141,7 @@ void Climate::setup(bool do_log)
             // check for validity
             foreach(int year, mRandomYearList)
                 if (year < 0 || year>=mLoadYears)
-                    throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!!");
+                    throw IException(QString("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!! Tried to access: '%1', batchYears: '%2'").arg(year).arg(mLoadYears) );
         }
         if (do_log) {
             if (mRandomYearList.count()>0)
