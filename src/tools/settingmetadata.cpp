@@ -69,20 +69,20 @@ void SettingMetaData::checkXMLFile(const QString fileName, QStringList metaKeys)
     n_not_found = 0;
     QStringList xmlkeys = xml.dump("");
     foreach (QString rawKey, xmlkeys) {
-    //for (QStringList::Iterator it=xmlkeys.begin(); it!=xmlkeys.end(); ++it) {
-        //QString key = it->mid(8, it->indexOf(QChar(':'))-8); // skip 'project.' (8 char)
-        //int index = it.indexOf(":");
         rawKey.truncate(rawKey.indexOf(":"));
         QString key = (rawKey.size() > 7) ? rawKey.sliced(8) : " ";
         if (!existingKeys.contains(key) && key!=" " && key.split(".").size() > 2) {
             // check for exceptions
+            //qDebug() << "key " << key << " has children: " << xml.nodeHasChildren(key);
             bool is_exc = false;
             for (QStringList::ConstIterator s=exceptions.constBegin(); s!=exceptions.constEnd(); ++s)
                 if (key.startsWith(*s))
                     is_exc=true;
             if (!is_exc) {
-                qDebug() << key;
-                ++n_not_found;
+                if (!xml.nodeHasChildren(key)) {
+                    qDebug() << key;
+                    ++n_not_found;
+                }
             }
         }
 

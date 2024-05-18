@@ -54,6 +54,7 @@ public:
    bool paramValueBool(const QString &paramName, const bool &defaultValue=true) const; ///< get value of special "parameter" space
     // helpers
    QStringList dump(const QString &path, int levels=-1);
+   bool nodeHasChildren(const QString &path);
 private:
    void dump_rec(QDomElement c, QStringList &stack, QStringList &out);
    void missedKey(const QString &keyname) const;

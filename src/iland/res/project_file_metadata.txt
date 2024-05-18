@@ -186,6 +186,7 @@ output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The
 
 gui.layout = group|SVD Unique state|List of unique states encountered in the simulation https://iland-model.org/outputs#Unique_forest_states
 output.svduniquestate.enabled = boolean|false|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
+output.svduniquestate.condition = string|condition|Unique State Condition|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
 
 gui.layout = group|SVD Indicators|SVD indicators <br/>Indicator data per resource unit as used by SVD. Please edit in XML project file https://iland-model.org/outputs#SVD_forest_indicator_data !
 output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file|simple

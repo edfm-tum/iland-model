@@ -327,3 +327,15 @@ QStringList XmlHelper::dump(const QString &path, int levels)
     dump_rec(c, stack, result);
     return result;
 }
+
+bool XmlHelper::nodeHasChildren(const QString &path)
+{
+    QDomElement e = node(path);
+    if ( !e.isNull() ) {
+        if ( !e.firstChild().isText() ) {
+           return true;
+        }
+    }
+    return false;
+
+}
