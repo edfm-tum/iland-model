@@ -51,7 +51,6 @@ QStringList SettingMetaData::checkXMLKeys(const QString fileName, QStringList me
 
     //for (int i=0;i<existingKeys.size();++i) {
     foreach (QString key, existingKeys) {
-        qDebug() << "Key: " << key;
         bool has_key = xml.hasNode(key);
         if (!has_key && !exceptions.contains(key)) {
             //qDebug() << key; // << ":" << set.value(key).toString();
