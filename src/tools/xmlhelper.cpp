@@ -67,6 +67,24 @@ XmlHelper::XmlHelper(QDomElement topNode)
     mCurrentTop = topNode;
 }
 
+void XmlHelper::saveToFile(const QString &fileName) {
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "File couldn't be opened for writing. Abort.";
+        return;
+    } else {
+
+        qDebug() << "Write current data to file.";
+        QTextStream outStream(&file);
+        mDoc.save(outStream, 4);
+
+        file.close();
+    }
+
+}
+
 void XmlHelper::loadFromFile(const QString &fileName)
 {
     mDoc.clear();
@@ -152,6 +170,31 @@ bool XmlHelper::paramValueBool(const QString &paramName, const bool &defaultValu
 bool XmlHelper::hasNode(const QString &path) const
 {
     return !node(path).isNull();
+}
+
+bool XmlHelper::createNode(const QString &path)
+{
+    if (hasNode(path)) {
+        qDebug() << "Node already exists. Skipping!";
+        return false;
+    } else
+    {
+        QDomNode curNode = top();
+        QDomNode childBranch;
+        foreach (QString xmlPath, path.split(".")) {
+            childBranch = curNode.firstChildElement(xmlPath);
+            if ( childBranch.isNull() ) {
+                curNode = curNode.appendChild(mDoc.createElement(xmlPath));
+            }
+            else {
+                curNode = childBranch;
+            }
+        }
+        curNode.appendChild(mDoc.createTextNode(""));
+
+    }
+
+    return true;
 }
 
 QString XmlHelper::value(const QString &path, const QString &defaultValue, bool do_warn) const

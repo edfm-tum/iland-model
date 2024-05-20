@@ -29,6 +29,66 @@
 #include "xmlhelper.h"
 #include "exception.h"
 
+QStringList SettingMetaData::checkXMLKeys(const QString fileName, QStringList metaKeys)
+{
+    XmlHelper xml; ///< xml-based hierarchical settings
+    try {
+        xml.loadFromFile(fileName);
+    } catch (const IException &e) {
+        qDebug() << "The file" << fileName << "does not exist or is not a valid XML file: " << e.message();
+        return {};
+    }
+
+    QStringList exceptions = QStringList() << "gui.layout";
+    // load from resource file
+    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
+    QStringList existingKeys = metaKeys;
+    QStringList missingKeys = QStringList();
+
+    // Check for keys in XML - File
+//    qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";
+//    qDebug() << "=========================================================";
+
+    //for (int i=0;i<existingKeys.size();++i) {
+    foreach (QString key, existingKeys) {
+        bool has_key = xml.hasNode(key);
+        if (!has_key && !exceptions.contains(key)) {
+            //qDebug() << key; // << ":" << set.value(key).toString();
+            missingKeys << key;
+        }
+    }
+//    qDebug() << "===============================================";
+//    qDebug() << "Number of keys not found in XML: " << missingKeys.size();
+//    qDebug() << "===============================================";
+//    qDebug() << "";
+
+    return missingKeys;
+}
+
+void SettingMetaData::updateXMLFile(const QString fileName, QStringList missingKeys) {
+
+    XmlHelper xml; ///< xml-based hierarchical settings
+    try {
+        xml.loadFromFile(fileName);
+    } catch (const IException &e) {
+        qDebug() << "The file" << fileName << "does not exist or is not a valid XML file: " << e.message();
+        return;
+    }
+
+    int n_counter = 0;
+
+    foreach (const QString& key, missingKeys) {
+        if (xml.createNode(key)) {
+            qDebug() << "Added " << key << " to XML file.";
+            ++n_counter;
+        } else {
+            qDebug() << "Couldn't add " << key << " to XML file.";
+        }
+    }
+    xml.saveToFile(fileName);
+    qDebug() << "Successfully added " << n_counter << " to XML file.";
+}
+
 void SettingMetaData::checkXMLFile(const QString fileName, QStringList metaKeys)
 {
     XmlHelper xml; ///< xml-based hierarchical settings
@@ -38,35 +98,29 @@ void SettingMetaData::checkXMLFile(const QString fileName, QStringList metaKeys)
         qDebug() << "The file" << fileName << "does not exist or is not a valid XML file: " << e.message();
         return;
     }
-
-    QStringList exceptions = QStringList() << "gui.layout" << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user" << "model.species";
-    // load from resource file
-    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
-    QStringList setChildGroups = set.childGroups();
-//    QStringList existingKeys = set.allKeys();
     QStringList existingKeys = metaKeys;
+    QStringList exceptions = QStringList() << "gui.layout" << "model.species.nitrogenResponseClasses.class" << "model.settings.seedDispersal.seedBelt.species" << "user" << "model.species";
 
-    // Check for keys in XML - File
-    qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";
-    qDebug() << "=========================================================";
-    int n_not_found = 0;
-    for (int i=0;i<existingKeys.size();++i) {
-        bool has_key = xml.hasNode(existingKeys[i]);
-        if (!has_key) {
-            qDebug() << existingKeys[i] << ":" << set.value(existingKeys[i]).toString();
-            ++n_not_found;
+    QStringList missingKeys = checkXMLKeys(fileName, metaKeys);
+    if (missingKeys.size() > 0) {
+        qDebug() << "Missing keys (Keys defined by iLand, missing in XML file)";
+        qDebug() << "=========================================================";
+        foreach (const QString &key, missingKeys) {
+            qDebug() << key;
         }
+        qDebug() << "===============================================";
+        qDebug() << "Number of keys not found in XML: " << missingKeys.size();
+        qDebug() << "===============================================";
+        qDebug() << "\n\n";
+    } else {
+        qDebug() << "There are no missing keys, XML file is up-to-date.\n\n";
     }
-    qDebug() << "===============================================";
-    qDebug() << "Number of keys not found in XML: " << n_not_found;
-    qDebug() << "===============================================";
-    qDebug() << "";
 
     qDebug() << "Invalid keys (keys in XML file, but not valid in iLand)";
     qDebug() << "=======================================================";
 
     // check for keys in XML but not in the list of allowed keys
-    n_not_found = 0;
+    int n_not_found = 0;
     QStringList xmlkeys = xml.dump("");
     foreach (QString rawKey, xmlkeys) {
         rawKey.truncate(rawKey.indexOf(":"));

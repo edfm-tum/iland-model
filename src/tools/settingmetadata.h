@@ -33,6 +33,8 @@ public:
     void loadFromFile(const QString &fileName,
                       QStringList& keys,
                       QStringList& values);
+    QStringList checkXMLKeys(const QString fileName, QStringList metaKeys);
+    void updateXMLFile(const QString fileName, QStringList missingKeys);
 
 private:
 

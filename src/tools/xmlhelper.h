@@ -29,6 +29,7 @@ public:
    ~XmlHelper();
    XmlHelper(const QString &fileName) {loadFromFile(fileName);}
    XmlHelper(QDomElement topNode);
+   void saveToFile(const QString &fileName);
    void loadFromFile(const QString &fileName);
    void resetWarnings();
    void printSuppressedWarnings();
@@ -39,6 +40,7 @@ public:
    /// returns true if the current (relative!) node is valid (i.e. not null).
    bool isValid() const { return !mCurrentTop.isNull(); }
    bool hasNode(const QString &path) const; ///< returns true if @p path exists.
+   bool createNode(const QString &path);
     // read access
    QDomElement node(const QString &path) const; ///< retrieve node defined by path (see class description)
    QString value(const QString &path, const QString &defaultValue="", bool do_warn=true) const; ///< retrieve value (as string) from node @p path.

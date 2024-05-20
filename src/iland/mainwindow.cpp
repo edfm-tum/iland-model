@@ -2826,3 +2826,10 @@ void MainWindow::on_actionExpression_plotter_triggered()
     ui_functionPlotter->show();
 }
 
+void MainWindow::on_actionUpdate_XML_file_triggered()
+{
+    const QString &fileName = ui->initFileName->text();
+    QStringList missingKeys = mSettingMetaData->checkXMLKeys(fileName, mMetaKeys);
+    mSettingMetaData->updateXMLFile(fileName, missingKeys);
+
+}

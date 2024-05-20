@@ -27,5 +27,5 @@ int main(int argc, char *argv[])
     setlocale(LC_ALL,"C");
     MainWindow w;
     w.show();
-    return a.exec();
+     return a.exec();
 }

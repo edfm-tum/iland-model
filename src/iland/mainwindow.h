@@ -259,6 +259,7 @@ private slots:
     void on_speciesFilterBox_currentIndexChanged(int index);
     void on_visRUSpeciesColor_stateChanged(int arg1) {on_visFon_toggled();  } // force repaint
     void on_actionExpression_plotter_triggered();
+    void on_actionUpdate_XML_file_triggered();
 };
 
 #endif // MAINWINDOW_H
