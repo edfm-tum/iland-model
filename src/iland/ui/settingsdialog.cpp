@@ -57,7 +57,7 @@ void SettingsDialog::updateData()
 
 void SettingsDialog::setFilterMode(int mode)
 {
-    qDebug() << "filter mode " << mode;
+
     // 0: all
     // 1: simplified
     // 2: advanced
@@ -70,6 +70,7 @@ void SettingsDialog::setFilterMode(int mode)
                 mirroredWidget->setVisible(true);
             }
         }
+        qDebug() << "Settings Dialog: Show all (including deprecated)";
         break;
 
     case 1:
@@ -85,6 +86,7 @@ void SettingsDialog::setFilterMode(int mode)
                 mirroredWidget->setVisible(v->visibility == "simple");
                 }
             }
+        qDebug() << "Settings Dialog: Simple view";
         break;
     case 2:
         for (auto &v : mKeys) {
@@ -96,6 +98,7 @@ void SettingsDialog::setFilterMode(int mode)
                 }
 
         }
+        qDebug() << "Settings Dialog: Advanced view";
         break;
     }
 
@@ -317,7 +320,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
 //                tabHeading->setStyleSheet("font-size: 15");
             }
             else {
-                qDebug() << curTabName << ": Tab not found";
+                //qDebug() << curTabName << ": Tab not found";
                 activeTab = false;
             }
         }
@@ -503,9 +506,13 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
     }
 
     // third part: Put everything together
+
     QHBoxLayout* contentLayout = new QHBoxLayout();
+    //qDebug() << "Add Tree widget to layout";
     contentLayout->addWidget(treeWidget);
+    //qDebug() << "Add Stacked widget to layout";
     contentLayout->addWidget(mStackedWidget);
+    //qDebug() << "Set Stretch";
     contentLayout->setStretch(0, 1);
     contentLayout->setStretch(1, 3);
 
@@ -517,8 +524,11 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
     cancelButton->setText("Cancel");
 
     QVBoxLayout* overallLayout = new QVBoxLayout(this);
+    //qDebug() << "Add Toolbar to layout";
     overallLayout->addWidget(  createToolbar(), 1 );
+    //qDebug() << "Add content QHBoxLayout to overall QVBoxLayout";
     overallLayout->addLayout(contentLayout);
+    //qDebug() << "Add button box to overall Layout";
     overallLayout->addWidget(dialogButtons);
 
     // Connect the tree widget with the stacked widget for navigation
@@ -526,6 +536,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
         int itemIndex = treeWidget->currentItem()->whatsThis(0).toInt();
         mStackedWidget->setCurrentIndex(itemIndex);
     });
+
 
     setLayout(overallLayout);
 

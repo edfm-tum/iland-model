@@ -477,6 +477,7 @@ void MainWindow::on_actionSettingsDialog_triggered()
 
     ui_settingsDialog->updateData();
     ui_settingsDialog->saveButton->setEnabled(false);
+    ui_settingsDialog->adjustSize();
     ui_settingsDialog->show();
 
 }

@@ -51,9 +51,12 @@ QStringList SettingMetaData::checkXMLKeys(const QString fileName, QStringList me
 
     //for (int i=0;i<existingKeys.size();++i) {
     foreach (QString key, existingKeys) {
+        qDebug() << "Key: " << key;
         bool has_key = xml.hasNode(key);
         if (!has_key && !exceptions.contains(key)) {
             //qDebug() << key; // << ":" << set.value(key).toString();
+            // to avoid double counting of not existing keys (if there are mirrored elements)
+            exceptions << key;
             missingKeys << key;
         }
     }
@@ -86,7 +89,7 @@ void SettingMetaData::updateXMLFile(const QString fileName, QStringList missingK
         }
     }
     xml.saveToFile(fileName);
-    qDebug() << "Successfully added " << n_counter << " to XML file.";
+    qDebug() << "Successfully added " << n_counter << " keys to XML file.";
 }
 
 void SettingMetaData::checkXMLFile(const QString fileName, QStringList metaKeys)
