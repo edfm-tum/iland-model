@@ -17,12 +17,14 @@ class DialogComment : public QDialog
 public:
     explicit DialogComment(LinkXmlQt* Linkxqt, const QStringList& xmlPath,QWidget *parent = nullptr);
     explicit DialogComment(GenericInputWidget *widget, QWidget *parent = nullptr);
+    explicit DialogComment(LinkXmlQt* Linkxqt, QWidget *parent = nullptr);
     ~DialogComment();
 
 private:
     Ui::DialogComment *ui;
     QPlainTextEdit* mCommentEdit;
     void acceptComment();
+    void acceptEditedDescription();
     const QStringList mXmlPath;
     LinkXmlQt* mLinkxqt;
     GenericInputWidget *mWidget;
@@ -30,6 +32,7 @@ private:
 
 signals:
     void commentBoxStatus();
+    void projectDescriptionEdited();
 };
 
 #endif // DIALOGCOMMENT_H

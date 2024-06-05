@@ -58,7 +58,7 @@
      <x>0</x>
      <y>0</y>
      <width>1065</width>
-     <height>21</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOutput_menu">
@@ -81,6 +81,7 @@
     <addaction name="actionImageToClipboard"/>
     <addaction name="actionTest"/>
     <addaction name="actionExpression_plotter"/>
+    <addaction name="actionUpdate_XML_file"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1318,6 +1319,11 @@ QProgressBar::chunk {
   <action name="actionExpression_plotter">
    <property name="text">
     <string>Expression plotter</string>
+   </property>
+  </action>
+  <action name="actionUpdate_XML_file">
+   <property name="text">
+    <string>Update XML file</string>
    </property>
   </action>
  </widget>
