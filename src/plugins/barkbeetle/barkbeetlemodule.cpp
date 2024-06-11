@@ -145,6 +145,8 @@ void BarkBeetleModule::loadParameters(bool do_reset)
     mOutbreakClimateMultiplier.setExpression(formula);
 
     mClimateVariables[8] = mOutbreakClimateMultiplier.addVar("VPDjj"); // save at index position 8
+    mClimateVariables[9] = mOutbreakClimateMultiplier.addVar("VPDjj_lastyear"); // save at index position 9
+
     mOutbreakClimateMultiplier.parse();
 
     params.outbreakDurationMin = xml.valueDouble(".outbreakDurationMin", 0.);
@@ -423,8 +425,12 @@ void BarkBeetleModule::calculateOutbreakFactor()
                 } while (++cday < cend);
                 vpd /= n;
                 *mClimateVariables[8] = vpd; // store to internal memory of expression
+                // VPDjj of last year; for the first year of simulation use also the current year
+                double vpd_last_year = bbru->vpd_jj_last_year > 0. ? bbru->vpd_jj_last_year : vpd;
+                *mClimateVariables[9] = vpd_last_year;
 
                 bbru->climateOutbreakFactor = mOutbreakClimateMultiplier.execute();
+                bbru->vpd_jj_last_year = vpd;
             }
         }
     }
