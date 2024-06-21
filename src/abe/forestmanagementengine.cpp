@@ -219,6 +219,50 @@ void ForestManagementEngine::runJavascript(bool after_processing)
     }
 }
 
+void ForestManagementEngine::runRepeatedItems(int stand_id)
+{
+    auto it = mRepeatStore.find(stand_id);
+    while (it != mRepeatStore.end() && it.key() == stand_id) {
+        //cout << i.value() << Qt::endl;
+        bool is_erased = false;
+        if (--it->waitYears == 0) {
+            // run the item
+            it->N++; // number of invocation, 1,2,3,...
+            QJSValueList params = { it->N };
+            QJSValue result;
+
+            FMStand* stnd = stand(stand_id);
+            if (!stnd)
+                throw IException(QString("Invalid stand-id for repeating activity: '%1'").arg(stand_id));
+            FomeScript::setExecutionContext(stnd);
+
+            if (it->obj.isUndefined())
+                result = it->callback.call(params);
+            else
+                result = it->callback.callWithInstance(it->obj, params);
+
+            if (result.isError())
+                FomeScript::bridge()->abort(result);
+
+            qCDebug(abe) << "executed repeated op for stand" << stand_id << ", result:" << result.toString();
+
+            // reset
+            it->waitYears = it->interval; // start again the countdown
+            if (it->times > -1) {
+                if (it->N >= it->times) {
+                    // done - remove repeater again
+                    it = mRepeatStore.erase(it);
+                    is_erased = true;
+                }
+            }
+
+        }
+        if (!is_erased)
+            ++it;
+    }
+
+}
+
 AgentType *ForestManagementEngine::agentType(const QString &name)
 {
     for (int i=0;i<mAgentTypes.count();++i)
@@ -251,10 +295,15 @@ FMUnit *nc_execute_unit(FMUnit *unit)
     int executed = 0;
     int total = 0;
     while (it!=stand_map.constEnd() && it.key()==unit) {
+        // (1) standard repeating activities
         it.value()->stp()->executeRepeatingActivities(it.value());
         if (it.value()->execute())
             ++executed;
-        //MapGrid::freeLocksForStand( it.value()->id() );
+
+        // (2) JS based repeated ops
+        ForestManagementEngine::instance()->runRepeatedItems( it.value()->id() );
+
+
         if (ForestManagementEngine::instance()->isCancel())
             break;
 
@@ -765,6 +814,23 @@ QVariantList ForestManagementEngine::standIds() const
     foreach(FMStand *s, mStands)
         standids.push_back(s->id());
     return standids;
+}
+
+void ForestManagementEngine::addRepeat(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval, int repeatTimes)
+{
+    mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback));
+}
+
+void ForestManagementEngine::stopRepeat(int stand_id, QJSValue obj)
+{
+    auto it = mRepeatStore.find(stand_id);
+    while (it != mRepeatStore.end() && it.key() == stand_id) {
+        if (it->obj.equals(obj))
+            it = mRepeatStore.erase(it);
+        else
+            ++it;
+    }
+
 }
 
 void ForestManagementEngine::notifyTreeRemoval(Tree *tree, int reason)

@@ -20,6 +20,7 @@
 #define FORESTMANAGEMENTENGINE_H
 #include <QMultiMap>
 #include <QVector>
+#include <QJSValue>
 
 #include "abegrid.h"
 
@@ -98,6 +99,12 @@ public:
     FMStand *standAt(QPointF coord) const { return mFMStandGrid.constValueAt(coord); }
     // functions
 
+    void addRepeat(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval=1, int repeatTimes=-1);
+    void stopRepeat(int stand_id, QJSValue obj);
+    // run advanced repeated operations
+    void runRepeatedItems(int stand_id);
+
+
     /// called by iLand for every tree that is removed/harvested/died due to disturbance.
     void notifyTreeRemoval(Tree* tree, int reason);
     /// called when bark beetle are likely going to spread
@@ -119,6 +126,7 @@ private:
     void setupOutputs();
     void runJavascript(bool after_processing);
 
+
     static ForestManagementEngine *singleton_fome_engine;
     int mCurrentYear; ///< current year of the simulation (=year of the model)
 
@@ -133,6 +141,21 @@ private:
     QMultiMap<FMUnit*, FMStand*> mUnitStandMap;
     QVector<FMStand*> mStands;
     QHash<int, FMStand*> mStandHash;
+
+    // advanced repeating operations
+    struct SRepeatItem {
+        SRepeatItem(): interval(1), times(-1), N(0), waitYears(1) {}
+        SRepeatItem(int ainterval, int atimes, QJSValue aobj, QJSValue acallback): interval(ainterval), times(atimes), N(0), waitYears(ainterval), obj(aobj), callback(acallback) {}
+
+        int interval;
+        int times;
+        int N; // times already repeated
+        int waitYears; // years until next execution
+        QJSValue obj; // this object
+        QJSValue callback; // callback function
+    };
+
+    QMultiHash<int, SRepeatItem> mRepeatStore;
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types

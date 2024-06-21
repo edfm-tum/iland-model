@@ -236,6 +236,8 @@ public slots:
     void sleep(int years) { if (mStand) mStand->sleep(years); }
     void wakeup() { if (mStand) mStand->wakeUp(); }
 
+    void repeat(QJSValue repeat_obj, QJSValue repeat_fun, int repeat_interval, int repeat_count);
+
     void setAbsoluteAge(double arg);
     /// start the management program again (initialize the stand)
     void reset();

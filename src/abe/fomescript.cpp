@@ -692,6 +692,19 @@ void StandObj::setSTP(QString stp_name)
     throwError(QString("The stp cannot be set, because the agent for stand %1 is not properly defined.").arg(mStand ? mStand->id() : -1));
 }
 
+void StandObj::repeat(QJSValue repeat_obj, QJSValue repeat_fun, int repeat_interval, int repeat_count)
+{
+    if (!repeat_fun.isCallable()) {
+        throwError(QString("Stand::repeat: the 'what' to repeat needs to be a callable JavaScript object. It is: %1").arg(repeat_fun.toString()));
+        return;
+    }
+    ForestManagementEngine::instance()->addRepeat(mStand->id(),
+                                                  repeat_obj,
+                                                  repeat_fun,
+                                                  repeat_interval,
+                                                  repeat_count);
+}
+
 void StandObj::throwError(QString msg) const
 {
     FomeScript::bridge()->abort(QString("Error while accessing 'stand': no valid execution context. Message: %1").arg(msg));

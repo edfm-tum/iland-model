@@ -220,7 +220,7 @@ private:
     Constraints mConstraints; // constraining factors
     Events mEvents; // action handlers such as "onExecute"
     DynamicExpression mEnabledIf; // enabledIf property (dynamically evaluated)
-    QJSValue mJSObj;
+    QJSValue mJSObj; // general purpose javascript object
     friend class FMSTP; // allow access of STP class to internals
     friend class FMStand; // allow access of the activity class (e.g for events)
     friend class ActivityObj; // allow access to scripting function
