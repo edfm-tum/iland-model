@@ -390,6 +390,11 @@ OTHER_FILES += maindoc.cpp \
     ../apidoc/abe/abe_context_doc.js
 
 DISTFILES += \
+    ../abe-lib/ABE-library.js \
+    ../abe-lib/harvest/harvest.js \
+    ../abe-lib/lib_helper.js \
+    ../abe-lib/planting/planting.js \
+    ../abe-lib/thinning/thinning.js \
     ../apidoc/ABE/abe_patches.js \
     ../apidoc/ABE/saplinglist_doc.js \
     ../apidoc/iLand/grid_doc.js \

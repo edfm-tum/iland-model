@@ -271,8 +271,8 @@ QJSValue FMSTP::evaluateJS(QJSValue value)
     if (value.isCallable()) {
         QJSValue result = value.call();
         if (result.isError()) {
-            throw IException(QString("Erron in evaluating Javascript expression: %1").
-                             arg(result.toString()));
+            throw IException(QString("Error in evaluating Javascript expression '%1': '%2'").
+                             arg(value.toString(), result.toString()));
         }
         return result;
     }
