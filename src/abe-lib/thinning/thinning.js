@@ -14,7 +14,7 @@ lib.thinning.selectiveThinning = function(options) {
 		
         // ... add other default thinning parameters
     };
-	const opts = mergeOptions(defaultOptions, options || {});
+    const opts = lib.mergeOptions(defaultOptions, options || {});
 	
 	
 	// dynamic parameters of selective thinning

@@ -47,7 +47,7 @@ lib.harvest.stripCut = function(options) {
 		
         // ... add other default thinning parameters
     };
-	const opts = mergeOptions(defaultOptions, options || {});
+    const opts = lib.mergeOptions(defaultOptions, options || {});
 	
 	const act = {
 		// MAYBE ITS BETTER TO HAVE ON EVALUATION WHERE I CHECK IF THE WHOLE STAND IS READY FOR HARVEST INSTEAD OF EVERY PATCH!
@@ -119,7 +119,7 @@ lib.harvest.stripCut2 = function(options) {
 		
         // ... add other default thinning parameters
     };
-	const opts = mergeOptions(defaultOptions, options || {});
+    const opts = lib.mergeOptions(defaultOptions, options || {});
 	
 	opts.constraint = "stand." + opts.constraint + ">" + opts.harvestThreshold;
 	
@@ -188,7 +188,7 @@ lib.harvest.clearcut = function(options) {
 		
         // ... add other default thinning parameters
     };
-	const opts = mergeOptions(defaultOptions, options || {});
+    const opts = lib.mergeOptions(defaultOptions, options || {});
 
 	const act = { // available function remain(x) kill all but x random trees
 			type: "scheduled", 
@@ -231,7 +231,7 @@ lib.harvest.CoppiceWithStandard = function(options) {
 		species: undefined,
 		constraint: undefined
     };
-	const opts = mergeOptions(defaultOptions, options || {});
+    const opts = lib.mergeOptions(defaultOptions, options || {});
 	
 	// adjust expression for sort
 	if (opts.species === undefined) {
@@ -274,7 +274,7 @@ lib.harvest.targetDBH = function(options) {
 		dbhList: {},
 		constraint: undefined,
     };
-	let opts = mergeOptions(defaultOptions, options || {});
+    let opts = lib.mergeOptions(defaultOptions, options || {});
 	
 	opts.dbhList['rest'] = opts.TargetDBH;  // set the rest to the overall target DBH	
 	
@@ -327,7 +327,7 @@ lib.harvest.targetDBHforNo3 = function(options) {
 		dbhList: {},
 		constraint: undefined,
     };
-	let opts = mergeOptions(defaultOptions, options || {});
+    let opts = lib.mergeOptions(defaultOptions, options || {});
 	
 	opts.dbhList['rest'] = opts.TargetDBH;  // set the rest to the overall target DBH	
 	

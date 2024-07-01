@@ -11,7 +11,7 @@ lib.planting.general = function(options) {
 		pattern: undefined, //"rect2"
 		clear: false
 	};
-	const opts = mergeOptions(defaultOptions, options || {});
+    const opts = lib.mergeOptions(defaultOptions, options || {});
 	
 	const plant = {
 		type: 'planting', 
