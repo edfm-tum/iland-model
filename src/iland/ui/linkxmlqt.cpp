@@ -326,9 +326,11 @@ void LinkXmlQt::writeValuesXml(QStackedWidget* stackedWidget) {
                     //qDebug() << "Widget not specified: " << curWidget->objectName();
                 }
 
-                //QDomText curText = curXml.createTextNode(elementValue);
                 curNode.firstChild().setNodeValue(elementValue);
-                //curNode.setNodeValue(elementValue);
+                if ( curNode.firstChild().isNull() ) {
+                    curNode.appendChild(curXml.createTextNode(""));
+                }
+
             }
 
         }
