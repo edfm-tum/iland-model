@@ -15,7 +15,7 @@ class GenericInputWidget; // forward
 struct SettingsItem  {
 
     SettingsItem(size_t index, QString akey, QString atype, QString alabel, QString atooltip, QString adefault, QString avisibility, QString aparent = "", QString aAltLabel = ""):
-        metakeyIndex(index), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility), parentTab(aparent), altLabel(aAltLabel){
+        metakeyIndex(index), widget(nullptr), key(akey), label(alabel), tooltip(atooltip), defaultValue(adefault), visibility(avisibility), parentTab(aparent), altLabel(aAltLabel){
         auto ti =  mInputTypes.indexOf(atype);
         if (ti < 0)
             throw IException("SettingsItem: invalid input type");
@@ -70,6 +70,10 @@ public:
 
     QString readXmlValue(QString key);
     QString readXmlComment(QString key);
+    void readXmlProjectDescription();
+    void writeProjectDescriptionXml(const QString &description);
+
+    QString xmlProjectDescription;
 
     void createXML(const QStringList &metaKeys, const QString& pathXmlFile);
     void setTempHomePath(QString homePath = "");

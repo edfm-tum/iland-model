@@ -420,13 +420,13 @@ QJSValue FomeScript::activity(QString stp_name, QString activity_name)
 
     FMSTP *stp = ForestManagementEngine::instance()->stp(stp_name);
     if (!stp) {
-        qCDebug(abe) << "fmengine.activty: invalid stp" << stp_name;
+        qCDebug(abe) << "fmengine.activity: invalid stp" << stp_name;
         return QJSValue();
     }
 
     Activity *act = stp->activity(activity_name);
     if (!act) {
-        qCDebug(abe) << "fmengine.activty: activity" << activity_name << "not found in stp:" << stp_name;
+        qCDebug(abe) << "fmengine.activity: activity" << activity_name << "not found in stp:" << stp_name;
         return QJSValue();
     }
 
@@ -719,7 +719,7 @@ void ActivityObj::setEnabled(bool do_enable)
             mStand->setToLatestForcedActivity();
             qCDebug(abe) << mStand->context() << "No valid activity found - forced execution of the latest activity with force=true.";
         }
-        qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activty:" << (mStand->currentActivity() ? mStand->currentActivity()->name() : QStringLiteral("*** no activity ***"));
+        qCDebug(abe) << mStand->context() << "disabled currently active activity " << old_activity << ", new next activity:" << (mStand->currentActivity() ? mStand->currentActivity()->name() : QStringLiteral("*** no activity ***"));
     }
 }
 

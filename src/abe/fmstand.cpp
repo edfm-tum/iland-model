@@ -373,7 +373,7 @@ bool FMStand::execute()
     } else {
         // execute immediately
         if (trace())
-            qCDebug(abe) << context() << "executing activty" << currentActivity()->name();
+            qCDebug(abe) << context() << "executing activity" << currentActivity()->name();
         mScheduledHarvest = 0.;
         bool executed = currentActivity()->execute(this);
         if (!currentActivity()) // special case: the activity invalidated the active activtity

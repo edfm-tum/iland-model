@@ -458,6 +458,10 @@ treemig=function(as1,as2,ks,d) # two-part exponential function, cf. Lischke & Lo
 
 /// the used kernel function
 /// see also Appendix B of iland paper II (note the different variable names)
+/// mTM_as1: shape parameter for wind / ballistic dispersal
+/// mTM_as2: shape parameter for zoochorous dispersal
+/// mTM_ks: proportion zoochorous transport
+/// fun fact: integral 0..asX = 1-1/e = ~0.63. 63% of dispersal distances are < asX
 /// the function returns the seed density at a point with distance 'distance'.
 double SeedDispersal::treemig(const double &distance)
 {
