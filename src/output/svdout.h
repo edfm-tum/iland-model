@@ -3,6 +3,7 @@
 #include "output.h"
 #include "expression.h"
 #include <bitset>
+#include "grid.h"
 // Qt5.12 bug with MSVC compiler
 // https://bugreports.qt.io/browse/QTBUG-72073
 // created an updated version of "bitset" including a lil fix
@@ -73,6 +74,8 @@ private:
     std::bitset<32> mIndicators;
     QVector<QPair<QString, int> > mSpecies; // store species IDs and corresponding index
     int mNDisturbanceHistory;
+
+    Grid<float> mCrownCoverGrid;
 
     // indicator calculators
     double calcShannonIndex(const ResourceUnit *ru);

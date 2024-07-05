@@ -64,7 +64,7 @@ public:
 
     /// add an planned activity for a given stand.
     /// @param stand the stand to add
-    /// @param flags the execution flags (activty x stand)
+    /// @param flags the execution flags (activity x stand)
     /// @param prob_schedule the probability from the activity-scheduling algorithm at the time of adding the ticket
     /// @param prob_execute the probability for executing the activity (based on the constraints of the activity)
     void addTicket(FMStand *stand, ActivityFlags *flags, double prob_schedule, double prob_execute);

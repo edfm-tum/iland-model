@@ -99,7 +99,7 @@ const QVector<LayeredGridBase::LayerElement> &ABELayers::names()
                 << LayeredGridBase::LayerElement(QStringLiteral("scheduler score"), QStringLiteral("score of a stand in the scheduler (higher scores: higher prob. to be executed)."), GridViewRainbow)
                 << LayeredGridBase::LayerElement(QStringLiteral("stp"), QStringLiteral("Stand treatment program currently active"), GridViewBrewerDiv)
                 << LayeredGridBase::LayerElement(QStringLiteral("user"), QStringLiteral("stand property (fmengine.visualizationProperty)"), GridViewRainbow)
-                << LayeredGridBase::LayerElement(QStringLiteral("activty"), QStringLiteral("Currently active activity for the stand"), GridViewBrewerDiv);
+                << LayeredGridBase::LayerElement(QStringLiteral("activity"), QStringLiteral("Currently active activity for the stand"), GridViewBrewerDiv);
     return mNames;
 }
 

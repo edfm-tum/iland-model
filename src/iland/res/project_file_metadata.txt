@@ -34,6 +34,40 @@ output.treeremoved.enabled = connected|Removed single trees
 output.carbonflow.enabled = connected|Enable Carbon flow
 output.soilinput.enabled = connected|Enable Soilinput
 
+
+gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
+
+gui.layout = group|Tree
+output.tree.enabled = boolean|true|Enable trees|Output of indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered after the growth of the current season. Initial values (without any growth) are output as 'startyear-1'.|simple
+output.tree.filter = integer|1|Filter|See tooltip treeremoved|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Remove trees
+output.treeremoved.enabled = boolean|true|Remove trees|Output of removed indivdual trees. Use the filter property to reduce amount of data (filter by resource-unit, year, species, ...). The output is triggered immediately when a tree is removed due to mortality or management.|simple
+output.treeremoved.filter = integer|1|Filter|The filter is a binary combination of the following values: TreeDead=1, TreeDebugging=2, TreeDeadBarkBeetle=16, TreeDeadWind=32, TreeDeadFire=64, TreeDeadKillAndDrop=128, TreeHarvested=256, MarkForCut=512, MarkForHarvest=1024, MarkCropTree=2048, MarkCropCompetitor=4096, TreeAffectedBite=8192|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Stand	
+output.stand.enabled = boolean|false|Stand|Output of aggregates on the level of RU x species. Values are always aggregated per hectare (of stockable area). Use the 'area' column to scale to the actual values on the resource unit. The output is created after the growth of the year, i.e. output with year=2000 means effectively the state of at the end of the year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'.|simple
+output.stand.condition = string|Stand condition|Condition|Controls if the output should be created for the current year (see dynamic stand output).|advanced
+output.stand.byRU = string|id number|Filter by RU|Limit the output to resource units that satisfy the given condition (e.g. 'id=3', or 'leafAreaIndex<2'). For more information see iLand-Wiki on resource unit variables.|advanced
+output.standdead.enabled = boolean|true|Stand dead|Died trees in current year on the level of RU x species. The output is created after the growth of the year, i.e. the growth of year trees are dying in is included! NPP and NPP_kg are not recorded for trees that are removed during management.|simple
+
+gui.layout = layout|hl
+gui.layout = group|Production & Management	
+output.production_month.enabled = boolean|false|Production month|Details about the 3PG production submodule on monthly basis and for each species and resource unit.|simple
+; output.production_month = string|january, february|Production month|string|advanced
+output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!|advanced
+
+gui.layout = layout|hl
+gui.layout = group|Sapling	
+output.sapling.enabled = boolean|true|Enable Saplings|Output of the establishment/sapling layer per resource unit and species. The output covers trees between a dbh of 1cm (height>1.3m) and the recruitment threshold (i.e. a height of 4m).Cohorts with a dbh < 1cm are counted in 'cohort_count_ha' but not used for average calculations.|simple
+output.sapling.condition = string|ru and year|Sapling|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
+output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unless the tree diameter is below the 'minDbh' threshold (cm).|simple
+output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
+output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|advanced
+
+
 gui.layout = group|Processes
 output.production_month.enabled = connected|GPP & NPP per month
 output.water.enabled = connected|Water Cycle
@@ -183,6 +217,10 @@ gui.layout = group|<h2>SVD</h2>|iLand has some special outputs that are tailored
 
 gui.layout = group|SVD State|Vegetation state transitions on RU over time https://iland-model.org/outputs#Forest_state_transitions
 output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.|simple
+<<<<<<< HEAD
+>>>>>>> refs/heads/settings_ui
+=======
+>>>>>>> bac1f6861664b858226b834e2f923b487edb2bd2
 
 gui.layout = group|SVD Unique state|List of unique states encountered in the simulation https://iland-model.org/outputs#Unique_forest_states
 output.svduniquestate.enabled = boolean|false|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
