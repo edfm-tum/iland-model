@@ -34,6 +34,7 @@ output.treeremoved.enabled = connected|Removed single trees
 output.carbonflow.enabled = connected|Enable Carbon flow
 output.soilinput.enabled = connected|Enable Soilinput
 
+
 gui.layout = tab|tabTree|Tree management|Trees on off, removed or not
 
 gui.layout = group|Tree
@@ -65,6 +66,7 @@ output.sapling.condition = string|ru and year|Sapling|Condition to limit executi
 output.saplingdetail.enabled = boolean|true|Sapling Details|Detailed output on indidvidual sapling cohorts. For each occupied and living 2x2m pixel, a row is generated, unless the tree diameter is below the 'minDbh' threshold (cm).|simple
 output.saplingdetail.condition = string|details|Condition details|Condition to limit execution for specific time/area with the variable 'ru' (resource unit id) and 'year' (the current year).|advanced
 output.saplingdetail.minDbh = string|5|Detail minDbh|Only trees with Dbh larger than the specified minDbh value (in cm) are considered.|advanced
+
 
 gui.layout = group|Processes
 output.production_month.enabled = connected|GPP & NPP per month
@@ -215,7 +217,10 @@ gui.layout = group|<h2>SVD</h2>|iLand has some special outputs that are tailored
 
 gui.layout = group|SVD State|Vegetation state transitions on RU over time https://iland-model.org/outputs#Forest_state_transitions
 output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.|simple
+<<<<<<< HEAD
 >>>>>>> refs/heads/settings_ui
+=======
+>>>>>>> bac1f6861664b858226b834e2f923b487edb2bd2
 
 gui.layout = group|SVD Unique state|List of unique states encountered in the simulation https://iland-model.org/outputs#Unique_forest_states
 output.svduniquestate.enabled = boolean|false|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
