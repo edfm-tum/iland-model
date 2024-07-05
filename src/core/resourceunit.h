@@ -90,7 +90,7 @@ public:
     // properties
     int index() const { return mIndex; }
     int id() const { return mID; }
-    const QRectF &boundingBox() const { return mBoundingBox; }
+    const QRectF &boundingBox() const { return mBoundingBox; } ///< bounding box (metric) of the RU
     const QPoint &cornerPointOffset() const { return mCornerOffset; } ///< coordinates on the LIF grid of the upper left corner of the RU
     double area() const { return mPixelCount*100; } ///< get the resource unit area in m2
     double stockedArea() const { return mStockedArea; } ///< get the stocked area in m2
