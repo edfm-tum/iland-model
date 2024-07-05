@@ -5,10 +5,10 @@
 
 ; *** Initial page *****
 ; Note: background image set by c++ side
-gui.layout = tab|tabSettings|Settings|Insert html for settings,....
-gui.layout = group|general|lorem ipso
-gui.layout = group|general|lorem ipso
-gui.layout = group|general|lorem ipso
+gui.layout = tab|tabProject|Project Description
+; gui.layout = group|general|lorem ipso
+; gui.layout = group|general|lorem ipso
+; gui.layout = group|general|lorem ipso
 
 ; ********** outputs *************
 ; ****** overview page ***********
@@ -186,6 +186,7 @@ output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The
 
 gui.layout = group|SVD Unique state|List of unique states encountered in the simulation https://iland-model.org/outputs#Unique_forest_states
 output.svduniquestate.enabled = boolean|false|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
+output.svduniquestate.condition = string|condition|Unique State Condition|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
 
 gui.layout = group|SVD Indicators|SVD indicators <br/>Indicator data per resource unit as used by SVD. Please edit in XML project file https://iland-model.org/outputs#SVD_forest_indicator_data !
 output.svdindicator.enabled = boolean|false|Enable Indicator|Indicator data per resource unit as used by SVD. The selection of indicators is triggered by keys in the project file|simple
@@ -314,7 +315,9 @@ model.settings.boundaryLayerConductance = numeric|0.2|Boundary Layer Conductance
 model.settings.waterUseSoilSaturation = boolean|false|Water Use Soil Saturation|If true, plants can access the water up to the saturation point (0kPa). If false, the accessible water is limited with the field capacity (-15kPa). Default is false.|advanced
 model.settings.interceptionStorageNeedle = numeric|4|Interception storage (needle)|Asymptotic crown storage capacity for intercepted rain water of confiers. (default: 4).|advanced
 model.settings.interceptionStorageBroadleaf = numeric|2|Interception storage (broadleafed)|Asymptotic crown storage capacity for intercepted rain water of deciduous trees. (default: 2).|advanced
-model.settings.snowMeltTemperature = numeric|0|Snow Melt Temperature|Threshold temperature for snow (degree Celsius). Precipitation on days with mean temperature below this threshold is modeled as snow; snow melts at mean temperatures above the threshold. default: 0°C.|advanced
+model.settings.snowMeltTemperature = numeric|0|Snow melt temperature|Threshold temperature for snow (degree Celsius). Precipitation on days with mean temperature below this threshold is modeled as snow; snow melts at mean temperatures above the threshold. default: 0°C.|advanced
+model.settings.snowDensity = numeric|300|Snow density|Density of snow in kg/m3 (default: 300)|advanced
+model.settings.snowInitialDepth = numeric|0|Snow initial depth|Depth of the snow pack (in m) at the start of the simulation (default: 0).|advanced
 model.settings.groundVegetationLAI = numeric|1|LAI ground vegetation|minimum LAI that is assumed to be provided by ground vegetation in absence of tree vegetation|advanced
 model.settings.groundVegetationPsiMin = numeric|-1.5|PsiMin of ground vegetation|https://iland-model.org/transpiration+and+conductance+in+saplings|advanced
 ; heatCapacityAir and air Pressure are deprecated. included for filtering reasons
@@ -376,7 +379,26 @@ gui.layout = group|Browsing|This section contains settings related to the browsi
 model.settings.browsing.enabled = boolean|false|Enable|If false the browsing module is disabled, i.e. no effect is calculated.|simple
 model.settings.browsing.browsingPressure = numeric|0.1|Browsing Pressure|scaling factor modifying the base probability|simple
 
-gui.layout = group|Permafrost
+gui.layout = group|Permafrost|The module simulates the annual freeze-thaw cycle of the active layer, driven by heat transfer from the atmosphere and the deeper permafrost layer. The module also simulates the growth dynamics of the moss layer, which plays a crucial role in insulating the permafrost (see advanced settings).
+model.settings.permafrost.enabled = boolean|false|Enable|Permafrost sub module switched on when true|simple
+model.settings.permafrost.onlySimulate = booelan|false|Only simulate|If true, permafrost is calculated but has no effect on water cycle|simple
+model.settings.permafrost.initialGroundTemperature = numeric|4|Initial ground temperature|Initial temperature in depth ‘groundBaseDepth’ below the active layer: at depth "groundBaseDepth" the temperature is assumed to remain +- constant within a year and to follow MAT with a 10yr delay. The initial value is given with 'initialGroundTemperature' and the depth from which thermal energy flows.|simple
+model.settings.permafrost.initialDepthFrozen = numeric|2|Initial depth frozen|Depth (m) up to which the soil is frozen at the start of the simulation (1st of January). For permanent permafrost the value is capped at 2m.|simple
+model.settings.permafrost.groudBaseDepth = numeric|3|Ground base depth|Depth (m) of the zone below the active layer from where the secondary heat flux (from below) originates.|simple
+model.settings.permafrost.lambdaOrganicLayer = numeric|1|Lambda organic layer|Thermal conductivity W/m*K of soil organic layer and moss|simple
+model.settings.permafrost.organicLayerDensity = numeric|50|Organic layer density|Density (kg/m3) of the soil organic layer (default: 50).|simple
+model.settings.permafrost.organicLayerDefaultDepth = numeric|0.1|Organic layer default depth|Depth of the soil organic layer (m) (only relevant when dynamic carbon cycle is disabled) (default: 0.1)|simple
+model.settings.permafrost.maxFreezeThawPerDay = numeric|10|Max. freeze/thaw per day|Cap for daily freezing and thawing (mm water column)|simple
+model.settings.permafrost.moss.biomass = numeric|100|Biomass|Initial life moss in kg/ha|advanced
+model.settings.permafrost.moss.bulk_density = numeric|0.8|Bulk density|Density of the moss layer in kg/m3.|advanced
+model.settings.permafrost.moss.light_k = numeric|0.75|Light extinction coeff.|Light extinction coefficient used for tree canopy and moss.|advanced
+model.settings.permafrost.moss.light_comp = numeric|0.3|Light compensation point|Light level (proportion of light above canopy) above which photosynthesis is possible.|advanced
+model.settings.permafrost.moss.light_sat = numeric|0.3|Light saturation point|Light level (proportion of light above canopy) above which an increase in light does not increase GPP|advanced
+model.settings.permafrost.moss.respiration_b = numeric|5|Biomass loss respiration|Annual loss of moss biomass due to respiration (flux to atmosphere).|advanced
+model.settings.permafrost.moss.respiration_q = numeric|10|Biomass loss turnover|Annual loss of moss biomass due to turnover (flux to litter).|advanced
+model.settings.permafrost.moss.CNRatio = numeric|0.5|CNRatio litter|CN-ratio of moss litter entering the litter pool of iLand.|advanced
+model.settings.permafrost.moss.r_decomp = numeric|0.1|Decomposition rate litter|Decomposition rate of moss litter that enters the litter pool of iLand|advanced
+model.settings.permafrost.moss.r_deciduous_inhibition = numeric|0.45|Inhibition effect decid. litter|Parameter to calculate inhibition effect of fresh broadleaved litter (default: 0.45)|advanced
 
 gui.layout = group|Miroclimate|The microclimate module simulates temperature buffering below canopies. https://iland-model.org/microclimate
 model.climate.microclimate.enabled = boolean|false|Enable|Enables the submodule|simple
@@ -585,7 +607,7 @@ gui.layout = group|Wind
 modules.fire.wind.speedMin = numeric|0|Min. speed|Minimum wind speed (m/s)|simple
 modules.fire.wind.speedMax = numeric|10|Max. speed|Maximum wind speed (m/s). The wind speed is randomly selected between speedMin and speedMax for each fire event|simple
 modules.fire.wind.direction = numeric|0|Direction|The main wind direction (in degrees). North=0, East=90, South=180, West=270. For each fire event the wind direction is calculated as direction +- 45°"|simple
-modules.fire = layout|hl
+gui.layout = layout|hl
 modules.fire.KBDIref = numeric|200|KBDI Ref.|Reference value for the site specific KBDI (Keetch Byram Drought Index)|simple
 modules.fire.rFireSuppression = numeric|1|r Fire Suppress.|A scalar for fire suppression|simple
 modules.fire.rLand = numeric|1|r Land|"Multiplier for the fire spread probability for the resource unit (0..1). If below the (default) value of 1, fire spreads with a reduced probability (e.g. for riparian areas)"|simple

@@ -79,6 +79,7 @@ GenericInputWidget::GenericInputWidget(LinkXmlQt *link, SettingsItem *item, bool
         mInputField = new QLineEdit();
         // default value given in metadata shown as grey placeholder text
         mInputField->setPlaceholderText(item->defaultValue);
+        mInputField->setStyleSheet("QLineEdit:hover {border: 1px solid gray;}");
         if (item->type == SettingsItem::DataPathFile ||
             item->type == SettingsItem::DataPathDirectory) {
             QToolButton *fileDialog = new QToolButton();

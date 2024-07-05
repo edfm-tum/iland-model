@@ -452,9 +452,12 @@ void MainWindow::processMetaData(metadata &meta) {
 
 void MainWindow::on_actionSettingsDialog_triggered()
 {
+    mLinkxqt->loadXmlFile();
+    mLinkxqt->setTempHomePath();
+    mLinkxqt->readXmlProjectDescription();
 
     if (!ui_settingsDialog) {
-        QStringList dialogList = QStringList() << "Settings" << "System"  << "Model" << "Output" << "Modules";
+        QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
         QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Management"  ;
         QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle";
         QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
@@ -471,11 +474,12 @@ void MainWindow::on_actionSettingsDialog_triggered()
     }
     //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
     //mLinkxqt->setTempHomePath(xmlFileInfo.absolutePath());
-    mLinkxqt->loadXmlFile();
-    mLinkxqt->setTempHomePath();
+
     ui_settingsDialog->updateData();
     ui_settingsDialog->saveButton->setEnabled(false);
+    ui_settingsDialog->adjustSize();
     ui_settingsDialog->show();
+
 }
 
 void MainWindow::batchLog(const QString s)
@@ -2693,7 +2697,7 @@ void MainWindow::on_actionRepaint_triggered()
 void MainWindow::on_checkXMLFile_clicked()
 {
     SettingMetaData sm;
-    sm.checkXMLFile(ui->initFileName->text());
+    sm.checkXMLFile(ui->initFileName->text(), mMetaKeys);
 }
 
 void MainWindow::on_actionSave_regeneration_grid_triggered()
@@ -2823,3 +2827,10 @@ void MainWindow::on_actionExpression_plotter_triggered()
     ui_functionPlotter->show();
 }
 
+void MainWindow::on_actionUpdate_XML_file_triggered()
+{
+    const QString &fileName = ui->initFileName->text();
+    QStringList missingKeys = mSettingMetaData->checkXMLKeys(fileName, mMetaKeys);
+    mSettingMetaData->updateXMLFile(fileName, missingKeys);
+
+}

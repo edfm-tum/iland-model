@@ -10,6 +10,7 @@
 
 
 #include "qpushbutton.h"
+#include "ui/dialogcomment.h"
 #include "ui/genericinputwidget.h"
 #include "qdialogbuttonbox.h"
 
@@ -31,15 +32,15 @@ SettingsDialog::SettingsDialog(LinkXmlQt* Linkxqt,
     // Tree Widget offers navigation
     QTreeWidget* mTreeWidget = new QTreeWidget();
     // The "pages" of the stacked widget hold the gui elements
-    QStackedWidget* mStackedWidget = new QStackedWidget();
+    mStackedWidget = new QStackedWidget();
 
     //
     //ui_dialogChangedValues = nullptr;
     try {
-    setDialogLayout(mTreeWidget, mStackedWidget);
-    ui_dialogChangedValues = new DialogChangedValues(this);
-    connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
-    connect(ui_dialogChangedValues, &DialogChangedValues::noChanges, this, [this]{a_changedValuesDialog->setEnabled(false);});
+        setDialogLayout(mTreeWidget, mStackedWidget);
+        ui_dialogChangedValues = new DialogChangedValues(this);
+        connect(this, &SettingsDialog::updateValueChangeTable, ui_dialogChangedValues, &DialogChangedValues::updateTable);
+        connect(ui_dialogChangedValues, &DialogChangedValues::noChanges, this, [this]{a_changedValuesDialog->setEnabled(false);});
     } catch (const IException &e) {
         QMessageBox::critical(this,"Error", e.message());
         close();
@@ -51,11 +52,12 @@ void SettingsDialog::updateData()
 {
     this->setWindowTitle(mLinkxqt->getXmlFile());
     readXMLValues();
+    setProjectDescription();
 }
 
 void SettingsDialog::setFilterMode(int mode)
 {
-    qDebug() << "filter mode " << mode;
+
     // 0: all
     // 1: simplified
     // 2: advanced
@@ -68,6 +70,7 @@ void SettingsDialog::setFilterMode(int mode)
                 mirroredWidget->setVisible(true);
             }
         }
+        qDebug() << "Settings Dialog: Show all (including deprecated)";
         break;
 
     case 1:
@@ -83,6 +86,7 @@ void SettingsDialog::setFilterMode(int mode)
                 mirroredWidget->setVisible(v->visibility == "simple");
                 }
             }
+        qDebug() << "Settings Dialog: Simple view";
         break;
     case 2:
         for (auto &v : mKeys) {
@@ -94,6 +98,7 @@ void SettingsDialog::setFilterMode(int mode)
                 }
 
         }
+        qDebug() << "Settings Dialog: Advanced view";
         break;
     }
 
@@ -150,7 +155,7 @@ QString SettingsDialog::linkify(QString text, bool collapse) {
 }
 
 
-void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* stackedWidget)
+void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mStackedWidget)
 {
     // First part of function defines the general layout and elements of the gui
     // Second part adds all the edits, labels, input elements to the layout
@@ -190,7 +195,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         curParentStack->setBackgroundRole(QPalette::Base);
 
         // backgroud image only for the top category
-        if(curModule == "Settings")
+        if(curModule == "Project")
             curParentStack->setStyleSheet("background-image: url(:/iland_splash3.jpg);");
 
         layoutParent->setAlignment(Qt::AlignTop);
@@ -206,7 +211,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 //        TextBrowser->setSource(htmlFile);
 
         //scrollParent->setWidget(curParentStack);
-        stackedWidget->addWidget(ParentScroll);
+        mStackedWidget->addWidget(ParentScroll);
 
         //QString dialogName = mModulesList[i];
 
@@ -233,7 +238,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             tabLay->setAlignment(Qt::AlignTop);
 
             localScroll->setWhatsThis(curModule + ":" + tab);
-            stackedWidget->addWidget(localScroll);
+            mStackedWidget->addWidget(localScroll);
         }
     }
     // Layout set
@@ -291,7 +296,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         if (inputType == "tab") {
             // curTabName holds the object name of the tab were subsequent elements are added
             curTabName = values[1];
-            curChildStack = stackedWidget->findChild<QWidget *>(curTabName);
+            curChildStack = mStackedWidget->findChild<QWidget *>(curTabName);
 
 
             if (curChildStack) {
@@ -315,7 +320,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
 //                tabHeading->setStyleSheet("font-size: 15");
             }
             else {
-                qDebug() << curTabName << ": Tab not found";
+                //qDebug() << curTabName << ": Tab not found";
                 activeTab = false;
             }
         }
@@ -393,6 +398,10 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                 QStringList curPair = {element, curTabName};
                 connectedElements.append(curPair);
             }
+//            else if (curTabName == "tabProject") {
+//                QPushButton* editProjectDesricption = new QPushButton("Edit Project Description");
+//                tabLay->addWidget(editProjectDesricption);
+//            }
         }
     }
 
@@ -406,14 +415,14 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
         curTabName = mirroredItemProps[1];
         origItem = mKeys[original];
 //        mirroredItem->type = SettingsItem::DataConnected;
-        curChildStack = stackedWidget->findChild<QWidget *>(curTabName);
+        curChildStack = mStackedWidget->findChild<QWidget *>(curTabName);
         tabLay = curChildStack->findChild<QVBoxLayout *>(curTabName + "Layout");
 
         // connect the mirrored element to its original version
 
         if (origItem->type == SettingsItem::DataBoolean) {
-            QCheckBox *origEl = stackedWidget->findChild<QCheckBox *>(original);
-            QCheckBox *siblEl = stackedWidget->findChild<QCheckBox *>(sibling);
+            QCheckBox *origEl = mStackedWidget->findChild<QCheckBox *>(original);
+            QCheckBox *siblEl = mStackedWidget->findChild<QCheckBox *>(sibling);
             if (origEl && siblEl) {
                 siblEl->setCheckState(origEl->checkState());
                 connect(origEl, &QCheckBox::stateChanged, this, [siblEl](int state) {
@@ -426,8 +435,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
             }
         }
         else if (origItem->type == SettingsItem::DataCombo) {
-            QComboBox *origEl = stackedWidget->findChild<QComboBox *>(original);
-            QComboBox *siblEl = stackedWidget->findChild<QComboBox *>(sibling);
+            QComboBox *origEl = mStackedWidget->findChild<QComboBox *>(original);
+            QComboBox *siblEl = mStackedWidget->findChild<QComboBox *>(sibling);
             if (origEl && siblEl) {
                 siblEl->setCurrentText(origEl->currentText());
                 connect(origEl, &QComboBox::currentTextChanged, this, [siblEl](const QString& text) {
@@ -445,8 +454,8 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
                  origItem->type == SettingsItem::DataPathDirectory ||
                  origItem->type == SettingsItem::DataPathFile ||
                  origItem->type == SettingsItem::DataFunction) {
-            QLineEdit *origEl = stackedWidget->findChild<QLineEdit *>(original);
-            QLineEdit *siblEl = stackedWidget->findChild<QLineEdit *>(sibling);
+            QLineEdit *origEl = mStackedWidget->findChild<QLineEdit *>(original);
+            QLineEdit *siblEl = mStackedWidget->findChild<QLineEdit *>(sibling);
             if (origEl && siblEl) {
                 siblEl->setText(origEl->text());
                 connect(origEl, &QLineEdit::textChanged, this, [siblEl](const QString& text) {
@@ -472,7 +481,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     int labelSize;
     QString maxLabel;
     QRegularExpression reTab("\\btab[A-Z]\\w*");
-    QList<QWidget *> stackList = stackedWidget->findChildren<QWidget *>(reTab);
+    QList<QWidget *> stackList = mStackedWidget->findChildren<QWidget *>(reTab);
     //qDebug() << "Num Stacks: " << stackList.length();
     foreach (QWidget *curStack, stackList) {
         //qDebug() << "Current Widget: " << curStack->objectName();
@@ -497,9 +506,13 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     }
 
     // third part: Put everything together
+
     QHBoxLayout* contentLayout = new QHBoxLayout();
+    //qDebug() << "Add Tree widget to layout";
     contentLayout->addWidget(treeWidget);
-    contentLayout->addWidget(stackedWidget);
+    //qDebug() << "Add Stacked widget to layout";
+    contentLayout->addWidget(mStackedWidget);
+    //qDebug() << "Set Stretch";
     contentLayout->setStretch(0, 1);
     contentLayout->setStretch(1, 3);
 
@@ -511,15 +524,19 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     cancelButton->setText("Cancel");
 
     QVBoxLayout* overallLayout = new QVBoxLayout(this);
+    //qDebug() << "Add Toolbar to layout";
     overallLayout->addWidget(  createToolbar(), 1 );
+    //qDebug() << "Add content QHBoxLayout to overall QVBoxLayout";
     overallLayout->addLayout(contentLayout);
+    //qDebug() << "Add button box to overall Layout";
     overallLayout->addWidget(dialogButtons);
 
     // Connect the tree widget with the stacked widget for navigation
     connect(treeWidget, &QTreeWidget::itemSelectionChanged, this, [=]() {
         int itemIndex = treeWidget->currentItem()->whatsThis(0).toInt();
-        stackedWidget->setCurrentIndex(itemIndex);
+        mStackedWidget->setCurrentIndex(itemIndex);
     });
+
 
     setLayout(overallLayout);
 
@@ -527,7 +544,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     //mLinkxqt->readValuesXml(stackedWidget);
 
 
-    connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(stackedWidget);
+    connect(dialogButtons, &QDialogButtonBox::accepted, this, [=]() {mLinkxqt->writeValuesXml(mStackedWidget);
                                                                      mLinkxqt->writeToFile(mLinkxqt->getXmlFile());
                                                                      ui_dialogChangedValues->mValueTable->setRowCount(0);
                                                                      ui_dialogChangedValues->mKeys = {};
@@ -549,7 +566,43 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* st
     }
 
     setFilterMode(1);
+    setTabProjectDescription();
 
+}
+
+void SettingsDialog::setTabProjectDescription() {
+    const QString& descriptionTab = "tabProject"; //mSettingsList[0];
+    QWidget* curChildStack = mStackedWidget->findChild<QWidget *>(descriptionTab);
+    QVBoxLayout* tabLay = curChildStack->findChild<QVBoxLayout *>(descriptionTab + "Layout");
+    QLabel* projectDescription = new QLabel();
+    projectDescription->setObjectName("projectDescriptionLabel");
+    tabLay->addWidget(projectDescription);
+    QPushButton* editProjectDesricption = new QPushButton("Edit Project Description");
+
+    connect(editProjectDesricption, &QPushButton::clicked, this, [=]() {dialogEditProjectDescription();});
+
+    QSpacerItem* vertSpacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    tabLay->addSpacerItem(vertSpacer);
+    tabLay->addWidget(editProjectDesricption);
+
+
+}
+
+void SettingsDialog::setProjectDescription() {
+
+    QLabel* projectDescription = this->findChild<QLabel *>("projectDescriptionLabel");
+    projectDescription->setText(mLinkxqt->xmlProjectDescription);
+
+}
+
+void SettingsDialog::dialogEditProjectDescription() {
+
+    DialogComment *ui_description = new DialogComment(mLinkxqt);
+
+    connect(ui_description, &DialogComment::projectDescriptionEdited, this, [=]{setProjectDescription();});
+    connect(ui_description, &DialogComment::accepted, this, &SettingsDialog::registerChangedComment);
+
+    ui_description->show();
 }
 
 void SettingsDialog::showChangedValuesDialog()

@@ -54,6 +54,9 @@ public:
     QAbstractButton* saveButton;
     QAbstractButton* cancelButton;
     QAction* a_changedValuesDialog;
+    void setTabProjectDescription();
+    void setProjectDescription();
+    void dialogEditProjectDescription();
 
 public slots:
     void updateData(); ///< fetch data from data structure and fill ui element
@@ -87,7 +90,7 @@ private:
     QTreeWidget* treeWidget;
 
     // Container for gui elements
-    QStackedWidget* stackedWidget;
+    QStackedWidget* mStackedWidget;
 
     // Based on keys and values and their respective order as defined in project_file_metadata.txt
     // setDialogLayout builds the layout of the dialog and defines all the elements.
@@ -101,6 +104,8 @@ private:
 
     QToolBar *createToolbar();
     DialogChangedValues* ui_dialogChangedValues;
+
+
 
 signals:
     void updateValueChangeTable(SettingsItem* item, QVariant newValue);

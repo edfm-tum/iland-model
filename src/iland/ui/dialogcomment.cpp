@@ -3,6 +3,21 @@
 
 #include "ui/linkxmlqt.h"
 
+DialogComment::DialogComment(LinkXmlQt* Linkxqt, QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::DialogComment),
+    mLinkxqt(Linkxqt)
+{
+
+    mLinkxqt->readXmlProjectDescription();
+
+    ui->setupUi(this);
+    //mLinkxqt = mWidget->getLinkXmlQt();
+    connect(ui->buttonBox_dialogComment, &QDialogButtonBox::accepted, this, [=]() {acceptEditedDescription();});
+
+    ui->commentField->setPlainText(mLinkxqt->xmlProjectDescription);
+}
+
 DialogComment::DialogComment(LinkXmlQt* Linkxqt, const QStringList& xmlPath, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DialogComment),
@@ -11,11 +26,10 @@ DialogComment::DialogComment(LinkXmlQt* Linkxqt, const QStringList& xmlPath, QWi
 {
     ui->setupUi(this);
 
-    connect(ui->buttonBox_dialogComment, &QDialogButtonBox::accepted, this, [=]() {acceptComment();});
+    connect(ui->buttonBox_dialogComment, &QDialogButtonBox::accepted, this, [=]() {acceptEditedDescription();});
 
     mCommentEdit = this->findChild<QPlainTextEdit *>();
 
-    //mXmlComment = mLinkxqt->readCommentXml(mXmlPath);
     mCommentEdit->setPlainText(mLinkxqt->readCommentXml(mXmlPath));
 
 }
@@ -51,4 +65,13 @@ void DialogComment::acceptComment()
     emit mWidget->commentChanged();
     QStringList xmlPath = mWidget->getWidgetName().split(".");
     mLinkxqt->writeCommentXml(commentText, xmlPath);
+}
+
+void DialogComment::acceptEditedDescription()
+{
+    QString descriptionText = ui->commentField->toPlainText();
+    mLinkxqt->writeProjectDescriptionXml(descriptionText);
+    mLinkxqt->xmlProjectDescription = descriptionText;
+    emit projectDescriptionEdited();
+
 }

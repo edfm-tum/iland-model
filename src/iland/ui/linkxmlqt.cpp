@@ -102,6 +102,32 @@ QString LinkXmlQt::readCommentXml(const QStringList& xmlPath)
 
 }
 
+void LinkXmlQt::readXmlProjectDescription() {
+
+    QDomDocument doc = mLoadedXml;
+    QStringList descriptionStrings;
+
+    QDomNodeList nodeList = doc.childNodes();
+    for (int i = 0; i < nodeList.count(); ++i) {
+        QDomNode node = nodeList.at(i);
+        if (node.isComment()) {
+            descriptionStrings << node.toComment().nodeValue();
+        } else if (node.isElement()) {
+            break; // Stop searching after finding the root element
+        }
+    }
+    xmlProjectDescription = descriptionStrings.join("\n");
+}
+
+void LinkXmlQt::writeProjectDescriptionXml(const QString& description) {
+
+    QDomElement rootElement = mLoadedXml.documentElement();
+    QDomElement curNode = rootElement;
+    QStringList commentSplittedLines = description.trimmed().split("\n");//, Qt::SkipEmptyParts);
+    clearCommentXml(curNode);
+    setComment(curNode, commentSplittedLines);
+}
+
 void LinkXmlQt::writeCommentXml(const QString& comment,
                                 QStringList xmlPath)
 
