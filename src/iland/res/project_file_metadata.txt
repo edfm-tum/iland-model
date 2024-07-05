@@ -190,7 +190,7 @@ gui.layout = group|BITE|This output provides annual statistics for each agent ht
 output.bite.enabled = boolean|false|Enable bite|The output provides annual statistics for each simulated biotic agent.|simple
 
 ; **** ABE / Management *********
-gui.layout = tab|tabForestmanagement|Forest management|todo
+gui.layout = tab|tabForestmanagement|Forest management|Outputs related to forest management
 gui.layout = group|Base management
 output.management.enabled = boolean|true|Enable Management|Aggregates for trees that are removed in current year on the level of RU x species. All values are scaled to one hectare.The output is created after the growth of the year, i.e. the growth of the year in which trees are dying, is included!|simple
 
@@ -217,10 +217,6 @@ gui.layout = group|<h2>SVD</h2>|iLand has some special outputs that are tailored
 
 gui.layout = group|SVD State|Vegetation state transitions on RU over time https://iland-model.org/outputs#Forest_state_transitions
 output.svdstate.enabled = boolean|false|Enable State|Forest state (for SVD). The output contains fixed columns and adds two extra columns for every active tree species. Those species columns hold the species share 0..1 for the local and the mid-range-neighborhood. Former have 'l_' and latter 'm_' as prefix (e.g. 'l_piab', 'm_piab'). Note that the sum of all shares is <=1, but can be lower than 1. See also the 'svduniquestate' output.|simple
-<<<<<<< HEAD
->>>>>>> refs/heads/settings_ui
-=======
->>>>>>> bac1f6861664b858226b834e2f923b487edb2bd2
 
 gui.layout = group|SVD Unique state|List of unique states encountered in the simulation https://iland-model.org/outputs#Unique_forest_states
 output.svduniquestate.enabled = boolean|false|Enable Unique State|List of forest states for the current simulation (for SVD). Each state is defined by a unique numerical Id ('stateId') which is used as a key in the 'svdstate' output.|simple
@@ -305,9 +301,9 @@ system.javascript.fileName = file|javascript file name|File name|The filename of
 ; ************************************
 
 ; model.settings overview
-gui.layout = tab|tabModel|Model Settings|Test ob das angenommen wird
+gui.layout = tab|tabModel|Model Settings|The settings in this section control the behavior of iLand. The first page are lets you quickly turn on/off main components.
 gui.layout = layout|hl
-gui.layout = group|General switches
+gui.layout = group|Main components
 model.settings.regenerationEnabled = connected|Enable Regeneration
 model.settings.mortalityEnabled = connected|Enable Mortality
 model.settings.growthEnabled = connected|Enable Growth
@@ -611,16 +607,20 @@ gui.layout = group|Static climate offset|Define a constant offset for temperatur
 model.climate.temperatureShift = numeric|0|Temperature shift|Simple option to modify the climate. The value is added to each daily temperature (default = 0)|simple
 model.climate.precipitationShift = numeric|1|Precipitation shift|Simple option to modify the climate. The daily precipitation is multiplied for each day with this value. (default = 1).|simple
 
+; ********************************************
+; **** Disturbance modules
+; ********************************************
 
 ; modules overview
-gui.layout = tab|tabModules|Modules|Description goes here
+gui.layout = tab|tabModules|Modules|This section covers disturbance modules for fire, wind, bark beetles and generic biotic agents.
 modules.fire.enabled = connected|Enable Fire
 modules.wind.enabled = connected|Enable Wind
 modules.barkbeetle.enabled = connected|Enable Barkbeetle
+modules.bite.enabled = connected|Enable BITE
 
 
 ; modules.fire
-gui.layout = tab|tabFire|Fire|The main design objectives were (i) to model fire regimes as an emerging property of vegetation and climate, (ii) to include processes of individual-tree fire resistance in order to simulate complex and heterogeneous fire impacts, (iii) to take into account landscape heterogeneity on fire processes, and (iv) to be sensitive to climate and thus applicable under climate change conditions. 
+gui.layout = tab|tabFire|Fire|simulates the ignition, spread and the impacts of wildfire on the landscape scale. <br/>See https://iland-model.org/wildfire for conceptual and https://iland-model.org/fire+module for technical documentation.
 modules.fire.enabled = boolean|false|Enable|Turn fire simulation on or off|simple
 modules.fire.onlySimulation = boolean|false|Only Simulation|Only if value is string real effects of fire (on trees, snags, soil pools) are simulated (default: string). A value of true can be useful for testing purposes."|simple
 modules.fire.allowBurnIn = boolean|true|Allow Burn In|A value of 'true' is required for burn-ins (If checked, iLand builds a map of edge pixels)|simple
@@ -657,8 +657,7 @@ modules.fire.fireExtinctionProbability = numeric|0|Fire Ext. Probability|Probabi
 
 
 ; modules.wind
-; modules.fire = gui|tabFire|test|test
-gui.layout = tab|tabWind|Wind|Users of the iLand wind module need to provide several types of input data. These types are (i) static parameters: either global parameters or variables per tree species. Examples are species specific turning moments or crown shape parameters. While global parameters are directly provided in the project file, species specific parameters are provided in an own parameter table in the input database of iLand. (ii) parameters in space: this is currently the topoModifier which scales the global wind pattern to a local value. Values per resource unit can be assigned using the mechanism to set up the simulation extent. (iii) parameters in time: basically a time series of wind events (with accompanying properties like wind direction and storm duration). This time series is provided with a time events file. 
+gui.layout = tab|tabWind|Wind|The wind modules simulates the disturbance agent wind on landscape level. <br/>See https://iland-model.org/wind%20disturbance and https://iland-model.org/wind+module for modeling concept and implementation, respectively.
 modules.wind.enabled = boolean|true|Enable|Turn wind simulation on or off|simple
 modules.wind.triggeredByTimeEvent = boolean|false|Time triggers wind|If checked, then wind events are triggered by time events (i.e. defined in an external input file). |simple
 modules.wind.onbeforeWind = string|javascript expression|on BeforeWind|Javascript expression evaluated before a wind event is executed. For example, you could define a function that sets an event-specifc topo grid. (Note: it is "on BeforeWind" (without space) not "onbeforeWind" - the wiki does not allow the correct term) |simple
@@ -696,9 +695,9 @@ modules.wind.dayOfYear = numeric|0-365|Day of year|Day of the year (0..365) of t
 modules.wind.LRITransferFunction = string|max(min(3.733-6.467*LRI,3.41),0.5)|LRI Transfer function|Expression to compute the Hegyi concurrency index from the trees' LRI. Default: max(min(3.733-6.467*LRI,3.41),0.5)|simple
 
 ; modules.barkbeetle
-gui.layout = tab|tabBarkbeetle|Barkbeetle|Description of barkbeetle module
+gui.layout = tab|tabBarkbeetle|Barkbeetle|The barkbeetle module simulates a specific biotic agent, namely the European Spruce bark beetles (Ips typographus). <br/>See https://iland-model.org/bark+beetle+disturbance and https://iland-model.org/barkbeetle+module for details.
 modules.barkbeetle.enabled = boolean|false|Enable|string|simple
-modules.barkbeetle.onAfterBarkbeetle = string|Javascript|On after Barkbeetle|string|simple
+modules.barkbeetle.onAfterBarkbeetle = string|Javascript|Javascript function that is called after bark beetle module (e.g. for specific aggregagations)|string|simple
 
 gui.layout = layout|hl
 modules.barkbeetle.colonizeProbabilityFormula = string|string|Colonalization probability formula|string|simple
@@ -738,4 +737,8 @@ modules.barkbeetle.referenceClimate.tableName = string|Type in table name|Table 
 modules.barkbeetle.referenceClimate = table|seasonalPrecipSum;seasonalTemperatureAverage|1|2|simple
 modules.barkbeetle.referenceClimate.seasonalPrecipSum = numeric|1;2;3;4|Precipitation sum|Tool tip seasonal prcip sum|simple
 modules.barkbeetle.referenceClimate.seasonalTemperatureAverage = numeric|12.3;4354.23|Temperature average|Tool tip temperature average|simple
+
+gui.layout = tab|tabBITE|BITE|BITE, the Biotic Disturbance Engine is a general module to simulate biotic disturbance agents in ecosystem models. <br/>See https://iland-model.org/BITE and https://iland-model.org/bite for more details.
+modules.bite.enabled = boolean|false|Enable|Enable the BITE module|simple
+modules.bite.file = file|Source code|BITE code|JavaScript file that contains the definition of  BITE agents.|simple
 
