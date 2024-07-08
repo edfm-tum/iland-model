@@ -70,7 +70,12 @@ void Schedule::setup(const QJSValue &js_value)
         force_execution = FMSTP::boolValueFromJs(js_value, "force", false);
         repeat = FMSTP::boolValueFromJs(js_value, "repeat", false);
         absolute = FMSTP::boolValueFromJs(js_value, "absolute", false);
-        if (!repeat) {
+        // signals
+        mSignalStr = FMSTP::valueFromJs(js_value, "signal").toString();
+        if (!mSignalStr.isEmpty())
+            mSignalDelta = FMSTP::valueFromJs(js_value, "wait","0").toInt();
+
+        if (!repeat && mSignalStr.isEmpty()) {
 
             if (tmin>-1 && tmax>-1 && topt==-1)
                 topt = (tmax+tmin) / 2;

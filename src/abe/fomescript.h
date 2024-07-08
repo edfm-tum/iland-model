@@ -140,6 +140,8 @@ public slots:
     // access to elements
     /// return the internal representation of a STP with the given name
     QJSValue stpByName(QString name);
+    /// test if a STP with name 'name' exists
+    bool isValidStp(QString name);
     // just for testing
     QJSValue test(QJSValue val);
 public:
@@ -248,6 +250,7 @@ public:
     void setStand(FMStand* stand) { mStand = stand; }
     bool trace() const;
     void setTrace(bool do_trace);
+    FMStand* stand() { return mStand; }
     UnitObj* unit();
     ActivityObj *activity();
     STPObj* stp();
@@ -369,6 +372,7 @@ public:
     int activityCount() const;
     QStringList activityNames();
 public slots:
+    bool signal(QString signalname);
 
 
 private:

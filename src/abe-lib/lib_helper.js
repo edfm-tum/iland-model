@@ -48,23 +48,26 @@ lib.dbg = function(str) {
 
 lib.createSTP = function(stp_name, ...concepts) {
     const program = {};
+    let activityCounter = 1;
     for (const conceptResult of concepts) {
-      if (Array.isArray(conceptResult)) { // Multiple results
-        conceptResult.forEach((activity, index) => {
-            const key = `${conceptResult[0].type}${index + 1}`; // Or your naming logic
-            program[key] = activity;
-        });
-      } else { // Single result
-        program[conceptResult.type] = conceptResult;
-      }
+        if (Array.isArray(conceptResult)) {
+            for (const activity of conceptResult) {
+                program[`activity${activityCounter}`] = activity;
+                activityCounter++;
+            }
+        } else {
+            program[`activity${activityCounter}`] = conceptResult;
+            activityCounter++;
+        }
     }
 
-    try {
-       const test = fmengine.stpByName(stp_name);
-       // the STP already exists, so update the program
-       fmengine.updateManagement(program, stp_name);
-    } catch (error) {
+    if (fmengine.isValidStp(stp_name)) {
+        // the STP already exists, so update the program
+        fmengine.updateManagement(program, stp_name);
+    } else {
         // the STP does not yet exist, add to fmengine
         fmengine.addManagement(program, stp_name);
     }
+
+
 }

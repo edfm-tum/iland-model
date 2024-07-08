@@ -13,7 +13,35 @@ const ClearCutPlanting = lib.planting.general({species='piab'});
 
 //var ClearcutSTP = buildProgram(ClearcutHarvest, ClearCutPlanting);
 //fmengine.addManagement(ClearcutSTP, 'Clearcut');
-lib.createSTP('Clearcut', ClearcutSTP);
+lib.createSTP('Clearcut', ClearcutHarvest, ClearCutPlanting);
+
+
+/*const Selector = lib.selectPatches({ select: { /*... options to specify what and how to select ...* / maxArea: 0.5, minArea: 0.1 },
+                               id: 'c1'
+                           })
+const Femel = lib.harvest.femel( { size: 20, n: 3, interval: 10, times: 4, width: 10, source: 'c1'}  )
+const PlantInPatch = lib.planting.plantPatch( { patches: 'c1', planting: {},  }) // years before / after start of femel
+const NegativeSelection = lib.thinning.negativeSelection( { patches: 'c1', targetSpecies: [], intenity:  }) // years after initial femel
+
+lib.createSTP() */
+
+// test for signals
+const act_test1 = { type: 'general', schedule: { //absolute: true,
+        opt: 40 },
+    action: function() {
+        Globals.alert('run test1, emitting signal');
+        stand.stp.signal('step');
+    }
+}
+
+const act_test2 = { type: 'general', schedule: { signal: 'step', wait: 1},
+    action: function() {
+        Globals.alert('signalled activity executed!');
+    }
+}
+
+lib.createSTP('testsignal', act_test1, act_test2);
+
 
 /**
 Structure

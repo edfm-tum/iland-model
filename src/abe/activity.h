@@ -36,7 +36,7 @@ public:
     // setup and life cycle
     Schedule()  {}
     Schedule(QJSValue &js_value) { clear(); setup(js_value); }
-    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat_start=0; repeat=false; absolute=false; }
+    void clear() { tmin=tmax=topt=-1; tminrel=tmaxrel=toptrel=-1.; force_execution=false; repeat_interval=-1; repeat_start=0; repeat=false; absolute=false; mSignalStr="", mSignalDelta=-1; }
     void setup(const QJSValue &js_value);
     QString dump() const;
     // functions
@@ -50,6 +50,9 @@ public:
     double maxValue(const double U=100.) const;
     /// returns the "optimal" year, i.e. the first year when prob. to execute is highest.
     double optimalValue(const double U=100.) const;
+    // signals
+    bool listensToSignal(const QString &signalstr) { return signalstr == mSignalStr; }
+    int signalExecutionDelay(const QString &signalstr) { Q_UNUSED(signalstr); return mSignalDelta; }
     // some stuffs
     int tmin; int tmax; int topt;
     double tminrel; double tmaxrel; double toptrel;
@@ -59,6 +62,9 @@ public:
     int repeat_start;
     bool repeat;
     bool absolute;
+private:
+    QString mSignalStr;
+    int mSignalDelta;
 };
 
 class Events {

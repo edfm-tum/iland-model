@@ -472,6 +472,12 @@ QJSValue FomeScript::stpByName(QString name)
 
 }
 
+bool FomeScript::isValidStp(QString name)
+{
+    FMSTP *stp = ForestManagementEngine::instance()->stp(name);
+    return stp != nullptr;
+}
+
 QJSValue FomeScript::test(QJSValue val)
 {
     qDebug() << "value:"<<  val.toString();
@@ -698,7 +704,7 @@ void StandObj::repeat(QJSValue repeat_obj, QJSValue repeat_fun, int repeat_inter
         throwError(QString("Stand::repeat: the 'what' to repeat needs to be a callable JavaScript object. It is: %1").arg(repeat_fun.toString()));
         return;
     }
-    ForestManagementEngine::instance()->addRepeat(mStand->id(),
+    ForestManagementEngine::instance()->addRepeatJS(mStand->id(),
                                                   repeat_obj,
                                                   repeat_fun,
                                                   repeat_interval,
@@ -1020,6 +1026,16 @@ QStringList STPObj::activityNames()
         names.push_back(mSTP->activities()[i]->name());
     return names;
 
+}
+
+bool STPObj::signal(QString signalname)
+{
+    if (!mSTP) {
+        ScriptGlobal::throwError("stp not valid!"); return false; }
+    if (FomeScript::bridge()->standId() < 0) {
+        ScriptGlobal::throwError("STP::signal: no valid stand id!"); return false; }
+
+    return mSTP->signal(signalname, FomeScript::bridge()->standObj()->stand());
 }
 
 

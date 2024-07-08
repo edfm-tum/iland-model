@@ -21,7 +21,7 @@
 #include "fmstp.h"
 #include "fmstand.h"
 #include "fomescript.h"
-
+#include "forestmanagementengine.h"
 
 namespace ABE {
 
@@ -114,6 +114,21 @@ bool FMSTP::executeRepeatingActivities(FMStand *stand)
         }
     return result; // return true if at least one repeating activity was executed.
 
+}
+
+bool FMSTP::signal(QString signalstr, FMStand *stand)
+{
+    int found = 0;
+    for (auto *act : mActivities) {
+        if (act->schedule().listensToSignal(signalstr)) {
+            int delta_yrs = act->schedule().signalExecutionDelay(signalstr);
+            ForestManagementEngine::instance()->addRepeatActivity(stand->id(),
+                                                                  act,
+                                                                  delta_yrs);
+            ++found;
+        }
+    }
+    return found > 0;
 }
 
 void FMSTP::evaluateDynamicExpressions(FMStand *stand)

@@ -38,6 +38,7 @@ class FMSTP; // forward
 class Agent; // forward
 class AgentType; // forward
 class FomeScript; // forward
+class Activity; // forward
 
 /// the ForestManagementEngine is the container for the agent based forest management engine.
 class ForestManagementEngine
@@ -99,7 +100,8 @@ public:
     FMStand *standAt(QPointF coord) const { return mFMStandGrid.constValueAt(coord); }
     // functions
 
-    void addRepeat(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval=1, int repeatTimes=-1);
+    void addRepeatJS(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval=1, int repeatTimes=-1);
+    void addRepeatActivity(int stand_id, Activity *act, int repeatInterval=1, int repeatTimes=-1);
     void stopRepeat(int stand_id, QJSValue obj);
     // run advanced repeated operations
     void runRepeatedItems(int stand_id);
@@ -144,15 +146,19 @@ private:
 
     // advanced repeating operations
     struct SRepeatItem {
-        SRepeatItem(): interval(1), times(-1), N(0), waitYears(1) {}
-        SRepeatItem(int ainterval, int atimes, QJSValue aobj, QJSValue acallback): interval(ainterval), times(atimes), N(0), waitYears(ainterval), obj(aobj), callback(acallback) {}
+        SRepeatItem(): interval(1), times(-1), N(0), waitYears(1),activity(nullptr) {}
+        SRepeatItem(int ainterval, int atimes, QJSValue &aobj, QJSValue &acallback): interval(ainterval), times(atimes),
+            N(0), waitYears(ainterval), jsobj(aobj), callback(acallback), activity(nullptr) {}
+        SRepeatItem(int ainterval, int atimes, Activity *act): interval(ainterval), times(atimes),
+            N(0), waitYears(ainterval), activity(act) {}
 
         int interval;
         int times;
         int N; // times already repeated
         int waitYears; // years until next execution
-        QJSValue obj; // this object
+        QJSValue jsobj; // this object
         QJSValue callback; // callback function
+        Activity *activity; //
     };
 
     QMultiHash<int, SRepeatItem> mRepeatStore;
