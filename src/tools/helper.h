@@ -57,7 +57,6 @@ public:
 
 
 
-    static QString currentRevision(); ///< svn revision number
 
 private:
     static bool m_quiet;

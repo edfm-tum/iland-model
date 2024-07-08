@@ -20,10 +20,8 @@
 
 #include <QString>
 #include <QRegularExpression>
-static const char *version = "1.9.1";
-static const char *svn_revision = "1556";
+static const char *version = "2.0 (rc)";
 const char *currentVersion(){ return version;}
-const char *svnRevision(){ return svn_revision;}
 
 // compiler version
 #ifdef Q_CC_MSVC
