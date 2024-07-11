@@ -125,6 +125,8 @@ bool FMSTP::signal(QString signalstr, FMStand *stand)
             ForestManagementEngine::instance()->addRepeatActivity(stand->id(),
                                                                   act,
                                                                   delta_yrs);
+            if (verbose())
+                qCDebug(abe) << "Signal" << signalstr << "sent for stand" << stand->id() << "received by activity" << act->name() << "delta yrs:" << delta_yrs;
             ++found;
         }
     }

@@ -391,6 +391,7 @@ OTHER_FILES += maindoc.cpp \
 
 DISTFILES += \
     ../abe-lib/ABE-library.js \
+    ../abe-lib/harvest/femel.js \
     ../abe-lib/harvest/harvest.js \
     ../abe-lib/lib_helper.js \
     ../abe-lib/planting/planting.js \

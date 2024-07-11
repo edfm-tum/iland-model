@@ -221,9 +221,12 @@ void ForestManagementEngine::runJavascript(bool after_processing)
 
 void ForestManagementEngine::runRepeatedItems(int stand_id)
 {
+    QList<QPair< int, SRepeatItem> > buffer_store; // used to add new items while iterating
+    mRepeatStoreBuffer = &buffer_store; // "install" buffer
+
     auto it = mRepeatStore.find(stand_id);
     while (it != mRepeatStore.end() && it.key() == stand_id) {
-        //cout << i.value() << Qt::endl;
+
         bool is_erased = false;
         if (--it->waitYears < 0) {
             // run the item
@@ -270,6 +273,14 @@ void ForestManagementEngine::runRepeatedItems(int stand_id)
         if (!is_erased)
             ++it;
     }
+
+    if (!buffer_store.empty()) {
+        // copy to repeat store
+        for (auto &p : buffer_store) {
+            mRepeatStore.insert(p.first, p.second);
+        }
+    }
+    mRepeatStoreBuffer = nullptr; // remove again
 
 }
 
@@ -828,12 +839,18 @@ QVariantList ForestManagementEngine::standIds() const
 
 void ForestManagementEngine::addRepeatJS(int stand_id, QJSValue obj, QJSValue callback, int repeatInterval, int repeatTimes)
 {
-    mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback));
+    if (mRepeatStoreBuffer)
+        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback)}); // to avoid problems with invalid iterators
+    else
+        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, obj, callback));
 }
 
 void ForestManagementEngine::addRepeatActivity(int stand_id, Activity *act, int repeatInterval, int repeatTimes)
 {
-    mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, act));
+    if (mRepeatStoreBuffer)
+        mRepeatStoreBuffer->push_back({stand_id, SRepeatItem(repeatInterval, repeatTimes, act)});
+    else
+        mRepeatStore.insert(stand_id, SRepeatItem(repeatInterval, repeatTimes, act));
 }
 
 void ForestManagementEngine::stopRepeat(int stand_id, QJSValue obj)

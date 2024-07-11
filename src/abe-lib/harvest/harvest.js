@@ -1,5 +1,7 @@
 lib.harvest = {};
 
+
+Globals.include(lib.path.dir + '/harvest/femel.js');
 /*
 lib.harvest = function(options) {
 	// Default Options

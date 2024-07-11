@@ -161,7 +161,8 @@ private:
         Activity *activity; //
     };
 
-    QMultiHash<int, SRepeatItem> mRepeatStore;
+    QMultiHash<int, SRepeatItem> mRepeatStore; ///< store multiple repeat-items per stand (int)
+    QList<QPair< int, SRepeatItem> >* mRepeatStoreBuffer {nullptr}; // used to store elements while
 
     // agents
     QVector<AgentType*> mAgentTypes; ///< collection of agent types
