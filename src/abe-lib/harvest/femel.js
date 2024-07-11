@@ -29,6 +29,7 @@ lib.harvest.femel = function(options) {
 
         if (n === stand.obj.lib.femel.opts.steps) {
             lib.dbg(`reached end of femel at step ${n}.`);
+            stand.activity.enabled = false;
         }
     }
 
@@ -45,6 +46,12 @@ lib.harvest.femel = function(options) {
 
             // set up repeated steps
             stand.repeat(undefined, femelStep,  opts.interval, opts.steps);
+            stand.sleep(50); // hack to prevent multiple executions
+        },
+        onCreate: function() {
+            // activity does not "end" after action is called
+            // the end is triggered by code (exit())
+            this.manualExit = true;
         }
     };
 }

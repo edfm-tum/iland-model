@@ -379,11 +379,11 @@ bool FMStand::execute()
         if (!currentActivity()) // special case: the activity invalidated the active activtity
             return executed;
 
-        if (!currentActivity()->isRepeatingActivity()) {
+        if (!currentActivity()->isRepeatingActivity() && !currentFlags().manualExit()) {
             currentFlags().setActive(false);
             afterExecution(!executed); // check what comes next for the stand
         } else {
-            // run the onExecuted handler in also for repeating activities
+            // run the onExecuted handler also for repeating activities
             currentActivity()->events().run(QStringLiteral("onExecuted"),this);
         }
         return executed;

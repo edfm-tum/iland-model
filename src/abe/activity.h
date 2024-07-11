@@ -129,6 +129,7 @@ public:
     bool isScheduled() const {return flag(IsScheduled);}
     bool isDoSimulate() const {return flag(DoSimulate);}
     bool isSalvage() const {return flag(IsSalvage);}
+    bool manualExit() const {return flag(ManualExit);}
 
 
     void setActive(const bool active) { setFlag(Active, active); }
@@ -141,6 +142,7 @@ public:
     void setIsScheduled(const bool doschedule) {setFlag(IsScheduled, doschedule); }
     void setDoSimulate(const bool dosimulate) {setFlag(DoSimulate, dosimulate); }
     void setIsSalvage(const bool issalvage) {setFlag(IsSalvage, issalvage); }
+    void setManualExit(const bool isterminate) {setFlag(ManualExit, isterminate); }
 
 private:
     /// (binary coded)  flags
@@ -153,7 +155,8 @@ private:
                  FinalHarvest=64,  // the management of the activity is a "endnutzung" (compared to "vornutzung")
                  IsScheduled=128, // the execution time of the activity is scheduled by the Scheduler component
                  DoSimulate=256,  // the default operation mode of harvests (simulate or not)
-                 IsSalvage=512   // the activity is triggered by tree mortality events
+                 IsSalvage=512,   // the activity is triggered by tree mortality events
+                 ManualExit=1024 // the activity does not exit activity automatically after execution
                  };
     bool flag(const ActivityFlags::Flags flag) const { return mFlags & flag; }
     void setFlag(const ActivityFlags::Flags flag, const bool value) { if (value) mFlags |= flag; else mFlags &= (flag ^ 0xffffff );}

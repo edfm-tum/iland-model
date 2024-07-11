@@ -392,6 +392,7 @@ class ActivityObj : public QObject
     Q_PROPERTY (bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(bool active READ active WRITE setActive)
     Q_PROPERTY(bool finalHarvest READ finalHarvest WRITE setFinalHarvest)
+    Q_PROPERTY(bool manualExit READ manualExit WRITE setManualExit)
     Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled)
     Q_PROPERTY(QString name READ name)
     Q_PROPERTY(int index READ index)
@@ -399,7 +400,7 @@ class ActivityObj : public QObject
     Q_PROPERTY(QJSValue obj READ JSObj WRITE setJSObj);
 
 public:
-    explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
+    explicit ActivityObj(QObject *parent = nullptr): QObject(parent) { mActivityIndex=-1; mStand=nullptr; mActivity=nullptr; }
     // used to construct a link to a given activty (with an index that could be not the currently active index!)
     ActivityObj(FMStand *stand, Activity *act, int index ): QObject(nullptr) { mActivityIndex=index; mStand=stand; mActivity=act; }
     /// default-case: set a forest stand as the context.
@@ -425,6 +426,9 @@ public:
 
     bool finalHarvest() const { return flags().isFinalHarvest(); }
     void setFinalHarvest(bool isfinal) { flags().setFinalHarvest(isfinal);}
+
+    bool manualExit() const { return flags().manualExit(); }
+    void setManualExit(bool ismanual) { flags().setManualExit(ismanual);}
 
     bool scheduled() const { return flags().isScheduled(); }
     void setScheduled(bool issched) { flags().setIsScheduled(issched);}

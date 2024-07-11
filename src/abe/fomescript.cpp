@@ -750,6 +750,7 @@ void ActivityObj::setEnabled(bool do_enable)
     }
 }
 
+
 ActivityFlags &ActivityObj::flags() const
 {
     // refer to a specific  activity of the stand (as returned by stand.activityByName("xxx") )

@@ -40,7 +40,35 @@ const act_test2 = { type: 'general', schedule: { signal: 'step', wait: 1},
     }
 }
 
-lib.createSTP('testsignal', act_test1, act_test2);
+const act_test3 = { type: 'general', schedule: { signal: 'step', wait: 3},
+    action: function() {
+        Globals.alert('signalled 3 yr activity executed!');
+    }
+}
+
+
+
+/* Test selector activity */
+const sel = lib.selectOptimalPatches( { schedule: { signal: 'step'}, patchsize: 2, N: 5, criterium: 'max_light'});
+
+lib.createSTP('testsignal', act_test1, act_test2, act_test3, sel);
+
+// femel test
+const femel = lib.harvest.femel( { schedule: {opt: 4, absolute: true } } );
+const femel_sel = lib.selectOptimalPatches( { schedule: { signal: 'start'}, patchsize: 2, N: 3, criterium: 'max_light'});
+const femel_step_manage = { type: 'general', schedule: { signal: 'step', wait: 5},
+    action: function() {
+        fmengine.log(`femel step manage. Last patch: ${stand.obj.lib.lastPatchId}`);
+    }
+}
+
+const femel_step_plant = { type: 'general', schedule: { signal: 'step'},
+    action: function() {
+        fmengine.log(`femel step plant. Last patch: ${stand.obj.lib.lastPatchId}`);
+    }
+}
+
+lib.createSTP('femel', femel, femel_sel, femel_step_plant, femel_step_manage);
 
 
 /**
