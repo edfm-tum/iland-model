@@ -498,7 +498,7 @@ double Expression::calculate(const double Val1, const double Val2, const bool fo
             return linearizedValue(Val1);
         return linearizedValue2d(Val1, Val2); // matrix case
     }
-    double var_space[10];
+    double var_space[EXPRNLOCALVARS];
     var_space[0]=Val1;
     var_space[1]=Val2;
     m_strict=false;
@@ -507,7 +507,7 @@ double Expression::calculate(const double Val1, const double Val2, const bool fo
 
 double Expression::calculate(ExpressionWrapper &object, const double variable_value1, const double variable_value2) const
 {
-    double var_space[10];
+    double var_space[EXPRNLOCALVARS];
     var_space[0] = variable_value1;
     var_space[1]=variable_value2;
     m_strict=false;
@@ -677,6 +677,8 @@ double * Expression::addVar(const QString& VarName)
         m_varList+=VarName;
         idx=m_varList.size()-1;
     }
+    if (m_varList.size() >= EXPRNLOCALVARS)
+        throw IException("The expression uses too many (local) variables!");
     return &m_varSpace[getVarIndex(VarName)];
 }
 

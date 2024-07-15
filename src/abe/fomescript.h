@@ -83,6 +83,8 @@ public:
     /// get a JS-Object referencing a single tree
     QJSValue treeRef(Tree *tree);
 
+    QJSValue &activityJS() { return mActivityJS; }
+
     // Properties
     /// verbose: when true, the logging intensity is increased significantly.
     bool verbose() const;
@@ -159,6 +161,7 @@ private:
     QString mStandVisualization;
     QJSValue mTreeValue;
     ScriptTree mTree;
+    QJSValue mActivityJS;
 
 
 };
@@ -378,7 +381,7 @@ class ActivityObj : public QObject
     Q_PROPERTY(QString description READ description)
 public:
     explicit ActivityObj(QObject *parent = 0): QObject(parent) { mActivityIndex=-1; mStand=0; mActivity=0; }
-    // used to construct a link to a given activty (with an index that could be not the currently active index!)
+    // used to construct a link to a given activity (with an index that could be not the currently active index!)
     ActivityObj(FMStand *stand, Activity *act, int index ): QObject(nullptr) { mActivityIndex=index; mStand=stand; mActivity=act; }
     /// default-case: set a forest stand as the context.
     void setStand(FMStand *stand, Activity *act=nullptr, int activity_index=-1) { mStand = stand; mActivity=act; mActivityIndex=activity_index;}

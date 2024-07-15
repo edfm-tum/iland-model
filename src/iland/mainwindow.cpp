@@ -29,13 +29,14 @@
 
 #include "global.h"
 #include "mainwindow.h"
+#include "ui/settingsdialog.h"
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "settingmetadata.h"
+#include "ui/linkxmlqt.h"
+#include "ui/dialogfunctionplotter.h"
 
 #include "model.h"
-#include "standloader.h"
-#include "stampcontainer.h"
 #include "resourceunit.h"
 #include "speciesset.h"
 #include "tree.h"
@@ -252,8 +253,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->PaintWidget, SIGNAL(doRepaint()),
             this, SLOT(repaint()));
 
-
-    // javascript console
+     // javascript console
     connect(ui->scriptCode, SIGNAL(executeJS(QString)),
             this, SLOT(executeJS(QString)) );
 
@@ -315,6 +315,11 @@ MainWindow::MainWindow(QWidget *parent)
             //return;
         }
     }
+
+    // settings dialog / editor
+    QString xmlPath = ui->initFileName->text();
+    mLinkxqt = new LinkXmlQt(xmlPath);
+    ui_settingsDialog = nullptr; // create on first use
 
 
     qDebug() << "threadcount: " << QThread::idealThreadCount();
@@ -399,13 +404,82 @@ MainWindow::MainWindow(QWidget *parent)
     ui->logOutput->setFont(font);
     //qDebug() << "mainwindow init done";
 
-}
+    // import all variables, their types, default values, etc defined in metadata.txt
+    SettingMetaData mSettingMetaData;
+    // QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    QString mainDir = ":";
+    mSettingMetaData.loadFromFile(mainDir + "/project_file_metadata.txt", mMetaKeys, mMetaValues);
 
+    connect(ui->initFileName, &QLineEdit::textChanged, this, [=]() {mLinkxqt->setXmlPath(ui->initFileName->text());});
+
+}
 
 MainWindow::~MainWindow()
 {
     mRemoteControl.destroy(); // delete model and free resources.
+    delete mLinkxqt;
     delete ui;
+}
+
+void MainWindow::processMetaData(metadata &meta) {
+
+//    QSettings set(":/project_file_metadata.txt", QSettings::IniFormat);
+//    QStringList existingKeys = set.allKeys();
+//    QString mainDir = QDir::currentPath();
+    //QString mainDir = "C:/Users/gu47yiy/Documents/iLand_svn/src/iland/res";
+    QString mainDir = ":";
+    mSettingMetaData->loadFromFile(mainDir + "/project_file_metadata.txt", mMetaKeys, mMetaValues);
+    QString key;
+    for (int i = 0; i < mMetaKeys.size(); i ++) {
+        key = mMetaKeys[i];
+        mMeta.elements.append(key);
+        QStringList curValue = mMetaValues[i].split(",");
+        mMeta.inputType.append(curValue[0]);
+        if (!key.contains("modules.fire")) {
+            mMeta.defaultValue.append("curValue[1]");
+            mMeta.labelName.append("c");
+            mMeta.toolTip.append("curValue[3]");
+        }
+        else {
+            mMeta.defaultValue.append(curValue[1]);
+            mMeta.labelName.append(curValue[2]);
+            mMeta.toolTip.append(curValue[3]);
+        }
+    }
+
+}
+
+
+void MainWindow::on_actionSettingsDialog_triggered()
+{
+    mLinkxqt->loadXmlFile();
+    mLinkxqt->setTempHomePath();
+    mLinkxqt->readXmlProjectDescription();
+
+    if (!ui_settingsDialog) {
+        QStringList dialogList = QStringList() << "Project" << "System"  << "Model" << "Output" << "Modules";
+        QStringList modelList = QStringList() << "World" << "Climate" << "Initialization" << "Site" << "Global Settings"  << "Seed Dispersal" << "Soil" << "Submodules" << "Management"  ;
+        QStringList modulesList = QStringList() << "Fire" << "Wind" << "Barkbeetle" << "BITE";
+        QStringList outputList = QStringList() << "Vegetation state" << "Dynamic" << "Flows" << "Processes" << "Disturbance modules" << "Forest management"  << "SVD";
+        QStringList systemList = QStringList() << "Path" << "Database" << "Logging" << "System Settings" << "Javascript";
+        QList<QStringList> tabList;
+        tabList.append(QStringList());
+        tabList.append(systemList);
+        tabList.append(modelList);
+        tabList.append(outputList);
+        tabList.append(modulesList);
+
+        ui_settingsDialog = new SettingsDialog(mLinkxqt, dialogList, tabList, mMetaKeys, mMetaValues, this);
+
+    }
+    //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
+    //mLinkxqt->setTempHomePath(xmlFileInfo.absolutePath());
+
+    ui_settingsDialog->updateData();
+    ui_settingsDialog->saveButton->setEnabled(false);
+    ui_settingsDialog->adjustSize();
+    ui_settingsDialog->show();
+
 }
 
 void MainWindow::batchLog(const QString s)
@@ -1951,12 +2025,19 @@ void MainWindow::setupModel()
 
 void MainWindow::on_openFile_clicked()
 {
-    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml",this);
+    QString fileName = Helper::fileDialog("select XML-project file", ui->initFileName->text(), "*.xml", "file", this);
     if (fileName.isEmpty())
         return;
     ui->initFileName->setText(fileName);
     QString xmlFile = Helper::loadTextFile(ui->initFileName->text());
+    //ui->iniEdit->setPlainText(xmlFile);
+    mLinkxqt->setXmlPath(fileName);
     checkModelState();
+}
+
+void MainWindow::on_initFileName_editingFinished()
+{
+    mLinkxqt->setXmlPath(ui->initFileName->text());
 }
 
 void MainWindow::on_actionTreelist_triggered()
@@ -2616,7 +2697,7 @@ void MainWindow::on_actionRepaint_triggered()
 void MainWindow::on_checkXMLFile_clicked()
 {
     SettingMetaData sm;
-    sm.checkXMLFile(ui->initFileName->text());
+    sm.checkXMLFile(ui->initFileName->text(), mMetaKeys);
 }
 
 void MainWindow::on_actionSave_regeneration_grid_triggered()
@@ -2739,3 +2820,17 @@ void MainWindow::on_speciesFilterBox_currentIndexChanged(int index)
 }
 
 
+
+void MainWindow::on_actionExpression_plotter_triggered()
+{
+    DialogFunctionPlotter *ui_functionPlotter = new DialogFunctionPlotter("x^2", "Test expressions", true, this);
+    ui_functionPlotter->show();
+}
+
+void MainWindow::on_actionUpdate_XML_file_triggered()
+{
+    const QString &fileName = ui->initFileName->text();
+    QStringList missingKeys = mSettingMetaData->checkXMLKeys(fileName, mMetaKeys);
+    mSettingMetaData->updateXMLFile(fileName, missingKeys);
+
+}

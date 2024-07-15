@@ -499,7 +499,7 @@ void Model::clear()
 
     GlobalSettings::instance()->outputManager()->close();
 
-    qDebug() << "Model ressources freed.";
+    qDebug() << "Model resources freed.";
 }
 
 /** Setup of the Simulation.
@@ -672,7 +672,7 @@ void Model::initOutputDatabase()
 
 }
 
-/// multithreaded running function for the resource unit level establishment
+/// multithreaded run function for resource unit level establishment
 static void nc_establishment(ResourceUnit *unit)
 {
     Saplings *s = GlobalSettings::instance()->model()->saplings();
@@ -685,7 +685,7 @@ static void nc_establishment(ResourceUnit *unit)
 
 }
 
-/// multithreaded running function for the resource unit level establishment
+/// multithreaded run function for resource unit level establishment
 static void nc_sapling_growth(ResourceUnit *unit)
 {
     Saplings *s = GlobalSettings::instance()->model()->saplings();
@@ -802,7 +802,7 @@ void Model::beforeRun()
 
 }
 
-/** Main model runner.
+/** Main model run routine.
   The sequence of actions is as follows:
   (1) Load the climate of the new year
   (2) Reset statistics for resource unit as well as for dead/managed trees
@@ -1047,7 +1047,7 @@ static void nc_readPattern(ResourceUnit *unit)
     }
 }
 
-/// multithreaded running function for the growth of individual trees
+/// multithreaded running function for growth of individual trees
 static void nc_grow(ResourceUnit *unit)
 {
     QVector<Tree>::iterator tit;
@@ -1072,7 +1072,7 @@ static void nc_grow(ResourceUnit *unit)
     GlobalSettings::instance()->systemStatistics()->treeCount+=unit->trees().count();
 }
 
-/// multithreaded running function for the resource level production
+/// multithreaded running function for resource level production
 static void nc_production(ResourceUnit *unit)
 {
     try {

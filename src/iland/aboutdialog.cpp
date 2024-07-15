@@ -28,7 +28,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     // fetch version information
     //const char *bd = __DATE__;
     ui->version->setText( QString("Version: %1 %2").arg(currentVersion()).arg(compiler()) );
-    ui->svnversion->setText( verboseVersion() );
+    ui->svnversion->setText( verboseVersionHtml() );
 
     QString s = ui->info->toHtml();
     s.replace("XXXX", buildYear());

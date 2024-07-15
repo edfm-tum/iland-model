@@ -206,7 +206,9 @@ void FMSTP::setupActivity(const QJSValue &js_value, const QString &name)
 
     // call the onCreate handler:
     FomeScript::bridge()->setActivity(act);
-    act->events().run(QStringLiteral("onCreate"),0);
+    QJSValueList params = {  FomeScript::bridge()->activityJS()  };
+
+    act->events().run(QStringLiteral("onCreate"),nullptr, &params);
     mActivities.push_back(act);
 }
 

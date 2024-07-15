@@ -10,7 +10,7 @@ Rectangle {
     //color:  "gray"
     Image {
         id: splash_image
-        source: "qrc:/iland_splash.png"
+        source: "qrc:/iland2_splash.jpg" // "qrc:/iland_splash.png"
         visible: rulercolors.caption === '';
         fillMode: Image.PreserveAspectFit
         anchors.fill: parent

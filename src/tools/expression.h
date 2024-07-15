@@ -23,7 +23,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QMutexLocker>
 #include <QtCore/QVector>
-
+#define EXPRNLOCALVARS 10
 class ExpressionWrapper;
 class Expression
 {
@@ -68,6 +68,7 @@ public:
         double *addVar(const QString& VarName);
         /// retrieve again the value pointer of a variable.
         double *  getVarAdress(const QString& VarName);
+        const QStringList &variables() {return m_varList; }
 
 
         bool isConstExpression() const { return m_constExpression; } ///< returns true if current expression is a constant.
@@ -105,7 +106,7 @@ private:
         Expression::ExtExecListItem *m_execList;
         int m_execListSize; // size of buffer
         int m_execIndex;
-        double m_varSpace[10];
+        double m_varSpace[EXPRNLOCALVARS];
         QStringList m_varList;
         QStringList m_externVarNames;
         double *m_externVarSpace;
