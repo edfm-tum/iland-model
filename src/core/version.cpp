@@ -20,7 +20,8 @@
 
 #include <QString>
 #include <QRegularExpression>
-static const char *version = "2.0 (rc)";
+
+static const char *version = "2.0";
 const char *currentVersion(){ return version;}
 
 // compiler version
