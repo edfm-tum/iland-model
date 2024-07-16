@@ -521,6 +521,7 @@ void SettingsDialog::setDialogLayout(QTreeWidget* treeWidget, QStackedWidget* mS
     cancelButton = dialogButtons->button(QDialogButtonBox::Cancel);
 
     saveButton->setText("Save Changes");
+    saveButton->setToolTip("Saving changes will overwrite current project file");
     cancelButton->setText("Cancel");
 
     QVBoxLayout* overallLayout = new QVBoxLayout(this);
@@ -575,6 +576,7 @@ void SettingsDialog::setTabProjectDescription() {
     QWidget* curChildStack = mStackedWidget->findChild<QWidget *>(descriptionTab);
     QVBoxLayout* tabLay = curChildStack->findChild<QVBoxLayout *>(descriptionTab + "Layout");
     QLabel* projectDescription = new QLabel();
+    projectDescription->setWordWrap(true);
     projectDescription->setObjectName("projectDescriptionLabel");
     tabLay->addWidget(projectDescription);
     QPushButton* editProjectDesricption = new QPushButton("Edit Project Description");
