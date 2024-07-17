@@ -18,7 +18,7 @@ has been steadily developed over the last 15 years and has been used on in more 
 
 * Offical home page: https://iland-model.org
 * Scientifc publications: https://iland-model.org/iLand+publications
-* Discord-community-channel: https://tinyurl.com/iland-discord
+* Discord-community-channel: https://discord.gg/e5trneUKav or https://tinyurl.com/iland-discord
 
 ## Instructions for building
 iLand is a C++ application using the Qt toolkit. The easiest way to build iLand is to use Qt Creator. Detailed instructions for building the model are here: https://iland-model.org/iland-book/Building_iLand.html
