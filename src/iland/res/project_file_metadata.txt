@@ -289,7 +289,7 @@ model.parameter.torus = boolean|false|Torus landscape|If true, the simulation sp
 model.parameter.debug_tree = string|ruindex=2 and dbh>30|Debug tree|A filter expression executed for trees during initialization. Textual debug output is generated only for those trees passing the filter. (e.g.: "ruindex=2 and dbh>30"). Providing an empty string is the fastest option when the debug data is not used. To enable debug output for all trees, set the value to '1' or 'true'.|advanced
 model.parameter.debug_clear = boolean|false|Clear debug|If true, text debug will be cleared after each simulation year. If set to false, the debug info is kept to provide time series information.|advanced
 model.parameter.gpp_per_year = numeric|10|GPP per year|If set, the production module is short-cut and this amound of NPP (kg/ha) is available for growth.|advanced
-model.parameter.debugDumpStamps = boolean|false|Dumb stamps|If true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes.|advanced
+model.parameter.debugDumpStamps = boolean|false|Dump stamps|If true, the content of the LIP-files is dumped to the console. This feature is provided for debugging purposes.|advanced
 
 ; *************  Javascript **************
 gui.layout = tab|tabJavascript|Javascript|This section deals with Javascript-script files that are loaded into the models' script engine at startup. See https://iland-model.org/iLand%20scripting
@@ -697,7 +697,7 @@ modules.wind.LRITransferFunction = string|max(min(3.733-6.467*LRI,3.41),0.5)|LRI
 ; modules.barkbeetle
 gui.layout = tab|tabBarkbeetle|Barkbeetle|The barkbeetle module simulates a specific biotic agent, namely the European Spruce bark beetles (Ips typographus). <br/>See https://iland-model.org/bark+beetle+disturbance and https://iland-model.org/barkbeetle+module for details.
 modules.barkbeetle.enabled = boolean|false|Enable|string|simple
-modules.barkbeetle.onAfterBarkbeetle = string|Javascript|Javascript function that is called after bark beetle module (e.g. for specific aggregagations)|string|simple
+modules.barkbeetle.onAfterBarkbeetle = string|Javascript function|Run after|Javascript function that is called after bark beetle module (e.g. for specific aggregagations)|simple
 
 gui.layout = layout|hl
 modules.barkbeetle.colonizeProbabilityFormula = string|string|Colonalization probability formula|string|simple
