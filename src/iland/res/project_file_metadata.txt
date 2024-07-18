@@ -267,7 +267,7 @@ system.database.climate = file|climate database file|Climate|The SQLite database
 gui.layout = tab|tabLogging|Logging|Settings controling logging in iLand.
 system.settings.logLevel = combo|Warning;Debug;Info;Error|Log level|This setting defines the logging intensity. When running on the Debug logging level, the log output contains many details that may slow down the application. Default is Debug. Note: this setting is in system.settings!|simple
 system.logging.logTarget = combo|console;file|Log target|If file the log output is stored in a file (see logFile). If console the log output is printed in the log window of the iLand main application.|simple
-system.logging.logFile = string|log file name|Log file|Log-output is stored in this file. If the filename contains the string "$date$", it is replaced by a timestamp (yyyymmdd__hrmiss). The default location is the log-path. A new file is created whenever the model created (e.g. after clicking "Create Model" or "Reload").|simple
+system.logging.logFile = file|log file name|Log file|Log-output is stored in this file. If the filename contains the string "$date$", it is replaced by a timestamp (yyyymmdd__hrmiss). The default location is the log-path. A new file is created whenever the model created (e.g. after clicking "Create Model" or "Reload").|simple
 system.logging.flush = boolean|false|Flush log|Log information is immediately written to the logfile when flush is true. This can be useful for debugging purposes (but might slow down execution).|advanced
 
 ; *************  System / technical **************

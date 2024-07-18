@@ -238,16 +238,6 @@ void GenericInputWidget::setComment(QString comment)
 
 void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString& type)
 {
-    QString xmlPath;
-    QDir homePathAbsolute;
-   //QFileInfo xmlFileInfo(mLinkxqt->getXmlFile());
-    QDir xmlHomePathAbsolute = mLinkxqt->getTempHomePath();
-
-
-    homePathAbsolute = mLinkxqt->getXmlFile();
-    qDebug() << "Project Folder:";
-    qDebug() << homePathAbsolute.path();
-
     //format dialog title
     QStringList parts = variableName.split('.', Qt::SkipEmptyParts);
     for (int i = 0; i < parts.size(); ++i)
@@ -260,19 +250,23 @@ void GenericInputWidget::connectFileDialog(const QString& variableName, QLineEdi
 
     const QString& title = "Select " + parts.join(":");
 
-    QString selectedFile = Helper::fileDialog(title, homePathAbsolute.absolutePath(), "", type, nullptr);
+    // get base path for the setting (including special cases)
+    QString base_path = getBasePath(variableName);
+
+    QString selectedFile = Helper::fileDialog(title, base_path, "", type, nullptr);
     if (selectedFile.isEmpty())
         return;
-    QString relativeFilePath = homePathAbsolute.relativeFilePath(selectedFile);
+
     QString fileName;
-    if (relativeFilePath.startsWith("..") ||
-        variableName == "system.path.home" ) {
-        qDebug() << "Set absolute path.";
-        fileName = selectedFile;
+    QFileInfo fileInfo(selectedFile);
+    if (fileInfo.absoluteFilePath().startsWith(base_path)) {
+        // file is relative to base path
+        fileName = fileInfo.absoluteFilePath().remove(0, base_path.length() + 1); // +1 also remove slash
     } else {
-        qDebug() << "Set relative path.";
-        fileName = relativeFilePath;
+        // absolute path
+        fileName = fileInfo.absoluteFilePath();
     }
+
     lineEdit->setText(fileName);
     //mLinkxqt->setTempHomePath(fileName);
     if (variableName == "system.path.home" ||
@@ -325,6 +319,33 @@ QString GenericInputWidget::getWidgetName()
 LinkXmlQt *GenericInputWidget::getLinkXmlQt()
 {
     return this->mLinkxqt;
+}
+
+QString GenericInputWidget::getBasePath(const QString &variableName)
+{
+    const QList<QPair<QString, QString> > special_cases = { {"system.database.in", "database"},
+                                                           {"system.database.out", "database"},
+                                                           {"system.database.climate", "database"}
+                                                           };
+
+    // get path to project root / xml folder
+    QDir homePathAbsolute = mLinkxqt->getXmlFile();
+    QFileInfo base_path_info(homePathAbsolute.absolutePath());
+    QString base_path = base_path_info.path();
+
+    // modify for select number of species cases
+    for (const auto& p : special_cases) {
+        if (p.first == variableName) {
+            QString extra_path = mLinkxqt->readXmlValue(QString("system.path.%1").arg(p.second));
+            QFileInfo fi(extra_path);
+            if (fi.isAbsolute())
+                base_path = extra_path;
+            else
+                base_path = QString("%1/%2").arg(base_path, extra_path);
+        }
+    }
+    return base_path;
+
 }
 
 void GenericInputWidget::openFunctionPlotter(SettingsItem *item, const QString& curExpr)
