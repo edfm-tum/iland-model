@@ -108,15 +108,19 @@ DEFINES += NO_DEBUG_MSGS
 
 # querying git repo
 win32 {
+ !defined(GIT_HASH) {
 GIT_HASH="\\\"$$quote($$system(git rev-parse --short HEAD))\\\""
 GIT_BRANCH="\\\"$$quote($$system(git rev-parse --abbrev-ref HEAD))\\\""
 BUILD_TIMESTAMP="\\\"$$quote($$system(date /t))\\\""
 DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
+}
 } else {
+!defined(GIT_HASH) {
 GIT_HASH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
 GIT_BRANCH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --abbrev-ref HEAD)\\\""
 BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
 DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
+}
 }
 
 
