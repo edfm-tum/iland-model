@@ -24,10 +24,22 @@
 /** This helper class holds meta data (description, Urls, etc) about model settings.
    Various types of settings (species, model, ...) are stored together.
 */
+
+
 class SettingMetaData
 {
 public:
-    void checkXMLFile(const QString fileName);
+    void checkXMLFile(const QString fileName, QStringList metaKeys);
+    void loadFromFile(const QString &fileName,
+                      QStringList& keys,
+                      QStringList& values);
+    QStringList checkXMLKeys(const QString fileName, QStringList metaKeys);
+    void updateXMLFile(const QString fileName, QStringList missingKeys);
+
+private:
+
+
+
 };
 
 

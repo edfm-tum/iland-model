@@ -5,9 +5,11 @@ QT += xml
 QT += qml
 QT += sql
 QT += widgets
+QT += charts
 # quick: for QML based user interface
 QT += quick
 QT += concurrent
+
 
 TARGET = iland
 TEMPLATE = app
@@ -92,6 +94,19 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 DEFINES += ILAND_GUI
 # enable/disble DBGMODE messages: dbg messages are removed when the define is added
 DEFINES += NO_DEBUG_MSGS
+
+# querying git repo
+win32 {
+GIT_HASH="\\\"$$quote($$system(git rev-parse --short HEAD))\\\""
+GIT_BRANCH="\\\"$$quote($$system(git rev-parse --abbrev-ref HEAD))\\\""
+BUILD_TIMESTAMP="\\\"$$quote($$system(date /t))\\\""
+DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
+} else {
+GIT_HASH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --short HEAD)\\\""
+GIT_BRANCH="\\\"$$system(git -C \""$$_PRO_FILE_PWD_"\" rev-parse --abbrev-ref HEAD)\\\""
+BUILD_TIMESTAMP="\\\"$$system(date -u +\""%Y-%m-%dT%H:%M:%SUTC\"")\\\""
+DEFINES += GIT_HASH=$$GIT_HASH GIT_BRANCH=$$GIT_BRANCH BUILD_TIMESTAMP=$$BUILD_TIMESTAMP
+}
 
 
 # to enable debug symbols in release code
@@ -233,7 +248,13 @@ SOURCES += main.cpp \
     ../bite/biteclimate.cpp \
     ../bite/biteoutput.cpp \
     ../abe/fmsaplinglist.cpp \
-    ../bite/biteoutputitem.cpp
+    ../bite/biteoutputitem.cpp \
+    ui/dialogchangedvalues.cpp \
+    ui/dialogcomment.cpp \
+    ui/dialogfunctionplotter.cpp \
+    ui/genericinputwidget.cpp \
+    ui/linkxmlqt.cpp \
+    ui/settingsdialog.cpp
 
 HEADERS += mainwindow.h \
     ../abe/patch.h \
@@ -365,9 +386,19 @@ HEADERS += mainwindow.h \
     ../bite/biteclimate.h \
     ../bite/biteoutput.h \
     ../abe/fmsaplinglist.h \
-    ../bite/biteoutputitem.h
+    ../bite/biteoutputitem.h \
+    ui/dialogchangedvalues.h \
+    ui/dialogcomment.h \
+    ui/dialogfunctionplotter.h \
+    ui/genericinputwidget.h \
+    ui/linkxmlqt.h \
+    ui/settingsdialog.h
 FORMS += mainwindow.ui \
-    aboutdialog.ui
+    aboutdialog.ui \
+    ui/dialogchangedvalues.ui \
+    ui/dialogcomment.ui \
+    ui/dialogfunctionplotter.ui \
+    ui/settingsTestDialog.ui
 RESOURCES += ./res/iland.qrc \
     qml_res.qrc
 

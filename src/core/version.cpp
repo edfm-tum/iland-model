@@ -19,10 +19,10 @@
 
 
 #include <QString>
-static const char *version = "1.9.1";
-static const char *svn_revision = "1556";
+#include <QRegularExpression>
+
+static const char *version = "2.0";
 const char *currentVersion(){ return version;}
-const char *svnRevision(){ return svn_revision;}
 
 // compiler version
 #ifdef Q_CC_MSVC
@@ -69,9 +69,35 @@ QString compiler()
     return QString("%1 %2 Qt %3").arg(MYCC).arg(BITS).arg(qVersion());
 }
 
+// QString verboseVersion()
+// {
+//     const char *bd = __DATE__; // build date
+//     QString s = QString("%1 (svn: %2, %3, %4)").arg(currentVersion()).arg(svnRevision()).arg(bd).arg(qVersion());
+//     return s;
+// }
+
 QString verboseVersion()
 {
-    const char *bd = __DATE__; // build date
-    QString s = QString("%1 (svn: %2, %3, %4)").arg(currentVersion()).arg(svnRevision()).arg(bd).arg(qVersion());
+    QString s = QString("branch: %1, version: %2, date: %3").arg(GIT_BRANCH).arg(GIT_HASH).arg(BUILD_TIMESTAMP);
     return s;
+
+}
+
+QString verboseVersionHtml()
+{
+    QString s = QString("branch: %1, version: <a href=\"https://github.com/edfm-tum/iland-model/tree/%2\">%2</a>, date: %3").arg(GIT_BRANCH).arg(GIT_HASH).arg(BUILD_TIMESTAMP);
+    return s;
+
+}
+
+QString buildYear()
+{
+    QString s(BUILD_TIMESTAMP);
+    QRegularExpression yearRegex("(\\d{4})");
+    QRegularExpressionMatch match = yearRegex.match(s);
+    if (match.hasMatch()) {
+        QString year = match.captured(1); // Access the captured year
+        return year;
+    }
+    return s; // default
 }

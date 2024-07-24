@@ -31,6 +31,7 @@ ProductionOut::ProductionOut()
     setDescription("Details about the 3PG production submodule on monthly basis and for each species and resource unit.");
     columns() << OutputColumn::year() << OutputColumn::ru() << OutputColumn::id() << OutputColumn::species()
               << OutputColumn("month", "month of year", OutInteger)
+              << OutputColumn("CO2_beta", "monthly value for effective beta (CO2 fertilization). beta = beta_0 * fN * (2-fSW)", OutDouble)
               << OutputColumn("phenology", "proportion of the month (0..1) that is within the vegetation period (and thus it is assumed that leaves are out)", OutDouble)
               << OutputColumn("tempResponse", "monthly average of daily respose value temperature", OutDouble)
               << OutputColumn("waterResponse", "monthly average of daily respose value soil water", OutDouble)
@@ -61,6 +62,9 @@ void ProductionOut::execute(const ResourceUnitSpecies *rus)
 
         *this << currentYear() << rus->ru()->index() << rus->ru()->id() << rus->species()->id();
         *this << (i+1); // month
+        double beta = resp->species()->speciesSet()->co2Beta(resp->nitrogenResponse(),
+                                                             resp->soilWaterResponse()[i]);
+        *this << beta; // co2beta
         *this << pheno_fractions[i]; // phenology (proportion of month with leaves)
 
         // responses

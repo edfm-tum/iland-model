@@ -301,8 +301,7 @@ double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenRes
     if (nitrogenResponse==0.)
         return 0.;
 
-    double co2_water = 2. - soilWaterResponse;
-    double beta = mCO2beta0 * co2_water * nitrogenResponse;
+    double beta = co2Beta(nitrogenResponse, soilWaterResponse);
 
     double r =1. +  M_LN2 * beta; // NPP increase for a doubling of atmospheric CO2 (Eq. 17)
 
@@ -314,6 +313,13 @@ double SpeciesSet::co2Response(const double ambientCO2, const double nitrogenRes
     double response = mCO2p0 * K1*(ambientCO2 - mCO2comp) / (1 + K2*(ambientCO2-mCO2comp)); // Eq. 16
     return response;
 
+}
+
+double SpeciesSet::co2Beta(const double nitrogenResponse, const double soilWaterResponse) const
+{
+    double co2_water = 2. - soilWaterResponse;
+    double beta = mCO2beta0 * co2_water * nitrogenResponse;
+    return beta;
 }
 
 /** calculates the lightResponse based on a value for LRI and the species lightResponseClass.

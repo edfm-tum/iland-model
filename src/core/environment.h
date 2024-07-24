@@ -40,7 +40,7 @@ public:
     bool setGridMode(const QString &grid_file_name);
     // setup
     void setDefaultValues(Climate *climate, SpeciesSet *speciesSet) {mCurrentClimate=climate; mCurrentSpeciesSet=speciesSet; }
-    bool loadFromString(const QString &source);
+    bool loadFromString(const QStringList &source);
     bool loadFromFile(const QString &fileName);
     QList<Climate*> climateList() const { return mClimate; } ///< created climates.
     QList<SpeciesSet*> speciesSetList() const { return mSpeciesSets; } ///< created species sets

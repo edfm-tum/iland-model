@@ -53,7 +53,7 @@ Environment::~Environment()
 
 bool Environment::loadFromFile(const QString &fileName)
 {
-    QString source = Helper::loadTextFile(GlobalSettings::instance()->path(fileName));
+    QStringList source = Helper::loadTextFileLines(GlobalSettings::instance()->path(fileName));
     if (source.isEmpty())
         throw IException(QString("Environment: input file does not exist or is empty (%1)").arg(fileName));
     return loadFromString(source);
@@ -63,14 +63,14 @@ bool Environment::loadFromFile(const QString &fileName)
 const QString speciesKey = "model.species.source";
 const QString climateKey = "model.climate.tableName";
 
-bool Environment::loadFromString(const QString &source)
+bool Environment::loadFromString(const QStringList &source)
 {
     try {
         if (mInfile)
             delete mInfile;
         mInfile = new CSVFile();
 
-        mInfile->loadFromString(source);
+        mInfile->loadFromStringList(source);
         mKeys = mInfile->captions();
 
         XmlHelper xml(GlobalSettings::instance()->settings());

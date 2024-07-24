@@ -99,6 +99,8 @@ public slots:
     void cutAndDrop();
 
     double percentile(int pct); ///< get value for the pct th percentile (1..100)
+    /// clear the list (without affecting trees)
+    void clear() { mTrees.clear(); }
     int loadAll() { return load(QString()); } ///< load all trees, return number of trees
     int load(QString filter); ///< load all trees passing the filter in a list, return number of trees
     int loadResourceUnit(int ruindex); ///< load all trees of a resource index

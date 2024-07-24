@@ -166,6 +166,7 @@ private:
     QString mStandVisualization;
     QJSValue mTreeValue;
     ScriptTree mTree;
+    QJSValue mActivityJS;
 
 
 

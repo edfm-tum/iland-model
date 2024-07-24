@@ -112,7 +112,7 @@ void ScriptGlobal::set(QString key, QString value)
 {
     XmlHelper &xml = const_cast<XmlHelper&>(GlobalSettings::instance()->settings());
     if (!xml.hasNode(key)) {
-        throwError("setting(): setting key '" + key + "' not valid.");
+        throwError("setting(): setting key '" + key + "' is not valid.");
         return;
     }
     xml.setNodeValue(key, value);
@@ -258,7 +258,9 @@ int ScriptGlobal::addSingleTrees(const int resourceIndex, QString content)
         throwError(QString("addSingleTrees: invalid resource unit (index: %1").arg(resourceIndex));
         return -1;
     }
-    int cnt = loader.loadSingleTreeList(content, ru, -1, "called_from_script");
+    QStringList lines = content.split("\n", Qt::SkipEmptyParts);
+
+    int cnt = loader.loadSingleTreeList(lines, ru, -1, "called_from_script");
     qDebug() << "script: addSingleTrees:" << cnt <<"trees loaded.";
     return cnt;
 }
@@ -271,13 +273,15 @@ int ScriptGlobal::addTrees(const int resourceIndex, QString content)
         throwError(QString("addTrees: invalid resource unit (index: %1").arg(resourceIndex));
         return -1;
     }
-    return loader.loadDistributionList(content, ru, 0, "called_from_script");
+    QStringList lines = content.split("\n", Qt::SkipEmptyParts);
+    return loader.loadDistributionList(lines, ru, 0, "called_from_script");
 }
 
 int ScriptGlobal::addTreesOnMap(const int standID, QString content)
 {
     StandLoader loader(mModel);
-    return loader.loadDistributionList(content, nullptr, standID, "called_from_script");
+    QStringList lines = content.split("\n", Qt::SkipEmptyParts);
+    return loader.loadDistributionList(lines, nullptr, standID, "called_from_script");
 }
 
 /*

@@ -134,6 +134,11 @@ Load all trees that are located on grid pixels with the value `standID` on the g
 */
 
 /**
+Clears the list without affecting any trees.
+
+@method clear
+*/
+/**
 Sort the trees in the internal list in ascending order according to a criterion given
 by `expression` (a valid [iLand Expression](https://iland-model.org/Expression)).
 

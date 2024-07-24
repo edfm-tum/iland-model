@@ -46,6 +46,7 @@ public:
     // calculations
     double nitrogenResponse(const double availableNitrogen, const double &responseClass) const;
     double co2Response(const double ambientCO2, const double nitrogenResponse, const double soilWaterResponse) const;
+    double co2Beta(const double nitrogenResponse, const double soilWaterResponse) const;
     double lightResponse(const double lightResourceIndex, const double lightResponseClass) const;
     double LRIcorrection(const double lightResourceIndex, const double relativeHeight) const  { return mLRICorrection.calculate(lightResourceIndex, relativeHeight);}
     // maintenance

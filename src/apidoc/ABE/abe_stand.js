@@ -155,6 +155,23 @@ var stand = {
   @property area
   @type double
 */
+
+/**
+  Sets a new STP for a stand. This can be used to "switch" from one STP to another STP.
+  Use `updateSTP()` from `fmengine` to change/update an already existing STP.
+
+  See also {{#crossLink "FMEngine/updateManagement:method"}}{{/crossLink}}.
+
+      // get the share of the dominant species:
+      console.log(stand.stp.name); // e.g. 'BAU'
+      fmengine.addManagement( { ... }, 'femel');
+      fmengine.standId=1; // explicitly set to stand with ID = 1
+      stand.setSTP('femel');
+
+
+  @method setSTP
+  @param {string} stp_name The name of the STP to set for the stand
+*/
 /**
   Retrieve the species id at position `index`.
 

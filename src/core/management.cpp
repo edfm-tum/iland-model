@@ -224,9 +224,10 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
     Expression expr(expression,&tw);
     expr.enableIncSum();
     int n = 0;
+    QPair<Tree*, double> empty_tree(nullptr,0.);
     QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
     try {
-        while (tp!=mTrees.end()) {
+        for (;tp!=mTrees.end();++tp) {
             tw.setTree(tp->first);
             // if expression evaluates to true and if random number below threshold...
             if (expr.calculate(tw) && drandom() <=fraction) {
@@ -237,12 +238,11 @@ int Management::remove_trees(QString expression, double fraction, bool managemen
                     tp->first->remove(); // kill
 
                 // remove from tree list
-                tp = mTrees.erase(tp);
+                *tp = empty_tree;
                 n++;
-            } else {
-                ++tp;
             }
         }
+        mTrees.removeAll(empty_tree);
     } catch(const IException &e) {
         ScriptGlobal::throwError(e.message());
     }
@@ -389,10 +389,12 @@ int Management::filter(QString filter)
     Expression expr(filter,&tw);
     expr.enableIncSum();
     int n_before = mTrees.count();
-    QList<QPair<Tree*, double> >::iterator tp=mTrees.begin();
+    QPair<Tree*, double> empty_tree(nullptr,0.);
     try {
-        while (tp!=mTrees.end()) {
-            tw.setTree(tp->first);
+        for (QList< QPair<Tree*, double> >::iterator it=mTrees.begin(); it!=mTrees.end(); ++it) {
+
+            tw.setTree(it->first); // iterate
+
             double value = expr.calculate(tw);
             // keep if expression returns true (1)
             bool keep = value==1.;
@@ -401,12 +403,12 @@ int Management::filter(QString filter)
                 keep = drandom() < value;
 
             if (!keep)
-                tp = mTrees.erase(tp);
-            else
-                ++tp;
+                *it = empty_tree;
+
         }
+        mTrees.removeAll(empty_tree);
     } catch(const IException &e) {
-         ScriptGlobal::throwError(e.message());
+        ScriptGlobal::throwError(e.message());
     }
 
     if (logLevelDebug())
@@ -532,19 +534,31 @@ void Management::removeSoilCarbon(MapGridWrapper *wrap, int key, double SWDfrac,
          ScriptGlobal::throwError(QString("removeSoilCarbon called with invalid parameters!!\nArgs: ---"));
         return;
     }
-    QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
+    if (!wrap || !wrap->map())
+        return;
+
+    //QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
+
+    auto it_pair = wrap->map()->resourceUnitAreasIterator(key);
+    auto it = it_pair.first; // the iterator
+    auto itend = it_pair.second; // the end
     double total_area = 0.;
-    for (int i=0;i<ru_areas.size();++i) {
-        ResourceUnit *ru = ru_areas[i].first;
-        double area_factor = ru_areas[i].second; // 0..1
+    while (it!=itend && it.key() == key) {
+        ResourceUnit *ru = it->first;
+        double area_factor = it->second; // 0..1
         total_area += area_factor;
         // swd
-        if (SWDfrac>0.)
+        if (SWDfrac>0. && ru->snag())
             ru->snag()->removeCarbon(SWDfrac*area_factor);
         // soil pools
-        ru->soil()->disturbance(DWDfrac*area_factor, litterFrac*area_factor, soilFrac*area_factor);
+        if (ru->soil())
+            ru->soil()->disturbance(DWDfrac*area_factor, litterFrac*area_factor, soilFrac*area_factor);
         // qDebug() << ru->index() << area_factor;
+
+        ++it;
     }
+
+
     if (logLevelDebug())
         qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);
 }
@@ -561,14 +575,19 @@ void Management::slashSnags(MapGridWrapper *wrap, int key, double slash_fraction
          ScriptGlobal::throwError(QString("slashSnags called with invalid parameters!!\nArgs: ...."));
         return;
     }
-    QList<QPair<ResourceUnit*, double> > ru_areas = wrap->map()->resourceUnitAreas(key);
+    if (!wrap || !wrap->map())
+        return;
+    auto it_pair = wrap->map()->resourceUnitAreasIterator(key);
+    auto it = it_pair.first; // the iterator
+    auto itend = it_pair.second; // the end
+
     double total_area = 0.;
-    for (int i=0;i<ru_areas.size();++i) {
-        ResourceUnit *ru = ru_areas[i].first;
-        double area_factor = ru_areas[i].second; // 0..1
+    while (it!=itend && it.key() == key) {
+        ResourceUnit *ru = it->first;
+        double area_factor = it->second; // 0..1
         total_area += area_factor;
         ru->snag()->management(slash_fraction * area_factor);
-        // qDebug() << ru->index() << area_factor;
+        ++it;
     }
     if (logLevelDebug())
         qDebug() << "total area" << total_area << "of" << wrap->map()->area(key);

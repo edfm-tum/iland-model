@@ -4,3 +4,6 @@ build-plugins*
 *.lib
 *.pdb
 .Rproj.user
+project_file.xml
+
+build/

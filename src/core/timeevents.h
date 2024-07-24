@@ -27,7 +27,7 @@ public:
     TimeEvents();
     // setup
     void clear() { mData.clear(); }
-    bool loadFromString(const QString &source);
+    bool loadFromString(const QStringList &source);
     bool loadFromFile(const QString &fileName);
     // excecute
     void run(); ///< execute all settings

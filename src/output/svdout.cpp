@@ -8,6 +8,7 @@
 #include "svdstate.h"
 #include "debugtimer.h"
 #include "soil.h"
+#include "spatialanalysis.h"
 
 SVDGPPOut::SVDGPPOut()
 {
@@ -345,7 +346,17 @@ double SVDIndicatorOut::calcShannonIndex(const ResourceUnit *ru)
 
 double SVDIndicatorOut::calcCrownCover(const ResourceUnit *ru)
 {
-    return 0.; // TODO: implement
+    Model *model = GlobalSettings::instance()->model();
+    GridRunner<float> runner(mCrownCoverGrid, ru->boundingBox());
+    int cc_sum = 0;
+    while (float *gv = runner.next()) {
+        if (model->heightGridValue(runner.currentIndex().x(),
+                                   runner.currentIndex().y()).isValid())
+            if (*gv >= 0.5f) // 0.5: half of a 2m cell is covered by a tree crown; is a bit pragmatic but seems reasonable (and works)
+                cc_sum++;
+    }
+    double value = cPxSize*cPxSize*cc_sum / cRUArea;
+    return limit(value, 0., 1.);
 }
 
 double SVDIndicatorOut::calcTotalCarbon(const ResourceUnit *ru)
@@ -402,6 +413,16 @@ void SVDIndicatorOut::exec()
         qWarning() << "Output SVDIndicatorOut cannot be used, because it requires the 'svdstate' output (and the SVD subsystem ('model.settings.svdStates.enabled')). Output disabled.";
 
         throw IException("Setup of SVDIndcatorOut: SVD states are required for this output ('model.settings.svdStates.enabled').");
+    }
+
+    // global calculations
+    // we need to run crown projections for all trees...
+    if (mIndicators.test(EcrownCover)) {
+        if (mCrownCoverGrid.isEmpty())
+            mCrownCoverGrid.setup(*GlobalSettings::instance()->model()->grid());
+
+        SpatialAnalysis::runCrownProjection2m(&mCrownCoverGrid);
+
     }
 
 

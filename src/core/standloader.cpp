@@ -179,7 +179,7 @@ void StandLoader::processInit()
 
         if (!QFile::exists(fileName))
             throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
-        QString content = Helper::loadTextFile(fileName);
+        QStringList content = Helper::loadTextFileLines(fileName);
         // this processes the init file (also does the checking) and
         // stores in a QHash datastrucutre
         parseInitFile(content, fileName);
@@ -321,7 +321,7 @@ int StandLoader::loadInitFile(const QString &fileName, const QString &type, int 
 
 int StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru, int stand_id)
 {
-    QString content = Helper::loadTextFile(fileName);
+    QStringList content = Helper::loadTextFileLines(fileName);
     if (content.isEmpty()) {
         qDebug() << "file not found: " + fileName;
         return 0;
@@ -332,7 +332,7 @@ int StandLoader::loadPicusFile(const QString &fileName, ResourceUnit *ru, int st
 /** load a list of trees (given by content) to a resource unit. Param fileName is just for error reporting.
   returns the number of loaded trees.
   */
-int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru_offset, int stand_id, const QString &fileName)
+int StandLoader::loadSingleTreeList(QStringList content, ResourceUnit *ru_offset, int stand_id, const QString &fileName)
 {
     QPointF offset;
     if (ru_offset && stand_id<0) {
@@ -345,24 +345,26 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru_off
     SpeciesSet *speciesSet = GlobalSettings::instance()->model()->speciesSet();
     const Grid<ResourceUnit*> &rugrid = GlobalSettings::instance()->model()->RUgrid();
 
-
-    QString my_content(content);
-
-    // cut out the <trees> </trees> part if present
-    if (content.contains("<trees>")) {
-        // Note: changed from QRegExp() (qt6 port), but not tested
-        QRegularExpression rx(".*<trees>(.*)</trees>.*");
-        QRegularExpressionMatch match = rx.match(content);
-        my_content = match.captured(1);
-        if (my_content.isEmpty())
-            return 0;
+    int lineno=0;
+    for (const auto &line : content) {
+        if (line.contains("<trees>")) {
+            // there is a Picus-style trees tag - remove and search for the closing tag
+            // not tested!
+            content.removeAt(lineno);
+            size_t l = content.indexOf("</trees>");
+            if (l>0)
+                content.removeAt(l);
+            break;
+        }
+        if (lineno++ > 100)
+            break;
     }
 
     CSVFile infile;
-    infile.loadFromString(my_content);
+    infile.loadFromStringList(content);
 
 
-    int iID =  infile.columnIndex("id");
+    int iID = infile.columnIndex("id");
     int iX = infile.columnIndex("x");
     int iY = infile.columnIndex("y");
     int iBhd = infile.columnIndex("bhdfrom");
@@ -447,7 +449,7 @@ int StandLoader::loadSingleTreeList(const QString &content, ResourceUnit *ru_off
   @param fileName source file name (for error reporting)
   @return number of trees added
   */
-int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, int stand_id, const QString &fileName)
+int StandLoader::loadDistributionList(const QStringList &content, ResourceUnit *ru, int stand_id, const QString &fileName)
 {
     int total_count = parseInitFile(content, fileName, ru);
     if (total_count==0)
@@ -476,7 +478,7 @@ int StandLoader::loadDistributionList(const QString &content, ResourceUnit *ru, 
 
 }
 
-int StandLoader::parseInitFile(const QString &content, const QString &fileName, ResourceUnit* ru)
+int StandLoader::parseInitFile(const QStringList &content, const QString &fileName, ResourceUnit* ru)
 {
     if (!ru)
         ru = mModel->ru();
@@ -486,7 +488,7 @@ int StandLoader::parseInitFile(const QString &content, const QString &fileName, 
 
     //DebugTimer t("StandLoader::loadiLandFile");
     CSVFile infile;
-    infile.loadFromString(content);
+    infile.loadFromStringList(content);
 
     int icount = infile.columnIndex("count");
     int ispecies = infile.columnIndex("species");
@@ -552,7 +554,7 @@ int StandLoader::loadiLandFile(const QString &fileName, ResourceUnit *ru, int st
 {
     if (!QFile::exists(fileName))
         throw IException(QString("load-ini-file: file '%1' does not exist.").arg(fileName));
-    QString content = Helper::loadTextFile(fileName);
+    QStringList content = Helper::loadTextFileLines(fileName);
     return loadDistributionList(content, ru, stand_id, fileName);
 }
 

@@ -141,7 +141,7 @@ void Climate::setup(bool do_log)
             // check for validity
             foreach(int year, mRandomYearList)
                 if (year < 0 || year>=mLoadYears)
-                    throw IException("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!!");
+                    throw IException(QString("Invalid randomSamplingList! Year numbers are 0-based and must to between 0 and batchYears-1 (check value of batchYears)!!! Tried to access: '%1', batchYears: '%2'").arg(year).arg(mLoadYears) );
         }
         if (do_log) {
             if (mRandomYearList.count()>0)
@@ -234,11 +234,15 @@ void Climate::load()
         //qDebug() << "loading year" << lastyear+1;
         while(1==1) {
             if(!mClimateQuery.next()) {
-                // rewind to start
+                if (mDoRandomSampling)
+                    throw IException(QString("Climate: not enough years in climate database - tried to load %1 years (random sampling of climate is enabled)").arg(mLoadYears) );
+
+                // rewind to the start of the time series
                 qDebug() << "restart of climate table";
                 lastyear=-1;
                 if (!mClimateQuery.first())
                     throw IException("Error rewinding climate file!");
+
             }
             yeardays++;
             if (yeardays>366)

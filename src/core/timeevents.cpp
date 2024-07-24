@@ -29,17 +29,17 @@ TimeEvents::TimeEvents()
 static QString lastLoadedFile;
 bool TimeEvents::loadFromFile(const QString &fileName)
 {
-    QString source = Helper::loadTextFile(GlobalSettings::instance()->path(fileName));
+    QStringList source = Helper::loadTextFileLines(GlobalSettings::instance()->path(fileName));
     if (source.isEmpty())
         throw IException(QString("TimeEvents: input file does not exist or is empty (%1)").arg(fileName));
     lastLoadedFile=fileName;
     return loadFromString(source);
 }
 
-bool TimeEvents::loadFromString(const QString &source)
+bool TimeEvents::loadFromString(const QStringList &source)
 {
     CSVFile infile;
-    infile.loadFromString(source);
+    infile.loadFromStringList(source);
     QStringList captions = infile.captions();
     int yearcol = infile.columnIndex("year");
     if (yearcol==-1)
