@@ -72,7 +72,20 @@ var fmengine= {
   @param {string} name The name that ABE should be use for this STP.
   @return {boolean} true on success.
   */
-     addManatgement: function(obj, name),
+     addManagement: function(obj, name),
+
+/**
+  updates the definition of a STP, i.e. replace the STP `stp_name` with a new Javascript object `program`.
+
+  If the `stp_name` is not found, an error is thrown.
+
+  See also: {{#crossLink "Activity"}}{{/crossLink}}
+
+  @method updateManagement
+  @param {object} program The javascript object that defines the STP.
+  @param {string} stp_name The name that ABE should be use for this STP.
+  @return {boolean} true on success.
+  */
 
 /**
   add an agent definition (Javascript) and gives the agent the name `name`.
