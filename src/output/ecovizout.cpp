@@ -8,10 +8,11 @@
 EcoVizOut::EcoVizOut()
 {
     setName("tree output for visualization software", "ecoviz");
-    setDescription("Output of aggregates on the level of landscape x species. Values are always aggregated per hectare. "\
-                   "The output is created after the growth of the year, " \
-                   "i.e. output with year=2000 means effectively the state of at the end of the " \
-                   "year 2000. The initial state (without any growth) is indicated by the year 'startyear-1'." \
+    setDescription("This is a special output for linking with the visualization tool 'Ecoviz'.\n "\
+                   "The output is a small standard iLand outpunt and a special textfile ('PDB') " \
+                   "which contains *all* trees and *all* saplings of a year (i.e. it tends to get big!). " \
+                   "Provide a file pattern in 'fileName', a $-sign is replaced with the current year. For example " \
+                   "output/ecoviz_$.pdb is saved as output/ecoviz_0.pdb (initial state), output/ecoviz_1.pdb (after 1 year of simulation), ....). \n" \
                    "You can use the 'condition' to control if the output should be created for the current year(see also dynamic stand output)");
     columns() << OutputColumn::year()
               << OutputColumn("count_trees", "total number of trees count saved to file", OutInteger)
@@ -70,7 +71,10 @@ bool EcoVizOut::writePDBFile(QString fileName, int n_trees, int n_cohorts, int y
 
         //stream << "Center Point: " << iter_result[0] << "  " << iter_result[1]
         //       << "  " << iter_result[2] << " Rotation: " << iter_result[3] <<'\n';
-        stream << "2.0" << Qt::endl; // PDB_file_version
+        stream << "3.0" << Qt::endl; // PDB_file_version
+        // version 3.0: include local origin in metric coordinates
+        stream << GlobalSettings::instance()->settings().value("model.world.location.x") << " "
+               << GlobalSettings::instance()->settings().value("model.world.location.y") << Qt::endl;
         stream << year << Qt::endl; // Time_step_number
         qint64 ntree_pos = stream.pos();
         stream << "          " << Qt::endl; // space for total number of trees
