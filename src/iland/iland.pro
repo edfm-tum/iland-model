@@ -37,6 +37,9 @@ PRE_TARGETDEPS += ../plugins/iland_fired.lib
 PRE_TARGETDEPS += ../plugins/iland_windd.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetled.lib
 LIBS += -L../plugins -liland_fired -liland_windd -liland_barkbeetled
+# external freeimage library (geotiff)
+LIBS += -L../3rdparty/FreeImage -lFreeImage
+
 }
 win32:*gcc*: {
 # debug GCC, windows
@@ -88,6 +91,8 @@ PRE_TARGETDEPS += ../plugins/iland_wind.lib
 PRE_TARGETDEPS += ../plugins/iland_barkbeetle.lib
 LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 
+# external freeimage library (geotiff)
+LIBS += -L../3rdparty/FreeImage -lFreeImage
 }
 }
 
@@ -136,6 +141,7 @@ SOURCES += main.cpp \
     ../core/permafrost.cpp \
     ../output/devstageout.cpp \
     ../output/ecovizout.cpp \
+    ../tools/geotiff.cpp \
     mainwindow.cpp \
     paintarea.cpp \
     ../core/grid.cpp \
@@ -267,6 +273,7 @@ HEADERS += mainwindow.h \
     ../core/permafrost.h \
     ../output/devstageout.h \
     ../output/ecovizout.h \
+    ../tools/geotiff.h \
     stable.h \
     paintarea.h \
     ../core/version.h \
