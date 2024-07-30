@@ -134,11 +134,15 @@ void ScriptGrid::save(QString fileName)
 {
     if (!mGrid || mGrid->isEmpty())
         return;
+    try{
     fileName = GlobalSettings::instance()->path(fileName);
     gridToFile<double>(*mGrid, fileName);
     //QString result = gridToESRIRaster(*mGrid);
     //Helper::saveToTextFile(fileName, result);
     qDebug() << "saved grid " << name() << " to " << fileName;
+    } catch( const IException &e) {
+    GlobalSettings::instance()->scriptEngine()->throwError(e.message());
+    }
 }
 
 bool ScriptGrid::load(QString fileName)

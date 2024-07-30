@@ -680,6 +680,7 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hleve
         return false;
     //QString result;
 
+    try{
     file_name = GlobalSettings::instance()->path(file_name);
 
     if (grid_type == "height") {
@@ -712,6 +713,10 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hleve
         return true;
     }
 
+    } catch( const IException &e) {
+    throwError(e.message());
+    return false;
+    }
 
     throwError("gridToFile(): could not save gridToFile because '" +  grid_type + "' is not a valid option.");
     return false;
@@ -1069,7 +1074,7 @@ void ScriptGlobal::test_tree_mortality(double thresh, int years, double p_death)
 void ScriptGlobal::throwError(const QString &errormessage)
 {
     GlobalSettings::instance()->scriptEngine()->throwError(errormessage);
-    mLastErrorMessage += errormessage + "\n";
+    // mLastErrorMessage += errormessage + "\n"; // not sure if it works to remove this?
     qWarning() << "Scripterror:" << errormessage;
 }
 
