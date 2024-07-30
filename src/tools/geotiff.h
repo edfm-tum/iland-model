@@ -22,7 +22,8 @@ public:
     GeoTIFF();
     ~GeoTIFF();
     // constants from FREE_IMAGE_TYPE (FreeImage.h)
-    enum TIFDatatype { 	DTSINT16		= 3,	//!  16-bit signed integer
+    enum TIFDatatype { DTUNKNOWN = 0,
+                       DTSINT16		= 3,	//!  16-bit signed integer
                        DTSINT32		= 5,	//!  32-bit signed integer
                        DTFLOAT		= 6,	//! 32-bit IEEE floating point
                        DTDOUBLE		= 7    //! 64-bit IEEE floating point
@@ -43,13 +44,13 @@ public:
     /// set value at ix/iy to *double* value
     void setValue(size_t ix, size_t iy, double value);
     /// set value at ix/iy to *float* value
-    void setValue(size_t ix, size_t iy, float value);
+    void setValue(size_t ix, size_t iy, float value) {setValue(ix, iy, static_cast<double>(value));}
     /// set value at ix/iy to int* value
-    void setValue(size_t ix, size_t iy, int value);
+    void setValue(size_t ix, size_t iy, int value) {setValue(ix, iy, static_cast<double>(value));}
     /// set value at ix/iy to *short int* value
-    void setValue(size_t ix, size_t iy, short int value);
+    void setValue(size_t ix, size_t iy, short int value) {setValue(ix, iy, static_cast<double>(value));}
 
-
+    double noDataValue() const { return mNoDataValue; }
     // getters
     double ox() const { return mOx; }
     double oy() const { return mOy; }
@@ -57,6 +58,10 @@ public:
     size_t ncol() const { return mNcol; }
     size_t nrow() const { return mNrow; }
 private:
+    static short int noDataShort() { return std::numeric_limits<short int>::lowest(); }
+    static  int noDataInt() { return std::numeric_limits<int>::lowest(); }
+    static  float noDataFloat() { return std::numeric_limits<float>::lowest(); }
+    static  double noDataDouble() { return std::numeric_limits<double>::lowest(); }
     static FIBITMAP *mProjectionBitmap;
     FIBITMAP *dib;
     TIFDatatype mDType;
@@ -64,6 +69,8 @@ private:
     double mOx, mOy;
     double mCellsize;
     size_t mNcol, mNrow;
+
+    double mNoDataValue;
 };
 
 #endif // GEOTIFF_H

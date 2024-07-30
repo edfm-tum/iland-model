@@ -673,21 +673,28 @@ void ScriptGlobal::setViewport(double x, double y, double scale_px_per_m)
         GlobalSettings::instance()->controller()->setViewport(QPointF(x,y), scale_px_per_m);
 }
 
-// helper function...
-QString heightGrid_height(const HeightGridValue &hgv) {
-    return QString::number(hgv.height);
-}
-
 /// write grid to a file...
 bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hlevel)
 {
     if (!GlobalSettings::instance()->model())
         return false;
-    QString result;
-    if (grid_type == "height")
-        result = gridToESRIRaster(*GlobalSettings::instance()->model()->heightGrid(), *heightGrid_height);
-    if (grid_type == "lif")
-        result = gridToESRIRaster(*GlobalSettings::instance()->model()->grid());
+    //QString result;
+
+    file_name = GlobalSettings::instance()->path(file_name);
+
+    if (grid_type == "height") {
+        //result = gridToESRIRaster(*GlobalSettings::instance()->model()->heightGrid(), *heightGrid_height);
+        ::gridToFile<HeightGridValue, float>(*GlobalSettings::instance()->model()->heightGrid(), file_name,
+                                             [](const HeightGridValue &hgv){ return hgv.height; });
+        return true;
+    }
+
+
+    if (grid_type == "lif") {
+        //result = gridToESRIRaster(*GlobalSettings::instance()->model()->grid());
+        ::gridToFile(*GlobalSettings::instance()->model()->grid(), file_name);
+        return true;
+    }
     if (grid_type == "lifc") {
         FloatGrid lif10m_grid = GlobalSettings::instance()->model()->grid()->averaged(5); // average LIF value with 10m resolution
         HeightGrid *height_grid = GlobalSettings::instance()->model()->heightGrid();
@@ -701,15 +708,11 @@ bool ScriptGlobal::gridToFile(QString grid_type, QString file_name, double hleve
             double rel_height = hlevel / ph->height;
             *pl = sset->LRIcorrection(*pl, rel_height); // correction based on height
         }
-        result = gridToESRIRaster(lif10m_grid);
-    }
-
-    if (!result.isEmpty()) {
-        file_name = GlobalSettings::instance()->path(file_name);
-        Helper::saveToTextFile(file_name, result);
-        qDebug() << "saved grid to " << file_name;
+        ::gridToFile(lif10m_grid, file_name);
         return true;
     }
+
+
     throwError("gridToFile(): could not save gridToFile because '" +  grid_type + "' is not a valid option.");
     return false;
 

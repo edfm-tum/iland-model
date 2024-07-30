@@ -135,8 +135,9 @@ void ScriptGrid::save(QString fileName)
     if (!mGrid || mGrid->isEmpty())
         return;
     fileName = GlobalSettings::instance()->path(fileName);
-    QString result = gridToESRIRaster(*mGrid);
-    Helper::saveToTextFile(fileName, result);
+    gridToFile<double>(*mGrid, fileName);
+    //QString result = gridToESRIRaster(*mGrid);
+    //Helper::saveToTextFile(fileName, result);
     qDebug() << "saved grid " << name() << " to " << fileName;
 }
 

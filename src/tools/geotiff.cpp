@@ -15,6 +15,7 @@ GeoTIFF::GeoTIFF()
     dib = nullptr;
     mOx = mOy = mCellsize = 0.;
     mNcol = mNrow = 0;
+    mNoDataValue = 0.;
 }
 
 GeoTIFF::~GeoTIFF()
@@ -41,6 +42,7 @@ int GeoTIFF::loadImage(const QString &fileName)
 
         mProjectionBitmap = FreeImage_Allocate(10,10,24);
         FreeImage_CloneMetadata(mProjectionBitmap, dib);
+        qDebug() << "GeoTIFF: meta data (incl. projection) for writing TIFs is copied from" << fileName;
     }
 
 
@@ -89,6 +91,17 @@ int GeoTIFF::loadImage(const QString &fileName)
         }
         mNcol = FreeImage_GetWidth(dib);
         mNrow = FreeImage_GetHeight(dib);
+
+
+        switch (FreeImage_GetImageType(dib)) {
+        case FIT_INT16: mNoDataValue = std::numeric_limits<short int>::lowest(); mDType = DTSINT16; break;
+        case FIT_INT32: mNoDataValue = std::numeric_limits<int>::lowest(); mDType = DTSINT32; break;
+        case FIT_FLOAT: mNoDataValue = std::numeric_limits<float>::lowest(); mDType = DTFLOAT; break;
+        case FIT_DOUBLE: mNoDataValue = std::numeric_limits<double>::lowest(); mDType = DTDOUBLE; break;
+        default:
+            throw IException(QString("GeoTiff: The TIF file '%1' has an invalid datatype. \n" \
+                                     "Currently valid are: int16 (INT2S), int32 (INT4S), float (FLT4S), double (FLT8S).").arg(fileName));
+        }
 
         QString info_str = QString("Loaded TIF '%1', x/y: %2/%3, cellsize: %4, width: %5, height: %6, datatype %7, %8 bits per cell")
                                .arg(fileName).arg(mOx).arg(mOy)
@@ -156,8 +169,11 @@ void GeoTIFF::copyToDoubleGrid(Grid<double> *grid)
     if (!dib)
         throw IException("Copy TIF to grid: tif not loaded!");
 
-    if (FreeImage_GetImageType(dib) != FIT_DOUBLE && FreeImage_GetImageType(dib) != FIT_FLOAT) {
-        throw IException("Copy TIF to grid: wrong data type, double or float expected!");
+    if (FreeImage_GetImageType(dib) != FIT_DOUBLE
+        && FreeImage_GetImageType(dib) != FIT_FLOAT
+        && FreeImage_GetImageType(dib) != FIT_INT16
+        && FreeImage_GetImageType(dib) != FIT_INT32) {
+        throw IException("Copy TIF to grid: wrong data type, double, float, int16, int32 expected!");
     }
     switch (FreeImage_GetImageType(dib)) {
     case FIT_DOUBLE: {
@@ -165,20 +181,39 @@ void GeoTIFF::copyToDoubleGrid(Grid<double> *grid)
         for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
             double *bits = (double*)FreeImage_GetScanLine(dib, y);
             for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
-                grid->valueAtIndex(x,y) = bits[x];
+                grid->valueAtIndex(x,y) = bits[x] == noDataDouble() ? noDataDouble() : bits[x];
             }
         }
-
+        return;
     }
     case FIT_FLOAT: {
         for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
             float *bits = (float*)FreeImage_GetScanLine(dib, y);
             for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
-                grid->valueAtIndex(x,y) = bits[x];
+                grid->valueAtIndex(x,y) = bits[x] == noDataFloat() ? noDataDouble() : bits[x];
             }
         }
-
+        return;
     }
+    case FIT_INT16:  {
+        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+            short int *bits = (short int *)FreeImage_GetScanLine(dib, y);
+            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+                grid->valueAtIndex(x,y) = bits[x] == noDataShort() ? noDataDouble() : bits[x];
+            }
+        }
+        return;
+    }
+    case FIT_INT32:  {
+        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+            int *bits = (int *)FreeImage_GetScanLine(dib, y);
+            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+                grid->valueAtIndex(x,y) = bits[x] == noDataInt() ? noDataDouble() : bits[x];
+            }
+        }
+        return;
+    }
+
     default:
         throw IException("Geotiff::copyToDoubleGrid: invalid data type.");
     }
@@ -190,9 +225,14 @@ void GeoTIFF::copyToFloatGrid(Grid<float> *grid)
 {
     if (!dib)
         throw IException("Copy TIF to grid: tif not loaded!");
-    if (FreeImage_GetImageType(dib) != FIT_DOUBLE && FreeImage_GetImageType(dib) != FIT_FLOAT) {
-        throw IException("Copy TIF to grid: wrong data type, double or float expected!");
+
+    if (FreeImage_GetImageType(dib) != FIT_DOUBLE
+        && FreeImage_GetImageType(dib) != FIT_FLOAT
+        && FreeImage_GetImageType(dib) != FIT_INT16
+        && FreeImage_GetImageType(dib) != FIT_INT32) {
+        throw IException("Copy TIF to grid: wrong data type, double, float, int16, int32 expected!");
     }
+
     switch (FreeImage_GetImageType(dib)) {
     case FIT_DOUBLE: {
 
@@ -202,7 +242,7 @@ void GeoTIFF::copyToFloatGrid(Grid<float> *grid)
                 grid->valueAtIndex(x,y) = bits[x];
             }
         }
-
+        return;
     }
     case FIT_FLOAT: {
         for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
@@ -211,8 +251,27 @@ void GeoTIFF::copyToFloatGrid(Grid<float> *grid)
                 grid->valueAtIndex(x,y) = bits[x];
             }
         }
-
+        return;
     }
+    case FIT_INT16:  {
+        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+            short int *bits = (short int *)FreeImage_GetScanLine(dib, y);
+            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+                grid->valueAtIndex(x,y) = bits[x];
+            }
+        }
+        return;
+    }
+    case FIT_INT32:  {
+        for(size_t y = 0; y < FreeImage_GetHeight(dib); y++) {
+            int *bits = (int *)FreeImage_GetScanLine(dib, y);
+            for(size_t x = 0; x < FreeImage_GetWidth(dib); x++) {
+                grid->valueAtIndex(x,y) = bits[x];
+            }
+        }
+        return;
+    }
+
     default:
         throw IException("Geotiff::copyToFloatGrid: invalid data type.");
     }
@@ -240,6 +299,13 @@ void GeoTIFF::initialize(size_t width, size_t height, TIFDatatype dtype)
     if (dtype != DTSINT16 && dtype!=DTSINT32 && dtype!=DTFLOAT && dtype!=DTDOUBLE)
         throw IException("GeoTif: init write: invalid data type!");
 
+    switch (mDType) {
+    case DTSINT16: mNoDataValue = std::numeric_limits<short int>::lowest(); break;
+    case DTSINT32: mNoDataValue = std::numeric_limits<int>::lowest(); break;
+    case DTFLOAT: mNoDataValue = std::numeric_limits<float>::lowest(); break;
+    case DTDOUBLE: mNoDataValue = std::numeric_limits<double>::lowest(); break;
+    }
+
     FREE_IMAGE_TYPE fit = FREE_IMAGE_TYPE(dtype);
     dib = FreeImage_AllocateT(fit , width, height );
     FreeImage_CloneMetadata(dib, mProjectionBitmap);
@@ -254,69 +320,27 @@ void GeoTIFF::setValue(size_t ix, size_t iy, double value)
         return;
     if (ix > FreeImage_GetWidth(dib) || iy > FreeImage_GetHeight(dib))
         return;
-    if (mDType == DTFLOAT) {
-    float flt_value = static_cast<float>(value);
-    ((float*)FreeImage_GetScanLine(dib, iy))[ix] = flt_value;
-    } else if (mDType == DTDOUBLE) {
+    switch (mDType) {
+    case DTFLOAT: {
+        float flt_value = static_cast<float>(value);
+        ((float*)FreeImage_GetScanLine(dib, iy))[ix] = flt_value;
+        return;
+    }
+    case DTDOUBLE:
         ((double*)FreeImage_GetScanLine(dib, iy))[ix] = value;
-    } else {
-        throw IException(QString("GeoTif:setValue(double): invalid type of TIF: %1").arg(mDType));
+        return;
+    case DTSINT16: {
+        short int short_value = static_cast<short int>(value);
+        ((short int*)FreeImage_GetScanLine(dib, iy))[ix] = short_value;
+        return;
     }
-}
-
-void GeoTIFF::setValue(size_t ix, size_t iy, float value)
-{
-    if (!dib)
+    case DTSINT32: {
+        int int_value = static_cast<int>(value);
+        ((int*)FreeImage_GetScanLine(dib, iy))[ix] = int_value;
         return;
-    if (ix > FreeImage_GetWidth(dib) || iy > FreeImage_GetHeight(dib))
-        return;
-    if (mDType == DTFLOAT) {
-        ((float*)FreeImage_GetScanLine(dib, iy))[ix] = value;
-    } else if (mDType == DTDOUBLE) {
-        double dbl_value = static_cast<double>(value);
-        ((double*)FreeImage_GetScanLine(dib, iy))[ix] = dbl_value;
-    } else {
-        throw IException(QString("GeoTif:setValue(float): invalid type of TIF: %1").arg(mDType));
+    }
     }
 
+    throw IException(QString("GeoTif:setValue(): invalid type of TIF: %1").arg(mDType));
 }
 
-void GeoTIFF::setValue(size_t ix, size_t iy, int value)
-{
-    if (!dib)
-        return;
-    if (ix > FreeImage_GetWidth(dib) || iy > FreeImage_GetHeight(dib))
-        return;
-
-    if (mDType == DTSINT16) {
-        // short int:  16 bit signed int on most machines: https://en.cppreference.com/w/cpp/language/types
-        short int sival = static_cast<short int>(value);
-        ((short int*)FreeImage_GetScanLine(dib, iy))[ix] = sival;
-    } else if (mDType == DTSINT32) {
-        // int: 32 bit signed integer on ~ every machine
-        ((int*)FreeImage_GetScanLine(dib, iy))[ix] = value;
-
-    } else {
-        throw IException(QString("GeoTif:setValue(int): invalid type of TIF: %1").arg(mDType));
-    }
-}
-
-void GeoTIFF::setValue(size_t ix, size_t iy, short value)
-{
-    if (!dib)
-        return;
-    if (ix > FreeImage_GetWidth(dib) || iy > FreeImage_GetHeight(dib))
-        return;
-
-    if (mDType == DTSINT16) {
-        // short int:  16 bit signed int on most machines: https://en.cppreference.com/w/cpp/language/types
-        ((short int*)FreeImage_GetScanLine(dib, iy))[ix] = value;
-    } else if (mDType == DTSINT32) {
-        // int: 32 bit signed integer on ~ every machine
-        int sival = static_cast<short int>(value);
-        ((int*)FreeImage_GetScanLine(dib, iy))[ix] = sival;
-
-    } else {
-        throw IException(QString("GeoTif:setValue(short int): invalid type of TIF: %1").arg(mDType));
-    }
-}
