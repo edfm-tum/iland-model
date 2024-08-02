@@ -26,6 +26,7 @@ class Species;
 class ThreadRunner
 {
 public:
+    enum RunState { Inactive, SingleThreaded, MultiThreaded};
     ThreadRunner();
     ThreadRunner(const QList<Species*> &speciesList) { setup(speciesList);}
 
@@ -43,9 +44,19 @@ public:
     template<class T> void run(void (*funcptr)(T&), QVector<T> &container, const bool forceSingleThreaded=false) const;
     // run over chunks of a larger array (or grid)
     template<class T> void runGrid(void (*funcptr)(T*, T*), T* begin, T* end, const bool forceSingleThreaded=false, int minsize=10000, int maxchunks=10000) const;
+
+    /// throw an exception that is safe when running
+    /// mulitple threads
+    void throwError(const QString &message) const;
+    bool hasErrors() const { return  !mErrors.isEmpty(); }
+    void clearErrors() { mErrors.clear(); }
+    const QStringList errors() const { return mErrors; }
+    void checkErrors();
 private:
+    static QStringList mErrors;
     QList<ResourceUnit*> mMap1, mMap2;
     QList<Species*> mSpeciesMap;
+    static RunState mState;
     static bool mMultithreaded;
 };
 
@@ -55,6 +66,7 @@ void ThreadRunner::runGrid(void (*funcptr)(T *, T*), T *begin, T *end, const boo
     int length = end - begin; // # of elements
     if (mMultithreaded && length>minsize*3 && forceSingleThreaded==false) {
         // create multiple calls
+        mState = MultiThreaded;
         int chunksize = minsize;
         if (length > chunksize*maxchunks) {
             chunksize = length / maxchunks;
@@ -68,8 +80,10 @@ void ThreadRunner::runGrid(void (*funcptr)(T *, T*), T *begin, T *end, const boo
         }
     } else {
         // run all in one big function call
+        mState = SingleThreaded;
         (*funcptr)(begin, end);
     }
+    mState = Inactive;
 }
 
 // multirunning function
@@ -78,13 +92,16 @@ void ThreadRunner::run(T *(*funcptr)(T *), const QVector<T *> &container, const 
 {
     if (mMultithreaded && container.count() > 3 && forceSingleThreaded==false) {
         // execute using QtConcurrent for larger amounts of elements
+        mState = MultiThreaded;
         QtConcurrent::blockingMap(container,funcptr);
     } else {
         // execute serialized in main thread
+        mState = SingleThreaded;
         T *element;
         foreach(element, container)
             (*funcptr)(element);
     }
+    mState = Inactive;
 
 }
 
@@ -94,14 +111,16 @@ void ThreadRunner::run(void (*funcptr)(T &), QVector<T> &container, const bool f
 {
     if (mMultithreaded && container.count() > 3 && forceSingleThreaded==false) {
         // execute using QtConcurrent for larger amounts of elements
+        mState = MultiThreaded;
         QtConcurrent::blockingMap(container,funcptr);
     } else {
         // execute serialized in main thread
+        mState = SingleThreaded;
         for (int i=0;i<container.size();++i)
             (*funcptr)(container[i]);
 
     }
-
+    mState = Inactive;
 }
 
 #endif // THREADRUNNER_H

@@ -43,6 +43,7 @@ private:
     bool mConnected;
 
     //void updateFilePath(const QString& path, QLineEdit *lineEdit);
+    QString getBasePath(const QString &variableName);
     void connectFileDialog(const QString& variableName, QLineEdit *lineEdit, const QString &type);
     void openCommentDialog(QStringList xmlPath);
 

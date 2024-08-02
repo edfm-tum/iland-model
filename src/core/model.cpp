@@ -124,10 +124,10 @@ static void nc_microclimate(ResourceUnit *unit)
     try {
         unit->analyzeMicroclimate();
 
-    } catch (const IException& e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+    } catch (const IException &e) {
+        // thread-safe error message
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
-
 }
 
 
@@ -680,7 +680,7 @@ static void nc_establishment(ResourceUnit *unit)
         s->establishment(unit);
 
     } catch (const IException& e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
 
 }
@@ -693,7 +693,7 @@ static void nc_sapling_growth(ResourceUnit *unit)
         s->saplingGrowth(unit);
 
     } catch (const IException& e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
 }
 
@@ -707,7 +707,7 @@ static void nc_carbonCycle(ResourceUnit *unit)
         unit->calculateCarbonCycle();
         // (2) do the soil carbon and nitrogen dynamics calculations (ICBM/2N)
     } catch (const IException& e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
 
 }
@@ -819,6 +819,7 @@ void Model::runYear()
 {
     DebugTimer t_all("Model::runYear()");
     GlobalSettings::instance()->systemStatistics()->reset();
+    threadRunner.clearErrors();
     RandomGenerator::checkGenerator(); // see if we need to generate new numbers...
     // initalization at start of year for external modules
     mModules->yearBegin();
@@ -912,6 +913,7 @@ void Model::runYear()
         mGrassCover->executeAfterRegeneration(); // evaluate ground vegetation
 
         // Establishment::debugInfo(); // debug test
+        threadRunner.checkErrors();
 
     }
 
@@ -949,6 +951,8 @@ void Model::runYear()
         mABEManagement->yearEnd();
         GlobalSettings::instance()->systemStatistics()->tManagement+=t.elapsed();
     }
+
+    threadRunner.checkErrors();
 
     // create outputs
     setCurrentTask("Write outputs");
@@ -1025,7 +1029,7 @@ static void nc_applyPattern(ResourceUnit *unit)
         }
 
     } catch (const IException &e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
 }
 
@@ -1043,7 +1047,7 @@ static void nc_readPattern(ResourceUnit *unit)
                 (*tit).readLIF_torus(); // do it the wraparound way
         }
     } catch (const IException &e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
 }
 
@@ -1066,7 +1070,7 @@ static void nc_grow(ResourceUnit *unit)
             (*tit).grow(); // actual growth of individual trees
         }
     } catch (const IException &e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
 
     GlobalSettings::instance()->systemStatistics()->treeCount+=unit->trees().count();
@@ -1078,7 +1082,7 @@ static void nc_production(ResourceUnit *unit)
     try {
         unit->production();
     } catch (const IException &e) {
-        GlobalSettings::instance()->controller()->throwError(e.message());
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
 }
 

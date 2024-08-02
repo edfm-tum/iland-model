@@ -244,31 +244,36 @@ FMUnit *nc_execute_unit(FMUnit *unit)
 {
     if (ForestManagementEngine::instance()->isCancel())
         return unit;
+    try {
+        //qDebug() << "called for unit" << unit;
+        const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
+        QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
+        int executed = 0;
+        int total = 0;
+        while (it!=stand_map.constEnd() && it.key()==unit) {
+            it.value()->stp()->executeRepeatingActivities(it.value());
+            if (it.value()->execute())
+                ++executed;
+            //MapGrid::freeLocksForStand( it.value()->id() );
+            if (ForestManagementEngine::instance()->isCancel())
+                break;
 
-    //qDebug() << "called for unit" << unit;
-    const QMultiMap<FMUnit*, FMStand*> &stand_map = ForestManagementEngine::instance()->stands();
-    QMultiMap<FMUnit*, FMStand*>::const_iterator it = stand_map.constFind(unit);
-    int executed = 0;
-    int total = 0;
-    while (it!=stand_map.constEnd() && it.key()==unit) {
-        it.value()->stp()->executeRepeatingActivities(it.value());
-        if (it.value()->execute())
-            ++executed;
-        //MapGrid::freeLocksForStand( it.value()->id() );
+            ++it;
+            ++total;
+        }
         if (ForestManagementEngine::instance()->isCancel())
-            break;
+            return unit;
 
-        ++it;
-        ++total;
+        if (FMSTP::verbose())
+            qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
+
+        // now run the scheduler
+        unit->scheduler()->run();
+    } catch (const IException &e) {
+        // thread-safe error message
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
-    if (ForestManagementEngine::instance()->isCancel())
-        return unit;
 
-    if (FMSTP::verbose())
-        qCDebug(abe) << "execute unit'" << unit->id() << "', ran" << executed << "of" << total;
-
-    // now run the scheduler
-    unit->scheduler()->run();
 
 
     return unit;
