@@ -470,25 +470,31 @@ static int impact_c;
 void nc_calculateFetch(WindCell *begin, WindCell *end)
 {
     int calculated = 0;
-    double current_direction;
-    for (WindCell *p=begin; p!=end; ++p) {
-        if (p->edge >= 1.f) {
-            QPoint pt=wind_module->mGrid.indexOf(p);
-            current_direction = wind_module->mWindDirection + (wind_module->mWindDirectionVariation>0.?nrandom(-wind_module->mWindDirectionVariation, wind_module->mWindDirectionVariation):0);
-            float old_edge = p->edge;
-            wind_module->checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - wind_module->mEdgeDetectionThreshold);
-            ++calculated;
-            // only simulate edges with gapsize > 20m
-            // this skips small gaps (e.g. areas marked as "stones")
-            if (old_edge>1.f) {
-                // for random starts only increase the distance
-                p->edge = qMax(p->edge, old_edge);
-            } else if (p->edge < 10.f) {
-                // minimum fetch distance for edges
-                p->edge = 0.f;
+    try {
+        double current_direction;
+        for (WindCell *p=begin; p!=end; ++p) {
+            if (p->edge >= 1.f) {
+                QPoint pt=wind_module->mGrid.indexOf(p);
+                current_direction = wind_module->mWindDirection + (wind_module->mWindDirectionVariation>0.?nrandom(-wind_module->mWindDirectionVariation, wind_module->mWindDirectionVariation):0);
+                float old_edge = p->edge;
+                wind_module->checkFetch(pt.x(), pt.y(), current_direction, p->height * 10., p->height - wind_module->mEdgeDetectionThreshold);
+                ++calculated;
+                // only simulate edges with gapsize > 20m
+                // this skips small gaps (e.g. areas marked as "stones")
+                if (old_edge>1.f) {
+                    // for random starts only increase the distance
+                    p->edge = qMax(p->edge, old_edge);
+                } else if (p->edge < 10.f) {
+                    // minimum fetch distance for edges
+                    p->edge = 0.f;
+                }
             }
         }
+    } catch (const IException &e) {
+        // thread-safe error message
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
     }
+
     QMutexLocker lock(&wind_mt_counter);
     impact_c += calculated;
 
@@ -527,6 +533,7 @@ void nc_calculateWindImpact(ResourceUnit *unit)
     GridRunner<WindCell> runner(wind_module->mGrid, unit->boundingBox());
     int calculated=0;
     int effective=0;
+    try {
     while (WindCell *p = runner.next()) {
         if (p->edge >= 1.f) {
             QPoint pt=wind_module->mGrid.indexOf(p);
@@ -535,6 +542,11 @@ void nc_calculateWindImpact(ResourceUnit *unit)
             ++calculated;
         }
     }
+    } catch (const IException &e) {
+    // thread-safe error message
+    GlobalSettings::instance()->model()->threadExec().throwError(e.message());
+    }
+
     QMutexLocker lock(&wind_mt_counter);
 
     impact_c += calculated;
