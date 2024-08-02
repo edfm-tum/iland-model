@@ -140,6 +140,7 @@ void Modules::run()
             qWarning() << "ERROR: uncaught exception in module '" << di->name() << "':";
             qWarning() << "ERROR:" << e.message();
             qWarning() << " **************************************** ";
+            throw IException(QString("ERROR in module: %1\n%2").arg(di->name(), e.message()));
         }
     }
 

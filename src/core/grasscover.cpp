@@ -163,7 +163,13 @@ void GrassCover::setInitialValues(const QVector<float *> &LIFpixels, const int p
 
 void nc_grass_simplified(ResourceUnit *unit)
 {
-    GlobalSettings::instance()->model()->saplings()->simplifiedGrassCover(unit);
+    try{
+        GlobalSettings::instance()->model()->saplings()->simplifiedGrassCover(unit);
+    } catch (const IException &e) {
+        // thread-safe error message
+        GlobalSettings::instance()->model()->threadExec().throwError(e.message());
+    }
+
 }
 
 void GrassCover::execute()
