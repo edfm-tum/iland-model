@@ -25,6 +25,7 @@
 #include "helper.h"
 #include "species.h"
 #include "tree.h"
+#include "resourceunit.h"
 #ifdef ILAND_GUI
 #include <QtGui/QImage>
 #endif
@@ -862,5 +863,21 @@ void SeedDispersal::addExternalBackgroundSeeds(Grid<float> &map, double backgrou
     const double frac_RU = 0.1; // fraction of resource units to process
     const double frac_cells = 0.2; // fraction of seed cells (20m) 0.2 ~ 5 from 25 cells per RU
 
-    return;
+    float effective_prob = background_value * 1. / (frac_RU * frac_cells);
+    int ncells = 0;
+
+    for (auto ru : GlobalSettings::instance()->model()->RUgrid()) {
+        if (ru!=nullptr && drandom() < frac_RU) {
+            GridRunner<float> runner(map, ru->boundingBox());
+            while (runner.next()) {
+                if (drandom() < frac_cells) {
+                    *(runner.current()) += effective_prob;
+                    ++ncells;
+                }
+            }
+        }
+    }
+    if (logLevelDebug())
+        qDebug() << "add external seeds (background): value=" << background_value << "set" << ncells << "cells with value" << effective_prob;
 }
+
