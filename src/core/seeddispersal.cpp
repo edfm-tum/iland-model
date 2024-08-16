@@ -25,6 +25,7 @@
 #include "helper.h"
 #include "species.h"
 #include "tree.h"
+#include "resourceunit.h"
 #ifdef ILAND_GUI
 #include <QtGui/QImage>
 #endif
@@ -679,8 +680,7 @@ void SeedDispersal::execute()
     float background_value = static_cast<float>(mExternalSeedBackgroundInput); // there is potentitally a background probability <>0 for all pixels.
     if (background_value>0.f) {
         // add a constant number of seeds on the map
-        mSeedMap.add(background_value);
-        mSeedMap.limit(0.f, 1.f);
+        addExternalBackgroundSeeds(mSeedMap, background_value);
     }
 
 
@@ -848,4 +848,35 @@ void SeedDispersal::distributeSeeds(Grid<float> *seed_map)
             *p = std::min(*p*fec / n_unlimited, 1.f);
         }
     }
+}
+
+
+void SeedDispersal::addExternalBackgroundSeeds(Grid<float> &map, double background_value)
+{
+    if (background_value > 0.01) {
+        // for high values of background prob we add the value everywhere
+        map.add(background_value);
+        map.limit(0.f, 1.f);
+        return;
+    }
+    // for lower values we make some performance optimizations, essentially by reducing the number of cells that need to be processed during establishment
+    const double frac_RU = 0.1; // fraction of resource units to process
+    const double frac_cells = 0.2; // fraction of seed cells (20m) 0.2 ~ 5 from 25 cells per RU
+
+    float effective_prob = background_value * 1. / (frac_RU * frac_cells);
+    int ncells = 0;
+
+    for (auto ru : GlobalSettings::instance()->model()->RUgrid()) {
+        if (ru!=nullptr && drandom() < frac_RU) {
+            GridRunner<float> runner(map, ru->boundingBox());
+            while (runner.next()) {
+                if (drandom() < frac_cells) {
+                    *(runner.current()) += effective_prob;
+                    ++ncells;
+                }
+            }
+        }
+    }
+    if (logLevelDebug())
+        qDebug() << "add external seeds (background): value=" << background_value << "set" << ncells << "cells with value" << effective_prob;
 }
