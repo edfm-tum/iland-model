@@ -118,7 +118,7 @@ private:
     double mPrecipitationShift; // multiply prec with that
     ClimateDay *mBegin; // pointer to the first day of the current year
     ClimateDay *mEnd; // pointer to the last day of the current year (+1)
-    QVector<ClimateDay> mStore; ///< storage of climate data
+    std::vector<ClimateDay> mStore; ///< storage of climate data
     QVector<int> mDayIndices; ///< store indices for month / years within store
     QSqlQuery mClimateQuery; ///< sql query for db access
     QList<Phenology> mPhenology; ///< phenology calculations

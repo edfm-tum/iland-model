@@ -257,10 +257,10 @@ void LinkXmlQt::readValuesXml(QStackedWidget* stackedWidget) {
                 }
                 else if (QCheckBox* checkBox = dynamic_cast<QCheckBox*>(curWidget)) {
                     if (curValue == "true" || curValue == "True" || curValue == "1") {
-                        checkBox->setChecked(TRUE);
+                        checkBox->setChecked(true);
                     }
                     else if (curValue == "false" || curValue == "False" || curValue == "0") {
-                        checkBox->setChecked(FALSE);
+                        checkBox->setChecked(false);
                     }
                 }
             // To be included: table widget,...

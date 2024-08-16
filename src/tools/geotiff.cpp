@@ -36,7 +36,7 @@ void GeoTIFF::clearProjection()
 
 int GeoTIFF::loadImage(const QString &fileName)
 {
-    qDebug() << "Loading TIF file '{}'" << fileName;
+    qDebug() << "Loading TIF file" << fileName;
     dib = FreeImage_Load(FIF_TIFF, fileName.toStdString().c_str());
     if (!mProjectionBitmap) {
 
@@ -46,8 +46,7 @@ int GeoTIFF::loadImage(const QString &fileName)
     }
 
 
-    unsigned int count;
-    if ((count = FreeImage_GetMetadataCount(FIMD_GEOTIFF, dib))>0) {
+    if (FreeImage_GetMetadataCount(FIMD_GEOTIFF, dib) >0) {
         FITAG *tagMake = nullptr;
         FreeImage_GetMetadata(FIMD_GEOTIFF, dib, "GeoTiePoints", &tagMake);
         if (!tagMake)

@@ -5,6 +5,7 @@ QT += xml
 QT += qml
 QT += sql
 QT += widgets
+# charts for the function plotter
 QT += charts
 # quick: for QML based user interface
 QT += quick
@@ -94,6 +95,14 @@ LIBS += -L../plugins -liland_fire -liland_wind -liland_barkbeetle
 # external freeimage library (geotiff)
 LIBS += -L../3rdparty/FreeImage -lFreeImage
 }
+}
+
+linux-g++ {
+# The "FreeImage" library is used for processing GeoTIFF data files.
+# FreeImage on Linux: see https://codeyarns.com/2014/02/11/how-to-install-and-use-freeimage/
+# basically sudo apt-get install libfreeimage3 libfreeimage-dev
+
+LIBS += -lfreeimage
 }
 
 DEFINES += ILAND_GUI

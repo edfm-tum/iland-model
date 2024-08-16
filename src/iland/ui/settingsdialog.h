@@ -18,7 +18,7 @@ class FilterButton : public QAbstractButton
 public:
     explicit FilterButton(const QString& text, const QString& pathIcon, QWidget *parent = nullptr);
 
-    void paintEvent(QPaintEvent *e) override;
+    // void paintEvent(QPaintEvent *e) override;
 
 private:
     QString mText;
