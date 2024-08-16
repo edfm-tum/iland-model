@@ -124,9 +124,16 @@ QMutex random_generator_refill_mutex;
 
 void RandomGenerator::refill() {
 
+    {
+    // only one thread should refill the random number buffer, but we do
+    // allow the other threads to continue taking random numbers while refilling
     QMutexLocker lock(&random_generator_refill_mutex); // serialize access
     if (mRotationCount<RANDOMGENERATORROTATIONS) // another thread might already succeeded in refilling....
         return;
+    mIndex = 0; // reset the index
+    mRotationCount=0;
+    mRefillCounter++;
+    }
 
     RGenerators gen;
     gen.seed(mBuffer[RANDOMGENERATORSIZE+4]); // use the last value as seed for the next round....
@@ -159,9 +166,6 @@ void RandomGenerator::refill() {
     } // switch
 
 
-    mIndex = 0; // reset the index
-    mRotationCount=0;
-    mRefillCounter++;
 }
 
 void RandomGenerator::seed(const unsigned oneSeed)
